@@ -1,7 +1,6 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/wickerbundle"
-      }
-   }
+  "variants": {
+    "bundle_type=plain": { "model": "witchery:block/wickerbundle_plain" },
+    "bundle_type=bloodied": { "model": "witchery:block/wickerbundle_bloodied" }
+  }
 }

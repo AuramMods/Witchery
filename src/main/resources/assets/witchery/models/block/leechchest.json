@@ -1,6 +1,41 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/leechchest"
-   }
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "witchery:block/leechchest",
+    "all": "witchery:block/leechchest"
+  },
+  "elements": [
+    {
+      "from": [
+        1.0,
+        0.0,
+        1.0
+      ],
+      "to": [
+        15.0,
+        14.0,
+        15.0
+      ],
+      "faces": {
+        "down": {
+          "texture": "#all"
+        },
+        "up": {
+          "texture": "#all"
+        },
+        "north": {
+          "texture": "#all"
+        },
+        "south": {
+          "texture": "#all"
+        },
+        "west": {
+          "texture": "#all"
+        },
+        "east": {
+          "texture": "#all"
+        }
+      }
+    }
+  ]
 }

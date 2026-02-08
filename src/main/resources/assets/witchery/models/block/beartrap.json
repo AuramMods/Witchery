@@ -1,6 +1,41 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/beartrap"
-   }
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "witchery:block/beartrap",
+    "all": "witchery:block/beartrap"
+  },
+  "elements": [
+    {
+      "from": [
+        3.2,
+        0.16,
+        3.2
+      ],
+      "to": [
+        12.8,
+        1.6,
+        12.8
+      ],
+      "faces": {
+        "down": {
+          "texture": "#all"
+        },
+        "up": {
+          "texture": "#all"
+        },
+        "north": {
+          "texture": "#all"
+        },
+        "south": {
+          "texture": "#all"
+        },
+        "west": {
+          "texture": "#all"
+        },
+        "east": {
+          "texture": "#all"
+        }
+      }
+    }
+  ]
 }

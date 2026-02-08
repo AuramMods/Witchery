@@ -117,3 +117,41 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
   - JSON resource locations currently lowercase-safe.
 - When purple-black reports happen, always verify log timestamp first and then re-check `latest.log` after a fresh client run.
 - Verified on fresh run (`2026-02-07 20:18`): `Missing textures in model` / `Unable to load model` / `FileNotFoundException` count for Witchery assets is now `0`.
+- Broad non-cube parity pass completed on `2026-02-08`:
+  - reduced `models/block` `cube_all` placeholders from `51` -> `14`.
+  - converted placeholder cubes to non-full approximations for:
+    - plant-like: `bramble`, `somniancotton`, `spanishmoss`, `vine`, `web`, `witchsapling`, `lilypad`, `leapinglily`, `cactus`.
+    - technical/invisible-like: `barrier`, `light`, `slurp`, `force`, `brewgas`.
+    - fluid-like: `brew`, `brewliquid`, `disease`, `spiritflowing`, `hollowtears`.
+    - portal-like: `spiritportal`, `tormentportal`.
+    - decorative/machine approximations: `altar`, `kettle`, `spinningwheel`, `statueofworship`, `coffinblock`, `refillingchest`, `mirrorwall`, `infinityegg`, `clever`, `distilleryidle`, `distilleryburning`, `fumefunnel`, `filteredfumefunnel`, `witchesovenidle`, `witchesovenburning`.
+  - fixed invalid slab item placeholders:
+    - `models/item/icedoubleslab.json`, `models/item/snowdoubleslab.json`, `models/item/witchwooddoubleslab.json` now parent their block models (removed `taglockkit` placeholder ref).
+  - remaining intentionally-full `cube_all` list:
+    - `bloodedwool`, `icedoubleslab`, `perpetualice`, `pitdirt`, `pitgrass`, `shadedglass`, `shadedglass_active`, `snowdoubleslab`, `tormentstone`, `wallgen`, `wickerbundle`, `witchleaves`, `witchwood`, `witchwooddoubleslab`.
+- Validation after this pass:
+  - `./gradlew compileJava` passes.
+  - all checked JSON files under `assets/witchery/blockstates`, `assets/witchery/models/block`, `assets/witchery/models/item` parse successfully.
+- Horizontal-facing parity scaffold added (2026-02-08):
+  - new reusable block class in `WitcheryBlocks` for placement-facing state (`HorizontalDirectionalBlock`).
+  - IDs switched to this scaffold:
+    - `altar`, `kettle`, `spinningwheel`, `distilleryidle`, `distilleryburning`, `witchesovenidle`, `witchesovenburning`, `fumefunnel`, `filteredfumefunnel`, `coffinblock`, `statueofworship`, `refillingchest`, `leechchest`.
+  - matching blockstates now use `facing=north/east/south/west` variants with `y` rotations and `uvlock`.
+  - compile validation after this change: `./gradlew compileJava` succeeded.
+- Wood/bundle variant-state parity added (2026-02-08):
+  - `witchwood`, `witchleaves`, `witchsapling` now use `wood_type=rowan|alder|hawthorn`.
+  - `wickerbundle` now uses `bundle_type=plain|bloodied`.
+  - new variant model files added for:
+    - planks: `witchwood_rowan`, `witchwood_alder`, `witchwood_hawthorn`
+    - leaves: `witchleaves_rowan`, `witchleaves_alder`, `witchleaves_hawthorn`
+    - saplings: `witchsapling_rowan`, `witchsapling_alder`, `witchsapling_hawthorn`
+    - wicker bundles: `wickerbundle_plain`, `wickerbundle_bloodied`
+  - defaults for base block/item models now point to legacy default variants (`rowan` / `plain`).
+  - compile + JSON validation after this change succeeded (`./gradlew compileJava`, JSON parse pass).
+- Shaded glass color-state parity added (2026-02-08):
+  - `shadedglass` and `shadedglass_active` now use enum property `color` (16 legacy values: white, orange, magenta, light_blue, yellow, lime, pink, gray, silver, cyan, purple, blue, brown, green, red, black).
+  - generated variant model families:
+    - `models/block/shadedglass_<color>.json` -> `shadedglassoff_<color>` textures
+    - `models/block/shadedglass_active_<color>.json` -> `shadedglass_<color>` textures
+  - item defaults now target white variant models.
+  - compile + JSON validation succeeded after this pass.

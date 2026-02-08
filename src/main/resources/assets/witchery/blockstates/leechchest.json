@@ -1,7 +1,8 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/leechchest"
-      }
-   }
+  "variants": {
+    "facing=north": { "model": "witchery:block/leechchest", "y": 180, "uvlock": true },
+    "facing=east": { "model": "witchery:block/leechchest", "y": 270, "uvlock": true },
+    "facing=south": { "model": "witchery:block/leechchest", "y": 0, "uvlock": true },
+    "facing=west": { "model": "witchery:block/leechchest", "y": 90, "uvlock": true }
+  }
 }

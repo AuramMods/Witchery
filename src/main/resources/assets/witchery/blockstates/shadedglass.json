@@ -1,7 +1,20 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/shadedglass"
-      }
-   }
+  "variants": {
+    "color=white": { "model": "witchery:block/shadedglass_white" },
+    "color=orange": { "model": "witchery:block/shadedglass_orange" },
+    "color=magenta": { "model": "witchery:block/shadedglass_magenta" },
+    "color=light_blue": { "model": "witchery:block/shadedglass_light_blue" },
+    "color=yellow": { "model": "witchery:block/shadedglass_yellow" },
+    "color=lime": { "model": "witchery:block/shadedglass_lime" },
+    "color=pink": { "model": "witchery:block/shadedglass_pink" },
+    "color=gray": { "model": "witchery:block/shadedglass_gray" },
+    "color=silver": { "model": "witchery:block/shadedglass_silver" },
+    "color=cyan": { "model": "witchery:block/shadedglass_cyan" },
+    "color=purple": { "model": "witchery:block/shadedglass_purple" },
+    "color=blue": { "model": "witchery:block/shadedglass_blue" },
+    "color=brown": { "model": "witchery:block/shadedglass_brown" },
+    "color=green": { "model": "witchery:block/shadedglass_green" },
+    "color=red": { "model": "witchery:block/shadedglass_red" },
+    "color=black": { "model": "witchery:block/shadedglass_black" }
+  }
 }

@@ -1,6 +1,3 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/witchsapling"
-   }
+  "parent": "witchery:block/witchsapling_rowan"
 }

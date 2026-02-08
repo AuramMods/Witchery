@@ -1,6 +1,23 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/cactus"
-   }
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "witchery:block/cactus",
+    "side": "witchery:block/cactus",
+    "top": "witchery:block/cactus",
+    "bottom": "witchery:block/cactus"
+  },
+  "elements": [
+    {
+      "from": [1, 0, 1],
+      "to": [15, 16, 15],
+      "faces": {
+        "north": {"texture": "#side"},
+        "east": {"texture": "#side"},
+        "south": {"texture": "#side"},
+        "west": {"texture": "#side"},
+        "up": {"texture": "#top"},
+        "down": {"texture": "#bottom"}
+      }
+    }
+  ]
 }

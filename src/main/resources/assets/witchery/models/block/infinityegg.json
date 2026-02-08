@@ -1,6 +1,45 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/infinityegg"
-   }
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "witchery:block/infinityegg",
+    "all": "witchery:block/infinityegg"
+  },
+  "elements": [
+    {
+      "from": [3, 0, 3],
+      "to": [13, 6, 13],
+      "faces": {
+        "north": {"texture": "#all"},
+        "east": {"texture": "#all"},
+        "south": {"texture": "#all"},
+        "west": {"texture": "#all"},
+        "up": {"texture": "#all"},
+        "down": {"texture": "#all"}
+      }
+    },
+    {
+      "from": [2, 6, 2],
+      "to": [14, 12, 14],
+      "faces": {
+        "north": {"texture": "#all"},
+        "east": {"texture": "#all"},
+        "south": {"texture": "#all"},
+        "west": {"texture": "#all"},
+        "up": {"texture": "#all"},
+        "down": {"texture": "#all"}
+      }
+    },
+    {
+      "from": [3, 12, 3],
+      "to": [13, 16, 13],
+      "faces": {
+        "north": {"texture": "#all"},
+        "east": {"texture": "#all"},
+        "south": {"texture": "#all"},
+        "west": {"texture": "#all"},
+        "up": {"texture": "#all"},
+        "down": {"texture": "#all"}
+      }
+    }
+  ]
 }

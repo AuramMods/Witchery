@@ -1,6 +1,41 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/decursedirected"
-   }
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "witchery:block/decursedirected",
+    "all": "witchery:block/decursedirected"
+  },
+  "elements": [
+    {
+      "from": [
+        2.4,
+        0.0,
+        2.4
+      ],
+      "to": [
+        13.6,
+        8.0,
+        13.6
+      ],
+      "faces": {
+        "down": {
+          "texture": "#all"
+        },
+        "up": {
+          "texture": "#all"
+        },
+        "north": {
+          "texture": "#all"
+        },
+        "south": {
+          "texture": "#all"
+        },
+        "west": {
+          "texture": "#all"
+        },
+        "east": {
+          "texture": "#all"
+        }
+      }
+    }
+  ]
 }

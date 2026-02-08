@@ -1,3 +1,6 @@
 {
-   "parent" : "witchery:block/slurp"
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "witchery:block/slurp"
+  }
 }

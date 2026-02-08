@@ -1,6 +1,25 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/tormentportal"
-   }
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "witchery:block/tormentportal",
+    "portal": "witchery:block/tormentportal"
+  },
+  "elements": [
+    {
+      "from": [7, 0, 0],
+      "to": [9, 16, 16],
+      "faces": {
+        "east": {"texture": "#portal"},
+        "west": {"texture": "#portal"}
+      }
+    },
+    {
+      "from": [0, 0, 7],
+      "to": [16, 16, 9],
+      "faces": {
+        "north": {"texture": "#portal"},
+        "south": {"texture": "#portal"}
+      }
+    }
+  ]
 }

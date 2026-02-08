@@ -1,6 +1,41 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/bloodrose"
-   }
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "witchery:block/bloodrose",
+    "all": "witchery:block/bloodrose"
+  },
+  "elements": [
+    {
+      "from": [
+        4.8,
+        0.0,
+        4.8
+      ],
+      "to": [
+        11.2,
+        9.6,
+        11.2
+      ],
+      "faces": {
+        "down": {
+          "texture": "#all"
+        },
+        "up": {
+          "texture": "#all"
+        },
+        "north": {
+          "texture": "#all"
+        },
+        "south": {
+          "texture": "#all"
+        },
+        "west": {
+          "texture": "#all"
+        },
+        "east": {
+          "texture": "#all"
+        }
+      }
+    }
+  ]
 }

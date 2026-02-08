@@ -1,7 +1,8 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/distilleryidle"
-      }
-   }
+  "variants": {
+    "facing=north": { "model": "witchery:block/distilleryidle", "y": 180, "uvlock": true },
+    "facing=east": { "model": "witchery:block/distilleryidle", "y": 270, "uvlock": true },
+    "facing=south": { "model": "witchery:block/distilleryidle", "y": 0, "uvlock": true },
+    "facing=west": { "model": "witchery:block/distilleryidle", "y": 90, "uvlock": true }
+  }
 }

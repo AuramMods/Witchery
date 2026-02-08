@@ -1,6 +1,6 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/bramble"
-   }
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "witchery:block/bramble_wild"
+  }
 }

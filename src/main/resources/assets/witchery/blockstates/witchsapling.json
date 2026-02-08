@@ -1,7 +1,7 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/witchsapling"
-      }
-   }
+  "variants": {
+    "wood_type=rowan": { "model": "witchery:block/witchsapling_rowan" },
+    "wood_type=alder": { "model": "witchery:block/witchsapling_alder" },
+    "wood_type=hawthorn": { "model": "witchery:block/witchsapling_hawthorn" }
+  }
 }

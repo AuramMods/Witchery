@@ -1,6 +1,3 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/shadedglass_active"
-   }
+  "parent": "witchery:block/shadedglass_active_white"
 }

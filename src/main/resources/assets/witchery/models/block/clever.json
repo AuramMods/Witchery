@@ -1,6 +1,33 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/clever"
-   }
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "witchery:block/clever",
+    "all": "witchery:block/clever"
+  },
+  "elements": [
+    {
+      "from": [5, 0, 7],
+      "to": [11, 3, 9],
+      "faces": {
+        "north": {"texture": "#all"},
+        "east": {"texture": "#all"},
+        "south": {"texture": "#all"},
+        "west": {"texture": "#all"},
+        "up": {"texture": "#all"},
+        "down": {"texture": "#all"}
+      }
+    },
+    {
+      "from": [7, 3, 7],
+      "to": [9, 12, 9],
+      "faces": {
+        "north": {"texture": "#all"},
+        "east": {"texture": "#all"},
+        "south": {"texture": "#all"},
+        "west": {"texture": "#all"},
+        "up": {"texture": "#all"},
+        "down": {"texture": "#all"}
+      }
+    }
+  ]
 }

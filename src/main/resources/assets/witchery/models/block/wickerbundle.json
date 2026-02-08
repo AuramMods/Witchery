@@ -1,6 +1,3 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/wickerbundle"
-   }
+  "parent": "witchery:block/wickerbundle_plain"
 }

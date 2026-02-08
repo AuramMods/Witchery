@@ -1,6 +1,6 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/somniancotton"
-   }
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "witchery:block/somniancotton"
+  }
 }

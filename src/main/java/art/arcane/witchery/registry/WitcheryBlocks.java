@@ -77,9 +77,19 @@ public final class WitcheryBlocks {
     private static Block createBlock(String path) {
         return switch (path) {
             case "witchlog" -> new LegacyWitchLogBlock();
+            case "witchwood" -> new LegacyWitchWoodVariantBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS));
+            case "witchleaves" -> new LegacyWitchWoodVariantBlock(BlockBehaviour.Properties.copy(Blocks.OAK_LEAVES).noOcclusion());
+            case "witchsapling" -> new LegacyWitchWoodVariantBlock(BlockBehaviour.Properties.copy(Blocks.OAK_SAPLING).noOcclusion());
+            case "wickerbundle" -> new LegacyWickerBundleBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS));
+            case "shadedglass" -> new LegacyShadedGlassBlock(false);
+            case "shadedglass_active" -> new LegacyShadedGlassBlock(true);
             case "icedoor" -> new DoorBlock(BlockBehaviour.Properties.copy(Blocks.IRON_DOOR).noOcclusion(), BlockSetType.IRON);
             case "rowanwooddoor", "alderwooddoor", "cwoodendoor" ->
                     new DoorBlock(BlockBehaviour.Properties.copy(Blocks.OAK_DOOR).noOcclusion(), BlockSetType.OAK);
+            case "altar", "kettle", "spinningwheel", "distilleryidle", "distilleryburning",
+                    "witchesovenidle", "witchesovenburning", "fumefunnel", "filteredfumefunnel",
+                    "coffinblock", "statueofworship", "refillingchest", "leechchest" ->
+                    new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion());
             case "stairswoodrowan", "stairswoodalder", "stairswoodhawthorn" ->
                     new StairBlock(Blocks.OAK_PLANKS.defaultBlockState(), BlockBehaviour.Properties.copy(Blocks.OAK_STAIRS));
             case "icestairs", "snowstairs" ->
@@ -112,6 +122,23 @@ public final class WitcheryBlocks {
         };
     }
 
+    private static final class LegacyHorizontalFacingBlock extends HorizontalDirectionalBlock {
+        private LegacyHorizontalFacingBlock(BlockBehaviour.Properties properties) {
+            super(properties);
+            registerDefaultState(defaultBlockState().setValue(FACING, Direction.NORTH));
+        }
+
+        @Override
+        public BlockState getStateForPlacement(BlockPlaceContext context) {
+            return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        }
+
+        @Override
+        protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+            builder.add(FACING);
+        }
+    }
+
     private static final class LegacyWitchLogBlock extends RotatedPillarBlock {
         private static final EnumProperty<LegacyWitchWoodType> WOOD_TYPE =
                 EnumProperty.create("wood_type", LegacyWitchWoodType.class);
@@ -136,6 +163,53 @@ public final class WitcheryBlocks {
         }
     }
 
+    private static final class LegacyWitchWoodVariantBlock extends Block {
+        private static final EnumProperty<LegacyWitchWoodType> WOOD_TYPE =
+                EnumProperty.create("wood_type", LegacyWitchWoodType.class);
+
+        private LegacyWitchWoodVariantBlock(BlockBehaviour.Properties properties) {
+            super(properties);
+            registerDefaultState(defaultBlockState().setValue(WOOD_TYPE, LegacyWitchWoodType.ROWAN));
+        }
+
+        @Override
+        protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+            builder.add(WOOD_TYPE);
+        }
+    }
+
+    private static final class LegacyWickerBundleBlock extends Block {
+        private static final EnumProperty<LegacyWickerBundleType> BUNDLE_TYPE =
+                EnumProperty.create("bundle_type", LegacyWickerBundleType.class);
+
+        private LegacyWickerBundleBlock(BlockBehaviour.Properties properties) {
+            super(properties);
+            registerDefaultState(defaultBlockState().setValue(BUNDLE_TYPE, LegacyWickerBundleType.PLAIN));
+        }
+
+        @Override
+        protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+            builder.add(BUNDLE_TYPE);
+        }
+    }
+
+    private static final class LegacyShadedGlassBlock extends Block {
+        private static final EnumProperty<LegacyShadedGlassColor> COLOR =
+                EnumProperty.create("color", LegacyShadedGlassColor.class);
+
+        private LegacyShadedGlassBlock(boolean active) {
+            super(BlockBehaviour.Properties.copy(Blocks.GLASS)
+                    .lightLevel(state -> active ? 15 : 0)
+                    .noOcclusion());
+            registerDefaultState(defaultBlockState().setValue(COLOR, LegacyShadedGlassColor.WHITE));
+        }
+
+        @Override
+        protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+            builder.add(COLOR);
+        }
+    }
+
     private enum LegacyWitchWoodType implements StringRepresentable {
         ROWAN("rowan"),
         ALDER("alder"),
@@ -144,6 +218,52 @@ public final class WitcheryBlocks {
         private final String serializedName;
 
         LegacyWitchWoodType(String serializedName) {
+            this.serializedName = serializedName;
+        }
+
+        @Override
+        public String getSerializedName() {
+            return serializedName;
+        }
+    }
+
+    private enum LegacyWickerBundleType implements StringRepresentable {
+        PLAIN("plain"),
+        BLOODIED("bloodied");
+
+        private final String serializedName;
+
+        LegacyWickerBundleType(String serializedName) {
+            this.serializedName = serializedName;
+        }
+
+        @Override
+        public String getSerializedName() {
+            return serializedName;
+        }
+    }
+
+    private enum LegacyShadedGlassColor implements StringRepresentable {
+        WHITE("white"),
+        ORANGE("orange"),
+        MAGENTA("magenta"),
+        LIGHT_BLUE("light_blue"),
+        YELLOW("yellow"),
+        LIME("lime"),
+        PINK("pink"),
+        GRAY("gray"),
+        SILVER("silver"),
+        CYAN("cyan"),
+        PURPLE("purple"),
+        BLUE("blue"),
+        BROWN("brown"),
+        GREEN("green"),
+        RED("red"),
+        BLACK("black");
+
+        private final String serializedName;
+
+        LegacyShadedGlassColor(String serializedName) {
             this.serializedName = serializedName;
         }
 

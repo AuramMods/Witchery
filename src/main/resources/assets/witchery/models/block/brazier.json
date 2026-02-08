@@ -1,6 +1,41 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/brazier"
-   }
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "witchery:block/brazier",
+    "all": "witchery:block/brazier"
+  },
+  "elements": [
+    {
+      "from": [
+        3.2,
+        0.0,
+        3.2
+      ],
+      "to": [
+        12.8,
+        15.2,
+        12.8
+      ],
+      "faces": {
+        "down": {
+          "texture": "#all"
+        },
+        "up": {
+          "texture": "#all"
+        },
+        "north": {
+          "texture": "#all"
+        },
+        "south": {
+          "texture": "#all"
+        },
+        "west": {
+          "texture": "#all"
+        },
+        "east": {
+          "texture": "#all"
+        }
+      }
+    }
+  ]
 }

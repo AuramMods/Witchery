@@ -32,6 +32,28 @@
     - fence/fence gate (`icefence`, `icefencegate`)
     - pressure plates (`icepressureplate`, `snowpressureplate`, `cwoodpressureplate`, `cstonepressureplate`, `csnowpressureplate`)
     - buttons (`cbuttonwood`, `cbuttonstone`)
+  - completed broad non-cube model conversion pass for legacy placeholders:
+    - plant-like models migrated to `cross`/flat forms (`bramble`, `somniancotton`, `spanishmoss`, `vine`, `web`, `witchsapling`, `lilypad`, `leapinglily`, `cactus`).
+    - technical/utility blocks switched off full-cube rendering (`barrier`, `light`, `slurp`, `force`, `brewgas`) with explicit inventory item icons.
+    - fluid-family placeholders converted from full cubes to short liquid approximations (`brew`, `brewliquid`, `disease`, `spiritflowing`, `hollowtears`).
+    - portal-family placeholders converted to crossed thin-pane portal geometry (`spiritportal`, `tormentportal`).
+    - decorative/functional placeholders converted to non-full approximations (`altar`, `kettle`, `spinningwheel`, `statueofworship`, `coffinblock`, `refillingchest`, `mirrorwall`, `infinityegg`, plus machine-family placeholders `clever`, `distillery*`, `fumefunnel*`, `witchesoven*`).
+  - fixed broken double-slab item model placeholders:
+    - `icedoubleslab`, `snowdoubleslab`, `witchwooddoubleslab` no longer point at `witchery:item/taglockkit`.
+  - added horizontal-facing scaffold parity for key machine/decor blocks in code + blockstates:
+    - blocks now place with facing state (`north/east/south/west`) instead of static default state.
+    - covered IDs: `altar`, `kettle`, `spinningwheel`, `distilleryidle`, `distilleryburning`, `witchesovenidle`, `witchesovenburning`, `fumefunnel`, `filteredfumefunnel`, `coffinblock`, `statueofworship`, `refillingchest`, `leechchest`.
+  - added legacy variant-state parity for core wood/bundle families:
+    - `witchwood` now uses `wood_type=rowan|alder|hawthorn` with `planks_*` textures.
+    - `witchleaves` now uses `wood_type=rowan|alder|hawthorn` with `leaves_*` textures.
+    - `witchsapling` now uses `wood_type=rowan|alder|hawthorn` with `sapling_*` textures.
+    - `wickerbundle` now uses `bundle_type=plain|bloodied` with `wicker_block_*` textures.
+  - added `shadedglass` color-state parity:
+    - `shadedglass` and `shadedglass_active` now use `color=...` with 16 legacy color values.
+    - generated `shadedglass_<color>` and `shadedglass_active_<color>` model families from legacy `shadedglassoff_*` / `shadedglass_*` textures.
+  - remaining `cube_all` block models reduced to 14 intentionally-full placeholders:
+    - core placeholders: `bloodedwool`, `icedoubleslab`, `perpetualice`, `pitdirt`, `pitgrass`, `snowdoubleslab`, `tormentstone`, `wallgen`, `witchwooddoubleslab`.
+    - intentional variant models (not generic placeholders): `witchwood_rowan`, `witchwood_alder`, `witchwood_hawthorn`, `shadedglass_*`, `shadedglass_active_*`.
 
 ## Phase Checklist
 
@@ -93,5 +115,6 @@
 - [~] Continue replacing placeholder block models with old 1.7 equivalents (breadth pass before behavior depth).
   - completed crop-family stage model parity pass.
   - completed structural families (stairs/slabs/fence/fence-gate/pressure-plate/button) with 1.20.1 state models.
-  - next breadth target: non-cube decorative/functional blocks still on generic cube placeholders.
+  - completed broad non-cube decorative/functional pass; remaining full-cube placeholders now narrowed to 14 likely-intentional cube blocks.
+  - next breadth target: metadata/state parity for remaining multi-variant legacy cubes (`witchwood`, `witchleaves`, `wickerbundle`, `wallgen`) and orientation/state behavior where legacy used TESR/custom renderers.
 - [ ] Keep this file updated as phases move from breadth to depth.

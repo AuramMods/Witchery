@@ -1,7 +1,8 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/distilleryburning"
-      }
-   }
+  "variants": {
+    "facing=north": { "model": "witchery:block/distilleryburning", "y": 180, "uvlock": true },
+    "facing=east": { "model": "witchery:block/distilleryburning", "y": 270, "uvlock": true },
+    "facing=south": { "model": "witchery:block/distilleryburning", "y": 0, "uvlock": true },
+    "facing=west": { "model": "witchery:block/distilleryburning", "y": 90, "uvlock": true }
+  }
 }

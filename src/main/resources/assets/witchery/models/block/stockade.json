@@ -1,6 +1,41 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/stockade"
-   }
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "witchery:block/stockade",
+    "all": "witchery:block/stockade"
+  },
+  "elements": [
+    {
+      "from": [
+        4.8,
+        0.0,
+        4.8
+      ],
+      "to": [
+        11.2,
+        14.4,
+        11.2
+      ],
+      "faces": {
+        "down": {
+          "texture": "#all"
+        },
+        "up": {
+          "texture": "#all"
+        },
+        "north": {
+          "texture": "#all"
+        },
+        "south": {
+          "texture": "#all"
+        },
+        "west": {
+          "texture": "#all"
+        },
+        "east": {
+          "texture": "#all"
+        }
+      }
+    }
+  ]
 }

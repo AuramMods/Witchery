@@ -1,6 +1,33 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/fumefunnel"
-   }
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "witchery:block/fumefunnel",
+    "all": "witchery:block/fumefunnel"
+  },
+  "elements": [
+    {
+      "from": [4, 0, 4],
+      "to": [12, 14, 12],
+      "faces": {
+        "north": {"texture": "#all"},
+        "east": {"texture": "#all"},
+        "south": {"texture": "#all"},
+        "west": {"texture": "#all"},
+        "up": {"texture": "#all"},
+        "down": {"texture": "#all"}
+      }
+    },
+    {
+      "from": [2, 14, 2],
+      "to": [14, 16, 14],
+      "faces": {
+        "north": {"texture": "#all"},
+        "east": {"texture": "#all"},
+        "south": {"texture": "#all"},
+        "west": {"texture": "#all"},
+        "up": {"texture": "#all"},
+        "down": {"texture": "#all"}
+      }
+    }
+  ]
 }

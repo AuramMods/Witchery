@@ -1,6 +1,6 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/vine"
-   }
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "witchery:block/vine"
+  }
 }

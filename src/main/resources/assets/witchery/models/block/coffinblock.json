@@ -1,6 +1,21 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/coffinblock"
-   }
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "witchery:block/coffinblock",
+    "all": "witchery:block/coffinblock"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 9, 16],
+      "faces": {
+        "north": {"texture": "#all"},
+        "east": {"texture": "#all"},
+        "south": {"texture": "#all"},
+        "west": {"texture": "#all"},
+        "up": {"texture": "#all"},
+        "down": {"texture": "#all"}
+      }
+    }
+  ]
 }

@@ -1,6 +1,41 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/statuegoddess"
-   }
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "witchery:block/statuegoddess",
+    "all": "witchery:block/statuegoddess"
+  },
+  "elements": [
+    {
+      "from": [
+        0.0,
+        0.0,
+        1.6
+      ],
+      "to": [
+        16.0,
+        32.0,
+        14.4
+      ],
+      "faces": {
+        "down": {
+          "texture": "#all"
+        },
+        "up": {
+          "texture": "#all"
+        },
+        "north": {
+          "texture": "#all"
+        },
+        "south": {
+          "texture": "#all"
+        },
+        "west": {
+          "texture": "#all"
+        },
+        "east": {
+          "texture": "#all"
+        }
+      }
+    }
+  ]
 }

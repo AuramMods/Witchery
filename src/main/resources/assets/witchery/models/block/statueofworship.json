@@ -1,6 +1,33 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/statueofworship"
-   }
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "witchery:block/statueofworship",
+    "all": "witchery:block/statueofworship"
+  },
+  "elements": [
+    {
+      "from": [2, 0, 2],
+      "to": [14, 16, 14],
+      "faces": {
+        "north": {"texture": "#all"},
+        "east": {"texture": "#all"},
+        "south": {"texture": "#all"},
+        "west": {"texture": "#all"},
+        "up": {"texture": "#all"},
+        "down": {"texture": "#all"}
+      }
+    },
+    {
+      "from": [4, 16, 4],
+      "to": [12, 22, 12],
+      "faces": {
+        "north": {"texture": "#all"},
+        "east": {"texture": "#all"},
+        "south": {"texture": "#all"},
+        "west": {"texture": "#all"},
+        "up": {"texture": "#all"},
+        "down": {"texture": "#all"}
+      }
+    }
+  ]
 }

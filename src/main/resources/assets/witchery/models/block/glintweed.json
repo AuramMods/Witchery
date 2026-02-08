@@ -1,6 +1,41 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/glintweed"
-   }
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "witchery:block/glintweed",
+    "all": "witchery:block/glintweed"
+  },
+  "elements": [
+    {
+      "from": [
+        0.8,
+        0.0,
+        0.8
+      ],
+      "to": [
+        15.2,
+        16.0,
+        15.2
+      ],
+      "faces": {
+        "down": {
+          "texture": "#all"
+        },
+        "up": {
+          "texture": "#all"
+        },
+        "north": {
+          "texture": "#all"
+        },
+        "south": {
+          "texture": "#all"
+        },
+        "west": {
+          "texture": "#all"
+        },
+        "east": {
+          "texture": "#all"
+        }
+      }
+    }
+  ]
 }

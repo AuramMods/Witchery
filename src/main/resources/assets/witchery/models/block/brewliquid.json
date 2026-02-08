@@ -1,6 +1,21 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/brewliquid"
-   }
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "witchery:block/brewliquid",
+    "side": "witchery:block/brewliquid",
+    "top": "witchery:block/brewliquid"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 14, 16],
+      "faces": {
+        "north": {"texture": "#side"},
+        "east": {"texture": "#side"},
+        "south": {"texture": "#side"},
+        "west": {"texture": "#side"},
+        "up": {"texture": "#top"}
+      }
+    }
+  ]
 }

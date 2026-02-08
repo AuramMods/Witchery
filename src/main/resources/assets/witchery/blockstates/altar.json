@@ -1,7 +1,8 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/altar"
-      }
-   }
+  "variants": {
+    "facing=north": { "model": "witchery:block/altar", "y": 180, "uvlock": true },
+    "facing=east": { "model": "witchery:block/altar", "y": 270, "uvlock": true },
+    "facing=south": { "model": "witchery:block/altar", "y": 0, "uvlock": true },
+    "facing=west": { "model": "witchery:block/altar", "y": 90, "uvlock": true }
+  }
 }

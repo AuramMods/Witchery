@@ -147,6 +147,57 @@ Lifecycle stages:
   - Button IDs:
     - `witchery:cbuttonwood`, `witchery:cbuttonstone`
     - blockstate properties: `face`, `facing`, `powered`.
+- Broad non-cube placeholder pass snapshot (2026-02-08)
+  - converted from full-cube placeholders to non-full approximations:
+    - plants/flat: `bramble`, `somniancotton`, `spanishmoss`, `vine`, `web`, `witchsapling`, `lilypad`, `leapinglily`, `cactus`
+    - technical/invisible-like: `barrier`, `light`, `slurp`, `force`, `brewgas`
+    - fluid-like visuals: `brew`, `brewliquid`, `disease`, `spiritflowing`, `hollowtears`
+    - portal geometry: `spiritportal`, `tormentportal`
+    - decorative/machine approximations: `altar`, `kettle`, `spinningwheel`, `statueofworship`, `coffinblock`, `refillingchest`, `mirrorwall`, `infinityegg`, `clever`, `distilleryidle`, `distilleryburning`, `fumefunnel`, `filteredfumefunnel`, `witchesovenidle`, `witchesovenburning`
+  - fixed slab item model placeholders:
+    - `icedoubleslab`, `snowdoubleslab`, `witchwooddoubleslab` now parent block models instead of placeholder `taglockkit`.
+  - remaining `cube_all` set narrowed to:
+    - `bloodedwool`, `icedoubleslab`, `perpetualice`, `pitdirt`, `pitgrass`, `shadedglass`, `shadedglass_active`, `snowdoubleslab`, `tormentstone`, `wallgen`, `wickerbundle`, `witchleaves`, `witchwood`, `witchwooddoubleslab`.
+- Horizontal-facing scaffold parity (2026-02-08)
+  - code scaffold: `LegacyHorizontalFacingBlock` in `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryBlocks.java`
+  - IDs now using placement-facing state + rotated blockstate variants:
+    - `altar`
+    - `kettle`
+    - `spinningwheel`
+    - `distilleryidle`
+    - `distilleryburning`
+    - `witchesovenidle`
+    - `witchesovenburning`
+    - `fumefunnel`
+    - `filteredfumefunnel`
+    - `coffinblock`
+    - `statueofworship`
+    - `refillingchest`
+    - `leechchest`
+- Wood/bundle variant-state parity (2026-02-08)
+  - code scaffolds in `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryBlocks.java`:
+    - `LegacyWitchWoodVariantBlock` (`wood_type` enum property)
+    - `LegacyWickerBundleBlock` (`bundle_type` enum property)
+  - blockstate coverage:
+    - `witchwood` -> `wood_type=rowan|alder|hawthorn`
+    - `witchleaves` -> `wood_type=rowan|alder|hawthorn`
+    - `witchsapling` -> `wood_type=rowan|alder|hawthorn`
+    - `wickerbundle` -> `bundle_type=plain|bloodied`
+  - model coverage:
+    - `witchwood_rowan|alder|hawthorn` using `planks_rowan|alder|hawthorn`
+    - `witchleaves_rowan|alder|hawthorn` using `leaves_rowan|alder|hawthorn`
+    - `witchsapling_rowan|alder|hawthorn` using `sapling_rowan|alder|hawthorn`
+    - `wickerbundle_plain|bloodied` using `wicker_block_*` side/top textures
+- Shaded glass color-state parity (2026-02-08)
+  - code scaffold: `LegacyShadedGlassBlock` with enum property `color` in `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryBlocks.java`
+  - IDs covered:
+    - `shadedglass`
+    - `shadedglass_active`
+  - 16 legacy colors mapped:
+    - `white`, `orange`, `magenta`, `light_blue`, `yellow`, `lime`, `pink`, `gray`, `silver`, `cyan`, `purple`, `blue`, `brown`, `green`, `red`, `black`
+  - model families:
+    - `shadedglass_<color>` -> texture `shadedglassoff_<color>`
+    - `shadedglass_active_<color>` -> texture `shadedglass_<color>`
 
 ## Block Registry List (`WitcheryBlocks`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/WitcheryBlocks.java`
