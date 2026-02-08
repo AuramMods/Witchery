@@ -1,10 +1,24 @@
 # READ THIS FIRST EVERY SESSION
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 
-## Session Memory (2026-02-07)
+## Session Memory (2026-02-08)
 - Port target is Forge 1.20.1.
 - Legacy source is fully available at `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10`.
 - Strategy is breadth-first: register everything first, behavior parity later.
+
+## Phase 1 Completed
+- Phase 1 scaffolding is implemented and `./gradlew compileJava` passes.
+- New registry scaffolding package:
+  - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryBlocks.java`
+  - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryItems.java`
+  - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryFluids.java`
+  - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryBlockEntities.java`
+  - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryEntities.java`
+  - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryMenus.java`
+  - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryEffects.java`
+  - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryCreativeTabs.java`
+  - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/LegacyRegistryData.java`
+- Mod bootstrap now routes through `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/Witchery.java` -> `WitcheryRegistries.register(...)`.
 
 ## Critical Architecture Facts
 - Legacy bootstrap class: `com.emoniph.witchery.Witchery`.
@@ -56,3 +70,31 @@ Always read this file first, then check `/Users/cyberpwn/development/workspace/A
   - separate items, or
   - data-component/nbt-driven subtypes with clear modern rendering + localization strategy.
 - Do not deep-port behavior until full registry surface exists and game starts cleanly.
+
+## Asset/Rendering Memory (critical)
+- Purple-black render state observed in client was tied to stale `run/logs/latest.log` (timestamp: 2026-02-07 19:57) plus invalid uppercase resource locations in model texture refs (example old value: `witchery:items/taglockKit`).
+- Additional 1.20.1 critical rule: use `textures/block` and `textures/item` atlas paths, not legacy-style `textures/blocks` and `textures/items` for model sprite references.
+- Additional 1.20.1 door-model rule: do not use `minecraft:block/template_door_*` parents (missing in this runtime); use `minecraft:block/door_bottom_left`, `door_bottom_right`, `door_top_left`, `door_top_right` and their `_open` variants.
+- Fixed by:
+  - rewriting model refs from `witchery:blocks/*` -> `witchery:block/*` and `witchery:items/*` -> `witchery:item/*`.
+  - copying legacy texture trees into singular folders (`textures/block`, `textures/item`).
+  - generating barrier-based placeholder textures for missing block sprite names so all model refs resolve during scaffolding.
+  - renaming actual texture filenames to lowercase in `textures/block` and `textures/item` (not just refs). This was required because many legacy files were camelCase (`taglockKit.png`, `voidBramble.png`, etc.).
+- MacOS case-insensitive filesystem trap:
+  - simple file existence checks can falsely report success for wrong-case names.
+  - use exact `find` output and real case-rename passes, then validate with fresh client log.
+- Current resource status:
+  - `assets/witchery/blockstates`: 121 files.
+  - `assets/witchery/models/block`: 121 files.
+  - `assets/witchery/models/item`: 217 files.
+  - legacy textures copied under `assets/witchery/textures`.
+- Targeted parity notes:
+  - `wolftrap` in 1.7 is `BlockBeartrap(true)` with TESR `ModelBeartrap` + `textures/blocks/beartrap.png`; current 1.20 model is a static approximation of the unsprung TESR geometry.
+  - `wolftrap` placement in 1.20 is now aligned to player facing direction (`getHorizontalDirection()`) for closer legacy behavior.
+  - `icedoor` blockstate now mirrors vanilla iron-door rotation mapping to keep open/hinge visuals correct in 1.20.1.
+- Texture/model reference validation passed:
+  - no missing model parents referenced by blockstates/models.
+  - no missing textures referenced by models (`TOTAL_MISSING=0` after singular-path migration + placeholders).
+  - JSON resource locations currently lowercase-safe.
+- When purple-black reports happen, always verify log timestamp first and then re-check `latest.log` after a fresh client run.
+- Verified on fresh run (`2026-02-07 20:18`): `Missing textures in model` / `Unable to load model` / `FileNotFoundException` count for Witchery assets is now `0`.

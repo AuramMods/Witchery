@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "witchery:block/wolftrap", "y": 180 },
+    "facing=south": { "model": "witchery:block/wolftrap" },
+    "facing=west": { "model": "witchery:block/wolftrap", "y": 90 },
+    "facing=east": { "model": "witchery:block/wolftrap", "y": 270 }
+  }
+}

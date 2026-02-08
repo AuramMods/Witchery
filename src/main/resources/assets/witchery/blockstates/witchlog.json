@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "witchery:block/witchlog_horizontal",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y": {
+      "model": "witchery:block/witchlog"
+    },
+    "axis=z": {
+      "model": "witchery:block/witchlog_horizontal",
+      "x": 90
+    }
+  }
+}

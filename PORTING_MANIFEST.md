@@ -100,6 +100,25 @@ Lifecycle stages:
 - `ItemBase.func_77655_b` auto-registers items via `ItemUtil.registerItem`.
 - Namespaced IDs are trimmed to path for legacy `GameRegistry` (`witchery:name` -> `name`).
 
+## Block Model Parity Anchors (current focus)
+- `witchery:wolftrap`
+  - Legacy class: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/blocks/BlockBeartrap.java` (`new BlockBeartrap(true)`).
+  - Legacy render model: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/client/model/ModelBeartrap.java`.
+  - Legacy texture: `assets/witchery/textures/blocks/beartrap.png`.
+- `witchery:icedoor`
+  - Legacy class: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/blocks/BlockPerpetualIceDoor.java`.
+  - Legacy textures: `assets/witchery/textures/blocks/icedoor_lower.png`, `icedoor_upper.png`.
+  - 1.20.1 model parent requirement: `minecraft:block/door_*` parents, not `template_door_*`.
+- `witchery:witchlog`
+  - Legacy class: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/blocks/BlockWitchLog.java`.
+  - Legacy rowan textures: `assets/witchery/textures/blocks/log_rowan.png`, `log_rowan_top.png`.
+- `witchery:mindrake`
+  - Legacy class: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/blocks/BlockWitchCrop.java`.
+  - Legacy stage textures: `assets/witchery/textures/blocks/mindrake_stage_0..4.png`.
+- `witchery:wallgen`
+  - Legacy class: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/worldgen/WorldHandlerVillageDistrict.java` (nested `BlockVillageWallGen`).
+  - Internal worldgen helper block; legacy registration texture fallback was `iron_block`.
+
 ## Block Registry List (`WitcheryBlocks`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/WitcheryBlocks.java`
 

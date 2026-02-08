@@ -6,10 +6,20 @@
 - Check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MEMORY.md` before starting work each session.
 - Check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before hunting for source details.
 
-## Current Snapshot (2026-02-07)
+## Current Snapshot (2026-02-08)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.
 - Manifest + durable memory created.
-- No 1.20 content registration has been started yet (this is intentional for phase ordering).
+- Phase 1 registry scaffolding is in place and compiling.
+- Phase 2 asset skeleton is partially in place:
+  - generated placeholder `blockstates`, `models/block`, and `models/item` for registered content.
+  - copied legacy textures into modern resource path.
+  - normalized resource-location usage to lowercase-safe paths to avoid model parse failures.
+  - migrated model texture refs and assets to singular atlas paths (`block`/`item`) for 1.20.1 compatibility.
+  - added temporary barrier-based placeholder textures for missing legacy sprite names to eliminate purple-black fallback during scaffolding.
+  - completed lowercase filename normalization in `textures/block` + `textures/item` and validated clean model bake log.
+  - started targeted 1.7 visual parity fixes for high-priority blocks (`wolftrap`, `icedoor`, `witchlog`, `mindrake`, `wallgen`).
+  - updated `icedoor` to use 1.20.1 door model parent chain (`door_*`) and vanilla door-state rotation mapping.
+  - replaced simplified `wolftrap` placeholder with geometry based on legacy `ModelBeartrap` dimensions.
 
 ## Phase Checklist
 
@@ -23,21 +33,23 @@
 - [x] Capture findings in manifest + memory docs.
 
 ### Phase 1 - 1.20 Registration Skeleton (breadth)
-- [ ] Create `DeferredRegister` structure for blocks.
-- [ ] Create `DeferredRegister` structure for items.
-- [ ] Create `DeferredRegister` structure for fluids + fluid types.
-- [ ] Create `DeferredRegister` structure for block entities.
-- [ ] Create `DeferredRegister` structure for entity types.
-- [ ] Create `DeferredRegister` structure for menu types.
-- [ ] Create `DeferredRegister` structure for mob effects (potions/effects).
-- [ ] Create creative mode tab wiring.
-- [ ] Register placeholder instances for every legacy registry entry (names first, behavior later).
+- [x] Create `DeferredRegister` structure for blocks.
+- [x] Create `DeferredRegister` structure for items.
+- [x] Create `DeferredRegister` structure for fluids + fluid types.
+- [x] Create `DeferredRegister` structure for block entities.
+- [x] Create `DeferredRegister` structure for entity types.
+- [x] Create `DeferredRegister` structure for menu types.
+- [x] Create `DeferredRegister` structure for mob effects (potions/effects).
+- [x] Create creative mode tab wiring.
+- [x] Register placeholder instances for every legacy registry entry (names first, behavior later).
 
 ### Phase 2 - Data + Assets Skeleton (breadth)
-- [ ] Add placeholder blockstates/models/lang entries for all registered blocks/items.
+- [x] Add placeholder blockstates/models/lang entries for all registered blocks/items.
 - [ ] Add minimal data-gen providers (loot, recipes, tags).
 - [ ] Add placeholder spawn egg / bucket items where needed.
-- [ ] Ensure game boots with full registry surface present.
+- [~] Ensure game boots with full registry surface present.
+  - All static resource checks pass (no missing model parent/texture references).
+  - Fresh client run verified: no Witchery model/texture bake errors after latest `icedoor`/`wolftrap` asset fixes.
 
 ### Phase 3 - Systems Migration Skeleton (breadth)
 - [ ] Network channel + packet stubs (all legacy packet message intents represented).
@@ -62,6 +74,9 @@
 - [ ] Test matrix + release checklist.
 
 ## Immediate Next Actions
-- [ ] Build 1.20 registry scaffolding package layout.
-- [ ] Start with blocks/items/fluids/entity types as empty placeholders matching legacy names from manifest.
+- [ ] Add placeholder bucket/block hookups for fluids (if needed for world interaction/testing).
+- [ ] Add placeholder block items for non-itemized legacy blocks where useful for QA visibility.
+- [x] Re-run client and validate `run/logs/latest.log` after the lowercase resource-location fix.
+- [x] Re-run client and validate `run/logs/latest.log` after `icedoor` parent-model and `wolftrap` geometry parity fixes.
+- [ ] Continue replacing placeholder block models with old 1.7 equivalents (breadth pass before behavior depth).
 - [ ] Keep this file updated as phases move from breadth to depth.
