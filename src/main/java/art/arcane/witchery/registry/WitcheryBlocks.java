@@ -40,11 +40,50 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public final class WitcheryBlocks {
+    private static final VoxelShape SHAPE_FULL_BLOCK = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 16.0D, 16.0D);
     private static final VoxelShape SHAPE_FLOWER_SMALL = Block.box(4.8D, 0.0D, 4.8D, 11.2D, 9.6D, 11.2D);
     private static final VoxelShape SHAPE_FLOWER_TALL = Block.box(0.8D, 0.0D, 0.8D, 15.2D, 16.0D, 15.2D);
     private static final VoxelShape SHAPE_FLOWER_LOW = Block.box(1.6D, 0.0D, 1.6D, 14.4D, 6.4D, 14.4D);
     private static final VoxelShape SHAPE_PAD_FLAT = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 0.5D, 16.0D);
     private static final VoxelShape SHAPE_GRASSPER = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 8.16D, 16.0D);
+    private static final VoxelShape SHAPE_ALTAR = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 12.0D, 16.0D);
+    private static final VoxelShape SHAPE_KETTLE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 12.0D, 14.0D);
+    private static final VoxelShape SHAPE_MACHINE_COMPACT = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 15.0D, 15.0D);
+    private static final VoxelShape SHAPE_FUNNEL = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
+    private static final VoxelShape SHAPE_COFFIN = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 9.0D, 16.0D);
+    private static final VoxelShape SHAPE_STATUE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 22.0D, 14.0D);
+    private static final VoxelShape SHAPE_CHEST = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 14.0D, 15.0D);
+    private static final VoxelShape SHAPE_WOLFTRAP = Block.box(3.0D, 0.0D, 1.0D, 13.0D, 2.01D, 15.0D);
+    private static final VoxelShape SHAPE_BEARTRAP = Block.box(3.2D, 0.16D, 3.2D, 12.8D, 1.6D, 12.8D);
+    private static final VoxelShape SHAPE_DEMONHEART = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 12.8D, 12.0D);
+    private static final VoxelShape SHAPE_SKULL = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 8.0D, 12.0D);
+    private static final VoxelShape SHAPE_CHALICE = Block.box(4.8D, 0.0D, 5.92D, 10.08D, 7.36D, 11.12D);
+    private static final VoxelShape SHAPE_CANDELABRA = Block.box(1.6D, 0.0D, 1.6D, 14.4D, 16.0D, 14.4D);
+    private static final VoxelShape SHAPE_BRAZIER = Block.box(3.2D, 0.0D, 3.2D, 12.8D, 15.2D, 12.8D);
+    private static final VoxelShape SHAPE_CRYSTAL_BALL = Block.box(4.8D, 0.0D, 4.8D, 11.2D, 9.6D, 11.2D);
+    private static final VoxelShape SHAPE_AREA_MARKER = Block.box(2.4D, 0.0D, 2.4D, 13.6D, 8.0D, 13.6D);
+    private static final VoxelShape SHAPE_FETISH = Block.box(3.2D, 0.0D, 3.2D, 12.8D, 16.0D, 12.8D);
+    private static final VoxelShape SHAPE_PLACED_ITEM = Block.box(3.2D, 0.0D, 3.2D, 12.8D, 0.8D, 12.8D);
+    private static final VoxelShape SHAPE_GLOW_GLOBE = Block.box(6.4D, 6.4D, 6.4D, 9.6D, 9.6D, 9.6D);
+    private static final VoxelShape SHAPE_INFINITY_EGG = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
+    private static final VoxelShape SHAPE_GARLIC_GARLAND = Block.box(1.6D, 12.8D, 13.6D, 14.4D, 16.0D, 16.0D);
+    private static final VoxelShape SHAPE_POPPET_SHELF = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 8.16D, 16.0D);
+    private static final VoxelShape SHAPE_DREAM_CATCHER = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 16.0D, 12.0D);
+    private static final VoxelShape SHAPE_SILVER_VAT = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 10.24D, 16.0D);
+    private static final VoxelShape SHAPE_DAYLIGHT_COLLECTOR = Block.box(3.2D, 0.0D, 3.2D, 12.8D, 12.8D, 12.8D);
+    private static final VoxelShape SHAPE_BLOOD_CRUCIBLE = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 4.96D, 12.0D);
+    private static final VoxelShape SHAPE_MIRROR_PANEL = Block.box(0.0D, 0.0D, 13.6D, 16.0D, 16.0D, 16.0D);
+    private static final VoxelShape SHAPE_GLYPH = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 0.25D, 16.0D);
+    private static final VoxelShape SHAPE_FLUID_LOW = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 14.0D, 16.0D);
+    private static final VoxelShape SHAPE_PORTAL_CROSS = Shapes.or(
+            Block.box(7.0D, 0.0D, 0.0D, 9.0D, 16.0D, 16.0D),
+            Block.box(0.0D, 0.0D, 7.0D, 16.0D, 16.0D, 9.0D)
+    );
+    private static final VoxelShape SHAPE_CACTUS = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 16.0D, 15.0D);
+    private static final VoxelShape SHAPE_VOID_BRAMBLE = Block.box(0.8D, 0.0D, 0.8D, 15.2D, 16.0D, 15.2D);
+    private static final VoxelShape SHAPE_CAULDRON = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 13.6D, 16.0D);
+    private static final VoxelShape SHAPE_WOLF_ALTAR = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 32.0D, 16.0D);
+    private static final VoxelShape SHAPE_STATUE_GODDESS = Block.box(0.0D, 0.0D, 1.6D, 16.0D, 32.0D, 14.4D);
 
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, Witchery.MODID);
     public static final Map<String, RegistryObject<Block>> LEGACY_BLOCKS = new LinkedHashMap<>();
@@ -105,17 +144,25 @@ public final class WitcheryBlocks {
             case "icedoor" -> new DoorBlock(BlockBehaviour.Properties.copy(Blocks.IRON_DOOR).noOcclusion(), BlockSetType.IRON);
             case "rowanwooddoor", "alderwooddoor", "cwoodendoor" ->
                     new DoorBlock(BlockBehaviour.Properties.copy(Blocks.OAK_DOOR).noOcclusion(), BlockSetType.OAK);
-            case "altar", "kettle", "spinningwheel", "distilleryidle", "distilleryburning",
-                    "witchesovenidle", "witchesovenburning", "fumefunnel", "filteredfumefunnel",
-                    "coffinblock", "statueofworship", "refillingchest", "leechchest" ->
-                    new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion());
+            case "altar" -> new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion(), SHAPE_ALTAR, true);
+            case "kettle" -> new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion(), SHAPE_KETTLE, true);
+            case "spinningwheel", "distilleryidle", "distilleryburning", "witchesovenidle", "witchesovenburning" ->
+                    new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion(), SHAPE_MACHINE_COMPACT, true);
+            case "fumefunnel", "filteredfumefunnel" ->
+                    new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion(), SHAPE_FUNNEL, true);
+            case "coffinblock" ->
+                    new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion(), SHAPE_COFFIN, true);
+            case "statueofworship" ->
+                    new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion(), SHAPE_STATUE, true);
+            case "refillingchest", "leechchest" ->
+                    new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.CHEST).noOcclusion(), SHAPE_CHEST, true);
             case "stairswoodrowan", "stairswoodalder", "stairswoodhawthorn" ->
                     new StairBlock(Blocks.OAK_PLANKS.defaultBlockState(), BlockBehaviour.Properties.copy(Blocks.OAK_STAIRS));
             case "icestairs", "snowstairs" ->
                     new StairBlock(Blocks.STONE.defaultBlockState(), BlockBehaviour.Properties.copy(Blocks.STONE_STAIRS));
             case "witchwoodslab", "iceslab", "snowslab" ->
                     new SlabBlock(BlockBehaviour.Properties.copy(Blocks.STONE_SLAB));
-            case "icefence" ->
+            case "icefence", "stockade", "icestockade" ->
                     new FenceBlock(BlockBehaviour.Properties.copy(Blocks.OAK_FENCE));
             case "icefencegate" ->
                     new FenceGateBlock(BlockBehaviour.Properties.copy(Blocks.OAK_FENCE_GATE), WoodType.OAK);
@@ -131,7 +178,69 @@ public final class WitcheryBlocks {
                     new LegacyCropBlock(4);
             case "garlicplant" -> new LegacyCropBlock(5);
             case "wolfsbane" -> new LegacyCropBlock(7);
-            case "wolftrap" -> new LegacyWolftrapBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).noOcclusion());
+            case "wolftrap" -> new LegacyWolftrapBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).noOcclusion().noCollission());
+            case "beartrap" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).sound(SoundType.METAL), SHAPE_BEARTRAP, false);
+            case "demonheart" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.STONE), SHAPE_DEMONHEART, true);
+            case "wolfhead", "alluringskull" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.SKELETON_SKULL), SHAPE_SKULL, true);
+            case "chalice" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BARS).sound(SoundType.METAL), SHAPE_CHALICE, true);
+            case "candelabra" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BARS).sound(SoundType.METAL), SHAPE_CANDELABRA, true);
+            case "brazier" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).sound(SoundType.METAL), SHAPE_BRAZIER, true);
+            case "crystalball" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.GLASS), SHAPE_CRYSTAL_BALL, true);
+            case "decurseteleport", "decursedirected" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.STONE), SHAPE_AREA_MARKER, true);
+            case "scarecrow", "trent", "witchsladder" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS), SHAPE_FETISH, true);
+            case "placeditem" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS), SHAPE_PLACED_ITEM, true);
+            case "glowglobe" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.GLASS), SHAPE_GLOW_GLOBE, true);
+            case "infinityegg" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DRAGON_EGG), SHAPE_INFINITY_EGG, true);
+            case "garlicgarland" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.OAK_LEAVES), SHAPE_GARLIC_GARLAND, false);
+            case "poppetshelf" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS), SHAPE_POPPET_SHELF, true);
+            case "dreamcatcher" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.OAK_TRAPDOOR), SHAPE_DREAM_CATCHER, false);
+            case "silvervat" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).sound(SoundType.METAL), SHAPE_SILVER_VAT, true);
+            case "daylightcollector" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DAYLIGHT_DETECTOR), SHAPE_DAYLIGHT_COLLECTOR, true);
+            case "bloodcrucible" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.STONE), SHAPE_BLOOD_CRUCIBLE, true);
+            case "mirrorblock", "mirrorblock2" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.GLASS), SHAPE_MIRROR_PANEL, true);
+            case "circle", "circleglyphritual", "circleglyphotherwhere", "circleglyphinfernal" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.WHITE_CARPET), SHAPE_GLYPH, false);
+            case "spiritportal", "tormentportal", "mirrorwall" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.NETHER_PORTAL), SHAPE_PORTAL_CROSS, false);
+            case "brew", "brewliquid", "disease", "spiritflowing", "hollowtears" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.WATER), SHAPE_FLUID_LOW, false);
+            case "brewgas" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.BARRIER).noLootTable(), SHAPE_FULL_BLOCK, false);
+            case "force", "barrier" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.BARRIER), SHAPE_FULL_BLOCK, true);
+            case "light", "slurp" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.BARRIER).noLootTable(), Shapes.empty(), false);
+            case "cactus" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.CACTUS), SHAPE_CACTUS, true);
+            case "voidbramble" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.SWEET_BERRY_BUSH), SHAPE_VOID_BRAMBLE, false);
+            case "cauldron" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.CAULDRON), SHAPE_CAULDRON, true);
+            case "wolfaltar" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.STONE), SHAPE_WOLF_ALTAR, true);
+            case "statuegoddess" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.STONE), SHAPE_STATUE_GODDESS, true);
+            case "pitdirt" -> new Block(BlockBehaviour.Properties.copy(Blocks.DIRT).noOcclusion());
+            case "pitgrass" -> new Block(BlockBehaviour.Properties.copy(Blocks.GRASS_BLOCK).noOcclusion());
             case "wallgen" -> new Block(BlockBehaviour.Properties.copy(Blocks.BEDROCK)
                     .strength(-1.0F, 3600000.0F)
                     .noOcclusion()
@@ -168,14 +277,41 @@ public final class WitcheryBlocks {
     }
 
     private static final class LegacyHorizontalFacingBlock extends HorizontalDirectionalBlock {
+        private final VoxelShape shape;
+        private final boolean hasCollision;
+
         private LegacyHorizontalFacingBlock(BlockBehaviour.Properties properties) {
+            this(properties, null, true);
+        }
+
+        private LegacyHorizontalFacingBlock(BlockBehaviour.Properties properties, VoxelShape shape, boolean hasCollision) {
             super(properties);
+            this.shape = shape;
+            this.hasCollision = hasCollision;
             registerDefaultState(defaultBlockState().setValue(FACING, Direction.NORTH));
         }
 
         @Override
         public BlockState getStateForPlacement(BlockPlaceContext context) {
             return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        }
+
+        @Override
+        public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+            return shape == null ? super.getShape(state, level, pos, context) : shape;
+        }
+
+        @Override
+        public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+            if (shape == null) {
+                return super.getCollisionShape(state, level, pos, context);
+            }
+            return hasCollision ? shape : Shapes.empty();
+        }
+
+        @Override
+        public VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
+            return shape == null ? super.getOcclusionShape(state, level, pos) : Shapes.empty();
         }
 
         @Override
@@ -371,6 +507,21 @@ public final class WitcheryBlocks {
         @Override
         public BlockState getStateForPlacement(BlockPlaceContext context) {
             return defaultBlockState().setValue(FACING, context.getHorizontalDirection());
+        }
+
+        @Override
+        public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+            return SHAPE_WOLFTRAP;
+        }
+
+        @Override
+        public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+            return Shapes.empty();
+        }
+
+        @Override
+        public VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
+            return Shapes.empty();
         }
 
         @Override

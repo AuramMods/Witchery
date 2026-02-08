@@ -22,14 +22,28 @@ public final class WitcheryClient {
                     "belladonna", "mandrake", "artichoke", "snowbell", "wormwood", "mindrake", "wolfsbane", "garlicplant",
                     "bloodrose", "glintweed", "embermoss", "crittersnare", "plantmine", "bramble", "somniancotton",
                     "spanishmoss", "vine", "web", "witchsapling", "lilypad", "leapinglily",
-                    "rowanwooddoor", "alderwooddoor", "cwoodendoor", "icedoor"
+                    "rowanwooddoor", "alderwooddoor", "cwoodendoor", "icedoor",
+                    "beartrap", "wolftrap", "demonheart", "wolfhead", "alluringskull", "chalice", "candelabra",
+                    "brazier", "crystalball", "decurseteleport", "decursedirected", "scarecrow", "trent", "witchsladder",
+                    "placeditem", "glowglobe", "infinityegg", "garlicgarland", "poppetshelf", "dreamcatcher",
+                    "daylightcollector", "bloodcrucible", "silvervat", "cauldron", "cactus",
+                    "circle", "circleglyphritual", "circleglyphotherwhere", "circleglyphinfernal",
+                    "altar", "kettle", "spinningwheel", "distilleryidle", "distilleryburning",
+                    "witchesovenidle", "witchesovenburning", "fumefunnel", "filteredfumefunnel",
+                    "coffinblock", "statueofworship", "refillingchest", "leechchest", "statuegoddess", "wolfaltar",
+                    "stockade", "icestockade", "voidbramble"
             }) {
                 setRenderType(name, RenderType.cutout());
             }
 
             setRenderType("witchleaves", RenderType.cutoutMipped());
 
-            for (String name : new String[]{"shadedglass", "shadedglass_active", "perpetualice"}) {
+            for (String name : new String[]{
+                    "shadedglass", "shadedglass_active", "perpetualice",
+                    "spiritportal", "tormentportal", "brew", "brewliquid", "disease",
+                    "spiritflowing", "hollowtears", "brewgas", "force", "barrier", "slurp",
+                    "mirrorwall", "mirrorblock", "mirrorblock2"
+            }) {
                 setRenderType(name, RenderType.translucent());
             }
         });
