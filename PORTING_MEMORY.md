@@ -1,5 +1,6 @@
 # READ THIS FIRST EVERY SESSION
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
+Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
 ## Session Memory (2026-02-08)
 - Port target is Forge 1.20.1.
@@ -92,6 +93,24 @@ Always read this file first, then check `/Users/cyberpwn/development/workspace/A
   - `wolftrap` in 1.7 is `BlockBeartrap(true)` with TESR `ModelBeartrap` + `textures/blocks/beartrap.png`; current 1.20 model is a static approximation of the unsprung TESR geometry.
   - `wolftrap` placement in 1.20 is now aligned to player facing direction (`getHorizontalDirection()`) for closer legacy behavior.
   - `icedoor` blockstate now mirrors vanilla iron-door rotation mapping to keep open/hinge visuals correct in 1.20.1.
+  - crop family parity pass added staged crop assets + age blockstates for:
+    - `belladonna` (max stage `4`)
+    - `mandrake` (max stage `4`)
+    - `artichoke` (max stage `4`)
+    - `snowbell` (max stage `4`)
+    - `wormwood` (max stage `4`)
+    - `wolfsbane` (max stage `7`)
+    - `garlicplant` (max stage `5`)
+  - corresponding crop scaffolding now maps those names to `CropBlock` placeholders with explicit `getMaxAge()` values in `WitcheryBlocks`.
+  - `witchlog` scaffolding now uses an explicit `wood_type` property with `rowan/alder/hawthorn` variants, plus dedicated alder/hawthorn log model files.
+  - `wallgen` model now uses `witchery:block/wallgen` during visual parity testing instead of the prior hardcoded iron texture placeholder.
+  - structural block families now use proper 1.20.1 block classes + blockstates instead of static cube placeholders:
+    - `StairBlock`: `stairswoodrowan`, `stairswoodalder`, `stairswoodhawthorn`, `icestairs`, `snowstairs`.
+    - `SlabBlock`: `witchwoodslab`, `iceslab`, `snowslab`.
+    - `FenceBlock`/`FenceGateBlock`: `icefence`, `icefencegate`.
+    - `PressurePlateBlock`: `icepressureplate`, `snowpressureplate`, `cwoodpressureplate`, `cstonepressureplate`, `csnowpressureplate`.
+    - `ButtonBlock`: `cbuttonwood`, `cbuttonstone`.
+  - corresponding assets were migrated to vanilla 1.20.1 template parents (`stairs`, `inner_stairs`, `outer_stairs`, `slab`, `fence_*`, `template_fence_gate*`, `pressure_plate_*`, `button*`) and full property-driven blockstates.
 - Texture/model reference validation passed:
   - no missing model parents referenced by blockstates/models.
   - no missing textures referenced by models (`TOTAL_MISSING=0` after singular-path migration + placeholders).

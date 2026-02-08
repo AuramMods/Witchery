@@ -5,6 +5,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -28,6 +29,7 @@ public final class WitcheryEntities {
 
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);
+        eventBus.addListener(WitcheryEntities::registerEntityAttributes);
     }
 
     public static Map<String, RegistryObject<EntityType<Zombie>>> all() {
@@ -46,5 +48,11 @@ public final class WitcheryEntities {
                         .build(Witchery.MODID + ":" + path));
 
         LEGACY_ENTITIES.put(path, entityType);
+    }
+
+    private static void registerEntityAttributes(EntityAttributeCreationEvent event) {
+        for (RegistryObject<EntityType<Zombie>> entry : LEGACY_ENTITIES.values()) {
+            event.put(entry.get(), Zombie.createAttributes().build());
+        }
     }
 }

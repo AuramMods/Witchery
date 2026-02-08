@@ -20,6 +20,18 @@
   - started targeted 1.7 visual parity fixes for high-priority blocks (`wolftrap`, `icedoor`, `witchlog`, `mindrake`, `wallgen`).
   - updated `icedoor` to use 1.20.1 door model parent chain (`door_*`) and vanilla door-state rotation mapping.
   - replaced simplified `wolftrap` placeholder with geometry based on legacy `ModelBeartrap` dimensions.
+  - converted legacy crop family to staged crop parity assets + crop block classes:
+    - crop blockstates now use `age=*` variants instead of cube placeholders for `belladonna`, `mandrake`, `artichoke`, `snowbell`, `wormwood`, `wolfsbane`, `garlicplant`.
+    - added stage model sets for those crops (`*_stageN`) and switched crop item models to flat generated icons using mature-stage textures.
+    - mapped crop max-age behavior in block scaffolding (`4`, `5`, or `7` depending on legacy crop).
+  - expanded `witchlog` parity to multi-wood variants via `wood_type` blockstate (`rowan`, `alder`, `hawthorn`) with dedicated alder/hawthorn model sets.
+  - switched `wallgen` block model texture from hardcoded iron placeholder to `witchery:block/wallgen` for visual parity testing.
+  - replaced major structural cube placeholders with 1.20.1 state-driven models + block classes:
+    - stairs family (`stairswoodrowan`, `stairswoodalder`, `stairswoodhawthorn`, `icestairs`, `snowstairs`)
+    - slab family (`witchwoodslab`, `iceslab`, `snowslab`)
+    - fence/fence gate (`icefence`, `icefencegate`)
+    - pressure plates (`icepressureplate`, `snowpressureplate`, `cwoodpressureplate`, `cstonepressureplate`, `csnowpressureplate`)
+    - buttons (`cbuttonwood`, `cbuttonstone`)
 
 ## Phase Checklist
 
@@ -78,5 +90,8 @@
 - [ ] Add placeholder block items for non-itemized legacy blocks where useful for QA visibility.
 - [x] Re-run client and validate `run/logs/latest.log` after the lowercase resource-location fix.
 - [x] Re-run client and validate `run/logs/latest.log` after `icedoor` parent-model and `wolftrap` geometry parity fixes.
-- [ ] Continue replacing placeholder block models with old 1.7 equivalents (breadth pass before behavior depth).
+- [~] Continue replacing placeholder block models with old 1.7 equivalents (breadth pass before behavior depth).
+  - completed crop-family stage model parity pass.
+  - completed structural families (stairs/slabs/fence/fence-gate/pressure-plate/button) with 1.20.1 state models.
+  - next breadth target: non-cube decorative/functional blocks still on generic cube placeholders.
 - [ ] Keep this file updated as phases move from breadth to depth.

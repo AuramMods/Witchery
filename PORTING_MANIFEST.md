@@ -112,12 +112,41 @@ Lifecycle stages:
 - `witchery:witchlog`
   - Legacy class: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/blocks/BlockWitchLog.java`.
   - Legacy rowan textures: `assets/witchery/textures/blocks/log_rowan.png`, `log_rowan_top.png`.
+  - Current 1.20.1 scaffold uses `wood_type=rowan|alder|hawthorn` plus `axis` to mirror legacy multi-wood log variants.
 - `witchery:mindrake`
   - Legacy class: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/blocks/BlockWitchCrop.java`.
   - Legacy stage textures: `assets/witchery/textures/blocks/mindrake_stage_0..4.png`.
 - `witchery:wallgen`
   - Legacy class: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/worldgen/WorldHandlerVillageDistrict.java` (nested `BlockVillageWallGen`).
   - Internal worldgen helper block; legacy registration texture fallback was `iron_block`.
+- Legacy crop family (`BlockWitchCrop`)
+  - Legacy class: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/blocks/BlockWitchCrop.java`.
+  - Legacy stage textures live under `assets/witchery/textures/blocks/*_stage_N.png`.
+  - Current 1.20.1 staged parity coverage:
+    - `witchery:belladonna` -> stage `0..4` (`age=5..7` mapped to stage `4`).
+    - `witchery:mandrake` -> stage `0..4` (`age=5..7` mapped to stage `4`).
+    - `witchery:artichoke` -> stage `0..4` (`age=5..7` mapped to stage `4`).
+    - `witchery:snowbell` -> stage `0..4` (`age=5..7` mapped to stage `4`).
+    - `witchery:wormwood` -> stage `0..4` (`age=5..7` mapped to stage `4`).
+    - `witchery:mindrake` -> stage `0..4` (`age=5..7` mapped to stage `4`).
+    - `witchery:wolfsbane` -> stage `0..7`.
+    - `witchery:garlicplant` -> stage `0..5` (`age=6..7` mapped to stage `5`).
+- Structural model/state families (2026-02-08 breadth pass)
+  - Stairs IDs:
+    - `witchery:stairswoodrowan`, `witchery:stairswoodalder`, `witchery:stairswoodhawthorn`, `witchery:icestairs`, `witchery:snowstairs`
+    - blockstate shape source pattern: vanilla 1.20.1 `oak_stairs` variant matrix.
+  - Slab IDs:
+    - `witchery:witchwoodslab`, `witchery:iceslab`, `witchery:snowslab`
+    - blockstate includes `type=bottom/top/double`; `double` points at legacy double slab cube models (`witchwooddoubleslab`, `icedoubleslab`, `snowdoubleslab`).
+  - Fence/FenceGate IDs:
+    - `witchery:icefence`, `witchery:icefencegate`
+    - fence uses multipart `north/east/south/west`; gate uses `facing/open/in_wall`.
+  - Pressure plate IDs:
+    - `witchery:icepressureplate`, `witchery:snowpressureplate`, `witchery:cwoodpressureplate`, `witchery:cstonepressureplate`, `witchery:csnowpressureplate`
+    - blockstate property: `powered=true/false`.
+  - Button IDs:
+    - `witchery:cbuttonwood`, `witchery:cbuttonstone`
+    - blockstate properties: `face`, `facing`, `powered`.
 
 ## Block Registry List (`WitcheryBlocks`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/WitcheryBlocks.java`

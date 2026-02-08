@@ -2,19 +2,28 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import net.minecraft.core.Direction;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ButtonBlock;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.FenceBlock;
+import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.PressurePlateBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
+import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -67,9 +76,32 @@ public final class WitcheryBlocks {
 
     private static Block createBlock(String path) {
         return switch (path) {
-            case "witchlog" -> new RotatedPillarBlock(BlockBehaviour.Properties.copy(Blocks.OAK_LOG));
+            case "witchlog" -> new LegacyWitchLogBlock();
             case "icedoor" -> new DoorBlock(BlockBehaviour.Properties.copy(Blocks.IRON_DOOR).noOcclusion(), BlockSetType.IRON);
-            case "mindrake" -> new LegacyMindrakeCropBlock();
+            case "rowanwooddoor", "alderwooddoor", "cwoodendoor" ->
+                    new DoorBlock(BlockBehaviour.Properties.copy(Blocks.OAK_DOOR).noOcclusion(), BlockSetType.OAK);
+            case "stairswoodrowan", "stairswoodalder", "stairswoodhawthorn" ->
+                    new StairBlock(Blocks.OAK_PLANKS.defaultBlockState(), BlockBehaviour.Properties.copy(Blocks.OAK_STAIRS));
+            case "icestairs", "snowstairs" ->
+                    new StairBlock(Blocks.STONE.defaultBlockState(), BlockBehaviour.Properties.copy(Blocks.STONE_STAIRS));
+            case "witchwoodslab", "iceslab", "snowslab" ->
+                    new SlabBlock(BlockBehaviour.Properties.copy(Blocks.STONE_SLAB));
+            case "icefence" ->
+                    new FenceBlock(BlockBehaviour.Properties.copy(Blocks.OAK_FENCE));
+            case "icefencegate" ->
+                    new FenceGateBlock(BlockBehaviour.Properties.copy(Blocks.OAK_FENCE_GATE), WoodType.OAK);
+            case "icepressureplate", "snowpressureplate", "cwoodpressureplate", "csnowpressureplate" ->
+                    new PressurePlateBlock(PressurePlateBlock.Sensitivity.EVERYTHING, BlockBehaviour.Properties.copy(Blocks.OAK_PRESSURE_PLATE), BlockSetType.OAK);
+            case "cstonepressureplate" ->
+                    new PressurePlateBlock(PressurePlateBlock.Sensitivity.MOBS, BlockBehaviour.Properties.copy(Blocks.STONE_PRESSURE_PLATE), BlockSetType.STONE);
+            case "cbuttonwood" ->
+                    new ButtonBlock(BlockBehaviour.Properties.copy(Blocks.OAK_BUTTON), BlockSetType.OAK, 30, true);
+            case "cbuttonstone" ->
+                    new ButtonBlock(BlockBehaviour.Properties.copy(Blocks.STONE_BUTTON), BlockSetType.STONE, 20, false);
+            case "belladonna", "mandrake", "artichoke", "snowbell", "wormwood", "mindrake" ->
+                    new LegacyCropBlock(4);
+            case "garlicplant" -> new LegacyCropBlock(5);
+            case "wolfsbane" -> new LegacyCropBlock(7);
             case "wolftrap" -> new LegacyWolftrapBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).noOcclusion());
             case "wallgen" -> new Block(BlockBehaviour.Properties.copy(Blocks.BEDROCK)
                     .strength(-1.0F, 3600000.0F)
@@ -80,14 +112,63 @@ public final class WitcheryBlocks {
         };
     }
 
-    private static final class LegacyMindrakeCropBlock extends CropBlock {
-        private LegacyMindrakeCropBlock() {
+    private static final class LegacyWitchLogBlock extends RotatedPillarBlock {
+        private static final EnumProperty<LegacyWitchWoodType> WOOD_TYPE =
+                EnumProperty.create("wood_type", LegacyWitchWoodType.class);
+
+        private LegacyWitchLogBlock() {
+            super(BlockBehaviour.Properties.copy(Blocks.OAK_LOG));
+            registerDefaultState(defaultBlockState()
+                    .setValue(AXIS, Direction.Axis.Y)
+                    .setValue(WOOD_TYPE, LegacyWitchWoodType.ROWAN));
+        }
+
+        @Override
+        public BlockState getStateForPlacement(BlockPlaceContext context) {
+            return defaultBlockState()
+                    .setValue(AXIS, context.getClickedFace().getAxis())
+                    .setValue(WOOD_TYPE, LegacyWitchWoodType.ROWAN);
+        }
+
+        @Override
+        protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+            builder.add(AXIS, WOOD_TYPE);
+        }
+    }
+
+    private enum LegacyWitchWoodType implements StringRepresentable {
+        ROWAN("rowan"),
+        ALDER("alder"),
+        HAWTHORN("hawthorn");
+
+        private final String serializedName;
+
+        LegacyWitchWoodType(String serializedName) {
+            this.serializedName = serializedName;
+        }
+
+        @Override
+        public String getSerializedName() {
+            return serializedName;
+        }
+    }
+
+    private static final class LegacyCropBlock extends CropBlock {
+        private final int maxAge;
+
+        private LegacyCropBlock(int maxAge) {
             super(BlockBehaviour.Properties.copy(Blocks.WHEAT));
+            this.maxAge = maxAge;
         }
 
         @Override
         protected Item getBaseSeedId() {
             return net.minecraft.world.item.Items.WHEAT_SEEDS;
+        }
+
+        @Override
+        public int getMaxAge() {
+            return maxAge;
         }
     }
 
