@@ -118,3 +118,9 @@
   - completed broad non-cube decorative/functional pass; remaining full-cube placeholders now narrowed to 14 likely-intentional cube blocks.
   - next breadth target: metadata/state parity for remaining multi-variant legacy cubes (`witchwood`, `witchleaves`, `wickerbundle`, `wallgen`) and orientation/state behavior where legacy used TESR/custom renderers.
 - [ ] Keep this file updated as phases move from breadth to depth.
+  - fixed plant-style solidity/culling mismatch (example: blood rose):
+    - added non-occluding bounded block scaffolds for plant-like legacy blocks so they no longer behave as full cubes.
+    - converted `bloodrose`, `glintweed`, `embermoss`, `crittersnare`, `plantmine` to `minecraft:block/cross` models.
+    - moved `witchsapling` to a dedicated non-colliding variant block scaffold (`wood_type` still preserved).
+  - added client render-layer registration (`cutout`/`cutoutMipped`/`translucent`) for transparent/cross assets to avoid opaque/full-block visual artifacts:
+    - file: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/client/WitcheryClient.java`

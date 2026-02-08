@@ -1,10 +1,12 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ButtonBlock;
@@ -24,6 +26,9 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.WoodType;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -35,6 +40,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public final class WitcheryBlocks {
+    private static final VoxelShape SHAPE_FLOWER_SMALL = Block.box(4.8D, 0.0D, 4.8D, 11.2D, 9.6D, 11.2D);
+    private static final VoxelShape SHAPE_FLOWER_TALL = Block.box(0.8D, 0.0D, 0.8D, 15.2D, 16.0D, 15.2D);
+    private static final VoxelShape SHAPE_FLOWER_LOW = Block.box(1.6D, 0.0D, 1.6D, 14.4D, 6.4D, 14.4D);
+    private static final VoxelShape SHAPE_PAD_FLAT = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 0.5D, 16.0D);
+    private static final VoxelShape SHAPE_GRASSPER = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 8.16D, 16.0D);
+
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, Witchery.MODID);
     public static final Map<String, RegistryObject<Block>> LEGACY_BLOCKS = new LinkedHashMap<>();
 
@@ -79,10 +90,18 @@ public final class WitcheryBlocks {
             case "witchlog" -> new LegacyWitchLogBlock();
             case "witchwood" -> new LegacyWitchWoodVariantBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS));
             case "witchleaves" -> new LegacyWitchWoodVariantBlock(BlockBehaviour.Properties.copy(Blocks.OAK_LEAVES).noOcclusion());
-            case "witchsapling" -> new LegacyWitchWoodVariantBlock(BlockBehaviour.Properties.copy(Blocks.OAK_SAPLING).noOcclusion());
+            case "witchsapling" -> new LegacyWitchSaplingVariantBlock();
             case "wickerbundle" -> new LegacyWickerBundleBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS));
             case "shadedglass" -> new LegacyShadedGlassBlock(false);
             case "shadedglass_active" -> new LegacyShadedGlassBlock(true);
+            case "bloodrose" -> new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_SMALL, false);
+            case "plantmine" -> new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_SMALL, true);
+            case "glintweed", "crittersnare", "bramble", "somniancotton", "spanishmoss", "vine", "web" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_TALL, false);
+            case "embermoss" -> new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_LOW, false);
+            case "lilypad", "leapinglily" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.LILY_PAD), SHAPE_PAD_FLAT, false);
+            case "grassper" -> new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_GRASSPER, false);
             case "icedoor" -> new DoorBlock(BlockBehaviour.Properties.copy(Blocks.IRON_DOOR).noOcclusion(), BlockSetType.IRON);
             case "rowanwooddoor", "alderwooddoor", "cwoodendoor" ->
                     new DoorBlock(BlockBehaviour.Properties.copy(Blocks.OAK_DOOR).noOcclusion(), BlockSetType.OAK);
@@ -120,6 +139,32 @@ public final class WitcheryBlocks {
                     .noCollission());
             default -> new Block(BlockBehaviour.Properties.copy(Blocks.STONE));
         };
+    }
+
+    private static final class LegacyNonSolidShapeBlock extends Block {
+        private final VoxelShape shape;
+        private final boolean hasCollision;
+
+        private LegacyNonSolidShapeBlock(BlockBehaviour.Properties properties, VoxelShape shape, boolean hasCollision) {
+            super(hasCollision ? properties.noOcclusion() : properties.noOcclusion().noCollission());
+            this.shape = shape;
+            this.hasCollision = hasCollision;
+        }
+
+        @Override
+        public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+            return shape;
+        }
+
+        @Override
+        public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+            return hasCollision ? shape : Shapes.empty();
+        }
+
+        @Override
+        public VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
+            return Shapes.empty();
+        }
     }
 
     private static final class LegacyHorizontalFacingBlock extends HorizontalDirectionalBlock {
@@ -170,6 +215,31 @@ public final class WitcheryBlocks {
         private LegacyWitchWoodVariantBlock(BlockBehaviour.Properties properties) {
             super(properties);
             registerDefaultState(defaultBlockState().setValue(WOOD_TYPE, LegacyWitchWoodType.ROWAN));
+        }
+
+        @Override
+        protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+            builder.add(WOOD_TYPE);
+        }
+    }
+
+    private static final class LegacyWitchSaplingVariantBlock extends Block {
+        private static final EnumProperty<LegacyWitchWoodType> WOOD_TYPE =
+                EnumProperty.create("wood_type", LegacyWitchWoodType.class);
+
+        private LegacyWitchSaplingVariantBlock() {
+            super(BlockBehaviour.Properties.copy(Blocks.OAK_SAPLING).noOcclusion().noCollission());
+            registerDefaultState(defaultBlockState().setValue(WOOD_TYPE, LegacyWitchWoodType.ROWAN));
+        }
+
+        @Override
+        public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+            return SHAPE_FLOWER_TALL;
+        }
+
+        @Override
+        public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+            return Shapes.empty();
         }
 
         @Override

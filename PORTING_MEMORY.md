@@ -155,3 +155,14 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
     - `models/block/shadedglass_active_<color>.json` -> `shadedglass_<color>` textures
   - item defaults now target white variant models.
   - compile + JSON validation succeeded after this pass.
+- Plant solidity/culling parity pass added (2026-02-08):
+  - root issue addressed: plant-style models were rendering as full-block solids because many legacy IDs still used default `Block` behavior.
+  - `WitcheryBlocks` now maps plant-like IDs to non-occluding bounded block scaffolds:
+    - `bloodrose`, `plantmine`, `glintweed`, `crittersnare`, `bramble`, `somniancotton`, `spanishmoss`, `vine`, `web`, `embermoss`, `lilypad`, `leapinglily`, `grassper`.
+  - `witchsapling` moved from generic variant block to dedicated non-colliding sapling variant scaffold (`wood_type` preserved).
+  - plant-family models updated to crossed render parents where appropriate:
+    - `bloodrose`, `glintweed`, `embermoss`, `crittersnare`, `plantmine`.
+- Client render layers added (2026-02-08):
+  - new file: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/client/WitcheryClient.java`.
+  - registers `RenderType.cutout()` for crop/plant/door family, `RenderType.cutoutMipped()` for `witchleaves`, and `RenderType.translucent()` for `shadedglass`, `shadedglass_active`, `perpetualice`.
+  - note: API call is currently deprecated (`ItemBlockRenderTypes.setRenderLayer`) but valid for current Forge target.

@@ -198,6 +198,20 @@ Lifecycle stages:
   - model families:
     - `shadedglass_<color>` -> texture `shadedglassoff_<color>`
     - `shadedglass_active_<color>` -> texture `shadedglass_<color>`
+- Plant solidity/culling parity (2026-02-08)
+  - code scaffold added in `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryBlocks.java`:
+    - `LegacyNonSolidShapeBlock` (custom shape + collision control + no occlusion)
+    - `LegacyWitchSaplingVariantBlock` (`wood_type` + no collision + no occlusion)
+  - IDs remapped from default full-solid placeholder behavior:
+    - `bloodrose`, `plantmine`, `glintweed`, `crittersnare`, `bramble`, `somniancotton`, `spanishmoss`, `vine`, `web`, `embermoss`, `lilypad`, `leapinglily`, `grassper`, `witchsapling`
+  - model parity update to cross renderer:
+    - `bloodrose`, `glintweed`, `embermoss`, `crittersnare`, `plantmine`
+- Client transparency/cutout layer registration (2026-02-08)
+  - file: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/client/WitcheryClient.java`
+  - render-layer groups:
+    - `cutout`: crops/flowers/vines/web/sapling/lily pads/doors (legacy plant-like translucent-alpha assets)
+    - `cutoutMipped`: `witchleaves`
+    - `translucent`: `shadedglass`, `shadedglass_active`, `perpetualice`
 
 ## Block Registry List (`WitcheryBlocks`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/WitcheryBlocks.java`
