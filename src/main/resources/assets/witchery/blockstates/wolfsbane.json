@@ -1,7 +1,12 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/wolfsbane"
-      }
-   }
+  "variants": {
+    "age=0": { "model": "witchery:block/wolfsbane_stage0" },
+    "age=1": { "model": "witchery:block/wolfsbane_stage1" },
+    "age=2": { "model": "witchery:block/wolfsbane_stage2" },
+    "age=3": { "model": "witchery:block/wolfsbane_stage3" },
+    "age=4": { "model": "witchery:block/wolfsbane_stage4" },
+    "age=5": { "model": "witchery:block/wolfsbane_stage5" },
+    "age=6": { "model": "witchery:block/wolfsbane_stage6" },
+    "age=7": { "model": "witchery:block/wolfsbane_stage7" }
+  }
 }

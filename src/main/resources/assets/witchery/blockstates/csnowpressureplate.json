@@ -1,7 +1,6 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/csnowpressureplate"
-      }
-   }
+  "variants": {
+    "powered=false": { "model": "witchery:block/csnowpressureplate" },
+    "powered=true": { "model": "witchery:block/csnowpressureplate_down" }
+  }
 }

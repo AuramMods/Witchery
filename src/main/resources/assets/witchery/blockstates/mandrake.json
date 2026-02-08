@@ -1,7 +1,12 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/mandrake"
-      }
-   }
+  "variants": {
+    "age=0": { "model": "witchery:block/mandrake_stage0" },
+    "age=1": { "model": "witchery:block/mandrake_stage1" },
+    "age=2": { "model": "witchery:block/mandrake_stage2" },
+    "age=3": { "model": "witchery:block/mandrake_stage3" },
+    "age=4": { "model": "witchery:block/mandrake_stage4" },
+    "age=5": { "model": "witchery:block/mandrake_stage4" },
+    "age=6": { "model": "witchery:block/mandrake_stage4" },
+    "age=7": { "model": "witchery:block/mandrake_stage4" }
+  }
 }

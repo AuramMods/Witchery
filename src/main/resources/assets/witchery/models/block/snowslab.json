@@ -1,6 +1,8 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/barrier"
-   }
+  "parent": "minecraft:block/slab",
+  "textures": {
+    "bottom": "witchery:block/snowslab",
+    "side": "witchery:block/snowslab",
+    "top": "witchery:block/snowslab"
+  }
 }

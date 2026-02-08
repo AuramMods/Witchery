@@ -1,7 +1,6 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/snowpressureplate"
-      }
-   }
+  "variants": {
+    "powered=false": { "model": "witchery:block/snowpressureplate" },
+    "powered=true": { "model": "witchery:block/snowpressureplate_down" }
+  }
 }

@@ -1,7 +1,9 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/icefence"
-      }
-   }
+  "multipart": [
+    { "apply": { "model": "witchery:block/icefence_post" } },
+    { "when": { "north": "true" }, "apply": { "model": "witchery:block/icefence_side", "uvlock": true } },
+    { "when": { "east": "true" }, "apply": { "model": "witchery:block/icefence_side", "uvlock": true, "y": 90 } },
+    { "when": { "south": "true" }, "apply": { "model": "witchery:block/icefence_side", "uvlock": true, "y": 180 } },
+    { "when": { "west": "true" }, "apply": { "model": "witchery:block/icefence_side", "uvlock": true, "y": 270 } }
+  ]
 }

@@ -1,7 +1,7 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/iceslab"
-      }
-   }
+  "variants": {
+    "type=bottom": { "model": "witchery:block/iceslab" },
+    "type=double": { "model": "witchery:block/icedoubleslab" },
+    "type=top": { "model": "witchery:block/iceslab_top" }
+  }
 }

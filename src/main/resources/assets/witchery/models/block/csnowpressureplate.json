@@ -1,6 +1,6 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/barrier"
-   }
+  "parent": "minecraft:block/pressure_plate_up",
+  "textures": {
+    "texture": "witchery:block/csnowpressureplate"
+  }
 }

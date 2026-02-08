@@ -1,15 +1,39 @@
 {
   "variants": {
-    "axis=x": {
+    "axis=x,wood_type=rowan": {
       "model": "witchery:block/witchlog_horizontal",
       "x": 90,
       "y": 90
     },
-    "axis=y": {
+    "axis=y,wood_type=rowan": {
       "model": "witchery:block/witchlog"
     },
-    "axis=z": {
+    "axis=z,wood_type=rowan": {
       "model": "witchery:block/witchlog_horizontal",
+      "x": 90
+    },
+    "axis=x,wood_type=alder": {
+      "model": "witchery:block/witchlog_alder_horizontal",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y,wood_type=alder": {
+      "model": "witchery:block/witchlog_alder"
+    },
+    "axis=z,wood_type=alder": {
+      "model": "witchery:block/witchlog_alder_horizontal",
+      "x": 90
+    },
+    "axis=x,wood_type=hawthorn": {
+      "model": "witchery:block/witchlog_hawthorn_horizontal",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y,wood_type=hawthorn": {
+      "model": "witchery:block/witchlog_hawthorn"
+    },
+    "axis=z,wood_type=hawthorn": {
+      "model": "witchery:block/witchlog_hawthorn_horizontal",
       "x": 90
     }
   }

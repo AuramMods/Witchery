@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/inner_stairs",
+  "textures": {
+    "bottom": "witchery:block/stairswoodhawthorn",
+    "side": "witchery:block/stairswoodhawthorn",
+    "top": "witchery:block/stairswoodhawthorn"
+  }
+}

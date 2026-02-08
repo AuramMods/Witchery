@@ -1,7 +1,6 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/cstonepressureplate"
-      }
-   }
+  "variants": {
+    "powered=false": { "model": "witchery:block/cstonepressureplate" },
+    "powered=true": { "model": "witchery:block/cstonepressureplate_down" }
+  }
 }

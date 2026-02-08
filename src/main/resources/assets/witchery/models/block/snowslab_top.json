@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab_top",
+  "textures": {
+    "bottom": "witchery:block/snowslab",
+    "side": "witchery:block/snowslab",
+    "top": "witchery:block/snowslab"
+  }
+}

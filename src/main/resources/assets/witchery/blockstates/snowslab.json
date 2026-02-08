@@ -1,7 +1,7 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/snowslab"
-      }
-   }
+  "variants": {
+    "type=bottom": { "model": "witchery:block/snowslab" },
+    "type=double": { "model": "witchery:block/snowdoubleslab" },
+    "type=top": { "model": "witchery:block/snowslab_top" }
+  }
 }

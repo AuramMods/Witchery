@@ -1,7 +1,7 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/witchwoodslab"
-      }
-   }
+  "variants": {
+    "type=bottom": { "model": "witchery:block/witchwoodslab" },
+    "type=double": { "model": "witchery:block/witchwooddoubleslab" },
+    "type=top": { "model": "witchery:block/witchwoodslab_top" }
+  }
 }
