@@ -2,8 +2,10 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -66,8 +68,20 @@ public final class WitcheryItems {
             return;
         }
 
-        RegistryObject<Item> item = ITEMS.register(path, () -> new Item(new Item.Properties()));
+        RegistryObject<Item> item = ITEMS.register(path, () -> createLegacyItem(path));
         LEGACY_ITEMS.put(path, item);
+    }
+
+    private static Item createLegacyItem(String path) {
+        Item.Properties bucketProperties = new Item.Properties()
+                .craftRemainder(Items.BUCKET)
+                .stacksTo(1);
+        return switch (path) {
+            case "bucketspirit" -> new BucketItem(WitcheryFluids.getRequiredSource("fluidspirit"), bucketProperties);
+            case "buckethollowtears" -> new BucketItem(WitcheryFluids.getRequiredSource("hollowtears"), bucketProperties);
+            case "bucketbrew" -> new BucketItem(WitcheryFluids.getRequiredSource("brew"), bucketProperties);
+            default -> new Item(new Item.Properties());
+        };
     }
 
     private static void registerLegacyBlockItem(String legacyName) {

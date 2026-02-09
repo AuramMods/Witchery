@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.FenceBlock;
 import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.PressurePlateBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SlabBlock;
@@ -74,7 +75,6 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_BLOOD_CRUCIBLE = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 4.96D, 12.0D);
     private static final VoxelShape SHAPE_MIRROR_PANEL = Block.box(0.0D, 0.0D, 13.6D, 16.0D, 16.0D, 16.0D);
     private static final VoxelShape SHAPE_GLYPH = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 0.25D, 16.0D);
-    private static final VoxelShape SHAPE_FLUID_LOW = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 14.0D, 16.0D);
     private static final VoxelShape SHAPE_PORTAL_CROSS = Shapes.or(
             Block.box(7.0D, 0.0D, 0.0D, 9.0D, 16.0D, 16.0D),
             Block.box(0.0D, 0.0D, 7.0D, 16.0D, 16.0D, 9.0D)
@@ -221,10 +221,12 @@ public final class WitcheryBlocks {
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.WHITE_CARPET), SHAPE_GLYPH, false);
             case "spiritportal", "tormentportal", "mirrorwall" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.NETHER_PORTAL), SHAPE_PORTAL_CROSS, false);
-            case "brew", "brewliquid", "disease", "spiritflowing", "hollowtears" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.WATER), SHAPE_FLUID_LOW, false);
-            case "brewgas" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.BARRIER).noLootTable(), SHAPE_FULL_BLOCK, false);
+            case "spiritflowing" -> createLegacyFluidBlock("fluidspirit");
+            case "hollowtears" -> createLegacyFluidBlock("hollowtears");
+            case "disease" -> createLegacyFluidBlock("fluiddisease");
+            case "brew" -> createLegacyFluidBlock("brew");
+            case "brewgas" -> createLegacyFluidBlock("brewgas");
+            case "brewliquid" -> createLegacyFluidBlock("brewliquid");
             case "force", "barrier" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.BARRIER), SHAPE_FULL_BLOCK, true);
             case "light", "slurp" ->
@@ -248,6 +250,14 @@ public final class WitcheryBlocks {
                     .noCollission());
             default -> new Block(BlockBehaviour.Properties.copy(Blocks.STONE));
         };
+    }
+
+    private static LiquidBlock createLegacyFluidBlock(String legacyFluidName) {
+        return new LiquidBlock(WitcheryFluids.getRequiredSource(legacyFluidName),
+                BlockBehaviour.Properties.copy(Blocks.WATER)
+                        .strength(100.0F)
+                        .noCollission()
+                        .noLootTable());
     }
 
     private static final class LegacyNonSolidShapeBlock extends Block {

@@ -658,6 +658,21 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | `BUCKET_HOLLOWTEARS` | `witchery:buckethollowtears` | `HOLLOW_TEARS` |
 | `BUCKET_BREW` | `witchery:bucketbrew` | `BREW` |
 
+### 1.20.1 Fluid Scaffold Mapping (current)
+Implementation anchors:
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryFluids.java`
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryBlocks.java`
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryItems.java`
+
+| Legacy Fluid ID | 1.20.1 Source/Flowing IDs | Linked Block ID | Linked Bucket ID |
+|---|---|---|---|
+| `fluidspirit` | `witchery:fluidspirit`, `witchery:flowing_fluidspirit` | `witchery:spiritflowing` (`LiquidBlock`) | `witchery:bucketspirit` (`BucketItem`) |
+| `hollowtears` | `witchery:hollowtears`, `witchery:flowing_hollowtears` | `witchery:hollowtears` (`LiquidBlock`) | `witchery:buckethollowtears` (`BucketItem`) |
+| `brew` | `witchery:brew`, `witchery:flowing_brew` | `witchery:brew` (`LiquidBlock`) | `witchery:bucketbrew` (`BucketItem`) |
+| `brewgas` | `witchery:brewgas`, `witchery:flowing_brewgas` | `witchery:brewgas` (`LiquidBlock`) | _(none)_ |
+| `brewliquid` | `witchery:brewliquid`, `witchery:flowing_brewliquid` | `witchery:brewliquid` (`LiquidBlock`) | _(none)_ |
+| `fluiddisease` | `witchery:fluiddisease`, `witchery:flowing_fluiddisease` | `witchery:disease` (`LiquidBlock`) | _(none)_ |
+
 ## Entity Registry (`WitcheryEntities`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/WitcheryEntities.java`
 

@@ -6,7 +6,7 @@
 - Check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MEMORY.md` before starting work each session.
 - Check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before hunting for source details.
 
-## Current Snapshot (2026-02-08)
+## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.
 - Manifest + durable memory created.
 - Phase 1 registry scaffolding is in place and compiling.
@@ -54,6 +54,10 @@
   - remaining `cube_all` block models reduced to 14 intentionally-full placeholders:
     - core placeholders: `bloodedwool`, `icedoubleslab`, `perpetualice`, `pitdirt`, `pitgrass`, `snowdoubleslab`, `tormentstone`, `wallgen`, `witchwooddoubleslab`.
     - intentional variant models (not generic placeholders): `witchwood_rowan`, `witchwood_alder`, `witchwood_hawthorn`, `shadedglass_*`, `shadedglass_active_*`.
+  - fluid scaffold parity now includes fluid block + bucket wiring:
+    - converted `spiritflowing`, `hollowtears`, `disease`, `brew`, `brewgas`, `brewliquid` from static placeholder blocks to `LiquidBlock` scaffolds backed by Forge fluid registrations.
+    - wired legacy bucket items to Forge fluid buckets: `bucketspirit` -> `fluidspirit`, `buckethollowtears` -> `hollowtears`, `bucketbrew` -> `brew`.
+    - added fluid-to-block/bucket mapping in `WitcheryFluids` so source/flowing fluids, blocks, and bucket items are linked for world interaction testing.
 
 ## Phase Checklist
 
@@ -80,7 +84,9 @@
 ### Phase 2 - Data + Assets Skeleton (breadth)
 - [x] Add placeholder blockstates/models/lang entries for all registered blocks/items.
 - [ ] Add minimal data-gen providers (loot, recipes, tags).
-- [ ] Add placeholder spawn egg / bucket items where needed.
+- [~] Add placeholder spawn egg / bucket items where needed.
+  - bucket scaffolding is wired for legacy fluid buckets (`bucketspirit`, `buckethollowtears`, `bucketbrew`).
+  - spawn eggs still pending.
 - [~] Ensure game boots with full registry surface present.
   - All static resource checks pass (no missing model parent/texture references).
   - Fresh client run verified: no Witchery model/texture bake errors after latest `icedoor`/`wolftrap` asset fixes.
@@ -108,7 +114,7 @@
 - [ ] Test matrix + release checklist.
 
 ## Immediate Next Actions
-- [ ] Add placeholder bucket/block hookups for fluids (if needed for world interaction/testing).
+- [x] Add placeholder bucket/block hookups for fluids (if needed for world interaction/testing).
 - [ ] Add placeholder block items for non-itemized legacy blocks where useful for QA visibility.
 - [x] Re-run client and validate `run/logs/latest.log` after the lowercase resource-location fix.
 - [x] Re-run client and validate `run/logs/latest.log` after `icedoor` parent-model and `wolftrap` geometry parity fixes.
@@ -129,4 +135,7 @@
     - added shape-aware horizontal scaffold support for machine/chest-style blocks so existing `facing` blockstates now use non-full bounding where legacy blocks were not full cubes.
     - mapped `stockade` and `icestockade` to fence behavior scaffold for breadth parity with legacy post/connection behavior.
   - expanded client render-layer coverage to include additional alpha-heavy decorative blocks and portal/fluid-style placeholders (cutout + translucent groups).
+  - migrated legacy fluid-like block IDs to true fluid scaffolds:
+    - `spiritflowing`, `hollowtears`, `disease`, `brew`, `brewgas`, `brewliquid` now use `LiquidBlock` tied to `WitcheryFluids` source fluids.
+    - bucket items `bucketspirit`, `buckethollowtears`, `bucketbrew` now register as `BucketItem` instead of generic items.
   - validation: `./gradlew compileJava` succeeds after this pass.

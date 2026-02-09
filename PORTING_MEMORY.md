@@ -7,6 +7,19 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Legacy source is fully available at `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10`.
 - Strategy is breadth-first: register everything first, behavior parity later.
 
+## Session Memory (2026-02-09 update)
+- Fluid breadth scaffold is now wired end-to-end (registry-level):
+  - `WitcheryFluids` keeps explicit legacy mapping in `LEGACY_FLUID_CONFIGS` for block + bucket bindings.
+  - critical legacy name mismatches to remember:
+    - fluid `fluidspirit` maps to block `spiritflowing`.
+    - fluid `fluiddisease` maps to block `disease`.
+- Fluid-like block IDs now use `LiquidBlock` scaffolds in `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryBlocks.java`:
+  - `spiritflowing`, `hollowtears`, `disease`, `brew`, `brewgas`, `brewliquid`.
+- Legacy fluid bucket items are no longer generic placeholders:
+  - `bucketspirit`, `buckethollowtears`, `bucketbrew` now register as `BucketItem` in `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryItems.java`.
+- `./gradlew compileJava` passes after this change (only existing deprecation warning remains for `ItemBlockRenderTypes.setRenderLayer`).
+- Guardrail: if any fluid ID is added/renamed, update `LEGACY_FLUID_CONFIGS` immediately or startup will fail fast with `Missing fluid config for legacy fluid`.
+
 ## Phase 1 Completed
 - Phase 1 scaffolding is implemented and `./gradlew compileJava` passes.
 - New registry scaffolding package:
