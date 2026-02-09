@@ -38,6 +38,7 @@
     - fluid-family placeholders converted from full cubes to short liquid approximations (`brew`, `brewliquid`, `disease`, `spiritflowing`, `hollowtears`).
     - portal-family placeholders converted to crossed thin-pane portal geometry (`spiritportal`, `tormentportal`).
     - decorative/functional placeholders converted to non-full approximations (`altar`, `kettle`, `spinningwheel`, `statueofworship`, `coffinblock`, `refillingchest`, `mirrorwall`, `infinityegg`, plus machine-family placeholders `clever`, `distillery*`, `fumefunnel*`, `witchesoven*`).
+    - fixed startup-freeze crash for `plantmine` (`offset type + collision shape` cache validation) by marking collision-enabled `LegacyNonSolidShapeBlock` variants as `dynamicShape`.
   - fixed broken double-slab item model placeholders:
     - `icedoubleslab`, `snowdoubleslab`, `witchwooddoubleslab` no longer point at `witchery:item/taglockkit`.
   - added horizontal-facing scaffold parity for key machine/decor blocks in code + blockstates:
@@ -158,6 +159,7 @@
 - [~] Ensure game boots with full registry surface present.
   - All static resource checks pass (no missing model parent/texture references).
   - Fresh client run verified: no Witchery model/texture bake errors after latest `icedoor`/`wolftrap` asset fixes.
+  - Fresh client launch smoke run after `plantmine` fix no longer reports `IllegalStateException: witchery:plantmine has a collision shape and an offset type`.
 
 ### Phase 3 - Systems Migration Skeleton (breadth)
 - [x] Network channel + packet stubs (all legacy packet message intents represented).
@@ -247,6 +249,7 @@
   - look-ahead queue for next operations:
     - replace remaining temporary mirror right-click routing with rite-completion activation hooks.
     - harden camera override lifecycle in `WitcheryClientCameraHooks` for edge cases (dimension swap, target despawn timeout, spectator transitions).
+    - audit other custom-shape blocks that copy offset-style vanilla properties to ensure collision-enabled variants stay `dynamicShape`-safe.
     - extend client sync handling beyond revision/initialized to include fuller staged groups as payload coverage grows (style/inventory/spell slices).
     - expand `WitcheryPlayerData` fields toward legacy `ExtendedPlayer` coverage (inventory/state/effect sync groups).
   - validation: `./gradlew compileJava` succeeds after this pass.

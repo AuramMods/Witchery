@@ -265,7 +265,7 @@ public final class WitcheryBlocks {
         private final boolean hasCollision;
 
         private LegacyNonSolidShapeBlock(BlockBehaviour.Properties properties, VoxelShape shape, boolean hasCollision) {
-            super(hasCollision ? properties.noOcclusion() : properties.noOcclusion().noCollission());
+            super(hasCollision ? properties.noOcclusion().dynamicShape() : properties.noOcclusion().noCollission());
             this.shape = shape;
             this.hasCollision = hasCollision;
         }

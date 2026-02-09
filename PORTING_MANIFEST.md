@@ -206,6 +206,8 @@ Lifecycle stages:
     - `bloodrose`, `plantmine`, `glintweed`, `crittersnare`, `bramble`, `somniancotton`, `spanishmoss`, `vine`, `web`, `embermoss`, `lilypad`, `leapinglily`, `grassper`, `witchsapling`
   - model parity update to cross renderer:
     - `bloodrose`, `glintweed`, `embermoss`, `crittersnare`, `plantmine`
+  - launch hotfix (2026-02-09):
+    - fixed Forge block-state cache validation crash for `witchery:plantmine` (`offset type + collision shape`) by marking collision-enabled `LegacyNonSolidShapeBlock` variants as `dynamicShape`.
 - Client transparency/cutout layer registration (2026-02-08)
   - file: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/client/WitcheryClient.java`
   - render-layer groups:

@@ -18,6 +18,13 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Legacy fluid bucket items are no longer generic placeholders:
   - `bucketspirit`, `buckethollowtears`, `bucketbrew` now register as `BucketItem` in `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryItems.java`.
 - `./gradlew compileJava` passes after this change (only existing deprecation warning remains for `ItemBlockRenderTypes.setRenderLayer`).
+- Launch crash hotfix (2026-02-09):
+  - fixed `IllegalStateException: witchery:plantmine has a collision shape and an offset type, but is not marked as dynamicShape in its properties`.
+  - root cause: `plantmine` copied `Blocks.DANDELION` offset behavior and used collision-enabled `LegacyNonSolidShapeBlock`, but the scaffold constructor did not set `dynamicShape`.
+  - fix: in `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryBlocks.java`, `LegacyNonSolidShapeBlock` now applies `.dynamicShape()` when `hasCollision=true`.
+  - verification:
+    - `./gradlew compileJava` passes.
+    - `./gradlew runClient` launch smoke reached full registry freeze/atlas initialization without the previous `plantmine` exception (manual stop after startup).
 - Guardrail: if any fluid ID is added/renamed, update `LEGACY_FLUID_CONFIGS` immediately or startup will fail fast with `Missing fluid config for legacy fluid`.
 - Minimal server data-generation pipeline now exists in `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/data`:
   - `WitcheryDataGenerators` subscribes to `GatherDataEvent`.
@@ -108,6 +115,7 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Near-term look-ahead queue:
   - replace temporary mirror right-click routing with rite-completion activation hooks (portal collision path is now scaffolded).
   - harden camera override lifecycle in `WitcheryClientCameraHooks` for edge cases (dimension swap, target despawn timeout, spectator transitions).
+  - audit offset-type + collision-shape scaffolds so collision-enabled custom-shape blocks remain `dynamicShape`-safe.
   - add targeted round-trip validation for sync snapshot payloads (`login`, `clone`, `item_update`, `spell_prepared`, `sync_markup_book`, `howl`) in both singleplayer and dedicated-server sessions.
   - keep migrating high-priority `ExtendedPlayer` groups into `WitcheryPlayerData` (combat/state/progression slices) before depth pass.
 
