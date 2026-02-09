@@ -56,12 +56,12 @@ public final class WitcheryNetwork {
         int discriminator = 0;
         discriminator = registerNoPayloadPacket(discriminator, "brew_prepared", BrewPreparedPacket.class, BrewPreparedPacket::new);
         discriminator = registerNoPayloadPacket(discriminator, "particles", ParticlesPacket.class, ParticlesPacket::new);
-        discriminator = registerNoPayloadPacket(discriminator, "cam_pos", CamPosPacket.class, CamPosPacket::new);
+        discriminator = registerCamPosPacket(discriminator);
         discriminator = registerItemUpdatePacket(discriminator);
         discriminator = registerNoPayloadPacket(discriminator, "player_style", PlayerStylePacket.class, PlayerStylePacket::new);
         discriminator = registerPlayerSyncPacket(discriminator);
-        discriminator = registerNoPayloadPacket(discriminator, "push_target", PushTargetPacket.class, PushTargetPacket::new);
-        discriminator = registerNoPayloadPacket(discriminator, "sound", SoundPacket.class, SoundPacket::new);
+        discriminator = registerPushTargetPacket(discriminator);
+        discriminator = registerSoundPacket(discriminator);
         discriminator = registerNoPayloadPacket(discriminator, "spell_prepared", SpellPreparedPacket.class, SpellPreparedPacket::new);
         discriminator = registerNoPayloadPacket(discriminator, "clear_fall_damage", ClearFallDamagePacket.class, ClearFallDamagePacket::new);
         discriminator = registerSyncEntitySizePacket(discriminator);
@@ -142,6 +142,27 @@ public final class WitcheryNetwork {
         );
     }
 
+    public static void sendCamPos(ServerPlayer player, double x, double y, double z, float yaw, float pitch) {
+        CHANNEL.send(
+                PacketDistributor.PLAYER.with(() -> player),
+                new CamPosPacket(x, y, z, yaw, pitch)
+        );
+    }
+
+    public static void sendPushTarget(ServerPlayer player, int entityId, double velocityX, double velocityY, double velocityZ) {
+        CHANNEL.send(
+                PacketDistributor.PLAYER.with(() -> player),
+                new PushTargetPacket(entityId, velocityX, velocityY, velocityZ)
+        );
+    }
+
+    public static void sendSound(ServerPlayer player, String soundId, double x, double y, double z, float volume, float pitch) {
+        CHANNEL.send(
+                PacketDistributor.PLAYER.with(() -> player),
+                new SoundPacket(soundId, x, y, z, volume, pitch)
+        );
+    }
+
     private static PacketBinding packetBinding(String intentKey) {
         String normalized = normalize(intentKey);
         PacketBinding binding = PACKET_BINDINGS_BY_KEY.get(normalized);
@@ -157,6 +178,18 @@ public final class WitcheryNetwork {
             throw new IllegalStateException("Missing legacy packet intent metadata for key: " + key);
         }
         return intent;
+    }
+
+    private static int registerCamPosPacket(int discriminator) {
+        return registerPacketWithCodec(
+                discriminator,
+                "cam_pos",
+                CamPosPacket.class,
+                CamPosPacket::encode,
+                CamPosPacket::decode,
+                WitcheryNetwork::handleCamPosPacket,
+                CamPosPacket::placeholder
+        );
     }
 
     private static int registerItemUpdatePacket(int discriminator) {
@@ -231,6 +264,30 @@ public final class WitcheryNetwork {
         );
     }
 
+    private static int registerPushTargetPacket(int discriminator) {
+        return registerPacketWithCodec(
+                discriminator,
+                "push_target",
+                PushTargetPacket.class,
+                PushTargetPacket::encode,
+                PushTargetPacket::decode,
+                WitcheryNetwork::handlePushTargetPacket,
+                PushTargetPacket::placeholder
+        );
+    }
+
+    private static int registerSoundPacket(int discriminator) {
+        return registerPacketWithCodec(
+                discriminator,
+                "sound",
+                SoundPacket.class,
+                SoundPacket::encode,
+                SoundPacket::decode,
+                WitcheryNetwork::handleSoundPacket,
+                SoundPacket::placeholder
+        );
+    }
+
     private static <T> int registerNoPayloadPacket(int discriminator, String key, Class<T> packetType, Supplier<T> factory) {
         return registerPacketWithCodec(
                 discriminator,
@@ -296,6 +353,13 @@ public final class WitcheryNetwork {
         );
     }
 
+    private static void handleCamPosPacket(CamPosPacket message, NetworkEvent.Context context) {
+        Witchery.LOGGER.debug(
+                "Handled scaffold packet 'cam_pos' x={} y={} z={} yaw={} pitch={} direction={}",
+                message.x(), message.y(), message.z(), message.yaw(), message.pitch(), context.getDirection()
+        );
+    }
+
     private static void handleItemUpdatePacket(ItemUpdatePacket message, NetworkEvent.Context context) {
         Witchery.LOGGER.debug(
                 "Handled scaffold packet 'item_update' slot={} count={} mainHand={} direction={}",
@@ -331,6 +395,20 @@ public final class WitcheryNetwork {
         );
     }
 
+    private static void handlePushTargetPacket(PushTargetPacket message, NetworkEvent.Context context) {
+        Witchery.LOGGER.debug(
+                "Handled scaffold packet 'push_target' entityId={} vx={} vy={} vz={} direction={}",
+                message.entityId(), message.velocityX(), message.velocityY(), message.velocityZ(), context.getDirection()
+        );
+    }
+
+    private static void handleSoundPacket(SoundPacket message, NetworkEvent.Context context) {
+        Witchery.LOGGER.debug(
+                "Handled scaffold packet 'sound' id={} x={} y={} z={} volume={} pitch={} direction={}",
+                message.soundId(), message.x(), message.y(), message.z(), message.volume(), message.pitch(), context.getDirection()
+        );
+    }
+
     private static boolean matchesDirection(LegacyRegistryData.LegacyPacketIntent intent, NetworkDirection direction) {
         return switch (intent.flow()) {
             case CLIENTBOUND -> direction == NetworkDirection.PLAY_TO_CLIENT;
@@ -351,7 +429,28 @@ public final class WitcheryNetwork {
     public record ParticlesPacket() {
     }
 
-    public record CamPosPacket() {
+    public record CamPosPacket(double x, double y, double z, float yaw, float pitch) {
+        public static CamPosPacket placeholder() {
+            return new CamPosPacket(0.0D, 0.0D, 0.0D, 0.0F, 0.0F);
+        }
+
+        public static void encode(CamPosPacket message, FriendlyByteBuf buffer) {
+            buffer.writeDouble(message.x());
+            buffer.writeDouble(message.y());
+            buffer.writeDouble(message.z());
+            buffer.writeFloat(message.yaw());
+            buffer.writeFloat(message.pitch());
+        }
+
+        public static CamPosPacket decode(FriendlyByteBuf buffer) {
+            return new CamPosPacket(
+                    buffer.readDouble(),
+                    buffer.readDouble(),
+                    buffer.readDouble(),
+                    buffer.readFloat(),
+                    buffer.readFloat()
+            );
+        }
     }
 
     public record ItemUpdatePacket(int slotIndex, int stackCount, boolean mainHand) {
@@ -390,10 +489,54 @@ public final class WitcheryNetwork {
         }
     }
 
-    public record PushTargetPacket() {
+    public record PushTargetPacket(int entityId, double velocityX, double velocityY, double velocityZ) {
+        public static PushTargetPacket placeholder() {
+            return new PushTargetPacket(0, 0.0D, 0.0D, 0.0D);
+        }
+
+        public static void encode(PushTargetPacket message, FriendlyByteBuf buffer) {
+            buffer.writeVarInt(message.entityId());
+            buffer.writeDouble(message.velocityX());
+            buffer.writeDouble(message.velocityY());
+            buffer.writeDouble(message.velocityZ());
+        }
+
+        public static PushTargetPacket decode(FriendlyByteBuf buffer) {
+            return new PushTargetPacket(
+                    buffer.readVarInt(),
+                    buffer.readDouble(),
+                    buffer.readDouble(),
+                    buffer.readDouble()
+            );
+        }
     }
 
-    public record SoundPacket() {
+    public record SoundPacket(String soundId, double x, double y, double z, float volume, float pitch) {
+        private static final int MAX_SOUND_ID_LENGTH = 128;
+
+        public static SoundPacket placeholder() {
+            return new SoundPacket("minecraft:block.note_block.harp", 0.0D, 0.0D, 0.0D, 1.0F, 1.0F);
+        }
+
+        public static void encode(SoundPacket message, FriendlyByteBuf buffer) {
+            buffer.writeUtf(message.soundId(), MAX_SOUND_ID_LENGTH);
+            buffer.writeDouble(message.x());
+            buffer.writeDouble(message.y());
+            buffer.writeDouble(message.z());
+            buffer.writeFloat(message.volume());
+            buffer.writeFloat(message.pitch());
+        }
+
+        public static SoundPacket decode(FriendlyByteBuf buffer) {
+            return new SoundPacket(
+                    buffer.readUtf(MAX_SOUND_ID_LENGTH),
+                    buffer.readDouble(),
+                    buffer.readDouble(),
+                    buffer.readDouble(),
+                    buffer.readFloat(),
+                    buffer.readFloat()
+            );
+        }
     }
 
     public record SpellPreparedPacket() {

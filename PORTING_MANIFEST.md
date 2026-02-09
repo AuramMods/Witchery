@@ -1084,6 +1084,9 @@ Current scaffold behavior:
   - `item_update` -> `(int slotIndex, int stackCount, boolean mainHand)` (serverbound)
   - `sync_entity_size` -> `(int entityId, float width, float height)` (clientbound)
   - `set_client_player_facing` -> `(float yaw, float pitch)` (clientbound)
+  - `cam_pos` -> `(double x, double y, double z, float yaw, float pitch)` (clientbound)
+  - `push_target` -> `(int entityId, double velocityX, double velocityY, double velocityZ)` (clientbound)
+  - `sound` -> `(String soundId, double x, double y, double z, float volume, float pitch)` (clientbound)
 
 Intent mapping used by scaffold:
 | Legacy ID | Intent Key | Flow |
