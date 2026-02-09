@@ -121,7 +121,11 @@ Lifecycle stages:
   - `witchery:brewliquid` -> `witchery:block/brew_still` + `witchery:block/brew_flow`.
   - `witchery:mirrorblock` -> `witchery:block/mirror`.
   - `witchery:mirrorblock2` -> `witchery:block/mirror2`.
-  - `witchery:trent` and `witchery:scarecrow` -> explicit textured cube scaffolds (temporary breadth-level visual fix).
+  - `witchery:trent` and `witchery:scarecrow` -> upgraded from temporary cube placeholders to multi-part static models with per-face UV maps based on legacy fetish atlas regions (`64x64`).
+- Fetish renderer/model anchors:
+  - Legacy renderer: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/client/renderer/RenderFetish.java`.
+  - Legacy models: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/client/model/ModelFetishTrent.java`, `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/client/model/ModelFetishScarecrow.java`.
+  - Legacy texture atlas paths: `textures/blocks/trent.png` and `textures/blocks/scarecrow.png` (`64x64`), so block-model UVs must be treated as atlas-relative (scaled from legacy model UV coordinates).
 - `witchery:icedoor`
   - Legacy class: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/blocks/BlockPerpetualIceDoor.java`.
   - Legacy textures: `assets/witchery/textures/blocks/icedoor_lower.png`, `icedoor_upper.png`.

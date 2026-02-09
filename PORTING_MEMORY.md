@@ -41,6 +41,10 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Reported placeholder-texture block model remap pass (2026-02-09):
   - updated model texture assignments for `tormentstone`, `refillingchest`, `brewliquid`, `mirrorblock`, `mirrorblock2`, `wolftrap`, `trent`, and `scarecrow`.
   - intent is breadth-level visual scaffolding: remove transparent/purple-black placeholder rendering while keeping behavior parity work for later phases.
+- Fetish model UV correction pass (2026-02-09):
+  - replaced temporary `cube_all` versions of `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/assets/witchery/models/block/trent.json` and `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/assets/witchery/models/block/scarecrow.json`.
+  - both models now use explicit multi-element cuboids with per-face UV coordinates derived from legacy `ModelFetishTrent`/`ModelFetishScarecrow` atlas regions (64x64 texture space scaled to block-model UV space).
+  - this addresses the "texture loaded but mapped incorrectly" artifact seen on `trent`.
 - Phase 3 network scaffold is now initialized:
   - new file `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/network/WitcheryNetwork.java`.
   - channel bootstrap is called from `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/Witchery.java`.
@@ -124,6 +128,8 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
   - harden camera override lifecycle in `WitcheryClientCameraHooks` for edge cases (dimension swap, target despawn timeout, spectator transitions).
   - audit offset-type + collision-shape scaffolds so collision-enabled custom-shape blocks remain `dynamicShape`-safe.
   - run a fresh client launch and re-scan `run/logs/latest.log` specifically for spawn egg model loads and the remapped block-model texture set.
+  - evaluate `witchsladder` against the same fetish-model UV/shape parity standard and decide whether to migrate it off the current simple pillar scaffold.
+  - revisit fetish rotation/tint parity (legacy TESR had per-part rotations and color overlays not yet represented in static JSON models).
   - add targeted round-trip validation for sync snapshot payloads (`login`, `clone`, `item_update`, `spell_prepared`, `sync_markup_book`, `howl`) in both singleplayer and dedicated-server sessions.
   - keep migrating high-priority `ExtendedPlayer` groups into `WitcheryPlayerData` (combat/state/progression slices) before depth pass.
 

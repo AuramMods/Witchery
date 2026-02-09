@@ -74,7 +74,7 @@
     - `brewliquid` now maps to animated `brew_still`/`brew_flow`.
     - `mirrorblock`/`mirrorblock2` now map to `mirror`/`mirror2`.
     - `wolftrap` now maps to `minecraft:block/iron_block` instead of placeholder `wolftrap`.
-    - `trent`/`scarecrow` block models now use explicit textured cube scaffolds to avoid near-transparent placeholder geometry.
+    - `trent`/`scarecrow` were upgraded from temporary cube placeholders to explicit multi-part fetish models with per-face UV mapping against their legacy `64x64` texture atlases.
   - network skeleton scaffolding now mirrors legacy packet surface:
     - added `WitcheryNetwork` `SimpleChannel` bootstrap and registration from mod init path.
     - added normalized packet-intent inventory for all 19 legacy pipeline messages with legacy ID + direction metadata.
@@ -235,6 +235,9 @@
 - [ ] Run fresh client launch smoke and scan `run/logs/latest.log` for:
   - spawn egg model resolution errors (`*_spawn_egg` model lookups).
   - block-model missing texture warnings for the remapped set (`tormentstone`, `refillingchest`, `brewliquid`, `mirrorblock*`, `wolftrap`, `trent`, `scarecrow`).
+- [ ] Continue fetish model parity depth pass:
+  - evaluate whether `witchsladder` needs the same multi-part UV approach.
+  - add fidelity follow-up for fetish-specific rotations/tint behavior currently handled by legacy TESR (`RenderFetish`).
 - [ ] Run targeted multiplayer/client validation for expanded player sync payload snapshots (`login`, `clone`, `item_update`, `spell_prepared`, `sync_markup_book`, `howl`).
   - completed crop-family stage model parity pass.
   - completed structural families (stairs/slabs/fence/fence-gate/pressure-plate/button) with 1.20.1 state models.
