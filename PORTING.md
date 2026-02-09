@@ -74,6 +74,10 @@
   - event-bus hook skeleton now has explicit Forge-side anchor points:
     - added `WitcheryEventHooks` no-op subscribers for entity capability attach, player login/clone, and level load.
     - preserves breadth visibility for upcoming `ExtendedPlayer` replacement and world runtime bootstrap migration.
+  - capability/data-attachment scaffold now exists for player data migration:
+    - added `WitcheryCapabilities` MOD-bus registration for `WitcheryPlayerData`.
+    - added `WitcheryPlayerDataProvider` attachment + clone-copy wiring through `WitcheryEventHooks`.
+    - added `WitcheryPlayerData` NBT-serializable payload shell (`initialized`, `syncRevision`) and login-time sync-intent send (`extended_player_sync`).
 
 ## Phase Checklist
 
@@ -118,8 +122,11 @@
   - datapack level-stem + dimension-type content and runtime travel hooks are still TODO.
 - [~] Event bus hooks migrated with no-op or minimal behavior.
   - placeholder Forge-bus hooks are in place for attach-capabilities, player login/clone, and level load events.
+  - attach-capabilities/player-clone hooks now include capability provider wiring for player data scaffold.
   - real handler routing/feature logic is still TODO.
-- [ ] Capability/data attachment plan for replacing `ExtendedPlayer`/custom NBT patterns.
+- [~] Capability/data attachment plan for replacing `ExtendedPlayer`/custom NBT patterns.
+  - `WitcheryPlayerData` + provider + capability registration scaffolding is in place.
+  - migration of legacy fields/logic from `ExtendedPlayer` remains TODO.
 
 ### Phase 4 - Feature Behavior Pass (depth)
 - [ ] Blocks/tile entity behavior parity pass.

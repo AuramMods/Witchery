@@ -1149,8 +1149,31 @@ Placeholder Forge-bus hook points:
 - `LevelEvent.Load`: world/runtime registry bootstrap migration anchor.
 
 Status:
-- handlers are intentionally no-op scaffolds for breadth-phase wiring.
+- handlers now contain minimal breadth scaffolding for capability attach/copy and login sync-intent routing.
 - feature-specific behavior is deferred to depth migration passes.
+
+## 1.20.1 Capability Scaffold (current)
+Implementation anchors:
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/capability/WitcheryCapabilities.java`
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/capability/WitcheryPlayerData.java`
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/capability/WitcheryPlayerDataProvider.java`
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/event/WitcheryEventHooks.java`
+
+Current scaffold behavior:
+- Registers `WitcheryPlayerData` capability type on MOD bus (`RegisterCapabilitiesEvent`).
+- Attaches player capability provider on `AttachCapabilitiesEvent<Entity>` when entity is a `Player`.
+- Copies capability data during `PlayerEvent.Clone`.
+- Sends `extended_player_sync` intent packet on player login as breadth sync placeholder.
+
+Current placeholder data surface (`WitcheryPlayerData`):
+| Field | Type | Purpose |
+|---|---|---|
+| `initialized` | `boolean` | breadth session-init marker |
+| `syncRevision` | `int` | incremental sync marker for placeholder packet routing |
+
+Status:
+- structural replacement path for legacy `ExtendedPlayer` is now wired.
+- actual migration of legacy fields/behaviors is still TODO.
 
 ## Mod Hook Integrations (`modHooks.register`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/Witchery.java`

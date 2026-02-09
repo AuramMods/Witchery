@@ -40,6 +40,11 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
   - new file `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/event/WitcheryEventHooks.java`.
   - placeholder handlers exist for `AttachCapabilitiesEvent<Entity>`, `PlayerLoggedInEvent`, `PlayerEvent.Clone`, and `LevelEvent.Load`.
   - this creates stable attachment points for capability/data migration and runtime bootstrap without adding behavior yet.
+- Capability scaffold now exists for `ExtendedPlayer` replacement:
+  - `WitcheryCapabilities` registers capability type `WitcheryPlayerData` on MOD bus.
+  - `WitcheryPlayerDataProvider` is attached to players via `AttachCapabilitiesEvent<Entity>` and copied during `PlayerEvent.Clone`.
+  - `WitcheryPlayerData` currently stores breadth placeholder state (`initialized`, `syncRevision`) with NBT serialization.
+  - login hook sends network intent `extended_player_sync` to client using `WitcheryNetwork.sendTo(...)`.
 
 ## Phase 1 Completed
 - Phase 1 scaffolding is implemented and `./gradlew compileJava` passes.

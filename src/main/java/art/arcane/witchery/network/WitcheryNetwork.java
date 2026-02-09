@@ -4,9 +4,11 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.registry.LegacyRegistryData;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 import java.util.Collection;
@@ -66,6 +68,10 @@ public final class WitcheryNetwork {
 
     public static void sendToServer(String intentKey) {
         CHANNEL.sendToServer(packet(intentKey));
+    }
+
+    public static void sendTo(ServerPlayer player, String intentKey) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), packet(intentKey));
     }
 
     private static void handleIntentPacket(LegacyIntentPacket message, Supplier<NetworkEvent.Context> contextSupplier) {

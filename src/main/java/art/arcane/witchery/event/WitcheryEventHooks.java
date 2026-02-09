@@ -1,7 +1,10 @@
 package art.arcane.witchery.event;
 
+import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.Witchery;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.LevelEvent;
@@ -15,17 +18,26 @@ public final class WitcheryEventHooks {
 
     @SubscribeEvent
     public static void onAttachEntityCapabilities(AttachCapabilitiesEvent<Entity> event) {
-        // Placeholder hook for capability migration (e.g. ExtendedPlayer replacement).
+        WitcheryPlayerDataProvider.attach(event);
     }
 
     @SubscribeEvent
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-        // Placeholder hook for player sync/bootstrap migration.
+        if (event.getEntity() instanceof ServerPlayer serverPlayer) {
+            WitcheryPlayerDataProvider.get(serverPlayer).ifPresent(data -> {
+                data.setInitialized(true);
+                data.bumpSyncRevision();
+                WitcheryNetwork.sendTo(serverPlayer, "extended_player_sync");
+            });
+        }
     }
 
     @SubscribeEvent
     public static void onPlayerClone(PlayerEvent.Clone event) {
-        // Placeholder hook for persistent player-data migration.
+        event.getOriginal().reviveCaps();
+        WitcheryPlayerDataProvider.get(event.getOriginal()).ifPresent(oldData ->
+                WitcheryPlayerDataProvider.get(event.getEntity()).ifPresent(newData -> newData.copyFrom(oldData)));
+        event.getOriginal().invalidateCaps();
     }
 
     @SubscribeEvent
