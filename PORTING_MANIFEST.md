@@ -1124,6 +1124,34 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 - Torment: `WorldProviderTorment`
 - Mirror: `WorldProviderMirror`
 
+### 1.20.1 Dimension Key Scaffold (current)
+Implementation anchor:
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/world/WitcheryDimensions.java`
+
+| Legacy Dimension | Level Key | LevelStem Key | DimensionType Key |
+|---|---|---|---|
+| Dream | `witchery:dream` | `witchery:dream` | `witchery:dream` |
+| Torment | `witchery:torment` | `witchery:torment` | `witchery:torment` |
+| Mirror | `witchery:mirror` | `witchery:mirror` | `witchery:mirror` |
+
+Status:
+- resource-key scaffolding only (no datapack `dimension_type` / `dimension` JSON yet).
+- travel/teleport behavior migration from legacy providers is still TODO.
+
+## 1.20.1 Event Hook Scaffold (current)
+Implementation anchor:
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/event/WitcheryEventHooks.java`
+
+Placeholder Forge-bus hook points:
+- `AttachCapabilitiesEvent<Entity>`: capability attachment migration anchor (`ExtendedPlayer` replacement path).
+- `PlayerEvent.PlayerLoggedInEvent`: player bootstrap/sync migration anchor.
+- `PlayerEvent.Clone`: persistent player data copy/migration anchor.
+- `LevelEvent.Load`: world/runtime registry bootstrap migration anchor.
+
+Status:
+- handlers are intentionally no-op scaffolds for breadth-phase wiring.
+- feature-specific behavior is deferred to depth migration passes.
+
 ## Mod Hook Integrations (`modHooks.register`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/Witchery.java`
 - `ModHookArsMagica2`

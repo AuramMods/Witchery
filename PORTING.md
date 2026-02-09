@@ -68,6 +68,12 @@
     - added `WitcheryNetwork` `SimpleChannel` bootstrap and registration from mod init path.
     - added normalized packet-intent inventory for all 19 legacy pipeline messages with legacy ID + direction metadata.
     - added no-op intent packet handler scaffold with direction validation warnings (behavior implementation deferred to depth pass).
+  - dimension migration skeleton now has stable resource-key anchors:
+    - added `WitcheryDimensions` keys for `dream`, `torment`, and `mirror` across `Level`, `LevelStem`, and `DimensionType`.
+    - datapack/worldgen wiring is still pending for actual dimension registration/teleport flow.
+  - event-bus hook skeleton now has explicit Forge-side anchor points:
+    - added `WitcheryEventHooks` no-op subscribers for entity capability attach, player login/clone, and level load.
+    - preserves breadth visibility for upcoming `ExtendedPlayer` replacement and world runtime bootstrap migration.
 
 ## Phase Checklist
 
@@ -107,8 +113,12 @@
 - [~] GUI/menu stubs for all legacy GUI IDs.
   - menu registry surface exists for all legacy GUI targets (`altar`, `witchcraft_book`, `witches_oven`, `distillery`, `spinning_wheel`, `brew_bag`, `biome_book`, `markup_book`, `leonards_urn`).
   - most screens still use generic placeholder menu behavior.
-- [ ] Dimension/key migration for Dream/Torment/Mirror.
-- [ ] Event bus hooks migrated with no-op or minimal behavior.
+- [~] Dimension/key migration for Dream/Torment/Mirror.
+  - resource keys are scaffolded (`Level`, `LevelStem`, `DimensionType`) for `dream`, `torment`, and `mirror`.
+  - datapack level-stem + dimension-type content and runtime travel hooks are still TODO.
+- [~] Event bus hooks migrated with no-op or minimal behavior.
+  - placeholder Forge-bus hooks are in place for attach-capabilities, player login/clone, and level load events.
+  - real handler routing/feature logic is still TODO.
 - [ ] Capability/data attachment plan for replacing `ExtendedPlayer`/custom NBT patterns.
 
 ### Phase 4 - Feature Behavior Pass (depth)

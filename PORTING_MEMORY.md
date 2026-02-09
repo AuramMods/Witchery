@@ -32,6 +32,14 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
   - channel bootstrap is called from `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/Witchery.java`.
   - legacy packet intents (`19`) are represented in `LegacyRegistryData.PACKETS` with `legacyId`, normalized key, and flow (`CLIENTBOUND`/`SERVERBOUND`).
   - current transport is a generic no-op intent packet scaffold with direction mismatch warnings; individual payload behavior is still TODO.
+- Phase 3 dimension scaffolding is now initialized:
+  - new file `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/world/WitcheryDimensions.java`.
+  - keys are defined for `dream`, `torment`, `mirror` across `Level`, `LevelStem`, and `DimensionType`.
+  - this is key-only scaffolding; datapack dimension JSON + travel/event wiring still needs migration.
+- Phase 3 event skeleton now has no-op Forge hooks:
+  - new file `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/event/WitcheryEventHooks.java`.
+  - placeholder handlers exist for `AttachCapabilitiesEvent<Entity>`, `PlayerLoggedInEvent`, `PlayerEvent.Clone`, and `LevelEvent.Load`.
+  - this creates stable attachment points for capability/data migration and runtime bootstrap without adding behavior yet.
 
 ## Phase 1 Completed
 - Phase 1 scaffolding is implemented and `./gradlew compileJava` passes.
