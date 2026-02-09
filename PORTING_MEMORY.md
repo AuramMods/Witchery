@@ -27,6 +27,11 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Placeholder spawn eggs are now auto-generated in `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryItems.java`:
   - one `ForgeSpawnEggItem` per legacy entity placeholder using `<normalized_entity_name>_spawn_egg`.
   - spawn eggs are appended to `WitcheryItems.allForCreativeTab()` so QA can access them without manual commands.
+- Phase 3 network scaffold is now initialized:
+  - new file `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/network/WitcheryNetwork.java`.
+  - channel bootstrap is called from `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/Witchery.java`.
+  - legacy packet intents (`19`) are represented in `LegacyRegistryData.PACKETS` with `legacyId`, normalized key, and flow (`CLIENTBOUND`/`SERVERBOUND`).
+  - current transport is a generic no-op intent packet scaffold with direction mismatch warnings; individual payload behavior is still TODO.
 
 ## Phase 1 Completed
 - Phase 1 scaffolding is implemented and `./gradlew compileJava` passes.

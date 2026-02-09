@@ -302,6 +302,28 @@ public final class LegacyRegistryData {
         "reflection"
     );
 
+    public static final List<LegacyPacketIntent> PACKETS = List.of(
+            new LegacyPacketIntent(1, "brew_prepared", PacketFlow.SERVERBOUND),
+            new LegacyPacketIntent(2, "particles", PacketFlow.CLIENTBOUND),
+            new LegacyPacketIntent(3, "cam_pos", PacketFlow.CLIENTBOUND),
+            new LegacyPacketIntent(4, "item_update", PacketFlow.SERVERBOUND),
+            new LegacyPacketIntent(5, "player_style", PacketFlow.CLIENTBOUND),
+            new LegacyPacketIntent(6, "player_sync", PacketFlow.CLIENTBOUND),
+            new LegacyPacketIntent(7, "push_target", PacketFlow.CLIENTBOUND),
+            new LegacyPacketIntent(8, "sound", PacketFlow.CLIENTBOUND),
+            new LegacyPacketIntent(9, "spell_prepared", PacketFlow.SERVERBOUND),
+            new LegacyPacketIntent(10, "clear_fall_damage", PacketFlow.SERVERBOUND),
+            new LegacyPacketIntent(11, "sync_entity_size", PacketFlow.CLIENTBOUND),
+            new LegacyPacketIntent(12, "sync_markup_book", PacketFlow.SERVERBOUND),
+            new LegacyPacketIntent(13, "extended_player_sync", PacketFlow.CLIENTBOUND),
+            new LegacyPacketIntent(14, "howl", PacketFlow.SERVERBOUND),
+            new LegacyPacketIntent(15, "extended_villager_sync", PacketFlow.CLIENTBOUND),
+            new LegacyPacketIntent(16, "select_player_ability", PacketFlow.SERVERBOUND),
+            new LegacyPacketIntent(17, "extended_entity_request_sync_to_client", PacketFlow.SERVERBOUND),
+            new LegacyPacketIntent(18, "partial_extended_player_sync", PacketFlow.CLIENTBOUND),
+            new LegacyPacketIntent(19, "set_client_player_facing", PacketFlow.CLIENTBOUND)
+    );
+
     public static final List<String> EFFECTS = List.of(
         "potion.paralysed",
         "potion.wrappedinvine",
@@ -417,4 +439,12 @@ public final class LegacyRegistryData {
         "wolfhead",
         "wolftrap"
     );
+
+    public enum PacketFlow {
+        CLIENTBOUND,
+        SERVERBOUND
+    }
+
+    public record LegacyPacketIntent(int legacyId, String key, PacketFlow flow) {
+    }
 }

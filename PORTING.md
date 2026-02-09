@@ -64,6 +64,10 @@
   - placeholder spawn-egg coverage added for entity registry breadth:
     - all legacy entity placeholders now get generated `*_spawn_egg` items (via `WitcheryItems` + `WitcheryEntities` maps).
     - spawn eggs are included in the creative-tab aggregate list for quick scaffolding QA.
+  - network skeleton scaffolding now mirrors legacy packet surface:
+    - added `WitcheryNetwork` `SimpleChannel` bootstrap and registration from mod init path.
+    - added normalized packet-intent inventory for all 19 legacy pipeline messages with legacy ID + direction metadata.
+    - added no-op intent packet handler scaffold with direction validation warnings (behavior implementation deferred to depth pass).
 
 ## Phase Checklist
 
@@ -99,8 +103,10 @@
   - Fresh client run verified: no Witchery model/texture bake errors after latest `icedoor`/`wolftrap` asset fixes.
 
 ### Phase 3 - Systems Migration Skeleton (breadth)
-- [ ] Network channel + packet stubs (all legacy packet message intents represented).
-- [ ] GUI/menu stubs for all legacy GUI IDs.
+- [x] Network channel + packet stubs (all legacy packet message intents represented).
+- [~] GUI/menu stubs for all legacy GUI IDs.
+  - menu registry surface exists for all legacy GUI targets (`altar`, `witchcraft_book`, `witches_oven`, `distillery`, `spinning_wheel`, `brew_bag`, `biome_book`, `markup_book`, `leonards_urn`).
+  - most screens still use generic placeholder menu behavior.
 - [ ] Dimension/key migration for Dream/Torment/Mirror.
 - [ ] Event bus hooks migrated with no-op or minimal behavior.
 - [ ] Capability/data attachment plan for replacing `ExtendedPlayer`/custom NBT patterns.

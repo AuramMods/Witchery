@@ -1,5 +1,6 @@
 package art.arcane.witchery;
 
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryRegistries;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -15,5 +16,6 @@ public class Witchery {
     public Witchery(FMLJavaModLoadingContext context) {
         IEventBus modEventBus = context.getModEventBus();
         WitcheryRegistries.register(modEventBus);
+        WitcheryNetwork.register();
     }
 }

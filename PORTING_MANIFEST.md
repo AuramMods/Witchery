@@ -1065,6 +1065,41 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 18 | `PacketPartialExtendedPlayerSync` | `CLIENT` |
 | 19 | `PacketSetClientPlayerFacing` | `CLIENT` |
 
+### 1.20.1 Network Skeleton (current)
+Implementation anchors:
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/network/WitcheryNetwork.java`
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/LegacyRegistryData.java`
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/Witchery.java`
+
+Current scaffold behavior:
+- Uses one `SimpleChannel` (`witchery:main`) with protocol version `"1"`.
+- Registers a generic `LegacyIntentPacket` no-op transport for breadth scaffolding.
+- Validates received packet intent key + expected direction and logs warnings for mismatches.
+- Represents all legacy packet intents in `LegacyRegistryData.PACKETS` as migration metadata.
+
+Intent mapping used by scaffold:
+| Legacy ID | Intent Key | Flow |
+|---:|---|---|
+| 1 | `brew_prepared` | `SERVERBOUND` |
+| 2 | `particles` | `CLIENTBOUND` |
+| 3 | `cam_pos` | `CLIENTBOUND` |
+| 4 | `item_update` | `SERVERBOUND` |
+| 5 | `player_style` | `CLIENTBOUND` |
+| 6 | `player_sync` | `CLIENTBOUND` |
+| 7 | `push_target` | `CLIENTBOUND` |
+| 8 | `sound` | `CLIENTBOUND` |
+| 9 | `spell_prepared` | `SERVERBOUND` |
+| 10 | `clear_fall_damage` | `SERVERBOUND` |
+| 11 | `sync_entity_size` | `CLIENTBOUND` |
+| 12 | `sync_markup_book` | `SERVERBOUND` |
+| 13 | `extended_player_sync` | `CLIENTBOUND` |
+| 14 | `howl` | `SERVERBOUND` |
+| 15 | `extended_villager_sync` | `CLIENTBOUND` |
+| 16 | `select_player_ability` | `SERVERBOUND` |
+| 17 | `extended_entity_request_sync_to_client` | `SERVERBOUND` |
+| 18 | `partial_extended_player_sync` | `CLIENTBOUND` |
+| 19 | `set_client_player_facing` | `CLIENTBOUND` |
+
 ## GUI IDs
 Sources:
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/common/CommonProxy.java`
