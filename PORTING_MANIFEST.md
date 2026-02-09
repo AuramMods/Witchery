@@ -1078,9 +1078,9 @@ Current scaffold behavior:
 - Validates packet receive direction against legacy flow metadata and logs mismatches.
 - Represents all legacy packet intents in `LegacyRegistryData.PACKETS` as migration metadata.
 - Adds codec-backed payload + handler scaffolding for high-priority sync packets:
-  - `player_sync` -> `(UUID playerId, int syncRevision)`
-  - `extended_player_sync` -> `(UUID playerId, boolean initialized, int syncRevision)`
-  - `partial_extended_player_sync` -> `(UUID playerId, int syncRevision)`
+  - `player_sync` -> `(UUID playerId, int syncRevision, CompoundTag playerData)`
+  - `extended_player_sync` -> `(UUID playerId, boolean initialized, int syncRevision, CompoundTag playerData)`
+  - `partial_extended_player_sync` -> `(UUID playerId, int syncRevision, CompoundTag playerData)`
 - Adds codec-backed payload + handler scaffolding for additional interaction packets:
   - `item_update` -> `(int slotIndex, int damageValue, int pageIndex)` (serverbound, aligned to legacy packet shape)
   - `sync_entity_size` -> `(int entityId, float width, float height)` (clientbound)
@@ -1098,7 +1098,7 @@ Current scaffold behavior:
   - `howl` (serverbound)
 - Adds first functional clientbound behavior hooks:
   - `particles` now dispatches to client packet bridge with legacy `ParticleEffect`/`SoundEffect` id mapping, effect-count scaling, and colored spell particle support.
-  - `player_sync`, `extended_player_sync`, and `partial_extended_player_sync` now dispatch to client packet bridge and apply staged capability sync fields (`syncRevision`, `initialized`) for target players.
+  - `player_sync`, `extended_player_sync`, and `partial_extended_player_sync` now dispatch to client packet bridge and hydrate staged capability sync fields from serialized `WitcheryPlayerData` snapshots, including stale-revision guards + persistent-tag mirrors.
   - `player_style` now dispatches to client packet bridge to apply staged style sync to target players by username.
   - `sound` now dispatches to client packet bridge to resolve legacy/modern ids and play local scaffold sound.
   - `push_target` now dispatches to client packet bridge to apply motion vectors to client entities.
@@ -1109,7 +1109,7 @@ Current scaffold behavior:
   - `clear_fall_damage` now clears sender fall distance.
   - `item_update` now mutates inventory stack NBT `CurrentPage` with legacy slot/damage validation.
   - `sync_markup_book` now mutates inventory stack NBT `pageStack` using string-list payload data.
-  - `item_update`, `spell_prepared`, `sync_markup_book`, and `howl` still stage data into `WitcheryPlayerData`, bump sync revision, and emit `player_sync`.
+  - `item_update`, `spell_prepared`, `sync_markup_book`, and `howl` still stage data into `WitcheryPlayerData`, bump sync revision, and emit `player_sync` with serialized capability snapshot payload.
   - `spell_prepared` + `howl` also mirror minimal state into sender persistent tags for migration visibility.
 
 Intent mapping used by scaffold:

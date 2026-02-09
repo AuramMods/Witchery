@@ -123,21 +123,21 @@ public final class WitcheryNetwork {
     public static void sendExtendedPlayerSync(ServerPlayer player, WitcheryPlayerData data) {
         CHANNEL.send(
                 PacketDistributor.PLAYER.with(() -> player),
-                new ExtendedPlayerSyncPacket(player.getUUID(), data.isInitialized(), data.getSyncRevision())
+                new ExtendedPlayerSyncPacket(player.getUUID(), data.isInitialized(), data.getSyncRevision(), createPlayerDataPayload(data))
         );
     }
 
     public static void sendPartialExtendedPlayerSync(ServerPlayer player, WitcheryPlayerData data) {
         CHANNEL.send(
                 PacketDistributor.PLAYER.with(() -> player),
-                new PartialExtendedPlayerSyncPacket(player.getUUID(), data.getSyncRevision())
+                new PartialExtendedPlayerSyncPacket(player.getUUID(), data.getSyncRevision(), createPlayerDataPayload(data))
         );
     }
 
     public static void sendPlayerSync(ServerPlayer player, WitcheryPlayerData data) {
         CHANNEL.send(
                 PacketDistributor.PLAYER.with(() -> player),
-                new PlayerSyncPacket(player.getUUID(), data.getSyncRevision())
+                new PlayerSyncPacket(player.getUUID(), data.getSyncRevision(), createPlayerDataPayload(data))
         );
     }
 
@@ -724,6 +724,15 @@ public final class WitcheryNetwork {
         return key.toLowerCase(Locale.ROOT);
     }
 
+    private static CompoundTag createPlayerDataPayload(WitcheryPlayerData data) {
+        return data.serializeNBT();
+    }
+
+    private static CompoundTag readPlayerDataPayload(FriendlyByteBuf buffer) {
+        CompoundTag payload = buffer.readNbt();
+        return payload == null ? new CompoundTag() : payload;
+    }
+
     private record PacketBinding(LegacyRegistryData.LegacyPacketIntent intent, Supplier<Object> factory) {
     }
 
@@ -846,20 +855,25 @@ public final class WitcheryNetwork {
         }
     }
 
-    public record PlayerSyncPacket(UUID playerId, int syncRevision) {
+    public record PlayerSyncPacket(UUID playerId, int syncRevision, CompoundTag playerData) {
         private static final UUID PLACEHOLDER_PLAYER = new UUID(0L, 0L);
 
+        public PlayerSyncPacket {
+            playerData = playerData == null ? new CompoundTag() : playerData.copy();
+        }
+
         public static PlayerSyncPacket placeholder() {
-            return new PlayerSyncPacket(PLACEHOLDER_PLAYER, 0);
+            return new PlayerSyncPacket(PLACEHOLDER_PLAYER, 0, new CompoundTag());
         }
 
         public static void encode(PlayerSyncPacket message, FriendlyByteBuf buffer) {
-            buffer.writeUUID(message.playerId);
-            buffer.writeVarInt(message.syncRevision);
+            buffer.writeUUID(message.playerId());
+            buffer.writeVarInt(message.syncRevision());
+            buffer.writeNbt(message.playerData());
         }
 
         public static PlayerSyncPacket decode(FriendlyByteBuf buffer) {
-            return new PlayerSyncPacket(buffer.readUUID(), buffer.readVarInt());
+            return new PlayerSyncPacket(buffer.readUUID(), buffer.readVarInt(), readPlayerDataPayload(buffer));
         }
     }
 
@@ -992,21 +1006,26 @@ public final class WitcheryNetwork {
         }
     }
 
-    public record ExtendedPlayerSyncPacket(UUID playerId, boolean initialized, int syncRevision) {
+    public record ExtendedPlayerSyncPacket(UUID playerId, boolean initialized, int syncRevision, CompoundTag playerData) {
         private static final UUID PLACEHOLDER_PLAYER = new UUID(0L, 0L);
 
+        public ExtendedPlayerSyncPacket {
+            playerData = playerData == null ? new CompoundTag() : playerData.copy();
+        }
+
         public static ExtendedPlayerSyncPacket placeholder() {
-            return new ExtendedPlayerSyncPacket(PLACEHOLDER_PLAYER, false, 0);
+            return new ExtendedPlayerSyncPacket(PLACEHOLDER_PLAYER, false, 0, new CompoundTag());
         }
 
         public static void encode(ExtendedPlayerSyncPacket message, FriendlyByteBuf buffer) {
-            buffer.writeUUID(message.playerId);
-            buffer.writeBoolean(message.initialized);
-            buffer.writeVarInt(message.syncRevision);
+            buffer.writeUUID(message.playerId());
+            buffer.writeBoolean(message.initialized());
+            buffer.writeVarInt(message.syncRevision());
+            buffer.writeNbt(message.playerData());
         }
 
         public static ExtendedPlayerSyncPacket decode(FriendlyByteBuf buffer) {
-            return new ExtendedPlayerSyncPacket(buffer.readUUID(), buffer.readBoolean(), buffer.readVarInt());
+            return new ExtendedPlayerSyncPacket(buffer.readUUID(), buffer.readBoolean(), buffer.readVarInt(), readPlayerDataPayload(buffer));
         }
     }
 
@@ -1032,20 +1051,25 @@ public final class WitcheryNetwork {
     public record ExtendedEntityRequestSyncToClientPacket() {
     }
 
-    public record PartialExtendedPlayerSyncPacket(UUID playerId, int syncRevision) {
+    public record PartialExtendedPlayerSyncPacket(UUID playerId, int syncRevision, CompoundTag playerData) {
         private static final UUID PLACEHOLDER_PLAYER = new UUID(0L, 0L);
 
+        public PartialExtendedPlayerSyncPacket {
+            playerData = playerData == null ? new CompoundTag() : playerData.copy();
+        }
+
         public static PartialExtendedPlayerSyncPacket placeholder() {
-            return new PartialExtendedPlayerSyncPacket(PLACEHOLDER_PLAYER, 0);
+            return new PartialExtendedPlayerSyncPacket(PLACEHOLDER_PLAYER, 0, new CompoundTag());
         }
 
         public static void encode(PartialExtendedPlayerSyncPacket message, FriendlyByteBuf buffer) {
-            buffer.writeUUID(message.playerId);
-            buffer.writeVarInt(message.syncRevision);
+            buffer.writeUUID(message.playerId());
+            buffer.writeVarInt(message.syncRevision());
+            buffer.writeNbt(message.playerData());
         }
 
         public static PartialExtendedPlayerSyncPacket decode(FriendlyByteBuf buffer) {
-            return new PartialExtendedPlayerSyncPacket(buffer.readUUID(), buffer.readVarInt());
+            return new PartialExtendedPlayerSyncPacket(buffer.readUUID(), buffer.readVarInt(), readPlayerDataPayload(buffer));
         }
     }
 

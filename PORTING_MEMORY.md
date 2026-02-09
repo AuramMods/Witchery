@@ -33,9 +33,9 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
   - legacy packet intents (`19`) are represented in `LegacyRegistryData.PACKETS` with `legacyId`, normalized key, and flow (`CLIENTBOUND`/`SERVERBOUND`).
   - transport now uses typed packet stubs (one per legacy intent key) with direction mismatch warnings.
   - codec-backed payload/handler scaffolding is now implemented for:
-    - `player_sync` (`playerId`, `syncRevision`)
-    - `extended_player_sync` (`playerId`, `initialized`, `syncRevision`)
-    - `partial_extended_player_sync` (`playerId`, `syncRevision`)
+    - `player_sync` (`playerId`, `syncRevision`, serialized `WitcheryPlayerData` snapshot)
+    - `extended_player_sync` (`playerId`, `initialized`, `syncRevision`, serialized `WitcheryPlayerData` snapshot)
+    - `partial_extended_player_sync` (`playerId`, `syncRevision`, serialized `WitcheryPlayerData` snapshot)
     - `item_update` (`slotIndex`, `damageValue`, `pageIndex`) (aligned to legacy packet shape)
     - `sync_entity_size` (`entityId`, `width`, `height`)
     - `set_client_player_facing` (`yaw`, `pitch`)
@@ -53,9 +53,9 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
     - new file `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/client/packet/WitcheryClientPacketHandlers.java`.
     - `particles` now uses legacy ordinal mapping for `ParticleEffect` + `SoundEffect`, scales particle count using legacy width rules, and supports colored spell particles.
     - `player_sync`, `extended_player_sync`, and `partial_extended_player_sync` now apply incoming sync state client-side:
-      - merges `syncRevision` into `WitcheryPlayerData` capability using monotonic merge logic.
-      - applies `initialized` for `extended_player_sync`.
-      - mirrors sync revision/initialized into client persistent tags for staged visibility.
+      - hydrates `WitcheryPlayerData` from serialized sync snapshots (`CompoundTag`) sent with each sync packet.
+      - drops stale/out-of-order sync packets using revision checks on both client persistent tags and capability data.
+      - mirrors sync/style state (`syncRevision`, `initialized`, `grotesqueTicks`, `nightmareLevel`, `ghost`) into client persistent tags for staged visibility and renderer compatibility.
     - `player_style` now applies staged style data to target player capability + persistent tags on client by username lookup.
     - `sound` now resolves legacy/modern sound ids and plays client-local scaffold audio with legacy volume/pitch defaults.
     - `push_target`, `set_client_player_facing`, and `sync_entity_size` now run first-pass client behavior hooks (motion, rotation, staged size metadata).
@@ -64,7 +64,7 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
     - `clear_fall_damage` clears sender `fallDistance`.
     - `item_update` now mutates real inventory stack page state via legacy key `CurrentPage` (with slot + damage validation).
     - `sync_markup_book` now mutates real inventory stack page-list state via legacy key `pageStack`.
-    - `item_update`, `spell_prepared`, `sync_markup_book`, and `howl` still stage sync state into `WitcheryPlayerData`, bump revision, and push `player_sync`.
+    - `item_update`, `spell_prepared`, `sync_markup_book`, and `howl` still stage sync state into `WitcheryPlayerData`, bump revision, and push `player_sync` (now including serialized capability snapshot payload).
     - `spell_prepared` and `howl` also write minimal persistent tags on the sender for migration visibility.
 - Phase 3 dimension scaffolding is now initialized:
   - new file `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/world/WitcheryDimensions.java`.
@@ -105,7 +105,7 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Near-term look-ahead queue:
   - replace temporary mirror right-click routing with rite-completion activation hooks (portal collision path is now scaffolded).
   - replace current `cam_pos` persistent-tag staging with an explicit client camera-mode state object (`PlayerRender` replacement scaffold).
-  - expand sync payload coverage so client capability applies more than revision/initialized as packet groups deepen.
+  - add targeted round-trip validation for sync snapshot payloads (`login`, `clone`, `item_update`, `spell_prepared`, `sync_markup_book`, `howl`) in both singleplayer and dedicated-server sessions.
   - keep migrating high-priority `ExtendedPlayer` groups into `WitcheryPlayerData` (combat/state/progression slices) before depth pass.
 
 ## Phase 1 Completed

@@ -5,6 +5,7 @@ import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.network.WitcheryNetwork;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -151,15 +152,15 @@ public final class WitcheryClientPacketHandlers {
     }
 
     public static void handlePlayerSync(WitcheryNetwork.PlayerSyncPacket message) {
-        applyClientSyncRevision(message.playerId(), message.syncRevision(), null);
+        applyClientSyncData(message.playerId(), message.syncRevision(), null, message.playerData());
     }
 
     public static void handleExtendedPlayerSync(WitcheryNetwork.ExtendedPlayerSyncPacket message) {
-        applyClientSyncRevision(message.playerId(), message.syncRevision(), message.initialized());
+        applyClientSyncData(message.playerId(), message.syncRevision(), message.initialized(), message.playerData());
     }
 
     public static void handlePartialExtendedPlayerSync(WitcheryNetwork.PartialExtendedPlayerSyncPacket message) {
-        applyClientSyncRevision(message.playerId(), message.syncRevision(), null);
+        applyClientSyncData(message.playerId(), message.syncRevision(), null, message.playerData());
     }
 
     public static void handlePushTarget(WitcheryNetwork.PushTargetPacket message) {
@@ -250,7 +251,7 @@ public final class WitcheryClientPacketHandlers {
         return null;
     }
 
-    private static void applyClientSyncRevision(UUID playerId, int syncRevision, Boolean initialized) {
+    private static void applyClientSyncData(UUID playerId, int syncRevision, Boolean initialized, CompoundTag playerData) {
         Minecraft minecraft = Minecraft.getInstance();
         ClientLevel level = minecraft.level;
         Player target = null;
@@ -267,17 +268,45 @@ public final class WitcheryClientPacketHandlers {
             Witchery.LOGGER.debug("Client sync packet target '{}' not found in current level", playerId);
             return;
         }
+        final Player resolvedTarget = target;
 
-        target.getPersistentData().putInt(KEY_CLIENT_SYNC_REVISION, syncRevision);
-        if (initialized != null) {
-            target.getPersistentData().putBoolean(KEY_CLIENT_SYNC_INITIALIZED, initialized);
+        int currentRevision = resolvedTarget.getPersistentData().getInt(KEY_CLIENT_SYNC_REVISION);
+        if (syncRevision < currentRevision) {
+            Witchery.LOGGER.debug(
+                    "Ignoring stale client sync packet for '{}' revision={} current={}",
+                    playerId,
+                    syncRevision,
+                    currentRevision
+            );
+            return;
         }
 
-        WitcheryPlayerDataProvider.get(target).ifPresent(data -> {
+        resolvedTarget.getPersistentData().putInt(KEY_CLIENT_SYNC_REVISION, syncRevision);
+        if (initialized != null) {
+            resolvedTarget.getPersistentData().putBoolean(KEY_CLIENT_SYNC_INITIALIZED, initialized);
+        }
+
+        WitcheryPlayerDataProvider.get(resolvedTarget).ifPresent(data -> {
+            if (syncRevision < data.getSyncRevision()) {
+                return;
+            }
+
+            if (playerData != null && !playerData.isEmpty()) {
+                data.deserializeNBT(playerData.copy());
+            }
             data.mergeSyncRevision(syncRevision);
             if (initialized != null) {
                 data.setInitialized(initialized);
             }
+
+            if (data.getGrotesqueTicks() > 0) {
+                resolvedTarget.getPersistentData().putInt(KEY_LEGACY_GROTESQUE, data.getGrotesqueTicks());
+            } else {
+                resolvedTarget.getPersistentData().remove(KEY_LEGACY_GROTESQUE);
+            }
+            resolvedTarget.getPersistentData().putInt(KEY_CLIENT_NIGHTMARE_LEVEL, data.getNightmareLevel());
+            resolvedTarget.getPersistentData().putBoolean(KEY_CLIENT_GHOST, data.isGhost());
+            resolvedTarget.getPersistentData().putBoolean(KEY_CLIENT_SYNC_INITIALIZED, data.isInitialized());
         });
     }
 

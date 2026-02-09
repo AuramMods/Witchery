@@ -69,9 +69,9 @@
     - added normalized packet-intent inventory for all 19 legacy pipeline messages with legacy ID + direction metadata.
     - replaced generic intent transport with typed no-payload packet stubs per legacy message intent, each registered on the channel with direction validation warnings.
     - implemented codec-backed scaffold payloads + handlers for high-priority sync intents:
-      - `player_sync` (uuid + sync revision)
-      - `extended_player_sync` (uuid + initialized + sync revision)
-      - `partial_extended_player_sync` (uuid + sync revision)
+      - `player_sync` (uuid + sync revision + serialized `WitcheryPlayerData` snapshot)
+      - `extended_player_sync` (uuid + initialized + sync revision + serialized `WitcheryPlayerData` snapshot)
+      - `partial_extended_player_sync` (uuid + sync revision + serialized `WitcheryPlayerData` snapshot)
     - expanded codec-backed payloads + handlers for additional high-impact intents:
       - `item_update` (slot index + item damage + page index, aligned to legacy packet shape)
       - `sync_entity_size` (entity id + width + height)
@@ -88,7 +88,7 @@
       - `clear_fall_damage` and `howl` now use explicit no-payload codec records + dedicated handlers.
     - clientbound packet handlers now include first functional client behavior:
       - `particles` now routes through a client packet bridge with legacy-aware `ParticleEffect`/`SoundEffect` id mapping, old-style effect count scaling, and colored spell particle support.
-      - `player_sync`, `extended_player_sync`, and `partial_extended_player_sync` now apply incoming sync state on client (capability revision/initialized merge + mirrored persistent tags).
+      - `player_sync`, `extended_player_sync`, and `partial_extended_player_sync` now apply incoming sync state on client with stale-revision guards and serialized `WitcheryPlayerData` snapshot hydration (plus mirrored persistent tags).
       - `player_style` now resolves target players client-side by username and applies staged style fields to capability + persistent tags.
       - `sound` now resolves and plays mapped client sounds (with legacy default volume/pitch behavior).
       - `push_target` now applies client-side motion vectors to the target entity.
@@ -174,7 +174,7 @@
     - applies stack NBT mutations for item/book sync intents (`CurrentPage`, `pageStack`) and stages item/spell/book/howl updates into `WitcheryPlayerData`.
   - clientbound handler scaffold now applies minimal runtime behavior:
     - `particles` spawns local particles/sound via legacy-aware id mapping (`ParticleEffect`/`SoundEffect`) with effect-count scaling + colored spell support.
-    - `player_sync`, `extended_player_sync`, and `partial_extended_player_sync` now mutate staged client capability sync fields (`syncRevision`, `initialized`) for target players.
+    - `player_sync`, `extended_player_sync`, and `partial_extended_player_sync` now hydrate staged client capability fields from serialized `WitcheryPlayerData` snapshots with stale-revision guards (plus persistent-tag mirrors for sync/style state).
     - `player_style` applies staged style sync to target player capability/persistent tags on client.
     - `sound`, `push_target`, `set_client_player_facing`, `sync_entity_size`, and `cam_pos` now route through client packet handlers with first-pass scaffold behavior.
 - [~] GUI/menu stubs for all legacy GUI IDs.
@@ -214,10 +214,12 @@
 
 ## Immediate Next Actions
 - [x] Add placeholder bucket/block hookups for fluids (if needed for world interaction/testing).
-- [ ] Add placeholder block items for non-itemized legacy blocks where useful for QA visibility.
+- [x] Add placeholder block items for non-itemized legacy blocks where useful for QA visibility.
+  - `WitcheryItems.registerLegacyBlockItem(...)` now auto-registers block items for legacy block IDs that do not already map to dedicated item placeholders.
 - [x] Re-run client and validate `run/logs/latest.log` after the lowercase resource-location fix.
 - [x] Re-run client and validate `run/logs/latest.log` after `icedoor` parent-model and `wolftrap` geometry parity fixes.
 - [~] Continue replacing placeholder block models with old 1.7 equivalents (breadth pass before behavior depth).
+- [ ] Run targeted multiplayer/client validation for expanded player sync payload snapshots (`login`, `clone`, `item_update`, `spell_prepared`, `sync_markup_book`, `howl`).
   - completed crop-family stage model parity pass.
   - completed structural families (stairs/slabs/fence/fence-gate/pressure-plate/button) with 1.20.1 state models.
   - completed broad non-cube decorative/functional pass; remaining full-cube placeholders now narrowed to 14 likely-intentional cube blocks.
