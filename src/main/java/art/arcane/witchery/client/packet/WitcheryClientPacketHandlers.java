@@ -1,6 +1,7 @@
 package art.arcane.witchery.client.packet;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.client.WitcheryClientCameraState;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.network.WitcheryNetwork;
 import net.minecraft.client.Minecraft;
@@ -26,9 +27,6 @@ public final class WitcheryClientPacketHandlers {
     private static final String KEY_LEGACY_GROTESQUE = "witcheryGrotesque";
     private static final String KEY_CLIENT_NIGHTMARE_LEVEL = "WitcheryNightmareLevel";
     private static final String KEY_CLIENT_GHOST = "WitcheryGhostState";
-    private static final String KEY_CLIENT_CAM_ACTIVE = "WitcheryCameraActive";
-    private static final String KEY_CLIENT_CAM_ACTIVE_TICK = "WitcheryCameraActiveTick";
-    private static final String KEY_CLIENT_CAM_TARGET_ID = "WitcheryCameraTargetEntityId";
     private static final String KEY_CLIENT_SYNC_REVISION = "WitcherySyncRevision";
     private static final String KEY_CLIENT_SYNC_INITIALIZED = "WitcherySyncInitialized";
     private static final String KEY_CLIENT_SYNCED_WIDTH = "WitcherySyncedWidth";
@@ -114,26 +112,23 @@ public final class WitcheryClientPacketHandlers {
     public static void handleCamPos(WitcheryNetwork.CamPosPacket message) {
         Minecraft minecraft = Minecraft.getInstance();
         ClientLevel level = minecraft.level;
-        Player player = minecraft.player;
-        if (player == null) {
+        if (minecraft.player == null) {
             return;
         }
 
-        player.getPersistentData().putBoolean(KEY_CLIENT_CAM_ACTIVE, message.active());
         if (!message.active()) {
-            player.getPersistentData().remove(KEY_CLIENT_CAM_TARGET_ID);
+            WitcheryClientCameraState.markInactive();
             return;
         }
 
-        if (level != null) {
-            player.getPersistentData().putLong(KEY_CLIENT_CAM_ACTIVE_TICK, level.getGameTime());
-        }
+        long activeTick = level != null ? level.getGameTime() : Long.MIN_VALUE;
+        WitcheryClientCameraState.markActive(activeTick);
 
         if (!message.updatePosition()) {
             return;
         }
 
-        player.getPersistentData().putInt(KEY_CLIENT_CAM_TARGET_ID, message.entityId());
+        WitcheryClientCameraState.setTargetEntityId(message.entityId());
         if (level == null || message.entityId() <= 0) {
             return;
         }
