@@ -42,6 +42,13 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
     - `cam_pos` (`x`, `y`, `z`, `yaw`, `pitch`)
     - `push_target` (`entityId`, `velocityX`, `velocityY`, `velocityZ`)
     - `sound` (`soundId`, `x`, `y`, `z`, `volume`, `pitch`)
+    - `particles` (`particleEffectId`, `soundEffectId`, `x`, `y`, `z`, `width`, `height`, `color`)
+    - `player_style` (`username`, `grotesqueTicks`, `nightmare`, `ghost`, `creatureType`, `blood`, `playerSkin`)
+    - `spell_prepared` (`effectId`, `level`)
+    - `sync_markup_book` (`slot`, `pages`)
+  - explicit no-payload codec records + handlers now exist for:
+    - `clear_fall_damage`
+    - `howl`
 - Phase 3 dimension scaffolding is now initialized:
   - new file `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/world/WitcheryDimensions.java`.
   - keys are defined for `dream`, `torment`, `mirror` across `Level`, `LevelStem`, and `DimensionType`.
@@ -74,7 +81,7 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
   - `WitcheryClient` registers `LegacyPlaceholderScreen` for all placeholder menus so GUI IDs `0..8` all have routable client stubs.
 - Near-term look-ahead queue:
   - replace temporary right-click trigger routing with authentic Dream/Torment/Mirror trigger paths (portal collision + rite completion hooks).
-  - expand codec-backed packet coverage to remaining utility intents (`particles`, `player_style`, `spell_prepared`, `clear_fall_damage`, `sync_markup_book`, `howl`).
+  - start routing scaffold packet handlers into real gameplay behavior as systems migrate (particle emission, player-style sync, spell-prepared UI/state, markup-book sync).
   - migrate high-priority `ExtendedPlayer` fields into `WitcheryPlayerData` groups before behavior pass.
 
 ## Phase 1 Completed

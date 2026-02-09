@@ -14,6 +14,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -25,6 +26,10 @@ import java.util.function.Supplier;
 
 public final class WitcheryNetwork {
     private static final String PROTOCOL_VERSION = "1";
+    private static final int MAX_USERNAME_LENGTH = 64;
+    private static final int MAX_PLAYER_SKIN_LENGTH = 256;
+    private static final int MAX_MARKUP_PAGE_COUNT = 256;
+    private static final int MAX_MARKUP_PAGE_LENGTH = 2048;
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             ResourceLocation.parse(Witchery.MODID + ":main"),
             () -> PROTOCOL_VERSION,
@@ -55,19 +60,19 @@ public final class WitcheryNetwork {
 
         int discriminator = 0;
         discriminator = registerNoPayloadPacket(discriminator, "brew_prepared", BrewPreparedPacket.class, BrewPreparedPacket::new);
-        discriminator = registerNoPayloadPacket(discriminator, "particles", ParticlesPacket.class, ParticlesPacket::new);
+        discriminator = registerParticlesPacket(discriminator);
         discriminator = registerCamPosPacket(discriminator);
         discriminator = registerItemUpdatePacket(discriminator);
-        discriminator = registerNoPayloadPacket(discriminator, "player_style", PlayerStylePacket.class, PlayerStylePacket::new);
+        discriminator = registerPlayerStylePacket(discriminator);
         discriminator = registerPlayerSyncPacket(discriminator);
         discriminator = registerPushTargetPacket(discriminator);
         discriminator = registerSoundPacket(discriminator);
-        discriminator = registerNoPayloadPacket(discriminator, "spell_prepared", SpellPreparedPacket.class, SpellPreparedPacket::new);
-        discriminator = registerNoPayloadPacket(discriminator, "clear_fall_damage", ClearFallDamagePacket.class, ClearFallDamagePacket::new);
+        discriminator = registerSpellPreparedPacket(discriminator);
+        discriminator = registerClearFallDamagePacket(discriminator);
         discriminator = registerSyncEntitySizePacket(discriminator);
-        discriminator = registerNoPayloadPacket(discriminator, "sync_markup_book", SyncMarkupBookPacket.class, SyncMarkupBookPacket::new);
+        discriminator = registerSyncMarkupBookPacket(discriminator);
         discriminator = registerExtendedPlayerSyncPacket(discriminator);
-        discriminator = registerNoPayloadPacket(discriminator, "howl", HowlPacket.class, HowlPacket::new);
+        discriminator = registerHowlPacket(discriminator);
         discriminator = registerNoPayloadPacket(discriminator, "extended_villager_sync", ExtendedVillagerSyncPacket.class, ExtendedVillagerSyncPacket::new);
         discriminator = registerNoPayloadPacket(discriminator, "select_player_ability", SelectPlayerAbilityPacket.class, SelectPlayerAbilityPacket::new);
         discriminator = registerNoPayloadPacket(discriminator, "extended_entity_request_sync_to_client", ExtendedEntityRequestSyncToClientPacket.class, ExtendedEntityRequestSyncToClientPacket::new);
@@ -163,6 +168,55 @@ public final class WitcheryNetwork {
         );
     }
 
+    public static void sendParticles(
+            ServerPlayer player,
+            int particleEffectId,
+            int soundEffectId,
+            double x,
+            double y,
+            double z,
+            double width,
+            double height,
+            int color
+    ) {
+        CHANNEL.send(
+                PacketDistributor.PLAYER.with(() -> player),
+                new ParticlesPacket(particleEffectId, soundEffectId, x, y, z, width, height, color)
+        );
+    }
+
+    public static void sendPlayerStyle(
+            ServerPlayer player,
+            String username,
+            int grotesqueTicks,
+            int nightmare,
+            boolean ghost,
+            int creatureType,
+            int blood,
+            String playerSkin
+    ) {
+        CHANNEL.send(
+                PacketDistributor.PLAYER.with(() -> player),
+                new PlayerStylePacket(username, grotesqueTicks, nightmare, ghost, creatureType, blood, playerSkin)
+        );
+    }
+
+    public static void sendSpellPreparedToServer(int effectId, int level) {
+        CHANNEL.sendToServer(new SpellPreparedPacket(effectId, level));
+    }
+
+    public static void sendClearFallDamageToServer() {
+        CHANNEL.sendToServer(ClearFallDamagePacket.placeholder());
+    }
+
+    public static void sendSyncMarkupBookToServer(int slot, List<String> pages) {
+        CHANNEL.sendToServer(new SyncMarkupBookPacket(slot, pages == null ? List.of() : pages));
+    }
+
+    public static void sendHowlToServer() {
+        CHANNEL.sendToServer(HowlPacket.placeholder());
+    }
+
     private static PacketBinding packetBinding(String intentKey) {
         String normalized = normalize(intentKey);
         PacketBinding binding = PACKET_BINDINGS_BY_KEY.get(normalized);
@@ -201,6 +255,30 @@ public final class WitcheryNetwork {
                 ItemUpdatePacket::decode,
                 WitcheryNetwork::handleItemUpdatePacket,
                 ItemUpdatePacket::placeholder
+        );
+    }
+
+    private static int registerParticlesPacket(int discriminator) {
+        return registerPacketWithCodec(
+                discriminator,
+                "particles",
+                ParticlesPacket.class,
+                ParticlesPacket::encode,
+                ParticlesPacket::decode,
+                WitcheryNetwork::handleParticlesPacket,
+                ParticlesPacket::placeholder
+        );
+    }
+
+    private static int registerPlayerStylePacket(int discriminator) {
+        return registerPacketWithCodec(
+                discriminator,
+                "player_style",
+                PlayerStylePacket.class,
+                PlayerStylePacket::encode,
+                PlayerStylePacket::decode,
+                WitcheryNetwork::handlePlayerStylePacket,
+                PlayerStylePacket::placeholder
         );
     }
 
@@ -288,6 +366,54 @@ public final class WitcheryNetwork {
         );
     }
 
+    private static int registerSpellPreparedPacket(int discriminator) {
+        return registerPacketWithCodec(
+                discriminator,
+                "spell_prepared",
+                SpellPreparedPacket.class,
+                SpellPreparedPacket::encode,
+                SpellPreparedPacket::decode,
+                WitcheryNetwork::handleSpellPreparedPacket,
+                SpellPreparedPacket::placeholder
+        );
+    }
+
+    private static int registerClearFallDamagePacket(int discriminator) {
+        return registerPacketWithCodec(
+                discriminator,
+                "clear_fall_damage",
+                ClearFallDamagePacket.class,
+                ClearFallDamagePacket::encode,
+                ClearFallDamagePacket::decode,
+                WitcheryNetwork::handleClearFallDamagePacket,
+                ClearFallDamagePacket::placeholder
+        );
+    }
+
+    private static int registerSyncMarkupBookPacket(int discriminator) {
+        return registerPacketWithCodec(
+                discriminator,
+                "sync_markup_book",
+                SyncMarkupBookPacket.class,
+                SyncMarkupBookPacket::encode,
+                SyncMarkupBookPacket::decode,
+                WitcheryNetwork::handleSyncMarkupBookPacket,
+                SyncMarkupBookPacket::placeholder
+        );
+    }
+
+    private static int registerHowlPacket(int discriminator) {
+        return registerPacketWithCodec(
+                discriminator,
+                "howl",
+                HowlPacket.class,
+                HowlPacket::encode,
+                HowlPacket::decode,
+                WitcheryNetwork::handleHowlPacket,
+                HowlPacket::placeholder
+        );
+    }
+
     private static <T> int registerNoPayloadPacket(int discriminator, String key, Class<T> packetType, Supplier<T> factory) {
         return registerPacketWithCodec(
                 discriminator,
@@ -367,6 +493,35 @@ public final class WitcheryNetwork {
         );
     }
 
+    private static void handleParticlesPacket(ParticlesPacket message, NetworkEvent.Context context) {
+        Witchery.LOGGER.debug(
+                "Handled scaffold packet 'particles' particle={} sound={} x={} y={} z={} width={} height={} color={} direction={}",
+                message.particleEffectId(),
+                message.soundEffectId(),
+                message.x(),
+                message.y(),
+                message.z(),
+                message.width(),
+                message.height(),
+                message.color(),
+                context.getDirection()
+        );
+    }
+
+    private static void handlePlayerStylePacket(PlayerStylePacket message, NetworkEvent.Context context) {
+        Witchery.LOGGER.debug(
+                "Handled scaffold packet 'player_style' username={} grotesqueTicks={} nightmare={} ghost={} creatureType={} blood={} skin={} direction={}",
+                message.username(),
+                message.grotesqueTicks(),
+                message.nightmare(),
+                message.ghost(),
+                message.creatureType(),
+                message.blood(),
+                message.playerSkin(),
+                context.getDirection()
+        );
+    }
+
     private static void handleExtendedPlayerSyncPacket(ExtendedPlayerSyncPacket message, NetworkEvent.Context context) {
         Witchery.LOGGER.debug(
                 "Handled scaffold packet 'extended_player_sync' player={} initialized={} revision={} direction={}",
@@ -409,6 +564,28 @@ public final class WitcheryNetwork {
         );
     }
 
+    private static void handleSpellPreparedPacket(SpellPreparedPacket message, NetworkEvent.Context context) {
+        Witchery.LOGGER.debug(
+                "Handled scaffold packet 'spell_prepared' effectId={} level={} direction={}",
+                message.effectId(), message.level(), context.getDirection()
+        );
+    }
+
+    private static void handleClearFallDamagePacket(ClearFallDamagePacket message, NetworkEvent.Context context) {
+        Witchery.LOGGER.debug("Handled scaffold packet 'clear_fall_damage' direction={}", context.getDirection());
+    }
+
+    private static void handleSyncMarkupBookPacket(SyncMarkupBookPacket message, NetworkEvent.Context context) {
+        Witchery.LOGGER.debug(
+                "Handled scaffold packet 'sync_markup_book' slot={} pageCount={} direction={}",
+                message.slot(), message.pages().size(), context.getDirection()
+        );
+    }
+
+    private static void handleHowlPacket(HowlPacket message, NetworkEvent.Context context) {
+        Witchery.LOGGER.debug("Handled scaffold packet 'howl' direction={}", context.getDirection());
+    }
+
     private static boolean matchesDirection(LegacyRegistryData.LegacyPacketIntent intent, NetworkDirection direction) {
         return switch (intent.flow()) {
             case CLIENTBOUND -> direction == NetworkDirection.PLAY_TO_CLIENT;
@@ -426,7 +603,43 @@ public final class WitcheryNetwork {
     public record BrewPreparedPacket() {
     }
 
-    public record ParticlesPacket() {
+    public record ParticlesPacket(
+            int particleEffectId,
+            int soundEffectId,
+            double x,
+            double y,
+            double z,
+            double width,
+            double height,
+            int color
+    ) {
+        public static ParticlesPacket placeholder() {
+            return new ParticlesPacket(0, 0, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0xFFFFFF);
+        }
+
+        public static void encode(ParticlesPacket message, FriendlyByteBuf buffer) {
+            buffer.writeVarInt(message.particleEffectId());
+            buffer.writeVarInt(message.soundEffectId());
+            buffer.writeDouble(message.x());
+            buffer.writeDouble(message.y());
+            buffer.writeDouble(message.z());
+            buffer.writeDouble(message.width());
+            buffer.writeDouble(message.height());
+            buffer.writeInt(message.color());
+        }
+
+        public static ParticlesPacket decode(FriendlyByteBuf buffer) {
+            return new ParticlesPacket(
+                    buffer.readVarInt(),
+                    buffer.readVarInt(),
+                    buffer.readDouble(),
+                    buffer.readDouble(),
+                    buffer.readDouble(),
+                    buffer.readDouble(),
+                    buffer.readDouble(),
+                    buffer.readInt()
+            );
+        }
     }
 
     public record CamPosPacket(double x, double y, double z, float yaw, float pitch) {
@@ -469,7 +682,45 @@ public final class WitcheryNetwork {
         }
     }
 
-    public record PlayerStylePacket() {
+    public record PlayerStylePacket(
+            String username,
+            int grotesqueTicks,
+            int nightmare,
+            boolean ghost,
+            int creatureType,
+            int blood,
+            String playerSkin
+    ) {
+        public PlayerStylePacket {
+            username = username == null ? "" : username;
+            playerSkin = playerSkin == null ? "" : playerSkin;
+        }
+
+        public static PlayerStylePacket placeholder() {
+            return new PlayerStylePacket("", 0, 0, false, 0, 0, "");
+        }
+
+        public static void encode(PlayerStylePacket message, FriendlyByteBuf buffer) {
+            buffer.writeUtf(message.username(), MAX_USERNAME_LENGTH);
+            buffer.writeVarInt(message.grotesqueTicks());
+            buffer.writeVarInt(message.nightmare());
+            buffer.writeBoolean(message.ghost());
+            buffer.writeVarInt(message.creatureType());
+            buffer.writeVarInt(message.blood());
+            buffer.writeUtf(message.playerSkin(), MAX_PLAYER_SKIN_LENGTH);
+        }
+
+        public static PlayerStylePacket decode(FriendlyByteBuf buffer) {
+            return new PlayerStylePacket(
+                    buffer.readUtf(MAX_USERNAME_LENGTH),
+                    buffer.readVarInt(),
+                    buffer.readVarInt(),
+                    buffer.readBoolean(),
+                    buffer.readVarInt(),
+                    buffer.readVarInt(),
+                    buffer.readUtf(MAX_PLAYER_SKIN_LENGTH)
+            );
+        }
     }
 
     public record PlayerSyncPacket(UUID playerId, int syncRevision) {
@@ -539,10 +790,32 @@ public final class WitcheryNetwork {
         }
     }
 
-    public record SpellPreparedPacket() {
+    public record SpellPreparedPacket(int effectId, int level) {
+        public static SpellPreparedPacket placeholder() {
+            return new SpellPreparedPacket(0, 0);
+        }
+
+        public static void encode(SpellPreparedPacket message, FriendlyByteBuf buffer) {
+            buffer.writeVarInt(message.effectId());
+            buffer.writeVarInt(message.level());
+        }
+
+        public static SpellPreparedPacket decode(FriendlyByteBuf buffer) {
+            return new SpellPreparedPacket(buffer.readVarInt(), buffer.readVarInt());
+        }
     }
 
     public record ClearFallDamagePacket() {
+        public static ClearFallDamagePacket placeholder() {
+            return new ClearFallDamagePacket();
+        }
+
+        public static void encode(ClearFallDamagePacket message, FriendlyByteBuf buffer) {
+        }
+
+        public static ClearFallDamagePacket decode(FriendlyByteBuf buffer) {
+            return placeholder();
+        }
     }
 
     public record SyncEntitySizePacket(int entityId, float width, float height) {
@@ -561,7 +834,39 @@ public final class WitcheryNetwork {
         }
     }
 
-    public record SyncMarkupBookPacket() {
+    public record SyncMarkupBookPacket(int slot, List<String> pages) {
+        public SyncMarkupBookPacket {
+            if (pages == null || pages.isEmpty()) {
+                pages = List.of();
+            } else {
+                pages = List.copyOf(pages);
+            }
+        }
+
+        public static SyncMarkupBookPacket placeholder() {
+            return new SyncMarkupBookPacket(0, List.of());
+        }
+
+        public static void encode(SyncMarkupBookPacket message, FriendlyByteBuf buffer) {
+            int clampedCount = Math.min(message.pages().size(), MAX_MARKUP_PAGE_COUNT);
+            buffer.writeVarInt(message.slot());
+            buffer.writeVarInt(clampedCount);
+
+            for (int index = 0; index < clampedCount; index++) {
+                String page = message.pages().get(index);
+                buffer.writeUtf(page == null ? "" : page, MAX_MARKUP_PAGE_LENGTH);
+            }
+        }
+
+        public static SyncMarkupBookPacket decode(FriendlyByteBuf buffer) {
+            int slot = buffer.readVarInt();
+            int pageCount = Math.min(buffer.readVarInt(), MAX_MARKUP_PAGE_COUNT);
+            List<String> pages = new java.util.ArrayList<>(pageCount);
+            for (int index = 0; index < pageCount; index++) {
+                pages.add(buffer.readUtf(MAX_MARKUP_PAGE_LENGTH));
+            }
+            return new SyncMarkupBookPacket(slot, pages);
+        }
     }
 
     public record ExtendedPlayerSyncPacket(UUID playerId, boolean initialized, int syncRevision) {
@@ -583,6 +888,16 @@ public final class WitcheryNetwork {
     }
 
     public record HowlPacket() {
+        public static HowlPacket placeholder() {
+            return new HowlPacket();
+        }
+
+        public static void encode(HowlPacket message, FriendlyByteBuf buffer) {
+        }
+
+        public static HowlPacket decode(FriendlyByteBuf buffer) {
+            return placeholder();
+        }
     }
 
     public record ExtendedVillagerSyncPacket() {

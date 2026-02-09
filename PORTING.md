@@ -80,6 +80,12 @@
       - `cam_pos` (x/y/z + yaw/pitch)
       - `push_target` (entity id + velocity vector)
       - `sound` (sound id + x/y/z + volume/pitch)
+    - expanded codec-backed payloads + handlers for remaining utility intents:
+      - `particles` (particle id + sound id + x/y/z + width/height + color)
+      - `player_style` (username + grotesque/nightmare/ghost + creature type + blood + skin)
+      - `spell_prepared` (effect id + level)
+      - `sync_markup_book` (slot + pages list)
+      - `clear_fall_damage` and `howl` now use explicit no-payload codec records + dedicated handlers.
   - dimension migration skeleton now has stable resource-key anchors:
     - added `WitcheryDimensions` keys for `dream`, `torment`, and `mirror` across `Level`, `LevelStem`, and `DimensionType`.
     - added breadth-first datapack scaffold files for `dream`, `torment`, and `mirror` (`data/witchery/dimension_type/*.json` and `data/witchery/dimension/*.json`).
@@ -140,6 +146,9 @@
     - `player_sync`, `extended_player_sync`, `partial_extended_player_sync`
     - `item_update`, `sync_entity_size`, `set_client_player_facing`
     - `cam_pos`, `push_target`, `sound`
+    - `particles`, `player_style`, `spell_prepared`, `sync_markup_book`
+  - explicit no-payload codec records + handlers are now in place for:
+    - `clear_fall_damage`, `howl`
 - [~] GUI/menu stubs for all legacy GUI IDs.
   - menu intents now preserve legacy GUI ID mapping (`0..8`) plus key name in `LegacyRegistryData`.
   - all legacy menu keys now register typed `LegacyPlaceholderMenu` + `LegacyPlaceholderScreen` scaffolds.
@@ -204,6 +213,6 @@
     - this keeps every legacy GUI ID wired while container/screen behavior is still breadth-level placeholder logic.
   - look-ahead queue for next operations:
     - replace temporary right-click trigger routing with authentic portal/rite activation paths (portal collision, rite completion hooks).
-    - expand codec-backed packet scaffolding to remaining utility intents (`particles`, `player_style`, `spell_prepared`, `clear_fall_damage`, `sync_markup_book`, `howl`).
+    - start routing scaffold packet handlers into real gameplay effects as owning systems land (particle spawning, player style sync, spell prepared state, markup-book sync).
     - expand `WitcheryPlayerData` fields toward legacy `ExtendedPlayer` coverage (inventory/state/effect sync groups).
   - validation: `./gradlew compileJava` succeeds after this pass.

@@ -1073,7 +1073,7 @@ Implementation anchors:
 
 Current scaffold behavior:
 - Uses one `SimpleChannel` (`witchery:main`) with protocol version `"1"`.
-- Registers typed no-payload packet stubs for all legacy packet intents (`19` total).
+- Registers typed packet records for all legacy packet intents (`19` total).
 - Validates packet receive direction against legacy flow metadata and logs mismatches.
 - Represents all legacy packet intents in `LegacyRegistryData.PACKETS` as migration metadata.
 - Adds codec-backed payload + handler scaffolding for high-priority sync packets:
@@ -1087,6 +1087,14 @@ Current scaffold behavior:
   - `cam_pos` -> `(double x, double y, double z, float yaw, float pitch)` (clientbound)
   - `push_target` -> `(int entityId, double velocityX, double velocityY, double velocityZ)` (clientbound)
   - `sound` -> `(String soundId, double x, double y, double z, float volume, float pitch)` (clientbound)
+- Adds codec-backed payload + handler scaffolding for utility packets:
+  - `particles` -> `(int particleEffectId, int soundEffectId, double x, double y, double z, double width, double height, int color)` (clientbound)
+  - `player_style` -> `(String username, int grotesqueTicks, int nightmare, boolean ghost, int creatureType, int blood, String playerSkin)` (clientbound)
+  - `spell_prepared` -> `(int effectId, int level)` (serverbound)
+  - `sync_markup_book` -> `(int slot, List<String> pages)` (serverbound)
+- Keeps explicit no-payload codec records + handlers for:
+  - `clear_fall_damage` (serverbound)
+  - `howl` (serverbound)
 
 Intent mapping used by scaffold:
 | Legacy ID | Intent Key | Flow |
