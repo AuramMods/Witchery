@@ -1097,7 +1097,9 @@ Current scaffold behavior:
   - `howl` (serverbound)
 - Adds first functional serverbound behavior hooks:
   - `clear_fall_damage` now clears sender fall distance.
-  - `item_update`, `spell_prepared`, `sync_markup_book`, and `howl` now stage data into `WitcheryPlayerData`, bump sync revision, and emit `player_sync`.
+  - `item_update` now mutates inventory stack NBT `CurrentPage` with legacy slot/damage validation.
+  - `sync_markup_book` now mutates inventory stack NBT `pageStack` using string-list payload data.
+  - `item_update`, `spell_prepared`, `sync_markup_book`, and `howl` still stage data into `WitcheryPlayerData`, bump sync revision, and emit `player_sync`.
   - `spell_prepared` + `howl` also mirror minimal state into sender persistent tags for migration visibility.
 
 Intent mapping used by scaffold:

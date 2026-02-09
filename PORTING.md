@@ -88,7 +88,9 @@
       - `clear_fall_damage` and `howl` now use explicit no-payload codec records + dedicated handlers.
     - serverbound packet handlers now include first functional scaffold behavior:
       - `clear_fall_damage` now clears sender fall distance.
-      - `spell_prepared`, `item_update`, `sync_markup_book`, and `howl` now write scaffold state into `WitcheryPlayerData` (+ minimal persistent tags for spell/howl) and bump sync revision.
+      - `item_update` now applies real inventory stack page mutation (`CurrentPage`) with legacy-style slot/damage validation.
+      - `sync_markup_book` now applies real inventory stack page-list mutation (`pageStack` string list).
+      - `spell_prepared`, `item_update`, `sync_markup_book`, and `howl` also stage state into `WitcheryPlayerData` (+ minimal persistent tags for spell/howl) and bump sync revision.
   - dimension migration skeleton now has stable resource-key anchors:
     - added `WitcheryDimensions` keys for `dream`, `torment`, and `mirror` across `Level`, `LevelStem`, and `DimensionType`.
     - added breadth-first datapack scaffold files for `dream`, `torment`, and `mirror` (`data/witchery/dimension_type/*.json` and `data/witchery/dimension/*.json`).
@@ -160,7 +162,7 @@
     - `clear_fall_damage`, `howl`
   - serverbound handler scaffold now applies minimal runtime behavior:
     - clears fall distance for `clear_fall_damage`.
-    - stages item/spell/book/howl updates into `WitcheryPlayerData` for upcoming gameplay wiring.
+    - applies stack NBT mutations for item/book sync intents (`CurrentPage`, `pageStack`) and stages item/spell/book/howl updates into `WitcheryPlayerData`.
 - [~] GUI/menu stubs for all legacy GUI IDs.
   - menu intents now preserve legacy GUI ID mapping (`0..8`) plus key name in `LegacyRegistryData`.
   - all legacy menu keys now register typed `LegacyPlaceholderMenu` + `LegacyPlaceholderScreen` scaffolds.
@@ -227,6 +229,6 @@
     - this keeps every legacy GUI ID wired while container/screen behavior is still breadth-level placeholder logic.
   - look-ahead queue for next operations:
     - replace remaining temporary mirror right-click routing with rite-completion activation hooks.
-    - continue packet behavior wiring by implementing clientbound effects (`particles`, `player_style`) and replacing markup/item scaffold state writes with real item/container updates.
+    - continue packet behavior wiring by implementing clientbound effects (`particles`, `player_style`) and propagating client sync surfaces beyond debug logs.
     - expand `WitcheryPlayerData` fields toward legacy `ExtendedPlayer` coverage (inventory/state/effect sync groups).
   - validation: `./gradlew compileJava` succeeds after this pass.

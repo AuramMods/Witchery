@@ -51,7 +51,9 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
     - `howl`
   - serverbound packet handlers now apply first functional behavior:
     - `clear_fall_damage` clears sender `fallDistance`.
-    - `item_update`, `spell_prepared`, `sync_markup_book`, and `howl` write scaffold state into `WitcheryPlayerData`, bump revision, and push `player_sync`.
+    - `item_update` now mutates real inventory stack page state via legacy key `CurrentPage` (with slot + damage validation).
+    - `sync_markup_book` now mutates real inventory stack page-list state via legacy key `pageStack`.
+    - `item_update`, `spell_prepared`, `sync_markup_book`, and `howl` still stage sync state into `WitcheryPlayerData`, bump revision, and push `player_sync`.
     - `spell_prepared` and `howl` also write minimal persistent tags on the sender for migration visibility.
 - Phase 3 dimension scaffolding is now initialized:
   - new file `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/world/WitcheryDimensions.java`.
@@ -91,7 +93,7 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
   - `WitcheryClient` registers `LegacyPlaceholderScreen` for all placeholder menus so GUI IDs `0..8` all have routable client stubs.
 - Near-term look-ahead queue:
   - replace temporary mirror right-click routing with rite-completion activation hooks (portal collision path is now scaffolded).
-  - continue packet behavior wiring for clientbound flows (`particles`, `player_style`) and replace item/book scaffold writes with real item/container mutations.
+  - continue packet behavior wiring for clientbound flows (`particles`, `player_style`) and move those intents beyond debug-only handling.
   - keep migrating high-priority `ExtendedPlayer` groups into `WitcheryPlayerData` (combat/state/progression slices) before depth pass.
 
 ## Phase 1 Completed

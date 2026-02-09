@@ -4,9 +4,13 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.registry.LegacyRegistryData;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.NetworkRegistry;
@@ -34,6 +38,8 @@ public final class WitcheryNetwork {
     private static final String KEY_PERSISTENT_SPELL_EFFECT_ID = "WITCSpellEffectID";
     private static final String KEY_PERSISTENT_SPELL_EFFECT_LEVEL = "WITCSpellEffectEnhanced";
     private static final String KEY_PERSISTENT_LAST_HOWL_TICK = "WITCLastHowlTick";
+    private static final String KEY_STACK_CURRENT_PAGE = "CurrentPage";
+    private static final String KEY_STACK_PAGE_STACK = "pageStack";
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             ResourceLocation.parse(Witchery.MODID + ":main"),
             () -> PROTOCOL_VERSION,
@@ -498,7 +504,25 @@ public final class WitcheryNetwork {
                 return;
             }
 
+            ItemStack stack = sender.getInventory().getItem(slot);
+            if (stack.isEmpty()) {
+                Witchery.LOGGER.debug("Ignoring scaffold packet 'item_update' for empty slot={} player={}", slot, sender.getScoreboardName());
+                return;
+            }
+
+            if (stack.getDamageValue() != message.damageValue()) {
+                Witchery.LOGGER.debug(
+                        "Ignoring scaffold packet 'item_update' with damage mismatch slot={} expected={} actual={} player={}",
+                        slot, message.damageValue(), stack.getDamageValue(), sender.getScoreboardName()
+                );
+                return;
+            }
+
             int clampedPage = Math.max(0, Math.min(message.pageIndex(), 999));
+            stack.getOrCreateTag().putInt(KEY_STACK_CURRENT_PAGE, clampedPage);
+            sender.getInventory().setChanged();
+            sender.containerMenu.broadcastChanges();
+
             data.applyItemUpdate(slot, message.damageValue(), clampedPage);
             data.bumpSyncRevision();
             sendPlayerSync(sender, data);
@@ -609,6 +633,22 @@ public final class WitcheryNetwork {
                 Witchery.LOGGER.debug("Ignoring scaffold packet 'sync_markup_book' with out-of-range slot={} player={}", slot, sender.getScoreboardName());
                 return;
             }
+
+            ItemStack stack = sender.getInventory().getItem(slot);
+            if (stack.isEmpty()) {
+                Witchery.LOGGER.debug("Ignoring scaffold packet 'sync_markup_book' for empty slot={} player={}", slot, sender.getScoreboardName());
+                return;
+            }
+
+            ListTag pageStack = new ListTag();
+            for (String page : message.pages()) {
+                pageStack.add(StringTag.valueOf(page == null ? "" : page));
+            }
+
+            CompoundTag stackTag = stack.getOrCreateTag();
+            stackTag.put(KEY_STACK_PAGE_STACK, pageStack);
+            sender.getInventory().setChanged();
+            sender.containerMenu.broadcastChanges();
 
             data.applyMarkupBookSync(slot, message.pages());
             data.bumpSyncRevision();
