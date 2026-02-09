@@ -87,8 +87,13 @@
       - `sync_markup_book` (slot + pages list)
       - `clear_fall_damage` and `howl` now use explicit no-payload codec records + dedicated handlers.
     - clientbound packet handlers now include first functional client behavior:
-      - `particles` now routes through a client packet bridge and spawns scaffold particle/sound effects locally.
+      - `particles` now routes through a client packet bridge with legacy-aware `ParticleEffect`/`SoundEffect` id mapping, old-style effect count scaling, and colored spell particle support.
       - `player_style` now resolves target players client-side by username and applies staged style fields to capability + persistent tags.
+      - `sound` now resolves and plays mapped client sounds (with legacy default volume/pitch behavior).
+      - `push_target` now applies client-side motion vectors to the target entity.
+      - `set_client_player_facing` now applies client-side player rotation.
+      - `sync_entity_size` now stages synced width/height values on the client target entity for follow-up resize parity work.
+      - `cam_pos` now stages camera sync data and applies scaffold camera-entity transform updates.
     - serverbound packet handlers now include first functional scaffold behavior:
       - `clear_fall_damage` now clears sender fall distance.
       - `item_update` now applies real inventory stack page mutation (`CurrentPage`) with legacy-style slot/damage validation.
@@ -167,8 +172,9 @@
     - clears fall distance for `clear_fall_damage`.
     - applies stack NBT mutations for item/book sync intents (`CurrentPage`, `pageStack`) and stages item/spell/book/howl updates into `WitcheryPlayerData`.
   - clientbound handler scaffold now applies minimal runtime behavior:
-    - `particles` spawns local placeholder particles + sound through client packet bridge.
+    - `particles` spawns local particles/sound via legacy-aware id mapping (`ParticleEffect`/`SoundEffect`) with effect-count scaling + colored spell support.
     - `player_style` applies staged style sync to target player capability/persistent tags on client.
+    - `sound`, `push_target`, `set_client_player_facing`, `sync_entity_size`, and `cam_pos` now route through client packet handlers with first-pass scaffold behavior.
 - [~] GUI/menu stubs for all legacy GUI IDs.
   - menu intents now preserve legacy GUI ID mapping (`0..8`) plus key name in `LegacyRegistryData`.
   - all legacy menu keys now register typed `LegacyPlaceholderMenu` + `LegacyPlaceholderScreen` scaffolds.
@@ -235,6 +241,7 @@
     - this keeps every legacy GUI ID wired while container/screen behavior is still breadth-level placeholder logic.
   - look-ahead queue for next operations:
     - replace remaining temporary mirror right-click routing with rite-completion activation hooks.
-    - deepen client packet parity by mapping legacy particle/sound/style semantics more closely (ParticleEffect/SoundEffect and visual style impacts).
+    - align `cam_pos` payload/semantics with legacy `PacketCamPos` (`active/updatePosition/entityId`) and wire a modern `PlayerRender` replacement hook.
+    - deepen `player_sync`/`extended_player_sync` client apply behavior (actual capability merge on receive, not debug-only).
     - expand `WitcheryPlayerData` fields toward legacy `ExtendedPlayer` coverage (inventory/state/effect sync groups).
   - validation: `./gradlew compileJava` succeeds after this pass.

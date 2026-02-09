@@ -492,6 +492,7 @@ public final class WitcheryNetwork {
     }
 
     private static void handleCamPosPacket(CamPosPacket message, NetworkEvent.Context context) {
+        runClient(() -> art.arcane.witchery.client.packet.WitcheryClientPacketHandlers.handleCamPos(message));
         Witchery.LOGGER.debug(
                 "Handled scaffold packet 'cam_pos' x={} y={} z={} yaw={} pitch={} direction={}",
                 message.x(), message.y(), message.z(), message.yaw(), message.pitch(), context.getDirection()
@@ -581,6 +582,7 @@ public final class WitcheryNetwork {
     }
 
     private static void handleSyncEntitySizePacket(SyncEntitySizePacket message, NetworkEvent.Context context) {
+        runClient(() -> art.arcane.witchery.client.packet.WitcheryClientPacketHandlers.handleSyncEntitySize(message));
         Witchery.LOGGER.debug(
                 "Handled scaffold packet 'sync_entity_size' entityId={} width={} height={} direction={}",
                 message.entityId(), message.width(), message.height(), context.getDirection()
@@ -588,6 +590,7 @@ public final class WitcheryNetwork {
     }
 
     private static void handleSetClientPlayerFacingPacket(SetClientPlayerFacingPacket message, NetworkEvent.Context context) {
+        runClient(() -> art.arcane.witchery.client.packet.WitcheryClientPacketHandlers.handleSetClientPlayerFacing(message));
         Witchery.LOGGER.debug(
                 "Handled scaffold packet 'set_client_player_facing' yaw={} pitch={} direction={}",
                 message.yaw(), message.pitch(), context.getDirection()
@@ -595,6 +598,7 @@ public final class WitcheryNetwork {
     }
 
     private static void handlePushTargetPacket(PushTargetPacket message, NetworkEvent.Context context) {
+        runClient(() -> art.arcane.witchery.client.packet.WitcheryClientPacketHandlers.handlePushTarget(message));
         Witchery.LOGGER.debug(
                 "Handled scaffold packet 'push_target' entityId={} vx={} vy={} vz={} direction={}",
                 message.entityId(), message.velocityX(), message.velocityY(), message.velocityZ(), context.getDirection()
@@ -602,6 +606,7 @@ public final class WitcheryNetwork {
     }
 
     private static void handleSoundPacket(SoundPacket message, NetworkEvent.Context context) {
+        runClient(() -> art.arcane.witchery.client.packet.WitcheryClientPacketHandlers.handleSound(message));
         Witchery.LOGGER.debug(
                 "Handled scaffold packet 'sound' id={} x={} y={} z={} volume={} pitch={} direction={}",
                 message.soundId(), message.x(), message.y(), message.z(), message.volume(), message.pitch(), context.getDirection()
