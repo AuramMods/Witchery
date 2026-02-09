@@ -45,6 +45,14 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
   - `WitcheryPlayerDataProvider` is attached to players via `AttachCapabilitiesEvent<Entity>` and copied during `PlayerEvent.Clone`.
   - `WitcheryPlayerData` currently stores breadth placeholder state (`initialized`, `syncRevision`) with NBT serialization.
   - login hook sends network intent `extended_player_sync` to client using `WitcheryNetwork.sendTo(...)`.
+- GUI scaffold now preserves legacy GUI IDs explicitly:
+  - `LegacyRegistryData.MENUS` is now metadata (`legacyGuiId`, `key`) rather than plain strings.
+  - `WitcheryMenus` now registers typed `LegacyPlaceholderMenu` entries and lookup by both key + legacy GUI ID.
+  - `WitcheryClient` registers `LegacyPlaceholderScreen` for all placeholder menus so GUI IDs `0..8` all have routable client stubs.
+- Near-term look-ahead queue:
+  - add dimension datapack scaffolding (`dimension_type` + `dimension`) for `dream`, `torment`, `mirror`.
+  - split generic network intent transport into typed packet payload stubs per legacy packet intent.
+  - migrate high-priority `ExtendedPlayer` fields into `WitcheryPlayerData` groups before behavior pass.
 
 ## Phase 1 Completed
 - Phase 1 scaffolding is implemented and `./gradlew compileJava` passes.

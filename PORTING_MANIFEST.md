@@ -1117,6 +1117,36 @@ Sources:
 | 7 | `null` | `GuiScreenMarkupBook` |
 | 8 | `ContainerLeonardsUrn` | `ItemLeonardsUrnGUI` |
 
+### 1.20.1 GUI/Menu Scaffold (current)
+Implementation anchors:
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/LegacyRegistryData.java`
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryMenus.java`
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/menu/LegacyPlaceholderMenu.java`
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/client/screen/LegacyPlaceholderScreen.java`
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/client/WitcheryClient.java`
+
+Current scaffold behavior:
+- menu metadata now tracks both legacy GUI ID and normalized menu key (`LegacyMenuIntent`).
+- every legacy GUI entry (`0..8`) registers a dedicated `MenuType<LegacyPlaceholderMenu>` keyed to legacy menu name.
+- client setup registers `LegacyPlaceholderScreen` for every placeholder menu type.
+
+ID mapping used by scaffold:
+| Legacy GUI ID | Key | Placeholder Menu Type ID |
+|---:|---|---|
+| 0 | `altar` | `witchery:altar` |
+| 1 | `witchcraft_book` | `witchery:witchcraft_book` |
+| 2 | `witches_oven` | `witchery:witches_oven` |
+| 3 | `distillery` | `witchery:distillery` |
+| 4 | `spinning_wheel` | `witchery:spinning_wheel` |
+| 5 | `brew_bag` | `witchery:brew_bag` |
+| 6 | `biome_book` | `witchery:biome_book` |
+| 7 | `markup_book` | `witchery:markup_book` |
+| 8 | `leonards_urn` | `witchery:leonards_urn` |
+
+Status:
+- GUI routing surface is fully scaffolded for breadth.
+- real container slot logic and screen behavior parity are still TODO.
+
 ## Dimensions
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/Witchery.java`
 

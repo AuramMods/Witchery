@@ -371,16 +371,16 @@ public final class LegacyRegistryData {
         "potion.wolfsbane"
     );
 
-    public static final List<String> MENUS = List.of(
-        "altar",
-        "witchcraft_book",
-        "witches_oven",
-        "distillery",
-        "spinning_wheel",
-        "brew_bag",
-        "biome_book",
-        "markup_book",
-        "leonards_urn"
+    public static final List<LegacyMenuIntent> MENUS = List.of(
+            new LegacyMenuIntent(0, "altar"),
+            new LegacyMenuIntent(1, "witchcraft_book"),
+            new LegacyMenuIntent(2, "witches_oven"),
+            new LegacyMenuIntent(3, "distillery"),
+            new LegacyMenuIntent(4, "spinning_wheel"),
+            new LegacyMenuIntent(5, "brew_bag"),
+            new LegacyMenuIntent(6, "biome_book"),
+            new LegacyMenuIntent(7, "markup_book"),
+            new LegacyMenuIntent(8, "leonards_urn")
     );
 
     public static final List<String> BLOCK_ENTITIES = List.of(
@@ -446,5 +446,8 @@ public final class LegacyRegistryData {
     }
 
     public record LegacyPacketIntent(int legacyId, String key, PacketFlow flow) {
+    }
+
+    public record LegacyMenuIntent(int legacyGuiId, String key) {
     }
 }

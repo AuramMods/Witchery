@@ -78,6 +78,10 @@
     - added `WitcheryCapabilities` MOD-bus registration for `WitcheryPlayerData`.
     - added `WitcheryPlayerDataProvider` attachment + clone-copy wiring through `WitcheryEventHooks`.
     - added `WitcheryPlayerData` NBT-serializable payload shell (`initialized`, `syncRevision`) and login-time sync-intent send (`extended_player_sync`).
+  - GUI/menu scaffold now has explicit legacy GUI-ID parity anchors:
+    - migrated menu intent list from plain names to `(legacyGuiId, key)` metadata in `LegacyRegistryData`.
+    - replaced generic `ChestMenu` placeholders with per-key `LegacyPlaceholderMenu` registrations.
+    - added client-side `LegacyPlaceholderScreen` registration for every legacy menu type to keep all GUI IDs routable in 1.20.1.
 
 ## Phase Checklist
 
@@ -115,8 +119,9 @@
 ### Phase 3 - Systems Migration Skeleton (breadth)
 - [x] Network channel + packet stubs (all legacy packet message intents represented).
 - [~] GUI/menu stubs for all legacy GUI IDs.
-  - menu registry surface exists for all legacy GUI targets (`altar`, `witchcraft_book`, `witches_oven`, `distillery`, `spinning_wheel`, `brew_bag`, `biome_book`, `markup_book`, `leonards_urn`).
-  - most screens still use generic placeholder menu behavior.
+  - menu intents now preserve legacy GUI ID mapping (`0..8`) plus key name in `LegacyRegistryData`.
+  - all legacy menu keys now register typed `LegacyPlaceholderMenu` + `LegacyPlaceholderScreen` scaffolds.
+  - opening behavior and real container slot logic are still TODO.
 - [~] Dimension/key migration for Dream/Torment/Mirror.
   - resource keys are scaffolded (`Level`, `LevelStem`, `DimensionType`) for `dream`, `torment`, and `mirror`.
   - datapack level-stem + dimension-type content and runtime travel hooks are still TODO.
@@ -168,4 +173,12 @@
   - migrated legacy fluid-like block IDs to true fluid scaffolds:
     - `spiritflowing`, `hollowtears`, `disease`, `brew`, `brewgas`, `brewliquid` now use `LiquidBlock` tied to `WitcheryFluids` source fluids.
     - bucket items `bucketspirit`, `buckethollowtears`, `bucketbrew` now register as `BucketItem` instead of generic items.
+  - upgraded GUI placeholder surface to legacy-ID aware menu/screen scaffolds:
+    - `WitcheryMenus` now registers `LegacyPlaceholderMenu` entries keyed from `LegacyRegistryData.LegacyMenuIntent`.
+    - `WitcheryClient` now registers `LegacyPlaceholderScreen` for all menu placeholders.
+    - this keeps every legacy GUI ID wired while container/screen behavior is still breadth-level placeholder logic.
+  - look-ahead queue for next operations:
+    - dimension datapack scaffolding for `dream`/`torment`/`mirror` (`dimension_type` + `dimension` JSON, then travel hooks).
+    - replace generic network intent packet with typed payload stubs per legacy packet class.
+    - expand `WitcheryPlayerData` fields toward legacy `ExtendedPlayer` coverage (inventory/state/effect sync groups).
   - validation: `./gradlew compileJava` succeeds after this pass.
