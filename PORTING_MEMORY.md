@@ -31,7 +31,11 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
   - new file `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/network/WitcheryNetwork.java`.
   - channel bootstrap is called from `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/Witchery.java`.
   - legacy packet intents (`19`) are represented in `LegacyRegistryData.PACKETS` with `legacyId`, normalized key, and flow (`CLIENTBOUND`/`SERVERBOUND`).
-  - transport now uses typed no-payload packet stubs (one per legacy intent key) with direction mismatch warnings; per-packet payload behavior is still TODO.
+  - transport now uses typed packet stubs (one per legacy intent key) with direction mismatch warnings.
+  - codec-backed payload/handler scaffolding is now implemented for:
+    - `player_sync` (`playerId`, `syncRevision`)
+    - `extended_player_sync` (`playerId`, `initialized`, `syncRevision`)
+    - `partial_extended_player_sync` (`playerId`, `syncRevision`)
 - Phase 3 dimension scaffolding is now initialized:
   - new file `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/world/WitcheryDimensions.java`.
   - keys are defined for `dream`, `torment`, `mirror` across `Level`, `LevelStem`, and `DimensionType`.
@@ -51,14 +55,16 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
   - `WitcheryCapabilities` registers capability type `WitcheryPlayerData` on MOD bus.
   - `WitcheryPlayerDataProvider` is attached to players via `AttachCapabilitiesEvent<Entity>` and copied during `PlayerEvent.Clone`.
   - `WitcheryPlayerData` currently stores breadth placeholder state (`initialized`, `syncRevision`) with NBT serialization.
-  - login hook sends network intent `extended_player_sync` to client using `WitcheryNetwork.sendTo(...)`.
+  - event hooks now send typed sync packets instead of intent-only placeholders:
+    - login sends `extended_player_sync` + `player_sync`.
+    - clone sends `partial_extended_player_sync`.
 - GUI scaffold now preserves legacy GUI IDs explicitly:
   - `LegacyRegistryData.MENUS` is now metadata (`legacyGuiId`, `key`) rather than plain strings.
   - `WitcheryMenus` now registers typed `LegacyPlaceholderMenu` entries and lookup by both key + legacy GUI ID.
   - `WitcheryClient` registers `LegacyPlaceholderScreen` for all placeholder menus so GUI IDs `0..8` all have routable client stubs.
 - Near-term look-ahead queue:
   - add runtime travel hooks for Dream/Torment/Mirror (portal/routing + teleport triggers).
-  - add real payload codecs/handlers for high-priority typed packet stubs (`extended_player_sync`, `partial_extended_player_sync`, `player_sync`).
+  - expand codec-backed packet coverage to remaining high-impact intents (`item_update`, `sync_entity_size`, `set_client_player_facing`).
   - migrate high-priority `ExtendedPlayer` fields into `WitcheryPlayerData` groups before behavior pass.
 
 ## Phase 1 Completed

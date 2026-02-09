@@ -27,7 +27,8 @@ public final class WitcheryEventHooks {
             WitcheryPlayerDataProvider.get(serverPlayer).ifPresent(data -> {
                 data.setInitialized(true);
                 data.bumpSyncRevision();
-                WitcheryNetwork.sendTo(serverPlayer, "extended_player_sync");
+                WitcheryNetwork.sendExtendedPlayerSync(serverPlayer, data);
+                WitcheryNetwork.sendPlayerSync(serverPlayer, data);
             });
         }
     }
@@ -38,6 +39,11 @@ public final class WitcheryEventHooks {
         WitcheryPlayerDataProvider.get(event.getOriginal()).ifPresent(oldData ->
                 WitcheryPlayerDataProvider.get(event.getEntity()).ifPresent(newData -> newData.copyFrom(oldData)));
         event.getOriginal().invalidateCaps();
+
+        if (event.getEntity() instanceof ServerPlayer serverPlayer) {
+            WitcheryPlayerDataProvider.get(serverPlayer).ifPresent(data ->
+                    WitcheryNetwork.sendPartialExtendedPlayerSync(serverPlayer, data));
+        }
     }
 
     @SubscribeEvent

@@ -1076,6 +1076,10 @@ Current scaffold behavior:
 - Registers typed no-payload packet stubs for all legacy packet intents (`19` total).
 - Validates packet receive direction against legacy flow metadata and logs mismatches.
 - Represents all legacy packet intents in `LegacyRegistryData.PACKETS` as migration metadata.
+- Adds codec-backed payload + handler scaffolding for high-priority sync packets:
+  - `player_sync` -> `(UUID playerId, int syncRevision)`
+  - `extended_player_sync` -> `(UUID playerId, boolean initialized, int syncRevision)`
+  - `partial_extended_player_sync` -> `(UUID playerId, int syncRevision)`
 
 Intent mapping used by scaffold:
 | Legacy ID | Intent Key | Flow |
@@ -1188,7 +1192,7 @@ Placeholder Forge-bus hook points:
 - `LevelEvent.Load`: world/runtime registry bootstrap migration anchor.
 
 Status:
-- handlers now contain minimal breadth scaffolding for capability attach/copy and login sync-intent routing.
+- handlers now contain minimal breadth scaffolding for capability attach/copy and typed player-sync routing.
 - feature-specific behavior is deferred to depth migration passes.
 
 ## 1.20.1 Capability Scaffold (current)
@@ -1202,7 +1206,9 @@ Current scaffold behavior:
 - Registers `WitcheryPlayerData` capability type on MOD bus (`RegisterCapabilitiesEvent`).
 - Attaches player capability provider on `AttachCapabilitiesEvent<Entity>` when entity is a `Player`.
 - Copies capability data during `PlayerEvent.Clone`.
-- Sends `extended_player_sync` intent packet on player login as breadth sync placeholder.
+- Sends typed scaffold sync packets from event hooks:
+  - `PlayerLoggedInEvent` -> `extended_player_sync` + `player_sync`
+  - `PlayerEvent.Clone` -> `partial_extended_player_sync`
 
 Current placeholder data surface (`WitcheryPlayerData`):
 | Field | Type | Purpose |
