@@ -84,9 +84,10 @@
     - added `WitcheryDimensions` keys for `dream`, `torment`, and `mirror` across `Level`, `LevelStem`, and `DimensionType`.
     - added breadth-first datapack scaffold files for `dream`, `torment`, and `mirror` (`data/witchery/dimension_type/*.json` and `data/witchery/dimension/*.json`).
     - added runtime travel hook scaffold in `WitcheryDimensionTravelHooks` with route-resolution helpers and player routing entrypoint (`routePlayer`).
-    - final trigger integration (portal/rite hooks) and worldgen/provider tuning are still TODO.
+    - wired scaffold trigger sources through `PlayerInteractEvent.RightClickBlock` -> `WitcheryDimensionTravelHooks.routePlayer(...)` for portal/rite test blocks (`spiritportal`, `tormentportal`, `mirrorblock*`, `mirrorwall`, `circleglyphotherwhere`).
+    - authentic portal collision/rite behavior and worldgen/provider tuning are still TODO.
   - event-bus hook skeleton now has explicit Forge-side anchor points:
-    - added `WitcheryEventHooks` subscribers for entity capability attach, player login/clone, level load, entity travel-to-dimension, and player changed-dimension.
+    - added `WitcheryEventHooks` subscribers for entity capability attach, player login/clone, player right-click block, level load, entity travel-to-dimension, and player changed-dimension.
     - preserves breadth visibility for upcoming `ExtendedPlayer` replacement and world runtime bootstrap migration.
   - capability/data-attachment scaffold now exists for player data migration:
     - added `WitcheryCapabilities` MOD-bus registration for `WitcheryPlayerData`.
@@ -147,9 +148,10 @@
   - resource keys are scaffolded (`Level`, `LevelStem`, `DimensionType`) for `dream`, `torment`, and `mirror`.
   - datapack `dimension_type` + `dimension` JSON scaffolding is now present for all three dimensions.
   - runtime travel scaffold hooks are in place via `WitcheryDimensionTravelHooks` + `WitcheryEventHooks`.
-  - portal/rite trigger integration and final provider behavior parity are still TODO.
+  - scaffold trigger routing is wired through right-click block events for key portal/rite blocks.
+  - authentic portal/rite behavior and final provider behavior parity are still TODO.
 - [~] Event bus hooks migrated with no-op or minimal behavior.
-  - placeholder Forge-bus hooks are in place for attach-capabilities, player login/clone, entity travel-to-dimension, player changed-dimension, and level load events.
+  - placeholder Forge-bus hooks are in place for attach-capabilities, player login/clone, player right-click block, entity travel-to-dimension, player changed-dimension, and level load events.
   - attach-capabilities/player-clone hooks now include capability provider wiring for player data scaffold.
   - real handler routing/feature logic is still TODO.
 - [~] Capability/data attachment plan for replacing `ExtendedPlayer`/custom NBT patterns.
@@ -201,7 +203,7 @@
     - `WitcheryClient` now registers `LegacyPlaceholderScreen` for all menu placeholders.
     - this keeps every legacy GUI ID wired while container/screen behavior is still breadth-level placeholder logic.
   - look-ahead queue for next operations:
-    - wire real portal/rite trigger sources into `WitcheryDimensionTravelHooks.routePlayer(...)` (dream/torment/mirror).
+    - replace temporary right-click trigger routing with authentic portal/rite activation paths (portal collision, rite completion hooks).
     - expand codec-backed packet scaffolding to remaining utility intents (`particles`, `player_style`, `spell_prepared`, `clear_fall_damage`, `sync_markup_book`, `howl`).
     - expand `WitcheryPlayerData` fields toward legacy `ExtendedPlayer` coverage (inventory/state/effect sync groups).
   - validation: `./gradlew compileJava` succeeds after this pass.

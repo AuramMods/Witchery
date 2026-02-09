@@ -1,22 +1,46 @@
 package art.arcane.witchery.world;
 
 import art.arcane.witchery.Witchery;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Locale;
 import java.util.Optional;
 
 public final class WitcheryDimensionTravelHooks {
+    private static final Map<String, TravelTrigger> BLOCK_TRIGGER_MAP = new LinkedHashMap<>();
+
+    static {
+        BLOCK_TRIGGER_MAP.put("spiritportal", TravelTrigger.DREAM_PORTAL);
+        BLOCK_TRIGGER_MAP.put("tormentportal", TravelTrigger.TORMENT_PORTAL);
+        BLOCK_TRIGGER_MAP.put("mirrorblock", TravelTrigger.MIRROR_RITE);
+        BLOCK_TRIGGER_MAP.put("mirrorblock2", TravelTrigger.MIRROR_RITE);
+        BLOCK_TRIGGER_MAP.put("mirrorwall", TravelTrigger.MIRROR_RITE);
+        BLOCK_TRIGGER_MAP.put("circleglyphotherwhere", TravelTrigger.MIRROR_RITE);
+    }
+
     private WitcheryDimensionTravelHooks() {
     }
 
     public static boolean isWitcheryDimension(ResourceKey<Level> levelKey) {
         return WitcheryDimensions.levels().contains(levelKey);
+    }
+
+    public static Optional<TravelTrigger> resolveTriggerFromBlock(BlockState state) {
+        ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        if (!Witchery.MODID.equals(blockId.getNamespace())) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(BLOCK_TRIGGER_MAP.get(blockId.getPath()));
     }
 
     public static Optional<ResourceKey<Level>> resolveTarget(ResourceKey<Level> currentLevel, TravelTrigger trigger) {

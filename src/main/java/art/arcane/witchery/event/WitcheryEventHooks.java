@@ -4,11 +4,14 @@ import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.world.WitcheryDimensionTravelHooks;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -58,6 +61,34 @@ public final class WitcheryEventHooks {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
             WitcheryDimensionTravelHooks.onPlayerChangedDimension(serverPlayer, event.getFrom(), event.getTo());
         }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        if (event.getLevel().isClientSide()) {
+            return;
+        }
+
+        if (event.getHand() != InteractionHand.MAIN_HAND) {
+            return;
+        }
+
+        if (!(event.getEntity() instanceof ServerPlayer serverPlayer)) {
+            return;
+        }
+
+        // Scaffold activation gesture for portal/rite trigger testing.
+        if (!serverPlayer.isShiftKeyDown()) {
+            return;
+        }
+
+        WitcheryDimensionTravelHooks.resolveTriggerFromBlock(event.getLevel().getBlockState(event.getPos()))
+                .ifPresent(trigger -> {
+                    if (WitcheryDimensionTravelHooks.routePlayer(serverPlayer, trigger)) {
+                        event.setCanceled(true);
+                        event.setCancellationResult(InteractionResult.SUCCESS);
+                    }
+                });
     }
 
     @SubscribeEvent
