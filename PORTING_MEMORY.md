@@ -31,11 +31,18 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
   - new file `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/network/WitcheryNetwork.java`.
   - channel bootstrap is called from `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/Witchery.java`.
   - legacy packet intents (`19`) are represented in `LegacyRegistryData.PACKETS` with `legacyId`, normalized key, and flow (`CLIENTBOUND`/`SERVERBOUND`).
-  - current transport is a generic no-op intent packet scaffold with direction mismatch warnings; individual payload behavior is still TODO.
+  - transport now uses typed no-payload packet stubs (one per legacy intent key) with direction mismatch warnings; per-packet payload behavior is still TODO.
 - Phase 3 dimension scaffolding is now initialized:
   - new file `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/world/WitcheryDimensions.java`.
   - keys are defined for `dream`, `torment`, `mirror` across `Level`, `LevelStem`, and `DimensionType`.
-  - this is key-only scaffolding; datapack dimension JSON + travel/event wiring still needs migration.
+  - datapack scaffolding now exists for all three dimensions:
+    - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/data/witchery/dimension_type/dream.json`
+    - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/data/witchery/dimension_type/torment.json`
+    - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/data/witchery/dimension_type/mirror.json`
+    - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/data/witchery/dimension/dream.json`
+    - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/data/witchery/dimension/torment.json`
+    - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/data/witchery/dimension/mirror.json`
+  - travel/event/provider behavior migration is still TODO.
 - Phase 3 event skeleton now has no-op Forge hooks:
   - new file `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/event/WitcheryEventHooks.java`.
   - placeholder handlers exist for `AttachCapabilitiesEvent<Entity>`, `PlayerLoggedInEvent`, `PlayerEvent.Clone`, and `LevelEvent.Load`.
@@ -50,8 +57,8 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
   - `WitcheryMenus` now registers typed `LegacyPlaceholderMenu` entries and lookup by both key + legacy GUI ID.
   - `WitcheryClient` registers `LegacyPlaceholderScreen` for all placeholder menus so GUI IDs `0..8` all have routable client stubs.
 - Near-term look-ahead queue:
-  - add dimension datapack scaffolding (`dimension_type` + `dimension`) for `dream`, `torment`, `mirror`.
-  - split generic network intent transport into typed packet payload stubs per legacy packet intent.
+  - add runtime travel hooks for Dream/Torment/Mirror (portal/routing + teleport triggers).
+  - add real payload codecs/handlers for high-priority typed packet stubs (`extended_player_sync`, `partial_extended_player_sync`, `player_sync`).
   - migrate high-priority `ExtendedPlayer` fields into `WitcheryPlayerData` groups before behavior pass.
 
 ## Phase 1 Completed

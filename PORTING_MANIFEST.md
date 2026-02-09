@@ -1073,8 +1073,8 @@ Implementation anchors:
 
 Current scaffold behavior:
 - Uses one `SimpleChannel` (`witchery:main`) with protocol version `"1"`.
-- Registers a generic `LegacyIntentPacket` no-op transport for breadth scaffolding.
-- Validates received packet intent key + expected direction and logs warnings for mismatches.
+- Registers typed no-payload packet stubs for all legacy packet intents (`19` total).
+- Validates packet receive direction against legacy flow metadata and logs mismatches.
 - Represents all legacy packet intents in `LegacyRegistryData.PACKETS` as migration metadata.
 
 Intent mapping used by scaffold:
@@ -1164,8 +1164,17 @@ Implementation anchor:
 | Torment | `witchery:torment` | `witchery:torment` | `witchery:torment` |
 | Mirror | `witchery:mirror` | `witchery:mirror` | `witchery:mirror` |
 
+### 1.20.1 Dimension Datapack Scaffold (current)
+Implementation anchors:
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/data/witchery/dimension_type/dream.json`
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/data/witchery/dimension_type/torment.json`
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/data/witchery/dimension_type/mirror.json`
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/data/witchery/dimension/dream.json`
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/data/witchery/dimension/torment.json`
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/data/witchery/dimension/mirror.json`
+
 Status:
-- resource-key scaffolding only (no datapack `dimension_type` / `dimension` JSON yet).
+- resource keys and breadth datapack scaffold are now present for Dream/Torment/Mirror.
 - travel/teleport behavior migration from legacy providers is still TODO.
 
 ## 1.20.1 Event Hook Scaffold (current)

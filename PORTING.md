@@ -67,10 +67,11 @@
   - network skeleton scaffolding now mirrors legacy packet surface:
     - added `WitcheryNetwork` `SimpleChannel` bootstrap and registration from mod init path.
     - added normalized packet-intent inventory for all 19 legacy pipeline messages with legacy ID + direction metadata.
-    - added no-op intent packet handler scaffold with direction validation warnings (behavior implementation deferred to depth pass).
+    - replaced generic intent transport with typed no-payload packet stubs per legacy message intent, each registered on the channel with direction validation warnings.
   - dimension migration skeleton now has stable resource-key anchors:
     - added `WitcheryDimensions` keys for `dream`, `torment`, and `mirror` across `Level`, `LevelStem`, and `DimensionType`.
-    - datapack/worldgen wiring is still pending for actual dimension registration/teleport flow.
+    - added breadth-first datapack scaffold files for `dream`, `torment`, and `mirror` (`data/witchery/dimension_type/*.json` and `data/witchery/dimension/*.json`).
+    - runtime travel/teleport behavior and final worldgen tuning are still TODO.
   - event-bus hook skeleton now has explicit Forge-side anchor points:
     - added `WitcheryEventHooks` no-op subscribers for entity capability attach, player login/clone, and level load.
     - preserves breadth visibility for upcoming `ExtendedPlayer` replacement and world runtime bootstrap migration.
@@ -118,13 +119,15 @@
 
 ### Phase 3 - Systems Migration Skeleton (breadth)
 - [x] Network channel + packet stubs (all legacy packet message intents represented).
+  - typed no-payload packet records are now registered for all `19` legacy intents.
 - [~] GUI/menu stubs for all legacy GUI IDs.
   - menu intents now preserve legacy GUI ID mapping (`0..8`) plus key name in `LegacyRegistryData`.
   - all legacy menu keys now register typed `LegacyPlaceholderMenu` + `LegacyPlaceholderScreen` scaffolds.
   - opening behavior and real container slot logic are still TODO.
 - [~] Dimension/key migration for Dream/Torment/Mirror.
   - resource keys are scaffolded (`Level`, `LevelStem`, `DimensionType`) for `dream`, `torment`, and `mirror`.
-  - datapack level-stem + dimension-type content and runtime travel hooks are still TODO.
+  - datapack `dimension_type` + `dimension` JSON scaffolding is now present for all three dimensions.
+  - runtime travel hooks and final provider behavior parity are still TODO.
 - [~] Event bus hooks migrated with no-op or minimal behavior.
   - placeholder Forge-bus hooks are in place for attach-capabilities, player login/clone, and level load events.
   - attach-capabilities/player-clone hooks now include capability provider wiring for player data scaffold.
@@ -178,7 +181,7 @@
     - `WitcheryClient` now registers `LegacyPlaceholderScreen` for all menu placeholders.
     - this keeps every legacy GUI ID wired while container/screen behavior is still breadth-level placeholder logic.
   - look-ahead queue for next operations:
-    - dimension datapack scaffolding for `dream`/`torment`/`mirror` (`dimension_type` + `dimension` JSON, then travel hooks).
-    - replace generic network intent packet with typed payload stubs per legacy packet class.
+    - add runtime travel hooks and migration anchors for Dream/Torment/Mirror teleport flow.
+    - implement real payload codecs/handlers for high-priority typed packet stubs (`extended_player_sync`, `partial_extended_player_sync`, `player_sync`).
     - expand `WitcheryPlayerData` fields toward legacy `ExtendedPlayer` coverage (inventory/state/effect sync groups).
   - validation: `./gradlew compileJava` succeeds after this pass.
