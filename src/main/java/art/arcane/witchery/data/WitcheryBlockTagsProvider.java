@@ -17,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class WitcheryBlockTagsProvider extends BlockTagsProvider {
     public static final TagKey<Block> LEGACY_BLOCKS =
-            TagKey.create(Registries.BLOCK, new ResourceLocation(Witchery.MODID, "legacy_blocks"));
+            TagKey.create(Registries.BLOCK, ResourceLocation.parse(Witchery.MODID + ":legacy_blocks"));
 
     public WitcheryBlockTagsProvider(PackOutput output,
                                      CompletableFuture<HolderLookup.Provider> lookupProvider,
