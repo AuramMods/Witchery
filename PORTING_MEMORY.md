@@ -46,10 +46,13 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
     - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/data/witchery/dimension/dream.json`
     - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/data/witchery/dimension/torment.json`
     - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/data/witchery/dimension/mirror.json`
-  - travel/event/provider behavior migration is still TODO.
+  - runtime travel hook scaffold now exists in `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/world/WitcheryDimensionTravelHooks.java`:
+    - route resolver for `dream`, `torment`, `mirror` plus return-to-overworld behavior.
+    - `routePlayer(...)` teleport entrypoint for future portal/rite trigger wiring.
+  - portal/rite trigger integration and provider parity behavior are still TODO.
 - Phase 3 event skeleton now has no-op Forge hooks:
   - new file `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/event/WitcheryEventHooks.java`.
-  - placeholder handlers exist for `AttachCapabilitiesEvent<Entity>`, `PlayerLoggedInEvent`, `PlayerEvent.Clone`, and `LevelEvent.Load`.
+  - placeholder handlers now exist for `AttachCapabilitiesEvent<Entity>`, `PlayerLoggedInEvent`, `PlayerEvent.Clone`, `EntityTravelToDimensionEvent`, `PlayerChangedDimensionEvent`, and `LevelEvent.Load`.
   - this creates stable attachment points for capability/data migration and runtime bootstrap without adding behavior yet.
 - Capability scaffold now exists for `ExtendedPlayer` replacement:
   - `WitcheryCapabilities` registers capability type `WitcheryPlayerData` on MOD bus.
@@ -63,7 +66,7 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
   - `WitcheryMenus` now registers typed `LegacyPlaceholderMenu` entries and lookup by both key + legacy GUI ID.
   - `WitcheryClient` registers `LegacyPlaceholderScreen` for all placeholder menus so GUI IDs `0..8` all have routable client stubs.
 - Near-term look-ahead queue:
-  - add runtime travel hooks for Dream/Torment/Mirror (portal/routing + teleport triggers).
+  - wire real Dream/Torment/Mirror trigger sources (portal blocks/rites) into `WitcheryDimensionTravelHooks.routePlayer(...)`.
   - expand codec-backed packet coverage to remaining high-impact intents (`item_update`, `sync_entity_size`, `set_client_player_facing`).
   - migrate high-priority `ExtendedPlayer` fields into `WitcheryPlayerData` groups before behavior pass.
 

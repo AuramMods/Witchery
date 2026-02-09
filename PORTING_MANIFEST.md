@@ -1177,9 +1177,19 @@ Implementation anchors:
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/data/witchery/dimension/torment.json`
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/data/witchery/dimension/mirror.json`
 
+### 1.20.1 Dimension Travel Hook Scaffold (current)
+Implementation anchors:
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/world/WitcheryDimensionTravelHooks.java`
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/event/WitcheryEventHooks.java`
+
+Current scaffold behavior:
+- route-resolution helper maps Dream/Torment/Mirror triggers to destination dimension keys (with return-to-overworld fallback when already in route dimension).
+- `routePlayer(...)` provides a shared teleport entrypoint to move players to target dimension spawn points.
+- Forge event wiring observes both travel attempts and completed dimension transitions for Witchery dimensions.
+
 Status:
 - resource keys and breadth datapack scaffold are now present for Dream/Torment/Mirror.
-- travel/teleport behavior migration from legacy providers is still TODO.
+- runtime travel hook scaffolding now exists, but portal/rite trigger integration and provider behavior parity are still TODO.
 
 ## 1.20.1 Event Hook Scaffold (current)
 Implementation anchor:
@@ -1189,10 +1199,12 @@ Placeholder Forge-bus hook points:
 - `AttachCapabilitiesEvent<Entity>`: capability attachment migration anchor (`ExtendedPlayer` replacement path).
 - `PlayerEvent.PlayerLoggedInEvent`: player bootstrap/sync migration anchor.
 - `PlayerEvent.Clone`: persistent player data copy/migration anchor.
+- `EntityTravelToDimensionEvent`: cross-dimension route observation/migration anchor.
+- `PlayerEvent.PlayerChangedDimensionEvent`: post-travel sync/bootstrap anchor for dimension transitions.
 - `LevelEvent.Load`: world/runtime registry bootstrap migration anchor.
 
 Status:
-- handlers now contain minimal breadth scaffolding for capability attach/copy and typed player-sync routing.
+- handlers now contain minimal breadth scaffolding for capability attach/copy, typed player-sync routing, and dimension-travel observation.
 - feature-specific behavior is deferred to depth migration passes.
 
 ## 1.20.1 Capability Scaffold (current)
