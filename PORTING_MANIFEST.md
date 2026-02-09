@@ -1072,6 +1072,7 @@ Implementation anchors:
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/Witchery.java`
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/client/packet/WitcheryClientPacketHandlers.java`
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/client/WitcheryClientCameraState.java`
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/client/event/WitcheryClientCameraHooks.java`
 
 Current scaffold behavior:
 - Uses one `SimpleChannel` (`witchery:main`) with protocol version `"1"`.
@@ -1105,7 +1106,8 @@ Current scaffold behavior:
   - `push_target` now dispatches to client packet bridge to apply motion vectors to client entities.
   - `set_client_player_facing` now dispatches to client packet bridge to apply local player rotation.
   - `sync_entity_size` now dispatches to client packet bridge and stages width/height sync metadata on target entities.
-  - `cam_pos` now dispatches to client packet bridge with legacy semantics (`active`, `updatePosition`, `entityId`) and stages camera-active/target data in `WitcheryClientCameraState` while applying scaffold target-follow camera transform updates.
+  - `cam_pos` now dispatches to client packet bridge with legacy semantics (`active`, `updatePosition`, `entityId`) and stages camera-active/target data in `WitcheryClientCameraState`.
+  - `WitcheryClientCameraHooks` now consumes staged camera state each client tick and applies scaffold camera-entity override/reset behavior (`setCameraEntity(target)` while active, fallback to local player when inactive/invalid target).
 - Adds first functional serverbound behavior hooks:
   - `clear_fall_damage` now clears sender fall distance.
   - `item_update` now mutates inventory stack NBT `CurrentPage` with legacy slot/damage validation.

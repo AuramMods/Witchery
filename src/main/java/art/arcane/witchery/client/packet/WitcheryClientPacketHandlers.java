@@ -112,12 +112,16 @@ public final class WitcheryClientPacketHandlers {
     public static void handleCamPos(WitcheryNetwork.CamPosPacket message) {
         Minecraft minecraft = Minecraft.getInstance();
         ClientLevel level = minecraft.level;
-        if (minecraft.player == null) {
+        Player player = minecraft.player;
+        if (player == null) {
             return;
         }
 
         if (!message.active()) {
             WitcheryClientCameraState.markInactive();
+            if (minecraft.getCameraEntity() != player) {
+                minecraft.setCameraEntity(player);
+            }
             return;
         }
 
@@ -131,18 +135,6 @@ public final class WitcheryClientPacketHandlers {
         WitcheryClientCameraState.setTargetEntityId(message.entityId());
         if (level == null || message.entityId() <= 0) {
             return;
-        }
-
-        Entity target = level.getEntity(message.entityId());
-        if (target == null) {
-            return;
-        }
-
-        Entity cameraEntity = minecraft.getCameraEntity();
-        if (cameraEntity != null) {
-            cameraEntity.setPos(target.getX(), target.getY(), target.getZ());
-            cameraEntity.setYRot(target.getYRot());
-            cameraEntity.setXRot(target.getXRot());
         }
     }
 

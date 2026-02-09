@@ -94,7 +94,7 @@
       - `push_target` now applies client-side motion vectors to the target entity.
       - `set_client_player_facing` now applies client-side player rotation.
       - `sync_entity_size` now stages synced width/height values on the client target entity for follow-up resize parity work.
-      - `cam_pos` now follows legacy packet semantics (`active`, `updatePosition`, `entityId`) and stages camera-active/target state via explicit client camera state (`WitcheryClientCameraState`) while applying scaffold camera transforms when target updates are requested.
+      - `cam_pos` now follows legacy packet semantics (`active`, `updatePosition`, `entityId`) and stages camera-active/target state via explicit client camera state (`WitcheryClientCameraState`), with client tick hooks applying camera-entity overrides and reset fallback.
     - serverbound packet handlers now include first functional scaffold behavior:
       - `clear_fall_damage` now clears sender fall distance.
       - `item_update` now applies real inventory stack page mutation (`CurrentPage`) with legacy-style slot/damage validation.
@@ -177,7 +177,7 @@
     - `player_sync`, `extended_player_sync`, and `partial_extended_player_sync` now hydrate staged client capability fields from serialized `WitcheryPlayerData` snapshots with stale-revision guards (plus persistent-tag mirrors for sync/style state).
     - `player_style` applies staged style sync to target player capability/persistent tags on client.
     - `sound`, `push_target`, `set_client_player_facing`, and `sync_entity_size` now route through client packet handlers with first-pass scaffold behavior.
-    - `cam_pos` now routes through client packet handlers using `WitcheryClientCameraState` instead of temporary player persistent-tag staging.
+    - `cam_pos` now routes through client packet handlers using `WitcheryClientCameraState` plus `WitcheryClientCameraHooks` (client tick camera-entity override scaffold) instead of temporary player persistent-tag staging.
 - [~] GUI/menu stubs for all legacy GUI IDs.
   - menu intents now preserve legacy GUI ID mapping (`0..8`) plus key name in `LegacyRegistryData`.
   - all legacy menu keys now register typed `LegacyPlaceholderMenu` + `LegacyPlaceholderScreen` scaffolds.
@@ -246,7 +246,7 @@
     - this keeps every legacy GUI ID wired while container/screen behavior is still breadth-level placeholder logic.
   - look-ahead queue for next operations:
     - replace remaining temporary mirror right-click routing with rite-completion activation hooks.
-    - wire `WitcheryClientCameraState` into renderer/camera override hooks once `PlayerRender` replacement scaffolding is introduced.
+    - harden camera override lifecycle in `WitcheryClientCameraHooks` for edge cases (dimension swap, target despawn timeout, spectator transitions).
     - extend client sync handling beyond revision/initialized to include fuller staged groups as payload coverage grows (style/inventory/spell slices).
     - expand `WitcheryPlayerData` fields toward legacy `ExtendedPlayer` coverage (inventory/state/effect sync groups).
   - validation: `./gradlew compileJava` succeeds after this pass.
