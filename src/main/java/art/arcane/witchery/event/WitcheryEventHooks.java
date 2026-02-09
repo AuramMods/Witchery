@@ -15,6 +15,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.event.TickEvent;
 
 @Mod.EventBusSubscriber(modid = Witchery.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class WitcheryEventHooks {
@@ -74,6 +75,28 @@ public final class WitcheryEventHooks {
     }
 
     @SubscribeEvent
+    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) {
+            return;
+        }
+
+        if (event.player.level().isClientSide()) {
+            return;
+        }
+
+        if (!(event.player instanceof ServerPlayer serverPlayer)) {
+            return;
+        }
+
+        if (serverPlayer.isPassenger() || serverPlayer.isVehicle()) {
+            return;
+        }
+
+        WitcheryDimensionTravelHooks.resolvePortalCollisionTrigger(serverPlayer)
+                .ifPresent(trigger -> WitcheryDimensionTravelHooks.routePlayerFromPortalCollision(serverPlayer, trigger));
+    }
+
+    @SubscribeEvent
     public static void onPlayerRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         if (event.getLevel().isClientSide()) {
             return;
@@ -92,7 +115,7 @@ public final class WitcheryEventHooks {
             return;
         }
 
-        WitcheryDimensionTravelHooks.resolveTriggerFromBlock(event.getLevel().getBlockState(event.getPos()))
+        WitcheryDimensionTravelHooks.resolveRiteTriggerFromBlock(event.getLevel().getBlockState(event.getPos()))
                 .ifPresent(trigger -> {
                     if (WitcheryDimensionTravelHooks.routePlayer(serverPlayer, trigger)) {
                         event.setCanceled(true);

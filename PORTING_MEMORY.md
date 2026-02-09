@@ -65,12 +65,13 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
     - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/data/witchery/dimension/mirror.json`
   - runtime travel hook scaffold now exists in `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/world/WitcheryDimensionTravelHooks.java`:
     - route resolver for `dream`, `torment`, `mirror` plus return-to-overworld behavior.
-    - `routePlayer(...)` teleport entrypoint now wired to scaffold trigger sources via `PlayerInteractEvent.RightClickBlock` in `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/event/WitcheryEventHooks.java`.
-    - current scaffold trigger blocks: `spiritportal`, `tormentportal`, `mirrorblock`, `mirrorblock2`, `mirrorwall`, `circleglyphotherwhere`.
-  - authentic portal collision/rite activation and provider parity behavior are still TODO.
+    - portal collision trigger path now uses `PlayerTickEvent` + `resolvePortalCollisionTrigger(...)` for `spiritportal` and `tormentportal`.
+    - right-click trigger path is now limited to mirror-rite scaffolds: `mirrorblock`, `mirrorblock2`, `mirrorwall`, `circleglyphotherwhere`.
+    - portal collision routing includes persistent cooldown gating (`WITCLastPortalCollisionTick`) to avoid rapid retrigger loops.
+  - authentic rite-completion activation and provider parity behavior are still TODO.
 - Phase 3 event skeleton now has no-op Forge hooks:
   - new file `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/event/WitcheryEventHooks.java`.
-  - placeholder handlers now exist for `AttachCapabilitiesEvent<Entity>`, `PlayerLoggedInEvent`, `PlayerEvent.Clone`, `PlayerInteractEvent.RightClickBlock`, `EntityTravelToDimensionEvent`, `PlayerChangedDimensionEvent`, and `LevelEvent.Load`.
+  - placeholder handlers now exist for `AttachCapabilitiesEvent<Entity>`, `PlayerLoggedInEvent`, `PlayerEvent.Clone`, `TickEvent.PlayerTickEvent`, `PlayerInteractEvent.RightClickBlock`, `EntityTravelToDimensionEvent`, `PlayerChangedDimensionEvent`, and `LevelEvent.Load`.
   - this creates stable attachment points for capability/data migration and runtime bootstrap without adding behavior yet.
 - Capability scaffold now exists for `ExtendedPlayer` replacement:
   - `WitcheryCapabilities` registers capability type `WitcheryPlayerData` on MOD bus.
@@ -89,7 +90,7 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
   - `WitcheryMenus` now registers typed `LegacyPlaceholderMenu` entries and lookup by both key + legacy GUI ID.
   - `WitcheryClient` registers `LegacyPlaceholderScreen` for all placeholder menus so GUI IDs `0..8` all have routable client stubs.
 - Near-term look-ahead queue:
-  - replace temporary right-click trigger routing with authentic Dream/Torment/Mirror trigger paths (portal collision + rite completion hooks).
+  - replace temporary mirror right-click routing with rite-completion activation hooks (portal collision path is now scaffolded).
   - continue packet behavior wiring for clientbound flows (`particles`, `player_style`) and replace item/book scaffold writes with real item/container mutations.
   - keep migrating high-priority `ExtendedPlayer` groups into `WitcheryPlayerData` (combat/state/progression slices) before depth pass.
 

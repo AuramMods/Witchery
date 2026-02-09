@@ -1205,15 +1205,17 @@ Current scaffold behavior:
 - route-resolution helper maps Dream/Torment/Mirror triggers to destination dimension keys (with return-to-overworld fallback when already in route dimension).
 - `routePlayer(...)` provides a shared teleport entrypoint to move players to target dimension spawn points.
 - Forge event wiring observes both travel attempts and completed dimension transitions for Witchery dimensions.
-- server-side scaffold trigger wiring now routes shift-right-click interaction on key Witchery blocks into dimension travel:
+- portal collision trigger wiring now routes through server `PlayerTickEvent` checks:
   - `spiritportal` -> dream route
   - `tormentportal` -> torment route
+- portal collision routing is cooldown-gated via persistent player tags (`WITCLastPortalCollisionTick`, `WITCLastPortalCollisionTrigger`) to prevent rapid retriggers.
+- right-click scaffold trigger wiring is now focused on rite-like mirror blocks:
   - `mirrorblock`, `mirrorblock2`, `mirrorwall`, `circleglyphotherwhere` -> mirror route
 
 Status:
 - resource keys and breadth datapack scaffold are now present for Dream/Torment/Mirror.
-- runtime travel hook scaffolding and temporary trigger wiring are now present.
-- authentic portal collision/rite activation and provider behavior parity are still TODO.
+- runtime travel hook scaffolding and split trigger wiring (portal collision + mirror right-click) are now present.
+- authentic rite-completion activation and provider behavior parity are still TODO.
 
 ## 1.20.1 Event Hook Scaffold (current)
 Implementation anchor:
@@ -1223,7 +1225,8 @@ Placeholder Forge-bus hook points:
 - `AttachCapabilitiesEvent<Entity>`: capability attachment migration anchor (`ExtendedPlayer` replacement path).
 - `PlayerEvent.PlayerLoggedInEvent`: player bootstrap/sync migration anchor.
 - `PlayerEvent.Clone`: persistent player data copy/migration anchor.
-- `PlayerInteractEvent.RightClickBlock`: scaffold portal/rite trigger routing anchor.
+- `TickEvent.PlayerTickEvent`: scaffold portal collision routing anchor.
+- `PlayerInteractEvent.RightClickBlock`: scaffold mirror-rite trigger routing anchor.
 - `EntityTravelToDimensionEvent`: cross-dimension route observation/migration anchor.
 - `PlayerEvent.PlayerChangedDimensionEvent`: post-travel sync/bootstrap anchor for dimension transitions.
 - `LevelEvent.Load`: world/runtime registry bootstrap migration anchor.

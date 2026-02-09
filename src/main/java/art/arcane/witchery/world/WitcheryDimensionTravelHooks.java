@@ -1,7 +1,9 @@
 package art.arcane.witchery.world;
 
 import art.arcane.witchery.Witchery;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -15,17 +17,27 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 
 public final class WitcheryDimensionTravelHooks {
-    private static final Map<String, TravelTrigger> BLOCK_TRIGGER_MAP = new LinkedHashMap<>();
+    private static final Map<String, TravelTrigger> PORTAL_TRIGGER_MAP = new LinkedHashMap<>();
+    private static final Map<String, TravelTrigger> RITE_TRIGGER_MAP = new LinkedHashMap<>();
+    private static final Set<TravelTrigger> PORTAL_COLLISION_TRIGGERS = Set.of(
+            TravelTrigger.DREAM_PORTAL,
+            TravelTrigger.TORMENT_PORTAL
+    );
+    private static final String KEY_LAST_PORTAL_COLLISION_TICK = "WITCLastPortalCollisionTick";
+    private static final String KEY_LAST_PORTAL_COLLISION_TRIGGER = "WITCLastPortalCollisionTrigger";
+    private static final long PORTAL_COLLISION_COOLDOWN_TICKS = 40L;
 
     static {
-        BLOCK_TRIGGER_MAP.put("spiritportal", TravelTrigger.DREAM_PORTAL);
-        BLOCK_TRIGGER_MAP.put("tormentportal", TravelTrigger.TORMENT_PORTAL);
-        BLOCK_TRIGGER_MAP.put("mirrorblock", TravelTrigger.MIRROR_RITE);
-        BLOCK_TRIGGER_MAP.put("mirrorblock2", TravelTrigger.MIRROR_RITE);
-        BLOCK_TRIGGER_MAP.put("mirrorwall", TravelTrigger.MIRROR_RITE);
-        BLOCK_TRIGGER_MAP.put("circleglyphotherwhere", TravelTrigger.MIRROR_RITE);
+        PORTAL_TRIGGER_MAP.put("spiritportal", TravelTrigger.DREAM_PORTAL);
+        PORTAL_TRIGGER_MAP.put("tormentportal", TravelTrigger.TORMENT_PORTAL);
+
+        RITE_TRIGGER_MAP.put("mirrorblock", TravelTrigger.MIRROR_RITE);
+        RITE_TRIGGER_MAP.put("mirrorblock2", TravelTrigger.MIRROR_RITE);
+        RITE_TRIGGER_MAP.put("mirrorwall", TravelTrigger.MIRROR_RITE);
+        RITE_TRIGGER_MAP.put("circleglyphotherwhere", TravelTrigger.MIRROR_RITE);
     }
 
     private WitcheryDimensionTravelHooks() {
@@ -40,7 +52,55 @@ public final class WitcheryDimensionTravelHooks {
         if (!Witchery.MODID.equals(blockId.getNamespace())) {
             return Optional.empty();
         }
-        return Optional.ofNullable(BLOCK_TRIGGER_MAP.get(blockId.getPath()));
+        TravelTrigger trigger = PORTAL_TRIGGER_MAP.get(blockId.getPath());
+        if (trigger != null) {
+            return Optional.of(trigger);
+        }
+        return Optional.ofNullable(RITE_TRIGGER_MAP.get(blockId.getPath()));
+    }
+
+    public static Optional<TravelTrigger> resolveRiteTriggerFromBlock(BlockState state) {
+        ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        if (!Witchery.MODID.equals(blockId.getNamespace())) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(RITE_TRIGGER_MAP.get(blockId.getPath()));
+    }
+
+    public static Optional<TravelTrigger> resolvePortalCollisionTrigger(ServerPlayer player) {
+        BlockPos feetPos = player.blockPosition();
+        Optional<TravelTrigger> feetTrigger = resolvePortalCollisionTriggerFromPos(player.serverLevel(), feetPos);
+        if (feetTrigger.isPresent()) {
+            return feetTrigger;
+        }
+
+        BlockPos eyePos = BlockPos.containing(player.getX(), player.getEyeY(), player.getZ());
+        if (!eyePos.equals(feetPos)) {
+            return resolvePortalCollisionTriggerFromPos(player.serverLevel(), eyePos);
+        }
+
+        return Optional.empty();
+    }
+
+    public static boolean routePlayerFromPortalCollision(ServerPlayer player, TravelTrigger trigger) {
+        if (!PORTAL_COLLISION_TRIGGERS.contains(trigger)) {
+            return false;
+        }
+
+        CompoundTag persistent = player.getPersistentData();
+        long gameTime = player.serverLevel().getGameTime();
+        long lastPortalTick = persistent.getLong(KEY_LAST_PORTAL_COLLISION_TICK);
+        if (gameTime - lastPortalTick < PORTAL_COLLISION_COOLDOWN_TICKS) {
+            return false;
+        }
+
+        if (!routePlayer(player, trigger)) {
+            return false;
+        }
+
+        persistent.putLong(KEY_LAST_PORTAL_COLLISION_TICK, gameTime);
+        persistent.putString(KEY_LAST_PORTAL_COLLISION_TRIGGER, trigger.key());
+        return true;
     }
 
     public static Optional<ResourceKey<Level>> resolveTarget(ResourceKey<Level> currentLevel, TravelTrigger trigger) {
@@ -108,6 +168,11 @@ public final class WitcheryDimensionTravelHooks {
                 "Observed dimension transition player={} from={} to={}",
                 player.getGameProfile().getName(), dimensionId(from), dimensionId(to)
         );
+    }
+
+    private static Optional<TravelTrigger> resolvePortalCollisionTriggerFromPos(Level level, BlockPos pos) {
+        return resolveTriggerFromBlock(level.getBlockState(pos))
+                .filter(PORTAL_COLLISION_TRIGGERS::contains);
     }
 
     private static ResourceKey<Level> routeToOrReturn(ResourceKey<Level> currentLevel, ResourceKey<Level> routeLevel) {
