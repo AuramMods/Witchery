@@ -58,6 +58,12 @@
     - converted `spiritflowing`, `hollowtears`, `disease`, `brew`, `brewgas`, `brewliquid` from static placeholder blocks to `LiquidBlock` scaffolds backed by Forge fluid registrations.
     - wired legacy bucket items to Forge fluid buckets: `bucketspirit` -> `fluidspirit`, `buckethollowtears` -> `hollowtears`, `bucketbrew` -> `brew`.
     - added fluid-to-block/bucket mapping in `WitcheryFluids` so source/flowing fluids, blocks, and bucket items are linked for world interaction testing.
+  - minimal server data-generation scaffold is now present:
+    - added `GatherDataEvent` hook and providers for block tags, loot tables, and recipes.
+    - current providers are breadth-first placeholders (`legacy_blocks` tag, generic block self-drops, empty recipe migration stub).
+  - placeholder spawn-egg coverage added for entity registry breadth:
+    - all legacy entity placeholders now get generated `*_spawn_egg` items (via `WitcheryItems` + `WitcheryEntities` maps).
+    - spawn eggs are included in the creative-tab aggregate list for quick scaffolding QA.
 
 ## Phase Checklist
 
@@ -83,10 +89,11 @@
 
 ### Phase 2 - Data + Assets Skeleton (breadth)
 - [x] Add placeholder blockstates/models/lang entries for all registered blocks/items.
-- [ ] Add minimal data-gen providers (loot, recipes, tags).
-- [~] Add placeholder spawn egg / bucket items where needed.
+- [x] Add minimal data-gen providers (loot, recipes, tags).
+  - `WitcheryBlockTagsProvider` (`legacy_blocks`), `WitcheryLootTableProvider`/`WitcheryBlockLoot` (self-drop scaffolding), and `WitcheryRecipeProvider` stub are registered via `WitcheryDataGenerators`.
+- [x] Add placeholder spawn egg / bucket items where needed.
   - bucket scaffolding is wired for legacy fluid buckets (`bucketspirit`, `buckethollowtears`, `bucketbrew`).
-  - spawn eggs still pending.
+  - placeholder spawn eggs are generated from legacy entity IDs using the `*_spawn_egg` naming pattern.
 - [~] Ensure game boots with full registry surface present.
   - All static resource checks pass (no missing model parent/texture references).
   - Fresh client run verified: no Witchery model/texture bake errors after latest `icedoor`/`wolftrap` asset fixes.

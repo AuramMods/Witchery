@@ -1,6 +1,8 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.DoubleHighBlockItem;
@@ -8,6 +10,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraftforge.common.ForgeSpawnEggItem;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -24,10 +27,15 @@ public final class WitcheryItems {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, Witchery.MODID);
     public static final Map<String, RegistryObject<Item>> LEGACY_ITEMS = new LinkedHashMap<>();
     public static final Map<String, RegistryObject<Item>> LEGACY_BLOCK_ITEMS = new LinkedHashMap<>();
+    public static final Map<String, RegistryObject<Item>> LEGACY_SPAWN_EGGS = new LinkedHashMap<>();
 
     static {
         for (String legacyName : LegacyRegistryData.ITEMS) {
             registerLegacyItem(legacyName);
+        }
+
+        for (String legacyName : WitcheryEntities.all().keySet()) {
+            registerLegacySpawnEgg(legacyName);
         }
 
         for (String legacyName : LegacyRegistryData.BLOCKS) {
@@ -56,8 +64,9 @@ public final class WitcheryItems {
     }
 
     public static Collection<RegistryObject<Item>> allForCreativeTab() {
-        List<RegistryObject<Item>> combined = new ArrayList<>(LEGACY_ITEMS.size() + LEGACY_BLOCK_ITEMS.size());
+        List<RegistryObject<Item>> combined = new ArrayList<>(LEGACY_ITEMS.size() + LEGACY_BLOCK_ITEMS.size() + LEGACY_SPAWN_EGGS.size());
         combined.addAll(LEGACY_ITEMS.values());
+        combined.addAll(LEGACY_SPAWN_EGGS.values());
         combined.addAll(LEGACY_BLOCK_ITEMS.values());
         return Collections.unmodifiableList(combined);
     }
@@ -82,6 +91,26 @@ public final class WitcheryItems {
             case "bucketbrew" -> new BucketItem(WitcheryFluids.getRequiredSource("brew"), bucketProperties);
             default -> new Item(new Item.Properties());
         };
+    }
+
+    private static void registerLegacySpawnEgg(String legacyEntityName) {
+        String path = RegistryNameUtil.normalizePath(legacyEntityName);
+        String eggPath = path + "_spawn_egg";
+
+        if (LEGACY_ITEMS.containsKey(eggPath)
+                || LEGACY_BLOCK_ITEMS.containsKey(eggPath)
+                || LEGACY_SPAWN_EGGS.containsKey(eggPath)) {
+            return;
+        }
+
+        RegistryObject<EntityType<Zombie>> entityType = WitcheryEntities.all().get(path);
+        if (entityType == null) {
+            throw new IllegalStateException("Missing legacy entity placeholder for path: " + path);
+        }
+
+        RegistryObject<Item> egg = ITEMS.register(eggPath,
+                () -> new ForgeSpawnEggItem(entityType, 0x6E5A4E, 0xA4A29D, new Item.Properties()));
+        LEGACY_SPAWN_EGGS.put(eggPath, egg);
     }
 
     private static void registerLegacyBlockItem(String legacyName) {

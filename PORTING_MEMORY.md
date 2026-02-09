@@ -19,6 +19,14 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
   - `bucketspirit`, `buckethollowtears`, `bucketbrew` now register as `BucketItem` in `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryItems.java`.
 - `./gradlew compileJava` passes after this change (only existing deprecation warning remains for `ItemBlockRenderTypes.setRenderLayer`).
 - Guardrail: if any fluid ID is added/renamed, update `LEGACY_FLUID_CONFIGS` immediately or startup will fail fast with `Missing fluid config for legacy fluid`.
+- Minimal server data-generation pipeline now exists in `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/data`:
+  - `WitcheryDataGenerators` subscribes to `GatherDataEvent`.
+  - `WitcheryBlockTagsProvider` writes `witchery:legacy_blocks`.
+  - `WitcheryLootTableProvider` + `WitcheryBlockLoot` generate breadth-first self-drop tables for registered blocks with items.
+  - `WitcheryRecipeProvider` is intentionally empty for now (recipe migration deferred to depth pass).
+- Placeholder spawn eggs are now auto-generated in `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryItems.java`:
+  - one `ForgeSpawnEggItem` per legacy entity placeholder using `<normalized_entity_name>_spawn_egg`.
+  - spawn eggs are appended to `WitcheryItems.allForCreativeTab()` so QA can access them without manual commands.
 
 ## Phase 1 Completed
 - Phase 1 scaffolding is implemented and `./gradlew compileJava` passes.

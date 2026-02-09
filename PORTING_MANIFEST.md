@@ -673,6 +673,37 @@ Implementation anchors:
 | `brewliquid` | `witchery:brewliquid`, `witchery:flowing_brewliquid` | `witchery:brewliquid` (`LiquidBlock`) | _(none)_ |
 | `fluiddisease` | `witchery:fluiddisease`, `witchery:flowing_fluiddisease` | `witchery:disease` (`LiquidBlock`) | _(none)_ |
 
+## 1.20.1 Data Generation Scaffolding (current)
+Implementation anchors:
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/data/WitcheryDataGenerators.java`
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/data/WitcheryBlockTagsProvider.java`
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/data/WitcheryLootTableProvider.java`
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/data/WitcheryBlockLoot.java`
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/data/WitcheryRecipeProvider.java`
+
+Current provider coverage:
+- `GatherDataEvent` registration: server-side data providers only (breadth scaffold).
+- Tags: writes `witchery:legacy_blocks` containing all entries in `WitcheryBlocks.LEGACY_BLOCKS`.
+- Loot: generates self-drop loot tables for blocks that currently resolve to an item (`block.asItem() != AIR`).
+- Recipes: stub provider currently emits no recipes (planned depth-phase migration).
+
+## 1.20.1 Spawn Egg Scaffolding (current)
+Implementation anchor:
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryItems.java`
+
+Behavior:
+- generates one placeholder `ForgeSpawnEggItem` per legacy entity placeholder entry in `LegacyRegistryData.ENTITIES` (`55` total).
+- registry name pattern: `<normalized_entity_name>_spawn_egg`.
+- spawn eggs are included in the creative-tab aggregation (`WitcheryItems.allForCreativeTab`).
+
+Examples:
+| Legacy Entity ID | Spawn Egg Item ID |
+|---|---|
+| `demon` | `witchery:demon_spawn_egg` |
+| `hornedHuntsman` | `witchery:hornedhuntsman_spawn_egg` |
+| `illusionZombie` | `witchery:illusionzombie_spawn_egg` |
+| `wingedmonkey` | `witchery:wingedmonkey_spawn_egg` |
+
 ## Entity Registry (`WitcheryEntities`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/WitcheryEntities.java`
 
