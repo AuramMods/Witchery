@@ -1080,6 +1080,10 @@ Current scaffold behavior:
   - `player_sync` -> `(UUID playerId, int syncRevision)`
   - `extended_player_sync` -> `(UUID playerId, boolean initialized, int syncRevision)`
   - `partial_extended_player_sync` -> `(UUID playerId, int syncRevision)`
+- Adds codec-backed payload + handler scaffolding for additional interaction packets:
+  - `item_update` -> `(int slotIndex, int stackCount, boolean mainHand)` (serverbound)
+  - `sync_entity_size` -> `(int entityId, float width, float height)` (clientbound)
+  - `set_client_player_facing` -> `(float yaw, float pitch)` (clientbound)
 
 Intent mapping used by scaffold:
 | Legacy ID | Intent Key | Flow |

@@ -57,14 +57,14 @@ public final class WitcheryNetwork {
         discriminator = registerNoPayloadPacket(discriminator, "brew_prepared", BrewPreparedPacket.class, BrewPreparedPacket::new);
         discriminator = registerNoPayloadPacket(discriminator, "particles", ParticlesPacket.class, ParticlesPacket::new);
         discriminator = registerNoPayloadPacket(discriminator, "cam_pos", CamPosPacket.class, CamPosPacket::new);
-        discriminator = registerNoPayloadPacket(discriminator, "item_update", ItemUpdatePacket.class, ItemUpdatePacket::new);
+        discriminator = registerItemUpdatePacket(discriminator);
         discriminator = registerNoPayloadPacket(discriminator, "player_style", PlayerStylePacket.class, PlayerStylePacket::new);
         discriminator = registerPlayerSyncPacket(discriminator);
         discriminator = registerNoPayloadPacket(discriminator, "push_target", PushTargetPacket.class, PushTargetPacket::new);
         discriminator = registerNoPayloadPacket(discriminator, "sound", SoundPacket.class, SoundPacket::new);
         discriminator = registerNoPayloadPacket(discriminator, "spell_prepared", SpellPreparedPacket.class, SpellPreparedPacket::new);
         discriminator = registerNoPayloadPacket(discriminator, "clear_fall_damage", ClearFallDamagePacket.class, ClearFallDamagePacket::new);
-        discriminator = registerNoPayloadPacket(discriminator, "sync_entity_size", SyncEntitySizePacket.class, SyncEntitySizePacket::new);
+        discriminator = registerSyncEntitySizePacket(discriminator);
         discriminator = registerNoPayloadPacket(discriminator, "sync_markup_book", SyncMarkupBookPacket.class, SyncMarkupBookPacket::new);
         discriminator = registerExtendedPlayerSyncPacket(discriminator);
         discriminator = registerNoPayloadPacket(discriminator, "howl", HowlPacket.class, HowlPacket::new);
@@ -72,7 +72,7 @@ public final class WitcheryNetwork {
         discriminator = registerNoPayloadPacket(discriminator, "select_player_ability", SelectPlayerAbilityPacket.class, SelectPlayerAbilityPacket::new);
         discriminator = registerNoPayloadPacket(discriminator, "extended_entity_request_sync_to_client", ExtendedEntityRequestSyncToClientPacket.class, ExtendedEntityRequestSyncToClientPacket::new);
         discriminator = registerPartialExtendedPlayerSyncPacket(discriminator);
-        registerNoPayloadPacket(discriminator, "set_client_player_facing", SetClientPlayerFacingPacket.class, SetClientPlayerFacingPacket::new);
+        registerSetClientPlayerFacingPacket(discriminator);
 
         if (PACKET_BINDINGS_BY_KEY.size() != PACKET_INTENTS_BY_KEY.size()) {
             throw new IllegalStateException("Packet binding mismatch. expected=" + PACKET_INTENTS_BY_KEY.size() + " actual=" + PACKET_BINDINGS_BY_KEY.size());
@@ -124,6 +124,24 @@ public final class WitcheryNetwork {
         );
     }
 
+    public static void sendItemUpdateToServer(int slotIndex, int stackCount, boolean mainHand) {
+        CHANNEL.sendToServer(new ItemUpdatePacket(slotIndex, stackCount, mainHand));
+    }
+
+    public static void sendSyncEntitySize(ServerPlayer player, int entityId, float width, float height) {
+        CHANNEL.send(
+                PacketDistributor.PLAYER.with(() -> player),
+                new SyncEntitySizePacket(entityId, width, height)
+        );
+    }
+
+    public static void sendSetClientPlayerFacing(ServerPlayer player, float yaw, float pitch) {
+        CHANNEL.send(
+                PacketDistributor.PLAYER.with(() -> player),
+                new SetClientPlayerFacingPacket(yaw, pitch)
+        );
+    }
+
     private static PacketBinding packetBinding(String intentKey) {
         String normalized = normalize(intentKey);
         PacketBinding binding = PACKET_BINDINGS_BY_KEY.get(normalized);
@@ -139,6 +157,18 @@ public final class WitcheryNetwork {
             throw new IllegalStateException("Missing legacy packet intent metadata for key: " + key);
         }
         return intent;
+    }
+
+    private static int registerItemUpdatePacket(int discriminator) {
+        return registerPacketWithCodec(
+                discriminator,
+                "item_update",
+                ItemUpdatePacket.class,
+                ItemUpdatePacket::encode,
+                ItemUpdatePacket::decode,
+                WitcheryNetwork::handleItemUpdatePacket,
+                ItemUpdatePacket::placeholder
+        );
     }
 
     private static int registerPlayerSyncPacket(int discriminator) {
@@ -174,6 +204,30 @@ public final class WitcheryNetwork {
                 PartialExtendedPlayerSyncPacket::decode,
                 WitcheryNetwork::handlePartialExtendedPlayerSyncPacket,
                 PartialExtendedPlayerSyncPacket::placeholder
+        );
+    }
+
+    private static int registerSyncEntitySizePacket(int discriminator) {
+        return registerPacketWithCodec(
+                discriminator,
+                "sync_entity_size",
+                SyncEntitySizePacket.class,
+                SyncEntitySizePacket::encode,
+                SyncEntitySizePacket::decode,
+                WitcheryNetwork::handleSyncEntitySizePacket,
+                SyncEntitySizePacket::placeholder
+        );
+    }
+
+    private static int registerSetClientPlayerFacingPacket(int discriminator) {
+        return registerPacketWithCodec(
+                discriminator,
+                "set_client_player_facing",
+                SetClientPlayerFacingPacket.class,
+                SetClientPlayerFacingPacket::encode,
+                SetClientPlayerFacingPacket::decode,
+                WitcheryNetwork::handleSetClientPlayerFacingPacket,
+                SetClientPlayerFacingPacket::placeholder
         );
     }
 
@@ -242,6 +296,13 @@ public final class WitcheryNetwork {
         );
     }
 
+    private static void handleItemUpdatePacket(ItemUpdatePacket message, NetworkEvent.Context context) {
+        Witchery.LOGGER.debug(
+                "Handled scaffold packet 'item_update' slot={} count={} mainHand={} direction={}",
+                message.slotIndex(), message.stackCount(), message.mainHand(), context.getDirection()
+        );
+    }
+
     private static void handleExtendedPlayerSyncPacket(ExtendedPlayerSyncPacket message, NetworkEvent.Context context) {
         Witchery.LOGGER.debug(
                 "Handled scaffold packet 'extended_player_sync' player={} initialized={} revision={} direction={}",
@@ -253,6 +314,20 @@ public final class WitcheryNetwork {
         Witchery.LOGGER.debug(
                 "Handled scaffold packet 'partial_extended_player_sync' player={} revision={} direction={}",
                 message.playerId(), message.syncRevision(), context.getDirection()
+        );
+    }
+
+    private static void handleSyncEntitySizePacket(SyncEntitySizePacket message, NetworkEvent.Context context) {
+        Witchery.LOGGER.debug(
+                "Handled scaffold packet 'sync_entity_size' entityId={} width={} height={} direction={}",
+                message.entityId(), message.width(), message.height(), context.getDirection()
+        );
+    }
+
+    private static void handleSetClientPlayerFacingPacket(SetClientPlayerFacingPacket message, NetworkEvent.Context context) {
+        Witchery.LOGGER.debug(
+                "Handled scaffold packet 'set_client_player_facing' yaw={} pitch={} direction={}",
+                message.yaw(), message.pitch(), context.getDirection()
         );
     }
 
@@ -279,7 +354,20 @@ public final class WitcheryNetwork {
     public record CamPosPacket() {
     }
 
-    public record ItemUpdatePacket() {
+    public record ItemUpdatePacket(int slotIndex, int stackCount, boolean mainHand) {
+        public static ItemUpdatePacket placeholder() {
+            return new ItemUpdatePacket(0, 0, true);
+        }
+
+        public static void encode(ItemUpdatePacket message, FriendlyByteBuf buffer) {
+            buffer.writeVarInt(message.slotIndex());
+            buffer.writeVarInt(message.stackCount());
+            buffer.writeBoolean(message.mainHand());
+        }
+
+        public static ItemUpdatePacket decode(FriendlyByteBuf buffer) {
+            return new ItemUpdatePacket(buffer.readVarInt(), buffer.readVarInt(), buffer.readBoolean());
+        }
     }
 
     public record PlayerStylePacket() {
@@ -314,7 +402,20 @@ public final class WitcheryNetwork {
     public record ClearFallDamagePacket() {
     }
 
-    public record SyncEntitySizePacket() {
+    public record SyncEntitySizePacket(int entityId, float width, float height) {
+        public static SyncEntitySizePacket placeholder() {
+            return new SyncEntitySizePacket(0, 0.6F, 1.8F);
+        }
+
+        public static void encode(SyncEntitySizePacket message, FriendlyByteBuf buffer) {
+            buffer.writeVarInt(message.entityId());
+            buffer.writeFloat(message.width());
+            buffer.writeFloat(message.height());
+        }
+
+        public static SyncEntitySizePacket decode(FriendlyByteBuf buffer) {
+            return new SyncEntitySizePacket(buffer.readVarInt(), buffer.readFloat(), buffer.readFloat());
+        }
     }
 
     public record SyncMarkupBookPacket() {
@@ -367,6 +468,18 @@ public final class WitcheryNetwork {
         }
     }
 
-    public record SetClientPlayerFacingPacket() {
+    public record SetClientPlayerFacingPacket(float yaw, float pitch) {
+        public static SetClientPlayerFacingPacket placeholder() {
+            return new SetClientPlayerFacingPacket(0.0F, 0.0F);
+        }
+
+        public static void encode(SetClientPlayerFacingPacket message, FriendlyByteBuf buffer) {
+            buffer.writeFloat(message.yaw());
+            buffer.writeFloat(message.pitch());
+        }
+
+        public static SetClientPlayerFacingPacket decode(FriendlyByteBuf buffer) {
+            return new SetClientPlayerFacingPacket(buffer.readFloat(), buffer.readFloat());
+        }
     }
 }

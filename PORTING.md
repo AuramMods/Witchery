@@ -72,6 +72,10 @@
       - `player_sync` (uuid + sync revision)
       - `extended_player_sync` (uuid + initialized + sync revision)
       - `partial_extended_player_sync` (uuid + sync revision)
+    - expanded codec-backed payloads + handlers for additional high-impact intents:
+      - `item_update` (slot index + stack count + hand source)
+      - `sync_entity_size` (entity id + width + height)
+      - `set_client_player_facing` (yaw + pitch)
   - dimension migration skeleton now has stable resource-key anchors:
     - added `WitcheryDimensions` keys for `dream`, `torment`, and `mirror` across `Level`, `LevelStem`, and `DimensionType`.
     - added breadth-first datapack scaffold files for `dream`, `torment`, and `mirror` (`data/witchery/dimension_type/*.json` and `data/witchery/dimension/*.json`).
@@ -127,7 +131,9 @@
 ### Phase 3 - Systems Migration Skeleton (breadth)
 - [x] Network channel + packet stubs (all legacy packet message intents represented).
   - typed no-payload packet records are now registered for all `19` legacy intents.
-  - codec-backed payload/handler scaffolding is now implemented for `player_sync`, `extended_player_sync`, and `partial_extended_player_sync`.
+  - codec-backed payload/handler scaffolding is now implemented for:
+    - `player_sync`, `extended_player_sync`, `partial_extended_player_sync`
+    - `item_update`, `sync_entity_size`, `set_client_player_facing`
 - [~] GUI/menu stubs for all legacy GUI IDs.
   - menu intents now preserve legacy GUI ID mapping (`0..8`) plus key name in `LegacyRegistryData`.
   - all legacy menu keys now register typed `LegacyPlaceholderMenu` + `LegacyPlaceholderScreen` scaffolds.
@@ -191,6 +197,6 @@
     - this keeps every legacy GUI ID wired while container/screen behavior is still breadth-level placeholder logic.
   - look-ahead queue for next operations:
     - wire real portal/rite trigger sources into `WitcheryDimensionTravelHooks.routePlayer(...)` (dream/torment/mirror).
-    - expand codec-backed packet scaffolding to remaining high-impact intents (first pass: `item_update`, `sync_entity_size`, `set_client_player_facing`).
+    - expand codec-backed packet scaffolding to remaining interaction intents (`cam_pos`, `push_target`, `sound`).
     - expand `WitcheryPlayerData` fields toward legacy `ExtendedPlayer` coverage (inventory/state/effect sync groups).
   - validation: `./gradlew compileJava` succeeds after this pass.
