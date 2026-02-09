@@ -65,6 +65,16 @@
   - placeholder spawn-egg coverage added for entity registry breadth:
     - all legacy entity placeholders now get generated `*_spawn_egg` items (via `WitcheryItems` + `WitcheryEntities` maps).
     - spawn eggs are included in the creative-tab aggregate list for quick scaffolding QA.
+  - added matching spawn-egg item model files for all registered legacy entity eggs:
+    - generated `55` `models/item/*_spawn_egg.json` files with `minecraft:item/template_spawn_egg` parent.
+    - corrected generation scope to `LegacyRegistryData.ENTITIES` only (removed accidental packet/effect/block ID over-generation).
+  - fixed reported placeholder-texture assignments for high-visibility block models:
+    - `tormentstone` now maps to `minecraft:block/mycelium_top` (legacy mycelium-top fallback).
+    - `refillingchest` now maps to `witchery:block/leechchest` instead of placeholder `refillingchest`.
+    - `brewliquid` now maps to animated `brew_still`/`brew_flow`.
+    - `mirrorblock`/`mirrorblock2` now map to `mirror`/`mirror2`.
+    - `wolftrap` now maps to `minecraft:block/iron_block` instead of placeholder `wolftrap`.
+    - `trent`/`scarecrow` block models now use explicit textured cube scaffolds to avoid near-transparent placeholder geometry.
   - network skeleton scaffolding now mirrors legacy packet surface:
     - added `WitcheryNetwork` `SimpleChannel` bootstrap and registration from mod init path.
     - added normalized packet-intent inventory for all 19 legacy pipeline messages with legacy ID + direction metadata.
@@ -222,6 +232,9 @@
 - [x] Re-run client and validate `run/logs/latest.log` after the lowercase resource-location fix.
 - [x] Re-run client and validate `run/logs/latest.log` after `icedoor` parent-model and `wolftrap` geometry parity fixes.
 - [~] Continue replacing placeholder block models with old 1.7 equivalents (breadth pass before behavior depth).
+- [ ] Run fresh client launch smoke and scan `run/logs/latest.log` for:
+  - spawn egg model resolution errors (`*_spawn_egg` model lookups).
+  - block-model missing texture warnings for the remapped set (`tormentstone`, `refillingchest`, `brewliquid`, `mirrorblock*`, `wolftrap`, `trent`, `scarecrow`).
 - [ ] Run targeted multiplayer/client validation for expanded player sync payload snapshots (`login`, `clone`, `item_update`, `spell_prepared`, `sync_markup_book`, `howl`).
   - completed crop-family stage model parity pass.
   - completed structural families (stairs/slabs/fence/fence-gate/pressure-plate/button) with 1.20.1 state models.

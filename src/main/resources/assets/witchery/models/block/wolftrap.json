@@ -2,8 +2,8 @@
   "ambientocclusion": false,
   "parent": "minecraft:block/block",
   "textures": {
-    "particle": "witchery:block/beartrap",
-    "trap": "witchery:block/beartrap"
+    "particle": "minecraft:block/iron_block",
+    "trap": "minecraft:block/iron_block"
   },
   "elements": [
     {

@@ -100,11 +100,28 @@ Lifecycle stages:
 - `ItemBase.func_77655_b` auto-registers items via `ItemUtil.registerItem`.
 - Namespaced IDs are trimmed to path for legacy `GameRegistry` (`witchery:name` -> `name`).
 
+## Spawn Egg Model Coverage (2026-02-09)
+- Runtime spawn egg item registration source:
+  - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryItems.java` (`registerLegacySpawnEgg` from `WitcheryEntities.all()`).
+- Asset model source:
+  - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/assets/witchery/models/item/*_spawn_egg.json`.
+- Coverage rule:
+  - exactly one model file per normalized legacy entity path from `LegacyRegistryData.ENTITIES` (`55` total).
+  - parent model for each file is `minecraft:item/template_spawn_egg`.
+
 ## Block Model Parity Anchors (current focus)
 - `witchery:wolftrap`
   - Legacy class: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/blocks/BlockBeartrap.java` (`new BlockBeartrap(true)`).
   - Legacy render model: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/client/model/ModelBeartrap.java`.
   - Legacy texture: `assets/witchery/textures/blocks/beartrap.png`.
+  - 2026-02-09 scaffold remap: model now points at `minecraft:block/iron_block` to avoid missing/transparent placeholder texture until dedicated texture parity pass.
+- 2026-02-09 placeholder texture remap set (reported visual breakage triage):
+  - `witchery:tormentstone` -> `minecraft:block/mycelium_top`.
+  - `witchery:refillingchest` -> `witchery:block/leechchest`.
+  - `witchery:brewliquid` -> `witchery:block/brew_still` + `witchery:block/brew_flow`.
+  - `witchery:mirrorblock` -> `witchery:block/mirror`.
+  - `witchery:mirrorblock2` -> `witchery:block/mirror2`.
+  - `witchery:trent` and `witchery:scarecrow` -> explicit textured cube scaffolds (temporary breadth-level visual fix).
 - `witchery:icedoor`
   - Legacy class: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/blocks/BlockPerpetualIceDoor.java`.
   - Legacy textures: `assets/witchery/textures/blocks/icedoor_lower.png`, `icedoor_upper.png`.

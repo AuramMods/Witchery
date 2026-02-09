@@ -34,6 +34,13 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Placeholder spawn eggs are now auto-generated in `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryItems.java`:
   - one `ForgeSpawnEggItem` per legacy entity placeholder using `<normalized_entity_name>_spawn_egg`.
   - spawn eggs are appended to `WitcheryItems.allForCreativeTab()` so QA can access them without manual commands.
+- Spawn egg missing-model fix (2026-02-09):
+  - generated matching item model files under `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/assets/witchery/models/item`.
+  - scope is now exactly the normalized legacy entity list (`LegacyRegistryData.ENTITIES`) -> `55` `*_spawn_egg.json` files.
+  - corrected a failed prior generation attempt that over-produced invalid spawn egg model names from non-entity lists.
+- Reported placeholder-texture block model remap pass (2026-02-09):
+  - updated model texture assignments for `tormentstone`, `refillingchest`, `brewliquid`, `mirrorblock`, `mirrorblock2`, `wolftrap`, `trent`, and `scarecrow`.
+  - intent is breadth-level visual scaffolding: remove transparent/purple-black placeholder rendering while keeping behavior parity work for later phases.
 - Phase 3 network scaffold is now initialized:
   - new file `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/network/WitcheryNetwork.java`.
   - channel bootstrap is called from `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/Witchery.java`.
@@ -116,6 +123,7 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
   - replace temporary mirror right-click routing with rite-completion activation hooks (portal collision path is now scaffolded).
   - harden camera override lifecycle in `WitcheryClientCameraHooks` for edge cases (dimension swap, target despawn timeout, spectator transitions).
   - audit offset-type + collision-shape scaffolds so collision-enabled custom-shape blocks remain `dynamicShape`-safe.
+  - run a fresh client launch and re-scan `run/logs/latest.log` specifically for spawn egg model loads and the remapped block-model texture set.
   - add targeted round-trip validation for sync snapshot payloads (`login`, `clone`, `item_update`, `spell_prepared`, `sync_markup_book`, `howl`) in both singleplayer and dedicated-server sessions.
   - keep migrating high-priority `ExtendedPlayer` groups into `WitcheryPlayerData` (combat/state/progression slices) before depth pass.
 
@@ -198,8 +206,9 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
   - use exact `find` output and real case-rename passes, then validate with fresh client log.
 - Current resource status:
   - `assets/witchery/blockstates`: 121 files.
-  - `assets/witchery/models/block`: 121 files.
-  - `assets/witchery/models/item`: 217 files.
+  - `assets/witchery/models/block`: 273 files.
+  - `assets/witchery/models/item`: 272 files.
+  - spawn egg item models present: 55 (`*_spawn_egg.json`).
   - legacy textures copied under `assets/witchery/textures`.
 - Targeted parity notes:
   - `wolftrap` in 1.7 is `BlockBeartrap(true)` with TESR `ModelBeartrap` + `textures/blocks/beartrap.png`; current 1.20 model is a static approximation of the unsprung TESR geometry.
