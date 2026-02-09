@@ -1070,6 +1070,7 @@ Implementation anchors:
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/network/WitcheryNetwork.java`
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/LegacyRegistryData.java`
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/Witchery.java`
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/client/packet/WitcheryClientPacketHandlers.java`
 
 Current scaffold behavior:
 - Uses one `SimpleChannel` (`witchery:main`) with protocol version `"1"`.
@@ -1095,6 +1096,9 @@ Current scaffold behavior:
 - Keeps explicit no-payload codec records + handlers for:
   - `clear_fall_damage` (serverbound)
   - `howl` (serverbound)
+- Adds first functional clientbound behavior hooks:
+  - `particles` now dispatches to client packet bridge to spawn local scaffold particles/sound.
+  - `player_style` now dispatches to client packet bridge to apply staged style sync to target players by username.
 - Adds first functional serverbound behavior hooks:
   - `clear_fall_damage` now clears sender fall distance.
   - `item_update` now mutates inventory stack NBT `CurrentPage` with legacy slot/damage validation.

@@ -49,6 +49,10 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
   - explicit no-payload codec records + handlers now exist for:
     - `clear_fall_damage`
     - `howl`
+  - clientbound packet handling now has first functional client bridge:
+    - new file `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/client/packet/WitcheryClientPacketHandlers.java`.
+    - `particles` now spawns local scaffold particles and ambient scaffold sound.
+    - `player_style` now applies staged style data to target player capability + persistent tags on client by username lookup.
   - serverbound packet handlers now apply first functional behavior:
     - `clear_fall_damage` clears sender `fallDistance`.
     - `item_update` now mutates real inventory stack page state via legacy key `CurrentPage` (with slot + damage validation).
@@ -93,7 +97,7 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
   - `WitcheryClient` registers `LegacyPlaceholderScreen` for all placeholder menus so GUI IDs `0..8` all have routable client stubs.
 - Near-term look-ahead queue:
   - replace temporary mirror right-click routing with rite-completion activation hooks (portal collision path is now scaffolded).
-  - continue packet behavior wiring for clientbound flows (`particles`, `player_style`) and move those intents beyond debug-only handling.
+  - deepen client packet parity for `particles`/`player_style` with closer legacy effect/render semantics.
   - keep migrating high-priority `ExtendedPlayer` groups into `WitcheryPlayerData` (combat/state/progression slices) before depth pass.
 
 ## Phase 1 Completed

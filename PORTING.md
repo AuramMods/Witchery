@@ -86,6 +86,9 @@
       - `spell_prepared` (effect id + level)
       - `sync_markup_book` (slot + pages list)
       - `clear_fall_damage` and `howl` now use explicit no-payload codec records + dedicated handlers.
+    - clientbound packet handlers now include first functional client behavior:
+      - `particles` now routes through a client packet bridge and spawns scaffold particle/sound effects locally.
+      - `player_style` now resolves target players client-side by username and applies staged style fields to capability + persistent tags.
     - serverbound packet handlers now include first functional scaffold behavior:
       - `clear_fall_damage` now clears sender fall distance.
       - `item_update` now applies real inventory stack page mutation (`CurrentPage`) with legacy-style slot/damage validation.
@@ -163,6 +166,9 @@
   - serverbound handler scaffold now applies minimal runtime behavior:
     - clears fall distance for `clear_fall_damage`.
     - applies stack NBT mutations for item/book sync intents (`CurrentPage`, `pageStack`) and stages item/spell/book/howl updates into `WitcheryPlayerData`.
+  - clientbound handler scaffold now applies minimal runtime behavior:
+    - `particles` spawns local placeholder particles + sound through client packet bridge.
+    - `player_style` applies staged style sync to target player capability/persistent tags on client.
 - [~] GUI/menu stubs for all legacy GUI IDs.
   - menu intents now preserve legacy GUI ID mapping (`0..8`) plus key name in `LegacyRegistryData`.
   - all legacy menu keys now register typed `LegacyPlaceholderMenu` + `LegacyPlaceholderScreen` scaffolds.
@@ -229,6 +235,6 @@
     - this keeps every legacy GUI ID wired while container/screen behavior is still breadth-level placeholder logic.
   - look-ahead queue for next operations:
     - replace remaining temporary mirror right-click routing with rite-completion activation hooks.
-    - continue packet behavior wiring by implementing clientbound effects (`particles`, `player_style`) and propagating client sync surfaces beyond debug logs.
+    - deepen client packet parity by mapping legacy particle/sound/style semantics more closely (ParticleEffect/SoundEffect and visual style impacts).
     - expand `WitcheryPlayerData` fields toward legacy `ExtendedPlayer` coverage (inventory/state/effect sync groups).
   - validation: `./gradlew compileJava` succeeds after this pass.

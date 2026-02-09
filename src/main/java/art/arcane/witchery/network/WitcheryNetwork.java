@@ -11,11 +11,13 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
+import net.minecraftforge.fml.DistExecutor;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -534,6 +536,7 @@ public final class WitcheryNetwork {
     }
 
     private static void handleParticlesPacket(ParticlesPacket message, NetworkEvent.Context context) {
+        runClient(() -> art.arcane.witchery.client.packet.WitcheryClientPacketHandlers.handleParticles(message));
         Witchery.LOGGER.debug(
                 "Handled scaffold packet 'particles' particle={} sound={} x={} y={} z={} width={} height={} color={} direction={}",
                 message.particleEffectId(),
@@ -549,6 +552,7 @@ public final class WitcheryNetwork {
     }
 
     private static void handlePlayerStylePacket(PlayerStylePacket message, NetworkEvent.Context context) {
+        runClient(() -> art.arcane.witchery.client.packet.WitcheryClientPacketHandlers.handlePlayerStyle(message));
         Witchery.LOGGER.debug(
                 "Handled scaffold packet 'player_style' username={} grotesqueTicks={} nightmare={} ghost={} creatureType={} blood={} skin={} direction={}",
                 message.username(),
@@ -695,6 +699,10 @@ public final class WitcheryNetwork {
             return;
         }
         dataOptional.ifPresent(data -> mutation.accept(sender, data));
+    }
+
+    private static void runClient(Runnable runnable) {
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> runnable.run());
     }
 
     private static boolean matchesDirection(LegacyRegistryData.LegacyPacketIntent intent, NetworkDirection direction) {
