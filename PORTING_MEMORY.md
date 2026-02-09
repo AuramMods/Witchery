@@ -39,7 +39,7 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
     - `item_update` (`slotIndex`, `damageValue`, `pageIndex`) (aligned to legacy packet shape)
     - `sync_entity_size` (`entityId`, `width`, `height`)
     - `set_client_player_facing` (`yaw`, `pitch`)
-    - `cam_pos` (`x`, `y`, `z`, `yaw`, `pitch`)
+    - `cam_pos` (`active`, `updatePosition`, `entityId`) (aligned to legacy packet shape)
     - `push_target` (`entityId`, `velocityX`, `velocityY`, `velocityZ`)
     - `sound` (`soundId`, `x`, `y`, `z`, `volume`, `pitch`)
     - `particles` (`particleEffectId`, `soundEffectId`, `x`, `y`, `z`, `width`, `height`, `color`)
@@ -52,9 +52,14 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
   - clientbound packet handling now has first functional client bridge:
     - new file `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/client/packet/WitcheryClientPacketHandlers.java`.
     - `particles` now uses legacy ordinal mapping for `ParticleEffect` + `SoundEffect`, scales particle count using legacy width rules, and supports colored spell particles.
+    - `player_sync`, `extended_player_sync`, and `partial_extended_player_sync` now apply incoming sync state client-side:
+      - merges `syncRevision` into `WitcheryPlayerData` capability using monotonic merge logic.
+      - applies `initialized` for `extended_player_sync`.
+      - mirrors sync revision/initialized into client persistent tags for staged visibility.
     - `player_style` now applies staged style data to target player capability + persistent tags on client by username lookup.
     - `sound` now resolves legacy/modern sound ids and plays client-local scaffold audio with legacy volume/pitch defaults.
-    - `push_target`, `set_client_player_facing`, `sync_entity_size`, and `cam_pos` now run first-pass client behavior hooks (motion, rotation, staged size metadata, staged camera sync).
+    - `push_target`, `set_client_player_facing`, and `sync_entity_size` now run first-pass client behavior hooks (motion, rotation, staged size metadata).
+    - `cam_pos` now follows legacy semantics (`active`, `updatePosition`, `entityId`) and stages camera-active/target state while applying scaffold camera transforms to follow target updates.
   - serverbound packet handlers now apply first functional behavior:
     - `clear_fall_damage` clears sender `fallDistance`.
     - `item_update` now mutates real inventory stack page state via legacy key `CurrentPage` (with slot + damage validation).
@@ -99,8 +104,8 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
   - `WitcheryClient` registers `LegacyPlaceholderScreen` for all placeholder menus so GUI IDs `0..8` all have routable client stubs.
 - Near-term look-ahead queue:
   - replace temporary mirror right-click routing with rite-completion activation hooks (portal collision path is now scaffolded).
-  - align `cam_pos` packet payload/behavior to legacy `PacketCamPos` semantics (`active/updatePosition/entityId`) with a modern client camera hook.
-  - deepen `player_sync`/`extended_player_sync` client application so incoming sync payloads mutate capability state instead of logging only.
+  - replace current `cam_pos` persistent-tag staging with an explicit client camera-mode state object (`PlayerRender` replacement scaffold).
+  - expand sync payload coverage so client capability applies more than revision/initialized as packet groups deepen.
   - keep migrating high-priority `ExtendedPlayer` groups into `WitcheryPlayerData` (combat/state/progression slices) before depth pass.
 
 ## Phase 1 Completed

@@ -77,7 +77,7 @@
       - `sync_entity_size` (entity id + width + height)
       - `set_client_player_facing` (yaw + pitch)
     - expanded codec-backed payloads + handlers for interaction intents:
-      - `cam_pos` (x/y/z + yaw/pitch)
+      - `cam_pos` (active + updatePosition + entity id)
       - `push_target` (entity id + velocity vector)
       - `sound` (sound id + x/y/z + volume/pitch)
     - expanded codec-backed payloads + handlers for remaining utility intents:
@@ -88,12 +88,13 @@
       - `clear_fall_damage` and `howl` now use explicit no-payload codec records + dedicated handlers.
     - clientbound packet handlers now include first functional client behavior:
       - `particles` now routes through a client packet bridge with legacy-aware `ParticleEffect`/`SoundEffect` id mapping, old-style effect count scaling, and colored spell particle support.
+      - `player_sync`, `extended_player_sync`, and `partial_extended_player_sync` now apply incoming sync state on client (capability revision/initialized merge + mirrored persistent tags).
       - `player_style` now resolves target players client-side by username and applies staged style fields to capability + persistent tags.
       - `sound` now resolves and plays mapped client sounds (with legacy default volume/pitch behavior).
       - `push_target` now applies client-side motion vectors to the target entity.
       - `set_client_player_facing` now applies client-side player rotation.
       - `sync_entity_size` now stages synced width/height values on the client target entity for follow-up resize parity work.
-      - `cam_pos` now stages camera sync data and applies scaffold camera-entity transform updates.
+      - `cam_pos` now follows legacy packet semantics (`active`, `updatePosition`, `entityId`) and stages camera-active/target state while applying scaffold camera transforms when target updates are requested.
     - serverbound packet handlers now include first functional scaffold behavior:
       - `clear_fall_damage` now clears sender fall distance.
       - `item_update` now applies real inventory stack page mutation (`CurrentPage`) with legacy-style slot/damage validation.
@@ -173,6 +174,7 @@
     - applies stack NBT mutations for item/book sync intents (`CurrentPage`, `pageStack`) and stages item/spell/book/howl updates into `WitcheryPlayerData`.
   - clientbound handler scaffold now applies minimal runtime behavior:
     - `particles` spawns local particles/sound via legacy-aware id mapping (`ParticleEffect`/`SoundEffect`) with effect-count scaling + colored spell support.
+    - `player_sync`, `extended_player_sync`, and `partial_extended_player_sync` now mutate staged client capability sync fields (`syncRevision`, `initialized`) for target players.
     - `player_style` applies staged style sync to target player capability/persistent tags on client.
     - `sound`, `push_target`, `set_client_player_facing`, `sync_entity_size`, and `cam_pos` now route through client packet handlers with first-pass scaffold behavior.
 - [~] GUI/menu stubs for all legacy GUI IDs.
@@ -241,7 +243,7 @@
     - this keeps every legacy GUI ID wired while container/screen behavior is still breadth-level placeholder logic.
   - look-ahead queue for next operations:
     - replace remaining temporary mirror right-click routing with rite-completion activation hooks.
-    - align `cam_pos` payload/semantics with legacy `PacketCamPos` (`active/updatePosition/entityId`) and wire a modern `PlayerRender` replacement hook.
-    - deepen `player_sync`/`extended_player_sync` client apply behavior (actual capability merge on receive, not debug-only).
+    - wire an explicit client camera-mode state object to replace the temporary persistent-tag camera staging used by `cam_pos`.
+    - extend client sync handling beyond revision/initialized to include fuller staged groups as payload coverage grows (style/inventory/spell slices).
     - expand `WitcheryPlayerData` fields toward legacy `ExtendedPlayer` coverage (inventory/state/effect sync groups).
   - validation: `./gradlew compileJava` succeeds after this pass.

@@ -55,6 +55,10 @@ public final class WitcheryPlayerData {
         return syncRevision;
     }
 
+    public void mergeSyncRevision(int syncRevision) {
+        this.syncRevision = Math.max(this.syncRevision, Math.max(syncRevision, 0));
+    }
+
     public void bumpSyncRevision() {
         syncRevision++;
     }

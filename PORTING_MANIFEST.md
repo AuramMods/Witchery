@@ -1085,7 +1085,7 @@ Current scaffold behavior:
   - `item_update` -> `(int slotIndex, int damageValue, int pageIndex)` (serverbound, aligned to legacy packet shape)
   - `sync_entity_size` -> `(int entityId, float width, float height)` (clientbound)
   - `set_client_player_facing` -> `(float yaw, float pitch)` (clientbound)
-  - `cam_pos` -> `(double x, double y, double z, float yaw, float pitch)` (clientbound)
+  - `cam_pos` -> `(boolean active, boolean updatePosition, int entityId)` (clientbound; aligned with legacy packet shape)
   - `push_target` -> `(int entityId, double velocityX, double velocityY, double velocityZ)` (clientbound)
   - `sound` -> `(String soundId, double x, double y, double z, float volume, float pitch)` (clientbound)
 - Adds codec-backed payload + handler scaffolding for utility packets:
@@ -1098,12 +1098,13 @@ Current scaffold behavior:
   - `howl` (serverbound)
 - Adds first functional clientbound behavior hooks:
   - `particles` now dispatches to client packet bridge with legacy `ParticleEffect`/`SoundEffect` id mapping, effect-count scaling, and colored spell particle support.
+  - `player_sync`, `extended_player_sync`, and `partial_extended_player_sync` now dispatch to client packet bridge and apply staged capability sync fields (`syncRevision`, `initialized`) for target players.
   - `player_style` now dispatches to client packet bridge to apply staged style sync to target players by username.
   - `sound` now dispatches to client packet bridge to resolve legacy/modern ids and play local scaffold sound.
   - `push_target` now dispatches to client packet bridge to apply motion vectors to client entities.
   - `set_client_player_facing` now dispatches to client packet bridge to apply local player rotation.
   - `sync_entity_size` now dispatches to client packet bridge and stages width/height sync metadata on target entities.
-  - `cam_pos` now dispatches to client packet bridge and stages camera-sync coordinates/rotation while applying scaffold camera transform updates.
+  - `cam_pos` now dispatches to client packet bridge with legacy semantics (`active`, `updatePosition`, `entityId`) and stages camera-active/target data while applying scaffold target-follow camera transform updates.
 - Adds first functional serverbound behavior hooks:
   - `clear_fall_damage` now clears sender fall distance.
   - `item_update` now mutates inventory stack NBT `CurrentPage` with legacy slot/damage validation.

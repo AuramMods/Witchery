@@ -19,15 +19,17 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import org.joml.Vector3f;
 
+import java.util.UUID;
+
 public final class WitcheryClientPacketHandlers {
     private static final String KEY_LEGACY_GROTESQUE = "witcheryGrotesque";
     private static final String KEY_CLIENT_NIGHTMARE_LEVEL = "WitcheryNightmareLevel";
     private static final String KEY_CLIENT_GHOST = "WitcheryGhostState";
-    private static final String KEY_CLIENT_LAST_CAM_X = "WitcheryCameraX";
-    private static final String KEY_CLIENT_LAST_CAM_Y = "WitcheryCameraY";
-    private static final String KEY_CLIENT_LAST_CAM_Z = "WitcheryCameraZ";
-    private static final String KEY_CLIENT_LAST_CAM_YAW = "WitcheryCameraYaw";
-    private static final String KEY_CLIENT_LAST_CAM_PITCH = "WitcheryCameraPitch";
+    private static final String KEY_CLIENT_CAM_ACTIVE = "WitcheryCameraActive";
+    private static final String KEY_CLIENT_CAM_ACTIVE_TICK = "WitcheryCameraActiveTick";
+    private static final String KEY_CLIENT_CAM_TARGET_ID = "WitcheryCameraTargetEntityId";
+    private static final String KEY_CLIENT_SYNC_REVISION = "WitcherySyncRevision";
+    private static final String KEY_CLIENT_SYNC_INITIALIZED = "WitcherySyncInitialized";
     private static final String KEY_CLIENT_SYNCED_WIDTH = "WitcherySyncedWidth";
     private static final String KEY_CLIENT_SYNCED_HEIGHT = "WitcherySyncedHeight";
     private static final String KEY_CLIENT_SYNCED_TARGET_ID = "WitcherySyncedTargetId";
@@ -110,21 +112,54 @@ public final class WitcheryClientPacketHandlers {
 
     public static void handleCamPos(WitcheryNetwork.CamPosPacket message) {
         Minecraft minecraft = Minecraft.getInstance();
-        Entity cameraEntity = minecraft.getCameraEntity();
-        if (cameraEntity != null) {
-            cameraEntity.setPos(message.x(), message.y(), message.z());
-            cameraEntity.setYRot(message.yaw());
-            cameraEntity.setXRot(message.pitch());
+        ClientLevel level = minecraft.level;
+        Player player = minecraft.player;
+        if (player == null) {
+            return;
         }
 
-        Player player = minecraft.player;
-        if (player != null) {
-            player.getPersistentData().putDouble(KEY_CLIENT_LAST_CAM_X, message.x());
-            player.getPersistentData().putDouble(KEY_CLIENT_LAST_CAM_Y, message.y());
-            player.getPersistentData().putDouble(KEY_CLIENT_LAST_CAM_Z, message.z());
-            player.getPersistentData().putFloat(KEY_CLIENT_LAST_CAM_YAW, message.yaw());
-            player.getPersistentData().putFloat(KEY_CLIENT_LAST_CAM_PITCH, message.pitch());
+        player.getPersistentData().putBoolean(KEY_CLIENT_CAM_ACTIVE, message.active());
+        if (!message.active()) {
+            player.getPersistentData().remove(KEY_CLIENT_CAM_TARGET_ID);
+            return;
         }
+
+        if (level != null) {
+            player.getPersistentData().putLong(KEY_CLIENT_CAM_ACTIVE_TICK, level.getGameTime());
+        }
+
+        if (!message.updatePosition()) {
+            return;
+        }
+
+        player.getPersistentData().putInt(KEY_CLIENT_CAM_TARGET_ID, message.entityId());
+        if (level == null || message.entityId() <= 0) {
+            return;
+        }
+
+        Entity target = level.getEntity(message.entityId());
+        if (target == null) {
+            return;
+        }
+
+        Entity cameraEntity = minecraft.getCameraEntity();
+        if (cameraEntity != null) {
+            cameraEntity.setPos(target.getX(), target.getY(), target.getZ());
+            cameraEntity.setYRot(target.getYRot());
+            cameraEntity.setXRot(target.getXRot());
+        }
+    }
+
+    public static void handlePlayerSync(WitcheryNetwork.PlayerSyncPacket message) {
+        applyClientSyncRevision(message.playerId(), message.syncRevision(), null);
+    }
+
+    public static void handleExtendedPlayerSync(WitcheryNetwork.ExtendedPlayerSyncPacket message) {
+        applyClientSyncRevision(message.playerId(), message.syncRevision(), message.initialized());
+    }
+
+    public static void handlePartialExtendedPlayerSync(WitcheryNetwork.PartialExtendedPlayerSyncPacket message) {
+        applyClientSyncRevision(message.playerId(), message.syncRevision(), null);
     }
 
     public static void handlePushTarget(WitcheryNetwork.PushTargetPacket message) {
@@ -213,6 +248,37 @@ public final class WitcheryClientPacketHandlers {
             }
         }
         return null;
+    }
+
+    private static void applyClientSyncRevision(UUID playerId, int syncRevision, Boolean initialized) {
+        Minecraft minecraft = Minecraft.getInstance();
+        ClientLevel level = minecraft.level;
+        Player target = null;
+
+        if (level != null) {
+            target = level.getPlayerByUUID(playerId);
+        }
+
+        if (target == null && minecraft.player != null && minecraft.player.getUUID().equals(playerId)) {
+            target = minecraft.player;
+        }
+
+        if (target == null) {
+            Witchery.LOGGER.debug("Client sync packet target '{}' not found in current level", playerId);
+            return;
+        }
+
+        target.getPersistentData().putInt(KEY_CLIENT_SYNC_REVISION, syncRevision);
+        if (initialized != null) {
+            target.getPersistentData().putBoolean(KEY_CLIENT_SYNC_INITIALIZED, initialized);
+        }
+
+        WitcheryPlayerDataProvider.get(target).ifPresent(data -> {
+            data.mergeSyncRevision(syncRevision);
+            if (initialized != null) {
+                data.setInitialized(initialized);
+            }
+        });
     }
 
     private static ParticleOptions resolveParticleType(LegacyParticleEffect effect) {

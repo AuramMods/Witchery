@@ -159,10 +159,10 @@ public final class WitcheryNetwork {
         );
     }
 
-    public static void sendCamPos(ServerPlayer player, double x, double y, double z, float yaw, float pitch) {
+    public static void sendCamPos(ServerPlayer player, boolean active, boolean updatePosition, int entityId) {
         CHANNEL.send(
                 PacketDistributor.PLAYER.with(() -> player),
-                new CamPosPacket(x, y, z, yaw, pitch)
+                new CamPosPacket(active, updatePosition, entityId)
         );
     }
 
@@ -485,6 +485,7 @@ public final class WitcheryNetwork {
     }
 
     private static void handlePlayerSyncPacket(PlayerSyncPacket message, NetworkEvent.Context context) {
+        runClient(() -> art.arcane.witchery.client.packet.WitcheryClientPacketHandlers.handlePlayerSync(message));
         Witchery.LOGGER.debug(
                 "Handled scaffold packet 'player_sync' player={} revision={} direction={}",
                 message.playerId(), message.syncRevision(), context.getDirection()
@@ -494,8 +495,8 @@ public final class WitcheryNetwork {
     private static void handleCamPosPacket(CamPosPacket message, NetworkEvent.Context context) {
         runClient(() -> art.arcane.witchery.client.packet.WitcheryClientPacketHandlers.handleCamPos(message));
         Witchery.LOGGER.debug(
-                "Handled scaffold packet 'cam_pos' x={} y={} z={} yaw={} pitch={} direction={}",
-                message.x(), message.y(), message.z(), message.yaw(), message.pitch(), context.getDirection()
+                "Handled scaffold packet 'cam_pos' active={} updatePosition={} entityId={} direction={}",
+                message.active(), message.updatePosition(), message.entityId(), context.getDirection()
         );
     }
 
@@ -568,6 +569,7 @@ public final class WitcheryNetwork {
     }
 
     private static void handleExtendedPlayerSyncPacket(ExtendedPlayerSyncPacket message, NetworkEvent.Context context) {
+        runClient(() -> art.arcane.witchery.client.packet.WitcheryClientPacketHandlers.handleExtendedPlayerSync(message));
         Witchery.LOGGER.debug(
                 "Handled scaffold packet 'extended_player_sync' player={} initialized={} revision={} direction={}",
                 message.playerId(), message.initialized(), message.syncRevision(), context.getDirection()
@@ -575,6 +577,7 @@ public final class WitcheryNetwork {
     }
 
     private static void handlePartialExtendedPlayerSyncPacket(PartialExtendedPlayerSyncPacket message, NetworkEvent.Context context) {
+        runClient(() -> art.arcane.witchery.client.packet.WitcheryClientPacketHandlers.handlePartialExtendedPlayerSync(message));
         Witchery.LOGGER.debug(
                 "Handled scaffold packet 'partial_extended_player_sync' player={} revision={} direction={}",
                 message.playerId(), message.syncRevision(), context.getDirection()
@@ -766,26 +769,22 @@ public final class WitcheryNetwork {
         }
     }
 
-    public record CamPosPacket(double x, double y, double z, float yaw, float pitch) {
+    public record CamPosPacket(boolean active, boolean updatePosition, int entityId) {
         public static CamPosPacket placeholder() {
-            return new CamPosPacket(0.0D, 0.0D, 0.0D, 0.0F, 0.0F);
+            return new CamPosPacket(false, false, 0);
         }
 
         public static void encode(CamPosPacket message, FriendlyByteBuf buffer) {
-            buffer.writeDouble(message.x());
-            buffer.writeDouble(message.y());
-            buffer.writeDouble(message.z());
-            buffer.writeFloat(message.yaw());
-            buffer.writeFloat(message.pitch());
+            buffer.writeBoolean(message.active());
+            buffer.writeBoolean(message.updatePosition());
+            buffer.writeVarInt(message.entityId());
         }
 
         public static CamPosPacket decode(FriendlyByteBuf buffer) {
             return new CamPosPacket(
-                    buffer.readDouble(),
-                    buffer.readDouble(),
-                    buffer.readDouble(),
-                    buffer.readFloat(),
-                    buffer.readFloat()
+                    buffer.readBoolean(),
+                    buffer.readBoolean(),
+                    buffer.readVarInt()
             );
         }
     }
