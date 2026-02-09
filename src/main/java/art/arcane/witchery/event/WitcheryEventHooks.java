@@ -30,6 +30,16 @@ public final class WitcheryEventHooks {
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
             WitcheryPlayerDataProvider.get(serverPlayer).ifPresent(data -> {
+                if (data.getOtherPlayerSkin().isEmpty()) {
+                    data.applyPlayerStyle(
+                            serverPlayer.getGameProfile().getName(),
+                            data.getGrotesqueTicks(),
+                            data.getNightmareLevel(),
+                            data.isGhost(),
+                            data.getCreatureTypeOrdinal(),
+                            data.getHumanBlood()
+                    );
+                }
                 data.setInitialized(true);
                 data.bumpSyncRevision();
                 WitcheryNetwork.sendExtendedPlayerSync(serverPlayer, data);

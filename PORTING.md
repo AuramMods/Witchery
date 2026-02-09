@@ -73,7 +73,7 @@
       - `extended_player_sync` (uuid + initialized + sync revision)
       - `partial_extended_player_sync` (uuid + sync revision)
     - expanded codec-backed payloads + handlers for additional high-impact intents:
-      - `item_update` (slot index + stack count + hand source)
+      - `item_update` (slot index + item damage + page index, aligned to legacy packet shape)
       - `sync_entity_size` (entity id + width + height)
       - `set_client_player_facing` (yaw + pitch)
     - expanded codec-backed payloads + handlers for interaction intents:
@@ -86,6 +86,9 @@
       - `spell_prepared` (effect id + level)
       - `sync_markup_book` (slot + pages list)
       - `clear_fall_damage` and `howl` now use explicit no-payload codec records + dedicated handlers.
+    - serverbound packet handlers now include first functional scaffold behavior:
+      - `clear_fall_damage` now clears sender fall distance.
+      - `spell_prepared`, `item_update`, `sync_markup_book`, and `howl` now write scaffold state into `WitcheryPlayerData` (+ minimal persistent tags for spell/howl) and bump sync revision.
   - dimension migration skeleton now has stable resource-key anchors:
     - added `WitcheryDimensions` keys for `dream`, `torment`, and `mirror` across `Level`, `LevelStem`, and `DimensionType`.
     - added breadth-first datapack scaffold files for `dream`, `torment`, and `mirror` (`data/witchery/dimension_type/*.json` and `data/witchery/dimension/*.json`).
@@ -98,7 +101,12 @@
   - capability/data-attachment scaffold now exists for player data migration:
     - added `WitcheryCapabilities` MOD-bus registration for `WitcheryPlayerData`.
     - added `WitcheryPlayerDataProvider` attachment + clone-copy wiring through `WitcheryEventHooks`.
-    - added `WitcheryPlayerData` NBT-serializable payload shell (`initialized`, `syncRevision`) and typed sync sends from event hooks:
+    - expanded `WitcheryPlayerData` NBT payload groups for legacy migration staging:
+      - style/state: `creatureTypeOrdinal`, `humanBlood`, `grotesqueTicks`, `nightmareLevel`, `ghost`, `otherPlayerSkin`
+      - effect state: `preparedSpellEffectId`, `preparedSpellLevel`
+      - inventory/book staging: `lastItemUpdate*`, `lastMarkupBook*`
+      - misc runtime staging: `lastHowlGameTime`
+    - typed sync sends from event hooks:
       - login: `extended_player_sync` + `player_sync`
       - clone: `partial_extended_player_sync`
   - GUI/menu scaffold now has explicit legacy GUI-ID parity anchors:
@@ -149,6 +157,9 @@
     - `particles`, `player_style`, `spell_prepared`, `sync_markup_book`
   - explicit no-payload codec records + handlers are now in place for:
     - `clear_fall_damage`, `howl`
+  - serverbound handler scaffold now applies minimal runtime behavior:
+    - clears fall distance for `clear_fall_damage`.
+    - stages item/spell/book/howl updates into `WitcheryPlayerData` for upcoming gameplay wiring.
 - [~] GUI/menu stubs for all legacy GUI IDs.
   - menu intents now preserve legacy GUI ID mapping (`0..8`) plus key name in `LegacyRegistryData`.
   - all legacy menu keys now register typed `LegacyPlaceholderMenu` + `LegacyPlaceholderScreen` scaffolds.
@@ -213,6 +224,6 @@
     - this keeps every legacy GUI ID wired while container/screen behavior is still breadth-level placeholder logic.
   - look-ahead queue for next operations:
     - replace temporary right-click trigger routing with authentic portal/rite activation paths (portal collision, rite completion hooks).
-    - start routing scaffold packet handlers into real gameplay effects as owning systems land (particle spawning, player style sync, spell prepared state, markup-book sync).
+    - continue packet behavior wiring by implementing clientbound effects (`particles`, `player_style`) and replacing markup/item scaffold state writes with real item/container updates.
     - expand `WitcheryPlayerData` fields toward legacy `ExtendedPlayer` coverage (inventory/state/effect sync groups).
   - validation: `./gradlew compileJava` succeeds after this pass.

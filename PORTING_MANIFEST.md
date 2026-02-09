@@ -1081,7 +1081,7 @@ Current scaffold behavior:
   - `extended_player_sync` -> `(UUID playerId, boolean initialized, int syncRevision)`
   - `partial_extended_player_sync` -> `(UUID playerId, int syncRevision)`
 - Adds codec-backed payload + handler scaffolding for additional interaction packets:
-  - `item_update` -> `(int slotIndex, int stackCount, boolean mainHand)` (serverbound)
+  - `item_update` -> `(int slotIndex, int damageValue, int pageIndex)` (serverbound, aligned to legacy packet shape)
   - `sync_entity_size` -> `(int entityId, float width, float height)` (clientbound)
   - `set_client_player_facing` -> `(float yaw, float pitch)` (clientbound)
   - `cam_pos` -> `(double x, double y, double z, float yaw, float pitch)` (clientbound)
@@ -1095,6 +1095,10 @@ Current scaffold behavior:
 - Keeps explicit no-payload codec records + handlers for:
   - `clear_fall_damage` (serverbound)
   - `howl` (serverbound)
+- Adds first functional serverbound behavior hooks:
+  - `clear_fall_damage` now clears sender fall distance.
+  - `item_update`, `spell_prepared`, `sync_markup_book`, and `howl` now stage data into `WitcheryPlayerData`, bump sync revision, and emit `player_sync`.
+  - `spell_prepared` + `howl` also mirror minimal state into sender persistent tags for migration visibility.
 
 Intent mapping used by scaffold:
 | Legacy ID | Intent Key | Flow |
@@ -1248,6 +1252,20 @@ Current placeholder data surface (`WitcheryPlayerData`):
 |---|---|---|
 | `initialized` | `boolean` | breadth session-init marker |
 | `syncRevision` | `int` | incremental sync marker for placeholder packet routing |
+| `creatureTypeOrdinal` | `int` | staged legacy creature type sync slot |
+| `humanBlood` | `int` | staged legacy blood-state sync slot |
+| `grotesqueTicks` | `int` | staged player-style grotesque timer |
+| `nightmareLevel` | `int` | staged dream/nightmare state marker |
+| `ghost` | `boolean` | staged ghost-state marker |
+| `otherPlayerSkin` | `String` | staged alternate skin/name reference |
+| `preparedSpellEffectId` | `int` | staged `spell_prepared` effect id |
+| `preparedSpellLevel` | `int` | staged `spell_prepared` level |
+| `lastItemUpdateSlot` | `int` | staged last `item_update` slot |
+| `lastItemUpdateDamage` | `int` | staged last `item_update` damage value |
+| `lastItemUpdatePage` | `int` | staged last `item_update` page index |
+| `lastMarkupBookSlot` | `int` | staged last `sync_markup_book` slot |
+| `lastMarkupBookPages` | `List<String>` | staged last `sync_markup_book` page payload |
+| `lastHowlGameTime` | `long` | staged last `howl` tick timestamp |
 
 Status:
 - structural replacement path for legacy `ExtendedPlayer` is now wired.

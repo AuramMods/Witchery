@@ -36,7 +36,7 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
     - `player_sync` (`playerId`, `syncRevision`)
     - `extended_player_sync` (`playerId`, `initialized`, `syncRevision`)
     - `partial_extended_player_sync` (`playerId`, `syncRevision`)
-    - `item_update` (`slotIndex`, `stackCount`, `mainHand`)
+    - `item_update` (`slotIndex`, `damageValue`, `pageIndex`) (aligned to legacy packet shape)
     - `sync_entity_size` (`entityId`, `width`, `height`)
     - `set_client_player_facing` (`yaw`, `pitch`)
     - `cam_pos` (`x`, `y`, `z`, `yaw`, `pitch`)
@@ -49,6 +49,10 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
   - explicit no-payload codec records + handlers now exist for:
     - `clear_fall_damage`
     - `howl`
+  - serverbound packet handlers now apply first functional behavior:
+    - `clear_fall_damage` clears sender `fallDistance`.
+    - `item_update`, `spell_prepared`, `sync_markup_book`, and `howl` write scaffold state into `WitcheryPlayerData`, bump revision, and push `player_sync`.
+    - `spell_prepared` and `howl` also write minimal persistent tags on the sender for migration visibility.
 - Phase 3 dimension scaffolding is now initialized:
   - new file `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/world/WitcheryDimensions.java`.
   - keys are defined for `dream`, `torment`, `mirror` across `Level`, `LevelStem`, and `DimensionType`.
@@ -71,7 +75,12 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Capability scaffold now exists for `ExtendedPlayer` replacement:
   - `WitcheryCapabilities` registers capability type `WitcheryPlayerData` on MOD bus.
   - `WitcheryPlayerDataProvider` is attached to players via `AttachCapabilitiesEvent<Entity>` and copied during `PlayerEvent.Clone`.
-  - `WitcheryPlayerData` currently stores breadth placeholder state (`initialized`, `syncRevision`) with NBT serialization.
+  - `WitcheryPlayerData` now stores staged legacy groups with NBT serialization:
+    - base sync: `initialized`, `syncRevision`
+    - style/state: `creatureTypeOrdinal`, `humanBlood`, `grotesqueTicks`, `nightmareLevel`, `ghost`, `otherPlayerSkin`
+    - spell state: `preparedSpellEffectId`, `preparedSpellLevel`
+    - inventory/book staging: `lastItemUpdate*`, `lastMarkupBook*`
+    - misc runtime: `lastHowlGameTime`
   - event hooks now send typed sync packets instead of intent-only placeholders:
     - login sends `extended_player_sync` + `player_sync`.
     - clone sends `partial_extended_player_sync`.
@@ -81,8 +90,8 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
   - `WitcheryClient` registers `LegacyPlaceholderScreen` for all placeholder menus so GUI IDs `0..8` all have routable client stubs.
 - Near-term look-ahead queue:
   - replace temporary right-click trigger routing with authentic Dream/Torment/Mirror trigger paths (portal collision + rite completion hooks).
-  - start routing scaffold packet handlers into real gameplay behavior as systems migrate (particle emission, player-style sync, spell-prepared UI/state, markup-book sync).
-  - migrate high-priority `ExtendedPlayer` fields into `WitcheryPlayerData` groups before behavior pass.
+  - continue packet behavior wiring for clientbound flows (`particles`, `player_style`) and replace item/book scaffold writes with real item/container mutations.
+  - keep migrating high-priority `ExtendedPlayer` groups into `WitcheryPlayerData` (combat/state/progression slices) before depth pass.
 
 ## Phase 1 Completed
 - Phase 1 scaffolding is implemented and `./gradlew compileJava` passes.

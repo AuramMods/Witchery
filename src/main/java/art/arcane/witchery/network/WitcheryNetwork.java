@@ -2,6 +2,7 @@ package art.arcane.witchery.network;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.capability.WitcheryPlayerData;
+import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.registry.LegacyRegistryData;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -30,6 +31,9 @@ public final class WitcheryNetwork {
     private static final int MAX_PLAYER_SKIN_LENGTH = 256;
     private static final int MAX_MARKUP_PAGE_COUNT = 256;
     private static final int MAX_MARKUP_PAGE_LENGTH = 2048;
+    private static final String KEY_PERSISTENT_SPELL_EFFECT_ID = "WITCSpellEffectID";
+    private static final String KEY_PERSISTENT_SPELL_EFFECT_LEVEL = "WITCSpellEffectEnhanced";
+    private static final String KEY_PERSISTENT_LAST_HOWL_TICK = "WITCLastHowlTick";
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             ResourceLocation.parse(Witchery.MODID + ":main"),
             () -> PROTOCOL_VERSION,
@@ -129,8 +133,8 @@ public final class WitcheryNetwork {
         );
     }
 
-    public static void sendItemUpdateToServer(int slotIndex, int stackCount, boolean mainHand) {
-        CHANNEL.sendToServer(new ItemUpdatePacket(slotIndex, stackCount, mainHand));
+    public static void sendItemUpdateToServer(int slotIndex, int damageValue, int pageIndex) {
+        CHANNEL.sendToServer(new ItemUpdatePacket(slotIndex, damageValue, pageIndex));
     }
 
     public static void sendSyncEntitySize(ServerPlayer player, int entityId, float width, float height) {
@@ -487,9 +491,21 @@ public final class WitcheryNetwork {
     }
 
     private static void handleItemUpdatePacket(ItemUpdatePacket message, NetworkEvent.Context context) {
+        mutateSenderData(context, "item_update", (sender, data) -> {
+            int slot = message.slotIndex();
+            if (slot < 0 || slot >= sender.getInventory().getContainerSize()) {
+                Witchery.LOGGER.debug("Ignoring scaffold packet 'item_update' with out-of-range slot={} player={}", slot, sender.getScoreboardName());
+                return;
+            }
+
+            int clampedPage = Math.max(0, Math.min(message.pageIndex(), 999));
+            data.applyItemUpdate(slot, message.damageValue(), clampedPage);
+            data.bumpSyncRevision();
+            sendPlayerSync(sender, data);
+        });
         Witchery.LOGGER.debug(
-                "Handled scaffold packet 'item_update' slot={} count={} mainHand={} direction={}",
-                message.slotIndex(), message.stackCount(), message.mainHand(), context.getDirection()
+                "Handled scaffold packet 'item_update' slot={} damage={} page={} direction={}",
+                message.slotIndex(), message.damageValue(), message.pageIndex(), context.getDirection()
         );
     }
 
@@ -565,6 +581,13 @@ public final class WitcheryNetwork {
     }
 
     private static void handleSpellPreparedPacket(SpellPreparedPacket message, NetworkEvent.Context context) {
+        mutateSenderData(context, "spell_prepared", (sender, data) -> {
+            sender.getPersistentData().putInt(KEY_PERSISTENT_SPELL_EFFECT_ID, message.effectId());
+            sender.getPersistentData().putInt(KEY_PERSISTENT_SPELL_EFFECT_LEVEL, message.level());
+            data.applyPreparedSpell(message.effectId(), message.level());
+            data.bumpSyncRevision();
+            sendPlayerSync(sender, data);
+        });
         Witchery.LOGGER.debug(
                 "Handled scaffold packet 'spell_prepared' effectId={} level={} direction={}",
                 message.effectId(), message.level(), context.getDirection()
@@ -572,10 +595,25 @@ public final class WitcheryNetwork {
     }
 
     private static void handleClearFallDamagePacket(ClearFallDamagePacket message, NetworkEvent.Context context) {
+        ServerPlayer sender = senderOrWarn(context, "clear_fall_damage");
+        if (sender != null) {
+            sender.fallDistance = 0.0F;
+        }
         Witchery.LOGGER.debug("Handled scaffold packet 'clear_fall_damage' direction={}", context.getDirection());
     }
 
     private static void handleSyncMarkupBookPacket(SyncMarkupBookPacket message, NetworkEvent.Context context) {
+        mutateSenderData(context, "sync_markup_book", (sender, data) -> {
+            int slot = message.slot();
+            if (slot < 0 || slot >= sender.getInventory().getContainerSize()) {
+                Witchery.LOGGER.debug("Ignoring scaffold packet 'sync_markup_book' with out-of-range slot={} player={}", slot, sender.getScoreboardName());
+                return;
+            }
+
+            data.applyMarkupBookSync(slot, message.pages());
+            data.bumpSyncRevision();
+            sendPlayerSync(sender, data);
+        });
         Witchery.LOGGER.debug(
                 "Handled scaffold packet 'sync_markup_book' slot={} pageCount={} direction={}",
                 message.slot(), message.pages().size(), context.getDirection()
@@ -583,7 +621,40 @@ public final class WitcheryNetwork {
     }
 
     private static void handleHowlPacket(HowlPacket message, NetworkEvent.Context context) {
+        mutateSenderData(context, "howl", (sender, data) -> {
+            long gameTime = sender.serverLevel().getGameTime();
+            sender.getPersistentData().putLong(KEY_PERSISTENT_LAST_HOWL_TICK, gameTime);
+            data.markHowled(gameTime);
+            data.bumpSyncRevision();
+            sendPlayerSync(sender, data);
+        });
         Witchery.LOGGER.debug("Handled scaffold packet 'howl' direction={}", context.getDirection());
+    }
+
+    private static ServerPlayer senderOrWarn(NetworkEvent.Context context, String key) {
+        ServerPlayer sender = context.getSender();
+        if (sender == null) {
+            Witchery.LOGGER.warn("Received packet '{}' without a server sender context", key);
+        }
+        return sender;
+    }
+
+    private static void mutateSenderData(
+            NetworkEvent.Context context,
+            String key,
+            BiConsumer<ServerPlayer, WitcheryPlayerData> mutation
+    ) {
+        ServerPlayer sender = senderOrWarn(context, key);
+        if (sender == null) {
+            return;
+        }
+
+        var dataOptional = WitcheryPlayerDataProvider.get(sender);
+        if (!dataOptional.isPresent()) {
+            Witchery.LOGGER.warn("Missing WitcheryPlayerData capability for '{}' while handling '{}'", sender.getScoreboardName(), key);
+            return;
+        }
+        dataOptional.ifPresent(data -> mutation.accept(sender, data));
     }
 
     private static boolean matchesDirection(LegacyRegistryData.LegacyPacketIntent intent, NetworkDirection direction) {
@@ -666,19 +737,19 @@ public final class WitcheryNetwork {
         }
     }
 
-    public record ItemUpdatePacket(int slotIndex, int stackCount, boolean mainHand) {
+    public record ItemUpdatePacket(int slotIndex, int damageValue, int pageIndex) {
         public static ItemUpdatePacket placeholder() {
-            return new ItemUpdatePacket(0, 0, true);
+            return new ItemUpdatePacket(0, 0, 0);
         }
 
         public static void encode(ItemUpdatePacket message, FriendlyByteBuf buffer) {
             buffer.writeVarInt(message.slotIndex());
-            buffer.writeVarInt(message.stackCount());
-            buffer.writeBoolean(message.mainHand());
+            buffer.writeVarInt(message.damageValue());
+            buffer.writeVarInt(message.pageIndex());
         }
 
         public static ItemUpdatePacket decode(FriendlyByteBuf buffer) {
-            return new ItemUpdatePacket(buffer.readVarInt(), buffer.readVarInt(), buffer.readBoolean());
+            return new ItemUpdatePacket(buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt());
         }
     }
 
