@@ -15,6 +15,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -36,12 +37,23 @@ public final class MutandisItem extends Item {
     }
 
     @Override
+    public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
+        BlockState existing = context.getLevel().getBlockState(context.getClickedPos());
+        if (POTTED_PLANTS.contains(existing.getBlock())) {
+            return mutate(context, existing, true);
+        }
+        return InteractionResult.PASS;
+    }
+
+    @Override
     public InteractionResult useOn(UseOnContext context) {
+        return mutate(context, context.getLevel().getBlockState(context.getClickedPos()), false);
+    }
+
+    private InteractionResult mutate(UseOnContext context, BlockState existing, boolean potted) {
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
-        BlockState existing = level.getBlockState(pos);
         Block sapling = WitcheryBlocks.getRequired("witchsapling").get();
-        boolean potted = POTTED_PLANTS.contains(existing.getBlock());
         if (!potted && !existing.is(PLANTS) && !existing.is(sapling)) {
             return InteractionResult.PASS;
         }
