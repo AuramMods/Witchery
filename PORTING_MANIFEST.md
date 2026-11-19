@@ -485,6 +485,7 @@ The first migrated subtypes have individual item IDs. Preserve `witchery:ingredi
 | 10 | `witchery:attuned_stone` |
 | 11 | `witchery:charged_attuned_stone` |
 | 14 | `witchery:mutandis` |
+| 15 | `witchery:mutandis_extremis` |
 | 16 | `witchery:quicklime` |
 | 17 | `witchery:gypsum` |
 | 18 | `witchery:wood_ash` |

@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:carrots", "minecraft:potatoes", "minecraft:wheat", "minecraft:sugar_cane",
+    "witchery:belladonna", "witchery:mandrake", "witchery:artichoke",
+    "minecraft:pumpkin_stem", "minecraft:cactus", "minecraft:melon_stem", "minecraft:nether_wart"
+  ]
+}

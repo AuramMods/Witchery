@@ -10,6 +10,7 @@ public enum WitcheryIngredient {
     ATTUNED_STONE(10, "attuned_stone"),
     CHARGED_ATTUNED_STONE(11, "charged_attuned_stone"),
     MUTANDIS(14, "mutandis"),
+    MUTANDIS_EXTREMIS(15, "mutandis_extremis"),
     QUICKLIME(16, "quicklime"),
     GYPSUM(17, "gypsum"),
     WOOD_ASH(18, "wood_ash"),

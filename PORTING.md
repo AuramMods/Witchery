@@ -37,7 +37,8 @@
 - [x] Restore the Heart Glyph and the Rite of Charging. The rite needs a 16-glyph white ring and a 28-glyph white ring. Five offerings and 2,000 altar power produce a Charged Attuned Stone. All 10 packaged headless checks passed, including redstone activation and cancellation, restart, and refunding offerings when the altar is out of range.
 - [x] Restore Arthana crafting, placement, the 32-block altar range upgrade, and the vanilla creature drops for brewing and skulls. Ten packaged server checks passed for the range boundary, persistence, blade damage, and machine pause after removal.
 - [x] Run Forge GameTest in a disposable profile. Four tests passed for placing and recovering a damaged Arthana, bat and wolf drops with Looting, stacked chalk splitting and durability, and starting and completing the Rite of Charging through the Heart Glyph use interaction.
-- [ ] Verify the latest chalk, Heart Glyph, and placed-item models in the muted multiplayer client. The headless tests passed and the latest virtual client attempts hit a server watchdog stall.
+- [x] Verify chalk, Heart Glyph, and placed-item rendering in the muted multiplayer client. Craft Ritual Chalk and an Arthana, draw the white and Heart Glyphs, and mount the blade. Drop the five offerings into a prepared ring, activate it with right-click, and pick up the Charged Attuned Stone. The altar was 21 blocks away.
+- [x] Restore Mutandis Extremis. Brew nether wart with Mutandis as the trigger, retain crop growth when mutating to another crop, and support the original mycelium and blue clay transformations. Five packaged cauldron checks and the two Forge GameTests for Extremis passed.
 - [ ] Finish the remaining altar artifacts, kettle recipes, the other powered cauldron recipes, and the remaining chalk rites.
 
 ## Current Snapshot (2026-02-09)

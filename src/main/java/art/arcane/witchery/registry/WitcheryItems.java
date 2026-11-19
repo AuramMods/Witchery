@@ -114,7 +114,7 @@ public final class WitcheryItems {
             case "bucketbrew" -> new BucketItem(WitcheryFluids.getRequiredSource("brew"), bucketProperties);
             case "anointing_paste" -> new AnointingPasteItem(new Item.Properties());
             case "arthana" -> new ArthanaItem();
-            case "mutandis" -> new MutandisItem(new Item.Properties());
+            case "mutandis", "mutandis_extremis" -> new MutandisItem(new Item.Properties(), path.equals("mutandis_extremis"));
             case "chalkritual" -> new RitualChalkItem("circleglyphritual");
             case "chalkotherwhere" -> new RitualChalkItem("circleglyphotherwhere");
             case "chalkinfernal" -> new RitualChalkItem("circleglyphinfernal");
