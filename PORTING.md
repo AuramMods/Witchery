@@ -34,7 +34,8 @@
 - [x] On the muted multiplayer client, craft the distillery and quicklime from supplied materials, place it by the altar, shift-click ingredients and jars into the menu, and collect gypsum, Oil of Vitriol, and slime through the output slots.
 - [ ] Finish the three late-game distillation recipes that require demon hearts or Brew of Flowing Spirit.
 - [x] Restore Ritual Chalk crafting and the Golden, Otherwhere, and Infernal Chalk conversions. Drawing uses the original glyph textures and chalk sound. All 11 packaged server checks passed, including support breakage, an idle ritual without an altar, and the Golden Chalk power discount from two white rings.
-- [ ] Finish the altar artifact items and range upgrades, kettle recipes, the other powered cauldron recipes, and chalk rites.
+- [x] Restore the Heart Glyph and the Rite of Charging. The rite needs a 16-glyph white ring and a 28-glyph white ring. Five offerings and 2,000 altar power produce a Charged Attuned Stone. All 10 packaged headless checks passed, including redstone activation and cancellation, restart, and refunding offerings when the altar is out of range.
+- [ ] Finish the altar artifact items and range upgrades, kettle recipes, the other powered cauldron recipes, and the remaining chalk rites.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.

@@ -4,6 +4,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.AltarBlock;
 import art.arcane.witchery.block.DistilleryBlock;
 import art.arcane.witchery.block.RitualGlyphBlock;
+import art.arcane.witchery.block.RiteHeartBlock;
 import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.block.WitchCropBlock;
 import art.arcane.witchery.block.WitchLeavesBlock;
@@ -82,7 +83,6 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_DAYLIGHT_COLLECTOR = Block.box(3.2D, 0.0D, 3.2D, 12.8D, 12.8D, 12.8D);
     private static final VoxelShape SHAPE_BLOOD_CRUCIBLE = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 4.96D, 12.0D);
     private static final VoxelShape SHAPE_MIRROR_PANEL = Block.box(0.0D, 0.0D, 13.6D, 16.0D, 16.0D, 16.0D);
-    private static final VoxelShape SHAPE_GLYPH = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 0.25D, 16.0D);
     private static final VoxelShape SHAPE_PORTAL_CROSS = Shapes.or(
             Block.box(7.0D, 0.0D, 0.0D, 9.0D, 16.0D, 16.0D),
             Block.box(0.0D, 0.0D, 7.0D, 16.0D, 16.0D, 9.0D)
@@ -230,8 +230,7 @@ public final class WitcheryBlocks {
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.STONE), SHAPE_BLOOD_CRUCIBLE, true);
             case "mirrorblock", "mirrorblock2" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.GLASS), SHAPE_MIRROR_PANEL, true);
-            case "circle" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.WHITE_CARPET), SHAPE_GLYPH, false);
+            case "circle" -> new RiteHeartBlock();
             case "circleglyphritual" -> new RitualGlyphBlock("chalkritual");
             case "circleglyphotherwhere" -> new RitualGlyphBlock("chalkotherwhere");
             case "circleglyphinfernal" -> new RitualGlyphBlock("chalkinfernal");
