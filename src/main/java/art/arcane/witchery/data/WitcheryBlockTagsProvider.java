@@ -6,6 +6,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.data.BlockTagsProvider;
@@ -30,5 +31,8 @@ public class WitcheryBlockTagsProvider extends BlockTagsProvider {
         for (RegistryObject<Block> block : WitcheryBlocks.LEGACY_BLOCKS.values()) {
             tag(LEGACY_BLOCKS).add(block.get());
         }
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(
+                WitcheryBlocks.getRequired("witchesovenidle").get(),
+                WitcheryBlocks.getRequired("witchesovenburning").get());
     }
 }

@@ -13,9 +13,12 @@
 - [x] On a disposable headless server, verify the single ice and snow drops, all three legacy double-slab drops, and the modern double witchwood slab state. All six runtime loot checks passed.
 - [x] Register oven-related ingredient variants with explicit legacy metadata mappings. Generate and package nine recipes, including the original oven and clay jar patterns and sapling-to-ash smelting.
 - [x] Verify soft-jar firing, vanilla and Witchery sapling ash, and witch-log charcoal in hopper-fed vanilla furnaces on a headless dedicated server. All four runtime checks passed.
-- [ ] Implement and verify legacy inventory upgrade from the recorded metadata mapping.
-- [ ] Wire the oven block entity, inventory, fuel, funnel timing, fume rolls, and menu through normal gameplay.
-- [ ] Verify survival progression and restart persistence with a real client and a dedicated server.
+- [x] Wire the oven block entity, inventory, fuel, funnel timing, fume rolls, and menu. Both old block IDs preserve facing and use the modern `lit` state for rendering.
+- [x] Verify server-side oven behavior across a restart. An active batch resumed from 100 ticks of progress at shutdown and completed after reopening the same world. Hopper-fed tests exercised all seven fume outputs and verified that acacia ash leaves the jar intact.
+- [x] Verify oven inventory conversion using legacy stacks after their item IDs have been resolved to namespaced strings. Known ingredient damage values map to modern IDs and preserve unrelated tags. Unconverted metadata survives another save.
+- [x] Verify oak fume and ash from the reobfuscated JAR on installed Forge 47.4.10. The headless test passed with Witchery alone and with the bundled Auram development mods. CoFH Core logged a client-mixin warning in the latter profile.
+- [ ] Verify the real client menu, shift-clicking, and end-to-end survival crafting. Restore survival acquisition and growth of all three Witchery sapling variants.
+- [ ] Finish oven parity for smelting experience, model details, and legacy sapling smelting configuration.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.
@@ -203,8 +206,7 @@
     - `cam_pos` now routes through client packet handlers using `WitcheryClientCameraState` plus `WitcheryClientCameraHooks` (client tick camera-entity override scaffold) instead of temporary player persistent-tag staging.
 - [~] GUI/menu stubs for all legacy GUI IDs.
   - menu intents now preserve legacy GUI ID mapping (`0..8`) plus key name in `LegacyRegistryData`.
-  - all legacy menu keys now register typed `LegacyPlaceholderMenu` + `LegacyPlaceholderScreen` scaffolds.
-  - opening behavior and real container slot logic are still TODO.
+  - GUI ID 2 opens the Witch's Oven menu. The other eight IDs still use `LegacyPlaceholderMenu` and `LegacyPlaceholderScreen`.
 - [~] Dimension/key migration for Dream/Torment/Mirror.
   - resource keys are scaffolded (`Level`, `LevelStem`, `DimensionType`) for `dream`, `torment`, and `mirror`.
   - datapack `dimension_type` + `dimension` JSON scaffolding is now present for all three dimensions.

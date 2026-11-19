@@ -1,8 +1,12 @@
 {
   "variants": {
-    "facing=north": { "model": "witchery:block/witchesovenidle", "y": 180, "uvlock": true },
-    "facing=east": { "model": "witchery:block/witchesovenidle", "y": 270, "uvlock": true },
-    "facing=south": { "model": "witchery:block/witchesovenidle", "y": 0, "uvlock": true },
-    "facing=west": { "model": "witchery:block/witchesovenidle", "y": 90, "uvlock": true }
+    "facing=north,lit=false": { "model": "witchery:block/witchesovenidle", "y": 180, "uvlock": true },
+    "facing=north,lit=true": { "model": "witchery:block/witchesovenburning", "y": 180, "uvlock": true },
+    "facing=east,lit=false": { "model": "witchery:block/witchesovenidle", "y": 270, "uvlock": true },
+    "facing=east,lit=true": { "model": "witchery:block/witchesovenburning", "y": 270, "uvlock": true },
+    "facing=south,lit=false": { "model": "witchery:block/witchesovenidle", "y": 0, "uvlock": true },
+    "facing=south,lit=true": { "model": "witchery:block/witchesovenburning", "y": 0, "uvlock": true },
+    "facing=west,lit=false": { "model": "witchery:block/witchesovenidle", "y": 90, "uvlock": true },
+    "facing=west,lit=true": { "model": "witchery:block/witchesovenburning", "y": 90, "uvlock": true }
   }
 }

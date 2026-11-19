@@ -10,6 +10,8 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Use a disposable, headless server for gameplay checks. Launch client tests with zero master volume in a background or isolated test session.
 - Oven-related ingredients use stable individual IDs through `WitcheryIngredient`. The manifest records the old damage-to-ID mapping. The original `witchery:ingredient` ID remains registered for unconverted stacks.
 - `WitcheryRecipeProvider` generates the oven, clay jar, wood ash, witch log charcoal, attuned stone, and funnel recipes. Sapling smelting follows the legacy default of using the shared sapling tag. Charged attuned stones still depend on restoring the charging rite.
+- `WitchesOvenBlockEntity` provides the oven's five slots and persists burn, cook, and inventory state. Headless server checks passed for the seven fume outputs, acacia ash with the jar left intact, restart progress, and known and unknown ingredient metadata fixtures.
+- The oven reads legacy ingredient metadata after the base item ID is resolved to `witchery:ingredient`. General conversion of numeric 1.7.10 save IDs still needs its own verified workflow.
 
 ## Session Memory (2026-02-08)
 - Port target is Forge 1.20.1.

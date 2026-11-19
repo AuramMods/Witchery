@@ -11,7 +11,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "witchery:witchesovenburning"
+          "name": "witchery:witchesovenidle"
         }
       ],
       "rolls": 1.0

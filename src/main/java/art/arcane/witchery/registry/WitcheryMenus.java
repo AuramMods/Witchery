@@ -2,6 +2,8 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.menu.LegacyPlaceholderMenu;
+import art.arcane.witchery.menu.WitchesOvenMenu;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -15,8 +17,11 @@ import java.util.Map;
 
 public final class WitcheryMenus {
     public static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(ForgeRegistries.MENU_TYPES, Witchery.MODID);
-    public static final Map<String, RegistryObject<MenuType<LegacyPlaceholderMenu>>> LEGACY_MENUS = new LinkedHashMap<>();
-    public static final Map<Integer, RegistryObject<MenuType<LegacyPlaceholderMenu>>> LEGACY_MENUS_BY_GUI_ID = new LinkedHashMap<>();
+    public static final Map<String, RegistryObject<? extends MenuType<?>>> LEGACY_MENUS = new LinkedHashMap<>();
+    public static final Map<Integer, RegistryObject<? extends MenuType<?>>> LEGACY_MENUS_BY_GUI_ID = new LinkedHashMap<>();
+    private static final Map<String, RegistryObject<MenuType<LegacyPlaceholderMenu>>> PLACEHOLDER_MENUS = new LinkedHashMap<>();
+    public static final RegistryObject<MenuType<WitchesOvenMenu>> WITCHES_OVEN = MENU_TYPES.register("witches_oven",
+            () -> new MenuType<>(WitchesOvenMenu::new, FeatureFlags.DEFAULT_FLAGS));
 
     static {
         for (LegacyRegistryData.LegacyMenuIntent menuIntent : LegacyRegistryData.MENUS) {
@@ -31,21 +36,25 @@ public final class WitcheryMenus {
         MENU_TYPES.register(eventBus);
     }
 
-    public static Map<String, RegistryObject<MenuType<LegacyPlaceholderMenu>>> all() {
+    public static Map<String, RegistryObject<? extends MenuType<?>>> all() {
         return Collections.unmodifiableMap(LEGACY_MENUS);
     }
 
-    public static RegistryObject<MenuType<LegacyPlaceholderMenu>> getRequired(String legacyName) {
+    public static Map<String, RegistryObject<MenuType<LegacyPlaceholderMenu>>> placeholders() {
+        return Collections.unmodifiableMap(PLACEHOLDER_MENUS);
+    }
+
+    public static RegistryObject<? extends MenuType<?>> getRequired(String legacyName) {
         String path = RegistryNameUtil.normalizePath(legacyName);
-        RegistryObject<MenuType<LegacyPlaceholderMenu>> menu = LEGACY_MENUS.get(path);
+        RegistryObject<? extends MenuType<?>> menu = LEGACY_MENUS.get(path);
         if (menu == null) {
             throw new IllegalStateException("Missing legacy menu placeholder for path: " + path);
         }
         return menu;
     }
 
-    public static RegistryObject<MenuType<LegacyPlaceholderMenu>> getRequiredByGuiId(int legacyGuiId) {
-        RegistryObject<MenuType<LegacyPlaceholderMenu>> menu = LEGACY_MENUS_BY_GUI_ID.get(legacyGuiId);
+    public static RegistryObject<? extends MenuType<?>> getRequiredByGuiId(int legacyGuiId) {
+        RegistryObject<? extends MenuType<?>> menu = LEGACY_MENUS_BY_GUI_ID.get(legacyGuiId);
         if (menu == null) {
             throw new IllegalStateException("Missing legacy menu placeholder for GUI id: " + legacyGuiId);
         }
@@ -58,9 +67,16 @@ public final class WitcheryMenus {
             return;
         }
 
+        if ("witches_oven".equals(path)) {
+            LEGACY_MENUS.put(path, WITCHES_OVEN);
+            LEGACY_MENUS_BY_GUI_ID.put(menuIntent.legacyGuiId(), WITCHES_OVEN);
+            return;
+        }
+
         RegistryObject<MenuType<LegacyPlaceholderMenu>> menu = MENU_TYPES.register(path,
                 () -> IForgeMenuType.create((windowId, inventory, buffer) -> new LegacyPlaceholderMenu(windowId, inventory, path)));
 
+        PLACEHOLDER_MENUS.put(path, menu);
         LEGACY_MENUS.put(path, menu);
         LEGACY_MENUS_BY_GUI_ID.put(menuIntent.legacyGuiId(), menu);
     }

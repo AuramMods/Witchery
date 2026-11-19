@@ -1207,11 +1207,11 @@ Implementation anchors:
 
 Current scaffold behavior:
 - menu metadata now tracks both legacy GUI ID and normalized menu key (`LegacyMenuIntent`).
-- every legacy GUI entry (`0..8`) registers a dedicated `MenuType<LegacyPlaceholderMenu>` keyed to legacy menu name.
-- client setup registers `LegacyPlaceholderScreen` for every placeholder menu type.
+- every legacy GUI entry (`0..8`) registers a dedicated menu type keyed to its legacy menu name.
+- GUI ID 2 opens `WitchesOvenMenu` with five slots and synchronized burn and cook progress. Client setup binds `WitchesOvenScreen` for this menu and uses `LegacyPlaceholderScreen` for the other eight.
 
 ID mapping used by scaffold:
-| Legacy GUI ID | Key | Placeholder Menu Type ID |
+| Legacy GUI ID | Key | Menu Type ID |
 |---:|---|---|
 | 0 | `altar` | `witchery:altar` |
 | 1 | `witchcraft_book` | `witchery:witchcraft_book` |
@@ -1224,8 +1224,8 @@ ID mapping used by scaffold:
 | 8 | `leonards_urn` | `witchery:leonards_urn` |
 
 Status:
-- GUI routing surface is fully scaffolded for breadth.
-- real container slot logic and screen behavior parity are still TODO.
+- The oven has a live menu and screen implementation. Graphical client validation is pending.
+- The other eight menus still need container and screen behavior.
 
 ## Dimensions
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/Witchery.java`

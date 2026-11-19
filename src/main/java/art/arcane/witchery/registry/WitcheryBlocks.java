@@ -1,6 +1,7 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.WitchesOvenBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.StringRepresentable;
@@ -146,8 +147,13 @@ public final class WitcheryBlocks {
                     new DoorBlock(BlockBehaviour.Properties.copy(Blocks.OAK_DOOR).noOcclusion(), BlockSetType.OAK);
             case "altar" -> new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion(), SHAPE_ALTAR, true);
             case "kettle" -> new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion(), SHAPE_KETTLE, true);
-            case "spinningwheel", "distilleryidle", "distilleryburning", "witchesovenidle", "witchesovenburning" ->
+            case "spinningwheel", "distilleryidle", "distilleryburning" ->
                     new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion(), SHAPE_MACHINE_COMPACT, true);
+            case "witchesovenidle", "witchesovenburning" ->
+                    new WitchesOvenBlock(BlockBehaviour.Properties.copy(Blocks.FURNACE)
+                            .strength(3.5F)
+                            .noOcclusion()
+                            .lightLevel(state -> state.getValue(WitchesOvenBlock.LIT) ? 13 : 0));
             case "fumefunnel", "filteredfumefunnel" ->
                     new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion(), SHAPE_FUNNEL, true);
             case "coffinblock" ->

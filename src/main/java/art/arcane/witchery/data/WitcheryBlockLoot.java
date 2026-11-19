@@ -31,6 +31,7 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                 case "witchwooddoubleslab" -> dropDoubleSlab(block, "witchwoodslab");
                 case "icedoubleslab" -> dropDoubleSlab(block, "iceslab");
                 case "snowdoubleslab" -> dropDoubleSlab(block, "snowslab");
+                case "witchesovenburning" -> dropOther(block, WitcheryBlocks.getRequired("witchesovenidle").get());
                 default -> {
                     if (block instanceof SlabBlock) {
                         add(block, createSlabItemTable(block));

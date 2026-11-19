@@ -1,6 +1,7 @@
 package art.arcane.witchery.client;
 
 import art.arcane.witchery.client.screen.LegacyPlaceholderScreen;
+import art.arcane.witchery.client.screen.WitchesOvenScreen;
 import art.arcane.witchery.menu.LegacyPlaceholderMenu;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.registry.WitcheryBlocks;
@@ -24,7 +25,8 @@ public final class WitcheryClient {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
-            for (RegistryObject<MenuType<LegacyPlaceholderMenu>> menuType : WitcheryMenus.all().values()) {
+            MenuScreens.register(WitcheryMenus.WITCHES_OVEN.get(), WitchesOvenScreen::new);
+            for (RegistryObject<MenuType<LegacyPlaceholderMenu>> menuType : WitcheryMenus.placeholders().values()) {
                 MenuScreens.register(menuType.get(), LegacyPlaceholderScreen::new);
             }
 
