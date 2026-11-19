@@ -5,6 +5,7 @@ import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.item.AnointingPasteItem;
 import art.arcane.witchery.item.ArthanaItem;
 import art.arcane.witchery.item.DrinkableBrewItem;
+import art.arcane.witchery.item.FilledChaliceItem;
 import art.arcane.witchery.item.MutandisItem;
 import art.arcane.witchery.item.RitualChalkItem;
 import art.arcane.witchery.item.ThrowableBrewItem;
@@ -119,6 +120,8 @@ public final class WitcheryItems {
             case "brew_of_ink" -> new ThrowableBrewItem(ThrowableBrewItem::splashInk);
             case "brew_of_the_depths" -> new DrinkableBrewItem(WitcheryEffects.DEPTHS, 6000, 0);
             case "redstone_soup" -> new DrinkableBrewItem(() -> MobEffects.HEALTH_BOOST, 2400, 1);
+            case "filled_chalice" -> new FilledChaliceItem(WitcheryBlocks.getRequired("chalice").get());
+            case "chalice", "candelabra" -> createBlockItem(path);
             case "mutandis", "mutandis_extremis" -> new MutandisItem(new Item.Properties(), path.equals("mutandis_extremis"));
             case "chalkritual" -> new RitualChalkItem("circleglyphritual");
             case "chalkotherwhere" -> new RitualChalkItem("circleglyphotherwhere");

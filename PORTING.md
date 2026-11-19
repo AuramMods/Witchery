@@ -44,6 +44,9 @@
 - [x] Run 18 packaged headless kettle checks on Forge. Test either ingredient order, mismatched and cold batches, hopper input, the one-time altar charge, normalized legacy inventory and fluid data, and restart with partial and finished brews.
 - [x] Run all nine disposable Forge GameTests. The three kettle tests cover manual and automated bottling, fill and drain, Ink projectile impact and splash distances, and the two drinkable effects.
 - [x] In the muted multiplayer client, craft and place the kettle from supplied materials, light the fire, fill the kettle, throw the six Ink ingredients, and bottle all three portions by hand. Throw Ink at a husk and verify the splash on a second husk. Drink a supplied Brew of the Depths to verify Wither II on land and sustained air underwater.
+- [x] Restore the Candelabra, Chalice, and Filled Chalice recipes, supplied models and textures, drops, and original altar bonuses. The Candelabra adds two to the recharge multiplier. The empty and filled chalices add one and two to the capacity multiplier, respectively.
+- [x] Pass 12 packaged artifact checks and all 11 disposable Forge GameTests. Verify block and item conversion fixtures, single drops when a chalice loses its support, and filled state and altar bonuses across restart.
+- [x] In muted survival, craft two chalices and a candelabra from supplied ingredients, fill one chalice with supplied Redstone Soup, and place all three on an altar. Verify the rendering and the altar's threefold capacity and recharge.
 - [ ] Finish the remaining altar artifacts, kettle recipes, the other powered cauldron recipes, and the remaining chalk rites.
 
 ## Current Snapshot (2026-02-09)

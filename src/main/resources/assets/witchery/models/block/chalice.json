@@ -1,40 +1,62 @@
 {
   "parent": "minecraft:block/block",
-  "textures": {
-    "particle": "witchery:block/chalice",
-    "all": "witchery:block/chalice"
-  },
+  "textures": {"particle": "witchery:block/chalice", "atlas": "witchery:block/chalice"},
   "elements": [
     {
-      "from": [
-        4.8,
-        0.0,
-        5.92
-      ],
-      "to": [
-        10.08,
-        7.36,
-        11.12
-      ],
+      "from": [6.5, 0, 6.5], "to": [9.5, 1, 9.5],
       "faces": {
-        "down": {
-          "texture": "#all"
-        },
-        "up": {
-          "texture": "#all"
-        },
-        "north": {
-          "texture": "#all"
-        },
-        "south": {
-          "texture": "#all"
-        },
-        "west": {
-          "texture": "#all"
-        },
-        "east": {
-          "texture": "#all"
-        }
+        "north": {"uv": [1.5, 8.0, 3.0, 8.5], "texture": "#atlas"},
+        "east": {"uv": [3.0, 8.0, 4.5, 8.5], "texture": "#atlas"},
+        "south": {"uv": [4.5, 8.0, 6.0, 8.5], "texture": "#atlas"},
+        "west": {"uv": [0.0, 8.0, 1.5, 8.5], "texture": "#atlas"},
+        "up": {"uv": [1.5, 6.5, 3.0, 8.0], "texture": "#atlas"},
+        "down": {"uv": [3.0, 6.5, 4.5, 8.0], "texture": "#atlas"}
+      }
+    },
+    {
+      "from": [7.5, 1, 7.5], "to": [8.5, 3, 8.5],
+      "faces": {
+        "north": {"uv": [2.5, 5.5, 3.0, 6.5], "texture": "#atlas"},
+        "east": {"uv": [3.0, 5.5, 3.5, 6.5], "texture": "#atlas"},
+        "south": {"uv": [3.5, 5.5, 4.0, 6.5], "texture": "#atlas"},
+        "west": {"uv": [2.0, 5.5, 2.5, 6.5], "texture": "#atlas"},
+        "up": {"uv": [2.5, 5.0, 3.0, 5.5], "texture": "#atlas"},
+        "down": {"uv": [3.0, 5.0, 3.5, 5.5], "texture": "#atlas"}
+      }
+    },
+    {
+      "from": [5.5, 3, 5.5], "to": [10.5, 3, 10.5],
+      "faces": {
+        "up": {"uv": [0.0, 2.0, 2.5, 4.5], "texture": "#atlas"},
+        "down": {"uv": [2.5, 2.0, 5.0, 4.5], "texture": "#atlas"}
+      }
+    },
+    {
+      "from": [5.5, 3, 5.5], "to": [10.5, 7, 5.5],
+      "faces": {
+        "north": {"uv": [0.0, 0.0, 2.5, 2.0], "texture": "#atlas"},
+        "south": {"uv": [0.0, 0.0, 2.5, 2.0], "texture": "#atlas"}
+      }
+    },
+    {
+      "from": [5.5, 3, 10.5], "to": [10.5, 7, 10.5],
+      "faces": {
+        "north": {"uv": [0.0, 0.0, 2.5, 2.0], "texture": "#atlas"},
+        "south": {"uv": [0.0, 0.0, 2.5, 2.0], "texture": "#atlas"}
+      }
+    },
+    {
+      "from": [5.5, 3, 5.5], "to": [5.5, 7, 10.5],
+      "faces": {
+        "west": {"uv": [0.0, 0.0, 2.5, 2.0], "texture": "#atlas"},
+        "east": {"uv": [0.0, 0.0, 2.5, 2.0], "texture": "#atlas"}
+      }
+    },
+    {
+      "from": [10.5, 3, 5.5], "to": [10.5, 7, 10.5],
+      "faces": {
+        "west": {"uv": [0.0, 0.0, 2.5, 2.0], "texture": "#atlas"},
+        "east": {"uv": [0.0, 0.0, 2.5, 2.0], "texture": "#atlas"}
       }
     }
   ]

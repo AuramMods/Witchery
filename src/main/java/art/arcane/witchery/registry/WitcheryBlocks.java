@@ -2,6 +2,8 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.AltarBlock;
+import art.arcane.witchery.block.CandelabraBlock;
+import art.arcane.witchery.block.ChaliceBlock;
 import art.arcane.witchery.block.DistilleryBlock;
 import art.arcane.witchery.block.KettleBlock;
 import art.arcane.witchery.block.PlacedItemBlock;
@@ -68,8 +70,6 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_BEARTRAP = Block.box(3.2D, 0.16D, 3.2D, 12.8D, 1.6D, 12.8D);
     private static final VoxelShape SHAPE_DEMONHEART = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 12.8D, 12.0D);
     private static final VoxelShape SHAPE_SKULL = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 8.0D, 12.0D);
-    private static final VoxelShape SHAPE_CHALICE = Block.box(4.8D, 0.0D, 5.92D, 10.08D, 7.36D, 11.12D);
-    private static final VoxelShape SHAPE_CANDELABRA = Block.box(1.6D, 0.0D, 1.6D, 14.4D, 16.0D, 14.4D);
     private static final VoxelShape SHAPE_BRAZIER = Block.box(3.2D, 0.0D, 3.2D, 12.8D, 15.2D, 12.8D);
     private static final VoxelShape SHAPE_CRYSTAL_BALL = Block.box(4.8D, 0.0D, 4.8D, 11.2D, 9.6D, 11.2D);
     private static final VoxelShape SHAPE_AREA_MARKER = Block.box(2.4D, 0.0D, 2.4D, 13.6D, 8.0D, 13.6D);
@@ -199,9 +199,9 @@ public final class WitcheryBlocks {
             case "wolfhead", "alluringskull" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.SKELETON_SKULL), SHAPE_SKULL, true);
             case "chalice" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BARS).sound(SoundType.METAL), SHAPE_CHALICE, true);
+                    new ChaliceBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BARS).noOcclusion().strength(3.0F));
             case "candelabra" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BARS).sound(SoundType.METAL), SHAPE_CANDELABRA, true);
+                    new CandelabraBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BARS).noOcclusion().strength(2.0F).lightLevel(state -> 15));
             case "brazier" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).sound(SoundType.METAL), SHAPE_BRAZIER, true);
             case "crystalball" ->

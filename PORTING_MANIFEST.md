@@ -482,6 +482,9 @@ The first migrated subtypes have individual item IDs. Preserve `witchery:ingredi
 
 | Legacy metadata | 1.20.1 item ID |
 |---:|---|
+| 0 | `witchery:candelabra` |
+| 1 | `witchery:chalice` |
+| 2 | `witchery:filled_chalice` |
 | 10 | `witchery:attuned_stone` |
 | 11 | `witchery:charged_attuned_stone` |
 | 14 | `witchery:mutandis` |

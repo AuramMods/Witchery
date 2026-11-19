@@ -7,6 +7,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 public enum WitcheryIngredient {
+    CANDELABRA(0, "candelabra"),
+    EMPTY_CHALICE(1, "chalice"),
+    FILLED_CHALICE(2, "filled_chalice"),
     ATTUNED_STONE(10, "attuned_stone"),
     CHARGED_ATTUNED_STONE(11, "charged_attuned_stone"),
     MUTANDIS(14, "mutandis"),

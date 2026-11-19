@@ -10,8 +10,26 @@
       ],
       "entries": [
         {
-          "type": "minecraft:item",
-          "name": "witchery:chalice"
+          "type": "minecraft:alternatives",
+          "children": [
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "block": "witchery:chalice",
+                  "condition": "minecraft:block_state_property",
+                  "properties": {
+                    "filled": "true"
+                  }
+                }
+              ],
+              "name": "witchery:filled_chalice"
+            },
+            {
+              "type": "minecraft:item",
+              "name": "witchery:chalice"
+            }
+          ]
         }
       ],
       "rolls": 1.0

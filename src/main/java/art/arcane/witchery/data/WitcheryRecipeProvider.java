@@ -156,5 +156,30 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .pattern(" S ")
                 .unlockedBy("has_emerald", has(Items.EMERALD))
                 .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, WitcheryIngredient.CANDELABRA.item())
+                .define('T', Items.TORCH)
+                .define('I', Items.IRON_INGOT)
+                .define('A', WitcheryIngredient.ATTUNED_STONE.item())
+                .pattern("TTT")
+                .pattern("IAI")
+                .pattern(" I ")
+                .unlockedBy("has_attuned_stone", has(WitcheryIngredient.ATTUNED_STONE.item()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, WitcheryIngredient.EMPTY_CHALICE.item())
+                .define('N', Items.GOLD_NUGGET)
+                .define('G', Items.GOLD_INGOT)
+                .define('A', WitcheryIngredient.ATTUNED_STONE.item())
+                .pattern("NAN")
+                .pattern("NGN")
+                .pattern(" G ")
+                .unlockedBy("has_attuned_stone", has(WitcheryIngredient.ATTUNED_STONE.item()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, WitcheryIngredient.FILLED_CHALICE.item())
+                .define('S', WitcheryIngredient.REDSTONE_SOUP.item())
+                .define('C', WitcheryIngredient.EMPTY_CHALICE.item())
+                .pattern("S")
+                .pattern("C")
+                .unlockedBy("has_redstone_soup", has(WitcheryIngredient.REDSTONE_SOUP.item()))
+                .save(recipeOutput);
     }
 }

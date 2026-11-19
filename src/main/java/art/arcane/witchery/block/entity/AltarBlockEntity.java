@@ -1,6 +1,7 @@
 package art.arcane.witchery.block.entity;
 
 import art.arcane.witchery.block.AltarBlock;
+import art.arcane.witchery.block.ChaliceBlock;
 import art.arcane.witchery.block.PlacedItemBlock;
 import art.arcane.witchery.power.AltarNature;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
@@ -106,8 +107,10 @@ public final class AltarBlockEntity extends BlockEntity {
                     candleBonus = 1;
                 }
             }
-            if (artifact.is(WitcheryBlocks.getRequired("chalice").get())) {
-                chaliceBonus = 1;
+            if (artifact.getBlock() instanceof ChaliceBlock) {
+                if (chaliceBonus == 0) {
+                    chaliceBonus = artifact.getValue(ChaliceBlock.FILLED) ? 2 : 1;
+                }
             } else if (artifact.is(WitcheryBlocks.getRequired("infinityegg").get())) {
                 infinityEgg = true;
             } else if (artifact.getBlock() instanceof PlacedItemBlock

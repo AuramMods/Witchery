@@ -1,5 +1,6 @@
 package art.arcane.witchery.data;
 
+import art.arcane.witchery.block.ChaliceBlock;
 import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.block.WitchCropBlock;
 import art.arcane.witchery.block.WitchWoodType;
@@ -50,6 +51,7 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                 case "snowdoubleslab" -> dropDoubleSlab(block, "snowslab");
                 case "witchesovenburning" -> dropOther(block, WitcheryBlocks.getRequired("witchesovenidle").get());
                 case "distilleryburning" -> dropOther(block, WitcheryBlocks.getRequired("distilleryidle").get());
+                case "chalice" -> dropChalice(block);
                 case "witchsapling", "witchlog", "witchwood" -> dropWitchWood(block);
                 case "witchleaves" -> dropWitchLeaves(block);
                 default -> {
@@ -63,6 +65,14 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                 }
             }
         }
+    }
+
+    private void dropChalice(Block block) {
+        LootItemCondition.Builder filled = LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
+                .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(ChaliceBlock.FILLED, true));
+        add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool()
+                .setRolls(ConstantValue.exactly(1)).add(AlternativesEntry.alternatives(
+                        LootItem.lootTableItem(WitcheryIngredient.FILLED_CHALICE.item()).when(filled), LootItem.lootTableItem(block))))));
     }
 
     private void dropWitchCrop(WitchCropBlock block) {

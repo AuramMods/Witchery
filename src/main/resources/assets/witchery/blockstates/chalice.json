@@ -1,7 +1,6 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/chalice"
-      }
-   }
+  "multipart": [
+    {"apply": {"model": "witchery:block/chalice"}},
+    {"when": {"filled": "true"}, "apply": {"model": "witchery:block/chalice_liquid"}}
+  ]
 }
