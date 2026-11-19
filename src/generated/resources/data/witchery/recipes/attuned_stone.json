@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "F": {
+      "item": "witchery:whiff_of_magic"
+    },
+    "L": {
+      "item": "minecraft:lava_bucket"
+    }
+  },
+  "pattern": [
+    "F",
+    "D",
+    "L"
+  ],
+  "result": {
+    "item": "witchery:attuned_stone"
+  },
+  "show_notification": true
+}

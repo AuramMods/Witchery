@@ -1,8 +1,20 @@
 package art.arcane.witchery.data;
 
+import art.arcane.witchery.Witchery;
+import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.FinishedRecipe;
+import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeProvider;
+import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.data.recipes.SimpleCookingRecipeBuilder;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 
 import java.util.function.Consumer;
 
@@ -13,6 +25,73 @@ public class WitcheryRecipeProvider extends RecipeProvider {
 
     @Override
     protected void buildRecipes(Consumer<FinishedRecipe> recipeOutput) {
-        // Breadth-first scaffold: recipe migration is a later depth pass.
+        Block oven = WitcheryBlocks.getRequired("witchesovenidle").get();
+        Block funnel = WitcheryBlocks.getRequired("fumefunnel").get();
+        Block filteredFunnel = WitcheryBlocks.getRequired("filteredfumefunnel").get();
+        Block witchLog = WitcheryBlocks.getRequired("witchlog").get();
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, oven)
+                .define('B', Blocks.IRON_BARS)
+                .define('I', Items.IRON_INGOT)
+                .pattern(" B ")
+                .pattern("III")
+                .pattern("IBI")
+                .unlockedBy("has_iron", has(Items.IRON_INGOT))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryIngredient.SOFT_CLAY_JAR.item(), 4)
+                .define('C', Items.CLAY_BALL)
+                .pattern(" C ")
+                .pattern("CCC")
+                .unlockedBy("has_clay", has(Items.CLAY_BALL))
+                .save(recipeOutput);
+        SimpleCookingRecipeBuilder.smelting(Ingredient.of(WitcheryIngredient.SOFT_CLAY_JAR.item()),
+                        RecipeCategory.MISC, WitcheryIngredient.CLAY_JAR.item(), 0, 200)
+                .unlockedBy("has_soft_jar", has(WitcheryIngredient.SOFT_CLAY_JAR.item()))
+                .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "clay_jar"));
+        SimpleCookingRecipeBuilder.smelting(Ingredient.of(ItemTags.SAPLINGS),
+                        RecipeCategory.MISC, WitcheryIngredient.WOOD_ASH.item(), 0, 200)
+                .unlockedBy("has_sapling", has(ItemTags.SAPLINGS))
+                .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "wood_ash"));
+        SimpleCookingRecipeBuilder.smelting(Ingredient.of(witchLog),
+                        RecipeCategory.MISC, Items.CHARCOAL, 0, 200)
+                .unlockedBy("has_witch_log", has(witchLog))
+                .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "charcoal_from_witch_log"));
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, funnel)
+                .define('E', Items.BUCKET)
+                .define('L', Items.LAVA_BUCKET)
+                .define('G', Blocks.GLOWSTONE)
+                .define('B', Blocks.IRON_BLOCK)
+                .define('I', Blocks.IRON_BARS)
+                .pattern("ELE")
+                .pattern("EGE")
+                .pattern("BIB")
+                .unlockedBy("has_witches_oven", has(oven))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryIngredient.ATTUNED_STONE.item())
+                .define('F', WitcheryIngredient.WHIFF_OF_MAGIC.item())
+                .define('D', Items.DIAMOND)
+                .define('L', Items.LAVA_BUCKET)
+                .pattern("F")
+                .pattern("D")
+                .pattern("L")
+                .unlockedBy("has_whiff_of_magic", has(WitcheryIngredient.WHIFF_OF_MAGIC.item()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryIngredient.FUME_FILTER.item())
+                .define('G', Blocks.GLASS)
+                .define('I', Items.IRON_INGOT)
+                .define('A', WitcheryIngredient.CHARGED_ATTUNED_STONE.item())
+                .pattern("GGG")
+                .pattern("IAI")
+                .pattern("GGG")
+                .unlockedBy("has_charged_stone", has(WitcheryIngredient.CHARGED_ATTUNED_STONE.item()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, filteredFunnel)
+                .define('B', funnel)
+                .define('F', WitcheryIngredient.FUME_FILTER.item())
+                .pattern("B")
+                .pattern("F")
+                .unlockedBy("has_fume_filter", has(WitcheryIngredient.FUME_FILTER.item()))
+                .save(recipeOutput);
     }
 }

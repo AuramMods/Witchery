@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "witchery:fumefunnel"
+    },
+    "F": {
+      "item": "witchery:fume_filter"
+    }
+  },
+  "pattern": [
+    "B",
+    "F"
+  ],
+  "result": {
+    "item": "witchery:filteredfumefunnel"
+  },
+  "show_notification": true
+}

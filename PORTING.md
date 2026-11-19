@@ -11,7 +11,9 @@
 - [x] Register all six slab item IDs as their corresponding block items while preserving the existing registry names. Single slabs use the modern double state when stacked. Legacy double blocks also drop two single slabs.
 - [x] Run data generation without the Auram extras and package the results. Java 17 `runData` generated 112 block loot tables and the legacy block tag. The reobfuscated `jar` task succeeded.
 - [x] On a disposable headless server, verify the single ice and snow drops, all three legacy double-slab drops, and the modern double witchwood slab state. All six runtime loot checks passed.
-- [ ] Register oven-related ingredient variants with explicit legacy metadata mappings. Port the oven and clay jar recipes and sapling smelting.
+- [x] Register oven-related ingredient variants with explicit legacy metadata mappings. Generate and package nine recipes, including the original oven and clay jar patterns and sapling-to-ash smelting.
+- [x] Verify soft-jar firing, vanilla and Witchery sapling ash, and witch-log charcoal in hopper-fed vanilla furnaces on a headless dedicated server. All four runtime checks passed.
+- [ ] Implement and verify legacy inventory upgrade from the recorded metadata mapping.
 - [ ] Wire the oven block entity, inventory, fuel, funnel timing, fume rolls, and menu through normal gameplay.
 - [ ] Verify survival progression and restart persistence with a real client and a dedicated server.
 

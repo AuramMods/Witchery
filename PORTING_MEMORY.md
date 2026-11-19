@@ -8,6 +8,8 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Treat the earlier phase snapshots as history. `runData` now runs against Witchery and Forge by default, writes run logs under `build/run-data`, and generates the packaged datapack under `src/generated/resources`.
 - Use `-PwithAuramMods` to add the bundled Auram development mods to a launch. Use `./gradlew jar` for packaging because `build` automatically deploys to the local Auram instance.
 - Use a disposable, headless server for gameplay checks. Launch client tests with zero master volume in a background or isolated test session.
+- Oven-related ingredients use stable individual IDs through `WitcheryIngredient`. The manifest records the old damage-to-ID mapping. The original `witchery:ingredient` ID remains registered for unconverted stacks.
+- `WitcheryRecipeProvider` generates the oven, clay jar, wood ash, witch log charcoal, attuned stone, and funnel recipes. Sapling smelting follows the legacy default of using the shared sapling tag. Charged attuned stones still depend on restoring the charging rite.
 
 ## Session Memory (2026-02-08)
 - Port target is Forge 1.20.1.

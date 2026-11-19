@@ -1,6 +1,7 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.item.WitcheryIngredient;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.BlockItem;
@@ -34,6 +35,10 @@ public final class WitcheryItems {
             registerLegacyItem(legacyName);
         }
 
+        for (WitcheryIngredient ingredient : WitcheryIngredient.values()) {
+            registerLegacyItem(ingredient.path());
+        }
+
         for (String legacyName : WitcheryEntities.all().keySet()) {
             registerLegacySpawnEgg(legacyName);
         }
@@ -54,7 +59,7 @@ public final class WitcheryItems {
         String path = RegistryNameUtil.normalizePath(legacyName);
         RegistryObject<Item> item = LEGACY_ITEMS.get(path);
         if (item == null) {
-            throw new IllegalStateException("Missing legacy item placeholder for path: " + path);
+            throw new IllegalStateException("Missing Witchery item for path: " + path);
         }
         return item;
     }

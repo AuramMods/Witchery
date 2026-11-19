@@ -477,6 +477,24 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 
 This is one registered item (`witchery:ingredient`) with many metadata subtypes.
 
+The first migrated subtypes have individual item IDs. Preserve `witchery:ingredient` for existing unconverted stacks. The mapping below is for the Witchery portion of a legacy stack upgrade.
+
+| Legacy metadata | 1.20.1 item ID |
+|---:|---|
+| 10 | `witchery:attuned_stone` |
+| 11 | `witchery:charged_attuned_stone` |
+| 18 | `witchery:wood_ash` |
+| 26 | `witchery:soft_clay_jar` |
+| 27 | `witchery:clay_jar` |
+| 28 | `witchery:foul_fume` |
+| 31 | `witchery:exhale_of_the_horned_one` |
+| 32 | `witchery:breath_of_the_goddess` |
+| 33 | `witchery:hint_of_rebirth` |
+| 34 | `witchery:whiff_of_magic` |
+| 35 | `witchery:reek_of_misfortune` |
+| 36 | `witchery:odour_of_purity` |
+| 73 | `witchery:fume_filter` |
+
 | Meta | Unlocalized Key |
 |---:|---|
 | 0 | `candelabra` |

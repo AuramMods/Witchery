@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "witchery:attuned_stone"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_whiff_of_magic": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "witchery:whiff_of_magic"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_whiff_of_magic",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "witchery:attuned_stone"
+    ]
+  },
+  "sends_telemetry_event": false
+}
