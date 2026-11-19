@@ -11,6 +11,27 @@
       "entries": [
         {
           "type": "minecraft:item",
+          "functions": [
+            {
+              "block": "witchery:witchwood",
+              "conditions": [
+                {
+                  "condition": "minecraft:inverted",
+                  "term": {
+                    "block": "witchery:witchwood",
+                    "condition": "minecraft:block_state_property",
+                    "properties": {
+                      "wood_type": "rowan"
+                    }
+                  }
+                }
+              ],
+              "function": "minecraft:copy_state",
+              "properties": [
+                "wood_type"
+              ]
+            }
+          ],
           "name": "witchery:witchwood"
         }
       ],

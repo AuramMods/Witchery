@@ -4,14 +4,19 @@ import art.arcane.witchery.client.screen.LegacyPlaceholderScreen;
 import art.arcane.witchery.client.screen.WitchesOvenScreen;
 import art.arcane.witchery.menu.LegacyPlaceholderMenu;
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryMenus;
 import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.RegistryObject;
@@ -19,6 +24,9 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 @Mod.EventBusSubscriber(modid = Witchery.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class WitcheryClient {
+    private static final ResourceLocation WOOD_TYPE_MODEL =
+            ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "wood_type");
+
     private WitcheryClient() {
     }
 
@@ -28,6 +36,10 @@ public final class WitcheryClient {
             MenuScreens.register(WitcheryMenus.WITCHES_OVEN.get(), WitchesOvenScreen::new);
             for (RegistryObject<MenuType<LegacyPlaceholderMenu>> menuType : WitcheryMenus.placeholders().values()) {
                 MenuScreens.register(menuType.get(), LegacyPlaceholderScreen::new);
+            }
+            for (String name : new String[]{"witchsapling", "witchleaves", "witchlog", "witchwood"}) {
+                ItemProperties.register(WitcheryBlocks.getRequired(name).get().asItem(), WOOD_TYPE_MODEL,
+                        (stack, level, entity, seed) -> WitchWoodType.fromStack(stack).ordinal());
             }
 
             for (String name : new String[]{
@@ -59,6 +71,33 @@ public final class WitcheryClient {
                 setRenderType(name, RenderType.translucent());
             }
         });
+    }
+
+    @SubscribeEvent
+    public static void registerBlockColors(RegisterColorHandlersEvent.Block event) {
+        event.register((state, level, pos, tint) -> {
+            if (tint != 0) {
+                return -1;
+            }
+            WitchWoodType wood = state.getValue(WitchWoodType.PROPERTY);
+            return wood == WitchWoodType.ROWAN && level != null && pos != null
+                    ? BiomeColors.getAverageFoliageColor(level, pos)
+                    : foliageColor(wood);
+        }, WitcheryBlocks.getRequired("witchleaves").get());
+    }
+
+    @SubscribeEvent
+    public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
+        event.register((stack, tint) -> tint == 0 ? foliageColor(WitchWoodType.fromStack(stack)) : -1,
+                WitcheryBlocks.getRequired("witchleaves").get());
+    }
+
+    private static int foliageColor(WitchWoodType wood) {
+        return switch (wood) {
+            case ROWAN -> 4764952;
+            case ALDER -> 3774771;
+            case HAWTHORN -> 6728294;
+        };
     }
 
     private static void setRenderType(String legacyName, RenderType renderType) {

@@ -1,6 +1,7 @@
 package art.arcane.witchery.block.entity;
 
 import art.arcane.witchery.block.WitchesOvenBlock;
+import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.menu.WitchesOvenMenu;
@@ -19,7 +20,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -222,12 +222,10 @@ public final class WitchesOvenBlockEntity extends BaseContainerBlockEntity imple
             return null;
         }
         if (input.is(WitcheryBlocks.getRequired("witchsapling").get().asItem())) {
-            CompoundTag state = input.getTagElement(BlockItem.BLOCK_STATE_TAG);
-            String wood = state == null ? "" : state.getString("wood_type");
-            return switch (wood) {
-                case "alder" -> WitcheryIngredient.REEK_OF_MISFORTUNE;
-                case "hawthorn" -> WitcheryIngredient.ODOUR_OF_PURITY;
-                default -> WitcheryIngredient.WHIFF_OF_MAGIC;
+            return switch (WitchWoodType.fromStack(input)) {
+                case ALDER -> WitcheryIngredient.REEK_OF_MISFORTUNE;
+                case HAWTHORN -> WitcheryIngredient.ODOUR_OF_PURITY;
+                case ROWAN -> WitcheryIngredient.WHIFF_OF_MAGIC;
             };
         }
         return WitcheryIngredient.FOUL_FUME;

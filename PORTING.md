@@ -17,8 +17,11 @@
 - [x] Verify server-side oven behavior across a restart. An active batch resumed from 100 ticks of progress at shutdown and completed after reopening the same world. Hopper-fed tests exercised all seven fume outputs and verified that acacia ash leaves the jar intact.
 - [x] Verify oven inventory conversion using legacy stacks after their item IDs have been resolved to namespaced strings. Known ingredient damage values map to modern IDs and preserve unrelated tags. Unconverted metadata survives another save.
 - [x] Verify oak fume and ash from the reobfuscated JAR on installed Forge 47.4.10. The headless test passed with Witchery alone and with the bundled Auram development mods. CoFH Core logged a client-mixin warning in the latter profile.
-- [ ] Verify the real client menu, shift-clicking, and end-to-end survival crafting. Restore survival acquisition and growth of all three Witchery sapling variants.
-- [ ] Finish oven parity for smelting experience, model details, and legacy sapling smelting configuration.
+- [x] Verify the real client menu and shift-clicking. An isolated muted Forge client joined a dedicated server in survival, crafted the oven and four soft clay jars from supplied base materials, fired the jars, placed the oven, inserted inputs, and collected eight ash and two oak fumes through the regular UI.
+- [x] Restore the oven's multipart model and texture atlas. Verified the new baked model on the isolated Forge client.
+- [x] Grow all three saplings via bone meal, preserve variant drops, and craft four matching planks per log. Verified all three trees, blocked growth, log and leaf loot, client-side planks crafting, and leaf decay with a real client nearby.
+- [ ] Restore survival acquisition of Witchery saplings through crop harvesting, cauldron brewing, and Mutandis. Verify the route from naturally sourced materials in a new survival world.
+- [ ] Finish oven parity for smelting experience and legacy sapling smelting configuration.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.

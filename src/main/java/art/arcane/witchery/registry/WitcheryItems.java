@@ -2,8 +2,10 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.item.WitchWoodBlockItem;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.DoubleHighBlockItem;
@@ -94,6 +96,8 @@ public final class WitcheryItems {
             case "bucketspirit" -> new BucketItem(WitcheryFluids.getRequiredSource("fluidspirit"), bucketProperties);
             case "buckethollowtears" -> new BucketItem(WitcheryFluids.getRequiredSource("hollowtears"), bucketProperties);
             case "bucketbrew" -> new BucketItem(WitcheryFluids.getRequiredSource("brew"), bucketProperties);
+            case "rowan_berries" -> new Item(new Item.Properties()
+                    .food(new FoodProperties.Builder().nutrition(1).saturationMod(6.0F).build()));
             case "witchwoodslab", "witchwooddoubleslab", "iceslab", "icedoubleslab", "snowslab", "snowdoubleslab" ->
                     createBlockItem(path);
             default -> new Item(new Item.Properties());
@@ -133,6 +137,11 @@ public final class WitcheryItems {
 
     private static BlockItem createBlockItem(String path) {
         Block block = WitcheryBlocks.getRequired(path).get();
+        switch (path) {
+            case "witchsapling", "witchleaves", "witchlog", "witchwood" -> {
+                return new WitchWoodBlockItem(block, new Item.Properties());
+            }
+        }
         return block instanceof DoorBlock
                 ? new DoubleHighBlockItem(block, new Item.Properties())
                 : new BlockItem(block, new Item.Properties());

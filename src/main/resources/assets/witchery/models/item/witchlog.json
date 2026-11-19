@@ -1,3 +1,17 @@
 {
-   "parent" : "witchery:block/witchlog"
+  "parent": "witchery:block/witchlog",
+  "overrides": [
+    {
+      "predicate": {
+        "witchery:wood_type": 1
+      },
+      "model": "witchery:item/witchlog_alder"
+    },
+    {
+      "predicate": {
+        "witchery:wood_type": 2
+      },
+      "model": "witchery:item/witchlog_hawthorn"
+    }
+  ]
 }

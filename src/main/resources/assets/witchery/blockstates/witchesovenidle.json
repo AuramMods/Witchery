@@ -1,12 +1,12 @@
 {
   "variants": {
-    "facing=north,lit=false": { "model": "witchery:block/witchesovenidle", "y": 180, "uvlock": true },
-    "facing=north,lit=true": { "model": "witchery:block/witchesovenburning", "y": 180, "uvlock": true },
-    "facing=east,lit=false": { "model": "witchery:block/witchesovenidle", "y": 270, "uvlock": true },
-    "facing=east,lit=true": { "model": "witchery:block/witchesovenburning", "y": 270, "uvlock": true },
-    "facing=south,lit=false": { "model": "witchery:block/witchesovenidle", "y": 0, "uvlock": true },
-    "facing=south,lit=true": { "model": "witchery:block/witchesovenburning", "y": 0, "uvlock": true },
-    "facing=west,lit=false": { "model": "witchery:block/witchesovenidle", "y": 90, "uvlock": true },
-    "facing=west,lit=true": { "model": "witchery:block/witchesovenburning", "y": 90, "uvlock": true }
+    "facing=north,lit=false": { "model": "witchery:block/witchesovenidle", "y": 0 },
+    "facing=north,lit=true": { "model": "witchery:block/witchesovenburning", "y": 0 },
+    "facing=east,lit=false": { "model": "witchery:block/witchesovenidle", "y": 90 },
+    "facing=east,lit=true": { "model": "witchery:block/witchesovenburning", "y": 90 },
+    "facing=south,lit=false": { "model": "witchery:block/witchesovenidle", "y": 180 },
+    "facing=south,lit=true": { "model": "witchery:block/witchesovenburning", "y": 180 },
+    "facing=west,lit=false": { "model": "witchery:block/witchesovenidle", "y": 270 },
+    "facing=west,lit=true": { "model": "witchery:block/witchesovenburning", "y": 270 }
   }
 }

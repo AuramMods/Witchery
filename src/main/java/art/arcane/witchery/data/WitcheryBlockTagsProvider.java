@@ -31,6 +31,13 @@ public class WitcheryBlockTagsProvider extends BlockTagsProvider {
         for (RegistryObject<Block> block : WitcheryBlocks.LEGACY_BLOCKS.values()) {
             tag(LEGACY_BLOCKS).add(block.get());
         }
+        Block log = WitcheryBlocks.getRequired("witchlog").get();
+        Block planks = WitcheryBlocks.getRequired("witchwood").get();
+        tag(BlockTags.LOGS).add(log);
+        tag(BlockTags.PLANKS).add(planks);
+        tag(BlockTags.LEAVES).add(WitcheryBlocks.getRequired("witchleaves").get());
+        tag(BlockTags.SAPLINGS).add(WitcheryBlocks.getRequired("witchsapling").get());
+        tag(BlockTags.MINEABLE_WITH_AXE).add(log, planks);
         tag(BlockTags.MINEABLE_WITH_PICKAXE).add(
                 WitcheryBlocks.getRequired("witchesovenidle").get(),
                 WitcheryBlocks.getRequired("witchesovenburning").get());

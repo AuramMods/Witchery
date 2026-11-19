@@ -235,5 +235,18 @@
    "item.witchery.whiff_of_magic" : "Whiff of Magic",
    "item.witchery.reek_of_misfortune" : "Reek of Misfortune",
    "item.witchery.odour_of_purity" : "Odour of Purity",
-   "item.witchery.fume_filter" : "Fume Filter"
+   "item.witchery.fume_filter" : "Fume Filter",
+   "block.witchery.witchsapling.rowan" : "Rowan Sapling",
+   "block.witchery.witchsapling.alder" : "Alder Sapling",
+   "block.witchery.witchsapling.hawthorn" : "Hawthorn Sapling",
+   "block.witchery.witchleaves.rowan" : "Rowan Leaves",
+   "block.witchery.witchleaves.alder" : "Alder Leaves",
+   "block.witchery.witchleaves.hawthorn" : "Hawthorn Leaves",
+   "block.witchery.witchlog.rowan" : "Rowan Log",
+   "block.witchery.witchlog.alder" : "Alder Log",
+   "block.witchery.witchlog.hawthorn" : "Hawthorn Log",
+   "block.witchery.witchwood.rowan" : "Rowan Planks",
+   "block.witchery.witchwood.alder" : "Alder Planks",
+   "block.witchery.witchwood.hawthorn" : "Hawthorn Planks",
+   "item.witchery.rowan_berries" : "Rowan Berries"
 }

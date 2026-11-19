@@ -1,3 +1,17 @@
 {
-  "parent": "witchery:block/witchleaves_rowan"
+  "parent": "witchery:block/witchleaves_rowan",
+  "overrides": [
+    {
+      "predicate": {
+        "witchery:wood_type": 1
+      },
+      "model": "witchery:item/witchleaves_alder"
+    },
+    {
+      "predicate": {
+        "witchery:wood_type": 2
+      },
+      "model": "witchery:item/witchleaves_hawthorn"
+    }
+  ]
 }

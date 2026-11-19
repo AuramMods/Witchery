@@ -12,6 +12,9 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - `WitcheryRecipeProvider` generates the oven, clay jar, wood ash, witch log charcoal, attuned stone, and funnel recipes. Sapling smelting follows the legacy default of using the shared sapling tag. Charged attuned stones still depend on restoring the charging rite.
 - `WitchesOvenBlockEntity` provides the oven's five slots and persists burn, cook, and inventory state. Headless server checks passed for the seven fume outputs, acacia ash with the jar left intact, restart progress, and known and unknown ingredient metadata fixtures.
 - The oven reads legacy ingredient metadata after the base item ID is resolved to `witchery:ingredient`. General conversion of numeric 1.7.10 save IDs still needs its own verified workflow.
+- A packaged Forge client with master volume zero and the OpenAL null driver can join the isolated server under Linux Xvfb. Survival crafting, firing jars, oven placement, shift-click input and output, the updated oven model, and wood-variant plank recipes were verified there.
+- Rowan, alder, and hawthorn use the existing `wood_type` state and retain the existing four family IDs. Non-rowan inventory stacks carry `BlockStateTag.wood_type`. Growable saplings use modern configured trees, with straight trunks for rowan and narrower and broader fancy trunks for alder and hawthorn.
+- The initial source of Witchery saplings is legacy Mutandis. Its unpowered cauldron recipe uses mandrake root, Exhale of the Horned One, and an egg added last to a full boiling cauldron.
 
 ## Session Memory (2026-02-08)
 - Port target is Forge 1.20.1.

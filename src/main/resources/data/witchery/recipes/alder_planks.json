@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "planks",
+  "ingredients": [
+    {
+      "type": "forge:partial_nbt",
+      "item": "witchery:witchlog",
+      "nbt": {
+        "BlockStateTag": {
+          "wood_type": "alder"
+        }
+      }
+    }
+  ],
+  "result": {
+    "item": "witchery:witchwood",
+    "count": 4,
+    "nbt": {
+      "BlockStateTag": {
+        "wood_type": "alder"
+      }
+    }
+  }
+}

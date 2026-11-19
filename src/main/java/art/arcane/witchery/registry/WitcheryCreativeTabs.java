@@ -1,6 +1,8 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.WitchWoodType;
+import art.arcane.witchery.item.WitchWoodBlockItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
@@ -19,7 +21,15 @@ public final class WitcheryCreativeTabs {
                         RegistryObject<net.minecraft.world.item.Item> iconItem = WitcheryItems.LEGACY_ITEMS.values().iterator().next();
                         return new ItemStack(iconItem.get());
                     })
-                    .displayItems((parameters, output) -> WitcheryItems.allForCreativeTab().forEach(item -> output.accept(item.get())))
+                    .displayItems((parameters, output) -> WitcheryItems.allForCreativeTab().forEach(entry -> {
+                        if (entry.get() instanceof WitchWoodBlockItem wood) {
+                            for (WitchWoodType type : WitchWoodType.values()) {
+                                output.accept(type.stack(wood));
+                            }
+                        } else {
+                            output.accept(entry.get());
+                        }
+                    }))
                     .build());
 
     private WitcheryCreativeTabs() {

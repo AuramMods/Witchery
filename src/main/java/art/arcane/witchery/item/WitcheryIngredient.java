@@ -19,6 +19,7 @@ public enum WitcheryIngredient {
     WHIFF_OF_MAGIC(34, "whiff_of_magic"),
     REEK_OF_MISFORTUNE(35, "reek_of_misfortune"),
     ODOUR_OF_PURITY(36, "odour_of_purity"),
+    ROWAN_BERRIES(63, "rowan_berries"),
     FUME_FILTER(73, "fume_filter");
 
     private static final String LEGACY_ID = "witchery:ingredient";
