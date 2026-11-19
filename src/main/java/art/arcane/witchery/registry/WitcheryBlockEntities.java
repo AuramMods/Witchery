@@ -3,6 +3,7 @@ package art.arcane.witchery.registry;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.AltarBlockEntity;
 import art.arcane.witchery.block.entity.DistilleryBlockEntity;
+import art.arcane.witchery.block.entity.PlacedItemBlockEntity;
 import art.arcane.witchery.block.entity.RiteHeartBlockEntity;
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
 import art.arcane.witchery.block.entity.WitchesOvenBlockEntity;
@@ -39,10 +40,14 @@ public final class WitcheryBlockEntities {
     public static final RegistryObject<BlockEntityType<RiteHeartBlockEntity>> CIRCLE =
             BLOCK_ENTITIES.register("circle", () -> BlockEntityType.Builder.of(RiteHeartBlockEntity::new,
                     WitcheryBlocks.getRequired("circle").get()).build(null));
+    public static final RegistryObject<BlockEntityType<PlacedItemBlockEntity>> PLACED_ITEM =
+            BLOCK_ENTITIES.register("placeditem", () -> BlockEntityType.Builder.of(PlacedItemBlockEntity::new,
+                    WitcheryBlocks.getRequired("placeditem").get()).build(null));
 
     static {
         LEGACY_BLOCK_ENTITIES.put("altar", ALTAR);
         LEGACY_BLOCK_ENTITIES.put("circle", CIRCLE);
+        LEGACY_BLOCK_ENTITIES.put("placeditem", PLACED_ITEM);
         LEGACY_BLOCK_ENTITIES.put("distilleryidle", DISTILLERY);
         LEGACY_BLOCK_ENTITIES.put("distilleryburning", LEGACY_BURNING_DISTILLERY);
         LEGACY_BLOCK_ENTITIES.put("cauldron", CAULDRON);

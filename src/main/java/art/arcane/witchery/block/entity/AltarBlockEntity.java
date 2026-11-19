@@ -1,9 +1,11 @@
 package art.arcane.witchery.block.entity;
 
 import art.arcane.witchery.block.AltarBlock;
+import art.arcane.witchery.block.PlacedItemBlock;
 import art.arcane.witchery.power.AltarNature;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryBlocks;
+import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -17,6 +19,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public final class AltarBlockEntity extends BlockEntity {
+    private static final int BASE_RANGE = 16;
+    public static final int MAX_RANGE = BASE_RANGE * 2;
     private static final int RECHARGE_INTERVAL = 20;
     private static final int SCAN_INTERVAL = 100;
     private static final int POWER_PER_SECOND = 10;
@@ -24,6 +28,7 @@ public final class AltarBlockEntity extends BlockEntity {
     private float power;
     private int powerScale = 1;
     private int recharge = 1;
+    private int range = BASE_RANGE;
     private long lastScan = Long.MIN_VALUE;
 
     public AltarBlockEntity(BlockPos pos, BlockState state) {
@@ -50,6 +55,7 @@ public final class AltarBlockEntity extends BlockEntity {
         int oldCapacity = capacity;
         int oldScale = powerScale;
         int oldRecharge = recharge;
+        int oldRange = range;
         float oldPower = power;
         long time = server.getGameTime();
         if (lastScan == Long.MIN_VALUE || time - lastScan >= SCAN_INTERVAL) {
@@ -58,18 +64,19 @@ public final class AltarBlockEntity extends BlockEntity {
         }
         updateArtifacts(server, structure);
         power = (int) Math.min(power + POWER_PER_SECOND * recharge, capacity());
-        if (oldPower != power || oldCapacity != capacity || oldScale != powerScale || oldRecharge != recharge) {
+        if (oldPower != power || oldCapacity != capacity || oldScale != powerScale || oldRecharge != recharge || oldRange != range) {
             setChanged();
         }
     }
 
     private void reset() {
-        if (lastScan != Long.MIN_VALUE || capacity != 0 || power != 0) {
+        if (lastScan != Long.MIN_VALUE || capacity != 0 || power != 0 || range != BASE_RANGE) {
             lastScan = Long.MIN_VALUE;
             capacity = 0;
             power = 0;
             powerScale = 1;
             recharge = 1;
+            range = BASE_RANGE;
             setChanged();
         }
     }
@@ -79,8 +86,10 @@ public final class AltarBlockEntity extends BlockEntity {
         int candleBonus = 0;
         int chaliceBonus = 0;
         boolean infinityEgg = false;
+        boolean arthana = false;
         for (BlockPos part : structure) {
-            BlockState artifact = level.getBlockState(part.above());
+            BlockPos artifactPos = part.above();
+            BlockState artifact = level.getBlockState(artifactPos);
             if (skullBonus == 0) {
                 if (artifact.is(Blocks.SKELETON_SKULL)) {
                     skullBonus = 1;
@@ -101,10 +110,15 @@ public final class AltarBlockEntity extends BlockEntity {
                 chaliceBonus = 1;
             } else if (artifact.is(WitcheryBlocks.getRequired("infinityegg").get())) {
                 infinityEgg = true;
+            } else if (artifact.getBlock() instanceof PlacedItemBlock
+                    && level.getBlockEntity(artifactPos) instanceof PlacedItemBlockEntity placed
+                    && placed.stack().is(WitcheryItems.getRequired("arthana").get())) {
+                arthana = true;
             }
         }
         powerScale = (1 + skullBonus + chaliceBonus) * (infinityEgg ? 10 : 1);
         recharge = (1 + skullBonus + candleBonus) * (infinityEgg ? 10 : 1);
+        range = arthana ? MAX_RANGE : BASE_RANGE;
     }
 
     @Nullable
@@ -115,6 +129,10 @@ public final class AltarBlockEntity extends BlockEntity {
 
     public boolean isCore(ServerLevel server) {
         return resolveCore(server) == this;
+    }
+
+    public boolean isInRange(BlockPos target) {
+        return worldPosition.distSqr(target) <= range * range;
     }
 
     public boolean consumePower(float amount) {
@@ -145,6 +163,7 @@ public final class AltarBlockEntity extends BlockEntity {
         capacity = Math.max(0, tag.getInt("MaxPower"));
         powerScale = Math.max(1, tag.getInt("PowerScale"));
         recharge = Math.max(1, tag.getInt("RechargeScale"));
+        range = tag.getInt("RangeScale") >= 2 ? MAX_RANGE : BASE_RANGE;
     }
 
     @Override
@@ -154,5 +173,6 @@ public final class AltarBlockEntity extends BlockEntity {
         tag.putInt("MaxPower", capacity);
         tag.putInt("PowerScale", powerScale);
         tag.putInt("RechargeScale", recharge);
+        tag.putInt("RangeScale", range / BASE_RANGE);
     }
 }

@@ -35,7 +35,10 @@
 - [ ] Finish the three late-game distillation recipes that require demon hearts or Brew of Flowing Spirit.
 - [x] Restore Ritual Chalk crafting and the Golden, Otherwhere, and Infernal Chalk conversions. Drawing uses the original glyph textures and chalk sound. All 11 packaged server checks passed, including support breakage, an idle ritual without an altar, and the Golden Chalk power discount from two white rings.
 - [x] Restore the Heart Glyph and the Rite of Charging. The rite needs a 16-glyph white ring and a 28-glyph white ring. Five offerings and 2,000 altar power produce a Charged Attuned Stone. All 10 packaged headless checks passed, including redstone activation and cancellation, restart, and refunding offerings when the altar is out of range.
-- [ ] Finish the altar artifact items and range upgrades, kettle recipes, the other powered cauldron recipes, and the remaining chalk rites.
+- [x] Restore Arthana crafting, placement, the 32-block altar range upgrade, and the vanilla creature drops for brewing and skulls. Ten packaged server checks passed for the range boundary, persistence, blade damage, and machine pause after removal.
+- [x] Run Forge GameTest in a disposable profile. Four tests passed for placing and recovering a damaged Arthana, bat and wolf drops with Looting, stacked chalk splitting and durability, and starting and completing the Rite of Charging through the Heart Glyph use interaction.
+- [ ] Verify the latest chalk, Heart Glyph, and placed-item models in the muted multiplayer client. The headless tests passed and the latest virtual client attempts hit a server watchdog stall.
+- [ ] Finish the remaining altar artifacts, kettle recipes, the other powered cauldron recipes, and the remaining chalk rites.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.

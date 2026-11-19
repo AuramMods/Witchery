@@ -3,6 +3,7 @@ package art.arcane.witchery.registry;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.item.AnointingPasteItem;
+import art.arcane.witchery.item.ArthanaItem;
 import art.arcane.witchery.item.MutandisItem;
 import art.arcane.witchery.item.RitualChalkItem;
 import art.arcane.witchery.item.WitcheryIngredient;
@@ -17,6 +18,8 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoorBlock;
@@ -110,6 +113,7 @@ public final class WitcheryItems {
             case "buckethollowtears" -> new BucketItem(WitcheryFluids.getRequiredSource("hollowtears"), bucketProperties);
             case "bucketbrew" -> new BucketItem(WitcheryFluids.getRequiredSource("brew"), bucketProperties);
             case "anointing_paste" -> new AnointingPasteItem(new Item.Properties());
+            case "arthana" -> new ArthanaItem();
             case "mutandis" -> new MutandisItem(new Item.Properties());
             case "chalkritual" -> new RitualChalkItem("circleglyphritual");
             case "chalkotherwhere" -> new RitualChalkItem("circleglyphotherwhere");
@@ -119,6 +123,8 @@ public final class WitcheryItems {
                     .food(new FoodProperties.Builder().nutrition(1).saturationMod(6.0F).build()));
             case "globe_artichoke" -> new Item(new Item.Properties()
                     .food(new FoodProperties.Builder().nutrition(20).saturationMod(0F).build()));
+            case "creeper_heart" -> new Item(new Item.Properties().food(new FoodProperties.Builder()
+                    .alwaysEat().effect(() -> new MobEffectInstance(MobEffects.CONFUSION, 20), 1.0F).build()));
             case "earmuffs" -> new ArmorItem(ArmorMaterials.LEATHER, ArmorItem.Type.HELMET, new Item.Properties());
             case "witchwoodslab", "witchwooddoubleslab", "iceslab", "icedoubleslab", "snowslab", "snowdoubleslab" ->
                     createBlockItem(path);

@@ -135,5 +135,15 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .pattern("AGA")
                 .unlockedBy("has_tear_of_the_goddess", has(WitcheryIngredient.TEAR_OF_THE_GODDESS.item()))
                 .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, WitcheryItems.getRequired("arthana").get())
+                .define('G', Items.GOLD_INGOT)
+                .define('N', Items.GOLD_NUGGET)
+                .define('E', Items.EMERALD)
+                .define('S', Items.STICK)
+                .pattern(" G ")
+                .pattern("NEN")
+                .pattern(" S ")
+                .unlockedBy("has_emerald", has(Items.EMERALD))
+                .save(recipeOutput);
     }
 }

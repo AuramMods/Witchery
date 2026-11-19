@@ -3,6 +3,7 @@ package art.arcane.witchery.registry;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.AltarBlock;
 import art.arcane.witchery.block.DistilleryBlock;
+import art.arcane.witchery.block.PlacedItemBlock;
 import art.arcane.witchery.block.RitualGlyphBlock;
 import art.arcane.witchery.block.RiteHeartBlock;
 import art.arcane.witchery.block.WitchCrop;
@@ -73,7 +74,6 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_CRYSTAL_BALL = Block.box(4.8D, 0.0D, 4.8D, 11.2D, 9.6D, 11.2D);
     private static final VoxelShape SHAPE_AREA_MARKER = Block.box(2.4D, 0.0D, 2.4D, 13.6D, 8.0D, 13.6D);
     private static final VoxelShape SHAPE_FETISH = Block.box(3.2D, 0.0D, 3.2D, 12.8D, 16.0D, 12.8D);
-    private static final VoxelShape SHAPE_PLACED_ITEM = Block.box(3.2D, 0.0D, 3.2D, 12.8D, 0.8D, 12.8D);
     private static final VoxelShape SHAPE_GLOW_GLOBE = Block.box(6.4D, 6.4D, 6.4D, 9.6D, 9.6D, 9.6D);
     private static final VoxelShape SHAPE_INFINITY_EGG = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
     private static final VoxelShape SHAPE_GARLIC_GARLAND = Block.box(1.6D, 12.8D, 13.6D, 14.4D, 16.0D, 16.0D);
@@ -210,8 +210,7 @@ public final class WitcheryBlocks {
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.STONE), SHAPE_AREA_MARKER, true);
             case "scarecrow", "trent", "witchsladder" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS), SHAPE_FETISH, true);
-            case "placeditem" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS), SHAPE_PLACED_ITEM, true);
+            case "placeditem" -> new PlacedItemBlock();
             case "glowglobe" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.GLASS), SHAPE_GLOW_GLOBE, true);
             case "infinityegg" ->

@@ -122,7 +122,7 @@ public final class DistilleryBlockEntity extends BaseContainerBlockEntity implem
 
     private void refreshAltar(ServerLevel level, BlockPos pos) {
         long tick = level.getGameTime();
-        if (tick % 40 == 0 || altar != null && (altar.isRemoved() || !altar.isCore(level))) {
+        if (tick % 40 == 0 || altar != null && (altar.isRemoved() || !altar.isInRange(pos) || !altar.isCore(level))) {
             altar = AltarPower.nearest(level, pos);
         }
     }

@@ -9,7 +9,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import org.jetbrains.annotations.Nullable;
 
 public final class AltarPower {
-    private static final int RANGE = 16;
+    private static final int RANGE = AltarBlockEntity.MAX_RANGE;
 
     private AltarPower() {
     }
@@ -27,7 +27,7 @@ public final class AltarPower {
                 for (BlockEntity blockEntity : chunk.getBlockEntities().values()) {
                     if (blockEntity instanceof AltarBlockEntity altar) {
                         double distance = altar.getBlockPos().distSqr(pos);
-                        if (distance <= nearestDistance && altar.isCore(level)) {
+                        if (distance <= nearestDistance && altar.isInRange(pos) && altar.isCore(level)) {
                             nearestDistance = distance;
                             closest = altar;
                         }

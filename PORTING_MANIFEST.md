@@ -490,6 +490,8 @@ The first migrated subtypes have individual item IDs. Preserve `witchery:ingredi
 | 18 | `witchery:wood_ash` |
 | 21 | `witchery:belladonna_flower` |
 | 22 | `witchery:mandrake_root` |
+| 24 | `witchery:bat_wool` |
+| 25 | `witchery:dog_tongue` |
 | 26 | `witchery:soft_clay_jar` |
 | 27 | `witchery:clay_jar` |
 | 28 | `witchery:foul_fume` |
@@ -504,9 +506,11 @@ The first migrated subtypes have individual item IDs. Preserve `witchery:ingredi
 | 37 | `witchery:tear_of_the_goddess` |
 | 38 | `witchery:refined_evil` |
 | 63 | `witchery:rowan_berries` |
+| 66 | `witchery:spectral_dust` |
 | 67 | `witchery:ender_dew` |
 | 69 | `witchery:globe_artichoke` |
 | 73 | `witchery:fume_filter` |
+| 74 | `witchery:creeper_heart` |
 | 78 | `witchery:icy_needle` |
 | 111 | `witchery:wormwood_leaf` |
 | 153 | `witchery:anointing_paste` |

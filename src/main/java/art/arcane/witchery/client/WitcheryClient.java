@@ -9,6 +9,8 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.client.model.MandrakeModel;
 import art.arcane.witchery.client.renderer.MandrakeRenderer;
+import art.arcane.witchery.client.renderer.PlacedItemRenderer;
+import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryMenus;
@@ -44,6 +46,7 @@ public final class WitcheryClient {
     @SubscribeEvent
     public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(WitcheryEntities.MANDRAKE.get(), MandrakeRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.PLACED_ITEM.get(), PlacedItemRenderer::new);
     }
 
     @SubscribeEvent
