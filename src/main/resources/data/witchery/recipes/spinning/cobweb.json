@@ -1,0 +1,7 @@
+{
+  "type": "witchery:spinning",
+  "fibre": {"item": "minecraft:string"},
+  "fibre_count": 8,
+  "modifiers": [],
+  "result": {"item": "minecraft:cobweb"}
+}

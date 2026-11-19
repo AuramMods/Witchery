@@ -47,6 +47,10 @@
 - [x] Restore the Candelabra, Chalice, and Filled Chalice recipes, supplied models and textures, drops, and original altar bonuses. The Candelabra adds two to the recharge multiplier. The empty and filled chalices add one and two to the capacity multiplier, respectively.
 - [x] Pass 12 packaged artifact checks and all 11 disposable Forge GameTests. Verify block and item conversion fixtures, single drops when a chalice loses its support, and filled state and altar bonuses across restart.
 - [x] In muted survival, craft two chalices and a candelabra from supplied ingredients, fill one chalice with supplied Redstone Soup, and place all three on an altar. Verify the rendering and the altar's threefold capacity and recharge.
+- [x] Restore crafting, recipes, the original menu, and powered animation for the Spinning Wheel. It consumes 0.6 altar power per tick for 300 ticks. The original four recipes yield cobweb, Golden Thread, Fanciful Thread, and Tormented Twine.
+- [x] Verify all four spinning recipes, hopper input, blocked output, legacy fibre and modifier data, and a power interruption across restart on packaged Forge. All 15 checks and all 12 disposable Forge GameTests passed. The packaged Golden Thread recipe also passed with the bundled Auram development mods.
+- [x] Craft and place the wheel in muted survival, shift-click a hay bale and Whiff of Magic into the original menu, and collect three Golden Threads. The test used supplied starting materials and an existing altar.
+- [ ] Complete the Dream and Nightmare paths that yield Wispy and Disturbed Cotton for the two remaining survival spins.
 - [ ] Finish the remaining altar artifacts, kettle recipes, the other powered cauldron recipes, and the remaining chalk rites.
 
 ## Current Snapshot (2026-02-09)

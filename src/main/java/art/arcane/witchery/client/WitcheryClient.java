@@ -3,6 +3,7 @@ package art.arcane.witchery.client;
 import art.arcane.witchery.client.screen.AltarScreen;
 import art.arcane.witchery.client.screen.DistilleryScreen;
 import art.arcane.witchery.client.screen.LegacyPlaceholderScreen;
+import art.arcane.witchery.client.screen.SpinningWheelScreen;
 import art.arcane.witchery.client.screen.WitchesOvenScreen;
 import art.arcane.witchery.menu.LegacyPlaceholderMenu;
 import art.arcane.witchery.Witchery;
@@ -11,6 +12,7 @@ import art.arcane.witchery.client.model.MandrakeModel;
 import art.arcane.witchery.client.renderer.KettleRenderer;
 import art.arcane.witchery.client.renderer.MandrakeRenderer;
 import art.arcane.witchery.client.renderer.PlacedItemRenderer;
+import art.arcane.witchery.client.renderer.SpinningWheelRenderer;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
@@ -44,6 +46,7 @@ public final class WitcheryClient {
     public static void registerModelLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(MandrakeModel.LAYER, MandrakeModel::layer);
         event.registerLayerDefinition(KettleRenderer.LAYER, KettleRenderer::layer);
+        event.registerLayerDefinition(SpinningWheelRenderer.LAYER, SpinningWheelRenderer::layer);
     }
 
     @SubscribeEvent
@@ -51,6 +54,7 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.MANDRAKE.get(), MandrakeRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.THROWN_BREW.get(), ThrownItemRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.KETTLE.get(), KettleRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.SPINNING_WHEEL.get(), SpinningWheelRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.PLACED_ITEM.get(), PlacedItemRenderer::new);
     }
 
@@ -60,6 +64,7 @@ public final class WitcheryClient {
             MenuScreens.register(WitcheryMenus.WITCHES_OVEN.get(), WitchesOvenScreen::new);
             MenuScreens.register(WitcheryMenus.ALTAR.get(), AltarScreen::new);
             MenuScreens.register(WitcheryMenus.DISTILLERY.get(), DistilleryScreen::new);
+            MenuScreens.register(WitcheryMenus.SPINNING_WHEEL.get(), SpinningWheelScreen::new);
             for (RegistryObject<MenuType<LegacyPlaceholderMenu>> menuType : WitcheryMenus.placeholders().values()) {
                 MenuScreens.register(menuType.get(), LegacyPlaceholderScreen::new);
             }

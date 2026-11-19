@@ -1,0 +1,6 @@
+{
+  "type": "witchery:spinning",
+  "fibre": {"item": "minecraft:hay_block"},
+  "modifiers": [{"item": "witchery:whiff_of_magic"}],
+  "result": {"item": "witchery:golden_thread", "count": 3}
+}

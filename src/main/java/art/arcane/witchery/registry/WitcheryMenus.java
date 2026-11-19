@@ -4,6 +4,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.menu.AltarMenu;
 import art.arcane.witchery.menu.DistilleryMenu;
 import art.arcane.witchery.menu.LegacyPlaceholderMenu;
+import art.arcane.witchery.menu.SpinningWheelMenu;
 import art.arcane.witchery.menu.WitchesOvenMenu;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
@@ -28,6 +29,8 @@ public final class WitcheryMenus {
             () -> new MenuType<>(AltarMenu::new, FeatureFlags.DEFAULT_FLAGS));
     public static final RegistryObject<MenuType<DistilleryMenu>> DISTILLERY = MENU_TYPES.register("distillery",
             () -> new MenuType<>(DistilleryMenu::new, FeatureFlags.DEFAULT_FLAGS));
+    public static final RegistryObject<MenuType<SpinningWheelMenu>> SPINNING_WHEEL = MENU_TYPES.register("spinning_wheel",
+            () -> new MenuType<>(SpinningWheelMenu::new, FeatureFlags.DEFAULT_FLAGS));
 
     static {
         for (LegacyRegistryData.LegacyMenuIntent menuIntent : LegacyRegistryData.MENUS) {
@@ -81,6 +84,11 @@ public final class WitcheryMenus {
         if ("altar".equals(path)) {
             LEGACY_MENUS.put(path, ALTAR);
             LEGACY_MENUS_BY_GUI_ID.put(menuIntent.legacyGuiId(), ALTAR);
+            return;
+        }
+        if ("spinning_wheel".equals(path)) {
+            LEGACY_MENUS.put(path, SPINNING_WHEEL);
+            LEGACY_MENUS_BY_GUI_ID.put(menuIntent.legacyGuiId(), SPINNING_WHEEL);
             return;
         }
         if ("distillery".equals(path)) {

@@ -1,0 +1,7 @@
+{
+  "type": "witchery:spinning",
+  "fibre": {"item": "witchery:disturbed_cotton"},
+  "fibre_count": 4,
+  "modifiers": [{"item": "minecraft:string"}, {"item": "witchery:reek_of_misfortune"}],
+  "result": {"item": "witchery:tormented_twine"}
+}

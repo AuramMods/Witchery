@@ -5,6 +5,7 @@ import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeCategory;
@@ -14,6 +15,8 @@ import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.data.recipes.SimpleCookingRecipeBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
@@ -22,6 +25,9 @@ import net.minecraft.world.level.block.Blocks;
 import java.util.function.Consumer;
 
 public class WitcheryRecipeProvider extends RecipeProvider {
+    private static final TagKey<Item> WOODEN_RODS = TagKey.create(Registries.ITEM,
+            ResourceLocation.fromNamespaceAndPath("forge", "rods/wooden"));
+
     public WitcheryRecipeProvider(PackOutput output) {
         super(output);
     }
@@ -180,6 +186,17 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .pattern("S")
                 .pattern("C")
                 .unlockedBy("has_redstone_soup", has(WitcheryIngredient.REDSTONE_SOUP.item()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, WitcheryBlocks.getRequired("spinningwheel").get())
+                .define('F', Items.ITEM_FRAME)
+                .define('W', Items.WHITE_WOOL)
+                .define('S', WOODEN_RODS)
+                .define('P', ItemTags.PLANKS)
+                .define('A', WitcheryIngredient.ATTUNED_STONE.item())
+                .pattern("FFW")
+                .pattern("FFS")
+                .pattern("PAP")
+                .unlockedBy("has_attuned_stone", has(WitcheryIngredient.ATTUNED_STONE.item()))
                 .save(recipeOutput);
     }
 }

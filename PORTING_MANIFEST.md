@@ -520,6 +520,10 @@ The first migrated subtypes have individual item IDs. Preserve `witchery:ingredi
 | 74 | `witchery:creeper_heart` |
 | 77 | `witchery:brew_of_the_depths` |
 | 78 | `witchery:icy_needle` |
+| 99 | `witchery:disturbed_cotton` |
+| 100 | `witchery:fanciful_thread` |
+| 101 | `witchery:tormented_twine` |
+| 102 | `witchery:golden_thread` |
 | 111 | `witchery:wormwood_leaf` |
 | 153 | `witchery:anointing_paste` |
 | 156 | `witchery:wolfsbane_flower` |

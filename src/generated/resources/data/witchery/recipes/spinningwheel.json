@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "witchery:attuned_stone"
+    },
+    "F": {
+      "item": "minecraft:item_frame"
+    },
+    "P": {
+      "tag": "minecraft:planks"
+    },
+    "S": {
+      "tag": "forge:rods/wooden"
+    },
+    "W": {
+      "item": "minecraft:white_wool"
+    }
+  },
+  "pattern": [
+    "FFW",
+    "FFS",
+    "PAP"
+  ],
+  "result": {
+    "item": "witchery:spinningwheel"
+  },
+  "show_notification": true
+}

@@ -4,6 +4,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.brewing.CauldronRitualRecipe;
 import art.arcane.witchery.brewing.KettleRecipe;
 import art.arcane.witchery.crafting.DistillingRecipe;
+import art.arcane.witchery.crafting.SpinningRecipe;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -43,6 +44,15 @@ public final class WitcheryRecipes {
             });
     public static final RegistryObject<RecipeSerializer<KettleRecipe>> KETTLE_SERIALIZER =
             SERIALIZERS.register("kettle", KettleRecipe.Serializer::new);
+    public static final RegistryObject<RecipeType<SpinningRecipe>> SPINNING =
+            TYPES.register("spinning", () -> new RecipeType<>() {
+                @Override
+                public String toString() {
+                    return Witchery.MODID + ":spinning";
+                }
+            });
+    public static final RegistryObject<RecipeSerializer<SpinningRecipe>> SPINNING_SERIALIZER =
+            SERIALIZERS.register("spinning", SpinningRecipe.Serializer::new);
     public static final RegistryObject<RecipeType<ItemRiteRecipe>> ITEM_RITE =
             TYPES.register("item_rite", () -> new RecipeType<>() {
                 @Override

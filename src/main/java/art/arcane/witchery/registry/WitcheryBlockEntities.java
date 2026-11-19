@@ -7,6 +7,7 @@ import art.arcane.witchery.block.entity.DistilleryBlockEntity;
 import art.arcane.witchery.block.entity.KettleBlockEntity;
 import art.arcane.witchery.block.entity.PlacedItemBlockEntity;
 import art.arcane.witchery.block.entity.RiteHeartBlockEntity;
+import art.arcane.witchery.block.entity.SpinningWheelBlockEntity;
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
 import art.arcane.witchery.block.entity.WitchesOvenBlockEntity;
 import net.minecraft.core.BlockPos;
@@ -45,6 +46,9 @@ public final class WitcheryBlockEntities {
     public static final RegistryObject<BlockEntityType<KettleBlockEntity>> KETTLE =
             BLOCK_ENTITIES.register("kettle", () -> BlockEntityType.Builder.of(KettleBlockEntity::new,
                     WitcheryBlocks.getRequired("kettle").get()).build(null));
+    public static final RegistryObject<BlockEntityType<SpinningWheelBlockEntity>> SPINNING_WHEEL =
+            BLOCK_ENTITIES.register("spinningwheel", () -> BlockEntityType.Builder.of(SpinningWheelBlockEntity::new,
+                    WitcheryBlocks.getRequired("spinningwheel").get()).build(null));
     public static final RegistryObject<BlockEntityType<RiteHeartBlockEntity>> CIRCLE =
             BLOCK_ENTITIES.register("circle", () -> BlockEntityType.Builder.of(RiteHeartBlockEntity::new,
                     WitcheryBlocks.getRequired("circle").get()).build(null));
@@ -60,6 +64,7 @@ public final class WitcheryBlockEntities {
         LEGACY_BLOCK_ENTITIES.put("distilleryidle", DISTILLERY);
         LEGACY_BLOCK_ENTITIES.put("distilleryburning", LEGACY_BURNING_DISTILLERY);
         LEGACY_BLOCK_ENTITIES.put("kettle", KETTLE);
+        LEGACY_BLOCK_ENTITIES.put("spinningwheel", SPINNING_WHEEL);
         LEGACY_BLOCK_ENTITIES.put("cauldron", CAULDRON);
         LEGACY_BLOCK_ENTITIES.put("witchesovenidle", WITCHES_OVEN);
         LEGACY_BLOCK_ENTITIES.put("witchesovenburning", LEGACY_BURNING_OVEN);

@@ -1,0 +1,7 @@
+{
+  "type": "witchery:spinning",
+  "fibre": {"item": "witchery:somniancotton"},
+  "fibre_count": 4,
+  "modifiers": [{"item": "minecraft:string"}, {"item": "witchery:odour_of_purity"}],
+  "result": {"item": "witchery:fanciful_thread"}
+}
