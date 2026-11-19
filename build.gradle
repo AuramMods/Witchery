@@ -52,7 +52,7 @@ minecraft {
         }
 
         data {
-            workingDirectory project.file('run-data')
+            workingDirectory layout.buildDirectory.dir('run-data').get().asFile
             args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
         }
     }
@@ -80,11 +80,10 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
-    implementation fg.deobf("curse.maven:projecte-226410:4901949")
+    compileOnly fg.deobf("curse.maven:projecte-226410:4901949")
     
     compileOnly(fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"))
     compileOnly(fg.deobf("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}"))
-    runtimeOnly(fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}"))
 }
 
 tasks.named('processResources', ProcessResources).configure {
@@ -162,13 +161,15 @@ repositories {
     }
 }
 
-dependencies
-{
-    for (extraModJar in fileTree(dir: extraModsDir, include: '*.jar')) {
-        def basename = extraModJar.name.substring(0, extraModJar.name.length() - ".jar".length())
-        def versionSep = basename.lastIndexOf('-')
-        assert versionSep != -1
-        def artifactId = basename.substring(0, versionSep)
-        def version = basename.substring(versionSep + 1)
-        runtimeOnly fg.deobf("extra-mods:$artifactId:$version")}
+if (providers.gradleProperty('withAuramMods').isPresent()) {
+    dependencies {
+        for (extraModJar in fileTree(dir: extraModsDir, include: '*.jar')) {
+            def basename = extraModJar.name.substring(0, extraModJar.name.length() - ".jar".length())
+            def versionSep = basename.lastIndexOf('-')
+            assert versionSep != -1
+            def artifactId = basename.substring(0, versionSep)
+            def version = basename.substring(versionSep + 1)
+            runtimeOnly fg.deobf("extra-mods:$artifactId:$version")
+        }
+    }
 }

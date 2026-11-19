@@ -89,6 +89,8 @@ public final class WitcheryItems {
             case "bucketspirit" -> new BucketItem(WitcheryFluids.getRequiredSource("fluidspirit"), bucketProperties);
             case "buckethollowtears" -> new BucketItem(WitcheryFluids.getRequiredSource("hollowtears"), bucketProperties);
             case "bucketbrew" -> new BucketItem(WitcheryFluids.getRequiredSource("brew"), bucketProperties);
+            case "witchwoodslab", "witchwooddoubleslab", "iceslab", "icedoubleslab", "snowslab", "snowdoubleslab" ->
+                    createBlockItem(path);
             default -> new Item(new Item.Properties());
         };
     }
@@ -120,13 +122,14 @@ public final class WitcheryItems {
             return;
         }
 
-        RegistryObject<Block> block = WitcheryBlocks.getRequired(path);
-        RegistryObject<Item> item = ITEMS.register(path, () -> {
-            Block b = block.get();
-            return b instanceof DoorBlock
-                    ? new DoubleHighBlockItem(b, new Item.Properties())
-                    : new BlockItem(b, new Item.Properties());
-        });
+        RegistryObject<Item> item = ITEMS.register(path, () -> createBlockItem(path));
         LEGACY_BLOCK_ITEMS.put(path, item);
+    }
+
+    private static BlockItem createBlockItem(String path) {
+        Block block = WitcheryBlocks.getRequired(path).get();
+        return block instanceof DoorBlock
+                ? new DoubleHighBlockItem(block, new Item.Properties())
+                : new BlockItem(block, new Item.Properties());
     }
 }

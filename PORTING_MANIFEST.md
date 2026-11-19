@@ -99,6 +99,7 @@ Lifecycle stages:
 - `BlockBaseContainer.func_149663_c` auto-registers blocks + tile entities.
 - `ItemBase.func_77655_b` auto-registers items via `ItemUtil.registerItem`.
 - Namespaced IDs are trimmed to path for legacy `GameRegistry` (`witchery:name` -> `name`).
+- `witchwoodslab`, `iceslab`, `snowslab`, and their three legacy double IDs appear in both lists. The modern item IDs match their blocks. Both modern double states and the legacy double blocks drop two matching single slabs. Legacy witchwood color metadata remains a separate parity item.
 
 ## Spawn Egg Model Coverage (2026-02-09)
 - Runtime spawn egg item registration source:

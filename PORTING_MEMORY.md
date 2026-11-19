@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Session Memory (2026-11-19)
+
+- The playable port starts with the Witch's Oven. The original recipes are in `old-1.7.10/com/emoniph/witchery/WitcheryRecipes.java` and the machine behavior is in `blocks/BlockWitchesOven.java`.
+- Treat the earlier phase snapshots as history. `runData` now runs against Witchery and Forge by default, writes run logs under `build/run-data`, and generates the packaged datapack under `src/generated/resources`.
+- Use `-PwithAuramMods` to add the bundled Auram development mods to a launch. Use `./gradlew jar` for packaging because `build` automatically deploys to the local Auram instance.
+- Use a disposable, headless server for gameplay checks. Launch client tests with zero master volume in a background or isolated test session.
+
 ## Session Memory (2026-02-08)
 - Port target is Forge 1.20.1.
 - Legacy source is fully available at `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10`.

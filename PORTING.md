@@ -6,6 +6,15 @@
 - Check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MEMORY.md` before starting work each session.
 - Check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before hunting for source details.
 
+## Witch's Oven Milestone (2026-11-19)
+
+- [x] Register all six slab item IDs as their corresponding block items while preserving the existing registry names. Single slabs use the modern double state when stacked. Legacy double blocks also drop two single slabs.
+- [x] Run data generation without the Auram extras and package the results. Java 17 `runData` generated 112 block loot tables and the legacy block tag. The reobfuscated `jar` task succeeded.
+- [x] On a disposable headless server, verify the single ice and snow drops, all three legacy double-slab drops, and the modern double witchwood slab state. All six runtime loot checks passed.
+- [ ] Register oven-related ingredient variants with explicit legacy metadata mappings. Port the oven and clay jar recipes and sapling smelting.
+- [ ] Wire the oven block entity, inventory, fuel, funnel timing, fume rolls, and menu through normal gameplay.
+- [ ] Verify survival progression and restart persistence with a real client and a dedicated server.
+
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.
 - Manifest + durable memory created.
