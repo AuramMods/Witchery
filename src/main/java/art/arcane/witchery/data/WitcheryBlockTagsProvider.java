@@ -43,6 +43,7 @@ public class WitcheryBlockTagsProvider extends BlockTagsProvider {
         }
         tag(BlockTags.MINEABLE_WITH_AXE).add(log, planks);
         tag(BlockTags.MINEABLE_WITH_PICKAXE).add(
+                WitcheryBlocks.getRequired("altar").get(),
                 WitcheryBlocks.getRequired("witchesovenidle").get(),
                 WitcheryBlocks.getRequired("witchesovenburning").get(),
                 WitcheryBlocks.getRequired("cauldron").get());

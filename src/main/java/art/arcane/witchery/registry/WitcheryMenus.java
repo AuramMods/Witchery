@@ -1,6 +1,7 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.menu.AltarMenu;
 import art.arcane.witchery.menu.LegacyPlaceholderMenu;
 import art.arcane.witchery.menu.WitchesOvenMenu;
 import net.minecraft.world.flag.FeatureFlags;
@@ -22,6 +23,8 @@ public final class WitcheryMenus {
     private static final Map<String, RegistryObject<MenuType<LegacyPlaceholderMenu>>> PLACEHOLDER_MENUS = new LinkedHashMap<>();
     public static final RegistryObject<MenuType<WitchesOvenMenu>> WITCHES_OVEN = MENU_TYPES.register("witches_oven",
             () -> new MenuType<>(WitchesOvenMenu::new, FeatureFlags.DEFAULT_FLAGS));
+    public static final RegistryObject<MenuType<AltarMenu>> ALTAR = MENU_TYPES.register("altar",
+            () -> new MenuType<>(AltarMenu::new, FeatureFlags.DEFAULT_FLAGS));
 
     static {
         for (LegacyRegistryData.LegacyMenuIntent menuIntent : LegacyRegistryData.MENUS) {
@@ -70,6 +73,11 @@ public final class WitcheryMenus {
         if ("witches_oven".equals(path)) {
             LEGACY_MENUS.put(path, WITCHES_OVEN);
             LEGACY_MENUS_BY_GUI_ID.put(menuIntent.legacyGuiId(), WITCHES_OVEN);
+            return;
+        }
+        if ("altar".equals(path)) {
+            LEGACY_MENUS.put(path, ALTAR);
+            LEGACY_MENUS_BY_GUI_ID.put(menuIntent.legacyGuiId(), ALTAR);
             return;
         }
 

@@ -1,5 +1,6 @@
 package art.arcane.witchery.client;
 
+import art.arcane.witchery.client.screen.AltarScreen;
 import art.arcane.witchery.client.screen.LegacyPlaceholderScreen;
 import art.arcane.witchery.client.screen.WitchesOvenScreen;
 import art.arcane.witchery.menu.LegacyPlaceholderMenu;
@@ -48,6 +49,7 @@ public final class WitcheryClient {
     public static void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
             MenuScreens.register(WitcheryMenus.WITCHES_OVEN.get(), WitchesOvenScreen::new);
+            MenuScreens.register(WitcheryMenus.ALTAR.get(), AltarScreen::new);
             for (RegistryObject<MenuType<LegacyPlaceholderMenu>> menuType : WitcheryMenus.placeholders().values()) {
                 MenuScreens.register(menuType.get(), LegacyPlaceholderScreen::new);
             }
@@ -66,7 +68,7 @@ public final class WitcheryClient {
                     "placeditem", "glowglobe", "infinityegg", "garlicgarland", "poppetshelf", "dreamcatcher",
                     "daylightcollector", "bloodcrucible", "silvervat", "cauldron", "cactus",
                     "circle", "circleglyphritual", "circleglyphotherwhere", "circleglyphinfernal",
-                    "altar", "kettle", "spinningwheel", "distilleryidle", "distilleryburning",
+                    "kettle", "spinningwheel", "distilleryidle", "distilleryburning",
                     "witchesovenidle", "witchesovenburning", "fumefunnel", "filteredfumefunnel",
                     "coffinblock", "statueofworship", "refillingchest", "leechchest", "statuegoddess", "wolfaltar",
                     "stockade", "icestockade", "voidbramble"

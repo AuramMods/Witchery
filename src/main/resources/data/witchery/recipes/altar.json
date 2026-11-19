@@ -1,0 +1,57 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "BWE",
+    "SRS",
+    "SRS"
+  ],
+  "key": {
+    "B": {
+      "item": "witchery:breath_of_the_goddess"
+    },
+    "W": {
+      "type": "forge:partial_nbt",
+      "item": "minecraft:potion",
+      "nbt": {
+        "Potion": "minecraft:water"
+      }
+    },
+    "E": {
+      "item": "witchery:exhale_of_the_horned_one"
+    },
+    "S": {
+      "item": "minecraft:stone_bricks"
+    },
+    "R": {
+      "type": "forge:difference",
+      "base": {
+        "item": "witchery:witchlog"
+      },
+      "subtracted": [
+        {
+          "type": "forge:partial_nbt",
+          "item": "witchery:witchlog",
+          "nbt": {
+            "BlockStateTag": {
+              "wood_type": "alder"
+            }
+          }
+        },
+        {
+          "type": "forge:partial_nbt",
+          "item": "witchery:witchlog",
+          "nbt": {
+            "BlockStateTag": {
+              "wood_type": "hawthorn"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "result": {
+    "item": "witchery:altar",
+    "count": 3
+  }
+}

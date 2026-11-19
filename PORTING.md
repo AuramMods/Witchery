@@ -26,7 +26,9 @@
 - [x] Verify the normal client interactions. In the isolated muted survival session, craft the paste from supplied seeds, anoint and fill the cauldron with three buckets, drop in the root from a harvested mandrake and the fume from the oven test, add an egg, collect six Mutandis, and mutate an oak sapling to alder.
 - [ ] Verify the full sapling acquisition route from naturally sourced materials in a new survival world.
 - [ ] Finish oven parity for smelting experience and legacy sapling smelting configuration.
-- [ ] Restore altar power, distilling and its ingredients, kettle recipes, and powered cauldron brewing. The current cauldron handles water and unpowered item-output recipes.
+- [x] Restore the six-block altar, its rowan-log recipe, nature-based power, initial altar artifacts, and multiplayer power display. Fifteen packaged headless checks passed, including invalid shapes, capacity caps, bonuses, and saving 200 power across a restart.
+- [x] In the muted survival session, craft three altar blocks from supplied ingredients, place them to complete a partially built altar, and verify the power display updates from 40 capacity at x1 to 80 at x3 after adding a skull and torch.
+- [ ] Finish the altar artifact items and range upgrades, then restore distillation, kettle recipes, and powered cauldron brewing. The current cauldron handles water and unpowered item-output recipes.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.
