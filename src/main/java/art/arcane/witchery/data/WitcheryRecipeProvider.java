@@ -32,6 +32,7 @@ public class WitcheryRecipeProvider extends RecipeProvider {
         Block funnel = WitcheryBlocks.getRequired("fumefunnel").get();
         Block filteredFunnel = WitcheryBlocks.getRequired("filteredfumefunnel").get();
         Block witchLog = WitcheryBlocks.getRequired("witchlog").get();
+        Block distillery = WitcheryBlocks.getRequired("distilleryidle").get();
 
         ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, oven)
                 .define('B', Blocks.IRON_BARS)
@@ -110,6 +111,20 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .requires(WitchCrop.BELLADONNA.seed())
                 .requires(WitchCrop.SNOWBELL.seed())
                 .unlockedBy("has_mandrake_seeds", has(WitchCrop.MANDRAKE.seed()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, distillery)
+                .define('J', WitcheryIngredient.CLAY_JAR.item())
+                .define('I', Items.IRON_INGOT)
+                .define('G', Items.GOLD_INGOT)
+                .define('A', WitcheryIngredient.ATTUNED_STONE.item())
+                .pattern("JIJ")
+                .pattern("III")
+                .pattern("GAG")
+                .unlockedBy("has_attuned_stone", has(WitcheryIngredient.ATTUNED_STONE.item()))
+                .save(recipeOutput);
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, WitcheryIngredient.QUICKLIME.item())
+                .requires(WitcheryIngredient.WOOD_ASH.item())
+                .unlockedBy("has_wood_ash", has(WitcheryIngredient.WOOD_ASH.item()))
                 .save(recipeOutput);
     }
 }

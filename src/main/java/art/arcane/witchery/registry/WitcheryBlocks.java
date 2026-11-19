@@ -2,6 +2,7 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.AltarBlock;
+import art.arcane.witchery.block.DistilleryBlock;
 import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.block.WitchCropBlock;
 import art.arcane.witchery.block.WitchLeavesBlock;
@@ -151,8 +152,11 @@ public final class WitcheryBlocks {
                     new DoorBlock(BlockBehaviour.Properties.copy(Blocks.OAK_DOOR).noOcclusion(), BlockSetType.OAK);
             case "altar" -> new AltarBlock(BlockBehaviour.Properties.copy(Blocks.STONE).strength(2.0F));
             case "kettle" -> new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion(), SHAPE_KETTLE, true);
-            case "spinningwheel", "distilleryidle", "distilleryburning" ->
+            case "spinningwheel" ->
                     new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion(), SHAPE_MACHINE_COMPACT, true);
+            case "distilleryidle", "distilleryburning" ->
+                    new DistilleryBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).strength(3.5F).noOcclusion()
+                            .lightLevel(state -> state.getValue(DistilleryBlock.LIT) ? 6 : 0));
             case "witchesovenidle", "witchesovenburning" ->
                     new WitchesOvenBlock(BlockBehaviour.Properties.copy(Blocks.FURNACE)
                             .strength(3.5F)

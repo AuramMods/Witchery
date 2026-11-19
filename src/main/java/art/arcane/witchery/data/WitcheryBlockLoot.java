@@ -49,6 +49,7 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                 case "icedoubleslab" -> dropDoubleSlab(block, "iceslab");
                 case "snowdoubleslab" -> dropDoubleSlab(block, "snowslab");
                 case "witchesovenburning" -> dropOther(block, WitcheryBlocks.getRequired("witchesovenidle").get());
+                case "distilleryburning" -> dropOther(block, WitcheryBlocks.getRequired("distilleryidle").get());
                 case "witchsapling", "witchlog", "witchwood" -> dropWitchWood(block);
                 case "witchleaves" -> dropWitchLeaves(block);
                 default -> {

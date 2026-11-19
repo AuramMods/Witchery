@@ -114,7 +114,18 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
     }
 
     public boolean addIngredient(ItemStack offered) {
-        if (!(level instanceof ServerLevel server) || offered.isEmpty() || !isBoiling() || ritual != null) {
+        if (!(level instanceof ServerLevel server) || offered.isEmpty() || tank.isEmpty()) {
+            return false;
+        }
+        if (offered.is(WitcheryIngredient.GYPSUM.item())) {
+            clearMixture();
+            BlockPos pos = getBlockPos();
+            server.sendParticles(ParticleTypes.SMOKE, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5,
+                    8, 0.22, 0.16, 0.22, 0.03);
+            server.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.7F, 1.3F);
+            return true;
+        }
+        if (!isBoiling() || ritual != null) {
             return false;
         }
         List<CauldronRitualRecipe> recipes = server.getRecipeManager().getAllRecipesFor(WitcheryRecipes.CAULDRON_RITUAL.get());
@@ -162,6 +173,13 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         if (!server.addFreshEntity(result)) {
             return;
         }
+        clearMixture();
+        server.sendParticles(ParticleTypes.POOF, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5,
+                8, 0.25, 0.2, 0.25, 0.02);
+        server.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.7F, 1.3F);
+    }
+
+    private void clearMixture() {
         ingredients.clear();
         ritual = null;
         ritualTicks = 0;
@@ -169,9 +187,6 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         tank.setFluid(FluidStack.EMPTY);
         updateState();
         setChanged();
-        server.sendParticles(ParticleTypes.POOF, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5,
-                8, 0.25, 0.2, 0.25, 0.02);
-        server.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.7F, 1.3F);
     }
 
     private void splash(ServerLevel server) {

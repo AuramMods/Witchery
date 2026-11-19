@@ -1,0 +1,26 @@
+{
+  "type": "witchery:distilling",
+  "jars": 3,
+  "ingredients": [
+    {
+      "item": "witchery:diamond_vapour"
+    },
+    {
+      "item": "minecraft:ghast_tear"
+    }
+  ],
+  "results": [
+    {
+      "item": "witchery:odour_of_purity"
+    },
+    {
+      "item": "witchery:reek_of_misfortune"
+    },
+    {
+      "item": "witchery:foul_fume"
+    },
+    {
+      "item": "witchery:refined_evil"
+    }
+  ]
+}

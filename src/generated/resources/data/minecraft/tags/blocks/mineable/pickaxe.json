@@ -1,6 +1,8 @@
 {
   "values": [
     "witchery:altar",
+    "witchery:distilleryidle",
+    "witchery:distilleryburning",
     "witchery:witchesovenidle",
     "witchery:witchesovenburning",
     "witchery:cauldron"

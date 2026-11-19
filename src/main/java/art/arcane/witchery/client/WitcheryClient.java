@@ -1,6 +1,7 @@
 package art.arcane.witchery.client;
 
 import art.arcane.witchery.client.screen.AltarScreen;
+import art.arcane.witchery.client.screen.DistilleryScreen;
 import art.arcane.witchery.client.screen.LegacyPlaceholderScreen;
 import art.arcane.witchery.client.screen.WitchesOvenScreen;
 import art.arcane.witchery.menu.LegacyPlaceholderMenu;
@@ -50,6 +51,7 @@ public final class WitcheryClient {
         event.enqueueWork(() -> {
             MenuScreens.register(WitcheryMenus.WITCHES_OVEN.get(), WitchesOvenScreen::new);
             MenuScreens.register(WitcheryMenus.ALTAR.get(), AltarScreen::new);
+            MenuScreens.register(WitcheryMenus.DISTILLERY.get(), DistilleryScreen::new);
             for (RegistryObject<MenuType<LegacyPlaceholderMenu>> menuType : WitcheryMenus.placeholders().values()) {
                 MenuScreens.register(menuType.get(), LegacyPlaceholderScreen::new);
             }

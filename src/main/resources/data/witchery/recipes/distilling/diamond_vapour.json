@@ -1,0 +1,23 @@
+{
+  "type": "witchery:distilling",
+  "jars": 3,
+  "ingredients": [
+    {
+      "item": "minecraft:diamond"
+    },
+    {
+      "item": "witchery:oil_of_vitriol"
+    }
+  ],
+  "results": [
+    {
+      "item": "witchery:diamond_vapour"
+    },
+    {
+      "item": "witchery:diamond_vapour"
+    },
+    {
+      "item": "witchery:odour_of_purity"
+    }
+  ]
+}

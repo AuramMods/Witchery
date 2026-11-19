@@ -2,6 +2,7 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.AltarBlockEntity;
+import art.arcane.witchery.block.entity.DistilleryBlockEntity;
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
 import art.arcane.witchery.block.entity.WitchesOvenBlockEntity;
 import net.minecraft.core.BlockPos;
@@ -30,9 +31,15 @@ public final class WitcheryBlockEntities {
     public static final RegistryObject<BlockEntityType<AltarBlockEntity>> ALTAR =
             BLOCK_ENTITIES.register("altar", () -> BlockEntityType.Builder.of(AltarBlockEntity::new,
                     WitcheryBlocks.getRequired("altar").get()).build(null));
+    public static final RegistryObject<BlockEntityType<DistilleryBlockEntity>> DISTILLERY =
+            BLOCK_ENTITIES.register("distilleryidle", () -> distilleryType(WitcheryBlockEntities::createDistillery));
+    public static final RegistryObject<BlockEntityType<DistilleryBlockEntity>> LEGACY_BURNING_DISTILLERY =
+            BLOCK_ENTITIES.register("distilleryburning", () -> distilleryType(WitcheryBlockEntities::createLegacyBurningDistillery));
 
     static {
         LEGACY_BLOCK_ENTITIES.put("altar", ALTAR);
+        LEGACY_BLOCK_ENTITIES.put("distilleryidle", DISTILLERY);
+        LEGACY_BLOCK_ENTITIES.put("distilleryburning", LEGACY_BURNING_DISTILLERY);
         LEGACY_BLOCK_ENTITIES.put("cauldron", CAULDRON);
         LEGACY_BLOCK_ENTITIES.put("witchesovenidle", WITCHES_OVEN);
         LEGACY_BLOCK_ENTITIES.put("witchesovenburning", LEGACY_BURNING_OVEN);
@@ -64,6 +71,20 @@ public final class WitcheryBlockEntities {
 
     private static WitchesOvenBlockEntity createLegacyBurningOven(BlockPos pos, BlockState state) {
         return new WitchesOvenBlockEntity(LEGACY_BURNING_OVEN.get(), pos, state);
+    }
+
+    private static BlockEntityType<DistilleryBlockEntity> distilleryType(BlockEntityType.BlockEntitySupplier<DistilleryBlockEntity> factory) {
+        return BlockEntityType.Builder.of(factory,
+                WitcheryBlocks.getRequired("distilleryidle").get(),
+                WitcheryBlocks.getRequired("distilleryburning").get()).build(null);
+    }
+
+    private static DistilleryBlockEntity createDistillery(BlockPos pos, BlockState state) {
+        return new DistilleryBlockEntity(DISTILLERY.get(), pos, state);
+    }
+
+    private static DistilleryBlockEntity createLegacyBurningDistillery(BlockPos pos, BlockState state) {
+        return new DistilleryBlockEntity(LEGACY_BURNING_DISTILLERY.get(), pos, state);
     }
 
     @SuppressWarnings("unchecked")

@@ -79,7 +79,7 @@ public final class WitchesCauldronBlock extends BaseEntityBlock {
 
     @Override
     public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-        if (level.isClientSide || !state.getValue(BOILING) || !(entity instanceof ItemEntity item) || !item.isAlive()
+        if (level.isClientSide || state.getValue(WATER) == 0 || !(entity instanceof ItemEntity item) || !item.isAlive()
                 || !(level.getBlockEntity(pos) instanceof WitchesCauldronBlockEntity cauldron)) {
             return;
         }

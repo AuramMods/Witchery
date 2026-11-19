@@ -65,6 +65,11 @@ public record CauldronRitualRecipe(ResourceLocation id, List<Ingredient> ingredi
     }
 
     @Override
+    public boolean isSpecial() {
+        return true;
+    }
+
+    @Override
     public ItemStack getResultItem(RegistryAccess registries) {
         return result;
     }

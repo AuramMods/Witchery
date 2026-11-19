@@ -24,11 +24,16 @@
 - [x] Restore Anointing Paste, the Witch's Cauldron, and its first unpowered brew. Three buckets of water and fire underneath allow mandrake root and Exhale of the Horned One to brew six Mutandis when an egg is added last.
 - [x] Verify the cauldron with the reobfuscated JAR on headless Forge. All 15 checks passed, including rejected ingredients and an early egg, two-bucket behavior, either ingredient order, and six Mutandis after restarting an active ritual at 39 of 210 ticks.
 - [x] Verify the normal client interactions. In the isolated muted survival session, craft the paste from supplied seeds, anoint and fill the cauldron with three buckets, drop in the root from a harvested mandrake and the fume from the oven test, add an egg, collect six Mutandis, and mutate an oak sapling to alder.
+- [x] Harvest the mutated alder sapling and verify its saved wood variant. Check that Mutandis changes the potted specimen in place through the normal client interaction.
 - [ ] Verify the full sapling acquisition route from naturally sourced materials in a new survival world.
 - [ ] Finish oven parity for smelting experience and legacy sapling smelting configuration.
 - [x] Restore the six-block altar, its rowan-log recipe, nature-based power, initial altar artifacts, and multiplayer power display. Fifteen packaged headless checks passed, including invalid shapes, capacity caps, bonuses, and saving 200 power across a restart.
 - [x] In the muted survival session, craft three altar blocks from supplied ingredients, place them to complete a partially built altar, and verify the power display updates from 40 capacity at x1 to 80 at x3 after adding a skull and torch.
-- [ ] Finish the altar artifact items and range upgrades, then restore distillation, kettle recipes, and powered cauldron brewing. The current cauldron handles water and unpowered item-output recipes.
+- [x] Restore the distillery with altar power, clay jars, two ingredient slots, and four output slots. Its original layout and model display progress and loaded jars. Six distillation recipes work, including the gypsum and Tear of the Goddess needed for ritual chalk.
+- [x] Verify 19 packaged headless distillery checks. The first batch resumed at 82 of 800 ticks after restart, paused at 82 when the altar was broken, and finished when the altar reformed. Checks covered six recipe outputs, the 16-block range, jars, blocked output slots, old ingredient metadata, and gypsum clearing an unheated cauldron. The gypsum recipe also passed with the bundled Auram development mods.
+- [x] On the muted multiplayer client, craft the distillery and quicklime from supplied materials, place it by the altar, shift-click ingredients and jars into the menu, and collect gypsum, Oil of Vitriol, and slime through the output slots.
+- [ ] Finish the three late-game distillation recipes that require demon hearts or Brew of Flowing Spirit.
+- [ ] Finish the altar artifact items and range upgrades, kettle recipes, powered cauldron brewing, and chalk rites. The current cauldron handles water and unpowered item-output recipes.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.

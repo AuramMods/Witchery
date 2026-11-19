@@ -2,6 +2,7 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.brewing.CauldronRitualRecipe;
+import art.arcane.witchery.crafting.DistillingRecipe;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -22,6 +23,15 @@ public final class WitcheryRecipes {
             });
     public static final RegistryObject<RecipeSerializer<CauldronRitualRecipe>> CAULDRON_RITUAL_SERIALIZER =
             SERIALIZERS.register("cauldron_ritual", CauldronRitualRecipe.Serializer::new);
+    public static final RegistryObject<RecipeType<DistillingRecipe>> DISTILLING =
+            TYPES.register("distilling", () -> new RecipeType<>() {
+                @Override
+                public String toString() {
+                    return Witchery.MODID + ":distilling";
+                }
+            });
+    public static final RegistryObject<RecipeSerializer<DistillingRecipe>> DISTILLING_SERIALIZER =
+            SERIALIZERS.register("distilling", DistillingRecipe.Serializer::new);
 
     private WitcheryRecipes() {
     }
