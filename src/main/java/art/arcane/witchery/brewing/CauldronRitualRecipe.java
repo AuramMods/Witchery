@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public record CauldronRitualRecipe(ResourceLocation id, List<Ingredient> ingredients, Ingredient trigger,
-                                  ItemStack result, int time) implements Recipe<Container> {
+                                  ItemStack result, int time, int power) implements Recipe<Container> {
     public boolean acceptsIngredient(List<ItemStack> added, ItemStack offered) {
         if (added.size() >= ingredients.size()) {
             return false;
@@ -97,11 +97,12 @@ public record CauldronRitualRecipe(ResourceLocation id, List<Ingredient> ingredi
             List<Ingredient> ingredients = new ArrayList<>();
             GsonHelper.getAsJsonArray(json, "ingredients").forEach(entry -> ingredients.add(Ingredient.fromJson(entry, false)));
             int time = GsonHelper.getAsInt(json, "time", 210);
-            if (ingredients.size() > MAX_INGREDIENTS || time < 1) {
-                throw new JsonSyntaxException("Invalid cauldron ritual size or duration for " + id);
+            int power = GsonHelper.getAsInt(json, "power", 0);
+            if (ingredients.size() > MAX_INGREDIENTS || time < 1 || power < 0) {
+                throw new JsonSyntaxException("Invalid cauldron ritual size, duration or power for " + id);
             }
             return new CauldronRitualRecipe(id, List.copyOf(ingredients), Ingredient.fromJson(json.get("trigger"), false),
-                    ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "result")), time);
+                    ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "result")), time, power);
         }
 
         @Override
@@ -115,7 +116,7 @@ public record CauldronRitualRecipe(ResourceLocation id, List<Ingredient> ingredi
                 ingredients.add(Ingredient.fromNetwork(buffer));
             }
             return new CauldronRitualRecipe(id, List.copyOf(ingredients), Ingredient.fromNetwork(buffer),
-                    buffer.readItem(), buffer.readVarInt());
+                    buffer.readItem(), buffer.readVarInt(), buffer.readVarInt());
         }
 
         @Override
@@ -127,6 +128,7 @@ public record CauldronRitualRecipe(ResourceLocation id, List<Ingredient> ingredi
             recipe.trigger.toNetwork(buffer);
             buffer.writeItem(recipe.result);
             buffer.writeVarInt(recipe.time);
+            buffer.writeVarInt(recipe.power);
         }
     }
 }

@@ -126,5 +126,14 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .requires(WitcheryIngredient.WOOD_ASH.item())
                 .unlockedBy("has_wood_ash", has(WitcheryIngredient.WOOD_ASH.item()))
                 .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryItems.getRequired("chalkritual").get(), 2)
+                .define('A', WitcheryIngredient.WOOD_ASH.item())
+                .define('T', WitcheryIngredient.TEAR_OF_THE_GODDESS.item())
+                .define('G', WitcheryIngredient.GYPSUM.item())
+                .pattern("ATA")
+                .pattern("AGA")
+                .pattern("AGA")
+                .unlockedBy("has_tear_of_the_goddess", has(WitcheryIngredient.TEAR_OF_THE_GODDESS.item()))
+                .save(recipeOutput);
     }
 }

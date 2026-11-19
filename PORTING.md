@@ -33,7 +33,8 @@
 - [x] Verify 19 packaged headless distillery checks. The first batch resumed at 82 of 800 ticks after restart, paused at 82 when the altar was broken, and finished when the altar reformed. Checks covered six recipe outputs, the 16-block range, jars, blocked output slots, old ingredient metadata, and gypsum clearing an unheated cauldron. The gypsum recipe also passed with the bundled Auram development mods.
 - [x] On the muted multiplayer client, craft the distillery and quicklime from supplied materials, place it by the altar, shift-click ingredients and jars into the menu, and collect gypsum, Oil of Vitriol, and slime through the output slots.
 - [ ] Finish the three late-game distillation recipes that require demon hearts or Brew of Flowing Spirit.
-- [ ] Finish the altar artifact items and range upgrades, kettle recipes, powered cauldron brewing, and chalk rites. The current cauldron handles water and unpowered item-output recipes.
+- [x] Restore Ritual Chalk crafting and the Golden, Otherwhere, and Infernal Chalk conversions. Drawing uses the original glyph textures and chalk sound. All 11 packaged server checks passed, including support breakage, an idle ritual without an altar, and the Golden Chalk power discount from two white rings.
+- [ ] Finish the altar artifact items and range upgrades, kettle recipes, the other powered cauldron recipes, and chalk rites.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.

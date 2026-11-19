@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_tear_of_the_goddess": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "witchery:tear_of_the_goddess"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "witchery:chalkritual"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_tear_of_the_goddess",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "witchery:chalkritual"
+    ]
+  },
+  "sends_telemetry_event": false
+}

@@ -1,0 +1,22 @@
+{
+  "type": "witchery:cauldron_ritual",
+  "ingredients": [
+    {
+      "item": "minecraft:nether_wart"
+    },
+    {
+      "item": "witchery:tear_of_the_goddess"
+    },
+    {
+      "item": "minecraft:ender_pearl"
+    }
+  ],
+  "trigger": {
+    "item": "witchery:chalkritual"
+  },
+  "result": {
+    "item": "witchery:chalkotherwhere"
+  },
+  "power": 2000,
+  "time": 210
+}

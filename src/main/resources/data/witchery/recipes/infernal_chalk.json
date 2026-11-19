@@ -1,0 +1,19 @@
+{
+  "type": "witchery:cauldron_ritual",
+  "ingredients": [
+    {
+      "item": "minecraft:nether_wart"
+    },
+    {
+      "item": "minecraft:blaze_powder"
+    }
+  ],
+  "trigger": {
+    "item": "witchery:chalkritual"
+  },
+  "result": {
+    "item": "witchery:chalkinfernal"
+  },
+  "power": 2000,
+  "time": 210
+}

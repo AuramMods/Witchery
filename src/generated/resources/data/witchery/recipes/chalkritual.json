@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "witchery:wood_ash"
+    },
+    "G": {
+      "item": "witchery:gypsum"
+    },
+    "T": {
+      "item": "witchery:tear_of_the_goddess"
+    }
+  },
+  "pattern": [
+    "ATA",
+    "AGA",
+    "AGA"
+  ],
+  "result": {
+    "count": 2,
+    "item": "witchery:chalkritual"
+  },
+  "show_notification": true
+}

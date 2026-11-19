@@ -1,0 +1,6 @@
+{
+  "parent": "witchery:block/ritual_glyph",
+  "textures": {
+    "glyph": "witchery:block/circleglyph2.8"
+  }
+}

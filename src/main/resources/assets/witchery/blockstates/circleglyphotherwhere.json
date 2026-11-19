@@ -1,7 +1,40 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/circleglyphotherwhere"
-      }
-   }
+  "variants": {
+    "pattern=0": {
+      "model": "witchery:block/circleglyphotherwhere"
+    },
+    "pattern=1": {
+      "model": "witchery:block/circleglyphotherwhere_1"
+    },
+    "pattern=2": {
+      "model": "witchery:block/circleglyphotherwhere_2"
+    },
+    "pattern=3": {
+      "model": "witchery:block/circleglyphotherwhere_3"
+    },
+    "pattern=4": {
+      "model": "witchery:block/circleglyphotherwhere_4"
+    },
+    "pattern=5": {
+      "model": "witchery:block/circleglyphotherwhere_5"
+    },
+    "pattern=6": {
+      "model": "witchery:block/circleglyphotherwhere_6"
+    },
+    "pattern=7": {
+      "model": "witchery:block/circleglyphotherwhere_7"
+    },
+    "pattern=8": {
+      "model": "witchery:block/circleglyphotherwhere_8"
+    },
+    "pattern=9": {
+      "model": "witchery:block/circleglyphotherwhere_9"
+    },
+    "pattern=10": {
+      "model": "witchery:block/circleglyphotherwhere_10"
+    },
+    "pattern=11": {
+      "model": "witchery:block/circleglyphotherwhere_11"
+    }
+  }
 }

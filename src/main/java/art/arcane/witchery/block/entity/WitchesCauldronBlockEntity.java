@@ -3,8 +3,11 @@ package art.arcane.witchery.block.entity;
 import art.arcane.witchery.block.WitchesCauldronBlock;
 import art.arcane.witchery.brewing.CauldronRitualRecipe;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.power.AltarPower;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
+import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryRecipes;
+import art.arcane.witchery.ritual.RitualCircle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -98,19 +101,50 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         if (!cauldron.isBoiling()) {
             cauldron.ritualTicks = 0;
         } else if (cauldron.ritual != null && cauldron.tank.getFluidAmount() == CAPACITY) {
-            if (server.getRecipeManager().byKey(cauldron.ritual).orElse(null) instanceof CauldronRitualRecipe recipe) {
-                if (++cauldron.ritualTicks >= recipe.time()) {
-                    cauldron.completeRitual(server, pos, recipe);
-                }
-            } else {
-                cauldron.ritual = null;
-                cauldron.ritualTicks = 0;
-                cauldron.setChanged();
-            }
+            cauldron.advanceRitual(server, pos);
         }
         if (oldHeat != cauldron.heatTicks || oldProgress != cauldron.ritualTicks) {
             level.blockEntityChanged(pos);
         }
+    }
+
+    private void advanceRitual(ServerLevel level, BlockPos pos) {
+        if (!(level.getRecipeManager().byKey(ritual).orElse(null) instanceof CauldronRitualRecipe recipe)) {
+            ritual = null;
+            ritualTicks = 0;
+            setChanged();
+            return;
+        }
+        AltarBlockEntity altar = null;
+        int power = 0;
+        if (recipe.power() > 0) {
+            power = ritualPower(level, pos, recipe.power());
+            altar = AltarPower.nearest(level, pos);
+            if (altar == null || altar.power() < power) {
+                ritualTicks = 0;
+                return;
+            }
+        }
+        if (ritualTicks < recipe.time()) {
+            ritualTicks++;
+        }
+        if (ritualTicks == recipe.time()) {
+            completeRitual(level, pos, recipe, altar, power);
+        }
+    }
+
+    private static int ritualPower(ServerLevel level, BlockPos pos, int basePower) {
+        Block white = WitcheryBlocks.getRequired("circleglyphritual").get();
+        Block red = WitcheryBlocks.getRequired("circleglyphinfernal").get();
+        double multiplier = 1.4;
+        for (RitualCircle ring : List.of(RitualCircle.SMALL, RitualCircle.MEDIUM)) {
+            if (ring.matches(level, pos, white)) {
+                multiplier -= 0.2;
+            } else if (ring.matches(level, pos, red)) {
+                multiplier -= 0.37;
+            }
+        }
+        return (int) Math.floor(basePower * multiplier);
     }
 
     public boolean addIngredient(ItemStack offered) {
@@ -166,11 +200,16 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         return Mth.clamp(Mth.ceil(tank.getFluidAmount() / (float) BUCKET), 0, 3);
     }
 
-    private void completeRitual(ServerLevel server, BlockPos pos, CauldronRitualRecipe recipe) {
+    private void completeRitual(ServerLevel server, BlockPos pos, CauldronRitualRecipe recipe,
+                                @Nullable AltarBlockEntity altar, int power) {
         ItemEntity result = new ItemEntity(server, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
                 recipe.getResultItem(server.registryAccess()).copy(), 0, 0.2, 0);
         result.setDefaultPickUpDelay();
         if (!server.addFreshEntity(result)) {
+            return;
+        }
+        if (altar != null && !altar.consumePower(power)) {
+            result.discard();
             return;
         }
         clearMixture();

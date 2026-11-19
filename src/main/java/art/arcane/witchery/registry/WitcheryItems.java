@@ -4,6 +4,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.item.AnointingPasteItem;
 import art.arcane.witchery.item.MutandisItem;
+import art.arcane.witchery.item.RitualChalkItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.item.WitchWoodBlockItem;
 import art.arcane.witchery.item.WitchSeedsItem;
@@ -110,6 +111,10 @@ public final class WitcheryItems {
             case "bucketbrew" -> new BucketItem(WitcheryFluids.getRequiredSource("brew"), bucketProperties);
             case "anointing_paste" -> new AnointingPasteItem(new Item.Properties());
             case "mutandis" -> new MutandisItem(new Item.Properties());
+            case "chalkritual" -> new RitualChalkItem("circleglyphritual");
+            case "chalkotherwhere" -> new RitualChalkItem("circleglyphotherwhere");
+            case "chalkinfernal" -> new RitualChalkItem("circleglyphinfernal");
+            case "chalkheart" -> new RitualChalkItem("circle");
             case "rowan_berries" -> new Item(new Item.Properties()
                     .food(new FoodProperties.Builder().nutrition(1).saturationMod(6.0F).build()));
             case "globe_artichoke" -> new Item(new Item.Properties()

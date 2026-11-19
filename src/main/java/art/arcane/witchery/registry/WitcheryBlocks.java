@@ -3,6 +3,7 @@ package art.arcane.witchery.registry;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.AltarBlock;
 import art.arcane.witchery.block.DistilleryBlock;
+import art.arcane.witchery.block.RitualGlyphBlock;
 import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.block.WitchCropBlock;
 import art.arcane.witchery.block.WitchLeavesBlock;
@@ -229,8 +230,11 @@ public final class WitcheryBlocks {
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.STONE), SHAPE_BLOOD_CRUCIBLE, true);
             case "mirrorblock", "mirrorblock2" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.GLASS), SHAPE_MIRROR_PANEL, true);
-            case "circle", "circleglyphritual", "circleglyphotherwhere", "circleglyphinfernal" ->
+            case "circle" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.WHITE_CARPET), SHAPE_GLYPH, false);
+            case "circleglyphritual" -> new RitualGlyphBlock("chalkritual");
+            case "circleglyphotherwhere" -> new RitualGlyphBlock("chalkotherwhere");
+            case "circleglyphinfernal" -> new RitualGlyphBlock("chalkinfernal");
             case "spiritportal", "tormentportal", "mirrorwall" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.NETHER_PORTAL), SHAPE_PORTAL_CROSS, false);
             case "spiritflowing" -> createLegacyFluidBlock("fluidspirit");

@@ -1,0 +1,19 @@
+{
+  "type": "witchery:cauldron_ritual",
+  "ingredients": [
+    {
+      "item": "witchery:mandrake_root"
+    },
+    {
+      "item": "minecraft:gold_nugget"
+    }
+  ],
+  "trigger": {
+    "item": "witchery:chalkritual"
+  },
+  "result": {
+    "item": "witchery:chalkheart"
+  },
+  "power": 2000,
+  "time": 210
+}
