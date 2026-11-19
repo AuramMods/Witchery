@@ -1,0 +1,14 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"item": "minecraft:redstone"},
+    {"item": "witchery:drop_of_luck"},
+    {"item": "witchery:bat_wool"},
+    {"item": "witchery:dog_tongue"},
+    {"item": "witchery:belladonna_flower"},
+    {"item": "witchery:mandrake_root"}
+  ],
+  "result": {"item": "witchery:redstone_soup"},
+  "color": -59882,
+  "power": 1000
+}

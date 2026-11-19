@@ -1,0 +1,13 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"item": "minecraft:ink_sac"},
+    {"item": "witchery:quicklime"},
+    {"item": "witchery:oil_of_vitriol"},
+    {"item": "minecraft:slime_ball"},
+    {"item": "witchery:belladonna_flower"},
+    {"item": "witchery:rowan_berries"}
+  ],
+  "result": {"item": "witchery:brew_of_ink", "count": 3},
+  "color": -13421773
+}

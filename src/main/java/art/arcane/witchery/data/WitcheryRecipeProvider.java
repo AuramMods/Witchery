@@ -33,6 +33,7 @@ public class WitcheryRecipeProvider extends RecipeProvider {
         Block filteredFunnel = WitcheryBlocks.getRequired("filteredfumefunnel").get();
         Block witchLog = WitcheryBlocks.getRequired("witchlog").get();
         Block distillery = WitcheryBlocks.getRequired("distilleryidle").get();
+        Block kettle = WitcheryBlocks.getRequired("kettle").get();
 
         ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, oven)
                 .define('B', Blocks.IRON_BARS)
@@ -120,6 +121,16 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .pattern("JIJ")
                 .pattern("III")
                 .pattern("GAG")
+                .unlockedBy("has_attuned_stone", has(WitcheryIngredient.ATTUNED_STONE.item()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, kettle)
+                .define('S', Items.STICK)
+                .define('T', Items.STRING)
+                .define('A', WitcheryIngredient.ATTUNED_STONE.item())
+                .define('C', Items.CAULDRON)
+                .pattern("STS")
+                .pattern("TAT")
+                .pattern(" C ")
                 .unlockedBy("has_attuned_stone", has(WitcheryIngredient.ATTUNED_STONE.item()))
                 .save(recipeOutput);
         ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, WitcheryIngredient.QUICKLIME.item())

@@ -3,6 +3,7 @@ package art.arcane.witchery.registry;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.AltarBlock;
 import art.arcane.witchery.block.DistilleryBlock;
+import art.arcane.witchery.block.KettleBlock;
 import art.arcane.witchery.block.PlacedItemBlock;
 import art.arcane.witchery.block.RitualGlyphBlock;
 import art.arcane.witchery.block.RiteHeartBlock;
@@ -58,7 +59,6 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_FLOWER_LOW = Block.box(1.6D, 0.0D, 1.6D, 14.4D, 6.4D, 14.4D);
     private static final VoxelShape SHAPE_PAD_FLAT = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 0.5D, 16.0D);
     private static final VoxelShape SHAPE_GRASSPER = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 8.16D, 16.0D);
-    private static final VoxelShape SHAPE_KETTLE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 12.0D, 14.0D);
     private static final VoxelShape SHAPE_MACHINE_COMPACT = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 15.0D, 15.0D);
     private static final VoxelShape SHAPE_FUNNEL = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
     private static final VoxelShape SHAPE_COFFIN = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 9.0D, 16.0D);
@@ -152,7 +152,7 @@ public final class WitcheryBlocks {
             case "rowanwooddoor", "alderwooddoor", "cwoodendoor" ->
                     new DoorBlock(BlockBehaviour.Properties.copy(Blocks.OAK_DOOR).noOcclusion(), BlockSetType.OAK);
             case "altar" -> new AltarBlock(BlockBehaviour.Properties.copy(Blocks.STONE).strength(2.0F));
-            case "kettle" -> new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion(), SHAPE_KETTLE, true);
+            case "kettle" -> new KettleBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion());
             case "spinningwheel" ->
                     new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion(), SHAPE_MACHINE_COMPACT, true);
             case "distilleryidle", "distilleryburning" ->

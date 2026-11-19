@@ -506,12 +506,16 @@ The first migrated subtypes have individual item IDs. Preserve `witchery:ingredi
 | 36 | `witchery:odour_of_purity` |
 | 37 | `witchery:tear_of_the_goddess` |
 | 38 | `witchery:refined_evil` |
+| 39 | `witchery:drop_of_luck` |
+| 40 | `witchery:redstone_soup` |
+| 60 | `witchery:brew_of_ink` |
 | 63 | `witchery:rowan_berries` |
 | 66 | `witchery:spectral_dust` |
 | 67 | `witchery:ender_dew` |
 | 69 | `witchery:globe_artichoke` |
 | 73 | `witchery:fume_filter` |
 | 74 | `witchery:creeper_heart` |
+| 77 | `witchery:brew_of_the_depths` |
 | 78 | `witchery:icy_needle` |
 | 111 | `witchery:wormwood_leaf` |
 | 153 | `witchery:anointing_paste` |

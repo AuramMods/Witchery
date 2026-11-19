@@ -3,9 +3,13 @@ package art.arcane.witchery.event;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.world.WitcheryDimensionTravelHooks;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
@@ -86,6 +90,15 @@ public final class WitcheryEventHooks {
 
         if (!(event.player instanceof ServerPlayer serverPlayer)) {
             return;
+        }
+
+        if (serverPlayer.level().getGameTime() % 20 == 0 && serverPlayer.hasEffect(WitcheryEffects.DEPTHS.get())) {
+            if (serverPlayer.isEyeInFluid(FluidTags.WATER)) {
+                serverPlayer.setAirSupply(serverPlayer.getMaxAirSupply());
+                serverPlayer.removeEffect(MobEffects.WITHER);
+            } else if (!serverPlayer.hasEffect(MobEffects.WITHER)) {
+                serverPlayer.addEffect(new MobEffectInstance(MobEffects.WITHER, 100, 1));
+            }
         }
 
         if (serverPlayer.isPassenger() || serverPlayer.isVehicle()) {

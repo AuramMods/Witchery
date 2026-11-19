@@ -15,6 +15,8 @@ import java.util.Map;
 public final class WitcheryEffects {
     public static final DeferredRegister<MobEffect> MOB_EFFECTS = DeferredRegister.create(ForgeRegistries.MOB_EFFECTS, Witchery.MODID);
     public static final Map<String, RegistryObject<MobEffect>> LEGACY_EFFECTS = new LinkedHashMap<>();
+    public static final RegistryObject<MobEffect> DEPTHS = MOB_EFFECTS.register("depths",
+            () -> new MobEffect(MobEffectCategory.NEUTRAL, 0x172643) {});
 
     static {
         for (String legacyName : LegacyRegistryData.EFFECTS) {

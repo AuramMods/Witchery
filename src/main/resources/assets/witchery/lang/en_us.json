@@ -264,6 +264,10 @@
    "item.witchery.anointing_paste" : "Anointing Paste",
    "item.witchery.mutandis" : "Mutandis",
    "item.witchery.mutandis_extremis" : "Mutandis Extremis",
+   "item.witchery.drop_of_luck" : "Drop of Luck",
+   "item.witchery.redstone_soup" : "Redstone Soup",
+   "item.witchery.brew_of_ink" : "Brew of Ink",
+   "item.witchery.brew_of_the_depths" : "Brew of the Depths",
    "item.witchery.quicklime" : "Quicklime",
    "item.witchery.gypsum" : "Gypsum",
    "item.witchery.diamond_vapour" : "Diamond Vapour",
@@ -275,6 +279,8 @@
    "item.witchery.icy_needle" : "Icy Needle",
    "item.witchery.wormwood_leaf" : "Wormwood",
    "item.witchery.wolfsbane_flower" : "Wolfsbane",
+   "effect.witchery.depths" : "Depths",
    "entity.witchery.mandrake" : "Mandrake",
+   "entity.witchery.thrown_brew" : "Thrown Brew",
    "item.witchery.mandrake_spawn_egg" : "Mandrake Spawn Egg"
 }

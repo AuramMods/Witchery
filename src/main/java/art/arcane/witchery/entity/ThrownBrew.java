@@ -1,0 +1,52 @@
+package art.arcane.witchery.entity;
+
+import art.arcane.witchery.item.ThrowableBrewItem;
+import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.registry.WitcheryEntities;
+import net.minecraft.core.particles.ItemParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
+
+public final class ThrownBrew extends ThrowableItemProjectile {
+    public ThrownBrew(EntityType<? extends ThrownBrew> type, Level level) {
+        super(type, level);
+    }
+
+    public ThrownBrew(LivingEntity thrower, Level level) {
+        super(WitcheryEntities.THROWN_BREW.get(), thrower, level);
+    }
+
+    @Override
+    protected Item getDefaultItem() {
+        return WitcheryIngredient.BREW_OF_INK.item();
+    }
+
+    @Override
+    protected float getGravity() {
+        return 0.05F;
+    }
+
+    @Override
+    protected void onHit(HitResult hit) {
+        super.onHit(hit);
+        if (level() instanceof ServerLevel server) {
+            if (getItem().getItem() instanceof ThrowableBrewItem brew) {
+                brew.impact(this, hit);
+            }
+            Vec3 impact = hit.getLocation();
+            server.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, getItem()),
+                    impact.x, impact.y, impact.z, 12, 0.2, 0.2, 0.2, 0.1);
+            server.playSound(null, impact.x, impact.y, impact.z, SoundEvents.GLASS_BREAK, SoundSource.NEUTRAL, 1.0F, 1.0F);
+            discard();
+        }
+    }
+}

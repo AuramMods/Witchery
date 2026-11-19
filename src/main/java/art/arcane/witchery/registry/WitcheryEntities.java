@@ -2,6 +2,7 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.entity.Mandrake;
+import art.arcane.witchery.entity.ThrownBrew;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
@@ -22,6 +23,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<Mandrake>> MANDRAKE =
             ENTITY_TYPES.register("mandrake", () -> EntityType.Builder.of(Mandrake::new, MobCategory.MONSTER)
                     .sized(0.6F, 0.9F).build(Witchery.MODID + ":mandrake"));
+    public static final RegistryObject<EntityType<ThrownBrew>> THROWN_BREW =
+            ENTITY_TYPES.register("thrown_brew", () -> EntityType.Builder.<ThrownBrew>of(ThrownBrew::new, MobCategory.MISC)
+                    .sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(3).build(Witchery.MODID + ":thrown_brew"));
 
     static {
         LEGACY_ENTITIES.put("mandrake", MANDRAKE);

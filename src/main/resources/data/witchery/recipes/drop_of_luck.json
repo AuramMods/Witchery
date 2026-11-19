@@ -1,0 +1,12 @@
+{
+  "type": "witchery:cauldron_ritual",
+  "ingredients": [
+    {"item": "witchery:mandrake_root"},
+    {"item": "minecraft:nether_wart"},
+    {"item": "witchery:tear_of_the_goddess"},
+    {"item": "witchery:refined_evil"}
+  ],
+  "trigger": {"item": "witchery:mutandis_extremis"},
+  "result": {"item": "witchery:drop_of_luck"},
+  "power": 1800
+}

@@ -1,0 +1,13 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"item": "witchery:mandrake_root"},
+    {"item": "witchery:globe_artichoke"},
+    {"item": "witchery:odour_of_purity"},
+    {"item": "witchery:tear_of_the_goddess"},
+    {"item": "minecraft:lily_pad"},
+    {"item": "minecraft:ink_sac"}
+  ],
+  "result": {"item": "witchery:brew_of_the_depths", "count": 3},
+  "color": -15260093
+}
