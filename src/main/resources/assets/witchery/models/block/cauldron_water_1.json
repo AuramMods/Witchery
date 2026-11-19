@@ -1,0 +1,9 @@
+{
+  "render_type": "minecraft:translucent",
+  "textures": {"particle": "witchery:block/cauldron", "water": "minecraft:block/water_still"},
+  "elements": [{
+    "from": [2, 6, 2],
+    "to": [14, 6, 14],
+    "faces": {"up": {"texture": "#water", "uv": [0, 0, 16, 16], "tintindex": 0}}
+  }]
+}

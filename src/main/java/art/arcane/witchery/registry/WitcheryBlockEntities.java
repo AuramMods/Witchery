@@ -1,6 +1,7 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
 import art.arcane.witchery.block.entity.WitchesOvenBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Block;
@@ -22,8 +23,12 @@ public final class WitcheryBlockEntities {
             BLOCK_ENTITIES.register("witchesovenidle", () -> ovenType(WitcheryBlockEntities::createOven));
     public static final RegistryObject<BlockEntityType<WitchesOvenBlockEntity>> LEGACY_BURNING_OVEN =
             BLOCK_ENTITIES.register("witchesovenburning", () -> ovenType(WitcheryBlockEntities::createLegacyBurningOven));
+    public static final RegistryObject<BlockEntityType<WitchesCauldronBlockEntity>> CAULDRON =
+            BLOCK_ENTITIES.register("cauldron", () -> BlockEntityType.Builder.of(WitchesCauldronBlockEntity::new,
+                    WitcheryBlocks.getRequired("cauldron").get()).build(null));
 
     static {
+        LEGACY_BLOCK_ENTITIES.put("cauldron", CAULDRON);
         LEGACY_BLOCK_ENTITIES.put("witchesovenidle", WITCHES_OVEN);
         LEGACY_BLOCK_ENTITIES.put("witchesovenburning", LEGACY_BURNING_OVEN);
         for (String legacyName : LegacyRegistryData.BLOCK_ENTITIES) {

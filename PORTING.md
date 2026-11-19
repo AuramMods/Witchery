@@ -21,8 +21,12 @@
 - [x] Restore the oven's multipart model and texture atlas. Verified the new baked model on the isolated Forge client.
 - [x] Grow all three saplings via bone meal, preserve variant drops, and craft four matching planks per log. Verified all three trees, blocked growth, log and leaf loot, client-side planks crafting, and leaf decay with a real client nearby.
 - [x] Restore the crop inputs for cauldron brewing. The original weighted grass seeds, eight growable crops, and live mandrake harvest are in place. Packaged headless checks passed for all crop and grass loot cases, and the muted client verified planting, growth, mandrake nausea, root pickup, earmuff protection, and artichoke water placement.
-- [ ] Finish survival acquisition of Witchery saplings through cauldron brewing and Mutandis. Verify the route from naturally sourced materials in a new survival world.
+- [x] Restore Anointing Paste, the Witch's Cauldron, and its first unpowered brew. Three buckets of water and fire underneath allow mandrake root and Exhale of the Horned One to brew six Mutandis when an egg is added last.
+- [x] Verify the cauldron with the reobfuscated JAR on headless Forge. All 15 checks passed, including rejected ingredients and an early egg, two-bucket behavior, either ingredient order, and six Mutandis after restarting an active ritual at 39 of 210 ticks.
+- [x] Verify the normal client interactions. In the isolated muted survival session, craft the paste from supplied seeds, anoint and fill the cauldron with three buckets, drop in the root from a harvested mandrake and the fume from the oven test, add an egg, collect six Mutandis, and mutate an oak sapling to alder.
+- [ ] Verify the full sapling acquisition route from naturally sourced materials in a new survival world.
 - [ ] Finish oven parity for smelting experience and legacy sapling smelting configuration.
+- [ ] Restore altar power, distilling and its ingredients, kettle recipes, and powered cauldron brewing. The current cauldron handles water and unpowered item-output recipes.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.

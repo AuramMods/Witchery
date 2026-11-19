@@ -1,6 +1,7 @@
 package art.arcane.witchery.data;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
@@ -9,6 +10,7 @@ import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.data.recipes.SimpleCookingRecipeBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
@@ -101,6 +103,13 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .pattern("L L")
                 .pattern("W W")
                 .unlockedBy("has_leather", has(Items.LEATHER))
+                .save(recipeOutput);
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, WitcheryIngredient.ANOINTING_PASTE.item())
+                .requires(WitchCrop.ARTICHOKE.seed())
+                .requires(WitchCrop.MANDRAKE.seed())
+                .requires(WitchCrop.BELLADONNA.seed())
+                .requires(WitchCrop.SNOWBELL.seed())
+                .unlockedBy("has_mandrake_seeds", has(WitchCrop.MANDRAKE.seed()))
                 .save(recipeOutput);
     }
 }

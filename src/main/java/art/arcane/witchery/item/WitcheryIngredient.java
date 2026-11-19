@@ -9,6 +9,7 @@ import net.minecraft.world.item.ItemStack;
 public enum WitcheryIngredient {
     ATTUNED_STONE(10, "attuned_stone"),
     CHARGED_ATTUNED_STONE(11, "charged_attuned_stone"),
+    MUTANDIS(14, "mutandis"),
     WOOD_ASH(18, "wood_ash"),
     BELLADONNA_FLOWER(21, "belladonna_flower"),
     MANDRAKE_ROOT(22, "mandrake_root"),
@@ -26,6 +27,7 @@ public enum WitcheryIngredient {
     FUME_FILTER(73, "fume_filter"),
     ICY_NEEDLE(78, "icy_needle"),
     WORMWOOD(111, "wormwood_leaf"),
+    ANOINTING_PASTE(153, "anointing_paste"),
     WOLFSBANE(156, "wolfsbane_flower");
 
     private static final String LEGACY_ID = "witchery:ingredient";

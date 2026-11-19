@@ -28,6 +28,7 @@ public final class WitcheryRegistries {
         WitcheryMenus.register(eventBus);
         WitcheryEffects.register(eventBus);
         WitcheryCreativeTabs.register(eventBus);
+        WitcheryRecipes.register(eventBus);
         LOOT_MODIFIERS.register(eventBus);
     }
 }

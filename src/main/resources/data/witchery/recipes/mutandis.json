@@ -1,0 +1,10 @@
+{
+  "type": "witchery:cauldron_ritual",
+  "ingredients": [
+    {"item": "witchery:mandrake_root"},
+    {"item": "witchery:exhale_of_the_horned_one"}
+  ],
+  "trigger": {"item": "minecraft:egg"},
+  "result": {"item": "witchery:mutandis", "count": 6},
+  "time": 210
+}

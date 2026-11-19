@@ -1,7 +1,8 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/cauldron"
-      }
-   }
+  "multipart": [
+    {"apply": {"model": "witchery:block/cauldron"}},
+    {"when": {"water": "1"}, "apply": {"model": "witchery:block/cauldron_water_1"}},
+    {"when": {"water": "2"}, "apply": {"model": "witchery:block/cauldron_water_2"}},
+    {"when": {"water": "3"}, "apply": {"model": "witchery:block/cauldron_water_3"}}
+  ]
 }
