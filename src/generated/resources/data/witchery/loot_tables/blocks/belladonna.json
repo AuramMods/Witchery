@@ -1,17 +1,74 @@
 {
   "type": "minecraft:block",
+  "functions": [
+    {
+      "function": "minecraft:explosion_decay"
+    }
+  ],
   "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:alternatives",
+          "children": [
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "block": "witchery:belladonna",
+                  "condition": "minecraft:block_state_property",
+                  "properties": {
+                    "age": "4"
+                  }
+                }
+              ],
+              "name": "witchery:belladonna_flower"
+            },
+            {
+              "type": "minecraft:item",
+              "name": "witchery:seedsbelladonna"
+            }
+          ]
+        }
+      ],
+      "rolls": 1.0
+    },
     {
       "bonus_rolls": 0.0,
       "conditions": [
         {
-          "condition": "minecraft:survives_explosion"
+          "block": "witchery:belladonna",
+          "condition": "minecraft:block_state_property",
+          "properties": {
+            "age": "4"
+          }
         }
       ],
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "witchery:belladonna"
+          "functions": [
+            {
+              "add": false,
+              "count": {
+                "type": "minecraft:binomial",
+                "n": 3.0,
+                "p": 0.53333336
+              },
+              "function": "minecraft:set_count"
+            },
+            {
+              "enchantment": "minecraft:fortune",
+              "formula": "minecraft:binomial_with_bonus_count",
+              "function": "minecraft:apply_bonus",
+              "parameters": {
+                "extra": 0,
+                "probability": 0.53333336
+              }
+            }
+          ],
+          "name": "witchery:seedsbelladonna"
         }
       ],
       "rolls": 1.0

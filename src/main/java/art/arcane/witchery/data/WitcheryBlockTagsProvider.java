@@ -1,6 +1,7 @@
 package art.arcane.witchery.data;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
@@ -37,6 +38,9 @@ public class WitcheryBlockTagsProvider extends BlockTagsProvider {
         tag(BlockTags.PLANKS).add(planks);
         tag(BlockTags.LEAVES).add(WitcheryBlocks.getRequired("witchleaves").get());
         tag(BlockTags.SAPLINGS).add(WitcheryBlocks.getRequired("witchsapling").get());
+        for (WitchCrop crop : WitchCrop.values()) {
+            tag(BlockTags.CROPS).add(crop.block());
+        }
         tag(BlockTags.MINEABLE_WITH_AXE).add(log, planks);
         tag(BlockTags.MINEABLE_WITH_PICKAXE).add(
                 WitcheryBlocks.getRequired("witchesovenidle").get(),

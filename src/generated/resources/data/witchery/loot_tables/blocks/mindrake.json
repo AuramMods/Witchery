@@ -1,17 +1,40 @@
 {
   "type": "minecraft:block",
+  "functions": [
+    {
+      "function": "minecraft:explosion_decay"
+    }
+  ],
   "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "witchery:seedsmindrake"
+        }
+      ],
+      "rolls": 1.0
+    },
     {
       "bonus_rolls": 0.0,
       "conditions": [
         {
-          "condition": "minecraft:survives_explosion"
+          "block": "witchery:mindrake",
+          "condition": "minecraft:block_state_property",
+          "properties": {
+            "age": "4"
+          }
+        },
+        {
+          "chance": 0.25,
+          "condition": "minecraft:random_chance"
         }
       ],
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "witchery:mindrake"
+          "name": "witchery:seedsmindrake"
         }
       ],
       "rolls": 1.0

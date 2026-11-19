@@ -1,11 +1,15 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.item.WitchWoodBlockItem;
+import art.arcane.witchery.item.WitchSeedsItem;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ArmorMaterials;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.DoubleHighBlockItem;
@@ -89,6 +93,12 @@ public final class WitcheryItems {
     }
 
     private static Item createLegacyItem(String path) {
+        WitchCrop crop = WitchCrop.forSeed(path);
+        if (crop != null) {
+            return crop == WitchCrop.ARTICHOKE
+                    ? new WitchSeedsItem.WaterSeeds(crop, new Item.Properties())
+                    : new WitchSeedsItem(crop, new Item.Properties());
+        }
         Item.Properties bucketProperties = new Item.Properties()
                 .craftRemainder(Items.BUCKET)
                 .stacksTo(1);
@@ -98,6 +108,9 @@ public final class WitcheryItems {
             case "bucketbrew" -> new BucketItem(WitcheryFluids.getRequiredSource("brew"), bucketProperties);
             case "rowan_berries" -> new Item(new Item.Properties()
                     .food(new FoodProperties.Builder().nutrition(1).saturationMod(6.0F).build()));
+            case "globe_artichoke" -> new Item(new Item.Properties()
+                    .food(new FoodProperties.Builder().nutrition(20).saturationMod(0F).build()));
+            case "earmuffs" -> new ArmorItem(ArmorMaterials.LEATHER, ArmorItem.Type.HELMET, new Item.Properties());
             case "witchwoodslab", "witchwooddoubleslab", "iceslab", "icedoubleslab", "snowslab", "snowdoubleslab" ->
                     createBlockItem(path);
             default -> new Item(new Item.Properties());
@@ -114,7 +127,7 @@ public final class WitcheryItems {
             return;
         }
 
-        RegistryObject<EntityType<Zombie>> entityType = WitcheryEntities.all().get(path);
+        RegistryObject<? extends EntityType<? extends Mob>> entityType = WitcheryEntities.all().get(path);
         if (entityType == null) {
             throw new IllegalStateException("Missing legacy entity placeholder for path: " + path);
         }

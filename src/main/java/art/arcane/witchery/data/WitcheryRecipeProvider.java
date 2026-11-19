@@ -3,6 +3,7 @@ package art.arcane.witchery.data;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
+import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeCategory;
@@ -92,6 +93,14 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .pattern("B")
                 .pattern("F")
                 .unlockedBy("has_fume_filter", has(WitcheryIngredient.FUME_FILTER.item()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, WitcheryItems.getRequired("earmuffs").get())
+                .define('L', Items.LEATHER)
+                .define('W', Blocks.WHITE_WOOL)
+                .pattern("LLL")
+                .pattern("L L")
+                .pattern("W W")
+                .unlockedBy("has_leather", has(Items.LEATHER))
                 .save(recipeOutput);
     }
 }

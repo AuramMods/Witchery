@@ -1,6 +1,8 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.WitchCrop;
+import art.arcane.witchery.block.WitchCropBlock;
 import art.arcane.witchery.block.WitchLeavesBlock;
 import art.arcane.witchery.block.WitchSaplingBlock;
 import art.arcane.witchery.block.WitchWoodType;
@@ -8,14 +10,12 @@ import art.arcane.witchery.block.WitchesOvenBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ButtonBlock;
-import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.FenceBlock;
 import net.minecraft.world.level.block.FenceGateBlock;
@@ -184,10 +184,8 @@ public final class WitcheryBlocks {
                     new ButtonBlock(BlockBehaviour.Properties.copy(Blocks.OAK_BUTTON), BlockSetType.OAK, 30, true);
             case "cbuttonstone" ->
                     new ButtonBlock(BlockBehaviour.Properties.copy(Blocks.STONE_BUTTON), BlockSetType.STONE, 20, false);
-            case "belladonna", "mandrake", "artichoke", "snowbell", "wormwood", "mindrake" ->
-                    new LegacyCropBlock(4);
-            case "garlicplant" -> new LegacyCropBlock(5);
-            case "wolfsbane" -> new LegacyCropBlock(7);
+            case "belladonna", "mandrake", "artichoke", "snowbell", "wormwood", "mindrake", "garlicplant", "wolfsbane" ->
+                    new WitchCropBlock(WitchCrop.forBlock(path), BlockBehaviour.Properties.copy(Blocks.WHEAT));
             case "wolftrap" -> new LegacyWolftrapBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).noOcclusion().noCollission());
             case "beartrap" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).sound(SoundType.METAL), SHAPE_BEARTRAP, false);
@@ -450,25 +448,6 @@ public final class WitcheryBlocks {
         @Override
         public String getSerializedName() {
             return serializedName;
-        }
-    }
-
-    private static final class LegacyCropBlock extends CropBlock {
-        private final int maxAge;
-
-        private LegacyCropBlock(int maxAge) {
-            super(BlockBehaviour.Properties.copy(Blocks.WHEAT));
-            this.maxAge = maxAge;
-        }
-
-        @Override
-        protected Item getBaseSeedId() {
-            return net.minecraft.world.item.Items.WHEAT_SEEDS;
-        }
-
-        @Override
-        public int getMaxAge() {
-            return maxAge;
         }
     }
 

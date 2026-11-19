@@ -1,24 +1,32 @@
 package art.arcane.witchery.data;
 
+import art.arcane.witchery.block.WitchCrop;
+import art.arcane.witchery.block.WitchCropBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.AlternativesEntry;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount;
 import net.minecraft.world.level.storage.loot.functions.CopyBlockState;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.predicates.BonusLevelTableCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
+import net.minecraft.world.level.storage.loot.providers.number.BinomialDistributionGenerator;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraftforge.registries.RegistryObject;
 
@@ -46,12 +54,53 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                 default -> {
                     if (block instanceof SlabBlock) {
                         add(block, createSlabItemTable(block));
+                    } else if (block instanceof WitchCropBlock crop) {
+                        dropWitchCrop(crop);
                     } else {
                         dropSelf(block);
                     }
                 }
             }
         }
+    }
+
+    private void dropWitchCrop(WitchCropBlock block) {
+        WitchCrop crop = block.crop();
+        ItemLike seed = crop.seed();
+        LootItemCondition.Builder mature = LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
+                .setProperties(StatePropertiesPredicate.Builder.properties()
+                        .hasProperty(CropBlock.AGE, crop.maxAge()));
+        if (crop == WitchCrop.MINDRAKE) {
+            add(block, applyExplosionDecay(block, LootTable.lootTable()
+                    .withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1)).add(LootItem.lootTableItem(seed)))
+                    .withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1)).when(mature)
+                            .when(LootItemRandomChanceCondition.randomChance(0.25F)).add(LootItem.lootTableItem(seed)))));
+            return;
+        }
+
+        ItemLike produce = switch (crop) {
+            case BELLADONNA -> WitcheryIngredient.BELLADONNA_FLOWER.item();
+            case MANDRAKE -> WitcheryIngredient.MANDRAKE_ROOT.item();
+            case ARTICHOKE -> WitcheryIngredient.GLOBE_ARTICHOKE.item();
+            case SNOWBELL -> Items.SNOWBALL;
+            case WORMWOOD -> WitcheryIngredient.WORMWOOD.item();
+            case WOLFSBANE -> WitcheryIngredient.WOLFSBANE.item();
+            default -> seed;
+        };
+        float seedChance = 8.0F / 15;
+        LootTable.Builder table = LootTable.lootTable()
+                .withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1))
+                        .add(AlternativesEntry.alternatives(LootItem.lootTableItem(produce).when(mature), LootItem.lootTableItem(seed))))
+                .withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1)).when(mature)
+                        .add(LootItem.lootTableItem(seed)
+                                .apply(SetItemCountFunction.setCount(BinomialDistributionGenerator.binomial(3, seedChance)))
+                                .apply(ApplyBonusCount.addBonusBinomialDistributionCount(Enchantments.BLOCK_FORTUNE, seedChance, 0))));
+        if (crop == WitchCrop.SNOWBELL) {
+            table.withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1)).when(mature)
+                    .when(LootItemRandomChanceCondition.randomChance(0.2F))
+                    .add(LootItem.lootTableItem(WitcheryIngredient.ICY_NEEDLE.item())));
+        }
+        add(block, applyExplosionDecay(block, table));
     }
 
     private void dropWitchWood(Block block) {

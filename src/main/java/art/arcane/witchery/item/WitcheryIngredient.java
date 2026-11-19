@@ -10,6 +10,8 @@ public enum WitcheryIngredient {
     ATTUNED_STONE(10, "attuned_stone"),
     CHARGED_ATTUNED_STONE(11, "charged_attuned_stone"),
     WOOD_ASH(18, "wood_ash"),
+    BELLADONNA_FLOWER(21, "belladonna_flower"),
+    MANDRAKE_ROOT(22, "mandrake_root"),
     SOFT_CLAY_JAR(26, "soft_clay_jar"),
     CLAY_JAR(27, "clay_jar"),
     FOUL_FUME(28, "foul_fume"),
@@ -20,7 +22,11 @@ public enum WitcheryIngredient {
     REEK_OF_MISFORTUNE(35, "reek_of_misfortune"),
     ODOUR_OF_PURITY(36, "odour_of_purity"),
     ROWAN_BERRIES(63, "rowan_berries"),
-    FUME_FILTER(73, "fume_filter");
+    GLOBE_ARTICHOKE(69, "globe_artichoke"),
+    FUME_FILTER(73, "fume_filter"),
+    ICY_NEEDLE(78, "icy_needle"),
+    WORMWOOD(111, "wormwood_leaf"),
+    WOLFSBANE(156, "wolfsbane_flower");
 
     private static final String LEGACY_ID = "witchery:ingredient";
     private static final String LEGACY_DAMAGE_TAG = "LegacyIngredientDamage";

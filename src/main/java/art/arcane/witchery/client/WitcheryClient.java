@@ -5,7 +5,10 @@ import art.arcane.witchery.client.screen.WitchesOvenScreen;
 import art.arcane.witchery.menu.LegacyPlaceholderMenu;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.WitchWoodType;
+import art.arcane.witchery.client.model.MandrakeModel;
+import art.arcane.witchery.client.renderer.MandrakeRenderer;
 import art.arcane.witchery.registry.WitcheryBlocks;
+import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryMenus;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.BiomeColors;
@@ -16,6 +19,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -28,6 +32,16 @@ public final class WitcheryClient {
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "wood_type");
 
     private WitcheryClient() {
+    }
+
+    @SubscribeEvent
+    public static void registerModelLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        event.registerLayerDefinition(MandrakeModel.LAYER, MandrakeModel::layer);
+    }
+
+    @SubscribeEvent
+    public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(WitcheryEntities.MANDRAKE.get(), MandrakeRenderer::new);
     }
 
     @SubscribeEvent

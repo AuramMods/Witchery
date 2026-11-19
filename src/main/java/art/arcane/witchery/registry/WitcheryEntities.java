@@ -1,7 +1,9 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.entity.Mandrake;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -16,9 +18,13 @@ import java.util.Map;
 
 public final class WitcheryEntities {
     public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, Witchery.MODID);
-    public static final Map<String, RegistryObject<EntityType<Zombie>>> LEGACY_ENTITIES = new LinkedHashMap<>();
+    public static final Map<String, RegistryObject<? extends EntityType<? extends Mob>>> LEGACY_ENTITIES = new LinkedHashMap<>();
+    public static final RegistryObject<EntityType<Mandrake>> MANDRAKE =
+            ENTITY_TYPES.register("mandrake", () -> EntityType.Builder.of(Mandrake::new, MobCategory.MONSTER)
+                    .sized(0.6F, 0.9F).build(Witchery.MODID + ":mandrake"));
 
     static {
+        LEGACY_ENTITIES.put("mandrake", MANDRAKE);
         for (String legacyName : LegacyRegistryData.ENTITIES) {
             registerLegacyEntity(legacyName);
         }
@@ -32,7 +38,7 @@ public final class WitcheryEntities {
         eventBus.addListener(WitcheryEntities::registerEntityAttributes);
     }
 
-    public static Map<String, RegistryObject<EntityType<Zombie>>> all() {
+    public static Map<String, RegistryObject<? extends EntityType<? extends Mob>>> all() {
         return Collections.unmodifiableMap(LEGACY_ENTITIES);
     }
 
@@ -51,8 +57,8 @@ public final class WitcheryEntities {
     }
 
     private static void registerEntityAttributes(EntityAttributeCreationEvent event) {
-        for (RegistryObject<EntityType<Zombie>> entry : LEGACY_ENTITIES.values()) {
-            event.put(entry.get(), Zombie.createAttributes().build());
+        for (RegistryObject<? extends EntityType<? extends Mob>> entry : LEGACY_ENTITIES.values()) {
+            event.put(entry.get(), entry == MANDRAKE ? Mandrake.attributes().build() : Zombie.createAttributes().build());
         }
     }
 }

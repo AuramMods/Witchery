@@ -20,7 +20,8 @@
 - [x] Verify the real client menu and shift-clicking. An isolated muted Forge client joined a dedicated server in survival, crafted the oven and four soft clay jars from supplied base materials, fired the jars, placed the oven, inserted inputs, and collected eight ash and two oak fumes through the regular UI.
 - [x] Restore the oven's multipart model and texture atlas. Verified the new baked model on the isolated Forge client.
 - [x] Grow all three saplings via bone meal, preserve variant drops, and craft four matching planks per log. Verified all three trees, blocked growth, log and leaf loot, client-side planks crafting, and leaf decay with a real client nearby.
-- [ ] Restore survival acquisition of Witchery saplings through crop harvesting, cauldron brewing, and Mutandis. Verify the route from naturally sourced materials in a new survival world.
+- [x] Restore the crop inputs for cauldron brewing. The original weighted grass seeds, eight growable crops, and live mandrake harvest are in place. Packaged headless checks passed for all crop and grass loot cases, and the muted client verified planting, growth, mandrake nausea, root pickup, earmuff protection, and artichoke water placement.
+- [ ] Finish survival acquisition of Witchery saplings through cauldron brewing and Mutandis. Verify the route from naturally sourced materials in a new survival world.
 - [ ] Finish oven parity for smelting experience and legacy sapling smelting configuration.
 
 ## Current Snapshot (2026-02-09)

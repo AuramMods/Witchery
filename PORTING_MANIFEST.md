@@ -485,6 +485,8 @@ The first migrated subtypes have individual item IDs. Preserve `witchery:ingredi
 | 10 | `witchery:attuned_stone` |
 | 11 | `witchery:charged_attuned_stone` |
 | 18 | `witchery:wood_ash` |
+| 21 | `witchery:belladonna_flower` |
+| 22 | `witchery:mandrake_root` |
 | 26 | `witchery:soft_clay_jar` |
 | 27 | `witchery:clay_jar` |
 | 28 | `witchery:foul_fume` |
@@ -495,7 +497,11 @@ The first migrated subtypes have individual item IDs. Preserve `witchery:ingredi
 | 35 | `witchery:reek_of_misfortune` |
 | 36 | `witchery:odour_of_purity` |
 | 63 | `witchery:rowan_berries` |
+| 69 | `witchery:globe_artichoke` |
 | 73 | `witchery:fume_filter` |
+| 78 | `witchery:icy_needle` |
+| 111 | `witchery:wormwood_leaf` |
+| 156 | `witchery:wolfsbane_flower` |
 
 | Meta | Unlocalized Key |
 |---:|---|
