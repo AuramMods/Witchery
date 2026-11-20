@@ -1,5 +1,6 @@
 package art.arcane.witchery;
 
+import art.arcane.witchery.config.WitcheryClientConfig;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryRegistries;
@@ -17,6 +18,7 @@ public class Witchery {
 
     public Witchery(FMLJavaModLoadingContext context) {
         context.registerConfig(ModConfig.Type.SERVER, WitcheryServerConfig.SPEC);
+        context.registerConfig(ModConfig.Type.CLIENT, WitcheryClientConfig.SPEC);
         IEventBus modEventBus = context.getModEventBus();
         WitcheryRegistries.register(modEventBus);
         WitcheryNetwork.register();

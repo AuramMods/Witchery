@@ -32,7 +32,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class WitcheryNetwork {
-    private static final String PROTOCOL_VERSION = "13";
+    private static final String PROTOCOL_VERSION = "14";
     private static final int MAX_USERNAME_LENGTH = 64;
     private static final int MAX_PLAYER_SKIN_LENGTH = 256;
     private static final int MAX_MARKUP_PAGE_COUNT = 256;
@@ -87,11 +87,24 @@ public final class WitcheryNetwork {
         discriminator = registerNoPayloadPacket(discriminator, "extended_entity_request_sync_to_client", ExtendedEntityRequestSyncToClientPacket.class, ExtendedEntityRequestSyncToClientPacket::new);
         discriminator = registerPartialExtendedPlayerSyncPacket(discriminator);
         discriminator = registerSetClientPlayerFacingPacket(discriminator);
-        CHANNEL.messageBuilder(DreamAtmospherePacket.class, discriminator, NetworkDirection.PLAY_TO_CLIENT)
+        CHANNEL.messageBuilder(DreamAtmospherePacket.class, discriminator++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder((message, buffer) -> buffer.writeByte(message.nightmareLevel()))
                 .decoder(buffer -> new DreamAtmospherePacket(buffer.readUnsignedByte()))
                 .consumerMainThread((message, context) -> {
                     runClient(() -> art.arcane.witchery.client.DreamSpecialEffects.updateClientMode(message.nightmareLevel()));
+                    context.get().setPacketHandled(true);
+                })
+                .add();
+        CHANNEL.messageBuilder(InfusionStatusPacket.class, discriminator, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder((message, buffer) -> {
+                    buffer.writeVarInt(message.type());
+                    buffer.writeVarInt(message.charge());
+                    buffer.writeVarInt(message.capacity());
+                })
+                .decoder(buffer -> new InfusionStatusPacket(buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt()))
+                .consumerMainThread((message, context) -> {
+                    runClient(() -> art.arcane.witchery.client.InfusionChargeOverlay.setStatus(
+                            message.type(), message.charge(), message.capacity()));
                     context.get().setPacketHandled(true);
                 })
                 .add();
@@ -172,6 +185,14 @@ public final class WitcheryNetwork {
     }
 
     private record DreamAtmospherePacket(int nightmareLevel) {
+    }
+
+    public static void sendInfusionStatus(ServerPlayer player, int type, int charge, int capacity) {
+        if (player.connection == null || !player.connection.connection.isConnected()) return;
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new InfusionStatusPacket(type, charge, capacity));
+    }
+
+    private record InfusionStatusPacket(int type, int charge, int capacity) {
     }
 
     public static void sendPushTarget(ServerPlayer player, int entityId, double velocityX, double velocityY, double velocityZ) {

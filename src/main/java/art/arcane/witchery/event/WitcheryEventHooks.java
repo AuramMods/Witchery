@@ -5,6 +5,7 @@ import art.arcane.witchery.brewing.GrotesqueEffect;
 import art.arcane.witchery.brewing.WakingNightmareEffect;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.familiar.FamiliarBinding;
+import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.item.DeathProtectionPoppetItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.network.WitcheryNetwork;
@@ -57,6 +58,7 @@ public final class WitcheryEventHooks {
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
             GrotesqueEffect.restoreLegacyBrew(serverPlayer);
+            InfusionEnergy.sync(serverPlayer);
             WitcheryPlayerDataProvider.get(serverPlayer).ifPresent(data -> {
                 if (data.getOtherPlayerSkin().isEmpty()) {
                     data.applyPlayerStyle(
@@ -74,6 +76,11 @@ public final class WitcheryEventHooks {
                 WitcheryNetwork.sendPlayerSync(serverPlayer, data);
             });
         }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        if (event.getEntity() instanceof ServerPlayer serverPlayer) InfusionEnergy.sync(serverPlayer);
     }
 
     @SubscribeEvent

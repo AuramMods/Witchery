@@ -1,5 +1,6 @@
 package art.arcane.witchery.infusion;
 
+import art.arcane.witchery.network.WitcheryNetwork;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -16,6 +17,10 @@ public final class InfusionEnergy {
     private InfusionEnergy() {
     }
 
+    public static int type(ServerPlayer player) {
+        return data(player).getInt(TYPE);
+    }
+
     public static void grant(ServerPlayer player, int type, int capacity) {
         CompoundTag data = player.getPersistentData();
         CompoundTag infusion = data.getCompound(Player.PERSISTED_NBT_TAG);
@@ -25,28 +30,31 @@ public final class InfusionEnergy {
         infusion.remove("WITCBeastPower");
         infusion.remove("WITCBeastPowerCharges");
         data.put(Player.PERSISTED_NBT_TAG, infusion);
+        sync(player, infusion);
     }
 
     public static boolean recharge(ServerPlayer player, int amount) {
-        CompoundTag infusion = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
+        CompoundTag infusion = data(player);
         int current = infusion.getInt(CHARGE);
         int capacity = infusion.getInt(CAPACITY);
         if (current >= capacity) return false;
         infusion.putInt(CHARGE, Math.min(current + amount, capacity));
+        sync(player, infusion);
         return true;
     }
 
     public static boolean spend(ServerPlayer player, int cost) {
         if (!canSpend(player, cost)) return false;
         if (!player.getAbilities().instabuild) {
-            CompoundTag infusion = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
+            CompoundTag infusion = data(player);
             infusion.putInt(CHARGE, infusion.getInt(CHARGE) - cost);
+            sync(player, infusion);
         }
         return true;
     }
 
     public static boolean canSpend(ServerPlayer player, int cost) {
-        CompoundTag infusion = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
+        CompoundTag infusion = data(player);
         if (player.getAbilities().instabuild) return true;
         if (infusion.getInt(TYPE) <= 0 || !infusion.contains(CHARGE, Tag.TAG_ANY_NUMERIC)) {
             explain(player, "required");
@@ -57,6 +65,18 @@ public final class InfusionEnergy {
             return false;
         }
         return true;
+    }
+
+    public static void sync(ServerPlayer player) {
+        sync(player, data(player));
+    }
+
+    private static void sync(ServerPlayer player, CompoundTag infusion) {
+        WitcheryNetwork.sendInfusionStatus(player, infusion.getInt(TYPE), infusion.getInt(CHARGE), infusion.getInt(CAPACITY));
+    }
+
+    private static CompoundTag data(ServerPlayer player) {
+        return player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
     }
 
     private static void explain(ServerPlayer player, String key) {

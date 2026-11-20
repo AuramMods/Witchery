@@ -24,6 +24,7 @@ import art.arcane.witchery.item.TormentContractItem;
 import art.arcane.witchery.item.VoodooPoppetItem;
 import art.arcane.witchery.item.ThrowableBrewItem;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.item.WitchHandItem;
 import art.arcane.witchery.item.WitchWoodBlockItem;
 import art.arcane.witchery.item.WitchSeedsItem;
 import art.arcane.witchery.world.DreamTravel;
@@ -146,6 +147,7 @@ public final class WitcheryItems {
             case "mirror" -> new MirrorItem();
             case "arthana" -> new ArthanaItem();
             case "mysticbranch" -> new MysticBranchItem();
+            case "witchhand" -> new WitchHandItem();
             case "demon_heart" -> new DemonHeartItem(WitcheryBlocks.getRequired("demonheart").get(), true);
             case "devilstonguecharm" -> new Item(new Item.Properties().durability(50).rarity(Rarity.UNCOMMON));
             case "necromantic_stone" -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)) {

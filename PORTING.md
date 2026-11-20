@@ -119,7 +119,8 @@
 - [x] Restore the Overworld infusion's two white rings, 4,000 altar power and 200 personal charges. All 40 required Forge GameTests passed, including the old poppet metadata, a bound poppet's lethal damage protection, and the charge cap.
 - [x] Restore the recharging rite with a standard Regeneration potion and upkeep of 40 altar power per second. The dedicated restart retained the active rite and the player's 180 charge outside the circle. The muted client reentered, reached the 200-charge cap, and stopped the rite at the heart.
 - [x] Restore the Light and Otherwhere infusion recipes.
-- [ ] Restore the four infusions' Witch Hand powers and charge HUD, the Poppet Shelf, and the remaining types of poppets.
+- [x] Restore the infusion charge HUD and the Witch's Hand drop.
+- [ ] Restore all four infusions' Witch Hand powers, the Poppet Shelf, and the remaining types of poppets. Otherwhere powers are implemented and undergoing packaged client checks.
 
 ## Infernal Infusion and Voodoo Poppets (2026-11-19)
 
@@ -146,6 +147,12 @@
 - [x] Brew Spirit of Otherwhere with Redstone Soup, extended Swiftness, two separate Eyes of Ender, Drop of Luck and Wool of Bat at 4,000 altar power. The muted client used extended splash Swiftness, bottled two servings, and completed the daytime rite inside small and medium Otherwhere circles. The rite granted infusion ID 3 and 200 charge.
 - [x] Both rites consumed a bound Death Protection Poppet and restored six health to ten. All 49 required Forge GameTests passed, including the legacy variants, and Java 17 data generation and JAR reobfuscation succeeded.
 - [x] A dedicated restart retained Otherwhere ID 3, all 200 charge, and the remaining portions of both kettle brews. The consumed ward stayed gone.
+
+## Witch's Hand and Otherwhere Powers (2026-11-20)
+
+- [x] Restore the Witch's Hand at `witchery:witchhand`. Witches drop it on player kills, with the original higher chance when killed with an Arthana. A muted survival player killed a witch with an Arthana and picked up its Hand on a dedicated server.
+- [x] Restore the personal charge meter using the four original block icons and the configurable left or right placement. The muted client displayed the Nether Portal meter and Otherwhere glyph on joining with 200 charge.
+- [x] Restore Otherwhere targeting, distance while channeling, blink, recall, lifting a creature and the caster, and recall with a companion. Forge GameTests verified blink and lift, including the four legacy recall fields and the Hand's saved cooldown. All 52 required tests passed, and Java 17 data generation and reobfuscation succeeded.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.

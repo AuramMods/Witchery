@@ -18,6 +18,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
+import net.minecraft.world.entity.monster.Witch;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -76,6 +77,10 @@ public final class WitcheryMobDrops {
             }
             return roll(random, (arthana ? 0.08 : 0.02) * multiplier)
                     ? new ItemStack(WitcheryIngredient.CREEPER_HEART.item()) : ItemStack.EMPTY;
+        }
+        if (creature instanceof Witch || creature instanceof CovenWitch) {
+            return roll(random, arthana ? 0.5 : 0.33)
+                    ? new ItemStack(WitcheryItems.getRequired("witchhand").get()) : ItemStack.EMPTY;
         }
 
         if (arthana && creature instanceof AbstractSkeleton) {
