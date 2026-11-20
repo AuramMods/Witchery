@@ -174,6 +174,11 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         List<ServerPlayer> recipients = List.of();
         Entity result = null;
         LivingEntity curseTarget = null;
+        int infusionType = switch (rite.action()) {
+            case INFUSE_OVERWORLD -> 2;
+            case INFUSE_INFERNAL -> 4;
+            default -> 0;
+        };
         boolean familiarRite = rite.action() == ItemRiteRecipe.Action.BIND_FAMILIAR || rite.action() == ItemRiteRecipe.Action.CALL_FAMILIAR;
         if (rite.action() == ItemRiteRecipe.Action.MANIFESTATION) {
             recipients = nearbyPlayers(level, pos, MANIFEST_RANGE);
@@ -181,7 +186,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 abort(level, "message.witchery.rite.no_nearby_player");
                 return;
             }
-        } else if (rite.action() == ItemRiteRecipe.Action.INFUSE_OVERWORLD) {
+        } else if (infusionType > 0) {
             recipients = nearbyPlayers(level, pos, INFUSION_RANGE);
         } else if (rite.action() == ItemRiteRecipe.Action.SUMMON_DEMON || rite.action() == ItemRiteRecipe.Action.SUMMON_IMP) {
             boolean impRite = rite.action() == ItemRiteRecipe.Action.SUMMON_IMP;
@@ -240,7 +245,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 DreamTravel.grantManifestation(recipient, MANIFEST_DURATION);
             } else {
                 recipient.hurt(level.damageSources().magic(), 100);
-                if (recipient.isAlive()) InfusionEnergy.grant(recipient, 2, INFUSION_CAPACITY);
+                if (recipient.isAlive()) InfusionEnergy.grant(recipient, infusionType, INFUSION_CAPACITY);
             }
         }
         for (ItemStack offering : sacrificed) {

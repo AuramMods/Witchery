@@ -575,7 +575,7 @@ The first migrated subtypes have individual item IDs. Preserve `witchery:ingredi
 | 42 | `ghostOfTheLight` |
 | 43 | `soulOfTheWorld` → `witchery:soul_of_the_world` |
 | 44 | `spiritOfOtherwhere` |
-| 45 | `infernalAnimus` |
+| 45 | `infernalAnimus` → `witchery:infernal_animus` |
 | 46 | `bookOven` |
 | 47 | `bookDistilling` |
 | 48 | `bookCircleMagic` |
@@ -708,8 +708,8 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 4 | `protectStarvation` | Hunger Protection Poppet |
 | 5 | `protectTool` | Tool Protection Poppet |
 | 6 | `protectDeath` | Death Protection Poppet → `witchery:death_protection_poppet` |
-| 7 | `protectVoodoo` | Voodoo Protection Poppet |
-| 8 | `voodoo` | Voodoo Poppet |
+| 7 | `protectVoodoo` | Voodoo Protection Poppet → `witchery:voodoo_protection_poppet` |
+| 8 | `voodoo` | Voodoo Poppet → `witchery:voodoo_poppet` |
 | 9 | `vampiric` | Vampiric Poppet |
 | 10 | `protectPoppet` | Poppet Protection |
 | 11 | `protectArmor` | Armor Protection Poppet |

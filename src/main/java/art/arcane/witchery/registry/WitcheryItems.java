@@ -5,6 +5,7 @@ import art.arcane.witchery.block.DreamWeave;
 import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.brewing.BrewImpacts;
 import art.arcane.witchery.item.AnointingPasteItem;
+import art.arcane.witchery.item.BoundPoppetItem;
 import art.arcane.witchery.item.ArthanaItem;
 import art.arcane.witchery.item.DemonHeartItem;
 import art.arcane.witchery.item.DeathProtectionPoppetItem;
@@ -19,6 +20,7 @@ import art.arcane.witchery.item.RitualChalkItem;
 import art.arcane.witchery.item.SeerStoneItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.TormentContractItem;
+import art.arcane.witchery.item.VoodooPoppetItem;
 import art.arcane.witchery.item.ThrowableBrewItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.item.WitchWoodBlockItem;
@@ -65,6 +67,8 @@ public final class WitcheryItems {
             registerLegacyItem(legacyName);
         }
         registerLegacyItem("death_protection_poppet");
+        registerLegacyItem("voodoo_poppet");
+        registerLegacyItem("voodoo_protection_poppet");
 
         for (WitcheryIngredient ingredient : WitcheryIngredient.values()) {
             registerLegacyItem(ingredient.path());
@@ -160,11 +164,17 @@ public final class WitcheryItems {
             case "contract_of_ownership" -> new OwnershipContractItem();
             case "contract_of_torment" -> new TormentContractItem();
             case "death_protection_poppet" -> new DeathProtectionPoppetItem();
+            case "voodoo_poppet" -> new VoodooPoppetItem();
+            case "voodoo_protection_poppet" -> new BoundPoppetItem();
             case "poppet" -> new Item(new Item.Properties().stacksTo(1));
             case "odd_porkchop_raw" -> new Item(new Item.Properties().food(new FoodProperties.Builder()
                     .nutrition(3).saturationMod(0.3F).alwaysEat().build()));
             case "redstone_soup" -> new DrinkableBrewItem(() -> MobEffects.HEALTH_BOOST, 2400, 1);
             case "soul_of_the_world" -> new DrinkableBrewItem(() -> MobEffects.POISON, 1200, 1);
+            case "infernal_animus" -> new DrinkableBrewItem(drinker -> {
+                drinker.addEffect(new MobEffectInstance(MobEffects.POISON, 1200, 1));
+                drinker.addEffect(new MobEffectInstance(MobEffects.WITHER, 3600, 2));
+            });
             case "happenstance_oil" -> new DrinkableBrewItem(() -> MobEffects.NIGHT_VISION, 1200, 0);
             case "seer_stone" -> new SeerStoneItem();
             case "purified_milk" -> new DrinkableBrewItem(DrinkableBrewItem::purifyMilk);

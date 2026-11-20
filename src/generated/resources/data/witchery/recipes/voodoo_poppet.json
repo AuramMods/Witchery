@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "witchery:belladonna_flower"
+    },
+    "F": {
+      "item": "minecraft:fermented_spider_eye"
+    },
+    "H": {
+      "item": "witchery:exhale_of_the_horned_one"
+    },
+    "M": {
+      "item": "witchery:mandrake_root"
+    },
+    "P": {
+      "item": "witchery:poppet"
+    }
+  },
+  "pattern": [
+    " F ",
+    "BPM",
+    " H "
+  ],
+  "result": {
+    "item": "witchery:voodoo_poppet"
+  },
+  "show_notification": true
+}

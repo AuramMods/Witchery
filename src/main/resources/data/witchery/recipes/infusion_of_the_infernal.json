@@ -1,0 +1,10 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [
+    {"size": "small", "glyph": "witchery:circleglyphinfernal"},
+    {"size": "medium", "glyph": "witchery:circleglyphinfernal"}
+  ],
+  "sacrifices": [{"item": "witchery:infernal_animus"}],
+  "power": 4000,
+  "action": "infuse_infernal"
+}

@@ -93,7 +93,8 @@
 - [x] Verify the same 250-health Lord after a dedicated restart. The muted client defeated it with an axe after a fixture shortened the remaining fight, collected two enchanted books, a Demon Heart and the Brew of Soul Torment, and drank the brew to save its Tormentum knowledge. It exited through the generated portal.
 - [x] Restore the Contract of Torment's standing-stone channel. The muted survival client tested interruption and a complete channel using legacy infusion charge loaded from the fixture. A complete channel spent 80 charge, consumed the contract, and summoned one 500-health Lord of Torment. The standing stones remained with mob griefing disabled.
 - [x] Restore survival infusion acquisition and recharging for the Contract of Torment. The muted client brewed and bottled Soul of the World, cast the Overworld infusion with a bound Death Protection Poppet, and then drew 20 charge from that infusion with the contract.
-- [ ] Restore the Infernal infusion required for Tormentum and complete the Mystic Branch's spellcasting.
+- [x] Restore the Infernal infusion required for Tormentum. The muted client brewed Infernal Animus with a used Voodoo Poppet, sacrificed it inside small and medium Infernal rings, and acquired 200 charge with a Death Protection Poppet.
+- [ ] Complete the Mystic Branch so the four Soul Brew spells can be cast.
 
 ## Familiars and Covens (2026-11-19)
 
@@ -117,7 +118,15 @@
 - [x] Restore Soul of the World in the kettle, using Redstone Soup, extended Regeneration, an Enchanted Golden Apple, Attuned Stone, Mandrake Root, and Rowan Sapling. The muted client filled the kettle and bottled two servings. The Forge tests distinguish Rowan from Alder and Hawthorn.
 - [x] Restore the Overworld infusion's two white rings, 4,000 altar power and 200 personal charges. All 40 required Forge GameTests passed, including the old poppet metadata, a bound poppet's lethal damage protection, and the charge cap.
 - [x] Restore the recharging rite with a standard Regeneration potion and upkeep of 40 altar power per second. The dedicated restart retained the active rite and the player's 180 charge outside the circle. The muted client reentered, reached the 200-charge cap, and stopped the rite at the heart.
-- [ ] Restore the three remaining infusion recipes, their special abilities, charge HUD, the Poppet Shelf, and other types of poppets.
+- [ ] Restore the remaining Light and Otherwhere infusion recipes, the infusions' special abilities and charge HUD, the Poppet Shelf, and other types of poppets.
+
+## Infernal Infusion and Voodoo Poppets (2026-11-19)
+
+- [x] Restore crafting and Taglock binding for Voodoo Poppets and their protection. The muted client bound a pig, pricked it to spend one Bone Needle and half a point of health, and pushed it with a charged poppet. All 42 required Forge GameTests passed, including the old signed poppet's saved wear.
+- [x] Restore Infernal Animus in the kettle using Redstone Soup, a strong Harming potion, Voodoo Poppet, Demon Heart, Refined Evil and Blaze Rod. A hopper fed the used, bound Voodoo Poppet into the kettle, and the muted client obtained two portions using strong splash Harming. GameTests also cover the strong drinking potion.
+- [x] Restore the 4,000-power Infernal infusion rite. The muted client replaced its Overworld infusion with ID 4 and 200 charge. The bound Death Protection Poppet was consumed and restored ten health.
+- [x] Verify Voodoo protection in the muted dedicated-server client. A self-targeted cast reflected from a matching ward and added 350 wear to both poppets.
+- [ ] Extend Voodoo protection to Poppet Shelves and Witch Hunter equipment.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.

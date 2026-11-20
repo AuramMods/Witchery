@@ -20,7 +20,9 @@ import java.util.function.Supplier;
 public final class TaglockBindingRecipe extends CustomRecipe {
     public enum Binding {
         OWNERSHIP(WitcheryIngredient.CONTRACT_OF_OWNERSHIP::item, () -> WitcheryRecipes.SIGN_OWNERSHIP_CONTRACT.get()),
-        DEATH_POPPET(() -> WitcheryItems.getRequired("death_protection_poppet").get(), () -> WitcheryRecipes.BIND_DEATH_POPPET.get());
+        DEATH_POPPET(() -> WitcheryItems.getRequired("death_protection_poppet").get(), () -> WitcheryRecipes.BIND_DEATH_POPPET.get()),
+        VOODOO_POPPET(() -> WitcheryItems.getRequired("voodoo_poppet").get(), () -> WitcheryRecipes.BIND_VOODOO_POPPET.get()),
+        VOODOO_PROTECTION(() -> WitcheryItems.getRequired("voodoo_protection_poppet").get(), () -> WitcheryRecipes.BIND_VOODOO_PROTECTION.get());
 
         private final Supplier<Item> item;
         private final Supplier<RecipeSerializer<?>> serializer;

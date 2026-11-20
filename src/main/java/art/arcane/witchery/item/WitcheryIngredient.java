@@ -43,6 +43,7 @@ public enum WitcheryIngredient {
     DROP_OF_LUCK(39, "drop_of_luck"),
     REDSTONE_SOUP(40, "redstone_soup"),
     SOUL_OF_THE_WORLD(43, "soul_of_the_world"),
+    INFERNAL_ANIMUS(45, "infernal_animus"),
     ODD_PORKCHOP_RAW(50, "odd_porkchop_raw"),
     BREW_OF_INK(60, "brew_of_ink"),
     ROWAN_BERRIES(63, "rowan_berries"),
@@ -108,11 +109,17 @@ public enum WitcheryIngredient {
     /** Loads an inventory stack after upgrading the legacy Witchery subtype, when present. */
     public static ItemStack loadInventoryStack(CompoundTag stackTag) {
         ItemStack stack = ItemStack.of(stackTag);
-        if (!stack.isEmpty() && "witchery:poppet".equals(stackTag.getString("id"))
-                && stackTag.getInt("Damage") == 6) {
-            ItemStack deathPoppet = new ItemStack(WitcheryItems.getRequired("death_protection_poppet").get(), stack.getCount());
-            if (stack.hasTag()) deathPoppet.setTag(stack.getTag().copy());
-            return deathPoppet;
+        if (!stack.isEmpty() && "witchery:poppet".equals(stackTag.getString("id"))) {
+            String poppet = switch (stackTag.getInt("Damage")) {
+                case 6 -> "death_protection_poppet";
+                case 7 -> "voodoo_protection_poppet";
+                case 8 -> "voodoo_poppet";
+                default -> null;
+            };
+            if (poppet == null) return stack;
+            ItemStack subtype = new ItemStack(WitcheryItems.getRequired(poppet).get(), stack.getCount());
+            if (stack.hasTag()) subtype.setTag(stack.getTag().copy());
+            return subtype;
         }
         if (stack.isEmpty() || !LEGACY_ID.equals(stackTag.getString("id"))) {
             return stack;

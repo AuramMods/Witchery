@@ -1,0 +1,36 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "witchery:belladonna_flower"
+    },
+    "D": {
+      "item": "minecraft:dandelion"
+    },
+    "F": {
+      "item": "minecraft:poppy"
+    },
+    "M": {
+      "item": "witchery:mandrake_root"
+    },
+    "P": {
+      "item": "witchery:poppet"
+    },
+    "R": {
+      "item": "minecraft:red_mushroom"
+    },
+    "U": {
+      "item": "minecraft:brown_mushroom"
+    }
+  },
+  "pattern": [
+    "DRF",
+    "BPM",
+    "FUD"
+  ],
+  "result": {
+    "item": "witchery:voodoo_protection_poppet"
+  },
+  "show_notification": true
+}
