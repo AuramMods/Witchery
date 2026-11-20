@@ -1,0 +1,21 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"item": "witchery:redstone_soup"},
+    {"type": "forge:nbt", "item": "minecraft:potion", "nbt": {"Potion": "minecraft:long_regeneration"}},
+    {"item": "minecraft:enchanted_golden_apple"},
+    {"item": "witchery:attuned_stone"},
+    {"item": "witchery:mandrake_root"},
+    {
+      "type": "forge:difference",
+      "base": {"item": "witchery:witchsapling"},
+      "subtracted": [
+        {"type": "forge:partial_nbt", "item": "witchery:witchsapling", "nbt": {"BlockStateTag": {"wood_type": "alder"}}},
+        {"type": "forge:partial_nbt", "item": "witchery:witchsapling", "nbt": {"BlockStateTag": {"wood_type": "hawthorn"}}}
+      ]
+    }
+  ],
+  "result": {"item": "witchery:soul_of_the_world", "count": 2},
+  "color": -16003328,
+  "power": 4000
+}

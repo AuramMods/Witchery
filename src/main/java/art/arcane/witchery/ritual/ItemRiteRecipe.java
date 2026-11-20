@@ -44,7 +44,9 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         CURE_WAKING_NIGHTMARE,
         BIND_FAMILIAR,
         CALL_FAMILIAR,
-        SUMMON_IMP
+        SUMMON_IMP,
+        INFUSE_OVERWORLD,
+        RECHARGE_INFUSION
     }
 
     public record Ring(RitualCircle pattern, Block glyph) {
@@ -187,6 +189,8 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 case "manifestation" -> Action.MANIFESTATION;
                 case "summon_demon" -> Action.SUMMON_DEMON;
                 case "summon_imp" -> Action.SUMMON_IMP;
+                case "infuse_overworld" -> Action.INFUSE_OVERWORLD;
+                case "recharge_infusion" -> Action.RECHARGE_INFUSION;
                 case "curse_waking_nightmare" -> Action.CURSE_WAKING_NIGHTMARE;
                 case "cure_waking_nightmare" -> Action.CURE_WAKING_NIGHTMARE;
                 case "bind_familiar" -> Action.BIND_FAMILIAR;

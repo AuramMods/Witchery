@@ -5,6 +5,7 @@ import art.arcane.witchery.brewing.GrotesqueEffect;
 import art.arcane.witchery.brewing.WakingNightmareEffect;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.familiar.FamiliarBinding;
+import art.arcane.witchery.item.DeathProtectionPoppetItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.Witchery;
@@ -26,6 +27,7 @@ import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -178,6 +180,11 @@ public final class WitcheryEventHooks {
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void onFamiliarDamage(LivingHurtEvent event) {
         if (event.getEntity() instanceof ServerPlayer server) FamiliarBinding.shareDamage(server, event);
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void protectFromLethalDamage(LivingDamageEvent event) {
+        DeathProtectionPoppetItem.protect(event);
     }
 
     @SubscribeEvent

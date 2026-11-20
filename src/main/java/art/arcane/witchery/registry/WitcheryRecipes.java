@@ -6,7 +6,7 @@ import art.arcane.witchery.brewing.KettleRecipe;
 import art.arcane.witchery.crafting.BoundTaglockIngredient;
 import art.arcane.witchery.crafting.DistillingRecipe;
 import art.arcane.witchery.crafting.SpinningRecipe;
-import art.arcane.witchery.crafting.SignOwnershipContractRecipe;
+import art.arcane.witchery.crafting.TaglockBindingRecipe;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -67,8 +67,12 @@ public final class WitcheryRecipes {
             });
     public static final RegistryObject<RecipeSerializer<ItemRiteRecipe>> ITEM_RITE_SERIALIZER =
             SERIALIZERS.register("item_rite", ItemRiteRecipe.Serializer::new);
-    public static final RegistryObject<RecipeSerializer<SignOwnershipContractRecipe>> SIGN_OWNERSHIP_CONTRACT =
-            SERIALIZERS.register("sign_ownership_contract", () -> new SimpleCraftingRecipeSerializer<>(SignOwnershipContractRecipe::new));
+    public static final RegistryObject<RecipeSerializer<TaglockBindingRecipe>> SIGN_OWNERSHIP_CONTRACT =
+            SERIALIZERS.register("sign_ownership_contract", () -> new SimpleCraftingRecipeSerializer<>(
+                    (id, category) -> new TaglockBindingRecipe(id, category, TaglockBindingRecipe.Binding.OWNERSHIP)));
+    public static final RegistryObject<RecipeSerializer<TaglockBindingRecipe>> BIND_DEATH_POPPET =
+            SERIALIZERS.register("bind_death_protection_poppet", () -> new SimpleCraftingRecipeSerializer<>(
+                    (id, category) -> new TaglockBindingRecipe(id, category, TaglockBindingRecipe.Binding.DEATH_POPPET)));
 
     private WitcheryRecipes() {
     }

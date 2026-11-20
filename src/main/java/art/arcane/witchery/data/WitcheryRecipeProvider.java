@@ -116,6 +116,27 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .pattern("PPS")
                 .unlockedBy("has_odd_porkchop", has(WitcheryIngredient.ODD_PORKCHOP_RAW.item()))
                 .save(recipeOutput);
+        Item poppet = WitcheryItems.getRequired("poppet").get();
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, poppet)
+                .define('W', Blocks.WHITE_WOOL)
+                .define('M', WitcheryBlocks.getRequired("spanishmoss").get())
+                .define('N', WitcheryIngredient.BONE_NEEDLE.item())
+                .define('S', Items.STRING)
+                .pattern("WMW")
+                .pattern("NMS")
+                .pattern("W W")
+                .unlockedBy("has_needle", has(WitcheryIngredient.BONE_NEEDLE.item()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryItems.getRequired("death_protection_poppet").get())
+                .define('L', WitcheryIngredient.DROP_OF_LUCK.item())
+                .define('G', Items.GOLD_NUGGET)
+                .define('D', WitcheryIngredient.DIAMOND_VAPOUR.item())
+                .define('P', poppet)
+                .pattern("LGD")
+                .pattern("GPG")
+                .pattern(" G ")
+                .unlockedBy("has_poppet", has(poppet))
+                .save(recipeOutput);
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryIngredient.FUME_FILTER.item())
                 .define('G', Blocks.GLASS)
                 .define('I', Items.IRON_INGOT)

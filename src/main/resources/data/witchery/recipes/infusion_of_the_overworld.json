@@ -1,0 +1,10 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [
+    {"size": "small", "glyph": "witchery:circleglyphritual"},
+    {"size": "medium", "glyph": "witchery:circleglyphritual"}
+  ],
+  "sacrifices": [{"item": "witchery:soul_of_the_world"}],
+  "power": 4000,
+  "action": "infuse_overworld"
+}

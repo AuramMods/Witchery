@@ -92,7 +92,8 @@
 - [x] Restore the Lord of Torment's 500 health, ordinary and demonic damage caps, fire immunity, ranged volley, and maze phase. The muted survival client dealt a capped axe hit and triggered the phase transition with another player in range. Both arrived at the same floor and only one 250-health Lord spawned. All 29 required GameTests passed.
 - [x] Verify the same 250-health Lord after a dedicated restart. The muted client defeated it with an axe after a fixture shortened the remaining fight, collected two enchanted books, a Demon Heart and the Brew of Soul Torment, and drank the brew to save its Tormentum knowledge. It exited through the generated portal.
 - [x] Restore the Contract of Torment's standing-stone channel. The muted survival client tested interruption and a complete channel using legacy infusion charge loaded from the fixture. A complete channel spent 80 charge, consumed the contract, and summoned one 500-health Lord of Torment. The standing stones remained with mob griefing disabled.
-- [ ] Restore survival infusion acquisition and recharging for the Contract of Torment. Complete the spellcasting system so the Brew of Soul Torment reward unlocks a castable Tormentum spell.
+- [x] Restore survival infusion acquisition and recharging for the Contract of Torment. The muted client brewed and bottled Soul of the World, cast the Overworld infusion with a bound Death Protection Poppet, and then drew 20 charge from that infusion with the contract.
+- [ ] Restore the Infernal infusion required for Tormentum and complete the Mystic Branch's spellcasting.
 
 ## Familiars and Covens (2026-11-19)
 
@@ -109,6 +110,14 @@
 - [ ] Restore the Imp's other signed spell contracts and the Mystic Branch's castable spells.
 - [ ] Restore legacy potion bottling skill and include it in Seer Stone readings.
 - [ ] Restore the Crystal Ball's predictions and the coven witch's additional combat and ritual behaviors.
+
+## Overworld Infusion and Death Protection Poppet (2026-11-19)
+
+- [x] Restore the Poppet, Death Protection Poppet, and Taglock binding recipes. The muted survival client crafted both shapes, filled a Taglock Kit at the bed, and bound the poppet to itself. The lethal infusion consumed the poppet and restored its owner from six to ten health.
+- [x] Restore Soul of the World in the kettle, using Redstone Soup, extended Regeneration, an Enchanted Golden Apple, Attuned Stone, Mandrake Root, and Rowan Sapling. The muted client filled the kettle and bottled two servings. The Forge tests distinguish Rowan from Alder and Hawthorn.
+- [x] Restore the Overworld infusion's two white rings, 4,000 altar power and 200 personal charges. All 40 required Forge GameTests passed, including the old poppet metadata, a bound poppet's lethal damage protection, and the charge cap.
+- [x] Restore the recharging rite with a standard Regeneration potion and upkeep of 40 altar power per second. The dedicated restart retained the active rite and the player's 180 charge outside the circle. The muted client reentered, reached the 200-charge cap, and stopped the rite at the heart.
+- [ ] Restore the three remaining infusion recipes, their special abilities, charge HUD, the Poppet Shelf, and other types of poppets.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.

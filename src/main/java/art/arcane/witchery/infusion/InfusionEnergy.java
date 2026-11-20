@@ -11,8 +11,29 @@ import net.minecraft.world.entity.player.Player;
 public final class InfusionEnergy {
     private static final String TYPE = "witcheryInfusionID";
     private static final String CHARGE = "witcheryInfusionCharges";
+    private static final String CAPACITY = "witcheryInfusionChargesMax";
 
     private InfusionEnergy() {
+    }
+
+    public static void grant(ServerPlayer player, int type, int capacity) {
+        CompoundTag data = player.getPersistentData();
+        CompoundTag infusion = data.getCompound(Player.PERSISTED_NBT_TAG);
+        infusion.putInt(TYPE, type);
+        infusion.putInt(CHARGE, capacity);
+        infusion.putInt(CAPACITY, capacity);
+        infusion.remove("WITCBeastPower");
+        infusion.remove("WITCBeastPowerCharges");
+        data.put(Player.PERSISTED_NBT_TAG, infusion);
+    }
+
+    public static boolean recharge(ServerPlayer player, int amount) {
+        CompoundTag infusion = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
+        int current = infusion.getInt(CHARGE);
+        int capacity = infusion.getInt(CAPACITY);
+        if (current >= capacity) return false;
+        infusion.putInt(CHARGE, Math.min(current + amount, capacity));
+        return true;
     }
 
     public static boolean spend(ServerPlayer player, int cost) {

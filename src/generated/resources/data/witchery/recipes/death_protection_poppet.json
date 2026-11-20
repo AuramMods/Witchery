@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "item": "witchery:diamond_vapour"
+    },
+    "G": {
+      "item": "minecraft:gold_nugget"
+    },
+    "L": {
+      "item": "witchery:drop_of_luck"
+    },
+    "P": {
+      "item": "witchery:poppet"
+    }
+  },
+  "pattern": [
+    "LGD",
+    "GPG",
+    " G "
+  ],
+  "result": {
+    "item": "witchery:death_protection_poppet"
+  },
+  "show_notification": true
+}

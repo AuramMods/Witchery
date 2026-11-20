@@ -42,6 +42,7 @@ public enum WitcheryIngredient {
     REFINED_EVIL(38, "refined_evil"),
     DROP_OF_LUCK(39, "drop_of_luck"),
     REDSTONE_SOUP(40, "redstone_soup"),
+    SOUL_OF_THE_WORLD(43, "soul_of_the_world"),
     ODD_PORKCHOP_RAW(50, "odd_porkchop_raw"),
     BREW_OF_INK(60, "brew_of_ink"),
     ROWAN_BERRIES(63, "rowan_berries"),
@@ -107,6 +108,12 @@ public enum WitcheryIngredient {
     /** Loads an inventory stack after upgrading the legacy Witchery subtype, when present. */
     public static ItemStack loadInventoryStack(CompoundTag stackTag) {
         ItemStack stack = ItemStack.of(stackTag);
+        if (!stack.isEmpty() && "witchery:poppet".equals(stackTag.getString("id"))
+                && stackTag.getInt("Damage") == 6) {
+            ItemStack deathPoppet = new ItemStack(WitcheryItems.getRequired("death_protection_poppet").get(), stack.getCount());
+            if (stack.hasTag()) deathPoppet.setTag(stack.getTag().copy());
+            return deathPoppet;
+        }
         if (stack.isEmpty() || !LEGACY_ID.equals(stackTag.getString("id"))) {
             return stack;
         }

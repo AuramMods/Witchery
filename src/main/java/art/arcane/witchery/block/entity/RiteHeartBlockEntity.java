@@ -5,6 +5,7 @@ import art.arcane.witchery.brewing.WakingNightmareEffect;
 import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.entity.Demon;
 import art.arcane.witchery.familiar.FamiliarBinding;
+import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.power.AltarPower;
@@ -46,6 +47,10 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     private static final int STEP_TICKS = 20;
     private static final int MANIFEST_RANGE = 5;
     private static final int MANIFEST_DURATION = 150;
+    private static final int INFUSION_RANGE = 4;
+    private static final int INFUSION_CAPACITY = 200;
+    private static final int RECHARGE_AMOUNT = 10;
+    private static final int RECHARGE_POWER_COST = 40;
     private final List<ItemStack> sacrificed = new ArrayList<>();
     @Nullable
     private ResourceLocation activeRite;
@@ -54,6 +59,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     private int stepTicks;
     private int covenSize;
     private int covenSummoned;
+    private boolean recharging;
 
     public RiteHeartBlockEntity(BlockPos pos, BlockState state) {
         super(WitcheryBlockEntities.CIRCLE.get(), pos, state);
@@ -121,6 +127,10 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             abort(level, "message.witchery.rite.unknown");
             return;
         }
+        if (recharging && rite.action() == ItemRiteRecipe.Action.RECHARGE_INFUSION) {
+            rechargeNearby(level);
+            return;
+        }
         if (covenSummoned < covenSize) {
             ServerPlayer caller = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
             if (caller != null && caller.level() == level) CovenWitch.summonToRite(caller, getBlockPos(), covenSummoned);
@@ -166,15 +176,13 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         LivingEntity curseTarget = null;
         boolean familiarRite = rite.action() == ItemRiteRecipe.Action.BIND_FAMILIAR || rite.action() == ItemRiteRecipe.Action.CALL_FAMILIAR;
         if (rite.action() == ItemRiteRecipe.Action.MANIFESTATION) {
-            double centerX = pos.getX() + 0.5;
-            double centerZ = pos.getZ() + 0.5;
-            recipients = level.getEntitiesOfClass(ServerPlayer.class, new AABB(pos).inflate(MANIFEST_RANGE, 0, MANIFEST_RANGE),
-                    player -> player.isAlive() && !player.isSpectator()
-                            && player.distanceToSqr(centerX, pos.getY(), centerZ) <= MANIFEST_RANGE * MANIFEST_RANGE);
+            recipients = nearbyPlayers(level, pos, MANIFEST_RANGE);
             if (recipients.isEmpty()) {
                 abort(level, "message.witchery.rite.no_nearby_player");
                 return;
             }
+        } else if (rite.action() == ItemRiteRecipe.Action.INFUSE_OVERWORLD) {
+            recipients = nearbyPlayers(level, pos, INFUSION_RANGE);
         } else if (rite.action() == ItemRiteRecipe.Action.SUMMON_DEMON || rite.action() == ItemRiteRecipe.Action.SUMMON_IMP) {
             boolean impRite = rite.action() == ItemRiteRecipe.Action.SUMMON_IMP;
             if (impRite && covenSize == 0) {
@@ -200,7 +208,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 abort(level, "message.witchery.rite.no_taglock_target");
                 return;
             }
-        } else if (!familiarRite) {
+        } else if (rite.action() == ItemRiteRecipe.Action.ITEM) {
             ItemEntity drop = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
                     rite.result().copy(), 0, 0.3, 0);
             drop.setDefaultPickUpDelay();
@@ -228,7 +236,12 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             WakingNightmareEffect.changeCurse(curseTarget, rite.action() == ItemRiteRecipe.Action.CURSE_WAKING_NIGHTMARE);
         }
         for (ServerPlayer recipient : recipients) {
-            DreamTravel.grantManifestation(recipient, MANIFEST_DURATION);
+            if (rite.action() == ItemRiteRecipe.Action.MANIFESTATION) {
+                DreamTravel.grantManifestation(recipient, MANIFEST_DURATION);
+            } else {
+                recipient.hurt(level.damageSources().magic(), 100);
+                if (recipient.isAlive()) InfusionEnergy.grant(recipient, 2, INFUSION_CAPACITY);
+            }
         }
         for (ItemStack offering : sacrificed) {
             if (offering.is(WitcheryIngredient.NECROMANTIC_STONE.item())) {
@@ -236,10 +249,36 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             }
         }
         sacrificed.clear();
-        clear(level);
+        if (rite.action() == ItemRiteRecipe.Action.RECHARGE_INFUSION) {
+            recharging = true;
+            setChanged();
+        } else {
+            clear(level);
+        }
         level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
                 16, 0.4, 0.4, 0.4, 0.05);
         level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.9F, 1.35F);
+    }
+
+    private static List<ServerPlayer> nearbyPlayers(ServerLevel level, BlockPos pos, int range) {
+        return level.getEntitiesOfClass(ServerPlayer.class, new AABB(pos).inflate(range, 0, range),
+                player -> player.isAlive() && !player.isSpectator()
+                        && player.distanceToSqr(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5) <= range * range);
+    }
+
+    private void rechargeNearby(ServerLevel level) {
+        AltarBlockEntity altar = AltarPower.nearest(level, getBlockPos());
+        if (altar == null || !altar.consumePower(RECHARGE_POWER_COST)) {
+            abort(level, "message.witchery.rite.missing_power");
+            return;
+        }
+        for (ServerPlayer player : nearbyPlayers(level, getBlockPos(), INFUSION_RANGE)) {
+            if (InfusionEnergy.recharge(player, RECHARGE_AMOUNT)) {
+                level.sendParticles(ParticleTypes.INSTANT_EFFECT, player.getX(), player.getY(0.5), player.getZ(),
+                        8, 0.35, 0.65, 0.35, 0);
+                player.playSound(SoundEvents.NOTE_BLOCK_PLING.value(), 0.8F, 1.0F);
+            }
+        }
     }
 
     private static boolean hasObstructedSummoningArea(ServerLevel level, BlockPos center) {
@@ -277,6 +316,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         stepTicks = 0;
         covenSize = 0;
         covenSummoned = 0;
+        recharging = false;
         updateActiveState(level);
         setChanged();
     }
@@ -301,6 +341,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         stepTicks = Mth.clamp(tag.getInt("StepTicks"), 0, STEP_TICKS - 1);
         covenSize = Mth.clamp(tag.getInt("CovenSize"), 0, CovenWitch.MAX_MEMBERS);
         covenSummoned = Mth.clamp(tag.getInt("CovenSummoned"), 0, covenSize);
+        recharging = tag.getBoolean("Recharging");
         sacrificed.clear();
         for (Tag entry : tag.getList("Sacrifices", Tag.TAG_COMPOUND)) {
             ItemStack stack = WitcheryIngredient.loadInventoryStack((CompoundTag) entry);
@@ -316,6 +357,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (activeRite != null) {
             tag.putString("Rite", activeRite.toString());
             tag.putInt("StepTicks", stepTicks);
+            if (recharging) tag.putBoolean("Recharging", true);
             if (covenSize > 0) {
                 tag.putInt("CovenSize", covenSize);
                 tag.putInt("CovenSummoned", covenSummoned);

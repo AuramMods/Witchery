@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "M": {
+      "item": "witchery:spanishmoss"
+    },
+    "N": {
+      "item": "witchery:bone_needle"
+    },
+    "S": {
+      "item": "minecraft:string"
+    },
+    "W": {
+      "item": "minecraft:white_wool"
+    }
+  },
+  "pattern": [
+    "WMW",
+    "NMS",
+    "W W"
+  ],
+  "result": {
+    "item": "witchery:poppet"
+  },
+  "show_notification": true
+}

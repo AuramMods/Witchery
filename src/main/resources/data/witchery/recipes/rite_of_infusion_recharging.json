@@ -1,0 +1,12 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [
+    {"size": "small", "glyph": "witchery:circleglyphritual"},
+    {"size": "medium", "glyph": "witchery:circleglyphritual"}
+  ],
+  "sacrifices": [
+    {"type": "forge:nbt", "item": "minecraft:potion", "nbt": {"Potion": "minecraft:regeneration"}}
+  ],
+  "power": 4000,
+  "action": "recharge_infusion"
+}
