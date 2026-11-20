@@ -1,6 +1,8 @@
 package art.arcane.witchery.world;
 
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.block.DreamCatcherBlock;
+import art.arcane.witchery.block.DreamWeave;
 import art.arcane.witchery.entity.Nightmare;
 import art.arcane.witchery.entity.SleepingBody;
 import art.arcane.witchery.item.WitcheryIngredient;
@@ -23,6 +25,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 import java.util.ArrayList;
@@ -170,7 +175,9 @@ public final class DreamTravel {
         CompoundTag hunger = new CompoundTag();
         player.getFoodData().addAdditionalSaveData(hunger);
         float health = Math.max(1, player.getHealth());
-        boolean nightmare = player.getRandom().nextDouble() < 0.998;
+        DreamAmbience ambience = DreamAmbience.around(overworld, anchor);
+        boolean nightmare = player.getRandom().nextDouble() < ambience.nightmareChance();
+        boolean demonic = nightmare && player.getRandom().nextDouble() < ambience.demonicChance();
 
         move(player, dream, arrival, yaw, pitch);
         if (player.serverLevel() != dream) {
@@ -190,7 +197,7 @@ public final class DreamTravel {
         session.putFloat("BodyPitch", pitch);
         session.putUUID(BODY_ENTITY, body.getUUID());
         session.putBoolean("Nightmare", nightmare);
-        session.putBoolean("Demonic", false);
+        session.putBoolean("Demonic", demonic);
         persistent.put(SPIRIT_WORLD, session);
         persistent.putBoolean(SPIRIT_WALKING, true);
 
@@ -206,7 +213,43 @@ public final class DreamTravel {
             player.getFoodData().eat(16, 0.8F);
             session.remove(SPIRIT_HUNGER);
         }
-        updateNightmare(player, nightmare ? 1 : 0);
+        updateNightmare(player, demonic ? 2 : nightmare ? 1 : 0);
+    }
+
+    private record DreamAmbience(double nightmareChance, double demonicChance) {
+        private static final double BASE_NIGHTMARE_CHANCE = 0.998;
+        private static final int RADIUS = 8;
+
+        static DreamAmbience around(ServerLevel level, BlockPos anchor) {
+            int cotton = 0;
+            int sources = 0;
+            int hearts = 0;
+            int fire = 0;
+            boolean nightmareWeave = false;
+            Block cottonBlock = WitcheryBlocks.getRequired("somniancotton").get();
+            Block spirit = WitcheryBlocks.getRequired("spiritflowing").get();
+            Block heart = WitcheryBlocks.getRequired("demonheart").get();
+            for (BlockPos pos : BlockPos.betweenClosed(anchor.offset(-RADIUS, -RADIUS, -RADIUS),
+                    anchor.offset(RADIUS, RADIUS, RADIUS))) {
+                if (!level.hasChunkAt(pos)) continue;
+                BlockState state = level.getBlockState(pos);
+                if (state.getBlock() instanceof DreamCatcherBlock && state.getValue(DreamCatcherBlock.WEAVE) == DreamWeave.NIGHTMARES) {
+                    nightmareWeave = true;
+                } else if (state.is(cottonBlock) && cotton < 2) {
+                    cotton++;
+                } else if (state.is(spirit) && sources < 3 && state.getFluidState().isSource()) {
+                    sources++;
+                } else if (state.is(heart) && hearts < 2) {
+                    hearts++;
+                } else if (state.is(Blocks.FIRE) && fire < 3) {
+                    fire++;
+                }
+            }
+            if (!nightmareWeave) return new DreamAmbience(BASE_NIGHTMARE_CHANCE, 0);
+            double danger = 0.35 * hearts + 0.1 * fire;
+            double nightmare = Mth.clamp(BASE_NIGHTMARE_CHANCE - 0.5 - 0.1 * (sources + cotton) + danger, 0, 1);
+            return new DreamAmbience(nightmare, hearts > 0 && sources > 0 ? danger : 0);
+        }
     }
 
     private static void wake(ServerPlayer player, CompoundTag persistent) {

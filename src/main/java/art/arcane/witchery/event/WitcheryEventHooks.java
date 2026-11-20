@@ -1,5 +1,6 @@
 package art.arcane.witchery.event;
 
+import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.Witchery;
@@ -14,12 +15,14 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.LevelEvent;
+import net.minecraftforge.event.level.SleepFinishedTimeEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.fml.common.Mod;
@@ -28,6 +31,11 @@ import net.minecraftforge.event.TickEvent;
 @Mod.EventBusSubscriber(modid = Witchery.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class WitcheryEventHooks {
     private WitcheryEventHooks() {
+    }
+
+    @SubscribeEvent
+    public static void onSleepFinished(SleepFinishedTimeEvent event) {
+        DreamCatcherBlock.finishSleep((ServerLevel) event.getLevel());
     }
 
     @SubscribeEvent

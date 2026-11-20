@@ -1,11 +1,13 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.DreamWeave;
 import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.brewing.BrewImpacts;
 import art.arcane.witchery.item.AnointingPasteItem;
 import art.arcane.witchery.item.ArthanaItem;
 import art.arcane.witchery.item.DrinkableBrewItem;
+import art.arcane.witchery.item.DreamWeaveItem;
 import art.arcane.witchery.item.FilledChaliceItem;
 import art.arcane.witchery.item.IcyNeedleItem;
 import art.arcane.witchery.item.MutandisItem;
@@ -127,6 +129,11 @@ public final class WitcheryItems {
             case "redstone_soup" -> new DrinkableBrewItem(() -> MobEffects.HEALTH_BOOST, 2400, 1);
             case "purified_milk" -> new DrinkableBrewItem(DrinkableBrewItem::purifyMilk);
             case "icy_needle" -> new IcyNeedleItem();
+            case "dreamweave_of_fleet_feet" -> dreamWeave(DreamWeave.MOVEMENT);
+            case "dreamweave_of_the_iron_arm" -> dreamWeave(DreamWeave.MINING);
+            case "dreamweave_of_fasting" -> dreamWeave(DreamWeave.HUNGER);
+            case "dreamweave_of_nightmares" -> dreamWeave(DreamWeave.NIGHTMARES);
+            case "dreamweave_of_intensity" -> dreamWeave(DreamWeave.INTENSITY);
             case "filled_chalice" -> new FilledChaliceItem(WitcheryBlocks.getRequired("chalice").get());
             case "chalice", "candelabra" -> createBlockItem(path);
             case "mutandis", "mutandis_extremis" -> new MutandisItem(new Item.Properties(), path.equals("mutandis_extremis"));
@@ -188,5 +195,9 @@ public final class WitcheryItems {
         return block instanceof DoorBlock
                 ? new DoubleHighBlockItem(block, new Item.Properties())
                 : new BlockItem(block, new Item.Properties());
+    }
+
+    private static DreamWeaveItem dreamWeave(DreamWeave weave) {
+        return new DreamWeaveItem(WitcheryBlocks.getRequired("dreamcatcher").get(), weave);
     }
 }

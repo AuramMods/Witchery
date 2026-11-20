@@ -1,6 +1,8 @@
 package art.arcane.witchery.data;
 
 import art.arcane.witchery.block.ChaliceBlock;
+import art.arcane.witchery.block.DreamCatcherBlock;
+import art.arcane.witchery.block.DreamWeave;
 import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.block.WitchCropBlock;
 import art.arcane.witchery.block.WitchWoodType;
@@ -20,6 +22,7 @@ import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.AlternativesEntry;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount;
 import net.minecraft.world.level.storage.loot.functions.CopyBlockState;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
@@ -52,6 +55,7 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                 case "witchesovenburning" -> dropOther(block, WitcheryBlocks.getRequired("witchesovenidle").get());
                 case "distilleryburning" -> dropOther(block, WitcheryBlocks.getRequired("distilleryidle").get());
                 case "chalice" -> dropChalice(block);
+                case "dreamcatcher" -> dropDreamWeave(block);
                 case "witchsapling", "witchlog", "witchwood" -> dropWitchWood(block);
                 case "witchleaves" -> dropWitchLeaves(block);
                 default -> {
@@ -65,6 +69,17 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                 }
             }
         }
+    }
+
+    private void dropDreamWeave(Block block) {
+        LootPoolEntryContainer.Builder<?>[] entries = java.util.Arrays.stream(DreamWeave.values())
+                .map(weave -> LootItem.lootTableItem(weave.item()).when(
+                        LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
+                                .setProperties(StatePropertiesPredicate.Builder.properties()
+                                        .hasProperty(DreamCatcherBlock.WEAVE, weave))))
+                .toArray(LootPoolEntryContainer.Builder<?>[]::new);
+        add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool()
+                .setRolls(ConstantValue.exactly(1)).add(AlternativesEntry.alternatives(entries)))));
     }
 
     private void dropChalice(Block block) {

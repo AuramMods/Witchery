@@ -7,6 +7,10 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 public enum WitcheryIngredient {
+    DREAMWEAVE_OF_FLEET_FEET(3, "dreamweave_of_fleet_feet"),
+    DREAMWEAVE_OF_THE_IRON_ARM(4, "dreamweave_of_the_iron_arm"),
+    DREAMWEAVE_OF_FASTING(5, "dreamweave_of_fasting"),
+    DREAMWEAVE_OF_NIGHTMARES(6, "dreamweave_of_nightmares"),
     CANDELABRA(0, "candelabra"),
     EMPTY_CHALICE(1, "chalice"),
     FILLED_CHALICE(2, "filled_chalice"),
@@ -52,6 +56,7 @@ public enum WitcheryIngredient {
     TORMENTED_TWINE(101, "tormented_twine"),
     GOLDEN_THREAD(102, "golden_thread"),
     MELLIFLUOUS_HUNGER(103, "mellifluous_hunger"),
+    DREAMWEAVE_OF_INTENSITY(104, "dreamweave_of_intensity"),
     PURIFIED_MILK(105, "purified_milk"),
     CHARM_OF_DISRUPTED_DREAMS(110, "charm_of_disrupted_dreams"),
     WORMWOOD(111, "wormwood_leaf"),

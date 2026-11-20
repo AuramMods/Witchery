@@ -1,0 +1,42 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "dxe",
+    "bab",
+    "cfc"
+  ],
+  "key": {
+    "a": {
+      "item": "minecraft:item_frame"
+    },
+    "b": {
+      "item": "witchery:fanciful_thread"
+    },
+    "c": {
+      "item": "minecraft:feather"
+    },
+    "d": {
+      "type": "forge:partial_nbt",
+      "item": "minecraft:splash_potion",
+      "nbt": {
+        "Potion": "minecraft:swiftness"
+      }
+    },
+    "e": {
+      "type": "forge:partial_nbt",
+      "item": "minecraft:splash_potion",
+      "nbt": {
+        "Potion": "minecraft:slowness"
+      }
+    },
+    "f": {
+      "item": "witchery:tormented_twine"
+    },
+    "x": {
+      "item": "witchery:diamond_vapour"
+    }
+  },
+  "result": {
+    "item": "witchery:dreamweave_of_fleet_feet"
+  }
+}

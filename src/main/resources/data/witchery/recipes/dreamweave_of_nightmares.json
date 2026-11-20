@@ -1,0 +1,39 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "dxe",
+    "bab",
+    "cbc"
+  ],
+  "key": {
+    "a": {
+      "item": "minecraft:item_frame"
+    },
+    "b": {
+      "item": "witchery:tormented_twine"
+    },
+    "c": {
+      "item": "minecraft:feather"
+    },
+    "d": {
+      "type": "forge:partial_nbt",
+      "item": "minecraft:splash_potion",
+      "nbt": {
+        "Potion": "minecraft:poison"
+      }
+    },
+    "e": {
+      "type": "forge:partial_nbt",
+      "item": "minecraft:splash_potion",
+      "nbt": {
+        "Potion": "minecraft:night_vision"
+      }
+    },
+    "x": {
+      "item": "witchery:diamond_vapour"
+    }
+  },
+  "result": {
+    "item": "witchery:dreamweave_of_nightmares"
+  }
+}

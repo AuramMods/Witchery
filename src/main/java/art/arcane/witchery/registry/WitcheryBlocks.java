@@ -5,6 +5,7 @@ import art.arcane.witchery.block.AltarBlock;
 import art.arcane.witchery.block.CandelabraBlock;
 import art.arcane.witchery.block.ChaliceBlock;
 import art.arcane.witchery.block.DistilleryBlock;
+import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.KettleBlock;
 import art.arcane.witchery.block.SomnianCottonBlock;
 import art.arcane.witchery.block.SpinningWheelBlock;
@@ -79,7 +80,6 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_INFINITY_EGG = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
     private static final VoxelShape SHAPE_GARLIC_GARLAND = Block.box(1.6D, 12.8D, 13.6D, 14.4D, 16.0D, 16.0D);
     private static final VoxelShape SHAPE_POPPET_SHELF = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 8.16D, 16.0D);
-    private static final VoxelShape SHAPE_DREAM_CATCHER = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 16.0D, 12.0D);
     private static final VoxelShape SHAPE_SILVER_VAT = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 10.24D, 16.0D);
     private static final VoxelShape SHAPE_DAYLIGHT_COLLECTOR = Block.box(3.2D, 0.0D, 3.2D, 12.8D, 12.8D, 12.8D);
     private static final VoxelShape SHAPE_BLOOD_CRUCIBLE = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 4.96D, 12.0D);
@@ -222,7 +222,7 @@ public final class WitcheryBlocks {
             case "poppetshelf" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS), SHAPE_POPPET_SHELF, true);
             case "dreamcatcher" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.OAK_TRAPDOOR), SHAPE_DREAM_CATCHER, false);
+                    new DreamCatcherBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS).strength(1).noCollission().noOcclusion());
             case "silvervat" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).sound(SoundType.METAL), SHAPE_SILVER_VAT, true);
             case "daylightcollector" ->

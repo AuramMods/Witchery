@@ -10,8 +10,74 @@
       ],
       "entries": [
         {
-          "type": "minecraft:item",
-          "name": "witchery:dreamcatcher"
+          "type": "minecraft:alternatives",
+          "children": [
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "block": "witchery:dreamcatcher",
+                  "condition": "minecraft:block_state_property",
+                  "properties": {
+                    "weave": "movement"
+                  }
+                }
+              ],
+              "name": "witchery:dreamweave_of_fleet_feet"
+            },
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "block": "witchery:dreamcatcher",
+                  "condition": "minecraft:block_state_property",
+                  "properties": {
+                    "weave": "mining"
+                  }
+                }
+              ],
+              "name": "witchery:dreamweave_of_the_iron_arm"
+            },
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "block": "witchery:dreamcatcher",
+                  "condition": "minecraft:block_state_property",
+                  "properties": {
+                    "weave": "hunger"
+                  }
+                }
+              ],
+              "name": "witchery:dreamweave_of_fasting"
+            },
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "block": "witchery:dreamcatcher",
+                  "condition": "minecraft:block_state_property",
+                  "properties": {
+                    "weave": "nightmares"
+                  }
+                }
+              ],
+              "name": "witchery:dreamweave_of_nightmares"
+            },
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "block": "witchery:dreamcatcher",
+                  "condition": "minecraft:block_state_property",
+                  "properties": {
+                    "weave": "intensity"
+                  }
+                }
+              ],
+              "name": "witchery:dreamweave_of_intensity"
+            }
+          ]
         }
       ],
       "rolls": 1.0

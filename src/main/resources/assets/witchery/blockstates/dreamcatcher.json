@@ -1,7 +1,9 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/dreamcatcher"
+  "multipart": [
+    {
+      "apply": {
+        "model": "witchery:block/dreamcatcher"
       }
-   }
+    }
+  ]
 }

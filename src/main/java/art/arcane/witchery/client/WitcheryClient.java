@@ -10,6 +10,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.client.model.MandrakeModel;
 import art.arcane.witchery.client.model.NightmareModel;
+import art.arcane.witchery.client.renderer.DreamCatcherRenderer;
 import art.arcane.witchery.client.renderer.KettleRenderer;
 import art.arcane.witchery.client.renderer.MandrakeRenderer;
 import art.arcane.witchery.client.renderer.NightmareRenderer;
@@ -49,6 +50,7 @@ public final class WitcheryClient {
     public static void registerModelLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(MandrakeModel.LAYER, MandrakeModel::layer);
         event.registerLayerDefinition(NightmareModel.LAYER, NightmareModel::layer);
+        event.registerLayerDefinition(DreamCatcherRenderer.LAYER, DreamCatcherRenderer::layer);
         event.registerLayerDefinition(KettleRenderer.LAYER, KettleRenderer::layer);
         event.registerLayerDefinition(SpinningWheelRenderer.LAYER, SpinningWheelRenderer::layer);
     }
@@ -62,6 +64,7 @@ public final class WitcheryClient {
         event.registerBlockEntityRenderer(WitcheryBlockEntities.KETTLE.get(), KettleRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.SPINNING_WHEEL.get(), SpinningWheelRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.PLACED_ITEM.get(), PlacedItemRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.DREAM_CATCHER.get(), DreamCatcherRenderer::new);
     }
 
     @SubscribeEvent
