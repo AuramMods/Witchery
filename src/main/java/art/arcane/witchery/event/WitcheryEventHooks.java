@@ -24,11 +24,13 @@ import art.arcane.witchery.vampirism.BloodFeeding;
 import art.arcane.witchery.vampirism.VampireAbilities;
 import art.arcane.witchery.vampirism.VampireFlight;
 import art.arcane.witchery.vampirism.VampireMortality;
+import art.arcane.witchery.vampirism.VampireVillages;
 import art.arcane.witchery.item.WitchClothingItem;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.prediction.PredictedCourtship;
 import art.arcane.witchery.prediction.Predictions;
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.ritual.DroppedWaystones;
 import art.arcane.witchery.world.DreamTravel;
@@ -56,6 +58,7 @@ import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
@@ -372,6 +375,13 @@ public final class WitcheryEventHooks {
         if (event.getEntity() instanceof ServerPlayer player) DeathProtectionPoppetItem.repairHeldTool(player);
     }
 
+    @SubscribeEvent
+    public static void preventVillageFriendlyFire(LivingAttackEvent event) {
+        if (event.getEntity() instanceof Villager && VillageGuard.isVillageDefender(event.getSource().getEntity())) {
+            event.setCanceled(true);
+        }
+    }
+
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void protectFromLethalDamage(LivingDamageEvent event) {
         if (VampireMortality.preventLethalDamage(event.getEntity(), event.getSource(), event.getAmount())) {
@@ -379,8 +389,13 @@ public final class WitcheryEventHooks {
             return;
         }
         DeathProtectionPoppetItem.protect(event);
-        if (!event.isCanceled() && event.getAmount() > 0 && event.getSource().is(net.minecraft.world.damagesource.DamageTypes.PLAYER_ATTACK)
-                && event.getSource().getDirectEntity() instanceof ServerPlayer player) {
+        if (event.isCanceled() || event.getAmount() <= 0) return;
+        var source = event.getSource();
+        if (event.getEntity() instanceof Villager villager && villager.level() instanceof ServerLevel world
+                && source.getEntity() instanceof LivingEntity attacker && !source.is(WitcheryDamageTypes.VAMPIRE_BITE)) {
+            VampireVillages.recordAggressor(world, villager, attacker);
+        }
+        if (source.is(net.minecraft.world.damagesource.DamageTypes.PLAYER_ATTACK) && source.getDirectEntity() instanceof ServerPlayer player) {
             Vampirism.knockBack(player, event.getEntity());
         }
     }

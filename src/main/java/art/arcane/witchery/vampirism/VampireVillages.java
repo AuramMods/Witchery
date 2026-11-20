@@ -5,6 +5,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.StructureTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiRecord;
@@ -17,16 +18,23 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayDeque;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class VampireVillages {
     private static final int VISIT_RANGE = 32;
     private static final int HOME_SEARCH_RANGE = 64;
+    private static final int AGGRESSION_DURATION = 300;
+    private static final Map<ServerLevel, ArrayDeque<Aggression>> AGGRESSION = Collections.synchronizedMap(new WeakHashMap<>());
     private static final Comparator<BlockPos> HOME_ORDER = Comparator.<BlockPos>comparingInt(BlockPos::getX)
             .thenComparingInt(BlockPos::getZ).thenComparingInt(BlockPos::getY);
 
@@ -52,6 +60,29 @@ public final class VampireVillages {
             return new AABB(center).inflate(radius, 4, radius);
         }
     }
+
+    public static void recordAggressor(ServerLevel world, Villager victim, LivingEntity attacker) {
+        var recent = AGGRESSION.computeIfAbsent(world, ignored -> new ArrayDeque<>());
+        long now = world.getGameTime();
+        expireAggression(recent, now);
+        recent.addLast(new Aggression(attacker.getUUID(), victim.position(), now + AGGRESSION_DURATION));
+    }
+
+    public static Stream<LivingEntity> recentAggressors(ServerLevel world, Territory village) {
+        var recent = AGGRESSION.get(world);
+        if (recent == null) return Stream.empty();
+        expireAggression(recent, world.getGameTime());
+        var residents = village.residents();
+        return recent.stream().filter(attack -> residents.contains(attack.victimPosition()))
+                .map(Aggression::attacker).distinct().map(world::getEntity)
+                .filter(LivingEntity.class::isInstance).map(LivingEntity.class::cast);
+    }
+
+    private static void expireAggression(ArrayDeque<Aggression> recent, long now) {
+        while (!recent.isEmpty() && recent.peekFirst().expiresAt() <= now) recent.removeFirst();
+    }
+
+    private record Aggression(UUID attacker, Vec3 victimPosition, long expiresAt) {}
 
     public static void releaseResidentClaims(Villager resident) {
         if (resident.isSleeping()) resident.stopSleeping();

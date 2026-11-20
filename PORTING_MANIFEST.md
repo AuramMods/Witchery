@@ -1359,6 +1359,7 @@ Status:
 - `witchery:garlicgarland` keeps its block and item ID. The block state saves a horizontal `facing` and defaults to north for existing 1.20.1 saves without that property.
 - `witchery:villageguard` reads and writes the legacy `GuardType` byte and `BloodLevel` value. It stores equipment in `HandItems` and `ArmorItems`. Earlier scaffold saves without a blood value initialize at 500.
 - `witchery:vampire_bite` preserves the attacking player's attribution and distinguishes feeding from a direct Cane Sword kill. Protocol 41 adds guard targets to the existing vampire blood display. Guard feeding uses the same saved `BloodLevel` as Cane Sword collection and the drained-target requirement for conversion.
+- General village defense uses the villagers' existing `Gossips` save data and the same territory used for recruitment. The server remembers attributed attacks on residents in memory for 300 ticks. No extra village save file is required for those short-lived attacks.
 
 ## 1.20.1 Event Hook Scaffold (current)
 Implementation anchor:

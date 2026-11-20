@@ -41,10 +41,13 @@ import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.TargetGoal;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.RangedAttackMob;
+import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.BowItem;
@@ -54,14 +57,18 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Comparator;
 import java.util.EnumSet;
 
 public final class VillageGuard extends PathfinderMob implements RangedAttackMob {
     private static final EntityDataAccessor<Byte> GUARD_TYPE = SynchedEntityData.defineId(VillageGuard.class, EntityDataSerializers.BYTE);
     private static final EntityDimensions TALL_SIZE = EntityDimensions.scalable(0.72F, 2.34F);
     private static final ResourceLocation WITCH_HUNTER = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "witchhunter");
+    private static final int HOSTILE_GOSSIP = -100;
+    private static final int TRUSTED_GOSSIP = 10;
     private int blood = BloodFeeding.MAX_MORTAL_BLOOD;
     private int patrolCheck;
+    @Nullable private VampireVillages.Territory village;
 
     public VillageGuard(EntityType<? extends VillageGuard> type, Level level) {
         super(type, level);
@@ -94,9 +101,10 @@ public final class VillageGuard extends PathfinderMob implements RangedAttackMob
         goalSelector.addGoal(10, new WaterAvoidingRandomStrollGoal(this, 1));
         goalSelector.addGoal(11, new LookAtPlayerGoal(this, Player.class, 8));
         goalSelector.addGoal(12, new RandomLookAroundGoal(this));
+        targetSelector.addGoal(1, new DefendVillageGoal());
         targetSelector.addGoal(2, new HurtByTargetGoal(this, VillageGuard.class).setAlertOthers());
         targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, LivingEntity.class, 10, true, true,
-                entity -> entity instanceof Enemy && !(entity instanceof Creeper) && !isAlly(entity)));
+                entity -> entity instanceof Enemy));
     }
 
     private boolean hasBow() {
@@ -125,21 +133,29 @@ public final class VillageGuard extends PathfinderMob implements RangedAttackMob
         super.customServerAiStep();
         if (--patrolCheck > 0 || !(level() instanceof ServerLevel world)) return;
         patrolCheck = 70 + random.nextInt(50);
-        VampireVillages.territory(world, blockPosition()).ifPresentOrElse(village -> {
+        village = VampireVillages.territory(world, blockPosition()).orElse(null);
+        if (village == null) {
+            clearRestriction();
+        } else {
             restrictTo(village.center(), village.radius() * 3 / 2);
             if (getTarget() == null) {
                 heal(1);
                 if (random.nextInt(4) == 0) setBlood(blood + 1);
             }
-        }, this::clearRestriction);
+        }
+    }
+
+    @Override
+    public boolean canAttack(LivingEntity target) {
+        return !(target instanceof Creeper || target instanceof Villager) && !isVillageDefender(target) && super.canAttack(target);
     }
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        return !isAlly(source.getEntity()) && super.hurt(source, amount);
+        return !isVillageDefender(source.getEntity()) && super.hurt(source, amount);
     }
 
-    private static boolean isAlly(@Nullable Entity entity) {
+    public static boolean isVillageDefender(@Nullable Entity entity) {
         return entity instanceof VillageGuard || entity != null && WITCH_HUNTER.equals(BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()));
     }
 
@@ -207,6 +223,48 @@ public final class VillageGuard extends PathfinderMob implements RangedAttackMob
     @Override protected SoundEvent getAmbientSound() { return SoundEvents.VILLAGER_AMBIENT; }
     @Override protected SoundEvent getHurtSound(DamageSource source) { return SoundEvents.VILLAGER_HURT; }
     @Override protected SoundEvent getDeathSound() { return SoundEvents.VILLAGER_DEATH; }
+
+    private final class DefendVillageGoal extends TargetGoal {
+        private final TargetingConditions threats = TargetingConditions.forCombat().ignoreLineOfSight();
+        private long nextScan;
+
+        private DefendVillageGoal() {
+            super(VillageGuard.this, false, true);
+            setFlags(EnumSet.of(Flag.TARGET));
+        }
+
+        @Override
+        public boolean canUse() {
+            if (village == null || !canFight() || !(level() instanceof ServerLevel world)) return false;
+            long now = world.getGameTime();
+            if (now < nextScan) return false;
+            nextScan = now + 5;
+            threats.range(getFollowDistance());
+            targetMob = VampireVillages.recentAggressors(world, village)
+                    .filter(target -> threats.test(VillageGuard.this, target))
+                    .min(Comparator.comparingDouble(VillageGuard.this::distanceToSqr)).orElse(null);
+            if (canAttack(targetMob, threats)) return true;
+            if (getRandom().nextInt(20) != 0) return false;
+
+            var residents = world.getEntitiesOfClass(Villager.class, village.residents(), Villager::isAlive);
+            targetMob = world.getPlayers(player -> threats.test(VillageGuard.this, player)).stream()
+                    .filter(player -> residents.stream().anyMatch(resident -> resident.getPlayerReputation(player) <= HOSTILE_GOSSIP
+                            || player.getLastHurtByMob() instanceof Player ally && resident.getPlayerReputation(ally) >= TRUSTED_GOSSIP))
+                    .min(Comparator.comparingDouble(VillageGuard.this::distanceToSqr)).orElse(null);
+            return canAttack(targetMob, threats);
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            return village != null && canFight() && super.canContinueToUse();
+        }
+
+        @Override
+        public void start() {
+            setTarget(targetMob);
+            super.start();
+        }
+    }
 
     private final class FollowVampireGoal extends Goal {
         private FollowVampireGoal() {
