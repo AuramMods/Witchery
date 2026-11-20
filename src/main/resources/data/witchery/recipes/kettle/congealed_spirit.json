@@ -1,0 +1,14 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"item": "witchery:brew_of_hollow_tears"},
+    {"item": "witchery:subdued_spirit"},
+    {"item": "witchery:subdued_spirit"},
+    {"item": "witchery:subdued_spirit"},
+    {"item": "witchery:subdued_spirit"},
+    {"item": "witchery:subdued_spirit"}
+  ],
+  "result": {"item": "witchery:congealed_spirit"},
+  "color": -3096310,
+  "power": 2000
+}

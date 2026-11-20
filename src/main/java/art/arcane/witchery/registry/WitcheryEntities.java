@@ -8,6 +8,7 @@ import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.entity.DarkMark;
 import art.arcane.witchery.entity.Demon;
 import art.arcane.witchery.entity.Ent;
+import art.arcane.witchery.entity.DreamSpirit;
 import art.arcane.witchery.entity.GrenadeProjectile;
 import art.arcane.witchery.entity.Hellhound;
 import art.arcane.witchery.entity.HornedHuntsman;
@@ -67,6 +68,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<Nightmare>> NIGHTMARE =
             ENTITY_TYPES.register("nightmare", () -> EntityType.Builder.of(Nightmare::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.8F).build(Witchery.MODID + ":nightmare"));
+    public static final RegistryObject<EntityType<DreamSpirit>> SPIRIT =
+            ENTITY_TYPES.register("spirit", () -> EntityType.Builder.of(DreamSpirit::new, MobCategory.AMBIENT)
+                    .sized(0.25F, 0.25F).clientTrackingRange(8).build(Witchery.MODID + ":spirit"));
     public static final RegistryObject<EntityType<Demon>> DEMON =
             ENTITY_TYPES.register("demon", () -> EntityType.Builder.of(Demon::new, MobCategory.MONSTER)
                     .sized(1.0F, 2.9F).fireImmune().build(Witchery.MODID + ":demon"));
@@ -163,6 +167,7 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("mandrake", MANDRAKE);
         LEGACY_ENTITIES.put("corpse", SLEEPING_BODY);
         LEGACY_ENTITIES.put("nightmare", NIGHTMARE);
+        LEGACY_ENTITIES.put("spirit", SPIRIT);
         LEGACY_ENTITIES.put("demon", DEMON);
         LEGACY_ENTITIES.put("ent", ENT);
         LEGACY_ENTITIES.put("reflection", REFLECTION);
@@ -222,6 +227,7 @@ public final class WitcheryEntities {
             var attributes = entry == MANDRAKE ? Mandrake.attributes()
                     : entry == SLEEPING_BODY ? SleepingBody.attributes()
                     : entry == NIGHTMARE ? Nightmare.attributes()
+                    : entry == SPIRIT ? DreamSpirit.attributes()
                     : entry == DEMON ? Demon.attributes()
                     : entry == ENT ? Ent.attributes()
                     : entry == REFLECTION ? Reflection.attributes()
@@ -248,6 +254,8 @@ public final class WitcheryEntities {
     }
 
     private static void registerSpawnPlacements(SpawnPlacementRegisterEvent event) {
+        event.register(SPIRIT.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                DreamSpirit::canSpawn, SpawnPlacementRegisterEvent.Operation.REPLACE);
         event.register(COVEN_WITCH.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 CovenWitch::canSpawn, SpawnPlacementRegisterEvent.Operation.REPLACE);
         event.register(HELLHOUND.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,

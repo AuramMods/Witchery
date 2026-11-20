@@ -21,6 +21,7 @@ import art.arcane.witchery.infusion.OverworldInfusion;
 import art.arcane.witchery.item.DeathProtectionPoppetItem;
 import art.arcane.witchery.item.CaneSwordItem;
 import art.arcane.witchery.item.TaglockItem;
+import art.arcane.witchery.item.SpiritOfferingItem;
 import art.arcane.witchery.item.VampiricPoppetItem;
 import art.arcane.witchery.item.GlassGobletItem;
 import art.arcane.witchery.item.HunterClothingItem;
@@ -130,8 +131,9 @@ public final class WitcheryEventHooks {
     }
 
     @SubscribeEvent
-    public static void onWaystoneToss(ItemTossEvent event) {
+    public static void onRitualOfferingToss(ItemTossEvent event) {
         DroppedWaystones.markToss(event.getEntity());
+        SpiritOfferingItem.markToss(event.getEntity());
     }
 
     @SubscribeEvent

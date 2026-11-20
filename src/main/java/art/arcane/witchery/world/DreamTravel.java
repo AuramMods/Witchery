@@ -597,6 +597,7 @@ public final class DreamTravel {
         return stack.is(WitcheryIngredient.ICY_NEEDLE.item()) || stack.is(WitcheryIngredient.DISTURBED_COTTON.item())
                 || stack.is(WitcheryIngredient.MELLIFLUOUS_HUNGER.item())
                 || stack.is(WitcheryIngredient.BREW_OF_FLOWING_SPIRIT.item())
+                || stack.is(WitcheryIngredient.SUBDUED_SPIRIT.item())
                 || stack.is(WitcheryBlocks.getRequired("somniancotton").get().asItem());
     }
 

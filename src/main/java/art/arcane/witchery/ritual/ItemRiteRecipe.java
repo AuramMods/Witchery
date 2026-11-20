@@ -37,7 +37,8 @@ import java.util.List;
 import java.util.Map;
 
 public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, List<Ring> rings, int power,
-                             ItemStack result, Action action, boolean nightOnly, @Nullable EntityType<?> livingOffering)
+                             ItemStack result, Action action, boolean nightOnly, @Nullable EntityType<?> livingOffering,
+                             boolean consumeNecromanticStone)
         implements Recipe<Container> {
     public enum Action {
         ITEM,
@@ -248,7 +249,8 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                     ? EntityType.byString(GsonHelper.getAsString(json, "living_offering")).orElseThrow(
                             () -> new JsonSyntaxException("Unknown living offering for " + id)) : null;
             return new ItemRiteRecipe(id, List.copyOf(ingredients), List.copyOf(rings), power, result,
-                    action, GsonHelper.getAsBoolean(json, "night_only", false), living);
+                    action, GsonHelper.getAsBoolean(json, "night_only", false), living,
+                    GsonHelper.getAsBoolean(json, "consume_necromantic_stone", false));
         }
 
         @Override
@@ -271,7 +273,8 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
             }
             return new ItemRiteRecipe(id, List.copyOf(sacrifices), List.copyOf(rings), buffer.readVarInt(), buffer.readItem(),
                     buffer.readEnum(Action.class), buffer.readBoolean(),
-                    buffer.readNullable(input -> BuiltInRegistries.ENTITY_TYPE.get(input.readResourceLocation())));
+                    buffer.readNullable(input -> BuiltInRegistries.ENTITY_TYPE.get(input.readResourceLocation())),
+                    buffer.readBoolean());
         }
 
         @Override
@@ -288,6 +291,7 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
             buffer.writeEnum(recipe.action);
             buffer.writeBoolean(recipe.nightOnly);
             buffer.writeNullable(recipe.livingOffering, (output, type) -> output.writeResourceLocation(BuiltInRegistries.ENTITY_TYPE.getKey(type)));
+            buffer.writeBoolean(recipe.consumeNecromanticStone);
         }
     }
 }

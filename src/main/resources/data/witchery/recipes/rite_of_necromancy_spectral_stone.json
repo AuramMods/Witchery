@@ -1,0 +1,15 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [
+    {"item": "witchery:necromantic_stone"},
+    {"item": "witchery:congealed_spirit"},
+    {"item": "witchery:condensed_fear"},
+    {"item": "witchery:spectral_dust"},
+    {"item": "witchery:boline"}
+  ],
+  "power": 6000,
+  "night_only": true,
+  "consume_necromantic_stone": true,
+  "result": {"item": "witchery:spectralstone"}
+}

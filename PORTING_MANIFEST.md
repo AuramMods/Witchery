@@ -650,7 +650,7 @@ Variant 156 consumes one flower when the tester targets a living entity within t
 | 109 | `brewBats` |
 | 110 | `charmDisruptedDreams` |
 | 111 | `wormwood` |
-| 112 | `subduedSpirit` |
+| 112 | `subduedSpirit` → `witchery:subdued_spirit` |
 | 113 | `focusedWill` |
 | 114 | `condensedFear` |
 | 115 | `brewHollowTears` |
@@ -664,7 +664,7 @@ Variant 156 consumes one flower when the tester targets a living entity within t
 | 123 | `brewGrave` |
 | 124 | `brewRevealing` |
 | 125 | `brewSubstitution` |
-| 126 | `brewCongealedSpirit` |
+| 126 | `brewCongealedSpirit` → `witchery:congealed_spirit` |
 | 127 | `bookBurning` |
 | 128 | `graveyardDust` |
 | 129 | `binkyhead` |
@@ -692,7 +692,7 @@ Variant 156 consumes one flower when the tester targets a living entity within t
 | 151 | `pentacle` |
 | 152 | `doorIce` |
 | 153 | `annointingPaste` |
-| 154 | `subduedSpiritVillage` |
+| 154 | `subduedSpiritVillage` → `witchery:subdued_village_spirit` |
 | 155 | `boltSilver` |
 | 156 | `wolfsbane` |
 | 157 | `silverdust` → `witchery:silver_dust` |
@@ -819,7 +819,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 113 | `SPECTRE` | `EntitySpectre` | `spectre` |
 | 114 | `POLTERGEIST` | `EntityPoltergeist` | `poltergeist` |
 | 115 | `BANSHEE` | `EntityBanshee` | `banshee` |
-| 116 | `SPIRIT` | `EntitySpirit` | `spirit` |
+| 116 | `SPIRIT` | `EntitySpirit` | `spirit` (Dream spawn, focus attraction, loot, structure guide) |
 | 117 | `DEATH` | `EntityDeath` | `death` |
 | 118 | `CROSSBOW_BOLT` | `EntityBolt` | `bolt` |
 | 119 | `WITCH_HUNTER` | `EntityWitchHunter` | `witchhunter` |
@@ -1044,6 +1044,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 
 - Rites 6 and 7 are `witchery:rite_of_transposition_creature` and `witchery:rite_of_transposition_ores`. They use medium and large Otherwhere circles, respectively. The protocol 55 item-rite actions retain the required sacrifices and altar power. An active ore rite migrates legacy `Rituals`, `RitualStages` and `RitualCovens` and saves the completed layer as `OreDepth`.
 - The Scarecrow, Trent Effigy and Witch's Ladder retain their block entity IDs. The legacy `EffectTypeID` and item `WITCSpiritEffect` both represent the spirit enhancement. Effect 1 enables carried Voodoo Protection against a forced summon within 16 blocks of the fetish.
+- Rite 82 uses `witchery:rite_of_necromancy_spectral_stone`. It consumes the Necromantic Stone and produces one blank `witchery:spectralstone`. Protocol 56 carries the explicit `consume_necromantic_stone` field and the Spirit's synchronized color.
 
 ## Prediction Registry (`PredictionManager`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/WitcheryRecipes.java`

@@ -1,5 +1,8 @@
 package art.arcane.witchery.registry;
 
+import art.arcane.witchery.entity.DreamSpirit;
+import art.arcane.witchery.item.SpiritOfferingItem;
+
 import art.arcane.witchery.item.BrewFuelItem;
 import art.arcane.witchery.item.EndlessWaterBrewItem;
 import art.arcane.witchery.item.PlayerCompassItem;
@@ -247,6 +250,11 @@ public final class WitcheryItems {
             case "demon_heart" -> new DemonHeartItem(WitcheryBlocks.getRequired("demonheart").get(), true);
             case "devilstonguecharm" -> new Item(new Item.Properties().durability(50).rarity(Rarity.UNCOMMON));
             case "necromantic_stone" -> new NecromanticStoneItem();
+            case "spectralstone" -> new Item(new Item.Properties().stacksTo(16).rarity(Rarity.RARE));
+            case "attuned_stone" -> new SpiritOfferingItem(DreamSpirit.Kind.GUIDE);
+            case "subdued_spirit" -> new SpiritOfferingItem(DreamSpirit.Kind.SPIRIT);
+            case "subdued_village_spirit" -> new SpiritOfferingItem(DreamSpirit.Kind.VILLAGE);
+            case "congealed_spirit" -> new DrinkableBrewItem(() -> MobEffects.NIGHT_VISION, 600, 1);
             case "brew_of_ink" -> new ThrowableBrewItem(BrewImpacts::splashInk);
             case "brew_of_vines" -> new ThrowableBrewItem(BrewTerrain::vines);
             case "brew_of_webs" -> new ThrowableBrewItem(BrewTerrain::webs);
@@ -355,6 +363,7 @@ public final class WitcheryItems {
                     case "hornedhuntsman" -> new ForgeSpawnEggItem(entityType, 11523, 4007964, new Item.Properties());
                     case "wolfman" -> new ForgeSpawnEggItem(entityType, 0x2D2D2D, 0x606060, new Item.Properties());
                     case "werevillager" -> new ForgeSpawnEggItem(entityType, 0x563C33, 0xBD8B72, new Item.Properties());
+                    case "spirit" -> new ForgeSpawnEggItem(entityType, 0xFFA530, 0xEECA00, new Item.Properties());
                     default -> new ForgeSpawnEggItem(entityType, 0x6E5A4E, 0xA4A29D, new Item.Properties());
                 });
         LEGACY_SPAWN_EGGS.put(eggPath, egg);

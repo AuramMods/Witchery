@@ -368,7 +368,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         }
         for (Sacrifice sacrifice : sacrificed) {
             ItemStack offering = sacrifice.stack();
-            if (offering.is(WitcheryIngredient.NECROMANTIC_STONE.item())) {
+            if (offering.is(WitcheryIngredient.NECROMANTIC_STONE.item()) && !rite.consumeNecromanticStone()) {
                 Block.popResource(level, pos, offering);
             }
         }

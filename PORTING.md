@@ -594,6 +594,17 @@
 - [x] Run Java 17 data generation, JAR reobfuscation and all 284 required Forge GameTests. Coverage includes Nether summoning, the Ender Inhibition threshold, refunds, both area and carried defenses, and the legacy six-member ore rite.
 - [ ] Restore the spirit-binding progression for new enhanced fetishes and finish the other spirit effects. The current enhancement can be used with migrated items and blocks.
 
+## Dream Spirits and the Spectral Stone (2026-11-20)
+
+- [x] Restore the flying Dream Spirit, its original model and translucent effects, Focused Will attraction, and groups of two to five natural spawns. A defeated Spirit yields a glinting Subdued Spirit that carries through waking. Using the item on a block releases a Spirit again.
+- [x] Restore the structure guide. Drop an Attuned Stone or Subdued Spirit in a tiny white chalk ring to send a short-lived Spirit toward the nearest village or Nether fortress. The reusable Subdued Village Spirit retains its separate item ID and returns its token on expiry. Both guide variants save their remaining lifetime and destination.
+- [x] Verify a client toss of two Attuned Stones. The guide flew toward the village found by the server, erased the ring and left one Attuned Stone. It disappeared after ten seconds.
+- [x] Brew Congealed Spirit from five separate Subdued Spirits and one Brew of Hollow Tears for 2,000 altar power. The muted survival client brought four hunted Spirits through an Icy Needle wake. The test added a fifth Spirit to the kettle fixture, and the client bottled the finished brew. Drinking it gives 30 seconds of Night Vision II.
+- [x] Restore the night-only Rite of Necromancy for a blank Spectral Stone. It uses the small white circle, 6,000 altar power, Congealed Spirit, Condensed Fear, Spectral Dust, a Boline and a Necromantic Stone. This rite consumes the Necromantic Stone.
+- [x] Save the rite after its first three offerings. The dedicated server resumed it after restart. The muted client rejoined and collected one blank Spectral Stone.
+- [x] Run Java 17 data generation, JAR reobfuscation and all 290 required Forge GameTests. Coverage includes Dream spawn rules, legacy guide data and expiry, item release, separate kettle offerings, bottling and the resumed night rite.
+- [ ] Restore the spectral creatures, the charged Spectral Stone's binding and release, and the remaining spirit-binding progression.
+
 ## Auram Pack Validation (2026-11-20)
 
 - [x] Reproduce the Evolved Mekanism 1.2.1-fix3 startup crash in the matched Auram profile before adding Witchery. Both pack runs reported the null `QIODriveTier` during Evolved Mekanism construction.
