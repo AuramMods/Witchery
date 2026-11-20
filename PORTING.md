@@ -429,6 +429,13 @@
 - [x] Restore the five-bulb garland and its recipe. The muted survival client crafted it from five garlic and three string and hung it in a doorway. The ward's facing controls its outline and model, and entities can move through the occupied space.
 - [x] Check repulsion in the dedicated world. The cured player walked through the doorway, then drank a filled-goblet fixture and was pushed back on the same approach. A vampire mob moved about one and a half blocks away from the ward and kept full health. The mounted facing and repulsion persisted through restart. Java 17 data generation, JAR reobfuscation and all 200 required Forge GameTests passed.
 
+## Village Guard Recruitment (2026-11-20)
+
+- [x] Recruit an adult villager with a crouching leather tunic offer. The muted client was refused before trading and then raised the villager's trading reputation to 14 in its normal menu. The two-resident settlement still refused. With seven additional resident fixtures and an occupied bed, Alden accepted guard duty. The client retained the same tunic through the refusal and successful offer.
+- [x] Verify the recruited guard's equipment and behavior. Alden kept its name, began with 40 health and 500 blood, and received a bow, iron chestplate and leather gear. The client saw the bow pose as the guard shot a zombie from 20 to 13.3 health. The nearby creeper stayed at 20. GameTests covered the original tall guard data, flaming arrows and friendly-fire immunity.
+- [x] Restart the dedicated server and verify the same UUID, bow, armor, 40 health and 500 blood. Java 17 data generation, JAR reobfuscation and all 202 required Forge GameTests passed.
+- [ ] Restore blood feeding from guards, their response to witnessed bites and conversion into vampires.
+
 ## Auram Pack Validation (2026-11-20)
 
 - [x] Reproduce the Evolved Mekanism 1.2.1-fix3 startup crash in the matched Auram profile before adding Witchery. Both pack runs reported the null `QIODriveTier` during Evolved Mekanism construction.

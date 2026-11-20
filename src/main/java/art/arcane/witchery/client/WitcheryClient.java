@@ -40,6 +40,7 @@ import art.arcane.witchery.client.renderer.FollowerRenderer;
 import art.arcane.witchery.client.renderer.BloodCrucibleRenderer;
 import art.arcane.witchery.client.renderer.SilverVatRenderer;
 import art.arcane.witchery.client.renderer.VampireRenderer;
+import art.arcane.witchery.client.renderer.VillageGuardRenderer;
 import art.arcane.witchery.client.renderer.GrassperRenderer;
 import art.arcane.witchery.client.renderer.ImpRenderer;
 import art.arcane.witchery.client.renderer.KettleRenderer;
@@ -156,6 +157,7 @@ public final class WitcheryClient {
         event.registerLayerDefinition(LilithModel.LAYER, LilithModel::layer);
         event.registerLayerDefinition(FollowerRenderer.LAYER, FollowerRenderer::layer);
         event.registerLayerDefinition(VampireRenderer.LAYER, VampireRenderer::layer);
+        event.registerLayerDefinition(VillageGuardRenderer.LAYER, VillageGuardRenderer::layer);
         for (var style : VampireClothingItem.Style.values()) {
             event.registerLayerDefinition(VampireClothingModel.layerId(style), () -> VampireClothingModel.layer(style));
         }
@@ -177,6 +179,7 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.LILITH.get(), LilithRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.FOLLOWER.get(), FollowerRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.VAMPIRE.get(), VampireRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.VILLAGE_GUARD.get(), VillageGuardRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.ATTACK_BAT.get(), BatRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SCRY_EYE.get(), NoopRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.MANDRAKE.get(), MandrakeRenderer::new);

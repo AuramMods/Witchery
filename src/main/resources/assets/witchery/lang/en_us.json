@@ -1,6 +1,12 @@
 {
    "death.attack.witchery.sunlight" : "%s burned in sunlight",
    "death.attack.witchery.sunlight.player" : "%s burned in sunlight while fighting %s",
+   "entity.witchery.villageguard" : "Village Guard",
+   "message.witchery.village.reputation" : "You need a better reputation with this village to appoint a guard.",
+   "message.witchery.village.small_village" : "The village needs at least nine villagers to appoint a guard.",
+   "message.witchery.village.enough_guards" : "This village already has enough guards.",
+   "message.witchery.village.guard_declined" : "The villager declined guard duty.",
+   "message.witchery.village.guard_accepted" : "The villager accepted guard duty.",
    "block.witchery.alderwooddoor" : "Alderwooddoor",
    "block.witchery.alluringskull" : "Alluringskull",
    "block.witchery.altar" : "Altar",

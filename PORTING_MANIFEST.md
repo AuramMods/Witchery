@@ -1183,7 +1183,7 @@ Implementation anchors:
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/client/event/WitcheryClientCameraHooks.java`
 
 Current scaffold behavior:
-- Uses one `SimpleChannel` (`witchery:main`) with protocol version `"39"`. The extended player payload carries vampire rank, blood power, blood reserve, quest progress, vision, ultimate choice and charges, the transient selected power and the saved creature form. `VampireQuestChunks` preserves the original packed `Location` values and records a modern dimension ID. Player style sync updates the other clients that track a transformed player. Vampire packet intents 15 through 17 select or activate a power and query or display a nearby target's blood. Markup book intent 12 saves an unlocked chapter from the held journal and raises the reader's saved cap. The infusion status includes the active infused brew and remaining duration, and the Kettle recipe codec carries the optional bottling familiar.
+- Uses one `SimpleChannel` (`witchery:main`) with protocol version `"40"`. The extended player payload carries vampire rank, blood power, blood reserve, quest progress, vision, ultimate choice and charges, the transient selected power and the saved creature form. `VampireQuestChunks` preserves the original packed `Location` values and records a modern dimension ID. Player style sync updates the other clients that track a transformed player. Vampire packet intents 15 through 17 select or activate a power and query or display a nearby target's blood. Markup book intent 12 saves an unlocked chapter from the held journal and raises the reader's saved cap. The infusion status includes the active infused brew and remaining duration, and the Kettle recipe codec carries the optional bottling familiar.
 - Crystal Ball viewing sends the existing `cam_pos` message for the transient `witchery:eye` or the living subject of a Taglock Kit. Server chunk and entity tracking follow the viewed entity, and the client centers terrain rendering on it. The observing player stays beside the Crystal Ball.
 - The Mystic Branch recognizes gestures from server-side player rotations. Protocol 12 retires the prepared-spell packet while recording the old intent in `LegacyRegistryData.PACKETS`.
 - Validates packet receive direction against legacy flow metadata and logs mismatches.
@@ -1357,6 +1357,7 @@ Status:
 - `witchery:silvervat` stores dust in the original `Items` slot zero and remembers the four adjacent gold output counts in `ObservedGold`. The optional Silver Sword recipe uses `forge:ingots/silver` when another mod supplies that tag.
 - Legacy rite 94 maps to `witchery:remove_vampirism`. The normal circle save stores the active recipe, caster, coven and offerings. The cure resets the existing vampire capability fields and retains the learned rank cap.
 - `witchery:garlicgarland` keeps its block and item ID. The block state saves a horizontal `facing` and defaults to north for existing 1.20.1 saves without that property.
+- `witchery:villageguard` reads and writes the legacy `GuardType` byte and `BloodLevel` value. It stores equipment in `HandItems` and `ArmorItems`. Earlier scaffold saves without a blood value initialize at 500.
 
 ## 1.20.1 Event Hook Scaffold (current)
 Implementation anchor:

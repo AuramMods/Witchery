@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
+import net.minecraft.world.phys.AABB;
 
 import java.util.ArrayDeque;
 import java.util.Comparator;
@@ -22,7 +23,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-final class VampireVillages {
+public final class VampireVillages {
     private static final int VISIT_RANGE = 32;
     private static final int HOME_SEARCH_RANGE = 64;
     private static final Comparator<BlockPos> HOME_ORDER = Comparator.<BlockPos>comparingInt(BlockPos::getX)
@@ -31,11 +32,30 @@ final class VampireVillages {
     private VampireVillages() {}
 
     static Optional<ChunkPos> nearby(ServerLevel world, BlockPos position) {
-        Optional<ChunkPos> generated = loadedVillages(world, position, VISIT_RANGE)
+        return nearestGeneratedVillage(world, position).map(StructureStart::getChunkPos)
+                .or(() -> nearbyOccupiedHomes(world.getPoiManager(), position).map(ChunkPos::new));
+    }
+
+    public static Optional<Territory> territory(ServerLevel world, BlockPos position) {
+        return nearestGeneratedVillage(world, position).map(start -> {
+            BoundingBox bounds = start.getBoundingBox();
+            BlockPos center = bounds.getCenter().atY(position.getY());
+            int radius = Math.max(VISIT_RANGE, Math.max(bounds.getXSpan(), bounds.getZSpan()) / 2);
+            return new Territory(center, radius);
+        }).or(() -> nearbyOccupiedHomes(world.getPoiManager(), position)
+                .map(anchor -> new Territory(anchor, VISIT_RANGE)));
+    }
+
+    public record Territory(BlockPos center, int radius) {
+        public AABB residents() {
+            return new AABB(center).inflate(radius, 4, radius);
+        }
+    }
+
+    private static Optional<StructureStart> nearestGeneratedVillage(ServerLevel world, BlockPos position) {
+        return loadedVillages(world, position, VISIT_RANGE)
                 .filter(start -> distanceTo(start.getBoundingBox(), position) <= VISIT_RANGE * VISIT_RANGE)
-                .min(Comparator.comparingDouble(start -> distanceTo(start.getBoundingBox(), position)))
-                .map(StructureStart::getChunkPos);
-        return generated.or(() -> nearbyOccupiedHomes(world.getPoiManager(), position).map(ChunkPos::new));
+                .min(Comparator.comparingDouble(start -> distanceTo(start.getBoundingBox(), position)));
     }
 
     private static Stream<StructureStart> loadedVillages(ServerLevel world, BlockPos position, int radius) {

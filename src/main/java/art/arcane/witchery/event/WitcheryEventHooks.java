@@ -7,6 +7,7 @@ import art.arcane.witchery.brewing.WakingNightmareEffect;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.familiar.FamiliarBinding;
+import art.arcane.witchery.entity.VillageGuardRecruitment;
 import art.arcane.witchery.infusion.CreaturePower;
 import art.arcane.witchery.infusion.InfernalInfusion;
 import art.arcane.witchery.infusion.InfusionEnergy;
@@ -389,6 +390,13 @@ public final class WitcheryEventHooks {
             if (event.getEntity() instanceof ServerPlayer player) VampireAbilities.interact(player, event.getTarget());
             event.setCanceled(true);
             event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide));
+            return;
+        }
+        if (event.getTarget() instanceof Villager villager
+                && VillageGuardRecruitment.isOffer(event.getEntity(), villager, event.getHand())) {
+            if (event.getEntity() instanceof ServerPlayer player) VillageGuardRecruitment.offer(player, villager);
+            event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide));
+            event.setCanceled(true);
             return;
         }
         var held = event.getItemStack();

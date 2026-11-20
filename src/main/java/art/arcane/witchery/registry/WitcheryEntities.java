@@ -22,6 +22,7 @@ import art.arcane.witchery.entity.Soulfire;
 import art.arcane.witchery.entity.SymbolProjectile;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.entity.Vampire;
+import art.arcane.witchery.entity.VillageGuard;
 import art.arcane.witchery.entity.WitchBroom;
 import art.arcane.witchery.entity.WitchCat;
 import art.arcane.witchery.entity.WitchOwl;
@@ -99,6 +100,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<Vampire>> VAMPIRE =
             ENTITY_TYPES.register("vampire", () -> EntityType.Builder.of(Vampire::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.95F).clientTrackingRange(8).build(Witchery.MODID + ":vampire"));
+    public static final RegistryObject<EntityType<VillageGuard>> VILLAGE_GUARD =
+            ENTITY_TYPES.register("villageguard", () -> EntityType.Builder.of(VillageGuard::new, MobCategory.CREATURE)
+                    .sized(0.6F, 1.8F).clientTrackingRange(8).build(Witchery.MODID + ":villageguard"));
     public static final RegistryObject<EntityType<AttackBat>> ATTACK_BAT =
             ENTITY_TYPES.register("attackbat", () -> EntityType.Builder.of(AttackBat::new, MobCategory.AMBIENT)
                     .sized(0.5F, 0.9F).clientTrackingRange(5).build(Witchery.MODID + ":attackbat"));
@@ -140,6 +144,7 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("babayaga", BABA_YAGA);
         LEGACY_ENTITIES.put("lilith", LILITH);
         LEGACY_ENTITIES.put("vampire", VAMPIRE);
+        LEGACY_ENTITIES.put("villageguard", VILLAGE_GUARD);
         LEGACY_ENTITIES.put("attackbat", ATTACK_BAT);
         LEGACY_ENTITIES.put("follower", FOLLOWER);
         LEGACY_ENTITIES.put("imp", IMP);
@@ -190,6 +195,7 @@ public final class WitcheryEntities {
                     : entry == BABA_YAGA ? BabaYaga.attributes()
                     : entry == LILITH ? Lilith.attributes()
                     : entry == VAMPIRE ? Vampire.attributes()
+                    : entry == VILLAGE_GUARD ? VillageGuard.attributes()
                     : entry == ATTACK_BAT ? Bat.createAttributes()
                     : entry == FOLLOWER ? WitcheryFollower.attributes()
                     : entry == IMP ? Imp.attributes()
