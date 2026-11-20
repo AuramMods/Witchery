@@ -312,7 +312,15 @@
 - [x] Restore Taglock collection through the coffin. The second player collected a kit from each half after the first player woke. Both kits bound to the first player's UUID at the coffin's registered respawn point.
 - [x] Preserve the earlier port's single decorative block and facing on world upgrade. A GameTest imported the original `Opened` field. Data generation, JAR reobfuscation and all 136 required Forge GameTests passed.
 - [x] Verify the open coffin on a dedicated restart. Both lids stayed open, both Taglocks retained their binding, and the first client respawned beside the head with full health. Mining the foot removed both halves and let the player pick up exactly one coffin. A GameTest verified the same item count when breaking the head.
-- [ ] Restore vampire daytime sleep and dusk wake-up alongside the player vampirism progression.
+- [x] Restore vampire daytime sleep and dusk wake-up. The muted client slept at daytime tick 6,095 in a sheltered coffin and woke at tick 13,034. Its 125 blood power stayed intact.
+
+## Blood Goblet and Lilith (2026-11-20)
+
+- [x] Restore the Glass Goblet recipe, filled item and original ritual layout. The muted survival client crafted a goblet from three bottles and glass, then used a Boline on a chicken in the prepared circle. The filled goblet and the skull survived a daytime activation attempt. Using it at night emptied the same goblet and summoned Elle.
+- [x] Restore Elle's lava search, transformation and Lilith's encounter. Elle found a clear lava surface and spent 400 ticks transforming. The muted client defeated the 200-health boss with an enchanted sword and a splash potion in the disposable arena. Lilith survived the defeat, restored her health and accepted the same goblet. GameTests verified the damage cap and the transition to a friendly encounter.
+- [x] Collect and drink Lilith's filled goblet. The muted client picked up the reward, drank it to reach rank one, saw 125 blood power on the original droplet meter, and kept an empty goblet. Java 17 data generation, reobfuscation and all 140 required Forge GameTests passed.
+- [x] Verify rank one after a dedicated restart. The 125 blood power, empty goblet and open coffin remained. The muted client kept its blood in shade at noon, then stepped into open daylight, lost its blood reserve and caught fire.
+- [ ] Restore feeding, vampire powers, the book, upper-rank trials, village interactions and effects tied to the remaining progression.
 
 ## Auram Pack Validation (2026-11-20)
 

@@ -4,6 +4,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.util.Mth;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +14,9 @@ public final class WitcheryPlayerData {
     private static final String KEY_SYNC_REVISION = "SyncRevision";
     private static final String KEY_CREATURE_TYPE_ORDINAL = "CreatureTypeOrdinal";
     private static final String KEY_HUMAN_BLOOD = "HumanBlood";
+    private static final String KEY_VAMPIRE_LEVEL = "VampireLevel";
+    private static final String KEY_BLOOD_POWER = "BloodPower";
+    private static final String KEY_VAMPIRE_LEVEL_CAP = "VampireLevelCap";
     private static final String KEY_GROTESQUE_TICKS = "GrotesqueTicks";
     private static final String KEY_NIGHTMARE_LEVEL = "NightmareLevel";
     private static final String KEY_GHOST = "Ghost";
@@ -30,6 +34,9 @@ public final class WitcheryPlayerData {
     private int syncRevision;
     private int creatureTypeOrdinal;
     private int humanBlood;
+    private int vampireLevel;
+    private int bloodPower;
+    private int vampireLevelCap;
     private int grotesqueTicks;
     private int nightmareLevel;
     private boolean ghost;
@@ -69,6 +76,34 @@ public final class WitcheryPlayerData {
 
     public int getHumanBlood() {
         return humanBlood;
+    }
+
+    public void setHumanBlood(int amount) {
+        humanBlood = Mth.clamp(amount, 0, 500);
+    }
+
+    public int getVampireLevel() {
+        return vampireLevel;
+    }
+
+    public void setVampireLevel(int level) {
+        vampireLevel = Mth.clamp(level, 0, 10);
+    }
+
+    public int getBloodPower() {
+        return bloodPower;
+    }
+
+    public void setBloodPower(int amount) {
+        bloodPower = Mth.clamp(amount, 0, getMaxBloodPower());
+    }
+
+    public int getMaxBloodPower() {
+        return 500 + vampireLevel * 250;
+    }
+
+    public int getVampireLevelCap() {
+        return vampireLevelCap;
     }
 
     public int getGrotesqueTicks() {
@@ -165,6 +200,9 @@ public final class WitcheryPlayerData {
         syncRevision = source.syncRevision;
         creatureTypeOrdinal = source.creatureTypeOrdinal;
         humanBlood = source.humanBlood;
+        vampireLevel = source.vampireLevel;
+        bloodPower = source.bloodPower;
+        vampireLevelCap = source.vampireLevelCap;
         grotesqueTicks = source.grotesqueTicks;
         nightmareLevel = source.nightmareLevel;
         ghost = source.ghost;
@@ -186,6 +224,9 @@ public final class WitcheryPlayerData {
         tag.putInt(KEY_SYNC_REVISION, syncRevision);
         tag.putInt(KEY_CREATURE_TYPE_ORDINAL, creatureTypeOrdinal);
         tag.putInt(KEY_HUMAN_BLOOD, humanBlood);
+        tag.putInt(KEY_VAMPIRE_LEVEL, vampireLevel);
+        tag.putInt(KEY_BLOOD_POWER, bloodPower);
+        tag.putInt(KEY_VAMPIRE_LEVEL_CAP, vampireLevelCap);
         tag.putInt(KEY_GROTESQUE_TICKS, grotesqueTicks);
         tag.putInt(KEY_NIGHTMARE_LEVEL, nightmareLevel);
         tag.putBoolean(KEY_GHOST, ghost);
@@ -210,7 +251,12 @@ public final class WitcheryPlayerData {
         initialized = tag.getBoolean(KEY_INITIALIZED);
         syncRevision = tag.getInt(KEY_SYNC_REVISION);
         creatureTypeOrdinal = tag.getInt(KEY_CREATURE_TYPE_ORDINAL);
-        humanBlood = tag.getInt(KEY_HUMAN_BLOOD);
+        CompoundTag bloodData = tag.contains("WitcheryExtendedPlayer", Tag.TAG_COMPOUND)
+                ? tag.getCompound("WitcheryExtendedPlayer") : tag;
+        setHumanBlood(bloodData.getInt(KEY_HUMAN_BLOOD));
+        setVampireLevel(bloodData.getInt(KEY_VAMPIRE_LEVEL));
+        setBloodPower(bloodData.getInt(KEY_BLOOD_POWER));
+        vampireLevelCap = Mth.clamp(bloodData.getInt(KEY_VAMPIRE_LEVEL_CAP), 0, 10);
         grotesqueTicks = tag.getInt(KEY_GROTESQUE_TICKS);
         nightmareLevel = tag.getInt(KEY_NIGHTMARE_LEVEL);
         ghost = tag.getBoolean(KEY_GHOST);

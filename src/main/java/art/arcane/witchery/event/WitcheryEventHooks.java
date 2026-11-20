@@ -1,6 +1,7 @@
 package art.arcane.witchery.event;
 
 import art.arcane.witchery.block.DreamCatcherBlock;
+import art.arcane.witchery.block.CoffinBlock;
 import art.arcane.witchery.brewing.GrotesqueEffect;
 import art.arcane.witchery.brewing.WakingNightmareEffect;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
@@ -13,6 +14,8 @@ import art.arcane.witchery.infusion.OverworldInfusion;
 import art.arcane.witchery.item.DeathProtectionPoppetItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.VampiricPoppetItem;
+import art.arcane.witchery.item.GlassGobletItem;
+import art.arcane.witchery.vampirism.Vampirism;
 import art.arcane.witchery.item.WitchClothingItem;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.prediction.PredictedCourtship;
@@ -49,12 +52,14 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingTickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.entity.player.SleepingTimeCheckEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.level.SleepFinishedTimeEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.event.TickEvent;
 
@@ -65,7 +70,22 @@ public final class WitcheryEventHooks {
 
     @SubscribeEvent
     public static void onSleepFinished(SleepFinishedTimeEvent event) {
-        DreamCatcherBlock.finishSleep((ServerLevel) event.getLevel());
+        ServerLevel level = (ServerLevel) event.getLevel();
+        DreamCatcherBlock.finishSleep(level);
+        if (level.players().stream().filter(player -> !player.isSpectator()).allMatch(player ->
+                player.isSleepingLongEnough() && Vampirism.level(player) > 0
+                        && player.getSleepingPos().map(pos -> level.getBlockState(pos).getBlock() instanceof CoffinBlock).orElse(false))) {
+            event.setTimeAddition(event.getNewTime() - 11_000);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onCoffinSleepTime(SleepingTimeCheckEvent event) {
+        var player = event.getEntity();
+        if (Vampirism.level(player) > 0 && event.getSleepingLocation().map(pos ->
+                player.level().getBlockState(pos).getBlock() instanceof CoffinBlock).orElse(false)) {
+            event.setResult(player.level().isDay() ? Event.Result.ALLOW : Event.Result.DENY);
+        }
     }
 
     @SubscribeEvent
@@ -175,6 +195,7 @@ public final class WitcheryEventHooks {
         }
         ScryingView.tick(serverPlayer);
         InfusedBrews.tick(serverPlayer);
+        Vampirism.tick(serverPlayer);
         if (InfusionEnergy.type(serverPlayer) == InfernalInfusion.ID) CreaturePower.tickFlight(serverPlayer);
         if (DreamTravel.processRequests(serverPlayer) || MirrorTravel.processPlayerCrossing(serverPlayer)
                 || TormentTravel.process(serverPlayer)) {
@@ -251,6 +272,8 @@ public final class WitcheryEventHooks {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onLivingDeath(LivingDeathEvent event) {
         if (event.getEntity() instanceof ServerPlayer viewer) ScryingView.close(viewer);
+        if (event.getEntity() instanceof net.minecraft.world.entity.animal.Chicken chicken
+                && event.getSource().getEntity() instanceof ServerPlayer player) GlassGobletItem.onChickenOffering(chicken, player);
         if (event.getEntity() instanceof ServerPlayer player && !player.getAbilities().instabuild
                 && (player.level().dimension().equals(WitcheryDimensions.DREAM) || DreamTravel.isGhost(player))
                 && DreamTravel.isSpiritWalking(player)) {

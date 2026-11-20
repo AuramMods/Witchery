@@ -16,6 +16,7 @@ import art.arcane.witchery.client.model.DarkMarkModel;
 import art.arcane.witchery.client.model.DemonModel;
 import art.arcane.witchery.client.model.EntModel;
 import art.arcane.witchery.client.model.ImpModel;
+import art.arcane.witchery.client.model.LilithModel;
 import art.arcane.witchery.client.model.LordOfTormentModel;
 import art.arcane.witchery.client.model.NightmareModel;
 import art.arcane.witchery.client.model.WitchOwlModel;
@@ -33,10 +34,12 @@ import art.arcane.witchery.client.renderer.DemonRenderer;
 import art.arcane.witchery.client.renderer.EntRenderer;
 import art.arcane.witchery.client.renderer.DemonHeartRenderer;
 import art.arcane.witchery.client.renderer.GrotesqueLayer;
+import art.arcane.witchery.client.renderer.FollowerRenderer;
 import art.arcane.witchery.client.renderer.GrassperRenderer;
 import art.arcane.witchery.client.renderer.ImpRenderer;
 import art.arcane.witchery.client.renderer.KettleRenderer;
 import art.arcane.witchery.client.renderer.LeechChestRenderer;
+import art.arcane.witchery.client.renderer.LilithRenderer;
 import art.arcane.witchery.client.renderer.LordOfTormentRenderer;
 import art.arcane.witchery.client.renderer.MandrakeRenderer;
 import art.arcane.witchery.client.renderer.MirrorBlockRenderer;
@@ -50,6 +53,7 @@ import art.arcane.witchery.client.renderer.SymbolProjectileRenderer;
 import art.arcane.witchery.client.renderer.WitchOwlRenderer;
 import art.arcane.witchery.client.renderer.WitchToadRenderer;
 import art.arcane.witchery.item.TaglockItem;
+import art.arcane.witchery.item.GlassGobletItem;
 import art.arcane.witchery.item.BroomItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
@@ -96,6 +100,7 @@ public final class WitcheryClient {
     @SubscribeEvent
     public static void registerGuiOverlays(RegisterGuiOverlaysEvent event) {
         event.registerAboveAll("infusion_charge", ClientInfusion::render);
+        event.registerAboveAll("vampire_blood", ClientVampirism::render);
     }
 
     @SubscribeEvent
@@ -140,6 +145,8 @@ public final class WitcheryClient {
         event.registerLayerDefinition(KettleRenderer.LAYER, KettleRenderer::layer);
         event.registerLayerDefinition(LeechChestRenderer.LAYER, LeechChestRenderer::layer);
         event.registerLayerDefinition(CoffinRenderer.LAYER, CoffinRenderer::layer);
+        event.registerLayerDefinition(LilithModel.LAYER, LilithModel::layer);
+        event.registerLayerDefinition(FollowerRenderer.LAYER, FollowerRenderer::layer);
         event.registerLayerDefinition(SpinningWheelRenderer.LAYER, SpinningWheelRenderer::layer);
     }
 
@@ -155,6 +162,8 @@ public final class WitcheryClient {
     @SubscribeEvent
     public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(WitcheryEntities.BABA_YAGA.get(), BabaYagaRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.LILITH.get(), LilithRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.FOLLOWER.get(), FollowerRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SCRY_EYE.get(), NoopRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.MANDRAKE.get(), MandrakeRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.NIGHTMARE.get(), NightmareRenderer::new);
@@ -206,6 +215,9 @@ public final class WitcheryClient {
             ItemProperties.register(WitcheryItems.getRequired("taglockkit").get(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "bound"),
                     (stack, level, entity, seed) -> TaglockItem.isBound(stack) ? 1 : 0);
+            ItemProperties.register(WitcheryItems.getRequired("glassgoblet").get(),
+                    ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "filled"),
+                    (stack, level, entity, seed) -> GlassGobletItem.filled(stack) ? 1 : 0);
             ItemProperties.register(WitcheryBlocks.getRequired("crittersnare").get().asItem(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "critter"),
                     (stack, level, entity, seed) -> CritterSnareBlock.critterFromStack(stack).ordinal());

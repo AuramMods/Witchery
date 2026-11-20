@@ -12,24 +12,29 @@ import net.minecraft.sounds.SoundSource;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Locale;
 
 public enum SymbolSpell {
     IGNIANIMA(39, SpellKnowledge.IGNIANIMA, 2, 0xFFE760, 3, 200, false, strokes("←", "↑", "↓")),
     CARNOSA_DIEM(40, SpellKnowledge.CARNOSA_DIEM, 1, 0, 0, 0, false, strokes("→", "↑", "↓")),
     MORSMORDRE(41, SpellKnowledge.MORSMORDRE, 20, 0x000000, 3, 8, false, strokes("↑", "←", "→")),
-    TORMENTUM(42, SpellKnowledge.TORMENTUM, 25, 0x222222, 4, 200, true, strokes("↓", "←", "→"));
+    TORMENTUM(42, SpellKnowledge.TORMENTUM, 25, 0x222222, 4, 200, true, strokes("↓", "←", "→")),
+    CONFUNDUS(8, null, 0, 16_771_328, 1.5F, 200, false, List.of()),
+    FLIPENDO(17, null, 0, 16_775_577, 3, 200, false, List.of()),
+    IMPEDIMENTA(19, null, 0, 6_191_615, 1.5F, 200, false, List.of()),
+    ATTRAHO(47, null, 0, 5_322_534, 1, 200, false, List.of());
 
     public static final int TORMENTUM_COOLDOWN = 30 * 60 * 20;
     private final int id;
-    private final SpellKnowledge knowledge;
+    @Nullable private final SpellKnowledge knowledge;
     private final int cost;
     private final int color;
-    private final int size;
+    private final float size;
     private final int lifetime;
     private final boolean falls;
     private final List<String> patterns;
 
-    SymbolSpell(int id, SpellKnowledge knowledge, int cost, int color, int size, int lifetime, boolean falls,
+    SymbolSpell(int id, @Nullable SpellKnowledge knowledge, int cost, int color, float size, int lifetime, boolean falls,
                 List<String> patterns) {
         this.id = id;
         this.knowledge = knowledge;
@@ -43,10 +48,12 @@ public enum SymbolSpell {
 
     public int id() { return id; }
     public int color() { return color; }
-    public int size() { return size; }
+    public float size() { return size; }
     public int lifetime() { return lifetime; }
     public boolean falls() { return falls; }
-    public Component displayName() { return knowledge.nameComponent(); }
+    public Component displayName() {
+        return knowledge == null ? Component.translatable("spell.witchery." + name().toLowerCase(Locale.ROOT)) : knowledge.nameComponent();
+    }
 
     @Nullable
     public static SymbolSpell byId(int id) {
@@ -66,7 +73,7 @@ public enum SymbolSpell {
 
     public void cast(ServerLevel level, ServerPlayer player) {
         if (!InfusionEnergy.canSpend(player, 0)) return;
-        if (!player.getAbilities().instabuild) {
+        if (!player.getAbilities().instabuild && knowledge != null) {
             if (!knowledge.isKnown(player)) {
                 reject(player, "unknown_spell");
                 return;

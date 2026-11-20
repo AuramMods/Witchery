@@ -7,6 +7,22 @@
     "subtitle": "subtitles.witchery.chalk",
     "sounds": ["witchery:random/chalk"]
   },
+  "random.drink": {
+    "subtitle": "subtitles.witchery.blood_drink",
+    "sounds": ["witchery:random/drink"]
+  },
+  "mob.lilith.say": {
+    "subtitle": "subtitles.witchery.lilith.ambient",
+    "sounds": ["witchery:mob/lilith/say1", "witchery:mob/lilith/say2", "witchery:mob/lilith/say3", "witchery:mob/lilith/say4", "witchery:mob/lilith/say5"]
+  },
+  "mob.lilith.hit": {
+    "subtitle": "subtitles.witchery.lilith.hurt",
+    "sounds": ["witchery:mob/lilith/hit"]
+  },
+  "mob.lilith.death": {
+    "subtitle": "subtitles.witchery.lilith.defeat",
+    "sounds": ["witchery:mob/lilith/death"]
+  },
   "mob.nightmare.nightmare_live": {
     "subtitle": "subtitles.witchery.nightmare.ambient",
     "sounds": ["witchery:mob/nightmare/nightmare_live"]

@@ -9,6 +9,8 @@ import art.arcane.witchery.entity.Ent;
 import art.arcane.witchery.entity.Imp;
 import art.arcane.witchery.entity.LegacyWaystoneEntity;
 import art.arcane.witchery.entity.LordOfTorment;
+import art.arcane.witchery.entity.Lilith;
+import art.arcane.witchery.entity.WitcheryFollower;
 import art.arcane.witchery.entity.Mandrake;
 import art.arcane.witchery.entity.Nightmare;
 import art.arcane.witchery.entity.Reflection;
@@ -87,6 +89,12 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<BabaYaga>> BABA_YAGA =
             ENTITY_TYPES.register("babayaga", () -> EntityType.Builder.of(BabaYaga::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.95F).clientTrackingRange(8).build(Witchery.MODID + ":babayaga"));
+    public static final RegistryObject<EntityType<Lilith>> LILITH =
+            ENTITY_TYPES.register("lilith", () -> EntityType.Builder.of(Lilith::new, MobCategory.MONSTER)
+                    .sized(0.8F, 2.5F).fireImmune().clientTrackingRange(8).build(Witchery.MODID + ":lilith"));
+    public static final RegistryObject<EntityType<WitcheryFollower>> FOLLOWER =
+            ENTITY_TYPES.register("follower", () -> EntityType.Builder.of(WitcheryFollower::new, MobCategory.CREATURE)
+                    .sized(0.6F, 1.8F).clientTrackingRange(8).build(Witchery.MODID + ":follower"));
     public static final RegistryObject<EntityType<ScryEye>> SCRY_EYE =
             ENTITY_TYPES.register("eye", () -> EntityType.Builder.of(ScryEye::new, MobCategory.MISC)
                     .sized(0.01F, 0.01F).noSave().noSummon().clientTrackingRange(10).updateInterval(1)
@@ -117,6 +125,8 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("toad", TOAD);
         LEGACY_ENTITIES.put("covenwitch", COVEN_WITCH);
         LEGACY_ENTITIES.put("babayaga", BABA_YAGA);
+        LEGACY_ENTITIES.put("lilith", LILITH);
+        LEGACY_ENTITIES.put("follower", FOLLOWER);
         LEGACY_ENTITIES.put("imp", IMP);
         LEGACY_ENTITIES.put("darkmark", DARK_MARK);
         for (String legacyName : LegacyRegistryData.ENTITIES) {
@@ -163,6 +173,8 @@ public final class WitcheryEntities {
                     : entry == LORD_OF_TORMENT ? LordOfTorment.attributes()
                     : entry == COVEN_WITCH ? CovenWitch.attributes()
                     : entry == BABA_YAGA ? BabaYaga.attributes()
+                    : entry == LILITH ? Lilith.attributes()
+                    : entry == FOLLOWER ? WitcheryFollower.attributes()
                     : entry == IMP ? Imp.attributes()
                     : entry == DARK_MARK ? DarkMark.attributes()
                     : entry == OWL ? WitchOwl.attributes()

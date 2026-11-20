@@ -3,6 +3,7 @@ package art.arcane.witchery.entity;
 import art.arcane.witchery.infusion.SpellKnowledge;
 import art.arcane.witchery.infusion.SymbolSpell;
 import art.arcane.witchery.item.MysticBranchItem;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.world.TormentTravel;
 import art.arcane.witchery.world.WitcheryDimensions;
@@ -18,12 +19,15 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.Tags;
@@ -41,13 +45,16 @@ public final class SymbolProjectile extends ThrowableProjectile {
     }
 
     public SymbolProjectile(ServerLevel level, ServerPlayer owner, SymbolSpell spell) {
+        this(level, owner, spell, owner.getEyePosition().add(0, -0.1, 0).add(owner.getLookAngle().scale(1.5)),
+                owner.getLookAngle());
+    }
+
+    public SymbolProjectile(ServerLevel level, LivingEntity owner, SymbolSpell spell, Vec3 origin, Vec3 direction) {
         this(WitcheryEntities.SYMBOL_PROJECTILE.get(), level);
         setOwner(owner);
-        Vec3 look = owner.getLookAngle();
-        Vec3 launch = owner.getEyePosition().add(0, -0.1, 0).add(look.scale(1.5));
-        moveTo(launch.x, launch.y, launch.z, owner.getYRot(), owner.getXRot());
+        moveTo(origin.x, origin.y, origin.z, owner.getYRot(), owner.getXRot());
         entityData.set(SPELL, spell.id());
-        entityData.set(ACCELERATION, look.scale(0.3).toVector3f());
+        entityData.set(ACCELERATION, direction.normalize().scale(0.3).toVector3f());
     }
 
     @Override
@@ -82,7 +89,7 @@ public final class SymbolProjectile extends ThrowableProjectile {
         }
         if (level() instanceof ServerLevel server) {
             if (age >= spell.lifetime()) {
-                if (spell == SymbolSpell.MORSMORDRE) impact(server, spell, position());
+                if (spell == SymbolSpell.MORSMORDRE) impact(server, spell, position(), null);
                 discard();
             }
         } else {
@@ -95,12 +102,14 @@ public final class SymbolProjectile extends ThrowableProjectile {
     protected void onHit(HitResult hit) {
         SymbolSpell spell = spell();
         if (level() instanceof ServerLevel server && spell != null) {
-            impact(server, spell, hit.getLocation());
+            LivingEntity direct = hit instanceof EntityHitResult entityHit && entityHit.getEntity() instanceof LivingEntity living
+                    ? living : null;
+            impact(server, spell, hit.getLocation(), direct);
             discard();
         }
     }
 
-    private void impact(ServerLevel level, SymbolSpell spell, Vec3 location) {
+    private void impact(ServerLevel level, SymbolSpell spell, Vec3 location, @Nullable LivingEntity direct) {
         level.sendParticles(ParticleTypes.WITCH, location.x, location.y, location.z, 16, 0.6, 0.6, 0.6, 0);
         level.playSound(null, location.x, location.y, location.z, SoundEvents.ENDER_DRAGON_HURT,
                 SoundSource.PLAYERS, 0.8F, 1);
@@ -108,8 +117,41 @@ public final class SymbolProjectile extends ThrowableProjectile {
             case IGNIANIMA -> Soulfire.ignite(level, this, getOwner(), location);
             case MORSMORDRE -> DarkMark.summon(level, location);
             case TORMENTUM -> sendToTorment(level, location);
+            case CONFUNDUS -> {
+                if (direct != null && !direct.hasEffect(MobEffects.CONFUSION)) direct.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 600));
+            }
+            case IMPEDIMENTA -> {
+                if (direct != null && direct != getOwner() && !direct.hasEffect(MobEffects.MOVEMENT_SLOWDOWN)) {
+                    direct.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 600, 1));
+                }
+            }
+            case FLIPENDO -> {
+                if (direct != null && direct != getOwner()) {
+                    Vec3 motion = getDeltaMovement();
+                    double scale = direct.hasEffect(MobEffects.MOVEMENT_SLOWDOWN) ? 2.5 : 2;
+                    applyMotion(direct, new Vec3(motion.x * scale, 0.3, motion.z * scale));
+                }
+            }
+            case ATTRAHO -> pullToCaster(level, location);
             case CARNOSA_DIEM -> { }
         }
+    }
+
+    private void pullToCaster(ServerLevel level, Vec3 location) {
+        if (getOwner() == null) return;
+        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, new AABB(location, location).inflate(2),
+                living -> living != getOwner() && living.distanceToSqr(location) <= 4)) {
+            Vec3 difference = getOwner().position().subtract(target.position());
+            if (difference.lengthSqr() < 0.0001) continue;
+            target.addEffect(new MobEffectInstance(MobEffects.JUMP, 20, 1));
+            applyMotion(target, new Vec3(difference.x * 0.14, difference.y * 0.2 + 0.3, difference.z * 0.14));
+        }
+    }
+
+    private static void applyMotion(LivingEntity target, Vec3 motion) {
+        target.setDeltaMovement(motion);
+        if (target instanceof ServerPlayer player) WitcheryNetwork.sendPushTarget(player, player.getId(), motion.x, motion.y, motion.z);
+        else target.hurtMarked = true;
     }
 
     private void sendToTorment(ServerLevel level, Vec3 location) {

@@ -9,6 +9,8 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.BooleanValue RESTRICT_TAGLOCK_COLLECTION_FOR_OPS;
     public static final ForgeConfigSpec.IntValue COVEN_WITCH_SPAWN_WEIGHT;
     public static final ForgeConfigSpec.BooleanValue RESTRICT_POPPET_SHELVES;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_VAMPIRE_RITUAL;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_VAMPIRE_QUESTS;
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -27,6 +29,8 @@ public final class WitcheryServerConfig {
         RESTRICT_POPPET_SHELVES = builder
                 .comment("Limit Poppet Shelf protection to the Overworld, Nether, End, and Dream.")
                 .define("restrictPoppetShelvesToVanillaAndSpiritDimensions", true);
+        ALLOW_VAMPIRE_RITUAL = builder.define("allowVampireRitual", true);
+        ALLOW_VAMPIRE_QUESTS = builder.define("allowVampireQuests", true);
         SPEC = builder.build();
     }
 

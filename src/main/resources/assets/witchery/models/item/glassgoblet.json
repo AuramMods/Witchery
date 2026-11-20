@@ -2,5 +2,6 @@
    "parent" : "minecraft:item/generated",
    "textures" : {
       "layer0" : "witchery:item/glassgoblet"
-   }
+   },
+   "overrides": [{"predicate": {"witchery:filled": 1}, "model": "witchery:item/glassgoblet_filled"}]
 }
