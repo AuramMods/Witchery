@@ -13,6 +13,7 @@ import art.arcane.witchery.client.model.DemonModel;
 import art.arcane.witchery.client.model.LordOfTormentModel;
 import art.arcane.witchery.client.model.NightmareModel;
 import art.arcane.witchery.client.renderer.DreamCatcherRenderer;
+import art.arcane.witchery.client.renderer.CovenWitchRenderer;
 import art.arcane.witchery.client.renderer.DemonRenderer;
 import art.arcane.witchery.client.renderer.DemonHeartRenderer;
 import art.arcane.witchery.client.renderer.GrotesqueLayer;
@@ -111,6 +112,7 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.LORD_OF_TORMENT.get(), LordOfTormentRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SOULFIRE.get(), ThrownItemRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.WITCH_CAT.get(), CatRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.COVEN_WITCH.get(), CovenWitchRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.REFLECTION.get(), ReflectionRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SLEEPING_BODY.get(), SleepingBodyRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.THROWN_BREW.get(), ThrownItemRenderer::new);

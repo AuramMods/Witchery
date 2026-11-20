@@ -1,0 +1,12 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "medium", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [
+    {"item": "witchery:quartz_sphere"},
+    {"item": "minecraft:gold_ingot"},
+    {"item": "witchery:happenstance_oil"}
+  ],
+  "power": 2000,
+  "night_only": true,
+  "result": {"item": "witchery:crystalball"}
+}

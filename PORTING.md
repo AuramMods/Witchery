@@ -99,8 +99,11 @@
 - [x] Restore familiar fire immunity, armor, healing, and damage sharing. The client observed a ten-point hit split into nine for the owner and one for the cat, then healed the cat with cod. All 31 required Forge GameTests passed, including legacy owner tags and the offline owner's protection.
 - [x] Restore the 1,000-power Rite of Calling a Familiar and sneaking dismissal. The muted client recalled the same cat from Torment, dismissed the seated cat, and called one replacement with the saved name and 50 health.
 - [x] Verify the owner's familiar record, cat UUID, and health across a dedicated restart. The disposable world confirmed that a fatal hit on a bound cat dismisses it and kills its online owner, as in the legacy mod.
+- [x] Restore the Coven Witch entity, original skins and voice, forest and swamp spawn weights, and seven recruitment quests. An active familiar unlocks an offer. The accepted quest records the recipient, and the six-member coven uses the legacy player data shape. All 34 required Forge GameTests passed, including a legacy name-only offer, a restarted fetch quest, and the fight quest's bound trophy.
+- [x] Restore the Quartz Sphere, Happenstance Oil and the night-only Rite of the Crystal Ball. The kettle test verifies the extended Night Vision potion. In the muted survival client, Angelique Redfern refused the player without a familiar and offered the Crystal Ball quest after the player recalled Bramble. The player crafted the sphere, bottled the oil, cast the rite, handed over the ball, and recruited Angelique. Her membership persisted on the dedicated server after restart.
 - [ ] Restore owl and toad familiars, their specialized abilities, and the cat's curse bonuses.
-- [ ] Restore Coven Witch spawning, quests and membership. Use the coven to perform the original Imp rite and obtain the Contract of Torment.
+- [ ] Restore Seer Stone readings and coven summoning, including when activating a circle with the stone. Use that circle to perform the Imp rite, bind the Imp with a signed Contract of Ownership, and obtain the Contract of Torment.
+- [ ] Restore the Crystal Ball's predictions and the coven witch's additional combat and ritual behaviors.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.

@@ -804,7 +804,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 107 | `LOUSE` | `EntityParasyticLouse` | `louse` |
 | 108 | `EYE` | `EntityEye` | `eye` |
 | 109 | `BABA_YAGA` | `EntityBabaYaga` | `babayaga` |
-| 110 | `COVEN_WITCH` | `EntityCovenWitch` | `covenwitch` |
+| 110 | `COVEN_WITCH` | `EntityCovenWitch` | `covenwitch` (spawn, appearance, recruitment, quests and membership restored) |
 | 111 | `PLAYER_CORPSE` | `EntityCorpse` | `corpse` |
 | 112 | `NIGHTMARE` | `EntityNightmare` | `nightmare` |
 | 113 | `SPECTRE` | `EntitySpectre` | `spectre` |

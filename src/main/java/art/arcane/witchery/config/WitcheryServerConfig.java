@@ -7,6 +7,7 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.BooleanValue DOUBLE_FUME_FILTER_CHANCE;
     public static final ForgeConfigSpec.BooleanValue RESTRICT_TAGLOCK_COLLECTION_ON_NON_PVP_SERVERS;
     public static final ForgeConfigSpec.BooleanValue RESTRICT_TAGLOCK_COLLECTION_FOR_OPS;
+    public static final ForgeConfigSpec.IntValue COVEN_WITCH_SPAWN_WEIGHT;
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -19,6 +20,9 @@ public final class WitcheryServerConfig {
         RESTRICT_TAGLOCK_COLLECTION_FOR_OPS = builder
                 .comment("Block collecting taglocks from server operators.")
                 .define("restrictTaglockCollectionForOps", false);
+        COVEN_WITCH_SPAWN_WEIGHT = builder
+                .comment("One in this many otherwise suitable spawn attempts produces a coven witch.")
+                .defineInRange("covenWitchSpawnWeight", 2, 1, Integer.MAX_VALUE);
         SPEC = builder.build();
     }
 

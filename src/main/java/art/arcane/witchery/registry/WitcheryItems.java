@@ -150,6 +150,7 @@ public final class WitcheryItems {
             case "brew_of_hollow_tears" -> new ThrowableBrewItem(BrewImpacts::depositHollowTears);
             case "brew_of_soul_torment" -> new DrinkableBrewItem(TormentTravel::learnTormentum);
             case "redstone_soup" -> new DrinkableBrewItem(() -> MobEffects.HEALTH_BOOST, 2400, 1);
+            case "happenstance_oil" -> new DrinkableBrewItem(() -> MobEffects.NIGHT_VISION, 1200, 0);
             case "purified_milk" -> new DrinkableBrewItem(DrinkableBrewItem::purifyMilk);
             case "icy_needle" -> new IcyNeedleItem();
             case "dreamweave_of_fleet_feet" -> dreamWeave(DreamWeave.MOVEMENT);
@@ -193,7 +194,9 @@ public final class WitcheryItems {
         }
 
         RegistryObject<Item> egg = ITEMS.register(eggPath,
-                () -> new ForgeSpawnEggItem(entityType, 0x6E5A4E, 0xA4A29D, new Item.Properties()));
+                () -> path.equals("covenwitch")
+                        ? new ForgeSpawnEggItem(entityType, 0x111111, 0x002D03, new Item.Properties())
+                        : new ForgeSpawnEggItem(entityType, 0x6E5A4E, 0xA4A29D, new Item.Properties()));
         LEGACY_SPAWN_EGGS.put(eggPath, egg);
     }
 

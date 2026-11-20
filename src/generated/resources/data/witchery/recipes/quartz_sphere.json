@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:quartz_block"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "Q": {
+      "item": "minecraft:quartz"
+    }
+  },
+  "pattern": [
+    "QBQ",
+    "BGB",
+    "QBQ"
+  ],
+  "result": {
+    "item": "witchery:quartz_sphere"
+  },
+  "show_notification": true
+}

@@ -1,12 +1,15 @@
 package art.arcane.witchery.event;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
@@ -38,10 +41,14 @@ public final class WitcheryMobDrops {
     @SubscribeEvent
     public static void addDrops(LivingDropsEvent event) {
         LivingEntity creature = event.getEntity();
-        if (!(event.getSource().getDirectEntity() instanceof ServerPlayer player) || creature.level().isClientSide
-                || creature.getPersistentData().getBoolean("WITCNoDrops")) {
-            return;
+        if (creature.level().isClientSide || creature.getPersistentData().getBoolean("WITCNoDrops")) return;
+
+        ListTag questDrops = creature.getPersistentData().getList(CovenWitch.EXTRA_DROPS, Tag.TAG_COMPOUND);
+        for (int index = 0; index < questDrops.size(); index++) {
+            ItemStack trophy = WitcheryIngredient.loadInventoryStack(questDrops.getCompound(index));
+            if (!trophy.isEmpty()) addDrop(event, trophy);
         }
+        if (!(event.getSource().getDirectEntity() instanceof ServerPlayer player)) return;
         boolean arthana = player.getMainHandItem().is(WitcheryItems.getRequired("arthana").get());
         int looting = event.getLootingLevel();
         ItemStack ingredient = ingredientDrop(creature, arthana, looting);

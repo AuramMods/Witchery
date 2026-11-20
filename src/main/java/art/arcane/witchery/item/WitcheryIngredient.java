@@ -55,6 +55,8 @@ public enum WitcheryIngredient {
     BREW_OF_THE_DEPTHS(77, "brew_of_the_depths"),
     ICY_NEEDLE(78, "icy_needle"),
     INFERNAL_BLOOD(80, "infernal_blood"),
+    QUARTZ_SPHERE(92, "quartz_sphere"),
+    HAPPENSTANCE_OIL(93, "happenstance_oil"),
     BREW_OF_SLEEPING(95, "brew_of_sleeping"),
     BREW_OF_FLOWING_SPIRIT(96, "brew_of_flowing_spirit"),
     DISTURBED_COTTON(99, "disturbed_cotton"),

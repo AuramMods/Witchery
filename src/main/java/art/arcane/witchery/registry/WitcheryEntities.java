@@ -1,6 +1,7 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.entity.Demon;
 import art.arcane.witchery.entity.LordOfTorment;
 import art.arcane.witchery.entity.Mandrake;
@@ -13,10 +14,13 @@ import art.arcane.witchery.entity.WitchCat;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.animal.Cat;
 import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
+import net.minecraftforge.event.entity.SpawnPlacementRegisterEvent;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -52,6 +56,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<WitchCat>> WITCH_CAT =
             ENTITY_TYPES.register("cat", () -> EntityType.Builder.<WitchCat>of(WitchCat::new, MobCategory.CREATURE)
                     .sized(0.6F, 0.7F).clientTrackingRange(8).build(Witchery.MODID + ":cat"));
+    public static final RegistryObject<EntityType<CovenWitch>> COVEN_WITCH =
+            ENTITY_TYPES.register("covenwitch", () -> EntityType.Builder.of(CovenWitch::new, MobCategory.CREATURE)
+                    .sized(0.6F, 1.95F).clientTrackingRange(8).build(Witchery.MODID + ":covenwitch"));
     public static final RegistryObject<EntityType<ThrownBrew>> THROWN_BREW =
             ENTITY_TYPES.register("thrown_brew", () -> EntityType.Builder.<ThrownBrew>of(ThrownBrew::new, MobCategory.MISC)
                     .sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(3).build(Witchery.MODID + ":thrown_brew"));
@@ -64,6 +71,7 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("reflection", REFLECTION);
         LEGACY_ENTITIES.put("lordoftorment", LORD_OF_TORMENT);
         LEGACY_ENTITIES.put("cat", WITCH_CAT);
+        LEGACY_ENTITIES.put("covenwitch", COVEN_WITCH);
         for (String legacyName : LegacyRegistryData.ENTITIES) {
             registerLegacyEntity(legacyName);
         }
@@ -75,6 +83,7 @@ public final class WitcheryEntities {
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);
         eventBus.addListener(WitcheryEntities::registerEntityAttributes);
+        eventBus.addListener(WitcheryEntities::registerSpawnPlacements);
     }
 
     public static Map<String, RegistryObject<? extends EntityType<? extends Mob>>> all() {
@@ -103,8 +112,14 @@ public final class WitcheryEntities {
                     : entry == DEMON ? Demon.attributes()
                     : entry == REFLECTION ? Reflection.attributes()
                     : entry == LORD_OF_TORMENT ? LordOfTorment.attributes()
+                    : entry == COVEN_WITCH ? CovenWitch.attributes()
                     : entry == WITCH_CAT ? Cat.createAttributes() : Zombie.createAttributes();
             event.put(entry.get(), attributes.build());
         }
+    }
+
+    private static void registerSpawnPlacements(SpawnPlacementRegisterEvent event) {
+        event.register(COVEN_WITCH.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                CovenWitch::canSpawn, SpawnPlacementRegisterEvent.Operation.REPLACE);
     }
 }

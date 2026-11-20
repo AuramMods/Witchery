@@ -30,5 +30,13 @@
   "mob.torment.death": {
     "subtitle": "subtitles.witchery.torment.death",
     "sounds": [{"name": "witchery:mob/torment/hit", "pitch": 0.7}]
+  },
+  "mob.baba.baba_living": {
+    "subtitle": "subtitles.witchery.coven.talk",
+    "sounds": ["witchery:mob/baba/baba_living1"]
+  },
+  "mob.baba.baba_death": {
+    "subtitle": "subtitles.witchery.coven.talk",
+    "sounds": ["witchery:mob/baba/baba_death"]
   }
 }

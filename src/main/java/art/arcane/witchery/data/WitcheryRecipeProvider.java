@@ -88,6 +88,15 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .pattern("L")
                 .unlockedBy("has_whiff_of_magic", has(WitcheryIngredient.WHIFF_OF_MAGIC.item()))
                 .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryIngredient.QUARTZ_SPHERE.item())
+                .define('Q', Items.QUARTZ)
+                .define('B', Blocks.QUARTZ_BLOCK)
+                .define('G', Blocks.GLASS)
+                .pattern("QBQ")
+                .pattern("BGB")
+                .pattern("QBQ")
+                .unlockedBy("has_quartz", has(Items.QUARTZ))
+                .save(recipeOutput);
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryIngredient.FUME_FILTER.item())
                 .define('G', Blocks.GLASS)
                 .define('I', Items.IRON_INGOT)
