@@ -1,0 +1,16 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [
+    {"size": "small", "glyph": "witchery:circleglyphritual"},
+    {"size": "medium", "glyph": "witchery:circleglyphritual"}
+  ],
+  "sacrifices": [
+    {"item": "witchery:infused_brew_base"},
+    {"item": "witchery:broom"},
+    {"item": "minecraft:feather"},
+    {"item": "witchery:arthana"}
+  ],
+  "power": 3000,
+  "living_offering": "witchery:owl",
+  "result": {"item": "witchery:brew_of_soaring"}
+}

@@ -1,0 +1,15 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"item": "witchery:redstone_soup"},
+    {"item": "witchery:brew_of_flowing_spirit"},
+    {"item": "witchery:creeper_heart"},
+    {"item": "witchery:toe_of_frog"},
+    {"item": "witchery:owlets_wing"},
+    {"item": "witchery:dog_tongue"}
+  ],
+  "color": -10520657,
+  "power": 3000,
+  "bottling_bonus": 1,
+  "result": {"item": "witchery:infused_brew_base"}
+}

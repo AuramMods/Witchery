@@ -14,6 +14,7 @@ import art.arcane.witchery.entity.SleepingBody;
 import art.arcane.witchery.entity.Soulfire;
 import art.arcane.witchery.entity.SymbolProjectile;
 import art.arcane.witchery.entity.ThrownBrew;
+import art.arcane.witchery.entity.WitchBroom;
 import art.arcane.witchery.entity.WitchCat;
 import art.arcane.witchery.entity.WitchOwl;
 import art.arcane.witchery.entity.WitchToad;
@@ -71,6 +72,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<WitchToad>> TOAD =
             ENTITY_TYPES.register("toad", () -> EntityType.Builder.of(WitchToad::new, MobCategory.CREATURE)
                     .sized(0.8F, 0.8F).clientTrackingRange(8).build(Witchery.MODID + ":toad"));
+    public static final RegistryObject<EntityType<WitchBroom>> BROOM =
+            ENTITY_TYPES.register("broom", () -> EntityType.Builder.of(WitchBroom::new, MobCategory.MISC)
+                    .sized(1.2F, 0.5F).clientTrackingRange(8).updateInterval(1).build(Witchery.MODID + ":broom"));
     public static final RegistryObject<EntityType<CovenWitch>> COVEN_WITCH =
             ENTITY_TYPES.register("covenwitch", () -> EntityType.Builder.of(CovenWitch::new, MobCategory.CREATURE)
                     .sized(0.6F, 1.95F).clientTrackingRange(8).build(Witchery.MODID + ":covenwitch"));
@@ -121,7 +125,7 @@ public final class WitcheryEntities {
 
     private static void registerLegacyEntity(String legacyName) {
         String path = RegistryNameUtil.normalizePath(legacyName);
-        if (LEGACY_ENTITIES.containsKey(path) || path.equals("soulfire") || path.equals("spelleffect")) {
+        if (LEGACY_ENTITIES.containsKey(path) || path.equals("soulfire") || path.equals("spelleffect") || path.equals("broom")) {
             return;
         }
 

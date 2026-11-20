@@ -7,6 +7,7 @@ import art.arcane.witchery.brewing.BrewImpacts;
 import art.arcane.witchery.item.AnointingPasteItem;
 import art.arcane.witchery.item.BoundPoppetItem;
 import art.arcane.witchery.item.ArthanaItem;
+import art.arcane.witchery.item.BroomItem;
 import art.arcane.witchery.item.DemonHeartItem;
 import art.arcane.witchery.item.DeathProtectionPoppetItem;
 import art.arcane.witchery.item.DrinkableBrewItem;
@@ -31,6 +32,7 @@ import art.arcane.witchery.item.WitchHandItem;
 import art.arcane.witchery.item.WitchWoodBlockItem;
 import art.arcane.witchery.item.WitchSeedsItem;
 import art.arcane.witchery.world.DreamTravel;
+import art.arcane.witchery.infusion.InfusedBrews;
 import art.arcane.witchery.infusion.SpellKnowledge;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -94,6 +96,7 @@ public final class WitcheryItems {
         for (String name : List.of("soulfire_spawn_egg", "spelleffect_spawn_egg")) {
             LEGACY_SPAWN_EGGS.put(name, ITEMS.register(name, () -> new Item(new Item.Properties())));
         }
+        ITEMS.register("broom_spawn_egg", () -> new BroomItem(true));
 
         for (String legacyName : LegacyRegistryData.BLOCKS) {
             registerLegacyBlockItem(legacyName);
@@ -158,6 +161,8 @@ public final class WitcheryItems {
             case "arthana" -> new ArthanaItem();
             case "mysticbranch" -> new MysticBranchItem();
             case "mutator" -> new MutatingSprigItem();
+            case "broom" -> new BroomItem(false);
+            case "enchanted_broom" -> new BroomItem(true);
             case "witchhand" -> new WitchHandItem();
             case "demon_heart" -> new DemonHeartItem(WitcheryBlocks.getRequired("demonheart").get(), true);
             case "devilstonguecharm" -> new Item(new Item.Properties().durability(50).rarity(Rarity.UNCOMMON));
@@ -192,6 +197,9 @@ public final class WitcheryItems {
             case "odd_porkchop_raw" -> new Item(new Item.Properties().food(new FoodProperties.Builder()
                     .nutrition(3).saturationMod(0.3F).alwaysEat().build()));
             case "redstone_soup" -> new DrinkableBrewItem(() -> MobEffects.HEALTH_BOOST, 2400, 1);
+            case "flying_ointment" -> new DrinkableBrewItem(() -> MobEffects.POISON, 1200, 2);
+            case "infused_brew_base" -> new DrinkableBrewItem(() -> MobEffects.WITHER, 200, 3);
+            case "brew_of_soaring" -> new DrinkableBrewItem(InfusedBrews::applySoaring);
             case "ghost_of_the_light", "soul_of_the_world", "spirit_of_otherwhere" ->
                     new DrinkableBrewItem(() -> MobEffects.POISON, 1200, 1);
             case "infernal_animus" -> new DrinkableBrewItem(drinker -> {

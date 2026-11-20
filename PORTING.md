@@ -231,7 +231,15 @@
 - [x] Restart the packaged dedicated server and reconnect the muted client. Both tamed animals kept their owner and dye colors. The Owl kept its named parcel, and the player kept Toad power 25, ten reserve charges and 168 infusion charges.
 - [x] Bind, dismiss and call Owl and Toad familiars. The muted client bound a blue Toad, redirected one point of a ten-point hit, and called it back with its name and color. Binding the purple Owl returned the Toad to its ordinary health. The client recovered the Owl's named parcel when dismissing it. The recalled Owl retained its UUID, purple color and 50 health after the packaged server restarted.
 - [x] Apply the active Toad's five-percent bonus to eligible Kettle brews. A seeded GameTest used a glass bottle on Ink with an active Toad, active Owl, active Cat and dismissed Toad. Only the active Toad yielded a bonus bottle. All 89 required Forge GameTests, data generation and JAR reobfuscation passed.
-- [ ] Restore the Owl's Broom Mastery and Waystone delivery. Apply the remaining Toad Brew Mastery bonuses as the related brews and brewing equipment are ported.
+- [ ] Restore Owl Waystone delivery. Apply the remaining Toad Brew Mastery bonuses as the related brews and brewing equipment are ported.
+
+## Flying broom and Soaring (2026-11-20)
+
+- [x] Craft the Broom with two sticks and three Hawthorn saplings. Brew Flying Ointment in the Kettle with a long Swiftness potion. The muted client sacrificed both in the small and medium white circles. Both items stayed in the circle during the daylight attempt. The same rite yielded an Enchanted Broom at midnight.
+- [x] Place, dye, mount and fly the Enchanted Broom on dedicated Forge. The muted rider flew more than 110 blocks in one run. Looking up raised the broom over six blocks during a shorter run, and looking down produced descending motion. Releasing forward with the Owl active braked the broom.
+- [x] Brew the Infused Brew Base in the Kettle and offer it with a Broom, Feather, Arthana and a wild Owl. The muted player received an Infused Brew of Soaring. Forge GameTests verified that the Owl and Soaring bonuses stack and that Soaring expires after two hours.
+- [x] Restart the packaged server after drinking Soaring. The same blue broom and brew timestamp survived. The muted client flew again with both bonuses, dismounted and recovered the dyed item with an axe. All 91 required GameTests, data generation and JAR reobfuscation passed.
+- [ ] Restore the other Infused Brew Base recipe when Wild Bramble has a survival path. Restore the infused-brew icon and remaining-time display with the other infused brews.
 
 ## Auram Pack Validation (2026-11-20)
 

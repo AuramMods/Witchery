@@ -168,6 +168,14 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Manual Kettle bottling uses the Toad's original five-percent Brew Mastery roll and the recipe's `bottling_bonus`. Ink, Love, Sleeping, Grotesque and Depths each allow one bonus bottle. A seeded Forge GameTest verified the extra Ink bottle, one batch serving consumed, and ordinary yields for other familiar types, a dismissed Toad, Redstone Soup, and extraction without a player. Protocol 17 carries the extra recipe field.
 - All 89 required Forge GameTests, data generation and reobfuscation passed. The temporary GameTest world used a fixed seed, with the Overworld magnet's test ore above natural veins so real terrain would not change the test's charge bill.
 
+### Flying broom and Soaring (2026-11-20)
+
+- The recipe uses the legacy three Hawthorn saplings and two sticks. Flying Ointment uses Redstone Soup, a long Swiftness potion, Diamond, Feather, Wool of Bat and Belladonna Flower. The Kettle uses 3,000 altar power. Infusion uses the Broom and Ointment, small and medium white circles, night and another 3,000 power. The muted survival client crafted and used both offerings. Daylight preserved them. The midnight cast returned the Enchanted Broom.
+- The Broom preserves `witchery:broom` as the entity ID. The mounted flight uses vanilla rider input with the server applying acceleration, collision and position. The original bristle model and dye colors render in the client. Both broom items can sweep away chalk. The enchanted item preserves its name and `BrushColor` through placement and recovery.
+- The muted client dyed the broom blue and rode over 110 blocks. Pitch produced upward and downward motion. Releasing forward with a bound Owl brought horizontal motion back to zero. The focused GameTests cover placement obstruction, name and color migration, recovery, glyph removal, Owl acceleration, braking, Soaring and expiration.
+- The muted survival client bottled the Infused Brew Base from its original six-ingredient Kettle recipe. The Infusion rite consumed a second Broom, the base, Feather, Arthana and a wild Owl and produced the Infused Brew of Soaring. The brew uses the legacy timestamp with a two-hour wall-clock duration.
+- After the packaged restart the same blue vehicle UUID and the player's Soaring timestamp were present. The muted client flew about 58 blocks during a 2.4-second forward-input test with Soaring and the Owl active. It dismounted, struck the vehicle with an axe and collected the Enchanted Broom with `BrushColor:11b`. All 91 required GameTests passed alongside data generation and JAR reobfuscation.
+
 ## Session Memory (2026-02-08)
 - Port target is Forge 1.20.1.
 - Legacy source is fully available at `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10`.

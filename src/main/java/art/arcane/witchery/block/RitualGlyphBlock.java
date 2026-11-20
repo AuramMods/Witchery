@@ -1,10 +1,12 @@
 package art.arcane.witchery.block;
 
+import art.arcane.witchery.item.BroomItem;
 import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -62,6 +64,11 @@ public final class RitualGlyphBlock extends Block {
     @Override
     public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
         return new ItemStack(WitcheryItems.getRequired(chalk).get());
+    }
+
+    @Override
+    public void attack(BlockState state, Level level, BlockPos pos, Player player) {
+        if (!level.isClientSide && player.getMainHandItem().getItem() instanceof BroomItem) level.removeBlock(pos, false);
     }
 
     @Override

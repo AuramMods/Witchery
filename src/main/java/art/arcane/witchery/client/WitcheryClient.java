@@ -19,6 +19,7 @@ import art.arcane.witchery.client.model.NightmareModel;
 import art.arcane.witchery.client.model.WitchOwlModel;
 import art.arcane.witchery.client.model.WitchToadModel;
 import art.arcane.witchery.client.renderer.DreamCatcherRenderer;
+import art.arcane.witchery.client.renderer.BroomRenderer;
 import art.arcane.witchery.client.renderer.DarkMarkRenderer;
 import art.arcane.witchery.client.renderer.CovenWitchRenderer;
 import art.arcane.witchery.client.renderer.DemonRenderer;
@@ -41,6 +42,8 @@ import art.arcane.witchery.client.renderer.SymbolProjectileRenderer;
 import art.arcane.witchery.client.renderer.WitchOwlRenderer;
 import art.arcane.witchery.client.renderer.WitchToadRenderer;
 import art.arcane.witchery.item.TaglockItem;
+import art.arcane.witchery.item.BroomItem;
+import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
@@ -58,6 +61,7 @@ import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.inventory.MenuType;
@@ -109,6 +113,7 @@ public final class WitcheryClient {
         event.registerLayerDefinition(EntModel.LAYER, EntModel::layer);
         event.registerLayerDefinition(WitchOwlModel.LAYER, WitchOwlModel::layer);
         event.registerLayerDefinition(WitchToadModel.LAYER, WitchToadModel::layer);
+        event.registerLayerDefinition(BroomRenderer.LAYER, BroomRenderer::layer);
         event.registerLayerDefinition(ImpModel.LAYER, ImpModel::layer);
         event.registerLayerDefinition(DarkMarkModel.LAYER, DarkMarkModel::layer);
         event.registerLayerDefinition(LordOfTormentModel.LAYER, LordOfTormentModel::layer);
@@ -144,6 +149,7 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.WITCH_CAT.get(), CatRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.OWL.get(), WitchOwlRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.TOAD.get(), WitchToadRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.BROOM.get(), BroomRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.COVEN_WITCH.get(), CovenWitchRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.REFLECTION.get(), ReflectionRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SLEEPING_BODY.get(), SleepingBodyRenderer::new);
@@ -237,6 +243,10 @@ public final class WitcheryClient {
     public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
         event.register((stack, tint) -> tint == 0 ? foliageColor(WitchWoodType.fromStack(stack)) : -1,
                 WitcheryBlocks.getRequired("witchleaves").get());
+        event.register((stack, tint) -> {
+            int color = BroomItem.brushColor(stack);
+            return tint == 1 ? DyeColor.byId(color < 0 ? 12 : color).getFireworkColor() : -1;
+        }, WitcheryIngredient.ENCHANTED_BROOM.item());
     }
 
     private static int foliageColor(WitchWoodType wood) {

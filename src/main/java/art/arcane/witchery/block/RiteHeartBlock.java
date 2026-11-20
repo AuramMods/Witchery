@@ -1,6 +1,7 @@
 package art.arcane.witchery.block;
 
 import art.arcane.witchery.block.entity.RiteHeartBlockEntity;
+import art.arcane.witchery.item.BroomItem;
 import art.arcane.witchery.item.SeerStoneItem;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryItems;
@@ -74,6 +75,11 @@ public final class RiteHeartBlock extends BaseEntityBlock {
     @Override
     public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
         return new ItemStack(WitcheryItems.getRequired("chalkheart").get());
+    }
+
+    @Override
+    public void attack(BlockState state, Level level, BlockPos pos, Player player) {
+        if (!level.isClientSide && player.getMainHandItem().getItem() instanceof BroomItem) level.removeBlock(pos, false);
     }
 
     @Override

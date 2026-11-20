@@ -1,0 +1,14 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [
+    {"size": "small", "glyph": "witchery:circleglyphritual"},
+    {"size": "medium", "glyph": "witchery:circleglyphritual"}
+  ],
+  "sacrifices": [
+    {"item": "witchery:broom"},
+    {"item": "witchery:flying_ointment"}
+  ],
+  "power": 3000,
+  "night_only": true,
+  "result": {"item": "witchery:enchanted_broom"}
+}

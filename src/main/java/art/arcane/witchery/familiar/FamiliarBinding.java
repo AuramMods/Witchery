@@ -92,6 +92,10 @@ public final class FamiliarBinding {
         return hasMastery(player, Type.TOAD);
     }
 
+    public static boolean hasBroomMastery(ServerPlayer player) {
+        return hasMastery(player, Type.OWL);
+    }
+
     private static boolean hasMastery(ServerPlayer player, Type type) {
         CompoundTag record = record(player);
         return record.getBoolean("FamiliarSummoned") && record.getInt("FamiliarType") == type.id;

@@ -540,8 +540,8 @@ The first migrated subtypes have individual item IDs. Preserve `witchery:ingredi
 | 5 | `weaveSaturation` |
 | 6 | `weaveNightmares` |
 | 7 | `boneNeedle` |
-| 8 | `broom` |
-| 9 | `broomEnchanted` |
+| 8 | `broom` → `witchery:broom` |
+| 9 | `broomEnchanted` → `witchery:enchanted_broom` |
 | 10 | `attunedStone` |
 | 11 | `attunedStoneCharged` |
 | 12 | `waystone` |
@@ -571,7 +571,7 @@ The first migrated subtypes have individual item IDs. Preserve `witchery:ingredi
 | 38 | `refinedEvil` |
 | 39 | `dropOfLuck` |
 | 40 | `redstoneSoup` |
-| 41 | `flyingOintment` |
+| 41 | `flyingOintment` → `witchery:flying_ointment` |
 | 42 | `ghostOfTheLight` → `witchery:ghost_of_the_light` |
 | 43 | `soulOfTheWorld` → `witchery:soul_of_the_world` |
 | 44 | `spiritOfOtherwhere` → `witchery:spirit_of_otherwhere` |
@@ -650,8 +650,8 @@ The first migrated subtypes have individual item IDs. Preserve `witchery:ingredi
 | 118 | `brewSolidSand` |
 | 119 | `brewSolidSandstone` |
 | 120 | `brewSolidErosion` |
-| 121 | `infusionBase` |
-| 122 | `brewSoaring` |
+| 121 | `infusionBase` → `witchery:infused_brew_base` |
+| 122 | `brewSoaring` → `witchery:brew_of_soaring` |
 | 123 | `brewGrave` |
 | 124 | `brewRevealing` |
 | 125 | `brewSubstitution` |
@@ -787,7 +787,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | ID | Field | Class | Legacy Name |
 |---:|---|---|---|
 | 92 | `DEMON` | `EntityDemon` | `demon` |
-| 93 | `BROOM` | `EntityBroom` | `broom` |
+| 93 | `BROOM` | `EntityBroom` | `broom` (rideable vehicle, hue, damage and recovery) |
 | 94 | `BREW` | `EntityWitchProjectile` | `brew` |
 | 95 | `SPECTRAL_FAMILIAR` | `EntityFamiliar` | `familiar` |
 | 96 | `MANDRAKE` | `EntityMandrake` | `mandrake` |
@@ -1106,6 +1106,8 @@ The Vampiric Poppet keeps both legacy Taglock indices. The first tracks the prot
 `witchery:grassper` reads its single legacy `Items` entry at `Slot:0b`. The rite heart retains legacy `Sacrifices` item entries and writes `GrassperPos` for offerings it takes from a Grassper. Critter Snare item damage 1 through 4 becomes the `critter` block state. The older bat subtype 9 also sets `stocked`, which restores `WitcheryShopStock` when that bat is released.
 
 The Owl reads `FeatherColor` and the Toad reads `SkinColor`. Both retain `Familiar` and `SuicideIn` and use vanilla tamed ownership. The Toad also reads `Poisonous`. The Owl keeps its carried item in its main hand equipment.
+
+The Broom uses `BrushColor` on the vehicle and enchanted item. The vehicle reads legacy plain-text `CustomName` and saves the modern component name. An older port's `witchery:broom_spawn_egg` can place the vehicle. The Infused Brew of Soaring uses `WITCInfusedBrewType:1` and `WITCInfusedBrewStart` in the player record.
 
 ## Recipe System Registries
 

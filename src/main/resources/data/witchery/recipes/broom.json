@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [" S ", " S ", "HHH"],
+  "key": {
+    "S": {"item": "minecraft:stick"},
+    "H": {
+      "type": "forge:partial_nbt",
+      "item": "witchery:witchsapling",
+      "nbt": {"BlockStateTag": {"wood_type": "hawthorn"}}
+    }
+  },
+  "result": {"item": "witchery:broom"}
+}
