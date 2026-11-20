@@ -794,7 +794,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 97 | `TREEFYD` | `EntityTreefyd` | `treefyd` |
 | 98 | `HUNTSMAN` | `EntityHornedHuntsman` | `hornedHuntsman` |
 | 99 | `SPELL` | `EntitySpellEffect` | `spellEffect` → `witchery:spelleffect` |
-| 100 | `ENT` | `EntityEnt` | `ent` |
+| 100 | `ENT` | `EntityEnt` | `ent` (Witchwood harvest awakening, legacy `Owner` field retained) |
 | 101 | `ILLUSION_CREEPER` | `EntityIllusionCreeper` | `illusionCreeper` |
 | 102 | `ILLUSION_SPIDER` | `EntityIllusionSpider` | `illusionSpider` |
 | 103 | `ILLUSION_ZOMBIE` | `EntityIllusionZombie` | `illusionZombie` |

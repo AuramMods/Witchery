@@ -27,12 +27,16 @@ import art.arcane.witchery.block.WitchSaplingBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.block.WitchesCauldronBlock;
 import art.arcane.witchery.block.WitchesOvenBlock;
+import art.arcane.witchery.entity.Ent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ButtonBlock;
@@ -47,6 +51,7 @@ import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -60,6 +65,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -361,6 +367,13 @@ public final class WitcheryBlocks {
         private LegacyWitchLogBlock() {
             super(BlockBehaviour.Properties.copy(Blocks.OAK_LOG));
             registerDefaultState(defaultBlockState().setValue(WitchWoodType.PROPERTY, WitchWoodType.ROWAN));
+        }
+
+        @Override
+        public void playerDestroy(Level level, Player player, BlockPos pos, BlockState state,
+                                  @Nullable BlockEntity entity, ItemStack tool) {
+            if (level instanceof ServerLevel server) Ent.tryAwaken(server, pos, this);
+            super.playerDestroy(level, player, pos, state, entity, tool);
         }
 
         @Override

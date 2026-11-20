@@ -4,6 +4,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.entity.DarkMark;
 import art.arcane.witchery.entity.Demon;
+import art.arcane.witchery.entity.Ent;
 import art.arcane.witchery.entity.Imp;
 import art.arcane.witchery.entity.LordOfTorment;
 import art.arcane.witchery.entity.Mandrake;
@@ -47,6 +48,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<Demon>> DEMON =
             ENTITY_TYPES.register("demon", () -> EntityType.Builder.of(Demon::new, MobCategory.MONSTER)
                     .sized(1.0F, 2.9F).fireImmune().build(Witchery.MODID + ":demon"));
+    public static final RegistryObject<EntityType<Ent>> ENT =
+            ENTITY_TYPES.register("ent", () -> EntityType.Builder.of(Ent::new, MobCategory.MONSTER)
+                    .sized(1.2F, 3.0F).clientTrackingRange(8).build(Witchery.MODID + ":ent"));
     public static final RegistryObject<EntityType<Reflection>> REFLECTION =
             ENTITY_TYPES.register("reflection", () -> EntityType.Builder.of(Reflection::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.8F).fireImmune().clientTrackingRange(8).build(Witchery.MODID + ":reflection"));
@@ -80,6 +84,7 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("corpse", SLEEPING_BODY);
         LEGACY_ENTITIES.put("nightmare", NIGHTMARE);
         LEGACY_ENTITIES.put("demon", DEMON);
+        LEGACY_ENTITIES.put("ent", ENT);
         LEGACY_ENTITIES.put("reflection", REFLECTION);
         LEGACY_ENTITIES.put("lordoftorment", LORD_OF_TORMENT);
         LEGACY_ENTITIES.put("cat", WITCH_CAT);
@@ -124,6 +129,7 @@ public final class WitcheryEntities {
                     : entry == SLEEPING_BODY ? SleepingBody.attributes()
                     : entry == NIGHTMARE ? Nightmare.attributes()
                     : entry == DEMON ? Demon.attributes()
+                    : entry == ENT ? Ent.attributes()
                     : entry == REFLECTION ? Reflection.attributes()
                     : entry == LORD_OF_TORMENT ? LordOfTorment.attributes()
                     : entry == COVEN_WITCH ? CovenWitch.attributes()

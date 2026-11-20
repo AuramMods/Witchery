@@ -201,8 +201,16 @@
 - [x] Restore both original crafting recipes, ordered two-Taglock binding for the Vampiric Poppet, and single-Taglock binding for Poppet Protection. The muted survival client crafted and bound both. The Vampiric Poppet received its first signature from the player's bed and its second from a live pig.
 - [x] Transfer entity-caused injury through the Vampiric Poppet at 66 wear per use, cap each transfer to a creature at 15 damage, and clear its Taglock when that creature dies. Three zombie damage tests left the player at seven health and wore the poppet to 198. The surviving signature and wear persisted after restart. Cyclic bindings stop when a recipient repeats.
 - [x] Restore the Corrupting Voodoo Protection rite with five offerings, 7,000 altar power and 28 infernal glyphs. The muted client cast it with its familiar dismissed. The heart returned all five offerings and the Poppet Protection kept its original wear.
-- [x] Reflect corruption as lightning with 350 wear to Poppet Protection. An undefended cast consumes up to ten matching Voodoo Protection Poppets, including wards on shelves. All 76 Forge GameTests passed, including these mechanics, legacy metadata and both Taglock indices. Java 17 data generation and JAR reobfuscation succeeded.
+- [x] Reflect corruption as lightning with 350 wear to Poppet Protection. An undefended cast consumes up to ten matching Voodoo Protection Poppets, including wards on shelves. All 77 Forge GameTests passed, including the full rite through heart activation, legacy metadata and both Taglock indices. Java 17 data generation and JAR reobfuscation succeeded.
 - [ ] Connect Witch Hunter equipment, the spirit poppet enhancement and other legacy damage exemptions when their owning systems are restored.
+
+## Ent and Ent Branch (2026-11-20)
+
+- [x] Restore the Ent at `witchery:ent`. Harvesting Witchwood can awaken one in the surrounding forest. The rate starts at 1% and increases with adjacent Witchwood logs up to 5%. Awakening needs supported space in a loaded chunk.
+- [x] Restore the original Ent model, attack animation, axe vulnerability, Ent Branch drop and Witchwood sapling drop. The branch supplies the existing Mystic Branch rite and the Mutating Sprig recipe still to be ported.
+- [x] Verify the packaged Ent in muted survival. The player harvested Hawthorn with an axe and awakened a hostile Ent, which attacked and killed the player. The respawned player defeated the same Ent with a supplied axe after it was positioned in the test arena, then picked up its Ent Branch and Alder Sapling.
+- [x] Package on Java 17 and pass all 80 required Forge GameTests. The tests cover harvesting, spawn distance, the 15-damage cap before the triple axe bonus, both drops, and legacy ownership.
+- [x] Restart the dedicated server and verify the saved branch, Alder Sapling variant and legacy Ent owner. The muted client offered the collected Ent Branch and Mystic Unguent inside two white rings at night, and the rite produced a Mystic Branch.
 
 ## Auram Pack Validation (2026-11-20)
 
