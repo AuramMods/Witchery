@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 public final class WitcheryPlayerDataProvider implements ICapabilitySerializable<CompoundTag> {
     private final WitcheryPlayerData data = new WitcheryPlayerData();
-    private final LazyOptional<WitcheryPlayerData> optional = LazyOptional.of(() -> data);
+    private LazyOptional<WitcheryPlayerData> optional = LazyOptional.empty();
 
     private WitcheryPlayerDataProvider() {
     }
@@ -33,11 +33,14 @@ public final class WitcheryPlayerDataProvider implements ICapabilitySerializable
 
     private void invalidate() {
         optional.invalidate();
+        optional = LazyOptional.empty();
     }
 
     @Override
     public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
         if (cap == WitcheryCapabilities.PLAYER_DATA) {
+            // Forge can revive the player provider to copy its data during respawn.
+            if (!optional.isPresent()) optional = LazyOptional.of(() -> data);
             return optional.cast();
         }
         return LazyOptional.empty();

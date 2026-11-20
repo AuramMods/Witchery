@@ -145,6 +145,8 @@ public final class WitcheryEventHooks {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
             InfusionEnergy.sync(serverPlayer);
             VampireFlight.restore(serverPlayer);
+            WitcheryPlayerDataProvider.get(serverPlayer).ifPresent(data ->
+                    WitcheryNetwork.sendPartialExtendedPlayerSync(serverPlayer, data));
         }
     }
 
@@ -169,13 +171,11 @@ public final class WitcheryEventHooks {
     @SubscribeEvent
     public static void onPlayerClone(PlayerEvent.Clone event) {
         event.getOriginal().reviveCaps();
-        WitcheryPlayerDataProvider.get(event.getOriginal()).ifPresent(oldData ->
-                WitcheryPlayerDataProvider.get(event.getEntity()).ifPresent(newData -> newData.copyFrom(oldData)));
-        event.getOriginal().invalidateCaps();
-
-        if (event.getEntity() instanceof ServerPlayer serverPlayer) {
-            WitcheryPlayerDataProvider.get(serverPlayer).ifPresent(data ->
-                    WitcheryNetwork.sendPartialExtendedPlayerSync(serverPlayer, data));
+        try {
+            WitcheryPlayerDataProvider.get(event.getOriginal()).ifPresent(oldData ->
+                    WitcheryPlayerDataProvider.get(event.getEntity()).ifPresent(newData -> newData.copyFrom(oldData)));
+        } finally {
+            event.getOriginal().invalidateCaps();
         }
     }
 
@@ -346,6 +346,13 @@ public final class WitcheryEventHooks {
     public static void onPlayerInteractWithEntity(PlayerInteractEvent.EntityInteract event) {
         if (VampireAbilities.selected(event.getEntity()) > 0) {
             if (event.getEntity() instanceof ServerPlayer player) VampireAbilities.interact(player, event.getTarget());
+            event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide));
+            return;
+        }
+        var held = event.getItemStack();
+        if (held.getItem() instanceof GlassGobletItem && GlassGobletItem.filled(held) && event.getTarget() instanceof Villager villager) {
+            if (event.getEntity() instanceof ServerPlayer player) GlassGobletItem.offerToVillager(player, villager, held);
             event.setCanceled(true);
             event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide));
             return;

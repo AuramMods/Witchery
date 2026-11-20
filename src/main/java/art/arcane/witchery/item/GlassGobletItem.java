@@ -2,8 +2,10 @@ package art.arcane.witchery.item;
 
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.entity.WitcheryFollower;
+import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcherySounds;
+import art.arcane.witchery.vampirism.BloodFeeding;
 import art.arcane.witchery.vampirism.Vampirism;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -20,7 +22,9 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.animal.Chicken;
+import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -31,6 +35,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.event.ForgeEventFactory;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
@@ -143,6 +148,44 @@ public final class GlassGobletItem extends Item {
                 return;
             }
         }
+    }
+
+    public static void offerToVillager(ServerPlayer player, Villager villager, ItemStack stack) {
+        ServerLevel world = player.serverLevel();
+        if (!BloodFeeding.paralysis(villager, 5)) {
+            refuseOffering(player, "not_mesmerized");
+        } else if (BloodFeeding.blood(villager) != 0) {
+            refuseOffering(player, "not_drained");
+        } else if (!coffinNearby(world, villager.blockPosition())) {
+            refuseOffering(player, "no_coffin");
+        } else {
+            var type = WitcheryEntities.VAMPIRE.get();
+            if (!villager.isAlive() || !ForgeEventFactory.canLivingConvert(villager, type, ignored -> {})) return;
+            var vampire = type.create(world);
+            if (vampire == null) return;
+            vampire.moveTo(villager.getX(), villager.getY(), villager.getZ(), villager.getYRot(), villager.getXRot());
+            vampire.finalizeSpawn(world, world.getCurrentDifficultyAt(vampire.blockPosition()), MobSpawnType.CONVERSION, null, null);
+            vampire.setPersistenceRequired();
+            if (!world.addFreshEntity(vampire)) return;
+            ForgeEventFactory.onLivingConvert(villager, vampire);
+            villager.discard();
+            bloodParticles(world, vampire);
+            if (player.getUUID().toString().equals(source(stack))) Vampirism.madeVampireWithOwnBlood(player);
+            empty(stack);
+        }
+    }
+
+    private static boolean coffinNearby(ServerLevel world, BlockPos position) {
+        var coffin = WitcheryBlocks.getRequired("coffinblock").get();
+        for (BlockPos point : BlockPos.betweenClosed(position.offset(-4, -4, -4), position.offset(4, 4, 4))) {
+            if (world.hasChunkAt(point) && world.getBlockState(point).is(coffin)) return true;
+        }
+        return false;
+    }
+
+    private static void refuseOffering(ServerPlayer player, String message) {
+        tell(player, message);
+        player.playNotifySound(SoundEvents.NOTE_BLOCK_SNARE.value(), SoundSource.PLAYERS, 0.6F, 1);
     }
 
     private static boolean ritualAt(ServerLevel level, BlockPos skull) {

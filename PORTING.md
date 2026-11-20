@@ -359,7 +359,15 @@
 - [x] Preserve village visits across a dedicated restart. The two recorded villages and learned cap remained after rejoin. Visiting a generated taiga village and a second plains village advanced the player to rank eight and cleared the completed list.
 - [x] Verify rank-eight Mesmerize and cage detection. An affected villager followed the muted player about five blocks. A villager in a cage with part of its roof missing reached 280 blood and gave no credit toward the trial.
 - [x] Reach rank nine by taking six careful sips across two covered cages. Each villager ended with 260 blood. A dedicated restart preserved rank nine, 1,079 blood power and both villagers' reserves. Data generation, JAR reobfuscation and all 163 required Forge GameTests passed.
-- [ ] Restore the rank-ten conversion, the remaining powers, vampire equipment, village responses and the cure.
+
+## Vampire Conversion and Rank Ten (2026-11-20)
+
+- [x] Earn the ninth Torn Page, finish the journal and learn the rank-ten cap. The muted survival client collected the drop from a weakened Wither, crafted it into the journal and read the final chapter.
+- [x] Convert a villager with the player's own blood. The client filled the goblet with 125 blood and kept it when the villager was unmesmerized, still had blood, or had no coffin nearby. It drained the existing cage villager from 260 to zero while the villager stayed alive, mesmerized it again and placed a coffin nearby. The offering created a vampire, returned the empty goblet and completed rank ten.
+- [x] Preserve the converted vampire and the player's progression. A dedicated restart kept the same creature UUID and home position, the empty goblet, rank ten and 1,114 blood.
+- [x] Verify the vampire's nightly hunt. The mob selected an occupied village, took five nonlethal bites and returned home. The hunted villager's blood went from 500 to 400.
+- [x] Preserve Witchery progress through player respawn. After a deliberate death in the headless server, the muted client respawned at rank ten with a cap of ten and 1,114 blood. Java 17 data generation, the reobfuscated JAR and all 167 required Forge GameTests passed.
+- [ ] Restore the Blood Crucible and ultimate powers, vampire equipment, guard conversions, village responses and the cure.
 
 ## Auram Pack Validation (2026-11-20)
 

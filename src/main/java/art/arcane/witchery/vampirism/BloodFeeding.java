@@ -55,6 +55,14 @@ public final class BloodFeeding {
         return effect != null && effect.getAmplifier() >= minimumAmplifier;
     }
 
+    public static int takeFromVillager(Villager villager, int bite) {
+        boolean resting = villager.isSleeping() || paralysis(villager, 4);
+        int available = blood(villager);
+        int amount = Math.min(available, resting ? bite : awakeBite(bite));
+        storeBlood(villager, available - amount);
+        return amount;
+    }
+
     static void drink(ServerPlayer player, LivingEntity target, WitcheryPlayerData vampire) {
         double reach = target.hasEffect(WitcheryEffects.PARALYSIS.get()) ? 2.1 : 1.3;
         if (player.distanceToSqr(target) > reach * reach || !target.isAlive()) return;
@@ -64,10 +72,8 @@ public final class BloodFeeding {
         int maximum = vampire.getMaxBloodPower();
         if (target instanceof Villager villager) {
             boolean resting = villager.isSleeping() || paralysis(villager, 4);
-            int before = blood(villager);
-            int remaining = Math.max(0, before - (resting ? bite : awakeBite(bite)));
-            storeBlood(villager, remaining);
-            amount = before - remaining;
+            amount = takeFromVillager(villager, bite);
+            int remaining = blood(villager);
             remainingVillagerBlood = remaining;
             if (remaining < 250) villager.hurt(player.damageSources().playerAttack(player), 1.3F);
             else if (!resting) villager.hurt(player.damageSources().playerAttack(player), 0.1F);

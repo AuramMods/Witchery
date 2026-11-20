@@ -13,6 +13,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.network.chat.Component;
@@ -42,12 +43,16 @@ public final class Vampirism {
         return WitcheryPlayerDataProvider.get(player).map(WitcheryPlayerData::getVampireLevel).orElse(0);
     }
 
-    public static boolean isInSunlight(ServerPlayer player) {
-        var world = player.serverLevel();
-        BlockPos crown = BlockPos.containing(player.getX(), Math.ceil(player.getBoundingBox().maxY), player.getZ());
+    public static boolean isBoss(LivingEntity entity) {
+        return entity.getType().is(BOOK_BOSSES);
+    }
+
+    public static boolean isInSunlight(LivingEntity entity) {
+        if (!(entity.level() instanceof ServerLevel world)) return false;
+        BlockPos crown = BlockPos.containing(entity.getX(), Math.ceil(entity.getBoundingBox().maxY), entity.getZ());
         return world.isDay() && world.dimensionType().hasSkyLight() && world.dimensionType().natural()
                 && !world.dimension().equals(WitcheryDimensions.DREAM) && !world.dimension().equals(WitcheryDimensions.TORMENT)
-                && world.canSeeSky(crown) && !world.isRainingAt(crown) && !player.isSleeping();
+                && world.canSeeSky(crown) && !world.isRainingAt(crown) && !entity.isSleeping();
     }
 
     public static void turn(ServerPlayer player) {
@@ -100,6 +105,14 @@ public final class Vampirism {
         }).orElse(false);
     }
 
+    public static void madeVampireWithOwnBlood(ServerPlayer player) {
+        WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
+            if (data.getVampireLevel() != 9 || !canAdvance(data)) return;
+            advance(player, data);
+            sync(player, data);
+        });
+    }
+
     private static boolean canAdvance(WitcheryPlayerData data) {
         return WitcheryServerConfig.ALLOW_VAMPIRE_QUESTS.get() && data.getVampireLevel() < data.getVampireLevelCap();
     }
@@ -126,7 +139,7 @@ public final class Vampirism {
         if (!incompleteBook) return;
         EntityType<?> type = victim.getType();
         var random = victim.getRandom();
-        if (type.is(BOOK_BOSSES)
+        if (isBoss(victim)
                 || (type == EntityType.ZOMBIFIED_PIGLIN || type == EntityType.ENDERMAN) && random.nextDouble() < 0.09
                 || victim instanceof Villager && random.nextDouble() < 0.10
                 || victim.getMobType() == MobType.UNDEAD && random.nextDouble() < 0.02) {

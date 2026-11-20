@@ -35,6 +35,7 @@ import art.arcane.witchery.client.renderer.EntRenderer;
 import art.arcane.witchery.client.renderer.DemonHeartRenderer;
 import art.arcane.witchery.client.renderer.GrotesqueLayer;
 import art.arcane.witchery.client.renderer.FollowerRenderer;
+import art.arcane.witchery.client.renderer.VampireRenderer;
 import art.arcane.witchery.client.renderer.GrassperRenderer;
 import art.arcane.witchery.client.renderer.ImpRenderer;
 import art.arcane.witchery.client.renderer.KettleRenderer;
@@ -147,6 +148,7 @@ public final class WitcheryClient {
         event.registerLayerDefinition(CoffinRenderer.LAYER, CoffinRenderer::layer);
         event.registerLayerDefinition(LilithModel.LAYER, LilithModel::layer);
         event.registerLayerDefinition(FollowerRenderer.LAYER, FollowerRenderer::layer);
+        event.registerLayerDefinition(VampireRenderer.LAYER, VampireRenderer::layer);
         event.registerLayerDefinition(SpinningWheelRenderer.LAYER, SpinningWheelRenderer::layer);
     }
 
@@ -164,6 +166,7 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.BABA_YAGA.get(), BabaYagaRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.LILITH.get(), LilithRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.FOLLOWER.get(), FollowerRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.VAMPIRE.get(), VampireRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SCRY_EYE.get(), NoopRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.MANDRAKE.get(), MandrakeRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.NIGHTMARE.get(), NightmareRenderer::new);

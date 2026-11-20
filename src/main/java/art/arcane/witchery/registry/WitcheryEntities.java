@@ -20,6 +20,7 @@ import art.arcane.witchery.entity.SleepingBody;
 import art.arcane.witchery.entity.Soulfire;
 import art.arcane.witchery.entity.SymbolProjectile;
 import art.arcane.witchery.entity.ThrownBrew;
+import art.arcane.witchery.entity.Vampire;
 import art.arcane.witchery.entity.WitchBroom;
 import art.arcane.witchery.entity.WitchCat;
 import art.arcane.witchery.entity.WitchOwl;
@@ -93,6 +94,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<Lilith>> LILITH =
             ENTITY_TYPES.register("lilith", () -> EntityType.Builder.of(Lilith::new, MobCategory.MONSTER)
                     .sized(0.8F, 2.5F).fireImmune().clientTrackingRange(8).build(Witchery.MODID + ":lilith"));
+    public static final RegistryObject<EntityType<Vampire>> VAMPIRE =
+            ENTITY_TYPES.register("vampire", () -> EntityType.Builder.of(Vampire::new, MobCategory.MONSTER)
+                    .sized(0.6F, 1.95F).clientTrackingRange(8).build(Witchery.MODID + ":vampire"));
     public static final RegistryObject<EntityType<WitcheryFollower>> FOLLOWER =
             ENTITY_TYPES.register("follower", () -> EntityType.Builder.of(WitcheryFollower::new, MobCategory.CREATURE)
                     .sized(0.6F, 1.8F).clientTrackingRange(8).build(Witchery.MODID + ":follower"));
@@ -130,6 +134,7 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("covenwitch", COVEN_WITCH);
         LEGACY_ENTITIES.put("babayaga", BABA_YAGA);
         LEGACY_ENTITIES.put("lilith", LILITH);
+        LEGACY_ENTITIES.put("vampire", VAMPIRE);
         LEGACY_ENTITIES.put("follower", FOLLOWER);
         LEGACY_ENTITIES.put("imp", IMP);
         LEGACY_ENTITIES.put("darkmark", DARK_MARK);
@@ -178,6 +183,7 @@ public final class WitcheryEntities {
                     : entry == COVEN_WITCH ? CovenWitch.attributes()
                     : entry == BABA_YAGA ? BabaYaga.attributes()
                     : entry == LILITH ? Lilith.attributes()
+                    : entry == VAMPIRE ? Vampire.attributes()
                     : entry == FOLLOWER ? WitcheryFollower.attributes()
                     : entry == IMP ? Imp.attributes()
                     : entry == DARK_MARK ? DarkMark.attributes()
