@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "minecraft:milk_bucket"
+    },
+    {
+      "item": "witchery:odour_of_purity"
+    },
+    {
+      "item": "witchery:clay_jar"
+    },
+    {
+      "item": "witchery:clay_jar"
+    },
+    {
+      "item": "witchery:clay_jar"
+    }
+  ],
+  "result": {
+    "count": 3,
+    "item": "witchery:purified_milk"
+  }
+}

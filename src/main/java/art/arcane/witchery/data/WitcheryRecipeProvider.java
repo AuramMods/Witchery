@@ -198,5 +198,17 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .pattern("PAP")
                 .unlockedBy("has_attuned_stone", has(WitcheryIngredient.ATTUNED_STONE.item()))
                 .save(recipeOutput);
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, WitcheryIngredient.PURIFIED_MILK.item(), 3)
+                .requires(Items.MILK_BUCKET)
+                .requires(WitcheryIngredient.ODOUR_OF_PURITY.item())
+                .requires(WitcheryIngredient.CLAY_JAR.item(), 3)
+                .unlockedBy("has_odour_of_purity", has(WitcheryIngredient.ODOUR_OF_PURITY.item()))
+                .save(recipeOutput);
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, WitcheryIngredient.PURIFIED_MILK.item(), 3)
+                .requires(Items.CAKE)
+                .requires(WitcheryIngredient.ODOUR_OF_PURITY.item(), 2)
+                .requires(WitcheryIngredient.CLAY_JAR.item(), 3)
+                .unlockedBy("has_odour_of_purity", has(WitcheryIngredient.ODOUR_OF_PURITY.item()))
+                .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "purified_milk_from_cake"));
     }
 }

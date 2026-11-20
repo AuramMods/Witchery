@@ -2,6 +2,7 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.WitchCrop;
+import art.arcane.witchery.brewing.BrewImpacts;
 import art.arcane.witchery.item.AnointingPasteItem;
 import art.arcane.witchery.item.ArthanaItem;
 import art.arcane.witchery.item.DrinkableBrewItem;
@@ -117,9 +118,11 @@ public final class WitcheryItems {
             case "bucketbrew" -> new BucketItem(WitcheryFluids.getRequiredSource("brew"), bucketProperties);
             case "anointing_paste" -> new AnointingPasteItem(new Item.Properties());
             case "arthana" -> new ArthanaItem();
-            case "brew_of_ink" -> new ThrowableBrewItem(ThrowableBrewItem::splashInk);
+            case "brew_of_ink" -> new ThrowableBrewItem(BrewImpacts::splashInk);
+            case "brew_of_love" -> new ThrowableBrewItem(BrewImpacts::splashLove);
             case "brew_of_the_depths" -> new DrinkableBrewItem(WitcheryEffects.DEPTHS, 6000, 0);
             case "redstone_soup" -> new DrinkableBrewItem(() -> MobEffects.HEALTH_BOOST, 2400, 1);
+            case "purified_milk" -> new DrinkableBrewItem(DrinkableBrewItem::purifyMilk);
             case "filled_chalice" -> new FilledChaliceItem(WitcheryBlocks.getRequired("chalice").get());
             case "chalice", "candelabra" -> createBlockItem(path);
             case "mutandis", "mutandis_extremis" -> new MutandisItem(new Item.Properties(), path.equals("mutandis_extremis"));

@@ -16,18 +16,20 @@ import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 
+import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public final class DrinkableBrewItem extends Item {
-    private final Supplier<MobEffect> effect;
-    private final int duration;
-    private final int amplifier;
+    private final Consumer<LivingEntity> effect;
 
     public DrinkableBrewItem(Supplier<MobEffect> effect, int duration, int amplifier) {
+        this(drinker -> drinker.addEffect(new MobEffectInstance(effect.get(), duration, amplifier)));
+    }
+
+    public DrinkableBrewItem(Consumer<LivingEntity> effect) {
         super(new Properties());
         this.effect = effect;
-        this.duration = duration;
-        this.amplifier = amplifier;
     }
 
     @Override
@@ -52,12 +54,19 @@ public final class DrinkableBrewItem extends Item {
             player.awardStat(Stats.ITEM_USED.get(this));
         }
         if (!level.isClientSide) {
-            drinker.addEffect(new MobEffectInstance(effect.get(), duration, amplifier));
+            effect.accept(drinker);
             drinker.gameEvent(GameEvent.DRINK);
         }
         if (!(drinker instanceof Player player) || !player.getAbilities().instabuild) {
             stack.shrink(1);
         }
         return stack;
+    }
+
+    public static void purifyMilk(LivingEntity drinker) {
+        if (!drinker.getActiveEffects().isEmpty() && drinker.getRandom().nextBoolean()) {
+            List<MobEffectInstance> effects = List.copyOf(drinker.getActiveEffects());
+            drinker.removeEffect(effects.get(drinker.getRandom().nextInt(effects.size())).getEffect());
+        }
     }
 }

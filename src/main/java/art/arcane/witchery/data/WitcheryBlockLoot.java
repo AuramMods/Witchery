@@ -111,6 +111,11 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                     .when(LootItemRandomChanceCondition.randomChance(0.2F))
                     .add(LootItem.lootTableItem(WitcheryIngredient.ICY_NEEDLE.item())));
         }
+        if (crop == WitchCrop.SNOWBELL) {
+            table.withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1)).when(mature)
+                    .when(LootItemRandomChanceCondition.randomChance(0.2F))
+                    .add(LootItem.lootTableItem(WitcheryIngredient.ICY_NEEDLE.item())));
+        }
         add(block, applyExplosionDecay(block, table));
     }
 

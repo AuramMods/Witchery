@@ -50,6 +50,8 @@
 - [x] Restore crafting, recipes, the original menu, and powered animation for the Spinning Wheel. It consumes 0.6 altar power per tick for 300 ticks. The original four recipes yield cobweb, Golden Thread, Fanciful Thread, and Tormented Twine.
 - [x] Verify all four spinning recipes, hopper input, blocked output, legacy fibre and modifier data, and a power interruption across restart on packaged Forge. All 15 checks and all 12 disposable Forge GameTests passed. The packaged Golden Thread recipe also passed with the bundled Auram development mods.
 - [x] Craft and place the wheel in muted survival, shift-click a hay bale and Whiff of Magic into the original menu, and collect three Golden Threads. The test used supplied starting materials and an existing altar.
+- [x] Restore the ingredient path for Brew of Sleeping. Mature snowbell yields an Icy Needle at the original 20% rate. Milk or cake crafts three Purified Milk jars, and the original kettle recipe produces three Brews of Love. The Love splash puts adult animals in love and pairs adult villagers. Six packaged checks and all 14 disposable Forge GameTests passed.
+- [ ] Implement the Brew of Love interaction for enslaved zombies when the enslavement system is ported.
 - [ ] Complete the Dream and Nightmare paths that yield Wispy and Disturbed Cotton for the two remaining survival spins.
 - [ ] Finish the remaining altar artifacts, kettle recipes, the other powered cauldron recipes, and the remaining chalk rites.
 

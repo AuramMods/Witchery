@@ -1,0 +1,13 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"item": "minecraft:poppy"},
+    {"item": "witchery:whiff_of_magic"},
+    {"item": "witchery:globe_artichoke"},
+    {"item": "minecraft:golden_carrot"},
+    {"item": "minecraft:lily_pad"},
+    {"item": "minecraft:cocoa_beans"}
+  ],
+  "result": {"item": "witchery:brew_of_love", "count": 3},
+  "color": -23044
+}
