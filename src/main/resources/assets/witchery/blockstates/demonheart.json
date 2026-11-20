@@ -1,7 +1,9 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/demonheart"
+  "multipart": [
+    {
+      "apply": {
+        "model": "witchery:block/demonheart"
       }
-   }
+    }
+  ]
 }

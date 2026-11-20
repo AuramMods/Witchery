@@ -13,6 +13,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.Container;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -32,10 +34,12 @@ import java.util.List;
 import java.util.Map;
 
 public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, List<Ring> rings, int power,
-                             ItemStack result, Action action, boolean nightOnly) implements Recipe<Container> {
+                             ItemStack result, Action action, boolean nightOnly, @Nullable EntityType<?> livingOffering)
+        implements Recipe<Container> {
     public enum Action {
         ITEM,
-        MANIFESTATION
+        MANIFESTATION,
+        SUMMON_DEMON
     }
 
     public record Ring(RitualCircle pattern, Block glyph) {
@@ -47,6 +51,17 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
 
     public boolean canStart(ServerLevel level) {
         return !nightOnly || level.isNight();
+    }
+
+    @Nullable
+    public Mob findLivingOffering(ServerLevel level, BlockPos pos) {
+        if (livingOffering == null) return null;
+        int radius = rings.stream().mapToInt(ring -> ring.pattern.sacrificeRadius()).max().orElse(4) + 1;
+        double x = pos.getX() + 0.5;
+        double z = pos.getZ() + 0.5;
+        return level.getEntitiesOfClass(Mob.class, new AABB(pos).inflate(radius, 1, radius),
+                mob -> mob.isAlive() && mob.getType() == livingOffering && mob.distanceToSqr(x, pos.getY(), z) <= radius * radius)
+                .stream().findFirst().orElse(null);
     }
 
     @Nullable
@@ -162,12 +177,16 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
             Action action = switch (GsonHelper.getAsString(json, "action", "item")) {
                 case "item" -> Action.ITEM;
                 case "manifestation" -> Action.MANIFESTATION;
+                case "summon_demon" -> Action.SUMMON_DEMON;
                 default -> throw new JsonSyntaxException("Unknown rite action for " + id);
             };
             ItemStack result = action == Action.ITEM
                     ? ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "result")) : ItemStack.EMPTY;
+            EntityType<?> living = json.has("living_offering")
+                    ? EntityType.byString(GsonHelper.getAsString(json, "living_offering")).orElseThrow(
+                            () -> new JsonSyntaxException("Unknown living offering for " + id)) : null;
             return new ItemRiteRecipe(id, List.copyOf(ingredients), List.copyOf(rings), power, result,
-                    action, GsonHelper.getAsBoolean(json, "night_only", false));
+                    action, GsonHelper.getAsBoolean(json, "night_only", false), living);
         }
 
         @Override
@@ -189,7 +208,8 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 rings.add(new Ring(buffer.readEnum(RitualCircle.class), BuiltInRegistries.BLOCK.get(buffer.readResourceLocation())));
             }
             return new ItemRiteRecipe(id, List.copyOf(sacrifices), List.copyOf(rings), buffer.readVarInt(), buffer.readItem(),
-                    buffer.readEnum(Action.class), buffer.readBoolean());
+                    buffer.readEnum(Action.class), buffer.readBoolean(),
+                    buffer.readNullable(input -> BuiltInRegistries.ENTITY_TYPE.get(input.readResourceLocation())));
         }
 
         @Override
@@ -205,6 +225,7 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
             buffer.writeItem(recipe.result);
             buffer.writeEnum(recipe.action);
             buffer.writeBoolean(recipe.nightOnly);
+            buffer.writeNullable(recipe.livingOffering, (output, type) -> output.writeResourceLocation(BuiltInRegistries.ENTITY_TYPE.getKey(type)));
         }
     }
 }

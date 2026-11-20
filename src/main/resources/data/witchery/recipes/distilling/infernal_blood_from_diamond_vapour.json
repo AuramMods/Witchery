@@ -1,0 +1,30 @@
+{
+  "type": "witchery:distilling",
+  "jars": 4,
+  "ingredients": [
+    [
+      {
+        "item": "witchery:demon_heart"
+      },
+      {
+        "item": "witchery:demonheart"
+      }
+    ],
+    {
+      "item": "witchery:diamond_vapour"
+    }
+  ],
+  "results": [
+    {
+      "item": "witchery:infernal_blood",
+      "count": 2
+    },
+    {
+      "item": "witchery:infernal_blood",
+      "count": 2
+    },
+    {
+      "item": "witchery:refined_evil"
+    }
+  ]
+}

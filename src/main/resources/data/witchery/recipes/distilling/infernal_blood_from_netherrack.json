@@ -1,0 +1,28 @@
+{
+  "type": "witchery:distilling",
+  "jars": 2,
+  "ingredients": [
+    [
+      {
+        "item": "witchery:demon_heart"
+      },
+      {
+        "item": "witchery:demonheart"
+      }
+    ],
+    {
+      "item": "minecraft:netherrack"
+    }
+  ],
+  "results": [
+    {
+      "item": "minecraft:soul_sand"
+    },
+    {
+      "item": "witchery:infernal_blood"
+    },
+    {
+      "item": "witchery:infernal_blood"
+    }
+  ]
+}

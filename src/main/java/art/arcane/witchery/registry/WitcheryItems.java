@@ -6,6 +6,7 @@ import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.brewing.BrewImpacts;
 import art.arcane.witchery.item.AnointingPasteItem;
 import art.arcane.witchery.item.ArthanaItem;
+import art.arcane.witchery.item.DemonHeartItem;
 import art.arcane.witchery.item.DrinkableBrewItem;
 import art.arcane.witchery.item.DreamWeaveItem;
 import art.arcane.witchery.item.FilledChaliceItem;
@@ -124,6 +125,8 @@ public final class WitcheryItems {
             case "bucketbrew" -> new BucketItem(WitcheryFluids.getRequiredSource("brew"), bucketProperties);
             case "anointing_paste" -> new AnointingPasteItem(new Item.Properties());
             case "arthana" -> new ArthanaItem();
+            case "demon_heart" -> new DemonHeartItem(WitcheryBlocks.getRequired("demonheart").get(), true);
+            case "devilstonguecharm" -> new Item(new Item.Properties().durability(50).rarity(Rarity.UNCOMMON));
             case "necromantic_stone" -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)) {
                 @Override
                 public boolean isFoil(ItemStack stack) {
@@ -198,6 +201,9 @@ public final class WitcheryItems {
     private static BlockItem createBlockItem(String path) {
         Block block = WitcheryBlocks.getRequired(path).get();
         switch (path) {
+            case "demonheart" -> {
+                return new DemonHeartItem(block, false);
+            }
             case "witchsapling", "witchleaves", "witchlog", "witchwood" -> {
                 return new WitchWoodBlockItem(block, new Item.Properties());
             }

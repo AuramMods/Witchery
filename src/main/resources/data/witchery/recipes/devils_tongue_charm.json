@@ -1,0 +1,36 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "b#b",
+    "dse",
+    "btb"
+  ],
+  "key": {
+    "b": {
+      "item": "minecraft:blaze_powder"
+    },
+    "#": {
+      "item": "witchery:polynesiacharm"
+    },
+    "d": [
+      {
+        "item": "witchery:demon_heart"
+      },
+      {
+        "item": "witchery:demonheart"
+      }
+    ],
+    "s": {
+      "item": "minecraft:skeleton_skull"
+    },
+    "e": {
+      "item": "witchery:refined_evil"
+    },
+    "t": {
+      "item": "witchery:dog_tongue"
+    }
+  },
+  "result": {
+    "item": "witchery:devilstonguecharm"
+  }
+}

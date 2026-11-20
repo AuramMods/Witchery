@@ -4,6 +4,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.AltarBlock;
 import art.arcane.witchery.block.CandelabraBlock;
 import art.arcane.witchery.block.ChaliceBlock;
+import art.arcane.witchery.block.DemonHeartBlock;
 import art.arcane.witchery.block.DistilleryBlock;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.KettleBlock;
@@ -72,7 +73,6 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_CHEST = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 14.0D, 15.0D);
     private static final VoxelShape SHAPE_WOLFTRAP = Block.box(3.0D, 0.0D, 1.0D, 13.0D, 2.01D, 15.0D);
     private static final VoxelShape SHAPE_BEARTRAP = Block.box(3.2D, 0.16D, 3.2D, 12.8D, 1.6D, 12.8D);
-    private static final VoxelShape SHAPE_DEMONHEART = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 12.8D, 12.0D);
     private static final VoxelShape SHAPE_SKULL = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 8.0D, 12.0D);
     private static final VoxelShape SHAPE_BRAZIER = Block.box(3.2D, 0.0D, 3.2D, 12.8D, 15.2D, 12.8D);
     private static final VoxelShape SHAPE_CRYSTAL_BALL = Block.box(4.8D, 0.0D, 4.8D, 11.2D, 9.6D, 11.2D);
@@ -199,7 +199,8 @@ public final class WitcheryBlocks {
             case "beartrap" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).sound(SoundType.METAL), SHAPE_BEARTRAP, false);
             case "demonheart" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.STONE), SHAPE_DEMONHEART, true);
+                    new DemonHeartBlock(BlockBehaviour.Properties.copy(Blocks.STONE).strength(1).noOcclusion()
+                            .sound(SoundType.NETHERRACK).lightLevel(state -> 3));
             case "wolfhead", "alluringskull" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.SKELETON_SKULL), SHAPE_SKULL, true);
             case "chalice" ->

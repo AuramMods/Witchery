@@ -9,8 +9,11 @@ import art.arcane.witchery.menu.LegacyPlaceholderMenu;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.client.model.MandrakeModel;
+import art.arcane.witchery.client.model.DemonModel;
 import art.arcane.witchery.client.model.NightmareModel;
 import art.arcane.witchery.client.renderer.DreamCatcherRenderer;
+import art.arcane.witchery.client.renderer.DemonRenderer;
+import art.arcane.witchery.client.renderer.DemonHeartRenderer;
 import art.arcane.witchery.client.renderer.KettleRenderer;
 import art.arcane.witchery.client.renderer.MandrakeRenderer;
 import art.arcane.witchery.client.renderer.NightmareRenderer;
@@ -50,6 +53,8 @@ public final class WitcheryClient {
     public static void registerModelLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(MandrakeModel.LAYER, MandrakeModel::layer);
         event.registerLayerDefinition(NightmareModel.LAYER, NightmareModel::layer);
+        event.registerLayerDefinition(DemonModel.LAYER, DemonModel::layer);
+        event.registerLayerDefinition(DemonHeartRenderer.LAYER, DemonHeartRenderer::layer);
         event.registerLayerDefinition(DreamCatcherRenderer.LAYER, DreamCatcherRenderer::layer);
         event.registerLayerDefinition(KettleRenderer.LAYER, KettleRenderer::layer);
         event.registerLayerDefinition(SpinningWheelRenderer.LAYER, SpinningWheelRenderer::layer);
@@ -59,12 +64,14 @@ public final class WitcheryClient {
     public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(WitcheryEntities.MANDRAKE.get(), MandrakeRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.NIGHTMARE.get(), NightmareRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.DEMON.get(), DemonRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SLEEPING_BODY.get(), SleepingBodyRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.THROWN_BREW.get(), ThrownItemRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.KETTLE.get(), KettleRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.SPINNING_WHEEL.get(), SpinningWheelRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.PLACED_ITEM.get(), PlacedItemRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.DREAM_CATCHER.get(), DreamCatcherRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.DEMON_HEART.get(), DemonHeartRenderer::new);
     }
 
     @SubscribeEvent

@@ -7,13 +7,13 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 public enum WitcheryIngredient {
+    CANDELABRA(0, "candelabra"),
+    EMPTY_CHALICE(1, "chalice"),
+    FILLED_CHALICE(2, "filled_chalice"),
     DREAMWEAVE_OF_FLEET_FEET(3, "dreamweave_of_fleet_feet"),
     DREAMWEAVE_OF_THE_IRON_ARM(4, "dreamweave_of_the_iron_arm"),
     DREAMWEAVE_OF_FASTING(5, "dreamweave_of_fasting"),
     DREAMWEAVE_OF_NIGHTMARES(6, "dreamweave_of_nightmares"),
-    CANDELABRA(0, "candelabra"),
-    EMPTY_CHALICE(1, "chalice"),
-    FILLED_CHALICE(2, "filled_chalice"),
     ATTUNED_STONE(10, "attuned_stone"),
     CHARGED_ATTUNED_STONE(11, "charged_attuned_stone"),
     MUTANDIS(14, "mutandis"),
@@ -23,6 +23,7 @@ public enum WitcheryIngredient {
     WOOD_ASH(18, "wood_ash"),
     BELLADONNA_FLOWER(21, "belladonna_flower"),
     MANDRAKE_ROOT(22, "mandrake_root"),
+    DEMON_HEART(23, "demon_heart"),
     BAT_WOOL(24, "bat_wool"),
     DOG_TONGUE(25, "dog_tongue"),
     SOFT_CLAY_JAR(26, "soft_clay_jar"),
@@ -51,6 +52,7 @@ public enum WitcheryIngredient {
     BREW_OF_LOVE(75, "brew_of_love"),
     BREW_OF_THE_DEPTHS(77, "brew_of_the_depths"),
     ICY_NEEDLE(78, "icy_needle"),
+    INFERNAL_BLOOD(80, "infernal_blood"),
     BREW_OF_SLEEPING(95, "brew_of_sleeping"),
     BREW_OF_FLOWING_SPIRIT(96, "brew_of_flowing_spirit"),
     DISTURBED_COTTON(99, "disturbed_cotton"),

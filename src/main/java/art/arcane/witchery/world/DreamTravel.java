@@ -3,6 +3,7 @@ package art.arcane.witchery.world;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.DreamWeave;
+import art.arcane.witchery.entity.Demon;
 import art.arcane.witchery.entity.Nightmare;
 import art.arcane.witchery.entity.SleepingBody;
 import art.arcane.witchery.item.WitcheryIngredient;
@@ -21,9 +22,14 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.LargeFireball;
+import net.minecraft.world.entity.projectile.SmallFireball;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -31,6 +37,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -105,6 +112,16 @@ public final class DreamTravel {
                 && player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getCompound(SPIRIT_WORLD).getBoolean("Nightmare");
     }
 
+    public static boolean isDemonicNightmare(ServerLevel level) {
+        return level.dimension().equals(WitcheryDimensions.DREAM)
+                && level.players().stream().anyMatch(DreamTravel::isDemonicNightmare);
+    }
+
+    private static boolean isDemonicNightmare(ServerPlayer player) {
+        return isNightmare(player)
+                && player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getCompound(SPIRIT_WORLD).getBoolean("Demonic");
+    }
+
     public static void markNightmareKilled(ServerPlayer player) {
         CompoundTag persistent = persistent(player);
         CompoundTag session = persistent.getCompound(SPIRIT_WORLD);
@@ -119,27 +136,66 @@ public final class DreamTravel {
                 || !level.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
             return;
         }
+        AABB nearby = player.getBoundingBox().inflate(18);
+        if (isDemonicNightmare(player)) {
+            spawnDemonicHazard(player, nearby);
+        }
         long lastKillTime = persistent(player).getCompound(SPIRIT_WORLD).getLong(LAST_NIGHTMARE_KILL);
         if (lastKillTime > System.currentTimeMillis() - 30_000
-                || !level.getEntitiesOfClass(Nightmare.class, player.getBoundingBox().inflate(18),
+                || !level.getEntitiesOfClass(Nightmare.class, nearby,
                         nightmare -> nightmare.isAlive() && nightmare.targets(player)).isEmpty()) {
             return;
         }
+        Nightmare nightmare = WitcheryEntities.NIGHTMARE.get().create(level);
+        if (nightmare != null) {
+            nightmare.assignVictim(player);
+            spawnNear(player, nightmare, 2, 6);
+        }
+    }
+
+    private static void spawnDemonicHazard(ServerPlayer player, AABB nearby) {
+        ServerLevel level = player.serverLevel();
+        double chance = player.getRandom().nextDouble();
+        if (chance < 0.65) {
+            double x = player.getX() - 2 + player.getRandom().nextInt(5);
+            double y = player.getY() + 15;
+            double z = player.getZ() - 2 + player.getRandom().nextInt(5);
+            if (chance < 0.5) {
+                level.addFreshEntity(new SmallFireball(level, x, y, z, 0, -0.2, 0));
+            } else {
+                LargeFireball ball = EntityType.FIREBALL.create(level);
+                if (ball != null) {
+                    ball.setPos(x, y, z);
+                    ball.yPower = -0.1;
+                    level.addFreshEntity(ball);
+                }
+            }
+        } else if (chance < 0.75) {
+            List<Mob> monsters = level.getEntitiesOfClass(Mob.class, nearby, mob -> mob.isAlive() && (mob instanceof Enemy || mob instanceof Demon));
+            if (monsters.size() < 10 && monsters.stream().filter(Demon.class::isInstance).count() < 2) {
+                Demon demon = WitcheryEntities.DEMON.get().create(level);
+                if (demon != null) {
+                    spawnNear(player, demon, 4, 8);
+                }
+            }
+        }
+    }
+
+    private static void spawnNear(ServerPlayer player, Mob mob, int minRange, int maxRange) {
+        ServerLevel level = player.serverLevel();
         BlockPos near = player.blockPosition();
-        int dx = player.getRandom().nextInt(9) - 4;
-        int dz = player.getRandom().nextInt(9) - 4;
-        BlockPos column = near.offset(dx + 2 * Integer.signum(dx), 0, dz + 2 * Integer.signum(dz));
+        int span = maxRange - minRange;
+        int dx = player.getRandom().nextInt(span * 2 + 1) - span;
+        int dz = player.getRandom().nextInt(span * 2 + 1) - span;
+        BlockPos column = near.offset(dx + minRange * Integer.signum(dx), 0, dz + minRange * Integer.signum(dz));
         for (int offset = 0; offset <= 8; offset++) {
             BlockPos above = column.above(offset);
             BlockPos below = column.below(offset);
             BlockPos position = canStand(level, above) ? above : canStand(level, below) ? below : null;
             if (position != null && !level.getBlockState(position.below()).getFluidState().isSource()) {
-                Nightmare nightmare = WitcheryEntities.NIGHTMARE.get().create(level);
-                if (nightmare == null) return;
-                nightmare.moveTo(position.getX() + 0.5, position.getY(), position.getZ() + 0.5, 0, 0);
-                if (level.noCollision(nightmare) && !level.containsAnyLiquid(nightmare.getBoundingBox())) {
-                    nightmare.assignVictim(player);
-                    level.addFreshEntity(nightmare);
+                mob.moveTo(position.getX() + 0.5, position.getY(), position.getZ() + 0.5, 0, 0);
+                if (level.noCollision(mob) && !level.containsAnyLiquid(mob.getBoundingBox())) {
+                    level.addFreshEntity(mob);
                 }
                 return;
             }

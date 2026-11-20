@@ -1,4 +1,8 @@
 {
+  "random.heartbeat": {
+    "subtitle": "subtitles.witchery.heartbeat",
+    "sounds": ["witchery:random/heartbeat1"]
+  },
   "random.chalk": {
     "subtitle": "subtitles.witchery.chalk",
     "sounds": ["witchery:random/chalk"]

@@ -1312,7 +1312,8 @@ Current scaffold behavior:
 Status:
 - resource keys and breadth datapack scaffold are now present for Dream/Torment/Mirror.
 - runtime travel hook scaffolding and split trigger wiring (portal collision + mirror right-click) are now present.
-- Dream and Nightmare cotton drops are available from naturally generated Somnian Cotton. The ordinary Nightmare now uses the original `witchery:nightmare` key with a dedicated entity and renderer. Dreamweaves use `witchery:dreamcatcher` and preserve the five original `WITCWeaveID` values. Demonic nightmare hazards, Waking Nightmare, and authentic Torment and Mirror activation and provider behavior are pending.
+- Dream and Nightmare cotton drops are available from naturally generated Somnian Cotton. The ordinary Nightmare now uses the original `witchery:nightmare` key with a dedicated entity and renderer. Dreamweaves use `witchery:dreamcatcher` and preserve the five original `WITCWeaveID` values. Demonic nightmares add fireballs overhead and can summon `witchery:demon`. Waking Nightmare and the Torment and Mirror activation and provider behavior are pending.
+- `witchery:demon` can also be summoned by two large Infernal rites in the Overworld. The entity persists bargains, remaining stock and whether it came from a rite. Demon Heart and Infernal Blood use legacy ingredient damage values 23 and 80. The heart block retains `witchery:demonheart` and drops the canonical `witchery:demon_heart`. The old port's heart item ID still works in both Infernal Blood recipes.
 
 ## 1.20.1 Event Hook Scaffold (current)
 Implementation anchor:

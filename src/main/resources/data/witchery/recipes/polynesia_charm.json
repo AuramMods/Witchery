@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "nin",
+    "p#p",
+    "nwn"
+  ],
+  "key": {
+    "n": {
+      "item": "minecraft:nether_wart"
+    },
+    "i": {
+      "item": "minecraft:iron_ingot"
+    },
+    "p": {
+      "item": "witchery:odour_of_purity"
+    },
+    "#": {
+      "item": "minecraft:cod"
+    },
+    "w": {
+      "item": "witchery:whiff_of_magic"
+    }
+  },
+  "result": {
+    "item": "witchery:polynesiacharm"
+  }
+}

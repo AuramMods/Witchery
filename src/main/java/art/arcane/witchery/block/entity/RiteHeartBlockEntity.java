@@ -1,9 +1,11 @@
 package art.arcane.witchery.block.entity;
 
 import art.arcane.witchery.block.RiteHeartBlock;
+import art.arcane.witchery.entity.Demon;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.power.AltarPower;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
+import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryRecipes;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
 import art.arcane.witchery.world.DreamTravel;
@@ -20,6 +22,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -133,8 +137,13 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             abort(level, "message.witchery.rite.missing_power");
             return;
         }
+        Mob living = rite.findLivingOffering(level, pos);
+        if (rite.livingOffering() != null && living == null) {
+            abort(level, "message.witchery.rite.missing_living_offering");
+            return;
+        }
         List<ServerPlayer> recipients = List.of();
-        ItemEntity result = null;
+        Entity result = null;
         if (rite.action() == ItemRiteRecipe.Action.MANIFESTATION) {
             double centerX = pos.getX() + 0.5;
             double centerZ = pos.getZ() + 0.5;
@@ -145,18 +154,33 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 abort(level, "message.witchery.rite.no_nearby_player");
                 return;
             }
-        } else {
-            result = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
-                    rite.result().copy(), 0, 0.3, 0);
-            result.setDefaultPickUpDelay();
-            if (!level.addFreshEntity(result)) {
+        } else if (rite.action() == ItemRiteRecipe.Action.SUMMON_DEMON) {
+            Demon demon = WitcheryEntities.DEMON.get().create(level);
+            if (demon == null) return;
+            demon.moveTo(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 0, 0);
+            if (hasObstructedSummoningArea(level, pos) || level.getBlockCollisions(demon, demon.getBoundingBox()).iterator().hasNext()) {
+                abort(level, "message.witchery.rite.obstructed");
                 return;
             }
+            demon.summonedByRite();
+            result = demon;
+        } else {
+            ItemEntity drop = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
+                    rite.result().copy(), 0, 0.3, 0);
+            drop.setDefaultPickUpDelay();
+            result = drop;
+        }
+        if (result != null && !level.addFreshEntity(result)) {
+            return;
         }
         if (altar != null && !altar.consumePower(rite.power())) {
             if (result != null) result.discard();
             abort(level, "message.witchery.rite.missing_power");
             return;
+        }
+        if (living != null) {
+            level.sendParticles(ParticleTypes.PORTAL, living.getX(), living.getY(0.5), living.getZ(), 16, 0.4, 0.6, 0.4, 0.05);
+            living.discard();
         }
         for (ServerPlayer recipient : recipients) {
             DreamTravel.grantManifestation(recipient, MANIFEST_DURATION);
@@ -171,6 +195,18 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
                 16, 0.4, 0.4, 0.4, 0.05);
         level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.9F, 1.35F);
+    }
+
+    private static boolean hasObstructedSummoningArea(ServerLevel level, BlockPos center) {
+        int obstructions = 0;
+        for (BlockPos pos : BlockPos.betweenClosed(center.offset(-3, 1, -3), center.offset(3, 3, 2))) {
+            int x = Math.abs(pos.getX() - center.getX());
+            int z = Math.abs(pos.getZ() - center.getZ());
+            if (x + z <= 4 && level.getBlockState(pos).blocksMotion()) {
+                if (++obstructions > 1 || x + z == 0) return true;
+            }
+        }
+        return false;
     }
 
     private void abort(ServerLevel level, String message) {

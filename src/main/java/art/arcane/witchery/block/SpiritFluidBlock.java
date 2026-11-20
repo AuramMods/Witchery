@@ -1,9 +1,9 @@
 package art.arcane.witchery.block;
 
 import art.arcane.witchery.entity.Nightmare;
+import art.arcane.witchery.entity.Demon;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
-import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -42,8 +42,7 @@ public final class SpiritFluidBlock extends LiquidBlock {
             return;
         }
         if (entity instanceof LivingEntity living) {
-            boolean hostileSpirit = living.isInvertedHealAndHarm()
-                    || living.getType() == WitcheryEntities.all().get("demon").get()
+            boolean hostileSpirit = living.isInvertedHealAndHarm() || living instanceof Demon
                     || flowingSpirit && living instanceof Nightmare;
             MobEffect effect = flowingSpirit != hostileSpirit ? MobEffects.REGENERATION : MobEffects.WEAKNESS;
             if (!living.hasEffect(effect)) {
