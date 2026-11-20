@@ -405,7 +405,8 @@
 - [x] Restore the one-health recovery from ordinary lethal damage. A normal fall hit damaged the muted survival player, and otherwise lethal fall damage left both the player and a vampire mob at one health. The player gained five exhaustion.
 - [x] Restore lethal fire and the clothing's flame protection. GameTests checked that two light garments save one hit in four and four garments save three hits in four. Fire Resistance stayed active while the burning player took damage in the packaged server. A lethal fire hit killed the unarmored player, who respawned at rank ten with 404 blood.
 - [x] Verify dedicated-server persistence of vampire death drops and sunlight mortality. The same dropped sword kept its 14,400-tick lifespan after a restart. Rejoining at rank ten with zero blood and stepping into noon sunlight killed the player with the sunlight death message. Java 17 data generation, JAR reobfuscation and all 190 required Forge GameTests passed.
-- [ ] Wire werewolf and silver interactions into mortality when lycanthropy is ported. Review the old accessory-mod exceptions with their modern integrations.
+- [x] Restore the shifted werewolf and Wolfman death exceptions and Silver Sword and Silver Bolt lethality against vampire hybrids. On the packaged server, a 12-point hit attributed to an ordinary villager left a vampire at one health. The same hit attributed to a Wolfman killed it. GameTests also verified player attacks before and after shifting and both silver weapons against pure vampires and hybrids in human form.
+- [ ] Review the old accessory-mod exceptions with their modern integrations.
 
 ## Cane Sword (2026-11-20)
 
@@ -475,7 +476,8 @@
 - [x] Restore both original recipes, full-moon timing, active cat and six-member coven. The muted client called its cat, collected its Taglock at a bed, sacrificed a Hellhound Head it had picked up, and activated the medium infernal circle with a Seer Stone. A waning night refunded all six offerings. At the full moon, Witch Hunter clothing blocked the curse. Removing one piece let the same offerings curse the player and the server retained vampire rank ten under the default hybrid setting.
 - [x] Restore the rank-one wolf form, smaller dimensions, armor drop, Night Vision, jump and movement stats, and Silver Sword damage. The dedicated server recorded speed changing from 0.10 to 0.15 and the additional step height of 0.4. A second muted client saw the first as a wolf. With the active familiar's damage sharing, a 12-point ordinary strike took 3.6 health and a seven-point silver strike took 10.8 health.
 - [x] Reconnect after a dedicated-server restart, then collect another Taglock and perform the cure while still in wolf form. The save retained rank one, wolf form and speed. The successful cure consumed all six offerings, restored normal movement and kept vampire rank ten. Java 17 data generation, JAR reobfuscation and all 226 required Forge GameTests passed.
-- [ ] Finish Wolfsbane identification and the cauldron brew.
+- [x] Restore Wolfsbane identification. The muted survival client used up one flower on an unshifted werevillager and saw the flame burst. A distant attempt left the stack unchanged. A nearby healthy villager used up one flower without flames. Java 17 data generation, JAR reobfuscation and all 248 required Forge GameTests passed.
+- [ ] Restore the Wolfsbane effect through general cauldron brewing.
 
 ## Werevillagers and Wolfmen (2026-11-20)
 

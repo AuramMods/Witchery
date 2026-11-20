@@ -4,7 +4,6 @@ import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerData.WolfmanQuestState;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.entity.HornedHuntsman;
-import art.arcane.witchery.entity.WereVillager;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcherySounds;
 import art.arcane.witchery.vampirism.Vampirism;
@@ -152,8 +151,7 @@ public final class WolfTrials {
             for (int member = 0; member < wolves; member++) summonPackWolf(world, player);
         } else {
             var targets = world.getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(16),
-                    target -> target.isAlive() && !(target instanceof WereVillager) && !Lycanthropy.isShifted(target)
-                            && !(target instanceof Player other && Lycanthropy.rank(other) > 0) && !Vampirism.isVampire(target));
+                    target -> target.isAlive() && !Lycanthropy.isWerewolf(target) && !Vampirism.isVampire(target));
             for (LivingEntity target : targets) {
                 int duration = (4 + world.random.nextInt(rank - 6)) * 20;
                 target.addEffect(new MobEffectInstance(WitcheryEffects.PARALYSIS.get(), duration, 3));

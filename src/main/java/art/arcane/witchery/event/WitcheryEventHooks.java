@@ -23,6 +23,7 @@ import art.arcane.witchery.item.VampiricPoppetItem;
 import art.arcane.witchery.item.GlassGobletItem;
 import art.arcane.witchery.item.HunterClothingItem;
 import art.arcane.witchery.item.HuntsmanSpearItem;
+import art.arcane.witchery.item.WolfsbaneFlowerItem;
 import art.arcane.witchery.lycanthropy.Lycanthropy;
 import art.arcane.witchery.lycanthropy.WerewolfVillagers;
 import art.arcane.witchery.lycanthropy.WolfCombat;
@@ -468,6 +469,14 @@ public final class WitcheryEventHooks {
             event.setCancellationResult(InteractionResult.CONSUME);
             event.setCanceled(true);
             return;
+        }
+        if (event.getItemStack().getItem() instanceof WolfsbaneFlowerItem flower && event.getTarget() instanceof LivingEntity target) {
+            InteractionResult result = flower.interactLivingEntity(event.getItemStack(), event.getEntity(), target, event.getHand());
+            if (result.consumesAction()) {
+                event.setCanceled(true);
+                event.setCancellationResult(result);
+                return;
+            }
         }
         if (event.getTarget() instanceof Villager villager
                 && VillageGuardRecruitment.isOffer(event.getEntity(), villager, event.getHand())) {

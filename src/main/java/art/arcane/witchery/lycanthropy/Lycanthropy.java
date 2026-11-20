@@ -2,6 +2,7 @@ package art.arcane.witchery.lycanthropy;
 
 import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.entity.WereVillager;
 import art.arcane.witchery.entity.WitcheryBolt;
 import art.arcane.witchery.entity.Wolfman;
 import art.arcane.witchery.network.WitcheryNetwork;
@@ -102,6 +103,10 @@ public final class Lycanthropy {
     public static boolean isShifted(LivingEntity entity) {
         return entity instanceof Wolfman || entity instanceof Player player
                 && WitcheryPlayerDataProvider.get(player).map(Lycanthropy::isShifted).orElse(false);
+    }
+
+    public static boolean isWerewolf(LivingEntity entity) {
+        return isShifted(entity) || entity instanceof WereVillager || entity instanceof Player player && rank(player) > 0;
     }
 
     private static boolean isShifted(WitcheryPlayerData data) {

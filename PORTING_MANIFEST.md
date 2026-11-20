@@ -537,6 +537,8 @@ The first migrated subtypes have individual item IDs. Preserve `witchery:ingredi
 | 160 | `witchery:torn_vampire_page` |
 | 161 | `witchery:dark_cloth` |
 
+Variant 156 consumes one flower when the tester targets a living entity within two blocks. Cursed targets emit flames and the Wolfman howl, including cursed humans and unshifted werevillagers. The `witchery:potion.wolfsbane` effect is a separate use of the same ingredient through general cauldron brewing.
+
 | Meta | Unlocalized Key |
 |---:|---|
 | 0 | `candelabra` |

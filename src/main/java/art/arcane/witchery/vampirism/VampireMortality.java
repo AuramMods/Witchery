@@ -1,6 +1,7 @@
 package art.arcane.witchery.vampirism;
 
 import art.arcane.witchery.item.VampireClothingItem;
+import art.arcane.witchery.lycanthropy.Lycanthropy;
 import art.arcane.witchery.registry.WitcheryDamageTypes;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
@@ -39,7 +40,8 @@ public final class VampireMortality {
         Entity attacker = source.getEntity();
         return source.is(WitcheryDamageTypes.SUNLIGHT) || source.is(DamageTypes.IN_WALL)
                 || source.is(DamageTypes.FELL_OUT_OF_WORLD) || source.is(DamageTypes.GENERIC_KILL)
-                || Vampirism.isVampire(attacker) || attacker instanceof LivingEntity living && Vampirism.isBoss(living);
+                || Lycanthropy.isWerewolf(victim) && Lycanthropy.isSilver(source) || Vampirism.isVampire(attacker)
+                || attacker instanceof LivingEntity living && (Vampirism.isBoss(living) || Lycanthropy.isShifted(living));
     }
 
     private static boolean isFire(DamageSource source) {
