@@ -21,7 +21,6 @@ import java.util.Set;
 
 public final class WitcheryDimensionTravelHooks {
     private static final Map<String, TravelTrigger> PORTAL_TRIGGER_MAP = new LinkedHashMap<>();
-    private static final Map<String, TravelTrigger> RITE_TRIGGER_MAP = new LinkedHashMap<>();
     private static final Set<TravelTrigger> PORTAL_COLLISION_TRIGGERS = Set.of(
             TravelTrigger.TORMENT_PORTAL
     );
@@ -32,10 +31,6 @@ public final class WitcheryDimensionTravelHooks {
     static {
         PORTAL_TRIGGER_MAP.put("tormentportal", TravelTrigger.TORMENT_PORTAL);
 
-        RITE_TRIGGER_MAP.put("mirrorblock", TravelTrigger.MIRROR_RITE);
-        RITE_TRIGGER_MAP.put("mirrorblock2", TravelTrigger.MIRROR_RITE);
-        RITE_TRIGGER_MAP.put("mirrorwall", TravelTrigger.MIRROR_RITE);
-        RITE_TRIGGER_MAP.put("circleglyphotherwhere", TravelTrigger.MIRROR_RITE);
     }
 
     private WitcheryDimensionTravelHooks() {
@@ -50,19 +45,7 @@ public final class WitcheryDimensionTravelHooks {
         if (!Witchery.MODID.equals(blockId.getNamespace())) {
             return Optional.empty();
         }
-        TravelTrigger trigger = PORTAL_TRIGGER_MAP.get(blockId.getPath());
-        if (trigger != null) {
-            return Optional.of(trigger);
-        }
-        return Optional.ofNullable(RITE_TRIGGER_MAP.get(blockId.getPath()));
-    }
-
-    public static Optional<TravelTrigger> resolveRiteTriggerFromBlock(BlockState state) {
-        ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
-        if (!Witchery.MODID.equals(blockId.getNamespace())) {
-            return Optional.empty();
-        }
-        return Optional.ofNullable(RITE_TRIGGER_MAP.get(blockId.getPath()));
+        return Optional.ofNullable(PORTAL_TRIGGER_MAP.get(blockId.getPath()));
     }
 
     public static Optional<TravelTrigger> resolvePortalCollisionTrigger(ServerPlayer player) {
@@ -104,7 +87,6 @@ public final class WitcheryDimensionTravelHooks {
     public static Optional<ResourceKey<Level>> resolveTarget(ResourceKey<Level> currentLevel, TravelTrigger trigger) {
         return switch (trigger) {
             case TORMENT_PORTAL -> Optional.of(routeToOrReturn(currentLevel, WitcheryDimensions.TORMENT));
-            case MIRROR_RITE -> Optional.of(routeToOrReturn(currentLevel, WitcheryDimensions.MIRROR));
             case RETURN_TO_OVERWORLD -> isWitcheryDimension(currentLevel)
                     ? Optional.of(Level.OVERWORLD)
                     : Optional.empty();
@@ -185,7 +167,6 @@ public final class WitcheryDimensionTravelHooks {
 
     public enum TravelTrigger {
         TORMENT_PORTAL,
-        MIRROR_RITE,
         RETURN_TO_OVERWORLD;
 
         public String key() {

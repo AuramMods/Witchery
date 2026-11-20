@@ -7,6 +7,7 @@ import art.arcane.witchery.block.entity.DemonHeartBlockEntity;
 import art.arcane.witchery.block.entity.DistilleryBlockEntity;
 import art.arcane.witchery.block.entity.DreamCatcherBlockEntity;
 import art.arcane.witchery.block.entity.KettleBlockEntity;
+import art.arcane.witchery.block.entity.MirrorBlockEntity;
 import art.arcane.witchery.block.entity.PlacedItemBlockEntity;
 import art.arcane.witchery.block.entity.RiteHeartBlockEntity;
 import art.arcane.witchery.block.entity.SpinningWheelBlockEntity;
@@ -63,6 +64,12 @@ public final class WitcheryBlockEntities {
     public static final RegistryObject<BlockEntityType<PlacedItemBlockEntity>> PLACED_ITEM =
             BLOCK_ENTITIES.register("placeditem", () -> BlockEntityType.Builder.of(PlacedItemBlockEntity::new,
                     WitcheryBlocks.getRequired("placeditem").get()).build(null));
+    public static final RegistryObject<BlockEntityType<MirrorBlockEntity>> MIRROR =
+            BLOCK_ENTITIES.register("mirrorblock", () -> BlockEntityType.Builder.of(WitcheryBlockEntities::createMirror,
+                    WitcheryBlocks.getRequired("mirrorblock").get()).build(null));
+    public static final RegistryObject<BlockEntityType<MirrorBlockEntity>> ROOM_MIRROR =
+            BLOCK_ENTITIES.register("mirrorblock2", () -> BlockEntityType.Builder.of(WitcheryBlockEntities::createRoomMirror,
+                    WitcheryBlocks.getRequired("mirrorblock2").get()).build(null));
 
     static {
         LEGACY_BLOCK_ENTITIES.put("altar", ALTAR);
@@ -74,6 +81,8 @@ public final class WitcheryBlockEntities {
         LEGACY_BLOCK_ENTITIES.put("distilleryidle", DISTILLERY);
         LEGACY_BLOCK_ENTITIES.put("distilleryburning", LEGACY_BURNING_DISTILLERY);
         LEGACY_BLOCK_ENTITIES.put("kettle", KETTLE);
+        LEGACY_BLOCK_ENTITIES.put("mirrorblock", MIRROR);
+        LEGACY_BLOCK_ENTITIES.put("mirrorblock2", ROOM_MIRROR);
         LEGACY_BLOCK_ENTITIES.put("spinningwheel", SPINNING_WHEEL);
         LEGACY_BLOCK_ENTITIES.put("cauldron", CAULDRON);
         LEGACY_BLOCK_ENTITIES.put("witchesovenidle", WITCHES_OVEN);
@@ -98,6 +107,14 @@ public final class WitcheryBlockEntities {
         return BlockEntityType.Builder.of(factory,
                 WitcheryBlocks.getRequired("witchesovenidle").get(),
                 WitcheryBlocks.getRequired("witchesovenburning").get()).build(null);
+    }
+
+    private static MirrorBlockEntity createMirror(BlockPos pos, BlockState state) {
+        return new MirrorBlockEntity(MIRROR.get(), pos, state);
+    }
+
+    private static MirrorBlockEntity createRoomMirror(BlockPos pos, BlockState state) {
+        return new MirrorBlockEntity(ROOM_MIRROR.get(), pos, state);
     }
 
     private static WitchesOvenBlockEntity createOven(BlockPos pos, BlockState state) {

@@ -17,8 +17,10 @@ import art.arcane.witchery.client.renderer.DemonHeartRenderer;
 import art.arcane.witchery.client.renderer.GrotesqueLayer;
 import art.arcane.witchery.client.renderer.KettleRenderer;
 import art.arcane.witchery.client.renderer.MandrakeRenderer;
+import art.arcane.witchery.client.renderer.MirrorBlockRenderer;
 import art.arcane.witchery.client.renderer.NightmareRenderer;
 import art.arcane.witchery.client.renderer.PlacedItemRenderer;
+import art.arcane.witchery.client.renderer.ReflectionRenderer;
 import art.arcane.witchery.client.renderer.SleepingBodyRenderer;
 import art.arcane.witchery.client.renderer.SpinningWheelRenderer;
 import art.arcane.witchery.item.TaglockItem;
@@ -80,6 +82,7 @@ public final class WitcheryClient {
         event.registerLayerDefinition(NightmareModel.LAYER, NightmareModel::layer);
         event.registerLayerDefinition(DemonModel.LAYER, DemonModel::layer);
         event.registerLayerDefinition(GrotesqueLayer.LAYER, GrotesqueLayer::layer);
+        event.registerLayerDefinition(MirrorBlockRenderer.LAYER, MirrorBlockRenderer::layer);
         event.registerLayerDefinition(DemonHeartRenderer.LAYER, DemonHeartRenderer::layer);
         event.registerLayerDefinition(DreamCatcherRenderer.LAYER, DreamCatcherRenderer::layer);
         event.registerLayerDefinition(KettleRenderer.LAYER, KettleRenderer::layer);
@@ -100,6 +103,7 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.MANDRAKE.get(), MandrakeRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.NIGHTMARE.get(), NightmareRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.DEMON.get(), DemonRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.REFLECTION.get(), ReflectionRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SLEEPING_BODY.get(), SleepingBodyRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.THROWN_BREW.get(), ThrownItemRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.KETTLE.get(), KettleRenderer::new);
@@ -107,6 +111,8 @@ public final class WitcheryClient {
         event.registerBlockEntityRenderer(WitcheryBlockEntities.PLACED_ITEM.get(), PlacedItemRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.DREAM_CATCHER.get(), DreamCatcherRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.DEMON_HEART.get(), DemonHeartRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.MIRROR.get(), MirrorBlockRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.ROOM_MIRROR.get(), MirrorBlockRenderer::new);
     }
 
     @SubscribeEvent

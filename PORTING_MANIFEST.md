@@ -1292,31 +1292,28 @@ Implementation anchors:
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/data/witchery/dimension/torment.json`
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/data/witchery/dimension/mirror.json`
 
-### 1.20.1 Dimension Travel Hook Scaffold (current)
+### 1.20.1 Dimension Travel
 Implementation anchors:
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/world/WitcheryDimensionTravelHooks.java`
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/event/WitcheryEventHooks.java`
 
-Current scaffold behavior:
-- route-resolution helper maps Dream/Torment/Mirror triggers to destination dimension keys (with return-to-overworld fallback when already in route dimension).
-- `routePlayer(...)` provides a shared teleport entrypoint to move players to target dimension spawn points.
+Current travel behavior:
+- `WitcheryDimensionTravelHooks.routePlayer(...)` moves players to the destination spawn for the temporary Torment route.
 - Forge event wiring observes both travel attempts and completed dimension transitions for Witchery dimensions.
 - `DreamTravel` handles Brew of Sleeping and waking in the server player tick. It records both inventories, health, hunger, the Overworld body coordinates and the nightmare flag under `PlayerPersisted.WITCSpiritWorld`, and retains `witchery:corpse` for the sleeping body.
 - `witchery:spiritportal` uses a snow frame in the Dream and manifests only a spirit walker with remaining rite time. `WITCManifested` and `WITCManifestDuration` persist in the Forge player tag. The portal retains its block ID and adds a horizontal `axis` property.
 - `tormentportal` collision still uses the temporary server `PlayerTickEvent` route.
 - Brew of Flowing Spirit uses legacy ingredient damage 96. The Dream-only brewing restriction uses the optional `dimension` field on the datapack recipe and synchronizes it to clients. Focused Will, Condensed Fear, and Brew of Hollow Tears use damage values 113–115.
-- portal collision routing is cooldown-gated via persistent player tags (`WITCLastPortalCollisionTick`, `WITCLastPortalCollisionTrigger`) to prevent rapid retriggers.
-- right-click scaffold trigger wiring is now focused on rite-like mirror blocks:
-  - `mirrorblock`, `mirrorblock2`, `mirrorwall`, `circleglyphotherwhere` -> mirror route
+- `MirrorTravel` opens a linked chamber when the player walks into a correctly mounted `witchery:mirrorblock`. A generated `witchery:mirrorblock2` links back to the exterior. The room is allocated in saved data and the two mirrors store their connection and Reflection defeat state.
 
 Status:
 - resource keys and breadth datapack scaffold are now present for Dream/Torment/Mirror.
-- runtime travel hook scaffolding and split trigger wiring (portal collision + mirror right-click) are now present.
-- Dream and Nightmare cotton drops are available from naturally generated Somnian Cotton. The ordinary Nightmare now uses the original `witchery:nightmare` key with a dedicated entity and renderer. Dreamweaves use `witchery:dreamcatcher` and preserve the five original `WITCWeaveID` values. Demonic nightmares add fireballs overhead and can summon `witchery:demon`. The Waking Nightmare curse and status effect use the same entity outside the Dream. The Torment and Mirror activation and provider behavior are pending.
+- Dream and Nightmare cotton drops are available from naturally generated Somnian Cotton. The ordinary Nightmare now uses the original `witchery:nightmare` key with a dedicated entity and renderer. Dreamweaves use `witchery:dreamcatcher` and preserve the five original `WITCWeaveID` values. Demonic nightmares add fireballs overhead and can summon `witchery:demon`. The Waking Nightmare curse and status effect use the same entity outside the Dream. Torment's activation and provider behavior are pending.
 - `witchery:demon` can also be summoned by two large Infernal rites in the Overworld. The entity persists bargains, remaining stock and whether it came from a rite. Demon Heart and Infernal Blood use legacy ingredient damage values 23 and 80. The heart block retains `witchery:demonheart` and drops the canonical `witchery:demon_heart`. The old port's heart item ID still works in both Infernal Blood recipes.
 - Bone Needle and Brew of Grotesque map legacy ingredient damage values 7 and 71. Taglock Kit uses the original `witchery:taglockkit` ID and shows the filled icon when bound. `WITCPlayer1` and the creature UUID halves in `WITCEntityIDm1` and `WITCEntityIDl1` work with the bound-taglock recipe ingredient. The new player UUID is authoritative when present. The Curse of Waking Nightmare persists under `PlayerPersisted.witcheryWakingNightmare`.
 - The `witchery:dream` dimension type references its registered client effects for fog, sky and lighting. The server chooses the shared mode from the active dreamers, independently of player-style packets.
 - The Mirror uses the `witchery:mirror` chunk generator and biome. New chunks contain the original stacked chambers. The dimension uses the same modern build bounds as the previous port, including for chunks saved before the generator change.
+- The Rite of the Mirror creates `witchery:mirror`. The previous port's `witchery:mirrorblock` item also mounts two halves. The block entities preserve `DimCoords`, `Connected`, and `DemonSlain` and use a UUID to verify both ends. `PlayerPersisted.MirrorWorldEntryPoint` retains the chamber entry. `witchery:reflection` saves its pose, equipment, health, and identity. The encounter waits for saved entities to load before checking whether the room has a Reflection.
 
 ## 1.20.1 Event Hook Scaffold (current)
 Implementation anchor:

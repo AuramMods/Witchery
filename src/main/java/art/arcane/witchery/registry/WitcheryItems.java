@@ -11,6 +11,7 @@ import art.arcane.witchery.item.DrinkableBrewItem;
 import art.arcane.witchery.item.DreamWeaveItem;
 import art.arcane.witchery.item.FilledChaliceItem;
 import art.arcane.witchery.item.IcyNeedleItem;
+import art.arcane.witchery.item.MirrorItem;
 import art.arcane.witchery.item.MutandisItem;
 import art.arcane.witchery.item.RitualChalkItem;
 import art.arcane.witchery.item.TaglockItem;
@@ -126,6 +127,7 @@ public final class WitcheryItems {
             case "bucketbrew" -> new BucketItem(WitcheryFluids.getRequiredSource("brew"), bucketProperties);
             case "anointing_paste" -> new AnointingPasteItem(new Item.Properties());
             case "taglockkit" -> new TaglockItem();
+            case "mirror" -> new MirrorItem();
             case "arthana" -> new ArthanaItem();
             case "demon_heart" -> new DemonHeartItem(WitcheryBlocks.getRequired("demonheart").get(), true);
             case "devilstonguecharm" -> new Item(new Item.Properties().durability(50).rarity(Rarity.UNCOMMON));
@@ -198,7 +200,7 @@ public final class WitcheryItems {
             return;
         }
 
-        RegistryObject<Item> item = ITEMS.register(path, () -> createBlockItem(path));
+        RegistryObject<Item> item = ITEMS.register(path, () -> path.equals("mirrorblock") ? new MirrorItem() : createBlockItem(path));
         LEGACY_BLOCK_ITEMS.put(path, item);
     }
 

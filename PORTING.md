@@ -74,7 +74,12 @@
 
 - [x] Generate the Mirror's stacked nine-block chambers using the original 16-block cell indices. The walls use the original animated liquid textures, cool tint, collision, and unbreakable behavior.
 - [x] Verify 17 packaged headless geometry and restart checks. Upgrade a disposable world from the previous port, preserve its existing Mirror chunk, and verify that a freshly generated chunk contains the new chambers.
-- [ ] Restore mirror crafting, placement, linked travel, and the Reflection encounter.
+- [x] Restore the 2,000-power Rite of the Mirror. The muted survival client used the medium white ring with Hollow Tears, gold, a glass pane, and a living Demon. The rite consumed the Demon and produced a Mirror that mounted as a two-block frame with the original model.
+- [x] Walk through the frame to a linked chamber. The Reflection killed the tester, persisted as a single boss through death, re-entry, and a dedicated restart, and copied the tester's skin and armor. A real survival hit respected the damage cap. After shortening the final fight in the test fixture, the player killed the boss with an axe and collected its Demon Heart. Both frames recorded the kill.
+- [x] Walk out through the chamber's exit, break and pick up the exterior Mirror, and remount it with its original chamber and defeated state. Walk through the defeated frame and emerge at an opposing frame in the Overworld. The fixed build crossed both dimensions without a movement warning.
+- [x] Verify both chat escapes. The muted client returned to its chamber's entrance or left for the Overworld, and a restart preserved the remaining cooldowns. The older port's Mirror block item mounted the same two-block frame.
+- [x] Verify vertical linking, the 3,000-power passage through a chamber wall, and exiting through a Mirror carried by another player. The two muted clients confirmed that a carrying player can move while the chamber occupant is inside and that the exit follows the carrier.
+- [ ] Restore the Mirror Face, conversations, disguises, and Mirror-related poppet and duplicate grenade behavior. Finish Reflection's advanced attacks and the shorter world setting.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.
@@ -267,8 +272,8 @@
   - resource keys are scaffolded (`Level`, `LevelStem`, `DimensionType`) for `dream`, `torment`, and `mirror`.
   - datapack `dimension_type` + `dimension` JSON scaffolding is now present for all three dimensions.
   - runtime travel scaffold hooks are in place via `WitcheryDimensionTravelHooks` + `WitcheryEventHooks`.
-  - Dream uses the sleeping brew, body and separate inventories through `DreamTravel`. The Rite of Manifestation and snow-frame Spirit Portal allow a time-limited visit to the Overworld while the body remains asleep. Dream provider presentation and demonic hazards are pending.
-  - Torment's collision path and the Mirror right-click path still use the temporary travel hooks. Their original activation and provider rules are pending.
+  - Dream uses the sleeping brew, body and separate inventories through `DreamTravel`. The Rite of Manifestation and snow-frame Spirit Portal allow a time-limited visit to the Overworld while the body remains asleep. The Dream has the three atmosphere variants and the demonic hazards.
+  - The Mirror uses two-block frames, stacked chambers, and Reflection encounters through `MirrorTravel`. Torment's collision path still uses the temporary travel hook.
 - [~] Event bus hooks migrated with no-op or minimal behavior.
   - placeholder Forge-bus hooks are in place for attach-capabilities, player login/clone, player tick, player right-click block, entity travel-to-dimension, player changed-dimension, and level load events.
   - attach-capabilities/player-clone hooks now include capability provider wiring for player data scaffold.

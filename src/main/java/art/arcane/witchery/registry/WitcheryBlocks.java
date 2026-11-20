@@ -8,6 +8,7 @@ import art.arcane.witchery.block.DemonHeartBlock;
 import art.arcane.witchery.block.DistilleryBlock;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.KettleBlock;
+import art.arcane.witchery.block.MirrorBlock;
 import art.arcane.witchery.block.SomnianCottonBlock;
 import art.arcane.witchery.block.SpinningWheelBlock;
 import art.arcane.witchery.block.SpiritFluidBlock;
@@ -86,7 +87,6 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_SILVER_VAT = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 10.24D, 16.0D);
     private static final VoxelShape SHAPE_DAYLIGHT_COLLECTOR = Block.box(3.2D, 0.0D, 3.2D, 12.8D, 12.8D, 12.8D);
     private static final VoxelShape SHAPE_BLOOD_CRUCIBLE = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 4.96D, 12.0D);
-    private static final VoxelShape SHAPE_MIRROR_PANEL = Block.box(0.0D, 0.0D, 13.6D, 16.0D, 16.0D, 16.0D);
     private static final VoxelShape SHAPE_PORTAL_CROSS = Shapes.or(
             Block.box(7.0D, 0.0D, 0.0D, 9.0D, 16.0D, 16.0D),
             Block.box(0.0D, 0.0D, 7.0D, 16.0D, 16.0D, 9.0D)
@@ -233,8 +233,8 @@ public final class WitcheryBlocks {
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DAYLIGHT_DETECTOR), SHAPE_DAYLIGHT_COLLECTOR, true);
             case "bloodcrucible" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.STONE), SHAPE_BLOOD_CRUCIBLE, true);
-            case "mirrorblock", "mirrorblock2" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.GLASS), SHAPE_MIRROR_PANEL, true);
+            case "mirrorblock", "mirrorblock2" -> new MirrorBlock(BlockBehaviour.Properties.copy(Blocks.GLASS)
+                    .strength(path.equals("mirrorblock") ? 1 : -1, 9_999).noLootTable(), path.equals("mirrorblock2"));
             case "circle" -> new RiteHeartBlock();
             case "circleglyphritual" -> new RitualGlyphBlock("chalkritual");
             case "circleglyphotherwhere" -> new RitualGlyphBlock("chalkotherwhere");

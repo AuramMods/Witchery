@@ -9,10 +9,10 @@ import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.world.DreamTravel;
+import art.arcane.witchery.world.MirrorTravel;
 import art.arcane.witchery.world.WitcheryDimensions;
 import art.arcane.witchery.world.WitcheryDimensionTravelHooks;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -22,6 +22,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -121,7 +122,7 @@ public final class WitcheryEventHooks {
         if (!(event.player instanceof ServerPlayer serverPlayer)) {
             return;
         }
-        if (DreamTravel.processRequests(serverPlayer)) {
+        if (DreamTravel.processRequests(serverPlayer) || MirrorTravel.processPlayerCrossing(serverPlayer)) {
             return;
         }
         DreamTravel.spawnNightmare(serverPlayer);
@@ -180,31 +181,10 @@ public final class WitcheryEventHooks {
     }
 
     @SubscribeEvent
-    public static void onPlayerRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        if (event.getLevel().isClientSide()) {
-            return;
+    public static void onMirrorEscapePhrase(ServerChatEvent event) {
+        if (MirrorTravel.queueEscapePhrase(event.getPlayer(), event.getRawText())) {
+            event.setCanceled(true);
         }
-
-        if (event.getHand() != InteractionHand.MAIN_HAND) {
-            return;
-        }
-
-        if (!(event.getEntity() instanceof ServerPlayer serverPlayer)) {
-            return;
-        }
-
-        // Scaffold activation gesture for portal/rite trigger testing.
-        if (!serverPlayer.isShiftKeyDown()) {
-            return;
-        }
-
-        WitcheryDimensionTravelHooks.resolveRiteTriggerFromBlock(event.getLevel().getBlockState(event.getPos()))
-                .ifPresent(trigger -> {
-                    if (WitcheryDimensionTravelHooks.routePlayer(serverPlayer, trigger)) {
-                        event.setCanceled(true);
-                        event.setCancellationResult(InteractionResult.SUCCESS);
-                    }
-                });
     }
 
     @SubscribeEvent

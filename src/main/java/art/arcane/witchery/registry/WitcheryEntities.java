@@ -4,6 +4,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.entity.Demon;
 import art.arcane.witchery.entity.Mandrake;
 import art.arcane.witchery.entity.Nightmare;
+import art.arcane.witchery.entity.Reflection;
 import art.arcane.witchery.entity.SleepingBody;
 import art.arcane.witchery.entity.ThrownBrew;
 import net.minecraft.world.entity.EntityType;
@@ -35,6 +36,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<Demon>> DEMON =
             ENTITY_TYPES.register("demon", () -> EntityType.Builder.of(Demon::new, MobCategory.MONSTER)
                     .sized(1.0F, 2.9F).fireImmune().build(Witchery.MODID + ":demon"));
+    public static final RegistryObject<EntityType<Reflection>> REFLECTION =
+            ENTITY_TYPES.register("reflection", () -> EntityType.Builder.of(Reflection::new, MobCategory.MONSTER)
+                    .sized(0.6F, 1.8F).fireImmune().clientTrackingRange(8).build(Witchery.MODID + ":reflection"));
     public static final RegistryObject<EntityType<ThrownBrew>> THROWN_BREW =
             ENTITY_TYPES.register("thrown_brew", () -> EntityType.Builder.<ThrownBrew>of(ThrownBrew::new, MobCategory.MISC)
                     .sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(3).build(Witchery.MODID + ":thrown_brew"));
@@ -44,6 +48,7 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("corpse", SLEEPING_BODY);
         LEGACY_ENTITIES.put("nightmare", NIGHTMARE);
         LEGACY_ENTITIES.put("demon", DEMON);
+        LEGACY_ENTITIES.put("reflection", REFLECTION);
         for (String legacyName : LegacyRegistryData.ENTITIES) {
             registerLegacyEntity(legacyName);
         }
@@ -80,7 +85,8 @@ public final class WitcheryEntities {
             var attributes = entry == MANDRAKE ? Mandrake.attributes()
                     : entry == SLEEPING_BODY ? SleepingBody.attributes()
                     : entry == NIGHTMARE ? Nightmare.attributes()
-                    : entry == DEMON ? Demon.attributes() : Zombie.createAttributes();
+                    : entry == DEMON ? Demon.attributes()
+                    : entry == REFLECTION ? Reflection.attributes() : Zombie.createAttributes();
             event.put(entry.get(), attributes.build());
         }
     }

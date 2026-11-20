@@ -1,0 +1,12 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "medium", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [
+    {"item": "witchery:brew_of_hollow_tears"},
+    {"item": "minecraft:gold_ingot"},
+    {"item": "minecraft:glass_pane"}
+  ],
+  "living_offering": "witchery:demon",
+  "power": 2000,
+  "result": {"item": "witchery:mirror"}
+}
