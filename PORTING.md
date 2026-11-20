@@ -229,7 +229,9 @@
 - [x] Restore feathers, Slimeballs, Owlet's Wing, and Toe of Frog drops with the Arthana bonuses. Legacy feather and skin colors, temporary lifespan, poison and familiar flags load from entity data.
 - [x] Verify live Infernal bindings and creature power acquisition. The wild Owl and Toad gave IDs 24 and 25, both with ten reserve charges. Binding and sacrificing each consumed six infusion charges. All 88 required Forge GameTests passed. Java 17 data generation and JAR reobfuscation succeeded.
 - [x] Restart the packaged dedicated server and reconnect the muted client. Both tamed animals kept their owner and dye colors. The Owl kept its named parcel, and the player kept Toad power 25, ten reserve charges and 168 infusion charges.
-- [ ] Connect Owl and Toad to familiar rites and mastery bonuses. Restore Owl Waystone delivery.
+- [x] Bind, dismiss and call Owl and Toad familiars. The muted client bound a blue Toad, redirected one point of a ten-point hit, and called it back with its name and color. Binding the purple Owl returned the Toad to its ordinary health. The client recovered the Owl's named parcel when dismissing it. The recalled Owl retained its UUID, purple color and 50 health after the packaged server restarted.
+- [x] Apply the active Toad's five-percent bonus to eligible Kettle brews. A seeded GameTest used a glass bottle on Ink with an active Toad, active Owl, active Cat and dismissed Toad. Only the active Toad yielded a bonus bottle. All 89 required Forge GameTests, data generation and JAR reobfuscation passed.
+- [ ] Restore the Owl's Broom Mastery and Waystone delivery. Apply the remaining Toad Brew Mastery bonuses as the related brews and brewing equipment are ported.
 
 ## Auram Pack Validation (2026-11-20)
 

@@ -9,5 +9,6 @@
     {"item": "witchery:rowan_berries"}
   ],
   "result": {"item": "witchery:brew_of_ink", "count": 3},
-  "color": -13421773
+  "color": -13421773,
+  "bottling_bonus": 1
 }

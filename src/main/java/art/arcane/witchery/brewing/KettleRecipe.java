@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public record KettleRecipe(ResourceLocation id, List<Ingredient> ingredients, ItemStack result, int color, int power,
-                           ResourceLocation dimension)
+                           ResourceLocation dimension, int bottlingBonus)
         implements Recipe<Container> {
     public static final int INGREDIENT_SLOTS = 6;
 
@@ -94,14 +94,16 @@ public record KettleRecipe(ResourceLocation id, List<Ingredient> ingredients, It
             JsonArray entries = GsonHelper.getAsJsonArray(json, "ingredients");
             ItemStack result = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "result"));
             int power = GsonHelper.getAsInt(json, "power", 0);
-            if (entries.size() != INGREDIENT_SLOTS || power < 0 || result.getCount() > result.getMaxStackSize()) {
-                throw new JsonSyntaxException("Invalid kettle recipe ingredients, power or result for " + id);
+            int bonus = GsonHelper.getAsInt(json, "bottling_bonus", 0);
+            if (entries.size() != INGREDIENT_SLOTS || power < 0 || result.getCount() > result.getMaxStackSize()
+                    || bonus < 0 || bonus >= result.getMaxStackSize()) {
+                throw new JsonSyntaxException("Invalid kettle recipe ingredients, power, result or bottling bonus for " + id);
             }
             List<Ingredient> ingredients = new ArrayList<>(INGREDIENT_SLOTS);
             entries.forEach(entry -> ingredients.add(Ingredient.fromJson(entry, false)));
             ResourceLocation dimension = json.has("dimension")
                     ? new ResourceLocation(GsonHelper.getAsString(json, "dimension")) : null;
-            return new KettleRecipe(id, List.copyOf(ingredients), result, GsonHelper.getAsInt(json, "color"), power, dimension);
+            return new KettleRecipe(id, List.copyOf(ingredients), result, GsonHelper.getAsInt(json, "color"), power, dimension, bonus);
         }
 
         @Override
@@ -111,7 +113,7 @@ public record KettleRecipe(ResourceLocation id, List<Ingredient> ingredients, It
                 ingredients.add(Ingredient.fromNetwork(buffer));
             }
             return new KettleRecipe(id, List.copyOf(ingredients), buffer.readItem(), buffer.readInt(), buffer.readVarInt(),
-                    buffer.readNullable(FriendlyByteBuf::readResourceLocation));
+                    buffer.readNullable(FriendlyByteBuf::readResourceLocation), buffer.readVarInt());
         }
 
         @Override
@@ -121,6 +123,7 @@ public record KettleRecipe(ResourceLocation id, List<Ingredient> ingredients, It
             buffer.writeInt(recipe.color);
             buffer.writeVarInt(recipe.power);
             buffer.writeNullable(recipe.dimension, FriendlyByteBuf::writeResourceLocation);
+            buffer.writeVarInt(recipe.bottlingBonus);
         }
     }
 }

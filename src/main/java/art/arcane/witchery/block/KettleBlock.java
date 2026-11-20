@@ -95,7 +95,7 @@ public final class KettleBlock extends BaseEntityBlock {
         ItemStack held = player.getItemInHand(hand);
         if (held.is(Items.GLASS_BOTTLE) && kettle.isReady()) {
             if (!level.isClientSide) {
-                ItemStack brew = kettle.bottleBrew();
+                ItemStack brew = kettle.bottleBrew(player);
                 if (!brew.isEmpty()) {
                     held.shrink(1);
                     if (held.isEmpty()) {

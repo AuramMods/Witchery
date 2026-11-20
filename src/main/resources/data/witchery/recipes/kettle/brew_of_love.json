@@ -9,5 +9,6 @@
     {"item": "minecraft:cocoa_beans"}
   ],
   "result": {"item": "witchery:brew_of_love", "count": 3},
-  "color": -23044
+  "color": -23044,
+  "bottling_bonus": 1
 }

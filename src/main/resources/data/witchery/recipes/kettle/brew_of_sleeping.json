@@ -9,5 +9,6 @@
     {"item": "witchery:globe_artichoke"}
   ],
   "result": {"item": "witchery:brew_of_sleeping", "count": 3},
-  "color": -7710856
+  "color": -7710856,
+  "bottling_bonus": 1
 }

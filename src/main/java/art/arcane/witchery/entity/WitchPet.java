@@ -1,10 +1,13 @@
 package art.arcane.witchery.entity;
 
+import art.arcane.witchery.familiar.Familiar;
+import art.arcane.witchery.familiar.FamiliarBinding;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -19,7 +22,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.ForgeEventFactory;
 
-public abstract class WitchPet extends TamableAnimal {
+public abstract class WitchPet extends TamableAnimal implements Familiar {
     private static final EntityDataAccessor<Integer> COLOR = SynchedEntityData.defineId(WitchPet.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> FAMILIAR = SynchedEntityData.defineId(WitchPet.class, EntityDataSerializers.BOOLEAN);
     protected int timeToLive = -1;
@@ -43,10 +46,12 @@ public abstract class WitchPet extends TamableAnimal {
         entityData.set(COLOR, color & 15);
     }
 
+    @Override
     public boolean isFamiliar() {
         return entityData.get(FAMILIAR);
     }
 
+    @Override
     public void setFamiliar(boolean familiar) {
         applyFamiliar(familiar);
         setHealth(getMaxHealth());
@@ -98,6 +103,10 @@ public abstract class WitchPet extends TamableAnimal {
         ItemStack held = player.getItemInHand(hand);
         boolean client = level().isClientSide;
         if (isTemporary()) return InteractionResult.sidedSuccess(client);
+        if (isFamiliar() && isOwnedBy(player) && isOrderedToSit() && player.isShiftKeyDown()) {
+            if (player instanceof ServerPlayer server) FamiliarBinding.dismiss(server, this);
+            return InteractionResult.sidedSuccess(client);
+        }
         if (!isTame() && isFood(held) && canTameFrom(player)) {
             if (!client) {
                 if (!player.getAbilities().instabuild) held.shrink(1);

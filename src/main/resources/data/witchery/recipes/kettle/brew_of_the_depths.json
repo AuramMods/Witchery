@@ -9,5 +9,6 @@
     {"item": "minecraft:ink_sac"}
   ],
   "result": {"item": "witchery:brew_of_the_depths", "count": 3},
-  "color": -15260093
+  "color": -15260093,
+  "bottling_bonus": 1
 }

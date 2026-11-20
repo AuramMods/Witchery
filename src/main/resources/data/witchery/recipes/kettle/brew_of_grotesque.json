@@ -10,5 +10,6 @@
   ],
   "result": {"item": "witchery:brew_of_grotesque", "count": 3},
   "color": -13491946,
-  "power": 500
+  "power": 500,
+  "bottling_bonus": 1
 }

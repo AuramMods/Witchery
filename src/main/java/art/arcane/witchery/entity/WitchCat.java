@@ -1,5 +1,6 @@
 package art.arcane.witchery.entity;
 
+import art.arcane.witchery.familiar.Familiar;
 import art.arcane.witchery.familiar.FamiliarBinding;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -21,7 +22,7 @@ import net.minecraft.world.level.Level;
 
 import java.util.UUID;
 
-public final class WitchCat extends Cat {
+public final class WitchCat extends Cat implements Familiar {
     private static final EntityDataAccessor<Boolean> FAMILIAR = SynchedEntityData.defineId(WitchCat.class, EntityDataSerializers.BOOLEAN);
     private static final UUID FAMILIAR_ARMOR_ID = UUID.fromString("70dd98ef-cd94-416c-9937-c2ed4f023beb");
 
@@ -35,10 +36,12 @@ public final class WitchCat extends Cat {
         entityData.define(FAMILIAR, false);
     }
 
+    @Override
     public boolean isFamiliar() {
         return entityData.get(FAMILIAR);
     }
 
+    @Override
     public void setFamiliar(boolean familiar) {
         applyFamiliar(familiar);
         setHealth(getMaxHealth());

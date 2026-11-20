@@ -114,6 +114,7 @@ public final class WitchOwl extends WitchPet {
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack held = player.getItemInHand(hand);
+        if (isFamiliar() && isOrderedToSit() && player.isShiftKeyDown()) return super.mobInteract(player, hand);
         if (!isTemporary() && isOwnedBy(player) && !isFood(held) && !(held.getItem() instanceof DyeItem)
                 && !held.is(Items.NAME_TAG) && !held.is(WitcheryItems.getRequired("polynesiacharm").get())
                 && !held.is(WitcheryItems.getRequired("devilstonguecharm").get())) {
