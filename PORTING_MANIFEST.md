@@ -1424,6 +1424,7 @@ Current placeholder data surface (`WitcheryPlayerData`):
 | `lastHowlGameTime` | `long` | shared cooldown for the wolf pack and Wolfman howls |
 
 Active lycanthropy saves retain `WerewolfLevel`, `WolfmanQuestState`, `WolfmanQuestCounter` and each signed `Location` in `WolfmanQuestChunks`. `LastHowlGameTime` tracks the wolf pack cooldown.
+The wolf's dirt loot modifier records its one-minute cooldown as `LastBoneFindGameTime`.
 
 Status:
 - structural replacement path for legacy `ExtendedPlayer` is now wired.

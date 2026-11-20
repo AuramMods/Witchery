@@ -64,12 +64,17 @@ public final class WerewolfVillagers {
     }
 
     public static boolean infect(Villager victim, boolean infectious) {
+        return infect(victim, infectious, victim.getHealth());
+    }
+
+    static boolean infect(Villager victim, boolean infectious, float health) {
         if (!(victim.level() instanceof ServerLevel level) || victim instanceof WereVillager) return false;
         var type = WitcheryEntities.WERE_VILLAGER.get();
         if (!ForgeEventFactory.canLivingConvert(victim, type, ticks -> {})) return false;
         var villager = type.create(level);
         if (villager == null) return false;
         var data = villagerData(victim);
+        data.putFloat("Health", health);
         data.putBoolean("Infectious", infectious);
         villager.load(data);
         return replace(level, victim, villager);

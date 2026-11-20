@@ -25,6 +25,7 @@ import art.arcane.witchery.item.HunterClothingItem;
 import art.arcane.witchery.item.HuntsmanSpearItem;
 import art.arcane.witchery.lycanthropy.Lycanthropy;
 import art.arcane.witchery.lycanthropy.WerewolfVillagers;
+import art.arcane.witchery.lycanthropy.WolfCombat;
 import art.arcane.witchery.lycanthropy.WolfTrials;
 import art.arcane.witchery.vampirism.Vampirism;
 import art.arcane.witchery.vampirism.BloodFeeding;
@@ -447,6 +448,8 @@ public final class WitcheryEventHooks {
                 && source.getEntity() instanceof LivingEntity attacker && !source.is(WitcheryDamageTypes.VAMPIRE_BITE)) {
             VampireVillages.recordAggressor(world, villager, attacker);
         }
+        WolfCombat.onDamage(event);
+        if (event.isCanceled()) return;
         if (source.is(net.minecraft.world.damagesource.DamageTypes.PLAYER_ATTACK) && source.getDirectEntity() instanceof ServerPlayer player) {
             Vampirism.knockBack(player, event.getEntity());
         }
@@ -517,8 +520,10 @@ public final class WitcheryEventHooks {
     }
 
     @SubscribeEvent
-    public static void shatterStoneAsVampire(PlayerEvent.BreakSpeed event) {
-        if (Vampirism.canShatter(event.getEntity(), event.getState())) event.setNewSpeed(Math.max(event.getNewSpeed(), 1000));
+    public static void speedUpCreatureMining(PlayerEvent.BreakSpeed event) {
+        if (Vampirism.canShatter(event.getEntity(), event.getState()) || Lycanthropy.canDig(event.getEntity(), event.getState())) {
+            event.setNewSpeed(Math.max(event.getNewSpeed(), 1000));
+        }
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)

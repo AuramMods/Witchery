@@ -447,7 +447,8 @@
 - [x] Preserve the chambered and preferred bolt through a dedicated restart. A chambered Silver Bolt and one already lodged in a wall both survived. The client recovered that projectile as a Silver Bolt. GameTests also covered legacy item metadata, the holy damage bonus and the powered anti-magic dispel.
 - [x] Verify the optional silver-ingot recipe with a temporary `forge:ingots/silver` fixture. The recipe became available when the tag was supplied, and the client crafted six silver bolts with one tagged ingot and six wooden bolts. Java 17 data generation, JAR reobfuscation and all 213 required Forge GameTests passed.
 - [x] Power Anti-Magic Bolts with the full Witch Hunter set. In a two-client test, a shot drained the shooter's 20 infusion charge, took the target's charge from 20 to 10, and left Poison active after dispelling Resistance.
-- [ ] Connect silver bolt damage and the remaining silvered armor behavior to lycanthropy. Restore the spirit enhancement for ordinary death wards hit by powered bolts.
+- [x] Connect Silver Bolts and silvered armor to lycanthropy. The dedicated server recorded both the Silver Bolt selection against a Wolfman and the protection, durability and retaliatory damage from silvered armor.
+- [ ] Restore the spirit enhancement for ordinary death wards hit by powered bolts.
 
 ## Witch Hunter Clothing (2026-11-20)
 
@@ -474,7 +475,7 @@
 - [x] Restore both original recipes, full-moon timing, active cat and six-member coven. The muted client called its cat, collected its Taglock at a bed, sacrificed a Hellhound Head it had picked up, and activated the medium infernal circle with a Seer Stone. A waning night refunded all six offerings. At the full moon, Witch Hunter clothing blocked the curse. Removing one piece let the same offerings curse the player and the server retained vampire rank ten under the default hybrid setting.
 - [x] Restore the rank-one wolf form, smaller dimensions, armor drop, Night Vision, jump and movement stats, and Silver Sword damage. The dedicated server recorded speed changing from 0.10 to 0.15 and the additional step height of 0.4. A second muted client saw the first as a wolf. With the active familiar's damage sharing, a 12-point ordinary strike took 3.6 health and a seven-point silver strike took 10.8 health.
 - [x] Reconnect after a dedicated-server restart, then collect another Taglock and perform the cure while still in wolf form. The save retained rank one, wolf form and speed. The successful cure consumed all six offerings, restored normal movement and kept vampire rank ten. Java 17 data generation, JAR reobfuscation and all 226 required Forge GameTests passed.
-- [ ] Finish werewolf armor rending, infection by bite, the traps, and Wolfsbane interactions.
+- [ ] Finish the traps and Wolfsbane interactions.
 
 ## Werevillagers and Wolfmen (2026-11-20)
 
@@ -504,6 +505,12 @@
 - [x] Verify both howl abilities on the dedicated server. A wolf howl called two wolves with the player's ownership and Mortal Coil. The wolves expired naturally. After the shared cooldown elapsed, a Wolfman howl paralyzed a nearby villager.
 - [x] Finish the final two trials in the muted survival client. A piglin kill in wolf form left progress at zero. Thirty attributed kills in Wolfman form advanced the player to rank nine. The final villager kill earned one point and the Wolf Altar awarded rank ten.
 - [x] Preserve legacy quest state, progress and signed chunk coordinates. Java 17 data generation, JAR reobfuscation and all 239 required Forge GameTests passed. They covered all five ranks, the temporary wolf pack, Wolfman fear, the shared cooldown and natural pack expiry.
+
+## Werewolf Combat and Digging (2026-11-20)
+
+- [x] Apply the original silvered armor response to werewolf attacks. The packaged server gave the target the same eight-point Wolfman attack with each coat. The plain coat left 15.12 health and one point of wear. The silvered coat left 16 health and zero wear. It also took the Wolfman from 80 to 79.38 health.
+- [x] Restore armor rending and bite transmission. The muted rank-ten Wolfman struck the second client, putting 44 wear on the iron helmet while the other pieces took two each. An infectious Wolfman converted a villager at three remaining health, keeping the original Taglock identity. A later nonlethal hit by the rank-ten player infected the second client at two health. The second client put on a silvered hat while human and took periodic damage.
+- [x] Restore wolf digging and the bone discovery cooldown. The first tap in the muted client left the dirt in place. A crouching tap removed it. Further digging produced a bone that the player picked up and saved the find time. Java 17 data generation, JAR reobfuscation and all 243 required Forge GameTests passed.
 
 ## Auram Pack Validation (2026-11-20)
 

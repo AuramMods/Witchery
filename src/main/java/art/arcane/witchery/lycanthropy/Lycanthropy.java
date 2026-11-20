@@ -28,6 +28,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -88,6 +90,13 @@ public final class Lycanthropy {
 
     public static boolean isWolfman(Player player) {
         return WitcheryPlayerDataProvider.get(player).map(data -> data.getCreatureTypeOrdinal() == WOLFMAN).orElse(false);
+    }
+
+    public static boolean canDig(Player player, BlockState state) {
+        return player.isShiftKeyDown() && isWolf(player) && rank(player) >= 3
+                && (state.is(Blocks.GRASS_BLOCK) || state.is(Blocks.SAND) || state.is(Blocks.RED_SAND)
+                || state.is(Blocks.DIRT) || state.is(Blocks.COARSE_DIRT) || state.is(Blocks.PODZOL)
+                || state.is(Blocks.MYCELIUM) || state.is(Blocks.GRAVEL));
     }
 
     public static boolean isShifted(LivingEntity entity) {

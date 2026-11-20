@@ -44,6 +44,7 @@ public final class WitcheryPlayerData {
     private static final String KEY_LAST_MARKUP_BOOK_SLOT = "LastMarkupBookSlot";
     private static final String KEY_LAST_MARKUP_BOOK_PAGES = "LastMarkupBookPages";
     private static final String KEY_LAST_HOWL_GAME_TIME = "LastHowlGameTime";
+    private static final String KEY_LAST_BONE_FIND_GAME_TIME = "LastBoneFindGameTime";
 
     private boolean initialized;
     private int syncRevision;
@@ -79,6 +80,7 @@ public final class WitcheryPlayerData {
     private int lastMarkupBookSlot = -1;
     private final List<String> lastMarkupBookPages = new ArrayList<>();
     private long lastHowlGameTime = Long.MIN_VALUE;
+    private long lastBoneFindGameTime = Long.MIN_VALUE;
 
     public boolean isInitialized() {
         return initialized;
@@ -358,6 +360,14 @@ public final class WitcheryPlayerData {
         lastHowlGameTime = gameTime;
     }
 
+    public long getLastBoneFindGameTime() {
+        return lastBoneFindGameTime;
+    }
+
+    public void markBoneFound(long gameTime) {
+        lastBoneFindGameTime = gameTime;
+    }
+
     public void copyFrom(WitcheryPlayerData source) {
         initialized = source.initialized;
         syncRevision = source.syncRevision;
@@ -393,6 +403,7 @@ public final class WitcheryPlayerData {
         lastMarkupBookPages.clear();
         lastMarkupBookPages.addAll(source.lastMarkupBookPages);
         lastHowlGameTime = source.lastHowlGameTime;
+        lastBoneFindGameTime = source.lastBoneFindGameTime;
     }
 
     public CompoundTag serializeNBT() {
@@ -446,6 +457,7 @@ public final class WitcheryPlayerData {
         }
         tag.put(KEY_LAST_MARKUP_BOOK_PAGES, pageList);
         tag.putLong(KEY_LAST_HOWL_GAME_TIME, lastHowlGameTime);
+        tag.putLong(KEY_LAST_BONE_FIND_GAME_TIME, lastBoneFindGameTime);
         return tag;
     }
 
@@ -502,6 +514,8 @@ public final class WitcheryPlayerData {
 
         lastHowlGameTime = tag.contains(KEY_LAST_HOWL_GAME_TIME, Tag.TAG_LONG)
                 ? tag.getLong(KEY_LAST_HOWL_GAME_TIME) : Long.MIN_VALUE;
+        lastBoneFindGameTime = tag.contains(KEY_LAST_BONE_FIND_GAME_TIME, Tag.TAG_LONG)
+                ? tag.getLong(KEY_LAST_BONE_FIND_GAME_TIME) : Long.MIN_VALUE;
     }
 
     private record VampireVillage(String dimension, long location) {}

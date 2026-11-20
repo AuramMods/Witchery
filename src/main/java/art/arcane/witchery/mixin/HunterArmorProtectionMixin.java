@@ -16,10 +16,15 @@ public abstract class HunterArmorProtectionMixin {
     private float witchery$reinforceHunterArmor(float incoming, float armor, float toughness, DamageSource source, float damage) {
         LivingEntity wearer = (LivingEntity) (Object) this;
         int reinforcedDefense = 0;
+        boolean silverRetaliation = false;
         for (ItemStack stack : wearer.getArmorSlots()) {
             if (stack.getItem() instanceof HunterClothingItem clothing && clothing.reinforcedAgainst(source)) {
                 reinforcedDefense += clothing.getDefense();
+                silverRetaliation |= clothing.silverProtection(source);
             }
+        }
+        if (silverRetaliation && !wearer.level().isClientSide && source.getEntity() instanceof LivingEntity attacker && attacker != wearer) {
+            attacker.hurt(attacker.damageSources().inFire(), 1);
         }
         return CombatRules.getDamageAfterAbsorb(incoming, armor + reinforcedDefense * 1.5F, toughness);
     }

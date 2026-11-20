@@ -1,6 +1,7 @@
 package art.arcane.witchery.item;
 
 import art.arcane.witchery.client.model.HunterClothingModel;
+import art.arcane.witchery.lycanthropy.Lycanthropy;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.vampirism.Vampirism;
 import net.minecraft.server.level.ServerPlayer;
@@ -104,17 +105,25 @@ public final class HunterClothingItem extends ArmorItem implements DyeableLeathe
     }
 
     public static void tick(ServerPlayer player) {
-        if (player.tickCount % 20 != 2 || !Vampirism.isVampire(player)) return;
+        if (player.tickCount % 20 != 2) return;
+        boolean werewolf = Lycanthropy.rank(player) > 0;
+        boolean vampire = Vampirism.isVampire(player);
+        if (!werewolf && !vampire) return;
         for (ItemStack stack : player.getArmorSlots()) {
-            if (stack.getItem() instanceof HunterClothingItem item && item.upgrade == Upgrade.GARLICKED) {
+            if (stack.getItem() instanceof HunterClothingItem item
+                    && (werewolf && item.upgrade != Upgrade.PLAIN || vampire && item.upgrade == Upgrade.GARLICKED)) {
                 player.hurt(player.damageSources().inFire(), 1.0F);
                 return;
             }
         }
     }
 
+    public boolean silverProtection(DamageSource source) {
+        return upgrade != Upgrade.PLAIN && source.getEntity() instanceof LivingEntity attacker && Lycanthropy.isShifted(attacker);
+    }
+
     public boolean reinforcedAgainst(DamageSource source) {
-        return upgrade == Upgrade.GARLICKED && Vampirism.isVampire(source.getEntity());
+        return silverProtection(source) || upgrade == Upgrade.GARLICKED && Vampirism.isVampire(source.getEntity());
     }
 
     @Override
