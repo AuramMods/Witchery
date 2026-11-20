@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "item": "witchery:diamond_vapour"
+    },
+    "L": {
+      "item": "minecraft:leather"
+    },
+    "M": {
+      "item": "witchery:whiff_of_magic"
+    }
+  },
+  "pattern": [
+    "MLM",
+    "LDL",
+    "MLM"
+  ],
+  "result": {
+    "count": 4,
+    "item": "witchery:impregnated_leather"
+  },
+  "show_notification": true
+}

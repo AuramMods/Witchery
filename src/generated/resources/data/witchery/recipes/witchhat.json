@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "G": {
+      "item": "minecraft:glowstone_dust"
+    },
+    "L": {
+      "item": "witchery:impregnated_leather"
+    },
+    "S": {
+      "item": "witchery:golden_thread"
+    }
+  },
+  "pattern": [
+    " L ",
+    "SLS",
+    "LGL"
+  ],
+  "result": {
+    "item": "witchery:witchhat"
+  },
+  "show_notification": true
+}

@@ -2,6 +2,7 @@ package art.arcane.witchery.block.entity;
 
 import art.arcane.witchery.brewing.KettleRecipe;
 import art.arcane.witchery.familiar.FamiliarBinding;
+import art.arcane.witchery.item.WitchClothingItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.power.AltarPower;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
@@ -16,6 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -178,13 +180,25 @@ public final class KettleBlockEntity extends BlockEntity {
 
     public ItemStack bottleBrew(Player player) {
         ItemStack bottled = bottleBrew();
-        if (!bottled.isEmpty() && player instanceof ServerPlayer server && FamiliarBinding.hasBrewMastery(server)) {
-            int bonus = server.serverLevel().getRecipeManager().getAllRecipesFor(WitcheryRecipes.KETTLE.get()).stream()
-                    .filter(recipe -> ItemStack.isSameItemSameTags(recipe.result(), bottled))
-                    .min((first, second) -> first.getId().compareTo(second.getId()))
-                    .map(KettleRecipe::bottlingBonus).orElse(0);
-            if (bonus > 0 && player.getRandom().nextDouble() <= 0.05) bottled.grow(bonus);
+        if (bottled.isEmpty() || !(player instanceof ServerPlayer server)) return bottled;
+        int bonus = server.serverLevel().getRecipeManager().getAllRecipesFor(WitcheryRecipes.KETTLE.get()).stream()
+                .filter(recipe -> ItemStack.isSameItemSameTags(recipe.result(), bottled))
+                .min((first, second) -> first.getId().compareTo(second.getId()))
+                .map(KettleRecipe::bottlingBonus).orElse(0);
+        if (bonus <= 0) return bottled;
+
+        var hat = WitchClothingItem.style(player.getItemBySlot(EquipmentSlot.HEAD));
+        var robe = WitchClothingItem.style(player.getItemBySlot(EquipmentSlot.CHEST));
+        boolean babaHat = hat == WitchClothingItem.Style.BABA_HAT;
+        double primaryChance = hat == WitchClothingItem.Style.WITCH_HAT ? 0.35 : babaHat ? 0.25 : 0;
+        boolean raising = bottled.is(WitcheryIngredient.BREW_OF_RAISING.item());
+        if (robe == (raising ? WitchClothingItem.Style.NECROMANCER_ROBE : WitchClothingItem.Style.WITCH_ROBE)) {
+            primaryChance += 0.35;
         }
+        double toadChance = FamiliarBinding.hasBrewMastery(server) ? 0.05 : 0;
+        primaryChance += toadChance;
+        if (primaryChance > 0 && player.getRandom().nextDouble() <= primaryChance) bottled.grow(bonus);
+        if (babaHat && player.getRandom().nextDouble() <= 0.25 + toadChance) bottled.grow(bonus);
         return bottled;
     }
 

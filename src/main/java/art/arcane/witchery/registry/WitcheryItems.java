@@ -18,6 +18,7 @@ import art.arcane.witchery.item.MirrorItem;
 import art.arcane.witchery.item.OwnershipContractItem;
 import art.arcane.witchery.item.MutandisItem;
 import art.arcane.witchery.item.MysticBranchItem;
+import art.arcane.witchery.item.NecromanticStoneItem;
 import art.arcane.witchery.item.RitualChalkItem;
 import art.arcane.witchery.item.SeerStoneItem;
 import art.arcane.witchery.item.TaglockItem;
@@ -28,6 +29,7 @@ import art.arcane.witchery.item.VampiricPoppetItem;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.PoppetProtectionItem;
 import art.arcane.witchery.item.ThrowableBrewItem;
+import art.arcane.witchery.item.WitchClothingItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.item.WitchHandItem;
 import art.arcane.witchery.item.WitchWoodBlockItem;
@@ -44,7 +46,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -170,14 +171,10 @@ public final class WitcheryItems {
             case "witchhand" -> new WitchHandItem();
             case "demon_heart" -> new DemonHeartItem(WitcheryBlocks.getRequired("demonheart").get(), true);
             case "devilstonguecharm" -> new Item(new Item.Properties().durability(50).rarity(Rarity.UNCOMMON));
-            case "necromantic_stone" -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)) {
-                @Override
-                public boolean isFoil(ItemStack stack) {
-                    return true;
-                }
-            };
+            case "necromantic_stone" -> new NecromanticStoneItem();
             case "brew_of_ink" -> new ThrowableBrewItem(BrewImpacts::splashInk);
             case "brew_of_love" -> new ThrowableBrewItem(BrewImpacts::splashLove);
+            case "brew_of_raising" -> new ThrowableBrewItem(BrewImpacts::raiseDead);
             case "brew_of_grotesque" -> new DrinkableBrewItem(drinker ->
                     drinker.addEffect(new MobEffectInstance(WitcheryEffects.GROTESQUE.get(), 4_800, 0, false, false, false)));
             case "brew_of_the_depths" -> new DrinkableBrewItem(WitcheryEffects.DEPTHS, 6000, 0);
@@ -234,6 +231,10 @@ public final class WitcheryItems {
             case "creeper_heart" -> new Item(new Item.Properties().food(new FoodProperties.Builder()
                     .alwaysEat().effect(() -> new MobEffectInstance(MobEffects.CONFUSION, 20), 1.0F).build()));
             case "earmuffs" -> new ArmorItem(ArmorMaterials.LEATHER, ArmorItem.Type.HELMET, new Item.Properties());
+            case "witchhat" -> new WitchClothingItem.Dyeable(WitchClothingItem.Style.WITCH_HAT);
+            case "witchrobe" -> new WitchClothingItem.Dyeable(WitchClothingItem.Style.WITCH_ROBE);
+            case "necromancerrobe" -> new WitchClothingItem.Dyeable(WitchClothingItem.Style.NECROMANCER_ROBE);
+            case "babashat" -> new WitchClothingItem(WitchClothingItem.Style.BABA_HAT);
             case "witchwoodslab", "witchwooddoubleslab", "iceslab", "icedoubleslab", "snowslab", "snowdoubleslab" ->
                     createBlockItem(path);
             default -> new Item(new Item.Properties());

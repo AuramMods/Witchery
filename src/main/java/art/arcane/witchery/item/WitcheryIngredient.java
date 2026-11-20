@@ -59,10 +59,12 @@ public enum WitcheryIngredient {
     BREW_OF_INK(60, "brew_of_ink"),
     ROWAN_BERRIES(63, "rowan_berries"),
     NECROMANTIC_STONE(64, "necromantic_stone"),
+    BREW_OF_RAISING(65, "brew_of_raising"),
     SPECTRAL_DUST(66, "spectral_dust"),
     ENDER_DEW(67, "ender_dew"),
     GLOBE_ARTICHOKE(69, "globe_artichoke"),
     BREW_OF_GROTESQUE(71, "brew_of_grotesque"),
+    IMPREGNATED_LEATHER(72, "impregnated_leather"),
     FUME_FILTER(73, "fume_filter"),
     CREEPER_HEART(74, "creeper_heart"),
     BREW_OF_LOVE(75, "brew_of_love"),
@@ -126,6 +128,10 @@ public enum WitcheryIngredient {
         ItemStack stack = ItemStack.of(stackTag);
         if (!stack.isEmpty() && "witchery:crittersnare".equals(stackTag.getString("id"))) {
             CritterSnareBlock.applyLegacyMetadata(stack, stackTag.getInt("Damage"));
+            return stack;
+        }
+        if (stack.getItem() instanceof WitchClothingItem && stackTag.contains("Damage", Tag.TAG_ANY_NUMERIC)) {
+            stack.setDamageValue(Math.min(stackTag.getInt("Damage"), stack.getMaxDamage()));
             return stack;
         }
         if (!stack.isEmpty() && "witchery:poppet".equals(stackTag.getString("id"))) {

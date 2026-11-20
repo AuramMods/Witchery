@@ -19,6 +19,8 @@ import art.arcane.witchery.client.model.LordOfTormentModel;
 import art.arcane.witchery.client.model.NightmareModel;
 import art.arcane.witchery.client.model.WitchOwlModel;
 import art.arcane.witchery.client.model.WitchToadModel;
+import art.arcane.witchery.client.model.WitchClothingModel;
+import art.arcane.witchery.item.WitchClothingItem;
 import art.arcane.witchery.client.renderer.DreamCatcherRenderer;
 import art.arcane.witchery.client.renderer.BabaYagaRenderer;
 import art.arcane.witchery.client.renderer.BroomRenderer;
@@ -112,6 +114,9 @@ public final class WitcheryClient {
 
     @SubscribeEvent
     public static void registerModelLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        for (WitchClothingItem.Style style : WitchClothingItem.Style.values()) {
+            event.registerLayerDefinition(WitchClothingModel.layerId(style), () -> WitchClothingModel.layer(style));
+        }
         event.registerLayerDefinition(BabaYagaModel.LAYER, BabaYagaModel::layer);
         event.registerLayerDefinition(MandrakeModel.LAYER, MandrakeModel::layer);
         event.registerLayerDefinition(NightmareModel.LAYER, NightmareModel::layer);
@@ -252,6 +257,10 @@ public final class WitcheryClient {
 
     @SubscribeEvent
     public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
+        event.register((stack, tint) -> tint == 0 && stack.getItem() instanceof WitchClothingItem.Dyeable clothing
+                        ? clothing.getColor(stack) : -1,
+                WitcheryItems.getRequired("witchhat").get(), WitcheryItems.getRequired("witchrobe").get(),
+                WitcheryItems.getRequired("necromancerrobe").get());
         event.register((stack, tint) -> tint == 0 ? foliageColor(WitchWoodType.fromStack(stack)) : -1,
                 WitcheryBlocks.getRequired("witchleaves").get());
         event.register((stack, tint) -> {

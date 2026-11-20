@@ -1,0 +1,15 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"item": "witchery:bat_wool"},
+    {"item": "witchery:mutandis"},
+    {"item": "minecraft:redstone"},
+    {"item": "witchery:oil_of_vitriol"},
+    {"item": "minecraft:bone"},
+    {"item": "minecraft:rotten_flesh"}
+  ],
+  "result": {"item": "witchery:brew_of_raising", "count": 3},
+  "color": -12120505,
+  "power": 500,
+  "bottling_bonus": 1
+}

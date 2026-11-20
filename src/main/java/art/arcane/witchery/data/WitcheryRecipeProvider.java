@@ -5,6 +5,7 @@ import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
+import art.arcane.witchery.registry.WitcheryRecipes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.FinishedRecipe;
@@ -13,6 +14,7 @@ import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.data.recipes.SimpleCookingRecipeBuilder;
+import net.minecraft.data.recipes.SpecialRecipeBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
@@ -97,6 +99,29 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .pattern("QBQ")
                 .unlockedBy("has_quartz", has(Items.QUARTZ))
                 .save(recipeOutput);
+        Item impregnatedLeather = WitcheryIngredient.IMPREGNATED_LEATHER.item();
+        Item goldenThread = WitcheryIngredient.GOLDEN_THREAD.item();
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, impregnatedLeather, 4)
+                .define('M', WitcheryIngredient.WHIFF_OF_MAGIC.item())
+                .define('L', Items.LEATHER)
+                .define('D', WitcheryIngredient.DIAMOND_VAPOUR.item())
+                .pattern("MLM")
+                .pattern("LDL")
+                .pattern("MLM")
+                .unlockedBy("has_diamond_vapour", has(WitcheryIngredient.DIAMOND_VAPOUR.item()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, WitcheryItems.getRequired("witchhat").get())
+                .define('L', impregnatedLeather)
+                .define('S', goldenThread)
+                .define('G', Items.GLOWSTONE_DUST)
+                .pattern(" L ")
+                .pattern("SLS")
+                .pattern("LGL")
+                .unlockedBy("has_impregnated_leather", has(impregnatedLeather))
+                .save(recipeOutput);
+        robe(recipeOutput, "witchrobe", impregnatedLeather, goldenThread, WitcheryIngredient.CREEPER_HEART.item());
+        robe(recipeOutput, "necromancerrobe", impregnatedLeather, goldenThread, WitcheryIngredient.NECROMANTIC_STONE.item());
+        SpecialRecipeBuilder.special(WitcheryRecipes.CLOTHING_REPAIR.get()).save(recipeOutput, "witchery:repair_witch_clothing");
         ShapelessRecipeBuilder.shapeless(RecipeCategory.FOOD, WitcheryIngredient.ODD_PORKCHOP_RAW.item())
                 .requires(WitcheryIngredient.MUTANDIS.item())
                 .requires(Items.ROTTEN_FLESH)
@@ -283,5 +308,17 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .requires(WitcheryIngredient.CLAY_JAR.item(), 3)
                 .unlockedBy("has_odour_of_purity", has(WitcheryIngredient.ODOUR_OF_PURITY.item()))
                 .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "purified_milk_from_cake"));
+    }
+
+    private static void robe(Consumer<FinishedRecipe> recipeOutput, String path, Item leather, Item thread, Item center) {
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, WitcheryItems.getRequired(path).get())
+                .define('L', leather)
+                .define('S', thread)
+                .define('C', center)
+                .pattern("LSL")
+                .pattern("LCL")
+                .pattern("LLL")
+                .unlockedBy("has_impregnated_leather", has(leather))
+                .save(recipeOutput);
     }
 }

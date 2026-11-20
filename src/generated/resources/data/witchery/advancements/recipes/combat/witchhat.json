@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_impregnated_leather": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "witchery:impregnated_leather"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "witchery:witchhat"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_impregnated_leather",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "witchery:witchhat"
+    ]
+  },
+  "sends_telemetry_event": false
+}

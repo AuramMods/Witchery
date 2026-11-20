@@ -12,6 +12,7 @@ import art.arcane.witchery.infusion.OverworldInfusion;
 import art.arcane.witchery.item.DeathProtectionPoppetItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.VampiricPoppetItem;
+import art.arcane.witchery.item.WitchClothingItem;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.prediction.PredictedCourtship;
 import art.arcane.witchery.prediction.Predictions;
@@ -224,9 +225,12 @@ public final class WitcheryEventHooks {
     }
 
     @SubscribeEvent
-    public static void protectMinionOwner(LivingChangeTargetEvent event) {
-        if (event.getEntity() instanceof Mob mob && InfernalInfusion.owns(mob, event.getNewTarget())
-                && mob.hasEffect(WitcheryEffects.ENSLAVED.get())) event.setNewTarget(null);
+    public static void protectPlayerFromTargeting(LivingChangeTargetEvent event) {
+        if (event.getEntity() instanceof Mob mob && event.getNewTarget() instanceof ServerPlayer player
+                && (WitchClothingItem.deters(mob, player)
+                || InfernalInfusion.owns(mob, player) && mob.hasEffect(WitcheryEffects.ENSLAVED.get()))) {
+            event.setNewTarget(null);
+        }
     }
 
     @SubscribeEvent
@@ -262,6 +266,10 @@ public final class WitcheryEventHooks {
             if (InfusionEnergy.type(player) == InfernalInfusion.ID) {
                 CreaturePower power = CreaturePower.forId(CreaturePower.activeId(player));
                 if (power != null) power.hurt(player, event);
+            }
+            if (!event.isCanceled() && WitchClothingItem.evadeWithBabaHat(player, event.getSource())) {
+                event.setCanceled(true);
+                return;
             }
             if (!event.isCanceled()) VampiricPoppetItem.transferDamage(player, event);
             if (!event.isCanceled()) FamiliarBinding.shareDamage(player, event);

@@ -1,6 +1,6 @@
 {
    "parent" : "minecraft:item/generated",
    "textures" : {
-      "layer0" : "witchery:item/taglockkit"
+      "layer0" : "witchery:item/witcheshat"
    }
 }

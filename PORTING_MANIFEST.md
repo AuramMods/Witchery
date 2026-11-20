@@ -368,6 +368,8 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 ## Item Registry List (`WitcheryItems`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/WitcheryItems.java`
 
+The original `witchhat`, `witchrobe`, `necromancerrobe`, and `babashat` IDs equip the modeled clothing. The corresponding ingredient mapping uses `impregnated_leather` for 72 and `brew_of_raising` for 65. `necromantic_stone` issues commands to owned undead.
+
 | Field | Legacy Name |
 |---|---|
 | `GENERIC` | `witchery:ingredient` |

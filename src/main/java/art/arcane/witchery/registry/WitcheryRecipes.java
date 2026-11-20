@@ -4,6 +4,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.brewing.CauldronRitualRecipe;
 import art.arcane.witchery.brewing.KettleRecipe;
 import art.arcane.witchery.crafting.BoundTaglockIngredient;
+import art.arcane.witchery.crafting.ClothingRepairRecipe;
 import art.arcane.witchery.crafting.DistillingRecipe;
 import art.arcane.witchery.crafting.SpinningRecipe;
 import art.arcane.witchery.crafting.TaglockBindingRecipe;
@@ -67,6 +68,8 @@ public final class WitcheryRecipes {
             });
     public static final RegistryObject<RecipeSerializer<ItemRiteRecipe>> ITEM_RITE_SERIALIZER =
             SERIALIZERS.register("item_rite", ItemRiteRecipe.Serializer::new);
+    public static final RegistryObject<RecipeSerializer<ClothingRepairRecipe>> CLOTHING_REPAIR =
+            SERIALIZERS.register("repair_witch_clothing", () -> new SimpleCraftingRecipeSerializer<>(ClothingRepairRecipe::new));
     public static final RegistryObject<RecipeSerializer<TaglockBindingRecipe>> SIGN_OWNERSHIP_CONTRACT =
             SERIALIZERS.register("sign_ownership_contract", () -> new SimpleCraftingRecipeSerializer<>(
                     (id, category) -> new TaglockBindingRecipe(id, category, TaglockBindingRecipe.Binding.OWNERSHIP)));

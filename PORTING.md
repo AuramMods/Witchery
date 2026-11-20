@@ -5,6 +5,7 @@
 - Prefer creating full vertical skeletons (all systems present, minimal behavior) before polish.
 - Check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MEMORY.md` before starting work each session.
 - Check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before hunting for source details.
+- Run `./gradlew runData` before a separate `./gradlew jar` invocation when generated resources change. The data run can stage the previous resources before writing the new files. The `jar` invocation reprocesses them and reobfuscates without deploying into Auram.
 
 ## Witch's Oven Milestone (2026-11-19)
 
@@ -260,9 +261,18 @@
 - [x] Restore the Love and both rescue forecasts. A summoned farmer approached the standing player and produced a baby villager. Separate zombie attacks summoned a temporary Owl and a wild Wolf. Each attacked the zombie that hit its player. All 105 required GameTests, data generation and JAR reobfuscation passed.
 - [x] Verify a reading for a nearby player on a dedicated server. The trained player used the ball and the second muted client received the Wet forecast. The reader's record stayed empty. Entering water cleared the second player's reading.
 - [x] Restore both Baba Yaga forecasts, her hostile and allied encounters, boss HUD and animated mortar-and-pestle model. On dedicated Forge one forecast spawned an ally with the second player's name, and the other led to a hostile potion attack. The ally departed at the end of its visit. A name-only legacy ally fixture dropped gifts. A shortened fight yielded Baba's Hat and an enchanted book. All 107 required GameTests passed, including the wooden sword counter and original damage cap.
-- [ ] Restore the rest of Baba Yaga's thrown brews, brew gifts, and Baba's Hat equipment and abilities.
+- [ ] Restore the rest of Baba Yaga's thrown brews and brew gifts.
 - [x] Restore Crystal Ball viewing with a location-bound Waystone. The muted clients saw a marked platform and its entity 126 blocks away while an observer still saw the player at the ball. Releasing use and the Eye's 200-tick expiry both returned the view. A distant Waystone and a Nether Waystone failed to open it. The same package worked with clean Forge and an isolated Embeddium 0.3.31 and Oculus 1.8.0 profile. All 108 required GameTests passed.
 - [x] Restore Crystal Ball viewing with a filled Taglock Kit. A sample taken from another player's bed let the muted client follow that player across a chunk boundary over 180 blocks away. A self sample raised an Eye above the ball. A cow sample showed the cow's point of view. Transferring the cow to the Nether closed the view and left it alive. After a dedicated restart during a later viewing, the player returned beside the ball with the same filled kit and the cow retained its UUID. All 109 required GameTests passed.
+
+## Witch Clothing and Raising (2026-11-20)
+
+- [x] Restore Impregnated Leather, the Witch's Hat and Robes, the Necromancer's Robes, and the original worn models and sprites. The muted client crafted the leather and all three pieces and wore both hats and the Necromancer's Robes. At the crafting table a dyed robe lost its 37 damage and kept its enchantment, color and name. Imported legacy robe wear and color passed a fixture check.
+- [x] Restore the robes' protection against their original attackers and the four garments' kettle bonuses. The headless tests verified the Creeper and undead targeting rules, both of Baba's bonus rolls, and the two robes' separate recipe families. The muted survival client wore the Witch's Hat and Necromancer's Robes and bottled four Brews of Raising from a three-serving batch.
+- [x] Restore the Brew of Raising and the Necromantic Stone's general undead commands. The muted client filled a heated kettle and brewed the original six ingredients with 500 altar power. A thrown portion raised two owned zombies, and the Necromantic Stone sent them to attack a husk. All 113 required GameTests, data generation and JAR reobfuscation passed.
+- [x] Restore Baba's Hat equipment and its charge-powered evasion. The muted client equipped the hat previously earned from Baba Yaga. A test hit from a zombie left health unchanged, reduced charge by five and moved the player to a nearby open block. Environmental fire did not consume any infusion charge.
+- [x] Restart the packaged server after these interactions. Both zombies kept their UUIDs and owner, the repaired robe kept its tags, and Baba's Hat and the remaining infusion charge stayed saved.
+- [ ] Connect the garments to the advanced cauldron, Polynesia trades, and the later player forms and crossbow effects. Restore the Necromantic Stone's infused Grave use.
 
 ## Auram Pack Validation (2026-11-20)
 
