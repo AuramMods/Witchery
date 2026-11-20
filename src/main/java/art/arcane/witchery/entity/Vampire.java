@@ -1,5 +1,6 @@
 package art.arcane.witchery.entity;
 
+import art.arcane.witchery.block.entity.BloodCrucibleBlockEntity;
 import art.arcane.witchery.item.GlassGobletItem;
 import art.arcane.witchery.vampirism.BloodFeeding;
 import art.arcane.witchery.vampirism.Vampirism;
@@ -103,9 +104,19 @@ public final class Vampire extends PathfinderMob {
                 setTarget(null);
                 setLastHurtByMob(null);
                 restrictTo(home, 4);
+                fillNearbyCrucible(world);
             }
         } else if (bites == 0 && !hunting && tickCount % 500 == 2) {
             beginHunt(world);
+        }
+    }
+
+    private void fillNearbyCrucible(ServerLevel world) {
+        for (BlockPos pos : BlockPos.betweenClosed(home.offset(-6, -6, -6), home.offset(6, 6, 6))) {
+            if (world.hasChunkAt(pos) && world.getBlockEntity(pos) instanceof BloodCrucibleBlockEntity crucible) {
+                crucible.depositBlood();
+                return;
+            }
         }
     }
 

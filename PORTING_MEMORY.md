@@ -154,6 +154,12 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Daylight testing exposed a respawn bug that cleared the player's Witchery capability. Forge's revived provider can now expose a fresh capability handle to the clone handler. Respawn sends the copied data after the client has the new player. The final packaged server and muted client kept rank ten, the learned cap of ten and 1,114 blood through a controlled death and respawn. This test loaded the same rank-ten character from its pre-death save.
 - Data generation, JAR reobfuscation and all 167 required Forge GameTests passed. The older Rite of Charging fixture missed its output twice during earlier suite runs and succeeded on a diagnostic rerun.
 
+### Blood Crucible and Thunderstorm (2026-11-20)
+
+- The Blood Crucible recipe uses two stone brick stairs, two stone bricks and a stone brick slab. The block and block entity keep their original ID and the block entity reads `BloodLevel`. Four nightly hunts raise the vessel by five blood each. The client renders the liquid level independently of the stone bowl model.
+- Rank ten opens the fifth hotbar power slot. Globe Artichoke plus a full crucible grants five Thunderstorm uses. Thunderstorm starts five to fifteen minutes of rain and thunder in the Overworld. It spends one use and refuses a second cast while rain is already queued or active.
+- The muted survival client crafted and placed the bowl, saw the first red surface appear at five blood, and rejoined after a dedicated restart with that deposit intact. Three more actual hunts filled the bowl to 20. It spent one Globe Artichoke to charge Thunderstorm, cast once and tried again during the storm. The saved world reported active rain and thunder with 9,549 ticks remaining. After another restart the storm continued and the player rejoined with 1,114 blood and four charges. Java 17 data generation, reobfuscation and all 171 required Forge GameTests passed.
+
 ### Earlier Validation Continued
 
 - The medium Infernal Imp rite uses Refined Evil, Infernal Blood, Ender Pearl, Attuned Stone and 5,000 altar power. The muted client activated the real rite and verified the four offerings were refunded without the Seer Stone. With an active coven and the stone it summoned a 50-health Imp. The client used its own bed to fill the Taglock Kit and crafted the signed Contract of Ownership in its inventory. The same contract survived a restart, was refused with six levels, and bound Zul after 25 levels were paid. New registry and recipe data use protocol 9.

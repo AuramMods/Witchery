@@ -81,6 +81,7 @@ public final class Vampirism {
             data.setBloodPower(0);
             data.setHumanBlood(50);
             data.setVampireVision(false);
+            data.setVampireUltimate(VampireUltimate.NONE, 0);
             VampireFlight.leave(player, data);
             sync(player, data);
         });

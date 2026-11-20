@@ -148,6 +148,14 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .pattern("ICI")
                 .unlockedBy("has_daylight_detector", has(Blocks.DAYLIGHT_DETECTOR))
                 .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryBlocks.getRequired("bloodcrucible").get())
+                .define('S', Blocks.STONE_BRICK_STAIRS)
+                .define('B', Blocks.STONE_BRICKS)
+                .define('L', Blocks.STONE_BRICK_SLAB)
+                .pattern("S S")
+                .pattern("BLB")
+                .unlockedBy("has_stone_bricks", has(Blocks.STONE_BRICKS))
+                .save(recipeOutput);
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryIngredient.WEB.item())
                 .define('S', Items.STRING)
                 .define('W', Blocks.COBWEB)

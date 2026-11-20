@@ -20,10 +20,12 @@ public final class VampireAbilities {
     public static final int MESMERIZE = 2;
     public static final int SPEED = 3;
     public static final int BAT = 4;
+    public static final int ULTIMATE = 5;
 
     private VampireAbilities() {}
 
     public static int maxPower(int rank) {
+        if (rank >= 10) return ULTIMATE;
         if (rank >= 7) return BAT;
         if (rank >= 4) return SPEED;
         return rank >= 2 ? MESMERIZE : rank == 1 ? DRINK : 0;
@@ -50,7 +52,31 @@ public final class VampireAbilities {
             if (power == MESMERIZE) toggleVision(player, data);
             else if (power == SPEED) accelerate(player, data);
             else if (power == BAT) VampireFlight.toggle(player, data);
+            else if (power == ULTIMATE) useUltimate(player, data);
         });
+    }
+
+    public static boolean chargeUltimate(ServerPlayer player, VampireUltimate ultimate) {
+        return WitcheryPlayerDataProvider.get(player).map(data -> {
+            if (data.getVampireLevel() < 10) return false;
+            data.setVampireUltimate(ultimate, VampireUltimate.MAX_CHARGES);
+            Vampirism.sync(player, data);
+            return true;
+        }).orElse(false);
+    }
+
+    private static void useUltimate(ServerPlayer player, WitcheryPlayerData data) {
+        VampireUltimate ultimate = data.getVampireUltimate();
+        int charges = data.getVampireUltimateCharges();
+        if (charges == 0 || data.getCreatureTypeOrdinal() != 0 || !ultimate.activate(player)) {
+            player.playNotifySound(SoundEvents.NOTE_BLOCK_SNARE.value(), SoundSource.PLAYERS, 1, 0.5F);
+            return;
+        }
+        if (!player.getAbilities().instabuild) {
+            data.setVampireUltimate(ultimate, charges - 1);
+            Vampirism.sync(player, data);
+        }
+        player.playNotifySound(SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 1, 1);
     }
 
     public static void interact(ServerPlayer player, Entity target) {

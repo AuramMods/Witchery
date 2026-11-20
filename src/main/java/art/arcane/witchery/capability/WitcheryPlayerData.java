@@ -1,5 +1,6 @@
 package art.arcane.witchery.capability;
 
+import art.arcane.witchery.vampirism.VampireUltimate;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -20,6 +21,8 @@ public final class WitcheryPlayerData {
     private static final String KEY_VAMPIRE_QUEST_COUNTER = "VampireQuestCounter";
     private static final String KEY_VAMPIRE_QUEST_CHUNKS = "VampireQuestChunks";
     private static final String KEY_VAMPIRE_VISION = "VampireVision";
+    private static final String KEY_VAMPIRE_ULTIMATE = "VampireUltimate";
+    private static final String KEY_VAMPIRE_ULTIMATE_CHARGES = "VampireUltimateCharges";
     private static final String KEY_PREVIOUS_MAY_FLY = "VampirePreviousMayFly";
     private static final String KEY_PREVIOUS_FLYING = "VampirePreviousFlying";
     private static final String KEY_GROTESQUE_TICKS = "GrotesqueTicks";
@@ -45,6 +48,8 @@ public final class WitcheryPlayerData {
     private int vampireQuestCounter;
     private final List<VampireVillage> vampireQuestVillages = new ArrayList<>();
     private boolean vampireVision;
+    private VampireUltimate vampireUltimate = VampireUltimate.NONE;
+    private int vampireUltimateCharges;
     private boolean previousMayFly;
     private boolean previousFlying;
     private int selectedVampirePower;
@@ -157,6 +162,19 @@ public final class WitcheryPlayerData {
 
     public void setVampireVision(boolean active) {
         vampireVision = active;
+    }
+
+    public VampireUltimate getVampireUltimate() {
+        return vampireUltimate;
+    }
+
+    public int getVampireUltimateCharges() {
+        return vampireUltimateCharges;
+    }
+
+    public void setVampireUltimate(VampireUltimate ultimate, int charges) {
+        vampireUltimate = ultimate;
+        vampireUltimateCharges = ultimate == VampireUltimate.NONE ? 0 : Mth.clamp(charges, 0, VampireUltimate.MAX_CHARGES);
     }
 
     public void rememberFlight(boolean mayFly, boolean flying) {
@@ -297,6 +315,8 @@ public final class WitcheryPlayerData {
         vampireQuestVillages.clear();
         vampireQuestVillages.addAll(source.vampireQuestVillages);
         vampireVision = source.vampireVision;
+        vampireUltimate = source.vampireUltimate;
+        vampireUltimateCharges = source.vampireUltimateCharges;
         previousMayFly = source.previousMayFly;
         previousFlying = source.previousFlying;
         grotesqueTicks = source.grotesqueTicks;
@@ -333,6 +353,8 @@ public final class WitcheryPlayerData {
         }
         tag.put(KEY_VAMPIRE_QUEST_CHUNKS, villages);
         tag.putBoolean(KEY_VAMPIRE_VISION, vampireVision);
+        tag.putInt(KEY_VAMPIRE_ULTIMATE, vampireUltimate.ordinal());
+        tag.putInt(KEY_VAMPIRE_ULTIMATE_CHARGES, vampireUltimateCharges);
         tag.putBoolean(KEY_PREVIOUS_MAY_FLY, previousMayFly);
         tag.putBoolean(KEY_PREVIOUS_FLYING, previousFlying);
         tag.putInt(KEY_GROTESQUE_TICKS, grotesqueTicks);
@@ -375,6 +397,8 @@ public final class WitcheryPlayerData {
             vampireQuestVillages.add(new VampireVillage(dimension, record.getLong("Location")));
         }
         vampireVision = bloodData.getBoolean(KEY_VAMPIRE_VISION);
+        setVampireUltimate(VampireUltimate.fromId(bloodData.getInt(KEY_VAMPIRE_ULTIMATE)),
+                bloodData.getInt(KEY_VAMPIRE_ULTIMATE_CHARGES));
         previousMayFly = tag.getBoolean(KEY_PREVIOUS_MAY_FLY);
         previousFlying = tag.getBoolean(KEY_PREVIOUS_FLYING);
         selectedVampirePower = bloodData.getInt("SelectedVampirePower");

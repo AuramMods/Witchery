@@ -6,11 +6,13 @@ import art.arcane.witchery.config.WitcheryClientConfig;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.vampirism.BloodFeeding;
 import art.arcane.witchery.vampirism.VampireAbilities;
+import art.arcane.witchery.vampirism.VampireUltimate;
 import art.arcane.witchery.vampirism.Vampirism;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.npc.Villager;
@@ -27,6 +29,8 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import java.util.Locale;
+
 @Mod.EventBusSubscriber(modid = Witchery.MODID, value = Dist.CLIENT)
 public final class ClientVampirism {
     private static final ResourceLocation DROPLET = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "textures/gui/bdrop.png");
@@ -36,6 +40,9 @@ public final class ClientVampirism {
     private static final ResourceLocation EYE = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "textures/item/veye.png");
     private static final ResourceLocation SPEED = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "textures/item/vspeed.png");
     private static final ResourceLocation BAT = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "textures/item/vbat.png");
+    private static final ResourceLocation STORM = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "textures/item/vstorm.png");
+    private static final ResourceLocation SWARM = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "textures/item/vfist.png");
+    private static final ResourceLocation FARM = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "textures/item/vcoffin.png");
     private static int aimingAt = -1;
     private static int trackedBlood = -1;
     private static int nextReadTick;
@@ -66,7 +73,14 @@ public final class ClientVampirism {
     }
 
     private static void choose(LocalPlayer player, int power) {
-        WitcheryPlayerDataProvider.get(player).ifPresent(data -> data.setSelectedVampirePower(power));
+        WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
+            data.setSelectedVampirePower(power);
+            if (power == VampireAbilities.ULTIMATE) {
+                String ultimate = data.getVampireUltimate().name().toLowerCase(Locale.ROOT);
+                player.displayClientMessage(Component.translatable("message.witchery.vampire.ultimate." + ultimate,
+                        data.getVampireUltimateCharges()), true);
+            }
+        });
         WitcheryNetwork.requestVampirePower(power, false);
     }
 
@@ -149,9 +163,18 @@ public final class ClientVampirism {
                     case VampireAbilities.DRINK -> FANGS;
                     case VampireAbilities.MESMERIZE -> EYE;
                     case VampireAbilities.SPEED -> SPEED;
-                    default -> BAT;
+                    case VampireAbilities.BAT -> BAT;
+                    default -> switch (data.getVampireUltimate()) {
+                        case STORM -> STORM;
+                        case FARM -> FARM;
+                        default -> SWARM;
+                    };
                 };
+                boolean faded = power == VampireAbilities.ULTIMATE
+                        && (data.getVampireUltimate() == VampireUltimate.NONE || data.getVampireUltimateCharges() == 0);
+                if (faded) graphics.setColor(1, 1, 1, 0.20F);
                 graphics.blit(icon, left + 3, top + 3, 0, 0, 16, 16, 16, 16);
+                if (faded) graphics.setColor(1, 1, 1, 1);
             }
             if (trackedBlood >= 0) {
                 int portion = BloodFeeding.MAX_MORTAL_BLOOD / 4;

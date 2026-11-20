@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:stone_bricks"
+    },
+    "L": {
+      "item": "minecraft:stone_brick_slab"
+    },
+    "S": {
+      "item": "minecraft:stone_brick_stairs"
+    }
+  },
+  "pattern": [
+    "S S",
+    "BLB"
+  ],
+  "result": {
+    "item": "witchery:bloodcrucible"
+  },
+  "show_notification": true
+}

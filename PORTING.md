@@ -367,7 +367,15 @@
 - [x] Preserve the converted vampire and the player's progression. A dedicated restart kept the same creature UUID and home position, the empty goblet, rank ten and 1,114 blood.
 - [x] Verify the vampire's nightly hunt. The mob selected an occupied village, took five nonlethal bites and returned home. The hunted villager's blood went from 500 to 400.
 - [x] Preserve Witchery progress through player respawn. After a deliberate death in the headless server, the muted client respawned at rank ten with a cap of ten and 1,114 blood. Java 17 data generation, the reobfuscated JAR and all 167 required Forge GameTests passed.
-- [ ] Restore the Blood Crucible and ultimate powers, vampire equipment, guard conversions, village responses and the cure.
+- [ ] Restore vampire equipment, guard conversions, village responses and the cure.
+
+## Blood Crucible and Thunderstorm (2026-11-20)
+
+- [x] Craft and place the Blood Crucible in survival. The muted client assembled the original stone brick recipe and confirmed that an empty vessel refused Globe Artichoke.
+- [x] Fill the vessel with four completed vampire hunts. The client saw the blood surface after the first five-point deposit. A dedicated restart preserved the deposit. Three later hunts raised the same vessel to 10, 15 and 20 blood.
+- [x] Offer a Globe Artichoke at rank ten. The vessel emptied, one artichoke was consumed and Thunderstorm gained five uses. The muted client selected the original storm icon and cast through the gameplay controls. The world switched to rain and thunder, and four charges and 1,114 blood remained. An attempt during the storm kept all four charges.
+- [x] Restart during the active Thunderstorm. The same player logged in with four charges and 1,114 blood, the vessel stayed empty and the saved thunderstorm continued. Java 17 data generation, JAR reobfuscation and all 171 required Forge GameTests passed.
+- [ ] Restore and verify the Bat Swarm and coffin-to-village ultimate powers.
 
 ## Auram Pack Validation (2026-11-20)
 
