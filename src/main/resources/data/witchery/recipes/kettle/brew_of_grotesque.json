@@ -1,0 +1,14 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"item": "witchery:mutandis_extremis"},
+    {"item": "witchery:mandrake_root"},
+    {"item": "witchery:globe_artichoke"},
+    {"item": "witchery:dog_tongue"},
+    {"item": "minecraft:golden_apple"},
+    {"item": "minecraft:poisonous_potato"}
+  ],
+  "result": {"item": "witchery:brew_of_grotesque", "count": 3},
+  "color": -13491946,
+  "power": 500
+}

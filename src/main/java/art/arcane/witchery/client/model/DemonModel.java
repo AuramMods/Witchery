@@ -40,12 +40,7 @@ public final class DemonModel extends EntityModel<Demon> {
     public static LayerDefinition layer() {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
-        root.addOrReplaceChild("head", CubeListBuilder.create()
-                .texOffs(0, 0).addBox(-4, -8, -4, 8, 8, 8)
-                .texOffs(0, 16).addBox(4, -12, -0.5F, 1, 8, 1).addBox(-5, -12, -0.5F, 1, 8, 1)
-                .texOffs(4, 16).addBox(1, -4, -5, 1, 2, 1).addBox(-2, -4, -5, 1, 2, 1)
-                .texOffs(8, 16).addBox(-2, -2, -6, 4, 1, 2)
-                .texOffs(20, 16).addBox(-1, -6, -6, 2, 3, 2), PartPose.offset(0, -9, 0));
+        root.addOrReplaceChild("head", headGeometry(), PartPose.offset(0, -9, 0));
         root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(64, 0).addBox(-4, 0, -3, 8, 14, 6),
                 PartPose.offset(0, -9, 0));
         root.addOrReplaceChild("right_arm", CubeListBuilder.create().texOffs(48, 0).addBox(-3, -2, -2, 4, 20, 4),
@@ -61,6 +56,15 @@ public final class DemonModel extends EntityModel<Demon> {
         root.addOrReplaceChild("left_wing", CubeListBuilder.create().texOffs(93, 0).addBox(0, 0, 0, 14, 21, 0),
                 PartPose.offsetAndRotation(-1, -8, 3, -0.3047F, 3.8114F, 0.6283F));
         return LayerDefinition.create(mesh, 128, 32);
+    }
+
+    public static CubeListBuilder headGeometry() {
+        return CubeListBuilder.create()
+                .texOffs(0, 0).addBox(-4, -8, -4, 8, 8, 8)
+                .texOffs(0, 16).addBox(4, -12, -0.5F, 1, 8, 1).addBox(-5, -12, -0.5F, 1, 8, 1)
+                .texOffs(4, 16).addBox(1, -4, -5, 1, 2, 1).addBox(-2, -4, -5, 1, 2, 1)
+                .texOffs(8, 16).addBox(-2, -2, -6, 4, 1, 2)
+                .texOffs(20, 16).addBox(-1, -6, -6, 2, 3, 2);
     }
 
     @Override

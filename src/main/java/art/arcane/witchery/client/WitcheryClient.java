@@ -14,21 +14,25 @@ import art.arcane.witchery.client.model.NightmareModel;
 import art.arcane.witchery.client.renderer.DreamCatcherRenderer;
 import art.arcane.witchery.client.renderer.DemonRenderer;
 import art.arcane.witchery.client.renderer.DemonHeartRenderer;
+import art.arcane.witchery.client.renderer.GrotesqueLayer;
 import art.arcane.witchery.client.renderer.KettleRenderer;
 import art.arcane.witchery.client.renderer.MandrakeRenderer;
 import art.arcane.witchery.client.renderer.NightmareRenderer;
 import art.arcane.witchery.client.renderer.PlacedItemRenderer;
 import art.arcane.witchery.client.renderer.SleepingBodyRenderer;
 import art.arcane.witchery.client.renderer.SpinningWheelRenderer;
+import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
+import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcheryMenus;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
+import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
@@ -54,10 +58,20 @@ public final class WitcheryClient {
         event.registerLayerDefinition(MandrakeModel.LAYER, MandrakeModel::layer);
         event.registerLayerDefinition(NightmareModel.LAYER, NightmareModel::layer);
         event.registerLayerDefinition(DemonModel.LAYER, DemonModel::layer);
+        event.registerLayerDefinition(GrotesqueLayer.LAYER, GrotesqueLayer::layer);
         event.registerLayerDefinition(DemonHeartRenderer.LAYER, DemonHeartRenderer::layer);
         event.registerLayerDefinition(DreamCatcherRenderer.LAYER, DreamCatcherRenderer::layer);
         event.registerLayerDefinition(KettleRenderer.LAYER, KettleRenderer::layer);
         event.registerLayerDefinition(SpinningWheelRenderer.LAYER, SpinningWheelRenderer::layer);
+    }
+
+    @SubscribeEvent
+    public static void addPlayerLayers(EntityRenderersEvent.AddLayers event) {
+        for (String skin : event.getSkins()) {
+            if (event.getPlayerSkin(skin) instanceof PlayerRenderer renderer) {
+                renderer.addLayer(new GrotesqueLayer(renderer, event.getContext().bakeLayer(GrotesqueLayer.LAYER)));
+            }
+        }
     }
 
     @SubscribeEvent
@@ -88,6 +102,9 @@ public final class WitcheryClient {
                 ItemProperties.register(WitcheryBlocks.getRequired(name).get().asItem(), WOOD_TYPE_MODEL,
                         (stack, level, entity, seed) -> WitchWoodType.fromStack(stack).ordinal());
             }
+            ItemProperties.register(WitcheryItems.getRequired("taglockkit").get(),
+                    ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "bound"),
+                    (stack, level, entity, seed) -> TaglockItem.isBound(stack) ? 1 : 0);
 
             for (String name : new String[]{
                     "belladonna", "mandrake", "artichoke", "snowbell", "wormwood", "mindrake", "wolfsbane", "garlicplant",

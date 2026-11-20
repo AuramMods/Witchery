@@ -1,0 +1,14 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "medium", "glyph": "witchery:circleglyphinfernal"}],
+  "sacrifices": [
+    {"type": "witchery:bound_taglock"},
+    {"item": "witchery:exhale_of_the_horned_one"},
+    {"item": "witchery:mellifluous_hunger"},
+    {"item": "witchery:tormented_twine"},
+    {"item": "minecraft:diamond"},
+    {"item": "witchery:brew_of_grotesque"}
+  ],
+  "power": 10000,
+  "action": "curse_waking_nightmare"
+}

@@ -1,7 +1,10 @@
 package art.arcane.witchery.event;
 
 import art.arcane.witchery.block.DreamCatcherBlock;
+import art.arcane.witchery.brewing.GrotesqueEffect;
+import art.arcane.witchery.brewing.WakingNightmareEffect;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.registry.WitcheryEffects;
@@ -14,6 +17,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
@@ -46,6 +50,7 @@ public final class WitcheryEventHooks {
     @SubscribeEvent
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
+            GrotesqueEffect.restoreLegacyBrew(serverPlayer);
             WitcheryPlayerDataProvider.get(serverPlayer).ifPresent(data -> {
                 if (data.getOtherPlayerSkin().isEmpty()) {
                     data.applyPlayerStyle(
@@ -120,6 +125,7 @@ public final class WitcheryEventHooks {
             return;
         }
         DreamTravel.spawnNightmare(serverPlayer);
+        WakingNightmareEffect.tickCurse(serverPlayer);
 
         if (serverPlayer.level().getGameTime() % 20 == 0 && serverPlayer.hasEffect(WitcheryEffects.DEPTHS.get())) {
             if (serverPlayer.isEyeInFluid(FluidTags.WATER)) {
@@ -146,6 +152,17 @@ public final class WitcheryEventHooks {
             event.setCanceled(true);
             player.setHealth(1);
             DreamTravel.requestWake(player);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerInteractWithEntity(PlayerInteractEvent.EntityInteract event) {
+        if (event.getItemStack().getItem() instanceof TaglockItem kit && event.getTarget() instanceof LivingEntity target) {
+            InteractionResult result = kit.collectFromEntity(event.getEntity(), event.getHand(), target);
+            if (result.consumesAction()) {
+                event.setCanceled(true);
+                event.setCancellationResult(result);
+            }
         }
     }
 

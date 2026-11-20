@@ -1,5 +1,6 @@
 package art.arcane.witchery.entity;
 
+import art.arcane.witchery.brewing.WakingNightmareEffect;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
@@ -84,18 +85,18 @@ public final class Nightmare extends Monster {
 
     @Override
     public boolean canAttack(LivingEntity target) {
-        return super.canAttack(target) && (!hasVictim() || target instanceof Player player && targets(player));
+        return super.canAttack(target) && (!hasVictim() || targets(target));
     }
 
-    public void assignVictim(ServerPlayer player) {
-        victimId = player.getUUID();
-        victimName = player.getGameProfile().getName();
-        setTarget(player);
+    public void assignVictim(LivingEntity victim) {
+        victimId = victim.getUUID();
+        victimName = victim instanceof Player player ? player.getGameProfile().getName() : victim.getName().getString();
+        setTarget(victim);
     }
 
-    public boolean targets(Player player) {
-        return victimId != null ? victimId.equals(player.getUUID())
-                : victimName.equalsIgnoreCase(player.getGameProfile().getName());
+    public boolean targets(LivingEntity victim) {
+        return victimId != null ? victimId.equals(victim.getUUID())
+                : victim instanceof Player player && victimName.equalsIgnoreCase(player.getGameProfile().getName());
     }
 
     private boolean hasVictim() {
@@ -115,11 +116,13 @@ public final class Nightmare extends Monster {
             entityData.set(DEFENDED, false);
         }
         if (hasVictim()) {
-            Player victim = victimId == null ? level.players().stream().filter(this::targets).findFirst().orElse(null)
-                    : level.getPlayerByUUID(victimId);
-            if (victim instanceof ServerPlayer player && player.isAlive() && distanceToSqr(player) <= 256
-                    && DreamTravel.isNightmare(player) && canAttack(player)) {
-                if (getTarget() != player) setTarget(player);
+            Entity target = victimId == null ? level.players().stream().filter(this::targets).findFirst().orElse(null)
+                    : level.getEntity(victimId);
+            if (target instanceof LivingEntity victim && victim.isAlive() && distanceToSqr(victim) <= 256
+                    && (level.dimension().equals(WitcheryDimensions.DREAM)
+                    ? victim instanceof ServerPlayer player && DreamTravel.isNightmare(player)
+                    : WakingNightmareEffect.isHaunted(victim)) && canAttack(victim)) {
+                if (getTarget() != victim) setTarget(victim);
             } else if (tickCount > 30) {
                 level.sendParticles(ParticleTypes.POOF, getX(), getY(0.5), getZ(), 16, 0.3, 0.55, 0.3, 0.02);
                 discard();

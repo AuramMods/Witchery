@@ -13,6 +13,7 @@ import art.arcane.witchery.item.FilledChaliceItem;
 import art.arcane.witchery.item.IcyNeedleItem;
 import art.arcane.witchery.item.MutandisItem;
 import art.arcane.witchery.item.RitualChalkItem;
+import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.ThrowableBrewItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.item.WitchWoodBlockItem;
@@ -124,6 +125,7 @@ public final class WitcheryItems {
             case "buckethollowtears" -> new BucketItem(WitcheryFluids.getRequiredSource("hollowtears"), bucketProperties);
             case "bucketbrew" -> new BucketItem(WitcheryFluids.getRequiredSource("brew"), bucketProperties);
             case "anointing_paste" -> new AnointingPasteItem(new Item.Properties());
+            case "taglockkit" -> new TaglockItem();
             case "arthana" -> new ArthanaItem();
             case "demon_heart" -> new DemonHeartItem(WitcheryBlocks.getRequired("demonheart").get(), true);
             case "devilstonguecharm" -> new Item(new Item.Properties().durability(50).rarity(Rarity.UNCOMMON));
@@ -135,6 +137,8 @@ public final class WitcheryItems {
             };
             case "brew_of_ink" -> new ThrowableBrewItem(BrewImpacts::splashInk);
             case "brew_of_love" -> new ThrowableBrewItem(BrewImpacts::splashLove);
+            case "brew_of_grotesque" -> new DrinkableBrewItem(drinker ->
+                    drinker.addEffect(new MobEffectInstance(WitcheryEffects.GROTESQUE.get(), 4_800, 0, false, false, false)));
             case "brew_of_the_depths" -> new DrinkableBrewItem(WitcheryEffects.DEPTHS, 6000, 0);
             case "brew_of_sleeping" -> new DrinkableBrewItem(DreamTravel::requestSleep);
             case "brew_of_flowing_spirit" -> new ThrowableBrewItem(BrewImpacts::depositSpirit);

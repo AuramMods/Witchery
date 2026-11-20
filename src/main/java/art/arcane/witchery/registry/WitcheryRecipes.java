@@ -3,14 +3,17 @@ package art.arcane.witchery.registry;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.brewing.CauldronRitualRecipe;
 import art.arcane.witchery.brewing.KettleRecipe;
+import art.arcane.witchery.crafting.BoundTaglockIngredient;
 import art.arcane.witchery.crafting.DistillingRecipe;
 import art.arcane.witchery.crafting.SpinningRecipe;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.RegisterEvent;
 import net.minecraftforge.registries.RegistryObject;
 
 public final class WitcheryRecipes {
@@ -69,5 +72,12 @@ public final class WitcheryRecipes {
     public static void register(IEventBus bus) {
         TYPES.register(bus);
         SERIALIZERS.register(bus);
+        bus.addListener(WitcheryRecipes::registerIngredients);
+    }
+
+    private static void registerIngredients(RegisterEvent event) {
+        if (event.getRegistryKey().equals(Registries.RECIPE_SERIALIZER)) {
+            CraftingHelper.register(BoundTaglockIngredient.ID, BoundTaglockIngredient.SERIALIZER);
+        }
     }
 }

@@ -1,7 +1,9 @@
 package art.arcane.witchery.block.entity;
 
 import art.arcane.witchery.block.RiteHeartBlock;
+import art.arcane.witchery.brewing.WakingNightmareEffect;
 import art.arcane.witchery.entity.Demon;
+import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.power.AltarPower;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
@@ -23,6 +25,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -79,11 +82,12 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             return;
         }
         BlockPos pos = getBlockPos();
-        boolean needsNight = false;
+        String reason = "message.witchery.rite.unknown";
         for (ItemRiteRecipe rite : level.getRecipeManager().getAllRecipesFor(WitcheryRecipes.ITEM_RITE.get())) {
             if (rite.hasCircles(level, pos) && rite.findSacrifices(level, pos, 0) != null) {
-                if (!rite.canStart(level)) {
-                    needsNight = true;
+                String failure = rite.startFailure(level);
+                if (failure != null) {
+                    reason = failure;
                     continue;
                 }
                 activeRite = rite.id();
@@ -96,8 +100,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             }
         }
         if (player != null) {
-            player.displayClientMessage(Component.translatable(needsNight
-                    ? "message.witchery.rite.night_only" : "message.witchery.rite.unknown"), true);
+            player.displayClientMessage(Component.translatable(reason), true);
         }
         failSound(level);
     }
@@ -144,6 +147,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         }
         List<ServerPlayer> recipients = List.of();
         Entity result = null;
+        LivingEntity curseTarget = null;
         if (rite.action() == ItemRiteRecipe.Action.MANIFESTATION) {
             double centerX = pos.getX() + 0.5;
             double centerZ = pos.getZ() + 0.5;
@@ -164,6 +168,15 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             }
             demon.summonedByRite();
             result = demon;
+        } else if (rite.action() == ItemRiteRecipe.Action.CURSE_WAKING_NIGHTMARE
+                || rite.action() == ItemRiteRecipe.Action.CURE_WAKING_NIGHTMARE) {
+            curseTarget = sacrificed.stream().filter(stack -> stack.getItem() instanceof TaglockItem)
+                    .map(stack -> TaglockItem.resolveTarget(level, stack))
+                    .filter(target -> target != null && target.isAlive()).findFirst().orElse(null);
+            if (curseTarget == null) {
+                abort(level, "message.witchery.rite.no_taglock_target");
+                return;
+            }
         } else {
             ItemEntity drop = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
                     rite.result().copy(), 0, 0.3, 0);
@@ -181,6 +194,9 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (living != null) {
             level.sendParticles(ParticleTypes.PORTAL, living.getX(), living.getY(0.5), living.getZ(), 16, 0.4, 0.6, 0.4, 0.05);
             living.discard();
+        }
+        if (curseTarget != null) {
+            WakingNightmareEffect.changeCurse(curseTarget, rite.action() == ItemRiteRecipe.Action.CURSE_WAKING_NIGHTMARE);
         }
         for (ServerPlayer recipient : recipients) {
             DreamTravel.grantManifestation(recipient, MANIFEST_DURATION);

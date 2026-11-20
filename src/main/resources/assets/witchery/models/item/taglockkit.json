@@ -1,6 +1,12 @@
 {
-   "parent" : "minecraft:item/generated",
-   "textures" : {
-      "layer0" : "witchery:item/taglockkit"
-   }
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "witchery:item/taglockkit"
+  },
+  "overrides": [
+    {
+      "predicate": { "witchery:bound": 1 },
+      "model": "witchery:item/taglockkit_full"
+    }
+  ]
 }

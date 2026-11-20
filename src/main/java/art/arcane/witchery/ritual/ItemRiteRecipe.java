@@ -39,7 +39,9 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
     public enum Action {
         ITEM,
         MANIFESTATION,
-        SUMMON_DEMON
+        SUMMON_DEMON,
+        CURSE_WAKING_NIGHTMARE,
+        CURE_WAKING_NIGHTMARE
     }
 
     public record Ring(RitualCircle pattern, Block glyph) {
@@ -49,8 +51,11 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         return rings.stream().allMatch(ring -> ring.pattern.matches(level, pos, ring.glyph));
     }
 
-    public boolean canStart(ServerLevel level) {
-        return !nightOnly || level.isNight();
+    @Nullable
+    public String startFailure(ServerLevel level) {
+        if (nightOnly && !level.isNight()) return "message.witchery.rite.night_only";
+        if (action == Action.CURSE_WAKING_NIGHTMARE && !level.isThundering()) return "message.witchery.rite.storm_only";
+        return null;
     }
 
     @Nullable
@@ -178,6 +183,8 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 case "item" -> Action.ITEM;
                 case "manifestation" -> Action.MANIFESTATION;
                 case "summon_demon" -> Action.SUMMON_DEMON;
+                case "curse_waking_nightmare" -> Action.CURSE_WAKING_NIGHTMARE;
+                case "cure_waking_nightmare" -> Action.CURE_WAKING_NIGHTMARE;
                 default -> throw new JsonSyntaxException("Unknown rite action for " + id);
             };
             ItemStack result = action == Action.ITEM

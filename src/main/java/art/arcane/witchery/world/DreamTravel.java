@@ -153,6 +153,25 @@ public final class DreamTravel {
         }
     }
 
+    public static void spawnWakingNightmare(LivingEntity victim, int intensity) {
+        if (!(victim.level() instanceof ServerLevel level) || !victim.isAlive() || level.dimension().equals(WitcheryDimensions.DREAM)
+                || level.getDifficulty() == Difficulty.PEACEFUL || !level.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)
+                || victim instanceof Player player && (player.isSpectator() || player.getAbilities().instabuild)) {
+            return;
+        }
+        int interval = intensity > 4 ? 30 : intensity > 2 ? 60 : 180;
+        if (victim.getRandom().nextInt(interval) != 0) return;
+        AABB nearby = victim.getBoundingBox().inflate(16, 8, 16);
+        if (!level.getEntitiesOfClass(Nightmare.class, nearby, nightmare -> nightmare.isAlive() && nightmare.targets(victim)).isEmpty()) {
+            return;
+        }
+        Nightmare nightmare = WitcheryEntities.NIGHTMARE.get().create(level);
+        if (nightmare != null) {
+            nightmare.assignVictim(victim);
+            spawnNear(victim, nightmare, 2, 6);
+        }
+    }
+
     private static void spawnDemonicHazard(ServerPlayer player, AABB nearby) {
         ServerLevel level = player.serverLevel();
         double chance = player.getRandom().nextDouble();
@@ -181,12 +200,12 @@ public final class DreamTravel {
         }
     }
 
-    private static void spawnNear(ServerPlayer player, Mob mob, int minRange, int maxRange) {
-        ServerLevel level = player.serverLevel();
-        BlockPos near = player.blockPosition();
+    private static void spawnNear(LivingEntity target, Mob mob, int minRange, int maxRange) {
+        ServerLevel level = (ServerLevel) target.level();
+        BlockPos near = target.blockPosition();
         int span = maxRange - minRange;
-        int dx = player.getRandom().nextInt(span * 2 + 1) - span;
-        int dz = player.getRandom().nextInt(span * 2 + 1) - span;
+        int dx = target.getRandom().nextInt(span * 2 + 1) - span;
+        int dz = target.getRandom().nextInt(span * 2 + 1) - span;
         BlockPos column = near.offset(dx + minRange * Integer.signum(dx), 0, dz + minRange * Integer.signum(dz));
         for (int offset = 0; offset <= 8; offset++) {
             BlockPos above = column.above(offset);
