@@ -8,6 +8,7 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.BooleanValue RESTRICT_TAGLOCK_COLLECTION_ON_NON_PVP_SERVERS;
     public static final ForgeConfigSpec.BooleanValue RESTRICT_TAGLOCK_COLLECTION_FOR_OPS;
     public static final ForgeConfigSpec.IntValue COVEN_WITCH_SPAWN_WEIGHT;
+    public static final ForgeConfigSpec.BooleanValue RESTRICT_POPPET_SHELVES;
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -23,6 +24,9 @@ public final class WitcheryServerConfig {
         COVEN_WITCH_SPAWN_WEIGHT = builder
                 .comment("One in this many otherwise suitable spawn attempts produces a coven witch.")
                 .defineInRange("covenWitchSpawnWeight", 2, 1, Integer.MAX_VALUE);
+        RESTRICT_POPPET_SHELVES = builder
+                .comment("Limit Poppet Shelf protection to the Overworld, Nether, End, and Dream.")
+                .define("restrictPoppetShelvesToVanillaAndSpiritDimensions", true);
         SPEC = builder.build();
     }
 

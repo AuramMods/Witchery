@@ -27,6 +27,7 @@ import art.arcane.witchery.client.renderer.MandrakeRenderer;
 import art.arcane.witchery.client.renderer.MirrorBlockRenderer;
 import art.arcane.witchery.client.renderer.NightmareRenderer;
 import art.arcane.witchery.client.renderer.PlacedItemRenderer;
+import art.arcane.witchery.client.renderer.PoppetShelfRenderer;
 import art.arcane.witchery.client.renderer.ReflectionRenderer;
 import art.arcane.witchery.client.renderer.SleepingBodyRenderer;
 import art.arcane.witchery.client.renderer.SpinningWheelRenderer;
@@ -135,6 +136,7 @@ public final class WitcheryClient {
         event.registerBlockEntityRenderer(WitcheryBlockEntities.KETTLE.get(), KettleRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.SPINNING_WHEEL.get(), SpinningWheelRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.PLACED_ITEM.get(), PlacedItemRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.POPPET_SHELF.get(), PoppetShelfRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.DREAM_CATCHER.get(), DreamCatcherRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.DEMON_HEART.get(), DemonHeartRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.MIRROR.get(), MirrorBlockRenderer::new);

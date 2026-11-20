@@ -120,7 +120,8 @@
 - [x] Restore the recharging rite with a standard Regeneration potion and upkeep of 40 altar power per second. The dedicated restart retained the active rite and the player's 180 charge outside the circle. The muted client reentered, reached the 200-charge cap, and stopped the rite at the heart.
 - [x] Restore the Light and Otherwhere infusion recipes.
 - [x] Restore the infusion charge HUD and the Witch's Hand drop.
-- [ ] Restore the Poppet Shelf and the remaining types of poppets.
+- [x] Restore the Poppet Shelf.
+- [ ] Restore the remaining types of poppets.
 
 ## Infernal Infusion and Voodoo Poppets (2026-11-19)
 
@@ -128,7 +129,8 @@
 - [x] Restore Infernal Animus in the kettle using Redstone Soup, a strong Harming potion, Voodoo Poppet, Demon Heart, Refined Evil and Blaze Rod. A hopper fed the used, bound Voodoo Poppet into the kettle, and the muted client obtained two portions using strong splash Harming. GameTests also cover the strong drinking potion.
 - [x] Restore the 4,000-power Infernal infusion rite. The muted client replaced its Overworld infusion with ID 4 and 200 charge. The bound Death Protection Poppet was consumed and restored ten health.
 - [x] Verify Voodoo protection in the muted dedicated-server client. A self-targeted cast reflected from a matching ward and added 350 wear to both poppets.
-- [ ] Extend Voodoo protection to Poppet Shelves and Witch Hunter equipment.
+- [x] Extend Voodoo protection to Poppet Shelves.
+- [ ] Restore Witch Hunter equipment and its interactions with wards.
 
 ## Mystic Branch and the Soul Brew Spells (2026-11-19)
 
@@ -178,6 +180,13 @@
 - [x] Build the reobfuscated Java 17 JAR and run all 65 required Forge GameTests. The tests cover legacy minion names, sacrifices, the secondary charge cap, effects, fireballs, arrows and cobwebs. Legacy ingredient 56 migrates to `witchery:thrown_web` and the existing `witchery:web` block item retains its ID.
 - [x] The dedicated restart retained the minion's owner, the bat power and nine creature charges. On the packaged server with `allow-flight=false`, the muted survival client held jump for 6.8 seconds, rose from Y 110 to Y 168.8, remained connected and took two damage after landing.
 - [ ] Verify acquiring the Owl and Toad powers through their survival entities. Their entity ports remain pending.
+
+## Poppet Shelf (2026-11-20)
+
+- [x] Restore the recipe with four Attuned Stones, four Nether Brick blocks, and green wool. The muted client crafted and placed a shelf, opened its nine slots, inserted three bound wards and rendered all three on the shelf. A comparator responded to its contents.
+- [x] Use Forge ticking tickets to keep shelves available at a distance. A shelf 480 blocks away consumed its Fire Protection Poppet to absorb lethal fire. After a dedicated restart, the same shelf and its two remaining wards were available before any player logged in. Its Death Protection Poppet absorbed lethal damage while the owner was in the Nether.
+- [x] Keep the original dimension restriction by default. Restore legacy inventory and owner data. The 68 required Forge GameTests covered the recipe, legacy ward subtype, inventory priority, comparator and ticket removal. Java 17 data generation and reobfuscation succeeded.
+- [x] Cast with a Voodoo Poppet in the muted client and verify that the remote ward reflected it. Both poppets took 350 wear. The survival client broke the shelf with an axe, collected the shelf and the worn ward, and the chunk unloaded after the player left. A packaged restart retained a real shelf ticket and removed an injected stale ticket at an empty location.
 
 ## Auram Pack Validation (2026-11-20)
 

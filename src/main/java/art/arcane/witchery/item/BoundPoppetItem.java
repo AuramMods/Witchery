@@ -1,11 +1,13 @@
 package art.arcane.witchery.item;
 
+import art.arcane.witchery.block.entity.PoppetShelfBlockEntity;
+import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.Container;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -22,13 +24,28 @@ public class BoundPoppetItem extends Item {
         super(new Properties().stacksTo(1));
     }
 
-    static ItemStack inInventory(ServerPlayer player, Item type) {
-        Inventory inventory = player.getInventory();
-        for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
-            ItemStack stack = inventory.getItem(slot);
-            if (stack.is(type) && TaglockItem.isBoundTo(stack, player)) return stack;
+    public static boolean isPoppet(ItemStack stack) {
+        return stack.getItem() instanceof BoundPoppetItem || stack.is(WitcheryItems.getRequired("poppet").get());
+    }
+
+    static boolean useWard(ServerPlayer player, Item type, int amount) {
+        if (useWard(player.getInventory(), player, type, amount)) return true;
+        for (PoppetShelfBlockEntity shelf : PoppetShelfBlockEntity.activeShelves(player.server)) {
+            if (useWard(shelf, player, type, amount)) return true;
         }
-        return ItemStack.EMPTY;
+        return false;
+    }
+
+    private static boolean useWard(Container container, ServerPlayer player, Item type, int amount) {
+        for (int slot = 0; slot < container.getContainerSize(); slot++) {
+            ItemStack stack = container.getItem(slot);
+            if (!stack.is(type) || !TaglockItem.isBoundTo(stack, player)) continue;
+            wear(stack, amount);
+            if (stack.isEmpty()) container.setItem(slot, ItemStack.EMPTY);
+            else container.setChanged();
+            return true;
+        }
+        return false;
     }
 
     static void wear(ItemStack poppet, int amount) {

@@ -10,6 +10,7 @@ import art.arcane.witchery.block.entity.DreamCatcherBlockEntity;
 import art.arcane.witchery.block.entity.KettleBlockEntity;
 import art.arcane.witchery.block.entity.MirrorBlockEntity;
 import art.arcane.witchery.block.entity.PlacedItemBlockEntity;
+import art.arcane.witchery.block.entity.PoppetShelfBlockEntity;
 import art.arcane.witchery.block.entity.RefillingChestBlockEntity;
 import art.arcane.witchery.block.entity.RiteHeartBlockEntity;
 import art.arcane.witchery.block.entity.SpinningWheelBlockEntity;
@@ -78,10 +79,14 @@ public final class WitcheryBlockEntities {
     public static final RegistryObject<BlockEntityType<BarrierBlockEntity>> BARRIER =
             BLOCK_ENTITIES.register("barrier", () -> BlockEntityType.Builder.of(BarrierBlockEntity::new,
                     WitcheryBlocks.getRequired("barrier").get()).build(null));
+    public static final RegistryObject<BlockEntityType<PoppetShelfBlockEntity>> POPPET_SHELF =
+            BLOCK_ENTITIES.register("poppetshelf", () -> BlockEntityType.Builder.of(PoppetShelfBlockEntity::new,
+                    WitcheryBlocks.getRequired("poppetshelf").get()).build(null));
 
     static {
         LEGACY_BLOCK_ENTITIES.put("altar", ALTAR);
         LEGACY_BLOCK_ENTITIES.put("barrier", BARRIER);
+        LEGACY_BLOCK_ENTITIES.put("poppetshelf", POPPET_SHELF);
         LEGACY_BLOCK_ENTITIES.put("chalice", CHALICE);
         LEGACY_BLOCK_ENTITIES.put("dreamcatcher", DREAM_CATCHER);
         LEGACY_BLOCK_ENTITIES.put("demonheart", DEMON_HEART);

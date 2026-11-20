@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["SBS", "BWB", "SBS"],
+  "key": {
+    "S": {"item": "witchery:attuned_stone"},
+    "B": {"item": "minecraft:nether_bricks"},
+    "W": {"item": "minecraft:green_wool"}
+  },
+  "result": {"item": "witchery:poppetshelf"}
+}

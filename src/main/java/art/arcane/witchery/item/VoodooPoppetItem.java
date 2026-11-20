@@ -113,10 +113,7 @@ public final class VoodooPoppetItem extends BoundPoppetItem {
 
     private static boolean warded(Entity caster, LivingEntity target, ItemStack poppet) {
         if (!(target instanceof ServerPlayer player)) return false;
-        ItemStack ward = inInventory(player, WitcheryItems.getRequired("voodoo_protection_poppet").get());
-        if (ward.isEmpty()) return false;
-        wear(ward, DEFLECTION_WEAR);
-        player.getInventory().setChanged();
+        if (!useWard(player, WitcheryItems.getRequired("voodoo_protection_poppet").get(), DEFLECTION_WEAR)) return false;
         if (caster instanceof ServerPlayer attacker) {
             wear(poppet, DEFLECTION_WEAR);
             LightningBolt lightning = EntityType.LIGHTNING_BOLT.create(attacker.serverLevel());

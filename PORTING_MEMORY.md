@@ -121,6 +121,13 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - All 65 required GameTests passed. Data generation and reobfuscation succeeded with the access transformer for the Bat and Owl sustained-jump behavior. The tests verified old owner-name restore, target protection, relocation orders, sacrifice and healing, charge caps, lightning and drowning responses, and the three fireball or arrow cases plus cobweb placement. Legacy web subtype 56 now uses `witchery:thrown_web` alongside the existing placeable block item.
 - The packaged dedicated restart kept the minion's owner UUID and effect, the player's bat power, 180 infusion charge and nine reserve charges. With `allow-flight=false`, the muted player held jump for 6.8 seconds and rose almost 59 blocks without disconnecting. Falling back to the arena cost two health and preserved both charge pools.
 
+### Poppet Shelf (2026-11-20)
+
+- The shelf uses the original `witchery:poppetshelf` block and block entity, nine slots, and a persistent Forge ticking ticket for the shelf's chunk. Its recipe uses Attuned Stones in the corners, Nether Bricks on the edges and green wool in the center. It renders stored poppets and exposes their fullness to a comparator. The muted survival player placed the crafted shelf and loaded three bound wards through its menu.
+- Wards in the player's inventory take priority. Shelves protect across dimensions, with the original default limiting eligible shelves to the Overworld, Nether, End, and Dream. The server setting can allow other dimensions. The real client survived lethal fire 480 blocks from its shelf, and after a restart the same shelf's Death Protection Poppet blocked lethal damage in the Nether. Forge loaded the shelf before anyone joined.
+- All 68 required Forge GameTests passed, and data generation and JAR reobfuscation succeeded. GameTests covered the legacy shelf name and ward metadata, inventory priority, the comparator, automation's poppet filter and ticket removal.
+- A real Voodoo cast reflected from the remote shelf and added 350 wear to both dolls. The client mined and recovered the shelf and the worn ward. The chunk unloaded when the player left. The final packaged restart verified that startup retains the valid shelf's ticket and prunes a stale same-chunk ticket injected into the disposable world's `chunks.dat`.
+
 ## Session Memory (2026-02-08)
 - Port target is Forge 1.20.1.
 - Legacy source is fully available at `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10`.

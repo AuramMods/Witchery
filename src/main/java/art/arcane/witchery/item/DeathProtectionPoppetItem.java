@@ -7,7 +7,6 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 
 public final class DeathProtectionPoppetItem extends BoundPoppetItem {
@@ -24,10 +23,7 @@ public final class DeathProtectionPoppetItem extends BoundPoppetItem {
     }
 
     private static boolean protectWith(ServerPlayer player, LivingDamageEvent event, String item) {
-        ItemStack poppet = inInventory(player, WitcheryItems.getRequired(item).get());
-        if (poppet.isEmpty()) return false;
-        wear(poppet, USE_LIMIT);
-        player.getInventory().setChanged();
+        if (!useWard(player, WitcheryItems.getRequired(item).get(), USE_LIMIT)) return false;
         event.setCanceled(true);
         if (player.getHealth() < 10) player.setHealth(10);
         player.playSound(SoundEvents.EXPERIENCE_ORB_PICKUP, 1, 1);
