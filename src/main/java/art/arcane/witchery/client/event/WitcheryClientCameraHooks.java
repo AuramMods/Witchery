@@ -2,10 +2,10 @@ package art.arcane.witchery.client.event;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.client.WitcheryClientCameraState;
-import art.arcane.witchery.entity.ScryEye;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
@@ -18,6 +18,7 @@ import net.minecraftforge.fml.common.Mod;
 public final class WitcheryClientCameraHooks {
     private static LocalPlayer heldPlayer;
     private static boolean previousNoGravity;
+    private static Entity activeCamera;
 
     private WitcheryClientCameraHooks() {
     }
@@ -36,7 +37,8 @@ public final class WitcheryClientCameraHooks {
         if (!WitcheryClientCameraState.isActive() || level.getGameTime() - WitcheryClientCameraState.getActiveTick() > 60) {
             WitcheryClientCameraState.markInactive();
             restoreMovement();
-            if (minecraft.getCameraEntity() instanceof ScryEye) minecraft.setCameraEntity(player);
+            if (activeCamera != null && minecraft.getCameraEntity() == activeCamera) minecraft.setCameraEntity(player);
+            activeCamera = null;
             return;
         }
 
@@ -49,10 +51,15 @@ public final class WitcheryClientCameraHooks {
         player.setDeltaMovement(Vec3.ZERO);
 
         int targetId = WitcheryClientCameraState.getTargetEntityId();
-        if (targetId > 0 && level.getEntity(targetId) instanceof ScryEye eye && !eye.isRemoved()
-                && minecraft.getCameraEntity() != eye) {
-            minecraft.setCameraEntity(eye);
+        Entity target = targetId > 0 ? level.getEntity(targetId) : null;
+        if (target != null && !target.isRemoved()) {
+            activeCamera = target;
+            if (minecraft.getCameraEntity() != target) minecraft.setCameraEntity(target);
         }
+    }
+
+    public static boolean isScryingFrom(Entity camera) {
+        return camera != null && camera == activeCamera && WitcheryClientCameraState.isActive();
     }
 
     @SubscribeEvent
@@ -68,6 +75,7 @@ public final class WitcheryClientCameraHooks {
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event) {
         WitcheryClientCameraState.markInactive();
         restoreMovement();
+        activeCamera = null;
     }
 
     private static void restoreMovement() {

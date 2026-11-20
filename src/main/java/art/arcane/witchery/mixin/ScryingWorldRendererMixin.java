@@ -1,6 +1,6 @@
 package art.arcane.witchery.mixin;
 
-import art.arcane.witchery.entity.ScryEye;
+import art.arcane.witchery.client.event.WitcheryClientCameraHooks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -38,6 +38,7 @@ public abstract class ScryingWorldRendererMixin {
 
     @Unique
     private Entity witchery$renderOrigin(LocalPlayer player) {
-        return minecraft.getCameraEntity() instanceof ScryEye eye ? eye : player;
+        Entity camera = minecraft.getCameraEntity();
+        return WitcheryClientCameraHooks.isScryingFrom(camera) ? camera : player;
     }
 }

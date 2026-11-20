@@ -1,6 +1,7 @@
 package art.arcane.witchery.block;
 
 import art.arcane.witchery.block.entity.CrystalBallBlockEntity;
+import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.power.AltarPower;
@@ -72,12 +73,19 @@ public final class CrystalBallBlock extends BaseEntityBlock {
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         var held = player.getItemInHand(hand);
-        if (held.is(WitcheryIngredient.BOUND_WAYSTONE.item())) {
-            if (level.isClientSide) {
+        boolean taglock = held.getItem() instanceof TaglockItem;
+        if (taglock || held.is(WitcheryIngredient.BOUND_WAYSTONE.item())) {
+            boolean hasBinding = !taglock || TaglockItem.isBound(held);
+            if (level.isClientSide && hasBinding) {
                 player.startUsingItem(hand);
-            } else if (level instanceof ServerLevel server && player instanceof ServerPlayer reader
-                    && consumePower(server, pos, reader) && !ScryingView.start(reader, hand, WaystoneItem.location(held))) {
-                failure(reader, "waystone_out_of_range");
+            } else if (level instanceof ServerLevel server && player instanceof ServerPlayer reader) {
+                if (!hasBinding) {
+                    failure(reader, "taglock_unbound");
+                } else if (consumePower(server, pos, reader)) {
+                    boolean opened = taglock ? ScryingView.startTaglock(reader, hand, TaglockItem.resolveTarget(server, held))
+                            : ScryingView.start(reader, hand, WaystoneItem.location(held));
+                    if (!opened) failure(reader, taglock ? "taglock_unavailable" : "waystone_out_of_range");
+                }
             }
             return InteractionResult.sidedSuccess(level.isClientSide);
         }

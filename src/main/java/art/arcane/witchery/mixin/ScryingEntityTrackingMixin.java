@@ -12,7 +12,7 @@ public abstract class ScryingEntityTrackingMixin {
     @Redirect(method = "updatePlayer", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/server/level/ServerPlayer;position()Lnet/minecraft/world/phys/Vec3;"))
     private Vec3 witchery$scryingPosition(ServerPlayer player) {
-        var eye = ScryingView.eye(player);
-        return eye == null ? player.position() : eye.position();
+        var camera = ScryingView.camera(player);
+        return camera == null ? player.position() : camera.position();
     }
 }

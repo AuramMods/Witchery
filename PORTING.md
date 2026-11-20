@@ -262,7 +262,7 @@
 - [x] Restore both Baba Yaga forecasts, her hostile and allied encounters, boss HUD and animated mortar-and-pestle model. On dedicated Forge one forecast spawned an ally with the second player's name, and the other led to a hostile potion attack. The ally departed at the end of its visit. A name-only legacy ally fixture dropped gifts. A shortened fight yielded Baba's Hat and an enchanted book. All 107 required GameTests passed, including the wooden sword counter and original damage cap.
 - [ ] Restore the rest of Baba Yaga's thrown brews, brew gifts, and Baba's Hat equipment and abilities.
 - [x] Restore Crystal Ball viewing with a location-bound Waystone. The muted clients saw a marked platform and its entity 126 blocks away while an observer still saw the player at the ball. Releasing use and the Eye's 200-tick expiry both returned the view. A distant Waystone and a Nether Waystone failed to open it. The same package worked with clean Forge and an isolated Embeddium 0.3.31 and Oculus 1.8.0 profile. All 108 required GameTests passed.
-- [ ] Restore Crystal Ball viewing with a filled Taglock Kit.
+- [x] Restore Crystal Ball viewing with a filled Taglock Kit. A sample taken from another player's bed let the muted client follow that player across a chunk boundary over 180 blocks away. A self sample raised an Eye above the ball. A cow sample showed the cow's point of view. Transferring the cow to the Nether closed the view and left it alive. After a dedicated restart during a later viewing, the player returned beside the ball with the same filled kit and the cow retained its UUID. All 109 required GameTests passed.
 
 ## Auram Pack Validation (2026-11-20)
 

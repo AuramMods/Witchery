@@ -43,6 +43,11 @@ public final class TaglockItem extends Item {
         super(new Properties().stacksTo(16));
     }
 
+    @Override
+    public int getUseDuration(ItemStack stack) {
+        return 1_200;
+    }
+
     public static boolean isBound(ItemStack stack) {
         return isBound(stack, 1);
     }
