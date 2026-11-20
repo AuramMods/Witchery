@@ -1,3 +1,3 @@
 {
-   "parent" : "witchery:block/clever"
+   "parent" : "minecraft:item/lever"
 }

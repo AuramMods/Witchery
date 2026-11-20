@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/button_pressed",
   "textures": {
-    "texture": "witchery:block/cbuttonwood"
+    "texture": "minecraft:block/oak_planks"
   }
 }

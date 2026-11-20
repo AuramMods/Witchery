@@ -1,6 +1,3 @@
 {
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "witchery:block/cwoodendoor"
-  }
+  "parent": "minecraft:item/oak_door"
 }

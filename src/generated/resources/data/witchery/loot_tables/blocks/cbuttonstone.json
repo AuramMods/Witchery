@@ -11,7 +11,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "witchery:cbuttonstone"
+          "name": "minecraft:stone_button"
         }
       ],
       "rolls": 1.0

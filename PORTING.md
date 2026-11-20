@@ -528,7 +528,7 @@
 - [x] Verify powered brewing and splash throws. The live cauldron kept the unpowered mixture and bottle. A nearby altar let the client bottle the inverted sugar brew. A real Wolfsbane splash applied the effect to a directly hit pig and a nearby pig for different durations. The pig outside the radius received no effect.
 - [x] Verify two effects in the same brew and their status icons. Glowstone strengthened Wolfsbane while Ender Inhibition remained at its base strength. An Ender Pearl thrown under Ender Inhibition consumed the pearl and left the player in place. In the control throw, clearing the effect restored teleportation. The player's bottling skill survived the restart.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 253 required Forge GameTests. The tests cover solo and mixed brews, the first bottling threshold, named legacy ingredient metadata, splash scaling, Ender Inhibition and the fixed Mutandis recipe.
-- [ ] Port the remaining brew actions and effects, including triggered dispersal, brew fluid containers, additional modifiers and castable cauldron rituals.
+- [ ] Port the remaining brew actions and effects, including brew fluid containers, additional modifiers and castable cauldron rituals.
 
 ## Gaseous and Liquid Brews (2026-11-20)
 
@@ -537,6 +537,15 @@
 - [x] Restore liquid flow and contact. The muted client threw a Liquid Brew of Wolfsbane onto a raised pig. The dyed liquid fell beside the support, reached the ground, and applied Wolfsbane to both the elevated and ground-level pigs. The source, falling stream, and runoff all returned to air.
 - [x] Save and restart during an active gas brew. Both the source cell and a neighboring cell retained the poison mixture, color, thrower and age, then continued aging.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 256 required Forge GameTests. The new tests check dispersal precedence, gas expansion and expiry, Gas Mask, and liquid flow and recession.
+
+## Triggered Brews and Cursed Controls (2026-11-20)
+
+- [x] Restore Zombie Head as the zero-power triggered dispersal ingredient. Thrown brews arm the original seven controls. An identical recipe adds a charge, and a different recipe replaces the saved mixture.
+- [x] Retain each control's appearance and redstone behavior. Manual button, lever and door use or a new pressure plate press apply the stored mixture at full duration. The last charge restores the original block in its current state, including an active redstone pulse and both halves of an open door.
+- [x] Preserve the original cursed control block and block entity IDs and their saved mixture keys. Tested named legacy brew ingredient decoding includes Zombie Head skull metadata.
+- [x] Verify two separate Wolfsbane batches in the muted survival client. Both throws armed the same wall button. The first press applied Wolfsbane, lit a lamp through the support and spent one charge. A dedicated-server restart retained the remaining charge and original mixture. The final press reapplied Wolfsbane, restored the vanilla button during the pulse and turned the lamp off on release.
+- [x] Run Java 17 data generation, JAR reobfuscation and all 261 required Forge GameTests. The new tests cover recharging, replacing a mixture, the last button pulse, all three pressure plates, both door halves and legacy skull metadata.
+- [ ] Restore the separate cauldron ritual that puts triggered brew charges on inventory items.
 
 ## Auram Pack Validation (2026-11-20)
 
@@ -729,7 +738,7 @@
     - `cam_pos` now routes through client packet handlers using `WitcheryClientCameraState` plus `WitcheryClientCameraHooks` (client tick camera-entity override scaffold) instead of temporary player persistent-tag staging.
 - [~] GUI/menu stubs for all legacy GUI IDs.
   - menu intents now preserve legacy GUI ID mapping (`0..8`) plus key name in `LegacyRegistryData`.
-  - GUI ID 2 opens the Witch's Oven menu. The other eight IDs still use `LegacyPlaceholderMenu` and `LegacyPlaceholderScreen`.
+  - The Altar, Witch's Oven, Distillery and Spinning Wheel use dedicated menus. The five remaining registry entries use `LegacyPlaceholderMenu` and `LegacyPlaceholderScreen`.
 - [~] Dimension/key migration for Dream/Torment/Mirror.
   - resource keys are scaffolded (`Level`, `LevelStem`, `DimensionType`) for `dream`, `torment`, and `mirror`.
   - datapack `dimension_type` + `dimension` JSON scaffolding is now present for all three dimensions.

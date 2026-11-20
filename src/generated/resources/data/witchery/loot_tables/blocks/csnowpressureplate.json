@@ -11,7 +11,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "witchery:csnowpressureplate"
+          "name": "witchery:snowpressureplate"
         }
       ],
       "rolls": 1.0

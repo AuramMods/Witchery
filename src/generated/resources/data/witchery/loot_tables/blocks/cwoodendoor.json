@@ -11,7 +11,16 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "witchery:cwoodendoor"
+          "conditions": [
+            {
+              "block": "witchery:cwoodendoor",
+              "condition": "minecraft:block_state_property",
+              "properties": {
+                "half": "lower"
+              }
+            }
+          ],
+          "name": "minecraft:oak_door"
         }
       ],
       "rolls": 1.0

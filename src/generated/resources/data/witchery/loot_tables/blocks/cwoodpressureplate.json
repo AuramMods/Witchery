@@ -11,7 +11,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "witchery:cwoodpressureplate"
+          "name": "minecraft:oak_pressure_plate"
         }
       ],
       "rolls": 1.0

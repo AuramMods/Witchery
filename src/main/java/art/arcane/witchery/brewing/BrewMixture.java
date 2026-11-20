@@ -30,7 +30,7 @@ public final class BrewMixture {
     private static final Map<ResourceLocation, Ingredient> INGREDIENTS = ingredients();
 
     public enum Delivery {
-        DRINK, SPLASH, GAS, LIQUID
+        DRINK, SPLASH, GAS, LIQUID, TRIGGERED
     }
 
     private enum Modifier {
@@ -105,10 +105,27 @@ public final class BrewMixture {
         if (tag == null) return null;
         List<ItemStack> stacks = new ArrayList<>();
         for (Tag entry : tag.getList(ITEMS, Tag.TAG_COMPOUND)) {
-            stacks.add(WitcheryIngredient.loadInventoryStack((CompoundTag) entry));
+            stacks.add(loadIngredient((CompoundTag) entry));
         }
         BrewMixture mixture = from(stacks);
         return mixture != null && (!tag.getBoolean("Splash") || mixture.splash()) ? mixture : null;
+    }
+
+    private static ItemStack loadIngredient(CompoundTag tag) {
+        if ("minecraft:skull".equals(tag.getString("id"))) {
+            String id = switch (tag.getInt("Damage")) {
+                case 1 -> "minecraft:wither_skeleton_skull";
+                case 2 -> "minecraft:zombie_head";
+                default -> null;
+            };
+            if (id != null) {
+                CompoundTag migrated = tag.copy();
+                migrated.putString("id", id);
+                migrated.remove("Damage");
+                return WitcheryIngredient.loadInventoryStack(migrated);
+            }
+        }
+        return WitcheryIngredient.loadInventoryStack(tag);
     }
 
     public CompoundTag bottleTag(List<ItemStack> stacks) {
@@ -273,6 +290,7 @@ public final class BrewMixture {
         modifier(entries, "witchery:globe_artichoke", 0, Modifier.DELIVERY, Delivery.SPLASH.ordinal(), 0, 0);
         modifier(entries, "witchery:bat_wool", 0, Modifier.DELIVERY, Delivery.GAS.ordinal(), 0, 0);
         modifier(entries, "witchery:wormwood_leaf", 0, Modifier.DELIVERY, Delivery.LIQUID.ordinal(), 0, 0);
+        modifier(entries, "zombie_head", 0, Modifier.DELIVERY, Delivery.TRIGGERED.ordinal(), 0, 0);
         modifier(entries, "witchery:wood_ash", 50, Modifier.EXTENT, 1, 1, 0);
         modifier(entries, "cocoa_beans", 100, Modifier.EXTENT, 1, 2, 0);
         modifier(entries, "witchery:somniancotton", 150, Modifier.EXTENT, 1, 3, 0);

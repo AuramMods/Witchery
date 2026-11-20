@@ -11,7 +11,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "witchery:cstonepressureplate"
+          "name": "minecraft:stone_pressure_plate"
         }
       ],
       "rolls": 1.0

@@ -4,6 +4,7 @@ import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.BrambleBlock;
 
 import art.arcane.witchery.block.ChaliceBlock;
+import art.arcane.witchery.block.CursedControls;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.DreamWeave;
 import art.arcane.witchery.block.entity.LeechSamples;
@@ -23,8 +24,10 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.state.properties.BedPart;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -56,6 +59,10 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
         for (RegistryObject<Block> entry : WitcheryBlocks.all()) {
             Block block = entry.get();
             if (block.getLootTable().equals(BuiltInLootTables.EMPTY)) {
+                continue;
+            }
+            if (block instanceof CursedControls.Control control) {
+                dropCursedControl(block, control.kind());
                 continue;
             }
             switch (entry.getId().getPath()) {
@@ -98,6 +105,18 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                     }
                 }
             }
+        }
+    }
+
+    private void dropCursedControl(Block block, CursedControls.Kind kind) {
+        if (kind == CursedControls.Kind.WOODEN_DOOR) {
+            add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool()
+                    .setRolls(ConstantValue.exactly(1)).add(LootItem.lootTableItem(kind.original())
+                            .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
+                                    .setProperties(StatePropertiesPredicate.Builder.properties()
+                                            .hasProperty(DoorBlock.HALF, DoubleBlockHalf.LOWER)))))));
+        } else {
+            dropOther(block, kind.original());
         }
     }
 

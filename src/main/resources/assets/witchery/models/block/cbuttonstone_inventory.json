@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/button_inventory",
   "textures": {
-    "texture": "witchery:block/cbuttonstone"
+    "texture": "minecraft:block/stone"
   }
 }

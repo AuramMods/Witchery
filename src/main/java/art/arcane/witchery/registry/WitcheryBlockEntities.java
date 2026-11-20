@@ -1,6 +1,8 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.block.entity.BrewFluidBlockEntity;
+import art.arcane.witchery.block.CursedControls;
+import art.arcane.witchery.block.entity.CursedControlBlockEntity;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.AltarBlockEntity;
 import art.arcane.witchery.block.entity.BarrierBlockEntity;
@@ -37,12 +39,15 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public final class WitcheryBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, Witchery.MODID);
     public static final Map<String, RegistryObject<? extends BlockEntityType<?>>> LEGACY_BLOCK_ENTITIES = new LinkedHashMap<>();
+    private static final Map<CursedControls.Kind, RegistryObject<BlockEntityType<CursedControlBlockEntity>>> CURSED_CONTROLS =
+            new EnumMap<>(CursedControls.Kind.class);
     public static final RegistryObject<BlockEntityType<WitchesOvenBlockEntity>> WITCHES_OVEN =
             BLOCK_ENTITIES.register("witchesovenidle", () -> ovenType(WitcheryBlockEntities::createOven));
     public static final RegistryObject<BlockEntityType<WitchesOvenBlockEntity>> LEGACY_BURNING_OVEN =
@@ -159,6 +164,14 @@ public final class WitcheryBlockEntities {
         LEGACY_BLOCK_ENTITIES.put("brewliquid", BREW_LIQUID);
         LEGACY_BLOCK_ENTITIES.put("witchesovenidle", WITCHES_OVEN);
         LEGACY_BLOCK_ENTITIES.put("witchesovenburning", LEGACY_BURNING_OVEN);
+        for (CursedControls.Kind kind : CursedControls.Kind.values()) {
+            RegistryObject<BlockEntityType<CursedControlBlockEntity>> type = BLOCK_ENTITIES.register(kind.path(),
+                    () -> BlockEntityType.Builder.of(
+                            (pos, state) -> new CursedControlBlockEntity(cursedControl(kind).get(), pos, state),
+                            kind.cursed()).build(null));
+            CURSED_CONTROLS.put(kind, type);
+            LEGACY_BLOCK_ENTITIES.put(kind.path(), type);
+        }
         for (String legacyName : LegacyRegistryData.BLOCK_ENTITIES) {
             registerLegacyBlockEntity(legacyName);
         }
@@ -173,6 +186,10 @@ public final class WitcheryBlockEntities {
 
     public static Map<String, RegistryObject<? extends BlockEntityType<?>>> all() {
         return Collections.unmodifiableMap(LEGACY_BLOCK_ENTITIES);
+    }
+
+    public static RegistryObject<BlockEntityType<CursedControlBlockEntity>> cursedControl(CursedControls.Kind kind) {
+        return CURSED_CONTROLS.get(kind);
     }
 
     private static BlockEntityType<WitchesOvenBlockEntity> ovenType(BlockEntityType.BlockEntitySupplier<WitchesOvenBlockEntity> factory) {

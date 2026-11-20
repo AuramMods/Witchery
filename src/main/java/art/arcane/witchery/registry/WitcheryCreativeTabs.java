@@ -1,12 +1,15 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.block.BrambleBlock;
+import art.arcane.witchery.block.BrewDispersalBlock;
+import art.arcane.witchery.block.CursedControls;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.item.BrewBottleItem;
 import art.arcane.witchery.item.WitchWoodBlockItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -34,7 +37,11 @@ public final class WitcheryCreativeTabs {
                             BrambleBlock.setWild(ender, false);
                             output.accept(ender);
                         } else if (!(entry.get() instanceof BrewBottleItem)) {
-                            output.accept(entry.get());
+                            if (!(entry.get() instanceof BlockItem blockItem
+                                    && (blockItem.getBlock() instanceof CursedControls.Control
+                                    || blockItem.getBlock() instanceof BrewDispersalBlock))) {
+                                output.accept(entry.get());
+                            }
                         }
                     }))
                     .build());

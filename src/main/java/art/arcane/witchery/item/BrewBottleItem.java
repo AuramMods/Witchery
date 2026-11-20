@@ -1,6 +1,7 @@
 package art.arcane.witchery.item;
 
 import art.arcane.witchery.block.BrewDispersalBlock;
+import art.arcane.witchery.block.CursedControls;
 import art.arcane.witchery.brewing.BrewMixture;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.registry.WitcheryBlocks;
@@ -67,6 +68,7 @@ public final class BrewBottleItem extends Item {
             case SPLASH -> "splash";
             case GAS -> "gas";
             case LIQUID -> "liquid";
+            case TRIGGERED -> "triggered";
         };
         return Component.translatable(key, effects);
     }
@@ -143,24 +145,30 @@ public final class BrewBottleItem extends Item {
     public void impact(ServerLevel level, ThrownBrew brew, HitResult hit) {
         BrewMixture mixture = BrewMixture.from(brew.getItem().getTag());
         if (mixture == null || !mixture.splash()) return;
-        if (mixture.delivery() == BrewMixture.Delivery.SPLASH) {
-            splash(level, brew, hit, mixture);
-        } else {
-            String id = mixture.delivery() == BrewMixture.Delivery.GAS ? "brewgas" : "brewliquid";
-            var cloud = (BrewDispersalBlock) WitcheryBlocks.getRequired(id).get();
-            BlockPos pos;
-            Direction face = Direction.UP;
-            if (hit instanceof BlockHitResult block) {
-                face = block.getDirection();
-                pos = block.getBlockPos().relative(face);
-            } else if (hit instanceof EntityHitResult entity) {
-                pos = entity.getEntity().blockPosition();
-            } else {
-                pos = BlockPos.containing(hit.getLocation());
-            }
-            cloud.release(level, pos, face, brew.getItem().getTag(), mixture, color(brew.getItem()), brew.getOwner());
+        switch (mixture.delivery()) {
+            case SPLASH -> splash(level, brew, hit, mixture);
+            case GAS, LIQUID -> releaseFluid(level, brew, hit, mixture);
+            case TRIGGERED -> CursedControls.impact(level, hit, brew.getItem().getTag(), mixture, color(brew.getItem()),
+                    brew.getOwner());
+            case DRINK -> { return; }
         }
         level.levelEvent(2002, BlockPos.containing(hit.getLocation()), color(brew.getItem()));
+    }
+
+    private void releaseFluid(ServerLevel level, ThrownBrew brew, HitResult hit, BrewMixture mixture) {
+        String id = mixture.delivery() == BrewMixture.Delivery.GAS ? "brewgas" : "brewliquid";
+        var cloud = (BrewDispersalBlock) WitcheryBlocks.getRequired(id).get();
+        BlockPos pos;
+        Direction face = Direction.UP;
+        if (hit instanceof BlockHitResult block) {
+            face = block.getDirection();
+            pos = block.getBlockPos().relative(face);
+        } else if (hit instanceof EntityHitResult entity) {
+            pos = entity.getEntity().blockPosition();
+        } else {
+            pos = BlockPos.containing(hit.getLocation());
+        }
+        cloud.release(level, pos, face, brew.getItem().getTag(), mixture, color(brew.getItem()), brew.getOwner());
     }
 
     private void splash(ServerLevel level, ThrownBrew brew, HitResult hit, BrewMixture mixture) {

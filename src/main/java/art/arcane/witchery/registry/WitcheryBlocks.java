@@ -8,6 +8,7 @@ import art.arcane.witchery.block.CandelabraBlock;
 import art.arcane.witchery.block.ChaliceBlock;
 import art.arcane.witchery.block.CoffinBlock;
 import art.arcane.witchery.block.CritterSnareBlock;
+import art.arcane.witchery.block.CursedControls;
 import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.block.BrewDispersalBlock;
 import art.arcane.witchery.block.BloodRoseBlock;
@@ -55,7 +56,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.ButtonBlock;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.FenceBlock;
 import net.minecraft.world.level.block.FenceGateBlock;
@@ -167,8 +167,9 @@ public final class WitcheryBlocks {
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.LILY_PAD), SHAPE_PAD_FLAT, false);
             case "grassper" -> new GrassperBlock();
             case "icedoor" -> new DoorBlock(BlockBehaviour.Properties.copy(Blocks.IRON_DOOR).noOcclusion(), BlockSetType.IRON);
-            case "rowanwooddoor", "alderwooddoor", "cwoodendoor" ->
+            case "rowanwooddoor", "alderwooddoor" ->
                     new DoorBlock(BlockBehaviour.Properties.copy(Blocks.OAK_DOOR).noOcclusion(), BlockSetType.OAK);
+            case "cwoodendoor" -> new CursedControls.Door();
             case "altar" -> new AltarBlock(BlockBehaviour.Properties.copy(Blocks.STONE).strength(2.0F));
             case "kettle" -> new KettleBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion());
             case "spinningwheel" ->
@@ -198,14 +199,14 @@ public final class WitcheryBlocks {
                     new FenceBlock(BlockBehaviour.Properties.copy(Blocks.OAK_FENCE));
             case "icefencegate" ->
                     new FenceGateBlock(BlockBehaviour.Properties.copy(Blocks.OAK_FENCE_GATE), WoodType.OAK);
-            case "icepressureplate", "snowpressureplate", "cwoodpressureplate", "csnowpressureplate" ->
+            case "icepressureplate", "snowpressureplate" ->
                     new PressurePlateBlock(PressurePlateBlock.Sensitivity.EVERYTHING, BlockBehaviour.Properties.copy(Blocks.OAK_PRESSURE_PLATE), BlockSetType.OAK);
-            case "cstonepressureplate" ->
-                    new PressurePlateBlock(PressurePlateBlock.Sensitivity.MOBS, BlockBehaviour.Properties.copy(Blocks.STONE_PRESSURE_PLATE), BlockSetType.STONE);
-            case "cbuttonwood" ->
-                    new ButtonBlock(BlockBehaviour.Properties.copy(Blocks.OAK_BUTTON), BlockSetType.OAK, 30, true);
-            case "cbuttonstone" ->
-                    new ButtonBlock(BlockBehaviour.Properties.copy(Blocks.STONE_BUTTON), BlockSetType.STONE, 20, false);
+            case "cwoodpressureplate" -> new CursedControls.Plate(CursedControls.Kind.WOODEN_PLATE);
+            case "csnowpressureplate" -> new CursedControls.Plate(CursedControls.Kind.SNOW_PLATE);
+            case "cstonepressureplate" -> new CursedControls.Plate(CursedControls.Kind.STONE_PLATE);
+            case "cbuttonwood" -> new CursedControls.Button(true);
+            case "cbuttonstone" -> new CursedControls.Button(false);
+            case "clever" -> new CursedControls.Lever();
             case "belladonna", "mandrake", "artichoke", "snowbell", "wormwood", "mindrake", "garlicplant", "wolfsbane" ->
                     new WitchCropBlock(WitchCrop.forBlock(path), BlockBehaviour.Properties.copy(Blocks.WHEAT));
             case "wolftrap" -> new HuntingTrapBlock(true);
