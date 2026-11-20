@@ -466,7 +466,14 @@
 
 - [x] Restore Hellhound behavior, the original model and texture, and Nether spawns. The packaged dedicated server spawned 13 Hellhounds near a muted survival client with natural spawning enabled. The original groups of one to three and weight 25 are defined by a Forge biome modifier.
 - [x] Restore Dog Tongue and Hellhound Head drops. The survival client collected three heads from the attributed Looting III fixture. It mounted one on a wall and placed an ordinary Wolf Head on top of a stone block. Both rendered with their original textures, and GameTests checked the legacy metadata, placement and drop variants.
-- [x] Start the original Hellhound cure with a thrown Weakness potion and an ordinary golden apple. The client spent one apple and the dedicated server recorded 4,449 ticks of conversion time and Strength. A restart preserved both placed trophies and the Hellhound's UUID and countdown. GameTests reloaded the countdown and confirmed the confused wolf outcome. Java 17 data generation, JAR reobfuscation and all 223 required Forge GameTests passed.
+- [x] Start the original Hellhound cure with a thrown Weakness potion and an ordinary golden apple. The client spent one apple and the dedicated server recorded 4,449 ticks of conversion time and Strength. A restart preserved both placed trophies and the Hellhound's UUID and countdown. The countdown completed naturally and the server recorded a wolf with ten seconds of Nausea. Java 17 data generation, JAR reobfuscation and all 223 required Forge GameTests passed.
+
+## Curse of the Wolf and Player Wolf Form (2026-11-20)
+
+- [x] Restore both original recipes, full-moon timing, active cat and six-member coven. The muted client called its cat, collected its Taglock at a bed, sacrificed a Hellhound Head it had picked up, and activated the medium infernal circle with a Seer Stone. A waning night refunded all six offerings. At the full moon, Witch Hunter clothing blocked the curse. Removing one piece let the same offerings curse the player and the server retained vampire rank ten under the default hybrid setting.
+- [x] Restore the rank-one wolf form, smaller dimensions, armor drop, Night Vision, jump and movement stats, and Silver Sword damage. The dedicated server recorded speed changing from 0.10 to 0.15 and the additional step height of 0.4. A second muted client saw the first as a wolf. With the active familiar's damage sharing, a 12-point ordinary strike took 3.6 health and a seven-point silver strike took 10.8 health.
+- [x] Reconnect after a dedicated-server restart, then collect another Taglock and perform the cure while still in wolf form. The save retained rank one, wolf form and speed. The successful cure consumed all six offerings, restored normal movement and kept vampire rank ten. Java 17 data generation, JAR reobfuscation and all 226 required Forge GameTests passed.
+- [ ] Restore infected villagers, the wolfman entity, Wolf Altar trials, voluntary forms, and the remaining werewolf combat, hunting and Wolfsbane interactions.
 
 ## Auram Pack Validation (2026-11-20)
 

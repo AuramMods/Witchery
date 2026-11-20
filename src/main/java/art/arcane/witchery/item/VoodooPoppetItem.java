@@ -123,6 +123,15 @@ public final class VoodooPoppetItem extends BoundPoppetItem {
         return true;
     }
 
+    public static boolean deflectRite(ServerPlayer caster, ServerPlayer target, int wards) {
+        var item = WitcheryItems.getRequired("voodoo_protection_poppet").get();
+        for (int strike = 0; strike < wards; strike++) {
+            if (!useWard(target, item, DEFLECTION_WEAR)) return false;
+        }
+        strikeCaster(caster);
+        return true;
+    }
+
     static void strikeCaster(ServerPlayer attacker) {
         LightningBolt lightning = EntityType.LIGHTNING_BOLT.create(attacker.serverLevel());
         if (lightning != null) {

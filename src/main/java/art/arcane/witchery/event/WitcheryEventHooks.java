@@ -22,6 +22,7 @@ import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.VampiricPoppetItem;
 import art.arcane.witchery.item.GlassGobletItem;
 import art.arcane.witchery.item.HunterClothingItem;
+import art.arcane.witchery.lycanthropy.Lycanthropy;
 import art.arcane.witchery.vampirism.Vampirism;
 import art.arcane.witchery.vampirism.BloodFeeding;
 import art.arcane.witchery.vampirism.VampireAbilities;
@@ -73,6 +74,7 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.ShieldBlockEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingTickEvent;
+import net.minecraftforge.event.entity.living.LivingEvent.LivingJumpEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -138,6 +140,7 @@ public final class WitcheryEventHooks {
             GrotesqueEffect.restoreLegacyBrew(serverPlayer);
             InfusionEnergy.sync(serverPlayer);
             VampireFlight.restore(serverPlayer);
+            Lycanthropy.restore(serverPlayer);
             WitcheryPlayerDataProvider.get(serverPlayer).ifPresent(data -> {
                 if (data.getOtherPlayerSkin().isEmpty()) {
                     data.applyPlayerStyle(
@@ -162,6 +165,7 @@ public final class WitcheryEventHooks {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
             InfusionEnergy.sync(serverPlayer);
             VampireFlight.restore(serverPlayer);
+            Lycanthropy.restore(serverPlayer);
             WitcheryPlayerDataProvider.get(serverPlayer).ifPresent(data ->
                     WitcheryNetwork.sendPartialExtendedPlayerSync(serverPlayer, data));
         }
@@ -207,6 +211,7 @@ public final class WitcheryEventHooks {
             ScryingView.close(serverPlayer);
             WitcheryDimensionTravelHooks.onPlayerChangedDimension(serverPlayer, event.getFrom(), event.getTo());
             VampireFlight.restore(serverPlayer);
+            Lycanthropy.restore(serverPlayer);
             if (event.getTo().equals(Level.NETHER)) Predictions.onNetherVisit(serverPlayer);
             WitcheryPlayerDataProvider.get(serverPlayer).ifPresent(data ->
                     WitcheryNetwork.sendPartialExtendedPlayerSync(serverPlayer, data));
@@ -229,6 +234,7 @@ public final class WitcheryEventHooks {
         ScryingView.tick(serverPlayer);
         InfusedBrews.tick(serverPlayer);
         Vampirism.tick(serverPlayer);
+        Lycanthropy.tick(serverPlayer);
         HunterClothingItem.tick(serverPlayer);
         WitchHunterPursuit.tick(serverPlayer);
         if (InfusionEnergy.type(serverPlayer) == InfernalInfusion.ID) CreaturePower.tickFlight(serverPlayer);
@@ -273,6 +279,7 @@ public final class WitcheryEventHooks {
                 event.setCanceled(true);
                 return;
             }
+            if (Lycanthropy.isShifted(player)) Lycanthropy.fall(player, event);
             int infusion = InfusionEnergy.type(player);
             if (infusion == OverworldInfusion.ID) OverworldInfusion.fall(player, event);
             if (infusion == InfernalInfusion.ID) {
@@ -280,6 +287,11 @@ public final class WitcheryEventHooks {
                 if (power != null) power.fall(player, event);
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void onWolfJump(LivingJumpEvent event) {
+        if (event.getEntity() instanceof Player player && Lycanthropy.isShifted(player)) Lycanthropy.jump(player);
     }
 
     @SubscribeEvent
@@ -365,6 +377,8 @@ public final class WitcheryEventHooks {
         if (event.getSource().getDirectEntity() instanceof WitcheryBolt bolt) {
             event.setAmount(bolt.modifyDamage(event.getEntity(), event.getAmount()));
         }
+        Lycanthropy.adjustDamage(event);
+        if (event.isCanceled()) return;
         if (event.getAmount() >= 1 && BloodFeeding.paralysis(event.getEntity(), 4)) {
             event.getEntity().removeEffect(WitcheryEffects.PARALYSIS.get());
         }
@@ -373,12 +387,12 @@ public final class WitcheryEventHooks {
                 CreaturePower power = CreaturePower.forId(CreaturePower.activeId(player));
                 if (power != null) power.hurt(player, event);
             }
-            boolean poweredAntiMagic = WitcheryBolt.poweredAntiMagic(event.getSource());
-            if (!event.isCanceled() && !poweredAntiMagic && WitchClothingItem.evadeWithBabaHat(player, event.getSource())) {
+            boolean ignoreWards = WitcheryBolt.poweredAntiMagic(event.getSource()) || Lycanthropy.isShifted(player);
+            if (!event.isCanceled() && !ignoreWards && WitchClothingItem.evadeWithBabaHat(player, event.getSource())) {
                 event.setCanceled(true);
                 return;
             }
-            if (!event.isCanceled() && !poweredAntiMagic) VampiricPoppetItem.transferDamage(player, event);
+            if (!event.isCanceled() && !ignoreWards) VampiricPoppetItem.transferDamage(player, event);
             if (!event.isCanceled()) FamiliarBinding.shareDamage(player, event);
             if (!event.isCanceled()) Predictions.onHurt(player, event.getSource());
             DeathProtectionPoppetItem.repairArmor(player);
@@ -408,7 +422,7 @@ public final class WitcheryEventHooks {
             event.setCanceled(true);
             return;
         }
-        DeathProtectionPoppetItem.protect(event);
+        if (!Lycanthropy.isShifted(event.getEntity())) DeathProtectionPoppetItem.protect(event);
         if (event.isCanceled() || event.getAmount() <= 0) return;
         var source = event.getSource();
         if (event.getEntity() instanceof Villager villager && villager.level() instanceof ServerLevel world
@@ -467,10 +481,14 @@ public final class WitcheryEventHooks {
 
     @SubscribeEvent
     @SuppressWarnings("removal")
-    public static void resizeBatForm(EntityEvent.Size event) {
-        if (event.getEntity() instanceof Player player && VampireFlight.isBat(player)) {
+    public static void resizeCreatureForm(EntityEvent.Size event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+        if (VampireFlight.isBat(player)) {
             event.setNewSize(VampireFlight.BAT_DIMENSIONS);
             event.setNewEyeHeight(VampireFlight.BAT_EYE_HEIGHT);
+        } else if (Lycanthropy.isWolf(player)) {
+            event.setNewSize(Lycanthropy.WOLF_DIMENSIONS);
+            event.setNewEyeHeight(Lycanthropy.WOLF_EYE_HEIGHT);
         }
     }
 

@@ -16,6 +16,7 @@ public final class WitcheryPlayerData {
     private static final String KEY_CREATURE_TYPE_ORDINAL = "CreatureTypeOrdinal";
     private static final String KEY_HUMAN_BLOOD = "HumanBlood";
     private static final String KEY_VAMPIRE_LEVEL = "VampireLevel";
+    private static final String KEY_WEREWOLF_LEVEL = "WerewolfLevel";
     private static final String KEY_BLOOD_POWER = "BloodPower";
     private static final String KEY_BLOOD_RESERVE = "BloodReserve";
     private static final String KEY_VAMPIRE_LEVEL_CAP = "VampireLevelCap";
@@ -44,6 +45,7 @@ public final class WitcheryPlayerData {
     private int creatureTypeOrdinal;
     private int humanBlood;
     private int vampireLevel;
+    private int werewolfLevel;
     private int bloodPower;
     private int bloodReserve;
     private int vampireLevelCap;
@@ -120,6 +122,15 @@ public final class WitcheryPlayerData {
         }
     }
 
+    public int getWerewolfLevel() {
+        return werewolfLevel;
+    }
+
+    public void setWerewolfLevel(int level) {
+        werewolfLevel = Mth.clamp(level, 0, 10);
+        setBloodPower(bloodPower);
+    }
+
     public int getBloodPower() {
         return bloodPower;
     }
@@ -137,7 +148,7 @@ public final class WitcheryPlayerData {
     }
 
     public int getMaxBloodPower() {
-        return 500 + vampireLevel * 250;
+        return 500 + (werewolfLevel >= 2 ? vampireLevel / 2 : vampireLevel) * 250;
     }
 
     public int getVampireLevelCap() {
@@ -319,6 +330,7 @@ public final class WitcheryPlayerData {
         creatureTypeOrdinal = source.creatureTypeOrdinal;
         humanBlood = source.humanBlood;
         vampireLevel = source.vampireLevel;
+        werewolfLevel = source.werewolfLevel;
         bloodPower = source.bloodPower;
         bloodReserve = source.bloodReserve;
         vampireLevelCap = source.vampireLevelCap;
@@ -352,6 +364,7 @@ public final class WitcheryPlayerData {
         tag.putInt(KEY_CREATURE_TYPE_ORDINAL, creatureTypeOrdinal);
         tag.putInt(KEY_HUMAN_BLOOD, humanBlood);
         tag.putInt(KEY_VAMPIRE_LEVEL, vampireLevel);
+        tag.putInt(KEY_WEREWOLF_LEVEL, werewolfLevel);
         tag.putInt(KEY_BLOOD_POWER, bloodPower);
         tag.putInt(KEY_BLOOD_RESERVE, bloodReserve);
         tag.putInt(KEY_VAMPIRE_LEVEL_CAP, vampireLevelCap);
@@ -398,6 +411,7 @@ public final class WitcheryPlayerData {
                 ? tag.getInt(KEY_CREATURE_TYPE_ORDINAL) : bloodData.getInt("CreatureType"));
         setHumanBlood(bloodData.getInt(KEY_HUMAN_BLOOD));
         setVampireLevel(bloodData.getInt(KEY_VAMPIRE_LEVEL));
+        setWerewolfLevel(bloodData.getInt(KEY_WEREWOLF_LEVEL));
         setBloodPower(bloodData.getInt(KEY_BLOOD_POWER));
         setBloodReserve(bloodData.getInt(KEY_BLOOD_RESERVE));
         vampireLevelCap = Mth.clamp(bloodData.getInt(KEY_VAMPIRE_LEVEL_CAP), 0, 10);

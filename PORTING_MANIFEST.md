@@ -1364,6 +1364,7 @@ Status:
 - Hunter hats, coats, trousers and boots retain their twelve original item IDs. Ingredient subtype 131 maps to `witchery:nullified_leather`. `witchery:hunter_clothing_upgrade` copies the input armor's NBT into the crafted variant, including `Damage` and `display.color`. Protocol 43 includes those recipes and the restored clothing items.
 - `witchery:witchhunter` keeps `HunterType` and `HunterTarget`, and adds `HunterTargetUUID` for stable player targeting. Legacy name-only targets still load. The original `PlayerPersisted.WITCHunterTrigger` uses Overworld game time. The server setting `vampireHunterSpawnChance` defaults to 0.01 per interval. Protocol 44 includes the restored entity and its arrival sound.
 - Hellhound entity ID 136 maps to `witchery:hellhound` and retains `ConversionTime`. The Wolf Head block keeps `witchery:wolfhead` and stores the trophy's `hellhound`, `facing` and `rotation` properties. Ordinary Wolf Heads retain their item ID. Legacy item metadata 1 maps to `witchery:hellhound_head` in the Witchery stack loader. Protocol 45 includes the new trophy item and block states.
+- Rite IDs 92 and 93 map to `witchery:curse_of_the_wolf` and `witchery:cure_lycanthropy`. Player saves preserve `WerewolfLevel` and the original wolf ordinal 1. Legacy nested data also reads `CreatureType`. Server setting `allowVampireWerewolfHybrids` defaults to true. Protocol 46 includes the two rites and original howl.
 
 ## 1.20.1 Event Hook Scaffold (current)
 Implementation anchor:

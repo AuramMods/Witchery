@@ -3,6 +3,7 @@ package art.arcane.witchery.item;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.entity.VillageGuard;
 import art.arcane.witchery.entity.WitcheryFollower;
+import art.arcane.witchery.lycanthropy.Lycanthropy;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcherySounds;
@@ -118,7 +119,14 @@ public final class GlassGobletItem extends Item {
     public ItemStack finishUsingItem(ItemStack stack, Level world, LivingEntity drinker) {
         if (!(drinker instanceof ServerPlayer player)) return stack;
         if (filled(stack)) {
-            if (!CHICKEN.equals(source(stack))) Vampirism.drinkGoblet(player);
+            if (!CHICKEN.equals(source(stack))) {
+                if (!WitcheryServerConfig.ALLOW_VAMPIRE_WEREWOLF_HYBRIDS.get()
+                        && Vampirism.level(player) == 0 && Lycanthropy.rank(player) > 0) {
+                    player.displayClientMessage(Component.translatable("message.witchery.rite.wolf.hybrids_disabled"), true);
+                    return stack;
+                }
+                Vampirism.drinkGoblet(player);
+            }
             empty(stack);
             player.playSound(SoundEvents.PLAYER_BURP, 0.5F, 1);
         } else if (Vampirism.level(player) >= 9 && Vampirism.drawBlood(player, 125)) {

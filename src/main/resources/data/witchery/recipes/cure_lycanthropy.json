@@ -1,0 +1,15 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [
+    {"type": "witchery:bound_taglock"},
+    {"item": "witchery:breath_of_the_goddess"},
+    {"item": "witchery:silversword"},
+    {"item": "witchery:wolfsbane_flower"},
+    {"item": "minecraft:diamond"},
+    {"item": "witchery:brew_of_love"}
+  ],
+  "night_only": true,
+  "power": 10000,
+  "action": "cure_lycanthropy"
+}

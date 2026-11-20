@@ -1,0 +1,15 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "medium", "glyph": "witchery:circleglyphinfernal"}],
+  "sacrifices": [
+    {"type": "witchery:bound_taglock"},
+    {"item": "witchery:exhale_of_the_horned_one"},
+    {"item": "witchery:hellhound_head"},
+    {"item": "witchery:wolfsbane_flower"},
+    {"item": "minecraft:diamond"},
+    {"item": "witchery:brew_of_grotesque"}
+  ],
+  "night_only": true,
+  "power": 10000,
+  "action": "curse_of_the_wolf"
+}

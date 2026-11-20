@@ -106,5 +106,9 @@
   "mob.toad.toad_hurt": {
     "subtitle": "subtitles.witchery.toad.hurt",
     "sounds": ["witchery:mob/toad/toad_hurt1"]
+  },
+  "mob.wolfman.howl": {
+    "subtitle": "subtitles.witchery.wolfman.howl",
+    "sounds": ["witchery:mob/wolfman/howl"]
   }
 }
