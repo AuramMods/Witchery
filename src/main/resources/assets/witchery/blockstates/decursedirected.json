@@ -1,7 +1,8 @@
 {
    "variants" : {
-      "" : {
-         "model" : "witchery:block/decursedirected"
-      }
+      "facing=north" : { "model" : "witchery:block/decursedirected" },
+      "facing=east" : { "model" : "witchery:block/decursedirected", "y" : 90 },
+      "facing=south" : { "model" : "witchery:block/decursedirected", "y" : 180 },
+      "facing=west" : { "model" : "witchery:block/decursedirected", "y" : 270 }
    }
 }

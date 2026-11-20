@@ -15,6 +15,10 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.DoubleValue VAMPIRE_HUNTER_SPAWN_CHANCE;
     public static final ForgeConfigSpec.BooleanValue ALLOW_VAMPIRE_WEREWOLF_HYBRIDS;
     public static final ForgeConfigSpec.BooleanValue ALLOW_PLAYER_TO_PLAYER_WOLF_INFECTION;
+    public static final ForgeConfigSpec.BooleanValue DECURSE_DIRECTED_ENABLED;
+    public static final ForgeConfigSpec.BooleanValue DECURSE_TELEPORT_ENABLED;
+    public static final ForgeConfigSpec.IntValue DECURSE_DIRECTED_RADIUS;
+    public static final ForgeConfigSpec.IntValue DECURSE_TELEPORT_RADIUS;
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -43,6 +47,14 @@ public final class WitcheryServerConfig {
                 .defineInRange("vampireHunterSpawnChance", 0.01, 0.0, 1.0);
         ALLOW_VAMPIRE_WEREWOLF_HYBRIDS = builder.define("allowVampireWerewolfHybrids", true);
         ALLOW_PLAYER_TO_PLAYER_WOLF_INFECTION = builder.define("allowPlayerToPlayerWolfInfection", true);
+        DECURSE_DIRECTED_ENABLED = builder.define("decurseDirectedEnabled", false);
+        DECURSE_TELEPORT_ENABLED = builder.define("decurseTeleportPullEnabled", false);
+        DECURSE_DIRECTED_RADIUS = builder
+                .comment("Horizontal range of a Statue of Broken Curses, in blocks.")
+                .defineInRange("decurseDirectedProtectRadius", 32, 0, 128);
+        DECURSE_TELEPORT_RADIUS = builder
+                .comment("Horizontal range of a Statue of Occluded Summons, in blocks.")
+                .defineInRange("decurseTeleportPullProtectRadius", 32, 0, 128);
         SPEC = builder.build();
     }
 

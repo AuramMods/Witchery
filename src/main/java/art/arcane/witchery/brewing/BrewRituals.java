@@ -1,6 +1,10 @@
 package art.arcane.witchery.brewing;
 
+import art.arcane.witchery.block.entity.AreaWardBlockEntity;
 import art.arcane.witchery.entity.CovenWitch;
+import art.arcane.witchery.item.HunterClothingItem;
+import art.arcane.witchery.item.TaglockItem;
+import art.arcane.witchery.item.VoodooPoppetItem;
 import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -9,10 +13,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.util.FakePlayerFactory;
 
 import java.util.Comparator;
 
@@ -33,12 +39,13 @@ public final class BrewRituals {
     }
 
     public static Result pulse(ServerLevel source, BlockPos origin, BrewMixture mixture, CompoundTag brew,
-                               int pulse, boolean leonard) {
+                               ItemStack trigger, int pulse, boolean leonard) {
+        if (trigger.getItem() instanceof TaglockItem) return taglockCast(source, origin, mixture, trigger, leonard);
         var destination = mixture.destination();
         ServerLevel level = destination == null ? source : source.getServer().getLevel(destination.dimension());
         BlockPos target = destination == null ? origin : destination.position();
         if (level == null || !level.isInWorldBounds(target) || !level.getWorldBorder().isWithinBounds(target)) return Result.TOO_FAR;
-        if (destination != null && !canReach(source, origin, level, target, leonard)) return Result.TOO_FAR;
+        if (destination != null && !canReach(source, origin, level, target.distSqr(origin), leonard)) return Result.TOO_FAR;
 
         return switch (mixture.delivery()) {
             case TRIGGERED -> BrewItemCurse.attach(source, origin, brew) ? Result.COMPLETE : Result.FAILED;
@@ -63,7 +70,23 @@ public final class BrewRituals {
         };
     }
 
-    private static boolean canReach(ServerLevel source, BlockPos origin, ServerLevel level, BlockPos target, boolean leonard) {
+    private static Result taglockCast(ServerLevel source, BlockPos origin, BrewMixture mixture, ItemStack trigger,
+                                      boolean leonard) {
+        LivingEntity target = TaglockItem.resolveTarget(source, trigger);
+        if (target == null || !target.isAlive() || !(target.level() instanceof ServerLevel level)) return Result.FAILED;
+        if (!canReach(source, origin, level, target.distanceToSqr(Vec3.atLowerCornerOf(origin)), leonard)) {
+            return Result.TOO_FAR;
+        }
+        if (!HunterClothingItem.resistsCurse(target) && !AreaWardBlockEntity.protectsBrew(target)
+                && !VoodooPoppetItem.deflectBrew(target)) {
+            var caster = FakePlayerFactory.getMinecraft(source);
+            mixture.apply(target, caster, caster, 1, 1);
+        }
+        return Result.COMPLETE;
+    }
+
+    private static boolean canReach(ServerLevel source, BlockPos origin, ServerLevel level, double distanceSquared,
+                                    boolean leonard) {
         AABB covenArea = new AABB(origin).inflate(6);
         Vec3 center = Vec3.atCenterOf(origin);
         int coven = source.getEntitiesOfClass(CovenWitch.class, covenArea, witch -> witch.hasCovenOwner()
@@ -75,7 +98,7 @@ public final class BrewRituals {
         if (coven >= 6) return true;
         int scale = (1 + coven) * 4;
         int distance = 2 * scale * scale;
-        return target.distSqr(origin) <= (double) distance * distance;
+        return distanceSquared <= (double) distance * distance;
     }
 
     private static void gasWave(ServerLevel level, BlockPos center, BrewMixture mixture, int radius) {

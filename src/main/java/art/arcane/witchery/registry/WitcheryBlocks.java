@@ -4,6 +4,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.BarrierBlock;
 import art.arcane.witchery.block.PoppetShelfBlock;
 import art.arcane.witchery.block.AltarBlock;
+import art.arcane.witchery.block.AreaWardBlock;
 import art.arcane.witchery.block.CandelabraBlock;
 import art.arcane.witchery.block.ChaliceBlock;
 import art.arcane.witchery.block.CoffinBlock;
@@ -44,6 +45,7 @@ import art.arcane.witchery.block.WitchesCauldronBlock;
 import art.arcane.witchery.block.WitchesOvenBlock;
 import art.arcane.witchery.block.WolfHeadBlock;
 import art.arcane.witchery.block.WolfAltarBlock;
+import art.arcane.witchery.block.entity.AreaWardBlockEntity;
 import art.arcane.witchery.entity.Ent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -98,7 +100,6 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_STATUE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 22.0D, 14.0D);
     private static final VoxelShape SHAPE_SKULL = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 8.0D, 12.0D);
     private static final VoxelShape SHAPE_BRAZIER = Block.box(3.2D, 0.0D, 3.2D, 12.8D, 15.2D, 12.8D);
-    private static final VoxelShape SHAPE_AREA_MARKER = Block.box(2.4D, 0.0D, 2.4D, 13.6D, 8.0D, 13.6D);
     private static final VoxelShape SHAPE_FETISH = Block.box(3.2D, 0.0D, 3.2D, 12.8D, 16.0D, 12.8D);
     private static final VoxelShape SHAPE_GLOW_GLOBE = Block.box(6.4D, 6.4D, 6.4D, 9.6D, 9.6D, 9.6D);
     private static final VoxelShape SHAPE_INFINITY_EGG = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
@@ -224,8 +225,8 @@ public final class WitcheryBlocks {
             case "brazier" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).sound(SoundType.METAL), SHAPE_BRAZIER, true);
             case "crystalball" -> new CrystalBallBlock();
-            case "decurseteleport", "decursedirected" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.STONE), SHAPE_AREA_MARKER, true);
+            case "decursedirected" -> new AreaWardBlock(AreaWardBlockEntity.Kind.DIRECTED);
+            case "decurseteleport" -> new AreaWardBlock(AreaWardBlockEntity.Kind.TELEPORT);
             case "scarecrow", "trent", "witchsladder" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS), SHAPE_FETISH, true);
             case "placeditem" -> new PlacedItemBlock();

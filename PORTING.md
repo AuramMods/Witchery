@@ -554,7 +554,7 @@
 - [x] Attach the curse to one item from a stack. With an active cat familiar, the muted survival client recovered one stick with two charges from an offering of three. The remaining two sticks kept their ordinary stack.
 - [x] Verify that a right click in air applies Wolfsbane, an immediate second click preserves the remaining charge, and the next click after five seconds reapplies Wolfsbane and clears the curse while keeping the item. The successful cast used a dropped-item fixture for the tongue and stick stack.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 264 required Forge GameTests. Coverage includes the 250-power debit with two white circles, the named 1.7.10 active-brew save, a missing offering, stack splitting, cooldown, and both interaction paths.
-- [ ] Restore taglock entity targeting, additional terrain actions, and Leonard's encounter and summoning ritual.
+- [ ] Restore additional terrain actions and Leonard's encounter and summoning ritual.
 - [ ] Restore the hallucinations from the Insanity effect that can occur during a risky cast.
 
 ## Cauldron Dispersal and Waystone Targets (2026-11-20)
@@ -574,6 +574,15 @@
 - [x] Verify dropped-ingredient casts in the packaged muted client. The five-use Endless Water brew filled the Witch's Cauldron. Its water supplied the strongest fuel recipe. The Witch's Oven consumed that fuel, began a 50,000-tick burn, and finished the sapling. A Player Compass from the cauldron bound to a pig in the inventory crafting grid. Its needle changed by a half turn when the player turned around.
 - [x] Verify a dedicated restart with a long oven burn, the used water brew, and the bound compass. The oven kept its full-sized timer and resumed burning. The bottle retained its wear and the compass still tracked the tagged pig.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 273 required Forge GameTests. Coverage includes all recipe variants, ingredient power accounting, recipe precedence, saved cast resumption, named legacy item metadata, pouring and dispensing, compass binding, and pit collision.
+
+## Taglock Cauldron Casts and Protection Statues (2026-11-20)
+
+- [x] Trigger a full cauldron with a Taglock Kit and 1,000 base altar power. The cast can use a drinking brew. It resolves the tagged creature or player at release, applies the full effect to that target, and refunds the original kit and preserves the brew if the target is missing or too far away.
+- [x] Respect Witch Hunter clothing, configured area protection and Voodoo Protection Poppets in their original order. Both statues protect against targeted brews. The Statue of Broken Curses also protects against the directed Waking Nightmare rite. Both server options default to disabled with a 32-block horizontal radius. Statue ownership and the local list of player killers retain their legacy save fields.
+- [x] Capture a pig's taglock in the muted background survival client and use the bound item in a dropped-ingredient cast. The server applied Wolfsbane to the pig after it moved during warmup and left the neighboring pig unaffected.
+- [x] Save a second cast three pulses into warmup. The dedicated server resumed and completed it after restart. The enabled directed statue seven blocks below the pig kept its facing, owner and killer list. The cast used the brew and applied no Wolfsbane.
+- [x] Run Java 17 data generation, JAR reobfuscation and all 278 required Forge GameTests. Coverage includes range failure, blank kits, named legacy cast resumption, loaded statue behavior, player killer records and the poppet's wear.
+- [ ] Restore the wolf and mandrake statue geometry and connect the Statue of Occluded Summons when forced-teleport rites are ported.
 
 ## Auram Pack Validation (2026-11-20)
 

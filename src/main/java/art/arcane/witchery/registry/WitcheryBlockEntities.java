@@ -5,6 +5,7 @@ import art.arcane.witchery.block.CursedControls;
 import art.arcane.witchery.block.entity.CursedControlBlockEntity;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.AltarBlockEntity;
+import art.arcane.witchery.block.entity.AreaWardBlockEntity;
 import art.arcane.witchery.block.entity.BarrierBlockEntity;
 import art.arcane.witchery.block.entity.BloodRoseBlockEntity;
 import art.arcane.witchery.block.entity.BloodCrucibleBlockEntity;
@@ -62,6 +63,14 @@ public final class WitcheryBlockEntities {
     public static final RegistryObject<BlockEntityType<AltarBlockEntity>> ALTAR =
             BLOCK_ENTITIES.register("altar", () -> BlockEntityType.Builder.of(AltarBlockEntity::new,
                     WitcheryBlocks.getRequired("altar").get()).build(null));
+    public static final RegistryObject<BlockEntityType<AreaWardBlockEntity>> DECURSE_DIRECTED =
+            BLOCK_ENTITIES.register("decursedirected", () -> BlockEntityType.Builder.of(
+                    (pos, state) -> new AreaWardBlockEntity(pos, state, AreaWardBlockEntity.Kind.DIRECTED),
+                    WitcheryBlocks.getRequired("decursedirected").get()).build(null));
+    public static final RegistryObject<BlockEntityType<AreaWardBlockEntity>> DECURSE_TELEPORT =
+            BLOCK_ENTITIES.register("decurseteleport", () -> BlockEntityType.Builder.of(
+                    (pos, state) -> new AreaWardBlockEntity(pos, state, AreaWardBlockEntity.Kind.TELEPORT),
+                    WitcheryBlocks.getRequired("decurseteleport").get()).build(null));
     public static final RegistryObject<BlockEntityType<ChaliceBlockEntity>> CHALICE =
             BLOCK_ENTITIES.register("chalice", () -> BlockEntityType.Builder.of(ChaliceBlockEntity::new,
                     WitcheryBlocks.getRequired("chalice").get()).build(null));
@@ -160,6 +169,8 @@ public final class WitcheryBlockEntities {
         LEGACY_BLOCK_ENTITIES.put("coffinblock", COFFIN);
         LEGACY_BLOCK_ENTITIES.put("spinningwheel", SPINNING_WHEEL);
         LEGACY_BLOCK_ENTITIES.put("cauldron", CAULDRON);
+        LEGACY_BLOCK_ENTITIES.put("decursedirected", DECURSE_DIRECTED);
+        LEGACY_BLOCK_ENTITIES.put("decurseteleport", DECURSE_TELEPORT);
         LEGACY_BLOCK_ENTITIES.put("brewgas", BREW_GAS);
         LEGACY_BLOCK_ENTITIES.put("brewliquid", BREW_LIQUID);
         LEGACY_BLOCK_ENTITIES.put("witchesovenidle", WITCHES_OVEN);

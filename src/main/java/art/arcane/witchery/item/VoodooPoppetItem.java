@@ -114,13 +114,17 @@ public final class VoodooPoppetItem extends BoundPoppetItem {
     }
 
     static boolean warded(Entity caster, LivingEntity target, ItemStack poppet) {
-        if (!(target instanceof ServerPlayer player)) return false;
-        if (!useWard(player, WitcheryItems.getRequired("voodoo_protection_poppet").get(), DEFLECTION_WEAR)) return false;
+        if (!deflectBrew(target)) return false;
         if (caster instanceof ServerPlayer attacker) {
             wear(poppet, DEFLECTION_WEAR);
             strikeCaster(attacker);
         }
         return true;
+    }
+
+    public static boolean deflectBrew(LivingEntity target) {
+        return target instanceof ServerPlayer player
+                && useWard(player, WitcheryItems.getRequired("voodoo_protection_poppet").get(), DEFLECTION_WEAR);
     }
 
     public static boolean deflectRite(ServerPlayer caster, ServerPlayer target, int wards) {

@@ -351,6 +351,7 @@ public final class BrewMixture {
         modifier(entries, "end_stone", 150, Modifier.LIFETIME, 1, 3, 0);
         modifier(entries, "witchery:bound_waystone", 100, Modifier.WAYSTONE, 0, 0, 0);
         modifier(entries, "witchery:dog_tongue", 250, Modifier.RITUAL, 0, 0, 0);
+        modifier(entries, "witchery:taglockkit", 1000, Modifier.RITUAL, 0, 0, 0);
         entries.put(ResourceLocation.withDefaultNamespace("coal"), new Ingredient(0, null, 1, 10, 0, null, null, true));
 
         potion(entries, "witchery:wolfsbane_flower", 0, 1, WitcheryEffects.WOLFSBANE, 1200);

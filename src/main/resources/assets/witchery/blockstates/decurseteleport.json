@@ -1,7 +1,8 @@
 {
    "variants" : {
-      "" : {
-         "model" : "witchery:block/decurseteleport"
-      }
+      "facing=north" : { "model" : "witchery:block/decurseteleport" },
+      "facing=east" : { "model" : "witchery:block/decurseteleport", "y" : 90 },
+      "facing=south" : { "model" : "witchery:block/decurseteleport", "y" : 180 },
+      "facing=west" : { "model" : "witchery:block/decurseteleport", "y" : 270 }
    }
 }

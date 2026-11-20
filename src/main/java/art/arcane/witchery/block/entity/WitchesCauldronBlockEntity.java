@@ -5,6 +5,7 @@ import art.arcane.witchery.brewing.BrewBottling;
 import art.arcane.witchery.brewing.BrewMixture;
 import art.arcane.witchery.brewing.BrewRituals;
 import art.arcane.witchery.brewing.CauldronRitualRecipe;
+import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.power.AltarPower;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
@@ -167,7 +168,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         if (++ritualTicks <= RITUAL_WARMUP_PULSES) return;
         if (altar != null && !altar.consumePower((int) Math.floor(cost))) return;
         boolean leonard = BrewRituals.leonardNearby(server, pos);
-        var result = BrewRituals.pulse(server, pos, mixture, mixture.bottleTag(ingredients),
+        var result = BrewRituals.pulse(server, pos, mixture, mixture.bottleTag(ingredients), lastIngredient(),
                 ritualTicks - RITUAL_WARMUP_PULSES, leonard);
         switch (result) {
             case FAILED, TOO_FAR -> endBrewRitual(server);
@@ -184,18 +185,27 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
 
     private void endBrewRitual(ServerLevel server) {
         ritualTicks = RITUAL_REFUND;
-        int last = ingredients.size() - 1;
-        if (last >= 0 && ingredients.get(last).is(WitcheryIngredient.DOG_TONGUE.item())) {
+        ItemStack trigger = lastIngredient();
+        if (trigger.is(WitcheryIngredient.DOG_TONGUE.item()) || trigger.getItem() instanceof TaglockItem) {
             ItemEntity refund = new ItemEntity(server, worldPosition.getX() + 0.03, worldPosition.getY() + 1.2,
-                    worldPosition.getZ() + 0.03, ingredients.get(last).copy(), -0.08, 0.1, -0.08);
+                    worldPosition.getZ() + 0.03, trigger.copy(), -0.08, 0.1, -0.08);
             refund.setDefaultPickUpDelay();
             if (!server.addFreshEntity(refund)) return;
-            ingredients.remove(last);
+            ingredients.remove(ingredients.size() - 1);
         }
         brewRitual = false;
         ritualTicks = 0;
         onIngredientAdded(server);
         ritualParticles(server, ParticleTypes.SMOKE);
+    }
+
+    private ItemStack lastIngredient() {
+        return ingredients.isEmpty() ? ItemStack.EMPTY : ingredients.get(ingredients.size() - 1);
+    }
+
+    private boolean canCastWith(ItemStack trigger) {
+        return mixture != null && mixture.hasEffects() && (trigger.getItem() instanceof TaglockItem
+                || trigger.is(WitcheryIngredient.DOG_TONGUE.item()) && mixture.splash());
     }
 
     private void ritualParticles(ServerLevel server, SimpleParticleType particles) {
@@ -291,8 +301,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         if (!isBoiling() || casting()) {
             return false;
         }
-        if (offered.is(WitcheryIngredient.DOG_TONGUE.item()) && tank.getFluidAmount() == CAPACITY
-                && mixture != null && mixture.hasEffects() && mixture.splash()) {
+        if (tank.getFluidAmount() == CAPACITY && canCastWith(offered)) {
             ingredients.add(offered.copyWithCount(1));
             brewRitual = true;
             ritualTicks = 0;
@@ -510,8 +519,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
                 ? tag.getInt("HeatTicks") : tag.getInt("TicksHeated"), 0, BOIL_TICKS);
         ritual = tag.contains("Ritual", Tag.TAG_STRING) ? ResourceLocation.tryParse(tag.getString("Ritual")) : null;
         brewRitual = ritual == null && (tag.getBoolean("RitualTriggered") || originalBrew.getBoolean("RitualTriggered"))
-                && mixture != null && mixture.splash() && mixture.hasEffects()
-                && ingredients.get(ingredients.size() - 1).is(WitcheryIngredient.DOG_TONGUE.item());
+                && canCastWith(lastIngredient());
         ritualTicks = Math.max(brewRitual ? RITUAL_REFUND : 0, tag.getInt("RitualTicks"));
     }
 

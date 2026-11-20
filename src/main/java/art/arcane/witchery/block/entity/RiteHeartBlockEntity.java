@@ -239,6 +239,10 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                     abort(level, "message.witchery.rite.hunter_curse_protection");
                     return;
                 }
+                if (AreaWardBlockEntity.protectsDirectedCurse(curseTarget)) {
+                    abort(level, "message.witchery.rite.area_curse_protection");
+                    return;
+                }
             }
         } else if (rite.action() == ItemRiteRecipe.Action.CORRUPT_VOODOO_PROTECTION) {
             corruptionCaster = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);

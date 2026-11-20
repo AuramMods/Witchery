@@ -3,6 +3,7 @@ package art.arcane.witchery.event;
 import art.arcane.witchery.brewing.BrewItemCurse;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.CoffinBlock;
+import art.arcane.witchery.block.entity.AreaWardBlockEntity;
 import art.arcane.witchery.brewing.GrotesqueEffect;
 import art.arcane.witchery.brewing.WakingNightmareEffect;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
@@ -366,6 +367,7 @@ public final class WitcheryEventHooks {
         }
         FamiliarBinding.handleDeath(event);
         if (!event.isCanceled() && event.getSource().getEntity() instanceof ServerPlayer killer) {
+            if (event.getEntity() instanceof ServerPlayer victim && killer != victim) AreaWardBlockEntity.recordKiller(killer);
             Vampirism.onKilled(event.getEntity(), killer, event.getSource());
             WolfTrials.onKilled(event.getEntity(), killer, event.getSource());
         }
