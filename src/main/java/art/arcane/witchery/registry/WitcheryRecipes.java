@@ -70,6 +70,9 @@ public final class WitcheryRecipes {
     public static final RegistryObject<RecipeSerializer<TaglockBindingRecipe>> SIGN_OWNERSHIP_CONTRACT =
             SERIALIZERS.register("sign_ownership_contract", () -> new SimpleCraftingRecipeSerializer<>(
                     (id, category) -> new TaglockBindingRecipe(id, category, TaglockBindingRecipe.Binding.OWNERSHIP)));
+    public static final RegistryObject<RecipeSerializer<TaglockBindingRecipe>> BIND_FIRE_POPPET =
+            SERIALIZERS.register("bind_fire_protection_poppet", () -> new SimpleCraftingRecipeSerializer<>(
+                    (id, category) -> new TaglockBindingRecipe(id, category, TaglockBindingRecipe.Binding.FIRE_POPPET)));
     public static final RegistryObject<RecipeSerializer<TaglockBindingRecipe>> BIND_DEATH_POPPET =
             SERIALIZERS.register("bind_death_protection_poppet", () -> new SimpleCraftingRecipeSerializer<>(
                     (id, category) -> new TaglockBindingRecipe(id, category, TaglockBindingRecipe.Binding.DEATH_POPPET)));

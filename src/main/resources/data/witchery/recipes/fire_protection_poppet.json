@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " E ",
+    "WPW",
+    " E "
+  ],
+  "key": {
+    "E": {
+      "item": "witchery:embermoss"
+    },
+    "W": {
+      "item": "witchery:bat_wool"
+    },
+    "P": {
+      "item": "witchery:poppet"
+    }
+  },
+  "result": {
+    "item": "witchery:fire_protection_poppet"
+  }
+}

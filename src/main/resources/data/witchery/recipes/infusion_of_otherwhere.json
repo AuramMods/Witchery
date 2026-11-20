@@ -1,0 +1,20 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [
+    {
+      "size": "small",
+      "glyph": "witchery:circleglyphotherwhere"
+    },
+    {
+      "size": "medium",
+      "glyph": "witchery:circleglyphotherwhere"
+    }
+  ],
+  "sacrifices": [
+    {
+      "item": "witchery:spirit_of_otherwhere"
+    }
+  ],
+  "power": 4000,
+  "action": "infuse_otherwhere"
+}

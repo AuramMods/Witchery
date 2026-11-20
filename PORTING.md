@@ -118,7 +118,8 @@
 - [x] Restore Soul of the World in the kettle, using Redstone Soup, extended Regeneration, an Enchanted Golden Apple, Attuned Stone, Mandrake Root, and Rowan Sapling. The muted client filled the kettle and bottled two servings. The Forge tests distinguish Rowan from Alder and Hawthorn.
 - [x] Restore the Overworld infusion's two white rings, 4,000 altar power and 200 personal charges. All 40 required Forge GameTests passed, including the old poppet metadata, a bound poppet's lethal damage protection, and the charge cap.
 - [x] Restore the recharging rite with a standard Regeneration potion and upkeep of 40 altar power per second. The dedicated restart retained the active rite and the player's 180 charge outside the circle. The muted client reentered, reached the 200-charge cap, and stopped the rite at the heart.
-- [ ] Restore the remaining Light and Otherwhere infusion recipes, the infusions' special abilities and charge HUD, the Poppet Shelf, and other types of poppets.
+- [x] Restore the Light and Otherwhere infusion recipes.
+- [ ] Restore the four infusions' Witch Hand powers and charge HUD, the Poppet Shelf, and the remaining types of poppets.
 
 ## Infernal Infusion and Voodoo Poppets (2026-11-19)
 
@@ -134,9 +135,17 @@
 - Hold use with the Mystic Branch, draw the directional strokes, then release to cast. The server recognizes six original variants per spell and checks infusion, learned knowledge, charge and cooldown. All four learned Soul Brew spells work with any infusion. The legacy Infernal restriction applies to curses that have no knowledge key.
 - [x] The muted survival client filled the kettle, bottled the unguent, and dropped both offerings at the heart. The rite left its offerings at noon and produced a Mystic Branch at midnight. The branch and infused player's 200 charges remained after a dedicated restart.
 - [x] The muted client drew and released Carnosa Diem, Ignianima and Morsmordre. The player's health fell from 20 to 18 and its charge reached 199 after Carnosa Diem. Ignianima lowered a pig's health from 10 to 7 and cost two charge. Morsmordre summoned a Dark Mark and cost 20 charge.
-- [x] The muted client rendered the Dark Mark's original model and smoke. Tormentum moved a second survival client to a maze floor, removed the nearby pig, and spent 25 charge. Repeating the gesture during the cooldown preserved charge. The dedicated server saved the original `tormentumLastUse` field, elapsed charge and the second player's Torment dimension.
+- [x] The muted client rendered the Dark Mark's original model and smoke. Tormentum moved a second survival client to a maze floor, removed the nearby pig, and spent 25 charge. Repeating the gesture during the cooldown preserved charge. The dedicated server saved the original `tormentumLastUse` field, remaining charge and the second player's Torment dimension.
 - [x] Java 17 data generation and reobfuscation succeeded on Forge 47.4.10. All 46 required Forge GameTests passed, including the long symbol variants, unknown spell rejection, Dark Mark lifespan, and Tormentum's impact against creatures and charge cooldown.
 - [ ] Restore the remaining symbols, enhanced casting with Worship, and the in-game symbol book.
+
+## Light and Otherwhere Infusions (2026-11-20)
+
+- [x] Restore the Fire Protection Poppet with a Poppet, two Embermoss and two Wool of Bat. The muted survival client crafted it, filled a Taglock Kit at its bed, and bound the poppet to itself. Lethal fire consumed the ward and granted three seconds of Fire Resistance. The Forge tests verify that the fire ward protects before a Death Protection Poppet.
+- [x] Brew Ghost of the Light with Redstone Soup, extended Invisibility, extended Fire Resistance, a Fire Protection Poppet, a Torch and Dog Tongue at 4,000 altar power. The muted client fed the crafted poppet into the kettle and bottled two servings. Its daytime white-circle rite granted Light infusion ID 1 and 200 charge. The player used the Mystic Branch to cast Carnosa Diem with the new infusion.
+- [x] Brew Spirit of Otherwhere with Redstone Soup, extended Swiftness, two separate Eyes of Ender, Drop of Luck and Wool of Bat at 4,000 altar power. The muted client used extended splash Swiftness, bottled two servings, and completed the daytime rite inside small and medium Otherwhere circles. The rite granted infusion ID 3 and 200 charge.
+- [x] Both rites consumed a bound Death Protection Poppet and restored six health to ten. All 49 required Forge GameTests passed, including the legacy variants, and Java 17 data generation and JAR reobfuscation succeeded.
+- [x] A dedicated restart retained Otherwhere ID 3, all 200 charge, and the remaining portions of both kettle brews. The consumed ward stayed gone.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.

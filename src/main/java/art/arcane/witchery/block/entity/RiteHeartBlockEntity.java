@@ -175,7 +175,9 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         Entity result = null;
         LivingEntity curseTarget = null;
         int infusionType = switch (rite.action()) {
+            case INFUSE_LIGHT -> 1;
             case INFUSE_OVERWORLD -> 2;
+            case INFUSE_OTHERWHERE -> 3;
             case INFUSE_INFERNAL -> 4;
             default -> 0;
         };

@@ -1,0 +1,37 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {
+      "item": "witchery:redstone_soup"
+    },
+    {
+      "type": "forge:nbt",
+      "item": "minecraft:potion",
+      "nbt": {
+        "Potion": "minecraft:long_invisibility"
+      }
+    },
+    {
+      "type": "forge:nbt",
+      "item": "minecraft:potion",
+      "nbt": {
+        "Potion": "minecraft:long_fire_resistance"
+      }
+    },
+    {
+      "item": "witchery:fire_protection_poppet"
+    },
+    {
+      "item": "minecraft:torch"
+    },
+    {
+      "item": "witchery:dog_tongue"
+    }
+  ],
+  "result": {
+    "item": "witchery:ghost_of_the_light",
+    "count": 2
+  },
+  "color": -5584658,
+  "power": 4000
+}

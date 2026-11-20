@@ -67,6 +67,7 @@ public final class WitcheryItems {
         for (String legacyName : LegacyRegistryData.ITEMS) {
             registerLegacyItem(legacyName);
         }
+        registerLegacyItem("fire_protection_poppet");
         registerLegacyItem("death_protection_poppet");
         registerLegacyItem("voodoo_poppet");
         registerLegacyItem("voodoo_protection_poppet");
@@ -167,6 +168,7 @@ public final class WitcheryItems {
             case "brew_of_soul_torment" -> new DrinkableBrewItem(SpellKnowledge.TORMENTUM::learn);
             case "contract_of_ownership" -> new OwnershipContractItem();
             case "contract_of_torment" -> new TormentContractItem();
+            case "fire_protection_poppet" -> new BoundPoppetItem();
             case "death_protection_poppet" -> new DeathProtectionPoppetItem();
             case "voodoo_poppet" -> new VoodooPoppetItem();
             case "voodoo_protection_poppet" -> new BoundPoppetItem();
@@ -174,7 +176,8 @@ public final class WitcheryItems {
             case "odd_porkchop_raw" -> new Item(new Item.Properties().food(new FoodProperties.Builder()
                     .nutrition(3).saturationMod(0.3F).alwaysEat().build()));
             case "redstone_soup" -> new DrinkableBrewItem(() -> MobEffects.HEALTH_BOOST, 2400, 1);
-            case "soul_of_the_world" -> new DrinkableBrewItem(() -> MobEffects.POISON, 1200, 1);
+            case "ghost_of_the_light", "soul_of_the_world", "spirit_of_otherwhere" ->
+                    new DrinkableBrewItem(() -> MobEffects.POISON, 1200, 1);
             case "infernal_animus" -> new DrinkableBrewItem(drinker -> {
                 drinker.addEffect(new MobEffectInstance(MobEffects.POISON, 1200, 1));
                 drinker.addEffect(new MobEffectInstance(MobEffects.WITHER, 3600, 2));

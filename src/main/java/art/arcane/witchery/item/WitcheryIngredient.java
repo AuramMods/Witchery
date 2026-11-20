@@ -42,7 +42,9 @@ public enum WitcheryIngredient {
     REFINED_EVIL(38, "refined_evil"),
     DROP_OF_LUCK(39, "drop_of_luck"),
     REDSTONE_SOUP(40, "redstone_soup"),
+    GHOST_OF_THE_LIGHT(42, "ghost_of_the_light"),
     SOUL_OF_THE_WORLD(43, "soul_of_the_world"),
+    SPIRIT_OF_OTHERWHERE(44, "spirit_of_otherwhere"),
     INFERNAL_ANIMUS(45, "infernal_animus"),
     ODD_PORKCHOP_RAW(50, "odd_porkchop_raw"),
     BREW_OF_INK(60, "brew_of_ink"),
@@ -112,6 +114,7 @@ public enum WitcheryIngredient {
         ItemStack stack = ItemStack.of(stackTag);
         if (!stack.isEmpty() && "witchery:poppet".equals(stackTag.getString("id"))) {
             String poppet = switch (stackTag.getInt("Damage")) {
+                case 3 -> "fire_protection_poppet";
                 case 6 -> "death_protection_poppet";
                 case 7 -> "voodoo_protection_poppet";
                 case 8 -> "voodoo_poppet";

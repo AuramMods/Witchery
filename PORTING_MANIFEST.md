@@ -572,9 +572,9 @@ The first migrated subtypes have individual item IDs. Preserve `witchery:ingredi
 | 39 | `dropOfLuck` |
 | 40 | `redstoneSoup` |
 | 41 | `flyingOintment` |
-| 42 | `ghostOfTheLight` |
+| 42 | `ghostOfTheLight` → `witchery:ghost_of_the_light` |
 | 43 | `soulOfTheWorld` → `witchery:soul_of_the_world` |
-| 44 | `spiritOfOtherwhere` |
+| 44 | `spiritOfOtherwhere` → `witchery:spirit_of_otherwhere` |
 | 45 | `infernalAnimus` → `witchery:infernal_animus` |
 | 46 | `bookOven` |
 | 47 | `bookDistilling` |
@@ -704,7 +704,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 0 | `poppet` | Poppet |
 | 1 | `protectEarth` | Earth Protection Poppet |
 | 2 | `protectWater` | Water Protection Poppet |
-| 3 | `protectFire` | Fire Protection Poppet |
+| 3 | `protectFire` | Fire Protection Poppet → `witchery:fire_protection_poppet` |
 | 4 | `protectStarvation` | Hunger Protection Poppet |
 | 5 | `protectTool` | Tool Protection Poppet |
 | 6 | `protectDeath` | Death Protection Poppet → `witchery:death_protection_poppet` |
@@ -1156,7 +1156,7 @@ Implementation anchors:
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/client/event/WitcheryClientCameraHooks.java`
 
 Current scaffold behavior:
-- Uses one `SimpleChannel` (`witchery:main`) with protocol version `"12"`.
+- Uses one `SimpleChannel` (`witchery:main`) with protocol version `"13"`.
 - The Mystic Branch recognizes gestures from server-side player rotations. Protocol 12 retires the prepared-spell packet while recording the old intent in `LegacyRegistryData.PACKETS`.
 - Validates packet receive direction against legacy flow metadata and logs mismatches.
 - Represents all legacy packet intents in `LegacyRegistryData.PACKETS` as migration metadata.

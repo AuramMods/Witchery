@@ -47,7 +47,9 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         SUMMON_IMP,
         INFUSE_OVERWORLD,
         RECHARGE_INFUSION,
-        INFUSE_INFERNAL
+        INFUSE_INFERNAL,
+        INFUSE_LIGHT,
+        INFUSE_OTHERWHERE
     }
 
     public record Ring(RitualCircle pattern, Block glyph) {
@@ -193,6 +195,8 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 case "infuse_overworld" -> Action.INFUSE_OVERWORLD;
                 case "recharge_infusion" -> Action.RECHARGE_INFUSION;
                 case "infuse_infernal" -> Action.INFUSE_INFERNAL;
+                case "infuse_light" -> Action.INFUSE_LIGHT;
+                case "infuse_otherwhere" -> Action.INFUSE_OTHERWHERE;
                 case "curse_waking_nightmare" -> Action.CURSE_WAKING_NIGHTMARE;
                 case "cure_waking_nightmare" -> Action.CURE_WAKING_NIGHTMARE;
                 case "bind_familiar" -> Action.BIND_FAMILIAR;

@@ -1,0 +1,20 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [
+    {
+      "size": "small",
+      "glyph": "witchery:circleglyphritual"
+    },
+    {
+      "size": "medium",
+      "glyph": "witchery:circleglyphritual"
+    }
+  ],
+  "sacrifices": [
+    {
+      "item": "witchery:ghost_of_the_light"
+    }
+  ],
+  "power": 2000,
+  "action": "infuse_light"
+}
