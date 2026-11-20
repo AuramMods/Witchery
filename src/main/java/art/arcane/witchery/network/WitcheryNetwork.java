@@ -5,10 +5,9 @@ import art.arcane.witchery.vampirism.VampireAbilities;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.item.VampireBookItem;
 import art.arcane.witchery.registry.LegacyRegistryData;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -34,14 +33,12 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class WitcheryNetwork {
-    private static final String PROTOCOL_VERSION = "26";
+    private static final String PROTOCOL_VERSION = "27";
     private static final int MAX_USERNAME_LENGTH = 64;
     private static final int MAX_PLAYER_SKIN_LENGTH = 256;
-    private static final int MAX_MARKUP_PAGE_COUNT = 256;
-    private static final int MAX_MARKUP_PAGE_LENGTH = 2048;
+    private static final int MAX_MARKUP_CHAPTER_LENGTH = 32;
     private static final String KEY_PERSISTENT_LAST_HOWL_TICK = "WITCLastHowlTick";
     private static final String KEY_STACK_CURRENT_PAGE = "CurrentPage";
-    private static final String KEY_STACK_PAGE_STACK = "pageStack";
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             ResourceLocation.parse(Witchery.MODID + ":main"),
             () -> PROTOCOL_VERSION,
@@ -268,8 +265,8 @@ public final class WitcheryNetwork {
         CHANNEL.sendToServer(ClearFallDamagePacket.placeholder());
     }
 
-    public static void sendSyncMarkupBookToServer(int slot, List<String> pages) {
-        CHANNEL.sendToServer(new SyncMarkupBookPacket(slot, pages == null ? List.of() : pages));
+    public static void sendMarkupBookBookmark(int slot, String chapter) {
+        CHANNEL.sendToServer(new SyncMarkupBookPacket(slot, chapter));
     }
 
     public static void sendHowlToServer() {
@@ -692,35 +689,16 @@ public final class WitcheryNetwork {
     private static void handleSyncMarkupBookPacket(SyncMarkupBookPacket message, NetworkEvent.Context context) {
         mutateSenderData(context, "sync_markup_book", (sender, data) -> {
             int slot = message.slot();
-            if (slot < 0 || slot >= sender.getInventory().getContainerSize()) {
-                Witchery.LOGGER.debug("Ignoring scaffold packet 'sync_markup_book' with out-of-range slot={} player={}", slot, sender.getScoreboardName());
-                return;
-            }
-
+            if (sender.isSpectator() || slot != sender.getInventory().selected && slot != sender.getInventory().getContainerSize() - 1) return;
             ItemStack stack = sender.getInventory().getItem(slot);
-            if (stack.isEmpty()) {
-                Witchery.LOGGER.debug("Ignoring scaffold packet 'sync_markup_book' for empty slot={} player={}", slot, sender.getScoreboardName());
-                return;
-            }
-
-            ListTag pageStack = new ListTag();
-            for (String page : message.pages()) {
-                pageStack.add(StringTag.valueOf(page == null ? "" : page));
-            }
-
-            CompoundTag stackTag = stack.getOrCreateTag();
-            stackTag.put(KEY_STACK_PAGE_STACK, pageStack);
+            if (!(stack.getItem() instanceof VampireBookItem) || !VampireBookItem.setBookmark(stack, message.chapter())) return;
             sender.getInventory().setChanged();
             sender.containerMenu.broadcastChanges();
-
-            data.applyMarkupBookSync(slot, message.pages());
+            data.applyMarkupBookSync(slot, List.of(message.chapter()));
+            data.increaseVampireLevelCap(VampireBookItem.tornPages(stack) + 1);
             data.bumpSyncRevision();
-            sendPlayerSync(sender, data);
+            sendPartialExtendedPlayerSync(sender, data);
         });
-        Witchery.LOGGER.debug(
-                "Handled scaffold packet 'sync_markup_book' slot={} pageCount={} direction={}",
-                message.slot(), message.pages().size(), context.getDirection()
-        );
     }
 
     private static void handleHowlPacket(HowlPacket message, NetworkEvent.Context context) {
@@ -1009,38 +987,18 @@ public final class WitcheryNetwork {
         }
     }
 
-    public record SyncMarkupBookPacket(int slot, List<String> pages) {
-        public SyncMarkupBookPacket {
-            if (pages == null || pages.isEmpty()) {
-                pages = List.of();
-            } else {
-                pages = List.copyOf(pages);
-            }
-        }
-
+    public record SyncMarkupBookPacket(int slot, String chapter) {
         public static SyncMarkupBookPacket placeholder() {
-            return new SyncMarkupBookPacket(0, List.of());
+            return new SyncMarkupBookPacket(0, "toc");
         }
 
         public static void encode(SyncMarkupBookPacket message, FriendlyByteBuf buffer) {
-            int clampedCount = Math.min(message.pages().size(), MAX_MARKUP_PAGE_COUNT);
             buffer.writeVarInt(message.slot());
-            buffer.writeVarInt(clampedCount);
-
-            for (int index = 0; index < clampedCount; index++) {
-                String page = message.pages().get(index);
-                buffer.writeUtf(page == null ? "" : page, MAX_MARKUP_PAGE_LENGTH);
-            }
+            buffer.writeUtf(message.chapter(), MAX_MARKUP_CHAPTER_LENGTH);
         }
 
         public static SyncMarkupBookPacket decode(FriendlyByteBuf buffer) {
-            int slot = buffer.readVarInt();
-            int pageCount = Math.min(buffer.readVarInt(), MAX_MARKUP_PAGE_COUNT);
-            List<String> pages = new java.util.ArrayList<>(pageCount);
-            for (int index = 0; index < pageCount; index++) {
-                pages.add(buffer.readUtf(MAX_MARKUP_PAGE_LENGTH));
-            }
-            return new SyncMarkupBookPacket(slot, pages);
+            return new SyncMarkupBookPacket(buffer.readVarInt(), buffer.readUtf(MAX_MARKUP_CHAPTER_LENGTH));
         }
     }
 

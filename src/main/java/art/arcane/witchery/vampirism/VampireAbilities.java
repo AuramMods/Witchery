@@ -7,6 +7,7 @@ import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -17,10 +18,12 @@ import net.minecraft.world.entity.player.Player;
 public final class VampireAbilities {
     public static final int DRINK = 1;
     public static final int MESMERIZE = 2;
+    public static final int SPEED = 3;
 
     private VampireAbilities() {}
 
     public static int maxPower(int rank) {
+        if (rank >= 4) return SPEED;
         return rank >= 2 ? MESMERIZE : rank == 1 ? DRINK : 0;
     }
 
@@ -38,9 +41,12 @@ public final class VampireAbilities {
     }
 
     public static void activate(ServerPlayer player) {
-        if (!player.isShiftKeyDown() || selected(player) != MESMERIZE || BloodFeeding.paralysis(player, 4)) return;
+        int power = selected(player);
+        if (power < MESMERIZE || (power == MESMERIZE && !player.isShiftKeyDown()) || BloodFeeding.paralysis(player, 4)) return;
         WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
-            if (data.getVampireLevel() >= 2 && data.beginVampireAbility(player.level().getGameTime())) toggleVision(player, data);
+            if (power > maxPower(data.getVampireLevel()) || !data.beginVampireAbility(player.level().getGameTime())) return;
+            if (power == MESMERIZE) toggleVision(player, data);
+            else if (power == SPEED) accelerate(player, data);
         });
     }
 
@@ -75,5 +81,20 @@ public final class VampireAbilities {
         if (active) player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 400, 0, true, false));
         else player.removeEffect(MobEffects.NIGHT_VISION);
         Vampirism.sync(player, data);
+    }
+
+    private static void accelerate(ServerPlayer player, WitcheryPlayerData data) {
+        MobEffectInstance speed = player.getEffect(MobEffects.MOVEMENT_SPEED);
+        int stages = speed == null ? 0 : Mth.ceillog2(speed.getAmplifier() + 1);
+        int stackingLimit = (data.getVampireLevel() - 2) / 2;
+        if (data.getCreatureTypeOrdinal() != 0 || stages > stackingLimit || !Vampirism.drawBlood(player, 10)) {
+            player.playNotifySound(SoundEvents.NOTE_BLOCK_SNARE.value(), SoundSource.PLAYERS, 1, 0.5F);
+            return;
+        }
+        int duration = speed == null ? 200 : speed.getDuration() + 60;
+        int amplifier = speed == null ? 1 : 2 * (speed.getAmplifier() + 1) - 1;
+        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, duration, amplifier, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.JUMP, duration, stages + 1, true, true));
+        player.playNotifySound(SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 1, 1);
     }
 }

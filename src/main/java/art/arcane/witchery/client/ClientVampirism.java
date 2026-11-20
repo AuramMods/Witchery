@@ -34,6 +34,7 @@ public final class ClientVampirism {
     private static final ResourceLocation WIDGETS = ResourceLocation.withDefaultNamespace("textures/gui/widgets.png");
     private static final ResourceLocation FANGS = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "textures/item/vteeth.png");
     private static final ResourceLocation EYE = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "textures/item/veye.png");
+    private static final ResourceLocation SPEED = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "textures/item/vspeed.png");
     private static int aimingAt = -1;
     private static int trackedBlood = -1;
     private static int nextReadTick;
@@ -80,7 +81,8 @@ public final class ClientVampirism {
         }
         int selected = VampireAbilities.selected(player);
         if (!event.isUseItem() || selected == 0 || client.hitResult != null && client.hitResult.getType() == HitResult.Type.ENTITY) return;
-        if (event.getHand() == InteractionHand.MAIN_HAND && selected == VampireAbilities.MESMERIZE && player.isShiftKeyDown()) {
+        if (event.getHand() == InteractionHand.MAIN_HAND && (selected == VampireAbilities.SPEED
+                || selected == VampireAbilities.MESMERIZE && player.isShiftKeyDown())) {
             WitcheryNetwork.requestVampirePower(selected, true);
         }
         event.setCanceled(true);
@@ -142,7 +144,12 @@ public final class ClientVampirism {
                 int top = height - 22;
                 graphics.blit(WIDGETS, left, top, 0, 0, 21, 22, 256, 256);
                 if (power == data.getSelectedVampirePower()) graphics.blit(WIDGETS, left - 1, top - 1, 0, 22, 24, 22, 256, 256);
-                graphics.blit(power == VampireAbilities.DRINK ? FANGS : EYE, left + 3, top + 3, 0, 0, 16, 16, 16, 16);
+                ResourceLocation icon = switch (power) {
+                    case VampireAbilities.DRINK -> FANGS;
+                    case VampireAbilities.MESMERIZE -> EYE;
+                    default -> SPEED;
+                };
+                graphics.blit(icon, left + 3, top + 3, 0, 0, 16, 16, 16, 16);
             }
             if (trackedBlood >= 0) {
                 int portion = BloodFeeding.MAX_MORTAL_BLOOD / 4;

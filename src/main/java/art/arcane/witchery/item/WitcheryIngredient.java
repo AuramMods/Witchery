@@ -114,7 +114,8 @@ public enum WitcheryIngredient {
     CONTRACT_OF_TORMENT(141, "contract_of_torment"),
     CREATURE_BOUND_WAYSTONE(147, "creature_bound_waystone"),
     ANOINTING_PASTE(153, "anointing_paste"),
-    WOLFSBANE(156, "wolfsbane_flower");
+    WOLFSBANE(156, "wolfsbane_flower"),
+    TORN_VAMPIRE_PAGE(160, "torn_vampire_page");
 
     private static final String LEGACY_ID = "witchery:ingredient";
     private static final String LEGACY_DAMAGE_TAG = "LegacyIngredientDamage";
@@ -148,6 +149,10 @@ public enum WitcheryIngredient {
         }
         if (stack.getItem() instanceof WitchClothingItem && stackTag.contains("Damage", Tag.TAG_ANY_NUMERIC)) {
             stack.setDamageValue(Math.min(stackTag.getInt("Damage"), stack.getMaxDamage()));
+            return stack;
+        }
+        if (stack.getItem() instanceof VampireBookItem && stackTag.contains("Damage", Tag.TAG_ANY_NUMERIC)) {
+            VampireBookItem.setTornPages(stack, stackTag.getInt("Damage"));
             return stack;
         }
         if (!stack.isEmpty() && "witchery:poppet".equals(stackTag.getString("id"))) {

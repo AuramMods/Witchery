@@ -113,6 +113,12 @@ public final class WitcheryPlayerData {
         return vampireLevelCap;
     }
 
+    public boolean increaseVampireLevelCap(int levelCap) {
+        if (levelCap <= vampireLevelCap) return false;
+        vampireLevelCap = Mth.clamp(levelCap, 3, 10);
+        return true;
+    }
+
     public int getVampireQuestCounter() {
         return vampireQuestCounter;
     }

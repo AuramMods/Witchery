@@ -1,22 +1,36 @@
 package art.arcane.witchery.vampirism;
 
+import art.arcane.witchery.Witchery;
 import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.config.WitcheryServerConfig;
+import art.arcane.witchery.item.VampireBookItem;
+import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.world.WitcheryDimensions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobType;
+import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 public final class Vampirism {
+    private static final TagKey<EntityType<?>> BOOK_BOSSES = TagKey.create(Registries.ENTITY_TYPE,
+            ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "vampire_book_bosses"));
+
     private Vampirism() {
     }
 
@@ -75,12 +89,44 @@ public final class Vampirism {
 
     public static boolean acceptPoppy(ServerPlayer player) {
         return WitcheryPlayerDataProvider.get(player).map(data -> {
-            if (!WitcheryServerConfig.ALLOW_VAMPIRE_QUESTS.get() || data.getVampireLevel() != 6
-                    || data.getVampireLevelCap() < 7) return false;
+            if (data.getVampireLevel() != 6 || !canAdvance(data)) return false;
             advance(player, data);
             sync(player, data);
             return true;
         }).orElse(false);
+    }
+
+    private static boolean canAdvance(WitcheryPlayerData data) {
+        return WitcheryServerConfig.ALLOW_VAMPIRE_QUESTS.get() && data.getVampireLevel() < data.getVampireLevelCap();
+    }
+
+    public static void onKilled(LivingEntity victim, ServerPlayer killer) {
+        boolean incompleteBook = false;
+        for (ItemStack stack : killer.getInventory().items) {
+            if (stack.getItem() instanceof VampireBookItem) {
+                incompleteBook = VampireBookItem.tornPages(stack) < VampireBookItem.MAX_TORN_PAGES;
+                break;
+            }
+        }
+        if (!incompleteBook) return;
+        EntityType<?> type = victim.getType();
+        var random = victim.getRandom();
+        if (type.is(BOOK_BOSSES)
+                || (type == EntityType.ZOMBIFIED_PIGLIN || type == EntityType.ENDERMAN) && random.nextDouble() < 0.09
+                || victim instanceof Villager && random.nextDouble() < 0.10
+                || victim.getMobType() == MobType.UNDEAD && random.nextDouble() < 0.02) {
+            victim.spawnAtLocation(WitcheryIngredient.TORN_VAMPIRE_PAGE.item(), 1);
+        }
+    }
+
+    public static void knockBack(ServerPlayer player, LivingEntity victim) {
+        if (!player.isShiftKeyDown()) return;
+        WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
+            if (data.getVampireLevel() < 3 || data.getCreatureTypeOrdinal() != 0) return;
+            var look = player.getLookAngle();
+            victim.setDeltaMovement(look.x * 1.8, 0.9, look.z * 1.8);
+            victim.hurtMarked = true;
+        });
     }
 
     static void feed(ServerPlayer player, WitcheryPlayerData data, int amount, int limit, int remainingVillagerBlood) {
@@ -136,6 +182,15 @@ public final class Vampirism {
             if (rank == 0) {
                 data.setHumanBlood(data.getHumanBlood() + 2);
                 return;
+            }
+            if (rank == 3 && player.level().isNight() && WitcheryServerConfig.ALLOW_VAMPIRE_QUESTS.get()) {
+                int target = player.getAbilities().instabuild ? 10 : 300;
+                if (data.getVampireQuestCounter() < target) {
+                    data.setVampireQuestCounter(data.getVampireQuestCounter() + 1);
+                } else if (canAdvance(data)) {
+                    advance(player, data);
+                    sync(player, data);
+                }
             }
             if (player.isEyeInFluid(FluidTags.WATER)) player.setAirSupply(player.getMaxAirSupply());
             player.removeEffect(MobEffects.POISON);

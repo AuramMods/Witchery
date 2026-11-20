@@ -31,6 +31,7 @@ import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.MutatingSprigItem;
 import art.arcane.witchery.item.TormentContractItem;
 import art.arcane.witchery.item.VoodooPoppetItem;
+import art.arcane.witchery.item.VampireBookItem;
 import art.arcane.witchery.item.VampiricPoppetItem;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.PoppetProtectionItem;
@@ -168,6 +169,7 @@ public final class WitcheryItems {
             case "anointing_paste" -> new AnointingPasteItem(new Item.Properties());
             case "taglockkit" -> new TaglockItem();
             case "coffin" -> createBlockItem("coffinblock");
+            case "vampirebook" -> new VampireBookItem();
             case "glassgoblet" -> new GlassGobletItem();
             case "mirror" -> new MirrorItem();
             case "arthana" -> new ArthanaItem();

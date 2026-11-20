@@ -327,7 +327,15 @@
 - [x] Restore Mesmerize and vampire vision. The muted client switched to the eye, spent 50 blood to paralyze a villager, and then fed from outside normal bite range. This transferred ten blood. Sneak-use in the air enabled Night Vision, which stayed active after further feeding.
 - [x] Complete the rank-two feeding trial. The muted client earned three careful sips from each of two fresh villagers by ending successive bites at 276, 269 and 262 blood. The sixth sip reached rank three and cleared the active power. GameTests also covered overfeeding resets, sleep recovery, feeding permission checks, animal blood limits and the paralysis rules.
 - [x] Restart the dedicated server with the packaged JAR. Rank three, the full 1,000-point reserve, vision and the two villagers' 262-point reserves survived. Java 17 data generation, JAR reobfuscation and all 145 required Forge GameTests passed.
-- [ ] Restore Observations of an Immortal, ranks four through ten, the remaining powers, vampire equipment, village responses and the cure.
+
+## Observations of an Immortal and Rank Four (2026-11-20)
+
+- [x] Craft the journal from six nether wart, a Nether Star, a book and garlic. The muted survival client crafted it and read its six starting pages. Closing the book kept a bookmark and raised the learned cap to rank three.
+- [x] Restore Torn Pages and the upgrades. The muted client collected three Torn Pages by killing three weakened Withers in the disposable world, crafted each page into the same book, and read the new speed chapter. The book showed nine pages and the player's learned cap rose to four. GameTests verified the nine-page upgrade limit and the old metadata and bookmark conversions.
+- [x] Restore the rank-three crouching strike. One empty-hand strike in the muted client took a pig from ten to nine health and launched it about six blocks.
+- [x] Finish the rank-three nighttime trial in survival. The counter paused at 158 during a sheltered daytime check. A dedicated restart preserved the accumulated time, rank cap, three attached pages and bookmark. After 300 nighttime intervals the client reached rank four without changing the saved counter. The journal reopened at the saved chapter and displayed its ritual diagram.
+- [x] Restore rank-four speed. The muted client selected the new hotbar icon, spent ten blood for Speed II and Jump Boost II, and spent ten more for Speed IV and Jump Boost III. A third use while active spent no blood. Data generation, JAR reobfuscation and all 151 required Forge GameTests passed.
+- [ ] Restore the village bookshop, ranks five through ten, the remaining powers, vampire equipment, village responses and the cure.
 
 ## Auram Pack Validation (2026-11-20)
 

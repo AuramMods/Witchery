@@ -288,6 +288,9 @@ public final class WitcheryEventHooks {
             return;
         }
         FamiliarBinding.handleDeath(event);
+        if (!event.isCanceled() && event.getSource().getEntity() instanceof ServerPlayer killer) {
+            Vampirism.onKilled(event.getEntity(), killer);
+        }
     }
 
     @SubscribeEvent(priority = EventPriority.LOW)
@@ -319,6 +322,10 @@ public final class WitcheryEventHooks {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void protectFromLethalDamage(LivingDamageEvent event) {
         DeathProtectionPoppetItem.protect(event);
+        if (!event.isCanceled() && event.getAmount() > 0 && event.getSource().is(net.minecraft.world.damagesource.DamageTypes.PLAYER_ATTACK)
+                && event.getSource().getDirectEntity() instanceof ServerPlayer player) {
+            Vampirism.knockBack(player, event.getEntity());
+        }
     }
 
     @SubscribeEvent

@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:ender_dragon",
+    "minecraft:wither",
+    "witchery:babayaga",
+    "witchery:lilith",
+    "witchery:lordoftorment",
+    "witchery:reflection",
+    { "id": "witchery:hornedhuntsman", "required": false },
+    { "id": "witchery:death", "required": false }
+  ]
+}

@@ -424,7 +424,7 @@ The original `witchhat`, `witchrobe`, `necromancerrobe`, and `babashat` IDs equi
 | `CREATIVE_WOLF_TOKEN` | `witchery:wolftoken` |
 | `BLOOD_GOBLET` | `witchery:glassgoblet` |
 | `SUN_GRENADE` | `witchery:sungrenade` |
-| `VAMPIRE_BOOK` | `witchery:vampirebook` |
+| `VAMPIRE_BOOK` | `witchery:vampirebook` (`Damage` 0–9 becomes `VampireBookPages`; retains `pageStack` bookmarks) |
 | `DUP_GRENADE` | `witchery:dupgrenade` |
 | `WITCH_HAT` | `witchery:witchhat` |
 | `BABAS_HAT` | `witchery:babashat` |
@@ -531,6 +531,7 @@ The first migrated subtypes have individual item IDs. Preserve `witchery:ingredi
 | 111 | `witchery:wormwood_leaf` |
 | 153 | `witchery:anointing_paste` |
 | 156 | `witchery:wolfsbane_flower` |
+| 160 | `witchery:torn_vampire_page` |
 
 | Meta | Unlocalized Key |
 |---:|---|
@@ -1181,7 +1182,7 @@ Implementation anchors:
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/client/event/WitcheryClientCameraHooks.java`
 
 Current scaffold behavior:
-- Uses one `SimpleChannel` (`witchery:main`) with protocol version `"26"`. The extended player payload carries vampire rank, blood power, quest progress, vision and the transient selected power. Vampire packet intents 15 through 17 select or activate a power and query or display a nearby target's blood. The infusion status includes the active infused brew and remaining duration, and the Kettle recipe codec carries the optional bottling familiar.
+- Uses one `SimpleChannel` (`witchery:main`) with protocol version `"27"`. The extended player payload carries vampire rank, blood power, quest progress, vision and the transient selected power. Vampire packet intents 15 through 17 select or activate a power and query or display a nearby target's blood. Markup book intent 12 saves an unlocked chapter from the held journal and raises the reader's saved cap. The infusion status includes the active infused brew and remaining duration, and the Kettle recipe codec carries the optional bottling familiar.
 - Crystal Ball viewing sends the existing `cam_pos` message for the transient `witchery:eye` or the living subject of a Taglock Kit. Server chunk and entity tracking follow the viewed entity, and the client centers terrain rendering on it. The observing player stays beside the Crystal Ball.
 - The Mystic Branch recognizes gestures from server-side player rotations. Protocol 12 retires the prepared-spell packet while recording the old intent in `LegacyRegistryData.PACKETS`.
 - Validates packet receive direction against legacy flow metadata and logs mismatches.
@@ -1200,7 +1201,7 @@ Current scaffold behavior:
 - Adds codec-backed payload + handler scaffolding for utility packets:
   - `particles` -> `(int particleEffectId, int soundEffectId, double x, double y, double z, double width, double height, int color)` (clientbound)
   - `player_style` -> `(String username, int grotesqueTicks, int nightmare, boolean ghost, int creatureType, int blood, String playerSkin)` (clientbound)
-  - `sync_markup_book` -> `(int slot, List<String> pages)` (serverbound)
+  - `sync_markup_book` -> `(int slot, String chapter)` (serverbound)
 - Keeps explicit no-payload codec records + handlers for:
   - `clear_fall_damage` (serverbound)
   - `howl` (serverbound)
@@ -1217,8 +1218,8 @@ Current scaffold behavior:
 - Adds first functional serverbound behavior hooks:
   - `clear_fall_damage` now clears sender fall distance.
   - `item_update` now mutates inventory stack NBT `CurrentPage` with legacy slot/damage validation.
-  - `sync_markup_book` now mutates inventory stack NBT `pageStack` using string-list payload data.
-  - `item_update`, `sync_markup_book`, and `howl` still stage data into `WitcheryPlayerData`, bump sync revision, and emit `player_sync` with serialized capability snapshot payload.
+  - `sync_markup_book` saves the unlocked chapter to the held journal's `pageStack` and syncs the learned rank cap.
+  - `item_update` and `howl` still stage data into `WitcheryPlayerData`, bump sync revision, and emit `player_sync` with serialized capability snapshot payload.
   - `howl` also mirrors minimal state into sender persistent tags.
 
 Intent mapping used by scaffold:
