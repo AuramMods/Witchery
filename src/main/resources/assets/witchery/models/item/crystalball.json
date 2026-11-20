@@ -1,3 +1,1 @@
-{
-   "parent" : "witchery:block/crystalball"
-}
+{"parent": "minecraft:item/generated", "textures": {"layer0": "witchery:block/crystalball_item"}}

@@ -22,6 +22,7 @@ import art.arcane.witchery.client.renderer.DreamCatcherRenderer;
 import art.arcane.witchery.client.renderer.BroomRenderer;
 import art.arcane.witchery.client.renderer.DarkMarkRenderer;
 import art.arcane.witchery.client.renderer.CovenWitchRenderer;
+import art.arcane.witchery.client.renderer.CrystalBallRenderer;
 import art.arcane.witchery.client.renderer.DemonRenderer;
 import art.arcane.witchery.client.renderer.EntRenderer;
 import art.arcane.witchery.client.renderer.DemonHeartRenderer;
@@ -115,6 +116,7 @@ public final class WitcheryClient {
         event.registerLayerDefinition(WitchOwlModel.LAYER, WitchOwlModel::layer);
         event.registerLayerDefinition(WitchToadModel.LAYER, WitchToadModel::layer);
         event.registerLayerDefinition(BroomRenderer.LAYER, BroomRenderer::layer);
+        event.registerLayerDefinition(CrystalBallRenderer.LAYER, CrystalBallRenderer::layer);
         event.registerLayerDefinition(ImpModel.LAYER, ImpModel::layer);
         event.registerLayerDefinition(DarkMarkModel.LAYER, DarkMarkModel::layer);
         event.registerLayerDefinition(LordOfTormentModel.LAYER, LordOfTormentModel::layer);
@@ -152,6 +154,7 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.TOAD.get(), WitchToadRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.BROOM.get(), BroomRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.ITEM_WAYSTONE.get(), ItemEntityRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.CRYSTAL_BALL.get(), CrystalBallRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.COVEN_WITCH.get(), CovenWitchRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.REFLECTION.get(), ReflectionRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SLEEPING_BODY.get(), SleepingBodyRenderer::new);

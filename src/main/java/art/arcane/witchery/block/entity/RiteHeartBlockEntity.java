@@ -11,7 +11,9 @@ import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.power.AltarPower;
+import art.arcane.witchery.prediction.Predictions;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
+import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryRecipes;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
@@ -264,6 +266,11 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 abort(level, "message.witchery.rite.no_waystone_destination");
                 return;
             }
+        }
+        if (initiator != null && result instanceof ItemEntity drop
+                && drop.getItem().is(WitcheryBlocks.getRequired("crystalball").get().asItem())) {
+            ServerPlayer caster = level.getServer().getPlayerList().getPlayer(initiator);
+            if (caster != null) Predictions.attune(caster);
         }
         if (living != null) {
             level.sendParticles(ParticleTypes.PORTAL, living.getX(), living.getY(0.5), living.getZ(), 16, 0.4, 0.6, 0.4, 0.05);

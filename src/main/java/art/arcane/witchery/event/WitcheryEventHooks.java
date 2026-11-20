@@ -13,6 +13,7 @@ import art.arcane.witchery.item.DeathProtectionPoppetItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.VampiricPoppetItem;
 import art.arcane.witchery.network.WitcheryNetwork;
+import art.arcane.witchery.prediction.Predictions;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.ritual.DroppedWaystones;
@@ -22,6 +23,7 @@ import art.arcane.witchery.world.TormentTravel;
 import art.arcane.witchery.world.WitcheryDimensions;
 import art.arcane.witchery.world.WitcheryDimensionTravelHooks;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -80,6 +82,7 @@ public final class WitcheryEventHooks {
     @SubscribeEvent
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
+            if (serverPlayer.level().dimension().equals(Level.NETHER)) Predictions.onNetherVisit(serverPlayer);
             GrotesqueEffect.restoreLegacyBrew(serverPlayer);
             InfusionEnergy.sync(serverPlayer);
             WitcheryPlayerDataProvider.get(serverPlayer).ifPresent(data -> {
@@ -141,6 +144,7 @@ public final class WitcheryEventHooks {
     public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
             WitcheryDimensionTravelHooks.onPlayerChangedDimension(serverPlayer, event.getFrom(), event.getTo());
+            if (event.getTo().equals(Level.NETHER)) Predictions.onNetherVisit(serverPlayer);
         }
     }
 
@@ -164,6 +168,7 @@ public final class WitcheryEventHooks {
         }
         DreamTravel.spawnNightmare(serverPlayer);
         WakingNightmareEffect.tickCurse(serverPlayer);
+        Predictions.tick(serverPlayer);
 
         if (serverPlayer.level().getGameTime() % 20 == 0 && serverPlayer.hasEffect(WitcheryEffects.DEPTHS.get())) {
             if (serverPlayer.isEyeInFluid(FluidTags.WATER)) {
@@ -241,6 +246,7 @@ public final class WitcheryEventHooks {
             }
             if (!event.isCanceled()) VampiricPoppetItem.transferDamage(player, event);
             if (!event.isCanceled()) FamiliarBinding.shareDamage(player, event);
+            if (!event.isCanceled()) Predictions.onHurt(player, event.getSource());
             DeathProtectionPoppetItem.repairArmor(player);
         }
     }

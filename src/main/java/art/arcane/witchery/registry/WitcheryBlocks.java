@@ -7,6 +7,7 @@ import art.arcane.witchery.block.AltarBlock;
 import art.arcane.witchery.block.CandelabraBlock;
 import art.arcane.witchery.block.ChaliceBlock;
 import art.arcane.witchery.block.CritterSnareBlock;
+import art.arcane.witchery.block.CrystalBallBlock;
 import art.arcane.witchery.block.DemonHeartBlock;
 import art.arcane.witchery.block.DistilleryBlock;
 import art.arcane.witchery.block.DreamCatcherBlock;
@@ -88,7 +89,6 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_BEARTRAP = Block.box(3.2D, 0.16D, 3.2D, 12.8D, 1.6D, 12.8D);
     private static final VoxelShape SHAPE_SKULL = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 8.0D, 12.0D);
     private static final VoxelShape SHAPE_BRAZIER = Block.box(3.2D, 0.0D, 3.2D, 12.8D, 15.2D, 12.8D);
-    private static final VoxelShape SHAPE_CRYSTAL_BALL = Block.box(4.8D, 0.0D, 4.8D, 11.2D, 9.6D, 11.2D);
     private static final VoxelShape SHAPE_AREA_MARKER = Block.box(2.4D, 0.0D, 2.4D, 13.6D, 8.0D, 13.6D);
     private static final VoxelShape SHAPE_FETISH = Block.box(3.2D, 0.0D, 3.2D, 12.8D, 16.0D, 12.8D);
     private static final VoxelShape SHAPE_GLOW_GLOBE = Block.box(6.4D, 6.4D, 6.4D, 9.6D, 9.6D, 9.6D);
@@ -218,8 +218,7 @@ public final class WitcheryBlocks {
                     new CandelabraBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BARS).noOcclusion().strength(2.0F).lightLevel(state -> 15));
             case "brazier" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).sound(SoundType.METAL), SHAPE_BRAZIER, true);
-            case "crystalball" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.GLASS), SHAPE_CRYSTAL_BALL, true);
+            case "crystalball" -> new CrystalBallBlock();
             case "decurseteleport", "decursedirected" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.STONE), SHAPE_AREA_MARKER, true);
             case "scarecrow", "trent", "witchsladder" ->

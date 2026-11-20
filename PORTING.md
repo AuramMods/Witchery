@@ -110,7 +110,7 @@
 - [x] Restore the Imp's gift progression, cooldown and original Soul Brew knowledge. The muted client verified the cooldown, advanced the fixture clock for subsequent gifts, and received Hunger, Fear, Anguish and the Contract of Torment. The three brews added their spell knowledge. All 38 required Forge GameTests passed, including signed ownership, saved gift progress and power, and the full contract channel.
 - [ ] Restore the Imp's other signed spell contracts.
 - [ ] Restore legacy potion bottling skill and include it in Seer Stone readings.
-- [ ] Restore the Crystal Ball's predictions and the coven witch's additional combat and ritual behaviors.
+- [ ] Restore the coven witch's additional combat and ritual behaviors.
 
 ## Overworld Infusion and Death Protection Poppet (2026-11-19)
 
@@ -249,6 +249,14 @@
 - [x] Deliver a parcel or throw a brew with a tamed Owl. The muted player assigned a location stone, launched the Owl with an empty hand, and restarted the server while it was airborne. The Owl delivered the named paper and returned to sit near its launch point. A second route made it throw Ink at a bound pig. A route of more than 160 blocks delivered a second parcel outside the player's simulation distance. All 96 required GameTests passed.
 - [x] Bind or use dropped Waystones at the original Otherwhere glyph patterns. The muted client tossed ten into an eight-glyph ring and got eight bound stones and two unbound stones. A powered ring bound a named pig. Dropping the bound stack inside a twelve-glyph ring moved the client, loose paper and seven remaining stones to the exact saved point. All 99 required GameTests passed.
 - [ ] Restore Crystal Ball viewing and the remaining Waystone uses in rites and equipment.
+
+## Crystal Ball readings (2026-11-20)
+
+- [x] Restore the placeable Crystal Ball, animated renderer and fortune-teller training through its night rite. The muted survival client crafted the Quartz Sphere, brewed Happenstance Oil and performed the rite with a Gold Ingot. Placing and using the ball gave the player an undead forecast.
+- [x] Restore the 500-power reading, five-second cooldown, and legacy saved forecast. A click during cooldown left the saved time unchanged. Reading again after cooldown repeated the same forecast and kept its original timestamp. All 101 required GameTests, data generation and JAR reobfuscation passed.
+- [x] Restore the first seven outcomes using the legacy IDs and weights. Arrows, falls, zombie, Ent and wolf damage, water and a Nether visit can fulfill their corresponding readings. The GameTests covered a matching fall, wrong damage and the overdue gravel cavity.
+- [x] Restart the packaged dedicated server while the undead forecast is active. The player retained training, the same forecast ID and timestamp, and the Crystal Ball's cooldown timestamp. A live zombie's attack cleared the forecast after reconnecting.
+- [ ] Restore mining, treasure, love, Baba Yaga and the Owl and Wolf rescue predictions. Restore the Waystone view and verify readings for nearby players on a dedicated server.
 
 ## Auram Pack Validation (2026-11-20)
 

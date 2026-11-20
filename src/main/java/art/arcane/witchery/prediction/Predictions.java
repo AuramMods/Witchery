@@ -1,0 +1,251 @@
+package art.arcane.witchery.prediction;
+
+import art.arcane.witchery.entity.Ent;
+import art.arcane.witchery.registry.WitcheryBlocks;
+import art.arcane.witchery.registry.WitcheryEntities;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.Difficulty;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
+
+public final class Predictions {
+    private static final String SKILL = "WITCFTeller";
+    private static final String ROOT = "WITCPredict";
+    private static final String LIST = "WITCPreList";
+    private static final String ID = "WITCPreID";
+    private static final String TIME = "WITCPreTime";
+    private static final String VISITED_NETHER = "WITCVisitedNether";
+    private static final String MESSAGE = "witchery.prediction.";
+    private static final long DUE_AFTER = 9_600;
+
+    private enum Kind {
+        ZOMBIE(1, 13, "zombie"),
+        ARROW(2, 13, "arrowhit"),
+        ENT(3, 3, "ent"),
+        FALL(4, 13, "fall"),
+        FRIEND(12, 3, "friend"),
+        WET(15, 13, "wet"),
+        NETHER(16, 3, "tothenether");
+
+        private final int id;
+        private final int weight;
+        private final String message;
+
+        Kind(int id, int weight, String message) {
+            this.id = id;
+            this.weight = weight;
+            this.message = message;
+        }
+
+        @Nullable
+        static Kind byId(int id) {
+            for (Kind kind : values()) {
+                if (kind.id == id) return kind;
+            }
+            return null;
+        }
+    }
+
+    private Predictions() {}
+
+    public static void attune(ServerPlayer player) {
+        CompoundTag persisted = persisted(player);
+        persisted.putBoolean(SKILL, true);
+        player.getPersistentData().put(Player.PERSISTED_NBT_TAG, persisted);
+    }
+
+    public static void read(ServerPlayer subject, ServerPlayer fortuneTeller) {
+        if (!subject.isCreative() && !persisted(fortuneTeller).getBoolean(SKILL)) {
+            subject.sendSystemMessage(Component.translatable(MESSAGE + "unskilled").withStyle(ChatFormatting.RED));
+            return;
+        }
+
+        CompoundTag persisted = persisted(subject);
+        CompoundTag root = persisted.getCompound(ROOT);
+        ListTag readings = root.getList(LIST, Tag.TAG_COMPOUND);
+        Kind kind;
+        if (readings.isEmpty()) {
+            kind = choose(subject);
+            if (kind != null) {
+                CompoundTag reading = new CompoundTag();
+                reading.putInt(ID, kind.id);
+                reading.putLong(TIME, timeInTicks());
+                readings.add(reading);
+                root.put(LIST, readings);
+                persisted.put(ROOT, root);
+                subject.getPersistentData().put(Player.PERSISTED_NBT_TAG, persisted);
+            }
+        } else {
+            kind = Kind.byId(readings.getCompound(0).getInt(ID));
+        }
+        subject.sendSystemMessage(Component.translatable(MESSAGE + (kind == null ? "none" : kind.message), subject.getDisplayName())
+                .withStyle(ChatFormatting.LIGHT_PURPLE));
+    }
+
+    public static void onHurt(ServerPlayer player, DamageSource source) {
+        ListTag readings = readings(player);
+        for (int index = readings.size() - 1; index >= 0; index--) {
+            Kind kind = Kind.byId(readings.getCompound(index).getInt(ID));
+            if (kind == null) continue;
+            boolean fulfilled = switch (kind) {
+                case ZOMBIE -> source.getEntity() instanceof Zombie;
+                case ARROW -> source.getDirectEntity() instanceof AbstractArrow;
+                case ENT -> source.getEntity() instanceof Ent;
+                case FALL -> source.is(DamageTypeTags.IS_FALL);
+                case FRIEND -> source.getEntity() instanceof Wolf;
+                default -> false;
+            };
+            if (fulfilled) readings.remove(index);
+        }
+    }
+
+    public static void onNetherVisit(ServerPlayer player) {
+        CompoundTag persisted = persisted(player);
+        persisted.putBoolean(VISITED_NETHER, true);
+        player.getPersistentData().put(Player.PERSISTED_NBT_TAG, persisted);
+        readings(player).removeIf(entry -> entry instanceof CompoundTag tag && tag.getInt(ID) == Kind.NETHER.id);
+    }
+
+    public static void tick(ServerPlayer player) {
+        if (player.tickCount % 100 != 0 || player.isSpectator() || !player.isAlive()) return;
+        ListTag readings = readings(player);
+        long now = timeInTicks();
+        for (int index = readings.size() - 1; index >= 0; index--) {
+            CompoundTag reading = readings.getCompound(index);
+            Kind kind = Kind.byId(reading.getInt(ID));
+            if (kind == null) continue;
+            if (kind == Kind.WET && player.isInWaterRainOrBubble()
+                    || kind == Kind.NETHER && player.level().dimension().equals(Level.NETHER)) {
+                readings.remove(index);
+            } else if (now - reading.getLong(TIME) > DUE_AFTER && player.getRandom().nextDouble() < 0.05) {
+                // Remove the reading before effects that can post another player event.
+                readings.remove(index);
+                if (!fulfill(kind, player)) readings.add(index, reading);
+            }
+        }
+    }
+
+    @Nullable
+    private static Kind choose(ServerPlayer subject) {
+        boolean canPredictNether = !subject.level().dimension().equals(Level.NETHER) && persisted(subject).getBoolean(VISITED_NETHER);
+        int weight = 0;
+        for (Kind kind : Kind.values()) {
+            if (kind != Kind.NETHER || canPredictNether) weight += kind.weight;
+        }
+        int choice = subject.getRandom().nextInt(weight);
+        for (Kind kind : Kind.values()) {
+            if (kind == Kind.NETHER && !canPredictNether) continue;
+            choice -= kind.weight;
+            if (choice < 0) return kind;
+        }
+        return null;
+    }
+
+    private static boolean fulfill(Kind kind, ServerPlayer player) {
+        return switch (kind) {
+            case ZOMBIE -> encounter(player, EntityType.ZOMBIE, false);
+            case ARROW -> encounter(player, EntityType.SKELETON, false);
+            case ENT -> encounter(player, WitcheryEntities.ENT.get(), false);
+            case FALL -> sinkGround(player, false);
+            case FRIEND -> encounter(player, EntityType.WOLF, true);
+            case WET -> sinkGround(player, true);
+            case NETHER -> sendToNether(player);
+        };
+    }
+
+    private static boolean encounter(ServerPlayer player, EntityType<? extends Mob> type, boolean ally) {
+        ServerLevel level = player.serverLevel();
+        if (!ally && level.getDifficulty() == Difficulty.PEACEFUL) return false;
+        RandomSource random = level.getRandom();
+        BlockPos start = player.blockPosition().offset(encounterOffset(random), 0, encounterOffset(random));
+        BlockPos.MutableBlockPos feet = start.mutable();
+        while (feet.getY() < start.getY() + 8 && !level.getBlockState(feet).isAir()) feet.move(Direction.UP);
+        while (feet.getY() > level.getMinBuildHeight() && level.getBlockState(feet.below()).isAir()) feet.move(Direction.DOWN);
+        if (level.isOutsideBuildHeight(feet) || !level.getWorldBorder().isWithinBounds(feet)
+                || !level.getBlockState(feet.below()).isFaceSturdy(level, feet.below(), Direction.UP)) return false;
+        Mob mob = type.create(level);
+        if (mob == null) return false;
+        Vec3 arrival = Vec3.atBottomCenterOf(feet);
+        mob.moveTo(arrival.x, arrival.y, arrival.z, 0, 0);
+        if (!level.noCollision(mob)) return false;
+        mob.finalizeSpawn(level, level.getCurrentDifficultyAt(feet), MobSpawnType.EVENT, null, null);
+        if (ally && mob instanceof Wolf wolf) {
+            wolf.tame(player);
+        } else {
+            mob.setTarget(player);
+        }
+        if (!level.addFreshEntity(mob)) return false;
+        level.sendParticles(ParticleTypes.SMOKE, mob.getX(), mob.getY(0.5), mob.getZ(), 16, 0.25, 0.4, 0.25, 0.035);
+        return true;
+    }
+
+    private static int encounterOffset(RandomSource random) {
+        int offset = random.nextInt(5) - 4;
+        return offset > -2 ? offset + 4 : offset;
+    }
+
+    private static boolean sinkGround(ServerPlayer player, boolean water) {
+        ServerLevel level = player.serverLevel();
+        BlockPos ground = player.blockPosition().below();
+        int depth = water ? 2 : 5;
+        if (level.isOutsideBuildHeight(ground.below(depth)) || !player.onGround()
+                || water && level.dimensionType().ultraWarm()) return false;
+        for (BlockPos pos : BlockPos.betweenClosed(ground.offset(-1, 0, -1), ground.offset(1, 0, 1))) {
+            if (!level.getBlockState(pos).is(BlockTags.DIRT) || !level.mayInteract(player, pos)) return false;
+        }
+        for (BlockPos surface : BlockPos.betweenClosed(ground.offset(-1, 0, -1), ground.offset(1, 0, 1))) {
+            for (int depthOffset = 1; depthOffset <= depth; depthOffset++) {
+                BlockPos pos = surface.below(depthOffset);
+                var state = level.getBlockState(pos);
+                if (state.getDestroySpeed(level, pos) < 0 || state.hasBlockEntity()
+                        || state.is(WitcheryBlocks.getRequired("force").get()) || !level.mayInteract(player, pos)) continue;
+                if (water) level.setBlockAndUpdate(pos, Blocks.WATER.defaultBlockState());
+                else level.removeBlock(pos, false);
+            }
+            level.setBlockAndUpdate(surface, Blocks.GRAVEL.defaultBlockState());
+        }
+        return true;
+    }
+
+    private static boolean sendToNether(ServerPlayer player) {
+        ServerLevel nether = player.server.getLevel(Level.NETHER);
+        if (nether == null || player.level() == nether || player.changeDimension(nether) == null) return false;
+        player.sendSystemMessage(Component.translatable(MESSAGE + "tothenether.summoned").withStyle(ChatFormatting.LIGHT_PURPLE));
+        encounter(player, EntityType.BLAZE, false);
+        return true;
+    }
+
+    private static CompoundTag persisted(ServerPlayer player) {
+        return player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
+    }
+
+    private static ListTag readings(ServerPlayer player) {
+        return persisted(player).getCompound(ROOT).getList(LIST, Tag.TAG_COMPOUND);
+    }
+
+    private static long timeInTicks() {
+        return System.currentTimeMillis() / 50L;
+    }
+}
