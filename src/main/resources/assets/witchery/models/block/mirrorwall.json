@@ -1,24 +1,21 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "particle": "witchery:block/mirrorwall",
-    "panel": "witchery:block/mirrorwall"
+    "particle": "witchery:block/brew_still",
+    "vertical": "witchery:block/brew_flow",
+    "horizontal": "witchery:block/brew_still"
   },
   "elements": [
     {
-      "from": [7, 0, 0],
-      "to": [9, 16, 16],
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
       "faces": {
-        "east": {"texture": "#panel"},
-        "west": {"texture": "#panel"}
-      }
-    },
-    {
-      "from": [0, 0, 7],
-      "to": [16, 16, 9],
-      "faces": {
-        "north": {"texture": "#panel"},
-        "south": {"texture": "#panel"}
+        "down": {"texture": "#horizontal", "tintindex": 0, "cullface": "down"},
+        "up": {"texture": "#horizontal", "tintindex": 0, "cullface": "up"},
+        "north": {"texture": "#vertical", "tintindex": 0, "cullface": "north"},
+        "south": {"texture": "#vertical", "tintindex": 0, "cullface": "south"},
+        "east": {"texture": "#vertical", "tintindex": 0, "cullface": "east"},
+        "west": {"texture": "#vertical", "tintindex": 0, "cullface": "west"}
       }
     }
   ]

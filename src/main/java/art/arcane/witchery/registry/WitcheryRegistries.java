@@ -3,8 +3,10 @@ package art.arcane.witchery.registry;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.data.GrassSeedLootModifier;
 import art.arcane.witchery.world.DreamCottonFeature;
+import art.arcane.witchery.world.MirrorChunkGenerator;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraftforge.common.loot.IGlobalLootModifier;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -15,10 +17,13 @@ public final class WitcheryRegistries {
     private static final DeferredRegister<Codec<? extends IGlobalLootModifier>> LOOT_MODIFIERS =
             DeferredRegister.create(ForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, Witchery.MODID);
     private static final DeferredRegister<Feature<?>> FEATURES = DeferredRegister.create(Registries.FEATURE, Witchery.MODID);
+    private static final DeferredRegister<Codec<? extends ChunkGenerator>> CHUNK_GENERATORS =
+            DeferredRegister.create(Registries.CHUNK_GENERATOR, Witchery.MODID);
 
     static {
         LOOT_MODIFIERS.register("grass_seeds", () -> GrassSeedLootModifier.CODEC);
         FEATURES.register("dream_cotton", DreamCottonFeature::new);
+        CHUNK_GENERATORS.register("mirror", () -> MirrorChunkGenerator.CODEC);
     }
 
     private WitcheryRegistries() {
@@ -37,5 +42,6 @@ public final class WitcheryRegistries {
         WitcherySounds.register(eventBus);
         LOOT_MODIFIERS.register(eventBus);
         FEATURES.register(eventBus);
+        CHUNK_GENERATORS.register(eventBus);
     }
 }

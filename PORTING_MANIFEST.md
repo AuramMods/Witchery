@@ -1316,6 +1316,7 @@ Status:
 - `witchery:demon` can also be summoned by two large Infernal rites in the Overworld. The entity persists bargains, remaining stock and whether it came from a rite. Demon Heart and Infernal Blood use legacy ingredient damage values 23 and 80. The heart block retains `witchery:demonheart` and drops the canonical `witchery:demon_heart`. The old port's heart item ID still works in both Infernal Blood recipes.
 - Bone Needle and Brew of Grotesque map legacy ingredient damage values 7 and 71. Taglock Kit uses the original `witchery:taglockkit` ID and shows the filled icon when bound. `WITCPlayer1` and the creature UUID halves in `WITCEntityIDm1` and `WITCEntityIDl1` work with the bound-taglock recipe ingredient. The new player UUID is authoritative when present. The Curse of Waking Nightmare persists under `PlayerPersisted.witcheryWakingNightmare`.
 - The `witchery:dream` dimension type references its registered client effects for fog, sky and lighting. The server chooses the shared mode from the active dreamers, independently of player-style packets.
+- The Mirror uses the `witchery:mirror` chunk generator and biome. New chunks contain the original stacked chambers. The dimension uses the same modern build bounds as the previous port, including for chunks saved before the generator change.
 
 ## 1.20.1 Event Hook Scaffold (current)
 Implementation anchor:

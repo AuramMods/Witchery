@@ -34,6 +34,7 @@ import net.minecraft.world.level.block.ButtonBlock;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.FenceBlock;
 import net.minecraft.world.level.block.FenceGateBlock;
+import net.minecraft.world.level.block.GlassBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.PressurePlateBlock;
@@ -239,7 +240,9 @@ public final class WitcheryBlocks {
             case "circleglyphotherwhere" -> new RitualGlyphBlock("chalkotherwhere");
             case "circleglyphinfernal" -> new RitualGlyphBlock("chalkinfernal");
             case "spiritportal" -> new SpiritPortalBlock(BlockBehaviour.Properties.copy(Blocks.NETHER_PORTAL).noLootTable());
-            case "tormentportal", "mirrorwall" ->
+            case "mirrorwall" -> new GlassBlock(BlockBehaviour.Properties.copy(Blocks.GLASS)
+                    .strength(-1, 9_999).noLootTable());
+            case "tormentportal" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.NETHER_PORTAL), SHAPE_PORTAL_CROSS, false);
             case "spiritflowing" -> new SpiritFluidBlock(WitcheryFluids.getRequiredSource("fluidspirit"), spiritProperties(), true);
             case "hollowtears" -> new SpiritFluidBlock(WitcheryFluids.getRequiredSource("hollowtears"), spiritProperties(), false);

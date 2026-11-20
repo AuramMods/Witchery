@@ -30,6 +30,7 @@ import art.arcane.witchery.registry.WitcheryMenus;
 import art.arcane.witchery.world.WitcheryDimensions;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.BiomeColors;
+import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
@@ -37,6 +38,7 @@ import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -58,6 +60,18 @@ public final class WitcheryClient {
     @SubscribeEvent
     public static void registerDimensionEffects(RegisterDimensionSpecialEffectsEvent event) {
         event.register(WitcheryDimensions.DREAM.location(), new DreamSpecialEffects());
+        event.register(WitcheryDimensions.MIRROR.location(),
+                new DimensionSpecialEffects(Float.NaN, false, DimensionSpecialEffects.SkyType.NONE, false, true) {
+                    @Override
+                    public Vec3 getBrightnessDependentFogColor(Vec3 base, float brightness) {
+                        return new Vec3(0, 0.03, 0.1);
+                    }
+
+                    @Override
+                    public boolean isFoggyAt(int x, int z) {
+                        return true;
+                    }
+                });
     }
 
     @SubscribeEvent
@@ -146,6 +160,8 @@ public final class WitcheryClient {
 
     @SubscribeEvent
     public static void registerBlockColors(RegisterColorHandlersEvent.Block event) {
+        event.register((state, level, pos, tint) -> tint == 0 ? 0xCCDDFF : -1,
+                WitcheryBlocks.getRequired("mirrorwall").get());
         event.register((state, level, pos, tint) -> tint == 0 ? 0x00FF66 : -1,
                 WitcheryBlocks.getRequired("spiritportal").get());
         event.register((state, level, pos, tint) -> level != null && pos != null

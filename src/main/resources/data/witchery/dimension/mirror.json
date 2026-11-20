@@ -1,10 +1,10 @@
 {
   "type": "witchery:mirror",
   "generator": {
-    "type": "minecraft:noise",
+    "type": "witchery:mirror",
     "biome_source": {
-      "type": "minecraft:the_end"
-    },
-    "settings": "minecraft:end"
+      "type": "minecraft:fixed",
+      "biome": "witchery:mirror"
+    }
   }
 }

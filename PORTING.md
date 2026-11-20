@@ -70,6 +70,12 @@
 - [x] Restore the Dream's pink daylight, green nightmare fog, red demonic fog, and starless sky. Two isolated muted clients on one dedicated server verified that another player's nightmare changes the entire dimension's atmosphere. The normal dreamer rejoined during a demonic nightmare and saw the red fog. When the other player woke, the atmosphere returned to pink.
 - [ ] Finish the remaining altar artifacts, kettle recipes, the other powered cauldron recipes, and the remaining chalk rites.
 
+## Mirror Milestone (2026-11-19)
+
+- [x] Generate the Mirror's stacked nine-block chambers using the original 16-block cell indices. The walls use the original animated liquid textures, cool tint, collision, and unbreakable behavior.
+- [x] Verify 17 packaged headless geometry and restart checks. Upgrade a disposable world from the previous port, preserve its existing Mirror chunk, and verify that a freshly generated chunk contains the new chambers.
+- [ ] Restore mirror crafting, placement, linked travel, and the Reflection encounter.
+
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.
 - Manifest + durable memory created.
