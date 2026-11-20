@@ -16,6 +16,8 @@ import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.VampiricPoppetItem;
 import art.arcane.witchery.item.GlassGobletItem;
 import art.arcane.witchery.vampirism.Vampirism;
+import art.arcane.witchery.vampirism.BloodFeeding;
+import art.arcane.witchery.vampirism.VampireAbilities;
 import art.arcane.witchery.item.WitchClothingItem;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.prediction.PredictedCourtship;
@@ -49,8 +51,10 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingTickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.SleepingTimeCheckEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
@@ -227,6 +231,7 @@ public final class WitcheryEventHooks {
     public static void onVillagerTick(LivingTickEvent event) {
         if (event.getEntity() instanceof Villager villager && villager.level() instanceof ServerLevel level) {
             PredictedCourtship.tick(villager, level);
+            BloodFeeding.tickVillager(villager, level);
         }
     }
 
@@ -287,6 +292,9 @@ public final class WitcheryEventHooks {
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void onPlayerHurt(LivingHurtEvent event) {
+        if (event.getAmount() >= 1 && BloodFeeding.paralysis(event.getEntity(), 4)) {
+            event.getEntity().removeEffect(WitcheryEffects.PARALYSIS.get());
+        }
         if (event.getEntity() instanceof ServerPlayer player) {
             if (InfusionEnergy.type(player) == InfernalInfusion.ID) {
                 CreaturePower power = CreaturePower.forId(CreaturePower.activeId(player));
@@ -315,12 +323,51 @@ public final class WitcheryEventHooks {
 
     @SubscribeEvent
     public static void onPlayerInteractWithEntity(PlayerInteractEvent.EntityInteract event) {
+        if (VampireAbilities.selected(event.getEntity()) > 0) {
+            if (event.getEntity() instanceof ServerPlayer player) VampireAbilities.interact(player, event.getTarget());
+            event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide));
+            return;
+        }
         if (event.getItemStack().getItem() instanceof TaglockItem kit && event.getTarget() instanceof LivingEntity target) {
             InteractionResult result = kit.collectFromEntity(event.getEntity(), event.getHand(), target);
             if (result.consumesAction()) {
                 event.setCanceled(true);
                 event.setCancellationResult(result);
             }
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onVampireInteraction(PlayerInteractEvent event) {
+        if (!event.isCancelable()) return;
+        var player = event.getEntity();
+        if (BloodFeeding.paralysis(player, 4) || (event instanceof PlayerInteractEvent.RightClickBlock
+                || event instanceof PlayerInteractEvent.RightClickItem) && VampireAbilities.selected(player) > 0) event.setCanceled(true);
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onParalysedAttack(AttackEntityEvent event) {
+        if (BloodFeeding.paralysis(event.getEntity(), 4)) event.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public static void onVampireStartEating(LivingEntityUseItemEvent.Start event) {
+        if (event.getEntity() instanceof ServerPlayer player && event.getItem().isEdible() && Vampirism.level(player) > 0) {
+            WitcheryPlayerDataProvider.get(player).ifPresent(data -> data.beginEating(player.getFoodData().getFoodLevel()));
+        }
+    }
+
+    @SubscribeEvent
+    public static void onVampireFinishEating(LivingEntityUseItemEvent.Finish event) {
+        if (event.getEntity() instanceof ServerPlayer player && Vampirism.level(player) > 0) {
+            WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
+                var food = player.getFoodData();
+                if (data.gainedFood(food.getFoodLevel())) {
+                    food.setFoodLevel(0);
+                    food.setSaturation(0);
+                }
+            });
         }
     }
 

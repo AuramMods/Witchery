@@ -9,6 +9,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
@@ -54,6 +57,9 @@ public final class Vampirism {
             data.setVampireLevel(0);
             data.setBloodPower(0);
             data.setHumanBlood(50);
+            data.setVampireVision(false);
+            data.setVampireQuestCounter(0);
+            data.setSelectedVampirePower(0);
             sync(player, data);
         });
     }
@@ -71,10 +77,44 @@ public final class Vampirism {
         return WitcheryPlayerDataProvider.get(player).map(data -> {
             if (!WitcheryServerConfig.ALLOW_VAMPIRE_QUESTS.get() || data.getVampireLevel() != 6
                     || data.getVampireLevelCap() < 7) return false;
-            data.setVampireLevel(7);
+            advance(player, data);
             sync(player, data);
             return true;
         }).orElse(false);
+    }
+
+    static void feed(ServerPlayer player, WitcheryPlayerData data, int amount, int limit, int remainingVillagerBlood) {
+        int change = Math.min(amount, Math.max(0, limit - data.getBloodPower()));
+        boolean advanced = false;
+        if (change > 0) {
+            data.setBloodPower(data.getBloodPower() + change);
+            if (WitcheryServerConfig.ALLOW_VAMPIRE_QUESTS.get() && data.getVampireLevel() == 1
+                    && data.getBloodPower() == data.getMaxBloodPower()) {
+                advance(player, data);
+                advanced = true;
+            }
+        }
+        if (remainingVillagerBlood >= 0 && !advanced && WitcheryServerConfig.ALLOW_VAMPIRE_QUESTS.get()
+                && data.getVampireLevel() == 2) {
+            if (remainingVillagerBlood >= 250 && remainingVillagerBlood <= 280) {
+                if (data.getVampireQuestCounter() >= 5) advance(player, data);
+                else {
+                    data.setVampireQuestCounter(data.getVampireQuestCounter() + 1);
+                    player.playNotifySound(SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.PLAYERS, 1, 1);
+                }
+            } else if (remainingVillagerBlood < 240) {
+                data.setVampireQuestCounter(0);
+            }
+        }
+        if (amount > 0 || remainingVillagerBlood >= 0) sync(player, data);
+    }
+
+    private static void advance(ServerPlayer player, WitcheryPlayerData data) {
+        data.setVampireLevel(data.getVampireLevel() + 1);
+        data.setVampireQuestCounter(0);
+        data.setSelectedVampirePower(0);
+        player.displayClientMessage(Component.translatable("message.witchery.vampire.rank", data.getVampireLevel()), false);
+        player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1, 1);
     }
 
     public static void drinkGoblet(ServerPlayer player) {
@@ -99,6 +139,9 @@ public final class Vampirism {
             }
             if (player.isEyeInFluid(FluidTags.WATER)) player.setAirSupply(player.getMaxAirSupply());
             player.removeEffect(MobEffects.POISON);
+            if (rank >= 2 && data.hasVampireVision()) {
+                player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 400, 0, true, false));
+            }
             int previousBlood = data.getBloodPower();
             var hunger = player.getFoodData();
             int feed = Math.min(20 - hunger.getFoodLevel(), previousBlood / 5);
@@ -127,7 +170,7 @@ public final class Vampirism {
         player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, weakness, true, false));
     }
 
-    private static void sync(ServerPlayer player, WitcheryPlayerData data) {
+    static void sync(ServerPlayer player, WitcheryPlayerData data) {
         data.bumpSyncRevision();
         WitcheryNetwork.sendPartialExtendedPlayerSync(player, data);
     }

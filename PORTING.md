@@ -320,7 +320,14 @@
 - [x] Restore Elle's lava search, transformation and Lilith's encounter. Elle found a clear lava surface and spent 400 ticks transforming. The muted client defeated the 200-health boss with an enchanted sword and a splash potion in the disposable arena. Lilith survived the defeat, restored her health and accepted the same goblet. GameTests verified the damage cap and the transition to a friendly encounter.
 - [x] Collect and drink Lilith's filled goblet. The muted client picked up the reward, drank it to reach rank one, saw 125 blood power on the original droplet meter, and kept an empty goblet. Java 17 data generation, reobfuscation and all 140 required Forge GameTests passed.
 - [x] Verify rank one after a dedicated restart. The 125 blood power, empty goblet and open coffin remained. The muted client kept its blood in shade at noon, then stepped into open daylight, lost its blood reserve and caught fire.
-- [ ] Restore feeding, vampire powers, the book, upper-rank trials, village interactions and effects tied to the remaining progression.
+
+## Vampire Feeding and Mesmerize (2026-11-20)
+
+- [x] Restore the hotbar feeding power and blood display. The muted survival client selected the fangs with the scroll wheel and saw droplets under the crosshair as it targeted a villager. Awake villagers yielded seven blood per bite. Hunger drew five blood per food point. The client filled the 750-point reserve and reached rank two.
+- [x] Restore Mesmerize and vampire vision. The muted client switched to the eye, spent 50 blood to paralyze a villager, and then fed from outside normal bite range. This transferred ten blood. Sneak-use in the air enabled Night Vision, which stayed active after further feeding.
+- [x] Complete the rank-two feeding trial. The muted client earned three careful sips from each of two fresh villagers by ending successive bites at 276, 269 and 262 blood. The sixth sip reached rank three and cleared the active power. GameTests also covered overfeeding resets, sleep recovery, feeding permission checks, animal blood limits and the paralysis rules.
+- [x] Restart the dedicated server with the packaged JAR. Rank three, the full 1,000-point reserve, vision and the two villagers' 262-point reserves survived. Java 17 data generation, JAR reobfuscation and all 145 required Forge GameTests passed.
+- [ ] Restore Observations of an Immortal, ranks four through ten, the remaining powers, vampire equipment, village responses and the cure.
 
 ## Auram Pack Validation (2026-11-20)
 

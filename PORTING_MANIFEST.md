@@ -1181,7 +1181,7 @@ Implementation anchors:
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/client/event/WitcheryClientCameraHooks.java`
 
 Current scaffold behavior:
-- Uses one `SimpleChannel` (`witchery:main`) with protocol version `"25"`. The extended player payload carries vampire rank and blood power. The infusion status includes the active infused brew and remaining duration, and the Kettle recipe codec carries the optional bottling familiar.
+- Uses one `SimpleChannel` (`witchery:main`) with protocol version `"26"`. The extended player payload carries vampire rank, blood power, quest progress, vision and the transient selected power. Vampire packet intents 15 through 17 select or activate a power and query or display a nearby target's blood. The infusion status includes the active infused brew and remaining duration, and the Kettle recipe codec carries the optional bottling familiar.
 - Crystal Ball viewing sends the existing `cam_pos` message for the transient `witchery:eye` or the living subject of a Taglock Kit. Server chunk and entity tracking follow the viewed entity, and the client centers terrain rendering on it. The observing player stays beside the Crystal Ball.
 - The Mystic Branch recognizes gestures from server-side player rotations. Protocol 12 retires the prepared-spell packet while recording the old intent in `LegacyRegistryData.PACKETS`.
 - Validates packet receive direction against legacy flow metadata and logs mismatches.

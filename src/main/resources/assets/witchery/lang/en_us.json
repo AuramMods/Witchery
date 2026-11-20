@@ -182,6 +182,8 @@
    "message.witchery.glassgoblet.rank" : "Vampires can fill an empty goblet from rank nine.",
    "message.witchery.glassgoblet.blood_low" : "You do not have enough blood to fill the goblet.",
    "subtitles.witchery.blood_drink" : "Blood drawn",
+   "subtitles.witchery.hypnosis" : "Vampire mesmerizes",
+   "message.witchery.vampire.rank" : "You have reached vampire rank %s.",
    "subtitles.witchery.lilith.ambient" : "Lilith speaks",
    "subtitles.witchery.lilith.hurt" : "Lilith hurts",
    "subtitles.witchery.lilith.defeat" : "Lilith defeated",

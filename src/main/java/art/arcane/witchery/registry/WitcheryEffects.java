@@ -1,6 +1,7 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.vampirism.ParalysisEffect;
 import art.arcane.witchery.brewing.GrotesqueEffect;
 import art.arcane.witchery.brewing.WakingNightmareEffect;
 import net.minecraft.world.effect.MobEffect;
@@ -25,11 +26,21 @@ public final class WitcheryEffects {
             MOB_EFFECTS.register("potion.grotesque", GrotesqueEffect::new);
     public static final RegistryObject<MobEffect> ENSLAVED = MOB_EFFECTS.register("potion.enslaved",
             () -> new MobEffect(MobEffectCategory.HARMFUL, 0x4F2756) {});
+    public static final RegistryObject<MobEffect> PARALYSIS = MOB_EFFECTS.register("potion.paralysed", ParalysisEffect::new);
+    public static final RegistryObject<MobEffect> QUEASY = MOB_EFFECTS.register("potion.queasy",
+            () -> new MobEffect(MobEffectCategory.HARMFUL, 0x7C9348) {
+                @Override
+                public java.util.List<net.minecraft.world.item.ItemStack> getCurativeItems() {
+                    return java.util.List.of();
+                }
+            });
 
     static {
         LEGACY_EFFECTS.put("potion.wakingnightmare", WAKING_NIGHTMARE);
         LEGACY_EFFECTS.put("potion.grotesque", GROTESQUE);
         LEGACY_EFFECTS.put("potion.enslaved", ENSLAVED);
+        LEGACY_EFFECTS.put("potion.paralysed", PARALYSIS);
+        LEGACY_EFFECTS.put("potion.queasy", QUEASY);
         for (String legacyName : LegacyRegistryData.EFFECTS) {
             registerLegacyEffect(legacyName);
         }

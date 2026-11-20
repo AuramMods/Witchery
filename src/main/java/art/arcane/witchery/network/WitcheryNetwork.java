@@ -1,5 +1,7 @@
 package art.arcane.witchery.network;
 
+import art.arcane.witchery.vampirism.BloodFeeding;
+import art.arcane.witchery.vampirism.VampireAbilities;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
@@ -32,7 +34,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class WitcheryNetwork {
-    private static final String PROTOCOL_VERSION = "25";
+    private static final String PROTOCOL_VERSION = "26";
     private static final int MAX_USERNAME_LENGTH = 64;
     private static final int MAX_PLAYER_SKIN_LENGTH = 256;
     private static final int MAX_MARKUP_PAGE_COUNT = 256;
@@ -82,9 +84,9 @@ public final class WitcheryNetwork {
         discriminator = registerSyncMarkupBookPacket(discriminator);
         discriminator = registerExtendedPlayerSyncPacket(discriminator);
         discriminator = registerHowlPacket(discriminator);
-        discriminator = registerNoPayloadPacket(discriminator, "extended_villager_sync", ExtendedVillagerSyncPacket.class, ExtendedVillagerSyncPacket::new);
-        discriminator = registerNoPayloadPacket(discriminator, "select_player_ability", SelectPlayerAbilityPacket.class, SelectPlayerAbilityPacket::new);
-        discriminator = registerNoPayloadPacket(discriminator, "extended_entity_request_sync_to_client", ExtendedEntityRequestSyncToClientPacket.class, ExtendedEntityRequestSyncToClientPacket::new);
+        discriminator = registerBloodTargetPacket(discriminator);
+        discriminator = registerVampireAbilityPacket(discriminator);
+        discriminator = registerBloodRequestPacket(discriminator);
         discriminator = registerPartialExtendedPlayerSyncPacket(discriminator);
         discriminator = registerSetClientPlayerFacingPacket(discriminator);
         CHANNEL.messageBuilder(DreamAtmospherePacket.class, discriminator++, NetworkDirection.PLAY_TO_CLIENT)
@@ -145,6 +147,18 @@ public final class WitcheryNetwork {
                 PacketDistributor.PLAYER.with(() -> player),
                 new ExtendedPlayerSyncPacket(player.getUUID(), data.isInitialized(), data.getSyncRevision(), createPlayerDataPayload(data))
         );
+    }
+
+    public static void requestVampirePower(int power, boolean activate) {
+        CHANNEL.sendToServer(new SelectPlayerAbilityPacket(power, activate));
+    }
+
+    public static void requestBloodTarget(int entityId) {
+        CHANNEL.sendToServer(new ExtendedEntityRequestSyncToClientPacket(entityId));
+    }
+
+    public static void sendBloodTarget(ServerPlayer player, int entityId, int blood) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ExtendedVillagerSyncPacket(entityId, blood));
     }
 
     public static void sendPartialExtendedPlayerSync(ServerPlayer player, WitcheryPlayerData data) {
@@ -447,6 +461,36 @@ public final class WitcheryNetwork {
         );
     }
 
+    private static int registerVampireAbilityPacket(int discriminator) {
+        return registerPacketWithCodec(discriminator, "select_player_ability", SelectPlayerAbilityPacket.class,
+                (message, buffer) -> buffer.writeVarInt(message.power()).writeBoolean(message.activate()),
+                buffer -> new SelectPlayerAbilityPacket(buffer.readVarInt(), buffer.readBoolean()),
+                (message, context) -> {
+                    ServerPlayer sender = context.getSender();
+                    if (sender == null || !sender.isAlive() || sender.isSpectator()) return;
+                    if (message.activate()) VampireAbilities.activate(sender);
+                    else VampireAbilities.select(sender, message.power());
+                }, () -> new SelectPlayerAbilityPacket(0, false));
+    }
+
+    private static int registerBloodRequestPacket(int discriminator) {
+        return registerPacketWithCodec(discriminator, "extended_entity_request_sync_to_client", ExtendedEntityRequestSyncToClientPacket.class,
+                (message, buffer) -> buffer.writeVarInt(message.entityId()),
+                buffer -> new ExtendedEntityRequestSyncToClientPacket(buffer.readVarInt()),
+                (message, context) -> {
+                    ServerPlayer sender = context.getSender();
+                    if (sender != null && sender.isAlive() && !sender.isSpectator()) BloodFeeding.shareVisibleBlood(sender, message.entityId());
+                }, () -> new ExtendedEntityRequestSyncToClientPacket(0));
+    }
+
+    private static int registerBloodTargetPacket(int discriminator) {
+        return registerPacketWithCodec(discriminator, "extended_villager_sync", ExtendedVillagerSyncPacket.class,
+                (message, buffer) -> buffer.writeVarInt(message.entityId()).writeInt(message.blood()),
+                buffer -> new ExtendedVillagerSyncPacket(buffer.readVarInt(), buffer.readInt()),
+                (message, context) -> runClient(() -> art.arcane.witchery.client.ClientVampirism.receiveBlood(message.entityId(), message.blood())),
+                () -> new ExtendedVillagerSyncPacket(0, -1));
+    }
+
     private static <T> int registerNoPayloadPacket(int discriminator, String key, Class<T> packetType, Supplier<T> factory) {
         return registerPacketWithCodec(
                 discriminator,
@@ -732,7 +776,9 @@ public final class WitcheryNetwork {
     }
 
     private static CompoundTag createPlayerDataPayload(WitcheryPlayerData data) {
-        return data.serializeNBT();
+        CompoundTag payload = data.serializeNBT();
+        payload.putInt("SelectedVampirePower", data.getSelectedVampirePower());
+        return payload;
     }
 
     private static CompoundTag readPlayerDataPayload(FriendlyByteBuf buffer) {
@@ -1034,13 +1080,13 @@ public final class WitcheryNetwork {
         }
     }
 
-    public record ExtendedVillagerSyncPacket() {
+    public record ExtendedVillagerSyncPacket(int entityId, int blood) {
     }
 
-    public record SelectPlayerAbilityPacket() {
+    public record SelectPlayerAbilityPacket(int power, boolean activate) {
     }
 
-    public record ExtendedEntityRequestSyncToClientPacket() {
+    public record ExtendedEntityRequestSyncToClientPacket(int entityId) {
     }
 
     public record PartialExtendedPlayerSyncPacket(UUID playerId, int syncRevision, CompoundTag playerData) {

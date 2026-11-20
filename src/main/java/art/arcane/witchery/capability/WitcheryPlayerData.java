@@ -17,6 +17,8 @@ public final class WitcheryPlayerData {
     private static final String KEY_VAMPIRE_LEVEL = "VampireLevel";
     private static final String KEY_BLOOD_POWER = "BloodPower";
     private static final String KEY_VAMPIRE_LEVEL_CAP = "VampireLevelCap";
+    private static final String KEY_VAMPIRE_QUEST_COUNTER = "VampireQuestCounter";
+    private static final String KEY_VAMPIRE_VISION = "VampireVision";
     private static final String KEY_GROTESQUE_TICKS = "GrotesqueTicks";
     private static final String KEY_NIGHTMARE_LEVEL = "NightmareLevel";
     private static final String KEY_GHOST = "Ghost";
@@ -37,6 +39,11 @@ public final class WitcheryPlayerData {
     private int vampireLevel;
     private int bloodPower;
     private int vampireLevelCap;
+    private int vampireQuestCounter;
+    private boolean vampireVision;
+    private int selectedVampirePower;
+    private long nextVampireAbility;
+    private int foodBeforeEating = -1;
     private int grotesqueTicks;
     private int nightmareLevel;
     private boolean ghost;
@@ -104,6 +111,46 @@ public final class WitcheryPlayerData {
 
     public int getVampireLevelCap() {
         return vampireLevelCap;
+    }
+
+    public int getVampireQuestCounter() {
+        return vampireQuestCounter;
+    }
+
+    public void setVampireQuestCounter(int counter) {
+        vampireQuestCounter = Math.max(0, counter);
+    }
+
+    public boolean hasVampireVision() {
+        return vampireVision;
+    }
+
+    public void setVampireVision(boolean active) {
+        vampireVision = active;
+    }
+
+    public int getSelectedVampirePower() {
+        return selectedVampirePower;
+    }
+
+    public void setSelectedVampirePower(int power) {
+        selectedVampirePower = power;
+    }
+
+    public boolean beginVampireAbility(long gameTime) {
+        if (gameTime < nextVampireAbility) return false;
+        nextVampireAbility = gameTime + 10;
+        return true;
+    }
+
+    public void beginEating(int foodLevel) {
+        foodBeforeEating = foodLevel;
+    }
+
+    public boolean gainedFood(int foodLevel) {
+        boolean gained = foodBeforeEating >= 0 && foodLevel > foodBeforeEating;
+        foodBeforeEating = -1;
+        return gained;
     }
 
     public int getGrotesqueTicks() {
@@ -203,6 +250,8 @@ public final class WitcheryPlayerData {
         vampireLevel = source.vampireLevel;
         bloodPower = source.bloodPower;
         vampireLevelCap = source.vampireLevelCap;
+        vampireQuestCounter = source.vampireQuestCounter;
+        vampireVision = source.vampireVision;
         grotesqueTicks = source.grotesqueTicks;
         nightmareLevel = source.nightmareLevel;
         ghost = source.ghost;
@@ -227,6 +276,8 @@ public final class WitcheryPlayerData {
         tag.putInt(KEY_VAMPIRE_LEVEL, vampireLevel);
         tag.putInt(KEY_BLOOD_POWER, bloodPower);
         tag.putInt(KEY_VAMPIRE_LEVEL_CAP, vampireLevelCap);
+        tag.putInt(KEY_VAMPIRE_QUEST_COUNTER, vampireQuestCounter);
+        tag.putBoolean(KEY_VAMPIRE_VISION, vampireVision);
         tag.putInt(KEY_GROTESQUE_TICKS, grotesqueTicks);
         tag.putInt(KEY_NIGHTMARE_LEVEL, nightmareLevel);
         tag.putBoolean(KEY_GHOST, ghost);
@@ -257,6 +308,9 @@ public final class WitcheryPlayerData {
         setVampireLevel(bloodData.getInt(KEY_VAMPIRE_LEVEL));
         setBloodPower(bloodData.getInt(KEY_BLOOD_POWER));
         vampireLevelCap = Mth.clamp(bloodData.getInt(KEY_VAMPIRE_LEVEL_CAP), 0, 10);
+        setVampireQuestCounter(bloodData.getInt(KEY_VAMPIRE_QUEST_COUNTER));
+        vampireVision = bloodData.getBoolean(KEY_VAMPIRE_VISION);
+        selectedVampirePower = bloodData.getInt("SelectedVampirePower");
         grotesqueTicks = tag.getInt(KEY_GROTESQUE_TICKS);
         nightmareLevel = tag.getInt(KEY_NIGHTMARE_LEVEL);
         ghost = tag.getBoolean(KEY_GHOST);

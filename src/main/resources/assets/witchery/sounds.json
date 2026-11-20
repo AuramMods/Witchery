@@ -11,6 +11,10 @@
     "subtitle": "subtitles.witchery.blood_drink",
     "sounds": ["witchery:random/drink"]
   },
+  "random.hypnosis": {
+    "subtitle": "subtitles.witchery.hypnosis",
+    "sounds": ["witchery:random/hypnosis"]
+  },
   "mob.lilith.say": {
     "subtitle": "subtitles.witchery.lilith.ambient",
     "sounds": ["witchery:mob/lilith/say1", "witchery:mob/lilith/say2", "witchery:mob/lilith/say3", "witchery:mob/lilith/say4", "witchery:mob/lilith/say5"]
