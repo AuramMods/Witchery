@@ -612,7 +612,7 @@ The first migrated subtypes have individual item IDs. Preserve `witchery:ingredi
 | 80 | `infernalBlood` |
 | 81 | `bookHerbology` |
 | 82 | `entbranch` |
-| 83 | `mysticunguent` |
+| 83 | `mysticunguent` → `witchery:mystic_unguent` |
 | 84 | `doorKeyring` |
 | 85 | `brewFrogsTongue` |
 | 86 | `brewCursedLeaping` |
@@ -793,7 +793,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 96 | `MANDRAKE` | `EntityMandrake` | `mandrake` |
 | 97 | `TREEFYD` | `EntityTreefyd` | `treefyd` |
 | 98 | `HUNTSMAN` | `EntityHornedHuntsman` | `hornedHuntsman` |
-| 99 | `SPELL` | `EntitySpellEffect` | `spellEffect` |
+| 99 | `SPELL` | `EntitySpellEffect` | `spellEffect` → `witchery:spelleffect` |
 | 100 | `ENT` | `EntityEnt` | `ent` |
 | 101 | `ILLUSION_CREEPER` | `EntityIllusionCreeper` | `illusionCreeper` |
 | 102 | `ILLUSION_SPIDER` | `EntityIllusionSpider` | `illusionSpider` |
@@ -1156,8 +1156,8 @@ Implementation anchors:
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/client/event/WitcheryClientCameraHooks.java`
 
 Current scaffold behavior:
-- Uses one `SimpleChannel` (`witchery:main`) with protocol version `"1"`.
-- Registers typed packet records for all legacy packet intents (`19` total).
+- Uses one `SimpleChannel` (`witchery:main`) with protocol version `"12"`.
+- The Mystic Branch recognizes gestures from server-side player rotations. Protocol 12 retires the prepared-spell packet while recording the old intent in `LegacyRegistryData.PACKETS`.
 - Validates packet receive direction against legacy flow metadata and logs mismatches.
 - Represents all legacy packet intents in `LegacyRegistryData.PACKETS` as migration metadata.
 - Adds codec-backed payload + handler scaffolding for high-priority sync packets:
@@ -1174,7 +1174,6 @@ Current scaffold behavior:
 - Adds codec-backed payload + handler scaffolding for utility packets:
   - `particles` -> `(int particleEffectId, int soundEffectId, double x, double y, double z, double width, double height, int color)` (clientbound)
   - `player_style` -> `(String username, int grotesqueTicks, int nightmare, boolean ghost, int creatureType, int blood, String playerSkin)` (clientbound)
-  - `spell_prepared` -> `(int effectId, int level)` (serverbound)
   - `sync_markup_book` -> `(int slot, List<String> pages)` (serverbound)
 - Keeps explicit no-payload codec records + handlers for:
   - `clear_fall_damage` (serverbound)
@@ -1193,8 +1192,8 @@ Current scaffold behavior:
   - `clear_fall_damage` now clears sender fall distance.
   - `item_update` now mutates inventory stack NBT `CurrentPage` with legacy slot/damage validation.
   - `sync_markup_book` now mutates inventory stack NBT `pageStack` using string-list payload data.
-  - `item_update`, `spell_prepared`, `sync_markup_book`, and `howl` still stage data into `WitcheryPlayerData`, bump sync revision, and emit `player_sync` with serialized capability snapshot payload.
-  - `spell_prepared` + `howl` also mirror minimal state into sender persistent tags for migration visibility.
+  - `item_update`, `sync_markup_book`, and `howl` still stage data into `WitcheryPlayerData`, bump sync revision, and emit `player_sync` with serialized capability snapshot payload.
+  - `howl` also mirrors minimal state into sender persistent tags.
 
 Intent mapping used by scaffold:
 | Legacy ID | Intent Key | Flow |

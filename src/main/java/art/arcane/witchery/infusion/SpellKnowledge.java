@@ -2,6 +2,7 @@ package art.arcane.witchery.infusion;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -21,6 +22,28 @@ public enum SpellKnowledge {
         this.key = key;
     }
 
+    public Component nameComponent() {
+        return Component.translatable("spell.witchery." + key);
+    }
+
+    public boolean isKnown(ServerPlayer player) {
+        return book(player).getBoolean(key);
+    }
+
+    public long cooldownRemaining(ServerPlayer player, int duration) {
+        String lastUse = key + "LastUse";
+        CompoundTag book = book(player);
+        if (!book.contains(lastUse, Tag.TAG_ANY_NUMERIC)) return 0;
+        long elapsed = Math.max(0, System.currentTimeMillis() / 50 - book.getLong(lastUse));
+        return Math.max(0, duration - elapsed);
+    }
+
+    public void startCooldown(ServerPlayer player) {
+        if (!player.getAbilities().instabuild && isKnown(player)) {
+            book(player).putLong(key + "LastUse", System.currentTimeMillis() / 50);
+        }
+    }
+
     public void learn(LivingEntity drinker) {
         if (!(drinker instanceof ServerPlayer player)) return;
         CompoundTag data = player.getPersistentData();
@@ -32,9 +55,13 @@ public enum SpellKnowledge {
     }
 
     public static List<String> known(ServerPlayer player) {
-        CompoundTag book = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getCompound(BOOK);
+        CompoundTag book = book(player);
         return book.getAllKeys().stream()
                 .filter(name -> book.contains(name, Tag.TAG_BYTE) && book.getBoolean(name))
                 .sorted().toList();
+    }
+
+    private static CompoundTag book(ServerPlayer player) {
+        return player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getCompound(BOOK);
     }
 }

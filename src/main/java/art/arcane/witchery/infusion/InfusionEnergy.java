@@ -37,18 +37,25 @@ public final class InfusionEnergy {
     }
 
     public static boolean spend(ServerPlayer player, int cost) {
+        if (!canSpend(player, cost)) return false;
+        if (!player.getAbilities().instabuild) {
+            CompoundTag infusion = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
+            infusion.putInt(CHARGE, infusion.getInt(CHARGE) - cost);
+        }
+        return true;
+    }
+
+    public static boolean canSpend(ServerPlayer player, int cost) {
         CompoundTag infusion = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
-        if (!infusion.contains(TYPE, Tag.TAG_ANY_NUMERIC) || !infusion.contains(CHARGE, Tag.TAG_ANY_NUMERIC)) {
+        if (player.getAbilities().instabuild) return true;
+        if (infusion.getInt(TYPE) <= 0 || !infusion.contains(CHARGE, Tag.TAG_ANY_NUMERIC)) {
             explain(player, "required");
             return false;
         }
-        if (player.getAbilities().instabuild) return true;
-        int available = infusion.getInt(CHARGE);
-        if (available < cost) {
+        if (infusion.getInt(CHARGE) < cost) {
             explain(player, "empty");
             return false;
         }
-        infusion.putInt(CHARGE, available - cost);
         return true;
     }
 

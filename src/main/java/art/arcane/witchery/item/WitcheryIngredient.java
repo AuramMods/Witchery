@@ -59,6 +59,7 @@ public enum WitcheryIngredient {
     ICY_NEEDLE(78, "icy_needle"),
     INFERNAL_BLOOD(80, "infernal_blood"),
     ENT_BRANCH(82, "ent_branch"),
+    MYSTIC_UNGUENT(83, "mystic_unguent"),
     OWLETS_WING(89, "owlets_wing"),
     TOE_OF_FROG(90, "toe_of_frog"),
     QUARTZ_SPHERE(92, "quartz_sphere"),

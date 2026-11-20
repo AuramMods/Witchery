@@ -8,6 +8,9 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -18,6 +21,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 public final class Soulfire extends SmallFireball {
     private static final EntityDataAccessor<Boolean> IGNITION = SynchedEntityData.defineId(Soulfire.class, EntityDataSerializers.BOOLEAN);
@@ -63,17 +67,28 @@ public final class Soulfire extends SmallFireball {
     @Override
     protected void onHit(HitResult hit) {
         if (entityData.get(IGNITION) && level() instanceof ServerLevel server) {
-            Vec3 position = hit.getLocation();
-            float health = getOwner() instanceof LivingEntity caster ? 20 * caster.getHealth() / caster.getMaxHealth() : 16;
-            float damage = health > 19 ? 2 : health > 15 ? 3 : health > 10 ? 5 : 6 + (12 - health) / 2;
-            for (LivingEntity victim : server.getEntitiesOfClass(LivingEntity.class, new AABB(position, position).inflate(1.5),
-                    entity -> entity.distanceToSqr(position) <= 2.25)) {
-                float scale = victim instanceof Player ? victim.getMaxHealth() / 20 : 1;
-                victim.hurt(WitcheryDamageTypes.demonic(server, this, getOwner()), damage * scale);
-            }
-            server.sendParticles(ParticleTypes.FLAME, position.x, position.y, position.z, 16, 0.5, 0.5, 0.5, 0.04);
+            ignite(server, this, getOwner(), hit.getLocation());
         }
         super.onHit(hit);
+    }
+
+    public static void ignite(ServerLevel server, Entity projectile, @Nullable Entity owner, Vec3 position) {
+        float damage = 4;
+        if (owner instanceof LivingEntity caster) {
+            float health = 20 * caster.getHealth() / caster.getMaxHealth();
+            if (health > 19) damage = 2;
+            else if (health > 15) damage = 3;
+            else if (health > 10) damage = 5;
+            else damage = 6 + (12 - health) / 2;
+        }
+        for (LivingEntity victim : server.getEntitiesOfClass(LivingEntity.class, new AABB(position, position).inflate(1.5),
+                entity -> entity.isAlive() && entity.distanceToSqr(position) <= 2.25)) {
+            float scale = victim instanceof Player ? victim.getMaxHealth() / 20 : 1;
+            victim.hurt(WitcheryDamageTypes.demonic(server, projectile, owner), damage * scale);
+            server.sendParticles(ParticleTypes.FLAME, victim.getX(), victim.getY(0.5), victim.getZ(),
+                    16, 0.5, 0.5, 0.5, 0.04);
+            server.playSound(null, victim.blockPosition(), SoundEvents.FLINTANDSTEEL_USE, SoundSource.PLAYERS, 0.8F, 1);
+        }
     }
 
     @Override

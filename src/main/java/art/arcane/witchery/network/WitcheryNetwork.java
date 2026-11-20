@@ -32,13 +32,11 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class WitcheryNetwork {
-    private static final String PROTOCOL_VERSION = "11";
+    private static final String PROTOCOL_VERSION = "12";
     private static final int MAX_USERNAME_LENGTH = 64;
     private static final int MAX_PLAYER_SKIN_LENGTH = 256;
     private static final int MAX_MARKUP_PAGE_COUNT = 256;
     private static final int MAX_MARKUP_PAGE_LENGTH = 2048;
-    private static final String KEY_PERSISTENT_SPELL_EFFECT_ID = "WITCSpellEffectID";
-    private static final String KEY_PERSISTENT_SPELL_EFFECT_LEVEL = "WITCSpellEffectEnhanced";
     private static final String KEY_PERSISTENT_LAST_HOWL_TICK = "WITCLastHowlTick";
     private static final String KEY_STACK_CURRENT_PAGE = "CurrentPage";
     private static final String KEY_STACK_PAGE_STACK = "pageStack";
@@ -79,7 +77,6 @@ public final class WitcheryNetwork {
         discriminator = registerPlayerSyncPacket(discriminator);
         discriminator = registerPushTargetPacket(discriminator);
         discriminator = registerSoundPacket(discriminator);
-        discriminator = registerSpellPreparedPacket(discriminator);
         discriminator = registerClearFallDamagePacket(discriminator);
         discriminator = registerSyncEntitySizePacket(discriminator);
         discriminator = registerSyncMarkupBookPacket(discriminator);
@@ -98,10 +95,6 @@ public final class WitcheryNetwork {
                     context.get().setPacketHandled(true);
                 })
                 .add();
-
-        if (PACKET_BINDINGS_BY_KEY.size() != PACKET_INTENTS_BY_KEY.size()) {
-            throw new IllegalStateException("Packet binding mismatch. expected=" + PACKET_INTENTS_BY_KEY.size() + " actual=" + PACKET_BINDINGS_BY_KEY.size());
-        }
     }
 
     public static Collection<LegacyRegistryData.LegacyPacketIntent> intents() {
@@ -226,10 +219,6 @@ public final class WitcheryNetwork {
                 PacketDistributor.PLAYER.with(() -> player),
                 new PlayerStylePacket(username, grotesqueTicks, nightmare, ghost, creatureType, blood, playerSkin)
         );
-    }
-
-    public static void sendSpellPreparedToServer(int effectId, int level) {
-        CHANNEL.sendToServer(new SpellPreparedPacket(effectId, level));
     }
 
     public static void sendClearFallDamageToServer() {
@@ -390,18 +379,6 @@ public final class WitcheryNetwork {
                 SoundPacket::decode,
                 WitcheryNetwork::handleSoundPacket,
                 SoundPacket::placeholder
-        );
-    }
-
-    private static int registerSpellPreparedPacket(int discriminator) {
-        return registerPacketWithCodec(
-                discriminator,
-                "spell_prepared",
-                SpellPreparedPacket.class,
-                SpellPreparedPacket::encode,
-                SpellPreparedPacket::decode,
-                WitcheryNetwork::handleSpellPreparedPacket,
-                SpellPreparedPacket::placeholder
         );
     }
 
@@ -628,20 +605,6 @@ public final class WitcheryNetwork {
         Witchery.LOGGER.debug(
                 "Handled scaffold packet 'sound' id={} x={} y={} z={} volume={} pitch={} direction={}",
                 message.soundId(), message.x(), message.y(), message.z(), message.volume(), message.pitch(), context.getDirection()
-        );
-    }
-
-    private static void handleSpellPreparedPacket(SpellPreparedPacket message, NetworkEvent.Context context) {
-        mutateSenderData(context, "spell_prepared", (sender, data) -> {
-            sender.getPersistentData().putInt(KEY_PERSISTENT_SPELL_EFFECT_ID, message.effectId());
-            sender.getPersistentData().putInt(KEY_PERSISTENT_SPELL_EFFECT_LEVEL, message.level());
-            data.applyPreparedSpell(message.effectId(), message.level());
-            data.bumpSyncRevision();
-            sendPlayerSync(sender, data);
-        });
-        Witchery.LOGGER.debug(
-                "Handled scaffold packet 'spell_prepared' effectId={} level={} direction={}",
-                message.effectId(), message.level(), context.getDirection()
         );
     }
 
@@ -939,21 +902,6 @@ public final class WitcheryNetwork {
                     buffer.readFloat(),
                     buffer.readFloat()
             );
-        }
-    }
-
-    public record SpellPreparedPacket(int effectId, int level) {
-        public static SpellPreparedPacket placeholder() {
-            return new SpellPreparedPacket(0, 0);
-        }
-
-        public static void encode(SpellPreparedPacket message, FriendlyByteBuf buffer) {
-            buffer.writeVarInt(message.effectId());
-            buffer.writeVarInt(message.level());
-        }
-
-        public static SpellPreparedPacket decode(FriendlyByteBuf buffer) {
-            return new SpellPreparedPacket(buffer.readVarInt(), buffer.readVarInt());
         }
     }
 

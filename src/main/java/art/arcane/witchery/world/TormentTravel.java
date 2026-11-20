@@ -42,6 +42,12 @@ public final class TormentTravel {
         data.putInt(FLOOR, floor);
     }
 
+    public static boolean requestSpellEncounter(ServerPlayer player) {
+        if (!player.isAlive() || player.isSpectator() || player.level().dimension().equals(WitcheryDimensions.TORMENT)) return false;
+        data(player).putInt(ACTION, ENTER);
+        return true;
+    }
+
     public static void touchPortal(ServerPlayer player) {
         CompoundTag data = data(player);
         if (data.getInt(ACTION) == 0) {

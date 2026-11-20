@@ -1,0 +1,21 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"item": "witchery:redstone_soup"},
+    {"type": "forge:nbt", "item": "minecraft:potion", "nbt": {"Potion": "minecraft:long_strength"}},
+    {"item": "minecraft:diamond"},
+    {
+      "type": "forge:difference",
+      "base": {"item": "witchery:witchsapling"},
+      "subtracted": [
+        {"type": "forge:partial_nbt", "item": "witchery:witchsapling", "nbt": {"BlockStateTag": {"wood_type": "alder"}}},
+        {"type": "forge:partial_nbt", "item": "witchery:witchsapling", "nbt": {"BlockStateTag": {"wood_type": "hawthorn"}}}
+      ]
+    },
+    {"item": "witchery:creeper_heart"},
+    {"item": "witchery:infernal_blood"}
+  ],
+  "result": {"item": "witchery:mystic_unguent"},
+  "color": -14333109,
+  "power": 3000
+}

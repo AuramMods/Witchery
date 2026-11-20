@@ -5,8 +5,10 @@ import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -90,6 +92,19 @@ public final class PlacedItemBlock extends BaseEntityBlock {
             popResource(level, pos, placed.stack());
         }
         super.onRemove(state, level, pos, replacement, moving);
+    }
+
+    public static InteractionResult placeOnAltar(UseOnContext context, ItemStack stack) {
+        Level level = context.getLevel();
+        BlockPos clicked = context.getClickedPos();
+        Player player = context.getPlayer();
+        if (player == null || context.getClickedFace() != Direction.UP
+                || !(level.getBlockState(clicked).getBlock() instanceof AltarBlock) || !level.isEmptyBlock(clicked.above())) {
+            return InteractionResult.PASS;
+        }
+        if (!player.mayUseItemAt(clicked.above(), Direction.UP, stack)) return InteractionResult.FAIL;
+        if (level instanceof ServerLevel server && !place(server, clicked.above(), player, stack)) return InteractionResult.FAIL;
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
     public static boolean place(ServerLevel level, BlockPos pos, Player player, ItemStack item) {

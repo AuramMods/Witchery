@@ -16,6 +16,7 @@ import art.arcane.witchery.item.IcyNeedleItem;
 import art.arcane.witchery.item.MirrorItem;
 import art.arcane.witchery.item.OwnershipContractItem;
 import art.arcane.witchery.item.MutandisItem;
+import art.arcane.witchery.item.MysticBranchItem;
 import art.arcane.witchery.item.RitualChalkItem;
 import art.arcane.witchery.item.SeerStoneItem;
 import art.arcane.witchery.item.TaglockItem;
@@ -77,8 +78,10 @@ public final class WitcheryItems {
         for (String legacyName : WitcheryEntities.all().keySet()) {
             registerLegacySpawnEgg(legacyName);
         }
-        // Older port saves can contain a placeholder egg for the non-living projectile.
-        LEGACY_SPAWN_EGGS.put("soulfire_spawn_egg", ITEMS.register("soulfire_spawn_egg", () -> new Item(new Item.Properties())));
+        // Older port saves can contain placeholder spawn eggs for these projectiles.
+        for (String name : List.of("soulfire_spawn_egg", "spelleffect_spawn_egg")) {
+            LEGACY_SPAWN_EGGS.put(name, ITEMS.register(name, () -> new Item(new Item.Properties())));
+        }
 
         for (String legacyName : LegacyRegistryData.BLOCKS) {
             registerLegacyBlockItem(legacyName);
@@ -141,6 +144,7 @@ public final class WitcheryItems {
             case "taglockkit" -> new TaglockItem();
             case "mirror" -> new MirrorItem();
             case "arthana" -> new ArthanaItem();
+            case "mysticbranch" -> new MysticBranchItem();
             case "demon_heart" -> new DemonHeartItem(WitcheryBlocks.getRequired("demonheart").get(), true);
             case "devilstonguecharm" -> new Item(new Item.Properties().durability(50).rarity(Rarity.UNCOMMON));
             case "necromantic_stone" -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)) {
@@ -176,6 +180,7 @@ public final class WitcheryItems {
                 drinker.addEffect(new MobEffectInstance(MobEffects.WITHER, 3600, 2));
             });
             case "happenstance_oil" -> new DrinkableBrewItem(() -> MobEffects.NIGHT_VISION, 1200, 0);
+            case "mystic_unguent" -> new DrinkableBrewItem(() -> MobEffects.WEAKNESS, 1200, 1);
             case "seer_stone" -> new SeerStoneItem();
             case "purified_milk" -> new DrinkableBrewItem(DrinkableBrewItem::purifyMilk);
             case "icy_needle" -> new IcyNeedleItem();

@@ -2,6 +2,7 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.entity.CovenWitch;
+import art.arcane.witchery.entity.DarkMark;
 import art.arcane.witchery.entity.Demon;
 import art.arcane.witchery.entity.Imp;
 import art.arcane.witchery.entity.LordOfTorment;
@@ -10,6 +11,7 @@ import art.arcane.witchery.entity.Nightmare;
 import art.arcane.witchery.entity.Reflection;
 import art.arcane.witchery.entity.SleepingBody;
 import art.arcane.witchery.entity.Soulfire;
+import art.arcane.witchery.entity.SymbolProjectile;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.entity.WitchCat;
 import net.minecraft.world.entity.EntityType;
@@ -66,6 +68,12 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<ThrownBrew>> THROWN_BREW =
             ENTITY_TYPES.register("thrown_brew", () -> EntityType.Builder.<ThrownBrew>of(ThrownBrew::new, MobCategory.MISC)
                     .sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(3).build(Witchery.MODID + ":thrown_brew"));
+    public static final RegistryObject<EntityType<SymbolProjectile>> SYMBOL_PROJECTILE =
+            ENTITY_TYPES.register("spelleffect", () -> EntityType.Builder.<SymbolProjectile>of(SymbolProjectile::new, MobCategory.MISC)
+                    .sized(1, 1).clientTrackingRange(4).updateInterval(1).build(Witchery.MODID + ":spelleffect"));
+    public static final RegistryObject<EntityType<DarkMark>> DARK_MARK =
+            ENTITY_TYPES.register("darkmark", () -> EntityType.Builder.of(DarkMark::new, MobCategory.MISC)
+                    .sized(2, 2).clientTrackingRange(4).build(Witchery.MODID + ":darkmark"));
 
     static {
         LEGACY_ENTITIES.put("mandrake", MANDRAKE);
@@ -77,6 +85,7 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("cat", WITCH_CAT);
         LEGACY_ENTITIES.put("covenwitch", COVEN_WITCH);
         LEGACY_ENTITIES.put("imp", IMP);
+        LEGACY_ENTITIES.put("darkmark", DARK_MARK);
         for (String legacyName : LegacyRegistryData.ENTITIES) {
             registerLegacyEntity(legacyName);
         }
@@ -97,7 +106,7 @@ public final class WitcheryEntities {
 
     private static void registerLegacyEntity(String legacyName) {
         String path = RegistryNameUtil.normalizePath(legacyName);
-        if (LEGACY_ENTITIES.containsKey(path) || path.equals("soulfire")) {
+        if (LEGACY_ENTITIES.containsKey(path) || path.equals("soulfire") || path.equals("spelleffect")) {
             return;
         }
 
@@ -119,6 +128,7 @@ public final class WitcheryEntities {
                     : entry == LORD_OF_TORMENT ? LordOfTorment.attributes()
                     : entry == COVEN_WITCH ? CovenWitch.attributes()
                     : entry == IMP ? Imp.attributes()
+                    : entry == DARK_MARK ? DarkMark.attributes()
                     : entry == WITCH_CAT ? Cat.createAttributes() : Zombie.createAttributes();
             event.put(entry.get(), attributes.build());
         }

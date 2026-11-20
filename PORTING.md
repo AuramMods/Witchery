@@ -93,8 +93,8 @@
 - [x] Verify the same 250-health Lord after a dedicated restart. The muted client defeated it with an axe after a fixture shortened the remaining fight, collected two enchanted books, a Demon Heart and the Brew of Soul Torment, and drank the brew to save its Tormentum knowledge. It exited through the generated portal.
 - [x] Restore the Contract of Torment's standing-stone channel. The muted survival client tested interruption and a complete channel using legacy infusion charge loaded from the fixture. A complete channel spent 80 charge, consumed the contract, and summoned one 500-health Lord of Torment. The standing stones remained with mob griefing disabled.
 - [x] Restore survival infusion acquisition and recharging for the Contract of Torment. The muted client brewed and bottled Soul of the World, cast the Overworld infusion with a bound Death Protection Poppet, and then drew 20 charge from that infusion with the contract.
-- [x] Restore the Infernal infusion required for Tormentum. The muted client brewed Infernal Animus with a used Voodoo Poppet, sacrificed it inside small and medium Infernal rings, and acquired 200 charge with a Death Protection Poppet.
-- [ ] Complete the Mystic Branch so the four Soul Brew spells can be cast.
+- [x] Restore the Infernal infusion. The muted client brewed Infernal Animus with a used Voodoo Poppet, sacrificed it inside small and medium Infernal rings, and acquired 200 charge with a Death Protection Poppet.
+- [x] Restore the Mystic Branch and the four castable Soul Brew spells.
 
 ## Familiars and Covens (2026-11-19)
 
@@ -108,7 +108,7 @@
 - [ ] Restore owl and toad familiars, their specialized abilities, and the cat's curse bonuses.
 - [x] Restore the medium Infernal Imp rite and ownership contract. The muted survival client verified the refund when activating without the Seer Stone and summoned a 50-health Imp with the stone. It signed the contract with its own Taglock Kit, verified the refusal at six levels, paid 25 levels, and bound Zul.
 - [x] Restore the Imp's gift progression, cooldown and original Soul Brew knowledge. The muted client verified the cooldown, advanced the fixture clock for subsequent gifts, and received Hunger, Fear, Anguish and the Contract of Torment. The three brews added their spell knowledge. All 38 required Forge GameTests passed, including signed ownership, saved gift progress and power, and the full contract channel.
-- [ ] Restore the Imp's other signed spell contracts and the Mystic Branch's castable spells.
+- [ ] Restore the Imp's other signed spell contracts.
 - [ ] Restore legacy potion bottling skill and include it in Seer Stone readings.
 - [ ] Restore the Crystal Ball's predictions and the coven witch's additional combat and ritual behaviors.
 
@@ -127,6 +127,16 @@
 - [x] Restore the 4,000-power Infernal infusion rite. The muted client replaced its Overworld infusion with ID 4 and 200 charge. The bound Death Protection Poppet was consumed and restored ten health.
 - [x] Verify Voodoo protection in the muted dedicated-server client. A self-targeted cast reflected from a matching ward and added 350 wear to both poppets.
 - [ ] Extend Voodoo protection to Poppet Shelves and Witch Hunter equipment.
+
+## Mystic Branch and the Soul Brew Spells (2026-11-19)
+
+- Brew one serving of Mystic Unguent with Redstone Soup, extended Strength, Diamond, Rowan Sapling, Creeper Heart and Infernal Blood at 3,000 altar power. Sacrifice it with an Ent Branch inside the small and medium white circles at night with another 3,000 power. The Imp's extra gifts can supply the Ent Branch.
+- Hold use with the Mystic Branch, draw the directional strokes, then release to cast. The server recognizes six original variants per spell and checks infusion, learned knowledge, charge and cooldown. All four learned Soul Brew spells work with any infusion. The legacy Infernal restriction applies to curses that have no knowledge key.
+- [x] The muted survival client filled the kettle, bottled the unguent, and dropped both offerings at the heart. The rite left its offerings at noon and produced a Mystic Branch at midnight. The branch and infused player's 200 charges remained after a dedicated restart.
+- [x] The muted client drew and released Carnosa Diem, Ignianima and Morsmordre. The player's health fell from 20 to 18 and its charge reached 199 after Carnosa Diem. Ignianima lowered a pig's health from 10 to 7 and cost two charge. Morsmordre summoned a Dark Mark and cost 20 charge.
+- [x] The muted client rendered the Dark Mark's original model and smoke. Tormentum moved a second survival client to a maze floor, removed the nearby pig, and spent 25 charge. Repeating the gesture during the cooldown preserved charge. The dedicated server saved the original `tormentumLastUse` field, elapsed charge and the second player's Torment dimension.
+- [x] Java 17 data generation and reobfuscation succeeded on Forge 47.4.10. All 46 required Forge GameTests passed, including the long symbol variants, unknown spell rejection, Dark Mark lifespan, and Tormentum's impact against creatures and charge cooldown.
+- [ ] Restore the remaining symbols, enhanced casting with Worship, and the in-game symbol book.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.
@@ -357,7 +367,7 @@
 - [ ] Continue fetish model parity depth pass:
   - evaluate whether `witchsladder` needs the same multi-part UV approach.
   - add fidelity follow-up for fetish-specific rotations/tint behavior currently handled by legacy TESR (`RenderFetish`).
-- [ ] Run targeted multiplayer/client validation for expanded player sync payload snapshots (`login`, `clone`, `item_update`, `spell_prepared`, `sync_markup_book`, `howl`).
+- [ ] Run targeted multiplayer/client validation for expanded player sync payload snapshots (`login`, `clone`, `item_update`, `sync_markup_book`, `howl`).
   - completed crop-family stage model parity pass.
   - completed structural families (stairs/slabs/fence/fence-gate/pressure-plate/button) with 1.20.1 state models.
   - completed broad non-cube decorative/functional pass; remaining full-cube placeholders now narrowed to 14 likely-intentional cube blocks.
