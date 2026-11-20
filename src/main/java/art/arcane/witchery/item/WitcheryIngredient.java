@@ -46,6 +46,7 @@ public enum WitcheryIngredient {
     BREW_OF_LOVE(75, "brew_of_love"),
     BREW_OF_THE_DEPTHS(77, "brew_of_the_depths"),
     ICY_NEEDLE(78, "icy_needle"),
+    BREW_OF_SLEEPING(95, "brew_of_sleeping"),
     DISTURBED_COTTON(99, "disturbed_cotton"),
     FANCIFUL_THREAD(100, "fanciful_thread"),
     TORMENTED_TWINE(101, "tormented_twine"),

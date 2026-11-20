@@ -1,0 +1,13 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"item": "witchery:purified_milk"},
+    {"item": "minecraft:cookie"},
+    {"item": "witchery:brew_of_love"},
+    {"item": "witchery:whiff_of_magic"},
+    {"item": "witchery:icy_needle"},
+    {"item": "witchery:globe_artichoke"}
+  ],
+  "result": {"item": "witchery:brew_of_sleeping", "count": 3},
+  "color": -7710856
+}

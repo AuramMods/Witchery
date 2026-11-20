@@ -273,6 +273,7 @@
    "item.witchery.golden_thread" : "Golden Thread",
    "item.witchery.brew_of_ink" : "Brew of Ink",
    "item.witchery.brew_of_love" : "Brew of Love",
+   "item.witchery.brew_of_sleeping" : "Brew of Sleeping",
    "item.witchery.purified_milk" : "Purified Milk",
    "item.witchery.brew_of_the_depths" : "Brew of the Depths",
    "item.witchery.quicklime" : "Quicklime",
@@ -289,5 +290,6 @@
    "effect.witchery.depths" : "Depths",
    "entity.witchery.mandrake" : "Mandrake",
    "entity.witchery.thrown_brew" : "Thrown Brew",
+   "entity.witchery.corpse" : "Sleeping Body",
    "item.witchery.mandrake_spawn_egg" : "Mandrake Spawn Egg"
 }

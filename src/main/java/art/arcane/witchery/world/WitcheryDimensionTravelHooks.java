@@ -23,7 +23,6 @@ public final class WitcheryDimensionTravelHooks {
     private static final Map<String, TravelTrigger> PORTAL_TRIGGER_MAP = new LinkedHashMap<>();
     private static final Map<String, TravelTrigger> RITE_TRIGGER_MAP = new LinkedHashMap<>();
     private static final Set<TravelTrigger> PORTAL_COLLISION_TRIGGERS = Set.of(
-            TravelTrigger.DREAM_PORTAL,
             TravelTrigger.TORMENT_PORTAL
     );
     private static final String KEY_LAST_PORTAL_COLLISION_TICK = "WITCLastPortalCollisionTick";
@@ -31,7 +30,6 @@ public final class WitcheryDimensionTravelHooks {
     private static final long PORTAL_COLLISION_COOLDOWN_TICKS = 40L;
 
     static {
-        PORTAL_TRIGGER_MAP.put("spiritportal", TravelTrigger.DREAM_PORTAL);
         PORTAL_TRIGGER_MAP.put("tormentportal", TravelTrigger.TORMENT_PORTAL);
 
         RITE_TRIGGER_MAP.put("mirrorblock", TravelTrigger.MIRROR_RITE);
@@ -105,7 +103,6 @@ public final class WitcheryDimensionTravelHooks {
 
     public static Optional<ResourceKey<Level>> resolveTarget(ResourceKey<Level> currentLevel, TravelTrigger trigger) {
         return switch (trigger) {
-            case DREAM_PORTAL -> Optional.of(routeToOrReturn(currentLevel, WitcheryDimensions.DREAM));
             case TORMENT_PORTAL -> Optional.of(routeToOrReturn(currentLevel, WitcheryDimensions.TORMENT));
             case MIRROR_RITE -> Optional.of(routeToOrReturn(currentLevel, WitcheryDimensions.MIRROR));
             case RETURN_TO_OVERWORLD -> isWitcheryDimension(currentLevel)
@@ -187,7 +184,6 @@ public final class WitcheryDimensionTravelHooks {
     }
 
     public enum TravelTrigger {
-        DREAM_PORTAL,
         TORMENT_PORTAL,
         MIRROR_RITE,
         RETURN_TO_OVERWORLD;

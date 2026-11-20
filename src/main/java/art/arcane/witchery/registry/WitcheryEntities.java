@@ -2,6 +2,7 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.entity.Mandrake;
+import art.arcane.witchery.entity.SleepingBody;
 import art.arcane.witchery.entity.ThrownBrew;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -23,12 +24,16 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<Mandrake>> MANDRAKE =
             ENTITY_TYPES.register("mandrake", () -> EntityType.Builder.of(Mandrake::new, MobCategory.MONSTER)
                     .sized(0.6F, 0.9F).build(Witchery.MODID + ":mandrake"));
+    public static final RegistryObject<EntityType<SleepingBody>> SLEEPING_BODY =
+            ENTITY_TYPES.register("corpse", () -> EntityType.Builder.of(SleepingBody::new, MobCategory.MISC)
+                    .sized(1.2F, 0.5F).clientTrackingRange(8).build(Witchery.MODID + ":corpse"));
     public static final RegistryObject<EntityType<ThrownBrew>> THROWN_BREW =
             ENTITY_TYPES.register("thrown_brew", () -> EntityType.Builder.<ThrownBrew>of(ThrownBrew::new, MobCategory.MISC)
                     .sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(3).build(Witchery.MODID + ":thrown_brew"));
 
     static {
         LEGACY_ENTITIES.put("mandrake", MANDRAKE);
+        LEGACY_ENTITIES.put("corpse", SLEEPING_BODY);
         for (String legacyName : LegacyRegistryData.ENTITIES) {
             registerLegacyEntity(legacyName);
         }
@@ -62,7 +67,9 @@ public final class WitcheryEntities {
 
     private static void registerEntityAttributes(EntityAttributeCreationEvent event) {
         for (RegistryObject<? extends EntityType<? extends Mob>> entry : LEGACY_ENTITIES.values()) {
-            event.put(entry.get(), entry == MANDRAKE ? Mandrake.attributes().build() : Zombie.createAttributes().build());
+            var attributes = entry == MANDRAKE ? Mandrake.attributes()
+                    : entry == SLEEPING_BODY ? SleepingBody.attributes() : Zombie.createAttributes();
+            event.put(entry.get(), attributes.build());
         }
     }
 }

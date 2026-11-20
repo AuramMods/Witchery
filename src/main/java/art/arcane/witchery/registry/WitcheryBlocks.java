@@ -6,6 +6,7 @@ import art.arcane.witchery.block.CandelabraBlock;
 import art.arcane.witchery.block.ChaliceBlock;
 import art.arcane.witchery.block.DistilleryBlock;
 import art.arcane.witchery.block.KettleBlock;
+import art.arcane.witchery.block.SomnianCottonBlock;
 import art.arcane.witchery.block.SpinningWheelBlock;
 import art.arcane.witchery.block.PlacedItemBlock;
 import art.arcane.witchery.block.RitualGlyphBlock;
@@ -142,8 +143,9 @@ public final class WitcheryBlocks {
             case "shadedglass_active" -> new LegacyShadedGlassBlock(true);
             case "bloodrose" -> new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_SMALL, false);
             case "plantmine" -> new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_SMALL, true);
-            case "glintweed", "crittersnare", "bramble", "somniancotton", "spanishmoss", "vine", "web" ->
+            case "glintweed", "crittersnare", "bramble", "spanishmoss", "vine", "web" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_TALL, false);
+            case "somniancotton" -> new SomnianCottonBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION).randomTicks());
             case "embermoss" -> new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_LOW, false);
             case "lilypad", "leapinglily" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.LILY_PAD), SHAPE_PAD_FLAT, false);

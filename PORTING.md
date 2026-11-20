@@ -52,7 +52,10 @@
 - [x] Craft and place the wheel in muted survival, shift-click a hay bale and Whiff of Magic into the original menu, and collect three Golden Threads. The test used supplied starting materials and an existing altar.
 - [x] Restore the ingredient path for Brew of Sleeping. Mature snowbell yields an Icy Needle at the original 20% rate. Milk or cake crafts three Purified Milk jars, and the original kettle recipe produces three Brews of Love. The Love splash puts adult animals in love and pairs adult villagers. Six packaged checks and all 14 disposable Forge GameTests passed.
 - [ ] Implement the Brew of Love interaction for enslaved zombies when the enslavement system is ported.
-- [ ] Complete the Dream and Nightmare paths that yield Wispy and Disturbed Cotton for the two remaining survival spins.
+- [x] Restore the original kettle recipe for Brew of Sleeping, tangible sleeping bodies, and separate Overworld and Dream inventories, including health and hunger. An Icy Needle wakes the sleeper, as does lethal Dream damage or destruction of the sleeping body.
+- [x] Generate Somnian Cotton in suitable Dream biomes, spread it by source Flowing Spirit, and harvest Wispy Cotton in a normal dream or Disturbed Cotton in a nightmare. Clean packaged world generation produced cotton in 16 of 1,296 inspected Dream chunks and zero of 2,025 Overworld chunks. All 15 disposable Forge GameTests passed.
+- [x] In the muted survival client, brew and bottle three Brews of Sleeping, enter a nightmare, and restart while the body and Dream inventory are active. Wake with an Icy Needle and verify that damaged gear and Overworld health return, that Disturbed Cotton crosses dimensions, and that ordinary Dream items stay behind. Reenter to confirm those items return and verify that destroying the body or taking lethal damage wakes the sleeper.
+- [ ] Complete the Nightmare encounters and add the Dreamweave that improves the odds of a normal dream. Verify both cotton recipes through player harvest, wake, and spinning.
 - [ ] Finish the remaining altar artifacts, kettle recipes, the other powered cauldron recipes, and the remaining chalk rites.
 
 ## Current Snapshot (2026-02-09)
@@ -246,10 +249,8 @@
   - resource keys are scaffolded (`Level`, `LevelStem`, `DimensionType`) for `dream`, `torment`, and `mirror`.
   - datapack `dimension_type` + `dimension` JSON scaffolding is now present for all three dimensions.
   - runtime travel scaffold hooks are in place via `WitcheryDimensionTravelHooks` + `WitcheryEventHooks`.
-  - scaffold trigger routing is now split by trigger source:
-    - portal collision path (`spiritportal`, `tormentportal`) via `PlayerTickEvent` + collision resolver.
-    - right-click path (`mirrorblock*`, `mirrorwall`, `circleglyphotherwhere`) retained as temporary rite scaffold.
-  - authentic rite-completion behavior and final provider behavior parity are still TODO.
+  - Dream uses the sleeping brew, body and separate inventories through `DreamTravel`. Spirit portal manifestation and Dream provider rules are in progress.
+  - Torment's collision path and the Mirror right-click path still use the temporary travel hooks. Their original activation and provider rules are pending.
 - [~] Event bus hooks migrated with no-op or minimal behavior.
   - placeholder Forge-bus hooks are in place for attach-capabilities, player login/clone, player tick, player right-click block, entity travel-to-dimension, player changed-dimension, and level load events.
   - attach-capabilities/player-clone hooks now include capability provider wiring for player data scaffold.

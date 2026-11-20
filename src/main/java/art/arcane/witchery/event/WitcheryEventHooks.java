@@ -4,6 +4,8 @@ import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.registry.WitcheryEffects;
+import art.arcane.witchery.world.DreamTravel;
+import art.arcane.witchery.world.WitcheryDimensions;
 import art.arcane.witchery.world.WitcheryDimensionTravelHooks;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.InteractionHand;
@@ -14,10 +16,12 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.event.TickEvent;
 
@@ -91,6 +95,9 @@ public final class WitcheryEventHooks {
         if (!(event.player instanceof ServerPlayer serverPlayer)) {
             return;
         }
+        if (DreamTravel.processRequests(serverPlayer)) {
+            return;
+        }
 
         if (serverPlayer.level().getGameTime() % 20 == 0 && serverPlayer.hasEffect(WitcheryEffects.DEPTHS.get())) {
             if (serverPlayer.isEyeInFluid(FluidTags.WATER)) {
@@ -107,6 +114,16 @@ public final class WitcheryEventHooks {
 
         WitcheryDimensionTravelHooks.resolvePortalCollisionTrigger(serverPlayer)
                 .ifPresent(trigger -> WitcheryDimensionTravelHooks.routePlayerFromPortalCollision(serverPlayer, trigger));
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onDreamDeath(LivingDeathEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player && !player.getAbilities().instabuild
+                && player.level().dimension().equals(WitcheryDimensions.DREAM) && DreamTravel.isSpiritWalking(player)) {
+            event.setCanceled(true);
+            player.setHealth(1);
+            DreamTravel.requestWake(player);
+        }
     }
 
     @SubscribeEvent

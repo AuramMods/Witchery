@@ -1301,9 +1301,8 @@ Current scaffold behavior:
 - route-resolution helper maps Dream/Torment/Mirror triggers to destination dimension keys (with return-to-overworld fallback when already in route dimension).
 - `routePlayer(...)` provides a shared teleport entrypoint to move players to target dimension spawn points.
 - Forge event wiring observes both travel attempts and completed dimension transitions for Witchery dimensions.
-- portal collision trigger wiring now routes through server `PlayerTickEvent` checks:
-  - `spiritportal` -> dream route
-  - `tormentportal` -> torment route
+- `DreamTravel` handles Brew of Sleeping and waking in the server player tick. It records both inventories, health, hunger, the Overworld body coordinates and the nightmare flag under `PlayerPersisted.WITCSpiritWorld`, and retains `witchery:corpse` for the sleeping body.
+- `tormentportal` collision still uses the temporary server `PlayerTickEvent` route. Spirit portal manifestation is pending.
 - portal collision routing is cooldown-gated via persistent player tags (`WITCLastPortalCollisionTick`, `WITCLastPortalCollisionTrigger`) to prevent rapid retriggers.
 - right-click scaffold trigger wiring is now focused on rite-like mirror blocks:
   - `mirrorblock`, `mirrorblock2`, `mirrorwall`, `circleglyphotherwhere` -> mirror route
@@ -1311,7 +1310,7 @@ Current scaffold behavior:
 Status:
 - resource keys and breadth datapack scaffold are now present for Dream/Torment/Mirror.
 - runtime travel hook scaffolding and split trigger wiring (portal collision + mirror right-click) are now present.
-- authentic rite-completion activation and provider behavior parity are still TODO.
+- Dream and Nightmare cotton drops are available from naturally generated Somnian Cotton. The Nightmare encounter, Dreamweaves, and authentic Torment and Mirror activation and provider behavior are pending.
 
 ## 1.20.1 Event Hook Scaffold (current)
 Implementation anchor:

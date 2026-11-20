@@ -1,0 +1,6 @@
+{
+  "type": "forge:add_features",
+  "biomes": "#minecraft:is_overworld",
+  "features": "witchery:dream_cotton",
+  "step": "vegetal_decoration"
+}

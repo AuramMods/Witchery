@@ -12,6 +12,7 @@ import art.arcane.witchery.client.model.MandrakeModel;
 import art.arcane.witchery.client.renderer.KettleRenderer;
 import art.arcane.witchery.client.renderer.MandrakeRenderer;
 import art.arcane.witchery.client.renderer.PlacedItemRenderer;
+import art.arcane.witchery.client.renderer.SleepingBodyRenderer;
 import art.arcane.witchery.client.renderer.SpinningWheelRenderer;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryBlocks;
@@ -52,6 +53,7 @@ public final class WitcheryClient {
     @SubscribeEvent
     public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(WitcheryEntities.MANDRAKE.get(), MandrakeRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.SLEEPING_BODY.get(), SleepingBodyRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.THROWN_BREW.get(), ThrownItemRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.KETTLE.get(), KettleRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.SPINNING_WHEEL.get(), SpinningWheelRenderer::new);
