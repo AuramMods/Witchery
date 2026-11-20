@@ -7,6 +7,7 @@ import art.arcane.witchery.brewing.WakingNightmareEffect;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.familiar.FamiliarBinding;
+import art.arcane.witchery.entity.VillageGuard;
 import art.arcane.witchery.entity.VillageGuardRecruitment;
 import art.arcane.witchery.infusion.CreaturePower;
 import art.arcane.witchery.infusion.InfernalInfusion;
@@ -400,8 +401,9 @@ public final class WitcheryEventHooks {
             return;
         }
         var held = event.getItemStack();
-        if (held.getItem() instanceof GlassGobletItem && GlassGobletItem.filled(held) && event.getTarget() instanceof Villager villager) {
-            if (event.getEntity() instanceof ServerPlayer player) GlassGobletItem.offerToVillager(player, villager, held);
+        if (held.getItem() instanceof GlassGobletItem && GlassGobletItem.filled(held)
+                && event.getTarget() instanceof Mob target && (target instanceof Villager || target instanceof VillageGuard)) {
+            if (event.getEntity() instanceof ServerPlayer player) GlassGobletItem.offerToResident(player, target, held);
             event.setCanceled(true);
             event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide));
             return;

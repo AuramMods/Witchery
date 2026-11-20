@@ -4,6 +4,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.config.WitcheryServerConfig;
+import art.arcane.witchery.entity.VillageGuard;
 import art.arcane.witchery.item.CaneSwordItem;
 import art.arcane.witchery.item.VampireBookItem;
 import art.arcane.witchery.item.WitcheryIngredient;
@@ -160,7 +161,7 @@ public final class Vampirism {
         var random = victim.getRandom();
         if (isBoss(victim)
                 || (type == EntityType.ZOMBIFIED_PIGLIN || type == EntityType.ENDERMAN) && random.nextDouble() < 0.09
-                || victim instanceof Villager && random.nextDouble() < 0.10
+                || (victim instanceof Villager || victim instanceof VillageGuard) && random.nextDouble() < 0.10
                 || victim.getMobType() == MobType.UNDEAD && random.nextDouble() < 0.02) {
             victim.spawnAtLocation(WitcheryIngredient.TORN_VAMPIRE_PAGE.item(), 1);
         }
@@ -169,6 +170,7 @@ public final class Vampirism {
     private static void fillCaneReserve(LivingEntity victim, ServerPlayer killer) {
         if (victim.getPersistentData().getBoolean("WITCNoDrops")) return;
         int blood = victim instanceof Villager villager ? BloodFeeding.blood(villager)
+                : victim instanceof VillageGuard guard ? guard.getBlood()
                 : victim instanceof ServerPlayer player ? WitcheryPlayerDataProvider.get(player).map(WitcheryPlayerData::getHumanBlood).orElse(0) : 0;
         if (blood == 0) return;
 

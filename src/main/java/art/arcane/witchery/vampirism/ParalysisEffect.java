@@ -2,6 +2,7 @@ package art.arcane.witchery.vampirism;
 
 import art.arcane.witchery.entity.Lilith;
 import art.arcane.witchery.entity.LordOfTorment;
+import art.arcane.witchery.entity.VillageGuard;
 import art.arcane.witchery.registry.WitcheryEffects;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -23,6 +24,7 @@ import net.minecraftforge.common.Tags;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 public final class ParalysisEffect extends MobEffect {
     public ParalysisEffect() {
@@ -48,13 +50,17 @@ public final class ParalysisEffect extends MobEffect {
 
     private static boolean freezes(LivingEntity entity, int amplifier) {
         return !(entity instanceof Lilith || entity instanceof LordOfTorment || entity.getType().is(Tags.EntityTypes.BOSSES))
-                && (amplifier < 5 || !(entity instanceof Villager)) && (!(entity instanceof Player) || amplifier >= 2);
+                && (amplifier < 5 || !(entity instanceof Villager || entity instanceof VillageGuard))
+                && (!(entity instanceof Player) || amplifier >= 2);
     }
 
     @Override
     public void applyEffectTick(LivingEntity entity, int amplifier) {
         if (amplifier >= 5 && entity instanceof Villager villager && entity.level() instanceof ServerLevel world) {
-            if (villager.tickCount % 10 == 0) lure(villager, world);
+            if (villager.tickCount % 10 == 0) {
+                lureTarget(villager, world).ifPresent(vampire -> villager.getBrain()
+                        .setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(vampire, 0.8F, 1)));
+            }
             return;
         }
         if (!freezes(entity, amplifier)) return;
@@ -70,10 +76,9 @@ public final class ParalysisEffect extends MobEffect {
         }
     }
 
-    private static void lure(Villager villager, ServerLevel world) {
-        world.getPlayers(player -> player.isAlive() && !player.isSpectator() && Vampirism.level(player) > 0
-                        && player.distanceToSqr(villager) <= 256).stream()
-                .min(Comparator.comparingDouble(villager::distanceToSqr))
-                .ifPresent(vampire -> villager.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(vampire, 0.8F, 1)));
+    public static Optional<ServerPlayer> lureTarget(LivingEntity resident, ServerLevel world) {
+        return world.getPlayers(player -> player.isAlive() && !player.isSpectator() && Vampirism.level(player) >= 8
+                        && player.distanceToSqr(resident) <= 256).stream()
+                .min(Comparator.comparingDouble(resident::distanceToSqr));
     }
 }

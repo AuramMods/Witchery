@@ -367,7 +367,7 @@
 - [x] Preserve the converted vampire and the player's progression. A dedicated restart kept the same creature UUID and home position, the empty goblet, rank ten and 1,114 blood.
 - [x] Verify the vampire's nightly hunt. The mob selected an occupied village, took five nonlethal bites and returned home. The hunted villager's blood went from 500 to 400.
 - [x] Preserve Witchery progress through player respawn. After a deliberate death in the headless server, the muted client respawned at rank ten with a cap of ten and 1,114 blood. Java 17 data generation, the reobfuscated JAR and all 167 required Forge GameTests passed.
-- [ ] Restore guard conversions and village responses.
+- [x] Restore guard conversion and the response to witnessed bites. See Village Guard Recruitment and Feeding below.
 
 ## Blood Crucible and Thunderstorm (2026-11-20)
 
@@ -429,12 +429,15 @@
 - [x] Restore the five-bulb garland and its recipe. The muted survival client crafted it from five garlic and three string and hung it in a doorway. The ward's facing controls its outline and model, and entities can move through the occupied space.
 - [x] Check repulsion in the dedicated world. The cured player walked through the doorway, then drank a filled-goblet fixture and was pushed back on the same approach. A vampire mob moved about one and a half blocks away from the ward and kept full health. The mounted facing and repulsion persisted through restart. Java 17 data generation, JAR reobfuscation and all 200 required Forge GameTests passed.
 
-## Village Guard Recruitment (2026-11-20)
+## Village Guard Recruitment and Feeding (2026-11-20)
 
 - [x] Recruit an adult villager with a crouching leather tunic offer. The muted client was refused before trading and then raised the villager's trading reputation to 14 in its normal menu. The two-resident settlement still refused. With seven additional resident fixtures and an occupied bed, Alden accepted guard duty. The client retained the same tunic through the refusal and successful offer.
 - [x] Verify the recruited guard's equipment and behavior. Alden kept its name, began with 40 health and 500 blood, and received a bow, iron chestplate and leather gear. The client saw the bow pose as the guard shot a zombie from 20 to 13.3 health. The nearby creeper stayed at 20. GameTests covered the original tall guard data, flaming arrows and friendly-fire immunity.
 - [x] Restart the dedicated server and verify the same UUID, bow, armor, 40 health and 500 blood. Java 17 data generation, JAR reobfuscation and all 202 required Forge GameTests passed.
-- [ ] Restore blood feeding from guards, their response to witnessed bites and conversion into vampires.
+- [x] Feed on a guard and show its blood on the vampire HUD. The muted client lured a guard with strengthened Mesmerize, drained its last seven blood and observed two health damage. After a bite on a villager, a sighted guard targeted the player and fired a bow. An occluded guard and a paralyzed guard did not acquire the target.
+- [x] Turn a drained guard with a goblet of the player's own blood. Offering without a coffin kept the filled goblet. The client then placed the coffin and made the offering. The goblet emptied and the player advanced from rank nine to ten. The new vampire kept its original conversion location as home when it left to hunt.
+- [x] Collect guard blood with a drawn Cane Sword. A direct strike on a weakened guard loaded 190 blood. A dedicated restart kept the reserve, empty goblet, placed coffin, rank ten and the converted vampire's UUID and equipment. The survival profile began this check at rank nine and used a guard with seven remaining blood. Java 17 data generation, JAR reobfuscation and all 206 required Forge GameTests passed.
+- [ ] Restore the guards' general village defense against recent aggressors and players with a bad reputation.
 
 ## Auram Pack Validation (2026-11-20)
 

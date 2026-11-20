@@ -11,7 +11,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
@@ -67,10 +66,7 @@ public final class VillageGuardRecruitment {
         if (!world.addFreshEntity(guard)) return false;
 
         ForgeEventFactory.onLivingConvert(villager, guard);
-        villager.releasePoi(MemoryModuleType.HOME);
-        villager.releasePoi(MemoryModuleType.JOB_SITE);
-        villager.releasePoi(MemoryModuleType.POTENTIAL_JOB_SITE);
-        villager.releasePoi(MemoryModuleType.MEETING_POINT);
+        VampireVillages.releaseResidentClaims(villager);
         villager.discard();
         world.sendParticles(ParticleTypes.INSTANT_EFFECT, guard.getX(), guard.getY(0.5), guard.getZ(), 16, 0.3, 0.5, 0.3, 0.03);
         guard.playSound(SoundEvents.VILLAGER_YES, 1, 1);

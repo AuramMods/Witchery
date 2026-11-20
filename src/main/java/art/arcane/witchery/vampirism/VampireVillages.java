@@ -5,6 +5,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.StructureTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiRecord;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
@@ -50,6 +51,14 @@ public final class VampireVillages {
         public AABB residents() {
             return new AABB(center).inflate(radius, 4, radius);
         }
+    }
+
+    public static void releaseResidentClaims(Villager resident) {
+        if (resident.isSleeping()) resident.stopSleeping();
+        resident.releasePoi(MemoryModuleType.HOME);
+        resident.releasePoi(MemoryModuleType.JOB_SITE);
+        resident.releasePoi(MemoryModuleType.POTENTIAL_JOB_SITE);
+        resident.releasePoi(MemoryModuleType.MEETING_POINT);
     }
 
     private static Optional<StructureStart> nearestGeneratedVillage(ServerLevel world, BlockPos position) {

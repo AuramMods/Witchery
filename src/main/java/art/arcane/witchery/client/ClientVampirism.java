@@ -3,6 +3,7 @@ package art.arcane.witchery.client;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.config.WitcheryClientConfig;
+import art.arcane.witchery.entity.VillageGuard;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.vampirism.BloodFeeding;
 import art.arcane.witchery.vampirism.VampireAbilities;
@@ -118,7 +119,8 @@ public final class ClientVampirism {
         Vec3 end = player.level().clip(new ClipContext(eye, eye.add(look), ClipContext.Block.COLLIDER,
                 ClipContext.Fluid.NONE, player)).getLocation();
         var target = ProjectileUtil.getEntityHitResult(player, eye, end, player.getBoundingBox().expandTowards(look).inflate(1),
-                entity -> entity.isPickable() && (entity instanceof Villager || entity instanceof Player), eye.distanceToSqr(end));
+                entity -> entity.isPickable() && (entity instanceof Villager || entity instanceof VillageGuard || entity instanceof Player),
+                eye.distanceToSqr(end));
         int id = target == null ? -1 : target.getEntity().getId();
         if (id != aimingAt) {
             aimingAt = id;

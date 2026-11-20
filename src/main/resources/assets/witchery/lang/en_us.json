@@ -1,6 +1,7 @@
 {
    "death.attack.witchery.sunlight" : "%s burned in sunlight",
    "death.attack.witchery.sunlight.player" : "%s burned in sunlight while fighting %s",
+   "death.attack.witchery.vampire_bite" : "%s was drained by %s",
    "entity.witchery.villageguard" : "Village Guard",
    "message.witchery.village.reputation" : "You need a better reputation with this village to appoint a guard.",
    "message.witchery.village.small_village" : "The village needs at least nine villagers to appoint a guard.",

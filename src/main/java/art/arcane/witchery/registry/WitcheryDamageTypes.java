@@ -17,6 +17,8 @@ public final class WitcheryDamageTypes {
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "vampire_fire"));
     public static final ResourceKey<DamageType> SUNLIGHT = ResourceKey.create(Registries.DAMAGE_TYPE,
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "sunlight"));
+    public static final ResourceKey<DamageType> VAMPIRE_BITE = ResourceKey.create(Registries.DAMAGE_TYPE,
+            ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "vampire_bite"));
 
     private WitcheryDamageTypes() {}
 
@@ -31,5 +33,10 @@ public final class WitcheryDamageTypes {
 
     public static DamageSource sunlight(Level level) {
         return new DamageSource(level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(SUNLIGHT));
+    }
+
+    public static DamageSource vampireBite(Entity attacker) {
+        var type = attacker.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(VAMPIRE_BITE);
+        return new DamageSource(type, attacker);
     }
 }

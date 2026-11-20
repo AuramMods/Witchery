@@ -1,11 +1,13 @@
 package art.arcane.witchery.item;
 
 import art.arcane.witchery.config.WitcheryServerConfig;
+import art.arcane.witchery.entity.VillageGuard;
 import art.arcane.witchery.entity.WitcheryFollower;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcherySounds;
 import art.arcane.witchery.vampirism.BloodFeeding;
+import art.arcane.witchery.vampirism.VampireVillages;
 import art.arcane.witchery.vampirism.Vampirism;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -22,6 +24,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.animal.Chicken;
 import net.minecraft.world.entity.npc.Villager;
@@ -150,25 +153,30 @@ public final class GlassGobletItem extends Item {
         }
     }
 
-    public static void offerToVillager(ServerPlayer player, Villager villager, ItemStack stack) {
+    public static void offerToResident(ServerPlayer player, Mob target, ItemStack stack) {
+        int blood;
+        if (target instanceof Villager villager) blood = BloodFeeding.blood(villager);
+        else if (target instanceof VillageGuard guard) blood = guard.getBlood();
+        else return;
         ServerLevel world = player.serverLevel();
-        if (!BloodFeeding.paralysis(villager, 5)) {
+        if (!BloodFeeding.paralysis(target, 5)) {
             refuseOffering(player, "not_mesmerized");
-        } else if (BloodFeeding.blood(villager) != 0) {
+        } else if (blood != 0) {
             refuseOffering(player, "not_drained");
-        } else if (!coffinNearby(world, villager.blockPosition())) {
+        } else if (!coffinNearby(world, target.blockPosition())) {
             refuseOffering(player, "no_coffin");
         } else {
             var type = WitcheryEntities.VAMPIRE.get();
-            if (!villager.isAlive() || !ForgeEventFactory.canLivingConvert(villager, type, ignored -> {})) return;
+            if (!target.isAlive() || !ForgeEventFactory.canLivingConvert(target, type, ignored -> {})) return;
             var vampire = type.create(world);
             if (vampire == null) return;
-            vampire.moveTo(villager.getX(), villager.getY(), villager.getZ(), villager.getYRot(), villager.getXRot());
+            vampire.copyPosition(target);
             vampire.finalizeSpawn(world, world.getCurrentDifficultyAt(vampire.blockPosition()), MobSpawnType.CONVERSION, null, null);
             vampire.setPersistenceRequired();
             if (!world.addFreshEntity(vampire)) return;
-            ForgeEventFactory.onLivingConvert(villager, vampire);
-            villager.discard();
+            ForgeEventFactory.onLivingConvert(target, vampire);
+            if (target instanceof Villager villager) VampireVillages.releaseResidentClaims(villager);
+            target.discard();
             bloodParticles(world, vampire);
             if (player.getUUID().toString().equals(source(stack))) Vampirism.madeVampireWithOwnBlood(player);
             empty(stack);

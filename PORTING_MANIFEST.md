@@ -1347,7 +1347,7 @@ Status:
 - The Leech Chest and Blood Rose keep the original `witchery:leechchest` and `witchery:bloodrose` block and item IDs. Their block entities retain `WITCPlayers` with `Player` entries. The chest item keeps that list after harvesting and preserves inventory contents as separate drops. The Blood Rose uses `full` for its visible sample state and the Boline drops an empty plant.
 - The placeable `witchery:coffin` uses two halves of `witchery:coffinblock` and the original `Opened` block entity field. `part`, `facing` and `occupied` follow modern bed states. `paired` distinguishes a placed pair from the previously saved decorative block. The shared bed Taglock path resolves the head from either half.
 - `witchery:glassgoblet` keeps the original `WITCBloodUUID` and `WITCBloodName` tags. `witchery:follower` retains `FollowerType`, `Skin` and `TicksToLive` and saves the lava destination and transformation time. `witchery:lilith` keeps `Invul`, `Lifetime` and `Friendly`. The player capability accepts the rank and blood keys from the legacy `WitcheryExtendedPlayer` compound.
-- The rank-ten offering turns an eligible villager into `witchery:vampire` and clears both blood tags from the goblet. The entity keeps `BaseX`, `BaseY` and `BaseZ` as its home and saves `Hunting` and `HuntBites`. Older port entities without the home tags adopt their saved position.
+- The rank-ten offering turns an eligible villager or Village Guard into `witchery:vampire` and clears both blood tags from the goblet. The entity keeps `BaseX`, `BaseY` and `BaseZ` as its home and saves `Hunting` and `HuntBites`. Older port entities without the home tags adopt their saved position.
 - `witchery:bloodcrucible` saves its original `BloodLevel` from 0 to 20. The player's `VampireUltimate` preserves legacy IDs 0 for none, 1 for Thunderstorm, 2 for Bat Swarm and 3 for travel. `VampireUltimateCharges` retains the remaining uses.
 - `witchery:attackbat` saves its caster under the original `Owner` GameProfile tag and its remaining life under `SwarmTicks`. Summoned attack bats carry `WITCNoDrops` in their entity data.
 - A bone selects ultimate ID 3. Coffin and village travel uses the existing modern respawn fields and the village information available in loaded chunks. A dimension change refreshes the replacement client's Witchery player data.
@@ -1358,6 +1358,7 @@ Status:
 - Legacy rite 94 maps to `witchery:remove_vampirism`. The normal circle save stores the active recipe, caster, coven and offerings. The cure resets the existing vampire capability fields and retains the learned rank cap.
 - `witchery:garlicgarland` keeps its block and item ID. The block state saves a horizontal `facing` and defaults to north for existing 1.20.1 saves without that property.
 - `witchery:villageguard` reads and writes the legacy `GuardType` byte and `BloodLevel` value. It stores equipment in `HandItems` and `ArmorItems`. Earlier scaffold saves without a blood value initialize at 500.
+- `witchery:vampire_bite` preserves the attacking player's attribution and distinguishes feeding from a direct Cane Sword kill. Protocol 41 adds guard targets to the existing vampire blood display. Guard feeding uses the same saved `BloodLevel` as Cane Sword collection and the drained-target requirement for conversion.
 
 ## 1.20.1 Event Hook Scaffold (current)
 Implementation anchor:

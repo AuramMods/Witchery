@@ -2,6 +2,7 @@ package art.arcane.witchery.entity;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.vampirism.BloodFeeding;
+import art.arcane.witchery.vampirism.ParalysisEffect;
 import art.arcane.witchery.vampirism.VampireVillages;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -29,6 +30,7 @@ import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.MoveThroughVillageGoal;
@@ -52,6 +54,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.EnumSet;
+
 public final class VillageGuard extends PathfinderMob implements RangedAttackMob {
     private static final EntityDataAccessor<Byte> GUARD_TYPE = SynchedEntityData.defineId(VillageGuard.class, EntityDataSerializers.BYTE);
     private static final EntityDimensions TALL_SIZE = EntityDimensions.scalable(0.72F, 2.34F);
@@ -72,16 +76,17 @@ public final class VillageGuard extends PathfinderMob implements RangedAttackMob
 
     @Override
     protected void registerGoals() {
+        goalSelector.addGoal(0, new FollowVampireGoal());
         goalSelector.addGoal(1, new FloatGoal(this));
         goalSelector.addGoal(4, new RangedAttackGoal(this, 1, 20, 60, 15) {
-            @Override public boolean canUse() { return hasBow() && super.canUse(); }
-            @Override public boolean canContinueToUse() { return hasBow() && super.canContinueToUse(); }
+            @Override public boolean canUse() { return hasBow() && canFight() && super.canUse(); }
+            @Override public boolean canContinueToUse() { return hasBow() && canFight() && super.canContinueToUse(); }
             @Override public void start() { super.start(); setAggressive(true); }
             @Override public void stop() { super.stop(); setAggressive(false); }
         });
         goalSelector.addGoal(4, new MeleeAttackGoal(this, 1.2, false) {
-            @Override public boolean canUse() { return !hasBow() && super.canUse(); }
-            @Override public boolean canContinueToUse() { return !hasBow() && super.canContinueToUse(); }
+            @Override public boolean canUse() { return !hasBow() && canFight() && super.canUse(); }
+            @Override public boolean canContinueToUse() { return !hasBow() && canFight() && super.canContinueToUse(); }
         });
         goalSelector.addGoal(6, new MoveThroughVillageGoal(this, 0.6, true, 4, () -> true));
         goalSelector.addGoal(7, new MoveTowardsRestrictionGoal(this, 1));
@@ -96,6 +101,10 @@ public final class VillageGuard extends PathfinderMob implements RangedAttackMob
 
     private boolean hasBow() {
         return getMainHandItem().getItem() instanceof BowItem;
+    }
+
+    private boolean canFight() {
+        return !BloodFeeding.paralysis(this, 4);
     }
 
     @Override
@@ -136,7 +145,7 @@ public final class VillageGuard extends PathfinderMob implements RangedAttackMob
 
     @Override
     public void performRangedAttack(LivingEntity target, float power) {
-        if (BloodFeeding.paralysis(this, 4)) return;
+        if (!canFight()) return;
         var arrow = ProjectileUtil.getMobArrow(this, new ItemStack(Items.ARROW), power);
         if (getGuardType() == 1) arrow.setSecondsOnFire(5);
         double dx = target.getX() - getX();
@@ -198,4 +207,43 @@ public final class VillageGuard extends PathfinderMob implements RangedAttackMob
     @Override protected SoundEvent getAmbientSound() { return SoundEvents.VILLAGER_AMBIENT; }
     @Override protected SoundEvent getHurtSound(DamageSource source) { return SoundEvents.VILLAGER_HURT; }
     @Override protected SoundEvent getDeathSound() { return SoundEvents.VILLAGER_DEATH; }
+
+    private final class FollowVampireGoal extends Goal {
+        private FollowVampireGoal() {
+            setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
+        }
+
+        @Override
+        public boolean canUse() {
+            return BloodFeeding.paralysis(VillageGuard.this, 5);
+        }
+
+        @Override
+        public void start() {
+            setTarget(null);
+            getNavigation().stop();
+        }
+
+        @Override
+        public void stop() {
+            getNavigation().stop();
+        }
+
+        @Override
+        public boolean requiresUpdateEveryTick() {
+            return true;
+        }
+
+        @Override
+        public void tick() {
+            if (tickCount % 10 != 0 || !(level() instanceof ServerLevel world)) return;
+            var vampire = ParalysisEffect.lureTarget(VillageGuard.this, world).orElse(null);
+            if (vampire == null || distanceToSqr(vampire) <= 1) {
+                getNavigation().stop();
+            } else {
+                getNavigation().moveTo(vampire, 0.8);
+                getLookControl().setLookAt(vampire);
+            }
+        }
+    }
 }

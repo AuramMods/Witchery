@@ -2,9 +2,11 @@ package art.arcane.witchery.vampirism;
 
 import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.entity.VillageGuard;
 import art.arcane.witchery.item.GlassGobletItem;
 import art.arcane.witchery.item.VampireClothingItem;
 import art.arcane.witchery.network.WitcheryNetwork;
+import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryEffects;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -77,14 +79,23 @@ public final class BloodFeeding {
             amount = takeFromVillager(villager, bite);
             int remaining = blood(villager);
             remainingVillagerBlood = remaining;
-            if (remaining < 250) villager.hurt(player.damageSources().playerAttack(player), 1.3F);
-            else if (!resting) villager.hurt(player.damageSources().playerAttack(player), 0.1F);
+            if (remaining < 250) villager.hurt(WitcheryDamageTypes.vampireBite(player), 1.3F);
+            else if (!resting) villager.hurt(WitcheryDamageTypes.vampireBite(player), 0.1F);
             WitcheryNetwork.sendBloodTarget(player, villager.getId(), remaining);
+            alertGuards(player, villager);
+        } else if (target instanceof VillageGuard guard) {
+            int before = guard.getBlood();
+            amount = Math.min(before, awakeBite(bite));
+            guard.setBlood(before - amount);
+            if (before < 250) guard.hurt(WitcheryDamageTypes.vampireBite(player), 2);
+            else if (!paralysis(guard, 4)) guard.hurt(WitcheryDamageTypes.vampireBite(player), 0.5F);
+            WitcheryNetwork.sendBloodTarget(player, guard.getId(), guard.getBlood());
+            alertGuards(player, guard);
         } else if (target instanceof ServerPlayer victim) {
             if (!player.canHarmPlayer(victim)) return;
             amount = WitcheryPlayerDataProvider.get(victim).map(data -> takeFromPlayer(player, victim, data, bite)).orElse(0);
         } else if (target instanceof Animal) {
-            target.hurt(player.damageSources().playerAttack(player), 1);
+            target.hurt(WitcheryDamageTypes.vampireBite(player), 1);
             amount = 2;
             maximum = Mth.ceil(maximum / 4.0F);
         } else return;
@@ -92,13 +103,23 @@ public final class BloodFeeding {
         GlassGobletItem.bloodParticles(player.serverLevel(), target);
     }
 
+    private static void alertGuards(ServerPlayer player, LivingEntity victim) {
+        var bounds = victim.getBoundingBox().inflate(16, 8, 16);
+        for (VillageGuard guard : player.serverLevel().getEntitiesOfClass(VillageGuard.class, bounds)) {
+            if (!guard.hasEffect(WitcheryEffects.PARALYSIS.get()) && guard.canAttack(player)
+                    && guard.getSensing().hasLineOfSight(victim)) {
+                guard.setTarget(player);
+            }
+        }
+    }
+
     private static int takeFromPlayer(ServerPlayer attacker, ServerPlayer victim, WitcheryPlayerData data, int bite) {
         if (data.getVampireLevel() > 0) return 0;
         int before = data.getHumanBlood();
         int remaining = Math.max(0, before - (victim.isSleeping() ? bite : awakeBite(bite)));
         data.setHumanBlood(remaining);
-        if (remaining < 250) victim.hurt(attacker.damageSources().playerAttack(attacker), 1);
-        else if (!victim.isSleeping()) victim.hurt(attacker.damageSources().playerAttack(attacker), 0.1F);
+        if (remaining < 250) victim.hurt(WitcheryDamageTypes.vampireBite(attacker), 1);
+        else if (!victim.isSleeping()) victim.hurt(WitcheryDamageTypes.vampireBite(attacker), 0.1F);
         WitcheryNetwork.sendBloodTarget(attacker, victim.getId(), remaining);
         Vampirism.sync(victim, data);
         return before - remaining;
@@ -113,7 +134,8 @@ public final class BloodFeeding {
         var target = viewer.serverLevel().getEntity(entityId);
         if (!(target instanceof LivingEntity living) || target == viewer || viewer.distanceToSqr(target) > 30.25
                 || !living.isAlive() || !viewer.hasLineOfSight(target)) return;
-        int amount = target instanceof Villager villager ? blood(villager) : target instanceof ServerPlayer player
+        int amount = target instanceof Villager villager ? blood(villager) : target instanceof VillageGuard guard ? guard.getBlood()
+                : target instanceof ServerPlayer player
                 ? WitcheryPlayerDataProvider.get(player).map(data -> data.getVampireLevel() == 0 ? data.getHumanBlood() : -1).orElse(-1) : -1;
         WitcheryNetwork.sendBloodTarget(viewer, entityId, amount);
     }
