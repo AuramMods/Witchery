@@ -67,7 +67,7 @@
 - [x] Brew Grotesque using the original six ingredients and 500 altar power. The muted survival client bottled all three portions, drank one, and verified that the Demon mask rendered and the aura repelled a cow.
 - [x] Restore Waking Nightmare and its two rites. The muted player used a real taglock and brewed Grotesque in the medium Infernal ring. The rite refused to start under clear skies, then applied the persistent curse and spent 10,000 power during a thunderstorm.
 - [x] Verify the Waking Nightmare curse across death and a dedicated restart, reject an empty kit, and refund all five cure offerings for an offline target. In the muted client, the separate status effect spawned a Waking Nightmare. The rite's curse kept it pursuing the same player after the effect was cleared. The player used the small white ring and a second self taglock to remove the curse and Weakness, and the Nightmare despawned.
-- [ ] Finish the Dream's legacy sky and fog.
+- [x] Restore the Dream's pink daylight, green nightmare fog, red demonic fog, and starless sky. Two isolated muted clients on one dedicated server verified that another player's nightmare changes the entire dimension's atmosphere. The normal dreamer rejoined during a demonic nightmare and saw the red fog. When the other player woke, the atmosphere returned to pink.
 - [ ] Finish the remaining altar artifacts, kettle recipes, the other powered cauldron recipes, and the remaining chalk rites.
 
 ## Current Snapshot (2026-02-09)

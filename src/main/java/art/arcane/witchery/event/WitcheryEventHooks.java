@@ -144,6 +144,19 @@ public final class WitcheryEventHooks {
                 .ifPresent(trigger -> WitcheryDimensionTravelHooks.routePlayerFromPortalCollision(serverPlayer, trigger));
     }
 
+    @SubscribeEvent
+    public static void onDreamAtmosphereTick(TickEvent.LevelTickEvent event) {
+        if (event.phase != TickEvent.Phase.END || !(event.level instanceof ServerLevel level)
+                || !level.dimension().equals(WitcheryDimensions.DREAM) || level.getGameTime() % 20 != 0
+                || level.players().isEmpty()) {
+            return;
+        }
+        int mode = DreamTravel.isDemonicNightmare(level) ? 2 : DreamTravel.isNightmare(level) ? 1 : 0;
+        for (ServerPlayer player : level.players()) {
+            WitcheryNetwork.sendDreamAtmosphere(player, mode);
+        }
+    }
+
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onDreamDeath(LivingDeathEvent event) {
         if (event.getEntity() instanceof ServerPlayer player && !player.getAbilities().instabuild

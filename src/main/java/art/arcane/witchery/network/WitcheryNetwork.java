@@ -32,7 +32,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class WitcheryNetwork {
-    private static final String PROTOCOL_VERSION = "5";
+    private static final String PROTOCOL_VERSION = "6";
     private static final int MAX_USERNAME_LENGTH = 64;
     private static final int MAX_PLAYER_SKIN_LENGTH = 256;
     private static final int MAX_MARKUP_PAGE_COUNT = 256;
@@ -89,7 +89,15 @@ public final class WitcheryNetwork {
         discriminator = registerNoPayloadPacket(discriminator, "select_player_ability", SelectPlayerAbilityPacket.class, SelectPlayerAbilityPacket::new);
         discriminator = registerNoPayloadPacket(discriminator, "extended_entity_request_sync_to_client", ExtendedEntityRequestSyncToClientPacket.class, ExtendedEntityRequestSyncToClientPacket::new);
         discriminator = registerPartialExtendedPlayerSyncPacket(discriminator);
-        registerSetClientPlayerFacingPacket(discriminator);
+        discriminator = registerSetClientPlayerFacingPacket(discriminator);
+        CHANNEL.messageBuilder(DreamAtmospherePacket.class, discriminator, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder((message, buffer) -> buffer.writeByte(message.nightmareLevel()))
+                .decoder(buffer -> new DreamAtmospherePacket(buffer.readUnsignedByte()))
+                .consumerMainThread((message, context) -> {
+                    runClient(() -> art.arcane.witchery.client.DreamSpecialEffects.updateClientMode(message.nightmareLevel()));
+                    context.get().setPacketHandled(true);
+                })
+                .add();
 
         if (PACKET_BINDINGS_BY_KEY.size() != PACKET_INTENTS_BY_KEY.size()) {
             throw new IllegalStateException("Packet binding mismatch. expected=" + PACKET_INTENTS_BY_KEY.size() + " actual=" + PACKET_BINDINGS_BY_KEY.size());
@@ -164,6 +172,13 @@ public final class WitcheryNetwork {
                 PacketDistributor.PLAYER.with(() -> player),
                 new CamPosPacket(active, updatePosition, entityId)
         );
+    }
+
+    public static void sendDreamAtmosphere(ServerPlayer player, int nightmareLevel) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new DreamAtmospherePacket(nightmareLevel));
+    }
+
+    private record DreamAtmospherePacket(int nightmareLevel) {
     }
 
     public static void sendPushTarget(ServerPlayer player, int entityId, double velocityX, double velocityY, double velocityZ) {
