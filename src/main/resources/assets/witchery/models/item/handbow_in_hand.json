@@ -1,0 +1,11 @@
+{
+  "parent": "builtin/entity",
+  "gui_light": "front",
+  "textures": {"particle": "witchery:item/handbow"},
+  "display": {
+    "firstperson_righthand": {"rotation": [8, -12, 0], "translation": [-2, 1, -2], "scale": [1.35, 1.35, 1.35]},
+    "firstperson_lefthand": {"rotation": [8, -12, 0], "translation": [-2, 1, -2], "scale": [1.35, 1.35, 1.35]},
+    "thirdperson_righthand": {"rotation": [85, 0, 0], "translation": [0, 1, -1], "scale": [1.2, 1.2, 1.2]},
+    "thirdperson_lefthand": {"rotation": [85, 0, 0], "translation": [0, 1, -1], "scale": [1.2, 1.2, 1.2]}
+  }
+}

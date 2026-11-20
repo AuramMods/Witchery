@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "witchery:null_catalyst"
+    },
+    {
+      "item": "witchery:belladonna_flower"
+    },
+    {
+      "item": "witchery:belladonna_flower"
+    },
+    {
+      "item": "witchery:holy_bolt"
+    },
+    {
+      "item": "witchery:holy_bolt"
+    },
+    {
+      "item": "witchery:holy_bolt"
+    }
+  ],
+  "result": {
+    "count": 3,
+    "item": "witchery:anti_magic_bolt"
+  }
+}

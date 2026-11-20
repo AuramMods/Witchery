@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:ghast",
+    "minecraft:blaze",
+    "minecraft:magma_cube",
+    "minecraft:wither",
+    "witchery:demon",
+    "witchery:leonard",
+    "witchery:lordoftorment",
+    "witchery:imp",
+    "witchery:lilith"
+  ]
+}

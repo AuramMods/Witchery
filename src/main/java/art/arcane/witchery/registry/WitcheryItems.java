@@ -13,6 +13,7 @@ import art.arcane.witchery.item.ArthanaItem;
 import art.arcane.witchery.item.BolineItem;
 import art.arcane.witchery.item.BroomItem;
 import art.arcane.witchery.item.CaneSwordItem;
+import art.arcane.witchery.item.HandBowItem;
 import art.arcane.witchery.item.DemonHeartItem;
 import art.arcane.witchery.item.DeathProtectionPoppetItem;
 import art.arcane.witchery.item.DrinkableBrewItem;
@@ -108,7 +109,7 @@ public final class WitcheryItems {
             registerLegacySpawnEgg(legacyName);
         }
         // Older port saves can contain placeholder spawn eggs for these projectiles.
-        for (String name : List.of("soulfire_spawn_egg", "spelleffect_spawn_egg", "grenade_spawn_egg")) {
+        for (String name : List.of("soulfire_spawn_egg", "spelleffect_spawn_egg", "grenade_spawn_egg", "bolt_spawn_egg")) {
             LEGACY_SPAWN_EGGS.put(name, ITEMS.register(name, () -> new Item(new Item.Properties())));
         }
         ITEMS.register("broom_spawn_egg", () -> new BroomItem(true));
@@ -176,6 +177,7 @@ public final class WitcheryItems {
             case "taglockkit" -> new TaglockItem();
             case "coffin" -> createBlockItem("coffinblock");
             case "canesword" -> new CaneSwordItem();
+            case "handbow" -> new HandBowItem();
             case "silversword" -> new SwordItem(Tiers.GOLD, 4, -2.4F, new Item.Properties()) {
                 @Override
                 public int getEnchantmentValue() {

@@ -1,6 +1,10 @@
 {
-   "parent" : "minecraft:item/generated",
-   "textures" : {
-      "layer0" : "witchery:item/handbow"
-   }
+  "loader": "forge:separate_transforms",
+  "textures": {"particle": "witchery:item/handbow"},
+  "base": {"parent": "witchery:item/handbow_in_hand"},
+  "perspectives": {
+    "gui": {"parent": "witchery:item/handbow_icon"},
+    "ground": {"parent": "witchery:item/handbow_icon"},
+    "fixed": {"parent": "witchery:item/handbow_icon"}
+  }
 }

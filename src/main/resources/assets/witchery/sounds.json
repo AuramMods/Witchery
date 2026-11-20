@@ -23,6 +23,14 @@
     "subtitle": "subtitles.witchery.hypnosis",
     "sounds": ["witchery:random/hypnosis"]
   },
+  "random.click": {
+    "subtitle": "subtitles.witchery.handbow_click",
+    "sounds": ["witchery:random/click"]
+  },
+  "random.wind_up": {
+    "subtitle": "subtitles.witchery.handbow_load",
+    "sounds": ["witchery:random/wind_up"]
+  },
   "mob.lilith.say": {
     "subtitle": "subtitles.witchery.lilith.ambient",
     "sounds": ["witchery:mob/lilith/say1", "witchery:mob/lilith/say2", "witchery:mob/lilith/say3", "witchery:mob/lilith/say4", "witchery:mob/lilith/say5"]

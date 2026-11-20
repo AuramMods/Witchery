@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "B": {
+      "item": "witchery:stake_bolt"
+    },
+    "S": {
+      "item": "witchery:silver_dust"
+    }
+  },
+  "pattern": [
+    " S ",
+    "BBB"
+  ],
+  "result": {
+    "count": 3,
+    "item": "witchery:silver_bolt"
+  },
+  "show_notification": true
+}

@@ -43,6 +43,15 @@ public final class InfusionEnergy {
         return true;
     }
 
+    public static void drain(ServerPlayer player, float fraction) {
+        CompoundTag infusion = data(player);
+        int current = infusion.getInt(CHARGE);
+        int capacity = infusion.getInt(CAPACITY);
+        if (current <= 0 || capacity <= 0) return;
+        infusion.putInt(CHARGE, Math.max(0, current - Math.max(1, (int) (capacity * fraction))));
+        sync(player, infusion);
+    }
+
     public static boolean spend(ServerPlayer player, int cost) {
         if (!canSpend(player, cost)) return false;
         if (!player.getAbilities().instabuild) {

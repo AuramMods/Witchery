@@ -9,6 +9,7 @@ import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.entity.VillageGuard;
 import art.arcane.witchery.entity.VillageGuardRecruitment;
+import art.arcane.witchery.entity.WitcheryBolt;
 import art.arcane.witchery.infusion.CreaturePower;
 import art.arcane.witchery.infusion.InfernalInfusion;
 import art.arcane.witchery.infusion.InfusionEnergy;
@@ -351,6 +352,9 @@ public final class WitcheryEventHooks {
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void onPlayerHurt(LivingHurtEvent event) {
+        if (event.getSource().getDirectEntity() instanceof WitcheryBolt bolt) {
+            event.setAmount(bolt.modifyDamage(event.getEntity(), event.getAmount()));
+        }
         if (event.getAmount() >= 1 && BloodFeeding.paralysis(event.getEntity(), 4)) {
             event.getEntity().removeEffect(WitcheryEffects.PARALYSIS.get());
         }

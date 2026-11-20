@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "B": {
+      "item": "witchery:stake_bolt"
+    },
+    "F": {
+      "item": "minecraft:feather"
+    },
+    "S": {
+      "item": "minecraft:string"
+    }
+  },
+  "pattern": [
+    " S ",
+    "BBB",
+    " F "
+  ],
+  "result": {
+    "item": "witchery:splitting_bolt"
+  },
+  "show_notification": true
+}

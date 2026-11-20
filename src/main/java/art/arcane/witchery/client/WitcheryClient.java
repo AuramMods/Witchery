@@ -41,6 +41,7 @@ import art.arcane.witchery.client.renderer.BloodCrucibleRenderer;
 import art.arcane.witchery.client.renderer.SilverVatRenderer;
 import art.arcane.witchery.client.renderer.VampireRenderer;
 import art.arcane.witchery.client.renderer.VillageGuardRenderer;
+import art.arcane.witchery.client.renderer.WitcheryBoltRenderer;
 import art.arcane.witchery.client.renderer.GrassperRenderer;
 import art.arcane.witchery.client.renderer.ImpRenderer;
 import art.arcane.witchery.client.renderer.KettleRenderer;
@@ -189,6 +190,7 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.IMP.get(), ImpRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.LORD_OF_TORMENT.get(), LordOfTormentRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SOULFIRE.get(), ThrownItemRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.BOLT.get(), WitcheryBoltRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SYMBOL_PROJECTILE.get(), SymbolProjectileRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.DARK_MARK.get(), DarkMarkRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.WITCH_CAT.get(), CatRenderer::new);

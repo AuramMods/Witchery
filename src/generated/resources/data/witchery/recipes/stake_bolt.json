@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "F": {
+      "item": "minecraft:feather"
+    },
+    "S": {
+      "item": "minecraft:string"
+    },
+    "W": {
+      "tag": "forge:rods/wooden"
+    }
+  },
+  "pattern": [
+    " S ",
+    "WWW",
+    "FFF"
+  ],
+  "result": {
+    "count": 9,
+    "item": "witchery:stake_bolt"
+  },
+  "show_notification": true
+}

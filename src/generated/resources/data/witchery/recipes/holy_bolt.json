@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "A": {
+      "item": "witchery:stake_bolt"
+    },
+    "B": {
+      "item": "minecraft:bone"
+    },
+    "T": {
+      "item": "minecraft:ghast_tear"
+    }
+  },
+  "pattern": [
+    "ABA",
+    "ATA",
+    "ABA"
+  ],
+  "result": {
+    "count": 12,
+    "item": "witchery:holy_bolt"
+  },
+  "show_notification": true
+}

@@ -440,6 +440,14 @@
 - [x] Restore general village defense. In a settlement anchored by a villager's claimed bed, a guard ignored a neutral wolf and then shot it after it killed another villager. With hostile gossip on the observer's account, the guard acquired that player as a target. Two muted clients also verified that the guard sided with a trusted player in a melee exchange. GameTests checked that ordinary aggressors stay in village memory for 300 ticks and that villagers are immune to a guard's stray arrows.
 - [x] Restart the dedicated server and check the same guard's UUID and renewed pursuit from the resident's saved hostile gossip. Java 17 data generation, JAR reobfuscation and all 209 required Forge GameTests passed.
 
+## Witch Hunter's Crossbow (2026-11-20)
+
+- [x] Restore crafting for the crossbow, all five kinds of ammunition and the Null Catalyst. A muted survival client used the original patterns to craft the crossbow and nine Wooden Bolts.
+- [x] Verify crouch loading, ammunition selection and the original model. The client loaded one Wooden Bolt, fired it into a wall, then switched between wooden, anti-magic, holy and splitting ammunition. Switching returned the previous bolt. The three splitting trajectories struck different blocks on the same wall. Each use cost two durability.
+- [x] Preserve the chambered and preferred bolt through a dedicated restart. A chambered Silver Bolt and one already lodged in a wall both survived. The client recovered that projectile as a Silver Bolt. GameTests also covered legacy item metadata, the holy damage bonus and the powered anti-magic dispel.
+- [x] Verify the optional silver-ingot recipe with a temporary `forge:ingots/silver` fixture. The recipe became available when the tag was supplied, and the client crafted six silver bolts with one tagged ingot and six wooden bolts. Java 17 data generation, JAR reobfuscation and all 213 required Forge GameTests passed.
+- [ ] Restore Witch Hunter clothing and the full-set trigger for powered Anti-Magic Bolts. Connect silver bolt damage to lycanthropy and restore the remaining protection interactions.
+
 ## Auram Pack Validation (2026-11-20)
 
 - [x] Reproduce the Evolved Mekanism 1.2.1-fix3 startup crash in the matched Auram profile before adding Witchery. Both pack runs reported the null `QIODriveTier` during Evolved Mekanism construction.

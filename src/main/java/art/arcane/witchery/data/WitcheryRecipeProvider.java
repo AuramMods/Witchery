@@ -163,6 +163,7 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .pattern(" CG").pattern("CDC").pattern("CC ")
                 .unlockedBy("has_dark_cloth", has(WitcheryIngredient.DARK_CLOTH.item()))
                 .save(recipeOutput);
+        handBowRecipes(recipeOutput);
         ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, WitcheryBlocks.getRequired("garlicgarland").get())
                 .define('G', GARLIC_CROPS).define('S', Items.STRING)
                 .pattern("S S").pattern("GSG").pattern("GGG")
@@ -406,6 +407,43 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .requires(WitcheryIngredient.CLAY_JAR.item(), 3)
                 .unlockedBy("has_odour_of_purity", has(WitcheryIngredient.ODOUR_OF_PURITY.item()))
                 .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "purified_milk_from_cake"));
+    }
+
+    private static void handBowRecipes(Consumer<FinishedRecipe> output) {
+        Item stake = WitcheryIngredient.STAKE_BOLT.item();
+        Item holy = WitcheryIngredient.HOLY_BOLT.item();
+        Item catalyst = WitcheryIngredient.NULL_CATALYST.item();
+        Item silver = WitcheryIngredient.SILVER_DUST.item();
+        Item needle = WitcheryIngredient.BONE_NEEDLE.item();
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, WitcheryItems.getRequired("handbow").get())
+                .define('I', Items.IRON_INGOT).define('B', Items.BOW).define('S', Items.STRING)
+                .define('W', WOODEN_RODS).define('N', needle)
+                .pattern("IBI").pattern("SWN").pattern(" I ")
+                .unlockedBy("has_bone_needle", has(needle)).save(output);
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, stake, 9)
+                .define('S', Items.STRING).define('W', WOODEN_RODS).define('F', Items.FEATHER)
+                .pattern(" S ").pattern("WWW").pattern("FFF")
+                .unlockedBy("has_feather", has(Items.FEATHER)).save(output);
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, WitcheryIngredient.SPLITTING_BOLT.item())
+                .define('S', Items.STRING).define('B', stake).define('F', Items.FEATHER)
+                .pattern(" S ").pattern("BBB").pattern(" F ")
+                .unlockedBy("has_stake_bolt", has(stake)).save(output);
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, holy, 12)
+                .define('A', stake).define('B', Items.BONE).define('T', Items.GHAST_TEAR)
+                .pattern("ABA").pattern("ATA").pattern("ABA")
+                .unlockedBy("has_stake_bolt", has(stake)).save(output);
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, catalyst, 2)
+                .requires(Items.NETHER_STAR).requires(Items.DIAMOND).requires(Items.FLINT).requires(Items.MAGMA_CREAM, 6)
+                .unlockedBy("has_nether_star", has(Items.NETHER_STAR)).save(output);
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, catalyst, 2)
+                .requires(catalyst).requires(Items.MAGMA_CREAM).requires(Items.BLAZE_POWDER)
+                .unlockedBy("has_null_catalyst", has(catalyst)).save(output, "witchery:null_catalyst_amplification");
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.COMBAT, WitcheryIngredient.ANTI_MAGIC_BOLT.item(), 3)
+                .requires(catalyst).requires(WitcheryIngredient.BELLADONNA_FLOWER.item(), 2).requires(holy, 3)
+                .unlockedBy("has_null_catalyst", has(catalyst)).save(output);
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, WitcheryIngredient.SILVER_BOLT.item(), 3)
+                .define('S', silver).define('B', stake).pattern(" S ").pattern("BBB")
+                .unlockedBy("has_silver_dust", has(silver)).save(output);
     }
 
     private static ShapedRecipeBuilder vampireClothing(Style style) {

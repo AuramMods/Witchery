@@ -23,6 +23,7 @@ import art.arcane.witchery.entity.SymbolProjectile;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.entity.Vampire;
 import art.arcane.witchery.entity.VillageGuard;
+import art.arcane.witchery.entity.WitcheryBolt;
 import art.arcane.witchery.entity.WitchBroom;
 import art.arcane.witchery.entity.WitchCat;
 import art.arcane.witchery.entity.WitchOwl;
@@ -73,6 +74,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<Soulfire>> SOULFIRE =
             ENTITY_TYPES.register("soulfire", () -> EntityType.Builder.<Soulfire>of(Soulfire::new, MobCategory.MISC)
                     .sized(0.3125F, 0.3125F).fireImmune().clientTrackingRange(4).updateInterval(3).build(Witchery.MODID + ":soulfire"));
+    public static final RegistryObject<EntityType<WitcheryBolt>> BOLT =
+            ENTITY_TYPES.register("bolt", () -> EntityType.Builder.<WitcheryBolt>of(WitcheryBolt::new, MobCategory.MISC)
+                    .sized(0.5F, 0.5F).clientTrackingRange(4).updateInterval(3).build(Witchery.MODID + ":bolt"));
     public static final RegistryObject<EntityType<WitchCat>> WITCH_CAT =
             ENTITY_TYPES.register("cat", () -> EntityType.Builder.<WitchCat>of(WitchCat::new, MobCategory.CREATURE)
                     .sized(0.6F, 0.7F).clientTrackingRange(8).build(Witchery.MODID + ":cat"));
@@ -170,7 +174,7 @@ public final class WitcheryEntities {
     private static void registerLegacyEntity(String legacyName) {
         String path = RegistryNameUtil.normalizePath(legacyName);
         if (LEGACY_ENTITIES.containsKey(path) || path.equals("soulfire") || path.equals("spelleffect") || path.equals("broom")
-                || path.equals("item") || path.equals("eye") || path.equals("grenade")) {
+                || path.equals("item") || path.equals("eye") || path.equals("grenade") || path.equals("bolt")) {
             return;
         }
 
