@@ -116,10 +116,15 @@ public enum WitcheryIngredient {
         ItemStack stack = ItemStack.of(stackTag);
         if (!stack.isEmpty() && "witchery:poppet".equals(stackTag.getString("id"))) {
             String poppet = switch (stackTag.getInt("Damage")) {
+                case 1 -> "earth_protection_poppet";
+                case 2 -> "water_protection_poppet";
                 case 3 -> "fire_protection_poppet";
+                case 4 -> "hunger_protection_poppet";
+                case 5 -> "tool_protection_poppet";
                 case 6 -> "death_protection_poppet";
                 case 7 -> "voodoo_protection_poppet";
                 case 8 -> "voodoo_poppet";
+                case 11 -> "armor_protection_poppet";
                 default -> null;
             };
             if (poppet == null) return stack;

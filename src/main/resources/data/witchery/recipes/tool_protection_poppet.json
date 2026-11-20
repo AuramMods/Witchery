@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " a ",
+    "bPb",
+    " a "
+  ],
+  "key": {
+    "P": {
+      "item": "witchery:poppet"
+    },
+    "a": {
+      "item": "witchery:reek_of_misfortune"
+    },
+    "b": {
+      "item": "witchery:drop_of_luck"
+    }
+  },
+  "result": {
+    "item": "witchery:tool_protection_poppet"
+  }
+}

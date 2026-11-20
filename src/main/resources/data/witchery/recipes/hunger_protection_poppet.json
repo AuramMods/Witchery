@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " a ",
+    "bPb",
+    " a "
+  ],
+  "key": {
+    "P": {
+      "item": "witchery:poppet"
+    },
+    "a": {
+      "item": "minecraft:rotten_flesh"
+    },
+    "b": {
+      "item": "minecraft:glistering_melon_slice"
+    }
+  },
+  "result": {
+    "item": "witchery:hunger_protection_poppet"
+  }
+}

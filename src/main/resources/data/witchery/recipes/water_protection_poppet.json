@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " a ",
+    "bPb",
+    " a "
+  ],
+  "key": {
+    "P": {
+      "item": "witchery:poppet"
+    },
+    "a": {
+      "item": "witchery:globe_artichoke"
+    },
+    "b": {
+      "item": "minecraft:ink_sac"
+    }
+  },
+  "result": {
+    "item": "witchery:water_protection_poppet"
+  }
+}

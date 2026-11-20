@@ -702,17 +702,17 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | Meta | Key | Display Name |
 |---:|---|---|
 | 0 | `poppet` | Poppet |
-| 1 | `protectEarth` | Earth Protection Poppet |
-| 2 | `protectWater` | Water Protection Poppet |
+| 1 | `protectEarth` | Earth Protection Poppet → `witchery:earth_protection_poppet` |
+| 2 | `protectWater` | Water Protection Poppet → `witchery:water_protection_poppet` |
 | 3 | `protectFire` | Fire Protection Poppet → `witchery:fire_protection_poppet` |
-| 4 | `protectStarvation` | Hunger Protection Poppet |
-| 5 | `protectTool` | Tool Protection Poppet |
+| 4 | `protectStarvation` | Hunger Protection Poppet → `witchery:hunger_protection_poppet` |
+| 5 | `protectTool` | Tool Protection Poppet → `witchery:tool_protection_poppet` |
 | 6 | `protectDeath` | Death Protection Poppet → `witchery:death_protection_poppet` |
 | 7 | `protectVoodoo` | Voodoo Protection Poppet → `witchery:voodoo_protection_poppet` |
 | 8 | `voodoo` | Voodoo Poppet → `witchery:voodoo_poppet` |
 | 9 | `vampiric` | Vampiric Poppet |
 | 10 | `protectPoppet` | Poppet Protection |
-| 11 | `protectArmor` | Armor Protection Poppet |
+| 11 | `protectArmor` | Armor Protection Poppet → `witchery:armor_protection_poppet` |
 
 ## Fluids
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/WitcheryFluids.java`

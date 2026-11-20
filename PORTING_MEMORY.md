@@ -128,6 +128,12 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - All 68 required Forge GameTests passed, and data generation and JAR reobfuscation succeeded. GameTests covered the legacy shelf name and ward metadata, inventory priority, the comparator, automation's poppet filter and ticket removal.
 - A real Voodoo cast reflected from the remote shelf and added 350 wear to both dolls. The client mined and recovered the shelf and the worn ward. The chunk unloaded when the player left. The final packaged restart verified that startup retains the valid shelf's ticket and prunes a stale same-chunk ticket injected into the disposable world's `chunks.dat`.
 
+### Specialized Protection Poppets (2026-11-20)
+
+- Restore legacy Earth (1), Water (2), Hunger (4), Tool (5) and Armor (11) poppet variants, original shaped recipes and single-Taglock binding. They work in player inventory and on shelves, with inventory first. Earth protects from lethal falls and falling blocks without healing. Water protects from lethal drowning and adds three seconds of Water Breathing. Hunger protects when starvation would leave two health or less and adds three seconds of Saturation. The Death ward's fallback effects last six seconds.
+- Tool repair runs on player interaction, and armor repair runs on injury. Eligible equipment at the original 90% wear threshold gets a full repair. A bound ward is consumed when used. All 72 required Forge GameTests passed, and data generation and reobfuscation succeeded.
+- The muted survival client crafted and personally Taglock-bound the Earth ward. The test supplied already-bound Water, Hunger, Tool and Armor wards. Dedicated damage commands verified unhealed Earth protection, Water Breathing and Saturation. A real stone block break brought a pickaxe from 235 wear to one, and an incoming hit brought an iron chestplate from 222 wear to zero. A full dedicated restart kept both repairs and the equipment wards remained consumed.
+
 ## Session Memory (2026-02-08)
 - Port target is Forge 1.20.1.
 - Legacy source is fully available at `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10`.

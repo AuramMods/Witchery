@@ -10,6 +10,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
@@ -21,7 +22,11 @@ public class BoundPoppetItem extends Item {
     private static final String DAMAGE = "WITCDamage";
 
     public BoundPoppetItem() {
-        super(new Properties().stacksTo(1));
+        this(Rarity.UNCOMMON);
+    }
+
+    protected BoundPoppetItem(Rarity rarity) {
+        super(new Properties().stacksTo(1).rarity(rarity));
     }
 
     public static boolean isPoppet(ItemStack stack) {

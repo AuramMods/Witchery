@@ -20,7 +20,12 @@ import java.util.function.Supplier;
 public final class TaglockBindingRecipe extends CustomRecipe {
     public enum Binding {
         OWNERSHIP(WitcheryIngredient.CONTRACT_OF_OWNERSHIP::item, () -> WitcheryRecipes.SIGN_OWNERSHIP_CONTRACT.get()),
+        EARTH_POPPET(() -> WitcheryItems.getRequired("earth_protection_poppet").get(), () -> WitcheryRecipes.BIND_EARTH_POPPET.get()),
+        WATER_POPPET(() -> WitcheryItems.getRequired("water_protection_poppet").get(), () -> WitcheryRecipes.BIND_WATER_POPPET.get()),
         FIRE_POPPET(() -> WitcheryItems.getRequired("fire_protection_poppet").get(), () -> WitcheryRecipes.BIND_FIRE_POPPET.get()),
+        HUNGER_POPPET(() -> WitcheryItems.getRequired("hunger_protection_poppet").get(), () -> WitcheryRecipes.BIND_HUNGER_POPPET.get()),
+        TOOL_POPPET(() -> WitcheryItems.getRequired("tool_protection_poppet").get(), () -> WitcheryRecipes.BIND_TOOL_POPPET.get()),
+        ARMOR_POPPET(() -> WitcheryItems.getRequired("armor_protection_poppet").get(), () -> WitcheryRecipes.BIND_ARMOR_POPPET.get()),
         DEATH_POPPET(() -> WitcheryItems.getRequired("death_protection_poppet").get(), () -> WitcheryRecipes.BIND_DEATH_POPPET.get()),
         VOODOO_POPPET(() -> WitcheryItems.getRequired("voodoo_poppet").get(), () -> WitcheryRecipes.BIND_VOODOO_POPPET.get()),
         VOODOO_PROTECTION(() -> WitcheryItems.getRequired("voodoo_protection_poppet").get(), () -> WitcheryRecipes.BIND_VOODOO_PROTECTION.get());

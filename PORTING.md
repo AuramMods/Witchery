@@ -121,7 +121,7 @@
 - [x] Restore the Light and Otherwhere infusion recipes.
 - [x] Restore the infusion charge HUD and the Witch's Hand drop.
 - [x] Restore the Poppet Shelf.
-- [ ] Restore the remaining types of poppets.
+- [ ] Restore the Vampiric Poppet and Poppet Protection.
 
 ## Infernal Infusion and Voodoo Poppets (2026-11-19)
 
@@ -187,6 +187,14 @@
 - [x] Use Forge ticking tickets to keep shelves available at a distance. A shelf 480 blocks away consumed its Fire Protection Poppet to absorb lethal fire. After a dedicated restart, the same shelf and its two remaining wards were available before any player logged in. Its Death Protection Poppet absorbed lethal damage while the owner was in the Nether.
 - [x] Keep the original dimension restriction by default. Restore legacy inventory and owner data. The 68 required Forge GameTests covered the recipe, legacy ward subtype, inventory priority, comparator and ticket removal. Java 17 data generation and reobfuscation succeeded.
 - [x] Cast with a Voodoo Poppet in the muted client and verify that the remote ward reflected it. Both poppets took 350 wear. The survival client broke the shelf with an axe, collected the shelf and the worn ward, and the chunk unloaded after the player left. A packaged restart retained a real shelf ticket and removed an injected stale ticket at an empty location.
+
+## Specialized Protection Poppets (2026-11-20)
+
+- [x] Restore crafting, models and Taglock binding for Earth, Water, Hunger, Tool, and Armor Protection Poppets. Their legacy metadata loads into the corresponding modern items.
+- [x] Restore lethal falling and falling-block protection without healing, lethal drowning protection with Water Breathing, and Hunger protection at two remaining health with Saturation. The Death Protection Poppet supplies its longer matching effect when no specialized ward is available.
+- [x] Restore tools and armor to full durability at 90% wear using the matching bound ward. The Forge tests verify that lower wear preserves the ward. All 72 required Forge GameTests passed, and Java 17 data generation and JAR reobfuscation succeeded.
+- [x] The muted survival client crafted Earth Protection, collected its own Taglock at the bed, and bound the ward. A lethal fall damage test consumed it and preserved six health. Water raised six health to ten and added Water Breathing. Hunger raised three health to ten and added Saturation after a starvation hit. Using a worn pickaxe repaired it before the mined block added one wear. An injury repaired the worn chestplate.
+- [x] A dedicated restart retained the repaired pickaxe and chestplate. The spent Tool and Armor wards stayed gone.
 
 ## Auram Pack Validation (2026-11-20)
 

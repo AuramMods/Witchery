@@ -69,6 +69,11 @@ public final class WitcheryItems {
             registerLegacyItem(legacyName);
         }
         registerLegacyItem("fire_protection_poppet");
+        registerLegacyItem("earth_protection_poppet");
+        registerLegacyItem("water_protection_poppet");
+        registerLegacyItem("hunger_protection_poppet");
+        registerLegacyItem("tool_protection_poppet");
+        registerLegacyItem("armor_protection_poppet");
         registerLegacyItem("death_protection_poppet");
         registerLegacyItem("voodoo_poppet");
         registerLegacyItem("voodoo_protection_poppet");
@@ -170,7 +175,8 @@ public final class WitcheryItems {
             case "brew_of_soul_torment" -> new DrinkableBrewItem(SpellKnowledge.TORMENTUM::learn);
             case "contract_of_ownership" -> new OwnershipContractItem();
             case "contract_of_torment" -> new TormentContractItem();
-            case "fire_protection_poppet" -> new BoundPoppetItem();
+            case "fire_protection_poppet", "earth_protection_poppet", "water_protection_poppet",
+                    "hunger_protection_poppet", "tool_protection_poppet", "armor_protection_poppet" -> new BoundPoppetItem();
             case "death_protection_poppet" -> new DeathProtectionPoppetItem();
             case "voodoo_poppet" -> new VoodooPoppetItem();
             case "voodoo_protection_poppet" -> new BoundPoppetItem();

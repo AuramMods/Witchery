@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " a ",
+    "bPb",
+    " c "
+  ],
+  "key": {
+    "P": {
+      "item": "witchery:poppet"
+    },
+    "a": {
+      "item": "minecraft:clay_ball"
+    },
+    "b": {
+      "item": "minecraft:feather"
+    },
+    "c": {
+      "item": "minecraft:dirt"
+    }
+  },
+  "result": {
+    "item": "witchery:earth_protection_poppet"
+  }
+}

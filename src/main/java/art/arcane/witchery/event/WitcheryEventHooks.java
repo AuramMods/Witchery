@@ -224,7 +224,13 @@ public final class WitcheryEventHooks {
                 if (power != null) power.hurt(player, event);
             }
             if (!event.isCanceled()) FamiliarBinding.shareDamage(player, event);
+            DeathProtectionPoppetItem.repairArmor(player);
         }
+    }
+
+    @SubscribeEvent
+    public static void repairHeldTool(PlayerInteractEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) DeathProtectionPoppetItem.repairHeldTool(player);
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)

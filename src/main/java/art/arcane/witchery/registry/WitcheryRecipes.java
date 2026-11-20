@@ -73,6 +73,16 @@ public final class WitcheryRecipes {
     public static final RegistryObject<RecipeSerializer<TaglockBindingRecipe>> BIND_FIRE_POPPET =
             SERIALIZERS.register("bind_fire_protection_poppet", () -> new SimpleCraftingRecipeSerializer<>(
                     (id, category) -> new TaglockBindingRecipe(id, category, TaglockBindingRecipe.Binding.FIRE_POPPET)));
+    public static final RegistryObject<RecipeSerializer<TaglockBindingRecipe>> BIND_EARTH_POPPET =
+            registerWardBinding("earth", TaglockBindingRecipe.Binding.EARTH_POPPET);
+    public static final RegistryObject<RecipeSerializer<TaglockBindingRecipe>> BIND_WATER_POPPET =
+            registerWardBinding("water", TaglockBindingRecipe.Binding.WATER_POPPET);
+    public static final RegistryObject<RecipeSerializer<TaglockBindingRecipe>> BIND_HUNGER_POPPET =
+            registerWardBinding("hunger", TaglockBindingRecipe.Binding.HUNGER_POPPET);
+    public static final RegistryObject<RecipeSerializer<TaglockBindingRecipe>> BIND_TOOL_POPPET =
+            registerWardBinding("tool", TaglockBindingRecipe.Binding.TOOL_POPPET);
+    public static final RegistryObject<RecipeSerializer<TaglockBindingRecipe>> BIND_ARMOR_POPPET =
+            registerWardBinding("armor", TaglockBindingRecipe.Binding.ARMOR_POPPET);
     public static final RegistryObject<RecipeSerializer<TaglockBindingRecipe>> BIND_DEATH_POPPET =
             SERIALIZERS.register("bind_death_protection_poppet", () -> new SimpleCraftingRecipeSerializer<>(
                     (id, category) -> new TaglockBindingRecipe(id, category, TaglockBindingRecipe.Binding.DEATH_POPPET)));
@@ -84,6 +94,11 @@ public final class WitcheryRecipes {
                     (id, category) -> new TaglockBindingRecipe(id, category, TaglockBindingRecipe.Binding.VOODOO_PROTECTION)));
 
     private WitcheryRecipes() {
+    }
+
+    private static RegistryObject<RecipeSerializer<TaglockBindingRecipe>> registerWardBinding(String name, TaglockBindingRecipe.Binding binding) {
+        return SERIALIZERS.register("bind_" + name + "_protection_poppet", () -> new SimpleCraftingRecipeSerializer<>(
+                (id, category) -> new TaglockBindingRecipe(id, category, binding)));
     }
 
     public static void register(IEventBus bus) {
