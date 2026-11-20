@@ -47,6 +47,7 @@ public enum WitcheryIngredient {
     SPIRIT_OF_OTHERWHERE(44, "spirit_of_otherwhere"),
     INFERNAL_ANIMUS(45, "infernal_animus"),
     ODD_PORKCHOP_RAW(50, "odd_porkchop_raw"),
+    ROCK(55, "rock"),
     BREW_OF_INK(60, "brew_of_ink"),
     ROWAN_BERRIES(63, "rowan_berries"),
     NECROMANTIC_STONE(64, "necromantic_stone"),

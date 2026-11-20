@@ -3,6 +3,7 @@ package art.arcane.witchery.item;
 import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.infusion.LightInfusion;
 import art.arcane.witchery.infusion.OtherwhereInfusion;
+import art.arcane.witchery.infusion.OverworldInfusion;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -41,6 +42,7 @@ public final class WitchHandItem extends Item {
             int elapsed = USE_TICKS - remaining;
             switch (InfusionEnergy.type(player)) {
                 case LightInfusion.ID -> LightInfusion.channel(player, elapsed);
+                case OverworldInfusion.ID -> OverworldInfusion.channel(player, elapsed);
                 case OtherwhereInfusion.ID -> OtherwhereInfusion.channel(player, elapsed);
             }
         }
@@ -54,6 +56,7 @@ public final class WitchHandItem extends Item {
         int elapsed = USE_TICKS - remaining;
         switch (InfusionEnergy.type(player)) {
             case LightInfusion.ID -> LightInfusion.release(player, elapsed);
+            case OverworldInfusion.ID -> OverworldInfusion.release(player, elapsed);
             case OtherwhereInfusion.ID -> {
                 if (OtherwhereInfusion.release(player, elapsed)) {
                     stack.getOrCreateTag().putLong(COOLDOWN, System.currentTimeMillis() + TELEPORT_COOLDOWN_MILLIS);
@@ -72,6 +75,7 @@ public final class WitchHandItem extends Item {
         if (player instanceof ServerPlayer caster && target instanceof LivingEntity living) {
             switch (InfusionEnergy.type(caster)) {
                 case LightInfusion.ID -> LightInfusion.attack(caster, living);
+                case OverworldInfusion.ID -> OverworldInfusion.attack(caster, living);
                 case OtherwhereInfusion.ID -> OtherwhereInfusion.attack(caster, living);
             }
         }

@@ -6,6 +6,7 @@ import art.arcane.witchery.brewing.WakingNightmareEffect;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.infusion.InfusionEnergy;
+import art.arcane.witchery.infusion.OverworldInfusion;
 import art.arcane.witchery.item.DeathProtectionPoppetItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.network.WitcheryNetwork;
@@ -29,6 +30,7 @@ import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -152,9 +154,17 @@ public final class WitcheryEventHooks {
     }
 
     @SubscribeEvent
-    public static void onTormentTick(TickEvent.LevelTickEvent event) {
+    public static void onServerLevelTick(TickEvent.LevelTickEvent event) {
         if (event.phase == TickEvent.Phase.END && event.level instanceof ServerLevel level) {
             TormentTravel.tickEncounters(level);
+            OverworldInfusion.tick(level);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onLivingFall(LivingFallEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player && InfusionEnergy.type(player) == OverworldInfusion.ID) {
+            OverworldInfusion.fall(player, event);
         }
     }
 

@@ -120,7 +120,7 @@
 - [x] Restore the recharging rite with a standard Regeneration potion and upkeep of 40 altar power per second. The dedicated restart retained the active rite and the player's 180 charge outside the circle. The muted client reentered, reached the 200-charge cap, and stopped the rite at the heart.
 - [x] Restore the Light and Otherwhere infusion recipes.
 - [x] Restore the infusion charge HUD and the Witch's Hand drop.
-- [ ] Restore Overworld and Infernal Witch's Hand powers, the Poppet Shelf, and the remaining types of poppets.
+- [ ] Restore Infernal Witch's Hand powers, the Poppet Shelf, and the remaining types of poppets.
 
 ## Infernal Infusion and Voodoo Poppets (2026-11-19)
 
@@ -162,6 +162,19 @@
 - [x] Restore the Light shield, cage and side projections. A brief sneak-use draws a three-by-three shield, cages an aimed creature or projects a line from the face of a block. Attacking lifts a creature four blocks into a cage for five charge. Owner-aware collision uses the original barrier texture and loaded ten-second lifetime. Legacy `owner`, `blocksPlayers` and `remainingTicks` fields load into the current block entity.
 - [x] The muted client returned to Light using its second serving of Ghost of the Light and the rite. It held and released the Hand to cloak for two charge, walked through and rendered its own shield, raised a pig into the cage, caged another pig at its original elevation, and projected a 15-block line from a stone face. The shield expired in the loaded world.
 - [x] Java 17 data generation and reobfuscation succeeded. All 55 required Forge GameTests passed, including cloak charge and aggression, owner-specific collision, lifetime and preserving charge when a raised cage is obstructed.
+
+## Overworld Infusion Hand Powers (2026-11-20)
+
+- [x] Restore the soft-landing power, the sneaking impact explosion, metal disarming, repelling an armored target, and the channeled magnet. Preserve the original costs and prevent invalid movement when an item lines up with the caster along one axis.
+- [x] Restore single-ore conversion and channeled ore conversion through Forge's ore and ingot tags. Convert mined-in-place deepslate and Nether ore to their host stone. The regular hand controls can raise a supported column, launch a damaging rock from a block face or channel a staged shockwave. The moving terrain preserves block states and skips blocks with inventories or unbreakable blocks.
+- [x] Data generation and JAR reobfuscation succeeded with Java 17. All 60 required Forge GameTests passed, including real projectile damage, separate ore outputs, preserving charge on unsupported falls and the 1.7.10 rock metadata.
+- [x] In the muted packaged client, use the Overworld rite with the fixture's bottled offering and bound ward. Convert gold and iron ore and collect the ingots with the magnet. Disarm a zombie and push its chainmail with a sneak attack. A rock dealt six damage, a lifted column rose three blocks with its nearby chest intact, and a two-second shockwave dealt eight damage. A plain grass landing and a sneaking snow landing each preserved health.
+- [x] A dedicated restart retained infusion ID 2, 151 charge, the Witch's Hand, the raised terracotta and its adjacent chest.
+
+## Auram Pack Validation (2026-11-20)
+
+- [x] Reproduce the Evolved Mekanism 1.2.1-fix3 startup crash in the matched Auram profile before adding Witchery. Both pack runs reported the null `QIODriveTier` during Evolved Mekanism construction.
+- [ ] Verify the packaged port at the Auram title screen and in fresh survival after the pack can start.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.

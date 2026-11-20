@@ -13,6 +13,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
@@ -32,17 +33,25 @@ public final class ThrownBrew extends ThrowableItemProjectile {
 
     @Override
     protected float getGravity() {
-        return 0.05F;
+        return getItem().is(WitcheryIngredient.ROCK.item()) ? super.getGravity() : 0.05F;
     }
 
     @Override
     protected void onHit(HitResult hit) {
         super.onHit(hit);
         if (level() instanceof ServerLevel server) {
+            Vec3 impact = hit.getLocation();
+            if (getItem().is(WitcheryIngredient.ROCK.item())) {
+                if (hit instanceof EntityHitResult entity) {
+                    entity.getEntity().hurt(server.damageSources().thrown(this, getOwner()), 6);
+                }
+                server.sendParticles(ParticleTypes.POOF, impact.x, impact.y, impact.z, 8, 0.5, 0.5, 0.5, 0.05);
+                discard();
+                return;
+            }
             if (getItem().getItem() instanceof ThrowableBrewItem brew) {
                 brew.impact(this, hit);
             }
-            Vec3 impact = hit.getLocation();
             server.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, getItem()),
                     impact.x, impact.y, impact.z, 12, 0.2, 0.2, 0.2, 0.1);
             server.playSound(null, impact.x, impact.y, impact.z, SoundEvents.GLASS_BREAK, SoundSource.NEUTRAL, 1.0F, 1.0F);
