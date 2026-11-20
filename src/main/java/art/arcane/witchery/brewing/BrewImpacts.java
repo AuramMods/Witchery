@@ -1,6 +1,9 @@
 package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.entity.ThrownBrew;
+import art.arcane.witchery.registry.WitcheryBlocks;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -11,11 +14,16 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.BlockSnapshot;
+import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.living.BabyEntitySpawnEvent;
 
 import java.util.ArrayList;
@@ -63,6 +71,43 @@ public final class BrewImpacts {
         for (int pair = 0; pair < Math.min(10, villagers.size() / 2); pair++) {
             breedVillagers(level, villagers.get(pair * 2), villagers.get(pair * 2 + 1));
         }
+    }
+
+    public static void depositSpirit(ThrownBrew brew, HitResult hit) {
+        depositLiquid(brew, hit, "spiritflowing");
+    }
+
+    public static void depositHollowTears(ThrownBrew brew, HitResult hit) {
+        depositLiquid(brew, hit, "hollowtears");
+    }
+
+    private static void depositLiquid(ThrownBrew brew, HitResult hit, String block) {
+        if (!(brew.level() instanceof ServerLevel level)) {
+            return;
+        }
+        BlockPos pos;
+        Direction face;
+        if (hit instanceof BlockHitResult impact && hit.getType() == HitResult.Type.BLOCK) {
+            pos = impact.getBlockPos();
+            face = impact.getDirection();
+            if (face != Direction.UP || level.getBlockState(pos).blocksMotion()) {
+                pos = pos.relative(face);
+            }
+        } else if (hit instanceof EntityHitResult impact) {
+            pos = impact.getEntity().blockPosition();
+            face = Direction.UP;
+        } else {
+            return;
+        }
+        BlockState state = level.getBlockState(pos);
+        if (!level.isInWorldBounds(pos) || state.blocksMotion() || state.hasBlockEntity()
+                || brew.getOwner() instanceof Player player && !level.mayInteract(player, pos)) {
+            return;
+        }
+        if (brew.getOwner() != null && ForgeEventFactory.onBlockPlace(brew.getOwner(), BlockSnapshot.create(level.dimension(), level, pos), face)) {
+            return;
+        }
+        level.setBlockAndUpdate(pos, WitcheryBlocks.getRequired(block).get().defaultBlockState());
     }
 
     private static AABB splashBounds(ThrownBrew brew, Vec3 impact) {

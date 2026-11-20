@@ -1303,6 +1303,7 @@ Current scaffold behavior:
 - Forge event wiring observes both travel attempts and completed dimension transitions for Witchery dimensions.
 - `DreamTravel` handles Brew of Sleeping and waking in the server player tick. It records both inventories, health, hunger, the Overworld body coordinates and the nightmare flag under `PlayerPersisted.WITCSpiritWorld`, and retains `witchery:corpse` for the sleeping body.
 - `tormentportal` collision still uses the temporary server `PlayerTickEvent` route. Spirit portal manifestation is pending.
+- Brew of Flowing Spirit uses legacy ingredient damage 96. The Dream-only brewing restriction uses the `dimension` field on the kettle recipe and comes across both saves and synchronized recipes. Focused Will, Condensed Fear, and Brew of Hollow Tears use damage values 113–115.
 - portal collision routing is cooldown-gated via persistent player tags (`WITCLastPortalCollisionTick`, `WITCLastPortalCollisionTrigger`) to prevent rapid retriggers.
 - right-click scaffold trigger wiring is now focused on rite-like mirror blocks:
   - `mirrorblock`, `mirrorblock2`, `mirrorwall`, `circleglyphotherwhere` -> mirror route

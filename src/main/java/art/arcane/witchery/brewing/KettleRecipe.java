@@ -22,9 +22,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
-public record KettleRecipe(ResourceLocation id, List<Ingredient> ingredients, ItemStack result, int color, int power)
+public record KettleRecipe(ResourceLocation id, List<Ingredient> ingredients, ItemStack result, int color, int power,
+                           ResourceLocation dimension)
         implements Recipe<Container> {
     public static final int INGREDIENT_SLOTS = 6;
+
+    public boolean canBrewIn(Level level) {
+        return dimension == null || dimension.equals(level.dimension().location());
+    }
 
     public boolean matchesPartial(List<ItemStack> contents) {
         List<Predicate<ItemStack>> tests = ingredients.stream()
@@ -34,7 +39,7 @@ public record KettleRecipe(ResourceLocation id, List<Ingredient> ingredients, It
 
     @Override
     public boolean matches(Container container, Level level) {
-        if (container.getContainerSize() != INGREDIENT_SLOTS) {
+        if (container.getContainerSize() != INGREDIENT_SLOTS || !canBrewIn(level)) {
             return false;
         }
         List<ItemStack> contents = new ArrayList<>(INGREDIENT_SLOTS);
@@ -94,7 +99,9 @@ public record KettleRecipe(ResourceLocation id, List<Ingredient> ingredients, It
             }
             List<Ingredient> ingredients = new ArrayList<>(INGREDIENT_SLOTS);
             entries.forEach(entry -> ingredients.add(Ingredient.fromJson(entry, false)));
-            return new KettleRecipe(id, List.copyOf(ingredients), result, GsonHelper.getAsInt(json, "color"), power);
+            ResourceLocation dimension = json.has("dimension")
+                    ? new ResourceLocation(GsonHelper.getAsString(json, "dimension")) : null;
+            return new KettleRecipe(id, List.copyOf(ingredients), result, GsonHelper.getAsInt(json, "color"), power, dimension);
         }
 
         @Override
@@ -103,7 +110,8 @@ public record KettleRecipe(ResourceLocation id, List<Ingredient> ingredients, It
             for (int slot = 0; slot < INGREDIENT_SLOTS; slot++) {
                 ingredients.add(Ingredient.fromNetwork(buffer));
             }
-            return new KettleRecipe(id, List.copyOf(ingredients), buffer.readItem(), buffer.readInt(), buffer.readVarInt());
+            return new KettleRecipe(id, List.copyOf(ingredients), buffer.readItem(), buffer.readInt(), buffer.readVarInt(),
+                    buffer.readNullable(FriendlyByteBuf::readResourceLocation));
         }
 
         @Override
@@ -112,6 +120,7 @@ public record KettleRecipe(ResourceLocation id, List<Ingredient> ingredients, It
             buffer.writeItem(recipe.result);
             buffer.writeInt(recipe.color);
             buffer.writeVarInt(recipe.power);
+            buffer.writeNullable(recipe.dimension, FriendlyByteBuf::writeResourceLocation);
         }
     }
 }

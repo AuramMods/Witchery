@@ -126,6 +126,8 @@ public final class WitcheryItems {
             case "brew_of_love" -> new ThrowableBrewItem(BrewImpacts::splashLove);
             case "brew_of_the_depths" -> new DrinkableBrewItem(WitcheryEffects.DEPTHS, 6000, 0);
             case "brew_of_sleeping" -> new DrinkableBrewItem(DreamTravel::requestSleep);
+            case "brew_of_flowing_spirit" -> new ThrowableBrewItem(BrewImpacts::depositSpirit);
+            case "brew_of_hollow_tears" -> new ThrowableBrewItem(BrewImpacts::depositHollowTears);
             case "redstone_soup" -> new DrinkableBrewItem(() -> MobEffects.HEALTH_BOOST, 2400, 1);
             case "purified_milk" -> new DrinkableBrewItem(DrinkableBrewItem::purifyMilk);
             case "icy_needle" -> new IcyNeedleItem();

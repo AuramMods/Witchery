@@ -1,10 +1,12 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.registries.DeferredRegister;
@@ -14,6 +16,7 @@ import net.minecraftforge.registries.RegistryObject;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public final class WitcheryFluids {
     public record LegacyFluid(RegistryObject<FluidType> fluidType,
@@ -26,19 +29,21 @@ public final class WitcheryFluids {
     private record LegacyFluidConfig(int density,
                                      int viscosity,
                                      String blockPath,
-                                     String bucketPath) {
+                                     String bucketPath,
+                                     String stillTexture,
+                                     String flowingTexture) {
     }
 
     public static final DeferredRegister<FluidType> FLUID_TYPES = DeferredRegister.create(ForgeRegistries.Keys.FLUID_TYPES, Witchery.MODID);
     public static final DeferredRegister<net.minecraft.world.level.material.Fluid> FLUIDS = DeferredRegister.create(ForgeRegistries.FLUIDS, Witchery.MODID);
 
     private static final Map<String, LegacyFluidConfig> LEGACY_FLUID_CONFIGS = Map.of(
-            "fluidspirit", new LegacyFluidConfig(500, 2000, "spiritflowing", "bucketspirit"),
-            "hollowtears", new LegacyFluidConfig(100, 1500, "hollowtears", "buckethollowtears"),
-            "brew", new LegacyFluidConfig(100, 1500, "brew", "bucketbrew"),
-            "brewgas", new LegacyFluidConfig(1000, 1000, "brewgas", null),
-            "brewliquid", new LegacyFluidConfig(1000, 1000, "brewliquid", null),
-            "fluiddisease", new LegacyFluidConfig(50, 3000, "disease", null)
+            "fluidspirit", new LegacyFluidConfig(500, 2000, "spiritflowing", "bucketspirit", "flowspirit_still", "flowspirit_flow"),
+            "hollowtears", new LegacyFluidConfig(100, 1500, "hollowtears", "buckethollowtears", "tears_still", "tears_flow"),
+            "brew", new LegacyFluidConfig(100, 1500, "brew", "bucketbrew", "brew_still", "brew_flow"),
+            "brewgas", new LegacyFluidConfig(1000, 1000, "brewgas", null, "brewgas", "brewgas"),
+            "brewliquid", new LegacyFluidConfig(1000, 1000, "brewliquid", null, "brew_still", "brew_flow"),
+            "fluiddisease", new LegacyFluidConfig(50, 3000, "disease", null, "disease_still", "disease_flow")
     );
 
     public static final Map<String, LegacyFluid> LEGACY_FLUIDS = new LinkedHashMap<>();
@@ -93,8 +98,27 @@ public final class WitcheryFluids {
                 .density(config.density())
                 .viscosity(config.viscosity());
 
+        if (path.equals("fluidspirit") || path.equals("hollowtears")) {
+            fluidProperties.lightLevel(3);
+        }
+        ResourceLocation still = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "block/" + config.stillTexture());
+        ResourceLocation flow = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "block/" + config.flowingTexture());
         RegistryObject<FluidType> fluidType = FLUID_TYPES.register(path,
                 () -> new FluidType(fluidProperties) {
+                    @Override
+                    public void initializeClient(Consumer<IClientFluidTypeExtensions> consumer) {
+                        consumer.accept(new IClientFluidTypeExtensions() {
+                            @Override
+                            public ResourceLocation getStillTexture() {
+                                return still;
+                            }
+
+                            @Override
+                            public ResourceLocation getFlowingTexture() {
+                                return flow;
+                            }
+                        });
+                    }
                 });
 
         final ForgeFlowingFluid.Properties[] properties = new ForgeFlowingFluid.Properties[1];

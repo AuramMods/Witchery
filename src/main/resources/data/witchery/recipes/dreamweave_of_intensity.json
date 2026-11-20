@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "dxe",
+    "bab",
+    "cfc"
+  ],
+  "key": {
+    "a": {
+      "item": "minecraft:item_frame"
+    },
+    "b": {
+      "item": "witchery:fanciful_thread"
+    },
+    "c": {
+      "item": "minecraft:feather"
+    },
+    "d": {
+      "item": "witchery:brew_of_flowing_spirit"
+    },
+    "e": {
+      "item": "witchery:brew_of_sleeping"
+    },
+    "f": {
+      "item": "witchery:tormented_twine"
+    },
+    "x": {
+      "item": "witchery:diamond_vapour"
+    }
+  },
+  "result": {
+    "item": "witchery:dreamweave_of_intensity"
+  }
+}

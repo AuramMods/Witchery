@@ -9,6 +9,7 @@ import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.KettleBlock;
 import art.arcane.witchery.block.SomnianCottonBlock;
 import art.arcane.witchery.block.SpinningWheelBlock;
+import art.arcane.witchery.block.SpiritFluidBlock;
 import art.arcane.witchery.block.PlacedItemBlock;
 import art.arcane.witchery.block.RitualGlyphBlock;
 import art.arcane.witchery.block.RiteHeartBlock;
@@ -237,8 +238,8 @@ public final class WitcheryBlocks {
             case "circleglyphinfernal" -> new RitualGlyphBlock("chalkinfernal");
             case "spiritportal", "tormentportal", "mirrorwall" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.NETHER_PORTAL), SHAPE_PORTAL_CROSS, false);
-            case "spiritflowing" -> createLegacyFluidBlock("fluidspirit");
-            case "hollowtears" -> createLegacyFluidBlock("hollowtears");
+            case "spiritflowing" -> new SpiritFluidBlock(WitcheryFluids.getRequiredSource("fluidspirit"), spiritProperties(), true);
+            case "hollowtears" -> new SpiritFluidBlock(WitcheryFluids.getRequiredSource("hollowtears"), spiritProperties(), false);
             case "disease" -> createLegacyFluidBlock("fluiddisease");
             case "brew" -> createLegacyFluidBlock("brew");
             case "brewgas" -> createLegacyFluidBlock("brewgas");
@@ -273,6 +274,10 @@ public final class WitcheryBlocks {
                         .strength(100.0F)
                         .noCollission()
                         .noLootTable());
+    }
+
+    private static BlockBehaviour.Properties spiritProperties() {
+        return BlockBehaviour.Properties.copy(Blocks.WATER).strength(100.0F).noCollission().noLootTable().lightLevel(state -> 3);
     }
 
     private static final class LegacyNonSolidShapeBlock extends Block {

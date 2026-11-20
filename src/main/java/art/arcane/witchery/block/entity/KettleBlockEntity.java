@@ -92,7 +92,7 @@ public final class KettleBlockEntity extends BlockEntity {
             return;
         }
         KettleRecipe recipe = server.getRecipeManager().getAllRecipesFor(WitcheryRecipes.KETTLE.get()).stream()
-                .filter(candidate -> candidate.matchesPartial(ingredients))
+                .filter(candidate -> candidate.canBrewIn(server) && candidate.matchesPartial(ingredients))
                 .min((first, second) -> first.getId().compareTo(second.getId()))
                 .orElse(null);
         if (recipe == null) {

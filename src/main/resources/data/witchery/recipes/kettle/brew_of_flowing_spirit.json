@@ -1,0 +1,29 @@
+{
+  "type": "witchery:kettle",
+  "dimension": "witchery:dream",
+  "ingredients": [
+    {
+      "item": "witchery:fanciful_thread"
+    },
+    {
+      "item": "witchery:globe_artichoke"
+    },
+    {
+      "item": "witchery:mandrake_root"
+    },
+    {
+      "item": "witchery:spanishmoss"
+    },
+    {
+      "item": "witchery:glintweed"
+    },
+    {
+      "item": "witchery:bat_wool"
+    }
+  ],
+  "result": {
+    "item": "witchery:brew_of_flowing_spirit",
+    "count": 3
+  },
+  "color": -16711834
+}

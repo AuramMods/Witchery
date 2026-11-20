@@ -51,6 +51,7 @@ public enum WitcheryIngredient {
     BREW_OF_THE_DEPTHS(77, "brew_of_the_depths"),
     ICY_NEEDLE(78, "icy_needle"),
     BREW_OF_SLEEPING(95, "brew_of_sleeping"),
+    BREW_OF_FLOWING_SPIRIT(96, "brew_of_flowing_spirit"),
     DISTURBED_COTTON(99, "disturbed_cotton"),
     FANCIFUL_THREAD(100, "fanciful_thread"),
     TORMENTED_TWINE(101, "tormented_twine"),
@@ -60,6 +61,9 @@ public enum WitcheryIngredient {
     PURIFIED_MILK(105, "purified_milk"),
     CHARM_OF_DISRUPTED_DREAMS(110, "charm_of_disrupted_dreams"),
     WORMWOOD(111, "wormwood_leaf"),
+    FOCUSED_WILL(113, "focused_will"),
+    CONDENSED_FEAR(114, "condensed_fear"),
+    BREW_OF_HOLLOW_TEARS(115, "brew_of_hollow_tears"),
     ANOINTING_PASTE(153, "anointing_paste"),
     WOLFSBANE(156, "wolfsbane_flower");
 
