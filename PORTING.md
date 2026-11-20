@@ -212,6 +212,16 @@
 - [x] Package on Java 17 and pass all 80 required Forge GameTests. The tests cover harvesting, spawn distance, the 15-damage cap before the triple axe bonus, both drops, and legacy ownership.
 - [x] Restart the dedicated server and verify the saved branch, Alder Sapling variant and legacy Ent owner. The muted client offered the collected Ent Branch and Mystic Unguent inside two white rings at night, and the rite produced a Mystic Branch.
 
+## Mutating Sprig, Grassper and Critter Snare (2026-11-20)
+
+- [x] Brew the Mutating Sprig with an Ent Branch, nether wart, Mutandis Extremis and 1,800 altar power. The packaged survival client collected the cauldron output and used it on the original Grassper pattern, creating four plants from an empty chest surrounded by vines over a water source.
+- [x] Restore the grass and mycelium swap, the cross of clay from submerged dirt, and the cobweb mutation that uses four Alder Saplings and a zombie over a source of water. One use costs one durability. The muted client produced four Critter Snares and the zombie was consumed.
+- [x] Restore the Grassper's model, single item inventory, comparator and use as a ritual offering holder. The muted client placed and released an ingot, and inserting another produced comparator output 15. The new rite support uses the original five-block square and saves the Grassper position for refunds.
+- [x] Restore bat, silverfish, tiny slime and tiny magma cube capture and sneak-release. Captured state and the bat shop stock flag carry through block item drops and legacy metadata. The packaged server captured a moving bat and kept its stocked state.
+- [x] Save a live Mystic Branch rite after the first Grassper offering. The packaged restart emptied the second Grassper and completed the rite. A separate Grassper still held one ingot and emitted comparator output 15. The client released the bat from the restored snare, and the bat kept its shop stock flag.
+- [x] Pass all 84 required Forge GameTests and package the reobfuscated JAR on Java 17.
+- [ ] Restore the remaining Sprig mutations, including Owl and Toad creation, and the linked Witchery creatures and plants.
+
 ## Auram Pack Validation (2026-11-20)
 
 - [x] Reproduce the Evolved Mekanism 1.2.1-fix3 startup crash in the matched Auram profile before adding Witchery. Both pack runs reported the null `QIODriveTier` during Evolved Mekanism construction.

@@ -6,9 +6,11 @@ import art.arcane.witchery.block.PoppetShelfBlock;
 import art.arcane.witchery.block.AltarBlock;
 import art.arcane.witchery.block.CandelabraBlock;
 import art.arcane.witchery.block.ChaliceBlock;
+import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.DemonHeartBlock;
 import art.arcane.witchery.block.DistilleryBlock;
 import art.arcane.witchery.block.DreamCatcherBlock;
+import art.arcane.witchery.block.GrassperBlock;
 import art.arcane.witchery.block.KettleBlock;
 import art.arcane.witchery.block.MirrorBlock;
 import art.arcane.witchery.block.RefillingChestBlock;
@@ -78,7 +80,6 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_FLOWER_TALL = Block.box(0.8D, 0.0D, 0.8D, 15.2D, 16.0D, 15.2D);
     private static final VoxelShape SHAPE_FLOWER_LOW = Block.box(1.6D, 0.0D, 1.6D, 14.4D, 6.4D, 14.4D);
     private static final VoxelShape SHAPE_PAD_FLAT = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 0.5D, 16.0D);
-    private static final VoxelShape SHAPE_GRASSPER = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 8.16D, 16.0D);
     private static final VoxelShape SHAPE_FUNNEL = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
     private static final VoxelShape SHAPE_COFFIN = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 9.0D, 16.0D);
     private static final VoxelShape SHAPE_STATUE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 22.0D, 14.0D);
@@ -151,13 +152,14 @@ public final class WitcheryBlocks {
             case "shadedglass_active" -> new LegacyShadedGlassBlock(true);
             case "bloodrose" -> new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_SMALL, false);
             case "plantmine" -> new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_SMALL, true);
-            case "glintweed", "crittersnare", "bramble", "spanishmoss", "vine", "web" ->
+            case "glintweed", "bramble", "spanishmoss", "vine", "web" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_TALL, false);
+            case "crittersnare" -> new CritterSnareBlock();
             case "somniancotton" -> new SomnianCottonBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION).randomTicks());
             case "embermoss" -> new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_LOW, false);
             case "lilypad", "leapinglily" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.LILY_PAD), SHAPE_PAD_FLAT, false);
-            case "grassper" -> new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_GRASSPER, false);
+            case "grassper" -> new GrassperBlock();
             case "icedoor" -> new DoorBlock(BlockBehaviour.Properties.copy(Blocks.IRON_DOOR).noOcclusion(), BlockSetType.IRON);
             case "rowanwooddoor", "alderwooddoor", "cwoodendoor" ->
                     new DoorBlock(BlockBehaviour.Properties.copy(Blocks.OAK_DOOR).noOcclusion(), BlockSetType.OAK);

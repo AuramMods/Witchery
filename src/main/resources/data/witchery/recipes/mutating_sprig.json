@@ -1,0 +1,10 @@
+{
+  "type": "witchery:cauldron_ritual",
+  "ingredients": [
+    {"item": "minecraft:nether_wart"},
+    {"item": "witchery:ent_branch"}
+  ],
+  "trigger": {"item": "witchery:mutandis_extremis"},
+  "result": {"item": "witchery:mutator"},
+  "power": 1800
+}

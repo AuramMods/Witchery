@@ -1,5 +1,7 @@
 package art.arcane.witchery.data;
 
+import art.arcane.witchery.block.CritterSnareBlock;
+
 import art.arcane.witchery.block.ChaliceBlock;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.DreamWeave;
@@ -58,6 +60,7 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                 case "demonheart" -> dropOther(block, WitcheryIngredient.DEMON_HEART.item());
                 case "dreamcatcher" -> dropDreamWeave(block);
                 case "witchsapling", "witchlog", "witchwood" -> dropWitchWood(block);
+                case "crittersnare" -> dropCritterSnare(block);
                 case "witchleaves" -> dropWitchLeaves(block);
                 default -> {
                     if (block instanceof SlabBlock) {
@@ -139,6 +142,16 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
         add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool()
                 .setRolls(ConstantValue.exactly(1))
                 .add(LootItem.lootTableItem(block).apply(copyWoodType(block))))));
+    }
+
+    private void dropCritterSnare(Block snare) {
+        LootItemCondition.Builder empty = LootItemBlockStatePropertyCondition.hasBlockStateProperties(snare)
+                .setProperties(StatePropertiesPredicate.Builder.properties()
+                        .hasProperty(CritterSnareBlock.CRITTER, CritterSnareBlock.Critter.EMPTY));
+        add(snare, LootTable.lootTable().withPool(applyExplosionCondition(snare, LootPool.lootPool()
+                .setRolls(ConstantValue.exactly(1))
+                .add(LootItem.lootTableItem(snare).apply(CopyBlockState.copyState(snare)
+                        .copy(CritterSnareBlock.CRITTER).copy(CritterSnareBlock.STOCKED).when(empty.invert()))))));
     }
 
     private void dropWitchLeaves(Block leaves) {

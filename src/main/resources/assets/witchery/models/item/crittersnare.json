@@ -1,3 +1,29 @@
 {
-   "parent" : "witchery:block/crittersnare"
+  "parent": "witchery:block/crittersnare",
+  "overrides": [
+    {
+      "predicate": {
+        "witchery:critter": 1
+      },
+      "model": "witchery:block/crittersnare_bat"
+    },
+    {
+      "predicate": {
+        "witchery:critter": 2
+      },
+      "model": "witchery:block/crittersnare_silverfish"
+    },
+    {
+      "predicate": {
+        "witchery:critter": 3
+      },
+      "model": "witchery:block/crittersnare_slime"
+    },
+    {
+      "predicate": {
+        "witchery:critter": 4
+      },
+      "model": "witchery:block/crittersnare_magmacube"
+    }
+  ]
 }

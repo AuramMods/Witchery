@@ -155,11 +155,11 @@ public final class MutandisItem extends Item {
         return state.getBlock().getStateDefinition().getProperty("age") instanceof IntegerProperty age ? age : null;
     }
 
-    private static boolean isSoakedDirt(Level level, BlockPos pos) {
+    static boolean isSoakedDirt(Level level, BlockPos pos) {
         return level.getBlockState(pos).is(Blocks.DIRT) && level.getBlockState(pos.above()).is(Blocks.WATER);
     }
 
-    private static void makeClay(ServerLevel level, BlockPos pos) {
+    static void makeClay(ServerLevel level, BlockPos pos) {
         if (isSoakedDirt(level, pos) && level.setBlockAndUpdate(pos, Blocks.CLAY.defaultBlockState())) {
             level.sendParticles(ParticleTypes.INSTANT_EFFECT, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
                     8, 0.22, 0.22, 0.22, 0.01);

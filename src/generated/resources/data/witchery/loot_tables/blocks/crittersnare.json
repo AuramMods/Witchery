@@ -11,6 +11,28 @@
       "entries": [
         {
           "type": "minecraft:item",
+          "functions": [
+            {
+              "block": "witchery:crittersnare",
+              "conditions": [
+                {
+                  "condition": "minecraft:inverted",
+                  "term": {
+                    "block": "witchery:crittersnare",
+                    "condition": "minecraft:block_state_property",
+                    "properties": {
+                      "critter": "empty"
+                    }
+                  }
+                }
+              ],
+              "function": "minecraft:copy_state",
+              "properties": [
+                "critter",
+                "stocked"
+              ]
+            }
+          ],
           "name": "witchery:crittersnare"
         }
       ],

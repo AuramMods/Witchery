@@ -1,3 +1,4 @@
 {
-   "parent" : "witchery:block/grassper"
+  "parent": "minecraft:item/generated",
+  "textures": {"layer0": "witchery:block/grasspericon"}
 }

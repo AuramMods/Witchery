@@ -7,6 +7,7 @@ import art.arcane.witchery.block.entity.ChaliceBlockEntity;
 import art.arcane.witchery.block.entity.DemonHeartBlockEntity;
 import art.arcane.witchery.block.entity.DistilleryBlockEntity;
 import art.arcane.witchery.block.entity.DreamCatcherBlockEntity;
+import art.arcane.witchery.block.entity.GrassperBlockEntity;
 import art.arcane.witchery.block.entity.KettleBlockEntity;
 import art.arcane.witchery.block.entity.MirrorBlockEntity;
 import art.arcane.witchery.block.entity.PlacedItemBlockEntity;
@@ -48,6 +49,9 @@ public final class WitcheryBlockEntities {
     public static final RegistryObject<BlockEntityType<DreamCatcherBlockEntity>> DREAM_CATCHER =
             BLOCK_ENTITIES.register("dreamcatcher", () -> BlockEntityType.Builder.of(DreamCatcherBlockEntity::new,
                     WitcheryBlocks.getRequired("dreamcatcher").get()).build(null));
+    public static final RegistryObject<BlockEntityType<GrassperBlockEntity>> GRASSPER =
+            BLOCK_ENTITIES.register("grassper", () -> BlockEntityType.Builder.of(GrassperBlockEntity::new,
+                    WitcheryBlocks.getRequired("grassper").get()).build(null));
     public static final RegistryObject<BlockEntityType<DemonHeartBlockEntity>> DEMON_HEART =
             BLOCK_ENTITIES.register("demonheart", () -> BlockEntityType.Builder.of(DemonHeartBlockEntity::new,
                     WitcheryBlocks.getRequired("demonheart").get()).build(null));
@@ -89,6 +93,7 @@ public final class WitcheryBlockEntities {
         LEGACY_BLOCK_ENTITIES.put("poppetshelf", POPPET_SHELF);
         LEGACY_BLOCK_ENTITIES.put("chalice", CHALICE);
         LEGACY_BLOCK_ENTITIES.put("dreamcatcher", DREAM_CATCHER);
+        LEGACY_BLOCK_ENTITIES.put("grassper", GRASSPER);
         LEGACY_BLOCK_ENTITIES.put("demonheart", DEMON_HEART);
         LEGACY_BLOCK_ENTITIES.put("circle", CIRCLE);
         LEGACY_BLOCK_ENTITIES.put("placeditem", PLACED_ITEM);

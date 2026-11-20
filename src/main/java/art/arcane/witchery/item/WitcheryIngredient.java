@@ -1,5 +1,7 @@
 package art.arcane.witchery.item;
 
+import art.arcane.witchery.block.CritterSnareBlock;
+
 import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -114,6 +116,10 @@ public enum WitcheryIngredient {
     /** Loads an inventory stack after upgrading the legacy Witchery subtype, when present. */
     public static ItemStack loadInventoryStack(CompoundTag stackTag) {
         ItemStack stack = ItemStack.of(stackTag);
+        if (!stack.isEmpty() && "witchery:crittersnare".equals(stackTag.getString("id"))) {
+            CritterSnareBlock.applyLegacyMetadata(stack, stackTag.getInt("Damage"));
+            return stack;
+        }
         if (!stack.isEmpty() && "witchery:poppet".equals(stackTag.getString("id"))) {
             String poppet = switch (stackTag.getInt("Damage")) {
                 case 1 -> "earth_protection_poppet";

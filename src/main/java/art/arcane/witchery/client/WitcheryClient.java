@@ -7,6 +7,7 @@ import art.arcane.witchery.client.screen.SpinningWheelScreen;
 import art.arcane.witchery.client.screen.WitchesOvenScreen;
 import art.arcane.witchery.menu.LegacyPlaceholderMenu;
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.client.model.MandrakeModel;
 import art.arcane.witchery.client.model.DarkMarkModel;
@@ -22,6 +23,7 @@ import art.arcane.witchery.client.renderer.DemonRenderer;
 import art.arcane.witchery.client.renderer.EntRenderer;
 import art.arcane.witchery.client.renderer.DemonHeartRenderer;
 import art.arcane.witchery.client.renderer.GrotesqueLayer;
+import art.arcane.witchery.client.renderer.GrassperRenderer;
 import art.arcane.witchery.client.renderer.ImpRenderer;
 import art.arcane.witchery.client.renderer.KettleRenderer;
 import art.arcane.witchery.client.renderer.LordOfTormentRenderer;
@@ -105,6 +107,7 @@ public final class WitcheryClient {
         event.registerLayerDefinition(DarkMarkModel.LAYER, DarkMarkModel::layer);
         event.registerLayerDefinition(LordOfTormentModel.LAYER, LordOfTormentModel::layer);
         event.registerLayerDefinition(GrotesqueLayer.LAYER, GrotesqueLayer::layer);
+        event.registerLayerDefinition(GrassperRenderer.LAYER, GrassperRenderer::layer);
         event.registerLayerDefinition(MirrorBlockRenderer.LAYER, MirrorBlockRenderer::layer);
         event.registerLayerDefinition(DemonHeartRenderer.LAYER, DemonHeartRenderer::layer);
         event.registerLayerDefinition(DreamCatcherRenderer.LAYER, DreamCatcherRenderer::layer);
@@ -140,6 +143,7 @@ public final class WitcheryClient {
         event.registerBlockEntityRenderer(WitcheryBlockEntities.KETTLE.get(), KettleRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.SPINNING_WHEEL.get(), SpinningWheelRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.PLACED_ITEM.get(), PlacedItemRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.GRASSPER.get(), GrassperRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.POPPET_SHELF.get(), PoppetShelfRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.DREAM_CATCHER.get(), DreamCatcherRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.DEMON_HEART.get(), DemonHeartRenderer::new);
@@ -165,6 +169,9 @@ public final class WitcheryClient {
             ItemProperties.register(WitcheryItems.getRequired("taglockkit").get(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "bound"),
                     (stack, level, entity, seed) -> TaglockItem.isBound(stack) ? 1 : 0);
+            ItemProperties.register(WitcheryBlocks.getRequired("crittersnare").get().asItem(),
+                    ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "critter"),
+                    (stack, level, entity, seed) -> CritterSnareBlock.critterFromStack(stack).ordinal());
 
             for (String name : new String[]{
                     "belladonna", "mandrake", "artichoke", "snowbell", "wormwood", "mindrake", "wolfsbane", "garlicplant",

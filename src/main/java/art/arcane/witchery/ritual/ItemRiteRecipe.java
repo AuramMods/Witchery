@@ -1,6 +1,7 @@
 package art.arcane.witchery.ritual;
 
 import art.arcane.witchery.block.RitualGlyphBlock;
+import art.arcane.witchery.block.entity.GrassperBlockEntity;
 import art.arcane.witchery.registry.WitcheryRecipes;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -25,6 +26,7 @@ import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.RecipeMatcher;
 import org.jetbrains.annotations.Nullable;
 
@@ -56,6 +58,9 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
     public record Ring(RitualCircle pattern, Block glyph) {
     }
 
+    public record Offering(ItemStack stack, Vec3 position, @Nullable BlockPos grassper, Runnable consume) {
+    }
+
     public boolean hasCircles(ServerLevel level, BlockPos pos) {
         return rings.stream().allMatch(ring -> ring.pattern.matches(level, pos, ring.glyph));
     }
@@ -79,13 +84,26 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
     }
 
     @Nullable
-    public List<ItemEntity> findSacrifices(ServerLevel level, BlockPos pos, int first) {
+    public List<Offering> findSacrifices(ServerLevel level, BlockPos pos, int first) {
         int radius = rings.stream().mapToInt(ring -> ring.pattern.sacrificeRadius()).max().orElse(4);
         AABB area = new AABB(pos).inflate(radius, 0, radius);
         double x = pos.getX() + 0.5;
         double z = pos.getZ() + 0.5;
-        List<ItemEntity> items = level.getEntitiesOfClass(ItemEntity.class, area, item -> item.isAlive()
-                && (item.getX() - x) * (item.getX() - x) + (item.getZ() - z) * (item.getZ() - z) <= radius * radius);
+        List<Offering> items = new ArrayList<>();
+        for (ItemEntity entity : level.getEntitiesOfClass(ItemEntity.class, area, item -> item.isAlive()
+                && (item.getX() - x) * (item.getX() - x) + (item.getZ() - z) * (item.getZ() - z) <= radius * radius)) {
+            ItemStack stack = entity.getItem();
+            items.add(new Offering(stack, entity.position(), null, () -> {
+                if (stack.getCount() == 1) entity.discard();
+                else entity.setItem(stack.copyWithCount(stack.getCount() - 1));
+            }));
+        }
+        for (BlockPos point : BlockPos.betweenClosed(pos.offset(-5, 0, -5), pos.offset(5, 0, 5))) {
+            if (level.getBlockEntity(point) instanceof GrassperBlockEntity grassper && !grassper.isEmpty()) {
+                items.add(new Offering(grassper.getItem(0), Vec3.atBottomCenterOf(point).add(0, 0.8, 0),
+                        grassper.getBlockPos(), () -> grassper.removeItem(0, 1)));
+            }
+        }
         List<Ingredient> required = sacrifices.subList(first, sacrifices.size());
         int[] owners = new int[items.size()];
         int[] assigned = new int[required.size()];
@@ -98,10 +116,10 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         return Arrays.stream(assigned).mapToObj(items::get).toList();
     }
 
-    private static boolean assign(int ingredient, List<Ingredient> required, List<ItemEntity> items,
+    private static boolean assign(int ingredient, List<Ingredient> required, List<Offering> items,
                                   int[] owners, int[] assigned, boolean[] visited) {
         for (int item = 0; item < items.size(); item++) {
-            if (visited[item] || !required.get(ingredient).test(items.get(item).getItem())) {
+            if (visited[item] || !required.get(ingredient).test(items.get(item).stack())) {
                 continue;
             }
             visited[item] = true;

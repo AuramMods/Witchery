@@ -1,7 +1,19 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/crittersnare"
-      }
-   }
+  "variants": {
+    "critter=empty": {
+      "model": "witchery:block/crittersnare"
+    },
+    "critter=bat": {
+      "model": "witchery:block/crittersnare_bat"
+    },
+    "critter=silverfish": {
+      "model": "witchery:block/crittersnare_silverfish"
+    },
+    "critter=slime": {
+      "model": "witchery:block/crittersnare_slime"
+    },
+    "critter=magmacube": {
+      "model": "witchery:block/crittersnare_magmacube"
+    }
+  }
 }

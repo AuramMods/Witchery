@@ -52,7 +52,10 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     private static final int INFUSION_CAPACITY = 200;
     private static final int RECHARGE_AMOUNT = 10;
     private static final int RECHARGE_POWER_COST = 40;
-    private final List<ItemStack> sacrificed = new ArrayList<>();
+    private final List<Sacrifice> sacrificed = new ArrayList<>();
+
+    private record Sacrifice(ItemStack stack, @Nullable BlockPos grassper) {
+    }
     @Nullable
     private ResourceLocation activeRite;
     @Nullable
@@ -143,20 +146,16 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             finish(level, rite);
             return;
         }
-        List<ItemEntity> remaining = rite.findSacrifices(level, pos, sacrificed.size());
+        List<ItemRiteRecipe.Offering> remaining = rite.findSacrifices(level, pos, sacrificed.size());
         if (remaining == null) {
             abort(level, "message.witchery.rite.missing_ingredient");
             return;
         }
-        ItemEntity entity = remaining.get(0);
-        ItemStack offered = entity.getItem();
-        sacrificed.add(offered.copyWithCount(1));
-        if (offered.getCount() == 1) {
-            entity.discard();
-        } else {
-            entity.setItem(offered.copyWithCount(offered.getCount() - 1));
-        }
-        level.sendParticles(ParticleTypes.INSTANT_EFFECT, entity.getX(), entity.getY() + 0.2, entity.getZ(),
+        ItemRiteRecipe.Offering offering = remaining.get(0);
+        sacrificed.add(new Sacrifice(offering.stack().copyWithCount(1), offering.grassper()));
+        offering.consume().run();
+        var location = offering.position();
+        level.sendParticles(ParticleTypes.INSTANT_EFFECT, location.x, location.y + 0.2, location.z,
                 8, 0.2, 0.22, 0.2, 0.02);
     }
 
@@ -262,7 +261,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 if (recipient.isAlive()) InfusionEnergy.grant(recipient, infusionType, INFUSION_CAPACITY);
             }
         }
-        for (ItemStack offering : sacrificed) {
+        for (Sacrifice sacrifice : sacrificed) {
+            ItemStack offering = sacrifice.stack();
             if (offering.is(WitcheryIngredient.NECROMANTIC_STONE.item())) {
                 Block.popResource(level, pos, offering);
             }
@@ -281,7 +281,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
 
     @Nullable
     private LivingEntity boundOffering(ServerLevel level) {
-        return sacrificed.stream().filter(stack -> stack.getItem() instanceof TaglockItem)
+        return sacrificed.stream().map(Sacrifice::stack).filter(stack -> stack.getItem() instanceof TaglockItem)
                 .map(stack -> TaglockItem.resolveTarget(level, stack))
                 .filter(target -> target != null && target.isAlive()).findFirst().orElse(null);
     }
@@ -330,8 +330,9 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     }
 
     public void refundSacrifices(ServerLevel level) {
-        for (ItemStack stack : sacrificed) {
-            Block.popResource(level, getBlockPos(), stack);
+        for (Sacrifice sacrifice : sacrificed) {
+            BlockPos origin = sacrifice.grassper() == null ? getBlockPos() : sacrifice.grassper();
+            Block.popResource(level, origin, sacrifice.stack());
         }
         sacrificed.clear();
     }
@@ -370,9 +371,11 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         recharging = tag.getBoolean("Recharging");
         sacrificed.clear();
         for (Tag entry : tag.getList("Sacrifices", Tag.TAG_COMPOUND)) {
-            ItemStack stack = WitcheryIngredient.loadInventoryStack((CompoundTag) entry);
+            CompoundTag saved = (CompoundTag) entry;
+            ItemStack stack = WitcheryIngredient.loadInventoryStack(saved);
             if (!stack.isEmpty()) {
-                sacrificed.add(stack);
+                BlockPos origin = saved.contains("GrassperPos", Tag.TAG_LONG) ? BlockPos.of(saved.getLong("GrassperPos")) : null;
+                sacrificed.add(new Sacrifice(stack, origin));
             }
         }
     }
@@ -393,8 +396,10 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             }
         }
         ListTag held = new ListTag();
-        for (ItemStack stack : sacrificed) {
-            held.add(stack.save(new CompoundTag()));
+        for (Sacrifice sacrifice : sacrificed) {
+            CompoundTag saved = sacrifice.stack().save(new CompoundTag());
+            if (sacrifice.grassper() != null) saved.putLong("GrassperPos", sacrifice.grassper().asLong());
+            held.add(saved);
         }
         tag.put("Sacrifices", held);
     }

@@ -20,6 +20,7 @@ import art.arcane.witchery.item.MysticBranchItem;
 import art.arcane.witchery.item.RitualChalkItem;
 import art.arcane.witchery.item.SeerStoneItem;
 import art.arcane.witchery.item.TaglockItem;
+import art.arcane.witchery.item.MutatingSprigItem;
 import art.arcane.witchery.item.TormentContractItem;
 import art.arcane.witchery.item.VoodooPoppetItem;
 import art.arcane.witchery.item.VampiricPoppetItem;
@@ -156,6 +157,7 @@ public final class WitcheryItems {
             case "mirror" -> new MirrorItem();
             case "arthana" -> new ArthanaItem();
             case "mysticbranch" -> new MysticBranchItem();
+            case "mutator" -> new MutatingSprigItem();
             case "witchhand" -> new WitchHandItem();
             case "demon_heart" -> new DemonHeartItem(WitcheryBlocks.getRequired("demonheart").get(), true);
             case "devilstonguecharm" -> new Item(new Item.Properties().durability(50).rarity(Rarity.UNCOMMON));
