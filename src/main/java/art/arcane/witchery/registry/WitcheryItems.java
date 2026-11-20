@@ -18,6 +18,7 @@ import art.arcane.witchery.item.DrinkableBrewItem;
 import art.arcane.witchery.item.DreamWeaveItem;
 import art.arcane.witchery.item.FilledChaliceItem;
 import art.arcane.witchery.item.GlassGobletItem;
+import art.arcane.witchery.item.BoneNeedleItem;
 import art.arcane.witchery.item.IcyNeedleItem;
 import art.arcane.witchery.item.LeechChestItem;
 import art.arcane.witchery.item.MirrorItem;
@@ -173,6 +174,7 @@ public final class WitcheryItems {
             case "vampirebook" -> new VampireBookItem();
             case "sungrenade" -> new SunGrenadeItem();
             case "glassgoblet" -> new GlassGobletItem();
+            case "bone_needle" -> new BoneNeedleItem();
             case "mirror" -> new MirrorItem();
             case "arthana" -> new ArthanaItem();
             case "mysticbranch" -> new MysticBranchItem();

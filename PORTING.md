@@ -389,6 +389,11 @@
 - [x] Travel home from the Nether. A dimension change now sends the Witchery capability to the replacement client player. The muted client kept its selected power when entering the Nether and returned to the same Overworld coffin. All 178 required Forge GameTests passed, including the bone offering, return to the saved spawn and the village destination.
 - [x] Restart the dedicated server and verify the saved coffin, travel choice and final remaining use. The client rejoined beside its coffin with one travel charge and 1,062 blood.
 
+## Blooded Wool and Dark Cloth (2026-11-20)
+
+- [x] Turn white wool into Blooded Wool with a Bone Needle at rank four or higher. The muted survival client kept red wool untouched, converted and harvested five white wool blocks, and spent exactly 625 blood. The same Bone Needle remained in its hand. GameTests covered rank, low blood, dyed wool and a canceled Forge placement.
+- [x] Smelt the harvested Blooded Wool into five Dark Cloth. A dedicated restart resumed the active furnace that had reached 68 ticks. The muted client collected all five pieces through the furnace menu. Data generation, reobfuscation and all 181 required Forge GameTests passed.
+
 ## Auram Pack Validation (2026-11-20)
 
 - [x] Reproduce the Evolved Mekanism 1.2.1-fix3 startup crash in the matched Auram profile before adding Witchery. Both pack runs reported the null `QIODriveTier` during Evolved Mekanism construction.

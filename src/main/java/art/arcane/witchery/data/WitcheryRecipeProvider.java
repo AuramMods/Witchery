@@ -73,6 +73,11 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                         RecipeCategory.MISC, Items.CHARCOAL, 0, 200)
                 .unlockedBy("has_witch_log", has(witchLog))
                 .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "charcoal_from_witch_log"));
+        Block bloodedWool = WitcheryBlocks.getRequired("bloodedwool").get();
+        SimpleCookingRecipeBuilder.smelting(Ingredient.of(bloodedWool), RecipeCategory.MISC,
+                        WitcheryIngredient.DARK_CLOTH.item(), 0, 200)
+                .unlockedBy("has_blooded_wool", has(bloodedWool))
+                .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "dark_cloth"));
 
         ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, funnel)
                 .define('E', Items.BUCKET)

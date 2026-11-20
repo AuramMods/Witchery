@@ -172,6 +172,11 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - The muted client charged the power with a filled-vessel fixture and used daytime coffin sleep to record an unforced respawn. From over forty blocks away it returned beside that coffin. Using the same power again at home brought it to the settlement. Both alternatives spent one use. A direct Nether transfer revealed that the replacement client player lost its capability sync. Sending the data during dimension changes restored the HUD and selected power. The same client cast successfully from the Nether twice and arrived beside its Overworld coffin both times.
 - After a dedicated restart the client rejoined beside the same coffin with one travel charge and 1,062 blood. Java 17 data generation, reobfuscation and all 178 required Forge GameTests passed.
 
+### Blooded Wool and Dark Cloth (2026-11-20)
+
+- The original Bone Needle item can now convert white wool at rank four for 125 blood. It pays the cost after Forge accepts the block replacement. The block keeps the original `witchery:bloodedwool` ID and wool sound and hardness. Its 200-tick furnace recipe produces one Dark Cloth with zero experience. Legacy ingredient damage 161 maps to `witchery:dark_cloth`.
+- The muted survival client tested red wool, then transformed and harvested five white wool blocks. Blood fell from 1,062 to 437 and it retained the needle. It loaded the actual wool and coal into a standard furnace. An active batch was saved at 68 ticks. After restarting the same dedicated world, the client collected five Dark Cloth from the furnace. Java 17 data generation, JAR reobfuscation and all 181 required Forge GameTests passed.
+
 ### Earlier Validation Continued
 
 - The medium Infernal Imp rite uses Refined Evil, Infernal Blood, Ender Pearl, Attuned Stone and 5,000 altar power. The muted client activated the real rite and verified the four offerings were refunded without the Seer Stone. With an active coven and the stone it summoned a 50-health Imp. The client used its own bed to fill the Taglock Kit and crafted the signed Contract of Ownership in its inventory. The same contract survived a restart, was refused with six levels, and bound Zul after 25 levels were paid. New registry and recipe data use protocol 9.

@@ -532,6 +532,7 @@ The first migrated subtypes have individual item IDs. Preserve `witchery:ingredi
 | 153 | `witchery:anointing_paste` |
 | 156 | `witchery:wolfsbane_flower` |
 | 160 | `witchery:torn_vampire_page` |
+| 161 | `witchery:dark_cloth` |
 
 | Meta | Unlocalized Key |
 |---:|---|

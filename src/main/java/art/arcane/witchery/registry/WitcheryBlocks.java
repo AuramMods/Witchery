@@ -154,6 +154,7 @@ public final class WitcheryBlocks {
             case "shadedglass" -> new LegacyShadedGlassBlock(false);
             case "shadedglass_active" -> new LegacyShadedGlassBlock(true);
             case "bloodrose" -> new BloodRoseBlock();
+            case "bloodedwool" -> new Block(BlockBehaviour.Properties.copy(Blocks.RED_WOOL));
             case "plantmine" -> new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_SMALL, true);
             case "glintweed", "spanishmoss", "vine", "web" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_TALL, false);
