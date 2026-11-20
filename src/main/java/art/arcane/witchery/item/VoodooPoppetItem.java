@@ -1,5 +1,6 @@
 package art.arcane.witchery.item;
 
+import art.arcane.witchery.entity.WitchHunterPursuit;
 import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
@@ -54,6 +55,7 @@ public final class VoodooPoppetItem extends BoundPoppetItem {
             caster.displayClientMessage(Component.translatable("message.witchery.voodoo_poppet.no_target"), true);
             return;
         }
+        WitchHunterPursuit.noticeBlackMagic(caster);
 
         HitResult aim = caster.pick(5, 1, true);
         if (aim instanceof BlockHitResult hit && aim.getType() == HitResult.Type.BLOCK

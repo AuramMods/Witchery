@@ -169,7 +169,7 @@ public final class HandBowItem extends BowItem {
             bolt.setBaseDamage(count == 3 ? 1 : 2);
             bolt.setCritArrow(power == 1);
             bolt.pickup = !retained && !player.isCreative() ? AbstractArrow.Pickup.ALLOWED : AbstractArrow.Pickup.DISALLOWED;
-            if (ammo != Ammo.ANTI_MAGIC) applyEnchantments(bow, bolt);
+            if (ammo != Ammo.ANTI_MAGIC) bolt.applyBowEnchantments(bow);
             float yaw = player.getYRot() + (count == 3 ? (i - 1) * 20 : 0);
             bolt.shootFromRotation(player, player.getXRot(), yaw, 0, power * 2, 1);
             fired |= world.addFreshEntity(bolt);
@@ -181,13 +181,6 @@ public final class HandBowItem extends BowItem {
         player.getInventory().setChanged();
         world.playSound(null, player.blockPosition(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1,
                 1 / (world.random.nextFloat() * 0.4F + 1.2F) + power * 0.5F);
-    }
-
-    private static void applyEnchantments(ItemStack bow, WitcheryBolt bolt) {
-        int power = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.POWER_ARROWS, bow);
-        if (power > 0) bolt.setBaseDamage(bolt.getBaseDamage() + 0.5 * power + 0.5);
-        bolt.setKnockback(EnchantmentHelper.getItemEnchantmentLevel(Enchantments.PUNCH_ARROWS, bow));
-        if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FLAMING_ARROWS, bow) > 0) bolt.setSecondsOnFire(100);
     }
 
     @Override

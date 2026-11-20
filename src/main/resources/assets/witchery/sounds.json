@@ -31,6 +31,10 @@
     "subtitle": "subtitles.witchery.handbow_load",
     "sounds": ["witchery:random/wind_up"]
   },
+  "random.theycome": {
+    "subtitle": "subtitles.witchery.witch_hunters_arrive",
+    "sounds": ["witchery:random/theycome"]
+  },
   "mob.lilith.say": {
     "subtitle": "subtitles.witchery.lilith.ambient",
     "sounds": ["witchery:mob/lilith/say1", "witchery:mob/lilith/say2", "witchery:mob/lilith/say3", "witchery:mob/lilith/say4", "witchery:mob/lilith/say5"]

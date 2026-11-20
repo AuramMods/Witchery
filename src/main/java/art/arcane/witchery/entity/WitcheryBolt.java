@@ -1,28 +1,23 @@
 package art.arcane.witchery.entity;
 
-import art.arcane.witchery.Witchery;
-import art.arcane.witchery.infusion.InfusedBrews;
 import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryEntities;
-import art.arcane.witchery.vampirism.Vampirism;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 
@@ -30,8 +25,6 @@ import java.util.List;
 
 public final class WitcheryBolt extends AbstractArrow {
     private static final EntityDataAccessor<Byte> BOLT_TYPE = SynchedEntityData.defineId(WitcheryBolt.class, EntityDataSerializers.BYTE);
-    private static final TagKey<EntityType<?>> DEMONIC = TagKey.create(Registries.ENTITY_TYPE,
-            ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "demonic"));
 
     public enum Kind {
         STAKE(WitcheryIngredient.STAKE_BOLT), ANTI_MAGIC(WitcheryIngredient.ANTI_MAGIC_BOLT),
@@ -108,8 +101,13 @@ public final class WitcheryBolt extends AbstractArrow {
 
     public float modifyDamage(LivingEntity target, float amount) {
         if (kind() != Kind.HOLY) return amount;
-        boolean vulnerable = target.getMobType() == MobType.UNDEAD || target.getType().is(DEMONIC)
-                || target instanceof ServerPlayer player && (Vampirism.level(player) > 0 || InfusedBrews.status(player).type() == InfusedBrews.GRAVE);
-        return vulnerable ? Mth.floor(amount * 1.5F) : amount;
+        return CreatureAlignment.undead(target) || CreatureAlignment.demonic(target) ? Mth.floor(amount * 1.5F) : amount;
+    }
+
+    public void applyBowEnchantments(ItemStack bow) {
+        int power = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.POWER_ARROWS, bow);
+        if (power > 0) setBaseDamage(getBaseDamage() + 0.5 * power + 0.5);
+        setKnockback(EnchantmentHelper.getItemEnchantmentLevel(Enchantments.PUNCH_ARROWS, bow));
+        if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FLAMING_ARROWS, bow) > 0) setSecondsOnFire(100);
     }
 }

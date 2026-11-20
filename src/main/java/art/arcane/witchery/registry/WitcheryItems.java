@@ -319,9 +319,11 @@ public final class WitcheryItems {
         }
 
         RegistryObject<Item> egg = ITEMS.register(eggPath,
-                () -> path.equals("covenwitch")
-                        ? new ForgeSpawnEggItem(entityType, 0x111111, 0x002D03, new Item.Properties())
-                        : new ForgeSpawnEggItem(entityType, 0x6E5A4E, 0xA4A29D, new Item.Properties()));
+                () -> switch (path) {
+                    case "covenwitch" -> new ForgeSpawnEggItem(entityType, 0x111111, 0x002D03, new Item.Properties());
+                    case "witchhunter" -> new ForgeSpawnEggItem(entityType, 0x78706B, 0x231C19, new Item.Properties());
+                    default -> new ForgeSpawnEggItem(entityType, 0x6E5A4E, 0xA4A29D, new Item.Properties());
+                });
         LEGACY_SPAWN_EGGS.put(eggPath, egg);
     }
 

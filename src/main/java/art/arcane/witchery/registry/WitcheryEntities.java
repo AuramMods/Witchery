@@ -26,6 +26,7 @@ import art.arcane.witchery.entity.VillageGuard;
 import art.arcane.witchery.entity.WitcheryBolt;
 import art.arcane.witchery.entity.WitchBroom;
 import art.arcane.witchery.entity.WitchCat;
+import art.arcane.witchery.entity.WitchHunter;
 import art.arcane.witchery.entity.WitchOwl;
 import art.arcane.witchery.entity.WitchToad;
 import net.minecraft.world.entity.EntityType;
@@ -107,6 +108,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<VillageGuard>> VILLAGE_GUARD =
             ENTITY_TYPES.register("villageguard", () -> EntityType.Builder.of(VillageGuard::new, MobCategory.CREATURE)
                     .sized(0.6F, 1.8F).clientTrackingRange(8).build(Witchery.MODID + ":villageguard"));
+    public static final RegistryObject<EntityType<WitchHunter>> WITCH_HUNTER =
+            ENTITY_TYPES.register("witchhunter", () -> EntityType.Builder.of(WitchHunter::new, MobCategory.MONSTER)
+                    .sized(0.6F, 1.8F).clientTrackingRange(8).build(Witchery.MODID + ":witchhunter"));
     public static final RegistryObject<EntityType<AttackBat>> ATTACK_BAT =
             ENTITY_TYPES.register("attackbat", () -> EntityType.Builder.of(AttackBat::new, MobCategory.AMBIENT)
                     .sized(0.5F, 0.9F).clientTrackingRange(5).build(Witchery.MODID + ":attackbat"));
@@ -149,6 +153,7 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("lilith", LILITH);
         LEGACY_ENTITIES.put("vampire", VAMPIRE);
         LEGACY_ENTITIES.put("villageguard", VILLAGE_GUARD);
+        LEGACY_ENTITIES.put("witchhunter", WITCH_HUNTER);
         LEGACY_ENTITIES.put("attackbat", ATTACK_BAT);
         LEGACY_ENTITIES.put("follower", FOLLOWER);
         LEGACY_ENTITIES.put("imp", IMP);
@@ -200,6 +205,7 @@ public final class WitcheryEntities {
                     : entry == LILITH ? Lilith.attributes()
                     : entry == VAMPIRE ? Vampire.attributes()
                     : entry == VILLAGE_GUARD ? VillageGuard.attributes()
+                    : entry == WITCH_HUNTER ? WitchHunter.attributes()
                     : entry == ATTACK_BAT ? Bat.createAttributes()
                     : entry == FOLLOWER ? WitcheryFollower.attributes()
                     : entry == IMP ? Imp.attributes()

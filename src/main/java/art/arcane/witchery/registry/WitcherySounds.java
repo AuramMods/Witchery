@@ -33,6 +33,7 @@ public final class WitcherySounds {
     public static final RegistryObject<SoundEvent> HYPNOSIS = sound("random.hypnosis");
     public static final RegistryObject<SoundEvent> BOW_CLICK = sound("random.click");
     public static final RegistryObject<SoundEvent> BOW_WIND_UP = sound("random.wind_up");
+    public static final RegistryObject<SoundEvent> WITCH_HUNTERS_ARRIVE = sound("random.theycome");
     public static final RegistryObject<SoundEvent> OWL_HOOT = sound("mob.owl.owl_hoot");
     public static final RegistryObject<SoundEvent> OWL_HURT = sound("mob.owl.owl_hurt");
     public static final RegistryObject<SoundEvent> TOAD_CROAK = sound("mob.toad.toad_croak");

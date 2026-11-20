@@ -456,6 +456,12 @@
 - [x] Restore the full-set magic and Waking Nightmare curse rolls and disable bound poppets while all four pieces are worn. GameTests checked the original probabilities, powered bolt interaction with an ordinary death ward, and the armor upgrade paths.
 - [x] Preserve the treated hat across a dedicated restart. The saved stack kept its blue dye and one durability damage. An Ender Pearl was consumed at Z 99.30 with the full outfit. Removing the boots let a second pearl carry the player to Z 105.15. Java 17 data generation, JAR reobfuscation and all 217 required Forge GameTests passed.
 
+## Witch Hunter Pursuits (2026-11-20)
+
+- [x] Restore the Witch Hunter entity, crossbow attacks and original skins. A disliked rank-ten vampire drew two hunters from a village with a claimed bed and hostile gossip. The test server raised only the report probability for this check. Both hunters carried crossbows and shot Holy Bolts at the player. The server also confirmed that a hunter sheds Poison and limits an ordinary hit to nine damage. After a restart at the default report probability, both hunters retained their UUIDs, crossbows and player target.
+- [x] Restore black magic notices from Voodoo and Vampiric Poppets and the Curse of Waking Nightmare. The muted survival client collected a pig's Taglock, crafted and used a bound Voodoo Poppet, and the server saved a pursuit timestamp. GameTests confirmed that a notice waits at least 2,400 ticks and can spawn at most two hunters with the original target. Java 17 data generation, JAR reobfuscation and all 220 required Forge GameTests passed.
+- [ ] Connect werewolf targets and Silver Bolt selection after lycanthropy, and wire the remaining black magic triggers as their rites are restored.
+
 ## Auram Pack Validation (2026-11-20)
 
 - [x] Reproduce the Evolved Mekanism 1.2.1-fix3 startup crash in the matched Auram profile before adding Witchery. Both pack runs reported the null `QIODriveTier` during Evolved Mekanism construction.

@@ -10,6 +10,7 @@ import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.entity.VillageGuard;
 import art.arcane.witchery.entity.VillageGuardRecruitment;
 import art.arcane.witchery.entity.WitcheryBolt;
+import art.arcane.witchery.entity.WitchHunterPursuit;
 import art.arcane.witchery.infusion.CreaturePower;
 import art.arcane.witchery.infusion.InfernalInfusion;
 import art.arcane.witchery.infusion.InfusionEnergy;
@@ -229,6 +230,7 @@ public final class WitcheryEventHooks {
         InfusedBrews.tick(serverPlayer);
         Vampirism.tick(serverPlayer);
         HunterClothingItem.tick(serverPlayer);
+        WitchHunterPursuit.tick(serverPlayer);
         if (InfusionEnergy.type(serverPlayer) == InfernalInfusion.ID) CreaturePower.tickFlight(serverPlayer);
         if (DreamTravel.processRequests(serverPlayer) || MirrorTravel.processPlayerCrossing(serverPlayer)
                 || TormentTravel.process(serverPlayer)) {

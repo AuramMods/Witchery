@@ -1,5 +1,6 @@
 package art.arcane.witchery.item;
 
+import art.arcane.witchery.entity.WitchHunterPursuit;
 import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -39,6 +40,7 @@ public final class VampiricPoppetItem extends BoundPoppetItem {
     }
 
     private static void transfer(ServerPlayer player, LivingHurtEvent event, ItemStack stack, Set<UUID> chain) {
+        WitchHunterPursuit.noticeBlackMagic(player);
         LivingEntity target = TaglockItem.resolveTarget(player.serverLevel(), stack, 2);
         if (target == null || !target.isAlive() || chain.contains(target.getUUID())
                 || HunterClothingItem.fullSet(target, HunterClothingItem.Upgrade.PLAIN) || VoodooPoppetItem.warded(player, target, stack)) return;

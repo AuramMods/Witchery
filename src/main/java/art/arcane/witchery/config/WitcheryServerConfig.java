@@ -12,6 +12,7 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.BooleanValue ALLOW_VAMPIRE_RITUAL;
     public static final ForgeConfigSpec.BooleanValue ALLOW_VAMPIRE_QUESTS;
     public static final ForgeConfigSpec.IntValue VAMPIRE_DEATH_ITEM_KEEP_ALIVE_MINS;
+    public static final ForgeConfigSpec.DoubleValue VAMPIRE_HUNTER_SPAWN_CHANCE;
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -35,6 +36,9 @@ public final class WitcheryServerConfig {
         VAMPIRE_DEATH_ITEM_KEEP_ALIVE_MINS = builder
                 .comment("Minutes before items dropped by a vampire player on death despawn.")
                 .defineInRange("vampireDeathItemKeepAliveMins", 12, 5, 30);
+        VAMPIRE_HUNTER_SPAWN_CHANCE = builder
+                .comment("Chance every five seconds that a village reports a disliked vampire at rank ten.")
+                .defineInRange("vampireHunterSpawnChance", 0.01, 0.0, 1.0);
         SPEC = builder.build();
     }
 

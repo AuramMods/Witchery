@@ -4,6 +4,7 @@ import art.arcane.witchery.block.RiteHeartBlock;
 import art.arcane.witchery.brewing.WakingNightmareEffect;
 import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.entity.Demon;
+import art.arcane.witchery.entity.WitchHunterPursuit;
 import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.item.HunterClothingItem;
@@ -222,9 +223,13 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 abort(level, "message.witchery.rite.no_taglock_target");
                 return;
             }
-            if (rite.action() == ItemRiteRecipe.Action.CURSE_WAKING_NIGHTMARE && HunterClothingItem.resistsCurse(curseTarget)) {
-                abort(level, "message.witchery.rite.hunter_curse_protection");
-                return;
+            if (rite.action() == ItemRiteRecipe.Action.CURSE_WAKING_NIGHTMARE) {
+                ServerPlayer caster = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
+                if (caster != null) WitchHunterPursuit.noticeBlackMagic(caster);
+                if (HunterClothingItem.resistsCurse(curseTarget)) {
+                    abort(level, "message.witchery.rite.hunter_curse_protection");
+                    return;
+                }
             }
         } else if (rite.action() == ItemRiteRecipe.Action.CORRUPT_VOODOO_PROTECTION) {
             corruptionCaster = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
