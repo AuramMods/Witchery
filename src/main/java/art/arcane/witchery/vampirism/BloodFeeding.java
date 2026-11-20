@@ -80,7 +80,7 @@ public final class BloodFeeding {
             amount = 2;
             maximum = Mth.ceil(maximum / 4.0F);
         } else return;
-        Vampirism.feed(player, vampire, amount, maximum, remainingVillagerBlood);
+        Vampirism.feed(player, vampire, amount, maximum, remainingVillagerBlood, target instanceof Villager villager ? villager : null);
         GlassGobletItem.bloodParticles(player.serverLevel(), target);
     }
 

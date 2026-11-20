@@ -352,7 +352,14 @@
 - [x] Complete the rank-six poppy exchange. The muted client offered Lilith a poppy with a learned cap of six and kept the flower after she declined. It collected another Torn Page from a weakened Wither, crafted the page into the journal and read it to learn the rank-seven cap. Lilith then accepted the same poppy and raised the vampire to rank seven. This exchange used a defeated Lilith fixture. The original summoning ritual and fight were verified in the earlier rank-one milestone.
 - [x] Restore the rank-seven bat form. The muted client selected the original bat icon, spent 50 blood to transform, and took off directly from the ground. It climbed from Y 86.5 to Y 95.8 with the jump key and flew into a one-block-high tunnel. A second muted client saw the animated bat and smaller hitbox. GameTests verified the one-point upkeep, depletion, form data migration and restoration of prior flight permissions.
 - [x] Restart while the bat is inside the tunnel. The saved form and flight resumed from the same position. The client flew out and returned to its normal size with flight cleared and no second transformation charge. Java 17 data generation, reobfuscation and all 159 required Forge GameTests passed.
-- [ ] Restore ranks eight through ten, vampire equipment, the remaining village interactions and the cure.
+
+## Vampire Village Visits and the Cage Trial (2026-11-20)
+
+- [x] Record distinct village visits at rank seven. The muted client read the journal with eight restored pages and entered a generated plains village in a fresh test world. A second stop in a nearby chunk of the same village kept the count at one. A snowy village raised it to two. GameTests verified that occupied homes in a player-built settlement count together and the original saved visit coordinates load.
+- [x] Preserve village visits across a dedicated restart. The two recorded villages and learned cap remained after rejoin. Visiting a generated taiga village and a second plains village advanced the player to rank eight and cleared the completed list.
+- [x] Verify rank-eight Mesmerize and cage detection. An affected villager followed the muted player about five blocks. A villager in a cage with part of its roof missing reached 280 blood and gave no credit toward the trial.
+- [x] Reach rank nine by taking six careful sips across two covered cages. Each villager ended with 260 blood. A dedicated restart preserved rank nine, 1,079 blood power and both villagers' reserves. Data generation, JAR reobfuscation and all 163 required Forge GameTests passed.
+- [ ] Restore the rank-ten conversion, the remaining powers, vampire equipment, village responses and the cure.
 
 ## Auram Pack Validation (2026-11-20)
 

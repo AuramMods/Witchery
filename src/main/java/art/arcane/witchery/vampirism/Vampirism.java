@@ -29,6 +29,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
+import javax.annotation.Nullable;
+
 public final class Vampirism {
     private static final TagKey<EntityType<?>> BOOK_BOSSES = TagKey.create(Registries.ENTITY_TYPE,
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "vampire_book_bosses"));
@@ -74,8 +76,6 @@ public final class Vampirism {
             data.setBloodPower(0);
             data.setHumanBlood(50);
             data.setVampireVision(false);
-            data.setVampireQuestCounter(0);
-            data.setSelectedVampirePower(0);
             VampireFlight.leave(player, data);
             sync(player, data);
         });
@@ -159,7 +159,8 @@ public final class Vampirism {
         });
     }
 
-    static void feed(ServerPlayer player, WitcheryPlayerData data, int amount, int limit, int remainingVillagerBlood) {
+    static void feed(ServerPlayer player, WitcheryPlayerData data, int amount, int limit, int remainingVillagerBlood,
+                     @Nullable Villager villager) {
         int change = Math.min(amount, Math.max(0, limit - data.getBloodPower()));
         boolean advanced = false;
         if (change > 0) {
@@ -170,8 +171,9 @@ public final class Vampirism {
                 advanced = true;
             }
         }
-        if (remainingVillagerBlood >= 0 && !advanced && WitcheryServerConfig.ALLOW_VAMPIRE_QUESTS.get()
-                && data.getVampireLevel() == 2) {
+        if (villager != null && !advanced && WitcheryServerConfig.ALLOW_VAMPIRE_QUESTS.get()
+                && (data.getVampireLevel() == 2
+                || data.getVampireLevel() == 8 && canAdvance(data) && VampireVillages.isCaged(villager))) {
             if (remainingVillagerBlood >= 250 && remainingVillagerBlood <= 280) {
                 if (data.getVampireQuestCounter() >= 5) advance(player, data);
                 else {
@@ -187,8 +189,6 @@ public final class Vampirism {
 
     private static void advance(ServerPlayer player, WitcheryPlayerData data) {
         data.setVampireLevel(data.getVampireLevel() + 1);
-        data.setVampireQuestCounter(0);
-        data.setSelectedVampirePower(0);
         player.displayClientMessage(Component.translatable("message.witchery.vampire.rank", data.getVampireLevel()), false);
         player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1, 1);
     }
@@ -222,6 +222,17 @@ public final class Vampirism {
                     advance(player, data);
                     sync(player, data);
                 }
+            }
+            if (rank == 7 && canAdvance(data)) {
+                var level = player.serverLevel();
+                VampireVillages.nearby(level, player.blockPosition()).ifPresent(village -> {
+                    if (data.visitVampireVillage(level.dimension().location().toString(), village.x, village.z)) {
+                        advanceTrial(player, data, 4);
+                        if (data.getVampireLevel() == 7) {
+                            player.playNotifySound(SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.PLAYERS, 1, 1);
+                        }
+                    }
+                });
             }
             if (player.isEyeInFluid(FluidTags.WATER)) player.setAirSupply(player.getMaxAirSupply());
             player.removeEffect(MobEffects.POISON);

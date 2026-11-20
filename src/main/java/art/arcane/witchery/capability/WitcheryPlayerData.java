@@ -18,6 +18,7 @@ public final class WitcheryPlayerData {
     private static final String KEY_BLOOD_POWER = "BloodPower";
     private static final String KEY_VAMPIRE_LEVEL_CAP = "VampireLevelCap";
     private static final String KEY_VAMPIRE_QUEST_COUNTER = "VampireQuestCounter";
+    private static final String KEY_VAMPIRE_QUEST_CHUNKS = "VampireQuestChunks";
     private static final String KEY_VAMPIRE_VISION = "VampireVision";
     private static final String KEY_PREVIOUS_MAY_FLY = "VampirePreviousMayFly";
     private static final String KEY_PREVIOUS_FLYING = "VampirePreviousFlying";
@@ -42,6 +43,7 @@ public final class WitcheryPlayerData {
     private int bloodPower;
     private int vampireLevelCap;
     private int vampireQuestCounter;
+    private final List<VampireVillage> vampireQuestVillages = new ArrayList<>();
     private boolean vampireVision;
     private boolean previousMayFly;
     private boolean previousFlying;
@@ -102,7 +104,13 @@ public final class WitcheryPlayerData {
     }
 
     public void setVampireLevel(int level) {
-        vampireLevel = Mth.clamp(level, 0, 10);
+        int rank = Mth.clamp(level, 0, 10);
+        if (rank != vampireLevel) {
+            vampireLevel = rank;
+            vampireQuestCounter = 0;
+            vampireQuestVillages.clear();
+            selectedVampirePower = 0;
+        }
     }
 
     public int getBloodPower() {
@@ -133,6 +141,14 @@ public final class WitcheryPlayerData {
 
     public void setVampireQuestCounter(int counter) {
         vampireQuestCounter = Math.max(0, counter);
+    }
+
+    public boolean visitVampireVillage(String dimension, int chunkX, int chunkZ) {
+        long location = (long) chunkX << 32 | (long) chunkZ & 0xffffffffL;
+        var village = new VampireVillage(dimension, location);
+        if (vampireQuestVillages.contains(village)) return false;
+        vampireQuestVillages.add(village);
+        return true;
     }
 
     public boolean hasVampireVision() {
@@ -278,6 +294,8 @@ public final class WitcheryPlayerData {
         bloodPower = source.bloodPower;
         vampireLevelCap = source.vampireLevelCap;
         vampireQuestCounter = source.vampireQuestCounter;
+        vampireQuestVillages.clear();
+        vampireQuestVillages.addAll(source.vampireQuestVillages);
         vampireVision = source.vampireVision;
         previousMayFly = source.previousMayFly;
         previousFlying = source.previousFlying;
@@ -306,6 +324,14 @@ public final class WitcheryPlayerData {
         tag.putInt(KEY_BLOOD_POWER, bloodPower);
         tag.putInt(KEY_VAMPIRE_LEVEL_CAP, vampireLevelCap);
         tag.putInt(KEY_VAMPIRE_QUEST_COUNTER, vampireQuestCounter);
+        ListTag villages = new ListTag();
+        for (VampireVillage village : vampireQuestVillages) {
+            CompoundTag record = new CompoundTag();
+            record.putString("Dimension", village.dimension());
+            record.putLong("Location", village.location());
+            villages.add(record);
+        }
+        tag.put(KEY_VAMPIRE_QUEST_CHUNKS, villages);
         tag.putBoolean(KEY_VAMPIRE_VISION, vampireVision);
         tag.putBoolean(KEY_PREVIOUS_MAY_FLY, previousMayFly);
         tag.putBoolean(KEY_PREVIOUS_FLYING, previousFlying);
@@ -341,6 +367,13 @@ public final class WitcheryPlayerData {
         setBloodPower(bloodData.getInt(KEY_BLOOD_POWER));
         vampireLevelCap = Mth.clamp(bloodData.getInt(KEY_VAMPIRE_LEVEL_CAP), 0, 10);
         setVampireQuestCounter(bloodData.getInt(KEY_VAMPIRE_QUEST_COUNTER));
+        vampireQuestVillages.clear();
+        for (Tag entry : bloodData.getList(KEY_VAMPIRE_QUEST_CHUNKS, Tag.TAG_COMPOUND)) {
+            CompoundTag record = (CompoundTag) entry;
+            if (!record.contains("Location", Tag.TAG_LONG)) continue;
+            String dimension = record.contains("Dimension", Tag.TAG_STRING) ? record.getString("Dimension") : "minecraft:overworld";
+            vampireQuestVillages.add(new VampireVillage(dimension, record.getLong("Location")));
+        }
         vampireVision = bloodData.getBoolean(KEY_VAMPIRE_VISION);
         previousMayFly = tag.getBoolean(KEY_PREVIOUS_MAY_FLY);
         previousFlying = tag.getBoolean(KEY_PREVIOUS_FLYING);
@@ -364,4 +397,6 @@ public final class WitcheryPlayerData {
 
         lastHowlGameTime = tag.getLong(KEY_LAST_HOWL_GAME_TIME);
     }
+
+    private record VampireVillage(String dimension, long location) {}
 }
