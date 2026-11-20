@@ -3,6 +3,7 @@ package art.arcane.witchery.registry;
 import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.WitchWoodType;
+import art.arcane.witchery.item.BrewBottleItem;
 import art.arcane.witchery.item.WitchWoodBlockItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -32,7 +33,7 @@ public final class WitcheryCreativeTabs {
                             var ender = new ItemStack(bramble);
                             BrambleBlock.setWild(ender, false);
                             output.accept(ender);
-                        } else {
+                        } else if (!(entry.get() instanceof BrewBottleItem)) {
                             output.accept(entry.get());
                         }
                     }))

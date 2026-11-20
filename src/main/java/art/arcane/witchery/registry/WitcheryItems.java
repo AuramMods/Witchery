@@ -11,6 +11,7 @@ import art.arcane.witchery.item.AnointingPasteItem;
 import art.arcane.witchery.item.BoundPoppetItem;
 import art.arcane.witchery.item.ArthanaItem;
 import art.arcane.witchery.item.BolineItem;
+import art.arcane.witchery.item.BrewBottleItem;
 import art.arcane.witchery.item.BroomItem;
 import art.arcane.witchery.item.CaneSwordItem;
 import art.arcane.witchery.item.HandBowItem;
@@ -183,6 +184,7 @@ public final class WitcheryItems {
             case "bucketspirit" -> new BucketItem(WitcheryFluids.getRequiredSource("fluidspirit"), bucketProperties);
             case "buckethollowtears" -> new BucketItem(WitcheryFluids.getRequiredSource("hollowtears"), bucketProperties);
             case "bucketbrew" -> new BucketItem(WitcheryFluids.getRequiredSource("brew"), bucketProperties);
+            case "brewbottle" -> new BrewBottleItem();
             case "anointing_paste" -> new AnointingPasteItem(new Item.Properties());
             case "taglockkit" -> new TaglockItem();
             case "coffin" -> createBlockItem("coffinblock");

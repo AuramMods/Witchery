@@ -1,11 +1,14 @@
 package art.arcane.witchery.block.entity;
 
 import art.arcane.witchery.block.WitchesCauldronBlock;
+import art.arcane.witchery.brewing.BrewBottling;
+import art.arcane.witchery.brewing.BrewMixture;
 import art.arcane.witchery.brewing.CauldronRitualRecipe;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.power.AltarPower;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryBlocks;
+import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcheryRecipes;
 import art.arcane.witchery.ritual.RitualCircle;
 import net.minecraft.core.BlockPos;
@@ -14,13 +17,17 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -45,8 +52,12 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
     private final List<ItemStack> ingredients = new ArrayList<>();
     @Nullable
     private ResourceLocation ritual;
+    @Nullable
+    private BrewMixture mixture;
     private int heatTicks;
     private int ritualTicks;
+    private int comparatorSignal;
+    private int clientBrewColor = -1;
 
     private final FluidTank tank = new FluidTank(CAPACITY, resource -> resource.getFluid() == Fluids.WATER) {
         @Override
@@ -68,11 +79,13 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         protected void onContentsChanged() {
             if (isEmpty()) {
                 ingredients.clear();
+                mixture = null;
                 ritual = null;
                 heatTicks = 0;
                 ritualTicks = 0;
             }
             updateState();
+            refreshComparator();
             setChanged();
         }
     };
@@ -105,6 +118,9 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         }
         if (oldHeat != cauldron.heatTicks || oldProgress != cauldron.ritualTicks) {
             level.blockEntityChanged(pos);
+        }
+        if (oldHeat != cauldron.heatTicks || server.getGameTime() % 20 == 0) {
+            cauldron.refreshComparator();
         }
     }
 
@@ -169,6 +185,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
                     ritual = recipe.id();
                     ritualTicks = 0;
                     splash(server);
+                    refreshComparator();
                     setChanged();
                     return true;
                 }
@@ -177,19 +194,102 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         for (CauldronRitualRecipe recipe : recipes) {
             if (recipe.acceptsIngredient(ingredients, offered)) {
                 ingredients.add(offered.copyWithCount(1));
-                splash(server);
-                setChanged();
+                onIngredientAdded(server);
                 return true;
             }
+        }
+        if (BrewMixture.canAdd(ingredients, offered)) {
+            BrewMixture.add(ingredients, offered);
+            onIngredientAdded(server);
+            return true;
         }
         return false;
     }
 
-    public int comparatorSignal() {
-        if (tank.isEmpty()) {
-            return 0;
+    private void onIngredientAdded(ServerLevel server) {
+        mixture = BrewMixture.from(ingredients);
+        splash(server);
+        refreshComparator();
+        BlockState state = getBlockState();
+        server.sendBlockUpdated(getBlockPos(), state, state, Block.UPDATE_CLIENTS);
+        setChanged();
+    }
+
+    public boolean bottle(ServerPlayer player, InteractionHand hand) {
+        if (!(level instanceof ServerLevel server) || !isBoiling() || ritual != null || mixture == null) return false;
+        BrewMixture contents = mixture;
+        int portion = BrewBottling.portion(player, contents);
+        int remaining = tank.getFluidAmount() - portion;
+        if (remaining < 0) return false;
+        if (contents.power() > 0) {
+            AltarBlockEntity altar = AltarPower.nearest(server, worldPosition);
+            if (altar == null || !altar.consumePower(contents.power())) return false;
         }
-        return isBoiling() ? 6 : 3;
+        ItemStack bottle = new ItemStack(WitcheryItems.getRequired("brewbottle").get());
+        bottle.setTag(contents.bottleTag(ingredients));
+        player.setItemInHand(hand, ItemUtils.createFilledResult(player.getItemInHand(hand), player, bottle, false));
+        BrewBottling.learn(player, contents);
+        if (remaining == 0) {
+            clearMixture();
+        } else {
+            tank.setFluid(new FluidStack(Fluids.WATER, remaining));
+            updateState();
+            refreshComparator();
+            setChanged();
+        }
+        server.playSound(null, worldPosition, SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1, 1);
+        return true;
+    }
+
+    public int comparatorSignal() {
+        return comparatorSignal;
+    }
+
+    private void refreshComparator() {
+        if (!(level instanceof ServerLevel server) || isRemoved()) return;
+        int signal = 0;
+        if (!tank.isEmpty()) {
+            signal = isBoiling() ? 6 : 3;
+            if (isBoiling() && ritual == null && mixture != null && mixture.used() > 0) {
+                AltarBlockEntity altar = mixture.power() > 0 ? AltarPower.nearest(server, worldPosition) : null;
+                boolean powered = mixture.power() == 0 || altar != null && altar.power() >= mixture.power();
+                signal = powered ? (mixture.used() == mixture.capacity() ? 15 : 12) : 9;
+            }
+        }
+        if (signal != comparatorSignal) {
+            comparatorSignal = signal;
+            server.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
+        }
+    }
+
+    public int clientBrewColor() {
+        return clientBrewColor;
+    }
+
+    @Override
+    public CompoundTag getUpdateTag() {
+        CompoundTag tag = new CompoundTag();
+        tag.putInt("Color", mixture != null ? mixture.color() : -1);
+        return tag;
+    }
+
+    @Override
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag) {
+        clientBrewColor = tag.getInt("Color");
+        if (level != null && level.isClientSide) {
+            BlockState state = getBlockState();
+            level.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_CLIENTS);
+        }
+    }
+
+    @Override
+    public void onDataPacket(net.minecraft.network.Connection connection, ClientboundBlockEntityDataPacket packet) {
+        if (packet.getTag() != null) handleUpdateTag(packet.getTag());
     }
 
     private boolean isBoiling() {
@@ -220,11 +320,13 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
 
     private void clearMixture() {
         ingredients.clear();
+        mixture = null;
         ritual = null;
         ritualTicks = 0;
         heatTicks = 0;
         tank.setFluid(FluidStack.EMPTY);
         updateState();
+        refreshComparator();
         setChanged();
     }
 
@@ -260,6 +362,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
                 ingredients.add(stack);
             }
         }
+        mixture = BrewMixture.from(ingredients);
         heatTicks = Mth.clamp(tag.getInt("HeatTicks"), 0, BOIL_TICKS);
         ritual = tag.contains("Ritual", Tag.TAG_STRING) ? ResourceLocation.tryParse(tag.getString("Ritual")) : null;
         ritualTicks = Math.max(0, tag.getInt("RitualTicks"));

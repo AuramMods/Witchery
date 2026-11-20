@@ -1,5 +1,6 @@
 package art.arcane.witchery.item;
 
+import art.arcane.witchery.brewing.BrewBottling;
 import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.infusion.SpellKnowledge;
@@ -103,6 +104,7 @@ public final class SeerStoneItem extends Item {
         }
         reading.append(" ").append(spells.getSiblings().isEmpty() ? Component.translatable(MESSAGE + "no_spells")
                 : Component.translatable(MESSAGE + "spells", spells));
+        reading.append(" ").append(Component.translatable(MESSAGE + "bottling", BrewBottling.skill(target)));
         boolean cursed = false;
         for (int index = 0; index < CURSE_TAGS.length; index++) {
             int level = persisted.getInt(CURSE_TAGS[index]);

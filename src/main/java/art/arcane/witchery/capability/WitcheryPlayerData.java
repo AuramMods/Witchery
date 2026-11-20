@@ -19,6 +19,7 @@ public final class WitcheryPlayerData {
     private static final String KEY_HUMAN_BLOOD = "HumanBlood";
     private static final String KEY_VAMPIRE_LEVEL = "VampireLevel";
     private static final String KEY_WEREWOLF_LEVEL = "WerewolfLevel";
+    private static final String KEY_POTION_BOTTLING = "PotionBottling";
     private static final String KEY_WOLFMAN_QUEST_STATE = "WolfmanQuestState";
     private static final String KEY_WOLFMAN_QUEST_COUNTER = "WolfmanQuestCounter";
     private static final String KEY_WOLFMAN_QUEST_CHUNKS = "WolfmanQuestChunks";
@@ -52,6 +53,7 @@ public final class WitcheryPlayerData {
     private int humanBlood;
     private int vampireLevel;
     private int werewolfLevel;
+    private int potionBottling;
     private WolfmanQuestState wolfmanQuestState = WolfmanQuestState.NOT_STARTED;
     private int wolfmanQuestCounter;
     private final Set<Long> wolfmanQuestChunks = new LinkedHashSet<>();
@@ -145,6 +147,14 @@ public final class WitcheryPlayerData {
         }
         werewolfLevel = next;
         setBloodPower(bloodPower);
+    }
+
+    public int getPotionBottling() {
+        return potionBottling;
+    }
+
+    public void setPotionBottling(int skill) {
+        potionBottling = Mth.clamp(skill, 0, 100);
     }
 
     public WolfmanQuestState getWolfmanQuestState() {
@@ -375,6 +385,7 @@ public final class WitcheryPlayerData {
         humanBlood = source.humanBlood;
         vampireLevel = source.vampireLevel;
         werewolfLevel = source.werewolfLevel;
+        potionBottling = source.potionBottling;
         wolfmanQuestState = source.wolfmanQuestState;
         wolfmanQuestCounter = source.wolfmanQuestCounter;
         wolfmanQuestChunks.clear();
@@ -414,6 +425,7 @@ public final class WitcheryPlayerData {
         tag.putInt(KEY_HUMAN_BLOOD, humanBlood);
         tag.putInt(KEY_VAMPIRE_LEVEL, vampireLevel);
         tag.putInt(KEY_WEREWOLF_LEVEL, werewolfLevel);
+        tag.putInt(KEY_POTION_BOTTLING, potionBottling);
         tag.putInt(KEY_WOLFMAN_QUEST_STATE, wolfmanQuestState.ordinal());
         tag.putInt(KEY_WOLFMAN_QUEST_COUNTER, wolfmanQuestCounter);
         ListTag wolfmanChunks = new ListTag();
@@ -471,6 +483,7 @@ public final class WitcheryPlayerData {
         setHumanBlood(bloodData.getInt(KEY_HUMAN_BLOOD));
         setVampireLevel(bloodData.getInt(KEY_VAMPIRE_LEVEL));
         setWerewolfLevel(bloodData.getInt(KEY_WEREWOLF_LEVEL));
+        setPotionBottling(bloodData.getInt(KEY_POTION_BOTTLING));
         wolfmanQuestState = WolfmanQuestState.values()[Mth.clamp(bloodData.getInt(KEY_WOLFMAN_QUEST_STATE), 0, 2)];
         wolfmanQuestCounter = Mth.clamp(bloodData.getInt(KEY_WOLFMAN_QUEST_COUNTER), 0, 100);
         wolfmanQuestChunks.clear();

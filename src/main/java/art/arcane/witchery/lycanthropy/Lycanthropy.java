@@ -177,12 +177,12 @@ public final class Lycanthropy {
     }
 
     public static boolean wolfsbaneActive(Player player, int rank) {
-        var effect = player.getEffect(WitcheryEffects.all().get("potion.wolfsbane").get());
+        var effect = player.getEffect(WitcheryEffects.WOLFSBANE.get());
         return effect != null && Math.max(1, effect.getAmplifier() * 3) >= rank;
     }
 
     public static boolean hasWolfsbane(LivingEntity entity) {
-        return entity.hasEffect(WitcheryEffects.all().get("potion.wolfsbane").get());
+        return entity.hasEffect(WitcheryEffects.WOLFSBANE.get());
     }
 
     private static void setForm(ServerPlayer player, WitcheryPlayerData data, int form, boolean howl) {

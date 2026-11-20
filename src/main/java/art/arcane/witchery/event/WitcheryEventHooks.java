@@ -433,7 +433,13 @@ public final class WitcheryEventHooks {
 
     @SubscribeEvent
     public static void preventHunterEnderPearlTravel(EntityTeleportEvent.EnderPearl event) {
-        if (HunterClothingItem.fullSet(event.getPlayer(), HunterClothingItem.Upgrade.PLAIN)) event.setCanceled(true);
+        if (event.getPlayer().hasEffect(WitcheryEffects.ENDER_INHIBITION.get())
+                || HunterClothingItem.fullSet(event.getPlayer(), HunterClothingItem.Upgrade.PLAIN)) event.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public static void preventEnderEntityTravel(EntityTeleportEvent.EnderEntity event) {
+        if (event.getEntityLiving().hasEffect(WitcheryEffects.ENDER_INHIBITION.get())) event.setCanceled(true);
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)

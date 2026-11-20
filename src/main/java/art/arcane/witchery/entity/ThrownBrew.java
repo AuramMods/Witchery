@@ -1,5 +1,6 @@
 package art.arcane.witchery.entity;
 
+import art.arcane.witchery.item.BrewBottleItem;
 import art.arcane.witchery.item.ThrowableBrewItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryEntities;
@@ -58,6 +59,11 @@ public final class ThrownBrew extends ThrowableItemProjectile {
                         : BlockPos.containing(impact);
                 if (hit instanceof EntityHitResult entity) pos = entity.getEntity().blockPosition();
                 if (server.getBlockState(pos).canBeReplaced()) server.setBlockAndUpdate(pos, Blocks.COBWEB.defaultBlockState());
+                discard();
+                return;
+            }
+            if (getItem().getItem() instanceof BrewBottleItem brew) {
+                brew.impact(server, this, hit);
                 discard();
                 return;
             }

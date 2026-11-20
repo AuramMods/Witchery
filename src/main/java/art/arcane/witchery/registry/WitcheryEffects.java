@@ -28,6 +28,9 @@ public final class WitcheryEffects {
     public static final RegistryObject<MobEffect> ENSLAVED = MOB_EFFECTS.register("potion.enslaved",
             () -> new MobEffect(MobEffectCategory.HARMFUL, 0x4F2756) {});
     public static final RegistryObject<MobEffect> PARALYSIS = MOB_EFFECTS.register("potion.paralysed", ParalysisEffect::new);
+    public static final RegistryObject<MobEffect> WOLFSBANE = simpleEffect("potion.wolfsbane", MobEffectCategory.NEUTRAL);
+    public static final RegistryObject<MobEffect> ENDER_INHIBITION = simpleEffect("potion.enderinhibition", MobEffectCategory.HARMFUL);
+    public static final RegistryObject<MobEffect> BREWING_EXPERTISE = simpleEffect("potion.brewingexpertise", MobEffectCategory.BENEFICIAL);
     public static final RegistryObject<MobEffect> MORTAL_COIL = MOB_EFFECTS.register("potion.mortalcoil", MortalCoilEffect::new);
     public static final RegistryObject<MobEffect> QUEASY = MOB_EFFECTS.register("potion.queasy",
             () -> new MobEffect(MobEffectCategory.HARMFUL, 0x7C9348) {
@@ -42,6 +45,9 @@ public final class WitcheryEffects {
         LEGACY_EFFECTS.put("potion.grotesque", GROTESQUE);
         LEGACY_EFFECTS.put("potion.enslaved", ENSLAVED);
         LEGACY_EFFECTS.put("potion.paralysed", PARALYSIS);
+        LEGACY_EFFECTS.put("potion.wolfsbane", WOLFSBANE);
+        LEGACY_EFFECTS.put("potion.enderinhibition", ENDER_INHIBITION);
+        LEGACY_EFFECTS.put("potion.brewingexpertise", BREWING_EXPERTISE);
         LEGACY_EFFECTS.put("potion.mortalcoil", MORTAL_COIL);
         LEGACY_EFFECTS.put("potion.queasy", QUEASY);
         for (String legacyName : LegacyRegistryData.EFFECTS) {
@@ -58,6 +64,11 @@ public final class WitcheryEffects {
 
     public static Map<String, RegistryObject<MobEffect>> all() {
         return Collections.unmodifiableMap(LEGACY_EFFECTS);
+    }
+
+    private static RegistryObject<MobEffect> simpleEffect(String path, MobEffectCategory category) {
+        int color = (Witchery.MODID + ":" + path).hashCode() & 0xFFFFFF;
+        return MOB_EFFECTS.register(path, () -> new MobEffect(category, color) {});
     }
 
     private static void registerLegacyEffect(String legacyName) {

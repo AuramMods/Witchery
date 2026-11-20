@@ -71,6 +71,8 @@ import art.arcane.witchery.client.renderer.WitchToadRenderer;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.GlassGobletItem;
 import art.arcane.witchery.item.BroomItem;
+import art.arcane.witchery.item.BrewBottleItem;
+import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
 import art.arcane.witchery.item.CaneSwordItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
@@ -271,6 +273,9 @@ public final class WitcheryClient {
             ItemProperties.register(WitcheryItems.getRequired("canesword").get(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "drawn"),
                     (stack, level, entity, seed) -> CaneSwordItem.isDrawn(stack) ? 1 : 0);
+            ItemProperties.register(WitcheryItems.getRequired("brewbottle").get(),
+                    ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "splash"),
+                    (stack, level, entity, seed) -> BrewBottleItem.isSplash(stack) ? 1 : 0);
             ItemProperties.register(WitcheryBlocks.getRequired("crittersnare").get().asItem(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "critter"),
                     (stack, level, entity, seed) -> CritterSnareBlock.critterFromStack(stack).ordinal());
@@ -317,8 +322,13 @@ public final class WitcheryClient {
                 WitcheryBlocks.getRequired("spiritportal").get());
         event.register((state, level, pos, tint) -> tint == 0 ? 0xFF0022 : -1,
                 WitcheryBlocks.getRequired("tormentportal").get());
-        event.register((state, level, pos, tint) -> level != null && pos != null
-                ? BiomeColors.getAverageWaterColor(level, pos) : 0x3F76E4, WitcheryBlocks.getRequired("cauldron").get());
+        event.register((state, level, pos, tint) -> {
+            if (level == null || pos == null) return 0x3F76E4;
+            if (level.getBlockEntity(pos) instanceof WitchesCauldronBlockEntity cauldron && cauldron.clientBrewColor() >= 0) {
+                return cauldron.clientBrewColor();
+            }
+            return BiomeColors.getAverageWaterColor(level, pos);
+        }, WitcheryBlocks.getRequired("cauldron").get());
         event.register((state, level, pos, tint) -> {
             if (tint != 0) {
                 return -1;
@@ -332,6 +342,7 @@ public final class WitcheryClient {
 
     @SubscribeEvent
     public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
+        event.register((stack, tint) -> tint == 0 ? BrewBottleItem.color(stack) : -1, WitcheryItems.getRequired("brewbottle").get());
         var hunterClothing = java.util.Arrays.stream(HunterClothingItem.Piece.values())
                 .flatMap(piece -> java.util.Arrays.stream(HunterClothingItem.Upgrade.values())
                         .map(upgrade -> WitcheryItems.getRequired(piece.path(upgrade)).get()))

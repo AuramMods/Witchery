@@ -1,6 +1,13 @@
 {
    "parent" : "minecraft:item/generated",
    "textures" : {
-      "layer0" : "witchery:item/taglockkit"
-   }
+      "layer0" : "witchery:item/brew_overlay",
+      "layer1" : "witchery:item/brew_drinkable"
+   },
+   "overrides" : [
+      {
+         "predicate" : { "witchery:splash" : 1 },
+         "model" : "witchery:item/brewbottle_splash"
+      }
+   ]
 }

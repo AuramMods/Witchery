@@ -110,7 +110,7 @@
 - [x] Restore the medium Infernal Imp rite and ownership contract. The muted survival client verified the refund when activating without the Seer Stone and summoned a 50-health Imp with the stone. It signed the contract with its own Taglock Kit, verified the refusal at six levels, paid 25 levels, and bound Zul.
 - [x] Restore the Imp's gift progression, cooldown and original Soul Brew knowledge. The muted client verified the cooldown, advanced the fixture clock for subsequent gifts, and received Hunger, Fear, Anguish and the Contract of Torment. The three brews added their spell knowledge. All 38 required Forge GameTests passed, including signed ownership, saved gift progress and power, and the full contract channel.
 - [ ] Restore the Imp's other signed spell contracts.
-- [ ] Restore legacy potion bottling skill and include it in Seer Stone readings.
+- [x] Restore legacy potion bottling skill and include it in Seer Stone readings. Filling a two-level brew advanced the muted client's skill to one and the stone reported that value. GameTests verify the first yield threshold, power accounting, and the saved capability.
 - [ ] Restore the coven witch's additional combat and ritual behaviors.
 
 ## Overworld Infusion and Death Protection Poppet (2026-11-19)
@@ -477,7 +477,7 @@
 - [x] Restore the rank-one wolf form, smaller dimensions, armor drop, Night Vision, jump and movement stats, and Silver Sword damage. The dedicated server recorded speed changing from 0.10 to 0.15 and the additional step height of 0.4. A second muted client saw the first as a wolf. With the active familiar's damage sharing, a 12-point ordinary strike took 3.6 health and a seven-point silver strike took 10.8 health.
 - [x] Reconnect after a dedicated-server restart, then collect another Taglock and perform the cure while still in wolf form. The save retained rank one, wolf form and speed. The successful cure consumed all six offerings, restored normal movement and kept vampire rank ten. Java 17 data generation, JAR reobfuscation and all 226 required Forge GameTests passed.
 - [x] Restore Wolfsbane identification. The muted survival client used up one flower on an unshifted werevillager and saw the flame burst. A distant attempt left the stack unchanged. A nearby healthy villager used up one flower without flames. Java 17 data generation, JAR reobfuscation and all 248 required Forge GameTests passed.
-- [ ] Restore the Wolfsbane effect through general cauldron brewing.
+- [x] Restore the Wolfsbane effect in drinkable and splash brews. A basic drink suppresses rank-one transformation for 60 seconds. The original strength modifiers raise the supported rank. The splash retains the direct-hit and proximity duration rules.
 
 ## Werevillagers and Wolfmen (2026-11-20)
 
@@ -520,6 +520,15 @@
 - [x] Arm the Wolf Trap beside a Wolf Altar at the full moon. The muted survival client leashed a sheep and tethered it to the fence. The trap recorded the summoned Wolfman's UUID. It stayed armed when an unrelated Wolfman moved through, then sprang and made its own Wolfman infectious when that creature moved through it.
 - [x] Verify the original loot and saved-tag formats. GameTests checked timed arming, the legacy owner UUID string, bait gating, capture and the absence of a Wolf Trap item drop. Java 17 data generation, JAR reobfuscation and all 246 required Forge GameTests passed.
 - [x] Restart the packaged dedicated server. Both placed traps retained their owner and sprung state. The Wolf Trap retained its specific Wolfman's UUID, that Wolfman remained infectious, and the sheep kept its fence leash.
+
+## General Cauldron Brewing (2026-11-20)
+
+- [x] Restore ordered ingredients, capacity, per-effect strength and duration, inversion, instant splash, altar costs, bottling yields and comparator output. The existing Mutandis ritual still uses its original trigger and output.
+- [x] Verify a three-bucket Wolfsbane batch in the muted survival client. The client filled the cauldron with buckets and dropped in Mandrake Root followed by Wolfsbane. The liquid changed color. An actual dedicated restart preserved its heat, water and ingredient order. The client bottled and drank it, received the effect and recovered the glass bottle.
+- [x] Verify powered brewing and splash throws. The live cauldron kept the unpowered mixture and bottle. A nearby altar let the client bottle the inverted sugar brew. A real Wolfsbane splash applied the effect to a directly hit pig and a nearby pig for different durations. The pig outside the radius received no effect.
+- [x] Verify two effects in the same brew and their status icons. Glowstone strengthened Wolfsbane while Ender Inhibition remained at its base strength. An Ender Pearl thrown under Ender Inhibition consumed the pearl and left the player in place. In the control throw, clearing the effect restored teleportation. The player's bottling skill survived the restart.
+- [x] Run Java 17 data generation, JAR reobfuscation and all 253 required Forge GameTests. The tests cover solo and mixed brews, the first bottling threshold, named legacy ingredient metadata, splash scaling, Ender Inhibition and the fixed Mutandis recipe.
+- [ ] Port the remaining brew actions and effects, including gas, liquid, triggered dispersal, brew fluid containers, additional modifiers and castable cauldron rituals.
 
 ## Auram Pack Validation (2026-11-20)
 
