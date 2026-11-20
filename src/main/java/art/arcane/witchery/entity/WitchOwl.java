@@ -18,6 +18,7 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -128,6 +129,12 @@ public final class WitchOwl extends WitchPet {
     @Override
     protected boolean canTameFrom(Player player) {
         return distanceToSqr(player) < 9;
+    }
+
+    public void beginRescue(LivingEntity attacker) {
+        timeToLive = 300;
+        setTarget(attacker);
+        setLastHurtByMob(attacker);
     }
 
     @Override

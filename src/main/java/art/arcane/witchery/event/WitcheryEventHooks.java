@@ -13,6 +13,7 @@ import art.arcane.witchery.item.DeathProtectionPoppetItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.VampiricPoppetItem;
 import art.arcane.witchery.network.WitcheryNetwork;
+import art.arcane.witchery.prediction.PredictedCourtship;
 import art.arcane.witchery.prediction.Predictions;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.registry.WitcheryEffects;
@@ -30,6 +31,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
@@ -41,6 +43,7 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.living.LivingEvent.LivingTickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
@@ -185,6 +188,13 @@ public final class WitcheryEventHooks {
         if (event.phase == TickEvent.Phase.END && event.level instanceof ServerLevel level) {
             TormentTravel.tickEncounters(level);
             OverworldInfusion.tick(level);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onVillagerTick(LivingTickEvent event) {
+        if (event.getEntity() instanceof Villager villager && villager.level() instanceof ServerLevel level) {
+            PredictedCourtship.tick(villager, level);
         }
     }
 

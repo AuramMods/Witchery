@@ -257,7 +257,9 @@
 - [x] Restore the first seven outcomes using the legacy IDs and weights. Arrows, falls, zombie, Ent and wolf damage, water and a Nether visit can fulfill their corresponding readings. The GameTests covered a matching fall, wrong damage and the overdue gravel cavity.
 - [x] Restart the packaged dedicated server while the undead forecast is active. The player retained training, the same forecast ID and timestamp, and the Crystal Ball's cooldown timestamp. A live zombie's attack cleared the forecast after reconnecting.
 - [x] Restore Iron, Diamond, Emerald, Coal and Buried Treasure predictions in survival harvesting. The muted player loaded old-format Coal and Treasure forecasts in a disposable save. Mining Deepslate yielded 16 extra coal, and digging dirt exposed a mineshaft chest with a Golden Apple. A loot preview left the Coal forecast active. All 103 required GameTests passed, including age thresholds, ore drops, and protected chest placement.
-- [ ] Restore love, Baba Yaga and the Owl and Wolf rescue predictions. Restore the Waystone view and verify readings for nearby players on a dedicated server.
+- [x] Restore the Love and both rescue forecasts. A summoned farmer approached the standing player and produced a baby villager. Separate zombie attacks summoned a temporary Owl and a wild Wolf. Each attacked the zombie that hit its player. All 105 required GameTests, data generation and JAR reobfuscation passed.
+- [x] Verify a reading for a nearby player on a dedicated server. The trained player used the ball and the second muted client received the Wet forecast. The reader's record stayed empty. Entering water cleared the second player's reading.
+- [ ] Restore the two Baba Yaga forecasts and Crystal Ball Waystone viewing.
 
 ## Auram Pack Validation (2026-11-20)
 

@@ -1,6 +1,7 @@
 package art.arcane.witchery.prediction;
 
 import art.arcane.witchery.entity.Ent;
+import art.arcane.witchery.entity.WitchOwl;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.ChatFormatting;
@@ -19,9 +20,11 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -34,6 +37,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public final class Predictions {
     private static final String SKILL = "WITCFTeller";
@@ -54,7 +58,10 @@ public final class Predictions {
         DIAMOND(6, 3, "diamond", 1_208),
         EMERALD(7, 3, "emerald", 1_208),
         TREASURE(8, 2, "treasure", 1_210),
+        LOVE(9, 2, "love", 1_210),
         FRIEND(12, 3, "friend"),
+        OWL_RESCUE(13, 13, "rescued", 1_208),
+        WOLF_RESCUE(14, 13, "rescued", 1_208),
         WET(15, 13, "wet"),
         NETHER(16, 3, "tothenether"),
         COAL(17, 13, "coal", 1_208);
@@ -83,10 +90,11 @@ public final class Predictions {
             return null;
         }
 
-        boolean canForceEncounter() {
+        double tickChance(long elapsed) {
             return switch (this) {
-                case ZOMBIE, ARROW, ENT, FALL, FRIEND, WET, NETHER -> true;
-                default -> false;
+                case LOVE -> elapsed > dueAfter ? 0.05 : 0.01;
+                case ZOMBIE, ARROW, ENT, FALL, FRIEND, WET, NETHER -> elapsed > dueAfter ? 0.05 : 0;
+                default -> 0;
             };
         }
     }
@@ -138,6 +146,7 @@ public final class Predictions {
                 case ENT -> source.getEntity() instanceof Ent;
                 case FALL -> source.is(DamageTypeTags.IS_FALL);
                 case FRIEND -> source.getEntity() instanceof Wolf;
+                case OWL_RESCUE, WOLF_RESCUE -> rescue(kind, player, source);
                 default -> false;
             };
             if (fulfilled) readings.remove(index);
@@ -185,8 +194,10 @@ public final class Predictions {
             if (kind == Kind.WET && player.isInWaterRainOrBubble()
                     || kind == Kind.NETHER && player.level().dimension().equals(Level.NETHER)) {
                 readings.remove(index);
-            } else if (kind.canForceEncounter() && now - reading.getLong(TIME) > kind.dueAfter
-                    && player.getRandom().nextDouble() < 0.05) {
+                continue;
+            }
+            double chance = kind.tickChance(now - reading.getLong(TIME));
+            if (chance > 0 && player.getRandom().nextDouble() < chance) {
                 // Remove the reading before effects that can post another player event.
                 readings.remove(index);
                 if (!fulfill(kind, player)) readings.add(index, reading);
@@ -212,46 +223,57 @@ public final class Predictions {
 
     private static boolean fulfill(Kind kind, ServerPlayer player) {
         return switch (kind) {
-            case ZOMBIE -> encounter(player, EntityType.ZOMBIE, false);
-            case ARROW -> encounter(player, EntityType.SKELETON, false);
-            case ENT -> encounter(player, WitcheryEntities.ENT.get(), false);
+            case ZOMBIE -> hostileEncounter(player, EntityType.ZOMBIE);
+            case ARROW -> hostileEncounter(player, EntityType.SKELETON);
+            case ENT -> hostileEncounter(player, WitcheryEntities.ENT.get());
             case FALL -> sinkGround(player, false);
-            case FRIEND -> encounter(player, EntityType.WOLF, true);
+            case LOVE -> encounter(player, EntityType.VILLAGER, 6, villager -> PredictedCourtship.start(villager, player));
+            case FRIEND -> encounter(player, EntityType.WOLF, 4, wolf -> wolf.tame(player));
             case WET -> sinkGround(player, true);
             case NETHER -> sendToNether(player);
             default -> false;
         };
     }
 
-    private static boolean encounter(ServerPlayer player, EntityType<? extends Mob> type, boolean ally) {
+    private static boolean rescue(Kind kind, ServerPlayer player, DamageSource source) {
+        if (!(source.getEntity() instanceof LivingEntity attacker) || attacker == player || !attacker.isAlive()) return false;
+        if (kind == Kind.OWL_RESCUE) {
+            return encounter(player, WitcheryEntities.OWL.get(), 4, owl -> owl.beginRescue(attacker));
+        }
+        return encounter(player, EntityType.WOLF, 4, wolf -> {
+            wolf.setTarget(attacker);
+            wolf.setLastHurtByMob(attacker);
+        });
+    }
+
+    private static boolean hostileEncounter(ServerPlayer player, EntityType<? extends Mob> type) {
+        return encounter(player, type, 4, mob -> mob.setTarget(player));
+    }
+
+    private static <T extends Mob> boolean encounter(ServerPlayer player, EntityType<T> type, int radius, Consumer<T> setup) {
         ServerLevel level = player.serverLevel();
-        if (!ally && level.getDifficulty() == Difficulty.PEACEFUL) return false;
         RandomSource random = level.getRandom();
-        BlockPos start = player.blockPosition().offset(encounterOffset(random), 0, encounterOffset(random));
+        BlockPos start = player.blockPosition().offset(encounterOffset(random, radius), 0, encounterOffset(random, radius));
         BlockPos.MutableBlockPos feet = start.mutable();
         while (feet.getY() < start.getY() + 8 && !level.getBlockState(feet).isAir()) feet.move(Direction.UP);
         while (feet.getY() > level.getMinBuildHeight() && level.getBlockState(feet.below()).isAir()) feet.move(Direction.DOWN);
         if (level.isOutsideBuildHeight(feet) || !level.getWorldBorder().isWithinBounds(feet)
                 || !level.getBlockState(feet.below()).isFaceSturdy(level, feet.below(), Direction.UP)) return false;
-        Mob mob = type.create(level);
-        if (mob == null) return false;
+        T mob = type.create(level);
+        if (mob == null || mob instanceof Monster && level.getDifficulty() == Difficulty.PEACEFUL) return false;
         Vec3 arrival = Vec3.atBottomCenterOf(feet);
         mob.moveTo(arrival.x, arrival.y, arrival.z, 0, 0);
         if (!level.noCollision(mob)) return false;
         mob.finalizeSpawn(level, level.getCurrentDifficultyAt(feet), MobSpawnType.EVENT, null, null);
-        if (ally && mob instanceof Wolf wolf) {
-            wolf.tame(player);
-        } else {
-            mob.setTarget(player);
-        }
+        setup.accept(mob);
         if (!level.addFreshEntity(mob)) return false;
         level.sendParticles(ParticleTypes.SMOKE, mob.getX(), mob.getY(0.5), mob.getZ(), 16, 0.25, 0.4, 0.25, 0.035);
         return true;
     }
 
-    private static int encounterOffset(RandomSource random) {
-        int offset = random.nextInt(5) - 4;
-        return offset > -2 ? offset + 4 : offset;
+    private static int encounterOffset(RandomSource random, int radius) {
+        int offset = random.nextInt(5);
+        return offset <= 2 ? offset - radius : offset + radius - 4;
     }
 
     private static boolean sinkGround(ServerPlayer player, boolean water) {
@@ -281,7 +303,7 @@ public final class Predictions {
         ServerLevel nether = player.server.getLevel(Level.NETHER);
         if (nether == null || player.level() == nether || player.changeDimension(nether) == null) return false;
         player.sendSystemMessage(Component.translatable(MESSAGE + "tothenether.summoned").withStyle(ChatFormatting.LIGHT_PURPLE));
-        encounter(player, EntityType.BLAZE, false);
+        hostileEncounter(player, EntityType.BLAZE);
         return true;
     }
 
