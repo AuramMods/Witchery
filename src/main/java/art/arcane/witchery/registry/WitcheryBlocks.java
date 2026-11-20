@@ -7,6 +7,7 @@ import art.arcane.witchery.block.AltarBlock;
 import art.arcane.witchery.block.CandelabraBlock;
 import art.arcane.witchery.block.ChaliceBlock;
 import art.arcane.witchery.block.CritterSnareBlock;
+import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.block.CrystalBallBlock;
 import art.arcane.witchery.block.DemonHeartBlock;
 import art.arcane.witchery.block.DistilleryBlock;
@@ -152,8 +153,9 @@ public final class WitcheryBlocks {
             case "shadedglass_active" -> new LegacyShadedGlassBlock(true);
             case "bloodrose" -> new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_SMALL, false);
             case "plantmine" -> new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_SMALL, true);
-            case "glintweed", "bramble", "spanishmoss", "vine", "web" ->
+            case "glintweed", "spanishmoss", "vine", "web" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_TALL, false);
+            case "bramble" -> new BrambleBlock();
             case "crittersnare" -> new CritterSnareBlock();
             case "somniancotton" -> new SomnianCottonBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION).randomTicks());
             case "embermoss" -> new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_LOW, false);

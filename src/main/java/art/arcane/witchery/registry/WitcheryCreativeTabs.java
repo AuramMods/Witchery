@@ -1,5 +1,6 @@
 package art.arcane.witchery.registry;
 
+import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.item.WitchWoodBlockItem;
@@ -26,6 +27,11 @@ public final class WitcheryCreativeTabs {
                             for (WitchWoodType type : WitchWoodType.values()) {
                                 output.accept(type.stack(wood));
                             }
+                        } else if (entry.get() instanceof BrambleBlock.Item bramble) {
+                            output.accept(bramble);
+                            var ender = new ItemStack(bramble);
+                            BrambleBlock.setWild(ender, false);
+                            output.accept(ender);
                         } else {
                             output.accept(entry.get());
                         }

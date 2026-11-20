@@ -8,6 +8,7 @@ import art.arcane.witchery.client.screen.WitchesOvenScreen;
 import art.arcane.witchery.menu.LegacyPlaceholderMenu;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.CritterSnareBlock;
+import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.client.model.BabaYagaModel;
 import art.arcane.witchery.client.model.MandrakeModel;
@@ -202,6 +203,9 @@ public final class WitcheryClient {
             ItemProperties.register(WitcheryBlocks.getRequired("crittersnare").get().asItem(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "critter"),
                     (stack, level, entity, seed) -> CritterSnareBlock.critterFromStack(stack).ordinal());
+            ItemProperties.register(WitcheryBlocks.getRequired("bramble").get().asItem(),
+                    ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "ender"),
+                    (stack, level, entity, seed) -> BrambleBlock.isWild(stack) ? 0 : 1);
 
             for (String name : new String[]{
                     "belladonna", "mandrake", "artichoke", "snowbell", "wormwood", "mindrake", "wolfsbane", "garlicplant",

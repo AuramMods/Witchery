@@ -32,7 +32,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class WitcheryNetwork {
-    private static final String PROTOCOL_VERSION = "23";
+    private static final String PROTOCOL_VERSION = "24";
     private static final int MAX_USERNAME_LENGTH = 64;
     private static final int MAX_PLAYER_SKIN_LENGTH = 256;
     private static final int MAX_MARKUP_PAGE_COUNT = 256;
@@ -102,12 +102,15 @@ public final class WitcheryNetwork {
                     buffer.writeVarInt(message.capacity());
                     buffer.writeVarInt(message.power());
                     buffer.writeVarInt(message.powerCharge());
+                    buffer.writeVarInt(message.brew());
+                    buffer.writeVarInt(message.brewTicks());
                 })
                 .decoder(buffer -> new InfusionStatusPacket(buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt(),
-                        buffer.readVarInt(), buffer.readVarInt()))
+                        buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt()))
                 .consumerMainThread((message, context) -> {
                     runClient(() -> art.arcane.witchery.client.ClientInfusion.setStatus(
-                            message.type(), message.charge(), message.capacity(), message.power(), message.powerCharge()));
+                            message.type(), message.charge(), message.capacity(), message.power(), message.powerCharge(),
+                            message.brew(), message.brewTicks()));
                     context.get().setPacketHandled(true);
                 })
                 .add();
@@ -190,12 +193,14 @@ public final class WitcheryNetwork {
     private record DreamAtmospherePacket(int nightmareLevel) {
     }
 
-    public static void sendInfusionStatus(ServerPlayer player, int type, int charge, int capacity, int power, int powerCharge) {
+    public static void sendInfusionStatus(ServerPlayer player, int type, int charge, int capacity, int power, int powerCharge,
+                                          int brew, int brewTicks) {
         if (player.connection == null || !player.connection.connection.isConnected()) return;
-        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new InfusionStatusPacket(type, charge, capacity, power, powerCharge));
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
+                new InfusionStatusPacket(type, charge, capacity, power, powerCharge, brew, brewTicks));
     }
 
-    private record InfusionStatusPacket(int type, int charge, int capacity, int power, int powerCharge) {
+    private record InfusionStatusPacket(int type, int charge, int capacity, int power, int powerCharge, int brew, int brewTicks) {
     }
 
     public static void sendPushTarget(ServerPlayer player, int entityId, double velocityX, double velocityY, double velocityZ) {

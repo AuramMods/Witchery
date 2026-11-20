@@ -93,6 +93,16 @@ public final class InfernalInfusion {
         HitResult hit = OtherwhereInfusion.rayTrace(player, 15);
         if (hit instanceof BlockHitResult block && hit.getType() == HitResult.Type.BLOCK
                 && player.level().getBlockState(block.getBlockPos()).is(WitcheryBlocks.getRequired("alluringskull").get())) return;
+        if (player.isShiftKeyDown() && hit instanceof EntityHitResult entity && entity.getEntity() instanceof Mob mob) {
+            if (InfusedBrews.useGrave(player, mob)) {
+                particles(mob, ParticleTypes.ENTITY_EFFECT);
+                player.serverLevel().playSound(null, mob.blockPosition(), SoundEvents.ZOMBIE_INFECT, player.getSoundSource(), 1, 1);
+            } else {
+                particles(mob, ParticleTypes.SMOKE);
+                fail(player);
+            }
+            return;
+        }
         List<Mob> undead = minions(player).stream().filter(mob -> mob.getMobType() == MobType.UNDEAD).toList();
         if (!player.isShiftKeyDown() && hit instanceof EntityHitResult entity
                 && entity.getEntity() instanceof LivingEntity target && target.isAlive() && !target.isSpectator()

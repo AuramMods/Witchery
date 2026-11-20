@@ -1,11 +1,14 @@
 package art.arcane.witchery.world;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.portal.PortalInfo;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.ITeleporter;
@@ -23,6 +26,27 @@ public final class WitcheryTeleport {
         return !level.isOutsideBuildHeight(pos) && level.getWorldBorder().isWithinBounds(pos)
                 && !level.getBlockCollisions(actor, actor.getBoundingBox().move(position.subtract(actor.position())))
                 .iterator().hasNext();
+    }
+
+    public static boolean randomSurface(Entity actor, ServerLevel level, BlockPos origin, int radius) {
+        RandomSource random = level.getRandom();
+        BlockPos ground = origin.offset(random.nextInt(radius * 2) - radius, 0, random.nextInt(radius * 2) - radius);
+        if (!level.getWorldBorder().isWithinBounds(ground)) return false;
+        while (ground.getY() > level.getMinBuildHeight() && !level.getBlockState(ground).blocksMotion()) {
+            ground = ground.below();
+        }
+        int ceiling = Math.min(level.getMaxBuildHeight() - 3, origin.getY() + 64);
+        while (ground.getY() < ceiling) {
+            var state = level.getBlockState(ground);
+            Vec3 landing = Vec3.atBottomCenterOf(ground.above());
+            if (state.isFaceSturdy(level, ground, Direction.UP) && !state.is(Blocks.BEDROCK)
+                    && level.isEmptyBlock(ground.above()) && level.isEmptyBlock(ground.above(2))
+                    && level.isEmptyBlock(ground.above(3)) && canArrive(actor, level, landing)) {
+                return move(actor, level, landing);
+            }
+            ground = ground.above();
+        }
+        return false;
     }
 
     public static boolean move(Entity actor, ServerLevel destination, Vec3 target) {

@@ -221,7 +221,7 @@
 - [x] Restore bat, silverfish, tiny slime and tiny magma cube capture and sneak-release. Captured state and the bat shop stock flag carry through block item drops and legacy metadata. The packaged server captured a moving bat and kept its stocked state.
 - [x] Save a live Mystic Branch rite after the first Grassper offering. The packaged restart emptied the second Grassper and completed the rite. A separate Grassper still held one ingot and emitted comparator output 15. The client released the bat from the restored snare, and the bat kept its shop stock flag.
 - [x] Pass all 84 required Forge GameTests and package the reobfuscated JAR on Java 17.
-- [ ] Restore the remaining Sprig mutations, including the plant mutations, Leech Chest, Parasytic Louse and Winged Monkey.
+- [ ] Restore the remaining Sprig mutations, including Leech Chest, Blood Roses, Parasytic Louse and Winged Monkey.
 
 ## Owl and Toad (2026-11-20)
 
@@ -240,7 +240,7 @@
 - [x] Place, dye, mount and fly the Enchanted Broom on dedicated Forge. The muted rider flew more than 110 blocks in one run. Looking up raised the broom over six blocks during a shorter run, and looking down produced descending motion. Releasing forward with the Owl active braked the broom.
 - [x] Brew the Infused Brew Base in the Kettle and offer it with a Broom, Feather, Arthana and a wild Owl. The muted player received an Infused Brew of Soaring. Forge GameTests verified that the Owl and Soaring bonuses stack and that Soaring expires after two hours.
 - [x] Restart the packaged server after drinking Soaring. The same blue broom and brew timestamp survived. The muted client flew again with both bonuses, dismounted and recovered the dyed item with an axe. All 91 required GameTests, data generation and JAR reobfuscation passed.
-- [ ] Restore the other Infused Brew Base recipe when Wild Bramble has a survival path. Restore the infused-brew icon and remaining-time display with the other infused brews.
+- [x] Restore the Wild Bramble recipe for a second Infused Brew Base. Restore the HUD icons and remaining-time display for Soaring and the Grave.
 
 ## Waystone rites (2026-11-20)
 
@@ -272,7 +272,7 @@
 - [x] Restore the Brew of Raising and the Necromantic Stone's general undead commands. The muted client filled a heated kettle and brewed the original six ingredients with 500 altar power. A thrown portion raised two owned zombies, and the Necromantic Stone sent them to attack a husk. All 113 required GameTests, data generation and JAR reobfuscation passed.
 - [x] Restore Baba's Hat equipment and its charge-powered evasion. The muted client equipped the hat previously earned from Baba Yaga. A test hit from a zombie left health unchanged, reduced charge by five and moved the player to a nearby open block. Environmental fire did not consume any infusion charge.
 - [x] Restart the packaged server after these interactions. Both zombies kept their UUIDs and owner, the repaired robe kept its tags, and Baba's Hat and the remaining infusion charge stayed saved.
-- [ ] Connect the garments to the advanced cauldron, Polynesia trades, and the later player forms and crossbow effects. Restore the Necromantic Stone's infused Grave use.
+- [ ] Connect the garments to the advanced cauldron, Polynesia trades, and the later player forms and crossbow effects.
 
 ## Terrain Brews (2026-11-20)
 
@@ -286,6 +286,15 @@
 - [x] Restore the recipes and effects for Frog's Tongue, Cursed Leaping, Hitchcock, Bats and Wasting. The muted client pulled a cow over two blocks, gained roughly eleven blocks of height with Jump Boost IV, and sent four temporary owls at a cow with Hitchcock. Bats released ten marked bats and applied Slowness VI to a nearby chicken. Wasting cut food from twenty to ten, applied Hunger and Poison, and cleared a nearby poppy.
 - [x] Craft a Bat Ball from four bat-filled snares and four slimeballs. The muted client took one from the crafting table. The GameTest also refused a slime-filled snare.
 - [x] Restore familiar-specific Kettle bottling. Cursed Leaping requires a Cat, Frog's Tongue a Toad and Hitchcock an Owl. Hopper extraction and wrong or dismissed familiars preserve the ready result and glass. The muted client tried Hitchcock before and after a dedicated restart with its Owl dismissed. Calling the Owl at the ritual circle allowed the same batch to be bottled. All 123 required GameTests, data generation and JAR reobfuscation passed.
+
+## Plant Mutations and the Grave (2026-11-20)
+
+- [x] Restore the legacy Sprig patterns for Wild Bramble, Ender Bramble and Wormwood. The muted survival client mutated three separate prepared arrangements with one charge each. Breaking a Wild Bramble segment returned an item with its saved variant. Wild contact applied cactus damage.
+- [x] Double Infused Brew Base using the harvested Wild Bramble and the original five other ingredients. The muted client tossed the harvested item into the heated Kettle and manually bottled both portions. A GameTest refused Ender Bramble and verified that the second recipe has no hat bonus.
+- [x] Restore the Grave rite. The muted client dropped one of its bottled portions into the small and medium white rings with bone, Web, and a Necromantic Stone. The ritual consumed its zombie, produced the infused brew, and returned the stone. Drinking opened the original skull and 120-minute display.
+- [x] Restore sneaking use of the Necromantic Stone during the Grave. The muted client bound a zombie, was refused when it tried a skeleton inside the cooldown, and bound the skeleton when the cooldown finished. Infusion charge stayed at 158 throughout.
+- [x] Verify Ender Bramble travel through actual player movement. Stepping inside moved the muted client from the test platform to safe terrain roughly 370 blocks away. Waiting until the next server tick kept the vanilla movement handler from reverting the teleport.
+- [x] Verify the Grave across a dedicated restart. The remaining-time HUD resumed at 117 minutes and the zombie kept its UUID and owner. The start time, cooldown timestamp, and 158 infusion charge persisted. Data generation, the reobfuscated build, and 129 required Forge GameTests passed.
 
 ## Auram Pack Validation (2026-11-20)
 

@@ -1,6 +1,7 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.block.DreamWeave;
 import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.brewing.BrewImpacts;
@@ -212,6 +213,7 @@ public final class WitcheryItems {
             case "flying_ointment" -> new DrinkableBrewItem(() -> MobEffects.POISON, 1200, 2);
             case "infused_brew_base" -> new DrinkableBrewItem(() -> MobEffects.WITHER, 200, 3);
             case "brew_of_soaring" -> new DrinkableBrewItem(InfusedBrews::applySoaring);
+            case "brew_of_the_grave" -> new DrinkableBrewItem(InfusedBrews::applyGrave);
             case "ghost_of_the_light", "soul_of_the_world", "spirit_of_otherwhere" ->
                     new DrinkableBrewItem(() -> MobEffects.POISON, 1200, 1);
             case "infernal_animus" -> new DrinkableBrewItem(drinker -> {
@@ -290,6 +292,9 @@ public final class WitcheryItems {
         switch (path) {
             case "demonheart" -> {
                 return new DemonHeartItem(block, false);
+            }
+            case "bramble" -> {
+                return new BrambleBlock.Item(block);
             }
             case "witchsapling", "witchleaves", "witchlog", "witchwood" -> {
                 return new WitchWoodBlockItem(block, new Item.Properties());

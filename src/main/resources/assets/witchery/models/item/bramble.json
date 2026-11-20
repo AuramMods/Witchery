@@ -1,3 +1,4 @@
 {
-   "parent" : "witchery:block/bramble"
+   "parent" : "witchery:block/bramble",
+   "overrides" : [{"predicate": {"witchery:ender": 1}, "model": "witchery:item/ender_bramble"}]
 }

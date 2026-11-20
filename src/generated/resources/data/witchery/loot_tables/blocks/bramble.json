@@ -11,6 +11,15 @@
       "entries": [
         {
           "type": "minecraft:item",
+          "functions": [
+            {
+              "block": "witchery:bramble",
+              "function": "minecraft:copy_state",
+              "properties": [
+                "wild"
+              ]
+            }
+          ],
           "name": "witchery:bramble"
         }
       ],

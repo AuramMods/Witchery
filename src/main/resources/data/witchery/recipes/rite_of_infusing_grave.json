@@ -1,0 +1,16 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [
+    {"size": "small", "glyph": "witchery:circleglyphritual"},
+    {"size": "medium", "glyph": "witchery:circleglyphritual"}
+  ],
+  "sacrifices": [
+    {"item": "witchery:infused_brew_base"},
+    {"item": "minecraft:bone"},
+    {"item": "witchery:thrown_web"},
+    {"item": "witchery:necromantic_stone"}
+  ],
+  "power": 3000,
+  "living_offering": "minecraft:zombie",
+  "result": {"item": "witchery:brew_of_the_grave"}
+}

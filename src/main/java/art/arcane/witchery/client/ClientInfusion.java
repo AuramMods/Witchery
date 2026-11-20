@@ -3,10 +3,12 @@ package art.arcane.witchery.client;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.config.WitcheryClientConfig;
 import art.arcane.witchery.infusion.CreaturePower;
+import art.arcane.witchery.infusion.InfusedBrews;
 import art.arcane.witchery.infusion.InfernalInfusion;
 import art.arcane.witchery.infusion.LightInfusion;
 import art.arcane.witchery.item.WitchHandItem;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
@@ -37,20 +39,24 @@ public final class ClientInfusion {
     private static int capacity;
     private static int powerId;
     private static int powerCharge;
+    private static int brewId;
+    private static long brewExpires;
 
     private ClientInfusion() {}
 
-    public static void setStatus(int type, int current, int max, int creature, int remaining) {
+    public static void setStatus(int type, int current, int max, int creature, int remaining, int brew, int brewTicks) {
         infusion = type;
         capacity = Math.max(max, 0);
         charge = Mth.clamp(current, 0, capacity);
         powerId = type == InfernalInfusion.ID && CreaturePower.forId(creature) != null ? creature : 0;
         powerCharge = Mth.clamp(remaining, 0, CreaturePower.MAX_CHARGES);
+        brewId = brew;
+        brewExpires = Util.getMillis() + 50L * brewTicks;
     }
 
     @SubscribeEvent
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event) {
-        setStatus(0, 0, 0, 0, 0);
+        setStatus(0, 0, 0, 0, 0, 0, 0);
     }
 
     @SubscribeEvent
@@ -95,8 +101,18 @@ public final class ClientInfusion {
 
     public static void render(ForgeGui gui, GuiGraphics graphics, float partialTick, int width, int height) {
         Minecraft client = Minecraft.getInstance();
-        if (capacity == 0 || client.player == null || client.player.isSpectator()
+        if (client.player == null || client.player.isSpectator()
                 || client.screen != null || client.options.hideGui) return;
+        long brewTime = brewExpires - Util.getMillis();
+        if (brewId != 0 && brewTime > 0) {
+            int left = WitcheryClientConfig.GUI_ON_LEFT.get() ? 17 : width - 23;
+            int top = height / 2 + 26;
+            RenderSystem.enableBlend();
+            graphics.blit(ICONS, left, top, 16, brewId == InfusedBrews.GRAVE ? 16 : 0, 16, 16, 256, 256);
+            RenderSystem.disableBlend();
+            graphics.drawCenteredString(client.font, Long.toString((brewTime + 59_999) / 60_000), left + 8, top + 10, 0xEEFFFFFF);
+        }
+        if (capacity == 0) return;
         Block material = switch (infusion) {
             case 1 -> Blocks.SNOW_BLOCK;
             case 2 -> Blocks.DIRT;

@@ -1,6 +1,7 @@
 package art.arcane.witchery.item;
 
 import art.arcane.witchery.block.CritterSnareBlock;
+import art.arcane.witchery.block.BrambleBlock;
 
 import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.nbt.CompoundTag;
@@ -104,6 +105,7 @@ public enum WitcheryIngredient {
     BREW_OF_HOLLOW_TEARS(115, "brew_of_hollow_tears"),
     INFUSED_BREW_BASE(121, "infused_brew_base"),
     BREW_OF_SOARING(122, "brew_of_soaring"),
+    BREW_OF_THE_GRAVE(123, "brew_of_the_grave"),
     BREW_SOUL_HUNGER(136, "brew_of_soul_hunger"),
     BREW_SOUL_ANGUISH(137, "brew_of_soul_anguish"),
     BREW_SOUL_FEAR(138, "brew_of_soul_fear"),
@@ -138,6 +140,10 @@ public enum WitcheryIngredient {
         ItemStack stack = ItemStack.of(stackTag);
         if (!stack.isEmpty() && "witchery:crittersnare".equals(stackTag.getString("id"))) {
             CritterSnareBlock.applyLegacyMetadata(stack, stackTag.getInt("Damage"));
+            return stack;
+        }
+        if (stack.getItem() instanceof BrambleBlock.Item && stackTag.contains("Damage", Tag.TAG_ANY_NUMERIC)) {
+            BrambleBlock.setWild(stack, stackTag.getInt("Damage") == 1);
             return stack;
         }
         if (stack.getItem() instanceof WitchClothingItem && stackTag.contains("Damage", Tag.TAG_ANY_NUMERIC)) {

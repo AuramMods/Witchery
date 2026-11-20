@@ -1,5 +1,6 @@
 package art.arcane.witchery.item;
 
+import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.block.entity.GrassperBlockEntity;
@@ -23,11 +24,13 @@ import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -52,6 +55,9 @@ public final class MutatingSprigItem extends Item {
         BlockState clicked = level.getBlockState(pos);
         boolean surface = clicked.is(Blocks.GRASS_BLOCK) || clicked.is(Blocks.MYCELIUM);
         boolean clay = MutandisItem.isSoakedDirt(level, pos);
+        PlantMutation plant = findBrambleMutation(level, pos, clicked);
+        boolean wormwood = clicked.is(Blocks.WHEAT) && clicked.getValue(CropBlock.AGE) == CropBlock.MAX_AGE
+                && sides(level, pos, WitcheryBlocks.getRequired("somniancotton").get(), false) && hasDiagonalWater(level, pos);
         boolean water = level.getBlockState(pos.below()).is(Blocks.WATER) && level.getFluidState(pos.below()).isSource();
         boolean grasspers = water && clicked.is(Blocks.CHEST) && sides(level, pos, Blocks.VINE, false);
         boolean cobweb = water && clicked.is(Blocks.COBWEB);
@@ -64,6 +70,11 @@ public final class MutatingSprigItem extends Item {
             } else if (clay) {
                 MutandisItem.makeClay(server, pos);
                 for (Direction side : Direction.Plane.HORIZONTAL) MutandisItem.makeClay(server, pos.relative(side));
+            } else if (plant != null) {
+                plant.apply(server, pos);
+            } else if (wormwood) {
+                for (Direction side : Direction.Plane.HORIZONTAL) server.removeBlock(pos.relative(side), false);
+                server.setBlockAndUpdate(pos, WitcheryBlocks.getRequired("wormwood").get().defaultBlockState());
             } else if (grasspers && server.getBlockEntity(pos) instanceof ChestBlockEntity chest && chest.isEmpty()) {
                 replaceAround(server, pos, WitcheryBlocks.getRequired("grassper").get());
             } else if (snares) {
@@ -83,7 +94,8 @@ public final class MutatingSprigItem extends Item {
             server.playSound(null, pos, SoundEvents.SLIME_SQUISH, SoundSource.BLOCKS, 1, 1);
             return InteractionResult.CONSUME;
         }
-        return surface || clay || grasspers || snares || mutation != null ? InteractionResult.SUCCESS : InteractionResult.PASS;
+        return surface || clay || plant != null || wormwood || grasspers || snares || mutation != null
+                ? InteractionResult.SUCCESS : InteractionResult.PASS;
     }
 
     private static boolean sides(Level level, BlockPos center, Block block, boolean alderOnly) {
@@ -104,21 +116,69 @@ public final class MutatingSprigItem extends Item {
         return new AABB(pos.getX() - 1, pos.getY() - 1, pos.getZ() - 1, pos.getX() + 1, pos.getY() + 2, pos.getZ() + 1);
     }
 
+    private static boolean hasDiagonalWater(Level level, BlockPos center) {
+        for (int x : new int[]{-1, 1}) {
+            for (int z : new int[]{-1, 1}) if (!sourceWater(level, center.offset(x, -1, z))) return false;
+        }
+        return true;
+    }
+
+    private static boolean sourceWater(Level level, BlockPos pos) {
+        return level.getBlockState(pos).is(Blocks.WATER) && level.getFluidState(pos).isSource();
+    }
+
+    @Nullable
+    private static PlantMutation findBrambleMutation(Level level, BlockPos center, BlockState clicked) {
+        boolean wild = clicked.is(Blocks.CACTUS);
+        if (!wild && !clicked.is(Blocks.SUGAR_CANE)) return null;
+        if (!sides(level, center, WitcheryBlocks.getRequired("spanishmoss").get(), false)) return null;
+        for (Direction side : Direction.Plane.HORIZONTAL) {
+            if (!sourceWater(level, center.below().relative(side))) return null;
+        }
+        var offerings = diagonalGrasspers(level, center);
+        if (offerings.isEmpty()) return null;
+        long bone = offerings.stream().filter(grassper -> grassper.getItem(0).is(Items.BONE_MEAL)).count();
+        long blaze = offerings.stream().filter(grassper -> grassper.getItem(0).is(Items.BLAZE_POWDER)).count();
+        long pearls = offerings.stream().filter(grassper -> grassper.getItem(0).is(Items.ENDER_PEARL)).count();
+        if (wild ? bone != 2 || blaze != 2 : pearls != 4) return null;
+        return new PlantMutation(clicked.getBlock(), wild, offerings);
+    }
+
+    private record PlantMutation(Block stem, boolean wild, List<GrassperBlockEntity> offerings) {
+        void apply(ServerLevel level, BlockPos center) {
+            BlockState output = WitcheryBlocks.getRequired("bramble").get().defaultBlockState().setValue(BrambleBlock.WILD, wild);
+            for (Direction side : Direction.Plane.HORIZONTAL) level.removeBlock(center.relative(side), false);
+            for (int height = wild ? 4 : 15; height >= 0; height--) {
+                BlockPos segment = center.above(height);
+                if (level.getBlockState(segment).is(stem)) level.setBlockAndUpdate(segment, output);
+            }
+            for (GrassperBlockEntity grassper : offerings) grassper.removeItem(0, 1);
+        }
+    }
+
+    private static List<GrassperBlockEntity> diagonalGrasspers(Level level, BlockPos center) {
+        List<GrassperBlockEntity> offerings = new ArrayList<>(4);
+        for (int x : new int[]{-1, 1}) {
+            for (int z : new int[]{-1, 1}) {
+                if (!(level.getBlockEntity(center.offset(x, 0, z)) instanceof GrassperBlockEntity grassper)) return List.of();
+                offerings.add(grassper);
+            }
+        }
+        return offerings;
+    }
+
     @Nullable
     private static CreatureMutation findCreatureMutation(Level level, BlockPos center) {
         Item extremis = WitcheryItems.getRequired("mutandis_extremis").get();
         Item attuned = WitcheryItems.getRequired("charged_attuned_stone").get();
-        List<GrassperBlockEntity> offerings = new ArrayList<>(4);
+        List<GrassperBlockEntity> offerings = diagonalGrasspers(level, center);
+        if (offerings.isEmpty()) return null;
         int mutandis = 0;
         int stones = 0;
-        for (int x = -1; x <= 1; x += 2) {
-            for (int z = -1; z <= 1; z += 2) {
-                if (!(level.getBlockEntity(center.offset(x, 0, z)) instanceof GrassperBlockEntity grassper)) return null;
-                ItemStack held = grassper.getItem(0);
-                if (held.is(extremis)) mutandis++;
-                if (held.is(attuned)) stones++;
-                offerings.add(grassper);
-            }
+        for (GrassperBlockEntity grassper : offerings) {
+            ItemStack held = grassper.getItem(0);
+            if (held.is(extremis)) mutandis++;
+            if (held.is(attuned)) stones++;
         }
         if (mutandis != 3 || stones != 1) return null;
         for (CreatureKind kind : CreatureKind.values()) {

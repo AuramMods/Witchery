@@ -1,7 +1,6 @@
 {
    "variants" : {
-      "" : {
-         "model" : "witchery:block/bramble"
-      }
+      "wild=true" : {"model" : "witchery:block/bramble"},
+      "wild=false" : {"model" : "witchery:block/bramble_ender"}
    }
 }

@@ -8,6 +8,7 @@ import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.infusion.CreaturePower;
 import art.arcane.witchery.infusion.InfernalInfusion;
 import art.arcane.witchery.infusion.InfusionEnergy;
+import art.arcane.witchery.infusion.InfusedBrews;
 import art.arcane.witchery.infusion.OverworldInfusion;
 import art.arcane.witchery.item.DeathProtectionPoppetItem;
 import art.arcane.witchery.item.TaglockItem;
@@ -173,6 +174,7 @@ public final class WitcheryEventHooks {
             return;
         }
         ScryingView.tick(serverPlayer);
+        InfusedBrews.tick(serverPlayer);
         if (InfusionEnergy.type(serverPlayer) == InfernalInfusion.ID) CreaturePower.tickFlight(serverPlayer);
         if (DreamTravel.processRequests(serverPlayer) || MirrorTravel.processPlayerCrossing(serverPlayer)
                 || TormentTravel.process(serverPlayer)) {

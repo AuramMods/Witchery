@@ -1,6 +1,7 @@
 package art.arcane.witchery.data;
 
 import art.arcane.witchery.block.CritterSnareBlock;
+import art.arcane.witchery.block.BrambleBlock;
 
 import art.arcane.witchery.block.ChaliceBlock;
 import art.arcane.witchery.block.DreamCatcherBlock;
@@ -61,6 +62,9 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                 case "dreamcatcher" -> dropDreamWeave(block);
                 case "witchsapling", "witchlog", "witchwood" -> dropWitchWood(block);
                 case "crittersnare" -> dropCritterSnare(block);
+                case "bramble" -> add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1))
+                        .add(LootItem.lootTableItem(block).apply(CopyBlockState.copyState(block).copy(BrambleBlock.WILD))))));
                 case "witchleaves" -> dropWitchLeaves(block);
                 default -> {
                     if (block instanceof SlabBlock) {

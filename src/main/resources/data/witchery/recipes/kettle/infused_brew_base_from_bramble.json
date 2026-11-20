@@ -1,0 +1,18 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"item": "witchery:infused_brew_base"},
+    {"item": "witchery:brew_of_flowing_spirit"},
+    {"item": "witchery:hint_of_rebirth"},
+    {"item": "witchery:mandrake_root"},
+    {"item": "witchery:bat_wool"},
+    {
+      "type": "forge:difference",
+      "base": {"item": "witchery:bramble"},
+      "subtracted": {"type": "forge:partial_nbt", "item": "witchery:bramble", "nbt": {"BlockStateTag": {"wild": "false"}}}
+    }
+  ],
+  "color": -10520657,
+  "power": 3000,
+  "result": {"item": "witchery:infused_brew_base", "count": 2}
+}
