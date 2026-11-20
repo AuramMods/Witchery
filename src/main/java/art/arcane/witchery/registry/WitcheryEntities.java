@@ -3,6 +3,7 @@ package art.arcane.witchery.registry;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.entity.AttackBat;
 import art.arcane.witchery.entity.BabaYaga;
+import art.arcane.witchery.entity.BrewDroplet;
 import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.entity.DarkMark;
 import art.arcane.witchery.entity.Demon;
@@ -145,6 +146,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<ThrownBrew>> THROWN_BREW =
             ENTITY_TYPES.register("thrown_brew", () -> EntityType.Builder.<ThrownBrew>of(ThrownBrew::new, MobCategory.MISC)
                     .sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(3).build(Witchery.MODID + ":thrown_brew"));
+    public static final RegistryObject<EntityType<BrewDroplet>> BREW_DROPLET =
+            ENTITY_TYPES.register("droplet", () -> EntityType.Builder.of(BrewDroplet::new, MobCategory.MISC)
+                    .sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(3).build(Witchery.MODID + ":droplet"));
     public static final RegistryObject<EntityType<GrenadeProjectile>> GRENADE =
             ENTITY_TYPES.register("grenade", () -> EntityType.Builder.<GrenadeProjectile>of(GrenadeProjectile::new, MobCategory.MISC)
                     .sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(3).build(Witchery.MODID + ":grenade"));
@@ -201,7 +205,7 @@ public final class WitcheryEntities {
     private static void registerLegacyEntity(String legacyName) {
         String path = RegistryNameUtil.normalizePath(legacyName);
         if (LEGACY_ENTITIES.containsKey(path) || path.equals("soulfire") || path.equals("spelleffect") || path.equals("broom")
-                || path.equals("item") || path.equals("eye") || path.equals("grenade") || path.equals("bolt")) {
+                || path.equals("item") || path.equals("eye") || path.equals("grenade") || path.equals("bolt") || path.equals("droplet")) {
             return;
         }
 

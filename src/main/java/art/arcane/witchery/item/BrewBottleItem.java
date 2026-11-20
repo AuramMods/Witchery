@@ -36,6 +36,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class BrewBottleItem extends Item {
@@ -60,9 +61,11 @@ public final class BrewBottleItem extends Item {
     public Component getName(ItemStack stack) {
         BrewMixture mixture = BrewMixture.from(stack.getTag());
         if (mixture == null) return super.getName(stack);
-        Component effects = mixture.effects().isEmpty() ? Component.translatable("item.witchery.brewbottle.water")
-                : ComponentUtils.formatList(mixture.effects().stream().map(effect -> effect.effect().getDisplayName()).toList(),
-                Component.literal(", "));
+        List<Component> names = new ArrayList<>();
+        for (var effect : mixture.effects()) names.add(effect.effect().getDisplayName());
+        if (mixture.extinguishes()) names.add(Component.translatable("brew.witchery.extinguish"));
+        Component effects = names.isEmpty() ? Component.translatable("item.witchery.brewbottle.water")
+                : ComponentUtils.formatList(names, Component.literal(", "));
         String key = "item.witchery.brewbottle." + switch (mixture.delivery()) {
             case DRINK -> "drink";
             case SPLASH -> "splash";
@@ -87,6 +90,7 @@ public final class BrewBottleItem extends Item {
             }
             tooltip.add(text);
         }
+        if (mixture.extinguishes()) tooltip.add(Component.translatable("brew.witchery.extinguish"));
     }
 
     @Override
@@ -181,6 +185,9 @@ public final class BrewBottleItem extends Item {
             if (distance >= radius && target != direct) continue;
             double scale = target == direct ? 1 : 1 - distance / radius;
             mixture.apply(target, brew, caster, scale, scale * 0.5);
+        }
+        if (hit instanceof BlockHitResult block) {
+            mixture.applyToBlock(level, block.getBlockPos(), radius, false, caster instanceof Player player ? player : null);
         }
     }
 }

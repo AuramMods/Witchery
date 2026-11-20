@@ -1,5 +1,6 @@
 package art.arcane.witchery.client;
 
+import art.arcane.witchery.entity.BrewDroplet;
 import art.arcane.witchery.client.screen.AltarScreen;
 import art.arcane.witchery.client.screen.DistilleryScreen;
 import art.arcane.witchery.client.screen.LegacyPlaceholderScreen;
@@ -218,6 +219,7 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.IMP.get(), ImpRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.LORD_OF_TORMENT.get(), LordOfTormentRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SOULFIRE.get(), ThrownItemRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.BREW_DROPLET.get(), context -> new ThrownItemRenderer<>(context, 0.5F, false));
         event.registerEntityRenderer(WitcheryEntities.BOLT.get(), WitcheryBoltRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SYMBOL_PROJECTILE.get(), SymbolProjectileRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.DARK_MARK.get(), DarkMarkRenderer::new);
@@ -346,6 +348,8 @@ public final class WitcheryClient {
     @SubscribeEvent
     public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
         event.register((stack, tint) -> tint == 0 ? BrewBottleItem.color(stack) : -1, WitcheryItems.getRequired("brewbottle").get());
+        event.register((stack, tint) -> tint == 0 && stack.getTag() != null && stack.getTag().contains(BrewDroplet.TINT_KEY)
+                ? stack.getTag().getInt(BrewDroplet.TINT_KEY) : -1, WitcheryIngredient.QUARTZ_SPHERE.item());
         var hunterClothing = java.util.Arrays.stream(HunterClothingItem.Piece.values())
                 .flatMap(piece -> java.util.Arrays.stream(HunterClothingItem.Upgrade.values())
                         .map(upgrade -> WitcheryItems.getRequired(piece.path(upgrade)).get()))

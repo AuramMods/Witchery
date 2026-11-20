@@ -554,8 +554,17 @@
 - [x] Attach the curse to one item from a stack. With an active cat familiar, the muted survival client recovered one stick with two charges from an offering of three. The remaining two sticks kept their ordinary stack.
 - [x] Verify that a right click in air applies Wolfsbane, an immediate second click preserves the remaining charge, and the next click after five seconds reapplies Wolfsbane and clears the curse while keeping the item. The successful cast used a dropped-item fixture for the tongue and stick stack.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 264 required Forge GameTests. Coverage includes the 250-power debit with two white circles, the named 1.7.10 active-brew save, a missing offering, stack splitting, cooldown, and both interaction paths.
-- [ ] Restore Dog Tongue casts for other dispersals, bound waystone and entity targeting, the remaining fixed recipes, and Leonard's role in cauldron magic. Preserve the legacy bottled withdrawal behavior for active brews.
+- [ ] Restore taglock entity targeting, the remaining fixed recipes and terrain actions, and Leonard's encounter and summoning ritual.
 - [ ] Restore the hallucinations from the Insanity effect that can occur during a risky cast.
+
+## Cauldron Dispersal and Waystone Targets (2026-11-20)
+
+- [x] Restore the gas wave and liquid rain. Gas expands from the target over successive pulses. The liquid rite spawns falling projectiles under the original entity ID, with the original Quartz Sphere sprite and saved brew color. Every pulse draws altar power.
+- [x] Restore instant block-targeted casts and coal's Extinguish effect. A cast puts out fire in an enlarged area. Ordinary thrown bottles use the smaller radius. A powered cast can still be bottled during warmup and keeps the legacy active marker.
+- [x] Restore the Bound Waystone's 100-power modifier and same-dimension distance limits. A cast without coven assistance reaches 32 blocks. Failed range checks return the tongue and preserve the base brew. Gas and instant casts use the bound coordinates. The legacy rain uses the bound dimension and the cauldron's horizontal coordinates.
+- [x] Run Java 17 data generation, JAR reobfuscation and all 268 required Forge GameTests. Coverage includes the gas wave before and after reload, valid and distant waystones, liquid projectile saves and contact effects, and active-brew bottling.
+- [x] Verify the bound gas wave with the muted background client and dropped-ingredient fixtures. The pig at the waystone received Wolfsbane first. The wave reached a second pig farther out and left the pig beside the cauldron unaffected.
+- [x] Verify the packaged liquid cast and Extinguish rite. The client rendered tinted droplets and their impacts. The server recorded the falling brew's ordered ingredients, and the cauldron emptied after ten pulses. With the waystone as the target, fire five blocks away went out and fire eight blocks away stayed lit.
 
 ## Auram Pack Validation (2026-11-20)
 

@@ -178,6 +178,7 @@
    "item.witchery.brewbottle.liquid" : "Liquid Brew of %s",
    "item.witchery.brewbottle.triggered" : "Triggered Brew of %s",
    "item.witchery.brewbottle.water" : "Water",
+   "brew.witchery.extinguish" : "Extinguish",
    "item.witchery.bucketbrew" : "Bucketbrew",
    "item.witchery.buckethollowtears" : "Buckethollowtears",
    "item.witchery.bucketspirit" : "Bucketspirit",
