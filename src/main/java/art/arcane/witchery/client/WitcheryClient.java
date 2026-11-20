@@ -46,6 +46,7 @@ import art.arcane.witchery.client.renderer.VillageGuardRenderer;
 import art.arcane.witchery.client.renderer.WitcheryBoltRenderer;
 import art.arcane.witchery.client.renderer.WitchHunterRenderer;
 import art.arcane.witchery.client.renderer.HellhoundRenderer;
+import art.arcane.witchery.client.renderer.HornedHuntsmanRenderer;
 import art.arcane.witchery.client.renderer.WolfHeadRenderer;
 import art.arcane.witchery.client.renderer.WolfmanRenderer;
 import art.arcane.witchery.client.renderer.WolfAltarRenderer;
@@ -169,6 +170,7 @@ public final class WitcheryClient {
         event.registerLayerDefinition(VillageGuardRenderer.LAYER, VillageGuardRenderer::layer);
         event.registerLayerDefinition(WitchHunterRenderer.LAYER, WitchHunterRenderer::layer);
         event.registerLayerDefinition(HellhoundRenderer.LAYER, HellhoundRenderer::layer);
+        event.registerLayerDefinition(HornedHuntsmanRenderer.LAYER, HornedHuntsmanRenderer::layer);
         event.registerLayerDefinition(WolfHeadRenderer.LAYER, WolfHeadRenderer::layer);
         event.registerLayerDefinition(WolfmanRenderer.LAYER, WolfmanRenderer::layer);
         event.registerLayerDefinition(WolfAltarRenderer.LAYER, WolfAltarRenderer::layer);
@@ -199,6 +201,7 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.VILLAGE_GUARD.get(), VillageGuardRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.WITCH_HUNTER.get(), WitchHunterRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.HELLHOUND.get(), HellhoundRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.HORNED_HUNTSMAN.get(), HornedHuntsmanRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.WOLFMAN.get(), WolfmanRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.WERE_VILLAGER.get(), VillagerRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.ATTACK_BAT.get(), BatRenderer::new);

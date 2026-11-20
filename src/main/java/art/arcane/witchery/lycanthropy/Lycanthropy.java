@@ -1,7 +1,9 @@
 package art.arcane.witchery.lycanthropy;
 
 import art.arcane.witchery.capability.WitcheryPlayerData;
+import art.arcane.witchery.capability.WitcheryPlayerData.WolfmanQuestState;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.entity.HornedHuntsman;
 import art.arcane.witchery.entity.WitcheryBolt;
 import art.arcane.witchery.entity.Wolfman;
 import art.arcane.witchery.network.WitcheryNetwork;
@@ -107,6 +109,15 @@ public final class Lycanthropy {
     public static void infect(ServerPlayer player) {
         setRank(player, 1);
         player.displayClientMessage(Component.translatable("message.witchery.werewolf.infection"), true);
+    }
+
+    public static void onKilled(LivingEntity victim, ServerPlayer killer) {
+        if (!(victim instanceof HornedHuntsman)) return;
+        WitcheryPlayerDataProvider.get(killer).ifPresent(data -> {
+            if (data.getWerewolfLevel() == 4 && data.getWolfmanQuestState() == WolfmanQuestState.STARTED) {
+                data.setWolfmanQuestState(WolfmanQuestState.COMPLETE);
+            }
+        });
     }
 
     public static void setRank(ServerPlayer player, int rank) {

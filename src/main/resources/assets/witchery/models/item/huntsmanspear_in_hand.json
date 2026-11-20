@@ -1,0 +1,42 @@
+{
+  "textures": {
+    "spear": "witchery:item/huntsmanspear_model",
+    "particle": "witchery:item/huntsmanspear"
+  },
+  "display": {
+    "thirdperson_righthand": {"rotation": [0, -90, 25], "translation": [0, 3, 1], "scale": [1, 1, 1]},
+    "thirdperson_lefthand": {"rotation": [0, 90, -25], "translation": [0, 3, 1], "scale": [1, 1, 1]},
+    "firstperson_righthand": {"rotation": [0, -40, 24], "translation": [0, 2, 0], "scale": [0.8, 0.8, 0.8]},
+    "firstperson_lefthand": {"rotation": [0, 40, -24], "translation": [0, 2, 0], "scale": [0.8, 0.8, 0.8]}
+  },
+  "elements": [
+    {
+      "from": [7.5, -6, 7.5],
+      "to": [8.5, 26, 8.5],
+      "faces": {
+        "up": {"uv": [0.25, 0, 0.5, 0.25], "texture": "#spear"},
+        "down": {"uv": [0.5, 0, 0.75, 0.25], "texture": "#spear"},
+        "west": {"uv": [0, 0.25, 0.25, 8.25], "texture": "#spear"},
+        "north": {"uv": [0.25, 0.25, 0.5, 8.25], "texture": "#spear"},
+        "east": {"uv": [0.5, 0.25, 0.75, 8.25], "texture": "#spear"},
+        "south": {"uv": [0.75, 0.25, 1, 8.25], "texture": "#spear"}
+      }
+    },
+    {
+      "from": [6.5, 25, 8],
+      "to": [9.5, 31, 8],
+      "faces": {
+        "north": {"uv": [1.5, 0.75, 2.25, 2.25], "texture": "#spear"},
+        "south": {"uv": [1.5, 0.75, 2.25, 2.25], "texture": "#spear"}
+      }
+    },
+    {
+      "from": [8, 25, 6.5],
+      "to": [8, 31, 9.5],
+      "faces": {
+        "west": {"uv": [1.5, 0.75, 2.25, 2.25], "texture": "#spear"},
+        "east": {"uv": [1.5, 0.75, 2.25, 2.25], "texture": "#spear"}
+      }
+    }
+  ]
+}

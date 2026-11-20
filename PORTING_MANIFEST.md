@@ -799,7 +799,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 95 | `SPECTRAL_FAMILIAR` | `EntityFamiliar` | `familiar` |
 | 96 | `MANDRAKE` | `EntityMandrake` | `mandrake` |
 | 97 | `TREEFYD` | `EntityTreefyd` | `treefyd` |
-| 98 | `HUNTSMAN` | `EntityHornedHuntsman` | `hornedHuntsman` |
+| 98 | `HUNTSMAN` | `EntityHornedHuntsman` | `hornedHuntsman` → `witchery:hornedhuntsman` (Horn of the Hunt, entrance, boss combat and rank-five trial) |
 | 99 | `SPELL` | `EntitySpellEffect` | `spellEffect` → `witchery:spelleffect` |
 | 100 | `ENT` | `EntityEnt` | `ent` (Witchwood harvest awakening, legacy `Owner` field retained) |
 | 101 | `ILLUSION_CREEPER` | `EntityIllusionCreeper` | `illusionCreeper` |

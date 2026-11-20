@@ -22,6 +22,7 @@ import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.VampiricPoppetItem;
 import art.arcane.witchery.item.GlassGobletItem;
 import art.arcane.witchery.item.HunterClothingItem;
+import art.arcane.witchery.item.HuntsmanSpearItem;
 import art.arcane.witchery.lycanthropy.Lycanthropy;
 import art.arcane.witchery.lycanthropy.WerewolfVillagers;
 import art.arcane.witchery.vampirism.Vampirism;
@@ -362,6 +363,7 @@ public final class WitcheryEventHooks {
         FamiliarBinding.handleDeath(event);
         if (!event.isCanceled() && event.getSource().getEntity() instanceof ServerPlayer killer) {
             Vampirism.onKilled(event.getEntity(), killer, event.getSource());
+            Lycanthropy.onKilled(event.getEntity(), killer);
         }
     }
 
@@ -406,7 +408,10 @@ public final class WitcheryEventHooks {
             }
             if (!event.isCanceled() && !ignoreWards) VampiricPoppetItem.transferDamage(player, event);
             if (!event.isCanceled()) FamiliarBinding.shareDamage(player, event);
-            if (!event.isCanceled()) Predictions.onHurt(player, event.getSource());
+            if (!event.isCanceled()) {
+                HuntsmanSpearItem.defend(player, event.getSource());
+                Predictions.onHurt(player, event.getSource());
+            }
             DeathProtectionPoppetItem.repairArmor(player);
         }
     }

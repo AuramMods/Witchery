@@ -9,6 +9,7 @@ import art.arcane.witchery.entity.Demon;
 import art.arcane.witchery.entity.Ent;
 import art.arcane.witchery.entity.GrenadeProjectile;
 import art.arcane.witchery.entity.Hellhound;
+import art.arcane.witchery.entity.HornedHuntsman;
 import art.arcane.witchery.entity.Imp;
 import art.arcane.witchery.entity.LegacyWaystoneEntity;
 import art.arcane.witchery.entity.LordOfTorment;
@@ -119,6 +120,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<Hellhound>> HELLHOUND =
             ENTITY_TYPES.register("hellhound", () -> EntityType.Builder.of(Hellhound::new, MobCategory.MONSTER)
                     .sized(0.9F, 0.9F).fireImmune().clientTrackingRange(8).build(Witchery.MODID + ":hellhound"));
+    public static final RegistryObject<EntityType<HornedHuntsman>> HORNED_HUNTSMAN =
+            ENTITY_TYPES.register("hornedhuntsman", () -> EntityType.Builder.of(HornedHuntsman::new, MobCategory.MONSTER)
+                    .sized(1.4F, 3.2F).fireImmune().clientTrackingRange(10).build(Witchery.MODID + ":hornedhuntsman"));
     public static final RegistryObject<EntityType<Wolfman>> WOLFMAN =
             ENTITY_TYPES.register("wolfman", () -> EntityType.Builder.of(Wolfman::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.8F).clientTrackingRange(8).build(Witchery.MODID + ":wolfman"));
@@ -169,6 +173,7 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("villageguard", VILLAGE_GUARD);
         LEGACY_ENTITIES.put("witchhunter", WITCH_HUNTER);
         LEGACY_ENTITIES.put("hellhound", HELLHOUND);
+        LEGACY_ENTITIES.put("hornedhuntsman", HORNED_HUNTSMAN);
         LEGACY_ENTITIES.put("wolfman", WOLFMAN);
         LEGACY_ENTITIES.put("werevillager", WERE_VILLAGER);
         LEGACY_ENTITIES.put("attackbat", ATTACK_BAT);
@@ -224,6 +229,7 @@ public final class WitcheryEntities {
                     : entry == VILLAGE_GUARD ? VillageGuard.attributes()
                     : entry == WITCH_HUNTER ? WitchHunter.attributes()
                     : entry == HELLHOUND ? Hellhound.attributes()
+                    : entry == HORNED_HUNTSMAN ? HornedHuntsman.attributes()
                     : entry == WOLFMAN ? Wolfman.attributes()
                     : entry == WERE_VILLAGER ? Villager.createAttributes()
                     : entry == ATTACK_BAT ? Bat.createAttributes()

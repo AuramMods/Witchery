@@ -474,7 +474,7 @@
 - [x] Restore both original recipes, full-moon timing, active cat and six-member coven. The muted client called its cat, collected its Taglock at a bed, sacrificed a Hellhound Head it had picked up, and activated the medium infernal circle with a Seer Stone. A waning night refunded all six offerings. At the full moon, Witch Hunter clothing blocked the curse. Removing one piece let the same offerings curse the player and the server retained vampire rank ten under the default hybrid setting.
 - [x] Restore the rank-one wolf form, smaller dimensions, armor drop, Night Vision, jump and movement stats, and Silver Sword damage. The dedicated server recorded speed changing from 0.10 to 0.15 and the additional step height of 0.4. A second muted client saw the first as a wolf. With the active familiar's damage sharing, a 12-point ordinary strike took 3.6 health and a seven-point silver strike took 10.8 health.
 - [x] Reconnect after a dedicated-server restart, then collect another Taglock and perform the cure while still in wolf form. The save retained rank one, wolf form and speed. The successful cure consumed all six offerings, restored normal movement and kept vampire rank ten. Java 17 data generation, JAR reobfuscation and all 226 required Forge GameTests passed.
-- [ ] Restore the Huntsman and ranks five through ten, and finish werewolf combat, hunting and Wolfsbane interactions.
+- [ ] Restore ranks six through ten and finish werewolf combat, hunting and Wolfsbane interactions.
 
 ## Werevillagers and Wolfmen (2026-11-20)
 
@@ -486,8 +486,15 @@
 
 - [x] Craft the Wolf Altar using three wolf trophies, three stone blocks and Wolfsbane. The muted survival client combined one Wolf Head with two Hellhound Heads in the original pattern, placed the altar and saw the original statue face the player. Using it while uninfected applied Mining Fatigue.
 - [x] Complete the first three offerings at the placed altar. At rank one, two gold remained unspent and three gold yielded the Moon Charm and rank two. Taking 31 raw mutton to the altar advanced the player to rank three and left one mutton. Ten Dog Tongues advanced the player to rank four.
-- [x] Verify the original three-second use time and automatic transformation suppression with a worn charm. The client released early without wear, then used one point of durability to return to human form during a full moon. GameTests exercised gold repair, legacy item data, the crouching Wolfman toggle at rank five, and form suppression with a worn charm. Java 17 data generation, JAR reobfuscation and all 232 required Forge GameTests passed.
+- [x] Verify the original three-second use time and automatic transformation suppression with a worn charm. The client released early without wear, then used one point of durability to return to human form during a full moon. GameTests exercised gold repair, the crouching Wolfman toggle at rank five, and form suppression with a worn charm. Java 17 data generation, JAR reobfuscation and all 232 required Forge GameTests passed.
 - [x] Restart the dedicated server at the same full moon. The reconnected player kept rank four, human form and the charm with one durability point spent. The placed Wolf Altar retained its block entity.
+
+## Horned Huntsman Trial (2026-11-20)
+
+- [x] Claim one Horn of the Hunt at rank four and hold it for two seconds to summon the Huntsman. The muted client picked up the altar's horn, kept it after an early release, and saw it break after a successful call. The boss appeared with its original model, texture and spear, and a boss bar tracked its entrance.
+- [x] Restart the dedicated server during the entrance. The same Huntsman reached 400 health after loading. GameTests verified the serialized entrance countdown, player-attributed defeat and altar turn-in, the 15-point raw damage cap, ranged arrows, and the skull, blood and enchanted book drops.
+- [x] Land a real sword hit on the packaged Huntsman and turn in the trial. The test arena used Strength and a stationary boss prepared at 12 health for the final strike. It dropped three Wither Skeleton Skulls, an enchanted book and Infernal Blood. The survival client returned to the altar, advanced to rank five and used a crouching Moon Charm to become a Wolfman with 40 maximum health.
+- [x] Restore the Huntsman's Spear and its 3D held model, knockback resistance, retaliating wolves and Nightmare vulnerability. Java 17 data generation, JAR reobfuscation and all 234 required Forge GameTests passed, including the legacy Moon Charm wear and wolf trial imports.
 
 ## Auram Pack Validation (2026-11-20)
 

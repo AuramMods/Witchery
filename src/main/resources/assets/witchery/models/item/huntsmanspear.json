@@ -1,6 +1,10 @@
 {
-   "parent" : "minecraft:item/generated",
-   "textures" : {
-      "layer0" : "witchery:item/huntsmanspear"
-   }
+  "loader": "forge:separate_transforms",
+  "textures": {"particle": "witchery:item/huntsmanspear"},
+  "base": {"parent": "witchery:item/huntsmanspear_in_hand"},
+  "perspectives": {
+    "gui": {"parent": "witchery:item/huntsmanspear_icon"},
+    "ground": {"parent": "witchery:item/huntsmanspear_icon"},
+    "fixed": {"parent": "witchery:item/huntsmanspear_icon"}
+  }
 }

@@ -1,6 +1,8 @@
 package art.arcane.witchery.block;
 
 import art.arcane.witchery.block.entity.WolfAltarBlockEntity;
+import art.arcane.witchery.capability.WitcheryPlayerData.WolfmanQuestState;
+import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.lycanthropy.Lycanthropy;
 import art.arcane.witchery.registry.WitcheryItems;
@@ -92,7 +94,7 @@ public final class WolfAltarBlock extends BaseEntityBlock {
                 worshipper.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 1200));
                 tell(worshipper, "unworthy");
             } else if (stack.is(Items.GOLD_INGOT) && stack.getCount() >= GOLD_REQUIRED) {
-                if (grantCharm(server, pos, facing)) {
+                if (grant(server, pos, facing, WitcheryItems.getRequired("mooncharm").get(), SoundEvents.PLAYER_LEVELUP)) {
                     stack.shrink(GOLD_REQUIRED);
                     if (rank == 1) Lycanthropy.setRank(worshipper, 2);
                     tell(worshipper, rank == 1 ? "gold_offered" : "charm_replaced");
@@ -103,6 +105,8 @@ public final class WolfAltarBlock extends BaseEntityBlock {
                 offer(server, pos, facing, worshipper, stack, Items.MUTTON, 30, "mutton", 3);
             } else if (rank == 3) {
                 offer(server, pos, facing, worshipper, stack, WitcheryIngredient.DOG_TONGUE.item(), 10, "tongues", 4);
+            } else if (rank == 4) {
+                huntsmanTrial(server, pos, facing, worshipper);
             } else if (rank == 10) {
                 tell(worshipper, "mastered");
             }
@@ -110,13 +114,31 @@ public final class WolfAltarBlock extends BaseEntityBlock {
         return InteractionResult.sidedSuccess(level.isClientSide());
     }
 
-    private static boolean grantCharm(ServerLevel level, BlockPos pos, Direction facing) {
-        var charm = new ItemStack(WitcheryItems.getRequired("mooncharm").get());
+    private static void huntsmanTrial(ServerLevel level, BlockPos pos, Direction facing, ServerPlayer player) {
+        WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
+            switch (data.getWolfmanQuestState()) {
+                case NOT_STARTED -> {
+                    if (grant(level, pos, facing, WitcheryItems.getRequired("hornofthehunt").get(), SoundEvents.FIRE_EXTINGUISH)) {
+                        data.setWolfmanQuestState(WolfmanQuestState.STARTED);
+                        tell(player, "hunt_started");
+                    }
+                }
+                case STARTED -> tell(player, "hunt_pending");
+                case COMPLETE -> {
+                    Lycanthropy.setRank(player, 5);
+                    rewardEffect(level, pos, facing, SoundEvents.PLAYER_LEVELUP);
+                    tell(player, "hunt_finished");
+                }
+            }
+        });
+    }
+
+    private static boolean grant(ServerLevel level, BlockPos pos, Direction facing, Item item, SoundEvent sound) {
         var reward = new ItemEntity(level, pos.getX() + 0.5 + facing.getStepX(), pos.getY() + 1.1,
-                pos.getZ() + 0.5 + facing.getStepZ(), charm, 0, 0, 0);
+                pos.getZ() + 0.5 + facing.getStepZ(), new ItemStack(item), 0, 0, 0);
         reward.setDefaultPickUpDelay();
         if (!level.addFreshEntity(reward)) return false;
-        rewardEffect(level, pos, facing, SoundEvents.PLAYER_LEVELUP);
+        rewardEffect(level, pos, facing, sound);
         return true;
     }
 

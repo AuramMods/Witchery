@@ -17,6 +17,7 @@ public final class WitcheryPlayerData {
     private static final String KEY_HUMAN_BLOOD = "HumanBlood";
     private static final String KEY_VAMPIRE_LEVEL = "VampireLevel";
     private static final String KEY_WEREWOLF_LEVEL = "WerewolfLevel";
+    private static final String KEY_WOLFMAN_QUEST_STATE = "WolfmanQuestState";
     private static final String KEY_BLOOD_POWER = "BloodPower";
     private static final String KEY_BLOOD_RESERVE = "BloodReserve";
     private static final String KEY_VAMPIRE_LEVEL_CAP = "VampireLevelCap";
@@ -46,6 +47,7 @@ public final class WitcheryPlayerData {
     private int humanBlood;
     private int vampireLevel;
     private int werewolfLevel;
+    private WolfmanQuestState wolfmanQuestState = WolfmanQuestState.NOT_STARTED;
     private int bloodPower;
     private int bloodReserve;
     private int vampireLevelCap;
@@ -127,8 +129,18 @@ public final class WitcheryPlayerData {
     }
 
     public void setWerewolfLevel(int level) {
-        werewolfLevel = Mth.clamp(level, 0, 10);
+        int next = Mth.clamp(level, 0, 10);
+        if (werewolfLevel != next) wolfmanQuestState = WolfmanQuestState.NOT_STARTED;
+        werewolfLevel = next;
         setBloodPower(bloodPower);
+    }
+
+    public WolfmanQuestState getWolfmanQuestState() {
+        return wolfmanQuestState;
+    }
+
+    public void setWolfmanQuestState(WolfmanQuestState state) {
+        wolfmanQuestState = state;
     }
 
     public int getBloodPower() {
@@ -331,6 +343,7 @@ public final class WitcheryPlayerData {
         humanBlood = source.humanBlood;
         vampireLevel = source.vampireLevel;
         werewolfLevel = source.werewolfLevel;
+        wolfmanQuestState = source.wolfmanQuestState;
         bloodPower = source.bloodPower;
         bloodReserve = source.bloodReserve;
         vampireLevelCap = source.vampireLevelCap;
@@ -365,6 +378,7 @@ public final class WitcheryPlayerData {
         tag.putInt(KEY_HUMAN_BLOOD, humanBlood);
         tag.putInt(KEY_VAMPIRE_LEVEL, vampireLevel);
         tag.putInt(KEY_WEREWOLF_LEVEL, werewolfLevel);
+        tag.putInt(KEY_WOLFMAN_QUEST_STATE, wolfmanQuestState.ordinal());
         tag.putInt(KEY_BLOOD_POWER, bloodPower);
         tag.putInt(KEY_BLOOD_RESERVE, bloodReserve);
         tag.putInt(KEY_VAMPIRE_LEVEL_CAP, vampireLevelCap);
@@ -412,6 +426,7 @@ public final class WitcheryPlayerData {
         setHumanBlood(bloodData.getInt(KEY_HUMAN_BLOOD));
         setVampireLevel(bloodData.getInt(KEY_VAMPIRE_LEVEL));
         setWerewolfLevel(bloodData.getInt(KEY_WEREWOLF_LEVEL));
+        wolfmanQuestState = WolfmanQuestState.values()[Mth.clamp(bloodData.getInt(KEY_WOLFMAN_QUEST_STATE), 0, 2)];
         setBloodPower(bloodData.getInt(KEY_BLOOD_POWER));
         setBloodReserve(bloodData.getInt(KEY_BLOOD_RESERVE));
         vampireLevelCap = Mth.clamp(bloodData.getInt(KEY_VAMPIRE_LEVEL_CAP), 0, 10);
@@ -450,4 +465,6 @@ public final class WitcheryPlayerData {
     }
 
     private record VampireVillage(String dimension, long location) {}
+
+    public enum WolfmanQuestState { NOT_STARTED, STARTED, COMPLETE }
 }

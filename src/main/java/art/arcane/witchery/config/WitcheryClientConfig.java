@@ -6,6 +6,7 @@ public final class WitcheryClientConfig {
     public static final ForgeConfigSpec SPEC;
     public static final ForgeConfigSpec.BooleanValue GUI_ON_LEFT;
     public static final ForgeConfigSpec.BooleanValue SHOW_VAMPIRE_TARGET_BLOOD_TEXT;
+    public static final ForgeConfigSpec.BooleanValue RENDER_HUNTSMAN_GLINT;
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -13,6 +14,7 @@ public final class WitcheryClientConfig {
                 .comment("Show the infusion charge meter on the left side of the screen.")
                 .define("guiOnLeft", true);
         SHOW_VAMPIRE_TARGET_BLOOD_TEXT = builder.define("hudShowVampireTargetBloodText", false);
+        RENDER_HUNTSMAN_GLINT = builder.define("renderHuntsmanGlintEffect", true);
         SPEC = builder.build();
     }
 

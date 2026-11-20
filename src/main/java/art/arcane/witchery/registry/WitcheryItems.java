@@ -14,6 +14,8 @@ import art.arcane.witchery.item.BolineItem;
 import art.arcane.witchery.item.BroomItem;
 import art.arcane.witchery.item.CaneSwordItem;
 import art.arcane.witchery.item.HandBowItem;
+import art.arcane.witchery.item.HornOfTheHuntItem;
+import art.arcane.witchery.item.HuntsmanSpearItem;
 import art.arcane.witchery.item.HunterClothingItem;
 import art.arcane.witchery.item.HunterClothingItem.Piece;
 import art.arcane.witchery.item.HunterClothingItem.Upgrade;
@@ -183,6 +185,8 @@ public final class WitcheryItems {
             case "taglockkit" -> new TaglockItem();
             case "coffin" -> createBlockItem("coffinblock");
             case "mooncharm" -> new MoonCharmItem();
+            case "hornofthehunt" -> new HornOfTheHuntItem();
+            case "huntsmanspear" -> new HuntsmanSpearItem();
             case "hellhound_head" -> new BlockItem(WitcheryBlocks.getRequired("wolfhead").get(), new Item.Properties()) {
                 @Override
                 public String getDescriptionId() { return getOrCreateDescriptionId(); }
@@ -334,6 +338,7 @@ public final class WitcheryItems {
                     case "covenwitch" -> new ForgeSpawnEggItem(entityType, 0x111111, 0x002D03, new Item.Properties());
                     case "witchhunter" -> new ForgeSpawnEggItem(entityType, 0x78706B, 0x231C19, new Item.Properties());
                     case "hellhound" -> new ForgeSpawnEggItem(entityType, 0xD86500, 0x5B1208, new Item.Properties());
+                    case "hornedhuntsman" -> new ForgeSpawnEggItem(entityType, 11523, 4007964, new Item.Properties());
                     case "wolfman" -> new ForgeSpawnEggItem(entityType, 0x2D2D2D, 0x606060, new Item.Properties());
                     case "werevillager" -> new ForgeSpawnEggItem(entityType, 0x563C33, 0xBD8B72, new Item.Properties());
                     default -> new ForgeSpawnEggItem(entityType, 0x6E5A4E, 0xA4A29D, new Item.Properties());
