@@ -5,6 +5,8 @@ import art.arcane.witchery.brewing.GrotesqueEffect;
 import art.arcane.witchery.brewing.WakingNightmareEffect;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.familiar.FamiliarBinding;
+import art.arcane.witchery.infusion.CreaturePower;
+import art.arcane.witchery.infusion.InfernalInfusion;
 import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.infusion.OverworldInfusion;
 import art.arcane.witchery.item.DeathProtectionPoppetItem;
@@ -23,11 +25,14 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.ServerChatEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
@@ -136,6 +141,7 @@ public final class WitcheryEventHooks {
         if (!(event.player instanceof ServerPlayer serverPlayer)) {
             return;
         }
+        if (InfusionEnergy.type(serverPlayer) == InfernalInfusion.ID) CreaturePower.tickFlight(serverPlayer);
         if (DreamTravel.processRequests(serverPlayer) || MirrorTravel.processPlayerCrossing(serverPlayer)
                 || TormentTravel.process(serverPlayer)) {
             return;
@@ -163,9 +169,25 @@ public final class WitcheryEventHooks {
 
     @SubscribeEvent
     public static void onLivingFall(LivingFallEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player && InfusionEnergy.type(player) == OverworldInfusion.ID) {
-            OverworldInfusion.fall(player, event);
+        if (event.getEntity() instanceof ServerPlayer player) {
+            int infusion = InfusionEnergy.type(player);
+            if (infusion == OverworldInfusion.ID) OverworldInfusion.fall(player, event);
+            if (infusion == InfernalInfusion.ID) {
+                CreaturePower power = CreaturePower.forId(CreaturePower.activeId(player));
+                if (power != null) power.fall(player, event);
+            }
         }
+    }
+
+    @SubscribeEvent
+    public static void restoreMinion(EntityJoinLevelEvent event) {
+        if (event.getLevel() instanceof ServerLevel && event.getEntity() instanceof Mob mob) InfernalInfusion.restore(mob);
+    }
+
+    @SubscribeEvent
+    public static void protectMinionOwner(LivingChangeTargetEvent event) {
+        if (event.getEntity() instanceof Mob mob && InfernalInfusion.owns(mob, event.getNewTarget())
+                && mob.hasEffect(WitcheryEffects.ENSLAVED.get())) event.setNewTarget(null);
     }
 
     @SubscribeEvent
@@ -195,8 +217,14 @@ public final class WitcheryEventHooks {
     }
 
     @SubscribeEvent(priority = EventPriority.LOW)
-    public static void onFamiliarDamage(LivingHurtEvent event) {
-        if (event.getEntity() instanceof ServerPlayer server) FamiliarBinding.shareDamage(server, event);
+    public static void onPlayerHurt(LivingHurtEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            if (InfusionEnergy.type(player) == InfernalInfusion.ID) {
+                CreaturePower power = CreaturePower.forId(CreaturePower.activeId(player));
+                if (power != null) power.hurt(player, event);
+            }
+            if (!event.isCanceled()) FamiliarBinding.shareDamage(player, event);
+        }
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)

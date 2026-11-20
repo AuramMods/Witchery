@@ -139,7 +139,17 @@ public final class OtherwhereInfusion {
 
     @Nullable
     private static Vec3 blinkTarget(ServerPlayer player, int elapsed) {
-        HitResult hitResult = rayTrace(player, 40 + 20 * (elapsed / 20));
+        return destination(rayTrace(player, 40 + 20 * (elapsed / 20)));
+    }
+
+    static boolean teleportAimed(ServerPlayer player, HitResult hit) {
+        Vec3 target = destination(hit);
+        ServerLevel level = player.serverLevel();
+        return target != null && !inhibited(player) && canArrive(player, level, target) && move(player, level, target);
+    }
+
+    @Nullable
+    private static Vec3 destination(HitResult hitResult) {
         if (hitResult instanceof EntityHitResult entity) return entity.getLocation();
         if (!(hitResult instanceof BlockHitResult block) || block.getType() == HitResult.Type.MISS) return null;
         Vec3 hit = block.getLocation();

@@ -585,8 +585,8 @@ The first migrated subtypes have individual item IDs. Preserve `witchery:ingredi
 | 52 | `doorRowan` |
 | 53 | `doorAlder` |
 | 54 | `doorKey` |
-| 55 | `rock` |
-| 56 | `web` |
+| 55 | `rock` → `witchery:rock` |
+| 56 | `web` → `witchery:thrown_web` |
 | 57 | `brewVines` |
 | 58 | `brewWeb` |
 | 59 | `brewThorns` |
@@ -1097,7 +1097,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 3 | `InfusionOtherwhere` |
 | 4 | `InfusionInfernal` |
 
-All four infusion recipes, their personal charge and the HUD are implemented. The Witch's Hand uses `witchery:witchhand` and restores Otherwhere movement, Light's cloak and barriers, and Overworld's terrain and metal powers. Its recall point survives serialization in `WITCRecallD`, `WITCRecallX`, `WITCRecallY` and `WITCRecallZ`. Its right-click cooldown keeps the `WITCCooldown` field. The `witchery:barrier` block retains `remainingTicks`, `blocksPlayers` and `owner` in its block entity, with a UUID for new placements. The Overworld projectile saves its `witchery:rock` item, which replaces ingredient damage 55. The Infernal Hand mode is pending.
+All four infusion recipes, their personal charge and the HUD are implemented. The Witch's Hand uses `witchery:witchhand` and restores Otherwhere movement, Light's cloak and barriers, Overworld's terrain and metal powers, and Infernal minion control and creature powers. Its recall point survives serialization in `WITCRecallD`, `WITCRecallX`, `WITCRecallY` and `WITCRecallZ`. Its right-click cooldown keeps the `WITCCooldown` field. The `witchery:barrier` block retains `remainingTicks`, `blocksPlayers` and `owner` in its block entity, with a UUID for new placements. Infernal minions read `WITCEnslaverName` and save the owner UUID for new bindings. Creature powers retain `WITCBeastPower` and `WITCBeastPowerCharges`. Their projectiles use the migrated Rock and Thrown Web ingredients.
 
 ## Recipe System Registries
 

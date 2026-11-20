@@ -1,6 +1,7 @@
 package art.arcane.witchery.item;
 
 import art.arcane.witchery.infusion.InfusionEnergy;
+import art.arcane.witchery.infusion.InfernalInfusion;
 import art.arcane.witchery.infusion.LightInfusion;
 import art.arcane.witchery.infusion.OtherwhereInfusion;
 import art.arcane.witchery.infusion.OverworldInfusion;
@@ -57,6 +58,7 @@ public final class WitchHandItem extends Item {
         switch (InfusionEnergy.type(player)) {
             case LightInfusion.ID -> LightInfusion.release(player, elapsed);
             case OverworldInfusion.ID -> OverworldInfusion.release(player, elapsed);
+            case InfernalInfusion.ID -> InfernalInfusion.release(player, elapsed);
             case OtherwhereInfusion.ID -> {
                 if (OtherwhereInfusion.release(player, elapsed)) {
                     stack.getOrCreateTag().putLong(COOLDOWN, System.currentTimeMillis() + TELEPORT_COOLDOWN_MILLIS);
@@ -77,6 +79,7 @@ public final class WitchHandItem extends Item {
                 case LightInfusion.ID -> LightInfusion.attack(caster, living);
                 case OverworldInfusion.ID -> OverworldInfusion.attack(caster, living);
                 case OtherwhereInfusion.ID -> OtherwhereInfusion.attack(caster, living);
+                case InfernalInfusion.ID -> InfernalInfusion.attack(caster, living);
             }
         }
         return true;

@@ -72,7 +72,8 @@ public final class InfusionEnergy {
     }
 
     private static void sync(ServerPlayer player, CompoundTag infusion) {
-        WitcheryNetwork.sendInfusionStatus(player, infusion.getInt(TYPE), infusion.getInt(CHARGE), infusion.getInt(CAPACITY));
+        WitcheryNetwork.sendInfusionStatus(player, infusion.getInt(TYPE), infusion.getInt(CHARGE), infusion.getInt(CAPACITY),
+                CreaturePower.activeId(player), CreaturePower.charges(player));
     }
 
     private static CompoundTag data(ServerPlayer player) {

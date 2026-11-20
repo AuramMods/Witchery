@@ -283,6 +283,8 @@
    "item.witchery.imp_spawn_egg" : "Imp Spawn Egg",
    "item.witchery.odd_porkchop_raw" : "Raw Odd Porkchop",
    "item.witchery.rock" : "Rock",
+   "item.witchery.thrown_web" : "Web",
+   "effect.witchery.potion.enslaved" : "Enslaved",
    "item.witchery.ent_branch" : "Ent Branch",
    "item.witchery.owlets_wing" : "Owlet's Wing",
    "item.witchery.toe_of_frog" : "Toe of Frog",

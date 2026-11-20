@@ -120,7 +120,7 @@
 - [x] Restore the recharging rite with a standard Regeneration potion and upkeep of 40 altar power per second. The dedicated restart retained the active rite and the player's 180 charge outside the circle. The muted client reentered, reached the 200-charge cap, and stopped the rite at the heart.
 - [x] Restore the Light and Otherwhere infusion recipes.
 - [x] Restore the infusion charge HUD and the Witch's Hand drop.
-- [ ] Restore Infernal Witch's Hand powers, the Poppet Shelf, and the remaining types of poppets.
+- [ ] Restore the Poppet Shelf and the remaining types of poppets.
 
 ## Infernal Infusion and Voodoo Poppets (2026-11-19)
 
@@ -170,6 +170,14 @@
 - [x] Data generation and JAR reobfuscation succeeded with Java 17. All 60 required Forge GameTests passed, including real projectile damage, separate ore outputs, preserving charge on unsupported falls and the 1.7.10 rock metadata.
 - [x] In the muted packaged client, use the Overworld rite with the fixture's bottled offering and bound ward. Convert gold and iron ore and collect the ingots with the magnet. Disarm a zombie and push its chainmail with a sneak attack. A rock dealt six damage, a lifted column rose three blocks with its nearby chest intact, and a two-second shockwave dealt eight damage. A plain grass landing and a sneaking snow landing each preserved health.
 - [x] A dedicated restart retained infusion ID 2, 151 charge, the Witch's Hand, the raised terracotta and its adjacent chest.
+
+## Infernal Infusion Hand Powers (2026-11-20)
+
+- [x] Restore minion binding, hostile and movement orders, and sacrificing a bound creature. The muted survival client performed the Infernal rite, bound a zombie, ordered it to attack a pig, and moved it toward an aimed block. The binding used five charge, the attack order used one, and the movement order preserved charge.
+- [x] Restore the 25 creature-power IDs and their activation and passive abilities. A separate meter uses the original creature icons and tracks up to 20 charges. The muted client sacrificed a pig, displayed its icon and charge, and restored six health to twenty. With the pig charge spent, another attempt preserved the infusion charge. Sacrificing a bat replaced that power and enabled Night Vision.
+- [x] Build the reobfuscated Java 17 JAR and run all 65 required Forge GameTests. The tests cover legacy minion names, sacrifices, the secondary charge cap, effects, fireballs, arrows and cobwebs. Legacy ingredient 56 migrates to `witchery:thrown_web` and the existing `witchery:web` block item retains its ID.
+- [x] The dedicated restart retained the minion's owner, the bat power and nine creature charges. On the packaged server with `allow-flight=false`, the muted survival client held jump for 6.8 seconds, rose from Y 110 to Y 168.8, remained connected and took two damage after landing.
+- [ ] Verify acquiring the Owl and Toad powers through their survival entities. Their entity ports remain pending.
 
 ## Auram Pack Validation (2026-11-20)
 

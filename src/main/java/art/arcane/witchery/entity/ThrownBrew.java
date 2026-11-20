@@ -3,6 +3,7 @@ package art.arcane.witchery.entity;
 import art.arcane.witchery.item.ThrowableBrewItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryEntities;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -13,6 +14,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -33,7 +36,8 @@ public final class ThrownBrew extends ThrowableItemProjectile {
 
     @Override
     protected float getGravity() {
-        return getItem().is(WitcheryIngredient.ROCK.item()) ? super.getGravity() : 0.05F;
+        return getItem().is(WitcheryIngredient.ROCK.item()) || getItem().is(WitcheryIngredient.WEB.item())
+                ? super.getGravity() : 0.05F;
     }
 
     @Override
@@ -46,6 +50,14 @@ public final class ThrownBrew extends ThrowableItemProjectile {
                     entity.getEntity().hurt(server.damageSources().thrown(this, getOwner()), 6);
                 }
                 server.sendParticles(ParticleTypes.POOF, impact.x, impact.y, impact.z, 8, 0.5, 0.5, 0.5, 0.05);
+                discard();
+                return;
+            }
+            if (getItem().is(WitcheryIngredient.WEB.item())) {
+                BlockPos pos = hit instanceof BlockHitResult block ? block.getBlockPos().relative(block.getDirection())
+                        : BlockPos.containing(impact);
+                if (hit instanceof EntityHitResult entity) pos = entity.getEntity().blockPosition();
+                if (server.getBlockState(pos).canBeReplaced()) server.setBlockAndUpdate(pos, Blocks.COBWEB.defaultBlockState());
                 discard();
                 return;
             }

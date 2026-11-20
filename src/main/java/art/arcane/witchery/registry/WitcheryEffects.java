@@ -23,10 +23,13 @@ public final class WitcheryEffects {
             MOB_EFFECTS.register("potion.wakingnightmare", WakingNightmareEffect::new);
     public static final RegistryObject<MobEffect> GROTESQUE =
             MOB_EFFECTS.register("potion.grotesque", GrotesqueEffect::new);
+    public static final RegistryObject<MobEffect> ENSLAVED = MOB_EFFECTS.register("potion.enslaved",
+            () -> new MobEffect(MobEffectCategory.HARMFUL, 0x4F2756) {});
 
     static {
         LEGACY_EFFECTS.put("potion.wakingnightmare", WAKING_NIGHTMARE);
         LEGACY_EFFECTS.put("potion.grotesque", GROTESQUE);
+        LEGACY_EFFECTS.put("potion.enslaved", ENSLAVED);
         for (String legacyName : LegacyRegistryData.EFFECTS) {
             registerLegacyEffect(legacyName);
         }
