@@ -57,6 +57,7 @@ import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.ChestRenderer;
 import net.minecraft.client.renderer.entity.CatRenderer;
+import net.minecraft.client.renderer.entity.ItemEntityRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
@@ -150,6 +151,7 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.OWL.get(), WitchOwlRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.TOAD.get(), WitchToadRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.BROOM.get(), BroomRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.ITEM_WAYSTONE.get(), ItemEntityRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.COVEN_WITCH.get(), CovenWitchRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.REFLECTION.get(), ReflectionRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SLEEPING_BODY.get(), SleepingBodyRenderer::new);

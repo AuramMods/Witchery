@@ -98,6 +98,7 @@ public final class WitcheryItems {
             LEGACY_SPAWN_EGGS.put(name, ITEMS.register(name, () -> new Item(new Item.Properties())));
         }
         ITEMS.register("broom_spawn_egg", () -> new BroomItem(true));
+        ITEMS.register("item_spawn_egg", () -> new Item(new Item.Properties()));
 
         for (String legacyName : LegacyRegistryData.BLOCKS) {
             registerLegacyBlockItem(legacyName);

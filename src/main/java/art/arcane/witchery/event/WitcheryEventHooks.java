@@ -15,6 +15,7 @@ import art.arcane.witchery.item.VampiricPoppetItem;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.registry.WitcheryEffects;
+import art.arcane.witchery.ritual.DroppedWaystones;
 import art.arcane.witchery.world.DreamTravel;
 import art.arcane.witchery.world.MirrorTravel;
 import art.arcane.witchery.world.TormentTravel;
@@ -40,6 +41,8 @@ import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
+import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.level.SleepFinishedTimeEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -60,6 +63,18 @@ public final class WitcheryEventHooks {
     @SubscribeEvent
     public static void onAttachEntityCapabilities(AttachCapabilitiesEvent<Entity> event) {
         WitcheryPlayerDataProvider.attach(event);
+    }
+
+    @SubscribeEvent
+    public static void onWaystoneToss(ItemTossEvent event) {
+        DroppedWaystones.markToss(event.getEntity());
+    }
+
+    @SubscribeEvent
+    public static void onWaystonePickup(EntityItemPickupEvent event) {
+        if (DroppedWaystones.isTossedWaystone(event.getItem()) && event.getEntity().distanceToSqr(event.getItem()) > 0.5625) {
+            event.setCanceled(true);
+        }
     }
 
     @SubscribeEvent

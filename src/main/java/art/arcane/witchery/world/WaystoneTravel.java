@@ -12,6 +12,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -26,19 +27,30 @@ public final class WaystoneTravel {
     private WaystoneTravel() {}
 
     @Nullable
-    public static LivingEntity findBindingTarget(ServerLevel level, BlockPos circle) {
+    public static LivingEntity findBindingTarget(ServerLevel level, BlockPos circle, boolean droppedStone) {
         Vec3 center = Vec3.atBottomCenterOf(circle);
-        AABB area = new AABB(circle).inflate(4, 0, 4);
-        Comparator<LivingEntity> distance = Comparator.comparingDouble(actor -> actor.distanceToSqr(center));
-        Mob creature = level.getEntitiesOfClass(Mob.class, area,
-                candidate -> candidate.isAlive() && candidate.distanceToSqr(center) <= 16).stream().min(distance).orElse(null);
-        if (creature != null) return creature;
-        return level.getEntitiesOfClass(ServerPlayer.class, area,
-                player -> player.isAlive() && !player.isSpectator() && player.distanceToSqr(center) <= 16)
-                .stream().min(distance).orElse(null);
+        int radius = droppedStone ? 2 : 4;
+        AABB area = new AABB(circle).inflate(radius, droppedStone ? 2 : 0, radius);
+        Comparator<LivingEntity> preference = Comparator.<LivingEntity>comparingInt(entity ->
+                (entity instanceof ServerPlayer) == droppedStone ? 0 : 1)
+                .thenComparingDouble(entity -> distanceSqr(entity, center, droppedStone));
+        return level.getEntitiesOfClass(LivingEntity.class, area,
+                candidate -> (candidate instanceof ServerPlayer || candidate instanceof Mob)
+                        && candidate.isAlive() && !candidate.isSpectator()
+                        && distanceSqr(candidate, center, droppedStone) <= radius * radius)
+                .stream().min(preference).orElse(null);
     }
 
     public static boolean teleportCircle(ServerLevel origin, BlockPos circle, ItemStack stone, int radius) {
+        return teleport(origin, circle, stone, radius, radius, false);
+    }
+
+    public static boolean teleportDropped(ServerLevel origin, BlockPos circle, ItemStack stone) {
+        return teleport(origin, circle, stone, 4, 0, true);
+    }
+
+    private static boolean teleport(ServerLevel origin, BlockPos circle, ItemStack stone, int radius, int spread,
+                                    boolean droppedStone) {
         WaystoneItem.Location location = WaystoneItem.location(stone);
         LivingEntity target = null;
         ServerLevel destination;
@@ -56,11 +68,11 @@ public final class WaystoneTravel {
         Vec3 center = Vec3.atBottomCenterOf(circle);
         boolean sent = false;
         for (Entity actor : origin.getEntities((Entity) null, new AABB(center, center).inflate(radius),
-                candidate -> candidate.isAlive() && !candidate.isSpectator() && candidate.distanceToSqr(center) < radius * radius)) {
-            if (inhibited(actor)) continue;
+                candidate -> inRange(candidate, center, radius, droppedStone))) {
+            if (!actor.isAlive() || actor.level() != origin || inhibited(actor)) continue;
             Vec3 arrival;
             if (location != null) {
-                arrival = findLanding(actor, destination, location.position(), radius);
+                arrival = findLanding(actor, destination, location.position(), spread);
             } else {
                 arrival = target.position();
                 if (!WitcheryTeleport.canArrive(actor, destination, arrival)) continue;
@@ -68,6 +80,17 @@ public final class WaystoneTravel {
             if (arrival != null) sent |= WitcheryTeleport.move(actor, destination, arrival);
         }
         return sent;
+    }
+
+    private static boolean inRange(Entity entity, Vec3 center, int radius, boolean droppedStone) {
+        if (!entity.isAlive() || entity.isSpectator()) return false;
+        if (!droppedStone) return entity.distanceToSqr(center) < radius * radius;
+        return (entity instanceof LivingEntity || entity instanceof ItemEntity)
+                && distanceSqr(entity, center, true) <= radius * radius;
+    }
+
+    private static double distanceSqr(Entity entity, Vec3 center, boolean horizontal) {
+        return entity.distanceToSqr(center.x, horizontal ? entity.getY() : center.y, center.z);
     }
 
     @Nullable

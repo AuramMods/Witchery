@@ -824,7 +824,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 127 | `GOBLIN_MOG` | `EntityGoblinMog` | `goblinmog` |
 | 128 | `GOBLIN_GULG` | `EntityGoblinGulg` | `goblingulg` |
 | 129 | `BREW2` | `EntityBrew` | `brew2` |
-| 130 | `ITEM_WAYSTONE` | `EntityItemWaystone` | `item` |
+| 130 | `ITEM_WAYSTONE` | `EntityItemWaystone` | `item` (legacy dropped Waystone, item subtype and age) |
 | 131 | `DROPLET` | `EntityDroplet` | `droplet` |
 | 132 | `SPLATTER` | `EntitySplatter` | `splatter` |
 | 133 | `LEONARD` | `EntityLeonard` | `leonard` |

@@ -1,6 +1,7 @@
 package art.arcane.witchery.item;
 
 import art.arcane.witchery.world.WitcheryDimensions;
+import art.arcane.witchery.ritual.DroppedWaystones;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -10,6 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -32,6 +34,11 @@ public final class WaystoneItem extends Item {
 
     public static boolean isBoundWaystone(ItemStack stack) {
         return stack.is(WitcheryIngredient.BOUND_WAYSTONE.item()) || stack.is(WitcheryIngredient.CREATURE_BOUND_WAYSTONE.item());
+    }
+
+    @Override
+    public boolean onEntityItemUpdate(ItemStack stack, ItemEntity entity) {
+        return DroppedWaystones.update(entity);
     }
 
     public static void bindLocation(ItemStack stone, ServerLevel level, BlockPos pos) {

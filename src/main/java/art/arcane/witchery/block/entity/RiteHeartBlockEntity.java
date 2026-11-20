@@ -230,7 +230,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 output = new ItemStack(WitcheryIngredient.BOUND_WAYSTONE.item());
                 WaystoneItem.bindLocation(output, level, pos);
             } else if (rite.action() == ItemRiteRecipe.Action.BIND_CREATURE_WAYSTONE) {
-                LivingEntity target = WaystoneTravel.findBindingTarget(level, pos);
+                LivingEntity target = WaystoneTravel.findBindingTarget(level, pos, false);
                 if (target == null) {
                     abort(level, "message.witchery.rite.no_waystone_target");
                     return;

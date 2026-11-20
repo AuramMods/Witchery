@@ -1,6 +1,7 @@
 package art.arcane.witchery.ritual;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 
@@ -59,7 +60,11 @@ public enum RitualCircle {
             ".#...........#.",
             "..#.........#..",
             "...#.......#...",
-            "....#######....");
+            "....#######...."),
+    TINY(
+            "###",
+            "#.#",
+            "###");
 
     private final List<BlockPos> offsets;
 
@@ -88,5 +93,12 @@ public enum RitualCircle {
 
     public int sacrificeRadius() {
         return (offsets.size() + 2) / 6 + 1;
+    }
+
+    public void erase(LevelAccessor level, BlockPos center, Block glyph) {
+        for (BlockPos offset : offsets) {
+            BlockPos pos = center.offset(offset);
+            if (level.getBlockState(pos).is(glyph)) level.removeBlock(pos, false);
+        }
     }
 }

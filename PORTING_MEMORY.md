@@ -189,6 +189,12 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - A third route sent a paper parcel more than 160 blocks to a platform outside the player's simulation distance. The destination had no permanent loading ticket during delivery. The Owl used temporary chunk tickets and returned to the launch point. The portable bindings target the Owl's current dimension, and saved journeys resume when the Owl's chunk ticks.
 - The Owl imports the original `WITCWaypoint` item and `HomeX`, `HomeY` and `HomeZ` fields. The return leg has a new `ReturningFromDelivery` flag. Protocol 19 synchronizes active delivery state. All 96 required Forge GameTests passed, including legacy loaded routes and an Ink impact. Data generation and reobfuscation succeeded.
 
+### Dropped Waystones (2026-11-20)
+
+- A player-tossed Waystone activates in an eight-glyph Otherwhere ring after four seconds. An empty ring binds up to eight stones to its center. A creature or player within two blocks needs 4,000 altar power to bind one stone. The muted player bound eight of ten stones in an empty circle, then bound a named pig with a powered circle. Both rings erased their glyphs.
+- A bound Waystone dropped inside the twelve-glyph Otherwhere circle transports eligible creatures, players and loose items within four blocks. This circle stays intact. A packaged restart kept the hand-bound stack. The muted client tossed all eight stones, moved to the exact recorded block, and picked up the seven remaining stones. A loose paper parcel made the same trip.
+- New tosses use vanilla item entities with the persistent `WITCDroppedWaystone` flag. `witchery:item` loads the old dropped entity, including its legacy ingredient subtype, `Age` and binding. Protocol 20 changes its entity type. All 99 required Forge GameTests passed, including an unpowered creature binding and travel with a remainder. Data generation and reobfuscation succeeded.
+
 ## Session Memory (2026-02-08)
 - Port target is Forge 1.20.1.
 - Legacy source is fully available at `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10`.

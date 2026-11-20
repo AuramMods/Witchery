@@ -247,7 +247,8 @@
 - [x] Bind a Creature-Bound Waystone to a nearby player or creature. Both original recipes are available. The muted client bound a named pig using the 500-power recipe. The pig and stone retained their matching identity after a packaged server restart. The rite then carried the player to the pig's new position.
 - [x] Verify legacy location and creature tags, safe placement, Nether travel and Ender Inhibition. All 94 required Forge GameTests, data generation and JAR reobfuscation passed.
 - [x] Deliver a parcel or throw a brew with a tamed Owl. The muted player assigned a location stone, launched the Owl with an empty hand, and restarted the server while it was airborne. The Owl delivered the named paper and returned to sit near its launch point. A second route made it throw Ink at a bound pig. A route of more than 160 blocks delivered a second parcel outside the player's simulation distance. All 96 required GameTests passed.
-- [ ] Restore the passive dropped Waystone circles, Crystal Ball viewing and the remaining Waystone uses in rites and equipment.
+- [x] Bind or use dropped Waystones at the original Otherwhere glyph patterns. The muted client tossed ten into an eight-glyph ring and got eight bound stones and two unbound stones. A powered ring bound a named pig. Dropping the bound stack inside a twelve-glyph ring moved the client, loose paper and seven remaining stones to the exact saved point. All 99 required GameTests passed.
+- [ ] Restore Crystal Ball viewing and the remaining Waystone uses in rites and equipment.
 
 ## Auram Pack Validation (2026-11-20)
 

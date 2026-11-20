@@ -6,6 +6,7 @@ import art.arcane.witchery.entity.DarkMark;
 import art.arcane.witchery.entity.Demon;
 import art.arcane.witchery.entity.Ent;
 import art.arcane.witchery.entity.Imp;
+import art.arcane.witchery.entity.LegacyWaystoneEntity;
 import art.arcane.witchery.entity.LordOfTorment;
 import art.arcane.witchery.entity.Mandrake;
 import art.arcane.witchery.entity.Nightmare;
@@ -75,6 +76,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<WitchBroom>> BROOM =
             ENTITY_TYPES.register("broom", () -> EntityType.Builder.of(WitchBroom::new, MobCategory.MISC)
                     .sized(1.2F, 0.5F).clientTrackingRange(8).updateInterval(1).build(Witchery.MODID + ":broom"));
+    public static final RegistryObject<EntityType<LegacyWaystoneEntity>> ITEM_WAYSTONE =
+            ENTITY_TYPES.register("item", () -> EntityType.Builder.of(LegacyWaystoneEntity::new, MobCategory.MISC)
+                    .sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(20).build(Witchery.MODID + ":item"));
     public static final RegistryObject<EntityType<CovenWitch>> COVEN_WITCH =
             ENTITY_TYPES.register("covenwitch", () -> EntityType.Builder.of(CovenWitch::new, MobCategory.CREATURE)
                     .sized(0.6F, 1.95F).clientTrackingRange(8).build(Witchery.MODID + ":covenwitch"));
@@ -125,7 +129,8 @@ public final class WitcheryEntities {
 
     private static void registerLegacyEntity(String legacyName) {
         String path = RegistryNameUtil.normalizePath(legacyName);
-        if (LEGACY_ENTITIES.containsKey(path) || path.equals("soulfire") || path.equals("spelleffect") || path.equals("broom")) {
+        if (LEGACY_ENTITIES.containsKey(path) || path.equals("soulfire") || path.equals("spelleffect") || path.equals("broom")
+                || path.equals("item")) {
             return;
         }
 
