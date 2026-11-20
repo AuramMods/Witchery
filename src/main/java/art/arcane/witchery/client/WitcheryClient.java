@@ -45,6 +45,8 @@ import art.arcane.witchery.client.renderer.VampireRenderer;
 import art.arcane.witchery.client.renderer.VillageGuardRenderer;
 import art.arcane.witchery.client.renderer.WitcheryBoltRenderer;
 import art.arcane.witchery.client.renderer.WitchHunterRenderer;
+import art.arcane.witchery.client.renderer.HellhoundRenderer;
+import art.arcane.witchery.client.renderer.WolfHeadRenderer;
 import art.arcane.witchery.client.renderer.GrassperRenderer;
 import art.arcane.witchery.client.renderer.ImpRenderer;
 import art.arcane.witchery.client.renderer.KettleRenderer;
@@ -163,6 +165,8 @@ public final class WitcheryClient {
         event.registerLayerDefinition(VampireRenderer.LAYER, VampireRenderer::layer);
         event.registerLayerDefinition(VillageGuardRenderer.LAYER, VillageGuardRenderer::layer);
         event.registerLayerDefinition(WitchHunterRenderer.LAYER, WitchHunterRenderer::layer);
+        event.registerLayerDefinition(HellhoundRenderer.LAYER, HellhoundRenderer::layer);
+        event.registerLayerDefinition(WolfHeadRenderer.LAYER, WolfHeadRenderer::layer);
         for (var style : VampireClothingItem.Style.values()) {
             event.registerLayerDefinition(VampireClothingModel.layerId(style), () -> VampireClothingModel.layer(style));
         }
@@ -189,6 +193,7 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.VAMPIRE.get(), VampireRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.VILLAGE_GUARD.get(), VillageGuardRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.WITCH_HUNTER.get(), WitchHunterRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.HELLHOUND.get(), HellhoundRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.ATTACK_BAT.get(), BatRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SCRY_EYE.get(), NoopRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.MANDRAKE.get(), MandrakeRenderer::new);
@@ -214,6 +219,7 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.GRENADE.get(), ThrownItemRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.KETTLE.get(), KettleRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.SPINNING_WHEEL.get(), SpinningWheelRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.WOLF_HEAD.get(), WolfHeadRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.PLACED_ITEM.get(), PlacedItemRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.GRASSPER.get(), GrassperRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.POPPET_SHELF.get(), PoppetShelfRenderer::new);

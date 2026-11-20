@@ -23,6 +23,7 @@ import art.arcane.witchery.block.entity.SilverVatBlockEntity;
 import art.arcane.witchery.block.entity.SpinningWheelBlockEntity;
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
 import art.arcane.witchery.block.entity.WitchesOvenBlockEntity;
+import art.arcane.witchery.block.entity.WolfHeadBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -110,11 +111,15 @@ public final class WitcheryBlockEntities {
     public static final RegistryObject<BlockEntityType<PoppetShelfBlockEntity>> POPPET_SHELF =
             BLOCK_ENTITIES.register("poppetshelf", () -> BlockEntityType.Builder.of(PoppetShelfBlockEntity::new,
                     WitcheryBlocks.getRequired("poppetshelf").get()).build(null));
+    public static final RegistryObject<BlockEntityType<WolfHeadBlockEntity>> WOLF_HEAD =
+            BLOCK_ENTITIES.register("wolfhead", () -> BlockEntityType.Builder.of(WolfHeadBlockEntity::new,
+                    WitcheryBlocks.getRequired("wolfhead").get()).build(null));
 
     static {
         LEGACY_BLOCK_ENTITIES.put("altar", ALTAR);
         LEGACY_BLOCK_ENTITIES.put("barrier", BARRIER);
         LEGACY_BLOCK_ENTITIES.put("poppetshelf", POPPET_SHELF);
+        LEGACY_BLOCK_ENTITIES.put("wolfhead", WOLF_HEAD);
         LEGACY_BLOCK_ENTITIES.put("chalice", CHALICE);
         LEGACY_BLOCK_ENTITIES.put("crystalball", CRYSTAL_BALL);
         LEGACY_BLOCK_ENTITIES.put("dreamcatcher", DREAM_CATCHER);

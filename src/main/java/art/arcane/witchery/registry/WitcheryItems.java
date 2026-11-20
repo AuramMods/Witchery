@@ -103,6 +103,7 @@ public final class WitcheryItems {
         registerLegacyItem("voodoo_protection_poppet");
         registerLegacyItem("vampiric_poppet");
         registerLegacyItem("poppet_protection");
+        registerLegacyItem("hellhound_head");
 
         for (WitcheryIngredient ingredient : WitcheryIngredient.values()) {
             registerLegacyItem(ingredient.path());
@@ -179,6 +180,13 @@ public final class WitcheryItems {
             case "anointing_paste" -> new AnointingPasteItem(new Item.Properties());
             case "taglockkit" -> new TaglockItem();
             case "coffin" -> createBlockItem("coffinblock");
+            case "hellhound_head" -> new BlockItem(WitcheryBlocks.getRequired("wolfhead").get(), new Item.Properties()) {
+                @Override
+                public String getDescriptionId() { return getOrCreateDescriptionId(); }
+
+                @Override
+                public void registerBlocks(Map<Block, Item> blockToItem, Item item) {}
+            };
             case "canesword" -> new CaneSwordItem();
             case "handbow" -> new HandBowItem();
             case "hunterhat" -> new HunterClothingItem(Piece.HAT, Upgrade.PLAIN);
@@ -322,6 +330,7 @@ public final class WitcheryItems {
                 () -> switch (path) {
                     case "covenwitch" -> new ForgeSpawnEggItem(entityType, 0x111111, 0x002D03, new Item.Properties());
                     case "witchhunter" -> new ForgeSpawnEggItem(entityType, 0x78706B, 0x231C19, new Item.Properties());
+                    case "hellhound" -> new ForgeSpawnEggItem(entityType, 0xD86500, 0x5B1208, new Item.Properties());
                     default -> new ForgeSpawnEggItem(entityType, 0x6E5A4E, 0xA4A29D, new Item.Properties());
                 });
         LEGACY_SPAWN_EGGS.put(eggPath, egg);

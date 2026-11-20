@@ -8,6 +8,7 @@ import art.arcane.witchery.entity.DarkMark;
 import art.arcane.witchery.entity.Demon;
 import art.arcane.witchery.entity.Ent;
 import art.arcane.witchery.entity.GrenadeProjectile;
+import art.arcane.witchery.entity.Hellhound;
 import art.arcane.witchery.entity.Imp;
 import art.arcane.witchery.entity.LegacyWaystoneEntity;
 import art.arcane.witchery.entity.LordOfTorment;
@@ -35,6 +36,7 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.ambient.Bat;
 import net.minecraft.world.entity.animal.Cat;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -111,6 +113,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<WitchHunter>> WITCH_HUNTER =
             ENTITY_TYPES.register("witchhunter", () -> EntityType.Builder.of(WitchHunter::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.8F).clientTrackingRange(8).build(Witchery.MODID + ":witchhunter"));
+    public static final RegistryObject<EntityType<Hellhound>> HELLHOUND =
+            ENTITY_TYPES.register("hellhound", () -> EntityType.Builder.of(Hellhound::new, MobCategory.MONSTER)
+                    .sized(0.9F, 0.9F).fireImmune().clientTrackingRange(8).build(Witchery.MODID + ":hellhound"));
     public static final RegistryObject<EntityType<AttackBat>> ATTACK_BAT =
             ENTITY_TYPES.register("attackbat", () -> EntityType.Builder.of(AttackBat::new, MobCategory.AMBIENT)
                     .sized(0.5F, 0.9F).clientTrackingRange(5).build(Witchery.MODID + ":attackbat"));
@@ -154,6 +159,7 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("vampire", VAMPIRE);
         LEGACY_ENTITIES.put("villageguard", VILLAGE_GUARD);
         LEGACY_ENTITIES.put("witchhunter", WITCH_HUNTER);
+        LEGACY_ENTITIES.put("hellhound", HELLHOUND);
         LEGACY_ENTITIES.put("attackbat", ATTACK_BAT);
         LEGACY_ENTITIES.put("follower", FOLLOWER);
         LEGACY_ENTITIES.put("imp", IMP);
@@ -206,6 +212,7 @@ public final class WitcheryEntities {
                     : entry == VAMPIRE ? Vampire.attributes()
                     : entry == VILLAGE_GUARD ? VillageGuard.attributes()
                     : entry == WITCH_HUNTER ? WitchHunter.attributes()
+                    : entry == HELLHOUND ? Hellhound.attributes()
                     : entry == ATTACK_BAT ? Bat.createAttributes()
                     : entry == FOLLOWER ? WitcheryFollower.attributes()
                     : entry == IMP ? Imp.attributes()
@@ -220,5 +227,7 @@ public final class WitcheryEntities {
     private static void registerSpawnPlacements(SpawnPlacementRegisterEvent event) {
         event.register(COVEN_WITCH.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 CovenWitch::canSpawn, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(HELLHOUND.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                Monster::checkAnyLightMonsterSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
     }
 }

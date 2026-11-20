@@ -10,8 +10,26 @@
       ],
       "entries": [
         {
-          "type": "minecraft:item",
-          "name": "witchery:wolfhead"
+          "type": "minecraft:alternatives",
+          "children": [
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "block": "witchery:wolfhead",
+                  "condition": "minecraft:block_state_property",
+                  "properties": {
+                    "hellhound": "true"
+                  }
+                }
+              ],
+              "name": "witchery:hellhound_head"
+            },
+            {
+              "type": "minecraft:item",
+              "name": "witchery:wolfhead"
+            }
+          ]
         }
       ],
       "rolls": 1.0

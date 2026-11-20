@@ -462,6 +462,12 @@
 - [x] Restore black magic notices from Voodoo and Vampiric Poppets and the Curse of Waking Nightmare. The muted survival client collected a pig's Taglock, crafted and used a bound Voodoo Poppet, and the server saved a pursuit timestamp. GameTests confirmed that a notice waits at least 2,400 ticks and can spawn at most two hunters with the original target. Java 17 data generation, JAR reobfuscation and all 220 required Forge GameTests passed.
 - [ ] Connect werewolf targets and Silver Bolt selection after lycanthropy, and wire the remaining black magic triggers as their rites are restored.
 
+## Hellhounds and Wolf Trophies (2026-11-20)
+
+- [x] Restore Hellhound behavior, the original model and texture, and Nether spawns. The packaged dedicated server spawned 13 Hellhounds near a muted survival client with natural spawning enabled. The original groups of one to three and weight 25 are defined by a Forge biome modifier.
+- [x] Restore Dog Tongue and Hellhound Head drops. The survival client collected three heads from the attributed Looting III fixture. It mounted one on a wall and placed an ordinary Wolf Head on top of a stone block. Both rendered with their original textures, and GameTests checked the legacy metadata, placement and drop variants.
+- [x] Start the original Hellhound cure with a thrown Weakness potion and an ordinary golden apple. The client spent one apple and the dedicated server recorded 4,449 ticks of conversion time and Strength. A restart preserved both placed trophies and the Hellhound's UUID and countdown. GameTests reloaded the countdown and confirmed the confused wolf outcome. Java 17 data generation, JAR reobfuscation and all 223 required Forge GameTests passed.
+
 ## Auram Pack Validation (2026-11-20)
 
 - [x] Reproduce the Evolved Mekanism 1.2.1-fix3 startup crash in the matched Auram profile before adding Witchery. Both pack runs reported the null `QIODriveTier` during Evolved Mekanism construction.

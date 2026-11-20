@@ -148,6 +148,11 @@ public enum WitcheryIngredient {
     /** Loads an inventory stack after upgrading the legacy Witchery subtype, when present. */
     public static ItemStack loadInventoryStack(CompoundTag stackTag) {
         ItemStack stack = ItemStack.of(stackTag);
+        if (!stack.isEmpty() && "witchery:wolfhead".equals(stackTag.getString("id")) && stackTag.getInt("Damage") == 1) {
+            ItemStack head = new ItemStack(WitcheryItems.getRequired("hellhound_head").get(), stack.getCount());
+            if (stack.hasTag()) head.setTag(stack.getTag().copy());
+            return head;
+        }
         if (!stack.isEmpty() && "witchery:crittersnare".equals(stackTag.getString("id"))) {
             CritterSnareBlock.applyLegacyMetadata(stack, stackTag.getInt("Damage"));
             return stack;

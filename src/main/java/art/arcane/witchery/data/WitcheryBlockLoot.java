@@ -10,6 +10,7 @@ import art.arcane.witchery.block.entity.LeechSamples;
 import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.block.WitchCropBlock;
 import art.arcane.witchery.block.WitchWoodType;
+import art.arcane.witchery.block.WolfHeadBlock;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
@@ -72,6 +73,12 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                                         .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(BedBlock.PART, BedPart.FOOT)))))));
                 case "witchsapling", "witchlog", "witchwood" -> dropWitchWood(block);
                 case "crittersnare" -> dropCritterSnare(block);
+                case "wolfhead" -> add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1)).add(AlternativesEntry.alternatives(
+                                LootItem.lootTableItem(WitcheryItems.getRequired("hellhound_head").get()).when(
+                                        LootItemBlockStatePropertyCondition.hasBlockStateProperties(block).setProperties(
+                                                StatePropertiesPredicate.Builder.properties().hasProperty(WolfHeadBlock.HELLHOUND, true))),
+                                LootItem.lootTableItem(block))))));
                 case "leechchest" -> add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool()
                         .setRolls(ConstantValue.exactly(1)).add(LootItem.lootTableItem(block)
                                 .apply(CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY)

@@ -39,6 +39,7 @@ import art.arcane.witchery.block.WitchSaplingBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.block.WitchesCauldronBlock;
 import art.arcane.witchery.block.WitchesOvenBlock;
+import art.arcane.witchery.block.WolfHeadBlock;
 import art.arcane.witchery.entity.Ent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -213,7 +214,8 @@ public final class WitcheryBlocks {
             case "demonheart" ->
                     new DemonHeartBlock(BlockBehaviour.Properties.copy(Blocks.STONE).strength(1).noOcclusion()
                             .sound(SoundType.NETHERRACK).lightLevel(state -> 3));
-            case "wolfhead", "alluringskull" ->
+            case "wolfhead" -> new WolfHeadBlock();
+            case "alluringskull" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.SKELETON_SKULL), SHAPE_SKULL, true);
             case "chalice" ->
                     new ChaliceBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BARS).noOcclusion().strength(3.0F));
