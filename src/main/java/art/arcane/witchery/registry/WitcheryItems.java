@@ -166,6 +166,7 @@ public final class WitcheryItems {
             case "bucketbrew" -> new BucketItem(WitcheryFluids.getRequiredSource("brew"), bucketProperties);
             case "anointing_paste" -> new AnointingPasteItem(new Item.Properties());
             case "taglockkit" -> new TaglockItem();
+            case "coffin" -> createBlockItem("coffinblock");
             case "mirror" -> new MirrorItem();
             case "arthana" -> new ArthanaItem();
             case "mysticbranch" -> new MysticBranchItem();

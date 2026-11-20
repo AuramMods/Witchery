@@ -41,7 +41,9 @@ public class WitcheryBlockTagsProvider extends BlockTagsProvider {
         for (WitchCrop crop : WitchCrop.values()) {
             tag(BlockTags.CROPS).add(crop.block());
         }
-        tag(BlockTags.MINEABLE_WITH_AXE).add(log, planks);
+        Block coffin = WitcheryBlocks.getRequired("coffinblock").get();
+        tag(BlockTags.BEDS).add(coffin);
+        tag(BlockTags.MINEABLE_WITH_AXE).add(log, planks, coffin);
         tag(BlockTags.MINEABLE_WITH_PICKAXE).add(
                 WitcheryBlocks.getRequired("altar").get(),
                 WitcheryBlocks.getRequired("distilleryidle").get(),

@@ -27,6 +27,7 @@ import art.arcane.witchery.client.renderer.BabaYagaRenderer;
 import art.arcane.witchery.client.renderer.BroomRenderer;
 import art.arcane.witchery.client.renderer.DarkMarkRenderer;
 import art.arcane.witchery.client.renderer.CovenWitchRenderer;
+import art.arcane.witchery.client.renderer.CoffinRenderer;
 import art.arcane.witchery.client.renderer.CrystalBallRenderer;
 import art.arcane.witchery.client.renderer.DemonRenderer;
 import art.arcane.witchery.client.renderer.EntRenderer;
@@ -138,6 +139,7 @@ public final class WitcheryClient {
         event.registerLayerDefinition(DreamCatcherRenderer.LAYER, DreamCatcherRenderer::layer);
         event.registerLayerDefinition(KettleRenderer.LAYER, KettleRenderer::layer);
         event.registerLayerDefinition(LeechChestRenderer.LAYER, LeechChestRenderer::layer);
+        event.registerLayerDefinition(CoffinRenderer.LAYER, CoffinRenderer::layer);
         event.registerLayerDefinition(SpinningWheelRenderer.LAYER, SpinningWheelRenderer::layer);
     }
 
@@ -184,6 +186,7 @@ public final class WitcheryClient {
         event.registerBlockEntityRenderer(WitcheryBlockEntities.ROOM_MIRROR.get(), MirrorBlockRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.REFILLING_CHEST.get(), ChestRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.LEECH_CHEST.get(), LeechChestRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.COFFIN.get(), CoffinRenderer::new);
     }
 
     @SubscribeEvent

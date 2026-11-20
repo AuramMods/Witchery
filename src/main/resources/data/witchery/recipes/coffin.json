@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["PPP", "LBL", "LLL"],
+  "key": {
+    "P": { "tag": "minecraft:planks" },
+    "L": { "tag": "minecraft:logs" },
+    "B": { "tag": "minecraft:beds" }
+  },
+  "result": { "item": "witchery:coffin" }
+}

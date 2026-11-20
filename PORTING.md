@@ -305,6 +305,15 @@
 - [x] Restore the Blood Rose mutation, the original empty and full textures, and the legacy Boline recipe. The muted player crafted the Boline using iron, bone and emerald. GameTests verified the original red flower variants, replacement of older samples, and replantable cuttings.
 - [x] Verify the Blood Rose across restart. The muted client mutated its empty Leech Chest into four roses. A second player walked through one, which displayed its full texture and kept their sample after restart. The first player collected the sample and drained the rose. It cut the rose with the crafted Boline without wear, and the second player replanted it empty. The rose also allowed the first player to collect its own sample. Data generation, JAR reobfuscation, and all 133 required Forge GameTests passed.
 
+## Coffin (2026-11-20)
+
+- [x] Craft the original placeable coffin from a bed, three planks and five logs. The muted survival client crafted the item and placed the head and foot together. Placement tests refused an obstructed or unsupported second half and retained the item.
+- [x] Restore both lid models, the crouch-use toggle, the open collision shape and the original `Opened` save field. The muted client was refused while closed and slept after opening it. A second player could not close it while occupied.
+- [x] Restore Taglock collection through the coffin. The second player collected a kit from each half after the first player woke. Both kits bound to the first player's UUID at the coffin's registered respawn point.
+- [x] Preserve the earlier port's single decorative block and facing on world upgrade. A GameTest imported the original `Opened` field. Data generation, JAR reobfuscation and all 136 required Forge GameTests passed.
+- [x] Verify the open coffin on a dedicated restart. Both lids stayed open, both Taglocks retained their binding, and the first client respawned beside the head with full health. Mining the foot removed both halves and let the player pick up exactly one coffin. A GameTest verified the same item count when breaking the head.
+- [ ] Restore vampire daytime sleep and dusk wake-up alongside the player vampirism progression.
+
 ## Auram Pack Validation (2026-11-20)
 
 - [x] Reproduce the Evolved Mekanism 1.2.1-fix3 startup crash in the matched Auram profile before adding Witchery. Both pack runs reported the null `QIODriveTier` during Evolved Mekanism construction.
