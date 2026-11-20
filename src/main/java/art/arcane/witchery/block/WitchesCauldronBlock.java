@@ -124,6 +124,11 @@ public final class WitchesCauldronBlock extends BaseEntityBlock {
             level.addParticle(ParticleTypes.BUBBLE_POP, pos.getX() + 0.2 + random.nextDouble() * 0.6,
                     pos.getY() + (3.0 + 3.0 * state.getValue(WATER)) / 16.0,
                     pos.getZ() + 0.2 + random.nextDouble() * 0.6, 0, 0.07, 0);
+            if (level.getBlockEntity(pos) instanceof WitchesCauldronBlockEntity cauldron && cauldron.clientRitual()) {
+                double angle = level.getGameTime() * 0.22;
+                level.addParticle(ParticleTypes.WITCH, pos.getX() + 0.5 + Math.cos(angle) * 0.65,
+                        pos.getY() + 1.15, pos.getZ() + 0.5 + Math.sin(angle) * 0.65, 0, 0.03, 0);
+            }
         }
     }
 }

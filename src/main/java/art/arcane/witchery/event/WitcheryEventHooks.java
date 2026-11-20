@@ -1,5 +1,6 @@
 package art.arcane.witchery.event;
 
+import art.arcane.witchery.brewing.BrewItemCurse;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.CoffinBlock;
 import art.arcane.witchery.brewing.GrotesqueEffect;
@@ -514,6 +515,14 @@ public final class WitcheryEventHooks {
         var player = event.getEntity();
         if (BloodFeeding.paralysis(player, 4) || (event instanceof PlayerInteractEvent.RightClickBlock
                 || event instanceof PlayerInteractEvent.RightClickItem) && VampireAbilities.selected(player) > 0) event.setCanceled(true);
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOW)
+    public static void onCursedItemUse(PlayerInteractEvent event) {
+        if ((event instanceof PlayerInteractEvent.RightClickBlock || event instanceof PlayerInteractEvent.RightClickItem)
+                && event.getEntity() instanceof ServerPlayer player && !player.isSpectator()) {
+            BrewItemCurse.trigger(player, event.getItemStack());
+        }
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)

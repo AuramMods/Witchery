@@ -34,7 +34,7 @@ public final class BrewMixture {
     }
 
     private enum Modifier {
-        CAPACITY, STRENGTH, DURATION, INVERT, HIDE_PARTICLES, DRINK_SPEED, DELIVERY, EXTENT, LIFETIME
+        CAPACITY, STRENGTH, DURATION, INVERT, HIDE_PARTICLES, DRINK_SPEED, DELIVERY, EXTENT, LIFETIME, RITUAL
     }
 
     private record Ingredient(int power, @Nullable Modifier modifier, int amount, int ceiling,
@@ -78,7 +78,7 @@ public final class BrewMixture {
         Mixing mixing = mix(current);
         ResourceLocation id = id(offered);
         Ingredient ingredient = INGREDIENTS.get(id);
-        return mixing != null && ingredient != null && !mixing.segment.contains(id)
+        return mixing != null && ingredient != null && ingredient.modifier != Modifier.RITUAL && !mixing.segment.contains(id)
                 && (!ingredient.isEffect() || mixing.used + ingredient.amount <= mixing.capacity);
     }
 
@@ -111,7 +111,7 @@ public final class BrewMixture {
         return mixture != null && (!tag.getBoolean("Splash") || mixture.splash()) ? mixture : null;
     }
 
-    private static ItemStack loadIngredient(CompoundTag tag) {
+    public static ItemStack loadIngredient(CompoundTag tag) {
         if ("minecraft:skull".equals(tag.getString("id"))) {
             String id = switch (tag.getInt("Damage")) {
                 case 1 -> "minecraft:wither_skeleton_skull";
@@ -263,6 +263,7 @@ public final class BrewMixture {
                 case LIFETIME -> {
                     if (lifetime < ingredient.ceiling) lifetime++;
                 }
+                case RITUAL -> { }
             }
         }
     }
@@ -297,6 +298,7 @@ public final class BrewMixture {
         modifier(entries, "witchery:belladonna_flower", 50, Modifier.LIFETIME, 1, 1, 0);
         modifier(entries, "lapis_lazuli", 100, Modifier.LIFETIME, 1, 2, 0);
         modifier(entries, "end_stone", 150, Modifier.LIFETIME, 1, 3, 0);
+        modifier(entries, "witchery:dog_tongue", 250, Modifier.RITUAL, 0, 0, 0);
 
         potion(entries, "witchery:wolfsbane_flower", 0, 1, WitcheryEffects.WOLFSBANE, 1200);
         potion(entries, "witchery:ender_dew", 200, 1, WitcheryEffects.ENDER_INHIBITION, 1800);

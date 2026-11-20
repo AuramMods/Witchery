@@ -545,7 +545,17 @@
 - [x] Preserve the original cursed control block and block entity IDs and their saved mixture keys. Tested named legacy brew ingredient decoding includes Zombie Head skull metadata.
 - [x] Verify two separate Wolfsbane batches in the muted survival client. Both throws armed the same wall button. The first press applied Wolfsbane, lit a lamp through the support and spent one charge. A dedicated-server restart retained the remaining charge and original mixture. The final press reapplied Wolfsbane, restored the vanilla button during the pulse and turned the lamp off on release.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 261 required Forge GameTests. The new tests cover recharging, replacing a mixture, the last button pulse, all three pressure plates, both door halves and legacy skull metadata.
-- [ ] Restore the separate cauldron ritual that puts triggered brew charges on inventory items.
+- [x] Restore the separate cauldron ritual that puts triggered brew charges on inventory items.
+
+## Cauldron Item Curses (2026-11-20)
+
+- [x] Activate a full, boiling triggered brew by dropping in Tongue of Dog. The cauldron warms up for 20 pulses before it spends power. Inner and outer white chalk rings reduce cost and avoid the ordinary circle risk. Infernal chalk trades power for risk.
+- [x] Preserve the active mixture and pulse count across a dedicated restart. If the cauldron has no offering at the casting pulse, return the tongue and keep the underlying brew.
+- [x] Attach the curse to one item from a stack. With an active cat familiar, the muted survival client recovered one stick with two charges from an offering of three. The remaining two sticks kept their ordinary stack.
+- [x] Verify that a right click in air applies Wolfsbane, an immediate second click preserves the remaining charge, and the next click after five seconds reapplies Wolfsbane and clears the curse while keeping the item. The successful cast used a dropped-item fixture for the tongue and stick stack.
+- [x] Run Java 17 data generation, JAR reobfuscation and all 264 required Forge GameTests. Coverage includes the 250-power debit with two white circles, the named 1.7.10 active-brew save, a missing offering, stack splitting, cooldown, and both interaction paths.
+- [ ] Restore Dog Tongue casts for other dispersals, bound waystone and entity targeting, the remaining fixed recipes, and Leonard's role in cauldron magic. Preserve the legacy bottled withdrawal behavior for active brews.
+- [ ] Restore the hallucinations from the Insanity effect that can occur during a risky cast.
 
 ## Auram Pack Validation (2026-11-20)
 
