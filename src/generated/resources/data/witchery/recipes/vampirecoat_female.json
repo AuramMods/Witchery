@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": {
+      "item": "witchery:dark_cloth"
+    },
+    "L": {
+      "item": "minecraft:leather"
+    }
+  },
+  "pattern": [
+    "C C",
+    "CLC",
+    "CCC"
+  ],
+  "result": {
+    "item": "witchery:vampirecoat_female"
+  },
+  "show_notification": true
+}

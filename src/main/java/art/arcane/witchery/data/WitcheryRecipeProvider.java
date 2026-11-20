@@ -4,6 +4,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.item.VampireClothingItem.Style;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcheryRecipes;
@@ -143,6 +144,16 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .save(recipeOutput);
         SpecialRecipeBuilder.special(WitcheryRecipes.ASSEMBLE_VAMPIRE_BOOK.get())
                 .save(recipeOutput, "witchery:assemble_vampire_book");
+        vampireClothing(Style.HAT).pattern("CCC").pattern("C C").save(recipeOutput);
+        vampireClothing(Style.COAT).pattern("C C").pattern("CCC").pattern("CCC").save(recipeOutput);
+        vampireClothing(Style.FITTED_COAT).define('L', Items.LEATHER)
+                .pattern("C C").pattern("CLC").pattern("CCC").save(recipeOutput);
+        vampireClothing(Style.TROUSERS).pattern("CCC").pattern("C C").pattern("C C").save(recipeOutput);
+        vampireClothing(Style.KILT).pattern("CCC").pattern("CCC").pattern("C C").save(recipeOutput);
+        vampireClothing(Style.BOOTS).pattern("C C").pattern("C C").save(recipeOutput);
+        reinforceClothing(recipeOutput, Style.HAT, Style.HELMET);
+        reinforceClothing(recipeOutput, Style.COAT, Style.CHAIN_COAT);
+        reinforceClothing(recipeOutput, Style.FITTED_COAT, Style.FITTED_CHAIN_COAT);
         ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, WitcheryBlocks.getRequired("daylightcollector").get())
                 .define('G', Items.GOLD_INGOT)
                 .define('R', Items.REPEATER)
@@ -368,6 +379,19 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .requires(WitcheryIngredient.CLAY_JAR.item(), 3)
                 .unlockedBy("has_odour_of_purity", has(WitcheryIngredient.ODOUR_OF_PURITY.item()))
                 .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "purified_milk_from_cake"));
+    }
+
+    private static ShapedRecipeBuilder vampireClothing(Style style) {
+        Item cloth = WitcheryIngredient.DARK_CLOTH.item();
+        return ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, WitcheryItems.getRequired(style.path()).get())
+                .define('C', cloth).unlockedBy("has_dark_cloth", has(cloth));
+    }
+
+    private static void reinforceClothing(Consumer<FinishedRecipe> output, Style base, Style reinforced) {
+        Item clothing = WitcheryItems.getRequired(base.path()).get();
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, WitcheryItems.getRequired(reinforced.path()).get())
+                .define('I', Items.IRON_INGOT).define('C', clothing).pattern(" I ").pattern("ICI").pattern(" I ")
+                .unlockedBy("has_vampire_clothing", has(clothing)).save(output);
     }
 
     private static void robe(Consumer<FinishedRecipe> recipeOutput, String path, Item leather, Item thread, Item center) {

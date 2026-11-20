@@ -22,7 +22,9 @@ import art.arcane.witchery.client.model.NightmareModel;
 import art.arcane.witchery.client.model.WitchOwlModel;
 import art.arcane.witchery.client.model.WitchToadModel;
 import art.arcane.witchery.client.model.WitchClothingModel;
+import art.arcane.witchery.client.model.VampireClothingModel;
 import art.arcane.witchery.item.WitchClothingItem;
+import art.arcane.witchery.item.VampireClothingItem;
 import art.arcane.witchery.client.renderer.DreamCatcherRenderer;
 import art.arcane.witchery.client.renderer.BabaYagaRenderer;
 import art.arcane.witchery.client.renderer.BroomRenderer;
@@ -151,6 +153,9 @@ public final class WitcheryClient {
         event.registerLayerDefinition(LilithModel.LAYER, LilithModel::layer);
         event.registerLayerDefinition(FollowerRenderer.LAYER, FollowerRenderer::layer);
         event.registerLayerDefinition(VampireRenderer.LAYER, VampireRenderer::layer);
+        for (var style : VampireClothingItem.Style.values()) {
+            event.registerLayerDefinition(VampireClothingModel.layerId(style), () -> VampireClothingModel.layer(style));
+        }
         event.registerLayerDefinition(SpinningWheelRenderer.LAYER, SpinningWheelRenderer::layer);
     }
 
@@ -287,6 +292,10 @@ public final class WitcheryClient {
 
     @SubscribeEvent
     public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
+        var vampireClothing = java.util.Arrays.stream(VampireClothingItem.Style.values())
+                .map(style -> WitcheryItems.getRequired(style.path()).get()).toArray(net.minecraft.world.item.Item[]::new);
+        event.register((stack, tint) -> tint == 0 && stack.getItem() instanceof VampireClothingItem clothing
+                ? clothing.getColor(stack) : -1, vampireClothing);
         event.register((stack, tint) -> tint == 0 && stack.getItem() instanceof WitchClothingItem.Dyeable clothing
                         ? clothing.getColor(stack) : -1,
                 WitcheryItems.getRequired("witchhat").get(), WitcheryItems.getRequired("witchrobe").get(),

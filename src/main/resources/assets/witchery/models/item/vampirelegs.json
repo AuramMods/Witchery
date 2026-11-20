@@ -1,6 +1,7 @@
 {
-   "parent" : "minecraft:item/generated",
-   "textures" : {
-      "layer0" : "witchery:item/vampirelegs"
-   }
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "witchery:item/vampirelegs_first",
+    "layer1": "witchery:item/vampirelegs"
+  }
 }

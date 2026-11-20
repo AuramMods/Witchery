@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "witchery:vampirechaincoat_female"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_vampire_clothing": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "witchery:vampirecoat_female"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_vampire_clothing",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "witchery:vampirechaincoat_female"
+    ]
+  },
+  "sends_telemetry_event": false
+}

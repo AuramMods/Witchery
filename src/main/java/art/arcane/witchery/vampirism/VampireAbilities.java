@@ -2,6 +2,7 @@ package art.arcane.witchery.vampirism;
 
 import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.item.VampireClothingItem;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.server.level.ServerPlayer;
@@ -99,7 +100,8 @@ public final class VampireAbilities {
             return;
         }
         int rank = data.getVampireLevel();
-        int time = 20 * (5 + rank / 2 + Math.max(0, (rank - 4) / 2));
+        int clothingBonus = VampireClothingItem.lightPieces(player) >= 3 ? 3 : 0;
+        int time = 20 * (5 + rank / 2 + Math.max(0, (rank - 4) / 2) + clothingBonus);
         living.addEffect(new MobEffectInstance(WitcheryEffects.PARALYSIS.get(), time, rank >= 8 ? 5 : 4), player);
         player.playSound(WitcherySounds.HYPNOSIS.get(), 0.5F, 1);
     }

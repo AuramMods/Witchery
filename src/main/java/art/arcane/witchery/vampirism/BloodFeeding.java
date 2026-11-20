@@ -3,6 +3,7 @@ package art.arcane.witchery.vampirism;
 import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.item.GlassGobletItem;
+import art.arcane.witchery.item.VampireClothingItem;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEffects;
 import net.minecraft.nbt.CompoundTag;
@@ -66,7 +67,8 @@ public final class BloodFeeding {
     static void drink(ServerPlayer player, LivingEntity target, WitcheryPlayerData vampire) {
         double reach = target.hasEffect(WitcheryEffects.PARALYSIS.get()) ? 2.1 : 1.3;
         if (player.distanceToSqr(target) > reach * reach || !target.isAlive()) return;
-        int bite = vampire.getCreatureTypeOrdinal() == 0 ? 10 : 2;
+        int normalBite = VampireClothingItem.lightPieces(player) >= 2 ? 15 : 10;
+        int bite = vampire.getCreatureTypeOrdinal() == 0 ? normalBite : 2;
         int amount;
         int remainingVillagerBlood = -1;
         int maximum = vampire.getMaxBloodPower();

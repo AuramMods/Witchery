@@ -2,6 +2,8 @@ package art.arcane.witchery.entity;
 
 import art.arcane.witchery.block.entity.BloodCrucibleBlockEntity;
 import art.arcane.witchery.item.GlassGobletItem;
+import art.arcane.witchery.item.VampireClothingItem;
+import art.arcane.witchery.item.VampireClothingItem.Style;
 import art.arcane.witchery.vampirism.BloodFeeding;
 import art.arcane.witchery.vampirism.Vampirism;
 import net.minecraft.core.BlockPos;
@@ -17,6 +19,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
@@ -84,6 +87,14 @@ public final class Vampire extends PathfinderMob {
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor world, DifficultyInstance difficulty, MobSpawnType reason,
                                         @Nullable SpawnGroupData data, @Nullable CompoundTag tag) {
         home = blockPosition();
+        boolean fitted = random.nextBoolean();
+        boolean reinforced = random.nextInt(3) == 0;
+        Style coat = fitted ? (reinforced ? Style.FITTED_CHAIN_COAT : Style.FITTED_COAT)
+                : (reinforced ? Style.CHAIN_COAT : Style.COAT);
+        Style legs = (fitted ? random.nextInt(4) != 0 : random.nextInt(3) == 0) ? Style.KILT : Style.TROUSERS;
+        setItemSlot(EquipmentSlot.CHEST, VampireClothingItem.make(coat));
+        setItemSlot(EquipmentSlot.LEGS, VampireClothingItem.make(legs));
+        setItemSlot(EquipmentSlot.FEET, VampireClothingItem.make(Style.BOOTS));
         return super.finalizeSpawn(world, difficulty, reason, data, tag);
     }
 

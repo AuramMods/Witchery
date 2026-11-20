@@ -367,7 +367,7 @@
 - [x] Preserve the converted vampire and the player's progression. A dedicated restart kept the same creature UUID and home position, the empty goblet, rank ten and 1,114 blood.
 - [x] Verify the vampire's nightly hunt. The mob selected an occupied village, took five nonlethal bites and returned home. The hunted villager's blood went from 500 to 400.
 - [x] Preserve Witchery progress through player respawn. After a deliberate death in the headless server, the muted client respawned at rank ten with a cap of ten and 1,114 blood. Java 17 data generation, the reobfuscated JAR and all 167 required Forge GameTests passed.
-- [ ] Restore vampire equipment, guard conversions, village responses and the cure.
+- [ ] Restore vampire mortality, the Cane Sword, guard conversions, village responses and the cure.
 
 ## Blood Crucible and Thunderstorm (2026-11-20)
 
@@ -393,6 +393,12 @@
 
 - [x] Turn white wool into Blooded Wool with a Bone Needle at rank four or higher. The muted survival client kept red wool untouched, converted and harvested five white wool blocks, and spent exactly 625 blood. The same Bone Needle remained in its hand. GameTests covered rank, low blood, dyed wool and a canceled Forge placement.
 - [x] Smelt the harvested Blooded Wool into five Dark Cloth. A dedicated restart resumed the active furnace that had reached 68 ticks. The muted client collected all five pieces through the furnace menu. Data generation, reobfuscation and all 181 required Forge GameTests passed.
+
+## Vampire Clothing (2026-11-20)
+
+- [x] Restore all nine wearable pieces and their recipes, including fitted, reinforced and kilt variants. The muted survival client crafted the top hat with the five Dark Cloth from the furnace and dyed it blue in a standard crafting table. GameTests checked all nine recipes and their armor properties.
+- [x] Apply the legacy feeding and Mesmerize bonuses. A bite on an awake villager drew seven blood with the hat alone and ten in the light outfit. The same rank-ten player cast enhanced Mesmerize and kept 404 blood after paying its 50-blood cost.
+- [x] Check the player, naturally equipped vampire and chain armor on the muted client. After a dedicated restart, the same vampire wore its original three pieces, and the player retained four pieces, the blue dye and seven armor. Java 17 data generation, JAR reobfuscation and all 185 required Forge GameTests passed.
 
 ## Auram Pack Validation (2026-11-20)
 
