@@ -12,6 +12,7 @@ import art.arcane.witchery.item.BoundPoppetItem;
 import art.arcane.witchery.item.ArthanaItem;
 import art.arcane.witchery.item.BolineItem;
 import art.arcane.witchery.item.BroomItem;
+import art.arcane.witchery.item.CaneSwordItem;
 import art.arcane.witchery.item.DemonHeartItem;
 import art.arcane.witchery.item.DeathProtectionPoppetItem;
 import art.arcane.witchery.item.DrinkableBrewItem;
@@ -172,6 +173,7 @@ public final class WitcheryItems {
             case "anointing_paste" -> new AnointingPasteItem(new Item.Properties());
             case "taglockkit" -> new TaglockItem();
             case "coffin" -> createBlockItem("coffinblock");
+            case "canesword" -> new CaneSwordItem();
             case "vampirebook" -> new VampireBookItem();
             case "vampirehat" -> new VampireClothingItem(VampireClothingItem.Style.HAT);
             case "vampirehelmet" -> new VampireClothingItem(VampireClothingItem.Style.HELMET);

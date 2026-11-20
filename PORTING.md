@@ -367,7 +367,7 @@
 - [x] Preserve the converted vampire and the player's progression. A dedicated restart kept the same creature UUID and home position, the empty goblet, rank ten and 1,114 blood.
 - [x] Verify the vampire's nightly hunt. The mob selected an occupied village, took five nonlethal bites and returned home. The hunted villager's blood went from 500 to 400.
 - [x] Preserve Witchery progress through player respawn. After a deliberate death in the headless server, the muted client respawned at rank ten with a cap of ten and 1,114 blood. Java 17 data generation, the reobfuscated JAR and all 167 required Forge GameTests passed.
-- [ ] Restore the Cane Sword, guard conversions, village responses and the cure.
+- [ ] Restore guard conversions, village responses and the cure.
 
 ## Blood Crucible and Thunderstorm (2026-11-20)
 
@@ -406,6 +406,11 @@
 - [x] Restore lethal fire and the clothing's flame protection. GameTests checked that two light garments save one hit in four and four garments save three hits in four. Fire Resistance stayed active while the burning player took damage in the packaged server. A lethal fire hit killed the unarmored player, who respawned at rank ten with 404 blood.
 - [x] Verify dedicated-server persistence of vampire death drops and sunlight mortality. The same dropped sword kept its 14,400-tick lifespan after a restart. Rejoining at rank ten with zero blood and stepping into noon sunlight killed the player with the sunlight death message. Java 17 data generation, JAR reobfuscation and all 190 required Forge GameTests passed.
 - [ ] Wire werewolf and silver interactions into mortality when lycanthropy is ported. Review the old accessory-mod exceptions with their modern integrations.
+
+## Cane Sword (2026-11-20)
+
+- [x] Restore the crafting recipe, the drawn and sheathed models, the original sound clips and the guard. The muted survival client crafted the sword from five Dark Cloth, a gold ingot and a diamond sword. Sneak-use changed the attack damage from two to eight. The drawn guard reduced an incoming hit without wearing the sword.
+- [x] Fill, save and use the blood reserve. A sheathed kill left the reserve empty. Two weakened villager fixtures with 180 and 140 blood filled it to 180 and then the 250 cap when killed with the drawn sword. After a dedicated restart, the player retained the drawn blade and saw 250 in its tooltip. The client sheathed and used it, moving all 250 into blood power to reach 654. Java 17 data generation, JAR reobfuscation and all 193 required Forge GameTests passed.
 
 ## Auram Pack Validation (2026-11-20)
 

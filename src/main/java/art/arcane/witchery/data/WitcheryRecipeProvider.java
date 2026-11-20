@@ -154,6 +154,13 @@ public class WitcheryRecipeProvider extends RecipeProvider {
         reinforceClothing(recipeOutput, Style.HAT, Style.HELMET);
         reinforceClothing(recipeOutput, Style.COAT, Style.CHAIN_COAT);
         reinforceClothing(recipeOutput, Style.FITTED_COAT, Style.FITTED_CHAIN_COAT);
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, WitcheryItems.getRequired("canesword").get())
+                .define('C', WitcheryIngredient.DARK_CLOTH.item())
+                .define('G', Items.GOLD_INGOT)
+                .define('D', Items.DIAMOND_SWORD)
+                .pattern(" CG").pattern("CDC").pattern("CC ")
+                .unlockedBy("has_dark_cloth", has(WitcheryIngredient.DARK_CLOTH.item()))
+                .save(recipeOutput);
         ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, WitcheryBlocks.getRequired("daylightcollector").get())
                 .define('G', Items.GOLD_INGOT)
                 .define('R', Items.REPEATER)

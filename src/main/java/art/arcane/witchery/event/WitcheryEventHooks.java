@@ -13,6 +13,7 @@ import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.infusion.InfusedBrews;
 import art.arcane.witchery.infusion.OverworldInfusion;
 import art.arcane.witchery.item.DeathProtectionPoppetItem;
+import art.arcane.witchery.item.CaneSwordItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.VampiricPoppetItem;
 import art.arcane.witchery.item.GlassGobletItem;
@@ -35,6 +36,7 @@ import art.arcane.witchery.world.TormentTravel;
 import art.arcane.witchery.world.WitcheryDimensions;
 import art.arcane.witchery.world.WitcheryDimensionTravelHooks;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -58,11 +60,13 @@ import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.living.ShieldBlockEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingTickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.SleepingTimeCheckEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
@@ -321,8 +325,23 @@ public final class WitcheryEventHooks {
         }
         FamiliarBinding.handleDeath(event);
         if (!event.isCanceled() && event.getSource().getEntity() instanceof ServerPlayer killer) {
-            Vampirism.onKilled(event.getEntity(), killer, event.getSource().getDirectEntity() == killer);
+            Vampirism.onKilled(event.getEntity(), killer, event.getSource());
         }
+    }
+
+    @SubscribeEvent
+    public static void blockWithCaneSword(ShieldBlockEvent event) {
+        if (CaneSwordItem.isDrawn(event.getEntity().getUseItem())) {
+            event.setBlockedDamage(event.getBlockedDamage() * 0.5F);
+            event.setShieldTakesDamage(false);
+        }
+    }
+
+    @SubscribeEvent
+    public static void showCaneReserve(ItemTooltipEvent event) {
+        if (!(event.getItemStack().getItem() instanceof CaneSwordItem) || event.getEntity() == null) return;
+        WitcheryPlayerDataProvider.get(event.getEntity()).ifPresent(data -> event.getToolTip().add(
+                Component.translatable("item.witchery.canesword.reserve", data.getBloodReserve())));
     }
 
     @SubscribeEvent(priority = EventPriority.LOW)

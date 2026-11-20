@@ -1,6 +1,41 @@
 {
-   "parent" : "minecraft:item/generated",
-   "textures" : {
-      "layer0" : "witchery:item/canesword"
-   }
+  "loader": "forge:separate_transforms",
+  "textures": {"particle": "witchery:item/canesword"},
+  "base": {
+    "parent": "witchery:item/canesword_in_hand",
+    "elements": [
+      {
+        "from": [7.4, 0.5, 7.4],
+        "to": [8.6, 13, 8.6],
+        "faces": {
+          "down": {"uv": [2, 3, 3, 4], "texture": "#cane"},
+          "up": {"uv": [1, 3, 2, 4], "texture": "#cane"},
+          "west": {"uv": [0, 4, 1, 10.5], "texture": "#cane"},
+          "north": {"uv": [1, 4, 2, 10.5], "texture": "#cane"},
+          "east": {"uv": [2, 4, 3, 10.5], "texture": "#cane"},
+          "south": {"uv": [3, 4, 4, 10.5], "texture": "#cane"}
+        }
+      },
+      {
+        "from": [6.9, 13, 6.9],
+        "to": [9.1, 14.8, 9.1],
+        "faces": {
+          "down": {"uv": [3, 0, 4.5, 1.5], "texture": "#cane"},
+          "up": {"uv": [1.5, 0, 3, 1.5], "texture": "#cane"},
+          "west": {"uv": [0, 1.5, 1.5, 2.5], "texture": "#cane"},
+          "north": {"uv": [1.5, 1.5, 3, 2.5], "texture": "#cane"},
+          "east": {"uv": [3, 1.5, 4.5, 2.5], "texture": "#cane"},
+          "south": {"uv": [4.5, 1.5, 6, 2.5], "texture": "#cane"}
+        }
+      }
+    ]
+  },
+  "perspectives": {
+    "gui": {"parent": "witchery:item/canesword_icon"},
+    "ground": {"parent": "witchery:item/canesword_icon"},
+    "fixed": {"parent": "witchery:item/canesword_icon"}
+  },
+  "overrides": [
+    {"predicate": {"witchery:drawn": 1}, "model": "witchery:item/canesword_drawn"}
+  ]
 }

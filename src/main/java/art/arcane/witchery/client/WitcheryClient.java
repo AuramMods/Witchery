@@ -59,6 +59,7 @@ import art.arcane.witchery.client.renderer.WitchToadRenderer;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.GlassGobletItem;
 import art.arcane.witchery.item.BroomItem;
+import art.arcane.witchery.item.CaneSwordItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryBlocks;
@@ -231,6 +232,9 @@ public final class WitcheryClient {
             ItemProperties.register(WitcheryItems.getRequired("glassgoblet").get(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "filled"),
                     (stack, level, entity, seed) -> GlassGobletItem.filled(stack) ? 1 : 0);
+            ItemProperties.register(WitcheryItems.getRequired("canesword").get(),
+                    ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "drawn"),
+                    (stack, level, entity, seed) -> CaneSwordItem.isDrawn(stack) ? 1 : 0);
             ItemProperties.register(WitcheryBlocks.getRequired("crittersnare").get().asItem(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "critter"),
                     (stack, level, entity, seed) -> CritterSnareBlock.critterFromStack(stack).ordinal());

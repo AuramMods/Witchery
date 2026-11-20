@@ -11,6 +11,14 @@
     "subtitle": "subtitles.witchery.blood_drink",
     "sounds": ["witchery:random/drink"]
   },
+  "random.sworddraw": {
+    "subtitle": "subtitles.witchery.sword_draw",
+    "sounds": ["witchery:random/sworddraw"]
+  },
+  "random.swordsheathe": {
+    "subtitle": "subtitles.witchery.sword_sheathe",
+    "sounds": ["witchery:random/swordsheathe"]
+  },
   "random.hypnosis": {
     "subtitle": "subtitles.witchery.hypnosis",
     "sounds": ["witchery:random/hypnosis"]

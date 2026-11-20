@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": {
+      "item": "witchery:dark_cloth"
+    },
+    "D": {
+      "item": "minecraft:diamond_sword"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    }
+  },
+  "pattern": [
+    " CG",
+    "CDC",
+    "CC "
+  ],
+  "result": {
+    "item": "witchery:canesword"
+  },
+  "show_notification": true
+}

@@ -17,6 +17,7 @@ public final class WitcheryPlayerData {
     private static final String KEY_HUMAN_BLOOD = "HumanBlood";
     private static final String KEY_VAMPIRE_LEVEL = "VampireLevel";
     private static final String KEY_BLOOD_POWER = "BloodPower";
+    private static final String KEY_BLOOD_RESERVE = "BloodReserve";
     private static final String KEY_VAMPIRE_LEVEL_CAP = "VampireLevelCap";
     private static final String KEY_VAMPIRE_QUEST_COUNTER = "VampireQuestCounter";
     private static final String KEY_VAMPIRE_QUEST_CHUNKS = "VampireQuestChunks";
@@ -44,6 +45,7 @@ public final class WitcheryPlayerData {
     private int humanBlood;
     private int vampireLevel;
     private int bloodPower;
+    private int bloodReserve;
     private int vampireLevelCap;
     private int vampireQuestCounter;
     private final List<VampireVillage> vampireQuestVillages = new ArrayList<>();
@@ -124,6 +126,14 @@ public final class WitcheryPlayerData {
 
     public void setBloodPower(int amount) {
         bloodPower = Mth.clamp(amount, 0, getMaxBloodPower());
+    }
+
+    public int getBloodReserve() {
+        return vampireLevel > 0 ? bloodReserve : 0;
+    }
+
+    public void setBloodReserve(int amount) {
+        bloodReserve = Mth.clamp(amount, 0, 250);
     }
 
     public int getMaxBloodPower() {
@@ -310,6 +320,7 @@ public final class WitcheryPlayerData {
         humanBlood = source.humanBlood;
         vampireLevel = source.vampireLevel;
         bloodPower = source.bloodPower;
+        bloodReserve = source.bloodReserve;
         vampireLevelCap = source.vampireLevelCap;
         vampireQuestCounter = source.vampireQuestCounter;
         vampireQuestVillages.clear();
@@ -342,6 +353,7 @@ public final class WitcheryPlayerData {
         tag.putInt(KEY_HUMAN_BLOOD, humanBlood);
         tag.putInt(KEY_VAMPIRE_LEVEL, vampireLevel);
         tag.putInt(KEY_BLOOD_POWER, bloodPower);
+        tag.putInt(KEY_BLOOD_RESERVE, bloodReserve);
         tag.putInt(KEY_VAMPIRE_LEVEL_CAP, vampireLevelCap);
         tag.putInt(KEY_VAMPIRE_QUEST_COUNTER, vampireQuestCounter);
         ListTag villages = new ListTag();
@@ -387,6 +399,7 @@ public final class WitcheryPlayerData {
         setHumanBlood(bloodData.getInt(KEY_HUMAN_BLOOD));
         setVampireLevel(bloodData.getInt(KEY_VAMPIRE_LEVEL));
         setBloodPower(bloodData.getInt(KEY_BLOOD_POWER));
+        setBloodReserve(bloodData.getInt(KEY_BLOOD_RESERVE));
         vampireLevelCap = Mth.clamp(bloodData.getInt(KEY_VAMPIRE_LEVEL_CAP), 0, 10);
         setVampireQuestCounter(bloodData.getInt(KEY_VAMPIRE_QUEST_COUNTER));
         vampireQuestVillages.clear();
