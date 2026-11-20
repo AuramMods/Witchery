@@ -30,7 +30,8 @@ public final class TaglockBindingRecipe extends CustomRecipe {
         VOODOO_POPPET(() -> WitcheryItems.getRequired("voodoo_poppet").get(), () -> WitcheryRecipes.BIND_VOODOO_POPPET.get()),
         VOODOO_PROTECTION(() -> WitcheryItems.getRequired("voodoo_protection_poppet").get(), () -> WitcheryRecipes.BIND_VOODOO_PROTECTION.get()),
         VAMPIRIC_POPPET(() -> WitcheryItems.getRequired("vampiric_poppet").get(), () -> WitcheryRecipes.BIND_VAMPIRIC_POPPET.get()),
-        POPPET_PROTECTION(() -> WitcheryItems.getRequired("poppet_protection").get(), () -> WitcheryRecipes.BIND_POPPET_PROTECTION.get());
+        POPPET_PROTECTION(() -> WitcheryItems.getRequired("poppet_protection").get(), () -> WitcheryRecipes.BIND_POPPET_PROTECTION.get()),
+        PLAYER_COMPASS(() -> WitcheryItems.getRequired("playercompass").get(), () -> WitcheryRecipes.BIND_PLAYER_COMPASS.get());
 
         private final Supplier<Item> item;
         private final Supplier<RecipeSerializer<?>> serializer;

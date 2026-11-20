@@ -1,0 +1,20 @@
+{
+  "type": "witchery:cauldron_ritual",
+  "legacy": true,
+  "ingredients": [
+    {
+      "item": "witchery:mandrake_root"
+    },
+    {
+      "item": "minecraft:dirt"
+    }
+  ],
+  "trigger": {
+    "item": "witchery:tormented_twine"
+  },
+  "result": {
+    "item": "witchery:pitdirt",
+    "count": 4
+  },
+  "power": 4000
+}

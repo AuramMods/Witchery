@@ -1,0 +1,24 @@
+{
+  "type": "witchery:cauldron_ritual",
+  "legacy": true,
+  "ingredients": [
+    {
+      "item": "witchery:mandrake_root"
+    },
+    {
+      "item": "minecraft:stone"
+    },
+    {
+      "item": "minecraft:end_stone"
+    }
+  ],
+  "trigger": {
+    "item": "witchery:mutandis_extremis"
+  },
+  "result": {
+    "item": "minecraft:end_stone",
+    "count": 2
+  },
+  "power": 1800,
+  "priority": 2
+}

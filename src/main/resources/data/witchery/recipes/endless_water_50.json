@@ -1,0 +1,26 @@
+{
+  "type": "witchery:cauldron_ritual",
+  "legacy": true,
+  "ingredients": [
+    {
+      "item": "minecraft:nether_wart"
+    },
+    {
+      "item": "minecraft:glowstone_dust"
+    },
+    {
+      "item": "minecraft:blaze_rod"
+    }
+  ],
+  "trigger": {
+    "item": "minecraft:snow_block"
+  },
+  "result": {
+    "item": "witchery:brew.water",
+    "nbt": {
+      "Damage": 50
+    }
+  },
+  "power": 3000,
+  "priority": 2
+}

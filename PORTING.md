@@ -215,7 +215,7 @@
 
 ## Mutating Sprig, Grassper and Critter Snare (2026-11-20)
 
-- [x] Brew the Mutating Sprig with an Ent Branch, nether wart, Mutandis Extremis and 1,800 altar power. The packaged survival client collected the cauldron output and created four Grasspers from an empty chest over source water using vines. The pattern also accepts short grass and ferns, which were variants of the original tallgrass block.
+- [x] Brew the Mutating Sprig with an Ent Branch, nether wart, Mutandis Extremis and 2,200 base altar power including the ingredients. The packaged survival client collected the cauldron output and created four Grasspers from an empty chest over source water using vines. The pattern also accepts short grass and ferns, which were variants of the original tallgrass block.
 - [x] Restore the grass and mycelium swap, the cross of clay from submerged dirt, and the cobweb mutation that uses four Alder Saplings and a zombie over a source of water. One use costs one durability. The muted client produced four Critter Snares and the zombie was consumed.
 - [x] Restore the Grassper's model, single item inventory, comparator and use as a ritual offering holder. The muted client placed and released an ingot, and inserting another produced comparator output 15. The new rite support uses the original five-block square and saves the Grassper position for refunds.
 - [x] Restore bat, silverfish, tiny slime and tiny magma cube capture and sneak-release. Captured state and the bat shop stock flag carry through block item drops and legacy metadata. The packaged server captured a moving bat and kept its stocked state.
@@ -554,7 +554,7 @@
 - [x] Attach the curse to one item from a stack. With an active cat familiar, the muted survival client recovered one stick with two charges from an offering of three. The remaining two sticks kept their ordinary stack.
 - [x] Verify that a right click in air applies Wolfsbane, an immediate second click preserves the remaining charge, and the next click after five seconds reapplies Wolfsbane and clears the curse while keeping the item. The successful cast used a dropped-item fixture for the tongue and stick stack.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 264 required Forge GameTests. Coverage includes the 250-power debit with two white circles, the named 1.7.10 active-brew save, a missing offering, stack splitting, cooldown, and both interaction paths.
-- [ ] Restore taglock entity targeting, the remaining fixed recipes and terrain actions, and Leonard's encounter and summoning ritual.
+- [ ] Restore taglock entity targeting, additional terrain actions, and Leonard's encounter and summoning ritual.
 - [ ] Restore the hallucinations from the Insanity effect that can occur during a risky cast.
 
 ## Cauldron Dispersal and Waystone Targets (2026-11-20)
@@ -565,6 +565,15 @@
 - [x] Run Java 17 data generation, JAR reobfuscation and all 268 required Forge GameTests. Coverage includes the gas wave before and after reload, valid and distant waystones, liquid projectile saves and contact effects, and active-brew bottling.
 - [x] Verify the bound gas wave with the muted background client and dropped-ingredient fixtures. The pig at the waystone received Wolfsbane first. The wave reached a second pig farther out and left the pig beside the cauldron unaffected.
 - [x] Verify the packaged liquid cast and Extinguish rite. The client rendered tinted droplets and their impacts. The server recorded the falling brew's ordered ingredients, and the cauldron emptied after ten pulses. With the waystone as the target, fire five blocks away went out and fire eight blocks away stayed lit.
+
+## Fixed Cauldron Recipes and Outputs (2026-11-20)
+
+- [x] Load all 26 legacy fixed recipes. Restore the Nether Wart and End Stone conversions, four strengths of Brew Fuel and Endless Water, both pit blocks, the Player Compass, cooking, and the Witch's Hand conversion. Retain the existing chalk, Mutandis, Mutandis Extremis, Mutating Sprig and Drop of Luck recipes.
+- [x] Include the ingredient power costs and original precedence for recipes that share a trigger. Custom cauldron recipes keep their existing exact-match and fixed-power defaults.
+- [x] Wire up the four burn times and four water capacities, manual and dispenser pouring, and the two pass-through pit blocks. Bind the Player Compass with a filled Taglock Kit and update its needle using the original 32 directional frames.
+- [x] Verify dropped-ingredient casts in the packaged muted client. The five-use Endless Water brew filled the Witch's Cauldron. Its water supplied the strongest fuel recipe. The Witch's Oven consumed that fuel, began a 50,000-tick burn, and finished the sapling. A Player Compass from the cauldron bound to a pig in the inventory crafting grid. Its needle changed by a half turn when the player turned around.
+- [x] Verify a dedicated restart with a long oven burn, the used water brew, and the bound compass. The oven kept its full-sized timer and resumed burning. The bottle retained its wear and the compass still tracked the tagged pig.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 273 required Forge GameTests. Coverage includes all recipe variants, ingredient power accounting, recipe precedence, saved cast resumption, named legacy item metadata, pouring and dispensing, compass binding, and pit collision.
 
 ## Auram Pack Validation (2026-11-20)
 

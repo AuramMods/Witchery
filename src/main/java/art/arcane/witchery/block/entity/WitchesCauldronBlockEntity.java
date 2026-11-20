@@ -53,6 +53,7 @@ import net.minecraftforge.fluids.capability.templates.FluidTank;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public final class WitchesCauldronBlockEntity extends BlockEntity {
@@ -241,8 +242,9 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         }
         AltarBlockEntity altar = null;
         int power = 0;
-        if (recipe.power() > 0) {
-            power = (int) Math.floor(recipe.power() * CastCircles.around(level, pos).powerScale());
+        int batchPower = recipe.batchPower(ingredients);
+        if (batchPower > 0) {
+            power = (int) Math.floor(batchPower * CastCircles.around(level, pos).powerScale());
             altar = AltarPower.nearest(level, pos);
             if (altar == null || altar.power() < power) {
                 ritualTicks = 0;
@@ -299,15 +301,16 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         }
         List<CauldronRitualRecipe> recipes = server.getRecipeManager().getAllRecipesFor(WitcheryRecipes.CAULDRON_RITUAL.get());
         if (tank.getFluidAmount() == CAPACITY) {
-            for (CauldronRitualRecipe recipe : recipes) {
-                if (recipe.canStart(ingredients, offered)) {
-                    ritual = recipe.id();
-                    ritualTicks = 0;
-                    splash(server);
-                    refreshComparator();
-                    setChanged();
-                    return true;
-                }
+            var recipe = recipes.stream().filter(candidate -> candidate.canStart(ingredients, offered))
+                    .max(Comparator.comparingInt(CauldronRitualRecipe::priority)
+                            .thenComparingInt(candidate -> candidate.ingredients().size())).orElse(null);
+            if (recipe != null) {
+                ritual = recipe.id();
+                ritualTicks = 0;
+                splash(server);
+                refreshComparator();
+                setChanged();
+                return true;
             }
         }
         for (CauldronRitualRecipe recipe : recipes) {

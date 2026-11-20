@@ -1,0 +1,12 @@
+{
+  "type": "witchery:cauldron_ritual",
+  "legacy": true,
+  "ingredients": [],
+  "trigger": {
+    "item": "witchery:witchhand"
+  },
+  "result": {
+    "item": "minecraft:rotten_flesh",
+    "count": 6
+  }
+}

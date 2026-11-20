@@ -1,6 +1,7 @@
 {
-   "parent" : "minecraft:item/generated",
-   "textures" : {
-      "layer0" : "witchery:item/taglockkit"
-   }
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "witchery:item/brew_overlay",
+    "layer1": "witchery:item/brew_drinkable"
+  }
 }

@@ -1,0 +1,18 @@
+{
+  "type": "witchery:cauldron_ritual",
+  "legacy": true,
+  "ingredients": [
+    {
+      "item": "witchery:mandrake_root"
+    }
+  ],
+  "trigger": {
+    "item": "minecraft:charcoal"
+  },
+  "result": {
+    "item": "witchery:brew.fuel",
+    "nbt": {
+      "FuelTier": 0
+    }
+  }
+}

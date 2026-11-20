@@ -1,0 +1,25 @@
+{
+  "type": "witchery:cauldron_ritual",
+  "legacy": true,
+  "ingredients": [
+    {
+      "item": "minecraft:nether_wart"
+    },
+    {
+      "item": "witchery:tear_of_the_goddess"
+    },
+    {
+      "item": "minecraft:vine"
+    },
+    {
+      "item": "minecraft:spider_eye"
+    }
+  ],
+  "trigger": {
+    "item": "minecraft:compass"
+  },
+  "result": {
+    "item": "witchery:playercompass"
+  },
+  "power": 5000
+}

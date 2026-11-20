@@ -1,5 +1,6 @@
 {
   "type": "witchery:cauldron_ritual",
+  "legacy": true,
   "ingredients": [
     {
       "item": "minecraft:nether_wart"

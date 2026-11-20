@@ -1,0 +1,28 @@
+{
+  "type": "witchery:cauldron_ritual",
+  "legacy": true,
+  "ingredients": [
+    {
+      "item": "witchery:mandrake_root"
+    },
+    {
+      "item": "minecraft:glowstone_dust"
+    },
+    {
+      "item": "minecraft:blaze_rod"
+    },
+    {
+      "item": "witchery:charged_attuned_stone"
+    }
+  ],
+  "trigger": {
+    "item": "minecraft:charcoal"
+  },
+  "result": {
+    "item": "witchery:brew.fuel",
+    "nbt": {
+      "FuelTier": 3
+    }
+  },
+  "priority": 3
+}

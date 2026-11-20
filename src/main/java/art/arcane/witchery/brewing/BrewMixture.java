@@ -207,6 +207,20 @@ public final class BrewMixture {
         return BuiltInRegistries.ITEM.getKey(stack.getItem());
     }
 
+    static int ingredientPower(ItemStack stack) {
+        ResourceLocation id = id(stack);
+        Ingredient ingredient = INGREDIENTS.get(id);
+        if (ingredient != null) return ingredient.power;
+        return switch (id.toString()) {
+            case "minecraft:ender_pearl" -> 1000;
+            case "minecraft:dandelion" -> 200;
+            case "minecraft:vine" -> 150;
+            case "witchery:ent_branch" -> 350;
+            case "witchery:refined_evil" -> 3000;
+            default -> 0;
+        };
+    }
+
     @Nullable
     private static Mixing mix(List<ItemStack> stacks) {
         Mixing mixing = new Mixing();

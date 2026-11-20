@@ -1,0 +1,24 @@
+{
+  "type": "witchery:cauldron_ritual",
+  "legacy": true,
+  "ingredients": [
+    {
+      "item": "minecraft:nether_wart"
+    },
+    {
+      "item": "minecraft:dirt"
+    },
+    {
+      "item": "minecraft:dandelion"
+    }
+  ],
+  "trigger": {
+    "item": "witchery:tormented_twine"
+  },
+  "result": {
+    "item": "witchery:pitgrass",
+    "count": 4
+  },
+  "power": 4000,
+  "priority": 1
+}

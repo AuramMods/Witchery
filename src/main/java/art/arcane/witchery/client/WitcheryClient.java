@@ -1,6 +1,8 @@
 package art.arcane.witchery.client;
 
 import art.arcane.witchery.entity.BrewDroplet;
+import art.arcane.witchery.item.BrewFuelItem;
+import art.arcane.witchery.item.PlayerCompassItem;
 import art.arcane.witchery.client.screen.AltarScreen;
 import art.arcane.witchery.client.screen.DistilleryScreen;
 import art.arcane.witchery.client.screen.LegacyPlaceholderScreen;
@@ -281,6 +283,9 @@ public final class WitcheryClient {
             ItemProperties.register(WitcheryItems.getRequired("brewbottle").get(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "splash"),
                     (stack, level, entity, seed) -> BrewBottleItem.isSplash(stack) ? 1 : 0);
+            ItemProperties.register(WitcheryItems.getRequired("playercompass").get(),
+                    ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "needle"),
+                    (stack, level, entity, seed) -> PlayerCompassItem.needle(stack));
             ItemProperties.register(WitcheryBlocks.getRequired("crittersnare").get().asItem(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "critter"),
                     (stack, level, entity, seed) -> CritterSnareBlock.critterFromStack(stack).ordinal());
@@ -343,11 +348,18 @@ public final class WitcheryClient {
                     ? BiomeColors.getAverageFoliageColor(level, pos)
                     : foliageColor(wood);
         }, WitcheryBlocks.getRequired("witchleaves").get());
+        event.register((state, level, pos, tint) -> tint != 0 ? -1 : level != null && pos != null
+                        ? BiomeColors.getAverageGrassColor(level, pos) : net.minecraft.world.level.GrassColor.get(0.5, 1),
+                WitcheryBlocks.getRequired("pitgrass").get());
     }
 
     @SubscribeEvent
     public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
         event.register((stack, tint) -> tint == 0 ? BrewBottleItem.color(stack) : -1, WitcheryItems.getRequired("brewbottle").get());
+        event.register((stack, tint) -> tint == 0 ? BrewFuelItem.color(stack) : -1, WitcheryItems.getRequired("brew.fuel").get());
+        event.register((stack, tint) -> tint == 0 ? 0x0000FF : -1, WitcheryItems.getRequired("brew.water").get());
+        event.register((stack, tint) -> tint == 0 ? net.minecraft.world.level.GrassColor.get(0.5, 1) : -1,
+                WitcheryBlocks.getRequired("pitgrass").get());
         event.register((stack, tint) -> tint == 0 && stack.getTag() != null && stack.getTag().contains(BrewDroplet.TINT_KEY)
                 ? stack.getTag().getInt(BrewDroplet.TINT_KEY) : -1, WitcheryIngredient.QUARTZ_SPHERE.item());
         var hunterClothing = java.util.Arrays.stream(HunterClothingItem.Piece.values())

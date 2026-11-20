@@ -272,8 +272,9 @@ public final class WitcheryBlocks {
             case "wolfaltar" -> new WolfAltarBlock();
             case "statuegoddess" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.STONE), SHAPE_STATUE_GODDESS, true);
-            case "pitdirt" -> new Block(BlockBehaviour.Properties.copy(Blocks.DIRT).noOcclusion());
-            case "pitgrass" -> new Block(BlockBehaviour.Properties.copy(Blocks.GRASS_BLOCK).noOcclusion());
+            case "pitdirt" -> new Block(BlockBehaviour.Properties.copy(Blocks.DIRT).noOcclusion().noCollission());
+            case "pitgrass" -> new net.minecraft.world.level.block.SnowyDirtBlock(
+                    BlockBehaviour.Properties.copy(Blocks.GRASS_BLOCK).noOcclusion().noCollission());
             case "wallgen" -> new Block(BlockBehaviour.Properties.copy(Blocks.BEDROCK)
                     .strength(-1.0F, 3600000.0F)
                     .noOcclusion()

@@ -1,0 +1,11 @@
+{
+  "type": "witchery:cauldron_ritual",
+  "legacy": true,
+  "ingredients": [],
+  "trigger": {
+    "item": "minecraft:porkchop"
+  },
+  "result": {
+    "item": "minecraft:cooked_porkchop"
+  }
+}

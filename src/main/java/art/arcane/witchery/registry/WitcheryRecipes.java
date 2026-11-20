@@ -107,6 +107,9 @@ public final class WitcheryRecipes {
     public static final RegistryObject<RecipeSerializer<TaglockBindingRecipe>> BIND_POPPET_PROTECTION =
             SERIALIZERS.register("bind_poppet_protection", () -> new SimpleCraftingRecipeSerializer<>(
                     (id, category) -> new TaglockBindingRecipe(id, category, TaglockBindingRecipe.Binding.POPPET_PROTECTION)));
+    public static final RegistryObject<RecipeSerializer<TaglockBindingRecipe>> BIND_PLAYER_COMPASS =
+            SERIALIZERS.register("bind_player_compass", () -> new SimpleCraftingRecipeSerializer<>(
+                    (id, category) -> new TaglockBindingRecipe(id, category, TaglockBindingRecipe.Binding.PLAYER_COMPASS)));
 
     private WitcheryRecipes() {
     }

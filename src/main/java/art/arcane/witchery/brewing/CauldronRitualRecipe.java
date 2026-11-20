@@ -13,17 +13,24 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.common.util.RecipeMatcher;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
 public record CauldronRitualRecipe(ResourceLocation id, List<Ingredient> ingredients, Ingredient trigger,
-                                  ItemStack result, int time, int power) implements Recipe<Container> {
+                                  ItemStack result, int time, int power, boolean legacy, int priority) implements Recipe<Container> {
     public boolean acceptsIngredient(List<ItemStack> added, ItemStack offered) {
+        if (legacy) {
+            if (ingredients.stream().noneMatch(ingredient -> ingredient.test(offered))) return false;
+            List<ItemStack> possible = new ArrayList<>(added);
+            possible.add(offered);
+            return matchedIngredients(possible) > matchedIngredients(added);
+        }
         if (added.size() >= ingredients.size()) {
             return false;
         }
@@ -39,7 +46,41 @@ public record CauldronRitualRecipe(ResourceLocation id, List<Ingredient> ingredi
     }
 
     public boolean canStart(List<ItemStack> added, ItemStack offered) {
-        return trigger.test(offered) && RecipeMatcher.findMatches(added, ingredients) != null;
+        if (!trigger.test(offered) || added.size() < ingredients.size()) return false;
+        if (added.size() == ingredients.size()) {
+            return ingredients.isEmpty() || RecipeMatcher.findMatches(added, ingredients) != null;
+        }
+        return legacy && matchedIngredients(added) == ingredients.size();
+    }
+
+    private int matchedIngredients(List<ItemStack> added) {
+        // Original recipes consume the entire batch and check only their required ingredients.
+        int[] matched = new int[added.size()];
+        Arrays.fill(matched, -1);
+        int count = 0;
+        for (int ingredient = 0; ingredient < ingredients.size(); ingredient++) {
+            if (matchIngredient(ingredient, added, matched, new boolean[added.size()])) count++;
+        }
+        return count;
+    }
+
+    private boolean matchIngredient(int ingredient, List<ItemStack> added, int[] matched, boolean[] visited) {
+        for (int index = 0; index < added.size(); index++) {
+            if (visited[index] || !ingredients.get(ingredient).test(added.get(index))) continue;
+            visited[index] = true;
+            if (matched[index] == -1 || matchIngredient(matched[index], added, matched, visited)) {
+                matched[index] = ingredient;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public int batchPower(List<ItemStack> added) {
+        if (!legacy) return power;
+        long total = power;
+        for (ItemStack ingredient : added) total += BrewMixture.ingredientPower(ingredient);
+        return (int) Math.min(Integer.MAX_VALUE, total);
     }
 
     @Override
@@ -98,11 +139,13 @@ public record CauldronRitualRecipe(ResourceLocation id, List<Ingredient> ingredi
             GsonHelper.getAsJsonArray(json, "ingredients").forEach(entry -> ingredients.add(Ingredient.fromJson(entry, false)));
             int time = GsonHelper.getAsInt(json, "time", 210);
             int power = GsonHelper.getAsInt(json, "power", 0);
+            boolean legacy = GsonHelper.getAsBoolean(json, "legacy", false);
+            int priority = GsonHelper.getAsInt(json, "priority", 0);
             if (ingredients.size() > MAX_INGREDIENTS || time < 1 || power < 0) {
                 throw new JsonSyntaxException("Invalid cauldron ritual size, duration or power for " + id);
             }
             return new CauldronRitualRecipe(id, List.copyOf(ingredients), Ingredient.fromJson(json.get("trigger"), false),
-                    ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "result")), time, power);
+                    CraftingHelper.getItemStack(GsonHelper.getAsJsonObject(json, "result"), true), time, power, legacy, priority);
         }
 
         @Override
@@ -116,7 +159,7 @@ public record CauldronRitualRecipe(ResourceLocation id, List<Ingredient> ingredi
                 ingredients.add(Ingredient.fromNetwork(buffer));
             }
             return new CauldronRitualRecipe(id, List.copyOf(ingredients), Ingredient.fromNetwork(buffer),
-                    buffer.readItem(), buffer.readVarInt(), buffer.readVarInt());
+                    buffer.readItem(), buffer.readVarInt(), buffer.readVarInt(), buffer.readBoolean(), buffer.readVarInt());
         }
 
         @Override
@@ -126,9 +169,11 @@ public record CauldronRitualRecipe(ResourceLocation id, List<Ingredient> ingredi
                 ingredient.toNetwork(buffer);
             }
             recipe.trigger.toNetwork(buffer);
-            buffer.writeItem(recipe.result);
+            buffer.writeItemStack(recipe.result, false);
             buffer.writeVarInt(recipe.time);
             buffer.writeVarInt(recipe.power);
+            buffer.writeBoolean(recipe.legacy);
+            buffer.writeVarInt(recipe.priority);
         }
     }
 }

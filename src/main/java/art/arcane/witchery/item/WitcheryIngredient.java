@@ -56,6 +56,7 @@ public enum WitcheryIngredient {
     SPIRIT_OF_OTHERWHERE(44, "spirit_of_otherwhere"),
     INFERNAL_ANIMUS(45, "infernal_animus"),
     ODD_PORKCHOP_RAW(50, "odd_porkchop_raw"),
+    ODD_PORKCHOP_COOKED(51, "odd_porkchop_cooked"),
     ROCK(55, "rock"),
     WEB(56, "thrown_web"),
     BREW_OF_VINES(57, "brew_of_vines"),
@@ -149,6 +150,12 @@ public enum WitcheryIngredient {
     /** Loads an inventory stack after upgrading the legacy Witchery subtype, when present. */
     public static ItemStack loadInventoryStack(CompoundTag stackTag) {
         ItemStack stack = ItemStack.of(stackTag);
+        if (stackTag.contains("Damage", Tag.TAG_ANY_NUMERIC)) {
+            if (stack.getItem() instanceof BrewFuelItem) BrewFuelItem.setTier(stack, stackTag.getInt("Damage"));
+            if (stack.getItem() instanceof EndlessWaterBrewItem) {
+                stack.setDamageValue(Math.max(0, Math.min(stackTag.getInt("Damage"), stack.getMaxDamage() - 1)));
+            }
+        }
         if (!stack.isEmpty() && "witchery:wolfhead".equals(stackTag.getString("id")) && stackTag.getInt("Damage") == 1) {
             ItemStack head = new ItemStack(WitcheryItems.getRequired("hellhound_head").get(), stack.getCount());
             if (stack.hasTag()) head.setTag(stack.getTag().copy());

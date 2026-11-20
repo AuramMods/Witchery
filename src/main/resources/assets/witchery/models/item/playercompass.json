@@ -1,6 +1,200 @@
 {
-   "parent" : "minecraft:item/generated",
-   "textures" : {
-      "layer0" : "witchery:item/taglockkit"
-   }
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "witchery:item/playercompass0"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "witchery:needle": 0.03125
+      },
+      "model": "witchery:item/playercompass/1"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.0625
+      },
+      "model": "witchery:item/playercompass/2"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.09375
+      },
+      "model": "witchery:item/playercompass/3"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.125
+      },
+      "model": "witchery:item/playercompass/4"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.15625
+      },
+      "model": "witchery:item/playercompass/5"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.1875
+      },
+      "model": "witchery:item/playercompass/6"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.21875
+      },
+      "model": "witchery:item/playercompass/7"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.25
+      },
+      "model": "witchery:item/playercompass/8"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.28125
+      },
+      "model": "witchery:item/playercompass/9"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.3125
+      },
+      "model": "witchery:item/playercompass/10"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.34375
+      },
+      "model": "witchery:item/playercompass/11"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.375
+      },
+      "model": "witchery:item/playercompass/12"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.40625
+      },
+      "model": "witchery:item/playercompass/13"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.4375
+      },
+      "model": "witchery:item/playercompass/14"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.46875
+      },
+      "model": "witchery:item/playercompass/15"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.5
+      },
+      "model": "witchery:item/playercompass/16"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.53125
+      },
+      "model": "witchery:item/playercompass/17"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.5625
+      },
+      "model": "witchery:item/playercompass/18"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.59375
+      },
+      "model": "witchery:item/playercompass/19"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.625
+      },
+      "model": "witchery:item/playercompass/20"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.65625
+      },
+      "model": "witchery:item/playercompass/21"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.6875
+      },
+      "model": "witchery:item/playercompass/22"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.71875
+      },
+      "model": "witchery:item/playercompass/23"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.75
+      },
+      "model": "witchery:item/playercompass/24"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.78125
+      },
+      "model": "witchery:item/playercompass/25"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.8125
+      },
+      "model": "witchery:item/playercompass/26"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.84375
+      },
+      "model": "witchery:item/playercompass/27"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.875
+      },
+      "model": "witchery:item/playercompass/28"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.90625
+      },
+      "model": "witchery:item/playercompass/29"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.9375
+      },
+      "model": "witchery:item/playercompass/30"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 0.96875
+      },
+      "model": "witchery:item/playercompass/31"
+    },
+    {
+      "predicate": {
+        "witchery:needle": 1.0
+      },
+      "model": "witchery:item/playercompass/32"
+    }
+  ]
 }

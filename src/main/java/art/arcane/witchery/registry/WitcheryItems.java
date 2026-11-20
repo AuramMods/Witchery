@@ -1,5 +1,8 @@
 package art.arcane.witchery.registry;
 
+import art.arcane.witchery.item.BrewFuelItem;
+import art.arcane.witchery.item.EndlessWaterBrewItem;
+import art.arcane.witchery.item.PlayerCompassItem;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.block.DreamWeave;
@@ -278,6 +281,11 @@ public final class WitcheryItems {
             case "poppet" -> new Item(new Item.Properties().stacksTo(1));
             case "odd_porkchop_raw" -> new Item(new Item.Properties().food(new FoodProperties.Builder()
                     .nutrition(3).saturationMod(0.3F).alwaysEat().build()));
+            case "odd_porkchop_cooked" -> new Item(new Item.Properties().food(new FoodProperties.Builder()
+                    .nutrition(8).saturationMod(0.8F).alwaysEat().build()));
+            case "brew.fuel" -> new BrewFuelItem();
+            case "brew.water" -> new EndlessWaterBrewItem();
+            case "playercompass" -> new PlayerCompassItem();
             case "redstone_soup" -> new DrinkableBrewItem(() -> MobEffects.HEALTH_BOOST, 2400, 1);
             case "flying_ointment" -> new DrinkableBrewItem(() -> MobEffects.POISON, 1200, 2);
             case "infused_brew_base" -> new DrinkableBrewItem(() -> MobEffects.WITHER, 200, 3);
