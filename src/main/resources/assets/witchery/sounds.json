@@ -110,5 +110,17 @@
   "mob.wolfman.howl": {
     "subtitle": "subtitles.witchery.wolfman.howl",
     "sounds": ["witchery:mob/wolfman/howl"]
+  },
+  "mob.wolfman.say": {
+    "subtitle": "subtitles.witchery.wolfman.say",
+    "sounds": ["witchery:mob/wolfman/say1", "witchery:mob/wolfman/say2"]
+  },
+  "mob.wolfman.hit": {
+    "subtitle": "subtitles.witchery.wolfman.hit",
+    "sounds": ["witchery:mob/wolfman/hit"]
+  },
+  "mob.wolfman.death": {
+    "subtitle": "subtitles.witchery.wolfman.death",
+    "sounds": ["witchery:mob/wolfman/death"]
   }
 }

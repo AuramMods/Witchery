@@ -30,6 +30,8 @@ import art.arcane.witchery.entity.WitchCat;
 import art.arcane.witchery.entity.WitchHunter;
 import art.arcane.witchery.entity.WitchOwl;
 import art.arcane.witchery.entity.WitchToad;
+import art.arcane.witchery.entity.WereVillager;
+import art.arcane.witchery.entity.Wolfman;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
@@ -38,6 +40,7 @@ import net.minecraft.world.entity.ambient.Bat;
 import net.minecraft.world.entity.animal.Cat;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
@@ -116,6 +119,12 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<Hellhound>> HELLHOUND =
             ENTITY_TYPES.register("hellhound", () -> EntityType.Builder.of(Hellhound::new, MobCategory.MONSTER)
                     .sized(0.9F, 0.9F).fireImmune().clientTrackingRange(8).build(Witchery.MODID + ":hellhound"));
+    public static final RegistryObject<EntityType<Wolfman>> WOLFMAN =
+            ENTITY_TYPES.register("wolfman", () -> EntityType.Builder.of(Wolfman::new, MobCategory.MONSTER)
+                    .sized(0.6F, 1.8F).clientTrackingRange(8).build(Witchery.MODID + ":wolfman"));
+    public static final RegistryObject<EntityType<WereVillager>> WERE_VILLAGER =
+            ENTITY_TYPES.register("werevillager", () -> EntityType.Builder.of(WereVillager::new, MobCategory.MISC)
+                    .sized(0.6F, 1.95F).clientTrackingRange(8).build(Witchery.MODID + ":werevillager"));
     public static final RegistryObject<EntityType<AttackBat>> ATTACK_BAT =
             ENTITY_TYPES.register("attackbat", () -> EntityType.Builder.of(AttackBat::new, MobCategory.AMBIENT)
                     .sized(0.5F, 0.9F).clientTrackingRange(5).build(Witchery.MODID + ":attackbat"));
@@ -160,6 +169,8 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("villageguard", VILLAGE_GUARD);
         LEGACY_ENTITIES.put("witchhunter", WITCH_HUNTER);
         LEGACY_ENTITIES.put("hellhound", HELLHOUND);
+        LEGACY_ENTITIES.put("wolfman", WOLFMAN);
+        LEGACY_ENTITIES.put("werevillager", WERE_VILLAGER);
         LEGACY_ENTITIES.put("attackbat", ATTACK_BAT);
         LEGACY_ENTITIES.put("follower", FOLLOWER);
         LEGACY_ENTITIES.put("imp", IMP);
@@ -213,6 +224,8 @@ public final class WitcheryEntities {
                     : entry == VILLAGE_GUARD ? VillageGuard.attributes()
                     : entry == WITCH_HUNTER ? WitchHunter.attributes()
                     : entry == HELLHOUND ? Hellhound.attributes()
+                    : entry == WOLFMAN ? Wolfman.attributes()
+                    : entry == WERE_VILLAGER ? Villager.createAttributes()
                     : entry == ATTACK_BAT ? Bat.createAttributes()
                     : entry == FOLLOWER ? WitcheryFollower.attributes()
                     : entry == IMP ? Imp.attributes()

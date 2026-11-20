@@ -460,7 +460,8 @@
 
 - [x] Restore the Witch Hunter entity, crossbow attacks and original skins. A disliked rank-ten vampire drew two hunters from a village with a claimed bed and hostile gossip. The test server raised only the report probability for this check. Both hunters carried crossbows and shot Holy Bolts at the player. The server also confirmed that a hunter sheds Poison and limits an ordinary hit to nine damage. After a restart at the default report probability, both hunters retained their UUIDs, crossbows and player target.
 - [x] Restore black magic notices from Voodoo and Vampiric Poppets and the Curse of Waking Nightmare. The muted survival client collected a pig's Taglock, crafted and used a bound Voodoo Poppet, and the server saved a pursuit timestamp. GameTests confirmed that a notice waits at least 2,400 ticks and can spawn at most two hunters with the original target. Java 17 data generation, JAR reobfuscation and all 220 required Forge GameTests passed.
-- [ ] Connect werewolf targets and Silver Bolt selection after lycanthropy, and wire the remaining black magic triggers as their rites are restored.
+- [x] Connect transformed werewolf targets and Silver Bolt selection. A packaged hunter selected a named Wolfman and fired bolts of type 4.
+- [ ] Wire the remaining black magic triggers as their rites are restored.
 
 ## Hellhounds and Wolf Trophies (2026-11-20)
 
@@ -473,7 +474,13 @@
 - [x] Restore both original recipes, full-moon timing, active cat and six-member coven. The muted client called its cat, collected its Taglock at a bed, sacrificed a Hellhound Head it had picked up, and activated the medium infernal circle with a Seer Stone. A waning night refunded all six offerings. At the full moon, Witch Hunter clothing blocked the curse. Removing one piece let the same offerings curse the player and the server retained vampire rank ten under the default hybrid setting.
 - [x] Restore the rank-one wolf form, smaller dimensions, armor drop, Night Vision, jump and movement stats, and Silver Sword damage. The dedicated server recorded speed changing from 0.10 to 0.15 and the additional step height of 0.4. A second muted client saw the first as a wolf. With the active familiar's damage sharing, a 12-point ordinary strike took 3.6 health and a seven-point silver strike took 10.8 health.
 - [x] Reconnect after a dedicated-server restart, then collect another Taglock and perform the cure while still in wolf form. The save retained rank one, wolf form and speed. The successful cure consumed all six offerings, restored normal movement and kept vampire rank ten. Java 17 data generation, JAR reobfuscation and all 226 required Forge GameTests passed.
-- [ ] Restore infected villagers, the wolfman entity, Wolf Altar trials, voluntary forms, and the remaining werewolf combat, hunting and Wolfsbane interactions.
+- [ ] Restore Wolf Altar trials, voluntary forms, and the remaining werewolf combat, hunting and Wolfsbane interactions.
+
+## Werevillagers and Wolfmen (2026-11-20)
+
+- [x] Restore the Werevillager and Wolfman, including the original Wolfman texture, combat stats, silver vulnerability, and the village cure. The Curse of the Wolf now infects villagers, correcting the legacy rite's plain-villager conversion.
+- [x] Keep profession, appearance, XP, trade history, the name and the original Taglock signature through transformation. The muted survival client cursed Felix, a snow librarian, observed his 80-health Wolfman form, and traded with him after daylight. The trade took his XP from 42 to 44 and uses from one to two.
+- [x] Restart during a second transformation. The same Wolfman kept its UUID, damage and saved trade. The muted client used the Taglock it collected from the infected villager to cure the saved Wolfman. The resulting vanilla villager kept the original signature, level-three librarian profession, XP 44 and two trade uses.
 
 ## Auram Pack Validation (2026-11-20)
 

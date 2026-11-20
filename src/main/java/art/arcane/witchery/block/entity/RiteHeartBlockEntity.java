@@ -5,7 +5,9 @@ import art.arcane.witchery.brewing.WakingNightmareEffect;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.entity.Demon;
+import art.arcane.witchery.entity.WereVillager;
 import art.arcane.witchery.entity.WitchHunterPursuit;
+import art.arcane.witchery.entity.Wolfman;
 import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.item.HunterClothingItem;
@@ -15,6 +17,7 @@ import art.arcane.witchery.item.VoodooPoppetItem;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.lycanthropy.Lycanthropy;
+import art.arcane.witchery.lycanthropy.WerewolfVillagers;
 import art.arcane.witchery.power.AltarPower;
 import art.arcane.witchery.prediction.Predictions;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
@@ -41,6 +44,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -187,7 +191,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         Entity result = null;
         LivingEntity curseTarget = null;
         ServerPlayer vampireCureTarget = null;
-        ServerPlayer wolfRiteTarget = null;
+        LivingEntity wolfRiteTarget = null;
         ServerPlayer corruptionCaster = null;
         int infusionType = switch (rite.action()) {
             case INFUSE_LIGHT -> 1;
@@ -271,7 +275,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 abort(level, failure);
                 return;
             }
-            wolfRiteTarget = (ServerPlayer) target;
+            wolfRiteTarget = target;
         } else if (rite.action() == ItemRiteRecipe.Action.ITEM || rite.action() == ItemRiteRecipe.Action.BIND_WAYSTONE
                 || rite.action() == ItemRiteRecipe.Action.BIND_CREATURE_WAYSTONE) {
             ItemStack output = rite.result().copy();
@@ -332,7 +336,12 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             WakingNightmareEffect.changeCurse(curseTarget, rite.action() == ItemRiteRecipe.Action.CURSE_WAKING_NIGHTMARE);
         }
         if (vampireCureTarget != null) finishVampireCure(level, pos, vampireCureTarget);
-        if (wolfRiteTarget != null) finishWolfRite(level, pos, wolfRiteTarget, rite.action() == ItemRiteRecipe.Action.CURSE_OF_THE_WOLF);
+        if (wolfRiteTarget != null && !finishWolfRite(level, pos, wolfRiteTarget,
+                rite.action() == ItemRiteRecipe.Action.CURSE_OF_THE_WOLF)) {
+            if (altar != null) altar.refundPower(rite.power());
+            abort(level, "message.witchery.rite.wolf.conversion_failed");
+            return;
+        }
         for (ServerPlayer recipient : recipients) {
             if (rite.action() == ItemRiteRecipe.Action.MANIFESTATION) {
                 DreamTravel.grantManifestation(recipient, MANIFEST_DURATION);
@@ -380,6 +389,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (inflict) {
             WitchHunterPursuit.noticeBlackMagic(caster);
             if (HunterClothingItem.resistsCurse(target)) return "message.witchery.rite.hunter_curse_protection";
+            if (target instanceof WereVillager || target instanceof Wolfman) return "message.witchery.rite.wolf.already_affected";
+            if (target instanceof Villager) return null;
             if (!(target instanceof ServerPlayer victim)) return "message.witchery.rite.wolf.human_required";
             if (VoodooPoppetItem.deflectRite(caster, victim, 3)) return "message.witchery.rite.wolf.warded";
             if (!WitcheryServerConfig.ALLOW_VAMPIRE_WEREWOLF_HYBRIDS.get() && Vampirism.isVampire(victim)) {
@@ -387,6 +398,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             }
             if (Lycanthropy.rank(victim) > 0) return "message.witchery.rite.wolf.already_affected";
         } else {
+            if (target instanceof WereVillager || target instanceof Wolfman wolfman && wolfman.hasFormerVillager()) return null;
             if (!(target instanceof ServerPlayer victim) || Lycanthropy.rank(victim) == 0) {
                 return "message.witchery.rite.wolf.unaffected";
             }
@@ -398,14 +410,22 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         return null;
     }
 
-    private static void finishWolfRite(ServerLevel level, BlockPos pos, ServerPlayer target, boolean inflict) {
-        boolean cursed = inflict || level.random.nextInt(4) == 0;
-        if (inflict) Lycanthropy.infect(target);
-        else if (!cursed) Lycanthropy.setRank(target, 0);
+    private static boolean finishWolfRite(ServerLevel level, BlockPos pos, LivingEntity target, boolean inflict) {
+        boolean cursed = inflict;
+        if (target instanceof ServerPlayer player) {
+            if (inflict) Lycanthropy.infect(player);
+            else if (level.random.nextInt(4) == 0) cursed = true;
+            else Lycanthropy.setRank(player, 0);
+        } else if (inflict && target instanceof Villager villager) {
+            if (!WerewolfVillagers.infect(villager, false)) return false;
+        } else if (target instanceof WereVillager villager) {
+            if (!WerewolfVillagers.cleanse(villager)) return false;
+        } else if (target instanceof Wolfman wolfman && !WerewolfVillagers.revert(wolfman, false)) return false;
         level.sendParticles(cursed ? ParticleTypes.FLAME : ParticleTypes.INSTANT_EFFECT,
                 pos.getX() + 0.5, pos.getY() + 0.1, pos.getZ() + 0.5, 16, 0.5, 0.6, 0.5, 0.035);
         level.playSound(null, pos, cursed ? SoundEvents.ENDER_DRAGON_GROWL : SoundEvents.PLAYER_LEVELUP,
                 SoundSource.BLOCKS, 1, 1);
+        return true;
     }
 
     @Nullable

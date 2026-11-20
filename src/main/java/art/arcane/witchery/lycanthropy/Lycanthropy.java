@@ -3,6 +3,7 @@ package art.arcane.witchery.lycanthropy;
 import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.entity.WitcheryBolt;
+import art.arcane.witchery.entity.Wolfman;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryItems;
@@ -86,7 +87,8 @@ public final class Lycanthropy {
     }
 
     public static boolean isShifted(LivingEntity entity) {
-        return entity instanceof Player player && WitcheryPlayerDataProvider.get(player).map(Lycanthropy::isShifted).orElse(false);
+        return entity instanceof Wolfman || entity instanceof Player player
+                && WitcheryPlayerDataProvider.get(player).map(Lycanthropy::isShifted).orElse(false);
     }
 
     private static boolean isShifted(WitcheryPlayerData data) {
@@ -140,6 +142,10 @@ public final class Lycanthropy {
     public static boolean wolfsbaneActive(Player player, int rank) {
         var effect = player.getEffect(WitcheryEffects.all().get("potion.wolfsbane").get());
         return effect != null && Math.max(1, effect.getAmplifier() * 3) >= rank;
+    }
+
+    public static boolean hasWolfsbane(LivingEntity entity) {
+        return entity.hasEffect(WitcheryEffects.all().get("potion.wolfsbane").get());
     }
 
     private static void setForm(ServerPlayer player, WitcheryPlayerData data, int form, boolean howl) {
@@ -238,7 +244,7 @@ public final class Lycanthropy {
         else event.setCanceled(true);
     }
 
-    private static boolean isSilver(DamageSource source) {
+    public static boolean isSilver(DamageSource source) {
         if (source.getDirectEntity() instanceof WitcheryBolt bolt) return bolt.kind() == WitcheryBolt.Kind.SILVER;
         return !source.is(DamageTypeTags.IS_PROJECTILE) && source.getEntity() instanceof LivingEntity living
                 && living.getMainHandItem().is(WitcheryItems.getRequired("silversword").get());

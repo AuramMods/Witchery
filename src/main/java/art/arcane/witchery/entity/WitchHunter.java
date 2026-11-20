@@ -1,5 +1,7 @@
 package art.arcane.witchery.entity;
 
+import art.arcane.witchery.lycanthropy.Lycanthropy;
+
 import art.arcane.witchery.infusion.InfernalInfusion;
 import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.item.HandBowItem;
@@ -86,7 +88,8 @@ public final class WitchHunter extends Monster implements RangedAttackMob {
     private boolean hunts(LivingEntity entity) {
         if (entity instanceof Player player && (targetUuid == null ? targetName.equals(player.getGameProfile().getName())
                 : targetUuid.equals(player.getUUID()))) return true;
-        if (CreatureAlignment.undead(entity) || CreatureAlignment.demonic(entity) || entity instanceof Witch || entity instanceof BabaYaga) return true;
+        if (Lycanthropy.isShifted(entity) || CreatureAlignment.undead(entity) || CreatureAlignment.demonic(entity)
+                || entity instanceof Witch || entity instanceof BabaYaga) return true;
         return entity instanceof ServerPlayer player && (InfusionEnergy.type(player) == InfernalInfusion.ID
                 || player.getInventory().items.stream().anyMatch(WitchHunter::hasDarkPoppet) || hasDarkPoppet(player.getOffhandItem()));
     }
@@ -139,7 +142,8 @@ public final class WitchHunter extends Monster implements RangedAttackMob {
     @Override
     public void performRangedAttack(LivingEntity target, float power) {
         if (!canFight() || !hasCrossbow()) return;
-        WitcheryBolt.Kind kind = CreatureAlignment.undead(target) ? WitcheryBolt.Kind.HOLY
+        WitcheryBolt.Kind kind = Lycanthropy.isShifted(target) ? WitcheryBolt.Kind.SILVER
+                : CreatureAlignment.undead(target) ? WitcheryBolt.Kind.HOLY
                 : random.nextInt(4) == 0 ? WitcheryBolt.Kind.POWERED_ANTI_MAGIC : WitcheryBolt.Kind.STAKE;
         var bolt = new WitcheryBolt(this, kind);
         int difficulty = level().getDifficulty().getId();

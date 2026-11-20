@@ -23,6 +23,7 @@ import art.arcane.witchery.item.VampiricPoppetItem;
 import art.arcane.witchery.item.GlassGobletItem;
 import art.arcane.witchery.item.HunterClothingItem;
 import art.arcane.witchery.lycanthropy.Lycanthropy;
+import art.arcane.witchery.lycanthropy.WerewolfVillagers;
 import art.arcane.witchery.vampirism.Vampirism;
 import art.arcane.witchery.vampirism.BloodFeeding;
 import art.arcane.witchery.vampirism.VampireAbilities;
@@ -62,6 +63,7 @@ import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.entity.EntityTeleportEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
@@ -297,6 +299,16 @@ public final class WitcheryEventHooks {
     @SubscribeEvent
     public static void restoreMinion(EntityJoinLevelEvent event) {
         if (event.getLevel() instanceof ServerLevel && event.getEntity() instanceof Mob mob) InfernalInfusion.restore(mob);
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void trackVillagerAlias(EntityJoinLevelEvent event) {
+        if (event.getLevel() instanceof ServerLevel level && event.getEntity() instanceof Mob mob) WerewolfVillagers.track(level, mob);
+    }
+
+    @SubscribeEvent
+    public static void removeVillagerAlias(EntityLeaveLevelEvent event) {
+        if (event.getLevel() instanceof ServerLevel level && event.getEntity() instanceof Mob mob) WerewolfVillagers.untrack(level, mob);
     }
 
     @SubscribeEvent

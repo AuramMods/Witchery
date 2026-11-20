@@ -47,6 +47,7 @@ import art.arcane.witchery.client.renderer.WitcheryBoltRenderer;
 import art.arcane.witchery.client.renderer.WitchHunterRenderer;
 import art.arcane.witchery.client.renderer.HellhoundRenderer;
 import art.arcane.witchery.client.renderer.WolfHeadRenderer;
+import art.arcane.witchery.client.renderer.WolfmanRenderer;
 import art.arcane.witchery.client.renderer.GrassperRenderer;
 import art.arcane.witchery.client.renderer.ImpRenderer;
 import art.arcane.witchery.client.renderer.KettleRenderer;
@@ -83,6 +84,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.ChestRenderer;
 import net.minecraft.client.renderer.entity.CatRenderer;
 import net.minecraft.client.renderer.entity.BatRenderer;
+import net.minecraft.client.renderer.entity.VillagerRenderer;
 import net.minecraft.client.renderer.entity.ItemEntityRenderer;
 import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
@@ -167,6 +169,7 @@ public final class WitcheryClient {
         event.registerLayerDefinition(WitchHunterRenderer.LAYER, WitchHunterRenderer::layer);
         event.registerLayerDefinition(HellhoundRenderer.LAYER, HellhoundRenderer::layer);
         event.registerLayerDefinition(WolfHeadRenderer.LAYER, WolfHeadRenderer::layer);
+        event.registerLayerDefinition(WolfmanRenderer.LAYER, WolfmanRenderer::layer);
         for (var style : VampireClothingItem.Style.values()) {
             event.registerLayerDefinition(VampireClothingModel.layerId(style), () -> VampireClothingModel.layer(style));
         }
@@ -194,6 +197,8 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.VILLAGE_GUARD.get(), VillageGuardRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.WITCH_HUNTER.get(), WitchHunterRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.HELLHOUND.get(), HellhoundRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.WOLFMAN.get(), WolfmanRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.WERE_VILLAGER.get(), VillagerRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.ATTACK_BAT.get(), BatRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SCRY_EYE.get(), NoopRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.MANDRAKE.get(), MandrakeRenderer::new);

@@ -1,5 +1,7 @@
 package art.arcane.witchery.item;
 
+import art.arcane.witchery.lycanthropy.WerewolfVillagers;
+
 import art.arcane.witchery.block.BloodRoseBlock;
 import art.arcane.witchery.block.LeechChestBlock;
 import art.arcane.witchery.block.entity.BloodRoseBlockEntity;
@@ -92,6 +94,7 @@ public final class TaglockItem extends Item {
             for (ServerLevel world : level.getServer().getAllLevels()) {
                 if (world.getEntity(id) instanceof LivingEntity living) return living;
             }
+            return WerewolfVillagers.findByTaglock(level.getServer(), id);
         }
         return null;
     }
@@ -249,7 +252,7 @@ public final class TaglockItem extends Item {
             tag.putString(PLAYER_NAME, player.getGameProfile().getName());
             tag.putUUID(PLAYER_UUID, player.getUUID());
         } else if (target instanceof Mob mob) {
-            UUID uuid = mob.getUUID();
+            UUID uuid = WerewolfVillagers.originalIdentity(mob);
             tag.putLong(CREATURE_MOST, uuid.getMostSignificantBits());
             tag.putLong(CREATURE_LEAST, uuid.getLeastSignificantBits());
             tag.putString(CREATURE_NAME, mob.getDisplayName().getString());

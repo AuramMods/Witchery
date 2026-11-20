@@ -331,6 +331,8 @@ public final class WitcheryItems {
                     case "covenwitch" -> new ForgeSpawnEggItem(entityType, 0x111111, 0x002D03, new Item.Properties());
                     case "witchhunter" -> new ForgeSpawnEggItem(entityType, 0x78706B, 0x231C19, new Item.Properties());
                     case "hellhound" -> new ForgeSpawnEggItem(entityType, 0xD86500, 0x5B1208, new Item.Properties());
+                    case "wolfman" -> new ForgeSpawnEggItem(entityType, 0x2D2D2D, 0x606060, new Item.Properties());
+                    case "werevillager" -> new ForgeSpawnEggItem(entityType, 0x563C33, 0xBD8B72, new Item.Properties());
                     default -> new ForgeSpawnEggItem(entityType, 0x6E5A4E, 0xA4A29D, new Item.Properties());
                 });
         LEGACY_SPAWN_EGGS.put(eggPath, egg);
