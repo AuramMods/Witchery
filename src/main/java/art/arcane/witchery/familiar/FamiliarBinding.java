@@ -40,7 +40,7 @@ public final class FamiliarBinding {
     private static final String FAMILIAR = "WITCFamiliar";
     private static final int RANGE = 7;
 
-    private enum Type {
+    public enum Type {
         CAT(1, () -> WitcheryEntities.WITCH_CAT.get(), List.of("Pyewackett", "Salem", "Gobbolino", "Sabbath", "Norris",
                 "Crookshanks", "Binx", "Voodoo", "Raven", "Simpkin", "Fishbone", "Kismet")),
         TOAD(2, () -> WitcheryEntities.TOAD.get(), List.of("Casper", "Wart", "Langston", "Croaker", "Prince Charming",
@@ -97,8 +97,13 @@ public final class FamiliarBinding {
     }
 
     private static boolean hasMastery(ServerPlayer player, Type type) {
+        return activeType(player) == type;
+    }
+
+    @Nullable
+    public static Type activeType(ServerPlayer player) {
         CompoundTag record = record(player);
-        return record.getBoolean("FamiliarSummoned") && record.getInt("FamiliarType") == type.id;
+        return record.getBoolean("FamiliarSummoned") ? Type.forId(record.getInt("FamiliarType")) : null;
     }
 
     public static String familiarName(ServerPlayer player) {

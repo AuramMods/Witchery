@@ -131,10 +131,10 @@ public final class WitchOwl extends WitchPet {
         return distanceToSqr(player) < 9;
     }
 
-    public void beginRescue(LivingEntity attacker) {
-        timeToLive = 300;
-        setTarget(attacker);
-        setLastHurtByMob(attacker);
+    public void attackTemporarily(LivingEntity target, int ticks) {
+        timeToLive = ticks;
+        setTarget(target);
+        setLastHurtByMob(target);
     }
 
     @Override

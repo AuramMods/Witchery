@@ -244,7 +244,7 @@ public final class Predictions {
     private static boolean rescue(Kind kind, ServerPlayer player, DamageSource source) {
         if (!(source.getEntity() instanceof LivingEntity attacker) || attacker == player || !attacker.isAlive()) return false;
         if (kind == Kind.OWL_RESCUE) {
-            return encounter(player, WitcheryEntities.OWL.get(), 4, owl -> owl.beginRescue(attacker));
+            return encounter(player, WitcheryEntities.OWL.get(), 4, owl -> owl.attackTemporarily(attacker, 300));
         }
         return encounter(player, EntityType.WOLF, 4, wolf -> {
             wolf.setTarget(attacker);

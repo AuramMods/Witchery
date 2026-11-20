@@ -1,6 +1,7 @@
 package art.arcane.witchery.data;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
@@ -15,14 +16,17 @@ import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.data.recipes.SimpleCookingRecipeBuilder;
 import net.minecraft.data.recipes.SpecialRecipeBuilder;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraftforge.common.crafting.PartialNBTIngredient;
 
 import java.util.function.Consumer;
 
@@ -129,6 +133,19 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .pattern("SWS")
                 .pattern(" S ")
                 .unlockedBy("has_cobweb", has(Blocks.COBWEB))
+                .save(recipeOutput);
+        Block critterSnare = WitcheryBlocks.getRequired("crittersnare").get();
+        var batState = new CompoundTag();
+        batState.putString(CritterSnareBlock.CRITTER.getName(), CritterSnareBlock.Critter.BAT.getSerializedName());
+        var batSnareTag = new CompoundTag();
+        batSnareTag.put(BlockItem.BLOCK_STATE_TAG, batState);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryIngredient.BAT_BALL.item())
+                .define('S', Items.SLIME_BALL)
+                .define('B', PartialNBTIngredient.of(critterSnare, batSnareTag))
+                .pattern("SBS")
+                .pattern("B B")
+                .pattern("SBS")
+                .unlockedBy("has_critter_snare", has(critterSnare))
                 .save(recipeOutput);
         ShapelessRecipeBuilder.shapeless(RecipeCategory.FOOD, WitcheryIngredient.ODD_PORKCHOP_RAW.item())
                 .requires(WitcheryIngredient.MUTANDIS.item())

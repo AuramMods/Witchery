@@ -1,0 +1,15 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"item": "minecraft:brown_mushroom"},
+    {"item": "minecraft:wheat_seeds"},
+    {"item": "witchery:brew_of_thorns"},
+    {"item": "witchery:bat_wool"},
+    {"item": "minecraft:feather"},
+    {"item": "witchery:owlets_wing"}
+  ],
+  "result": {"item": "witchery:brew_of_hitchcock", "count": 3},
+  "color": -3908582,
+  "bottling_bonus": 1,
+  "bottling_familiar": "owl"
+}

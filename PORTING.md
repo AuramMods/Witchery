@@ -261,7 +261,7 @@
 - [x] Restore the Love and both rescue forecasts. A summoned farmer approached the standing player and produced a baby villager. Separate zombie attacks summoned a temporary Owl and a wild Wolf. Each attacked the zombie that hit its player. All 105 required GameTests, data generation and JAR reobfuscation passed.
 - [x] Verify a reading for a nearby player on a dedicated server. The trained player used the ball and the second muted client received the Wet forecast. The reader's record stayed empty. Entering water cleared the second player's reading.
 - [x] Restore both Baba Yaga forecasts, her hostile and allied encounters, boss HUD and animated mortar-and-pestle model. On dedicated Forge one forecast spawned an ally with the second player's name, and the other led to a hostile potion attack. The ally departed at the end of its visit. A name-only legacy ally fixture dropped gifts. A shortened fight yielded Baba's Hat and an enchanted book. All 107 required GameTests passed, including the wooden sword counter and original damage cap.
-- [ ] Restore the rest of Baba Yaga's thrown brews and brew gifts.
+- [x] Restore the rest of Baba Yaga's thrown brews and brew gifts. The GameTests exercised each of her 12 legacy brew choices. The visit and death tables use the original collections.
 - [x] Restore Crystal Ball viewing with a location-bound Waystone. The muted clients saw a marked platform and its entity 126 blocks away while an observer still saw the player at the ball. Releasing use and the Eye's 200-tick expiry both returned the view. A distant Waystone and a Nether Waystone failed to open it. The same package worked with clean Forge and an isolated Embeddium 0.3.31 and Oculus 1.8.0 profile. All 108 required GameTests passed.
 - [x] Restore Crystal Ball viewing with a filled Taglock Kit. A sample taken from another player's bed let the muted client follow that player across a chunk boundary over 180 blocks away. A self sample raised an Eye above the ball. A cow sample showed the cow's point of view. Transferring the cow to the Nether closed the view and left it alive. After a dedicated restart during a later viewing, the player returned beside the ball with the same filled kit and the cow retained its UUID. All 109 required GameTests passed.
 
@@ -279,7 +279,13 @@
 - [x] Restore kettle recipes and projectile impacts for Vines, Webs, Thorns and Sprouting. The muted survival client crafted the Web ingredient, filled the heated kettle, bottled Brew of Webs and threw it onto the floor. It also threw supplied portions of the other three. Vines attached on the wall face, Thorns produced three cactus segments, and Sprouting produced a horizontal birch branch.
 - [x] Verify the active Toad bonus, the three distinct Sprouting saplings, and Baba Yaga's Webs and Thorns projectiles. All 118 required GameTests, data generation and JAR reobfuscation passed.
 - [x] Restart the packaged server after the terrain changed. The webs, vines, cactus, birch branch, two owned Zombie Villagers, and two unbottled Kettle servings persisted.
-- [ ] Restore the remaining Baba Yaga brews and their familiar-specific bottling rules where applicable. Connect the terrain impacts to the legacy plant mines and circle rites.
+- [ ] Connect the terrain impacts to the legacy plant mines and circle rites.
+
+## Familiar Brews and Baba Yaga (2026-11-20)
+
+- [x] Restore the recipes and effects for Frog's Tongue, Cursed Leaping, Hitchcock, Bats and Wasting. The muted client pulled a cow over two blocks, gained roughly eleven blocks of height with Jump Boost IV, and sent four temporary owls at a cow with Hitchcock. Bats released ten marked bats and applied Slowness VI to a nearby chicken. Wasting cut food from twenty to ten, applied Hunger and Poison, and cleared a nearby poppy.
+- [x] Craft a Bat Ball from four bat-filled snares and four slimeballs. The muted client took one from the crafting table. The GameTest also refused a slime-filled snare.
+- [x] Restore familiar-specific Kettle bottling. Cursed Leaping requires a Cat, Frog's Tongue a Toad and Hitchcock an Owl. Hopper extraction and wrong or dismissed familiars preserve the ready result and glass. The muted client tried Hitchcock before and after a dedicated restart with its Owl dismissed. Calling the Owl at the ritual circle allowed the same batch to be bottled. All 123 required GameTests, data generation and JAR reobfuscation passed.
 
 ## Auram Pack Validation (2026-11-20)
 

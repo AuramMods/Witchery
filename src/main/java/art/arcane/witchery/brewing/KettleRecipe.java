@@ -1,5 +1,6 @@
 package art.arcane.witchery.brewing;
 
+import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.registry.WitcheryRecipes;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -7,6 +8,7 @@ import com.google.gson.JsonSyntaxException;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
@@ -17,18 +19,24 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.RecipeMatcher;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Predicate;
 
 public record KettleRecipe(ResourceLocation id, List<Ingredient> ingredients, ItemStack result, int color, int power,
-                           ResourceLocation dimension, int bottlingBonus)
+                           ResourceLocation dimension, int bottlingBonus, @Nullable FamiliarBinding.Type bottlingFamiliar)
         implements Recipe<Container> {
     public static final int INGREDIENT_SLOTS = 6;
 
     public boolean canBrewIn(Level level) {
         return dimension == null || dimension.equals(level.dimension().location());
+    }
+
+    public boolean canBottle(@Nullable ServerPlayer player) {
+        return bottlingFamiliar == null || player != null && FamiliarBinding.activeType(player) == bottlingFamiliar;
     }
 
     public boolean matchesPartial(List<ItemStack> contents) {
@@ -103,7 +111,16 @@ public record KettleRecipe(ResourceLocation id, List<Ingredient> ingredients, It
             entries.forEach(entry -> ingredients.add(Ingredient.fromJson(entry, false)));
             ResourceLocation dimension = json.has("dimension")
                     ? new ResourceLocation(GsonHelper.getAsString(json, "dimension")) : null;
-            return new KettleRecipe(id, List.copyOf(ingredients), result, GsonHelper.getAsInt(json, "color"), power, dimension, bonus);
+            FamiliarBinding.Type familiar = null;
+            if (json.has("bottling_familiar")) {
+                String name = GsonHelper.getAsString(json, "bottling_familiar");
+                try {
+                    familiar = FamiliarBinding.Type.valueOf(name.toUpperCase(Locale.ROOT));
+                } catch (IllegalArgumentException invalid) {
+                    throw new JsonSyntaxException("Unknown bottling familiar '" + name + "' for " + id, invalid);
+                }
+            }
+            return new KettleRecipe(id, List.copyOf(ingredients), result, GsonHelper.getAsInt(json, "color"), power, dimension, bonus, familiar);
         }
 
         @Override
@@ -113,7 +130,8 @@ public record KettleRecipe(ResourceLocation id, List<Ingredient> ingredients, It
                 ingredients.add(Ingredient.fromNetwork(buffer));
             }
             return new KettleRecipe(id, List.copyOf(ingredients), buffer.readItem(), buffer.readInt(), buffer.readVarInt(),
-                    buffer.readNullable(FriendlyByteBuf::readResourceLocation), buffer.readVarInt());
+                    buffer.readNullable(FriendlyByteBuf::readResourceLocation), buffer.readVarInt(),
+                    buffer.readNullable(data -> data.readEnum(FamiliarBinding.Type.class)));
         }
 
         @Override
@@ -124,6 +142,7 @@ public record KettleRecipe(ResourceLocation id, List<Ingredient> ingredients, It
             buffer.writeVarInt(recipe.power);
             buffer.writeNullable(recipe.dimension, FriendlyByteBuf::writeResourceLocation);
             buffer.writeVarInt(recipe.bottlingBonus);
+            buffer.writeNullable(recipe.bottlingFamiliar, FriendlyByteBuf::writeEnum);
         }
     }
 }

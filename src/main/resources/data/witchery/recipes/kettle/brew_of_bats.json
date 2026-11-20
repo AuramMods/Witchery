@@ -1,0 +1,14 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"item": "witchery:bat_ball"},
+    {"item": "witchery:bat_wool"},
+    {"item": "minecraft:apple"},
+    {"item": "minecraft:sugar"},
+    {"item": "minecraft:fermented_spider_eye"},
+    {"item": "minecraft:gunpowder"}
+  ],
+  "result": {"item": "witchery:brew_of_bats", "count": 3},
+  "color": -9809858,
+  "bottling_bonus": 1
+}

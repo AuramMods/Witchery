@@ -1,0 +1,15 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"item": "minecraft:bone"},
+    {"item": "minecraft:apple"},
+    {"item": "witchery:brew_of_sprouting"},
+    {"item": "witchery:belladonna_flower"},
+    {"item": "minecraft:feather"},
+    {"item": "minecraft:cod"}
+  ],
+  "result": {"item": "witchery:brew_of_cursed_leaping", "count": 3},
+  "color": -16758145,
+  "bottling_bonus": 1,
+  "bottling_familiar": "cat"
+}

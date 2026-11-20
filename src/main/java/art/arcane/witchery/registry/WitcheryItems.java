@@ -4,6 +4,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.DreamWeave;
 import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.brewing.BrewImpacts;
+import art.arcane.witchery.brewing.BrewCreatureEffects;
 import art.arcane.witchery.brewing.BrewTerrain;
 import art.arcane.witchery.item.AnointingPasteItem;
 import art.arcane.witchery.item.BoundPoppetItem;
@@ -180,6 +181,11 @@ public final class WitcheryItems {
             case "brew_of_sprouting" -> new ThrowableBrewItem(BrewTerrain::sprouting);
             case "brew_of_love" -> new ThrowableBrewItem(BrewImpacts::splashLove);
             case "brew_of_raising" -> new ThrowableBrewItem(BrewImpacts::raiseDead);
+            case "brew_of_frogs_tongue" -> new ThrowableBrewItem(BrewCreatureEffects::frogsTongue);
+            case "brew_of_cursed_leaping" -> new ThrowableBrewItem(BrewCreatureEffects::cursedLeaping);
+            case "brew_of_hitchcock" -> new ThrowableBrewItem(BrewCreatureEffects::hitchcock);
+            case "brew_of_bats" -> new ThrowableBrewItem(BrewCreatureEffects::bats);
+            case "brew_of_wasting" -> new ThrowableBrewItem(BrewCreatureEffects::wasting);
             case "brew_of_grotesque" -> new DrinkableBrewItem(drinker ->
                     drinker.addEffect(new MobEffectInstance(WitcheryEffects.GROTESQUE.get(), 4_800, 0, false, false, false)));
             case "brew_of_the_depths" -> new DrinkableBrewItem(WitcheryEffects.DEPTHS, 6000, 0);

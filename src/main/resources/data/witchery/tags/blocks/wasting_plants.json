@@ -1,0 +1,26 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:leaves",
+    "#minecraft:flowers",
+    "#minecraft:saplings",
+    "#minecraft:crops",
+    "minecraft:vine",
+    "minecraft:grass",
+    "minecraft:tall_grass",
+    "minecraft:fern",
+    "minecraft:large_fern",
+    "minecraft:dead_bush",
+    "minecraft:brown_mushroom",
+    "minecraft:red_mushroom",
+    "minecraft:lily_pad",
+    "minecraft:nether_wart",
+    "witchery:embermoss",
+    "witchery:glintweed",
+    "witchery:spanishmoss",
+    "witchery:bramble",
+    "witchery:voidbramble",
+    "witchery:somniancotton",
+    "witchery:bloodrose"
+  ]
+}

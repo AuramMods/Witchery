@@ -61,7 +61,10 @@ public final class BabaYaga extends Monster implements RangedAttackMob {
             AttributeModifier.Operation.ADDITION);
     private static final List<WitcheryIngredient> GIFTS = List.of(WitcheryIngredient.SPECTRAL_DUST,
             WitcheryIngredient.BAT_WOOL, WitcheryIngredient.TOE_OF_FROG, WitcheryIngredient.OWLETS_WING,
-            WitcheryIngredient.DOG_TONGUE, WitcheryIngredient.BREW_OF_VINES, WitcheryIngredient.BREW_OF_SPROUTING);
+            WitcheryIngredient.DOG_TONGUE, WitcheryIngredient.BREW_OF_VINES, WitcheryIngredient.BREW_OF_SPROUTING,
+            WitcheryIngredient.BREW_OF_HITCHCOCK, WitcheryIngredient.BREW_OF_CURSED_LEAPING,
+            WitcheryIngredient.BREW_OF_FROGS_TONGUE);
+    private static final int VISIT_GIFT_COUNT = 7;
     private final ServerBossEvent boss = new ServerBossEvent(getDisplayName(), BossEvent.BossBarColor.PURPLE,
             BossEvent.BossBarOverlay.PROGRESS);
     private String ownerName = "";
@@ -195,7 +198,7 @@ public final class BabaYaga extends Monster implements RangedAttackMob {
         Player owner = level.players().stream().filter(this::isOwnedBy).findFirst().orElse(null);
         if (owner == null) return;
         if (visitTicks % 100 == 0 && distanceToSqr(owner) < 64) {
-            WitcheryIngredient gift = GIFTS.get(random.nextInt(GIFTS.size()));
+            WitcheryIngredient gift = GIFTS.get(random.nextInt(VISIT_GIFT_COUNT));
             int quantity = random.nextInt(3);
             if (quantity > 0) spawnAtLocation(new ItemStack(gift.item(), quantity));
         }
@@ -245,7 +248,11 @@ public final class BabaYaga extends Monster implements RangedAttackMob {
         WitcheryIngredient selectedBrew = switch (brewChoice) {
             case 0, 1 -> WitcheryIngredient.BREW_OF_WEBS;
             case 2, 3 -> WitcheryIngredient.BREW_OF_THORNS;
+            case 4, 5 -> WitcheryIngredient.BREW_OF_FROGS_TONGUE;
             case 6, 7 -> WitcheryIngredient.BREW_OF_INK;
+            case 8, 9 -> WitcheryIngredient.BREW_OF_HITCHCOCK;
+            case 10 -> WitcheryIngredient.BREW_OF_BATS;
+            case 11 -> WitcheryIngredient.BREW_OF_WASTING;
             default -> null;
         };
         if (selectedBrew != null) {

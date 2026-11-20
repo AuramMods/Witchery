@@ -56,10 +56,7 @@ public final class BrewImpacts {
                 if (duration > 0) {
                     entity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, duration), brew.getEffectSource());
                 }
-                if (entity instanceof Mob mob) {
-                    mob.setTarget(null);
-                    mob.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
-                }
+                clearTarget(entity);
             }
         }
     }
@@ -205,7 +202,14 @@ public final class BrewImpacts {
         return brew.getOwner() instanceof ServerPlayer player && FamiliarBinding.hasBrewMastery(player);
     }
 
-    private static AABB splashBounds(ThrownBrew brew, Vec3 impact, double radius) {
+    static void clearTarget(LivingEntity entity) {
+        if (entity instanceof Mob mob) {
+            mob.setTarget(null);
+            mob.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
+        }
+    }
+
+    static AABB splashBounds(ThrownBrew brew, Vec3 impact, double radius) {
         return brew.getBoundingBox().move(impact.subtract(brew.position())).inflate(radius, 2, radius);
     }
 

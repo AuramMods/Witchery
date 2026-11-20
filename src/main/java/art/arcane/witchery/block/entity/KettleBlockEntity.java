@@ -13,6 +13,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
@@ -46,6 +47,7 @@ public final class KettleBlockEntity extends BlockEntity {
     private final List<ItemStack> ingredients = contents.subList(0, BREW_SLOT);
     private boolean ruined;
     private int color;
+    @Nullable private ResourceLocation finishedRecipeId;
 
     private final FluidTank tank = new FluidTank(BUCKET, resource -> resource.getFluid() == Fluids.WATER) {
         @Override
@@ -108,6 +110,7 @@ public final class KettleBlockEntity extends BlockEntity {
         color = recipe.color();
         if (ingredients.stream().noneMatch(ItemStack::isEmpty) && canPower(server, recipe.power())) {
             contents.set(BREW_SLOT, recipe.result().copy());
+            finishedRecipeId = recipe.id();
             clearIngredients();
             changed = true;
         }
@@ -179,12 +182,12 @@ public final class KettleBlockEntity extends BlockEntity {
     }
 
     public ItemStack bottleBrew(Player player) {
-        ItemStack bottled = bottleBrew();
-        if (bottled.isEmpty() || !(player instanceof ServerPlayer server)) return bottled;
-        int bonus = server.serverLevel().getRecipeManager().getAllRecipesFor(WitcheryRecipes.KETTLE.get()).stream()
-                .filter(recipe -> ItemStack.isSameItemSameTags(recipe.result(), bottled))
-                .min((first, second) -> first.getId().compareTo(second.getId()))
-                .map(KettleRecipe::bottlingBonus).orElse(0);
+        if (!(player instanceof ServerPlayer server)) return ItemStack.EMPTY;
+        KettleRecipe recipe = finishedRecipe();
+        if (recipe != null && !recipe.canBottle(server)) return ItemStack.EMPTY;
+        ItemStack bottled = extractBrew(1, false, false);
+        if (bottled.isEmpty() || recipe == null) return bottled;
+        int bonus = recipe.bottlingBonus();
         if (bonus <= 0) return bottled;
 
         var hat = WitchClothingItem.style(player.getItemBySlot(EquipmentSlot.HEAD));
@@ -202,7 +205,25 @@ public final class KettleBlockEntity extends BlockEntity {
         return bottled;
     }
 
+    @Nullable
+    private KettleRecipe finishedRecipe() {
+        ItemStack brew = contents.get(BREW_SLOT);
+        if (level == null || !isReady()) return null;
+        var recipes = level.getRecipeManager();
+        if (finishedRecipeId != null && recipes.byKey(finishedRecipeId).orElse(null) instanceof KettleRecipe recipe
+                && ItemStack.isSameItemSameTags(recipe.result(), brew)) return recipe;
+        return recipes.getAllRecipesFor(WitcheryRecipes.KETTLE.get()).stream()
+                .filter(recipe -> ItemStack.isSameItemSameTags(recipe.result(), brew))
+                .min((first, second) -> first.id().compareTo(second.id()))
+                .orElse(null);
+    }
+
     private ItemStack bottleBrew(int amount, boolean automated, boolean simulate) {
+        KettleRecipe recipe = finishedRecipe();
+        return recipe == null || recipe.canBottle(null) ? extractBrew(amount, automated, simulate) : ItemStack.EMPTY;
+    }
+
+    private ItemStack extractBrew(int amount, boolean automated, boolean simulate) {
         ItemStack brew = contents.get(BREW_SLOT);
         if (!isReady() || !isFull() || amount <= 0 || (automated && bottleCount() < brew.getCount())) {
             return ItemStack.EMPTY;
@@ -226,6 +247,7 @@ public final class KettleBlockEntity extends BlockEntity {
     private void ruinBatch() {
         ruined = true;
         color = 0;
+        finishedRecipeId = null;
         contents.set(BREW_SLOT, ItemStack.EMPTY);
         update();
     }
@@ -235,6 +257,7 @@ public final class KettleBlockEntity extends BlockEntity {
         contents.set(BREW_SLOT, ItemStack.EMPTY);
         ruined = false;
         color = 0;
+        finishedRecipeId = null;
     }
 
     private void clearIngredients() {
@@ -273,6 +296,7 @@ public final class KettleBlockEntity extends BlockEntity {
                 tank.setFluid(new FluidStack(Fluids.WATER, amount));
             }
         }
+        finishedRecipeId = tag.contains("FinishedRecipe", Tag.TAG_STRING) ? ResourceLocation.tryParse(tag.getString("FinishedRecipe")) : null;
     }
 
     @Override
@@ -282,6 +306,7 @@ public final class KettleBlockEntity extends BlockEntity {
         tag.putBoolean("Ruined", ruined);
         tag.putInt("LiquidColor", color);
         tag.put("Tank", tank.writeToNBT(new CompoundTag()));
+        if (finishedRecipeId != null) tag.putString("FinishedRecipe", finishedRecipeId.toString());
     }
 
     @Override

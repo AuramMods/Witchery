@@ -1,0 +1,15 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"item": "minecraft:red_mushroom"},
+    {"item": "minecraft:wheat"},
+    {"item": "witchery:brew_of_webs"},
+    {"item": "witchery:globe_artichoke"},
+    {"item": "minecraft:slime_ball"},
+    {"item": "witchery:toe_of_frog"}
+  ],
+  "result": {"item": "witchery:brew_of_frogs_tongue", "count": 3},
+  "color": -12938226,
+  "bottling_bonus": 1,
+  "bottling_familiar": "toad"
+}

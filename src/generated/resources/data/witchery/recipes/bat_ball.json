@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "type": "forge:partial_nbt",
+      "item": "witchery:crittersnare",
+      "nbt": "{BlockStateTag:{critter:\"bat\"}}"
+    },
+    "S": {
+      "item": "minecraft:slime_ball"
+    }
+  },
+  "pattern": [
+    "SBS",
+    "B B",
+    "SBS"
+  ],
+  "result": {
+    "item": "witchery:bat_ball"
+  },
+  "show_notification": true
+}

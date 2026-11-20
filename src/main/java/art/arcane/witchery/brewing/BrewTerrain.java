@@ -179,7 +179,7 @@ public final class BrewTerrain {
                 LEAVES.get(species).defaultBlockState().setValue(LeavesBlock.PERSISTENT, true));
     }
 
-    private static BlockPos splashPosition(ServerLevel level, HitResult hit) {
+    static BlockPos splashPosition(ServerLevel level, HitResult hit) {
         if (hit instanceof BlockHitResult block) {
             BlockPos pos = block.getBlockPos();
             return block.getDirection() == Direction.UP && !level.getBlockState(pos).blocksMotion()
@@ -195,16 +195,20 @@ public final class BrewTerrain {
     }
 
     private static boolean replace(ThrownBrew brew, ServerLevel level, BlockPos pos, BlockState state, Direction face) {
-        if (!level.isInWorldBounds(pos) || !level.getWorldBorder().isWithinBounds(pos)) return false;
         BlockState old = level.getBlockState(pos);
         if (old.equals(state)) return true;
-        if (old.hasBlockEntity() || old.getDestroySpeed(level, pos) < 0) return false;
-        if (brew.getOwner() instanceof Player player && (!level.mayInteract(player, pos)
-                || !old.isAir() && MinecraftForge.EVENT_BUS.post(new BlockEvent.BreakEvent(level, pos, old, player)))) return false;
+        if (!canChange(brew, level, pos, old)) return false;
         if (brew.getOwner() != null && ForgeEventFactory.onBlockPlace(brew.getOwner(),
                 BlockSnapshot.create(level.dimension(), level, pos), face)) return false;
         if (!level.setBlockAndUpdate(pos, state)) return false;
         level.sendParticles(ParticleTypes.POOF, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 6, 0.25, 0.25, 0.25, 0.02);
         return true;
+    }
+
+    static boolean canChange(ThrownBrew brew, ServerLevel level, BlockPos pos, BlockState old) {
+        if (!level.isInWorldBounds(pos) || !level.getWorldBorder().isWithinBounds(pos)
+                || old.hasBlockEntity() || old.getDestroySpeed(level, pos) < 0) return false;
+        return !(brew.getOwner() instanceof Player player) || level.mayInteract(player, pos)
+                && (old.isAir() || !MinecraftForge.EVENT_BUS.post(new BlockEvent.BreakEvent(level, pos, old, player)));
     }
 }
