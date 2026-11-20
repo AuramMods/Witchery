@@ -367,7 +367,7 @@
 - [x] Preserve the converted vampire and the player's progression. A dedicated restart kept the same creature UUID and home position, the empty goblet, rank ten and 1,114 blood.
 - [x] Verify the vampire's nightly hunt. The mob selected an occupied village, took five nonlethal bites and returned home. The hunted villager's blood went from 500 to 400.
 - [x] Preserve Witchery progress through player respawn. After a deliberate death in the headless server, the muted client respawned at rank ten with a cap of ten and 1,114 blood. Java 17 data generation, the reobfuscated JAR and all 167 required Forge GameTests passed.
-- [ ] Restore vampire mortality, the Cane Sword, guard conversions, village responses and the cure.
+- [ ] Restore the Cane Sword, guard conversions, village responses and the cure.
 
 ## Blood Crucible and Thunderstorm (2026-11-20)
 
@@ -399,6 +399,13 @@
 - [x] Restore all nine wearable pieces and their recipes, including fitted, reinforced and kilt variants. The muted survival client crafted the top hat with the five Dark Cloth from the furnace and dyed it blue in a standard crafting table. GameTests checked all nine recipes and their armor properties.
 - [x] Apply the legacy feeding and Mesmerize bonuses. A bite on an awake villager drew seven blood with the hat alone and ten in the light outfit. The same rank-ten player cast enhanced Mesmerize and kept 404 blood after paying its 50-blood cost.
 - [x] Check the player, naturally equipped vampire and chain armor on the muted client. After a dedicated restart, the same vampire wore its original three pieces, and the player retained four pieces, the blue dye and seven armor. Java 17 data generation, JAR reobfuscation and all 185 required Forge GameTests passed.
+
+## Vampire Mortality (2026-11-20)
+
+- [x] Restore the one-health recovery from ordinary lethal damage. A normal fall hit damaged the muted survival player, and otherwise lethal fall damage left both the player and a vampire mob at one health. The player gained five exhaustion.
+- [x] Restore lethal fire and the clothing's flame protection. GameTests checked that two light garments save one hit in four and four garments save three hits in four. Fire Resistance stayed active while the burning player took damage in the packaged server. A lethal fire hit killed the unarmored player, who respawned at rank ten with 404 blood.
+- [x] Verify dedicated-server persistence of vampire death drops and sunlight mortality. The same dropped sword kept its 14,400-tick lifespan after a restart. Rejoining at rank ten with zero blood and stepping into noon sunlight killed the player with the sunlight death message. Java 17 data generation, JAR reobfuscation and all 190 required Forge GameTests passed.
+- [ ] Wire werewolf and silver interactions into mortality when lycanthropy is ported. Review the old accessory-mod exceptions with their modern integrations.
 
 ## Auram Pack Validation (2026-11-20)
 

@@ -1,4 +1,6 @@
 {
+   "death.attack.witchery.sunlight" : "%s burned in sunlight",
+   "death.attack.witchery.sunlight.player" : "%s burned in sunlight while fighting %s",
    "block.witchery.alderwooddoor" : "Alderwooddoor",
    "block.witchery.alluringskull" : "Alluringskull",
    "block.witchery.altar" : "Altar",

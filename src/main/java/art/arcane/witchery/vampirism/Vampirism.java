@@ -7,6 +7,7 @@ import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.item.VampireBookItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.network.WitcheryNetwork;
+import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.world.WitcheryDimensions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -253,6 +254,10 @@ public final class Vampirism {
             if (rank >= 2 && data.hasVampireVision()) {
                 player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 400, 0, true, false));
             }
+            if (player.isOnFire() && player.hasEffect(MobEffects.FIRE_RESISTANCE)) {
+                player.hurt(WitcheryDamageTypes.vampireFire(player.level()), 2);
+                if (!player.isAlive()) return;
+            }
             int previousBlood = data.getBloodPower();
             var hunger = player.getFoodData();
             int feed = Math.min(20 - hunger.getFoodLevel(), previousBlood / 5);
@@ -262,7 +267,13 @@ public final class Vampirism {
             }
             if (data.getBloodPower() == 0 && hunger.getFoodLevel() == 0) weaken(player, 8, 1);
             if (!player.getAbilities().instabuild && isInSunlight(player)) {
-                if (data.getBloodPower() == 0 && player.tickCount > 400) player.kill();
+                if (data.getBloodPower() == 0 && player.tickCount > 400) {
+                    var sunlight = WitcheryDamageTypes.sunlight(player.level());
+                    player.getCombatTracker().recordDamage(sunlight, player.getHealth());
+                    player.setHealth(0);
+                    player.die(sunlight);
+                    return;
+                }
                 if (rank >= 5) {
                     data.setBloodPower(data.getBloodPower() - 60);
                     weaken(player, 3, 0);

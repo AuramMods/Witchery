@@ -5,6 +5,7 @@ import art.arcane.witchery.block.CoffinBlock;
 import art.arcane.witchery.brewing.GrotesqueEffect;
 import art.arcane.witchery.brewing.WakingNightmareEffect;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.infusion.CreaturePower;
 import art.arcane.witchery.infusion.InfernalInfusion;
@@ -19,6 +20,7 @@ import art.arcane.witchery.vampirism.Vampirism;
 import art.arcane.witchery.vampirism.BloodFeeding;
 import art.arcane.witchery.vampirism.VampireAbilities;
 import art.arcane.witchery.vampirism.VampireFlight;
+import art.arcane.witchery.vampirism.VampireMortality;
 import art.arcane.witchery.item.WitchClothingItem;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.prediction.PredictedCourtship;
@@ -53,6 +55,7 @@ import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
@@ -290,6 +293,19 @@ public final class WitcheryEventHooks {
         }
     }
 
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void onVampireDeath(LivingDeathEvent event) {
+        if (VampireMortality.preventDeath(event.getEntity(), event.getSource())) event.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public static void onVampireDrops(LivingDropsEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player && Vampirism.level(player) > 0) {
+            int lifespan = WitcheryServerConfig.VAMPIRE_DEATH_ITEM_KEEP_ALIVE_MINS.get() * 60 * 20;
+            event.getDrops().forEach(drop -> drop.lifespan = lifespan);
+        }
+    }
+
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onLivingDeath(LivingDeathEvent event) {
         if (event.getEntity() instanceof ServerPlayer viewer) ScryingView.close(viewer);
@@ -337,6 +353,10 @@ public final class WitcheryEventHooks {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void protectFromLethalDamage(LivingDamageEvent event) {
+        if (VampireMortality.preventLethalDamage(event.getEntity(), event.getSource(), event.getAmount())) {
+            event.setCanceled(true);
+            return;
+        }
         DeathProtectionPoppetItem.protect(event);
         if (!event.isCanceled() && event.getAmount() > 0 && event.getSource().is(net.minecraft.world.damagesource.DamageTypes.PLAYER_ATTACK)
                 && event.getSource().getDirectEntity() instanceof ServerPlayer player) {

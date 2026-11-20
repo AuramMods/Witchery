@@ -13,10 +13,8 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -178,19 +176,6 @@ public final class Vampire extends PathfinderMob {
             }
         }
         return true;
-    }
-
-    @Override
-    public void die(DamageSource source) {
-        Entity attacker = source.getEntity();
-        if (source.is(DamageTypeTags.IS_FIRE) || source.is(DamageTypes.FELL_OUT_OF_WORLD)
-                || source.is(DamageTypes.GENERIC_KILL) || attacker instanceof Vampire
-                || attacker instanceof Player player && Vampirism.level(player) > 0
-                || attacker instanceof LivingEntity living && Vampirism.isBoss(living)) {
-            super.die(source);
-        } else {
-            setHealth(1);
-        }
     }
 
     @Override
