@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "D": {
+      "item": "witchery:silver_dust"
+    },
+    "S": {
+      "item": "minecraft:golden_sword"
+    }
+  },
+  "pattern": [
+    "DDD",
+    "DSD",
+    "DDD"
+  ],
+  "result": {
+    "item": "witchery:silversword"
+  },
+  "show_notification": true
+}

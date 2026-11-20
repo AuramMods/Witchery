@@ -38,6 +38,7 @@ import art.arcane.witchery.client.renderer.DemonHeartRenderer;
 import art.arcane.witchery.client.renderer.GrotesqueLayer;
 import art.arcane.witchery.client.renderer.FollowerRenderer;
 import art.arcane.witchery.client.renderer.BloodCrucibleRenderer;
+import art.arcane.witchery.client.renderer.SilverVatRenderer;
 import art.arcane.witchery.client.renderer.VampireRenderer;
 import art.arcane.witchery.client.renderer.GrassperRenderer;
 import art.arcane.witchery.client.renderer.ImpRenderer;
@@ -151,6 +152,7 @@ public final class WitcheryClient {
         event.registerLayerDefinition(KettleRenderer.LAYER, KettleRenderer::layer);
         event.registerLayerDefinition(LeechChestRenderer.LAYER, LeechChestRenderer::layer);
         event.registerLayerDefinition(CoffinRenderer.LAYER, CoffinRenderer::layer);
+        event.registerLayerDefinition(SilverVatRenderer.LAYER, SilverVatRenderer::layer);
         event.registerLayerDefinition(LilithModel.LAYER, LilithModel::layer);
         event.registerLayerDefinition(FollowerRenderer.LAYER, FollowerRenderer::layer);
         event.registerLayerDefinition(VampireRenderer.LAYER, VampireRenderer::layer);
@@ -210,6 +212,7 @@ public final class WitcheryClient {
         event.registerBlockEntityRenderer(WitcheryBlockEntities.LEECH_CHEST.get(), LeechChestRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.COFFIN.get(), CoffinRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.BLOOD_CRUCIBLE.get(), BloodCrucibleRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.SILVER_VAT.get(), SilverVatRenderer::new);
     }
 
     @SubscribeEvent

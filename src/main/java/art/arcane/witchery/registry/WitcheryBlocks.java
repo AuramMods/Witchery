@@ -11,6 +11,7 @@ import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.block.BloodRoseBlock;
 import art.arcane.witchery.block.BloodCrucibleBlock;
+import art.arcane.witchery.block.SilverVatBlock;
 import art.arcane.witchery.block.CrystalBallBlock;
 import art.arcane.witchery.block.DaylightCollectorBlock;
 import art.arcane.witchery.block.DemonHeartBlock;
@@ -99,7 +100,6 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_GLOW_GLOBE = Block.box(6.4D, 6.4D, 6.4D, 9.6D, 9.6D, 9.6D);
     private static final VoxelShape SHAPE_INFINITY_EGG = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
     private static final VoxelShape SHAPE_GARLIC_GARLAND = Block.box(1.6D, 12.8D, 13.6D, 14.4D, 16.0D, 16.0D);
-    private static final VoxelShape SHAPE_SILVER_VAT = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 10.24D, 16.0D);
     private static final VoxelShape SHAPE_CACTUS = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 16.0D, 15.0D);
     private static final VoxelShape SHAPE_VOID_BRAMBLE = Block.box(0.8D, 0.0D, 0.8D, 15.2D, 16.0D, 15.2D);
     private static final VoxelShape SHAPE_WOLF_ALTAR = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 32.0D, 16.0D);
@@ -236,8 +236,7 @@ public final class WitcheryBlocks {
             case "poppetshelf" -> new PoppetShelfBlock();
             case "dreamcatcher" ->
                     new DreamCatcherBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS).strength(1).noCollission().noOcclusion());
-            case "silvervat" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).sound(SoundType.METAL), SHAPE_SILVER_VAT, true);
+            case "silvervat" -> new SilverVatBlock();
             case "daylightcollector" -> new DaylightCollectorBlock();
             case "bloodcrucible" -> new BloodCrucibleBlock();
             case "mirrorblock", "mirrorblock2" -> new MirrorBlock(BlockBehaviour.Properties.copy(Blocks.GLASS)

@@ -44,7 +44,10 @@ public class WitcheryBlockTagsProvider extends BlockTagsProvider {
         Block coffin = WitcheryBlocks.getRequired("coffinblock").get();
         tag(BlockTags.BEDS).add(coffin);
         tag(BlockTags.MINEABLE_WITH_AXE).add(log, planks, coffin);
+        Block silverVat = WitcheryBlocks.getRequired("silvervat").get();
+        tag(BlockTags.NEEDS_STONE_TOOL).add(silverVat);
         tag(BlockTags.MINEABLE_WITH_PICKAXE).add(
+                silverVat,
                 WitcheryBlocks.getRequired("altar").get(),
                 WitcheryBlocks.getRequired("distilleryidle").get(),
                 WitcheryBlocks.getRequired("distilleryburning").get(),

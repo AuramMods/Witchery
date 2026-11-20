@@ -161,6 +161,19 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .pattern(" CG").pattern("CDC").pattern("CC ")
                 .unlockedBy("has_dark_cloth", has(WitcheryIngredient.DARK_CLOTH.item()))
                 .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryBlocks.getRequired("silvervat").get())
+                .define('I', Items.IRON_INGOT)
+                .define('B', Items.WATER_BUCKET)
+                .define('F', Blocks.FURNACE)
+                .pattern("IBI").pattern("IFI")
+                .unlockedBy("has_furnace", has(Blocks.FURNACE))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, WitcheryItems.getRequired("silversword").get())
+                .define('D', WitcheryIngredient.SILVER_DUST.item())
+                .define('S', Items.GOLDEN_SWORD)
+                .pattern("DDD").pattern("DSD").pattern("DDD")
+                .unlockedBy("has_silver_dust", has(WitcheryIngredient.SILVER_DUST.item()))
+                .save(recipeOutput);
         ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, WitcheryBlocks.getRequired("daylightcollector").get())
                 .define('G', Items.GOLD_INGOT)
                 .define('R', Items.REPEATER)

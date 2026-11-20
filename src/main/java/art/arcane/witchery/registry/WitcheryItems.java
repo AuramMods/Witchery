@@ -58,6 +58,8 @@ import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.Tiers;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.Items;
@@ -174,6 +176,12 @@ public final class WitcheryItems {
             case "taglockkit" -> new TaglockItem();
             case "coffin" -> createBlockItem("coffinblock");
             case "canesword" -> new CaneSwordItem();
+            case "silversword" -> new SwordItem(Tiers.GOLD, 4, -2.4F, new Item.Properties()) {
+                @Override
+                public int getEnchantmentValue() {
+                    return Tiers.IRON.getEnchantmentValue();
+                }
+            };
             case "vampirebook" -> new VampireBookItem();
             case "vampirehat" -> new VampireClothingItem(VampireClothingItem.Style.HAT);
             case "vampirehelmet" -> new VampireClothingItem(VampireClothingItem.Style.HELMET);

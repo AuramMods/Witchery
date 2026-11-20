@@ -412,6 +412,12 @@
 - [x] Restore the crafting recipe, the drawn and sheathed models, the original sound clips and the guard. The muted survival client crafted the sword from five Dark Cloth, a gold ingot and a diamond sword. Sneak-use changed the attack damage from two to eight. The drawn guard reduced an incoming hit without wearing the sword.
 - [x] Fill, save and use the blood reserve. A sheathed kill left the reserve empty. Two weakened villager fixtures with 180 and 140 blood filled it to 180 and then the 250 cap when killed with the drawn sword. After a dedicated restart, the player retained the drawn blade and saw 250 in its tooltip. The client sheathed and used it, moving all 250 into blood power to reach 654. Java 17 data generation, JAR reobfuscation and all 193 required Forge GameTests passed.
 
+## Silver Vat and Silver Sword (2026-11-20)
+
+- [x] Craft and place the original Silver Vat in survival. Four neighboring blast furnaces produced gold and the first two dust from raw-gold and coal fixtures. The vat kept a separate count for each output, and all produced gold remained available in the furnaces.
+- [x] Restart with two dust stored and a blast furnace at 55 of 100 cooking ticks. The vat resumed producing dust from the same batches. The muted client saw its connected spouts and silver in the water and collected eight dust with a click.
+- [x] Craft the Silver Sword with the recovered dust and a gold sword. The client equipped it with five attack damage. A separate tag fixture verified the recipe for two mod-provided silver ingots. All 196 required GameTests passed, including ordinary furnace output, the legacy dust mapping, comparators and hopper extraction. Data generation and JAR reobfuscation succeeded.
+
 ## Auram Pack Validation (2026-11-20)
 
 - [x] Reproduce the Evolved Mekanism 1.2.1-fix3 startup crash in the matched Auram profile before adding Witchery. Both pack runs reported the null `QIODriveTier` during Evolved Mekanism construction.

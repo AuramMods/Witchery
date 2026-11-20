@@ -115,6 +115,7 @@ public enum WitcheryIngredient {
     CREATURE_BOUND_WAYSTONE(147, "creature_bound_waystone"),
     ANOINTING_PASTE(153, "anointing_paste"),
     WOLFSBANE(156, "wolfsbane_flower"),
+    SILVER_DUST(157, "silver_dust"),
     TORN_VAMPIRE_PAGE(160, "torn_vampire_page"),
     DARK_CLOTH(161, "dark_cloth");
 

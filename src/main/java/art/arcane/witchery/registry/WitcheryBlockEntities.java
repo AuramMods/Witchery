@@ -19,6 +19,7 @@ import art.arcane.witchery.block.entity.PlacedItemBlockEntity;
 import art.arcane.witchery.block.entity.PoppetShelfBlockEntity;
 import art.arcane.witchery.block.entity.RefillingChestBlockEntity;
 import art.arcane.witchery.block.entity.RiteHeartBlockEntity;
+import art.arcane.witchery.block.entity.SilverVatBlockEntity;
 import art.arcane.witchery.block.entity.SpinningWheelBlockEntity;
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
 import art.arcane.witchery.block.entity.WitchesOvenBlockEntity;
@@ -97,6 +98,9 @@ public final class WitcheryBlockEntities {
     public static final RegistryObject<BlockEntityType<BloodCrucibleBlockEntity>> BLOOD_CRUCIBLE =
             BLOCK_ENTITIES.register("bloodcrucible", () -> BlockEntityType.Builder.of(BloodCrucibleBlockEntity::new,
                     WitcheryBlocks.getRequired("bloodcrucible").get()).build(null));
+    public static final RegistryObject<BlockEntityType<SilverVatBlockEntity>> SILVER_VAT =
+            BLOCK_ENTITIES.register("silvervat", () -> BlockEntityType.Builder.of(SilverVatBlockEntity::new,
+                    WitcheryBlocks.getRequired("silvervat").get()).build(null));
     public static final RegistryObject<BlockEntityType<CoffinBlockEntity>> COFFIN =
             BLOCK_ENTITIES.register("coffinblock", () -> BlockEntityType.Builder.of(CoffinBlockEntity::new,
                     WitcheryBlocks.getRequired("coffinblock").get()).build(null));
@@ -127,6 +131,7 @@ public final class WitcheryBlockEntities {
         LEGACY_BLOCK_ENTITIES.put("leechchest", LEECH_CHEST);
         LEGACY_BLOCK_ENTITIES.put("bloodrose", BLOOD_ROSE);
         LEGACY_BLOCK_ENTITIES.put("bloodcrucible", BLOOD_CRUCIBLE);
+        LEGACY_BLOCK_ENTITIES.put("silvervat", SILVER_VAT);
         LEGACY_BLOCK_ENTITIES.put("coffinblock", COFFIN);
         LEGACY_BLOCK_ENTITIES.put("spinningwheel", SPINNING_WHEEL);
         LEGACY_BLOCK_ENTITIES.put("cauldron", CAULDRON);
