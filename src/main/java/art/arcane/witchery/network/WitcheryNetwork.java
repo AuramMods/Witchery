@@ -33,7 +33,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class WitcheryNetwork {
-    private static final String PROTOCOL_VERSION = "38";
+    private static final String PROTOCOL_VERSION = "39";
     private static final int MAX_USERNAME_LENGTH = 64;
     private static final int MAX_PLAYER_SKIN_LENGTH = 256;
     private static final int MAX_MARKUP_CHAPTER_LENGTH = 32;

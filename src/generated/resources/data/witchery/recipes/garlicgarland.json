@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": {
+      "tag": "forge:crops/garlic"
+    },
+    "S": {
+      "item": "minecraft:string"
+    }
+  },
+  "pattern": [
+    "S S",
+    "GSG",
+    "GGG"
+  ],
+  "result": {
+    "item": "witchery:garlicgarland"
+  },
+  "show_notification": true
+}

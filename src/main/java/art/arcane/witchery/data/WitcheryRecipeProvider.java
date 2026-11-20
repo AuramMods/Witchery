@@ -34,6 +34,8 @@ import java.util.function.Consumer;
 public class WitcheryRecipeProvider extends RecipeProvider {
     private static final TagKey<Item> WOODEN_RODS = TagKey.create(Registries.ITEM,
             ResourceLocation.fromNamespaceAndPath("forge", "rods/wooden"));
+    private static final TagKey<Item> GARLIC_CROPS = TagKey.create(Registries.ITEM,
+            ResourceLocation.fromNamespaceAndPath("forge", "crops/garlic"));
 
     public WitcheryRecipeProvider(PackOutput output) {
         super(output);
@@ -160,6 +162,11 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .define('D', Items.DIAMOND_SWORD)
                 .pattern(" CG").pattern("CDC").pattern("CC ")
                 .unlockedBy("has_dark_cloth", has(WitcheryIngredient.DARK_CLOTH.item()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, WitcheryBlocks.getRequired("garlicgarland").get())
+                .define('G', GARLIC_CROPS).define('S', Items.STRING)
+                .pattern("S S").pattern("GSG").pattern("GGG")
+                .unlockedBy("has_garlic", has(WitchCrop.GARLIC.seed()))
                 .save(recipeOutput);
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryBlocks.getRequired("silvervat").get())
                 .define('I', Items.IRON_INGOT)

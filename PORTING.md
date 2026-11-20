@@ -424,6 +424,11 @@
 - [x] Require an active cat familiar, a six-member coven called with a Seer Stone, and the tagged vampire within eight blocks in the same world. The muted client recovered all six offerings without an active cat, with one coven member, and when twelve blocks away. It bound a cat through the familiar rite and used a saved six-member coven fixture for the full-coven test.
 - [x] Spend 10,000 altar power on an eligible attempt. GameTests exercised the one-in-four failure and the cure, and confirmed that both consume the offerings and power. The dedicated survival attempt cured the rank-ten vampire, cleared its blood, vision and remaining ultimate charge, and gave it 50 human blood. It stood in daylight without taking damage and remained human after a dedicated restart. Java 17 data generation, JAR reobfuscation and all 198 required Forge GameTests passed.
 
+## Garlic Garland (2026-11-20)
+
+- [x] Restore the five-bulb garland and its recipe. The muted survival client crafted it from five garlic and three string and hung it in a doorway. The ward's facing controls its outline and model, and entities can move through the occupied space.
+- [x] Check repulsion in the dedicated world. The cured player walked through the doorway, then drank a filled-goblet fixture and was pushed back on the same approach. A vampire mob moved about one and a half blocks away from the ward and kept full health. The mounted facing and repulsion persisted through restart. Java 17 data generation, JAR reobfuscation and all 200 required Forge GameTests passed.
+
 ## Auram Pack Validation (2026-11-20)
 
 - [x] Reproduce the Evolved Mekanism 1.2.1-fix3 startup crash in the matched Auram profile before adding Witchery. Both pack runs reported the null `QIODriveTier` during Evolved Mekanism construction.

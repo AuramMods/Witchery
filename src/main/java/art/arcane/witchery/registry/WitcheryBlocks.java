@@ -11,6 +11,7 @@ import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.block.BloodRoseBlock;
 import art.arcane.witchery.block.BloodCrucibleBlock;
+import art.arcane.witchery.block.GarlicGarlandBlock;
 import art.arcane.witchery.block.SilverVatBlock;
 import art.arcane.witchery.block.CrystalBallBlock;
 import art.arcane.witchery.block.DaylightCollectorBlock;
@@ -99,7 +100,6 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_FETISH = Block.box(3.2D, 0.0D, 3.2D, 12.8D, 16.0D, 12.8D);
     private static final VoxelShape SHAPE_GLOW_GLOBE = Block.box(6.4D, 6.4D, 6.4D, 9.6D, 9.6D, 9.6D);
     private static final VoxelShape SHAPE_INFINITY_EGG = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
-    private static final VoxelShape SHAPE_GARLIC_GARLAND = Block.box(1.6D, 12.8D, 13.6D, 14.4D, 16.0D, 16.0D);
     private static final VoxelShape SHAPE_CACTUS = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 16.0D, 15.0D);
     private static final VoxelShape SHAPE_VOID_BRAMBLE = Block.box(0.8D, 0.0D, 0.8D, 15.2D, 16.0D, 15.2D);
     private static final VoxelShape SHAPE_WOLF_ALTAR = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 32.0D, 16.0D);
@@ -231,8 +231,7 @@ public final class WitcheryBlocks {
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.GLASS), SHAPE_GLOW_GLOBE, true);
             case "infinityegg" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DRAGON_EGG), SHAPE_INFINITY_EGG, true);
-            case "garlicgarland" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.OAK_LEAVES), SHAPE_GARLIC_GARLAND, false);
+            case "garlicgarland" -> new GarlicGarlandBlock();
             case "poppetshelf" -> new PoppetShelfBlock();
             case "dreamcatcher" ->
                     new DreamCatcherBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS).strength(1).noCollission().noOcclusion());
