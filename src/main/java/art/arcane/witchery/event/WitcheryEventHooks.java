@@ -20,6 +20,7 @@ import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.ritual.DroppedWaystones;
 import art.arcane.witchery.world.DreamTravel;
 import art.arcane.witchery.world.MirrorTravel;
+import art.arcane.witchery.world.ScryingView;
 import art.arcane.witchery.world.TormentTravel;
 import art.arcane.witchery.world.WitcheryDimensions;
 import art.arcane.witchery.world.WitcheryDimensionTravelHooks;
@@ -113,6 +114,11 @@ public final class WitcheryEventHooks {
     }
 
     @SubscribeEvent
+    public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) ScryingView.close(player);
+    }
+
+    @SubscribeEvent
     public static void onStartTracking(PlayerEvent.StartTracking event) {
         if (event.getEntity() instanceof ServerPlayer viewer && event.getTarget() instanceof ServerPlayer target) {
             WitcheryPlayerDataProvider.get(target).ifPresent(data -> {
@@ -146,6 +152,7 @@ public final class WitcheryEventHooks {
     @SubscribeEvent
     public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
+            ScryingView.close(serverPlayer);
             WitcheryDimensionTravelHooks.onPlayerChangedDimension(serverPlayer, event.getFrom(), event.getTo());
             if (event.getTo().equals(Level.NETHER)) Predictions.onNetherVisit(serverPlayer);
         }
@@ -164,6 +171,7 @@ public final class WitcheryEventHooks {
         if (!(event.player instanceof ServerPlayer serverPlayer)) {
             return;
         }
+        ScryingView.tick(serverPlayer);
         if (InfusionEnergy.type(serverPlayer) == InfernalInfusion.ID) CreaturePower.tickFlight(serverPlayer);
         if (DreamTravel.processRequests(serverPlayer) || MirrorTravel.processPlayerCrossing(serverPlayer)
                 || TormentTravel.process(serverPlayer)) {
@@ -236,6 +244,7 @@ public final class WitcheryEventHooks {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onLivingDeath(LivingDeathEvent event) {
+        if (event.getEntity() instanceof ServerPlayer viewer) ScryingView.close(viewer);
         if (event.getEntity() instanceof ServerPlayer player && !player.getAbilities().instabuild
                 && (player.level().dimension().equals(WitcheryDimensions.DREAM) || DreamTravel.isGhost(player))
                 && DreamTravel.isSpiritWalking(player)) {

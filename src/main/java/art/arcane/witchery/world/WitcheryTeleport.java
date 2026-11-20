@@ -3,7 +3,9 @@ package art.arcane.witchery.world;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.portal.PortalInfo;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.ITeleporter;
@@ -11,6 +13,8 @@ import net.minecraftforge.common.util.ITeleporter;
 import java.util.function.Function;
 
 public final class WitcheryTeleport {
+    private static final TicketType<Integer> ARRIVAL = TicketType.create("witchery_travel_arrival", Integer::compareTo, 40);
+
     private WitcheryTeleport() {}
 
     public static boolean canArrive(Entity actor, ServerLevel level, Vec3 position) {
@@ -45,6 +49,10 @@ public final class WitcheryTeleport {
             });
         }
         if (moved == null || moved.level() != destination || moved.distanceToSqr(target) > 0.01) return false;
+        if (origin != destination && !(moved instanceof ServerPlayer)) {
+            // Make the destination entity-ticking long enough for its entity storage to load.
+            destination.getChunkSource().addRegionTicket(ARRIVAL, moved.chunkPosition(), 2, moved.getId());
+        }
         moved.resetFallDistance();
         TormentTravel.transitionEffect(origin, start);
         TormentTravel.transitionEffect(destination, target);

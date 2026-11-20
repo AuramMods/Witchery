@@ -110,32 +110,14 @@ public final class WitcheryClientPacketHandlers {
     }
 
     public static void handleCamPos(WitcheryNetwork.CamPosPacket message) {
-        Minecraft minecraft = Minecraft.getInstance();
-        ClientLevel level = minecraft.level;
-        Player player = minecraft.player;
-        if (player == null) {
-            return;
-        }
-
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level == null) return;
         if (!message.active()) {
             WitcheryClientCameraState.markInactive();
-            if (minecraft.getCameraEntity() != player) {
-                minecraft.setCameraEntity(player);
-            }
             return;
         }
-
-        long activeTick = level != null ? level.getGameTime() : Long.MIN_VALUE;
-        WitcheryClientCameraState.markActive(activeTick);
-
-        if (!message.updatePosition()) {
-            return;
-        }
-
-        WitcheryClientCameraState.setTargetEntityId(message.entityId());
-        if (level == null || message.entityId() <= 0) {
-            return;
-        }
+        WitcheryClientCameraState.markActive(level.getGameTime());
+        if (message.updatePosition()) WitcheryClientCameraState.setTargetEntityId(message.entityId());
     }
 
     public static void handlePlayerSync(WitcheryNetwork.PlayerSyncPacket message) {

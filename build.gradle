@@ -13,10 +13,10 @@ base {
     archivesName = mod_id
 }
 
-//mixin {
-//    add sourceSets.main, "witchery.refmap.json"
-//    config "mixins.witchery.json"
-//}
+mixin {
+    add sourceSets.main, "witchery.refmap.json"
+    config "mixins.witchery.json"
+}
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 

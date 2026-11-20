@@ -61,6 +61,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.ChestRenderer;
 import net.minecraft.client.renderer.entity.CatRenderer;
 import net.minecraft.client.renderer.entity.ItemEntityRenderer;
+import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
@@ -144,6 +145,7 @@ public final class WitcheryClient {
     @SubscribeEvent
     public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(WitcheryEntities.BABA_YAGA.get(), BabaYagaRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.SCRY_EYE.get(), NoopRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.MANDRAKE.get(), MandrakeRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.NIGHTMARE.get(), NightmareRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.DEMON.get(), DemonRenderer::new);

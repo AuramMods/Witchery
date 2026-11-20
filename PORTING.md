@@ -248,7 +248,7 @@
 - [x] Verify legacy location and creature tags, safe placement, Nether travel and Ender Inhibition. All 94 required Forge GameTests, data generation and JAR reobfuscation passed.
 - [x] Deliver a parcel or throw a brew with a tamed Owl. The muted player assigned a location stone, launched the Owl with an empty hand, and restarted the server while it was airborne. The Owl delivered the named paper and returned to sit near its launch point. A second route made it throw Ink at a bound pig. A route of more than 160 blocks delivered a second parcel outside the player's simulation distance. All 96 required GameTests passed.
 - [x] Bind or use dropped Waystones at the original Otherwhere glyph patterns. The muted client tossed ten into an eight-glyph ring and got eight bound stones and two unbound stones. A powered ring bound a named pig. Dropping the bound stack inside a twelve-glyph ring moved the client, loose paper and seven remaining stones to the exact saved point. All 99 required GameTests passed.
-- [ ] Restore Crystal Ball viewing and the remaining Waystone uses in rites and equipment.
+- [ ] Restore the remaining Waystone uses in rites and equipment.
 
 ## Crystal Ball readings (2026-11-20)
 
@@ -261,7 +261,8 @@
 - [x] Verify a reading for a nearby player on a dedicated server. The trained player used the ball and the second muted client received the Wet forecast. The reader's record stayed empty. Entering water cleared the second player's reading.
 - [x] Restore both Baba Yaga forecasts, her hostile and allied encounters, boss HUD and animated mortar-and-pestle model. On dedicated Forge one forecast spawned an ally with the second player's name, and the other led to a hostile potion attack. The ally departed at the end of its visit. A name-only legacy ally fixture dropped gifts. A shortened fight yielded Baba's Hat and an enchanted book. All 107 required GameTests passed, including the wooden sword counter and original damage cap.
 - [ ] Restore the rest of Baba Yaga's thrown brews, brew gifts, and Baba's Hat equipment and abilities.
-- [ ] Restore Crystal Ball Waystone viewing.
+- [x] Restore Crystal Ball viewing with a location-bound Waystone. The muted clients saw a marked platform and its entity 126 blocks away while an observer still saw the player at the ball. Releasing use and the Eye's 200-tick expiry both returned the view. A distant Waystone and a Nether Waystone failed to open it. The same package worked with clean Forge and an isolated Embeddium 0.3.31 and Oculus 1.8.0 profile. All 108 required GameTests passed.
+- [ ] Restore Crystal Ball viewing with a filled Taglock Kit.
 
 ## Auram Pack Validation (2026-11-20)
 

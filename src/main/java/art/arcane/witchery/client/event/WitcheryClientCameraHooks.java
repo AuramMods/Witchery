@@ -2,17 +2,23 @@ package art.arcane.witchery.client.event;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.client.WitcheryClientCameraState;
+import art.arcane.witchery.entity.ScryEye;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.client.event.MovementInputUpdateEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = Witchery.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public final class WitcheryClientCameraHooks {
+    private static LocalPlayer heldPlayer;
+    private static boolean previousNoGravity;
+
     private WitcheryClientCameraHooks() {
     }
 
@@ -23,34 +29,50 @@ public final class WitcheryClientCameraHooks {
         }
 
         Minecraft minecraft = Minecraft.getInstance();
-        Player player = minecraft.player;
+        LocalPlayer player = minecraft.player;
         ClientLevel level = minecraft.level;
-        if (player == null || level == null) {
+        if (player == null || level == null) return;
+
+        if (!WitcheryClientCameraState.isActive() || level.getGameTime() - WitcheryClientCameraState.getActiveTick() > 60) {
+            WitcheryClientCameraState.markInactive();
+            restoreMovement();
+            if (minecraft.getCameraEntity() instanceof ScryEye) minecraft.setCameraEntity(player);
             return;
         }
 
-        if (!WitcheryClientCameraState.isActive()) {
-            if (minecraft.getCameraEntity() != player) {
-                minecraft.setCameraEntity(player);
-            }
-            return;
+        if (heldPlayer != player) {
+            restoreMovement();
+            heldPlayer = player;
+            previousNoGravity = player.isNoGravity();
         }
+        player.setNoGravity(true);
+        player.setDeltaMovement(Vec3.ZERO);
 
-        int targetEntityId = WitcheryClientCameraState.getTargetEntityId();
-        if (targetEntityId <= 0) {
-            return;
+        int targetId = WitcheryClientCameraState.getTargetEntityId();
+        if (targetId > 0 && level.getEntity(targetId) instanceof ScryEye eye && !eye.isRemoved()
+                && minecraft.getCameraEntity() != eye) {
+            minecraft.setCameraEntity(eye);
         }
+    }
 
-        Entity target = level.getEntity(targetEntityId);
-        if (target == null || target.isRemoved()) {
-            if (minecraft.getCameraEntity() != player) {
-                minecraft.setCameraEntity(player);
-            }
-            return;
-        }
+    @SubscribeEvent
+    public static void onMovementInput(MovementInputUpdateEvent event) {
+        if (!WitcheryClientCameraState.isActive()) return;
+        var input = event.getInput();
+        input.leftImpulse = 0;
+        input.forwardImpulse = 0;
+        input.jumping = false;
+    }
 
-        if (minecraft.getCameraEntity() != target) {
-            minecraft.setCameraEntity(target);
-        }
+    @SubscribeEvent
+    public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event) {
+        WitcheryClientCameraState.markInactive();
+        restoreMovement();
+    }
+
+    private static void restoreMovement() {
+        if (heldPlayer == null) return;
+        heldPlayer.setNoGravity(previousNoGravity);
+        heldPlayer = null;
     }
 }

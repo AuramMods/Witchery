@@ -37,6 +37,11 @@ public final class WaystoneItem extends Item {
     }
 
     @Override
+    public int getUseDuration(ItemStack stack) {
+        return stack.is(WitcheryIngredient.BOUND_WAYSTONE.item()) ? 1_200 : 0;
+    }
+
+    @Override
     public boolean onEntityItemUpdate(ItemStack stack, ItemEntity entity) {
         return DroppedWaystones.update(entity);
     }

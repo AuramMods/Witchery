@@ -381,6 +381,7 @@
    "message.witchery.owl.no_waypoint" : "The owl cannot reach the waystone's destination.",
    "witchery.prediction.recharging" : "The crystal ball is recharging.",
    "witchery.prediction.nopower" : "The crystal ball needs more altar power.",
+   "witchery.prediction.waystone_out_of_range" : "The crystal ball cannot see the location bound to this Waystone.",
    "witchery.prediction.unskilled" : "You look into the crystal ball, but cannot interpret what you see.",
    "witchery.prediction.none" : "The future of %s is clouded.",
    "witchery.prediction.zombie" : "The crystal ball shows that %s will encounter the undead.",

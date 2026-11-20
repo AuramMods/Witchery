@@ -12,6 +12,7 @@ import art.arcane.witchery.entity.LordOfTorment;
 import art.arcane.witchery.entity.Mandrake;
 import art.arcane.witchery.entity.Nightmare;
 import art.arcane.witchery.entity.Reflection;
+import art.arcane.witchery.entity.ScryEye;
 import art.arcane.witchery.entity.SleepingBody;
 import art.arcane.witchery.entity.Soulfire;
 import art.arcane.witchery.entity.SymbolProjectile;
@@ -86,6 +87,10 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<BabaYaga>> BABA_YAGA =
             ENTITY_TYPES.register("babayaga", () -> EntityType.Builder.of(BabaYaga::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.95F).clientTrackingRange(8).build(Witchery.MODID + ":babayaga"));
+    public static final RegistryObject<EntityType<ScryEye>> SCRY_EYE =
+            ENTITY_TYPES.register("eye", () -> EntityType.Builder.of(ScryEye::new, MobCategory.MISC)
+                    .sized(0.01F, 0.01F).noSave().noSummon().clientTrackingRange(10).updateInterval(1)
+                    .build(Witchery.MODID + ":eye"));
     public static final RegistryObject<EntityType<Imp>> IMP =
             ENTITY_TYPES.register("imp", () -> EntityType.Builder.of(Imp::new, MobCategory.MONSTER)
                     .sized(0.4F, 1.3F).fireImmune().build(Witchery.MODID + ":imp"));
@@ -135,7 +140,7 @@ public final class WitcheryEntities {
     private static void registerLegacyEntity(String legacyName) {
         String path = RegistryNameUtil.normalizePath(legacyName);
         if (LEGACY_ENTITIES.containsKey(path) || path.equals("soulfire") || path.equals("spelleffect") || path.equals("broom")
-                || path.equals("item")) {
+                || path.equals("item") || path.equals("eye")) {
             return;
         }
 

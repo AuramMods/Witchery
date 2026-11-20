@@ -2,8 +2,10 @@ package art.arcane.witchery.block;
 
 import art.arcane.witchery.block.entity.CrystalBallBlockEntity;
 import art.arcane.witchery.item.WaystoneItem;
+import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.power.AltarPower;
 import art.arcane.witchery.prediction.Predictions;
+import art.arcane.witchery.world.ScryingView;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -69,7 +71,16 @@ public final class CrystalBallBlock extends BaseEntityBlock {
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if (WaystoneItem.isBoundWaystone(player.getItemInHand(hand))) return InteractionResult.PASS;
+        var held = player.getItemInHand(hand);
+        if (held.is(WitcheryIngredient.BOUND_WAYSTONE.item())) {
+            if (level.isClientSide) {
+                player.startUsingItem(hand);
+            } else if (level instanceof ServerLevel server && player instanceof ServerPlayer reader
+                    && consumePower(server, pos, reader) && !ScryingView.start(reader, hand, WaystoneItem.location(held))) {
+                failure(reader, "waystone_out_of_range");
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
         if (level instanceof ServerLevel server && player instanceof ServerPlayer reader
                 && server.getBlockEntity(pos) instanceof CrystalBallBlockEntity ball) {
             if (!ball.ready(server.getGameTime())) {
