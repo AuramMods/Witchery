@@ -21,6 +21,8 @@ public enum WitcheryIngredient {
     ENCHANTED_BROOM(9, "enchanted_broom"),
     ATTUNED_STONE(10, "attuned_stone"),
     CHARGED_ATTUNED_STONE(11, "charged_attuned_stone"),
+    WAYSTONE(12, "waystone"),
+    BOUND_WAYSTONE(13, "bound_waystone"),
     MUTANDIS(14, "mutandis"),
     MUTANDIS_EXTREMIS(15, "mutandis_extremis"),
     QUICKLIME(16, "quicklime"),
@@ -96,6 +98,7 @@ public enum WitcheryIngredient {
     BREW_SOUL_TORMENT(139, "brew_of_soul_torment"),
     CONTRACT_OF_OWNERSHIP(140, "contract_of_ownership"),
     CONTRACT_OF_TORMENT(141, "contract_of_torment"),
+    CREATURE_BOUND_WAYSTONE(147, "creature_bound_waystone"),
     ANOINTING_PASTE(153, "anointing_paste"),
     WOLFSBANE(156, "wolfsbane_flower");
 

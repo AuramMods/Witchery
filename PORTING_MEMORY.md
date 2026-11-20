@@ -176,6 +176,12 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - The muted survival client bottled the Infused Brew Base from its original six-ingredient Kettle recipe. The Infusion rite consumed a second Broom, the base, Feather, Arthana and a wild Owl and produced the Infused Brew of Soaring. The brew uses the legacy timestamp with a two-hour wall-clock duration.
 - After the packaged restart the same blue vehicle UUID and the player's Soaring timestamp were present. The muted client flew about 58 blocks during a 2.4-second forward-input test with Soaring and the Owl active. It dismounted, struck the vehicle with an axe and collected the Enchanted Broom with `BrushColor:11b`. All 91 required GameTests passed alongside data generation and JAR reobfuscation.
 
+### Waystone rites (2026-11-20)
+
+- The muted client crafted a Waystone with Flint and Bone Needle, offered it with Ender Dew and Glowstone Dust in a small white circle, and traveled back to that site from a separate small Otherwhere circle. Location binding uses 500 altar power and saves the legacy coordinate fields plus the modern dimension key.
+- Creature binding accepts the small white circle with Ender Dew, Slimeball and Snowball for 500 power, or Ender Dew, Slimeball, Icy Needle and Charged Attuned Stone without an altar. The muted client used the first recipe to bind a named pig. The pig and stone's matching UUID persisted through a packaged restart. A later cast moved the player to the pig's relocated position.
+- The travel rite consumes one bound stone on success and refunds it on failure. It carries eligible entities and loose items within three blocks, checks Ender Inhibition II, preserves the Dream and Mirror cross-dimensional restrictions, and looks for standing room at position bindings. The same teleport implementation serves the Otherwhere Witch's Hand. All 94 required Forge GameTests passed, including Nether transport and the unsafe or missing destination cases. Data generation and reobfuscation succeeded. Protocol 18 carries the new rite actions.
+
 ## Session Memory (2026-02-08)
 - Port target is Forge 1.20.1.
 - Legacy source is fully available at `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10`.

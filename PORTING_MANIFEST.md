@@ -544,8 +544,8 @@ The first migrated subtypes have individual item IDs. Preserve `witchery:ingredi
 | 9 | `broomEnchanted` → `witchery:enchanted_broom` |
 | 10 | `attunedStone` |
 | 11 | `attunedStoneCharged` |
-| 12 | `waystone` |
-| 13 | `waystoneBound` |
+| 12 | `waystone` → `witchery:waystone` |
+| 13 | `waystoneBound` → `witchery:bound_waystone` |
 | 14 | `mutandis` |
 | 15 | `mutandisExtremis` |
 | 16 | `quicklime` |
@@ -676,7 +676,7 @@ The first migrated subtypes have individual item IDs. Preserve `witchery:ingredi
 | 144 | `contractEvaporate` |
 | 145 | `contractFieryTouch` |
 | 146 | `contractSmelting` |
-| 147 | `waystoneCreatureBound` |
+| 147 | `waystoneCreatureBound` → `witchery:creature_bound_waystone` |
 | 148 | `kobolditedust` |
 | 149 | `kobolditenugget` |
 | 150 | `kobolditeingot` |
@@ -1108,6 +1108,8 @@ The Vampiric Poppet keeps both legacy Taglock indices. The first tracks the prot
 The Owl reads `FeatherColor` and the Toad reads `SkinColor`. Both retain `Familiar` and `SuicideIn` and use vanilla tamed ownership. The Toad also reads `Poisonous`. The Owl keeps its carried item in its main hand equipment.
 
 The Broom uses `BrushColor` on the vehicle and enchanted item. The vehicle reads legacy plain-text `CustomName` and saves the modern component name. An older port's `witchery:broom_spawn_egg` can place the vehicle. The Infused Brew of Soaring uses `WITCInfusedBrewType:1` and `WITCInfusedBrewStart` in the player record.
+
+Bound Waystones retain `PosX`, `PosY`, `PosZ`, `PosD` and `NameD`. New bindings add the namespaced `Dimension` field. Old Waystones resolve the three vanilla dimensions and Witchery's default legacy IDs `-37` for Dream, `-38` for Torment and `-39` for Mirror. Creature-Bound Waystones share the first Taglock signature fields.
 
 ## Recipe System Registries
 

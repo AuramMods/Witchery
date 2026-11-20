@@ -1,0 +1,12 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [
+    {"item": "witchery:waystone"},
+    {"item": "witchery:ender_dew"},
+    {"item": "minecraft:slime_ball"},
+    {"item": "witchery:icy_needle"},
+    {"item": "witchery:charged_attuned_stone"}
+  ],
+  "action": "bind_creature_waystone"
+}

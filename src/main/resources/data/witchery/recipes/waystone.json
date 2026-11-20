@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["FN"],
+  "key": {
+    "F": {"item": "minecraft:flint"},
+    "N": {"item": "witchery:bone_needle"}
+  },
+  "result": {"item": "witchery:waystone"}
+}

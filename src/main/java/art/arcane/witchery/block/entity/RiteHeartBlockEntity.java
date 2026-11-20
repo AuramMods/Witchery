@@ -8,6 +8,7 @@ import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.item.PoppetProtectionItem;
 import art.arcane.witchery.item.TaglockItem;
+import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.power.AltarPower;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
@@ -15,6 +16,7 @@ import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryRecipes;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
 import art.arcane.witchery.world.DreamTravel;
+import art.arcane.witchery.world.WaystoneTravel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -221,9 +223,22 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 return;
             }
             curseTarget = boundOffering(level);
-        } else if (rite.action() == ItemRiteRecipe.Action.ITEM) {
-            ItemEntity drop = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
-                    rite.result().copy(), 0, 0.3, 0);
+        } else if (rite.action() == ItemRiteRecipe.Action.ITEM || rite.action() == ItemRiteRecipe.Action.BIND_WAYSTONE
+                || rite.action() == ItemRiteRecipe.Action.BIND_CREATURE_WAYSTONE) {
+            ItemStack output = rite.result().copy();
+            if (rite.action() == ItemRiteRecipe.Action.BIND_WAYSTONE) {
+                output = new ItemStack(WitcheryIngredient.BOUND_WAYSTONE.item());
+                WaystoneItem.bindLocation(output, level, pos);
+            } else if (rite.action() == ItemRiteRecipe.Action.BIND_CREATURE_WAYSTONE) {
+                LivingEntity target = WaystoneTravel.findBindingTarget(level, pos);
+                if (target == null) {
+                    abort(level, "message.witchery.rite.no_waystone_target");
+                    return;
+                }
+                output = new ItemStack(WitcheryIngredient.CREATURE_BOUND_WAYSTONE.item());
+                TaglockItem.bindSignature(output, target);
+            }
+            ItemEntity drop = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5, output, 0, 0.3, 0);
             drop.setDefaultPickUpDelay();
             result = drop;
         }
@@ -240,6 +255,15 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             if (altar != null) altar.refundPower(rite.power());
             abort(level, "message.witchery.rite.no_familiar");
             return;
+        }
+        if (rite.action() == ItemRiteRecipe.Action.TRAVEL_WAYSTONE) {
+            ItemStack stone = sacrificed.stream().map(Sacrifice::stack).filter(stack -> stack.is(WitcheryIngredient.BOUND_WAYSTONE.item())
+                    || stack.is(WitcheryIngredient.CREATURE_BOUND_WAYSTONE.item())).findFirst().orElse(ItemStack.EMPTY);
+            if (stone.isEmpty() || !WaystoneTravel.teleportCircle(level, pos, stone, 3)) {
+                if (altar != null) altar.refundPower(rite.power());
+                abort(level, "message.witchery.rite.no_waystone_destination");
+                return;
+            }
         }
         if (living != null) {
             level.sendParticles(ParticleTypes.PORTAL, living.getX(), living.getY(0.5), living.getZ(), 16, 0.4, 0.6, 0.4, 0.05);

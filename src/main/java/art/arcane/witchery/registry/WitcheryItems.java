@@ -25,6 +25,7 @@ import art.arcane.witchery.item.MutatingSprigItem;
 import art.arcane.witchery.item.TormentContractItem;
 import art.arcane.witchery.item.VoodooPoppetItem;
 import art.arcane.witchery.item.VampiricPoppetItem;
+import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.PoppetProtectionItem;
 import art.arcane.witchery.item.ThrowableBrewItem;
 import art.arcane.witchery.item.WitcheryIngredient;
@@ -163,6 +164,7 @@ public final class WitcheryItems {
             case "mutator" -> new MutatingSprigItem();
             case "broom" -> new BroomItem(false);
             case "enchanted_broom" -> new BroomItem(true);
+            case "waystone", "bound_waystone", "creature_bound_waystone" -> new WaystoneItem();
             case "witchhand" -> new WitchHandItem();
             case "demon_heart" -> new DemonHeartItem(WitcheryBlocks.getRequired("demonheart").get(), true);
             case "devilstonguecharm" -> new Item(new Item.Properties().durability(50).rarity(Rarity.UNCOMMON));

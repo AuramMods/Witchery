@@ -1,7 +1,7 @@
 package art.arcane.witchery.infusion;
 
 import art.arcane.witchery.registry.WitcheryEffects;
-import art.arcane.witchery.world.TormentTravel;
+import art.arcane.witchery.world.WitcheryTeleport;
 import art.arcane.witchery.world.WitcheryDimensions;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -22,15 +22,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.portal.PortalInfo;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.util.ITeleporter;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.function.Function;
 
 public final class OtherwhereInfusion {
     public static final int ID = 3;
@@ -59,8 +55,8 @@ public final class OtherwhereInfusion {
 
         Vec3 target = blinkTarget(player, elapsed);
         ServerLevel level = player.serverLevel();
-        if (target == null || !canArrive(player, level, target)) return fail(player, "no_destination");
-        if (!InfusionEnergy.canSpend(player, 1) || !move(player, level, target)) return false;
+        if (target == null || !WitcheryTeleport.canArrive(player, level, target)) return fail(player, "no_destination");
+        if (!InfusionEnergy.canSpend(player, 1) || !WitcheryTeleport.move(player, level, target)) return false;
         return InfusionEnergy.spend(player, 1);
     }
 
@@ -79,13 +75,13 @@ public final class OtherwhereInfusion {
         Vec3 playerTarget = liftTarget(level, player);
         Vec3 victimTarget = liftTarget(level, victim);
         boolean moveVictim = !inhibited(victim);
-        if (playerTarget == null || victimTarget == null || !canArrive(player, level, playerTarget)
-                || (moveVictim && !canArrive(victim, level, victimTarget))) {
+        if (playerTarget == null || victimTarget == null || !WitcheryTeleport.canArrive(player, level, playerTarget)
+                || (moveVictim && !WitcheryTeleport.canArrive(victim, level, victimTarget))) {
             fail(player, "no_destination");
             return;
         }
-        if (InfusionEnergy.canSpend(player, 2) && move(player, level, playerTarget)) {
-            if (moveVictim) move(victim, level, victimTarget);
+        if (InfusionEnergy.canSpend(player, 2) && WitcheryTeleport.move(player, level, playerTarget)) {
+            if (moveVictim) WitcheryTeleport.move(victim, level, victimTarget);
             InfusionEnergy.spend(player, 2);
         }
     }
@@ -98,11 +94,11 @@ public final class OtherwhereInfusion {
                 || !data.contains(RECALL + "X", Tag.TAG_ANY_NUMERIC) || !data.contains(RECALL + "Y", Tag.TAG_ANY_NUMERIC)
                 || !data.contains(RECALL + "Z", Tag.TAG_ANY_NUMERIC)) return fail(player, "no_recall");
         Vec3 target = new Vec3(data.getDouble(RECALL + "X"), data.getDouble(RECALL + "Y"), data.getDouble(RECALL + "Z"));
-        if (!canArrive(player, destination, target)) return fail(player, "no_destination");
-        boolean moveCompanion = companion != null && !inhibited(companion) && canArrive(companion, destination, target);
+        if (!WitcheryTeleport.canArrive(player, destination, target)) return fail(player, "no_destination");
+        boolean moveCompanion = companion != null && !inhibited(companion) && WitcheryTeleport.canArrive(companion, destination, target);
         int cost = companion == null ? 2 : 4;
-        if (!InfusionEnergy.canSpend(player, cost) || !move(player, destination, target)) return false;
-        if (moveCompanion) move(companion, destination, target);
+        if (!InfusionEnergy.canSpend(player, cost) || !WitcheryTeleport.move(player, destination, target)) return false;
+        if (moveCompanion) WitcheryTeleport.move(companion, destination, target);
         return InfusionEnergy.spend(player, cost);
     }
 
@@ -145,7 +141,7 @@ public final class OtherwhereInfusion {
     static boolean teleportAimed(ServerPlayer player, HitResult hit) {
         Vec3 target = destination(hit);
         ServerLevel level = player.serverLevel();
-        return target != null && !inhibited(player) && canArrive(player, level, target) && move(player, level, target);
+        return target != null && !inhibited(player) && WitcheryTeleport.canArrive(player, level, target) && WitcheryTeleport.move(player, level, target);
     }
 
     @Nullable
@@ -180,44 +176,6 @@ public final class OtherwhereInfusion {
         double room = ceiling.getType() == HitResult.Type.MISS ? 8
                 : Math.min(8, ceiling.getLocation().y - actor.getY() - Math.max(2, actor.getBbHeight()));
         return room > 0 ? actor.position().add(0, room, 0) : null;
-    }
-
-    private static boolean canArrive(Entity actor, ServerLevel level, Vec3 position) {
-        if (!Double.isFinite(position.x) || !Double.isFinite(position.y) || !Double.isFinite(position.z)) return false;
-        BlockPos pos = BlockPos.containing(position);
-        return !level.isOutsideBuildHeight(pos) && level.getWorldBorder().isWithinBounds(pos)
-                && !level.getBlockCollisions(actor, actor.getBoundingBox().move(position.subtract(actor.position())))
-                .iterator().hasNext();
-    }
-
-    private static boolean move(LivingEntity actor, ServerLevel destination, Vec3 target) {
-        ServerLevel origin = (ServerLevel) actor.level();
-        Vec3 start = actor.position();
-        Entity moved = actor;
-        if (actor instanceof ServerPlayer player) {
-            player.teleportTo(destination, target.x, target.y, target.z, player.getYRot(), player.getXRot());
-            if (player.connection != null) player.connection.resetPosition();
-        } else if (origin == destination) {
-            actor.teleportTo(target.x, target.y, target.z);
-        } else {
-            moved = actor.changeDimension(destination, new ITeleporter() {
-                @Override
-                public PortalInfo getPortalInfo(Entity entity, ServerLevel level, Function<ServerLevel, PortalInfo> defaultInfo) {
-                    return new PortalInfo(target, Vec3.ZERO, entity.getYRot(), entity.getXRot());
-                }
-
-                @Override
-                public Entity placeEntity(Entity entity, ServerLevel source, ServerLevel level, float yaw,
-                                          Function<Boolean, Entity> reposition) {
-                    return reposition.apply(false);
-                }
-            });
-        }
-        if (moved == null || moved.level() != destination || moved.distanceToSqr(target) > 0.01) return false;
-        moved.resetFallDistance();
-        TormentTravel.transitionEffect(origin, start);
-        TormentTravel.transitionEffect(destination, target);
-        return true;
     }
 
     private static boolean restricted(ResourceKey<Level> dimension) {

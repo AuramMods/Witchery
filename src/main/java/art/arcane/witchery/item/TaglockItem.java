@@ -214,8 +214,18 @@ public final class TaglockItem extends Item {
     private static void bind(ServerPlayer collector, InteractionHand hand, LivingEntity target) {
         ItemStack held = collector.getItemInHand(hand);
         ItemStack filled = held.getCount() == 1 ? held : held.copyWithCount(1);
-        CompoundTag tag = filled.getOrCreateTag();
-        clearBinding(filled, 1);
+        bindSignature(filled, target);
+        if (filled != held) {
+            held.shrink(1);
+            if (!collector.getInventory().add(filled)) collector.drop(filled, false);
+        }
+        collector.serverLevel().playSound(null, collector.getX(), collector.getY(), collector.getZ(),
+                SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.5F, 0.5F);
+    }
+
+    public static void bindSignature(ItemStack stack, LivingEntity target) {
+        CompoundTag tag = stack.getOrCreateTag();
+        clearBinding(stack, 1);
         if (target instanceof ServerPlayer player) {
             tag.putString(PLAYER_NAME, player.getGameProfile().getName());
             tag.putUUID(PLAYER_UUID, player.getUUID());
@@ -226,12 +236,6 @@ public final class TaglockItem extends Item {
             tag.putString(CREATURE_NAME, mob.getDisplayName().getString());
             mob.setPersistenceRequired();
         }
-        if (filled != held) {
-            held.shrink(1);
-            if (!collector.getInventory().add(filled)) collector.drop(filled, false);
-        }
-        collector.serverLevel().playSound(null, collector.getX(), collector.getY(), collector.getZ(),
-                SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.5F, 0.5F);
     }
 
     private static void failureSound(ServerPlayer player) {

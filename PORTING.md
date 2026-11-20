@@ -241,6 +241,13 @@
 - [x] Restart the packaged server after drinking Soaring. The same blue broom and brew timestamp survived. The muted client flew again with both bonuses, dismounted and recovered the dyed item with an axe. All 91 required GameTests, data generation and JAR reobfuscation passed.
 - [ ] Restore the other Infused Brew Base recipe when Wild Bramble has a survival path. Restore the infused-brew icon and remaining-time display with the other infused brews.
 
+## Waystone rites (2026-11-20)
+
+- [x] Craft a Waystone from Flint and a Bone Needle. The muted player bound it at a small white circle with Ender Dew and Glowstone Dust, then offered the result at a separate small Otherwhere circle. The rite moved the player to the original location.
+- [x] Bind a Creature-Bound Waystone to a nearby player or creature. Both original recipes are available. The muted client bound a named pig using the 500-power recipe. The pig and stone retained their matching identity after a packaged server restart. The rite then carried the player to the pig's new position.
+- [x] Verify legacy location and creature tags, safe placement, Nether travel and Ender Inhibition. All 94 required Forge GameTests, data generation and JAR reobfuscation passed.
+- [ ] Restore the passive dropped Waystone circles, Owl delivery, Crystal Ball viewing and the remaining Waystone uses in rites and equipment.
+
 ## Auram Pack Validation (2026-11-20)
 
 - [x] Reproduce the Evolved Mekanism 1.2.1-fix3 startup crash in the matched Auram profile before adding Witchery. Both pack runs reported the null `QIODriveTier` during Evolved Mekanism construction.
