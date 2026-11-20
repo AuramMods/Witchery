@@ -4,6 +4,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.DreamWeave;
 import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.brewing.BrewImpacts;
+import art.arcane.witchery.brewing.BrewTerrain;
 import art.arcane.witchery.item.AnointingPasteItem;
 import art.arcane.witchery.item.BoundPoppetItem;
 import art.arcane.witchery.item.ArthanaItem;
@@ -173,6 +174,10 @@ public final class WitcheryItems {
             case "devilstonguecharm" -> new Item(new Item.Properties().durability(50).rarity(Rarity.UNCOMMON));
             case "necromantic_stone" -> new NecromanticStoneItem();
             case "brew_of_ink" -> new ThrowableBrewItem(BrewImpacts::splashInk);
+            case "brew_of_vines" -> new ThrowableBrewItem(BrewTerrain::vines);
+            case "brew_of_webs" -> new ThrowableBrewItem(BrewTerrain::webs);
+            case "brew_of_thorns" -> new ThrowableBrewItem(BrewTerrain::thorns);
+            case "brew_of_sprouting" -> new ThrowableBrewItem(BrewTerrain::sprouting);
             case "brew_of_love" -> new ThrowableBrewItem(BrewImpacts::splashLove);
             case "brew_of_raising" -> new ThrowableBrewItem(BrewImpacts::raiseDead);
             case "brew_of_grotesque" -> new DrinkableBrewItem(drinker ->

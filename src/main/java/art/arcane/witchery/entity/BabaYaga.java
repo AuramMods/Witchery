@@ -61,7 +61,7 @@ public final class BabaYaga extends Monster implements RangedAttackMob {
             AttributeModifier.Operation.ADDITION);
     private static final List<WitcheryIngredient> GIFTS = List.of(WitcheryIngredient.SPECTRAL_DUST,
             WitcheryIngredient.BAT_WOOL, WitcheryIngredient.TOE_OF_FROG, WitcheryIngredient.OWLETS_WING,
-            WitcheryIngredient.DOG_TONGUE);
+            WitcheryIngredient.DOG_TONGUE, WitcheryIngredient.BREW_OF_VINES, WitcheryIngredient.BREW_OF_SPROUTING);
     private final ServerBossEvent boss = new ServerBossEvent(getDisplayName(), BossEvent.BossBarColor.PURPLE,
             BossEvent.BossBarOverlay.PROGRESS);
     private String ownerName = "";
@@ -242,9 +242,15 @@ public final class BabaYaga extends Monster implements RangedAttackMob {
         double distance = aim.horizontalDistance();
         Projectile shot;
         int brewChoice = random.nextInt(3) == 0 ? random.nextInt(12) : -1;
-        if (brewChoice == 6 || brewChoice == 7) {
+        WitcheryIngredient selectedBrew = switch (brewChoice) {
+            case 0, 1 -> WitcheryIngredient.BREW_OF_WEBS;
+            case 2, 3 -> WitcheryIngredient.BREW_OF_THORNS;
+            case 6, 7 -> WitcheryIngredient.BREW_OF_INK;
+            default -> null;
+        };
+        if (selectedBrew != null) {
             ThrownBrew brew = new ThrownBrew(this, level());
-            brew.setItem(new ItemStack(WitcheryIngredient.BREW_OF_INK.item()));
+            brew.setItem(new ItemStack(selectedBrew.item()));
             shot = brew;
         } else {
             ThrownPotion potion = new ThrownPotion(level(), this);

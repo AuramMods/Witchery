@@ -122,6 +122,14 @@ public class WitcheryRecipeProvider extends RecipeProvider {
         robe(recipeOutput, "witchrobe", impregnatedLeather, goldenThread, WitcheryIngredient.CREEPER_HEART.item());
         robe(recipeOutput, "necromancerrobe", impregnatedLeather, goldenThread, WitcheryIngredient.NECROMANTIC_STONE.item());
         SpecialRecipeBuilder.special(WitcheryRecipes.CLOTHING_REPAIR.get()).save(recipeOutput, "witchery:repair_witch_clothing");
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryIngredient.WEB.item())
+                .define('S', Items.STRING)
+                .define('W', Blocks.COBWEB)
+                .pattern(" S ")
+                .pattern("SWS")
+                .pattern(" S ")
+                .unlockedBy("has_cobweb", has(Blocks.COBWEB))
+                .save(recipeOutput);
         ShapelessRecipeBuilder.shapeless(RecipeCategory.FOOD, WitcheryIngredient.ODD_PORKCHOP_RAW.item())
                 .requires(WitcheryIngredient.MUTANDIS.item())
                 .requires(Items.ROTTEN_FLESH)

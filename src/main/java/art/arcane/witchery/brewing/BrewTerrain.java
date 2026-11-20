@@ -1,0 +1,210 @@
+package art.arcane.witchery.brewing;
+
+import art.arcane.witchery.block.WitchWoodType;
+import art.arcane.witchery.entity.ThrownBrew;
+import art.arcane.witchery.registry.WitcheryBlocks;
+import art.arcane.witchery.world.WitcheryTeleport;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.RotatedPillarBlock;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.VineBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.BlockSnapshot;
+import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraftforge.event.level.BlockEvent;
+
+import java.util.List;
+
+public final class BrewTerrain {
+    private static final List<Direction> SIDES = List.of(Direction.EAST, Direction.WEST, Direction.SOUTH, Direction.NORTH);
+    private static final List<Block> LOGS = List.of(Blocks.OAK_LOG, Blocks.SPRUCE_LOG, Blocks.BIRCH_LOG, Blocks.JUNGLE_LOG);
+    private static final List<Block> LEAVES = List.of(Blocks.OAK_LEAVES, Blocks.SPRUCE_LEAVES, Blocks.BIRCH_LEAVES, Blocks.JUNGLE_LEAVES);
+    private static final List<Block> PLANKS = List.of(Blocks.OAK_PLANKS, Blocks.SPRUCE_PLANKS, Blocks.BIRCH_PLANKS, Blocks.JUNGLE_PLANKS);
+    private static final List<Block> SAPLINGS = List.of(Blocks.OAK_SAPLING, Blocks.SPRUCE_SAPLING, Blocks.BIRCH_SAPLING, Blocks.JUNGLE_SAPLING);
+
+    private BrewTerrain() {}
+
+    public static void webs(ThrownBrew brew, HitResult hit) {
+        if (!(brew.level() instanceof ServerLevel level)) return;
+        BlockPos center = splashPosition(level, hit);
+        BlockState web = Blocks.COBWEB.defaultBlockState();
+        place(brew, level, center, web, Direction.UP);
+        for (Direction direction : Direction.values()) place(brew, level, center.relative(direction), web, direction);
+        if (BrewImpacts.enhanced(brew)) {
+            for (int x : new int[]{-1, 1}) {
+                for (int z : new int[]{-1, 1}) place(brew, level, center.offset(x, 0, z), web, Direction.UP);
+            }
+        }
+    }
+
+    public static void thorns(ThrownBrew brew, HitResult hit) {
+        if (!(brew.level() instanceof ServerLevel level)) return;
+        boolean enhanced = BrewImpacts.enhanced(brew);
+        if (hit instanceof BlockHitResult block) {
+            if ((block.getDirection() == Direction.UP || level.getBlockState(block.getBlockPos()).is(Blocks.CACTUS))
+                    && cactus(brew, level, block.getBlockPos(), enhanced ? 4 : 3)) return;
+            BrewImpacts.recoverBrew(brew, level, Vec3.atCenterOf(block.getBlockPos().relative(block.getDirection())));
+        } else if (hit instanceof EntityHitResult entity) {
+            for (Direction side : SIDES) {
+                if (!cactus(brew, level, entity.getEntity().blockPosition().relative(side), enhanced ? 2 : 1)) {
+                    BrewImpacts.recoverBrew(brew, level, entity.getEntity().position());
+                    break;
+                }
+            }
+        }
+    }
+
+    private static boolean cactus(ThrownBrew brew, ServerLevel level, BlockPos hit, int height) {
+        BlockPos base = hit;
+        BlockState ground = level.getBlockState(base);
+        if (!ground.blocksMotion() && !ground.is(Blocks.CACTUS)) {
+            base = base.below();
+            ground = level.getBlockState(base);
+        }
+        if (ground.is(Blocks.CACTUS)) {
+            while (level.getBlockState(base.above()).is(Blocks.CACTUS)) base = base.above();
+        } else if (!cactusSoil(ground) || !replace(brew, level, base, Blocks.SAND.defaultBlockState(), Direction.UP)) {
+            return false;
+        }
+        for (int i = 1; i <= height; i++) {
+            if (!place(brew, level, base.above(i), Blocks.CACTUS.defaultBlockState(), Direction.UP)) break;
+        }
+        return true;
+    }
+
+    private static boolean cactusSoil(BlockState state) {
+        return state.is(BlockTags.DIRT) || state.is(BlockTags.SAND) || state.is(BlockTags.SNOW)
+                || state.getSoundType() == SoundType.STONE || state.is(Blocks.CLAY)
+                || state.is(Blocks.SPONGE) || state.is(Blocks.WET_SPONGE);
+    }
+
+    public static void vines(ThrownBrew brew, HitResult hit) {
+        if (!(brew.level() instanceof ServerLevel level)) return;
+        if (!(hit instanceof BlockHitResult block) || !block.getDirection().getAxis().isHorizontal()) {
+            BrewImpacts.recoverBrew(brew, level, hit);
+            return;
+        }
+        Direction side = block.getDirection();
+        boolean enhanced = BrewImpacts.enhanced(brew);
+        BlockPos impact = block.getBlockPos();
+        var face = VineBlock.getPropertyForFace(side.getOpposite());
+        for (Direction vertical : List.of(Direction.DOWN, Direction.UP)) {
+            BlockPos support = vertical == Direction.DOWN ? impact : impact.above();
+            while (level.isInWorldBounds(support)) {
+                if (!level.getBlockState(support).isFaceSturdy(level, support, side) && enhanced) {
+                    BlockPos step = support.relative(vertical == Direction.UP ? side.getOpposite() : side);
+                    if (level.getBlockState(step).isFaceSturdy(level, step, side)) support = step;
+                }
+                if (!level.getBlockState(support).isFaceSturdy(level, support, side)) break;
+                BlockPos target = support.relative(side);
+                BlockState existing = level.getBlockState(target);
+                BlockState vine = existing.is(Blocks.VINE) ? existing : Blocks.VINE.defaultBlockState();
+                if (!place(brew, level, target, vine.setValue(face, true), side)) break;
+                support = support.relative(vertical);
+            }
+        }
+    }
+
+    public static void sprouting(ThrownBrew brew, HitResult hit) {
+        if (!(brew.level() instanceof ServerLevel level)) return;
+        if (!(hit instanceof BlockHitResult block)) {
+            BrewImpacts.recoverBrew(brew, level, hit);
+            return;
+        }
+        BlockPos impact = block.getBlockPos();
+        Direction direction = block.getDirection();
+        TargetBranch branch = branch(level.getBlockState(impact), level.getRandom());
+        BlockState log = branch.log().setValue(RotatedPillarBlock.AXIS, direction.getAxis());
+        BlockPos next = splashPosition(level, hit);
+        BlockPos top = null;
+        int limit = BrewImpacts.enhanced(brew) ? 20 : 15;
+        for (int i = next.equals(impact) ? 0 : 1; i < limit; i++) {
+            if (!place(brew, level, next, log, direction)) break;
+            top = next;
+            if (level.getRandom().nextInt(4) == 0) {
+                Direction twig = Direction.getRandom(level.getRandom());
+                if (twig.getAxis() != direction.getAxis()) place(brew, level, next.relative(twig), branch.leaves(), twig);
+            }
+            next = next.relative(direction);
+        }
+        if (top != null && direction == Direction.UP) {
+            Vec3 landing = Vec3.atBottomCenterOf(top.above());
+            Vec3 center = hit.getLocation();
+            AABB bounds = brew.getBoundingBox().move(center.subtract(brew.position())).inflate(0, 2, 0);
+            for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, bounds, LivingEntity::isAlive)) {
+                if (WitcheryTeleport.canArrive(entity, level, landing)) WitcheryTeleport.move(entity, level, landing);
+            }
+        }
+    }
+
+    private record TargetBranch(BlockState log, BlockState leaves) {}
+
+    private static TargetBranch branch(BlockState hit, RandomSource random) {
+        Block witchLog = WitcheryBlocks.getRequired("witchlog").get();
+        Block witchLeaves = WitcheryBlocks.getRequired("witchleaves").get();
+        if (hit.hasProperty(WitchWoodType.PROPERTY)) {
+            var species = hit.getValue(WitchWoodType.PROPERTY);
+            return new TargetBranch(witchLog.defaultBlockState().setValue(WitchWoodType.PROPERTY, species),
+                    witchLeaves.defaultBlockState().setValue(WitchWoodType.PROPERTY, species));
+        }
+        Block source = hit.getBlock();
+        for (int species = 0; species < LOGS.size(); species++) {
+            if (source == LOGS.get(species) || source == LEAVES.get(species)
+                    || source == PLANKS.get(species) || source == SAPLINGS.get(species)) return vanillaBranch(species);
+        }
+        if (random.nextBoolean()) return vanillaBranch(random.nextInt(LOGS.size()));
+        var species = WitchWoodType.values()[random.nextInt(WitchWoodType.values().length)];
+        return new TargetBranch(witchLog.defaultBlockState().setValue(WitchWoodType.PROPERTY, species),
+                witchLeaves.defaultBlockState().setValue(WitchWoodType.PROPERTY, species));
+    }
+
+    private static TargetBranch vanillaBranch(int species) {
+        return new TargetBranch(LOGS.get(species).defaultBlockState(),
+                LEAVES.get(species).defaultBlockState().setValue(LeavesBlock.PERSISTENT, true));
+    }
+
+    private static BlockPos splashPosition(ServerLevel level, HitResult hit) {
+        if (hit instanceof BlockHitResult block) {
+            BlockPos pos = block.getBlockPos();
+            return block.getDirection() == Direction.UP && !level.getBlockState(pos).blocksMotion()
+                    ? pos : pos.relative(block.getDirection());
+        }
+        return hit instanceof EntityHitResult entity ? entity.getEntity().blockPosition() : BlockPos.containing(hit.getLocation());
+    }
+
+    private static boolean place(ThrownBrew brew, ServerLevel level, BlockPos pos, BlockState state, Direction face) {
+        BlockState previous = level.getBlockState(pos);
+        boolean replaceable = !previous.blocksMotion() || state.is(Blocks.VINE) && previous.is(BlockTags.LEAVES);
+        return replaceable && replace(brew, level, pos, state, face);
+    }
+
+    private static boolean replace(ThrownBrew brew, ServerLevel level, BlockPos pos, BlockState state, Direction face) {
+        if (!level.isInWorldBounds(pos) || !level.getWorldBorder().isWithinBounds(pos)) return false;
+        BlockState old = level.getBlockState(pos);
+        if (old.equals(state)) return true;
+        if (old.hasBlockEntity() || old.getDestroySpeed(level, pos) < 0) return false;
+        if (brew.getOwner() instanceof Player player && (!level.mayInteract(player, pos)
+                || !old.isAir() && MinecraftForge.EVENT_BUS.post(new BlockEvent.BreakEvent(level, pos, old, player)))) return false;
+        if (brew.getOwner() != null && ForgeEventFactory.onBlockPlace(brew.getOwner(),
+                BlockSnapshot.create(level.dimension(), level, pos), face)) return false;
+        if (!level.setBlockAndUpdate(pos, state)) return false;
+        level.sendParticles(ParticleTypes.POOF, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 6, 0.25, 0.25, 0.25, 0.02);
+        return true;
+    }
+}

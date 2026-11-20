@@ -1,0 +1,14 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"item": "witchery:thrown_web"},
+    {"item": "minecraft:red_mushroom"},
+    {"item": "witchery:bat_wool"},
+    {"item": "minecraft:dandelion"},
+    {"item": "witchery:whiff_of_magic"},
+    {"item": "witchery:belladonna_flower"}
+  ],
+  "result": {"item": "witchery:brew_of_webs", "count": 3},
+  "color": -1,
+  "bottling_bonus": 1
+}

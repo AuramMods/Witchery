@@ -1,0 +1,14 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"item": "minecraft:green_dye"},
+    {"item": "minecraft:brown_mushroom"},
+    {"item": "witchery:oil_of_vitriol"},
+    {"item": "witchery:odour_of_purity"},
+    {"item": "minecraft:poppy"},
+    {"item": "witchery:mandrake_root"}
+  ],
+  "result": {"item": "witchery:brew_of_thorns", "count": 3},
+  "color": -10027232,
+  "bottling_bonus": 1
+}

@@ -1,0 +1,14 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"type": "forge:difference", "base": {"item": "witchery:witchsapling"}, "subtracted": [{"type": "forge:partial_nbt", "item": "witchery:witchsapling", "nbt": {"BlockStateTag": {"wood_type": "alder"}}}, {"type": "forge:partial_nbt", "item": "witchery:witchsapling", "nbt": {"BlockStateTag": {"wood_type": "hawthorn"}}}]},
+    {"type": "forge:partial_nbt", "item": "witchery:witchsapling", "nbt": {"BlockStateTag": {"wood_type": "alder"}}},
+    {"type": "forge:partial_nbt", "item": "witchery:witchsapling", "nbt": {"BlockStateTag": {"wood_type": "hawthorn"}}},
+    {"item": "witchery:dog_tongue"},
+    {"item": "witchery:mandrake_root"},
+    {"item": "minecraft:poppy"}
+  ],
+  "result": {"item": "witchery:brew_of_sprouting", "count": 3},
+  "color": -11258073,
+  "bottling_bonus": 1
+}

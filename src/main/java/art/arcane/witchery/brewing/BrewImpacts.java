@@ -1,6 +1,7 @@
 package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.entity.ThrownBrew;
+import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.infusion.InfernalInfusion;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
@@ -19,6 +20,7 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
@@ -45,11 +47,12 @@ public final class BrewImpacts {
 
     public static void splashInk(ThrownBrew brew, HitResult hit) {
         Vec3 impact = hit.getLocation();
-        for (LivingEntity entity : brew.level().getEntitiesOfClass(LivingEntity.class, splashBounds(brew, impact))) {
+        double radius = enhanced(brew) ? 5 : SPLASH_RADIUS;
+        for (LivingEntity entity : brew.level().getEntitiesOfClass(LivingEntity.class, splashBounds(brew, impact, radius))) {
             boolean direct = hit instanceof EntityHitResult entityHit && entityHit.getEntity() == entity;
             double distance = entity.distanceToSqr(impact);
-            if (direct || distance < SPLASH_RADIUS * SPLASH_RADIUS) {
-                int duration = direct ? 400 : (int) Math.round((1 - Math.sqrt(distance) / SPLASH_RADIUS) * 400);
+            if (direct || distance < radius * radius) {
+                int duration = direct ? 400 : (int) Math.round((1 - Math.sqrt(distance) / radius) * 400);
                 if (duration > 0) {
                     entity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, duration), brew.getEffectSource());
                 }
@@ -66,9 +69,11 @@ public final class BrewImpacts {
             return;
         }
         Vec3 impact = hit.getLocation();
+        double radius = enhanced(brew) ? 5 : SPLASH_RADIUS;
+        AABB bounds = splashBounds(brew, impact, radius);
         List<Villager> villagers = new ArrayList<>();
-        for (AgeableMob mob : level.getEntitiesOfClass(AgeableMob.class, splashBounds(brew, impact),
-                candidate -> candidate.getAge() >= 0 && candidate.distanceToSqr(impact) < SPLASH_RADIUS * SPLASH_RADIUS)) {
+        for (AgeableMob mob : level.getEntitiesOfClass(AgeableMob.class, bounds,
+                candidate -> candidate.getAge() >= 0 && candidate.distanceToSqr(impact) < radius * radius)) {
             if (mob instanceof Animal animal) {
                 animal.setAge(0);
                 animal.setInLove(null);
@@ -78,6 +83,14 @@ public final class BrewImpacts {
         }
         for (int pair = 0; pair < Math.min(10, villagers.size() / 2); pair++) {
             breedVillagers(level, villagers.get(pair * 2), villagers.get(pair * 2 + 1));
+        }
+        if (brew.getOwner() instanceof ServerPlayer player) {
+            List<Zombie> zombies = level.getEntitiesOfClass(Zombie.class, bounds, candidate -> candidate.isAlive()
+                    && !candidate.isBaby() && candidate.distanceToSqr(impact) < radius * radius
+                    && InfernalInfusion.owns(candidate, player));
+            for (int pair = 0; pair < Math.min(10, zombies.size() / 2); pair++) {
+                breedZombies(level, zombies.get(pair * 2), zombies.get(pair * 2 + 1), player);
+            }
         }
     }
 
@@ -92,10 +105,7 @@ public final class BrewImpacts {
     public static void raiseDead(ThrownBrew brew, HitResult hit) {
         if (!(brew.level() instanceof ServerLevel level)) return;
         if (!(hit instanceof BlockHitResult block) || block.getDirection() != Direction.UP) {
-            Vec3 drop = hit instanceof BlockHitResult blockHit
-                    ? Vec3.atCenterOf(blockHit.getBlockPos().relative(blockHit.getDirection() == Direction.DOWN ? Direction.DOWN : Direction.UP))
-                    : hit instanceof EntityHitResult entityHit ? entityHit.getEntity().position() : hit.getLocation();
-            level.addFreshEntity(new ItemEntity(level, drop.x, drop.y, drop.z, brew.getItem().copyWithCount(1)));
+            recoverBrew(brew, level, hit);
             return;
         }
 
@@ -115,6 +125,17 @@ public final class BrewImpacts {
                 break;
             }
         }
+    }
+
+    static void recoverBrew(ThrownBrew brew, ServerLevel level, HitResult hit) {
+        Vec3 drop = hit instanceof BlockHitResult block
+                ? Vec3.atCenterOf(block.getBlockPos().relative(block.getDirection() == Direction.DOWN ? Direction.DOWN : Direction.UP))
+                : hit instanceof EntityHitResult entity ? entity.getEntity().position() : hit.getLocation();
+        recoverBrew(brew, level, drop);
+    }
+
+    static void recoverBrew(ThrownBrew brew, ServerLevel level, Vec3 drop) {
+        level.addFreshEntity(new ItemEntity(level, drop.x, drop.y, drop.z, brew.getItem().copyWithCount(1)));
     }
 
     private static void raiseUndead(ServerLevel level, BlockPos ground, ServerPlayer owner) {
@@ -180,8 +201,12 @@ public final class BrewImpacts {
         level.setBlockAndUpdate(pos, WitcheryBlocks.getRequired(block).get().defaultBlockState());
     }
 
-    private static AABB splashBounds(ThrownBrew brew, Vec3 impact) {
-        return brew.getBoundingBox().move(impact.subtract(brew.position())).inflate(SPLASH_RADIUS, 2, SPLASH_RADIUS);
+    static boolean enhanced(ThrownBrew brew) {
+        return brew.getOwner() instanceof ServerPlayer player && FamiliarBinding.hasBrewMastery(player);
+    }
+
+    private static AABB splashBounds(ThrownBrew brew, Vec3 impact, double radius) {
+        return brew.getBoundingBox().move(impact.subtract(brew.position())).inflate(radius, 2, radius);
     }
 
     private static void breedVillagers(ServerLevel level, Villager first, Villager mate) {
@@ -198,5 +223,34 @@ public final class BrewImpacts {
         child.moveTo(mate.getX(), mate.getY(), mate.getZ(), 0, 0);
         level.addFreshEntityWithPassengers(child);
         level.broadcastEntityEvent(child, (byte) 12);
+    }
+
+    private static void breedZombies(ServerLevel level, Zombie first, Zombie mate, ServerPlayer owner) {
+        if (!mayBecomeZombieVillager(first) || !mayBecomeZombieVillager(mate)) return;
+        Zombie child = EntityType.ZOMBIE.create(level);
+        if (child == null) return;
+        child.setBaby(true);
+        child.moveTo(mate.getX(), mate.getY(), mate.getZ(), 0, 0);
+        if (!level.addFreshEntity(child)) return;
+        first.teleportTo(mate.getX(), mate.getY(), mate.getZ());
+        becomeZombieVillager(first, owner);
+        becomeZombieVillager(mate, owner);
+        level.sendParticles(ParticleTypes.HEART, child.getX(), child.getY() + 1, child.getZ(), 8, 0.5, 1, 0.5, 0.05);
+    }
+
+    private static boolean mayBecomeZombieVillager(Zombie zombie) {
+        return zombie.getType() == EntityType.ZOMBIE_VILLAGER
+                || ForgeEventFactory.canLivingConvert(zombie, EntityType.ZOMBIE_VILLAGER, ignored -> {});
+    }
+
+    private static void becomeZombieVillager(Zombie zombie, ServerPlayer owner) {
+        if (zombie.getType() == EntityType.ZOMBIE_VILLAGER) return;
+        var villager = zombie.convertTo(EntityType.ZOMBIE_VILLAGER, true);
+        if (villager == null) return;
+        villager.getPersistentData().merge(zombie.getPersistentData());
+        villager.setHealth(Math.min(zombie.getHealth(), villager.getMaxHealth()));
+        for (MobEffectInstance effect : zombie.getActiveEffects()) villager.addEffect(new MobEffectInstance(effect));
+        InfernalInfusion.bind(villager, owner);
+        ForgeEventFactory.onLivingConvert(zombie, villager);
     }
 }

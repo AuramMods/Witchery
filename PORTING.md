@@ -52,7 +52,7 @@
 - [x] Verify all four spinning recipes, hopper input, blocked output, legacy fibre and modifier data, and a power interruption across restart on packaged Forge. All 15 checks and all 12 disposable Forge GameTests passed. The packaged Golden Thread recipe also passed with the bundled Auram development mods.
 - [x] Craft and place the wheel in muted survival, shift-click a hay bale and Whiff of Magic into the original menu, and collect three Golden Threads. The test used supplied starting materials and an existing altar.
 - [x] Restore the ingredient path for Brew of Sleeping. Mature snowbell yields an Icy Needle at the original 20% rate. Milk or cake crafts three Purified Milk jars, and the original kettle recipe produces three Brews of Love. The Love splash puts adult animals in love and pairs adult villagers. Six packaged checks and all 14 disposable Forge GameTests passed.
-- [ ] Implement the Brew of Love interaction for enslaved zombies when the enslavement system is ported.
+- [x] Restore the Brew of Love interaction with owned zombies. The muted client threw it near the two zombies it previously raised. Both became owned Zombie Villagers and one wild baby spawned. The headless tests verified that a nearby unowned adult was unaffected and the converted parents kept their equipment.
 - [x] Restore the original kettle recipe for Brew of Sleeping, tangible sleeping bodies, and separate Overworld and Dream inventories, including health and hunger. An Icy Needle wakes the sleeper, as does lethal Dream damage or destruction of the sleeping body.
 - [x] Generate Somnian Cotton in suitable Dream biomes, spread it by source Flowing Spirit, and harvest Wispy Cotton in a normal dream or Disturbed Cotton in a nightmare. Clean packaged world generation produced cotton in 16 of 1,296 inspected Dream chunks and zero of 2,025 Overworld chunks. All 15 disposable Forge GameTests passed.
 - [x] In the muted survival client, brew and bottle three Brews of Sleeping, enter a nightmare, and restart while the body and Dream inventory are active. Wake with an Icy Needle and verify that damaged gear and Overworld health return, that Disturbed Cotton crosses dimensions, and that ordinary Dream items stay behind. Reenter to confirm those items return and verify that destroying the body or taking lethal damage wakes the sleeper.
@@ -273,6 +273,13 @@
 - [x] Restore Baba's Hat equipment and its charge-powered evasion. The muted client equipped the hat previously earned from Baba Yaga. A test hit from a zombie left health unchanged, reduced charge by five and moved the player to a nearby open block. Environmental fire did not consume any infusion charge.
 - [x] Restart the packaged server after these interactions. Both zombies kept their UUIDs and owner, the repaired robe kept its tags, and Baba's Hat and the remaining infusion charge stayed saved.
 - [ ] Connect the garments to the advanced cauldron, Polynesia trades, and the later player forms and crossbow effects. Restore the Necromantic Stone's infused Grave use.
+
+## Terrain Brews (2026-11-20)
+
+- [x] Restore kettle recipes and projectile impacts for Vines, Webs, Thorns and Sprouting. The muted survival client crafted the Web ingredient, filled the heated kettle, bottled Brew of Webs and threw it onto the floor. It also threw supplied portions of the other three. Vines attached on the wall face, Thorns produced three cactus segments, and Sprouting produced a horizontal birch branch.
+- [x] Verify the active Toad bonus, the three distinct Sprouting saplings, and Baba Yaga's Webs and Thorns projectiles. All 118 required GameTests, data generation and JAR reobfuscation passed.
+- [x] Restart the packaged server after the terrain changed. The webs, vines, cactus, birch branch, two owned Zombie Villagers, and two unbottled Kettle servings persisted.
+- [ ] Restore the remaining Baba Yaga brews and their familiar-specific bottling rules where applicable. Connect the terrain impacts to the legacy plant mines and circle rites.
 
 ## Auram Pack Validation (2026-11-20)
 
