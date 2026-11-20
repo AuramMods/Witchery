@@ -87,8 +87,9 @@
 - [x] Restore the original three Refilling Chests per floor. They use modern dungeon loot, populate when first loaded, and refill only when empty after an hour of loaded time. Their inventory and `WITCLifeTicks` survive dedicated restarts.
 - [x] Verify 59 packaged headless checks covering all six entries, exits, and central caches, plus the maze boundaries, first fill, repeat refill, and save persistence. A separate generator fixture found a route from entry to exit and each cache on every floor of 100 seeds.
 - [x] Verify the chest lid, inventory, and loot collection in the muted survival client. Preserve a saved marker in a previous port's Torment dimension. Generated Nether chunks extend beyond that marker and still occupy part of the original maze footprint.
-- [ ] Restore the portal's random-floor transport, chance of returning to another maze, and use of the player's Overworld respawn point. Route arrivals away from previously generated Nether terrain on upgraded port saves.
-- [ ] Restore the Lord of Torment encounter, the Imp's contract, and the Brew of Soul Anguish. Verify the encounter and full progression in the muted multiplayer client.
+- [x] Restore the animated red exit portal and collision travel. The muted client entered all six original floor elevations and exited to the configured Overworld respawn point. All 27 Forge GameTests passed, including the normal and rare exit requests with fixed random seeds.
+- [x] Route upgraded saves to an intact maze. The muted client used the separate maze at X 1032, checked that the old diamond marker remained, and walked through the new exit to the original Overworld respawn point. After a dedicated restart it entered the same maze footprint and the marker was still present.
+- [ ] Restore the Imp's contract, the Lord of Torment encounter, and its Brew of Soul Torment reward. Verify the encounter and full progression in the muted multiplayer client.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.
@@ -280,9 +281,9 @@
 - [~] Dimension/key migration for Dream/Torment/Mirror.
   - resource keys are scaffolded (`Level`, `LevelStem`, `DimensionType`) for `dream`, `torment`, and `mirror`.
   - datapack `dimension_type` + `dimension` JSON scaffolding is now present for all three dimensions.
-  - runtime travel scaffold hooks are in place via `WitcheryDimensionTravelHooks` + `WitcheryEventHooks`.
+  - `WitcheryEventHooks` processes dimension travel requests on the server tick, with `WitcheryDimensionTravelHooks` observing Forge dimension changes.
   - Dream uses the sleeping brew, body and separate inventories through `DreamTravel`. The Rite of Manifestation and snow-frame Spirit Portal allow a time-limited visit to the Overworld while the body remains asleep. The Dream has the three atmosphere variants and the demonic hazards.
-  - The Mirror uses two-block frames, stacked chambers, and Reflection encounters through `MirrorTravel`. Torment's collision path still uses the temporary travel hook.
+  - The Mirror uses two-block frames, stacked chambers, and Reflection encounters through `MirrorTravel`. `TormentTravel` uses generated maze entrances and exits, with a separate intact layout for upgraded Nether-like Torment saves.
 - [~] Event bus hooks migrated with no-op or minimal behavior.
   - placeholder Forge-bus hooks are in place for attach-capabilities, player login/clone, player tick, player right-click block, entity travel-to-dimension, player changed-dimension, and level load events.
   - attach-capabilities/player-clone hooks now include capability provider wiring for player data scaffold.

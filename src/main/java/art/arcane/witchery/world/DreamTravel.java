@@ -239,7 +239,7 @@ public final class DreamTravel {
             if (walking) {
                 wake(player, persistent);
             } else if (inDream) {
-                WitcheryDimensionTravelHooks.routePlayer(player, WitcheryDimensionTravelHooks.TravelTrigger.RETURN_TO_OVERWORLD);
+                WitcheryDimensionTravelHooks.returnToOverworld(player);
             }
             return true;
         }

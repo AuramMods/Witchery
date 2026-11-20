@@ -12,6 +12,7 @@ final class TormentMaze {
     static final int CENTER_X = 8;
     static final int ENTRANCE_Z = 8;
     static final int EXIT_Z = 68;
+    static final int UPGRADE_MAZE_OFFSET = 1024;
     private static final int CELLS = 31;
     private static final int WIDTH = CELLS * 2 + 1;
     private static final int WEST_EDGE = CENTER_X - CELLS;
@@ -47,6 +48,10 @@ final class TormentMaze {
     static boolean covers(int x, int z) {
         return x >= WEST_EDGE && x < WEST_EDGE + WIDTH
                 && z >= NORTH_EDGE && z < NORTH_EDGE + WIDTH + 2;
+    }
+
+    static int originalX(int x) {
+        return x >= UPGRADE_MAZE_OFFSET / 2 ? x - UPGRADE_MAZE_OFFSET : x;
     }
 
     static boolean intersects(int minX, int minZ, int maxX, int maxZ) {

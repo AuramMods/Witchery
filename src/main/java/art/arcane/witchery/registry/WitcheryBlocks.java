@@ -14,6 +14,7 @@ import art.arcane.witchery.block.SomnianCottonBlock;
 import art.arcane.witchery.block.SpinningWheelBlock;
 import art.arcane.witchery.block.SpiritFluidBlock;
 import art.arcane.witchery.block.SpiritPortalBlock;
+import art.arcane.witchery.block.TormentPortalBlock;
 import art.arcane.witchery.block.PlacedItemBlock;
 import art.arcane.witchery.block.RitualGlyphBlock;
 import art.arcane.witchery.block.RiteHeartBlock;
@@ -88,10 +89,6 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_SILVER_VAT = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 10.24D, 16.0D);
     private static final VoxelShape SHAPE_DAYLIGHT_COLLECTOR = Block.box(3.2D, 0.0D, 3.2D, 12.8D, 12.8D, 12.8D);
     private static final VoxelShape SHAPE_BLOOD_CRUCIBLE = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 4.96D, 12.0D);
-    private static final VoxelShape SHAPE_PORTAL_CROSS = Shapes.or(
-            Block.box(7.0D, 0.0D, 0.0D, 9.0D, 16.0D, 16.0D),
-            Block.box(0.0D, 0.0D, 7.0D, 16.0D, 16.0D, 9.0D)
-    );
     private static final VoxelShape SHAPE_CACTUS = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 16.0D, 15.0D);
     private static final VoxelShape SHAPE_VOID_BRAMBLE = Block.box(0.8D, 0.0D, 0.8D, 15.2D, 16.0D, 15.2D);
     private static final VoxelShape SHAPE_WOLF_ALTAR = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 32.0D, 16.0D);
@@ -244,8 +241,7 @@ public final class WitcheryBlocks {
             case "spiritportal" -> new SpiritPortalBlock(BlockBehaviour.Properties.copy(Blocks.NETHER_PORTAL).noLootTable());
             case "mirrorwall" -> new GlassBlock(BlockBehaviour.Properties.copy(Blocks.GLASS)
                     .strength(-1, 9_999).noLootTable());
-            case "tormentportal" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.NETHER_PORTAL), SHAPE_PORTAL_CROSS, false);
+            case "tormentportal" -> new TormentPortalBlock();
             case "tormentstone" -> new Block(BlockBehaviour.Properties.copy(Blocks.MYCELIUM)
                     .strength(-1, 9_999).noLootTable().noOcclusion());
             case "spiritflowing" -> new SpiritFluidBlock(WitcheryFluids.getRequiredSource("fluidspirit"), spiritProperties(), true);

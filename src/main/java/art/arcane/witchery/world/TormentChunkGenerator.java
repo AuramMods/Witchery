@@ -75,7 +75,8 @@ public final class TormentChunkGenerator extends ChunkGenerator {
                                                         StructureManager structures, ChunkAccess chunk) {
         int xMin = chunk.getPos().getMinBlockX();
         int zMin = chunk.getPos().getMinBlockZ();
-        if (!TormentMaze.intersects(xMin, zMin, xMin + 15, zMin + 15)) {
+        int mazeX = TormentMaze.originalX(xMin);
+        if (!TormentMaze.intersects(mazeX, zMin, mazeX + 15, zMin + 15)) {
             return CompletableFuture.completedFuture(chunk);
         }
 
@@ -87,9 +88,9 @@ public final class TormentChunkGenerator extends ChunkGenerator {
         int top = Math.min(chunk.getMaxBuildHeight() - 1, MAX_CEILING);
         for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 16; z++) {
-                if (!TormentMaze.covers(xMin + x, zMin + z)) continue;
+                if (!TormentMaze.covers(mazeX + x, zMin + z)) continue;
                 for (int y = bottom; y <= top; y++) {
-                    TormentMaze.BlockKind kind = maze.at(xMin + x, y, zMin + z);
+                    TormentMaze.BlockKind kind = maze.at(mazeX + x, y, zMin + z);
                     if (kind == TormentMaze.BlockKind.AIR) continue;
                     BlockState state = state(kind);
                     chunk.setBlockState(pos.set(xMin + x, y, zMin + z), state, false);
@@ -111,10 +112,11 @@ public final class TormentChunkGenerator extends ChunkGenerator {
 
     @Override
     public int getBaseHeight(int x, int z, Heightmap.Types type, LevelHeightAccessor height, RandomState random) {
-        if (TormentMaze.covers(x, z)) {
+        int mazeX = TormentMaze.originalX(x);
+        if (TormentMaze.covers(mazeX, z)) {
             TormentMaze maze = maze(random);
             for (int y = Math.min(MAX_CEILING, height.getMaxBuildHeight() - 1); y >= Math.max(MIN_FLOOR, height.getMinBuildHeight()); y--) {
-                if (type.isOpaque().test(state(maze.at(x, y, z)))) return y + 1;
+                if (type.isOpaque().test(state(maze.at(mazeX, y, z)))) return y + 1;
             }
         }
         return height.getMinBuildHeight();
@@ -122,11 +124,12 @@ public final class TormentChunkGenerator extends ChunkGenerator {
 
     @Override
     public NoiseColumn getBaseColumn(int x, int z, LevelHeightAccessor height, RandomState random) {
-        TormentMaze maze = TormentMaze.covers(x, z) ? maze(random) : null;
+        int mazeX = TormentMaze.originalX(x);
+        TormentMaze maze = TormentMaze.covers(mazeX, z) ? maze(random) : null;
         BlockState[] states = new BlockState[height.getHeight()];
         int bottom = height.getMinBuildHeight();
         for (int index = 0; index < states.length; index++) {
-            states[index] = maze == null ? Blocks.AIR.defaultBlockState() : state(maze.at(x, bottom + index, z));
+            states[index] = maze == null ? Blocks.AIR.defaultBlockState() : state(maze.at(mazeX, bottom + index, z));
         }
         return new NoiseColumn(bottom, states);
     }

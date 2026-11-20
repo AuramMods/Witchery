@@ -10,6 +10,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.world.DreamTravel;
 import art.arcane.witchery.world.MirrorTravel;
+import art.arcane.witchery.world.TormentTravel;
 import art.arcane.witchery.world.WitcheryDimensions;
 import art.arcane.witchery.world.WitcheryDimensionTravelHooks;
 import net.minecraft.tags.FluidTags;
@@ -122,7 +123,8 @@ public final class WitcheryEventHooks {
         if (!(event.player instanceof ServerPlayer serverPlayer)) {
             return;
         }
-        if (DreamTravel.processRequests(serverPlayer) || MirrorTravel.processPlayerCrossing(serverPlayer)) {
+        if (DreamTravel.processRequests(serverPlayer) || MirrorTravel.processPlayerCrossing(serverPlayer)
+                || TormentTravel.process(serverPlayer)) {
             return;
         }
         DreamTravel.spawnNightmare(serverPlayer);
@@ -136,13 +138,6 @@ public final class WitcheryEventHooks {
                 serverPlayer.addEffect(new MobEffectInstance(MobEffects.WITHER, 100, 1));
             }
         }
-
-        if (serverPlayer.isPassenger() || serverPlayer.isVehicle()) {
-            return;
-        }
-
-        WitcheryDimensionTravelHooks.resolvePortalCollisionTrigger(serverPlayer)
-                .ifPresent(trigger -> WitcheryDimensionTravelHooks.routePlayerFromPortalCollision(serverPlayer, trigger));
     }
 
     @SubscribeEvent

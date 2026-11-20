@@ -172,6 +172,8 @@ public final class WitcheryClient {
                 WitcheryBlocks.getRequired("mirrorwall").get());
         event.register((state, level, pos, tint) -> tint == 0 ? 0x00FF66 : -1,
                 WitcheryBlocks.getRequired("spiritportal").get());
+        event.register((state, level, pos, tint) -> tint == 0 ? 0xFF0022 : -1,
+                WitcheryBlocks.getRequired("tormentportal").get());
         event.register((state, level, pos, tint) -> level != null && pos != null
                 ? BiomeColors.getAverageWaterColor(level, pos) : 0x3F76E4, WitcheryBlocks.getRequired("cauldron").get());
         event.register((state, level, pos, tint) -> {
