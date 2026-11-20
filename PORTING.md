@@ -231,7 +231,7 @@
 - [x] Restart the packaged dedicated server and reconnect the muted client. Both tamed animals kept their owner and dye colors. The Owl kept its named parcel, and the player kept Toad power 25, ten reserve charges and 168 infusion charges.
 - [x] Bind, dismiss and call Owl and Toad familiars. The muted client bound a blue Toad, redirected one point of a ten-point hit, and called it back with its name and color. Binding the purple Owl returned the Toad to its ordinary health. The client recovered the Owl's named parcel when dismissing it. The recalled Owl retained its UUID, purple color and 50 health after the packaged server restarted.
 - [x] Apply the active Toad's five-percent bonus to eligible Kettle brews. A seeded GameTest used a glass bottle on Ink with an active Toad, active Owl, active Cat and dismissed Toad. Only the active Toad yielded a bonus bottle. All 89 required Forge GameTests, data generation and JAR reobfuscation passed.
-- [ ] Restore Owl Waystone delivery. Apply the remaining Toad Brew Mastery bonuses as the related brews and brewing equipment are ported.
+- [ ] Apply the remaining Toad Brew Mastery bonuses as the related brews and brewing equipment are ported.
 
 ## Flying broom and Soaring (2026-11-20)
 
@@ -246,7 +246,8 @@
 - [x] Craft a Waystone from Flint and a Bone Needle. The muted player bound it at a small white circle with Ender Dew and Glowstone Dust, then offered the result at a separate small Otherwhere circle. The rite moved the player to the original location.
 - [x] Bind a Creature-Bound Waystone to a nearby player or creature. Both original recipes are available. The muted client bound a named pig using the 500-power recipe. The pig and stone retained their matching identity after a packaged server restart. The rite then carried the player to the pig's new position.
 - [x] Verify legacy location and creature tags, safe placement, Nether travel and Ender Inhibition. All 94 required Forge GameTests, data generation and JAR reobfuscation passed.
-- [ ] Restore the passive dropped Waystone circles, Owl delivery, Crystal Ball viewing and the remaining Waystone uses in rites and equipment.
+- [x] Deliver a parcel or throw a brew with a tamed Owl. The muted player assigned a location stone, launched the Owl with an empty hand, and restarted the server while it was airborne. The Owl delivered the named paper and returned to sit near its launch point. A second route made it throw Ink at a bound pig. A route of more than 160 blocks delivered a second parcel outside the player's simulation distance. All 96 required GameTests passed.
+- [ ] Restore the passive dropped Waystone circles, Crystal Ball viewing and the remaining Waystone uses in rites and equipment.
 
 ## Auram Pack Validation (2026-11-20)
 

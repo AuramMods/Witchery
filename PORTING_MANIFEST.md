@@ -798,7 +798,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 101 | `ILLUSION_CREEPER` | `EntityIllusionCreeper` | `illusionCreeper` |
 | 102 | `ILLUSION_SPIDER` | `EntityIllusionSpider` | `illusionSpider` |
 | 103 | `ILLUSION_ZOMBIE` | `EntityIllusionZombie` | `illusionZombie` |
-| 104 | `OWL` | `EntityOwl` | `owl` (Mutating Sprig, taming, feathers, parcels, Infernal power 24) |
+| 104 | `OWL` | `EntityOwl` | `owl` (Mutating Sprig, taming, feathers, Waystone delivery, Infernal power 24) |
 | 105 | `TOAD` | `EntityToad` | `toad` (Mutating Sprig, taming, amphibious behavior, Infernal power 25) |
 | 106 | `CAT_FAMILIAR` | `EntityWitchCat` | `cat` |
 | 107 | `LOUSE` | `EntityParasyticLouse` | `louse` |
@@ -1110,6 +1110,8 @@ The Owl reads `FeatherColor` and the Toad reads `SkinColor`. Both retain `Famili
 The Broom uses `BrushColor` on the vehicle and enchanted item. The vehicle reads legacy plain-text `CustomName` and saves the modern component name. An older port's `witchery:broom_spawn_egg` can place the vehicle. The Infused Brew of Soaring uses `WITCInfusedBrewType:1` and `WITCInfusedBrewStart` in the player record.
 
 Bound Waystones retain `PosX`, `PosY`, `PosZ`, `PosD` and `NameD`. New bindings add the namespaced `Dimension` field. Old Waystones resolve the three vanilla dimensions and Witchery's default legacy IDs `-37` for Dream, `-38` for Torment and `-39` for Mirror. Creature-Bound Waystones share the first Taglock signature fields.
+
+Owls retain `WITCWaypoint` and their launch coordinates in `HomeX`, `HomeY` and `HomeZ` while delivering. `ReturningFromDelivery` preserves the return leg on modern saves.
 
 ## Recipe System Registries
 

@@ -257,8 +257,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             return;
         }
         if (rite.action() == ItemRiteRecipe.Action.TRAVEL_WAYSTONE) {
-            ItemStack stone = sacrificed.stream().map(Sacrifice::stack).filter(stack -> stack.is(WitcheryIngredient.BOUND_WAYSTONE.item())
-                    || stack.is(WitcheryIngredient.CREATURE_BOUND_WAYSTONE.item())).findFirst().orElse(ItemStack.EMPTY);
+            ItemStack stone = sacrificed.stream().map(Sacrifice::stack).filter(WaystoneItem::isBoundWaystone)
+                    .findFirst().orElse(ItemStack.EMPTY);
             if (stone.isEmpty() || !WaystoneTravel.teleportCircle(level, pos, stone, 3)) {
                 if (altar != null) altar.refundPower(rite.power());
                 abort(level, "message.witchery.rite.no_waystone_destination");

@@ -377,6 +377,7 @@
    "message.witchery.rite.no_familiar" : "No familiar can answer this rite.",
    "message.witchery.rite.no_waystone_target" : "There is no creature or player to bind within the circle.",
    "message.witchery.rite.no_waystone_destination" : "The waystone could not carry anyone to its destination.",
+   "message.witchery.owl.no_waypoint" : "The owl cannot reach the waystone's destination.",
    "tooltip.witchery.waystone.location" : "%s: %s, %s, %s",
    "tooltip.witchery.waystone.creature" : "Bound to %s",
    "entity.witchery.nightmare" : "Nightmare",

@@ -182,6 +182,13 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Creature binding accepts the small white circle with Ender Dew, Slimeball and Snowball for 500 power, or Ender Dew, Slimeball, Icy Needle and Charged Attuned Stone without an altar. The muted client used the first recipe to bind a named pig. The pig and stone's matching UUID persisted through a packaged restart. A later cast moved the player to the pig's relocated position.
 - The travel rite consumes one bound stone on success and refunds it on failure. It carries eligible entities and loose items within three blocks, checks Ender Inhibition II, preserves the Dream and Mirror cross-dimensional restrictions, and looks for standing room at position bindings. The same teleport implementation serves the Otherwhere Witch's Hand. All 94 required Forge GameTests passed, including Nether transport and the unsafe or missing destination cases. Data generation and reobfuscation succeeded. Protocol 18 carries the new rite actions.
 
+### Owl deliveries (2026-11-20)
+
+- The owner gives the Owl one parcel, sets a position or creature Waystone by using it on the carrying Owl, then uses an empty hand to release a seated courier. Assignment keeps the original stone with the player. After delivery the Owl returns to its assigned home and sits. Kettle brews and vanilla splash or lingering potions are thrown, and ordinary parcels drop as items.
+- The muted client gave the active Owl familiar its original named paper and assigned a freshly bound location stone. The test server saved the Owl in flight with the paper and copied stone. After restart the Owl dropped the same paper, flew back and sat within one block of its launch point. The player retained the stone. A Creature-Bound Waystone made a second trip throw Brew of Ink and blind the named pig.
+- A third route sent a paper parcel more than 160 blocks to a platform outside the player's simulation distance. The destination had no permanent loading ticket during delivery. The Owl used temporary chunk tickets and returned to the launch point. The portable bindings target the Owl's current dimension, and saved journeys resume when the Owl's chunk ticks.
+- The Owl imports the original `WITCWaypoint` item and `HomeX`, `HomeY` and `HomeZ` fields. The return leg has a new `ReturningFromDelivery` flag. Protocol 19 synchronizes active delivery state. All 96 required Forge GameTests passed, including legacy loaded routes and an Ink impact. Data generation and reobfuscation succeeded.
+
 ## Session Memory (2026-02-08)
 - Port target is Forge 1.20.1.
 - Legacy source is fully available at `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10`.

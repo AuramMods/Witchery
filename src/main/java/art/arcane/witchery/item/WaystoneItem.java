@@ -30,6 +30,10 @@ public final class WaystoneItem extends Item {
         super(new Properties());
     }
 
+    public static boolean isBoundWaystone(ItemStack stack) {
+        return stack.is(WitcheryIngredient.BOUND_WAYSTONE.item()) || stack.is(WitcheryIngredient.CREATURE_BOUND_WAYSTONE.item());
+    }
+
     public static void bindLocation(ItemStack stone, ServerLevel level, BlockPos pos) {
         var dimension = level.dimension();
         var tag = stone.getOrCreateTag();

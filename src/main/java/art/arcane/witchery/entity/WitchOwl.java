@@ -1,9 +1,14 @@
 package art.arcane.witchery.entity;
 
+import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
@@ -45,10 +50,13 @@ import org.jetbrains.annotations.Nullable;
 
 public final class WitchOwl extends WitchPet {
     private static final Ingredient FOOD = Ingredient.of(Items.PORKCHOP, Items.BEEF);
+    private static final EntityDataAccessor<Boolean> DELIVERING = SynchedEntityData.defineId(WitchOwl.class, EntityDataSerializers.BOOLEAN);
+    private final OwlDeliveryGoal delivery = new OwlDeliveryGoal(this);
 
     public WitchOwl(EntityType<? extends WitchOwl> type, Level level) {
         super(type, level);
         moveControl = new FlyingMoveControl(this, 20, false);
+        goalSelector.addGoal(2, delivery);
     }
 
     public static AttributeSupplier.Builder attributes() {
@@ -57,9 +65,20 @@ public final class WitchOwl extends WitchPet {
     }
 
     @Override
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        entityData.define(DELIVERING, false);
+    }
+
+    @Override
     protected void registerGoals() {
         goalSelector.addGoal(0, new FloatGoal(this));
-        goalSelector.addGoal(1, new SitWhenOrderedToGoal(this));
+        goalSelector.addGoal(1, new SitWhenOrderedToGoal(this) {
+            @Override
+            public boolean canUse() {
+                return isTame() && isOrderedToSit();
+            }
+        });
         goalSelector.addGoal(3, new MeleeAttackGoal(this, 1, true));
         goalSelector.addGoal(4, new TemptGoal(this, 0.6, FOOD, true));
         goalSelector.addGoal(5, new FollowOwnerGoal(this, 1, 14, 5, true));
@@ -119,6 +138,13 @@ public final class WitchOwl extends WitchPet {
                 && !held.is(Items.NAME_TAG) && !held.is(WitcheryItems.getRequired("polynesiacharm").get())
                 && !held.is(WitcheryItems.getRequired("devilstonguecharm").get())) {
             ItemStack carried = getMainHandItem();
+            if (!carried.isEmpty() && WaystoneItem.isBoundWaystone(held)) {
+                if (!level().isClientSide && !delivery.assign(held)) {
+                    player.displayClientMessage(Component.translatable("message.witchery.owl.no_waypoint"), true);
+                }
+                return InteractionResult.sidedSuccess(level().isClientSide);
+            }
+            if (entityData.get(DELIVERING)) return super.mobInteract(player, hand);
             if (!held.isEmpty() && carried.isEmpty()) {
                 if (!level().isClientSide) {
                     ItemStack parcel = player.getAbilities().instabuild ? held.copyWithCount(1) : held.split(1);
@@ -136,6 +162,22 @@ public final class WitchOwl extends WitchPet {
             }
         }
         return super.mobInteract(player, hand);
+    }
+
+    void setDelivering(boolean active) {
+        entityData.set(DELIVERING, active);
+    }
+
+    @Override
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        delivery.save(tag);
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        delivery.load(tag);
     }
 
     @Override
