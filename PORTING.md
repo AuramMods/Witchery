@@ -259,7 +259,9 @@
 - [x] Restore Iron, Diamond, Emerald, Coal and Buried Treasure predictions in survival harvesting. The muted player loaded old-format Coal and Treasure forecasts in a disposable save. Mining Deepslate yielded 16 extra coal, and digging dirt exposed a mineshaft chest with a Golden Apple. A loot preview left the Coal forecast active. All 103 required GameTests passed, including age thresholds, ore drops, and protected chest placement.
 - [x] Restore the Love and both rescue forecasts. A summoned farmer approached the standing player and produced a baby villager. Separate zombie attacks summoned a temporary Owl and a wild Wolf. Each attacked the zombie that hit its player. All 105 required GameTests, data generation and JAR reobfuscation passed.
 - [x] Verify a reading for a nearby player on a dedicated server. The trained player used the ball and the second muted client received the Wet forecast. The reader's record stayed empty. Entering water cleared the second player's reading.
-- [ ] Restore the two Baba Yaga forecasts and Crystal Ball Waystone viewing.
+- [x] Restore both Baba Yaga forecasts, her hostile and allied encounters, boss HUD and animated mortar-and-pestle model. On dedicated Forge one forecast spawned an ally with the second player's name, and the other led to a hostile potion attack. The ally departed at the end of its visit. A name-only legacy ally fixture dropped gifts. A shortened fight yielded Baba's Hat and an enchanted book. All 107 required GameTests passed, including the wooden sword counter and original damage cap.
+- [ ] Restore the rest of Baba Yaga's thrown brews, brew gifts, and Baba's Hat equipment and abilities.
+- [ ] Restore Crystal Ball Waystone viewing.
 
 ## Auram Pack Validation (2026-11-20)
 

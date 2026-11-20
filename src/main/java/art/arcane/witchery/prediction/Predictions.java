@@ -1,5 +1,6 @@
 package art.arcane.witchery.prediction;
 
+import art.arcane.witchery.entity.BabaYaga;
 import art.arcane.witchery.entity.Ent;
 import art.arcane.witchery.entity.WitchOwl;
 import art.arcane.witchery.registry.WitcheryBlocks;
@@ -59,6 +60,8 @@ public final class Predictions {
         EMERALD(7, 3, "emerald", 1_208),
         TREASURE(8, 2, "treasure", 1_210),
         LOVE(9, 2, "love", 1_210),
+        BABA_HOSTILE(10, 2, "bababad"),
+        BABA_ALLY(11, 2, "babagood"),
         FRIEND(12, 3, "friend"),
         OWL_RESCUE(13, 13, "rescued", 1_208),
         WOLF_RESCUE(14, 13, "rescued", 1_208),
@@ -93,7 +96,7 @@ public final class Predictions {
         double tickChance(long elapsed) {
             return switch (this) {
                 case LOVE -> elapsed > dueAfter ? 0.05 : 0.01;
-                case ZOMBIE, ARROW, ENT, FALL, FRIEND, WET, NETHER -> elapsed > dueAfter ? 0.05 : 0;
+                case ZOMBIE, ARROW, ENT, FALL, BABA_HOSTILE, BABA_ALLY, FRIEND, WET, NETHER -> elapsed > dueAfter ? 0.05 : 0;
                 default -> 0;
             };
         }
@@ -145,6 +148,7 @@ public final class Predictions {
                 case ARROW -> source.getDirectEntity() instanceof AbstractArrow;
                 case ENT -> source.getEntity() instanceof Ent;
                 case FALL -> source.is(DamageTypeTags.IS_FALL);
+                case BABA_HOSTILE, BABA_ALLY -> source.getEntity() instanceof BabaYaga;
                 case FRIEND -> source.getEntity() instanceof Wolf;
                 case OWL_RESCUE, WOLF_RESCUE -> rescue(kind, player, source);
                 default -> false;
@@ -228,6 +232,8 @@ public final class Predictions {
             case ENT -> hostileEncounter(player, WitcheryEntities.ENT.get());
             case FALL -> sinkGround(player, false);
             case LOVE -> encounter(player, EntityType.VILLAGER, 6, villager -> PredictedCourtship.start(villager, player));
+            case BABA_HOSTILE -> hostileEncounter(player, WitcheryEntities.BABA_YAGA.get());
+            case BABA_ALLY -> encounter(player, WitcheryEntities.BABA_YAGA.get(), 4, baba -> baba.bind(player));
             case FRIEND -> encounter(player, EntityType.WOLF, 4, wolf -> wolf.tame(player));
             case WET -> sinkGround(player, true);
             case NETHER -> sendToNether(player);

@@ -9,6 +9,7 @@ import art.arcane.witchery.menu.LegacyPlaceholderMenu;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.WitchWoodType;
+import art.arcane.witchery.client.model.BabaYagaModel;
 import art.arcane.witchery.client.model.MandrakeModel;
 import art.arcane.witchery.client.model.DarkMarkModel;
 import art.arcane.witchery.client.model.DemonModel;
@@ -19,6 +20,7 @@ import art.arcane.witchery.client.model.NightmareModel;
 import art.arcane.witchery.client.model.WitchOwlModel;
 import art.arcane.witchery.client.model.WitchToadModel;
 import art.arcane.witchery.client.renderer.DreamCatcherRenderer;
+import art.arcane.witchery.client.renderer.BabaYagaRenderer;
 import art.arcane.witchery.client.renderer.BroomRenderer;
 import art.arcane.witchery.client.renderer.DarkMarkRenderer;
 import art.arcane.witchery.client.renderer.CovenWitchRenderer;
@@ -109,6 +111,7 @@ public final class WitcheryClient {
 
     @SubscribeEvent
     public static void registerModelLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        event.registerLayerDefinition(BabaYagaModel.LAYER, BabaYagaModel::layer);
         event.registerLayerDefinition(MandrakeModel.LAYER, MandrakeModel::layer);
         event.registerLayerDefinition(NightmareModel.LAYER, NightmareModel::layer);
         event.registerLayerDefinition(DemonModel.LAYER, DemonModel::layer);
@@ -140,6 +143,7 @@ public final class WitcheryClient {
 
     @SubscribeEvent
     public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(WitcheryEntities.BABA_YAGA.get(), BabaYagaRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.MANDRAKE.get(), MandrakeRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.NIGHTMARE.get(), NightmareRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.DEMON.get(), DemonRenderer::new);

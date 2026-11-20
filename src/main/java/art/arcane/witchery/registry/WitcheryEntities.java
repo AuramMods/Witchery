@@ -1,6 +1,7 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.entity.BabaYaga;
 import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.entity.DarkMark;
 import art.arcane.witchery.entity.Demon;
@@ -82,6 +83,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<CovenWitch>> COVEN_WITCH =
             ENTITY_TYPES.register("covenwitch", () -> EntityType.Builder.of(CovenWitch::new, MobCategory.CREATURE)
                     .sized(0.6F, 1.95F).clientTrackingRange(8).build(Witchery.MODID + ":covenwitch"));
+    public static final RegistryObject<EntityType<BabaYaga>> BABA_YAGA =
+            ENTITY_TYPES.register("babayaga", () -> EntityType.Builder.of(BabaYaga::new, MobCategory.MONSTER)
+                    .sized(0.6F, 1.95F).clientTrackingRange(8).build(Witchery.MODID + ":babayaga"));
     public static final RegistryObject<EntityType<Imp>> IMP =
             ENTITY_TYPES.register("imp", () -> EntityType.Builder.of(Imp::new, MobCategory.MONSTER)
                     .sized(0.4F, 1.3F).fireImmune().build(Witchery.MODID + ":imp"));
@@ -107,6 +111,7 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("owl", OWL);
         LEGACY_ENTITIES.put("toad", TOAD);
         LEGACY_ENTITIES.put("covenwitch", COVEN_WITCH);
+        LEGACY_ENTITIES.put("babayaga", BABA_YAGA);
         LEGACY_ENTITIES.put("imp", IMP);
         LEGACY_ENTITIES.put("darkmark", DARK_MARK);
         for (String legacyName : LegacyRegistryData.ENTITIES) {
@@ -152,6 +157,7 @@ public final class WitcheryEntities {
                     : entry == REFLECTION ? Reflection.attributes()
                     : entry == LORD_OF_TORMENT ? LordOfTorment.attributes()
                     : entry == COVEN_WITCH ? CovenWitch.attributes()
+                    : entry == BABA_YAGA ? BabaYaga.attributes()
                     : entry == IMP ? Imp.attributes()
                     : entry == DARK_MARK ? DarkMark.attributes()
                     : entry == OWL ? WitchOwl.attributes()

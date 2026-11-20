@@ -1056,7 +1056,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 16 | `PredictionNetherTrip` | 3 | `witchery.prediction.tothenether` |
 | 17 | `PredictionMultiMine` | 13 | `witchery.prediction.coal` |
 
-`Predictions` restores IDs 1–9 and 12–17 with their legacy weights, one active outcome, and `WITCPredict.WITCPreList` entries with `WITCPreID` and `WITCPreTime`. Baba Yaga IDs 10 and 11 stay in the player record pending their encounters. `CrystalBallBlockEntity` retains `LastUsedTime` and the training rite grants `WITCFTeller`.
+`Predictions` registers all 17 IDs with their legacy weights, one active outcome, and `WITCPredict.WITCPreList` entries with `WITCPreID` and `WITCPreTime`. `CrystalBallBlockEntity` retains `LastUsedTime` and the training rite grants `WITCFTeller`. The two Baba Yaga readings use the original `witchery:babayaga` entity and legacy `Owner` name. New allied visits also retain the UUID and visit age.
 
 Mining predictions extend Forge block loot after the harvest. Deepslate and its matching ores extend the legacy stone rules. The treasure prediction places a chest with `minecraft:chests/abandoned_mineshaft`, the modern counterpart of `mineshaftCorridor`.
 
