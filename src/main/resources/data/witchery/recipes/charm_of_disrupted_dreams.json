@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["lll", "lsl", "lll"],
+  "key": {
+    "l": {"item": "minecraft:stick"},
+    "s": {"item": "witchery:fanciful_thread"}
+  },
+  "result": {"item": "witchery:charm_of_disrupted_dreams"}
+}

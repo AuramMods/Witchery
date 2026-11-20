@@ -55,7 +55,8 @@
 - [x] Restore the original kettle recipe for Brew of Sleeping, tangible sleeping bodies, and separate Overworld and Dream inventories, including health and hunger. An Icy Needle wakes the sleeper, as does lethal Dream damage or destruction of the sleeping body.
 - [x] Generate Somnian Cotton in suitable Dream biomes, spread it by source Flowing Spirit, and harvest Wispy Cotton in a normal dream or Disturbed Cotton in a nightmare. Clean packaged world generation produced cotton in 16 of 1,296 inspected Dream chunks and zero of 2,025 Overworld chunks. All 15 disposable Forge GameTests passed.
 - [x] In the muted survival client, brew and bottle three Brews of Sleeping, enter a nightmare, and restart while the body and Dream inventory are active. Wake with an Icy Needle and verify that damaged gear and Overworld health return, that Disturbed Cotton crosses dimensions, and that ordinary Dream items stay behind. Reenter to confirm those items return and verify that destroying the body or taking lethal damage wakes the sleeper.
-- [ ] Complete the Nightmare encounters and add the Dreamweave that improves the odds of a normal dream. Verify both cotton recipes through player harvest, wake, and spinning.
+- [x] Restore the ordinary Nightmare encounter with personal targeting, a 30-second post-kill delay, armor swipes, a protective charm, and the original model, animation and sounds. The muted multiplayer client attracted one naturally, demonstrated its defense window, killed it and brought Mellifluous Hunger back to the Overworld. All 17 disposable Forge GameTests passed.
+- [ ] Restore the Dreamweaves, demonic nightmare hazards, and Waking Nightmare curse. Verify both cotton recipes through player harvest, wake, and spinning.
 - [ ] Finish the remaining altar artifacts, kettle recipes, the other powered cauldron recipes, and the remaining chalk rites.
 
 ## Current Snapshot (2026-02-09)

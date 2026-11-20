@@ -1310,7 +1310,7 @@ Current scaffold behavior:
 Status:
 - resource keys and breadth datapack scaffold are now present for Dream/Torment/Mirror.
 - runtime travel hook scaffolding and split trigger wiring (portal collision + mirror right-click) are now present.
-- Dream and Nightmare cotton drops are available from naturally generated Somnian Cotton. The Nightmare encounter, Dreamweaves, and authentic Torment and Mirror activation and provider behavior are pending.
+- Dream and Nightmare cotton drops are available from naturally generated Somnian Cotton. The ordinary Nightmare now uses the original `witchery:nightmare` key with a dedicated entity and renderer. Dreamweaves, demonic nightmares, Waking Nightmare, and authentic Torment and Mirror activation and provider behavior are pending.
 
 ## 1.20.1 Event Hook Scaffold (current)
 Implementation anchor:

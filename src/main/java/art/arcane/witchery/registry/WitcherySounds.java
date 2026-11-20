@@ -11,10 +11,17 @@ import net.minecraftforge.registries.RegistryObject;
 public final class WitcherySounds {
     private static final DeferredRegister<SoundEvent> SOUNDS =
             DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, Witchery.MODID);
-    public static final RegistryObject<SoundEvent> CHALK = SOUNDS.register("random.chalk",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "random.chalk")));
+    public static final RegistryObject<SoundEvent> CHALK = sound("random.chalk");
+    public static final RegistryObject<SoundEvent> NIGHTMARE_LIVE = sound("mob.nightmare.nightmare_live");
+    public static final RegistryObject<SoundEvent> NIGHTMARE_HIT = sound("mob.nightmare.nightmare_hit");
+    public static final RegistryObject<SoundEvent> NIGHTMARE_DEAD = sound("mob.nightmare.nightmare_dead");
 
     private WitcherySounds() {
+    }
+
+    private static RegistryObject<SoundEvent> sound(String name) {
+        return SOUNDS.register(name,
+                () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(Witchery.MODID, name)));
     }
 
     public static void register(IEventBus eventBus) {

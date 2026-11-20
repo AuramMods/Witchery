@@ -51,7 +51,9 @@ public enum WitcheryIngredient {
     FANCIFUL_THREAD(100, "fanciful_thread"),
     TORMENTED_TWINE(101, "tormented_twine"),
     GOLDEN_THREAD(102, "golden_thread"),
+    MELLIFLUOUS_HUNGER(103, "mellifluous_hunger"),
     PURIFIED_MILK(105, "purified_milk"),
+    CHARM_OF_DISRUPTED_DREAMS(110, "charm_of_disrupted_dreams"),
     WORMWOOD(111, "wormwood_leaf"),
     ANOINTING_PASTE(153, "anointing_paste"),
     WOLFSBANE(156, "wolfsbane_flower");

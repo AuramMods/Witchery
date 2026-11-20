@@ -2,6 +2,7 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.entity.Mandrake;
+import art.arcane.witchery.entity.Nightmare;
 import art.arcane.witchery.entity.SleepingBody;
 import art.arcane.witchery.entity.ThrownBrew;
 import net.minecraft.world.entity.EntityType;
@@ -27,6 +28,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<SleepingBody>> SLEEPING_BODY =
             ENTITY_TYPES.register("corpse", () -> EntityType.Builder.of(SleepingBody::new, MobCategory.MISC)
                     .sized(1.2F, 0.5F).clientTrackingRange(8).build(Witchery.MODID + ":corpse"));
+    public static final RegistryObject<EntityType<Nightmare>> NIGHTMARE =
+            ENTITY_TYPES.register("nightmare", () -> EntityType.Builder.of(Nightmare::new, MobCategory.MONSTER)
+                    .sized(0.6F, 1.8F).build(Witchery.MODID + ":nightmare"));
     public static final RegistryObject<EntityType<ThrownBrew>> THROWN_BREW =
             ENTITY_TYPES.register("thrown_brew", () -> EntityType.Builder.<ThrownBrew>of(ThrownBrew::new, MobCategory.MISC)
                     .sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(3).build(Witchery.MODID + ":thrown_brew"));
@@ -34,6 +38,7 @@ public final class WitcheryEntities {
     static {
         LEGACY_ENTITIES.put("mandrake", MANDRAKE);
         LEGACY_ENTITIES.put("corpse", SLEEPING_BODY);
+        LEGACY_ENTITIES.put("nightmare", NIGHTMARE);
         for (String legacyName : LegacyRegistryData.ENTITIES) {
             registerLegacyEntity(legacyName);
         }
@@ -68,7 +73,8 @@ public final class WitcheryEntities {
     private static void registerEntityAttributes(EntityAttributeCreationEvent event) {
         for (RegistryObject<? extends EntityType<? extends Mob>> entry : LEGACY_ENTITIES.values()) {
             var attributes = entry == MANDRAKE ? Mandrake.attributes()
-                    : entry == SLEEPING_BODY ? SleepingBody.attributes() : Zombie.createAttributes();
+                    : entry == SLEEPING_BODY ? SleepingBody.attributes()
+                    : entry == NIGHTMARE ? Nightmare.attributes() : Zombie.createAttributes();
             event.put(entry.get(), attributes.build());
         }
     }

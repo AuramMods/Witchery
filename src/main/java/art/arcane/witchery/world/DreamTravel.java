@@ -1,6 +1,7 @@
 package art.arcane.witchery.world;
 
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.entity.Nightmare;
 import art.arcane.witchery.entity.SleepingBody;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.network.WitcheryNetwork;
@@ -15,10 +16,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 
@@ -38,6 +41,7 @@ public final class DreamTravel {
     private static final String SPIRIT_HUNGER = "SpiritHunger";
     private static final String BODY_ENTITY = "BodyEntity";
     private static final String REQUEST_SLEEP = "WITCDrankSleepingBrew";
+    private static final String LAST_NIGHTMARE_KILL = "LastNightmareKillTime";
     private static final int TRANSITION_USE_COOLDOWN = 20;
 
     private DreamTravel() {
@@ -59,8 +63,53 @@ public final class DreamTravel {
     }
 
     public static boolean isNightmare(ServerLevel level) {
-        return level.dimension().equals(WitcheryDimensions.DREAM) && level.players().stream().anyMatch(player ->
-                player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getCompound(SPIRIT_WORLD).getBoolean("Nightmare"));
+        return level.dimension().equals(WitcheryDimensions.DREAM) && level.players().stream().anyMatch(DreamTravel::isNightmare);
+    }
+
+    public static boolean isNightmare(ServerPlayer player) {
+        return player.level().dimension().equals(WitcheryDimensions.DREAM)
+                && player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getCompound(SPIRIT_WORLD).getBoolean("Nightmare");
+    }
+
+    public static void markNightmareKilled(ServerPlayer player) {
+        CompoundTag persistent = persistent(player);
+        CompoundTag session = persistent.getCompound(SPIRIT_WORLD);
+        session.putLong(LAST_NIGHTMARE_KILL, System.currentTimeMillis());
+        persistent.put(SPIRIT_WORLD, session);
+    }
+
+    public static void spawnNightmare(ServerPlayer player) {
+        ServerLevel level = player.serverLevel();
+        if (level.getGameTime() % 100 != 0 || !player.isAlive() || player.isSpectator()
+                || player.getAbilities().instabuild || !isNightmare(player) || level.getDifficulty() == Difficulty.PEACEFUL
+                || !level.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
+            return;
+        }
+        long lastKillTime = persistent(player).getCompound(SPIRIT_WORLD).getLong(LAST_NIGHTMARE_KILL);
+        if (lastKillTime > System.currentTimeMillis() - 30_000
+                || !level.getEntitiesOfClass(Nightmare.class, player.getBoundingBox().inflate(18),
+                        nightmare -> nightmare.isAlive() && nightmare.targets(player)).isEmpty()) {
+            return;
+        }
+        BlockPos near = player.blockPosition();
+        int dx = player.getRandom().nextInt(9) - 4;
+        int dz = player.getRandom().nextInt(9) - 4;
+        BlockPos column = near.offset(dx + 2 * Integer.signum(dx), 0, dz + 2 * Integer.signum(dz));
+        for (int offset = 0; offset <= 8; offset++) {
+            BlockPos above = column.above(offset);
+            BlockPos below = column.below(offset);
+            BlockPos position = canStand(level, above) ? above : canStand(level, below) ? below : null;
+            if (position != null && !level.getBlockState(position.below()).getFluidState().isSource()) {
+                Nightmare nightmare = WitcheryEntities.NIGHTMARE.get().create(level);
+                if (nightmare == null) return;
+                nightmare.moveTo(position.getX() + 0.5, position.getY(), position.getZ() + 0.5, 0, 0);
+                if (level.noCollision(nightmare) && !level.containsAnyLiquid(nightmare.getBoundingBox())) {
+                    nightmare.assignVictim(player);
+                    level.addFreshEntity(nightmare);
+                }
+                return;
+            }
+        }
     }
 
     private static boolean isGhost(ServerPlayer player) {
@@ -259,6 +308,7 @@ public final class DreamTravel {
 
     private static boolean carriesOut(ItemStack stack) {
         return stack.is(WitcheryIngredient.ICY_NEEDLE.item()) || stack.is(WitcheryIngredient.DISTURBED_COTTON.item())
+                || stack.is(WitcheryIngredient.MELLIFLUOUS_HUNGER.item())
                 || stack.is(WitcheryBlocks.getRequired("somniancotton").get().asItem());
     }
 

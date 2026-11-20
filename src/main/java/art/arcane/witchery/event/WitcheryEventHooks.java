@@ -98,6 +98,7 @@ public final class WitcheryEventHooks {
         if (DreamTravel.processRequests(serverPlayer)) {
             return;
         }
+        DreamTravel.spawnNightmare(serverPlayer);
 
         if (serverPlayer.level().getGameTime() % 20 == 0 && serverPlayer.hasEffect(WitcheryEffects.DEPTHS.get())) {
             if (serverPlayer.isEyeInFluid(FluidTags.WATER)) {
