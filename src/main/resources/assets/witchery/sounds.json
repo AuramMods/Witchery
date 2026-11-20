@@ -50,5 +50,21 @@
   "mob.imp.death": {
     "subtitle": "subtitles.witchery.imp.death",
     "sounds": ["witchery:mob/imp/death"]
+  },
+  "mob.owl.owl_hoot": {
+    "subtitle": "subtitles.witchery.owl.hoot",
+    "sounds": ["witchery:mob/owl/owl_hoot1", "witchery:mob/owl/owl_hoot2"]
+  },
+  "mob.owl.owl_hurt": {
+    "subtitle": "subtitles.witchery.owl.hurt",
+    "sounds": ["witchery:mob/owl/owl_hurt1"]
+  },
+  "mob.toad.toad_croak": {
+    "subtitle": "subtitles.witchery.toad.croak",
+    "sounds": ["witchery:mob/toad/toad_croak1", "witchery:mob/toad/toad_croak2"]
+  },
+  "mob.toad.toad_hurt": {
+    "subtitle": "subtitles.witchery.toad.hurt",
+    "sounds": ["witchery:mob/toad/toad_hurt1"]
   }
 }

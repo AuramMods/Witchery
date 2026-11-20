@@ -2,6 +2,9 @@ package art.arcane.witchery.event;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.entity.CovenWitch;
+import art.arcane.witchery.entity.WitchOwl;
+import art.arcane.witchery.entity.WitchPet;
+import art.arcane.witchery.entity.WitchToad;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
@@ -70,6 +73,13 @@ public final class WitcheryMobDrops {
         }
         if (creature.getType().is(CANINES)) {
             return woolOrTongue(random, arthana, looting, WitcheryIngredient.DOG_TONGUE);
+        }
+        if (creature instanceof WitchPet pet && !pet.isTemporary()) {
+            WitcheryIngredient ingredient = pet instanceof WitchOwl ? WitcheryIngredient.OWLETS_WING
+                    : pet instanceof WitchToad ? WitcheryIngredient.TOE_OF_FROG : null;
+            if (ingredient != null && roll(random, arthana ? (looting > 0 ? 1 : 0.5) : 0.2)) {
+                return new ItemStack(ingredient.item());
+            }
         }
         if (creature.getType() == EntityType.CREEPER) {
             if (arthana && roll(random, 0.01 * multiplier)) {

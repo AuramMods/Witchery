@@ -798,8 +798,8 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 101 | `ILLUSION_CREEPER` | `EntityIllusionCreeper` | `illusionCreeper` |
 | 102 | `ILLUSION_SPIDER` | `EntityIllusionSpider` | `illusionSpider` |
 | 103 | `ILLUSION_ZOMBIE` | `EntityIllusionZombie` | `illusionZombie` |
-| 104 | `OWL` | `EntityOwl` | `owl` |
-| 105 | `TOAD` | `EntityToad` | `toad` |
+| 104 | `OWL` | `EntityOwl` | `owl` (Mutating Sprig, taming, feathers, parcels, Infernal power 24) |
+| 105 | `TOAD` | `EntityToad` | `toad` (Mutating Sprig, taming, amphibious behavior, Infernal power 25) |
 | 106 | `CAT_FAMILIAR` | `EntityWitchCat` | `cat` |
 | 107 | `LOUSE` | `EntityParasyticLouse` | `louse` |
 | 108 | `EYE` | `EntityEye` | `eye` |
@@ -1104,6 +1104,8 @@ All four infusion recipes, their personal charge and the HUD are implemented. Th
 The Vampiric Poppet keeps both legacy Taglock indices. The first tracks the protected player, and the second tracks the damage recipient. Player bindings read `WITCPlayer1` and `WITCPlayer2` with optional `WITCPlayerUUID1` and `WITCPlayerUUID2`. Creature bindings retain the `WITCEntityIDm`, `WITCEntityIDl` and `WITCDisplayName` fields for each index.
 
 `witchery:grassper` reads its single legacy `Items` entry at `Slot:0b`. The rite heart retains legacy `Sacrifices` item entries and writes `GrassperPos` for offerings it takes from a Grassper. Critter Snare item damage 1 through 4 becomes the `critter` block state. The older bat subtype 9 also sets `stocked`, which restores `WitcheryShopStock` when that bat is released.
+
+The Owl reads `FeatherColor` and the Toad reads `SkinColor`. Both retain `Familiar` and `SuicideIn` and use vanilla tamed ownership. The Toad also reads `Poisonous`. The Owl keeps its carried item in its main hand equipment.
 
 ## Recipe System Registries
 

@@ -15,6 +15,8 @@ import art.arcane.witchery.entity.Soulfire;
 import art.arcane.witchery.entity.SymbolProjectile;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.entity.WitchCat;
+import art.arcane.witchery.entity.WitchOwl;
+import art.arcane.witchery.entity.WitchToad;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
@@ -63,6 +65,12 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<WitchCat>> WITCH_CAT =
             ENTITY_TYPES.register("cat", () -> EntityType.Builder.<WitchCat>of(WitchCat::new, MobCategory.CREATURE)
                     .sized(0.6F, 0.7F).clientTrackingRange(8).build(Witchery.MODID + ":cat"));
+    public static final RegistryObject<EntityType<WitchOwl>> OWL =
+            ENTITY_TYPES.register("owl", () -> EntityType.Builder.of(WitchOwl::new, MobCategory.CREATURE)
+                    .sized(0.6F, 0.8F).clientTrackingRange(8).build(Witchery.MODID + ":owl"));
+    public static final RegistryObject<EntityType<WitchToad>> TOAD =
+            ENTITY_TYPES.register("toad", () -> EntityType.Builder.of(WitchToad::new, MobCategory.CREATURE)
+                    .sized(0.8F, 0.8F).clientTrackingRange(8).build(Witchery.MODID + ":toad"));
     public static final RegistryObject<EntityType<CovenWitch>> COVEN_WITCH =
             ENTITY_TYPES.register("covenwitch", () -> EntityType.Builder.of(CovenWitch::new, MobCategory.CREATURE)
                     .sized(0.6F, 1.95F).clientTrackingRange(8).build(Witchery.MODID + ":covenwitch"));
@@ -88,6 +96,8 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("reflection", REFLECTION);
         LEGACY_ENTITIES.put("lordoftorment", LORD_OF_TORMENT);
         LEGACY_ENTITIES.put("cat", WITCH_CAT);
+        LEGACY_ENTITIES.put("owl", OWL);
+        LEGACY_ENTITIES.put("toad", TOAD);
         LEGACY_ENTITIES.put("covenwitch", COVEN_WITCH);
         LEGACY_ENTITIES.put("imp", IMP);
         LEGACY_ENTITIES.put("darkmark", DARK_MARK);
@@ -135,6 +145,8 @@ public final class WitcheryEntities {
                     : entry == COVEN_WITCH ? CovenWitch.attributes()
                     : entry == IMP ? Imp.attributes()
                     : entry == DARK_MARK ? DarkMark.attributes()
+                    : entry == OWL ? WitchOwl.attributes()
+                    : entry == TOAD ? WitchToad.attributes()
                     : entry == WITCH_CAT ? Cat.createAttributes() : Zombie.createAttributes();
             event.put(entry.get(), attributes.build());
         }

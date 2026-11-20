@@ -179,7 +179,7 @@
 - [x] Restore the 25 creature-power IDs and their activation and passive abilities. A separate meter uses the original creature icons and tracks up to 20 charges. The muted client sacrificed a pig, displayed its icon and charge, and restored six health to twenty. With the pig charge spent, another attempt preserved the infusion charge. Sacrificing a bat replaced that power and enabled Night Vision.
 - [x] Build the reobfuscated Java 17 JAR and run all 65 required Forge GameTests. The tests cover legacy minion names, sacrifices, the secondary charge cap, effects, fireballs, arrows and cobwebs. Legacy ingredient 56 migrates to `witchery:thrown_web` and the existing `witchery:web` block item retains its ID.
 - [x] The dedicated restart retained the minion's owner, the bat power and nine creature charges. On the packaged server with `allow-flight=false`, the muted survival client held jump for 6.8 seconds, rose from Y 110 to Y 168.8, remained connected and took two damage after landing.
-- [ ] Verify acquiring the Owl and Toad powers through their survival entities. Their entity ports remain pending.
+- [x] Acquire the Owl and Toad powers through their survival entities. The muted client mutated both species, bound a wild member of each species and sacrificed it with the Infernal Hand. Each power started with ten reserve charges.
 
 ## Poppet Shelf (2026-11-20)
 
@@ -220,7 +220,16 @@
 - [x] Restore bat, silverfish, tiny slime and tiny magma cube capture and sneak-release. Captured state and the bat shop stock flag carry through block item drops and legacy metadata. The packaged server captured a moving bat and kept its stocked state.
 - [x] Save a live Mystic Branch rite after the first Grassper offering. The packaged restart emptied the second Grassper and completed the rite. A separate Grassper still held one ingot and emitted comparator output 15. The client released the bat from the restored snare, and the bat kept its shop stock flag.
 - [x] Pass all 84 required Forge GameTests and package the reobfuscated JAR on Java 17.
-- [ ] Restore the remaining Sprig mutations, including Owl and Toad creation, and the linked Witchery creatures and plants.
+- [ ] Restore the remaining Sprig mutations, including the plant mutations, Leech Chest, Parasytic Louse and Winged Monkey.
+
+## Owl and Toad (2026-11-20)
+
+- [x] Mutate two captured bats into Owls with a wolf and two caught tiny slimes into Toads with an ocelot. The muted client performed both mutations with a cobweb, water, three Mutandis Extremis and a Charged Attuned Stone. Both living offerings and both pairs of snares were consumed. The Grasspers emptied and the Sprig took one wear per mutation.
+- [x] Restore the original models, colors, animations and sound definitions. The muted player tamed a new Owl with pork and a Toad with rotten flesh, dyed both, and handed the Owl a named paper parcel. The client displayed both bodies and the Owl's parcel.
+- [x] Restore feathers, Slimeballs, Owlet's Wing, and Toe of Frog drops with the Arthana bonuses. Legacy feather and skin colors, temporary lifespan, poison and familiar flags load from entity data.
+- [x] Verify live Infernal bindings and creature power acquisition. The wild Owl and Toad gave IDs 24 and 25, both with ten reserve charges. Binding and sacrificing each consumed six infusion charges. All 88 required Forge GameTests passed. Java 17 data generation and JAR reobfuscation succeeded.
+- [x] Restart the packaged dedicated server and reconnect the muted client. Both tamed animals kept their owner and dye colors. The Owl kept its named parcel, and the player kept Toad power 25, ten reserve charges and 168 infusion charges.
+- [ ] Connect Owl and Toad to familiar rites and mastery bonuses. Restore Owl Waystone delivery.
 
 ## Auram Pack Validation (2026-11-20)
 
