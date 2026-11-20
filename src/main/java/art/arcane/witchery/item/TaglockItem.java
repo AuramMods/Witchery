@@ -1,5 +1,9 @@
 package art.arcane.witchery.item;
 
+import art.arcane.witchery.block.BloodRoseBlock;
+import art.arcane.witchery.block.LeechChestBlock;
+import art.arcane.witchery.block.entity.BloodRoseBlockEntity;
+import art.arcane.witchery.block.entity.LeechChestBlockEntity;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.ChatFormatting;
@@ -167,6 +171,16 @@ public final class TaglockItem extends Item {
         Level level = context.getLevel();
         BlockPos clicked = context.getClickedPos();
         BlockState state = level.getBlockState(clicked);
+        if (state.getBlock() instanceof LeechChestBlock || state.getBlock() instanceof BloodRoseBlock) {
+            if (context.getPlayer() instanceof ServerPlayer player) {
+                var source = level.getBlockEntity(clicked);
+                ServerPlayer subject = source instanceof LeechChestBlockEntity chest ? chest.collect(player)
+                        : source instanceof BloodRoseBlockEntity rose ? rose.collect(player) : null;
+                if (subject == null) failureSound(player);
+                else bind(player, context.getHand(), subject);
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide());
+        }
         if (!(state.getBlock() instanceof BedBlock)) return InteractionResult.PASS;
         if (context.getPlayer() instanceof ServerPlayer player) {
             if (player.isShiftKeyDown()) {

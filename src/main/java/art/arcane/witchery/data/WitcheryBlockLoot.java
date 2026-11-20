@@ -6,6 +6,7 @@ import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.block.ChaliceBlock;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.DreamWeave;
+import art.arcane.witchery.block.entity.LeechSamples;
 import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.block.WitchCropBlock;
 import art.arcane.witchery.block.WitchWoodType;
@@ -28,6 +29,7 @@ import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount;
 import net.minecraft.world.level.storage.loot.functions.CopyBlockState;
+import net.minecraft.world.level.storage.loot.functions.CopyNbtFunction;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.predicates.BonusLevelTableCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
@@ -35,6 +37,7 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
 import net.minecraft.world.level.storage.loot.providers.number.BinomialDistributionGenerator;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+import net.minecraft.world.level.storage.loot.providers.nbt.ContextNbtProvider;
 import net.minecraftforge.registries.RegistryObject;
 
 import java.util.Set;
@@ -62,6 +65,10 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                 case "dreamcatcher" -> dropDreamWeave(block);
                 case "witchsapling", "witchlog", "witchwood" -> dropWitchWood(block);
                 case "crittersnare" -> dropCritterSnare(block);
+                case "leechchest" -> add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1)).add(LootItem.lootTableItem(block)
+                                .apply(CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY)
+                                        .copy(LeechSamples.PLAYERS_TAG, LeechSamples.PLAYERS_TAG))))));
                 case "bramble" -> add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool()
                         .setRolls(ConstantValue.exactly(1))
                         .add(LootItem.lootTableItem(block).apply(CopyBlockState.copyState(block).copy(BrambleBlock.WILD))))));

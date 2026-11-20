@@ -1,3 +1,4 @@
 {
-   "parent" : "witchery:block/leechchest"
+   "parent" : "minecraft:item/chest",
+   "textures" : { "particle" : "witchery:block/leechchest" }
 }

@@ -215,7 +215,7 @@
 
 ## Mutating Sprig, Grassper and Critter Snare (2026-11-20)
 
-- [x] Brew the Mutating Sprig with an Ent Branch, nether wart, Mutandis Extremis and 1,800 altar power. The packaged survival client collected the cauldron output and used it on the original Grassper pattern, creating four plants from an empty chest surrounded by vines over a water source.
+- [x] Brew the Mutating Sprig with an Ent Branch, nether wart, Mutandis Extremis and 1,800 altar power. The packaged survival client collected the cauldron output and created four Grasspers from an empty chest over source water using vines. The pattern also accepts short grass and ferns, which were variants of the original tallgrass block.
 - [x] Restore the grass and mycelium swap, the cross of clay from submerged dirt, and the cobweb mutation that uses four Alder Saplings and a zombie over a source of water. One use costs one durability. The muted client produced four Critter Snares and the zombie was consumed.
 - [x] Restore the Grassper's model, single item inventory, comparator and use as a ritual offering holder. The muted client placed and released an ingot, and inserting another produced comparator output 15. The new rite support uses the original five-block square and saves the Grassper position for refunds.
 - [x] Restore bat, silverfish, tiny slime and tiny magma cube capture and sneak-release. Captured state and the bat shop stock flag carry through block item drops and legacy metadata. The packaged server captured a moving bat and kept its stocked state.
@@ -295,6 +295,15 @@
 - [x] Restore sneaking use of the Necromantic Stone during the Grave. The muted client bound a zombie, was refused when it tried a skeleton inside the cooldown, and bound the skeleton when the cooldown finished. Infusion charge stayed at 158 throughout.
 - [x] Verify Ender Bramble travel through actual player movement. Stepping inside moved the muted client from the test platform to safe terrain roughly 370 blocks away. Waiting until the next server tick kept the vanilla movement handler from reverting the teleport.
 - [x] Verify the Grave across a dedicated restart. The remaining-time HUD resumed at 117 minutes and the zombie kept its UUID and owner. The start time, cooldown timestamp, and 158 infusion charge persisted. Data generation, the reobfuscated build, and 129 required Forge GameTests passed.
+
+## Leech Chests, Blood Roses and the Boline (2026-11-20)
+
+- [x] Restore the Leech Chest mutation. The muted survival client used a Sprig on an empty trapped chest with four vines over four cardinal water sources. GameTests verified refusal with a filled chest or a missing water source.
+- [x] Restore the four-part lid, three sample sacs and chest menus. Two muted survival clients opened the same chest. It retained both names, refused the collector's own sample, and kept the second player's sample when they left for the Nether. A normal Taglock Kit collected that player's name and UUID once they returned.
+- [x] Recover Leech Chest samples along with a harvested chest. A dedicated restart preserved three diamonds, the remaining opener, and the second player's filled kit. The muted client mined the chest with a pickaxe and picked up the chest with its saved sample and a separate stack of three diamonds.
+- [x] Re-place the harvested chest with its sample and join it to a second chest. The muted client opened the combined six-row menu.
+- [x] Restore the Blood Rose mutation, the original empty and full textures, and the legacy Boline recipe. The muted player crafted the Boline using iron, bone and emerald. GameTests verified the original red flower variants, replacement of older samples, and replantable cuttings.
+- [x] Verify the Blood Rose across restart. The muted client mutated its empty Leech Chest into four roses. A second player walked through one, which displayed its full texture and kept their sample after restart. The first player collected the sample and drained the rose. It cut the rose with the crafted Boline without wear, and the second player replanted it empty. The rose also allowed the first player to collect its own sample. Data generation, JAR reobfuscation, and all 133 required Forge GameTests passed.
 
 ## Auram Pack Validation (2026-11-20)
 

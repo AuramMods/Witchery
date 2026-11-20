@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": ["I", "B", "E"],
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "B": { "item": "minecraft:bone" },
+    "E": { "item": "minecraft:emerald" }
+  },
+  "result": { "item": "witchery:boline" }
+}

@@ -46,6 +46,7 @@ public class WitcheryBlockTagsProvider extends BlockTagsProvider {
                 WitcheryBlocks.getRequired("altar").get(),
                 WitcheryBlocks.getRequired("distilleryidle").get(),
                 WitcheryBlocks.getRequired("distilleryburning").get(),
+                WitcheryBlocks.getRequired("leechchest").get(),
                 WitcheryBlocks.getRequired("witchesovenidle").get(),
                 WitcheryBlocks.getRequired("witchesovenburning").get(),
                 WitcheryBlocks.getRequired("cauldron").get());

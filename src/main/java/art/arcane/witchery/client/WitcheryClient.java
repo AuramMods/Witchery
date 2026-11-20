@@ -35,6 +35,7 @@ import art.arcane.witchery.client.renderer.GrotesqueLayer;
 import art.arcane.witchery.client.renderer.GrassperRenderer;
 import art.arcane.witchery.client.renderer.ImpRenderer;
 import art.arcane.witchery.client.renderer.KettleRenderer;
+import art.arcane.witchery.client.renderer.LeechChestRenderer;
 import art.arcane.witchery.client.renderer.LordOfTormentRenderer;
 import art.arcane.witchery.client.renderer.MandrakeRenderer;
 import art.arcane.witchery.client.renderer.MirrorBlockRenderer;
@@ -136,6 +137,7 @@ public final class WitcheryClient {
         event.registerLayerDefinition(DemonHeartRenderer.LAYER, DemonHeartRenderer::layer);
         event.registerLayerDefinition(DreamCatcherRenderer.LAYER, DreamCatcherRenderer::layer);
         event.registerLayerDefinition(KettleRenderer.LAYER, KettleRenderer::layer);
+        event.registerLayerDefinition(LeechChestRenderer.LAYER, LeechChestRenderer::layer);
         event.registerLayerDefinition(SpinningWheelRenderer.LAYER, SpinningWheelRenderer::layer);
     }
 
@@ -181,6 +183,7 @@ public final class WitcheryClient {
         event.registerBlockEntityRenderer(WitcheryBlockEntities.MIRROR.get(), MirrorBlockRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.ROOM_MIRROR.get(), MirrorBlockRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.REFILLING_CHEST.get(), ChestRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.LEECH_CHEST.get(), LeechChestRenderer::new);
     }
 
     @SubscribeEvent

@@ -1,5 +1,6 @@
 package art.arcane.witchery.item;
 
+import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.WitchWoodType;
@@ -11,10 +12,13 @@ import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -30,6 +34,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -42,6 +47,9 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public final class MutatingSprigItem extends Item {
+    private static final TagKey<Block> BLOOD_ROSE_FLOWERS = TagKey.create(Registries.BLOCK,
+            ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "blood_rose_flowers"));
+
     public MutatingSprigItem() {
         super(new Properties().rarity(Rarity.UNCOMMON).durability(15));
     }
@@ -58,8 +66,14 @@ public final class MutatingSprigItem extends Item {
         PlantMutation plant = findBrambleMutation(level, pos, clicked);
         boolean wormwood = clicked.is(Blocks.WHEAT) && clicked.getValue(CropBlock.AGE) == CropBlock.MAX_AGE
                 && sides(level, pos, WitcheryBlocks.getRequired("somniancotton").get(), false) && hasDiagonalWater(level, pos);
-        boolean water = level.getBlockState(pos.below()).is(Blocks.WATER) && level.getFluidState(pos.below()).isSource();
-        boolean grasspers = water && clicked.is(Blocks.CHEST) && sides(level, pos, Blocks.VINE, false);
+        boolean water = sourceWater(level, pos.below());
+        boolean grasspers = water && clicked.is(Blocks.CHEST) && (sides(level, pos, Blocks.VINE, false)
+                || Direction.Plane.HORIZONTAL.stream().map(pos::relative).map(level::getBlockState)
+                .allMatch(state -> state.is(Blocks.GRASS) || state.is(Blocks.FERN)));
+        boolean leech = clicked.is(Blocks.TRAPPED_CHEST) && sides(level, pos, Blocks.VINE, false) && hasCardinalWater(level, pos);
+        boolean roses = water && clicked.is(WitcheryBlocks.getRequired("leechchest").get())
+                && Direction.Plane.HORIZONTAL.stream().map(pos::relative).map(level::getBlockState)
+                .allMatch(state -> state.is(BLOOD_ROSE_FLOWERS));
         boolean cobweb = water && clicked.is(Blocks.COBWEB);
         boolean snares = cobweb && sides(level, pos, WitcheryBlocks.getRequired("witchsapling").get(), true);
         CreatureMutation mutation = cobweb && !snares ? findCreatureMutation(level, pos) : null;
@@ -75,6 +89,14 @@ public final class MutatingSprigItem extends Item {
             } else if (wormwood) {
                 for (Direction side : Direction.Plane.HORIZONTAL) server.removeBlock(pos.relative(side), false);
                 server.setBlockAndUpdate(pos, WitcheryBlocks.getRequired("wormwood").get().defaultBlockState());
+            } else if (leech && server.getBlockEntity(pos) instanceof ChestBlockEntity chest && chest.isEmpty()) {
+                for (Direction side : Direction.Plane.HORIZONTAL) server.removeBlock(pos.relative(side), false);
+                BlockState output = WitcheryBlocks.getRequired("leechchest").get().defaultBlockState()
+                        .setValue(ChestBlock.FACING, clicked.getValue(ChestBlock.FACING))
+                        .setValue(ChestBlock.WATERLOGGED, clicked.getValue(ChestBlock.WATERLOGGED));
+                server.setBlockAndUpdate(pos, output);
+            } else if (roses && server.getBlockEntity(pos) instanceof ChestBlockEntity chest && chest.isEmpty()) {
+                replaceAround(server, pos, WitcheryBlocks.getRequired("bloodrose").get());
             } else if (grasspers && server.getBlockEntity(pos) instanceof ChestBlockEntity chest && chest.isEmpty()) {
                 replaceAround(server, pos, WitcheryBlocks.getRequired("grassper").get());
             } else if (snares) {
@@ -94,7 +116,7 @@ public final class MutatingSprigItem extends Item {
             server.playSound(null, pos, SoundEvents.SLIME_SQUISH, SoundSource.BLOCKS, 1, 1);
             return InteractionResult.CONSUME;
         }
-        return surface || clay || plant != null || wormwood || grasspers || snares || mutation != null
+        return surface || clay || plant != null || wormwood || grasspers || leech || roses || snares || mutation != null
                 ? InteractionResult.SUCCESS : InteractionResult.PASS;
     }
 
@@ -119,6 +141,13 @@ public final class MutatingSprigItem extends Item {
     private static boolean hasDiagonalWater(Level level, BlockPos center) {
         for (int x : new int[]{-1, 1}) {
             for (int z : new int[]{-1, 1}) if (!sourceWater(level, center.offset(x, -1, z))) return false;
+        }
+        return true;
+    }
+
+    private static boolean hasCardinalWater(Level level, BlockPos center) {
+        for (Direction side : Direction.Plane.HORIZONTAL) {
+            if (!sourceWater(level, center.below().relative(side))) return false;
         }
         return true;
     }

@@ -10,6 +10,7 @@ import art.arcane.witchery.brewing.BrewTerrain;
 import art.arcane.witchery.item.AnointingPasteItem;
 import art.arcane.witchery.item.BoundPoppetItem;
 import art.arcane.witchery.item.ArthanaItem;
+import art.arcane.witchery.item.BolineItem;
 import art.arcane.witchery.item.BroomItem;
 import art.arcane.witchery.item.DemonHeartItem;
 import art.arcane.witchery.item.DeathProtectionPoppetItem;
@@ -17,6 +18,7 @@ import art.arcane.witchery.item.DrinkableBrewItem;
 import art.arcane.witchery.item.DreamWeaveItem;
 import art.arcane.witchery.item.FilledChaliceItem;
 import art.arcane.witchery.item.IcyNeedleItem;
+import art.arcane.witchery.item.LeechChestItem;
 import art.arcane.witchery.item.MirrorItem;
 import art.arcane.witchery.item.OwnershipContractItem;
 import art.arcane.witchery.item.MutandisItem;
@@ -233,6 +235,7 @@ public final class WitcheryItems {
             case "filled_chalice" -> new FilledChaliceItem(WitcheryBlocks.getRequired("chalice").get());
             case "chalice", "candelabra" -> createBlockItem(path);
             case "mutandis", "mutandis_extremis" -> new MutandisItem(new Item.Properties(), path.equals("mutandis_extremis"));
+            case "boline" -> new BolineItem();
             case "chalkritual" -> new RitualChalkItem("circleglyphritual");
             case "chalkotherwhere" -> new RitualChalkItem("circleglyphotherwhere");
             case "chalkinfernal" -> new RitualChalkItem("circleglyphinfernal");
@@ -295,6 +298,9 @@ public final class WitcheryItems {
             }
             case "bramble" -> {
                 return new BrambleBlock.Item(block);
+            }
+            case "leechchest" -> {
+                return new LeechChestItem(block);
             }
             case "witchsapling", "witchleaves", "witchlog", "witchwood" -> {
                 return new WitchWoodBlockItem(block, new Item.Properties());

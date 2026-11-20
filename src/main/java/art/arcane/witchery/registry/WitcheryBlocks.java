@@ -8,12 +8,14 @@ import art.arcane.witchery.block.CandelabraBlock;
 import art.arcane.witchery.block.ChaliceBlock;
 import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.BrambleBlock;
+import art.arcane.witchery.block.BloodRoseBlock;
 import art.arcane.witchery.block.CrystalBallBlock;
 import art.arcane.witchery.block.DemonHeartBlock;
 import art.arcane.witchery.block.DistilleryBlock;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.GrassperBlock;
 import art.arcane.witchery.block.KettleBlock;
+import art.arcane.witchery.block.LeechChestBlock;
 import art.arcane.witchery.block.MirrorBlock;
 import art.arcane.witchery.block.RefillingChestBlock;
 import art.arcane.witchery.block.SomnianCottonBlock;
@@ -85,7 +87,6 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_FUNNEL = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
     private static final VoxelShape SHAPE_COFFIN = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 9.0D, 16.0D);
     private static final VoxelShape SHAPE_STATUE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 22.0D, 14.0D);
-    private static final VoxelShape SHAPE_CHEST = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 14.0D, 15.0D);
     private static final VoxelShape SHAPE_WOLFTRAP = Block.box(3.0D, 0.0D, 1.0D, 13.0D, 2.01D, 15.0D);
     private static final VoxelShape SHAPE_BEARTRAP = Block.box(3.2D, 0.16D, 3.2D, 12.8D, 1.6D, 12.8D);
     private static final VoxelShape SHAPE_SKULL = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 8.0D, 12.0D);
@@ -151,7 +152,7 @@ public final class WitcheryBlocks {
             case "wickerbundle" -> new LegacyWickerBundleBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS));
             case "shadedglass" -> new LegacyShadedGlassBlock(false);
             case "shadedglass_active" -> new LegacyShadedGlassBlock(true);
-            case "bloodrose" -> new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_SMALL, false);
+            case "bloodrose" -> new BloodRoseBlock();
             case "plantmine" -> new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_SMALL, true);
             case "glintweed", "spanishmoss", "vine", "web" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_TALL, false);
@@ -184,8 +185,7 @@ public final class WitcheryBlocks {
             case "statueofworship" ->
                     new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion(), SHAPE_STATUE, true);
             case "refillingchest" -> new RefillingChestBlock();
-            case "leechchest" ->
-                    new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.CHEST).noOcclusion(), SHAPE_CHEST, true);
+            case "leechchest" -> new LeechChestBlock();
             case "stairswoodrowan", "stairswoodalder", "stairswoodhawthorn" ->
                     new StairBlock(Blocks.OAK_PLANKS.defaultBlockState(), BlockBehaviour.Properties.copy(Blocks.OAK_STAIRS));
             case "icestairs", "snowstairs" ->

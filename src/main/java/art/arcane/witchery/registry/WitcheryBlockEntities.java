@@ -3,6 +3,7 @@ package art.arcane.witchery.registry;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.AltarBlockEntity;
 import art.arcane.witchery.block.entity.BarrierBlockEntity;
+import art.arcane.witchery.block.entity.BloodRoseBlockEntity;
 import art.arcane.witchery.block.entity.ChaliceBlockEntity;
 import art.arcane.witchery.block.entity.CrystalBallBlockEntity;
 import art.arcane.witchery.block.entity.DemonHeartBlockEntity;
@@ -10,6 +11,7 @@ import art.arcane.witchery.block.entity.DistilleryBlockEntity;
 import art.arcane.witchery.block.entity.DreamCatcherBlockEntity;
 import art.arcane.witchery.block.entity.GrassperBlockEntity;
 import art.arcane.witchery.block.entity.KettleBlockEntity;
+import art.arcane.witchery.block.entity.LeechChestBlockEntity;
 import art.arcane.witchery.block.entity.MirrorBlockEntity;
 import art.arcane.witchery.block.entity.PlacedItemBlockEntity;
 import art.arcane.witchery.block.entity.PoppetShelfBlockEntity;
@@ -84,6 +86,12 @@ public final class WitcheryBlockEntities {
     public static final RegistryObject<BlockEntityType<RefillingChestBlockEntity>> REFILLING_CHEST =
             BLOCK_ENTITIES.register("refillingchest", () -> BlockEntityType.Builder.of(RefillingChestBlockEntity::new,
                     WitcheryBlocks.getRequired("refillingchest").get()).build(null));
+    public static final RegistryObject<BlockEntityType<LeechChestBlockEntity>> LEECH_CHEST =
+            BLOCK_ENTITIES.register("leechchest", () -> BlockEntityType.Builder.of(LeechChestBlockEntity::new,
+                    WitcheryBlocks.getRequired("leechchest").get()).build(null));
+    public static final RegistryObject<BlockEntityType<BloodRoseBlockEntity>> BLOOD_ROSE =
+            BLOCK_ENTITIES.register("bloodrose", () -> BlockEntityType.Builder.of(BloodRoseBlockEntity::new,
+                    WitcheryBlocks.getRequired("bloodrose").get()).build(null));
     public static final RegistryObject<BlockEntityType<BarrierBlockEntity>> BARRIER =
             BLOCK_ENTITIES.register("barrier", () -> BlockEntityType.Builder.of(BarrierBlockEntity::new,
                     WitcheryBlocks.getRequired("barrier").get()).build(null));
@@ -108,6 +116,8 @@ public final class WitcheryBlockEntities {
         LEGACY_BLOCK_ENTITIES.put("mirrorblock", MIRROR);
         LEGACY_BLOCK_ENTITIES.put("mirrorblock2", ROOM_MIRROR);
         LEGACY_BLOCK_ENTITIES.put("refillingchest", REFILLING_CHEST);
+        LEGACY_BLOCK_ENTITIES.put("leechchest", LEECH_CHEST);
+        LEGACY_BLOCK_ENTITIES.put("bloodrose", BLOOD_ROSE);
         LEGACY_BLOCK_ENTITIES.put("spinningwheel", SPINNING_WHEEL);
         LEGACY_BLOCK_ENTITIES.put("cauldron", CAULDRON);
         LEGACY_BLOCK_ENTITIES.put("witchesovenidle", WITCHES_OVEN);
