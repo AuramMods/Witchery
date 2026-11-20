@@ -1,5 +1,6 @@
 package art.arcane.witchery.registry;
 
+import art.arcane.witchery.block.entity.BrewFluidBlockEntity;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.AltarBlockEntity;
 import art.arcane.witchery.block.entity.BarrierBlockEntity;
@@ -49,6 +50,10 @@ public final class WitcheryBlockEntities {
     public static final RegistryObject<BlockEntityType<WitchesCauldronBlockEntity>> CAULDRON =
             BLOCK_ENTITIES.register("cauldron", () -> BlockEntityType.Builder.of(WitchesCauldronBlockEntity::new,
                     WitcheryBlocks.getRequired("cauldron").get()).build(null));
+    public static final RegistryObject<BlockEntityType<BrewFluidBlockEntity>> BREW_GAS =
+            BLOCK_ENTITIES.register("brewgas", () -> brewFluidType(WitcheryBlockEntities::createBrewGas));
+    public static final RegistryObject<BlockEntityType<BrewFluidBlockEntity>> BREW_LIQUID =
+            BLOCK_ENTITIES.register("brewliquid", () -> brewFluidType(WitcheryBlockEntities::createBrewLiquid));
     public static final RegistryObject<BlockEntityType<AltarBlockEntity>> ALTAR =
             BLOCK_ENTITIES.register("altar", () -> BlockEntityType.Builder.of(AltarBlockEntity::new,
                     WitcheryBlocks.getRequired("altar").get()).build(null));
@@ -150,6 +155,8 @@ public final class WitcheryBlockEntities {
         LEGACY_BLOCK_ENTITIES.put("coffinblock", COFFIN);
         LEGACY_BLOCK_ENTITIES.put("spinningwheel", SPINNING_WHEEL);
         LEGACY_BLOCK_ENTITIES.put("cauldron", CAULDRON);
+        LEGACY_BLOCK_ENTITIES.put("brewgas", BREW_GAS);
+        LEGACY_BLOCK_ENTITIES.put("brewliquid", BREW_LIQUID);
         LEGACY_BLOCK_ENTITIES.put("witchesovenidle", WITCHES_OVEN);
         LEGACY_BLOCK_ENTITIES.put("witchesovenburning", LEGACY_BURNING_OVEN);
         for (String legacyName : LegacyRegistryData.BLOCK_ENTITIES) {
@@ -172,6 +179,19 @@ public final class WitcheryBlockEntities {
         return BlockEntityType.Builder.of(factory,
                 WitcheryBlocks.getRequired("witchesovenidle").get(),
                 WitcheryBlocks.getRequired("witchesovenburning").get()).build(null);
+    }
+
+    private static BlockEntityType<BrewFluidBlockEntity> brewFluidType(BlockEntityType.BlockEntitySupplier<BrewFluidBlockEntity> factory) {
+        return BlockEntityType.Builder.of(factory,
+                WitcheryBlocks.getRequired("brewgas").get(), WitcheryBlocks.getRequired("brewliquid").get()).build(null);
+    }
+
+    private static BrewFluidBlockEntity createBrewGas(BlockPos pos, BlockState state) {
+        return new BrewFluidBlockEntity(BREW_GAS.get(), pos, state);
+    }
+
+    private static BrewFluidBlockEntity createBrewLiquid(BlockPos pos, BlockState state) {
+        return new BrewFluidBlockEntity(BREW_LIQUID.get(), pos, state);
     }
 
     private static MirrorBlockEntity createMirror(BlockPos pos, BlockState state) {

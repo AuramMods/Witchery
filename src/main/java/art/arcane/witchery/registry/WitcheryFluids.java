@@ -1,10 +1,15 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.entity.BrewFluidBlockEntity;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BucketItem;
+import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.material.FlowingFluid;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.fluids.FluidType;
@@ -103,6 +108,7 @@ public final class WitcheryFluids {
         }
         ResourceLocation still = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "block/" + config.stillTexture());
         ResourceLocation flow = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "block/" + config.flowingTexture());
+        boolean dispersal = path.equals("brewgas") || path.equals("brewliquid");
         RegistryObject<FluidType> fluidType = FLUID_TYPES.register(path,
                 () -> new FluidType(fluidProperties) {
                     @Override
@@ -117,16 +123,32 @@ public final class WitcheryFluids {
                             public ResourceLocation getFlowingTexture() {
                                 return flow;
                             }
+
+                            @Override
+                            public int getTintColor(FluidState state, BlockAndTintGetter level, BlockPos pos) {
+                                if (dispersal && level.getBlockEntity(pos) instanceof BrewFluidBlockEntity fluid) {
+                                    return 0xFF000000 | fluid.color();
+                                }
+                                return getTintColor();
+                            }
                         });
                     }
                 });
 
         final ForgeFlowingFluid.Properties[] properties = new ForgeFlowingFluid.Properties[1];
 
-        RegistryObject<FlowingFluid> source = FLUIDS.register(path,
-                () -> new ForgeFlowingFluid.Source(properties[0]));
-        RegistryObject<FlowingFluid> flowing = FLUIDS.register("flowing_" + path,
-                () -> new ForgeFlowingFluid.Flowing(properties[0]));
+        RegistryObject<FlowingFluid> source = FLUIDS.register(path, () -> dispersal
+                ? new ForgeFlowingFluid.Source(properties[0]) {
+                    @Override
+                    public void tick(Level level, BlockPos pos, FluidState state) {
+                        // The block owns spreading and preserves the mixture on every new cell.
+                    }
+                } : new ForgeFlowingFluid.Source(properties[0]));
+        RegistryObject<FlowingFluid> flowing = FLUIDS.register("flowing_" + path, () -> dispersal
+                ? new ForgeFlowingFluid.Flowing(properties[0]) {
+                    @Override
+                    public void tick(Level level, BlockPos pos, FluidState state) {}
+                } : new ForgeFlowingFluid.Flowing(properties[0]));
 
         properties[0] = new ForgeFlowingFluid.Properties(fluidType, source, flowing)
                 .slopeFindDistance(2)

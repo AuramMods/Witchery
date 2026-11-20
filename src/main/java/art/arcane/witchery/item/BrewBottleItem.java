@@ -1,9 +1,12 @@
 package art.arcane.witchery.item;
 
+import art.arcane.witchery.block.BrewDispersalBlock;
 import art.arcane.witchery.brewing.BrewMixture;
 import art.arcane.witchery.entity.ThrownBrew;
+import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
@@ -26,6 +29,7 @@ import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -58,7 +62,12 @@ public final class BrewBottleItem extends Item {
         Component effects = mixture.effects().isEmpty() ? Component.translatable("item.witchery.brewbottle.water")
                 : ComponentUtils.formatList(mixture.effects().stream().map(effect -> effect.effect().getDisplayName()).toList(),
                 Component.literal(", "));
-        String key = mixture.splash() ? "item.witchery.brewbottle.splash" : "item.witchery.brewbottle.drink";
+        String key = "item.witchery.brewbottle." + switch (mixture.delivery()) {
+            case DRINK -> "drink";
+            case SPLASH -> "splash";
+            case GAS -> "gas";
+            case LIQUID -> "liquid";
+        };
         return Component.translatable(key, effects);
     }
 
@@ -134,6 +143,27 @@ public final class BrewBottleItem extends Item {
     public void impact(ServerLevel level, ThrownBrew brew, HitResult hit) {
         BrewMixture mixture = BrewMixture.from(brew.getItem().getTag());
         if (mixture == null || !mixture.splash()) return;
+        if (mixture.delivery() == BrewMixture.Delivery.SPLASH) {
+            splash(level, brew, hit, mixture);
+        } else {
+            String id = mixture.delivery() == BrewMixture.Delivery.GAS ? "brewgas" : "brewliquid";
+            var cloud = (BrewDispersalBlock) WitcheryBlocks.getRequired(id).get();
+            BlockPos pos;
+            Direction face = Direction.UP;
+            if (hit instanceof BlockHitResult block) {
+                face = block.getDirection();
+                pos = block.getBlockPos().relative(face);
+            } else if (hit instanceof EntityHitResult entity) {
+                pos = entity.getEntity().blockPosition();
+            } else {
+                pos = BlockPos.containing(hit.getLocation());
+            }
+            cloud.release(level, pos, face, brew.getItem().getTag(), mixture, color(brew.getItem()), brew.getOwner());
+        }
+        level.levelEvent(2002, BlockPos.containing(hit.getLocation()), color(brew.getItem()));
+    }
+
+    private void splash(ServerLevel level, ThrownBrew brew, HitResult hit, BrewMixture mixture) {
         Vec3 impact = hit.getLocation();
         int radius = mixture.splashRadius();
         LivingEntity caster = brew.getOwner() instanceof LivingEntity living ? living : null;
@@ -144,6 +174,5 @@ public final class BrewBottleItem extends Item {
             double scale = target == direct ? 1 : 1 - distance / radius;
             mixture.apply(target, brew, caster, scale, scale * 0.5);
         }
-        level.levelEvent(2002, BlockPos.containing(impact), color(brew.getItem()));
     }
 }

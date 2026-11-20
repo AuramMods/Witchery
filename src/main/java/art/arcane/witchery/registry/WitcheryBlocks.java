@@ -9,6 +9,7 @@ import art.arcane.witchery.block.ChaliceBlock;
 import art.arcane.witchery.block.CoffinBlock;
 import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.BrambleBlock;
+import art.arcane.witchery.block.BrewDispersalBlock;
 import art.arcane.witchery.block.BloodRoseBlock;
 import art.arcane.witchery.block.BloodCrucibleBlock;
 import art.arcane.witchery.block.GarlicGarlandBlock;
@@ -254,8 +255,8 @@ public final class WitcheryBlocks {
             case "hollowtears" -> new SpiritFluidBlock(WitcheryFluids.getRequiredSource("hollowtears"), spiritProperties(), false);
             case "disease" -> createLegacyFluidBlock("fluiddisease");
             case "brew" -> createLegacyFluidBlock("brew");
-            case "brewgas" -> createLegacyFluidBlock("brewgas");
-            case "brewliquid" -> createLegacyFluidBlock("brewliquid");
+            case "brewgas" -> new BrewDispersalBlock(true);
+            case "brewliquid" -> new BrewDispersalBlock(false);
             case "force" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.BARRIER).noLootTable(), SHAPE_FULL_BLOCK, true);
             case "barrier" -> new BarrierBlock();

@@ -528,7 +528,15 @@
 - [x] Verify powered brewing and splash throws. The live cauldron kept the unpowered mixture and bottle. A nearby altar let the client bottle the inverted sugar brew. A real Wolfsbane splash applied the effect to a directly hit pig and a nearby pig for different durations. The pig outside the radius received no effect.
 - [x] Verify two effects in the same brew and their status icons. Glowstone strengthened Wolfsbane while Ender Inhibition remained at its base strength. An Ender Pearl thrown under Ender Inhibition consumed the pearl and left the player in place. In the control throw, clearing the effect restored teleportation. The player's bottling skill survived the restart.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 253 required Forge GameTests. The tests cover solo and mixed brews, the first bottling threshold, named legacy ingredient metadata, splash scaling, Ender Inhibition and the fixed Mutandis recipe.
-- [ ] Port the remaining brew actions and effects, including gas, liquid, triggered dispersal, brew fluid containers, additional modifiers and castable cauldron rituals.
+- [ ] Port the remaining brew actions and effects, including triggered dispersal, brew fluid containers, additional modifiers and castable cauldron rituals.
+
+## Gaseous and Liquid Brews (2026-11-20)
+
+- [x] Restore Bat Wool and Wormwood dispersal, replacement of the previous dispersal ingredient, and lifetime modifiers. Pressing the bottle's use control releases the mixture at impact. The saved block entities carry the original effect list, color, lifetime, expansion and thrower.
+- [x] Restore gas spread and Gas Mask. Gas spreads in six directions and preserves its data in each new cell. Gravel brews Gas Mask, which survives milk and blocks harmful gas effects. The muted client brewed and threw a poisonous cloud. The server recorded Poison on the unmasked pig and only Gas Mask on the masked pig.
+- [x] Restore liquid flow and contact. The muted client threw a Liquid Brew of Wolfsbane onto a raised pig. The dyed liquid fell beside the support, reached the ground, and applied Wolfsbane to both the elevated and ground-level pigs. The source, falling stream, and runoff all returned to air.
+- [x] Save and restart during an active gas brew. Both the source cell and a neighboring cell retained the poison mixture, color, thrower and age, then continued aging.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 256 required Forge GameTests. The new tests check dispersal precedence, gas expansion and expiry, Gas Mask, and liquid flow and recession.
 
 ## Auram Pack Validation (2026-11-20)
 

@@ -9,6 +9,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -28,8 +29,12 @@ public final class BrewMixture {
     private static final String ITEMS = "Items";
     private static final Map<ResourceLocation, Ingredient> INGREDIENTS = ingredients();
 
+    public enum Delivery {
+        DRINK, SPLASH, GAS, LIQUID
+    }
+
     private enum Modifier {
-        CAPACITY, STRENGTH, DURATION, INVERT, HIDE_PARTICLES, DRINK_SPEED, SPLASH, EXTENT
+        CAPACITY, STRENGTH, DURATION, INVERT, HIDE_PARTICLES, DRINK_SPEED, DELIVERY, EXTENT, LIFETIME
     }
 
     private record Ingredient(int power, @Nullable Modifier modifier, int amount, int ceiling,
@@ -52,8 +57,9 @@ public final class BrewMixture {
     private final int drinkTicks;
     private final int yieldModifier;
     private final int color;
-    private final boolean splash;
-    private final int splashRadius;
+    private final Delivery delivery;
+    private final int extent;
+    private final int lifetime;
 
     private BrewMixture(Mixing mixing) {
         effects = List.copyOf(mixing.effects);
@@ -63,8 +69,9 @@ public final class BrewMixture {
         drinkTicks = Math.max(2, mixing.drinkTicks);
         yieldModifier = mixing.yieldModifier;
         color = mixing.color & 0xFFFFFF;
-        splash = mixing.splash;
-        splashRadius = 3 + mixing.extent;
+        delivery = mixing.delivery;
+        extent = mixing.extent;
+        lifetime = mixing.lifetime;
     }
 
     public static boolean canAdd(List<ItemStack> current, ItemStack offered) {
@@ -77,10 +84,10 @@ public final class BrewMixture {
 
     public static void add(List<ItemStack> current, ItemStack offered) {
         Ingredient ingredient = INGREDIENTS.get(id(offered));
-        if (ingredient != null && ingredient.modifier == Modifier.SPLASH) {
+        if (ingredient != null && ingredient.modifier == Modifier.DELIVERY) {
             current.removeIf(stack -> {
                 Ingredient previous = INGREDIENTS.get(id(stack));
-                return previous != null && previous.modifier == Modifier.SPLASH;
+                return previous != null && previous.modifier == Modifier.DELIVERY;
             });
         }
         current.add(offered.copyWithCount(1));
@@ -101,7 +108,7 @@ public final class BrewMixture {
             stacks.add(WitcheryIngredient.loadInventoryStack((CompoundTag) entry));
         }
         BrewMixture mixture = from(stacks);
-        return mixture != null && (!tag.getBoolean("Splash") || mixture.splash) ? mixture : null;
+        return mixture != null && (!tag.getBoolean("Splash") || mixture.splash()) ? mixture : null;
     }
 
     public CompoundTag bottleTag(List<ItemStack> stacks) {
@@ -115,7 +122,7 @@ public final class BrewMixture {
         tag.putInt("UsedCapacity", used);
         tag.putInt("RemainingCapacity", capacity - used);
         tag.putInt("BrewDrinkSpeed", drinkTicks);
-        tag.putBoolean("Splash", splash);
+        tag.putBoolean("Splash", splash());
         return tag;
     }
 
@@ -126,13 +133,22 @@ public final class BrewMixture {
     public int drinkTicks() { return drinkTicks; }
     public int yieldModifier() { return yieldModifier; }
     public int color() { return color; }
-    public boolean splash() { return splash; }
-    public int splashRadius() { return splashRadius; }
+    public boolean splash() { return delivery != Delivery.DRINK; }
+    public Delivery delivery() { return delivery; }
+    public int extent() { return extent; }
+    public int lifetime() { return lifetime; }
+    public int splashRadius() { return 3 + extent; }
 
     public void apply(LivingEntity target, @Nullable Entity source, @Nullable LivingEntity caster,
                       double strengthScale, double durationScale) {
+        apply(target, source, caster, strengthScale, durationScale, false);
+    }
+
+    public void apply(LivingEntity target, @Nullable Entity source, @Nullable LivingEntity caster,
+                      double strengthScale, double durationScale, boolean blocksHarmfulEffects) {
         if (target.isDeadOrDying() || durationScale <= 0) return;
         for (Application application : effects) {
+            if (blocksHarmfulEffects && application.effect.getCategory() == MobEffectCategory.HARMFUL) continue;
             if (application.effect.isInstantenous()) {
                 application.effect.applyInstantenousEffect(source, caster, target, application.amplifier, strengthScale);
             } else {
@@ -166,8 +182,9 @@ public final class BrewMixture {
         private int drinkTicks = 32;
         private int yieldModifier;
         private int color = 17;
-        private boolean splash;
+        private Delivery delivery = Delivery.DRINK;
         private int extent;
+        private int lifetime;
         private int strength;
         private int duration;
         private int strengthBoosts;
@@ -222,9 +239,12 @@ public final class BrewMixture {
                 case INVERT -> inverted = true;
                 case HIDE_PARTICLES -> hideParticles = true;
                 case DRINK_SPEED -> drinkTicks += ingredient.amount;
-                case SPLASH -> splash = true;
+                case DELIVERY -> delivery = Delivery.values()[ingredient.amount];
                 case EXTENT -> {
                     if (extent < ingredient.ceiling) extent++;
+                }
+                case LIFETIME -> {
+                    if (lifetime < ingredient.ceiling) lifetime++;
                 }
             }
         }
@@ -249,14 +269,20 @@ public final class BrewMixture {
         modifier(entries, "witchery:rowan_berries", 50, Modifier.DRINK_SPEED, -8, 0, 0);
         modifier(entries, "witchery:exhale_of_the_horned_one", 0, Modifier.DRINK_SPEED, -4, 0, 0);
         modifier(entries, "witchery:spanishmoss", 50, Modifier.DRINK_SPEED, -4, 0, 0);
-        modifier(entries, "gunpowder", 0, Modifier.SPLASH, 0, 0, 0);
-        modifier(entries, "witchery:globe_artichoke", 0, Modifier.SPLASH, 0, 0, 0);
+        modifier(entries, "gunpowder", 0, Modifier.DELIVERY, Delivery.SPLASH.ordinal(), 0, 0);
+        modifier(entries, "witchery:globe_artichoke", 0, Modifier.DELIVERY, Delivery.SPLASH.ordinal(), 0, 0);
+        modifier(entries, "witchery:bat_wool", 0, Modifier.DELIVERY, Delivery.GAS.ordinal(), 0, 0);
+        modifier(entries, "witchery:wormwood_leaf", 0, Modifier.DELIVERY, Delivery.LIQUID.ordinal(), 0, 0);
         modifier(entries, "witchery:wood_ash", 50, Modifier.EXTENT, 1, 1, 0);
         modifier(entries, "cocoa_beans", 100, Modifier.EXTENT, 1, 2, 0);
         modifier(entries, "witchery:somniancotton", 150, Modifier.EXTENT, 1, 3, 0);
+        modifier(entries, "witchery:belladonna_flower", 50, Modifier.LIFETIME, 1, 1, 0);
+        modifier(entries, "lapis_lazuli", 100, Modifier.LIFETIME, 1, 2, 0);
+        modifier(entries, "end_stone", 150, Modifier.LIFETIME, 1, 3, 0);
 
         potion(entries, "witchery:wolfsbane_flower", 0, 1, WitcheryEffects.WOLFSBANE, 1200);
         potion(entries, "witchery:ender_dew", 200, 1, WitcheryEffects.ENDER_INHIBITION, 1800);
+        potion(entries, "gravel", 100, 2, WitcheryEffects.GAS_MASK, 1800);
         potion(entries, "spider_eye", 0, 2, () -> MobEffects.POISON, 900);
         potion(entries, "sugar", 100, 2, 10,
                 new Potion(() -> MobEffects.MOVEMENT_SPEED, 3600), new Potion(() -> MobEffects.MOVEMENT_SLOWDOWN, 1800));

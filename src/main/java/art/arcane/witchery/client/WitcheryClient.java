@@ -40,6 +40,7 @@ import art.arcane.witchery.client.renderer.DemonHeartRenderer;
 import art.arcane.witchery.client.renderer.GrotesqueLayer;
 import art.arcane.witchery.client.renderer.FollowerRenderer;
 import art.arcane.witchery.client.renderer.BloodCrucibleRenderer;
+import art.arcane.witchery.client.renderer.BrewGasRenderer;
 import art.arcane.witchery.client.renderer.SilverVatRenderer;
 import art.arcane.witchery.client.renderer.VampireRenderer;
 import art.arcane.witchery.client.renderer.VillageGuardRenderer;
@@ -232,6 +233,8 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.THROWN_BREW.get(), ThrownItemRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.GRENADE.get(), ThrownItemRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.KETTLE.get(), KettleRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.BREW_GAS.get(), BrewGasRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.BREW_LIQUID.get(), BrewGasRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.SPINNING_WHEEL.get(), SpinningWheelRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.WOLF_HEAD.get(), WolfHeadRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.WOLF_ALTAR.get(), WolfAltarRenderer::new);

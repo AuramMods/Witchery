@@ -31,6 +31,13 @@ public final class WitcheryEffects {
     public static final RegistryObject<MobEffect> WOLFSBANE = simpleEffect("potion.wolfsbane", MobEffectCategory.NEUTRAL);
     public static final RegistryObject<MobEffect> ENDER_INHIBITION = simpleEffect("potion.enderinhibition", MobEffectCategory.HARMFUL);
     public static final RegistryObject<MobEffect> BREWING_EXPERTISE = simpleEffect("potion.brewingexpertise", MobEffectCategory.BENEFICIAL);
+    public static final RegistryObject<MobEffect> GAS_MASK = MOB_EFFECTS.register("potion.gasmask",
+            () -> new MobEffect(MobEffectCategory.BENEFICIAL, legacyColor("potion.gasmask")) {
+                @Override
+                public java.util.List<net.minecraft.world.item.ItemStack> getCurativeItems() {
+                    return java.util.List.of();
+                }
+            });
     public static final RegistryObject<MobEffect> MORTAL_COIL = MOB_EFFECTS.register("potion.mortalcoil", MortalCoilEffect::new);
     public static final RegistryObject<MobEffect> QUEASY = MOB_EFFECTS.register("potion.queasy",
             () -> new MobEffect(MobEffectCategory.HARMFUL, 0x7C9348) {
@@ -48,6 +55,7 @@ public final class WitcheryEffects {
         LEGACY_EFFECTS.put("potion.wolfsbane", WOLFSBANE);
         LEGACY_EFFECTS.put("potion.enderinhibition", ENDER_INHIBITION);
         LEGACY_EFFECTS.put("potion.brewingexpertise", BREWING_EXPERTISE);
+        LEGACY_EFFECTS.put("potion.gasmask", GAS_MASK);
         LEGACY_EFFECTS.put("potion.mortalcoil", MORTAL_COIL);
         LEGACY_EFFECTS.put("potion.queasy", QUEASY);
         for (String legacyName : LegacyRegistryData.EFFECTS) {
@@ -67,8 +75,11 @@ public final class WitcheryEffects {
     }
 
     private static RegistryObject<MobEffect> simpleEffect(String path, MobEffectCategory category) {
-        int color = (Witchery.MODID + ":" + path).hashCode() & 0xFFFFFF;
-        return MOB_EFFECTS.register(path, () -> new MobEffect(category, color) {});
+        return MOB_EFFECTS.register(path, () -> new MobEffect(category, legacyColor(path)) {});
+    }
+
+    private static int legacyColor(String path) {
+        return (Witchery.MODID + ":" + path).hashCode() & 0xFFFFFF;
     }
 
     private static void registerLegacyEffect(String legacyName) {
