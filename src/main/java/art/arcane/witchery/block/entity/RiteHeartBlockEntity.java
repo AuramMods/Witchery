@@ -6,6 +6,7 @@ import art.arcane.witchery.power.AltarPower;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryRecipes;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
+import art.arcane.witchery.world.DreamTravel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -25,6 +26,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -33,6 +35,8 @@ import java.util.UUID;
 
 public final class RiteHeartBlockEntity extends BlockEntity {
     private static final int STEP_TICKS = 20;
+    private static final int MANIFEST_RANGE = 5;
+    private static final int MANIFEST_DURATION = 150;
     private final List<ItemStack> sacrificed = new ArrayList<>();
     @Nullable
     private ResourceLocation activeRite;
@@ -71,8 +75,13 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             return;
         }
         BlockPos pos = getBlockPos();
+        boolean needsNight = false;
         for (ItemRiteRecipe rite : level.getRecipeManager().getAllRecipesFor(WitcheryRecipes.ITEM_RITE.get())) {
             if (rite.hasCircles(level, pos) && rite.findSacrifices(level, pos, 0) != null) {
+                if (!rite.canStart(level)) {
+                    needsNight = true;
+                    continue;
+                }
                 activeRite = rite.id();
                 initiator = player == null ? null : player.getUUID();
                 stepTicks = 0;
@@ -83,7 +92,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             }
         }
         if (player != null) {
-            player.displayClientMessage(Component.translatable("message.witchery.rite.unknown"), true);
+            player.displayClientMessage(Component.translatable(needsNight
+                    ? "message.witchery.rite.night_only" : "message.witchery.rite.unknown"), true);
         }
         failSound(level);
     }
@@ -123,20 +133,43 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             abort(level, "message.witchery.rite.missing_power");
             return;
         }
-        ItemEntity result = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
-                rite.result().copy(), 0, 0.3, 0);
-        result.setDefaultPickUpDelay();
-        if (!level.addFreshEntity(result)) {
-            return;
+        List<ServerPlayer> recipients = List.of();
+        ItemEntity result = null;
+        if (rite.action() == ItemRiteRecipe.Action.MANIFESTATION) {
+            double centerX = pos.getX() + 0.5;
+            double centerZ = pos.getZ() + 0.5;
+            recipients = level.getEntitiesOfClass(ServerPlayer.class, new AABB(pos).inflate(MANIFEST_RANGE, 0, MANIFEST_RANGE),
+                    player -> player.isAlive() && !player.isSpectator()
+                            && player.distanceToSqr(centerX, pos.getY(), centerZ) <= MANIFEST_RANGE * MANIFEST_RANGE);
+            if (recipients.isEmpty()) {
+                abort(level, "message.witchery.rite.no_nearby_player");
+                return;
+            }
+        } else {
+            result = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
+                    rite.result().copy(), 0, 0.3, 0);
+            result.setDefaultPickUpDelay();
+            if (!level.addFreshEntity(result)) {
+                return;
+            }
         }
         if (altar != null && !altar.consumePower(rite.power())) {
-            result.discard();
+            if (result != null) result.discard();
             abort(level, "message.witchery.rite.missing_power");
             return;
         }
+        for (ServerPlayer recipient : recipients) {
+            DreamTravel.grantManifestation(recipient, MANIFEST_DURATION);
+        }
+        for (ItemStack offering : sacrificed) {
+            if (offering.is(WitcheryIngredient.NECROMANTIC_STONE.item())) {
+                Block.popResource(level, pos, offering);
+            }
+        }
         sacrificed.clear();
         clear(level);
-        level.sendParticles(ParticleTypes.ENCHANT, result.getX(), result.getY(), result.getZ(), 16, 0.4, 0.4, 0.4, 0.05);
+        level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
+                16, 0.4, 0.4, 0.4, 0.05);
         level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.9F, 1.35F);
     }
 

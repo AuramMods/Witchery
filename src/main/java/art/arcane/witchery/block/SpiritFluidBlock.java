@@ -28,6 +28,14 @@ public final class SpiritFluidBlock extends LiquidBlock {
     }
 
     @Override
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState previous, boolean moved) {
+        if (flowingSpirit && state.getFluidState().isSource() && SpiritPortalBlock.tryIgnite(level, pos)) {
+            return;
+        }
+        super.onPlace(state, level, pos, previous, moved);
+    }
+
+    @Override
     public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         super.entityInside(state, level, pos, entity);
         if (level.isClientSide()) {

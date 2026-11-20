@@ -14,6 +14,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.FluidTags;
@@ -21,6 +22,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
@@ -29,6 +31,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +49,12 @@ public final class DreamTravel {
     private static final String SPIRIT_HUNGER = "SpiritHunger";
     private static final String BODY_ENTITY = "BodyEntity";
     private static final String REQUEST_SLEEP = "WITCDrankSleepingBrew";
+    private static final String REQUEST_MANIFEST = "WITCEnteredSpiritPortal";
+    private static final String REQUEST_GHOST_RETURN = "WITCLeavingManifestation";
+    private static final String MANIFESTED = "WITCManifested";
+    private static final String MANIFEST_DURATION = "WITCManifestDuration";
+    private static final String MANIFEST_SKIP = "WITCManifestSkipTick";
+    private static final String MANIFEST_REENTRY = "WITCManifestReentryTick";
     private static final String LAST_NIGHTMARE_KILL = "LastNightmareKillTime";
     private static final int TRANSITION_USE_COOLDOWN = 20;
 
@@ -61,6 +70,26 @@ public final class DreamTravel {
 
     public static void requestWake(ServerPlayer player) {
         persistent(player).putBoolean(FORCE_AWAKEN, true);
+    }
+
+    public static void requestManifest(ServerPlayer player) {
+        if (player.level().dimension().equals(WitcheryDimensions.DREAM) && isSpiritWalking(player)
+                && manifestSeconds(player) >= 5
+                && player.level().getGameTime() >= player.getPersistentData().getLong(MANIFEST_REENTRY)) {
+            player.getPersistentData().putBoolean(REQUEST_MANIFEST, true);
+        }
+    }
+
+    public static void requestReturnFromGhost(ServerPlayer player) {
+        player.getPersistentData().putBoolean(REQUEST_GHOST_RETURN, true);
+    }
+
+    public static void grantManifestation(ServerPlayer player, int seconds) {
+        persistent(player).putInt(MANIFEST_DURATION, seconds);
+    }
+
+    public static int manifestSeconds(ServerPlayer player) {
+        return player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getInt(MANIFEST_DURATION);
     }
 
     public static boolean isSpiritWalking(ServerPlayer player) {
@@ -117,8 +146,8 @@ public final class DreamTravel {
         }
     }
 
-    private static boolean isGhost(ServerPlayer player) {
-        return WitcheryPlayerDataProvider.get(player).map(data -> data.isGhost()).orElse(false);
+    public static boolean isGhost(ServerPlayer player) {
+        return player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getBoolean(MANIFESTED);
     }
 
     public static boolean processRequests(ServerPlayer player) {
@@ -129,7 +158,8 @@ public final class DreamTravel {
         CompoundTag persistent = data.getCompound(Player.PERSISTED_NBT_TAG);
         boolean walking = persistent.getBoolean(SPIRIT_WALKING);
         boolean inDream = player.level().dimension().equals(WitcheryDimensions.DREAM);
-        if (persistent.getBoolean(FORCE_AWAKEN) || walking && !inDream && !isGhost(player)) {
+        boolean ghost = isGhost(player);
+        if (persistent.getBoolean(FORCE_AWAKEN) || walking && !inDream && !ghost) {
             persistent.remove(FORCE_AWAKEN);
             if (walking) {
                 wake(player, persistent);
@@ -137,6 +167,21 @@ public final class DreamTravel {
                 WitcheryDimensionTravelHooks.routePlayer(player, WitcheryDimensionTravelHooks.TravelTrigger.RETURN_TO_OVERWORLD);
             }
             return true;
+        }
+        if (data.getBoolean(REQUEST_MANIFEST)) {
+            data.remove(REQUEST_MANIFEST);
+            if (walking && inDream && !ghost && manifestSeconds(player) >= 5) {
+                manifest(player, persistent);
+                return true;
+            }
+        }
+        if (ghost) {
+            boolean requested = data.getBoolean(REQUEST_GHOST_RETURN);
+            data.remove(REQUEST_GHOST_RETURN);
+            if (requested || manifestExpired(player, persistent)) {
+                returnFromGhost(player, persistent);
+                return true;
+            }
         }
         if (data.getBoolean(REQUEST_SLEEP)) {
             data.remove(REQUEST_SLEEP);
@@ -213,7 +258,7 @@ public final class DreamTravel {
             player.getFoodData().eat(16, 0.8F);
             session.remove(SPIRIT_HUNGER);
         }
-        updateNightmare(player, demonic ? 2 : nightmare ? 1 : 0);
+        syncStyle(player, demonic ? 2 : nightmare ? 1 : 0, false);
     }
 
     private record DreamAmbience(double nightmareChance, double demonicChance) {
@@ -255,13 +300,23 @@ public final class DreamTravel {
     private static void wake(ServerPlayer player, CompoundTag persistent) {
         CompoundTag session = persistent.getCompound(SPIRIT_WORLD);
         if (!session.contains(OVERWORLD_INVENTORY, Tag.TAG_LIST)) {
+            persistent.remove(SPIRIT_WALKING);
+            persistent.remove(MANIFESTED);
+            syncStyle(player, 0, false);
             return;
         }
+        ServerLevel origin = player.serverLevel();
+        Vec3 originPos = player.position();
+        boolean ghost = isGhost(player);
         ServerLevel overworld = player.server.overworld();
         BlockPos anchor = new BlockPos(session.getInt("OverworldBodyX"), session.getInt("OverworldBodyY"), session.getInt("OverworldBodyZ"));
         BlockPos arrival = findArrival(overworld, anchor);
-        ListTag spiritItems = player.getInventory().save(new ListTag());
+        ListTag activeItems = player.getInventory().save(new ListTag());
+        ListTag spiritItems = ghost ? session.getList(SPIRIT_INVENTORY, Tag.TAG_COMPOUND).copy() : activeItems;
         List<ItemStack> carried = takeItems(spiritItems, DreamTravel::carriesOut);
+        if (ghost) {
+            carried.addAll(takeItems(activeItems, DreamTravel::carriesOut));
+        }
         CompoundTag hunger = new CompoundTag();
         player.getFoodData().addAdditionalSaveData(hunger);
         float health = Math.max(10, player.getHealth());
@@ -272,6 +327,9 @@ public final class DreamTravel {
             return;
         }
 
+        if (ghost) {
+            dropGhostInventory(origin, originPos, activeItems);
+        }
         restoreInventory(player, session.getList(OVERWORLD_INVENTORY, Tag.TAG_COMPOUND), carried);
         player.getCooldowns().addCooldown(WitcheryIngredient.BREW_OF_SLEEPING.item(), TRANSITION_USE_COOLDOWN);
         session.remove(OVERWORLD_INVENTORY);
@@ -290,8 +348,99 @@ public final class DreamTravel {
         session.putBoolean("Nightmare", false);
         session.putBoolean("Demonic", false);
         persistent.putBoolean(SPIRIT_WALKING, false);
+        persistent.remove(MANIFESTED);
         player.clearFire();
-        updateNightmare(player, 0);
+        syncStyle(player, 0, false);
+    }
+
+    private static void manifest(ServerPlayer player, CompoundTag persistent) {
+        CompoundTag session = persistent.getCompound(SPIRIT_WORLD);
+        if (!session.contains(OVERWORLD_INVENTORY, Tag.TAG_LIST)) {
+            return;
+        }
+        ServerLevel overworld = player.server.overworld();
+        BlockPos arrival = findArrival(overworld, player.blockPosition());
+        ListTag dreamItems = player.getInventory().save(new ListTag());
+        List<ItemStack> carried = takeItems(dreamItems, DreamTravel::icyNeedle);
+        move(player, overworld, arrival, player.getYRot(), player.getXRot());
+        if (player.serverLevel() != overworld) {
+            return;
+        }
+        session.put(SPIRIT_INVENTORY, dreamItems);
+        session.putFloat(SPIRIT_HEALTH, Math.max(1, player.getHealth()));
+        persistent.putBoolean(MANIFESTED, true);
+        restoreInventory(player, new ListTag(), carried);
+        player.getCooldowns().addCooldown(WitcheryIngredient.ICY_NEEDLE.item(), TRANSITION_USE_COOLDOWN);
+        syncStyle(player, nightmareLevel(session), true);
+    }
+
+    private static void returnFromGhost(ServerPlayer player, CompoundTag persistent) {
+        ServerLevel dream = player.server.getLevel(WitcheryDimensions.DREAM);
+        if (dream == null) {
+            requestWake(player);
+            return;
+        }
+        ServerLevel origin = player.serverLevel();
+        Vec3 originPos = player.position();
+        CompoundTag session = persistent.getCompound(SPIRIT_WORLD);
+        ListTag items = player.getInventory().save(new ListTag());
+        List<ItemStack> carried = takeItems(items, stack -> icyNeedle(stack) || isBoundFetish(stack));
+        BlockPos arrival = findArrival(dream, player.blockPosition());
+        move(player, dream, arrival, player.getYRot(), player.getXRot());
+        if (player.serverLevel() != dream) {
+            requestReturnFromGhost(player);
+            return;
+        }
+        dropGhostInventory(origin, originPos, items);
+        restoreInventory(player, session.getList(SPIRIT_INVENTORY, Tag.TAG_COMPOUND), carried);
+        session.remove(SPIRIT_INVENTORY);
+        session.remove(SPIRIT_HEALTH);
+        persistent.remove(MANIFESTED);
+        player.getPersistentData().putLong(MANIFEST_REENTRY, dream.getGameTime() + TRANSITION_USE_COOLDOWN);
+        player.getCooldowns().addCooldown(WitcheryIngredient.ICY_NEEDLE.item(), TRANSITION_USE_COOLDOWN);
+        syncStyle(player, nightmareLevel(session), false);
+    }
+
+    private static boolean manifestExpired(ServerPlayer player, CompoundTag persistent) {
+        if (player.serverLevel().getGameTime() % 100 != 0) {
+            return false;
+        }
+        if (persistent.getBoolean(MANIFEST_SKIP)) {
+            persistent.remove(MANIFEST_SKIP);
+            return false;
+        }
+        int seconds = Math.max(0, persistent.getInt(MANIFEST_DURATION) - 5);
+        if (seconds == 0) {
+            persistent.remove(MANIFEST_DURATION);
+            return true;
+        }
+        persistent.putInt(MANIFEST_DURATION, seconds);
+        if (seconds == 60 || seconds == 30 || seconds == 15) {
+            player.displayClientMessage(Component.translatable("message.witchery.manifest.remaining", seconds), false);
+        }
+        return false;
+    }
+
+    private static boolean icyNeedle(ItemStack stack) {
+        return stack.is(WitcheryIngredient.ICY_NEEDLE.item());
+    }
+
+    private static boolean isBoundFetish(ItemStack stack) {
+        return stack.getTag() != null && stack.getTag().getInt("WITCSpiritEffect") > 0
+                && (stack.is(WitcheryBlocks.getRequired("scarecrow").get().asItem())
+                || stack.is(WitcheryBlocks.getRequired("trent").get().asItem())
+                || stack.is(WitcheryBlocks.getRequired("witchsladder").get().asItem()));
+    }
+
+    private static void dropGhostInventory(ServerLevel level, Vec3 position, ListTag items) {
+        for (Tag slot : items) {
+            ItemStack stack = WitcheryIngredient.loadInventoryStack((CompoundTag) slot);
+            if (!stack.isEmpty()) {
+                ItemEntity entity = new ItemEntity(level, position.x, position.y + 0.25, position.z, stack);
+                entity.setDefaultPickUpDelay();
+                level.addFreshEntity(entity);
+            }
+        }
     }
 
     private static CompoundTag persistent(ServerPlayer player) {
@@ -326,7 +475,27 @@ public final class DreamTravel {
         int minY = level.getMinBuildHeight() + 1;
         int maxY = level.getMaxBuildHeight() - 2;
         int start = Mth.clamp(near.getY(), minY, maxY);
-        for (int offset = 0; offset <= Math.max(start - minY, maxY - start); offset++) {
+        BlockPos local = findStandingInColumn(level, near.atY(start), minY, maxY, 0, 8);
+        if (local != null) {
+            return local;
+        }
+        for (int radius = 1; radius <= 2; radius++) {
+            for (BlockPos column : BlockPos.betweenClosed(near.offset(-radius, 0, -radius), near.offset(radius, 0, radius))) {
+                if (Math.max(Math.abs(column.getX() - near.getX()), Math.abs(column.getZ() - near.getZ())) != radius) continue;
+                BlockPos nearby = findStandingInColumn(level, column.atY(start), minY, maxY, 0, 4);
+                if (nearby != null) {
+                    return nearby;
+                }
+            }
+        }
+        BlockPos distant = findStandingInColumn(level, near.atY(start), minY, maxY, 9, Math.max(start - minY, maxY - start));
+        return distant != null ? distant : level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, near);
+    }
+
+    private static BlockPos findStandingInColumn(ServerLevel level, BlockPos near, int minY, int maxY,
+                                                int minOffset, int maxOffset) {
+        int start = near.getY();
+        for (int offset = minOffset; offset <= maxOffset; offset++) {
             BlockPos above = near.atY(start + offset);
             if (above.getY() <= maxY && canStand(level, above)) {
                 return above;
@@ -336,7 +505,7 @@ public final class DreamTravel {
                 return below;
             }
         }
-        return level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, near);
+        return null;
     }
 
     private static boolean canStand(ServerLevel level, BlockPos pos) {
@@ -389,12 +558,21 @@ public final class DreamTravel {
         player.inventoryMenu.broadcastChanges();
     }
 
-    private static void updateNightmare(ServerPlayer player, int nightmare) {
+    private static int nightmareLevel(CompoundTag session) {
+        return session.getBoolean("Nightmare") ? session.getBoolean("Demonic") ? 2 : 1 : 0;
+    }
+
+    private static void syncStyle(ServerPlayer player, int nightmare, boolean ghost) {
         WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
-            data.applyPlayerStyle(data.getOtherPlayerSkin(), data.getGrotesqueTicks(), nightmare, false,
+            data.applyPlayerStyle(data.getOtherPlayerSkin(), data.getGrotesqueTicks(), nightmare, ghost,
                     data.getCreatureTypeOrdinal(), data.getHumanBlood());
             data.bumpSyncRevision();
             WitcheryNetwork.sendPartialExtendedPlayerSync(player, data);
+            for (ServerPlayer viewer : player.serverLevel().players()) {
+                if (viewer == player) continue;
+                WitcheryNetwork.sendPlayerStyle(viewer, player.getGameProfile().getName(), data.getGrotesqueTicks(),
+                        nightmare, ghost, data.getCreatureTypeOrdinal(), data.getHumanBlood(), data.getOtherPlayerSkin());
+            }
         });
     }
 }

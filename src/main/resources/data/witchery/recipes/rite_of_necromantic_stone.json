@@ -1,0 +1,34 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [
+    {
+      "size": "small",
+      "glyph": "witchery:circleglyphritual"
+    }
+  ],
+  "sacrifices": [
+    {
+      "item": "witchery:attuned_stone"
+    },
+    {
+      "item": "minecraft:bone"
+    },
+    {
+      "item": "minecraft:rotten_flesh"
+    },
+    {
+      "item": "witchery:wood_ash"
+    },
+    {
+      "item": "minecraft:iron_sword"
+    },
+    {
+      "item": "witchery:spectral_dust"
+    }
+  ],
+  "power": 1000,
+  "night_only": true,
+  "result": {
+    "item": "witchery:necromantic_stone"
+  }
+}

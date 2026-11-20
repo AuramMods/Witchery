@@ -1,0 +1,31 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [
+    {
+      "size": "small",
+      "glyph": "witchery:circleglyphotherwhere"
+    }
+  ],
+  "sacrifices": [
+    {
+      "item": "witchery:spectral_dust"
+    },
+    {
+      "item": "witchery:mellifluous_hunger"
+    },
+    {
+      "item": "witchery:necromantic_stone"
+    },
+    {
+      "item": "minecraft:golden_pickaxe"
+    },
+    {
+      "item": "witchery:arthana"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    }
+  ],
+  "power": 5000,
+  "action": "manifestation"
+}

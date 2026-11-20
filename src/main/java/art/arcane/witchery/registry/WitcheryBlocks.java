@@ -10,6 +10,7 @@ import art.arcane.witchery.block.KettleBlock;
 import art.arcane.witchery.block.SomnianCottonBlock;
 import art.arcane.witchery.block.SpinningWheelBlock;
 import art.arcane.witchery.block.SpiritFluidBlock;
+import art.arcane.witchery.block.SpiritPortalBlock;
 import art.arcane.witchery.block.PlacedItemBlock;
 import art.arcane.witchery.block.RitualGlyphBlock;
 import art.arcane.witchery.block.RiteHeartBlock;
@@ -236,7 +237,8 @@ public final class WitcheryBlocks {
             case "circleglyphritual" -> new RitualGlyphBlock("chalkritual");
             case "circleglyphotherwhere" -> new RitualGlyphBlock("chalkotherwhere");
             case "circleglyphinfernal" -> new RitualGlyphBlock("chalkinfernal");
-            case "spiritportal", "tormentportal", "mirrorwall" ->
+            case "spiritportal" -> new SpiritPortalBlock(BlockBehaviour.Properties.copy(Blocks.NETHER_PORTAL).noLootTable());
+            case "tormentportal", "mirrorwall" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.NETHER_PORTAL), SHAPE_PORTAL_CROSS, false);
             case "spiritflowing" -> new SpiritFluidBlock(WitcheryFluids.getRequiredSource("fluidspirit"), spiritProperties(), true);
             case "hollowtears" -> new SpiritFluidBlock(WitcheryFluids.getRequiredSource("hollowtears"), spiritProperties(), false);

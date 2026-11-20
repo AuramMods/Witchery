@@ -24,6 +24,8 @@ public final class IcyNeedleItem extends Item {
             }
             if (level.dimension().equals(WitcheryDimensions.DREAM)) {
                 DreamTravel.requestWake(serverPlayer);
+            } else if (DreamTravel.isGhost(serverPlayer)) {
+                DreamTravel.requestReturnFromGhost(serverPlayer);
             } else {
                 player.hurt(level.damageSources().playerAttack(player), 1);
             }

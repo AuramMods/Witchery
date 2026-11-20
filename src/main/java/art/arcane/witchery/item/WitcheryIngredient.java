@@ -42,6 +42,7 @@ public enum WitcheryIngredient {
     REDSTONE_SOUP(40, "redstone_soup"),
     BREW_OF_INK(60, "brew_of_ink"),
     ROWAN_BERRIES(63, "rowan_berries"),
+    NECROMANTIC_STONE(64, "necromantic_stone"),
     SPECTRAL_DUST(66, "spectral_dust"),
     ENDER_DEW(67, "ender_dew"),
     GLOBE_ARTICHOKE(69, "globe_artichoke"),

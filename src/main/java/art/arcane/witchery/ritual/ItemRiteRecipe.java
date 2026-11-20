@@ -32,12 +32,21 @@ import java.util.List;
 import java.util.Map;
 
 public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, List<Ring> rings, int power,
-                             ItemStack result) implements Recipe<Container> {
+                             ItemStack result, Action action, boolean nightOnly) implements Recipe<Container> {
+    public enum Action {
+        ITEM,
+        MANIFESTATION
+    }
+
     public record Ring(RitualCircle pattern, Block glyph) {
     }
 
     public boolean hasCircles(ServerLevel level, BlockPos pos) {
         return rings.stream().allMatch(ring -> ring.pattern.matches(level, pos, ring.glyph));
+    }
+
+    public boolean canStart(ServerLevel level) {
+        return !nightOnly || level.isNight();
     }
 
     @Nullable
@@ -150,8 +159,15 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 }
                 rings.add(new Ring(pattern, glyph));
             });
-            return new ItemRiteRecipe(id, List.copyOf(ingredients), List.copyOf(rings), power,
-                    ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "result")));
+            Action action = switch (GsonHelper.getAsString(json, "action", "item")) {
+                case "item" -> Action.ITEM;
+                case "manifestation" -> Action.MANIFESTATION;
+                default -> throw new JsonSyntaxException("Unknown rite action for " + id);
+            };
+            ItemStack result = action == Action.ITEM
+                    ? ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "result")) : ItemStack.EMPTY;
+            return new ItemRiteRecipe(id, List.copyOf(ingredients), List.copyOf(rings), power, result,
+                    action, GsonHelper.getAsBoolean(json, "night_only", false));
         }
 
         @Override
@@ -172,7 +188,8 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
             for (int i = 0; i < ringCount; i++) {
                 rings.add(new Ring(buffer.readEnum(RitualCircle.class), BuiltInRegistries.BLOCK.get(buffer.readResourceLocation())));
             }
-            return new ItemRiteRecipe(id, List.copyOf(sacrifices), List.copyOf(rings), buffer.readVarInt(), buffer.readItem());
+            return new ItemRiteRecipe(id, List.copyOf(sacrifices), List.copyOf(rings), buffer.readVarInt(), buffer.readItem(),
+                    buffer.readEnum(Action.class), buffer.readBoolean());
         }
 
         @Override
@@ -186,6 +203,8 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
             }
             buffer.writeVarInt(recipe.power);
             buffer.writeItem(recipe.result);
+            buffer.writeEnum(recipe.action);
+            buffer.writeBoolean(recipe.nightOnly);
         }
     }
 }

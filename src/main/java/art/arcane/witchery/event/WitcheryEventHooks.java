@@ -66,6 +66,19 @@ public final class WitcheryEventHooks {
     }
 
     @SubscribeEvent
+    public static void onStartTracking(PlayerEvent.StartTracking event) {
+        if (event.getEntity() instanceof ServerPlayer viewer && event.getTarget() instanceof ServerPlayer target) {
+            WitcheryPlayerDataProvider.get(target).ifPresent(data -> {
+                if (data.isGhost() || data.getNightmareLevel() > 0) {
+                    WitcheryNetwork.sendPlayerStyle(viewer, target.getGameProfile().getName(), data.getGrotesqueTicks(),
+                            data.getNightmareLevel(), data.isGhost(), data.getCreatureTypeOrdinal(),
+                            data.getHumanBlood(), data.getOtherPlayerSkin());
+                }
+            });
+        }
+    }
+
+    @SubscribeEvent
     public static void onPlayerClone(PlayerEvent.Clone event) {
         event.getOriginal().reviveCaps();
         WitcheryPlayerDataProvider.get(event.getOriginal()).ifPresent(oldData ->
@@ -128,7 +141,8 @@ public final class WitcheryEventHooks {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onDreamDeath(LivingDeathEvent event) {
         if (event.getEntity() instanceof ServerPlayer player && !player.getAbilities().instabuild
-                && player.level().dimension().equals(WitcheryDimensions.DREAM) && DreamTravel.isSpiritWalking(player)) {
+                && (player.level().dimension().equals(WitcheryDimensions.DREAM) || DreamTravel.isGhost(player))
+                && DreamTravel.isSpiritWalking(player)) {
             event.setCanceled(true);
             player.setHealth(1);
             DreamTravel.requestWake(player);

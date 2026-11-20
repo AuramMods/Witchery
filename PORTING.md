@@ -59,6 +59,8 @@
 - [x] Restore the five Dreamweave wall hangings, four recipes, the shared wall block, original textures and effects at dawn. The muted client crafted the Dreamweave of Nightmares using the two specified splash potions, mounted it, and used a bed to verify Weakness and the nearby Fleet Feet weave's Slowness. The legacy weave fixture restored the correct variant and loot. All 19 disposable Forge GameTests passed.
 - [x] Verify normal and nightmare cotton in the muted multiplayer client. The Dreamweave of Nightmares and the legacy cotton and source-fluid arrangement produced a normal dream. Harvest and carry home one of each cotton, supplement each stack for the four-fibre recipes, and collect Fanciful Thread and Tormented Twine from powered Spinning Wheels.
 - [x] Brew Flowing Spirit only in the Dream, distil it into Focused Will, Condensed Fear, and two stacks of four Brews of Hollow Tears, and craft the Dreamweave of Intensity. Fourteen packaged checks and all 19 disposable Forge GameTests passed. The muted client bottled three portions in the Dream, carried them across waking, and threw one to make a flowing pool that gave Regeneration. Fluid sprites prevent the client crash observed in the earlier scaffold.
+- [x] Restore the rite that creates the Necromantic Stone, the Rite of Manifestation, and the two-by-two snow-frame Spirit Portal. Seven packaged checks covered both portal axes, invalid frames, collapse on block removal, and the night-only stone rite. The full 19-test Forge suite passed.
+- [x] Activate Manifestation by hand using the prepared purple ring and offerings. The player received 150 seconds, retained the stone, and walked through the portal to manifest. The muted client verified early return by Icy Needle, dropping Overworld items on return, timer and sleeping-body persistence across restart, expiry, and restoration of the original Overworld inventory after waking.
 - [ ] Finish demonic nightmare hazards and the Waking Nightmare curse.
 - [ ] Finish the remaining altar artifacts, kettle recipes, the other powered cauldron recipes, and the remaining chalk rites.
 
@@ -253,7 +255,7 @@
   - resource keys are scaffolded (`Level`, `LevelStem`, `DimensionType`) for `dream`, `torment`, and `mirror`.
   - datapack `dimension_type` + `dimension` JSON scaffolding is now present for all three dimensions.
   - runtime travel scaffold hooks are in place via `WitcheryDimensionTravelHooks` + `WitcheryEventHooks`.
-  - Dream uses the sleeping brew, body and separate inventories through `DreamTravel`. Spirit portal manifestation and Dream provider rules are in progress.
+  - Dream uses the sleeping brew, body and separate inventories through `DreamTravel`. The Rite of Manifestation and snow-frame Spirit Portal allow a time-limited visit to the Overworld while the body remains asleep. Dream provider presentation and demonic hazards are pending.
   - Torment's collision path and the Mirror right-click path still use the temporary travel hooks. Their original activation and provider rules are pending.
 - [~] Event bus hooks migrated with no-op or minimal behavior.
   - placeholder Forge-bus hooks are in place for attach-capabilities, player login/clone, player tick, player right-click block, entity travel-to-dimension, player changed-dimension, and level load events.
