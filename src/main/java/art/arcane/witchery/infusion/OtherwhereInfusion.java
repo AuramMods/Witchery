@@ -139,22 +139,27 @@ public final class OtherwhereInfusion {
 
     @Nullable
     private static Vec3 blinkTarget(ServerPlayer player, int elapsed) {
-        ServerLevel level = player.serverLevel();
-        Vec3 eyes = player.getEyePosition();
-        Vec3 direction = player.getLookAngle().scale(40 + 20 * (elapsed / 20));
-        BlockHitResult block = level.clip(new ClipContext(eyes, eyes.add(direction),
-                ClipContext.Block.COLLIDER, ClipContext.Fluid.SOURCE_ONLY, player));
-        EntityHitResult entity = ProjectileUtil.getEntityHitResult(level, player, eyes, block.getLocation(),
-                player.getBoundingBox().expandTowards(block.getLocation().subtract(eyes)).inflate(1),
-                target -> target.isPickable() && !target.isSpectator());
-        if (entity != null) return entity.getLocation();
-        if (block.getType() == HitResult.Type.MISS) return null;
+        HitResult hitResult = rayTrace(player, 40 + 20 * (elapsed / 20));
+        if (hitResult instanceof EntityHitResult entity) return entity.getLocation();
+        if (!(hitResult instanceof BlockHitResult block) || block.getType() == HitResult.Type.MISS) return null;
         Vec3 hit = block.getLocation();
         return switch (block.getDirection()) {
             case DOWN -> hit.add(0, -2, 0);
             case UP -> hit;
             default -> hit.add(Vec3.atLowerCornerOf(block.getDirection().getNormal()).scale(0.5));
         };
+    }
+
+    static HitResult rayTrace(ServerPlayer player, double distance) {
+        ServerLevel level = player.serverLevel();
+        Vec3 eyes = player.getEyePosition();
+        Vec3 direction = player.getLookAngle().scale(distance);
+        BlockHitResult block = level.clip(new ClipContext(eyes, eyes.add(direction),
+                ClipContext.Block.COLLIDER, ClipContext.Fluid.SOURCE_ONLY, player));
+        EntityHitResult entity = ProjectileUtil.getEntityHitResult(level, player, eyes, block.getLocation(),
+                player.getBoundingBox().expandTowards(block.getLocation().subtract(eyes)).inflate(1),
+                target -> target.isPickable() && !target.isSpectator());
+        return entity == null ? block : entity;
     }
 
     @Nullable

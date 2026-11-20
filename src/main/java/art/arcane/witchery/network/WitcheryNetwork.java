@@ -103,7 +103,7 @@ public final class WitcheryNetwork {
                 })
                 .decoder(buffer -> new InfusionStatusPacket(buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt()))
                 .consumerMainThread((message, context) -> {
-                    runClient(() -> art.arcane.witchery.client.InfusionChargeOverlay.setStatus(
+                    runClient(() -> art.arcane.witchery.client.ClientInfusion.setStatus(
                             message.type(), message.charge(), message.capacity()));
                     context.get().setPacketHandled(true);
                 })

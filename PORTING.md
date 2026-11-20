@@ -120,7 +120,7 @@
 - [x] Restore the recharging rite with a standard Regeneration potion and upkeep of 40 altar power per second. The dedicated restart retained the active rite and the player's 180 charge outside the circle. The muted client reentered, reached the 200-charge cap, and stopped the rite at the heart.
 - [x] Restore the Light and Otherwhere infusion recipes.
 - [x] Restore the infusion charge HUD and the Witch's Hand drop.
-- [ ] Restore all four infusions' Witch Hand powers, the Poppet Shelf, and the remaining types of poppets. Otherwhere powers are implemented and undergoing packaged client checks.
+- [ ] Restore Overworld and Infernal Witch's Hand powers, the Poppet Shelf, and the remaining types of poppets.
 
 ## Infernal Infusion and Voodoo Poppets (2026-11-19)
 
@@ -153,6 +153,15 @@
 - [x] Restore the Witch's Hand at `witchery:witchhand`. Witches drop it on player kills, with the original higher chance when killed with an Arthana. A muted survival player killed a witch with an Arthana and picked up its Hand on a dedicated server.
 - [x] Restore the personal charge meter using the four original block icons and the configurable left or right placement. The muted client displayed the Nether Portal meter and Otherwhere glyph on joining with 200 charge.
 - [x] Restore Otherwhere targeting, distance while channeling, blink, recall, lifting a creature and the caster, and recall with a companion. Forge GameTests verified blink and lift, including the four legacy recall fields and the Hand's saved cooldown. All 52 required tests passed, and Java 17 data generation and reobfuscation succeeded.
+- [x] The muted survival player blinked from Z 28.5 to Z 37.69 for one charge, remembered a position, returned to it for two charge and raised a pig and the caster for two charge. Ender Inhibition III preserved the player's position and charge. Sneak-attacking a pig in the Nether recalled both the player and the pig to the marked Overworld point for four charge.
+- [x] The dedicated save retained the Hand, its cooldown tag, both recalled entities, all four legacy recall fields and 191 charge after a full restart.
+
+## Light Infusion Hand Powers (2026-11-20)
+
+- [x] Restore sustained cloaking for one charge every 30 ticks and clear nearby hostile targets. Stopping item use ends the cloak. A separate Invisibility potion retains its duration.
+- [x] Restore the Light shield, cage and side projections. A brief sneak-use draws a three-by-three shield, cages an aimed creature or projects a line from the face of a block. Attacking lifts a creature four blocks into a cage for five charge. Owner-aware collision uses the original barrier texture and loaded ten-second lifetime. Legacy `owner`, `blocksPlayers` and `remainingTicks` fields load into the current block entity.
+- [x] The muted client returned to Light using its second serving of Ghost of the Light and the rite. It held and released the Hand to cloak for two charge, walked through and rendered its own shield, raised a pig into the cage, caged another pig at its original elevation, and projected a 15-block line from a stone face. The shield expired in the loaded world.
+- [x] Java 17 data generation and reobfuscation succeeded. All 55 required Forge GameTests passed, including cloak charge and aggression, owner-specific collision, lifetime and preserving charge when a raised cage is obstructed.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.

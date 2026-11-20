@@ -2,6 +2,8 @@ package art.arcane.witchery.client;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.config.WitcheryClientConfig;
+import art.arcane.witchery.infusion.LightInfusion;
+import art.arcane.witchery.item.WitchHandItem;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -10,14 +12,16 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.client.event.MovementInputUpdateEvent;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = Witchery.MODID, value = Dist.CLIENT)
-public final class InfusionChargeOverlay {
+public final class ClientInfusion {
     private static final ResourceLocation FRAME =
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "textures/gui/glass.png");
     private static final ResourceLocation ICONS =
@@ -28,7 +32,7 @@ public final class InfusionChargeOverlay {
     private static int charge;
     private static int capacity;
 
-    private InfusionChargeOverlay() {}
+    private ClientInfusion() {}
 
     public static void setStatus(int type, int current, int max) {
         infusion = type;
@@ -39,6 +43,19 @@ public final class InfusionChargeOverlay {
     @SubscribeEvent
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event) {
         setStatus(0, 0, 0);
+    }
+
+    @SubscribeEvent
+    public static void onMovementInput(MovementInputUpdateEvent event) {
+        var player = event.getEntity();
+        if (infusion != LightInfusion.ID || !player.isUsingItem() || player.isPassenger()
+                || !(player.getUseItem().getItem() instanceof WitchHandItem)) return;
+        boolean onIce = player.level().getBlockState(player.getOnPos()).is(Blocks.ICE);
+        if (player.onGround() || onIce) {
+            double speed = onIce || player.isInWater() ? 1.1 : 1.65;
+            Vec3 motion = player.getDeltaMovement();
+            player.setDeltaMovement(motion.x * speed, motion.y, motion.z * speed);
+        }
     }
 
     public static void render(ForgeGui gui, GuiGraphics graphics, float partialTick, int width, int height) {

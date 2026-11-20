@@ -1,6 +1,7 @@
 package art.arcane.witchery.item;
 
 import art.arcane.witchery.infusion.InfusionEnergy;
+import art.arcane.witchery.infusion.LightInfusion;
 import art.arcane.witchery.infusion.OtherwhereInfusion;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
@@ -12,7 +13,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 
 public final class WitchHandItem extends Item {
@@ -30,11 +30,6 @@ public final class WitchHandItem extends Item {
     }
 
     @Override
-    public UseAnim getUseAnimation(ItemStack stack) {
-        return UseAnim.BLOCK;
-    }
-
-    @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         player.startUsingItem(hand);
         return InteractionResultHolder.consume(player.getItemInHand(hand));
@@ -42,26 +37,43 @@ public final class WitchHandItem extends Item {
 
     @Override
     public void onUseTick(Level level, LivingEntity living, ItemStack stack, int remaining) {
-        if (living instanceof ServerPlayer player && InfusionEnergy.type(player) == OtherwhereInfusion.ID) {
-            OtherwhereInfusion.channel(player, USE_TICKS - remaining);
+        if (living instanceof ServerPlayer player) {
+            int elapsed = USE_TICKS - remaining;
+            switch (InfusionEnergy.type(player)) {
+                case LightInfusion.ID -> LightInfusion.channel(player, elapsed);
+                case OtherwhereInfusion.ID -> OtherwhereInfusion.channel(player, elapsed);
+            }
         }
     }
 
     @Override
     public void releaseUsing(ItemStack stack, Level level, LivingEntity living, int remaining) {
-        if (!(living instanceof ServerPlayer player) || InfusionEnergy.type(player) != OtherwhereInfusion.ID) return;
+        if (!(living instanceof ServerPlayer player)) return;
         CompoundTag tag = stack.getTag();
         if (tag != null && tag.getLong(COOLDOWN) > System.currentTimeMillis()) return;
-        if (OtherwhereInfusion.release(player, USE_TICKS - remaining)) {
-            stack.getOrCreateTag().putLong(COOLDOWN, System.currentTimeMillis() + TELEPORT_COOLDOWN_MILLIS);
+        int elapsed = USE_TICKS - remaining;
+        switch (InfusionEnergy.type(player)) {
+            case LightInfusion.ID -> LightInfusion.release(player, elapsed);
+            case OtherwhereInfusion.ID -> {
+                if (OtherwhereInfusion.release(player, elapsed)) {
+                    stack.getOrCreateTag().putLong(COOLDOWN, System.currentTimeMillis() + TELEPORT_COOLDOWN_MILLIS);
+                }
+            }
         }
     }
 
     @Override
+    public void onStopUsing(ItemStack stack, LivingEntity living, int remaining) {
+        if (living instanceof ServerPlayer player) LightInfusion.endCloak(player);
+    }
+
+    @Override
     public boolean onLeftClickEntity(ItemStack stack, Player player, Entity target) {
-        if (player instanceof ServerPlayer caster && target instanceof LivingEntity living
-                && InfusionEnergy.type(caster) == OtherwhereInfusion.ID) {
-            OtherwhereInfusion.attack(caster, living);
+        if (player instanceof ServerPlayer caster && target instanceof LivingEntity living) {
+            switch (InfusionEnergy.type(caster)) {
+                case LightInfusion.ID -> LightInfusion.attack(caster, living);
+                case OtherwhereInfusion.ID -> OtherwhereInfusion.attack(caster, living);
+            }
         }
         return true;
     }

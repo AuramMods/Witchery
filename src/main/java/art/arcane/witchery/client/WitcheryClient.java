@@ -72,7 +72,7 @@ public final class WitcheryClient {
 
     @SubscribeEvent
     public static void registerGuiOverlays(RegisterGuiOverlaysEvent event) {
-        event.registerAboveAll("infusion_charge", InfusionChargeOverlay::render);
+        event.registerAboveAll("infusion_charge", ClientInfusion::render);
     }
 
     @SubscribeEvent

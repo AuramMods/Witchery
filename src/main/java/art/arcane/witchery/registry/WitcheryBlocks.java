@@ -1,6 +1,7 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.BarrierBlock;
 import art.arcane.witchery.block.AltarBlock;
 import art.arcane.witchery.block.CandelabraBlock;
 import art.arcane.witchery.block.ChaliceBlock;
@@ -252,8 +253,7 @@ public final class WitcheryBlocks {
             case "brewliquid" -> createLegacyFluidBlock("brewliquid");
             case "force" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.BARRIER).noLootTable(), SHAPE_FULL_BLOCK, true);
-            case "barrier" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.BARRIER), SHAPE_FULL_BLOCK, true);
+            case "barrier" -> new BarrierBlock();
             case "light", "slurp" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.BARRIER).noLootTable(), Shapes.empty(), false);
             case "cactus" ->

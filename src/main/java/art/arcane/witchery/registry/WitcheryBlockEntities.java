@@ -2,6 +2,7 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.AltarBlockEntity;
+import art.arcane.witchery.block.entity.BarrierBlockEntity;
 import art.arcane.witchery.block.entity.ChaliceBlockEntity;
 import art.arcane.witchery.block.entity.DemonHeartBlockEntity;
 import art.arcane.witchery.block.entity.DistilleryBlockEntity;
@@ -74,9 +75,13 @@ public final class WitcheryBlockEntities {
     public static final RegistryObject<BlockEntityType<RefillingChestBlockEntity>> REFILLING_CHEST =
             BLOCK_ENTITIES.register("refillingchest", () -> BlockEntityType.Builder.of(RefillingChestBlockEntity::new,
                     WitcheryBlocks.getRequired("refillingchest").get()).build(null));
+    public static final RegistryObject<BlockEntityType<BarrierBlockEntity>> BARRIER =
+            BLOCK_ENTITIES.register("barrier", () -> BlockEntityType.Builder.of(BarrierBlockEntity::new,
+                    WitcheryBlocks.getRequired("barrier").get()).build(null));
 
     static {
         LEGACY_BLOCK_ENTITIES.put("altar", ALTAR);
+        LEGACY_BLOCK_ENTITIES.put("barrier", BARRIER);
         LEGACY_BLOCK_ENTITIES.put("chalice", CHALICE);
         LEGACY_BLOCK_ENTITIES.put("dreamcatcher", DREAM_CATCHER);
         LEGACY_BLOCK_ENTITIES.put("demonheart", DEMON_HEART);
