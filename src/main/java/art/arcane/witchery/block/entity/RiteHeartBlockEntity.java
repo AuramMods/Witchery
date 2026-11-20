@@ -25,6 +25,7 @@ import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryRecipes;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
+import art.arcane.witchery.ritual.RiteOfTransposition;
 import art.arcane.witchery.vampirism.Vampirism;
 import art.arcane.witchery.world.DreamTravel;
 import art.arcane.witchery.world.WaystoneTravel;
@@ -80,6 +81,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     private int covenSize;
     private int covenSummoned;
     private boolean recharging;
+    private int oreDepth;
 
     public RiteHeartBlockEntity(BlockPos pos, BlockState state) {
         super(WitcheryBlockEntities.CIRCLE.get(), pos, state);
@@ -98,9 +100,11 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         }
         heart.updateActiveState(server);
         if (heart.activeRite != null) {
-            if (++heart.stepTicks >= STEP_TICKS) {
+            int interval = heart.oreDepth > 0 ? RiteOfTransposition.ORE_PULSE_TICKS : STEP_TICKS;
+            if (++heart.stepTicks >= interval) {
                 heart.stepTicks = 0;
-                heart.advance(server);
+                if (heart.oreDepth > 0) heart.transposeOreLayer(server);
+                else heart.advance(server);
             }
             level.blockEntityChanged(pos);
         }
@@ -322,6 +326,14 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 return;
             }
         }
+        if (rite.action() == ItemRiteRecipe.Action.TRANSPOSE_CREATURE) {
+            ServerPlayer caster = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
+            String failure = RiteOfTransposition.summon(level, pos, boundOffering(level), caster);
+            if (failure != null) {
+                abort(level, failure);
+                return;
+            }
+        }
         if (initiator != null && result instanceof ItemEntity drop
                 && drop.getItem().is(WitcheryBlocks.getRequired("crystalball").get().asItem())) {
             ServerPlayer caster = level.getServer().getPlayerList().getPlayer(initiator);
@@ -361,7 +373,9 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             }
         }
         sacrificed.clear();
-        if (rite.action() == ItemRiteRecipe.Action.RECHARGE_INFUSION) {
+        if (rite.action() == ItemRiteRecipe.Action.TRANSPOSE_ORES) {
+            transposeOreLayer(level);
+        } else if (rite.action() == ItemRiteRecipe.Action.RECHARGE_INFUSION) {
             recharging = true;
             setChanged();
         } else {
@@ -370,6 +384,10 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
                 16, 0.4, 0.4, 0.4, 0.05);
         level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.9F, 1.35F);
+    }
+
+    private void transposeOreLayer(ServerLevel level) {
+        if (!RiteOfTransposition.transposeOreLayer(level, getBlockPos(), ++oreDepth, covenSize)) clear(level);
     }
 
     private static void finishVampireCure(ServerLevel level, BlockPos pos, ServerPlayer vampire) {
@@ -497,6 +515,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         covenSize = 0;
         covenSummoned = 0;
         recharging = false;
+        oreDepth = 0;
         updateActiveState(level);
         setChanged();
     }
@@ -531,6 +550,25 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 sacrificed.add(new Sacrifice(stack, origin));
             }
         }
+        oreDepth = activeRite != null && !recharging
+                ? Mth.clamp(tag.getInt("OreDepth"), 0, RiteOfTransposition.oreDepthLimit(covenSize) - 1) : 0;
+        if (activeRite == null) loadLegacyOreRite(tag);
+    }
+
+    private void loadLegacyOreRite(CompoundTag tag) {
+        byte[] rites = tag.getByteArray("Rituals");
+        byte[] stages = tag.getByteArray("RitualStages");
+        byte[] covens = tag.getByteArray("RitualCovens");
+        for (int index = 0; index < Math.min(rites.length, stages.length); index++) {
+            if (rites[index] != 7 || stages[index] <= 0) continue;
+            int members = index < covens.length ? Mth.clamp(covens[index], 0, CovenWitch.MAX_MEMBERS) : 0;
+            if (stages[index] >= RiteOfTransposition.oreDepthLimit(members)) continue;
+            activeRite = RiteOfTransposition.ORE_RECIPE;
+            covenSize = members;
+            covenSummoned = members;
+            oreDepth = stages[index];
+            return;
+        }
     }
 
     @Override
@@ -539,6 +577,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (activeRite != null) {
             tag.putString("Rite", activeRite.toString());
             tag.putInt("StepTicks", stepTicks);
+            if (oreDepth > 0) tag.putInt("OreDepth", oreDepth);
             if (recharging) tag.putBoolean("Recharging", true);
             if (covenSize > 0) {
                 tag.putInt("CovenSize", covenSize);

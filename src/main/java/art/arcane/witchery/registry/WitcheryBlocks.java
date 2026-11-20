@@ -21,6 +21,7 @@ import art.arcane.witchery.block.DaylightCollectorBlock;
 import art.arcane.witchery.block.DemonHeartBlock;
 import art.arcane.witchery.block.DistilleryBlock;
 import art.arcane.witchery.block.DreamCatcherBlock;
+import art.arcane.witchery.block.FetishBlock;
 import art.arcane.witchery.block.GrassperBlock;
 import art.arcane.witchery.block.HuntingTrapBlock;
 import art.arcane.witchery.block.KettleBlock;
@@ -100,7 +101,6 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_STATUE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 22.0D, 14.0D);
     private static final VoxelShape SHAPE_SKULL = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 8.0D, 12.0D);
     private static final VoxelShape SHAPE_BRAZIER = Block.box(3.2D, 0.0D, 3.2D, 12.8D, 15.2D, 12.8D);
-    private static final VoxelShape SHAPE_FETISH = Block.box(3.2D, 0.0D, 3.2D, 12.8D, 16.0D, 12.8D);
     private static final VoxelShape SHAPE_GLOW_GLOBE = Block.box(6.4D, 6.4D, 6.4D, 9.6D, 9.6D, 9.6D);
     private static final VoxelShape SHAPE_INFINITY_EGG = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
     private static final VoxelShape SHAPE_CACTUS = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 16.0D, 15.0D);
@@ -227,8 +227,7 @@ public final class WitcheryBlocks {
             case "crystalball" -> new CrystalBallBlock();
             case "decursedirected" -> new AreaWardBlock(AreaWardBlockEntity.Kind.DIRECTED);
             case "decurseteleport" -> new AreaWardBlock(AreaWardBlockEntity.Kind.TELEPORT);
-            case "scarecrow", "trent", "witchsladder" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS), SHAPE_FETISH, true);
+            case "scarecrow", "trent", "witchsladder" -> new FetishBlock(path);
             case "placeditem" -> new PlacedItemBlock();
             case "glowglobe" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.GLASS), SHAPE_GLOW_GLOBE, true);

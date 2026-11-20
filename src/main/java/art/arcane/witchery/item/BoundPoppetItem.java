@@ -39,6 +39,11 @@ public class BoundPoppetItem extends Item {
         return useWard(player, type, amount, stack -> true, stack -> {});
     }
 
+    static boolean useCarriedWard(ServerPlayer player, Item type, int amount) {
+        return !HunterClothingItem.fullSet(player, HunterClothingItem.Upgrade.PLAIN)
+                && useWard(player.getInventory(), player, type, amount, stack -> true, stack -> {});
+    }
+
     static boolean useWard(ServerPlayer player, Item type, int amount, Predicate<ItemStack> condition, Consumer<ItemStack> use) {
         if (HunterClothingItem.fullSet(player, HunterClothingItem.Upgrade.PLAIN)) return false;
         if (useWard(player.getInventory(), player, type, amount, condition, use)) return true;

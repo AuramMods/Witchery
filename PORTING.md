@@ -582,7 +582,17 @@
 - [x] Capture a pig's taglock in the muted background survival client and use the bound item in a dropped-ingredient cast. The server applied Wolfsbane to the pig after it moved during warmup and left the neighboring pig unaffected.
 - [x] Save a second cast three pulses into warmup. The dedicated server resumed and completed it after restart. The enabled directed statue seven blocks below the pig kept its facing, owner and killer list. The cast used the brew and applied no Wolfsbane.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 278 required Forge GameTests. Coverage includes range failure, blank kits, named legacy cast resumption, loaded statue behavior, player killer records and the poppet's wear.
-- [ ] Restore the wolf and mandrake statue geometry and connect the Statue of Occluded Summons when forced-teleport rites are ported.
+- [ ] Restore the wolf and mandrake statue geometry.
+
+## Rites of Transposition (2026-11-20)
+
+- [x] Use the medium Otherwhere circle, Waystone, bound Taglock Kit, Ender Dew, Iron Axe and 3,000 altar power to summon a creature or player. The muted survival client captured a pig's taglock. After the fixture moved that pig to the Nether and dropped the offerings, the client activated the circle and recovered the same pig at its center. The nearby pig stayed in place.
+- [x] Keep the Dream restriction, Witch Hunter resistance, Statue of Occluded Summons, enhanced carried Voodoo Protection Poppet, and Ender Inhibition IV. A failed attempt returns the offerings and spends the altar charge. Existing enhanced fetish items and block entities provide the original 16-block boost and retain the enhancement when broken and placed again.
+- [x] Verify redstone activation with the muted client connected. It arrived from the Nether on the first attempt. With the migrated scarecrow and bound poppet in the second fixture, the player stayed put, the poppet took 350 wear, and all four offerings returned.
+- [x] Use the large Otherwhere circle and the five original offerings to extract ore from a 17-by-17 area. The rite scans 30 layers and adds five per coven member. Six members also enable gold. Both stone and deepslate ore variants drop their own blocks. The active layer survives a restart and can be restored from the legacy rite 7 save.
+- [x] Save the native ore rite after six layers. On restart, it finished thirty layers and left exactly two Iron Ore items and one Deepslate Iron Ore item. Gold, iron on layer 31, and iron outside the range all stayed in place.
+- [x] Run Java 17 data generation, JAR reobfuscation and all 284 required Forge GameTests. Coverage includes Nether summoning, the Ender Inhibition threshold, refunds, both area and carried defenses, and the legacy six-member ore rite.
+- [ ] Restore the spirit-binding progression for new enhanced fetishes and finish the other spirit effects. The current enhancement can be used with migrated items and blocks.
 
 ## Auram Pack Validation (2026-11-20)
 

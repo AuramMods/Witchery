@@ -1,0 +1,12 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "medium", "glyph": "witchery:circleglyphotherwhere"}],
+  "sacrifices": [
+    {"item": "witchery:waystone"},
+    {"type": "witchery:bound_taglock"},
+    {"item": "witchery:ender_dew"},
+    {"item": "minecraft:iron_axe"}
+  ],
+  "power": 3000,
+  "action": "transpose_creature"
+}

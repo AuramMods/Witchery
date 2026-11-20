@@ -1,5 +1,6 @@
 package art.arcane.witchery.item;
 
+import art.arcane.witchery.block.entity.FetishBlockEntity;
 import art.arcane.witchery.entity.WitchHunterPursuit;
 import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.core.particles.ParticleTypes;
@@ -26,6 +27,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 public final class VoodooPoppetItem extends BoundPoppetItem {
     private static final int USE_TICKS = 80;
@@ -129,10 +131,18 @@ public final class VoodooPoppetItem extends BoundPoppetItem {
 
     public static boolean deflectRite(ServerPlayer caster, ServerPlayer target, int wards) {
         var item = WitcheryItems.getRequired("voodoo_protection_poppet").get();
-        for (int strike = 0; strike < wards; strike++) {
+        int required = wards > 1 && FetishBlockEntity.enhancesPoppets(target) ? 1 : wards;
+        for (int strike = 0; strike < required; strike++) {
             if (!useWard(target, item, DEFLECTION_WEAR)) return false;
         }
         strikeCaster(caster);
+        return true;
+    }
+
+    public static boolean deflectSummoning(@Nullable ServerPlayer caster, LivingEntity target) {
+        if (!(target instanceof ServerPlayer player) || !FetishBlockEntity.enhancesPoppets(player)) return false;
+        if (!useCarriedWard(player, WitcheryItems.getRequired("voodoo_protection_poppet").get(), DEFLECTION_WEAR)) return false;
+        if (caster != null) strikeCaster(caster);
         return true;
     }
 

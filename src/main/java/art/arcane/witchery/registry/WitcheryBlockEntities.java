@@ -15,6 +15,7 @@ import art.arcane.witchery.block.entity.CrystalBallBlockEntity;
 import art.arcane.witchery.block.entity.DemonHeartBlockEntity;
 import art.arcane.witchery.block.entity.DistilleryBlockEntity;
 import art.arcane.witchery.block.entity.DreamCatcherBlockEntity;
+import art.arcane.witchery.block.entity.FetishBlockEntity;
 import art.arcane.witchery.block.entity.GrassperBlockEntity;
 import art.arcane.witchery.block.entity.HuntingTrapBlockEntity;
 import art.arcane.witchery.block.entity.KettleBlockEntity;
@@ -42,6 +43,7 @@ import net.minecraftforge.registries.RegistryObject;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public final class WitcheryBlockEntities {
@@ -49,6 +51,7 @@ public final class WitcheryBlockEntities {
     public static final Map<String, RegistryObject<? extends BlockEntityType<?>>> LEGACY_BLOCK_ENTITIES = new LinkedHashMap<>();
     private static final Map<CursedControls.Kind, RegistryObject<BlockEntityType<CursedControlBlockEntity>>> CURSED_CONTROLS =
             new EnumMap<>(CursedControls.Kind.class);
+    private static final Map<String, RegistryObject<BlockEntityType<FetishBlockEntity>>> FETISHES = new LinkedHashMap<>();
     public static final RegistryObject<BlockEntityType<WitchesOvenBlockEntity>> WITCHES_OVEN =
             BLOCK_ENTITIES.register("witchesovenidle", () -> ovenType(WitcheryBlockEntities::createOven));
     public static final RegistryObject<BlockEntityType<WitchesOvenBlockEntity>> LEGACY_BURNING_OVEN =
@@ -183,6 +186,13 @@ public final class WitcheryBlockEntities {
             CURSED_CONTROLS.put(kind, type);
             LEGACY_BLOCK_ENTITIES.put(kind.path(), type);
         }
+        for (String path : List.of("scarecrow", "trent", "witchsladder")) {
+            RegistryObject<BlockEntityType<FetishBlockEntity>> type = BLOCK_ENTITIES.register(path,
+                    () -> BlockEntityType.Builder.of((pos, state) -> new FetishBlockEntity(pos, state, path),
+                            WitcheryBlocks.getRequired(path).get()).build(null));
+            FETISHES.put(path, type);
+            LEGACY_BLOCK_ENTITIES.put(path, type);
+        }
         for (String legacyName : LegacyRegistryData.BLOCK_ENTITIES) {
             registerLegacyBlockEntity(legacyName);
         }
@@ -197,6 +207,10 @@ public final class WitcheryBlockEntities {
 
     public static Map<String, RegistryObject<? extends BlockEntityType<?>>> all() {
         return Collections.unmodifiableMap(LEGACY_BLOCK_ENTITIES);
+    }
+
+    public static RegistryObject<BlockEntityType<FetishBlockEntity>> fetish(String path) {
+        return FETISHES.get(path);
     }
 
     public static RegistryObject<BlockEntityType<CursedControlBlockEntity>> cursedControl(CursedControls.Kind kind) {

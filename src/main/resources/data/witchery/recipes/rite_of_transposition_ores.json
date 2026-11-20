@@ -1,0 +1,12 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "large", "glyph": "witchery:circleglyphotherwhere"}],
+  "sacrifices": [
+    {"item": "minecraft:ender_pearl"},
+    {"item": "minecraft:iron_ingot"},
+    {"item": "minecraft:blaze_powder"},
+    {"item": "witchery:diamond_vapour"},
+    {"item": "witchery:charged_attuned_stone"}
+  ],
+  "action": "transpose_ores"
+}

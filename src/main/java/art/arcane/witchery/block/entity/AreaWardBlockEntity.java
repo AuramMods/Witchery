@@ -71,6 +71,10 @@ public final class AreaWardBlockEntity extends BlockEntity {
         return findWard(entity, ward -> ward.kind == Kind.DIRECTED && ward.enabled() && !ward.isKiller(entity));
     }
 
+    public static boolean protectsSummoning(LivingEntity entity) {
+        return findWard(entity, ward -> ward.kind == Kind.TELEPORT && ward.enabled() && !ward.isKiller(entity));
+    }
+
     public static void recordKiller(ServerPlayer player) {
         findWard(player, ward -> {
             if (ward.killers.add(player.getGameProfile().getName())) ward.setChanged();

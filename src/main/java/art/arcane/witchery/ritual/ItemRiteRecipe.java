@@ -3,6 +3,7 @@ package art.arcane.witchery.ritual;
 import art.arcane.witchery.block.RitualGlyphBlock;
 import art.arcane.witchery.block.entity.GrassperBlockEntity;
 import art.arcane.witchery.registry.WitcheryRecipes;
+import art.arcane.witchery.world.WitcheryDimensions;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
@@ -58,7 +59,9 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         TRAVEL_WAYSTONE,
         CURE_VAMPIRISM,
         CURSE_OF_THE_WOLF,
-        CURE_LYCANTHROPY
+        CURE_LYCANTHROPY,
+        TRANSPOSE_CREATURE,
+        TRANSPOSE_ORES
     }
 
     public record Ring(RitualCircle pattern, Block glyph) {
@@ -73,6 +76,8 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
 
     @Nullable
     public String startFailure(ServerLevel level) {
+        if ((action == Action.TRANSPOSE_CREATURE || action == Action.TRANSPOSE_ORES)
+                && level.dimension().equals(WitcheryDimensions.DREAM)) return "message.witchery.rite.transpose_dream";
         if (nightOnly && !level.isNight()) return "message.witchery.rite.night_only";
         if (action == Action.CURSE_WAKING_NIGHTMARE && !level.isThundering()) return "message.witchery.rite.storm_only";
         return null;
@@ -233,6 +238,8 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 case "cure_vampirism" -> Action.CURE_VAMPIRISM;
                 case "curse_of_the_wolf" -> Action.CURSE_OF_THE_WOLF;
                 case "cure_lycanthropy" -> Action.CURE_LYCANTHROPY;
+                case "transpose_creature" -> Action.TRANSPOSE_CREATURE;
+                case "transpose_ores" -> Action.TRANSPOSE_ORES;
                 default -> throw new JsonSyntaxException("Unknown rite action for " + id);
             };
             ItemStack result = action == Action.ITEM
