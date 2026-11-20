@@ -19,6 +19,8 @@ public final class WitcheryPlayerData {
     private static final String KEY_VAMPIRE_LEVEL_CAP = "VampireLevelCap";
     private static final String KEY_VAMPIRE_QUEST_COUNTER = "VampireQuestCounter";
     private static final String KEY_VAMPIRE_VISION = "VampireVision";
+    private static final String KEY_PREVIOUS_MAY_FLY = "VampirePreviousMayFly";
+    private static final String KEY_PREVIOUS_FLYING = "VampirePreviousFlying";
     private static final String KEY_GROTESQUE_TICKS = "GrotesqueTicks";
     private static final String KEY_NIGHTMARE_LEVEL = "NightmareLevel";
     private static final String KEY_GHOST = "Ghost";
@@ -41,6 +43,8 @@ public final class WitcheryPlayerData {
     private int vampireLevelCap;
     private int vampireQuestCounter;
     private boolean vampireVision;
+    private boolean previousMayFly;
+    private boolean previousFlying;
     private int selectedVampirePower;
     private long nextVampireAbility;
     private int foodBeforeEating = -1;
@@ -79,6 +83,10 @@ public final class WitcheryPlayerData {
 
     public int getCreatureTypeOrdinal() {
         return creatureTypeOrdinal;
+    }
+
+    public void setCreatureTypeOrdinal(int type) {
+        creatureTypeOrdinal = Mth.clamp(type, 0, 5);
     }
 
     public int getHumanBlood() {
@@ -133,6 +141,19 @@ public final class WitcheryPlayerData {
 
     public void setVampireVision(boolean active) {
         vampireVision = active;
+    }
+
+    public void rememberFlight(boolean mayFly, boolean flying) {
+        previousMayFly = mayFly;
+        previousFlying = flying;
+    }
+
+    public boolean previouslyAllowedToFly() {
+        return previousMayFly;
+    }
+
+    public boolean previouslyFlying() {
+        return previousFlying;
     }
 
     public int getSelectedVampirePower() {
@@ -258,6 +279,8 @@ public final class WitcheryPlayerData {
         vampireLevelCap = source.vampireLevelCap;
         vampireQuestCounter = source.vampireQuestCounter;
         vampireVision = source.vampireVision;
+        previousMayFly = source.previousMayFly;
+        previousFlying = source.previousFlying;
         grotesqueTicks = source.grotesqueTicks;
         nightmareLevel = source.nightmareLevel;
         ghost = source.ghost;
@@ -284,6 +307,8 @@ public final class WitcheryPlayerData {
         tag.putInt(KEY_VAMPIRE_LEVEL_CAP, vampireLevelCap);
         tag.putInt(KEY_VAMPIRE_QUEST_COUNTER, vampireQuestCounter);
         tag.putBoolean(KEY_VAMPIRE_VISION, vampireVision);
+        tag.putBoolean(KEY_PREVIOUS_MAY_FLY, previousMayFly);
+        tag.putBoolean(KEY_PREVIOUS_FLYING, previousFlying);
         tag.putInt(KEY_GROTESQUE_TICKS, grotesqueTicks);
         tag.putInt(KEY_NIGHTMARE_LEVEL, nightmareLevel);
         tag.putBoolean(KEY_GHOST, ghost);
@@ -307,15 +332,18 @@ public final class WitcheryPlayerData {
     public void deserializeNBT(CompoundTag tag) {
         initialized = tag.getBoolean(KEY_INITIALIZED);
         syncRevision = tag.getInt(KEY_SYNC_REVISION);
-        creatureTypeOrdinal = tag.getInt(KEY_CREATURE_TYPE_ORDINAL);
         CompoundTag bloodData = tag.contains("WitcheryExtendedPlayer", Tag.TAG_COMPOUND)
                 ? tag.getCompound("WitcheryExtendedPlayer") : tag;
+        setCreatureTypeOrdinal(tag.contains(KEY_CREATURE_TYPE_ORDINAL, Tag.TAG_ANY_NUMERIC)
+                ? tag.getInt(KEY_CREATURE_TYPE_ORDINAL) : bloodData.getInt("CreatureType"));
         setHumanBlood(bloodData.getInt(KEY_HUMAN_BLOOD));
         setVampireLevel(bloodData.getInt(KEY_VAMPIRE_LEVEL));
         setBloodPower(bloodData.getInt(KEY_BLOOD_POWER));
         vampireLevelCap = Mth.clamp(bloodData.getInt(KEY_VAMPIRE_LEVEL_CAP), 0, 10);
         setVampireQuestCounter(bloodData.getInt(KEY_VAMPIRE_QUEST_COUNTER));
         vampireVision = bloodData.getBoolean(KEY_VAMPIRE_VISION);
+        previousMayFly = tag.getBoolean(KEY_PREVIOUS_MAY_FLY);
+        previousFlying = tag.getBoolean(KEY_PREVIOUS_FLYING);
         selectedVampirePower = bloodData.getInt("SelectedVampirePower");
         grotesqueTicks = tag.getInt(KEY_GROTESQUE_TICKS);
         nightmareLevel = tag.getInt(KEY_NIGHTMARE_LEVEL);

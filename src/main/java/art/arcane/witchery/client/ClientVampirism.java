@@ -35,6 +35,7 @@ public final class ClientVampirism {
     private static final ResourceLocation FANGS = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "textures/item/vteeth.png");
     private static final ResourceLocation EYE = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "textures/item/veye.png");
     private static final ResourceLocation SPEED = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "textures/item/vspeed.png");
+    private static final ResourceLocation BAT = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "textures/item/vbat.png");
     private static int aimingAt = -1;
     private static int trackedBlood = -1;
     private static int nextReadTick;
@@ -81,7 +82,7 @@ public final class ClientVampirism {
         }
         int selected = VampireAbilities.selected(player);
         if (!event.isUseItem() || selected == 0 || client.hitResult != null && client.hitResult.getType() == HitResult.Type.ENTITY) return;
-        if (event.getHand() == InteractionHand.MAIN_HAND && (selected == VampireAbilities.SPEED
+        if (event.getHand() == InteractionHand.MAIN_HAND && (selected >= VampireAbilities.SPEED
                 || selected == VampireAbilities.MESMERIZE && player.isShiftKeyDown())) {
             WitcheryNetwork.requestVampirePower(selected, true);
         }
@@ -147,7 +148,8 @@ public final class ClientVampirism {
                 ResourceLocation icon = switch (power) {
                     case VampireAbilities.DRINK -> FANGS;
                     case VampireAbilities.MESMERIZE -> EYE;
-                    default -> SPEED;
+                    case VampireAbilities.SPEED -> SPEED;
+                    default -> BAT;
                 };
                 graphics.blit(icon, left + 3, top + 3, 0, 0, 16, 16, 16, 16);
             }

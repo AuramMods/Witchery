@@ -19,10 +19,12 @@ public final class VampireAbilities {
     public static final int DRINK = 1;
     public static final int MESMERIZE = 2;
     public static final int SPEED = 3;
+    public static final int BAT = 4;
 
     private VampireAbilities() {}
 
     public static int maxPower(int rank) {
+        if (rank >= 7) return BAT;
         if (rank >= 4) return SPEED;
         return rank >= 2 ? MESMERIZE : rank == 1 ? DRINK : 0;
     }
@@ -47,6 +49,7 @@ public final class VampireAbilities {
             if (power > maxPower(data.getVampireLevel()) || !data.beginVampireAbility(player.level().getGameTime())) return;
             if (power == MESMERIZE) toggleVision(player, data);
             else if (power == SPEED) accelerate(player, data);
+            else if (power == BAT) VampireFlight.toggle(player, data);
         });
     }
 

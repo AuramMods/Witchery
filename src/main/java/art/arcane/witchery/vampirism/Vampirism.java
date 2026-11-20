@@ -76,11 +76,13 @@ public final class Vampirism {
             data.setVampireVision(false);
             data.setVampireQuestCounter(0);
             data.setSelectedVampirePower(0);
+            VampireFlight.leave(player, data);
             sync(player, data);
         });
     }
 
     public static boolean drawBlood(ServerPlayer player, int amount) {
+        if (player.getAbilities().instabuild) return true;
         return WitcheryPlayerDataProvider.get(player).map(data -> {
             if (data.getBloodPower() < amount) return false;
             data.setBloodPower(data.getBloodPower() - amount);
@@ -211,6 +213,7 @@ public final class Vampirism {
                 data.setHumanBlood(data.getHumanBlood() + 2);
                 return;
             }
+            VampireFlight.tick(player, data);
             if (rank == 3 && player.level().isNight() && WitcheryServerConfig.ALLOW_VAMPIRE_QUESTS.get()) {
                 int target = player.getAbilities().instabuild ? 10 : 300;
                 if (data.getVampireQuestCounter() < target) {

@@ -33,7 +33,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class WitcheryNetwork {
-    private static final String PROTOCOL_VERSION = "28";
+    private static final String PROTOCOL_VERSION = "29";
     private static final int MAX_USERNAME_LENGTH = 64;
     private static final int MAX_PLAYER_SKIN_LENGTH = 256;
     private static final int MAX_MARKUP_CHAPTER_LENGTH = 32;
@@ -259,6 +259,12 @@ public final class WitcheryNetwork {
                 PacketDistributor.PLAYER.with(() -> player),
                 new PlayerStylePacket(username, grotesqueTicks, nightmare, ghost, creatureType, blood, playerSkin)
         );
+    }
+
+    public static void broadcastPlayerStyle(ServerPlayer player, WitcheryPlayerData data) {
+        CHANNEL.send(PacketDistributor.TRACKING_ENTITY.with(() -> player), new PlayerStylePacket(
+                player.getGameProfile().getName(), data.getGrotesqueTicks(), data.getNightmareLevel(), data.isGhost(),
+                data.getCreatureTypeOrdinal(), data.getHumanBlood(), data.getOtherPlayerSkin()));
     }
 
     public static void sendClearFallDamageToServer() {

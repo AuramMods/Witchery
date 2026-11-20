@@ -18,6 +18,7 @@ import art.arcane.witchery.item.GlassGobletItem;
 import art.arcane.witchery.vampirism.Vampirism;
 import art.arcane.witchery.vampirism.BloodFeeding;
 import art.arcane.witchery.vampirism.VampireAbilities;
+import art.arcane.witchery.vampirism.VampireFlight;
 import art.arcane.witchery.item.WitchClothingItem;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.prediction.PredictedCourtship;
@@ -40,6 +41,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
@@ -47,6 +49,7 @@ import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
@@ -117,6 +120,7 @@ public final class WitcheryEventHooks {
             if (serverPlayer.level().dimension().equals(Level.NETHER)) Predictions.onNetherVisit(serverPlayer);
             GrotesqueEffect.restoreLegacyBrew(serverPlayer);
             InfusionEnergy.sync(serverPlayer);
+            VampireFlight.restore(serverPlayer);
             WitcheryPlayerDataProvider.get(serverPlayer).ifPresent(data -> {
                 if (data.getOtherPlayerSkin().isEmpty()) {
                     data.applyPlayerStyle(
@@ -138,7 +142,10 @@ public final class WitcheryEventHooks {
 
     @SubscribeEvent
     public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
-        if (event.getEntity() instanceof ServerPlayer serverPlayer) InfusionEnergy.sync(serverPlayer);
+        if (event.getEntity() instanceof ServerPlayer serverPlayer) {
+            InfusionEnergy.sync(serverPlayer);
+            VampireFlight.restore(serverPlayer);
+        }
     }
 
     @SubscribeEvent
@@ -150,7 +157,7 @@ public final class WitcheryEventHooks {
     public static void onStartTracking(PlayerEvent.StartTracking event) {
         if (event.getEntity() instanceof ServerPlayer viewer && event.getTarget() instanceof ServerPlayer target) {
             WitcheryPlayerDataProvider.get(target).ifPresent(data -> {
-                if (data.isGhost() || data.getNightmareLevel() > 0) {
+                if (data.isGhost() || data.getNightmareLevel() > 0 || data.getCreatureTypeOrdinal() != 0) {
                     WitcheryNetwork.sendPlayerStyle(viewer, target.getGameProfile().getName(), data.getGrotesqueTicks(),
                             data.getNightmareLevel(), data.isGhost(), data.getCreatureTypeOrdinal(),
                             data.getHumanBlood(), data.getOtherPlayerSkin());
@@ -182,6 +189,7 @@ public final class WitcheryEventHooks {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
             ScryingView.close(serverPlayer);
             WitcheryDimensionTravelHooks.onPlayerChangedDimension(serverPlayer, event.getFrom(), event.getTo());
+            VampireFlight.restore(serverPlayer);
             if (event.getTo().equals(Level.NETHER)) Predictions.onNetherVisit(serverPlayer);
         }
     }
@@ -240,6 +248,10 @@ public final class WitcheryEventHooks {
     @SubscribeEvent
     public static void onLivingFall(LivingFallEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
+            if (VampireFlight.isBat(player)) {
+                event.setCanceled(true);
+                return;
+            }
             int infusion = InfusionEnergy.type(player);
             if (infusion == OverworldInfusion.ID) OverworldInfusion.fall(player, event);
             if (infusion == InfernalInfusion.ID) {
@@ -357,7 +369,16 @@ public final class WitcheryEventHooks {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onParalysedAttack(AttackEntityEvent event) {
-        if (BloodFeeding.paralysis(event.getEntity(), 4)) event.setCanceled(true);
+        if (BloodFeeding.paralysis(event.getEntity(), 4) || VampireFlight.isBat(event.getEntity())) event.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    @SuppressWarnings("removal")
+    public static void resizeBatForm(EntityEvent.Size event) {
+        if (event.getEntity() instanceof Player player && VampireFlight.isBat(player)) {
+            event.setNewSize(VampireFlight.BAT_DIMENSIONS);
+            event.setNewEyeHeight(VampireFlight.BAT_EYE_HEIGHT);
+        }
     }
 
     @SubscribeEvent

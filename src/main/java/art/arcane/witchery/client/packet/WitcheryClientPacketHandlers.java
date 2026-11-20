@@ -99,14 +99,12 @@ public final class WitcheryClientPacketHandlers {
         target.getPersistentData().putInt(KEY_CLIENT_NIGHTMARE_LEVEL, message.nightmare());
         target.getPersistentData().putBoolean(KEY_CLIENT_GHOST, message.ghost());
 
-        WitcheryPlayerDataProvider.get(target).ifPresent(data -> data.applyPlayerStyle(
-                message.playerSkin(),
-                message.grotesqueTicks(),
-                message.nightmare(),
-                message.ghost(),
-                message.creatureType(),
-                message.blood()
-        ));
+        WitcheryPlayerDataProvider.get(target).ifPresent(data -> {
+            int oldForm = data.getCreatureTypeOrdinal();
+            data.applyPlayerStyle(message.playerSkin(), message.grotesqueTicks(), message.nightmare(), message.ghost(),
+                    message.creatureType(), message.blood());
+            if (oldForm != data.getCreatureTypeOrdinal()) target.refreshDimensions();
+        });
     }
 
     public static void handleCamPos(WitcheryNetwork.CamPosPacket message) {
@@ -261,7 +259,9 @@ public final class WitcheryClientPacketHandlers {
             }
 
             if (playerData != null && !playerData.isEmpty()) {
+                int oldForm = data.getCreatureTypeOrdinal();
                 data.deserializeNBT(playerData.copy());
+                if (oldForm != data.getCreatureTypeOrdinal()) resolvedTarget.refreshDimensions();
             }
             data.mergeSyncRevision(syncRevision);
             if (initialized != null) {
