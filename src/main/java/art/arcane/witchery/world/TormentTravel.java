@@ -1,6 +1,8 @@
 package art.arcane.witchery.world;
 
+import art.arcane.witchery.entity.LordOfTorment;
 import art.arcane.witchery.registry.WitcheryBlocks;
+import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -10,10 +12,14 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,6 +31,26 @@ public final class TormentTravel {
     private static final int LEAVE = 3;
 
     private TormentTravel() {}
+
+    public static int randomFloor(RandomSource random) {
+        return random.nextInt(TormentMaze.LEVELS);
+    }
+
+    public static void requestBossEncounter(ServerPlayer player, int floor) {
+        if (!player.isAlive() || player.isSpectator() || player.isCreative()) return;
+        CompoundTag data = data(player);
+        data.putInt(ACTION, ENTER_PRESET);
+        data.putInt(FLOOR, floor);
+    }
+
+    public static void learnTormentum(LivingEntity drinker) {
+        if (drinker instanceof ServerPlayer player) {
+            CompoundTag persistent = data(player);
+            CompoundTag spells = persistent.getCompound("WITCSpellBook");
+            spells.putBoolean("tormentum", true);
+            persistent.put("WITCSpellBook", spells);
+        }
+    }
 
     public static void touchPortal(ServerPlayer player) {
         CompoundTag data = data(player);
@@ -43,13 +69,14 @@ public final class TormentTravel {
 
         ServerLevel destination;
         Vec3 arrival;
+        int floor = -1;
         if (action == ENTER || action == ENTER_PRESET) {
             destination = player.server.getLevel(WitcheryDimensions.TORMENT);
             if (destination == null) return false;
-            int slot = action == ENTER ? player.getRandom().nextInt(TormentMaze.LEVELS)
+            floor = action == ENTER ? randomFloor(player.getRandom())
                     : Mth.clamp(data.getInt(FLOOR), 0, TormentMaze.LEVELS - 1);
-            int mazeOffset = MazeLocation.resolve(destination);
-            BlockPos entry = new BlockPos(mazeOffset + TormentMaze.CENTER_X, TormentMaze.floorY(slot) + 1, TormentMaze.ENTRANCE_Z);
+            int mazeOffset = MazeLocation.resolve(destination).offset;
+            BlockPos entry = new BlockPos(mazeOffset + TormentMaze.CENTER_X, TormentMaze.floorY(floor) + 1, TormentMaze.ENTRANCE_Z);
             arrival = standNear(destination, entry);
         } else if (action == LEAVE) {
             destination = player.server.overworld();
@@ -65,9 +92,34 @@ public final class TormentTravel {
         player.connection.resetPosition();
         player.resetFallDistance();
         if (action == LEAVE) data.remove(FLOOR);
+        if (action == ENTER_PRESET) MazeLocation.resolve(destination).queueBoss(floor);
         transitionEffect(origin, start);
         transitionEffect(destination, player.position());
         return true;
+    }
+
+    public static void tickEncounters(ServerLevel level) {
+        if (!level.dimension().equals(WitcheryDimensions.TORMENT) || level.players().isEmpty() || level.getGameTime() % 10 != 0) return;
+        MazeLocation location = level.getDataStorage().get(MazeLocation::load, MazeLocation.ID);
+        if (location == null || location.pendingBossFloors == 0) return;
+        for (int floor = 0; floor < TormentMaze.LEVELS; floor++) {
+            if ((location.pendingBossFloors & 1 << floor) != 0 && spawnEncounterBoss(level, location.offset, floor)) {
+                location.pendingBossFloors &= ~(1 << floor);
+                location.setDirty();
+            }
+        }
+    }
+
+    private static boolean spawnEncounterBoss(ServerLevel level, int offset, int floor) {
+        BlockPos chamber = new BlockPos(offset + 9, TormentMaze.floorY(floor) + 1, 36);
+        if (!level.areEntitiesLoaded(ChunkPos.asLong(chamber))) return false;
+        AABB bounds = new AABB(offset - 24, chamber.getY() - 1, 6, offset + 40, chamber.getY() + 5, 71);
+        if (!level.getEntitiesOfClass(LordOfTorment.class, bounds, LordOfTorment::isAlive).isEmpty()) return true;
+        LordOfTorment lord = WitcheryEntities.LORD_OF_TORMENT.get().create(level);
+        if (lord == null) return false;
+        lord.moveTo(chamber.getX() + 0.5, chamber.getY(), chamber.getZ() + 0.5, 0, 0);
+        lord.setHealth(lord.getMaxHealth() * 0.5F);
+        return level.addFreshEntity(lord);
     }
 
     private static CompoundTag data(ServerPlayer player) {
@@ -100,21 +152,28 @@ public final class TormentTravel {
         return null;
     }
 
-    private static void transitionEffect(ServerLevel level, Vec3 pos) {
+    public static void transitionEffect(ServerLevel level, Vec3 pos) {
         level.sendParticles(ParticleTypes.PORTAL, pos.x, pos.y + 0.8, pos.z, 16, 0.6, 0.9, 0.6, 0.03);
         level.playSound(null, pos.x, pos.y, pos.z, SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1, 1);
     }
 
     private static final class MazeLocation extends SavedData {
+        private static final String ID = "witchery_torment_maze";
         private int offset = -1;
+        private int pendingBossFloors;
 
-        private static int resolve(ServerLevel level) {
-            MazeLocation location = level.getDataStorage().computeIfAbsent(MazeLocation::load, MazeLocation::new, "witchery_torment_maze");
+        private static MazeLocation resolve(ServerLevel level) {
+            MazeLocation location = level.getDataStorage().computeIfAbsent(MazeLocation::load, MazeLocation::new, ID);
             if (location.offset < 0) {
                 location.offset = hasOriginalMaze(level) ? 0 : TormentMaze.UPGRADE_MAZE_OFFSET;
                 location.setDirty();
             }
-            return location.offset;
+            return location;
+        }
+
+        private void queueBoss(int floor) {
+            pendingBossFloors |= 1 << floor;
+            setDirty();
         }
 
         private static boolean hasOriginalMaze(ServerLevel level) {
@@ -132,12 +191,14 @@ public final class TormentTravel {
         private static MazeLocation load(CompoundTag tag) {
             MazeLocation location = new MazeLocation();
             location.offset = tag.contains("Offset") ? tag.getInt("Offset") : -1;
+            location.pendingBossFloors = tag.getInt("PendingBossFloors");
             return location;
         }
 
         @Override
         public CompoundTag save(CompoundTag tag) {
             tag.putInt("Offset", offset);
+            tag.putInt("PendingBossFloors", pendingBossFloors);
             return tag;
         }
     }

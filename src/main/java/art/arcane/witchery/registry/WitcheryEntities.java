@@ -2,10 +2,12 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.entity.Demon;
+import art.arcane.witchery.entity.LordOfTorment;
 import art.arcane.witchery.entity.Mandrake;
 import art.arcane.witchery.entity.Nightmare;
 import art.arcane.witchery.entity.Reflection;
 import art.arcane.witchery.entity.SleepingBody;
+import art.arcane.witchery.entity.Soulfire;
 import art.arcane.witchery.entity.ThrownBrew;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -39,6 +41,12 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<Reflection>> REFLECTION =
             ENTITY_TYPES.register("reflection", () -> EntityType.Builder.of(Reflection::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.8F).fireImmune().clientTrackingRange(8).build(Witchery.MODID + ":reflection"));
+    public static final RegistryObject<EntityType<LordOfTorment>> LORD_OF_TORMENT =
+            ENTITY_TYPES.register("lordoftorment", () -> EntityType.Builder.of(LordOfTorment::new, MobCategory.MONSTER)
+                    .sized(0.6F, 1.9F).fireImmune().clientTrackingRange(10).build(Witchery.MODID + ":lordoftorment"));
+    public static final RegistryObject<EntityType<Soulfire>> SOULFIRE =
+            ENTITY_TYPES.register("soulfire", () -> EntityType.Builder.<Soulfire>of(Soulfire::new, MobCategory.MISC)
+                    .sized(0.3125F, 0.3125F).fireImmune().clientTrackingRange(4).updateInterval(3).build(Witchery.MODID + ":soulfire"));
     public static final RegistryObject<EntityType<ThrownBrew>> THROWN_BREW =
             ENTITY_TYPES.register("thrown_brew", () -> EntityType.Builder.<ThrownBrew>of(ThrownBrew::new, MobCategory.MISC)
                     .sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(3).build(Witchery.MODID + ":thrown_brew"));
@@ -49,6 +57,7 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("nightmare", NIGHTMARE);
         LEGACY_ENTITIES.put("demon", DEMON);
         LEGACY_ENTITIES.put("reflection", REFLECTION);
+        LEGACY_ENTITIES.put("lordoftorment", LORD_OF_TORMENT);
         for (String legacyName : LegacyRegistryData.ENTITIES) {
             registerLegacyEntity(legacyName);
         }
@@ -68,7 +77,7 @@ public final class WitcheryEntities {
 
     private static void registerLegacyEntity(String legacyName) {
         String path = RegistryNameUtil.normalizePath(legacyName);
-        if (LEGACY_ENTITIES.containsKey(path)) {
+        if (LEGACY_ENTITIES.containsKey(path) || path.equals("soulfire")) {
             return;
         }
 
@@ -86,7 +95,8 @@ public final class WitcheryEntities {
                     : entry == SLEEPING_BODY ? SleepingBody.attributes()
                     : entry == NIGHTMARE ? Nightmare.attributes()
                     : entry == DEMON ? Demon.attributes()
-                    : entry == REFLECTION ? Reflection.attributes() : Zombie.createAttributes();
+                    : entry == REFLECTION ? Reflection.attributes()
+                    : entry == LORD_OF_TORMENT ? LordOfTorment.attributes() : Zombie.createAttributes();
             event.put(entry.get(), attributes.build());
         }
     }

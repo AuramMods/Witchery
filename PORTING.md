@@ -89,7 +89,9 @@
 - [x] Verify the chest lid, inventory, and loot collection in the muted survival client. Preserve a saved marker in a previous port's Torment dimension. Generated Nether chunks extend beyond that marker and still occupy part of the original maze footprint.
 - [x] Restore the animated red exit portal and collision travel. The muted client entered all six original floor elevations and exited to the configured Overworld respawn point. All 27 Forge GameTests passed, including the normal and rare exit requests with fixed random seeds.
 - [x] Route upgraded saves to an intact maze. The muted client used the separate maze at X 1032, checked that the old diamond marker remained, and walked through the new exit to the original Overworld respawn point. After a dedicated restart it entered the same maze footprint and the marker was still present.
-- [ ] Restore the Imp's contract, the Lord of Torment encounter, and its Brew of Soul Torment reward. Verify the encounter and full progression in the muted multiplayer client.
+- [x] Restore the Lord of Torment's 500 health, ordinary and demonic damage caps, fire immunity, ranged volley, and maze phase. The muted survival client dealt a capped axe hit and triggered the phase transition with another player in range. Both arrived at the same floor and only one 250-health Lord spawned. All 29 required GameTests passed.
+- [x] Verify the same 250-health Lord after a dedicated restart. The muted client defeated it with an axe after a fixture shortened the remaining fight, collected two enchanted books, a Demon Heart and the Brew of Soul Torment, and drank the brew to save its Tormentum knowledge. It exited through the generated portal.
+- [ ] Restore natural access through the coven, Imp, and its summoning contract. Complete the spellcasting system so the Brew of Soul Torment reward unlocks a castable Tormentum spell.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.

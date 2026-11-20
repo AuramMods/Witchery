@@ -69,6 +69,7 @@ public enum WitcheryIngredient {
     FOCUSED_WILL(113, "focused_will"),
     CONDENSED_FEAR(114, "condensed_fear"),
     BREW_OF_HOLLOW_TEARS(115, "brew_of_hollow_tears"),
+    BREW_SOUL_TORMENT(139, "brew_of_soul_torment"),
     ANOINTING_PASTE(153, "anointing_paste"),
     WOLFSBANE(156, "wolfsbane_flower");
 

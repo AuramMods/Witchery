@@ -18,5 +18,17 @@
   "mob.nightmare.nightmare_dead": {
     "subtitle": "subtitles.witchery.nightmare.death",
     "sounds": ["witchery:mob/nightmare/nightmare_dead"]
+  },
+  "mob.torment.laugh": {
+    "subtitle": "subtitles.witchery.torment.laugh",
+    "sounds": ["witchery:mob/torment/laugh"]
+  },
+  "mob.torment.hit": {
+    "subtitle": "subtitles.witchery.torment.hurt",
+    "sounds": ["witchery:mob/torment/hit"]
+  },
+  "mob.torment.death": {
+    "subtitle": "subtitles.witchery.torment.death",
+    "sounds": [{"name": "witchery:mob/torment/hit", "pitch": 0.7}]
   }
 }

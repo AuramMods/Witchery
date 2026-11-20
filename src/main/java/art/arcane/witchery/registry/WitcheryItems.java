@@ -20,6 +20,7 @@ import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.item.WitchWoodBlockItem;
 import art.arcane.witchery.item.WitchSeedsItem;
 import art.arcane.witchery.world.DreamTravel;
+import art.arcane.witchery.world.TormentTravel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.food.FoodProperties;
@@ -67,6 +68,8 @@ public final class WitcheryItems {
         for (String legacyName : WitcheryEntities.all().keySet()) {
             registerLegacySpawnEgg(legacyName);
         }
+        // Older port saves can contain a placeholder egg for the non-living projectile.
+        LEGACY_SPAWN_EGGS.put("soulfire_spawn_egg", ITEMS.register("soulfire_spawn_egg", () -> new Item(new Item.Properties())));
 
         for (String legacyName : LegacyRegistryData.BLOCKS) {
             registerLegacyBlockItem(legacyName);
@@ -145,6 +148,7 @@ public final class WitcheryItems {
             case "brew_of_sleeping" -> new DrinkableBrewItem(DreamTravel::requestSleep);
             case "brew_of_flowing_spirit" -> new ThrowableBrewItem(BrewImpacts::depositSpirit);
             case "brew_of_hollow_tears" -> new ThrowableBrewItem(BrewImpacts::depositHollowTears);
+            case "brew_of_soul_torment" -> new DrinkableBrewItem(TormentTravel::learnTormentum);
             case "redstone_soup" -> new DrinkableBrewItem(() -> MobEffects.HEALTH_BOOST, 2400, 1);
             case "purified_milk" -> new DrinkableBrewItem(DrinkableBrewItem::purifyMilk);
             case "icy_needle" -> new IcyNeedleItem();
