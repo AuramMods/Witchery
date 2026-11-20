@@ -55,7 +55,8 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         CORRUPT_VOODOO_PROTECTION,
         BIND_WAYSTONE,
         BIND_CREATURE_WAYSTONE,
-        TRAVEL_WAYSTONE
+        TRAVEL_WAYSTONE,
+        CURE_VAMPIRISM
     }
 
     public record Ring(RitualCircle pattern, Block glyph) {
@@ -227,6 +228,7 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 case "bind_waystone" -> Action.BIND_WAYSTONE;
                 case "bind_creature_waystone" -> Action.BIND_CREATURE_WAYSTONE;
                 case "travel_waystone" -> Action.TRAVEL_WAYSTONE;
+                case "cure_vampirism" -> Action.CURE_VAMPIRISM;
                 default -> throw new JsonSyntaxException("Unknown rite action for " + id);
             };
             ItemStack result = action == Action.ITEM

@@ -367,7 +367,7 @@
 - [x] Preserve the converted vampire and the player's progression. A dedicated restart kept the same creature UUID and home position, the empty goblet, rank ten and 1,114 blood.
 - [x] Verify the vampire's nightly hunt. The mob selected an occupied village, took five nonlethal bites and returned home. The hunted villager's blood went from 500 to 400.
 - [x] Preserve Witchery progress through player respawn. After a deliberate death in the headless server, the muted client respawned at rank ten with a cap of ten and 1,114 blood. Java 17 data generation, the reobfuscated JAR and all 167 required Forge GameTests passed.
-- [ ] Restore guard conversions, village responses and the cure.
+- [ ] Restore guard conversions and village responses.
 
 ## Blood Crucible and Thunderstorm (2026-11-20)
 
@@ -417,6 +417,12 @@
 - [x] Craft and place the original Silver Vat in survival. Four neighboring blast furnaces produced gold and the first two dust from raw-gold and coal fixtures. The vat kept a separate count for each output, and all produced gold remained available in the furnaces.
 - [x] Restart with two dust stored and a blast furnace at 55 of 100 cooking ticks. The vat resumed producing dust from the same batches. The muted client saw its connected spouts and silver in the water and collected eight dust with a click.
 - [x] Craft the Silver Sword with the recovered dust and a gold sword. The client equipped it with five attack damage. A separate tag fixture verified the recipe for two mod-provided silver ingots. All 196 required GameTests passed, including ordinary furnace output, the legacy dust mapping, comparators and hopper extraction. Data generation and JAR reobfuscation succeeded.
+
+## Rite of Removing Vampirism (2026-11-20)
+
+- [x] Restore the original small white circle and six offerings. The muted survival client sampled its coffin with a Taglock Kit and offered the Silver Sword it crafted from vat dust.
+- [x] Require an active cat familiar, a six-member coven called with a Seer Stone, and the tagged vampire within eight blocks in the same world. The muted client recovered all six offerings without an active cat, with one coven member, and when twelve blocks away. It bound a cat through the familiar rite and used a saved six-member coven fixture for the full-coven test.
+- [x] Spend 10,000 altar power on an eligible attempt. GameTests exercised the one-in-four failure and the cure, and confirmed that both consume the offerings and power. The dedicated survival attempt cured the rank-ten vampire, cleared its blood, vision and remaining ultimate charge, and gave it 50 human blood. It stood in daylight without taking damage and remained human after a dedicated restart. Java 17 data generation, JAR reobfuscation and all 198 required Forge GameTests passed.
 
 ## Auram Pack Validation (2026-11-20)
 

@@ -17,6 +17,7 @@ import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryRecipes;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
+import art.arcane.witchery.vampirism.Vampirism;
 import art.arcane.witchery.world.DreamTravel;
 import art.arcane.witchery.world.WaystoneTravel;
 import net.minecraft.core.BlockPos;
@@ -54,6 +55,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     private static final int MANIFEST_DURATION = 150;
     private static final int INFUSION_RANGE = 4;
     private static final int INFUSION_CAPACITY = 200;
+    private static final int VAMPIRE_CURE_RANGE = 8;
     private static final int RECHARGE_AMOUNT = 10;
     private static final int RECHARGE_POWER_COST = 40;
     private final List<Sacrifice> sacrificed = new ArrayList<>();
@@ -178,6 +180,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         List<ServerPlayer> recipients = List.of();
         Entity result = null;
         LivingEntity curseTarget = null;
+        ServerPlayer vampireCureTarget = null;
         ServerPlayer corruptionCaster = null;
         int infusionType = switch (rite.action()) {
             case INFUSE_LIGHT -> 1;
@@ -225,6 +228,26 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 return;
             }
             curseTarget = boundOffering(level);
+        } else if (rite.action() == ItemRiteRecipe.Action.CURE_VAMPIRISM) {
+            ServerPlayer caster = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
+            if (caster == null || caster.level() != level || !FamiliarBinding.hasCurseMastery(caster)) {
+                abort(level, "message.witchery.rite.requires_curse_mastery");
+                return;
+            }
+            if (covenSize < CovenWitch.MAX_MEMBERS) {
+                abort(level, "message.witchery.rite.requires_full_coven");
+                return;
+            }
+            if (!(boundOffering(level) instanceof ServerPlayer vampire) || Vampirism.level(vampire) == 0) {
+                abort(level, "message.witchery.rite.cure_vampirism.no_vampire");
+                return;
+            }
+            if (vampire.level() != level
+                    || vampire.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) > VAMPIRE_CURE_RANGE * VAMPIRE_CURE_RANGE) {
+                abort(level, "message.witchery.rite.cure_vampirism.too_far");
+                return;
+            }
+            vampireCureTarget = vampire;
         } else if (rite.action() == ItemRiteRecipe.Action.ITEM || rite.action() == ItemRiteRecipe.Action.BIND_WAYSTONE
                 || rite.action() == ItemRiteRecipe.Action.BIND_CREATURE_WAYSTONE) {
             ItemStack output = rite.result().copy();
@@ -284,6 +307,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         } else if (curseTarget != null) {
             WakingNightmareEffect.changeCurse(curseTarget, rite.action() == ItemRiteRecipe.Action.CURSE_WAKING_NIGHTMARE);
         }
+        if (vampireCureTarget != null) finishVampireCure(level, pos, vampireCureTarget);
         for (ServerPlayer recipient : recipients) {
             if (rite.action() == ItemRiteRecipe.Action.MANIFESTATION) {
                 DreamTravel.grantManifestation(recipient, MANIFEST_DURATION);
@@ -308,6 +332,15 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
                 16, 0.4, 0.4, 0.4, 0.05);
         level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.9F, 1.35F);
+    }
+
+    private static void finishVampireCure(ServerLevel level, BlockPos pos, ServerPlayer vampire) {
+        boolean cured = level.random.nextInt(4) != 0;
+        if (cured) Vampirism.cure(vampire);
+        level.sendParticles(cured ? ParticleTypes.INSTANT_EFFECT : ParticleTypes.FLAME,
+                pos.getX() + 0.5, pos.getY() + 0.1, pos.getZ() + 0.5, 24, 0.5, 0.6, 0.5, 0.035);
+        level.playSound(null, pos, cured ? SoundEvents.PLAYER_LEVELUP : SoundEvents.ENDER_DRAGON_GROWL,
+                SoundSource.BLOCKS, 1, 1);
     }
 
     @Nullable
