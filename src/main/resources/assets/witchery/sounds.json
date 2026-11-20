@@ -122,5 +122,9 @@
   "mob.wolfman.death": {
     "subtitle": "subtitles.witchery.wolfman.death",
     "sounds": ["witchery:mob/wolfman/death"]
+  },
+  "mob.wolfman.lord": {
+    "subtitle": "subtitles.witchery.wolfman.lord",
+    "sounds": ["witchery:mob/wolfman/lord"]
   }
 }

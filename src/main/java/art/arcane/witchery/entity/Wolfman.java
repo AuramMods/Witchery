@@ -100,6 +100,10 @@ public final class Wolfman extends Monster {
 
     public int attackTicks() { return attackTicks; }
 
+    public void setPlayerAnimation(Player player) {
+        attackTicks = player.swinging ? Math.max(0, 10 - player.swingTime) : 0;
+    }
+
     @Override
     public void handleEntityEvent(byte event) {
         if (event == 4) playAttack();

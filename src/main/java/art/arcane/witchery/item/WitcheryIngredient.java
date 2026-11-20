@@ -8,6 +8,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 public enum WitcheryIngredient {
     CANDELABRA(0, "candelabra"),
@@ -161,7 +162,8 @@ public enum WitcheryIngredient {
             BrambleBlock.setWild(stack, stackTag.getInt("Damage") == 1);
             return stack;
         }
-        if (stack.getItem() instanceof WitchClothingItem && stackTag.contains("Damage", Tag.TAG_ANY_NUMERIC)) {
+        if ((stack.getItem() instanceof WitchClothingItem || stack.getItem() instanceof MoonCharmItem)
+                && stackTag.contains("Damage", Tag.TAG_ANY_NUMERIC)) {
             stack.setDamageValue(Math.min(stackTag.getInt("Damage"), stack.getMaxDamage()));
             return stack;
         }
@@ -203,18 +205,28 @@ public enum WitcheryIngredient {
             return stack;
         }
 
-        for (WitcheryIngredient ingredient : values()) {
-            if (ingredient.legacyDamage == damage) {
-                ItemStack converted = new ItemStack(ingredient.item(), stack.getCount());
-                if (itemTag != null) {
-                    CompoundTag convertedTag = itemTag.copy();
-                    convertedTag.remove(LEGACY_DAMAGE_TAG);
-                    if (!convertedTag.isEmpty()) {
-                        converted.setTag(convertedTag);
-                    }
+        Item upgraded = switch (damage) {
+            case 158 -> Items.MUTTON;
+            case 159 -> Items.COOKED_MUTTON;
+            default -> null;
+        };
+        if (upgraded == null) {
+            for (WitcheryIngredient ingredient : values()) {
+                if (ingredient.legacyDamage == damage) {
+                    upgraded = ingredient.item();
+                    break;
                 }
-                return converted;
             }
+        }
+
+        if (upgraded != null) {
+            ItemStack converted = new ItemStack(upgraded, stack.getCount());
+            if (itemTag != null) {
+                CompoundTag convertedTag = itemTag.copy();
+                convertedTag.remove(LEGACY_DAMAGE_TAG);
+                if (!convertedTag.isEmpty()) converted.setTag(convertedTag);
+            }
+            return converted;
         }
 
         stack.getOrCreateTag().putInt(LEGACY_DAMAGE_TAG, damage);

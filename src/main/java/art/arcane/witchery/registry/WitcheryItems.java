@@ -27,6 +27,8 @@ import art.arcane.witchery.item.BoneNeedleItem;
 import art.arcane.witchery.item.IcyNeedleItem;
 import art.arcane.witchery.item.LeechChestItem;
 import art.arcane.witchery.item.MirrorItem;
+import art.arcane.witchery.item.MoonCharmItem;
+import art.arcane.witchery.item.WolfAltarItem;
 import art.arcane.witchery.item.OwnershipContractItem;
 import art.arcane.witchery.item.MutandisItem;
 import art.arcane.witchery.item.MysticBranchItem;
@@ -180,6 +182,7 @@ public final class WitcheryItems {
             case "anointing_paste" -> new AnointingPasteItem(new Item.Properties());
             case "taglockkit" -> new TaglockItem();
             case "coffin" -> createBlockItem("coffinblock");
+            case "mooncharm" -> new MoonCharmItem();
             case "hellhound_head" -> new BlockItem(WitcheryBlocks.getRequired("wolfhead").get(), new Item.Properties()) {
                 @Override
                 public String getDescriptionId() { return getOrCreateDescriptionId(); }
@@ -352,6 +355,9 @@ public final class WitcheryItems {
     private static BlockItem createBlockItem(String path) {
         Block block = WitcheryBlocks.getRequired(path).get();
         switch (path) {
+            case "wolfaltar" -> {
+                return new WolfAltarItem(block);
+            }
             case "demonheart" -> {
                 return new DemonHeartItem(block, false);
             }

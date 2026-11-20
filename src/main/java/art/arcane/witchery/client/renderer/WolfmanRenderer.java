@@ -2,6 +2,8 @@ package art.arcane.witchery.client.renderer;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.entity.Wolfman;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
@@ -13,8 +15,10 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
+import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.HumanoidArm;
 
 public final class WolfmanRenderer extends MobRenderer<Wolfman, WolfmanRenderer.Model> {
     public static final ModelLayerLocation LAYER = new ModelLayerLocation(
@@ -24,6 +28,7 @@ public final class WolfmanRenderer extends MobRenderer<Wolfman, WolfmanRenderer.
 
     public WolfmanRenderer(EntityRendererProvider.Context context) {
         super(context, new Model(context.bakeLayer(LAYER)), 0.5F);
+        addLayer(new ItemInHandLayer<>(this, context.getItemInHandRenderer()));
     }
 
     @Override
@@ -57,7 +62,7 @@ public final class WolfmanRenderer extends MobRenderer<Wolfman, WolfmanRenderer.
         thigh.addOrReplaceChild("shin", CubeListBuilder.create().texOffs(38, 13).addBox(-2, 3.5F, 2, 4, 8, 4), PartPose.ZERO);
     }
 
-    static final class Model extends HierarchicalModel<Wolfman> {
+    static final class Model extends HierarchicalModel<Wolfman> implements ArmedModel {
         private final ModelPart root;
         private final ModelPart head;
         private final ModelPart rightArm;
@@ -76,6 +81,12 @@ public final class WolfmanRenderer extends MobRenderer<Wolfman, WolfmanRenderer.
 
         @Override
         public ModelPart root() { return root; }
+
+        @Override
+        public void translateToHand(HumanoidArm arm, PoseStack pose) {
+            (arm == HumanoidArm.RIGHT ? rightArm : leftArm).translateAndRotate(pose);
+            pose.translate(0, 0.13, 0);
+        }
 
         @Override
         public void setupAnim(Wolfman wolfman, float swing, float amount, float age, float yaw, float pitch) {

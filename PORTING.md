@@ -474,13 +474,20 @@
 - [x] Restore both original recipes, full-moon timing, active cat and six-member coven. The muted client called its cat, collected its Taglock at a bed, sacrificed a Hellhound Head it had picked up, and activated the medium infernal circle with a Seer Stone. A waning night refunded all six offerings. At the full moon, Witch Hunter clothing blocked the curse. Removing one piece let the same offerings curse the player and the server retained vampire rank ten under the default hybrid setting.
 - [x] Restore the rank-one wolf form, smaller dimensions, armor drop, Night Vision, jump and movement stats, and Silver Sword damage. The dedicated server recorded speed changing from 0.10 to 0.15 and the additional step height of 0.4. A second muted client saw the first as a wolf. With the active familiar's damage sharing, a 12-point ordinary strike took 3.6 health and a seven-point silver strike took 10.8 health.
 - [x] Reconnect after a dedicated-server restart, then collect another Taglock and perform the cure while still in wolf form. The save retained rank one, wolf form and speed. The successful cure consumed all six offerings, restored normal movement and kept vampire rank ten. Java 17 data generation, JAR reobfuscation and all 226 required Forge GameTests passed.
-- [ ] Restore Wolf Altar trials, voluntary forms, and the remaining werewolf combat, hunting and Wolfsbane interactions.
+- [ ] Restore the Huntsman and ranks five through ten, and finish werewolf combat, hunting and Wolfsbane interactions.
 
 ## Werevillagers and Wolfmen (2026-11-20)
 
 - [x] Restore the Werevillager and Wolfman, including the original Wolfman texture, combat stats, silver vulnerability, and the village cure. The Curse of the Wolf now infects villagers, correcting the legacy rite's plain-villager conversion.
 - [x] Keep profession, appearance, XP, trade history, the name and the original Taglock signature through transformation. The muted survival client cursed Felix, a snow librarian, observed his 80-health Wolfman form, and traded with him after daylight. The trade took his XP from 42 to 44 and uses from one to two.
 - [x] Restart during a second transformation. The same Wolfman kept its UUID, damage and saved trade. The muted client used the Taglock it collected from the infected villager to cure the saved Wolfman. The resulting vanilla villager kept the original signature, level-three librarian profession, XP 44 and two trade uses.
+
+## Wolf Altar and Moon Charm (2026-11-20)
+
+- [x] Craft the Wolf Altar using three wolf trophies, three stone blocks and Wolfsbane. The muted survival client combined one Wolf Head with two Hellhound Heads in the original pattern, placed the altar and saw the original statue face the player. Using it while uninfected applied Mining Fatigue.
+- [x] Complete the first three offerings at the placed altar. At rank one, two gold remained unspent and three gold yielded the Moon Charm and rank two. Taking 31 raw mutton to the altar advanced the player to rank three and left one mutton. Ten Dog Tongues advanced the player to rank four.
+- [x] Verify the original three-second use time and automatic transformation suppression with a worn charm. The client released early without wear, then used one point of durability to return to human form during a full moon. GameTests exercised gold repair, legacy item data, the crouching Wolfman toggle at rank five, and form suppression with a worn charm. Java 17 data generation, JAR reobfuscation and all 232 required Forge GameTests passed.
+- [x] Restart the dedicated server at the same full moon. The reconnected player kept rank four, human form and the charm with one durability point spent. The placed Wolf Altar retained its block entity.
 
 ## Auram Pack Validation (2026-11-20)
 

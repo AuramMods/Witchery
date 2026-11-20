@@ -86,6 +86,10 @@ public final class Lycanthropy {
         return WitcheryPlayerDataProvider.get(player).map(data -> data.getCreatureTypeOrdinal() == WOLF).orElse(false);
     }
 
+    public static boolean isWolfman(Player player) {
+        return WitcheryPlayerDataProvider.get(player).map(data -> data.getCreatureTypeOrdinal() == WOLFMAN).orElse(false);
+    }
+
     public static boolean isShifted(LivingEntity entity) {
         return entity instanceof Wolfman || entity instanceof Player player
                 && WitcheryPlayerDataProvider.get(player).map(Lycanthropy::isShifted).orElse(false);
@@ -129,14 +133,33 @@ public final class Lycanthropy {
         WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
             if (data.getWerewolfLevel() == 0) return;
             boolean fullMoon = isFullMoon(player.level());
-            boolean canShift = !wolfsbaneActive(player, data.getWerewolfLevel())
-                    && !player.getInventory().contains(new ItemStack(WitcheryItems.getRequired("mooncharm").get()));
+            var charm = WitcheryItems.getRequired("mooncharm").get();
+            boolean hasCharm = player.getInventory().items.stream().anyMatch(stack -> stack.is(charm))
+                    || player.getOffhandItem().is(charm);
+            boolean canShift = !wolfsbaneActive(player, data.getWerewolfLevel()) && !hasCharm;
             if (isShifted(data) && !fullMoon && canShift) setForm(player, data, HUMAN, false);
             if (data.getCreatureTypeOrdinal() == HUMAN && fullMoon && canShift && !player.isSleeping()) {
                 setForm(player, data, WOLF, true);
             }
             if (isShifted(data)) enforceShiftedEffects(player, data);
         });
+    }
+
+    public static boolean useMoonCharm(ServerPlayer player) {
+        return WitcheryPlayerDataProvider.get(player).map(data -> {
+            int rank = data.getWerewolfLevel();
+            if (rank < 2 || wolfsbaneActive(player, rank) || player.isSleeping()) return false;
+            boolean chooseWolfman = rank >= 5 && player.isShiftKeyDown();
+            int next = switch (data.getCreatureTypeOrdinal()) {
+                case HUMAN -> chooseWolfman ? WOLFMAN : WOLF;
+                case WOLF -> chooseWolfman ? WOLFMAN : HUMAN;
+                case WOLFMAN -> chooseWolfman ? HUMAN : WOLF;
+                default -> -1;
+            };
+            if (next < 0) return false;
+            setForm(player, data, next, false);
+            return true;
+        }).orElse(false);
     }
 
     public static boolean wolfsbaneActive(Player player, int rank) {

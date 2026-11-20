@@ -112,6 +112,9 @@ Lifecycle stages:
   - parent model for each file is `minecraft:item/template_spawn_egg`.
 
 ## Block Model Parity Anchors (current focus)
+- `witchery:wolfaltar`
+  - Uses the original Wolf Altar geometry and texture through its block entity renderer and inventory renderer. The facing determines the front of the statue and the reward position.
+  - The survival recipe accepts either Wolf Head variant in each trophy slot. The original gold, raw mutton and Dog Tongue offerings are available through rank four. The gold reward creates `witchery:mooncharm`, which retains its legacy wear value.
 - `witchery:wolftrap`
   - Legacy class: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/blocks/BlockBeartrap.java` (`new BlockBeartrap(true)`).
   - Legacy render model: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/client/model/ModelBeartrap.java`.

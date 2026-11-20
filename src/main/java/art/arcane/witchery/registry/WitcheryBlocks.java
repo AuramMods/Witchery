@@ -40,6 +40,7 @@ import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.block.WitchesCauldronBlock;
 import art.arcane.witchery.block.WitchesOvenBlock;
 import art.arcane.witchery.block.WolfHeadBlock;
+import art.arcane.witchery.block.WolfAltarBlock;
 import art.arcane.witchery.entity.Ent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -103,7 +104,6 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_INFINITY_EGG = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
     private static final VoxelShape SHAPE_CACTUS = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 16.0D, 15.0D);
     private static final VoxelShape SHAPE_VOID_BRAMBLE = Block.box(0.8D, 0.0D, 0.8D, 15.2D, 16.0D, 15.2D);
-    private static final VoxelShape SHAPE_WOLF_ALTAR = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 32.0D, 16.0D);
     private static final VoxelShape SHAPE_STATUE_GODDESS = Block.box(0.0D, 0.0D, 1.6D, 16.0D, 32.0D, 14.4D);
 
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, Witchery.MODID);
@@ -269,8 +269,7 @@ public final class WitcheryBlocks {
             case "voidbramble" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.SWEET_BERRY_BUSH), SHAPE_VOID_BRAMBLE, false);
             case "cauldron" -> new WitchesCauldronBlock(BlockBehaviour.Properties.copy(Blocks.CAULDRON));
-            case "wolfaltar" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.STONE), SHAPE_WOLF_ALTAR, true);
+            case "wolfaltar" -> new WolfAltarBlock();
             case "statuegoddess" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.STONE), SHAPE_STATUE_GODDESS, true);
             case "pitdirt" -> new Block(BlockBehaviour.Properties.copy(Blocks.DIRT).noOcclusion());
