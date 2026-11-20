@@ -4,6 +4,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.data.GrassSeedLootModifier;
 import art.arcane.witchery.world.DreamCottonFeature;
 import art.arcane.witchery.world.MirrorChunkGenerator;
+import art.arcane.witchery.world.TormentChunkGenerator;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.chunk.ChunkGenerator;
@@ -24,6 +25,7 @@ public final class WitcheryRegistries {
         LOOT_MODIFIERS.register("grass_seeds", () -> GrassSeedLootModifier.CODEC);
         FEATURES.register("dream_cotton", DreamCottonFeature::new);
         CHUNK_GENERATORS.register("mirror", () -> MirrorChunkGenerator.CODEC);
+        CHUNK_GENERATORS.register("torment", () -> TormentChunkGenerator.CODEC);
     }
 
     private WitcheryRegistries() {

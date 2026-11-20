@@ -35,6 +35,7 @@ import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.ChestRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
@@ -113,6 +114,7 @@ public final class WitcheryClient {
         event.registerBlockEntityRenderer(WitcheryBlockEntities.DEMON_HEART.get(), DemonHeartRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.MIRROR.get(), MirrorBlockRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.ROOM_MIRROR.get(), MirrorBlockRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.REFILLING_CHEST.get(), ChestRenderer::new);
     }
 
     @SubscribeEvent

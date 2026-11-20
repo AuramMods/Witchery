@@ -9,6 +9,7 @@ import art.arcane.witchery.block.DistilleryBlock;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.KettleBlock;
 import art.arcane.witchery.block.MirrorBlock;
+import art.arcane.witchery.block.RefillingChestBlock;
 import art.arcane.witchery.block.SomnianCottonBlock;
 import art.arcane.witchery.block.SpinningWheelBlock;
 import art.arcane.witchery.block.SpiritFluidBlock;
@@ -174,7 +175,8 @@ public final class WitcheryBlocks {
                     new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion(), SHAPE_COFFIN, true);
             case "statueofworship" ->
                     new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion(), SHAPE_STATUE, true);
-            case "refillingchest", "leechchest" ->
+            case "refillingchest" -> new RefillingChestBlock();
+            case "leechchest" ->
                     new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.CHEST).noOcclusion(), SHAPE_CHEST, true);
             case "stairswoodrowan", "stairswoodalder", "stairswoodhawthorn" ->
                     new StairBlock(Blocks.OAK_PLANKS.defaultBlockState(), BlockBehaviour.Properties.copy(Blocks.OAK_STAIRS));
@@ -244,13 +246,17 @@ public final class WitcheryBlocks {
                     .strength(-1, 9_999).noLootTable());
             case "tormentportal" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.NETHER_PORTAL), SHAPE_PORTAL_CROSS, false);
+            case "tormentstone" -> new Block(BlockBehaviour.Properties.copy(Blocks.MYCELIUM)
+                    .strength(-1, 9_999).noLootTable().noOcclusion());
             case "spiritflowing" -> new SpiritFluidBlock(WitcheryFluids.getRequiredSource("fluidspirit"), spiritProperties(), true);
             case "hollowtears" -> new SpiritFluidBlock(WitcheryFluids.getRequiredSource("hollowtears"), spiritProperties(), false);
             case "disease" -> createLegacyFluidBlock("fluiddisease");
             case "brew" -> createLegacyFluidBlock("brew");
             case "brewgas" -> createLegacyFluidBlock("brewgas");
             case "brewliquid" -> createLegacyFluidBlock("brewliquid");
-            case "force", "barrier" ->
+            case "force" ->
+                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.BARRIER).noLootTable(), SHAPE_FULL_BLOCK, true);
+            case "barrier" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.BARRIER), SHAPE_FULL_BLOCK, true);
             case "light", "slurp" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.BARRIER).noLootTable(), Shapes.empty(), false);

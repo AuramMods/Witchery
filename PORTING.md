@@ -81,6 +81,15 @@
 - [x] Verify vertical linking, the 3,000-power passage through a chamber wall, and exiting through a Mirror carried by another player. The two muted clients confirmed that a carrying player can move while the chamber occupant is inside and that the exit follows the carrier.
 - [ ] Restore the Mirror Face, conversations, disguises, and Mirror-related poppet and duplicate grenade behavior. Finish Reflection's advanced attacks and the shorter world setting.
 
+## Torment Milestone (2026-11-19)
+
+- [x] Generate the six original 31-by-31-cell mazes at their legacy elevations. Restore the invisible solid force walls, Torment Stone floors, cache rooms, and two-block exit portals. The surrounding dimension is void.
+- [x] Restore the original three Refilling Chests per floor. They use modern dungeon loot, populate when first loaded, and refill only when empty after an hour of loaded time. Their inventory and `WITCLifeTicks` survive dedicated restarts.
+- [x] Verify 59 packaged headless checks covering all six entries, exits, and central caches, plus the maze boundaries, first fill, repeat refill, and save persistence. A separate generator fixture found a route from entry to exit and each cache on every floor of 100 seeds.
+- [x] Verify the chest lid, inventory, and loot collection in the muted survival client. Preserve a saved marker in a previous port's Torment dimension. Generated Nether chunks extend beyond that marker and still occupy part of the original maze footprint.
+- [ ] Restore the portal's random-floor transport, chance of returning to another maze, and use of the player's Overworld respawn point. Route arrivals away from previously generated Nether terrain on upgraded port saves.
+- [ ] Restore the Lord of Torment encounter, the Imp's contract, and the Brew of Soul Anguish. Verify the encounter and full progression in the muted multiplayer client.
+
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.
 - Manifest + durable memory created.

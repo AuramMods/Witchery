@@ -9,6 +9,7 @@ import art.arcane.witchery.block.entity.DreamCatcherBlockEntity;
 import art.arcane.witchery.block.entity.KettleBlockEntity;
 import art.arcane.witchery.block.entity.MirrorBlockEntity;
 import art.arcane.witchery.block.entity.PlacedItemBlockEntity;
+import art.arcane.witchery.block.entity.RefillingChestBlockEntity;
 import art.arcane.witchery.block.entity.RiteHeartBlockEntity;
 import art.arcane.witchery.block.entity.SpinningWheelBlockEntity;
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
@@ -70,6 +71,9 @@ public final class WitcheryBlockEntities {
     public static final RegistryObject<BlockEntityType<MirrorBlockEntity>> ROOM_MIRROR =
             BLOCK_ENTITIES.register("mirrorblock2", () -> BlockEntityType.Builder.of(WitcheryBlockEntities::createRoomMirror,
                     WitcheryBlocks.getRequired("mirrorblock2").get()).build(null));
+    public static final RegistryObject<BlockEntityType<RefillingChestBlockEntity>> REFILLING_CHEST =
+            BLOCK_ENTITIES.register("refillingchest", () -> BlockEntityType.Builder.of(RefillingChestBlockEntity::new,
+                    WitcheryBlocks.getRequired("refillingchest").get()).build(null));
 
     static {
         LEGACY_BLOCK_ENTITIES.put("altar", ALTAR);
@@ -83,6 +87,7 @@ public final class WitcheryBlockEntities {
         LEGACY_BLOCK_ENTITIES.put("kettle", KETTLE);
         LEGACY_BLOCK_ENTITIES.put("mirrorblock", MIRROR);
         LEGACY_BLOCK_ENTITIES.put("mirrorblock2", ROOM_MIRROR);
+        LEGACY_BLOCK_ENTITIES.put("refillingchest", REFILLING_CHEST);
         LEGACY_BLOCK_ENTITIES.put("spinningwheel", SPINNING_WHEEL);
         LEGACY_BLOCK_ENTITIES.put("cauldron", CAULDRON);
         LEGACY_BLOCK_ENTITIES.put("witchesovenidle", WITCHES_OVEN);
