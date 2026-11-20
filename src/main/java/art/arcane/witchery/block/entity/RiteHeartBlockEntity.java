@@ -3,6 +3,7 @@ package art.arcane.witchery.block.entity;
 import art.arcane.witchery.block.RiteHeartBlock;
 import art.arcane.witchery.brewing.WakingNightmareEffect;
 import art.arcane.witchery.entity.Demon;
+import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.power.AltarPower;
@@ -148,6 +149,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         List<ServerPlayer> recipients = List.of();
         Entity result = null;
         LivingEntity curseTarget = null;
+        boolean familiarRite = rite.action() == ItemRiteRecipe.Action.BIND_FAMILIAR || rite.action() == ItemRiteRecipe.Action.CALL_FAMILIAR;
         if (rite.action() == ItemRiteRecipe.Action.MANIFESTATION) {
             double centerX = pos.getX() + 0.5;
             double centerZ = pos.getZ() + 0.5;
@@ -177,7 +179,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 abort(level, "message.witchery.rite.no_taglock_target");
                 return;
             }
-        } else {
+        } else if (!familiarRite) {
             ItemEntity drop = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
                     rite.result().copy(), 0, 0.3, 0);
             drop.setDefaultPickUpDelay();
@@ -189,6 +191,12 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (altar != null && !altar.consumePower(rite.power())) {
             if (result != null) result.discard();
             abort(level, "message.witchery.rite.missing_power");
+            return;
+        }
+        if (familiarRite && !(rite.action() == ItemRiteRecipe.Action.BIND_FAMILIAR
+                ? FamiliarBinding.bindNear(level, pos) : FamiliarBinding.callNear(level, pos))) {
+            if (altar != null) altar.refundPower(rite.power());
+            abort(level, "message.witchery.rite.no_familiar");
             return;
         }
         if (living != null) {

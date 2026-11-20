@@ -1,0 +1,13 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "medium", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [
+    {"item": "witchery:tear_of_the_goddess"},
+    {"item": "witchery:odour_of_purity"},
+    {"item": "witchery:whiff_of_magic"},
+    {"item": "minecraft:diamond"},
+    {"item": "witchery:infernal_blood"}
+  ],
+  "power": 8000,
+  "action": "bind_familiar"
+}

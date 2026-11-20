@@ -4,6 +4,7 @@ import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.brewing.GrotesqueEffect;
 import art.arcane.witchery.brewing.WakingNightmareEffect;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.Witchery;
@@ -25,6 +26,7 @@ import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.LevelEvent;
@@ -161,14 +163,21 @@ public final class WitcheryEventHooks {
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public static void onDreamDeath(LivingDeathEvent event) {
+    public static void onLivingDeath(LivingDeathEvent event) {
         if (event.getEntity() instanceof ServerPlayer player && !player.getAbilities().instabuild
                 && (player.level().dimension().equals(WitcheryDimensions.DREAM) || DreamTravel.isGhost(player))
                 && DreamTravel.isSpiritWalking(player)) {
             event.setCanceled(true);
             player.setHealth(1);
             DreamTravel.requestWake(player);
+            return;
         }
+        FamiliarBinding.handleDeath(event);
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOW)
+    public static void onFamiliarDamage(LivingHurtEvent event) {
+        if (event.getEntity() instanceof ServerPlayer server) FamiliarBinding.shareDamage(server, event);
     }
 
     @SubscribeEvent

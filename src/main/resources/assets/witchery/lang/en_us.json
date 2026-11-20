@@ -248,6 +248,8 @@
    "subtitles.witchery.torment.death" : "Lord of Torment dies",
    "entity.witchery.lordoftorment" : "Lord of Torment",
    "entity.witchery.soulfire" : "Soulfire",
+   "entity.witchery.cat" : "Witch Cat",
+   "message.witchery.rite.no_familiar" : "No familiar can answer this rite.",
    "entity.witchery.nightmare" : "Nightmare",
    "message.witchery.rite.unknown" : "No rite matches these circles and offerings.",
    "message.witchery.rite.cancelled" : "The rite has been cancelled.",

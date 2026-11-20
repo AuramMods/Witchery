@@ -9,9 +9,11 @@ import art.arcane.witchery.entity.Reflection;
 import art.arcane.witchery.entity.SleepingBody;
 import art.arcane.witchery.entity.Soulfire;
 import art.arcane.witchery.entity.ThrownBrew;
+import art.arcane.witchery.entity.WitchCat;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.animal.Cat;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
@@ -47,6 +49,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<Soulfire>> SOULFIRE =
             ENTITY_TYPES.register("soulfire", () -> EntityType.Builder.<Soulfire>of(Soulfire::new, MobCategory.MISC)
                     .sized(0.3125F, 0.3125F).fireImmune().clientTrackingRange(4).updateInterval(3).build(Witchery.MODID + ":soulfire"));
+    public static final RegistryObject<EntityType<WitchCat>> WITCH_CAT =
+            ENTITY_TYPES.register("cat", () -> EntityType.Builder.<WitchCat>of(WitchCat::new, MobCategory.CREATURE)
+                    .sized(0.6F, 0.7F).clientTrackingRange(8).build(Witchery.MODID + ":cat"));
     public static final RegistryObject<EntityType<ThrownBrew>> THROWN_BREW =
             ENTITY_TYPES.register("thrown_brew", () -> EntityType.Builder.<ThrownBrew>of(ThrownBrew::new, MobCategory.MISC)
                     .sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(3).build(Witchery.MODID + ":thrown_brew"));
@@ -58,6 +63,7 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("demon", DEMON);
         LEGACY_ENTITIES.put("reflection", REFLECTION);
         LEGACY_ENTITIES.put("lordoftorment", LORD_OF_TORMENT);
+        LEGACY_ENTITIES.put("cat", WITCH_CAT);
         for (String legacyName : LegacyRegistryData.ENTITIES) {
             registerLegacyEntity(legacyName);
         }
@@ -96,7 +102,8 @@ public final class WitcheryEntities {
                     : entry == NIGHTMARE ? Nightmare.attributes()
                     : entry == DEMON ? Demon.attributes()
                     : entry == REFLECTION ? Reflection.attributes()
-                    : entry == LORD_OF_TORMENT ? LordOfTorment.attributes() : Zombie.createAttributes();
+                    : entry == LORD_OF_TORMENT ? LordOfTorment.attributes()
+                    : entry == WITCH_CAT ? Cat.createAttributes() : Zombie.createAttributes();
             event.put(entry.get(), attributes.build());
         }
     }

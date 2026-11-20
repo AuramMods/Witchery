@@ -1,0 +1,11 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "medium", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [
+    {"item": "witchery:breath_of_the_goddess"},
+    {"item": "witchery:hint_of_rebirth"},
+    {"item": "witchery:whiff_of_magic"}
+  ],
+  "power": 1000,
+  "action": "call_familiar"
+}

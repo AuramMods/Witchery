@@ -93,6 +93,15 @@
 - [x] Verify the same 250-health Lord after a dedicated restart. The muted client defeated it with an axe after a fixture shortened the remaining fight, collected two enchanted books, a Demon Heart and the Brew of Soul Torment, and drank the brew to save its Tormentum knowledge. It exited through the generated portal.
 - [ ] Restore natural access through the coven, Imp, and its summoning contract. Complete the spellcasting system so the Brew of Soul Torment reward unlocks a castable Tormentum spell.
 
+## Familiars and Covens (2026-11-19)
+
+- [x] Restore cat familiars through the 8,000-power Rite of Binding a Familiar. The muted survival client tamed a vanilla cat with cod, bound it with a medium white circle, and kept its name. The rite returned all five offerings and altar power when the circle had no eligible pet.
+- [x] Restore familiar fire immunity, armor, healing, and damage sharing. The client observed a ten-point hit split into nine for the owner and one for the cat, then healed the cat with cod. All 31 required Forge GameTests passed, including legacy owner tags and the offline owner's protection.
+- [x] Restore the 1,000-power Rite of Calling a Familiar and sneaking dismissal. The muted client recalled the same cat from Torment, dismissed the seated cat, and called one replacement with the saved name and 50 health.
+- [x] Verify the owner's familiar record, cat UUID, and health across a dedicated restart. The disposable world confirmed that a fatal hit on a bound cat dismisses it and kills its online owner, as in the legacy mod.
+- [ ] Restore owl and toad familiars, their specialized abilities, and the cat's curse bonuses.
+- [ ] Restore Coven Witch spawning, quests and membership. Use the coven to perform the original Imp rite and obtain the Contract of Torment.
+
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.
 - Manifest + durable memory created.

@@ -147,6 +147,11 @@ public final class AltarBlockEntity extends BlockEntity {
         return true;
     }
 
+    void refundPower(float amount) {
+        power = Math.min(capacity(), power + amount);
+        setChanged();
+    }
+
     public float power() {
         return power;
     }
