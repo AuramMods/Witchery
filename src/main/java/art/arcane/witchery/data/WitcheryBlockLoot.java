@@ -73,6 +73,7 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                                         .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(BedBlock.PART, BedPart.FOOT)))))));
                 case "witchsapling", "witchlog", "witchwood" -> dropWitchWood(block);
                 case "crittersnare" -> dropCritterSnare(block);
+                case "wolftrap" -> add(block, LootTable.lootTable());
                 case "wolfhead" -> add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool()
                         .setRolls(ConstantValue.exactly(1)).add(AlternativesEntry.alternatives(
                                 LootItem.lootTableItem(WitcheryItems.getRequired("hellhound_head").get()).when(

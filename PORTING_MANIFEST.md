@@ -115,11 +115,11 @@ Lifecycle stages:
 - `witchery:wolfaltar`
   - Uses the original Wolf Altar geometry and texture through its block entity renderer and inventory renderer. The facing determines the front of the statue and the reward position.
   - The survival recipe accepts either Wolf Head variant in each trophy slot. The original offerings and trials advance from rank one through rank ten. The gold reward creates `witchery:mooncharm`, which retains its legacy wear value.
-- `witchery:wolftrap`
+- `witchery:beartrap` and `witchery:wolftrap`
   - Legacy class: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/blocks/BlockBeartrap.java` (`new BlockBeartrap(true)`).
   - Legacy render model: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/client/model/ModelBeartrap.java`.
   - Legacy texture: `assets/witchery/textures/blocks/beartrap.png`.
-  - 2026-02-09 scaffold remap: model now points at `minecraft:block/iron_block` to avoid missing/transparent placeholder texture until dedicated texture parity pass.
+  - Both variants use the original plate, hinges, jaws and teeth in a shared block entity renderer. The silvered variant uses the full-moon sheep lure and only springs on its recorded Wolfman.
 - 2026-02-09 placeholder texture remap set (reported visual breakage triage):
   - `witchery:tormentstone` -> `minecraft:block/mycelium_top`.
   - `witchery:refillingchest` -> `witchery:block/leechchest`.

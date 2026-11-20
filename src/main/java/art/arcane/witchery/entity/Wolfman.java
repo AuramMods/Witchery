@@ -121,6 +121,8 @@ public final class Wolfman extends Monster {
 
     public boolean isInfectious() { return infectious; }
 
+    public void makeInfectious() { infectious = true; }
+
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);

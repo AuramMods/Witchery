@@ -475,7 +475,7 @@
 - [x] Restore both original recipes, full-moon timing, active cat and six-member coven. The muted client called its cat, collected its Taglock at a bed, sacrificed a Hellhound Head it had picked up, and activated the medium infernal circle with a Seer Stone. A waning night refunded all six offerings. At the full moon, Witch Hunter clothing blocked the curse. Removing one piece let the same offerings curse the player and the server retained vampire rank ten under the default hybrid setting.
 - [x] Restore the rank-one wolf form, smaller dimensions, armor drop, Night Vision, jump and movement stats, and Silver Sword damage. The dedicated server recorded speed changing from 0.10 to 0.15 and the additional step height of 0.4. A second muted client saw the first as a wolf. With the active familiar's damage sharing, a 12-point ordinary strike took 3.6 health and a seven-point silver strike took 10.8 health.
 - [x] Reconnect after a dedicated-server restart, then collect another Taglock and perform the cure while still in wolf form. The save retained rank one, wolf form and speed. The successful cure consumed all six offerings, restored normal movement and kept vampire rank ten. Java 17 data generation, JAR reobfuscation and all 226 required Forge GameTests passed.
-- [ ] Finish the traps and Wolfsbane interactions.
+- [ ] Finish Wolfsbane identification and the cauldron brew.
 
 ## Werevillagers and Wolfmen (2026-11-20)
 
@@ -511,6 +511,13 @@
 - [x] Apply the original silvered armor response to werewolf attacks. The packaged server gave the target the same eight-point Wolfman attack with each coat. The plain coat left 15.12 health and one point of wear. The silvered coat left 16 health and zero wear. It also took the Wolfman from 80 to 79.38 health.
 - [x] Restore armor rending and bite transmission. The muted rank-ten Wolfman struck the second client, putting 44 wear on the iron helmet while the other pieces took two each. An infectious Wolfman converted a villager at three remaining health, keeping the original Taglock identity. A later nonlethal hit by the rank-ten player infected the second client at two health. The second client put on a silvered hat while human and took periodic damage.
 - [x] Restore wolf digging and the bone discovery cooldown. The first tap in the muted client left the dirt in place. A crouching tap removed it. Further digging produced a bone that the player picked up and saved the find time. Java 17 data generation, JAR reobfuscation and all 243 required Forge GameTests passed.
+
+## Bear Trap and Wolf Trap (2026-11-20)
+
+- [x] Craft and place the original Bear Trap and upgrade a second one to a Wolf Trap. Both muted clients saw the original trap model. The armed Bear Trap was faint and lacked an outline for the non-owner. A live pig moved through it and took four damage and Paralysis III.
+- [x] Arm the Wolf Trap beside a Wolf Altar at the full moon. The muted survival client leashed a sheep and tethered it to the fence. The trap recorded the summoned Wolfman's UUID. It stayed armed when an unrelated Wolfman moved through, then sprang and made its own Wolfman infectious when that creature moved through it.
+- [x] Verify the original loot and saved-tag formats. GameTests checked timed arming, the legacy owner UUID string, bait gating, capture and the absence of a Wolf Trap item drop. Java 17 data generation, JAR reobfuscation and all 246 required Forge GameTests passed.
+- [x] Restart the packaged dedicated server. Both placed traps retained their owner and sprung state. The Wolf Trap retained its specific Wolfman's UUID, that Wolfman remained infectious, and the sheep kept its fence leash.
 
 ## Auram Pack Validation (2026-11-20)
 

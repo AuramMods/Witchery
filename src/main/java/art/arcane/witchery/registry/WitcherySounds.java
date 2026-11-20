@@ -41,6 +41,7 @@ public final class WitcherySounds {
     public static final RegistryObject<SoundEvent> WOLFMAN_DEATH = sound("mob.wolfman.death");
     public static final RegistryObject<SoundEvent> WOLFMAN_LORD = sound("mob.wolfman.lord");
     public static final RegistryObject<SoundEvent> HUNT_HORN = sound("random.horn");
+    public static final RegistryObject<SoundEvent> MANTRAP = sound("random.mantrap");
     public static final RegistryObject<SoundEvent> OWL_HOOT = sound("mob.owl.owl_hoot");
     public static final RegistryObject<SoundEvent> OWL_HURT = sound("mob.owl.owl_hurt");
     public static final RegistryObject<SoundEvent> TOAD_CROAK = sound("mob.toad.toad_croak");

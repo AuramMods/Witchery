@@ -1,0 +1,22 @@
+{
+  "type": "forge:conditional",
+  "recipes": [
+    {
+      "conditions": [
+        {"type": "forge:not", "value": {"type": "forge:tag_empty", "tag": "forge:ingots/silver"}}
+      ],
+      "recipe": {
+        "type": "minecraft:crafting_shaped",
+        "category": "equipment",
+        "pattern": ["SNS", "WTW", "SNS"],
+        "key": {
+          "S": {"tag": "forge:ingots/silver"},
+          "N": {"item": "witchery:null_catalyst"},
+          "W": {"item": "witchery:wolfsbane_flower"},
+          "T": {"item": "witchery:beartrap"}
+        },
+        "result": {"item": "witchery:wolftrap"}
+      }
+    }
+  ]
+}

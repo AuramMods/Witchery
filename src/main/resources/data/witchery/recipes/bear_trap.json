@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": ["III", "SPS", "III"],
+  "key": {
+    "I": {"item": "minecraft:iron_ingot"},
+    "S": {"item": "minecraft:shears"},
+    "P": {"item": "minecraft:heavy_weighted_pressure_plate"}
+  },
+  "result": {"item": "witchery:beartrap"}
+}

@@ -17,6 +17,7 @@ import art.arcane.witchery.item.HandBowItem;
 import art.arcane.witchery.item.HornOfTheHuntItem;
 import art.arcane.witchery.item.HuntsmanSpearItem;
 import art.arcane.witchery.item.HunterClothingItem;
+import art.arcane.witchery.item.HuntingTrapItem;
 import art.arcane.witchery.item.HunterClothingItem.Piece;
 import art.arcane.witchery.item.HunterClothingItem.Upgrade;
 import art.arcane.witchery.item.DemonHeartItem;
@@ -360,6 +361,9 @@ public final class WitcheryItems {
     private static BlockItem createBlockItem(String path) {
         Block block = WitcheryBlocks.getRequired(path).get();
         switch (path) {
+            case "beartrap", "wolftrap" -> {
+                return new HuntingTrapItem(block);
+            }
             case "wolfaltar" -> {
                 return new WolfAltarItem(block);
             }

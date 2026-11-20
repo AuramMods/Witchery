@@ -19,6 +19,7 @@ import art.arcane.witchery.block.DemonHeartBlock;
 import art.arcane.witchery.block.DistilleryBlock;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.GrassperBlock;
+import art.arcane.witchery.block.HuntingTrapBlock;
 import art.arcane.witchery.block.KettleBlock;
 import art.arcane.witchery.block.LeechChestBlock;
 import art.arcane.witchery.block.MirrorBlock;
@@ -94,8 +95,6 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_PAD_FLAT = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 0.5D, 16.0D);
     private static final VoxelShape SHAPE_FUNNEL = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
     private static final VoxelShape SHAPE_STATUE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 22.0D, 14.0D);
-    private static final VoxelShape SHAPE_WOLFTRAP = Block.box(3.0D, 0.0D, 1.0D, 13.0D, 2.01D, 15.0D);
-    private static final VoxelShape SHAPE_BEARTRAP = Block.box(3.2D, 0.16D, 3.2D, 12.8D, 1.6D, 12.8D);
     private static final VoxelShape SHAPE_SKULL = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 8.0D, 12.0D);
     private static final VoxelShape SHAPE_BRAZIER = Block.box(3.2D, 0.0D, 3.2D, 12.8D, 15.2D, 12.8D);
     private static final VoxelShape SHAPE_AREA_MARKER = Block.box(2.4D, 0.0D, 2.4D, 13.6D, 8.0D, 13.6D);
@@ -208,9 +207,8 @@ public final class WitcheryBlocks {
                     new ButtonBlock(BlockBehaviour.Properties.copy(Blocks.STONE_BUTTON), BlockSetType.STONE, 20, false);
             case "belladonna", "mandrake", "artichoke", "snowbell", "wormwood", "mindrake", "garlicplant", "wolfsbane" ->
                     new WitchCropBlock(WitchCrop.forBlock(path), BlockBehaviour.Properties.copy(Blocks.WHEAT));
-            case "wolftrap" -> new LegacyWolftrapBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).noOcclusion().noCollission());
-            case "beartrap" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).sound(SoundType.METAL), SHAPE_BEARTRAP, false);
+            case "wolftrap" -> new HuntingTrapBlock(true);
+            case "beartrap" -> new HuntingTrapBlock(false);
             case "demonheart" ->
                     new DemonHeartBlock(BlockBehaviour.Properties.copy(Blocks.STONE).strength(1).noOcclusion()
                             .sound(SoundType.NETHERRACK).lightLevel(state -> 3));
@@ -482,38 +480,6 @@ public final class WitcheryBlocks {
         @Override
         public String getSerializedName() {
             return serializedName;
-        }
-    }
-
-    private static final class LegacyWolftrapBlock extends HorizontalDirectionalBlock {
-        private LegacyWolftrapBlock(BlockBehaviour.Properties properties) {
-            super(properties.sound(SoundType.METAL));
-            registerDefaultState(defaultBlockState().setValue(FACING, Direction.NORTH));
-        }
-
-        @Override
-        public BlockState getStateForPlacement(BlockPlaceContext context) {
-            return defaultBlockState().setValue(FACING, context.getHorizontalDirection());
-        }
-
-        @Override
-        public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-            return SHAPE_WOLFTRAP;
-        }
-
-        @Override
-        public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-            return Shapes.empty();
-        }
-
-        @Override
-        public VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
-            return Shapes.empty();
-        }
-
-        @Override
-        protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-            builder.add(FACING);
         }
     }
 }

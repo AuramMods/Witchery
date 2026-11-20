@@ -291,6 +291,13 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Rank-nine Wolfmen damage one random armor slot by one quarter of its maximum durability. The rank-ten test actor's unarmed hit left one iron helmet at 44 wear and the other iron pieces at two. The original player transmission option defaults to true. Player bites require a nonlethal wound below one quarter health and the one-in-four roll. A full silvered outfit blocks player transmission. Hybrid eligibility checks the victim, so the setting prevents creating a hybrid from either side of the bite.
 - An infectious Wolfman converted a named villager from six to three health without losing its original Taglock UUID. A real hit from the rank-ten client infected the second client at two health. In wolf form, the same first client crouched to dig dirt with one click and collected a bone from standard block loot. The dedicated server recorded `LastBoneFindGameTime` as 296993. Data generation, reobfuscation and all 243 required Forge GameTests passed.
 
+### Bear Trap and Wolf Trap (2026-11-20)
+
+- Both recipes use the original patterns. The Wolf Trap also accepts the optional `forge:ingots/silver` tag. The muted client crafted and placed both traps and the original hinged model showed sprung and armed states. The Bear Trap's opacity defaults to 0.3 for non-owners while armed, and the targeting outline is suppressed for that viewer. The second client saw the faint trap. After the one-second waiting period, real collision sprang it on a pig and left the pig at six health with amplifier 2 paralysis.
+- The alternate trap arms beside the Wolf Altar with a leashed sheep within eight blocks on the full moon. Two bait polls are required. A real client leashed the sheep and tethered it to a fence. The dedicated server summoned one Wolfman and saved its UUID. The trap ignored an unrelated Wolfman. Nudging the summoned Wolfman through the trap set `Infectious` and applied the same paralysis. The silvered trap does not drop itself.
+- Both blocks use the `witchery:beartrap` block entity and retain `Sprung`, `Owner`, `WolftrapStart`, `WolfMost` and `WolfLeast`. Current saves add `ArmedAt` for the one-second arming grace. The legacy player UUID string is supported. Data generation, JAR reobfuscation and all 246 required Forge GameTests passed with protocol 51.
+- Both armed times and owner profiles remained in the save after capture and dedicated restart. The same summoned Wolfman retained its UUID and `Infectious:1b`. The sheep's lead still pointed at the fence in the restored world.
+
 ### Earlier Validation Continued
 
 - The medium Infernal Imp rite uses Refined Evil, Infernal Blood, Ender Pearl, Attuned Stone and 5,000 altar power. The muted client activated the real rite and verified the four offerings were refunded without the Seer Stone. With an active coven and the stone it summoned a 50-health Imp. The client used its own bed to fill the Taglock Kit and crafted the signed Contract of Ownership in its inventory. The same contract survived a restart, was refused with six levels, and bound Zul after 25 levels were paid. New registry and recipe data use protocol 9.
@@ -631,8 +638,7 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
   - spawn egg item models present: 55 (`*_spawn_egg.json`).
   - legacy textures copied under `assets/witchery/textures`.
 - Targeted parity notes:
-  - `wolftrap` in 1.7 is `BlockBeartrap(true)` with TESR `ModelBeartrap` + `textures/blocks/beartrap.png`; current 1.20 model is a static approximation of the unsprung TESR geometry.
-  - `wolftrap` placement in 1.20 is now aligned to player facing direction (`getHorizontalDirection()`) for closer legacy behavior.
+  - The 2026-11-20 trap milestone restored the original `ModelBeartrap` geometry and `textures/blocks/beartrap.png` for both trap variants. Their open and sprung poses now reflect the saved trap state. Placement follows the player's facing.
   - `icedoor` blockstate now mirrors vanilla iron-door rotation mapping to keep open/hinge visuals correct in 1.20.1.
   - crop family parity pass added staged crop assets + age blockstates for:
     - `belladonna` (max stage `4`)

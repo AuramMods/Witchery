@@ -12,6 +12,7 @@ import art.arcane.witchery.block.entity.DemonHeartBlockEntity;
 import art.arcane.witchery.block.entity.DistilleryBlockEntity;
 import art.arcane.witchery.block.entity.DreamCatcherBlockEntity;
 import art.arcane.witchery.block.entity.GrassperBlockEntity;
+import art.arcane.witchery.block.entity.HuntingTrapBlockEntity;
 import art.arcane.witchery.block.entity.KettleBlockEntity;
 import art.arcane.witchery.block.entity.LeechChestBlockEntity;
 import art.arcane.witchery.block.entity.MirrorBlockEntity;
@@ -118,8 +119,12 @@ public final class WitcheryBlockEntities {
     public static final RegistryObject<BlockEntityType<WolfAltarBlockEntity>> WOLF_ALTAR =
             BLOCK_ENTITIES.register("wolfaltar", () -> BlockEntityType.Builder.of(WolfAltarBlockEntity::new,
                     WitcheryBlocks.getRequired("wolfaltar").get()).build(null));
+    public static final RegistryObject<BlockEntityType<HuntingTrapBlockEntity>> HUNTING_TRAP =
+            BLOCK_ENTITIES.register("beartrap", () -> BlockEntityType.Builder.of(HuntingTrapBlockEntity::new,
+                    WitcheryBlocks.getRequired("beartrap").get(), WitcheryBlocks.getRequired("wolftrap").get()).build(null));
 
     static {
+        LEGACY_BLOCK_ENTITIES.put("beartrap", HUNTING_TRAP);
         LEGACY_BLOCK_ENTITIES.put("altar", ALTAR);
         LEGACY_BLOCK_ENTITIES.put("barrier", BARRIER);
         LEGACY_BLOCK_ENTITIES.put("poppetshelf", POPPET_SHELF);

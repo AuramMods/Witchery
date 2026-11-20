@@ -50,6 +50,7 @@ import art.arcane.witchery.client.renderer.HornedHuntsmanRenderer;
 import art.arcane.witchery.client.renderer.WolfHeadRenderer;
 import art.arcane.witchery.client.renderer.WolfmanRenderer;
 import art.arcane.witchery.client.renderer.WolfAltarRenderer;
+import art.arcane.witchery.client.renderer.HuntingTrapRenderer;
 import art.arcane.witchery.client.renderer.GrassperRenderer;
 import art.arcane.witchery.client.renderer.ImpRenderer;
 import art.arcane.witchery.client.renderer.KettleRenderer;
@@ -174,6 +175,7 @@ public final class WitcheryClient {
         event.registerLayerDefinition(WolfHeadRenderer.LAYER, WolfHeadRenderer::layer);
         event.registerLayerDefinition(WolfmanRenderer.LAYER, WolfmanRenderer::layer);
         event.registerLayerDefinition(WolfAltarRenderer.LAYER, WolfAltarRenderer::layer);
+        event.registerLayerDefinition(HuntingTrapRenderer.LAYER, HuntingTrapRenderer::layer);
         for (var style : VampireClothingItem.Style.values()) {
             event.registerLayerDefinition(VampireClothingModel.layerId(style), () -> VampireClothingModel.layer(style));
         }
@@ -231,6 +233,7 @@ public final class WitcheryClient {
         event.registerBlockEntityRenderer(WitcheryBlockEntities.SPINNING_WHEEL.get(), SpinningWheelRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.WOLF_HEAD.get(), WolfHeadRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.WOLF_ALTAR.get(), WolfAltarRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.HUNTING_TRAP.get(), HuntingTrapRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.PLACED_ITEM.get(), PlacedItemRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.GRASSPER.get(), GrassperRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.POPPET_SHELF.get(), PoppetShelfRenderer::new);

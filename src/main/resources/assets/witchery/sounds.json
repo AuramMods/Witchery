@@ -39,6 +39,10 @@
     "subtitle": "subtitles.witchery.hunting_horn",
     "sounds": ["witchery:random/horn"]
   },
+  "random.mantrap": {
+    "subtitle": "subtitles.witchery.mantrap",
+    "sounds": ["witchery:random/mantrap"]
+  },
   "mob.lilith.say": {
     "subtitle": "subtitles.witchery.lilith.ambient",
     "sounds": ["witchery:mob/lilith/say1", "witchery:mob/lilith/say2", "witchery:mob/lilith/say3", "witchery:mob/lilith/say4", "witchery:mob/lilith/say5"]
