@@ -27,6 +27,7 @@ import art.arcane.witchery.item.MysticBranchItem;
 import art.arcane.witchery.item.NecromanticStoneItem;
 import art.arcane.witchery.item.RitualChalkItem;
 import art.arcane.witchery.item.SeerStoneItem;
+import art.arcane.witchery.item.SunGrenadeItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.MutatingSprigItem;
 import art.arcane.witchery.item.TormentContractItem;
@@ -102,7 +103,7 @@ public final class WitcheryItems {
             registerLegacySpawnEgg(legacyName);
         }
         // Older port saves can contain placeholder spawn eggs for these projectiles.
-        for (String name : List.of("soulfire_spawn_egg", "spelleffect_spawn_egg")) {
+        for (String name : List.of("soulfire_spawn_egg", "spelleffect_spawn_egg", "grenade_spawn_egg")) {
             LEGACY_SPAWN_EGGS.put(name, ITEMS.register(name, () -> new Item(new Item.Properties())));
         }
         ITEMS.register("broom_spawn_egg", () -> new BroomItem(true));
@@ -170,6 +171,7 @@ public final class WitcheryItems {
             case "taglockkit" -> new TaglockItem();
             case "coffin" -> createBlockItem("coffinblock");
             case "vampirebook" -> new VampireBookItem();
+            case "sungrenade" -> new SunGrenadeItem();
             case "glassgoblet" -> new GlassGobletItem();
             case "mirror" -> new MirrorItem();
             case "arthana" -> new ArthanaItem();

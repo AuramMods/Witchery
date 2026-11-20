@@ -26,6 +26,8 @@ import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 
 public final class Vampirism {
     private static final TagKey<EntityType<?>> BOOK_BOSSES = TagKey.create(Registries.ENTITY_TYPE,
@@ -100,7 +102,18 @@ public final class Vampirism {
         return WitcheryServerConfig.ALLOW_VAMPIRE_QUESTS.get() && data.getVampireLevel() < data.getVampireLevelCap();
     }
 
-    public static void onKilled(LivingEntity victim, ServerPlayer killer) {
+    public static void onSunBurst(ServerPlayer player) {
+        WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
+            if (data.getVampireLevel() == 4 && canAdvance(data)) advanceTrial(player, data, 10);
+        });
+    }
+
+    public static void onKilled(LivingEntity victim, ServerPlayer killer, boolean direct) {
+        if (direct && victim.getType() == EntityType.BLAZE) {
+            WitcheryPlayerDataProvider.get(killer).ifPresent(data -> {
+                if (data.getVampireLevel() == 5 && canAdvance(data)) advanceTrial(killer, data, 20);
+            });
+        }
         boolean incompleteBook = false;
         for (ItemStack stack : killer.getInventory().items) {
             if (stack.getItem() instanceof VampireBookItem) {
@@ -117,6 +130,21 @@ public final class Vampirism {
                 || victim.getMobType() == MobType.UNDEAD && random.nextDouble() < 0.02) {
             victim.spawnAtLocation(WitcheryIngredient.TORN_VAMPIRE_PAGE.item(), 1);
         }
+    }
+
+    private static void advanceTrial(ServerPlayer player, WitcheryPlayerData data, int required) {
+        if (data.getVampireQuestCounter() >= required - 1) {
+            advance(player, data);
+            sync(player, data);
+        } else data.setVampireQuestCounter(data.getVampireQuestCounter() + 1);
+    }
+
+    public static boolean canShatter(Player player, BlockState stone) {
+        return player.isShiftKeyDown() && !player.isCreative() && !player.isSpectator() && player.getFoodData().getFoodLevel() > 0
+                && (stone.is(Blocks.STONE) || stone.is(Blocks.COBBLESTONE) || stone.is(Blocks.NETHERRACK))
+                && !player.getMainHandItem().isCorrectToolForDrops(Blocks.STONE.defaultBlockState())
+                && WitcheryPlayerDataProvider.get(player).map(data -> data.getVampireLevel() >= 6
+                        && data.getCreatureTypeOrdinal() == 0).orElse(false);
     }
 
     public static void knockBack(ServerPlayer player, LivingEntity victim) {

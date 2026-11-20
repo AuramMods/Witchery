@@ -6,6 +6,7 @@ import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.entity.DarkMark;
 import art.arcane.witchery.entity.Demon;
 import art.arcane.witchery.entity.Ent;
+import art.arcane.witchery.entity.GrenadeProjectile;
 import art.arcane.witchery.entity.Imp;
 import art.arcane.witchery.entity.LegacyWaystoneEntity;
 import art.arcane.witchery.entity.LordOfTorment;
@@ -105,6 +106,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<ThrownBrew>> THROWN_BREW =
             ENTITY_TYPES.register("thrown_brew", () -> EntityType.Builder.<ThrownBrew>of(ThrownBrew::new, MobCategory.MISC)
                     .sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(3).build(Witchery.MODID + ":thrown_brew"));
+    public static final RegistryObject<EntityType<GrenadeProjectile>> GRENADE =
+            ENTITY_TYPES.register("grenade", () -> EntityType.Builder.<GrenadeProjectile>of(GrenadeProjectile::new, MobCategory.MISC)
+                    .sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(3).build(Witchery.MODID + ":grenade"));
     public static final RegistryObject<EntityType<SymbolProjectile>> SYMBOL_PROJECTILE =
             ENTITY_TYPES.register("spelleffect", () -> EntityType.Builder.<SymbolProjectile>of(SymbolProjectile::new, MobCategory.MISC)
                     .sized(1, 1).clientTrackingRange(4).updateInterval(1).build(Witchery.MODID + ":spelleffect"));
@@ -150,7 +154,7 @@ public final class WitcheryEntities {
     private static void registerLegacyEntity(String legacyName) {
         String path = RegistryNameUtil.normalizePath(legacyName);
         if (LEGACY_ENTITIES.containsKey(path) || path.equals("soulfire") || path.equals("spelleffect") || path.equals("broom")
-                || path.equals("item") || path.equals("eye")) {
+                || path.equals("item") || path.equals("eye") || path.equals("grenade")) {
             return;
         }
 

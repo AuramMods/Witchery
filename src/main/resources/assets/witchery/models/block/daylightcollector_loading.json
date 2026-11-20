@@ -1,0 +1,4 @@
+{
+  "parent": "witchery:block/daylightcollector",
+  "textures": { "cross": "witchery:block/daylightcollector1" }
+}

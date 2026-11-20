@@ -342,8 +342,8 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | `WOLFTRAP` | `witchery:wolftrap` |
 | `WALLGEN` | `witchery:wallgen` |
 | `COFFIN` | `witchery:coffinblock` |
-| `LIGHT` | `witchery:light` |
-| `DAYLIGHT_COLLECTOR` | `witchery:daylightcollector` |
+| `LIGHT` | `witchery:light` (invisible level-15 light, with a temporary state for moving sources) |
+| `DAYLIGHT_COLLECTOR` | `witchery:daylightcollector` (`charge` 0–15 in block state) |
 | `BLOOD_CRUCIBLE` | `witchery:bloodcrucible` |
 | `MIRROR` | `witchery:mirrorblock` |
 | `MIRROR_UNBREAKABLE` | `witchery:mirrorblock2` |
@@ -423,7 +423,7 @@ The original `witchhat`, `witchrobe`, `necromancerrobe`, and `babashat` IDs equi
 | `HORN_OF_THE_HUNT` | `witchery:hornofthehunt` |
 | `CREATIVE_WOLF_TOKEN` | `witchery:wolftoken` |
 | `BLOOD_GOBLET` | `witchery:glassgoblet` |
-| `SUN_GRENADE` | `witchery:sungrenade` |
+| `SUN_GRENADE` | `witchery:sungrenade` (from the loaded Daylight Collector) |
 | `VAMPIRE_BOOK` | `witchery:vampirebook` (`Damage` 0–9 becomes `VampireBookPages`; retains `pageStack` bookmarks) |
 | `DUP_GRENADE` | `witchery:dupgrenade` |
 | `WITCH_HAT` | `witchery:witchhat` |
@@ -837,7 +837,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 137 | `WERE_VILLAGER` | `EntityVillagerWere` | `werevillager` |
 | 138 | `VILLAGE_GUARD` | `EntityVillageGuard` | `villageguard` |
 | 139 | `VAMPIRE_VILLAGER` | `EntityVampire` | `vampire` |
-| 140 | `GRENADE` | `EntityGrenade` | `grenade` |
+| 140 | `GRENADE` | `EntityGrenade` | `grenade` (Sun Grenade; saved `Impacted` and `Remaining`) |
 | 141 | `LILITH` | `EntityLilith` | `lilith` |
 | 142 | `FOLLOWER` | `EntityFollower` | `follower` |
 | 143 | `WINGED_MONKEY` | `EntityWingedMonkey` | `wingedmonkey` |
@@ -1182,7 +1182,7 @@ Implementation anchors:
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/client/event/WitcheryClientCameraHooks.java`
 
 Current scaffold behavior:
-- Uses one `SimpleChannel` (`witchery:main`) with protocol version `"27"`. The extended player payload carries vampire rank, blood power, quest progress, vision and the transient selected power. Vampire packet intents 15 through 17 select or activate a power and query or display a nearby target's blood. Markup book intent 12 saves an unlocked chapter from the held journal and raises the reader's saved cap. The infusion status includes the active infused brew and remaining duration, and the Kettle recipe codec carries the optional bottling familiar.
+- Uses one `SimpleChannel` (`witchery:main`) with protocol version `"28"`. The extended player payload carries vampire rank, blood power, quest progress, vision and the transient selected power. Vampire packet intents 15 through 17 select or activate a power and query or display a nearby target's blood. Markup book intent 12 saves an unlocked chapter from the held journal and raises the reader's saved cap. The infusion status includes the active infused brew and remaining duration, and the Kettle recipe codec carries the optional bottling familiar.
 - Crystal Ball viewing sends the existing `cam_pos` message for the transient `witchery:eye` or the living subject of a Taglock Kit. Server chunk and entity tracking follow the viewed entity, and the client centers terrain rendering on it. The observing player stays beside the Crystal Ball.
 - The Mystic Branch recognizes gestures from server-side player rotations. Protocol 12 retires the prepared-spell packet while recording the old intent in `LegacyRegistryData.PACKETS`.
 - Validates packet receive direction against legacy flow metadata and logs mismatches.

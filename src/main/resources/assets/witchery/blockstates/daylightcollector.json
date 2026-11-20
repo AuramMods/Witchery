@@ -1,7 +1,16 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/daylightcollector"
-      }
-   }
+  "multipart": [
+    {
+      "when": { "charge": "0" },
+      "apply": { "model": "witchery:block/daylightcollector" }
+    },
+    {
+      "when": { "charge": "1|2|3|4|5|6|7|8|9|10|11|12|13|14" },
+      "apply": { "model": "witchery:block/daylightcollector_loading" }
+    },
+    {
+      "when": { "charge": "15" },
+      "apply": { "model": "witchery:block/daylightcollector_loaded" }
+    }
+  ]
 }

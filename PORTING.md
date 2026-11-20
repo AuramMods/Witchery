@@ -333,9 +333,20 @@
 - [x] Craft the journal from six nether wart, a Nether Star, a book and garlic. The muted survival client crafted it and read its six starting pages. Closing the book kept a bookmark and raised the learned cap to rank three.
 - [x] Restore Torn Pages and the upgrades. The muted client collected three Torn Pages by killing three weakened Withers in the disposable world, crafted each page into the same book, and read the new speed chapter. The book showed nine pages and the player's learned cap rose to four. GameTests verified the nine-page upgrade limit and the old metadata and bookmark conversions.
 - [x] Restore the rank-three crouching strike. One empty-hand strike in the muted client took a pig from ten to nine health and launched it about six blocks.
-- [x] Finish the rank-three nighttime trial in survival. The counter paused at 158 during a sheltered daytime check. A dedicated restart preserved the accumulated time, rank cap, three attached pages and bookmark. After 300 nighttime intervals the client reached rank four without changing the saved counter. The journal reopened at the saved chapter and displayed its ritual diagram.
+- [x] Finish the rank-three nighttime trial in survival. The counter paused at 158 during a sheltered daytime check. A dedicated restart preserved the accumulated time, rank cap, three attached pages and bookmark. The client reached rank four after 300 nighttime intervals through regular server ticks. The journal reopened at the saved chapter and displayed its ritual diagram.
 - [x] Restore rank-four speed. The muted client selected the new hotbar icon, spent ten blood for Speed II and Jump Boost II, and spent ten more for Speed IV and Jump Boost III. A third use while active spent no blood. Data generation, JAR reobfuscation and all 151 required Forge GameTests passed.
-- [ ] Restore the village bookshop, ranks five through ten, the remaining powers, vampire equipment, village responses and the cure.
+- [ ] Restore the village bookshop loot for Observations of an Immortal and its Torn Pages.
+
+## Daylight Collector and Sun Grenades (2026-11-20)
+
+- [x] Craft and place the Daylight Collector. The muted survival client used the original two gold ingots, two iron ingots, daylight detector and redstone repeater. Ten Quartz Spheres went into ten collectors. The empty stand, partial charge and finished sphere use the original crossed textures.
+- [x] Advance the collector from stage one through eight with an adjacent vanilla daylight detector. The dedicated test advanced the world's time through successive morning levels and observed both the vanilla signal and collector charge. GameTests verified early removal returns a sphere, skipped levels and regular redstone cannot charge it, and a finished sphere stays charged when the detector falls.
+- [x] Resume collector charging after a restart. The stands retained charge eight and all filled to 15 under daylight. The muted client collected all ten Sun Grenades and the stands returned to empty.
+- [x] Restore Sun Grenade flight, temporary light and the original 1,200-tick fuse. The muted client threw all ten grenades. A dedicated restart preserved the grounded projectiles, their remaining fuse and their light. Their bursts advanced the client to rank five, the temporary light disappeared and the client recovered all ten Quartz Spheres.
+- [x] Verify rank-five daytime tolerance. Under a roof at noon the vampire retained all 975 blood and 20 health. Two intervals in direct sun consumed 120 blood and left the player with 855 blood, full health and no fire.
+- [x] Complete rank five's Blaze trial. The muted client added two more Torn Pages to the journal and learned the rank-six cap. It reached rank six after twenty sword kills against weakened test Blazes. The GameTests also verified that ranged kills do not count.
+- [x] Restore rank-six stone shattering. After a restart with the final package, the muted client crouched and broke stone, cobblestone and netherrack with an empty hand. The drops and exhaustion appeared in the server state. Deepslate stayed intact. Data generation, JAR reobfuscation and all 155 required Forge GameTests passed.
+- [ ] Restore ranks seven through ten, bat transformation, vampire equipment, the remaining village interactions and the cure.
 
 ## Auram Pack Validation (2026-11-20)
 

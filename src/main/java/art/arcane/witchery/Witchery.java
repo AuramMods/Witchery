@@ -3,6 +3,7 @@ package art.arcane.witchery;
 import art.arcane.witchery.block.entity.PoppetShelfBlockEntity;
 import art.arcane.witchery.config.WitcheryClientConfig;
 import art.arcane.witchery.config.WitcheryServerConfig;
+import art.arcane.witchery.item.SunGrenadeItem;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryRegistries;
 import com.mojang.logging.LogUtils;
@@ -24,11 +25,14 @@ public class Witchery {
         context.registerConfig(ModConfig.Type.CLIENT, WitcheryClientConfig.SPEC);
         IEventBus modEventBus = context.getModEventBus();
         WitcheryRegistries.register(modEventBus);
-        modEventBus.addListener(Witchery::registerChunkLoading);
+        modEventBus.addListener(Witchery::setupCommon);
         WitcheryNetwork.register();
     }
 
-    private static void registerChunkLoading(FMLCommonSetupEvent event) {
-        event.enqueueWork(() -> ForgeChunkManager.setForcedChunkLoadingCallback(MODID, PoppetShelfBlockEntity::restoreTickets));
+    private static void setupCommon(FMLCommonSetupEvent event) {
+        event.enqueueWork(() -> {
+            ForgeChunkManager.setForcedChunkLoadingCallback(MODID, PoppetShelfBlockEntity::restoreTickets);
+            SunGrenadeItem.registerDispenser();
+        });
     }
 }

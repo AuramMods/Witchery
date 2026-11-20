@@ -40,6 +40,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
@@ -59,6 +60,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.SleepingTimeCheckEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.level.SleepFinishedTimeEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -289,7 +291,7 @@ public final class WitcheryEventHooks {
         }
         FamiliarBinding.handleDeath(event);
         if (!event.isCanceled() && event.getSource().getEntity() instanceof ServerPlayer killer) {
-            Vampirism.onKilled(event.getEntity(), killer);
+            Vampirism.onKilled(event.getEntity(), killer, event.getSource().getDirectEntity() == killer);
         }
     }
 
@@ -356,6 +358,26 @@ public final class WitcheryEventHooks {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onParalysedAttack(AttackEntityEvent event) {
         if (BloodFeeding.paralysis(event.getEntity(), 4)) event.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public static void shatterStoneAsVampire(PlayerEvent.BreakSpeed event) {
+        if (Vampirism.canShatter(event.getEntity(), event.getState())) event.setNewSpeed(Math.max(event.getNewSpeed(), 1000));
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void harvestStoneAsVampire(PlayerEvent.HarvestCheck event) {
+        if (!event.canHarvest() && Vampirism.canShatter(event.getEntity(), event.getTargetBlock())) event.setCanHarvest(true);
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void chargeForShatteringStone(BlockEvent.BreakEvent event) {
+        if (!(event.getPlayer() instanceof ServerPlayer player) || !(event.getLevel() instanceof ServerLevel level)
+                || !Vampirism.canShatter(player, event.getState())) return;
+        var server = level.getServer();
+        server.tell(new TickTask(server.getTickCount(), () -> {
+            if (!event.isCanceled() && level.getBlockState(event.getPos()) != event.getState()) player.causeFoodExhaustion(10F);
+        }));
     }
 
     @SubscribeEvent

@@ -138,6 +138,16 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .save(recipeOutput);
         SpecialRecipeBuilder.special(WitcheryRecipes.ASSEMBLE_VAMPIRE_BOOK.get())
                 .save(recipeOutput, "witchery:assemble_vampire_book");
+        ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, WitcheryBlocks.getRequired("daylightcollector").get())
+                .define('G', Items.GOLD_INGOT)
+                .define('R', Items.REPEATER)
+                .define('I', Items.IRON_INGOT)
+                .define('C', Blocks.DAYLIGHT_DETECTOR)
+                .pattern("G G")
+                .pattern(" R ")
+                .pattern("ICI")
+                .unlockedBy("has_daylight_detector", has(Blocks.DAYLIGHT_DETECTOR))
+                .save(recipeOutput);
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryIngredient.WEB.item())
                 .define('S', Items.STRING)
                 .define('W', Blocks.COBWEB)

@@ -11,6 +11,7 @@ import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.block.BloodRoseBlock;
 import art.arcane.witchery.block.CrystalBallBlock;
+import art.arcane.witchery.block.DaylightCollectorBlock;
 import art.arcane.witchery.block.DemonHeartBlock;
 import art.arcane.witchery.block.DistilleryBlock;
 import art.arcane.witchery.block.DreamCatcherBlock;
@@ -23,6 +24,7 @@ import art.arcane.witchery.block.SomnianCottonBlock;
 import art.arcane.witchery.block.SpinningWheelBlock;
 import art.arcane.witchery.block.SpiritFluidBlock;
 import art.arcane.witchery.block.SpiritPortalBlock;
+import art.arcane.witchery.block.SunlightBlock;
 import art.arcane.witchery.block.TormentPortalBlock;
 import art.arcane.witchery.block.PlacedItemBlock;
 import art.arcane.witchery.block.RitualGlyphBlock;
@@ -97,7 +99,6 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_INFINITY_EGG = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
     private static final VoxelShape SHAPE_GARLIC_GARLAND = Block.box(1.6D, 12.8D, 13.6D, 14.4D, 16.0D, 16.0D);
     private static final VoxelShape SHAPE_SILVER_VAT = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 10.24D, 16.0D);
-    private static final VoxelShape SHAPE_DAYLIGHT_COLLECTOR = Block.box(3.2D, 0.0D, 3.2D, 12.8D, 12.8D, 12.8D);
     private static final VoxelShape SHAPE_BLOOD_CRUCIBLE = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 4.96D, 12.0D);
     private static final VoxelShape SHAPE_CACTUS = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 16.0D, 15.0D);
     private static final VoxelShape SHAPE_VOID_BRAMBLE = Block.box(0.8D, 0.0D, 0.8D, 15.2D, 16.0D, 15.2D);
@@ -236,8 +237,7 @@ public final class WitcheryBlocks {
                     new DreamCatcherBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS).strength(1).noCollission().noOcclusion());
             case "silvervat" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).sound(SoundType.METAL), SHAPE_SILVER_VAT, true);
-            case "daylightcollector" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DAYLIGHT_DETECTOR), SHAPE_DAYLIGHT_COLLECTOR, true);
+            case "daylightcollector" -> new DaylightCollectorBlock();
             case "bloodcrucible" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.STONE), SHAPE_BLOOD_CRUCIBLE, true);
             case "mirrorblock", "mirrorblock2" -> new MirrorBlock(BlockBehaviour.Properties.copy(Blocks.GLASS)
@@ -261,7 +261,8 @@ public final class WitcheryBlocks {
             case "force" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.BARRIER).noLootTable(), SHAPE_FULL_BLOCK, true);
             case "barrier" -> new BarrierBlock();
-            case "light", "slurp" ->
+            case "light" -> new SunlightBlock();
+            case "slurp" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.BARRIER).noLootTable(), Shapes.empty(), false);
             case "cactus" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.CACTUS), SHAPE_CACTUS, true);
