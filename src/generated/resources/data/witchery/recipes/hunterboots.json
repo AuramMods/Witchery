@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "L": {
+      "item": "witchery:nullified_leather"
+    }
+  },
+  "pattern": [
+    "L L",
+    "L L"
+  ],
+  "result": {
+    "item": "witchery:hunterboots"
+  },
+  "show_notification": true
+}

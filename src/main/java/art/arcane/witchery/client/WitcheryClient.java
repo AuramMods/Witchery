@@ -22,6 +22,8 @@ import art.arcane.witchery.client.model.NightmareModel;
 import art.arcane.witchery.client.model.WitchOwlModel;
 import art.arcane.witchery.client.model.WitchToadModel;
 import art.arcane.witchery.client.model.WitchClothingModel;
+import art.arcane.witchery.client.model.HunterClothingModel;
+import art.arcane.witchery.item.HunterClothingItem;
 import art.arcane.witchery.client.model.VampireClothingModel;
 import art.arcane.witchery.item.WitchClothingItem;
 import art.arcane.witchery.item.VampireClothingItem;
@@ -161,6 +163,9 @@ public final class WitcheryClient {
         event.registerLayerDefinition(VillageGuardRenderer.LAYER, VillageGuardRenderer::layer);
         for (var style : VampireClothingItem.Style.values()) {
             event.registerLayerDefinition(VampireClothingModel.layerId(style), () -> VampireClothingModel.layer(style));
+        }
+        for (var piece : HunterClothingItem.Piece.values()) {
+            event.registerLayerDefinition(HunterClothingModel.layerId(piece), () -> HunterClothingModel.layer(piece));
         }
         event.registerLayerDefinition(SpinningWheelRenderer.LAYER, SpinningWheelRenderer::layer);
     }
@@ -304,6 +309,12 @@ public final class WitcheryClient {
 
     @SubscribeEvent
     public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
+        var hunterClothing = java.util.Arrays.stream(HunterClothingItem.Piece.values())
+                .flatMap(piece -> java.util.Arrays.stream(HunterClothingItem.Upgrade.values())
+                        .map(upgrade -> WitcheryItems.getRequired(piece.path(upgrade)).get()))
+                .toArray(net.minecraft.world.item.Item[]::new);
+        event.register((stack, tint) -> tint == 0 && stack.getItem() instanceof HunterClothingItem clothing
+                ? clothing.getColor(stack) : -1, hunterClothing);
         var vampireClothing = java.util.Arrays.stream(VampireClothingItem.Style.values())
                 .map(style -> WitcheryItems.getRequired(style.path()).get()).toArray(net.minecraft.world.item.Item[]::new);
         event.register((stack, tint) -> tint == 0 && stack.getItem() instanceof VampireClothingItem clothing

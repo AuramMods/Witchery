@@ -1361,6 +1361,7 @@ Status:
 - `witchery:vampire_bite` preserves the attacking player's attribution and distinguishes feeding from a direct Cane Sword kill. Protocol 41 adds guard targets to the existing vampire blood display. Guard feeding uses the same saved `BloodLevel` as Cane Sword collection and the drained-target requirement for conversion.
 - General village defense uses the villagers' existing `Gossips` save data and the same territory used for recruitment. The server remembers attributed attacks on residents in memory for 300 ticks. No extra village save file is required for those short-lived attacks.
 - `witchery:handbow` reads and writes legacy `WITCBoltTypeCurrent` and `WITCBoltTypePreferred` IDs 1 through 5 for wooden, anti-magic, holy, splitting and silver ammunition. Ingredient subtypes 130 and 132–135 and 155 map to Null Catalyst and the five bolts. The dedicated `witchery:bolt` projectile keeps the original `boltType` IDs 0 through 4 and uses modern projectile owner and collision state. The older scaffold's `witchery:bolt_spawn_egg` stack remains readable. Protocol 42 includes the ammunition, sounds and projectile data.
+- Hunter hats, coats, trousers and boots retain their twelve original item IDs. Ingredient subtype 131 maps to `witchery:nullified_leather`. `witchery:hunter_clothing_upgrade` copies the input armor's NBT into the crafted variant, including `Damage` and `display.color`. Protocol 43 includes those recipes and the restored clothing items.
 
 ## 1.20.1 Event Hook Scaffold (current)
 Implementation anchor:

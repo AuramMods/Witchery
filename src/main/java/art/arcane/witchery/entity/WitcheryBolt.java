@@ -15,6 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
@@ -66,6 +67,10 @@ public final class WitcheryBolt extends AbstractArrow {
 
     public Kind kind() {
         return Kind.fromId(entityData.get(BOLT_TYPE));
+    }
+
+    public static boolean poweredAntiMagic(DamageSource source) {
+        return source.getDirectEntity() instanceof WitcheryBolt bolt && bolt.kind() == Kind.POWERED_ANTI_MAGIC;
     }
 
     private void setKind(Kind kind) {

@@ -40,6 +40,7 @@ public class BoundPoppetItem extends Item {
     }
 
     static boolean useWard(ServerPlayer player, Item type, int amount, Predicate<ItemStack> condition, Consumer<ItemStack> use) {
+        if (HunterClothingItem.fullSet(player, HunterClothingItem.Upgrade.PLAIN)) return false;
         if (useWard(player.getInventory(), player, type, amount, condition, use)) return true;
         for (PoppetShelfBlockEntity shelf : PoppetShelfBlockEntity.activeShelves(player.server)) {
             if (useWard(shelf, player, type, amount, condition, use)) return true;

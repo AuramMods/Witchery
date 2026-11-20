@@ -20,6 +20,7 @@ import art.arcane.witchery.item.CaneSwordItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.VampiricPoppetItem;
 import art.arcane.witchery.item.GlassGobletItem;
+import art.arcane.witchery.item.HunterClothingItem;
 import art.arcane.witchery.vampirism.Vampirism;
 import art.arcane.witchery.vampirism.BloodFeeding;
 import art.arcane.witchery.vampirism.VampireAbilities;
@@ -41,6 +42,7 @@ import art.arcane.witchery.world.TormentTravel;
 import art.arcane.witchery.world.WitcheryDimensions;
 import art.arcane.witchery.world.WitcheryDimensionTravelHooks;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.InteractionResult;
@@ -59,6 +61,7 @@ import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityEvent;
+import net.minecraftforge.event.entity.EntityTeleportEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -225,6 +228,7 @@ public final class WitcheryEventHooks {
         ScryingView.tick(serverPlayer);
         InfusedBrews.tick(serverPlayer);
         Vampirism.tick(serverPlayer);
+        HunterClothingItem.tick(serverPlayer);
         if (InfusionEnergy.type(serverPlayer) == InfernalInfusion.ID) CreaturePower.tickFlight(serverPlayer);
         if (DreamTravel.processRequests(serverPlayer) || MirrorTravel.processPlayerCrossing(serverPlayer)
                 || TormentTravel.process(serverPlayer)) {
@@ -352,6 +356,10 @@ public final class WitcheryEventHooks {
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void onPlayerHurt(LivingHurtEvent event) {
+        if (event.getSource().is(DamageTypeTags.WITCH_RESISTANT_TO) && HunterClothingItem.resistsMagic(event.getEntity())) {
+            event.setCanceled(true);
+            return;
+        }
         if (event.getSource().getDirectEntity() instanceof WitcheryBolt bolt) {
             event.setAmount(bolt.modifyDamage(event.getEntity(), event.getAmount()));
         }
@@ -363,11 +371,12 @@ public final class WitcheryEventHooks {
                 CreaturePower power = CreaturePower.forId(CreaturePower.activeId(player));
                 if (power != null) power.hurt(player, event);
             }
-            if (!event.isCanceled() && WitchClothingItem.evadeWithBabaHat(player, event.getSource())) {
+            boolean poweredAntiMagic = WitcheryBolt.poweredAntiMagic(event.getSource());
+            if (!event.isCanceled() && !poweredAntiMagic && WitchClothingItem.evadeWithBabaHat(player, event.getSource())) {
                 event.setCanceled(true);
                 return;
             }
-            if (!event.isCanceled()) VampiricPoppetItem.transferDamage(player, event);
+            if (!event.isCanceled() && !poweredAntiMagic) VampiricPoppetItem.transferDamage(player, event);
             if (!event.isCanceled()) FamiliarBinding.shareDamage(player, event);
             if (!event.isCanceled()) Predictions.onHurt(player, event.getSource());
             DeathProtectionPoppetItem.repairArmor(player);
@@ -384,6 +393,11 @@ public final class WitcheryEventHooks {
         if (event.getEntity() instanceof Villager && VillageGuard.isVillageDefender(event.getSource().getEntity())) {
             event.setCanceled(true);
         }
+    }
+
+    @SubscribeEvent
+    public static void preventHunterEnderPearlTravel(EntityTeleportEvent.EnderPearl event) {
+        if (HunterClothingItem.fullSet(event.getPlayer(), HunterClothingItem.Upgrade.PLAIN)) event.setCanceled(true);
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)

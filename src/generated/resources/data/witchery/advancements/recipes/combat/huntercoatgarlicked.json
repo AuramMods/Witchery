@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_silvered_clothing": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "witchery:huntercoatsilvered"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "witchery:huntercoatgarlicked"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_silvered_clothing",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "witchery:huntercoatgarlicked"
+    ]
+  },
+  "sends_telemetry_event": false
+}

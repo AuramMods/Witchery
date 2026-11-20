@@ -1,5 +1,6 @@
 package art.arcane.witchery.item;
 
+import art.arcane.witchery.entity.WitcheryBolt;
 import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -35,7 +36,7 @@ public final class DeathProtectionPoppetItem extends BoundPoppetItem {
         if (fire && protectWithEffect(player, event, "fire_protection_poppet", MobEffects.FIRE_RESISTANCE)) return;
         if (source.is(DamageTypes.DROWN) && protectWithEffect(player, event, "water_protection_poppet", MobEffects.WATER_BREATHING)) return;
         if (source.is(DamageTypes.STARVE) && protectWithEffect(player, event, "hunger_protection_poppet", MobEffects.SATURATION)) return;
-        if (protectWith(player, event, "death_protection_poppet", true)) {
+        if (!WitcheryBolt.poweredAntiMagic(source) && protectWith(player, event, "death_protection_poppet", true)) {
             if (fire || player.isOnFire()) effect(player, MobEffects.FIRE_RESISTANCE, 120);
             else if (source.is(DamageTypes.DROWN)) effect(player, MobEffects.WATER_BREATHING, 120);
             else if (source.is(DamageTypes.STARVE)) effect(player, MobEffects.SATURATION, 120);

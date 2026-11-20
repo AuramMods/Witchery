@@ -40,7 +40,8 @@ public final class VampiricPoppetItem extends BoundPoppetItem {
 
     private static void transfer(ServerPlayer player, LivingHurtEvent event, ItemStack stack, Set<UUID> chain) {
         LivingEntity target = TaglockItem.resolveTarget(player.serverLevel(), stack, 2);
-        if (target == null || !target.isAlive() || chain.contains(target.getUUID()) || VoodooPoppetItem.warded(player, target, stack)) return;
+        if (target == null || !target.isAlive() || chain.contains(target.getUUID())
+                || HunterClothingItem.fullSet(target, HunterClothingItem.Upgrade.PLAIN) || VoodooPoppetItem.warded(player, target, stack)) return;
         float amount = target instanceof ServerPlayer ? event.getAmount() : Math.min(event.getAmount(), 15);
         target.hurt(event.getSource(), amount);
         if (!(target instanceof ServerPlayer) && !target.isAlive()) TaglockItem.clearBinding(stack, 2);

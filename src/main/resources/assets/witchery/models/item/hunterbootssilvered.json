@@ -1,6 +1,7 @@
 {
-   "parent" : "minecraft:item/generated",
-   "textures" : {
-      "layer0" : "witchery:item/taglockkit"
-   }
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "witchery:item/hunterboots",
+    "layer1": "witchery:item/hunterboots_silvered"
+  }
 }

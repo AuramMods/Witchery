@@ -107,6 +107,7 @@ public enum WitcheryIngredient {
     BREW_OF_SOARING(122, "brew_of_soaring"),
     BREW_OF_THE_GRAVE(123, "brew_of_the_grave"),
     NULL_CATALYST(130, "null_catalyst"),
+    NULLIFIED_LEATHER(131, "nullified_leather"),
     STAKE_BOLT(132, "stake_bolt"),
     ANTI_MAGIC_BOLT(133, "anti_magic_bolt"),
     HOLY_BOLT(134, "holy_bolt"),

@@ -6,6 +6,7 @@ import art.arcane.witchery.brewing.KettleRecipe;
 import art.arcane.witchery.crafting.AssembleVampireBookRecipe;
 import art.arcane.witchery.crafting.BoundTaglockIngredient;
 import art.arcane.witchery.crafting.ClothingRepairRecipe;
+import art.arcane.witchery.crafting.HunterClothingUpgradeRecipe;
 import art.arcane.witchery.crafting.DistillingRecipe;
 import art.arcane.witchery.crafting.SpinningRecipe;
 import art.arcane.witchery.crafting.TaglockBindingRecipe;
@@ -73,6 +74,8 @@ public final class WitcheryRecipes {
             SERIALIZERS.register("item_rite", ItemRiteRecipe.Serializer::new);
     public static final RegistryObject<RecipeSerializer<ClothingRepairRecipe>> CLOTHING_REPAIR =
             SERIALIZERS.register("repair_witch_clothing", () -> new SimpleCraftingRecipeSerializer<>(ClothingRepairRecipe::new));
+    public static final RegistryObject<RecipeSerializer<HunterClothingUpgradeRecipe>> HUNTER_CLOTHING_UPGRADE =
+            SERIALIZERS.register("hunter_clothing_upgrade", HunterClothingUpgradeRecipe.Serializer::new);
     public static final RegistryObject<RecipeSerializer<TaglockBindingRecipe>> SIGN_OWNERSHIP_CONTRACT =
             SERIALIZERS.register("sign_ownership_contract", () -> new SimpleCraftingRecipeSerializer<>(
                     (id, category) -> new TaglockBindingRecipe(id, category, TaglockBindingRecipe.Binding.OWNERSHIP)));

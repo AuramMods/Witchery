@@ -1,0 +1,27 @@
+{
+  "type": "witchery:hunter_clothing_upgrade",
+  "category": "equipment",
+  "key": {
+    "A": {
+      "item": "witchery:huntercoat"
+    },
+    "D": {
+      "item": "witchery:silver_dust"
+    },
+    "S": {
+      "item": "minecraft:string"
+    },
+    "W": {
+      "item": "witchery:wolfsbane_flower"
+    }
+  },
+  "pattern": [
+    "DWD",
+    "WAW",
+    "DSD"
+  ],
+  "result": {
+    "item": "witchery:huntercoatsilvered"
+  },
+  "show_notification": true
+}

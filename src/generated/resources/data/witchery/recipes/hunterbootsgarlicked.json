@@ -1,0 +1,24 @@
+{
+  "type": "witchery:hunter_clothing_upgrade",
+  "category": "equipment",
+  "key": {
+    "A": {
+      "item": "witchery:hunterbootssilvered"
+    },
+    "G": {
+      "item": "witchery:garlic"
+    },
+    "S": {
+      "item": "minecraft:string"
+    }
+  },
+  "pattern": [
+    " G ",
+    "GAG",
+    " S "
+  ],
+  "result": {
+    "item": "witchery:hunterbootsgarlicked"
+  },
+  "show_notification": true
+}

@@ -4,6 +4,7 @@ import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.client.renderer.HandBowRenderer;
 import art.arcane.witchery.entity.WitcheryBolt;
 import art.arcane.witchery.entity.WitcheryBolt.Kind;
+import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
@@ -159,10 +160,12 @@ public final class HandBowItem extends BowItem {
         float power = getPowerForTime(elapsed >= 20 ? 20 : 19);
         boolean retained = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.INFINITY_ARROWS, bow) > 0
                 && world.random.nextFloat() < 0.25F;
+        boolean powered = ammo == Ammo.ANTI_MAGIC && HunterClothingItem.fullSet(player, HunterClothingItem.Upgrade.PLAIN);
+        Kind projectile = powered ? Kind.POWERED_ANTI_MAGIC : ammo.projectile;
         int count = ammo == Ammo.SPLITTING ? 3 : 1;
         boolean fired = false;
         for (int i = 0; i < count; i++) {
-            WitcheryBolt bolt = new WitcheryBolt(player, ammo.projectile);
+            WitcheryBolt bolt = new WitcheryBolt(player, projectile);
             bolt.setBaseDamage(count == 3 ? 1 : 2);
             bolt.setCritArrow(power == 1);
             bolt.pickup = !retained && !player.isCreative() ? AbstractArrow.Pickup.ALLOWED : AbstractArrow.Pickup.DISALLOWED;
@@ -172,6 +175,7 @@ public final class HandBowItem extends BowItem {
             fired |= world.addFreshEntity(bolt);
         }
         if (!fired) return;
+        if (powered) InfusionEnergy.drain(player, 1.0F);
         if (!retained) bow.getOrCreateTag().remove(CURRENT);
         bow.hurtAndBreak(2, player, shooter -> shooter.broadcastBreakEvent(shooter.getUsedItemHand()));
         player.getInventory().setChanged();

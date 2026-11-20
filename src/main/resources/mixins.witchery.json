@@ -4,7 +4,7 @@
   "package": "art.arcane.witchery.mixin",
   "compatibilityLevel": "JAVA_17",
   "refmap": "witchery.refmap.json",
-  "mixins": ["ScryingChunkMapMixin", "ScryingEntityTrackingMixin"],
+  "mixins": ["ScryingChunkMapMixin", "ScryingEntityTrackingMixin", "HunterArmorProtectionMixin", "HunterArmorWearMixin"],
   "client": ["ScryingWorldRendererMixin"],
   "injectors": {
     "defaultRequire": 1

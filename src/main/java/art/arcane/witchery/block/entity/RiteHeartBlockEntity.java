@@ -6,6 +6,7 @@ import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.entity.Demon;
 import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.infusion.InfusionEnergy;
+import art.arcane.witchery.item.HunterClothingItem;
 import art.arcane.witchery.item.PoppetProtectionItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WaystoneItem;
@@ -219,6 +220,10 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             curseTarget = boundOffering(level);
             if (curseTarget == null) {
                 abort(level, "message.witchery.rite.no_taglock_target");
+                return;
+            }
+            if (rite.action() == ItemRiteRecipe.Action.CURSE_WAKING_NIGHTMARE && HunterClothingItem.resistsCurse(curseTarget)) {
+                abort(level, "message.witchery.rite.hunter_curse_protection");
                 return;
             }
         } else if (rite.action() == ItemRiteRecipe.Action.CORRUPT_VOODOO_PROTECTION) {

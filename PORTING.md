@@ -131,7 +131,7 @@
 - [x] Restore the 4,000-power Infernal infusion rite. The muted client replaced its Overworld infusion with ID 4 and 200 charge. The bound Death Protection Poppet was consumed and restored ten health.
 - [x] Verify Voodoo protection in the muted dedicated-server client. A self-targeted cast reflected from a matching ward and added 350 wear to both poppets.
 - [x] Extend Voodoo protection to Poppet Shelves.
-- [ ] Restore Witch Hunter equipment and its interactions with wards.
+- [x] Restore Witch Hunter equipment and its interactions with ordinary poppets. The spirit enhancement for death protection remains on the crossbow checklist.
 
 ## Mystic Branch and the Soul Brew Spells (2026-11-19)
 
@@ -446,7 +446,15 @@
 - [x] Verify crouch loading, ammunition selection and the original model. The client loaded one Wooden Bolt, fired it into a wall, then switched between wooden, anti-magic, holy and splitting ammunition. Switching returned the previous bolt. The three splitting trajectories struck different blocks on the same wall. Each use cost two durability.
 - [x] Preserve the chambered and preferred bolt through a dedicated restart. A chambered Silver Bolt and one already lodged in a wall both survived. The client recovered that projectile as a Silver Bolt. GameTests also covered legacy item metadata, the holy damage bonus and the powered anti-magic dispel.
 - [x] Verify the optional silver-ingot recipe with a temporary `forge:ingots/silver` fixture. The recipe became available when the tag was supplied, and the client crafted six silver bolts with one tagged ingot and six wooden bolts. Java 17 data generation, JAR reobfuscation and all 213 required Forge GameTests passed.
-- [ ] Restore Witch Hunter clothing and the full-set trigger for powered Anti-Magic Bolts. Connect silver bolt damage to lycanthropy and restore the remaining protection interactions.
+- [x] Power Anti-Magic Bolts with the full Witch Hunter set. In a two-client test, a shot drained the shooter's 20 infusion charge, took the target's charge from 20 to 10, and left Poison active after dispelling Resistance.
+- [ ] Connect silver bolt damage and the remaining silvered armor behavior to lycanthropy. Restore the spirit enhancement for ordinary death wards hit by powered bolts.
+
+## Witch Hunter Clothing (2026-11-20)
+
+- [x] Craft Nullified Leather, a Witch Hunter hat and both armor upgrades through the survival crafting menu. The client dyed the hat blue and wore it through a damage check. Both upgrades preserved its dye and wear. The complete outfit uses the original hat, coat and armor textures in third-person.
+- [x] Verify the garlicked coat's protection using the same attributed hit from a vampire. The player had 15.12 health and one durability damage with the plain coat, and 16 health and zero durability damage with the garlicked coat. A zombie hit wore the upgraded coat normally. A vampire wearing a garlicked hat also took periodic fire damage.
+- [x] Restore the full-set magic and Waking Nightmare curse rolls and disable bound poppets while all four pieces are worn. GameTests checked the original probabilities, powered bolt interaction with an ordinary death ward, and the armor upgrade paths.
+- [x] Preserve the treated hat across a dedicated restart. The saved stack kept its blue dye and one durability damage. An Ender Pearl was consumed at Z 99.30 with the full outfit. Removing the boots let a second pearl carry the player to Z 105.15. Java 17 data generation, JAR reobfuscation and all 217 required Forge GameTests passed.
 
 ## Auram Pack Validation (2026-11-20)
 

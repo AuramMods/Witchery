@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "L": {
+      "item": "minecraft:leather"
+    },
+    "N": {
+      "item": "witchery:null_catalyst"
+    }
+  },
+  "pattern": [
+    "LLL",
+    "LNL",
+    "LLL"
+  ],
+  "result": {
+    "count": 3,
+    "item": "witchery:nullified_leather"
+  },
+  "show_notification": true
+}

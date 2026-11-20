@@ -1,0 +1,43 @@
+{
+  "type": "forge:conditional",
+  "recipes": [
+    {
+      "conditions": [
+        {
+          "type": "forge:not",
+          "value": {
+            "type": "forge:tag_empty",
+            "tag": "forge:ingots/silver"
+          }
+        }
+      ],
+      "recipe": {
+        "type": "witchery:hunter_clothing_upgrade",
+        "category": "equipment",
+        "key": {
+          "A": {
+            "item": "witchery:huntercoat"
+          },
+          "D": {
+            "tag": "forge:ingots/silver"
+          },
+          "S": {
+            "item": "minecraft:string"
+          },
+          "W": {
+            "item": "witchery:wolfsbane_flower"
+          }
+        },
+        "pattern": [
+          "DWD",
+          "WAW",
+          "DSD"
+        ],
+        "result": {
+          "item": "witchery:huntercoatsilvered"
+        },
+        "show_notification": true
+      }
+    }
+  ]
+}

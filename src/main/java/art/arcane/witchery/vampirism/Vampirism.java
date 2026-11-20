@@ -5,6 +5,7 @@ import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.entity.VillageGuard;
+import art.arcane.witchery.entity.Vampire;
 import art.arcane.witchery.item.CaneSwordItem;
 import art.arcane.witchery.item.VampireBookItem;
 import art.arcane.witchery.item.WitcheryIngredient;
@@ -27,6 +28,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.npc.Villager;
@@ -46,6 +48,10 @@ public final class Vampirism {
 
     public static int level(Player player) {
         return WitcheryPlayerDataProvider.get(player).map(WitcheryPlayerData::getVampireLevel).orElse(0);
+    }
+
+    public static boolean isVampire(@Nullable Entity entity) {
+        return entity instanceof Vampire || entity instanceof Player player && level(player) > 0;
     }
 
     public static boolean isBoss(LivingEntity entity) {

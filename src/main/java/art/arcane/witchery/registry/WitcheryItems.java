@@ -14,6 +14,9 @@ import art.arcane.witchery.item.BolineItem;
 import art.arcane.witchery.item.BroomItem;
 import art.arcane.witchery.item.CaneSwordItem;
 import art.arcane.witchery.item.HandBowItem;
+import art.arcane.witchery.item.HunterClothingItem;
+import art.arcane.witchery.item.HunterClothingItem.Piece;
+import art.arcane.witchery.item.HunterClothingItem.Upgrade;
 import art.arcane.witchery.item.DemonHeartItem;
 import art.arcane.witchery.item.DeathProtectionPoppetItem;
 import art.arcane.witchery.item.DrinkableBrewItem;
@@ -178,6 +181,18 @@ public final class WitcheryItems {
             case "coffin" -> createBlockItem("coffinblock");
             case "canesword" -> new CaneSwordItem();
             case "handbow" -> new HandBowItem();
+            case "hunterhat" -> new HunterClothingItem(Piece.HAT, Upgrade.PLAIN);
+            case "huntercoat" -> new HunterClothingItem(Piece.COAT, Upgrade.PLAIN);
+            case "hunterlegs" -> new HunterClothingItem(Piece.LEGS, Upgrade.PLAIN);
+            case "hunterboots" -> new HunterClothingItem(Piece.BOOTS, Upgrade.PLAIN);
+            case "hunterhatsilvered" -> new HunterClothingItem(Piece.HAT, Upgrade.SILVERED);
+            case "huntercoatsilvered" -> new HunterClothingItem(Piece.COAT, Upgrade.SILVERED);
+            case "hunterlegssilvered" -> new HunterClothingItem(Piece.LEGS, Upgrade.SILVERED);
+            case "hunterbootssilvered" -> new HunterClothingItem(Piece.BOOTS, Upgrade.SILVERED);
+            case "hunterhatgarlicked" -> new HunterClothingItem(Piece.HAT, Upgrade.GARLICKED);
+            case "huntercoatgarlicked" -> new HunterClothingItem(Piece.COAT, Upgrade.GARLICKED);
+            case "hunterlegsgarlicked" -> new HunterClothingItem(Piece.LEGS, Upgrade.GARLICKED);
+            case "hunterbootsgarlicked" -> new HunterClothingItem(Piece.BOOTS, Upgrade.GARLICKED);
             case "silversword" -> new SwordItem(Tiers.GOLD, 4, -2.4F, new Item.Properties()) {
                 @Override
                 public int getEnchantmentValue() {

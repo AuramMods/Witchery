@@ -3,11 +3,15 @@ package art.arcane.witchery.data;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.WitchCrop;
+import art.arcane.witchery.item.HunterClothingItem;
+import art.arcane.witchery.item.HunterClothingItem.Piece;
+import art.arcane.witchery.item.HunterClothingItem.Upgrade;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.item.VampireClothingItem.Style;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcheryRecipes;
+import com.google.gson.JsonObject;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.FinishedRecipe;
@@ -25,9 +29,13 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.crafting.PartialNBTIngredient;
+import net.minecraftforge.common.crafting.ConditionalRecipe;
+import net.minecraftforge.common.crafting.conditions.NotCondition;
+import net.minecraftforge.common.crafting.conditions.TagEmptyCondition;
 
 import java.util.function.Consumer;
 
@@ -36,6 +44,8 @@ public class WitcheryRecipeProvider extends RecipeProvider {
             ResourceLocation.fromNamespaceAndPath("forge", "rods/wooden"));
     private static final TagKey<Item> GARLIC_CROPS = TagKey.create(Registries.ITEM,
             ResourceLocation.fromNamespaceAndPath("forge", "crops/garlic"));
+    private static final TagKey<Item> SILVER_INGOTS = TagKey.create(Registries.ITEM,
+            ResourceLocation.fromNamespaceAndPath("forge", "ingots/silver"));
 
     public WitcheryRecipeProvider(PackOutput output) {
         super(output);
@@ -164,6 +174,7 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_dark_cloth", has(WitcheryIngredient.DARK_CLOTH.item()))
                 .save(recipeOutput);
         handBowRecipes(recipeOutput);
+        hunterClothingRecipes(recipeOutput);
         ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, WitcheryBlocks.getRequired("garlicgarland").get())
                 .define('G', GARLIC_CROPS).define('S', Items.STRING)
                 .pattern("S S").pattern("GSG").pattern("GGG")
@@ -444,6 +455,55 @@ public class WitcheryRecipeProvider extends RecipeProvider {
         ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, WitcheryIngredient.SILVER_BOLT.item(), 3)
                 .define('S', silver).define('B', stake).pattern(" S ").pattern("BBB")
                 .unlockedBy("has_silver_dust", has(silver)).save(output);
+    }
+
+    private static void hunterClothingRecipes(Consumer<FinishedRecipe> output) {
+        Item leather = WitcheryIngredient.NULLIFIED_LEATHER.item();
+        Item catalyst = WitcheryIngredient.NULL_CATALYST.item();
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, leather, 3)
+                .define('L', Items.LEATHER).define('N', catalyst)
+                .pattern("LLL").pattern("LNL").pattern("LLL")
+                .unlockedBy("has_null_catalyst", has(catalyst)).save(output);
+        for (Piece piece : Piece.values()) {
+            Item plain = HunterClothingItem.make(piece, Upgrade.PLAIN).getItem();
+            Item silvered = HunterClothingItem.make(piece, Upgrade.SILVERED).getItem();
+            Item garlicked = HunterClothingItem.make(piece, Upgrade.GARLICKED).getItem();
+            ShapedRecipeBuilder clothing = ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, plain)
+                    .define('L', leather).unlockedBy("has_nullified_leather", has(leather));
+            switch (piece) {
+                case HAT -> clothing.pattern("LLL").pattern("L L");
+                case COAT -> clothing.pattern("L L").pattern("LLL").pattern("LLL");
+                case LEGS -> clothing.pattern("LLL").pattern("L L").pattern("L L");
+                case BOOTS -> clothing.pattern("L L").pattern("L L");
+            }
+            clothing.save(output);
+            silverHunterClothing(plain, silvered).define('D', WitcheryIngredient.SILVER_DUST.item())
+                    .save(recipe -> output.accept(new HunterUpgradeResult(recipe)));
+            ResourceLocation ingotRecipe = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, piece.path(Upgrade.SILVERED) + "_from_ingots");
+            ConditionalRecipe.builder().addCondition(new NotCondition(new TagEmptyCondition(SILVER_INGOTS.location())))
+                    .addRecipe(conditional -> silverHunterClothing(plain, silvered).define('D', SILVER_INGOTS)
+                            .save(recipe -> conditional.accept(new HunterUpgradeResult(recipe)), ingotRecipe))
+                    .generateAdvancement().build(output, ingotRecipe);
+            ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, garlicked)
+                    .define('G', WitchCrop.GARLIC.seed()).define('A', silvered).define('S', Items.STRING)
+                    .pattern(" G ").pattern("GAG").pattern(" S ")
+                    .unlockedBy("has_silvered_clothing", has(silvered))
+                    .save(recipe -> output.accept(new HunterUpgradeResult(recipe)));
+        }
+    }
+
+    private static ShapedRecipeBuilder silverHunterClothing(Item plain, Item silvered) {
+        return ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, silvered)
+                .define('W', WitcheryIngredient.WOLFSBANE.item()).define('A', plain).define('S', Items.STRING)
+                .pattern("DWD").pattern("WAW").pattern("DSD").unlockedBy("has_hunter_clothing", has(plain));
+    }
+
+    private record HunterUpgradeResult(FinishedRecipe recipe) implements FinishedRecipe {
+        @Override public ResourceLocation getId() { return recipe.getId(); }
+        @Override public RecipeSerializer<?> getType() { return WitcheryRecipes.HUNTER_CLOTHING_UPGRADE.get(); }
+        @Override public void serializeRecipeData(JsonObject json) { recipe.serializeRecipeData(json); }
+        @Override public JsonObject serializeAdvancement() { return recipe.serializeAdvancement(); }
+        @Override public ResourceLocation getAdvancementId() { return recipe.getAdvancementId(); }
     }
 
     private static ShapedRecipeBuilder vampireClothing(Style style) {
