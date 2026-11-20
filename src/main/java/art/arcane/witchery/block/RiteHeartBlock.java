@@ -1,6 +1,7 @@
 package art.arcane.witchery.block;
 
 import art.arcane.witchery.block.entity.RiteHeartBlockEntity;
+import art.arcane.witchery.item.SeerStoneItem;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.core.BlockPos;
@@ -89,7 +90,7 @@ public final class RiteHeartBlock extends BaseEntityBlock {
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (level instanceof ServerLevel server && level.getBlockEntity(pos) instanceof RiteHeartBlockEntity heart) {
-            heart.toggle(server, player);
+            heart.toggle(server, player, player.getItemInHand(hand).getItem() instanceof SeerStoneItem);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

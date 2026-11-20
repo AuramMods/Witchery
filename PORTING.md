@@ -101,8 +101,10 @@
 - [x] Verify the owner's familiar record, cat UUID, and health across a dedicated restart. The disposable world confirmed that a fatal hit on a bound cat dismisses it and kills its online owner, as in the legacy mod.
 - [x] Restore the Coven Witch entity, original skins and voice, forest and swamp spawn weights, and seven recruitment quests. An active familiar unlocks an offer. The accepted quest records the recipient, and the six-member coven uses the legacy player data shape. All 34 required Forge GameTests passed, including a legacy name-only offer, a restarted fetch quest, and the fight quest's bound trophy.
 - [x] Restore the Quartz Sphere, Happenstance Oil and the night-only Rite of the Crystal Ball. The kettle test verifies the extended Night Vision potion. In the muted survival client, Angelique Redfern refused the player without a familiar and offered the Crystal Ball quest after the player recalled Bramble. The player crafted the sphere, bottled the oil, cast the rite, handed over the ball, and recruited Angelique. Her membership persisted on the dedicated server after restart.
+- [x] Restore the night-only Rite of the Seer Stone, readings and coven calls. The muted survival client made the stone, read the player's familiar, coven and spell knowledge, and called Angelique. Activating the Rite of the Necromantic Stone with the Seer Stone moved the same witch to the circle. She left after the rite, and she remained in the player's coven. All 35 required Forge GameTests passed.
 - [ ] Restore owl and toad familiars, their specialized abilities, and the cat's curse bonuses.
-- [ ] Restore Seer Stone readings and coven summoning, including when activating a circle with the stone. Use that circle to perform the Imp rite, bind the Imp with a signed Contract of Ownership, and obtain the Contract of Torment.
+- [ ] Use the Seer Stone to perform the original Imp rite, bind the Imp with a signed Contract of Ownership, and obtain the Contract of Torment.
+- [ ] Restore legacy potion bottling skill and include it in Seer Stone readings.
 - [ ] Restore the Crystal Ball's predictions and the coven witch's additional combat and ritual behaviors.
 
 ## Current Snapshot (2026-02-09)

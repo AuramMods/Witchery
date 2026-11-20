@@ -621,9 +621,9 @@ The first migrated subtypes have individual item IDs. Preserve `witchery:ingredi
 | 89 | `owletsWing` |
 | 90 | `toeOfFrog` |
 | 91 | `appleWormy` |
-| 92 | `quartzSphere` |
-| 93 | `happenstanceOil` |
-| 94 | `seerStone` |
+| 92 | `quartzSphere` → `witchery:quartz_sphere` |
+| 93 | `happenstanceOil` → `witchery:happenstance_oil` |
+| 94 | `seerStone` → `witchery:seer_stone` |
 | 95 | `brewSleep` |
 | 96 | `brewFlowingSpirit` |
 | 97 | `brewWasting` |

@@ -41,6 +41,10 @@ public final class FamiliarBinding {
         return record.getBoolean("FamiliarSummoned") && record.getInt("FamiliarType") > 0;
     }
 
+    public static String familiarName(ServerPlayer player) {
+        return record(player).getString("FamiliarName");
+    }
+
     public static boolean bindNear(ServerLevel level, BlockPos circle) {
         Set<UUID> boundOwners = new HashSet<>();
         Vec3 center = Vec3.atBottomCenterOf(circle);

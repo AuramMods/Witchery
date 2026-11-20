@@ -1,0 +1,12 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [
+    {"item": "witchery:quartz_sphere"},
+    {"item": "minecraft:obsidian"},
+    {"item": "witchery:happenstance_oil"}
+  ],
+  "power": 2000,
+  "night_only": true,
+  "result": {"item": "witchery:seer_stone"}
+}

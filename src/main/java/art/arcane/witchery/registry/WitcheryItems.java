@@ -14,6 +14,7 @@ import art.arcane.witchery.item.IcyNeedleItem;
 import art.arcane.witchery.item.MirrorItem;
 import art.arcane.witchery.item.MutandisItem;
 import art.arcane.witchery.item.RitualChalkItem;
+import art.arcane.witchery.item.SeerStoneItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.ThrowableBrewItem;
 import art.arcane.witchery.item.WitcheryIngredient;
@@ -151,6 +152,7 @@ public final class WitcheryItems {
             case "brew_of_soul_torment" -> new DrinkableBrewItem(TormentTravel::learnTormentum);
             case "redstone_soup" -> new DrinkableBrewItem(() -> MobEffects.HEALTH_BOOST, 2400, 1);
             case "happenstance_oil" -> new DrinkableBrewItem(() -> MobEffects.NIGHT_VISION, 1200, 0);
+            case "seer_stone" -> new SeerStoneItem();
             case "purified_milk" -> new DrinkableBrewItem(DrinkableBrewItem::purifyMilk);
             case "icy_needle" -> new IcyNeedleItem();
             case "dreamweave_of_fleet_feet" -> dreamWeave(DreamWeave.MOVEMENT);

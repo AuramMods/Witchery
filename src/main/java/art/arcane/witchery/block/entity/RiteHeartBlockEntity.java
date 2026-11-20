@@ -2,6 +2,7 @@ package art.arcane.witchery.block.entity;
 
 import art.arcane.witchery.block.RiteHeartBlock;
 import art.arcane.witchery.brewing.WakingNightmareEffect;
+import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.entity.Demon;
 import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.item.TaglockItem;
@@ -51,6 +52,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     @Nullable
     private UUID initiator;
     private int stepTicks;
+    private int covenSize;
+    private int covenSummoned;
 
     public RiteHeartBlockEntity(BlockPos pos, BlockState state) {
         super(WitcheryBlockEntities.CIRCLE.get(), pos, state);
@@ -78,6 +81,10 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     }
 
     public void toggle(ServerLevel level, @Nullable Player player) {
+        toggle(level, player, false);
+    }
+
+    public void toggle(ServerLevel level, @Nullable Player player, boolean callCoven) {
         if (activeRite != null) {
             abort(level, "message.witchery.rite.cancelled");
             return;
@@ -93,6 +100,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 }
                 activeRite = rite.id();
                 initiator = player == null ? null : player.getUUID();
+                covenSize = callCoven && player instanceof ServerPlayer serverPlayer ? CovenWitch.covenSize(serverPlayer) : 0;
+                covenSummoned = 0;
                 stepTicks = 0;
                 updateActiveState(level);
                 setChanged();
@@ -110,6 +119,12 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (!(level.getRecipeManager().byKey(activeRite).orElse(null) instanceof ItemRiteRecipe rite)
                 || sacrificed.size() > rite.sacrifices().size()) {
             abort(level, "message.witchery.rite.unknown");
+            return;
+        }
+        if (covenSummoned < covenSize) {
+            ServerPlayer caller = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
+            if (caller != null && caller.level() == level) CovenWitch.summonToRite(caller, getBlockPos(), covenSummoned);
+            covenSummoned++;
             return;
         }
         BlockPos pos = getBlockPos();
@@ -254,6 +269,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         activeRite = null;
         initiator = null;
         stepTicks = 0;
+        covenSize = 0;
+        covenSummoned = 0;
         updateActiveState(level);
         setChanged();
     }
@@ -276,6 +293,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         activeRite = tag.contains("Rite", Tag.TAG_STRING) ? ResourceLocation.tryParse(tag.getString("Rite")) : null;
         initiator = tag.hasUUID("Initiator") ? tag.getUUID("Initiator") : null;
         stepTicks = Mth.clamp(tag.getInt("StepTicks"), 0, STEP_TICKS - 1);
+        covenSize = Mth.clamp(tag.getInt("CovenSize"), 0, CovenWitch.MAX_MEMBERS);
+        covenSummoned = Mth.clamp(tag.getInt("CovenSummoned"), 0, covenSize);
         sacrificed.clear();
         for (Tag entry : tag.getList("Sacrifices", Tag.TAG_COMPOUND)) {
             ItemStack stack = WitcheryIngredient.loadInventoryStack((CompoundTag) entry);
@@ -291,6 +310,10 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (activeRite != null) {
             tag.putString("Rite", activeRite.toString());
             tag.putInt("StepTicks", stepTicks);
+            if (covenSize > 0) {
+                tag.putInt("CovenSize", covenSize);
+                tag.putInt("CovenSummoned", covenSummoned);
+            }
             if (initiator != null) {
                 tag.putUUID("Initiator", initiator);
             }
