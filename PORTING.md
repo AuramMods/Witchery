@@ -474,7 +474,7 @@
 - [x] Restore both original recipes, full-moon timing, active cat and six-member coven. The muted client called its cat, collected its Taglock at a bed, sacrificed a Hellhound Head it had picked up, and activated the medium infernal circle with a Seer Stone. A waning night refunded all six offerings. At the full moon, Witch Hunter clothing blocked the curse. Removing one piece let the same offerings curse the player and the server retained vampire rank ten under the default hybrid setting.
 - [x] Restore the rank-one wolf form, smaller dimensions, armor drop, Night Vision, jump and movement stats, and Silver Sword damage. The dedicated server recorded speed changing from 0.10 to 0.15 and the additional step height of 0.4. A second muted client saw the first as a wolf. With the active familiar's damage sharing, a 12-point ordinary strike took 3.6 health and a seven-point silver strike took 10.8 health.
 - [x] Reconnect after a dedicated-server restart, then collect another Taglock and perform the cure while still in wolf form. The save retained rank one, wolf form and speed. The successful cure consumed all six offerings, restored normal movement and kept vampire rank ten. Java 17 data generation, JAR reobfuscation and all 226 required Forge GameTests passed.
-- [ ] Restore ranks six through ten and finish werewolf combat, hunting and Wolfsbane interactions.
+- [ ] Finish werewolf armor rending, infection by bite, the traps, and Wolfsbane interactions.
 
 ## Werevillagers and Wolfmen (2026-11-20)
 
@@ -495,6 +495,15 @@
 - [x] Restart the dedicated server during the entrance. The same Huntsman reached 400 health after loading. GameTests verified the serialized entrance countdown, player-attributed defeat and altar turn-in, the 15-point raw damage cap, ranged arrows, and the skull, blood and enchanted book drops.
 - [x] Land a real sword hit on the packaged Huntsman and turn in the trial. The test arena used Strength and a stationary boss prepared at 12 health for the final strike. It dropped three Wither Skeleton Skulls, an enchanted book and Infernal Blood. The survival client returned to the altar, advanced to rank five and used a crouching Moon Charm to become a Wolfman with 40 maximum health.
 - [x] Restore the Huntsman's Spear and its 3D held model, knockback resistance, retaliating wolves and Nightmare vulnerability. Java 17 data generation, JAR reobfuscation and all 234 required Forge GameTests passed, including the legacy Moon Charm wear and wolf trial imports.
+
+## Werewolf Hunts, Howls and Taming (2026-11-20)
+
+- [x] Restore the five remaining trials and original turn-ins at the Wolf Altar. GameTests used attributed kills, taming and the howl handler to validate all five ranks. In the muted survival client, a grounded kill earned zero progress and ten airborne kills advanced the player to rank six.
+- [x] Restore shift, look straight up and use for howling. The muted client crouched and howled in Wolfman form during the full moon. The dedicated restart preserved eight recorded chunks. The client repeated a saved location, added eight new chunks and turned in the trial.
+- [x] Tame wolves by interacting in wolf form. The muted client tamed six wild wolves without using bones. The dedicated server verified all six owner UUIDs and the player advanced to rank eight.
+- [x] Verify both howl abilities on the dedicated server. A wolf howl called two wolves with the player's ownership and Mortal Coil. The wolves expired naturally. After the shared cooldown elapsed, a Wolfman howl paralyzed a nearby villager.
+- [x] Finish the final two trials in the muted survival client. A piglin kill in wolf form left progress at zero. Thirty attributed kills in Wolfman form advanced the player to rank nine. The final villager kill earned one point and the Wolf Altar awarded rank ten.
+- [x] Preserve legacy quest state, progress and signed chunk coordinates. Java 17 data generation, JAR reobfuscation and all 239 required Forge GameTests passed. They covered all five ranks, the temporary wolf pack, Wolfman fear, the shared cooldown and natural pack expiry.
 
 ## Auram Pack Validation (2026-11-20)
 

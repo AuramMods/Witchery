@@ -3,6 +3,7 @@ package art.arcane.witchery.registry;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.vampirism.ParalysisEffect;
 import art.arcane.witchery.brewing.GrotesqueEffect;
+import art.arcane.witchery.brewing.MortalCoilEffect;
 import art.arcane.witchery.brewing.WakingNightmareEffect;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -27,6 +28,7 @@ public final class WitcheryEffects {
     public static final RegistryObject<MobEffect> ENSLAVED = MOB_EFFECTS.register("potion.enslaved",
             () -> new MobEffect(MobEffectCategory.HARMFUL, 0x4F2756) {});
     public static final RegistryObject<MobEffect> PARALYSIS = MOB_EFFECTS.register("potion.paralysed", ParalysisEffect::new);
+    public static final RegistryObject<MobEffect> MORTAL_COIL = MOB_EFFECTS.register("potion.mortalcoil", MortalCoilEffect::new);
     public static final RegistryObject<MobEffect> QUEASY = MOB_EFFECTS.register("potion.queasy",
             () -> new MobEffect(MobEffectCategory.HARMFUL, 0x7C9348) {
                 @Override
@@ -40,6 +42,7 @@ public final class WitcheryEffects {
         LEGACY_EFFECTS.put("potion.grotesque", GROTESQUE);
         LEGACY_EFFECTS.put("potion.enslaved", ENSLAVED);
         LEGACY_EFFECTS.put("potion.paralysed", PARALYSIS);
+        LEGACY_EFFECTS.put("potion.mortalcoil", MORTAL_COIL);
         LEGACY_EFFECTS.put("potion.queasy", QUEASY);
         for (String legacyName : LegacyRegistryData.EFFECTS) {
             registerLegacyEffect(legacyName);

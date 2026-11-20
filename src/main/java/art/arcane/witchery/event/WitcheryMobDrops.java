@@ -26,6 +26,7 @@ import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
+import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -45,7 +46,11 @@ public final class WitcheryMobDrops {
     @SubscribeEvent
     public static void addDrops(LivingDropsEvent event) {
         LivingEntity creature = event.getEntity();
-        if (creature.level().isClientSide || creature.getPersistentData().getBoolean("WITCNoDrops")) return;
+        if (creature.level().isClientSide) return;
+        if (creature.getPersistentData().getBoolean("WITCNoDrops")) {
+            event.setCanceled(true);
+            return;
+        }
 
         ListTag questDrops = creature.getPersistentData().getList(CovenWitch.EXTRA_DROPS, Tag.TAG_COMPOUND);
         for (int index = 0; index < questDrops.size(); index++) {
@@ -63,6 +68,11 @@ public final class WitcheryMobDrops {
                 && creature.getRandom().nextInt(12) <= Math.min(looting, 3)) {
             addDrop(event, new ItemStack(WitcheryBlocks.getRequired("wolfhead").get()));
         }
+    }
+
+    @SubscribeEvent
+    public static void suppressSummonExperience(LivingExperienceDropEvent event) {
+        if (event.getEntity().getPersistentData().getBoolean("WITCNoDrops")) event.setDroppedExperience(0);
     }
 
     private static ItemStack ingredientDrop(LivingEntity creature, boolean arthana, int looting) {

@@ -92,7 +92,7 @@ public final class TaglockItem extends Item {
         if (tag.contains(most, Tag.TAG_LONG) && tag.contains(least, Tag.TAG_LONG)) {
             UUID id = new UUID(tag.getLong(most), tag.getLong(least));
             for (ServerLevel world : level.getServer().getAllLevels()) {
-                if (world.getEntity(id) instanceof LivingEntity living) return living;
+                if (world.getEntity(id) instanceof LivingEntity living && living.isAlive()) return living;
             }
             return WerewolfVillagers.findByTaglock(level.getServer(), id);
         }

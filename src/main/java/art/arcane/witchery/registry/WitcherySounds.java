@@ -35,6 +35,7 @@ public final class WitcherySounds {
     public static final RegistryObject<SoundEvent> BOW_WIND_UP = sound("random.wind_up");
     public static final RegistryObject<SoundEvent> WITCH_HUNTERS_ARRIVE = sound("random.theycome");
     public static final RegistryObject<SoundEvent> WOLFMAN_HOWL = sound("mob.wolfman.howl");
+    public static final RegistryObject<SoundEvent> WOLFMAN_EAT = sound("mob.wolfman.eat");
     public static final RegistryObject<SoundEvent> WOLFMAN_SAY = sound("mob.wolfman.say");
     public static final RegistryObject<SoundEvent> WOLFMAN_HIT = sound("mob.wolfman.hit");
     public static final RegistryObject<SoundEvent> WOLFMAN_DEATH = sound("mob.wolfman.death");

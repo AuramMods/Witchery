@@ -25,6 +25,7 @@ import art.arcane.witchery.item.HunterClothingItem;
 import art.arcane.witchery.item.HuntsmanSpearItem;
 import art.arcane.witchery.lycanthropy.Lycanthropy;
 import art.arcane.witchery.lycanthropy.WerewolfVillagers;
+import art.arcane.witchery.lycanthropy.WolfTrials;
 import art.arcane.witchery.vampirism.Vampirism;
 import art.arcane.witchery.vampirism.BloodFeeding;
 import art.arcane.witchery.vampirism.VampireAbilities;
@@ -363,7 +364,7 @@ public final class WitcheryEventHooks {
         FamiliarBinding.handleDeath(event);
         if (!event.isCanceled() && event.getSource().getEntity() instanceof ServerPlayer killer) {
             Vampirism.onKilled(event.getEntity(), killer, event.getSource());
-            Lycanthropy.onKilled(event.getEntity(), killer);
+            WolfTrials.onKilled(event.getEntity(), killer, event.getSource());
         }
     }
 
@@ -457,6 +458,12 @@ public final class WitcheryEventHooks {
             if (event.getEntity() instanceof ServerPlayer player) VampireAbilities.interact(player, event.getTarget());
             event.setCanceled(true);
             event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide));
+            return;
+        }
+        if (event.getEntity() instanceof ServerPlayer player && event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND
+                && event.getTarget() instanceof net.minecraft.world.entity.animal.Wolf wolf && WolfTrials.tame(player, wolf)) {
+            event.setCancellationResult(InteractionResult.CONSUME);
+            event.setCanceled(true);
             return;
         }
         if (event.getTarget() instanceof Villager villager

@@ -3,8 +3,12 @@ package art.arcane.witchery.client;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.entity.Wolfman;
 import art.arcane.witchery.lycanthropy.Lycanthropy;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEntities;
+import art.arcane.witchery.vampirism.BloodFeeding;
+import art.arcane.witchery.vampirism.VampireAbilities;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
@@ -12,6 +16,7 @@ import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -26,6 +31,21 @@ public final class ClientWolfForm {
     private static final Map<Player, Mob> MODELS = new WeakHashMap<>();
 
     private ClientWolfForm() {}
+
+    @SubscribeEvent
+    public static void howl(InputEvent.InteractionKeyMappingTriggered event) {
+        var player = Minecraft.getInstance().player;
+        if (!event.isUseItem() || event.getHand() != InteractionHand.MAIN_HAND || player == null || player.isSpectator()
+                || !player.isShiftKeyDown() || player.getXRot() != -90 || VampireAbilities.selected(player) != 0
+                || BloodFeeding.paralysis(player, 4)) return;
+        int rank = Lycanthropy.rank(player);
+        if (rank == 6 && Lycanthropy.isShifted(player) || rank >= 8 && Lycanthropy.isWolf(player)
+                || rank >= 7 && Lycanthropy.isWolfman(player)) {
+            WitcheryNetwork.sendHowlToServer();
+            event.setSwingHand(false);
+            event.setCanceled(true);
+        }
+    }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void renderWolf(RenderPlayerEvent.Pre event) {

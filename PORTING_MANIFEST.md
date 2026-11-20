@@ -114,7 +114,7 @@ Lifecycle stages:
 ## Block Model Parity Anchors (current focus)
 - `witchery:wolfaltar`
   - Uses the original Wolf Altar geometry and texture through its block entity renderer and inventory renderer. The facing determines the front of the statue and the reward position.
-  - The survival recipe accepts either Wolf Head variant in each trophy slot. The original gold, raw mutton and Dog Tongue offerings are available through rank four. The gold reward creates `witchery:mooncharm`, which retains its legacy wear value.
+  - The survival recipe accepts either Wolf Head variant in each trophy slot. The original offerings and trials advance from rank one through rank ten. The gold reward creates `witchery:mooncharm`, which retains its legacy wear value.
 - `witchery:wolftrap`
   - Legacy class: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/blocks/BlockBeartrap.java` (`new BlockBeartrap(true)`).
   - Legacy render model: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/client/model/ModelBeartrap.java`.
@@ -1421,7 +1421,9 @@ Current placeholder data surface (`WitcheryPlayerData`):
 | `lastItemUpdatePage` | `int` | staged last `item_update` page index |
 | `lastMarkupBookSlot` | `int` | staged last `sync_markup_book` slot |
 | `lastMarkupBookPages` | `List<String>` | staged last `sync_markup_book` page payload |
-| `lastHowlGameTime` | `long` | staged last `howl` tick timestamp |
+| `lastHowlGameTime` | `long` | shared cooldown for the wolf pack and Wolfman howls |
+
+Active lycanthropy saves retain `WerewolfLevel`, `WolfmanQuestState`, `WolfmanQuestCounter` and each signed `Location` in `WolfmanQuestChunks`. `LastHowlGameTime` tracks the wolf pack cooldown.
 
 Status:
 - structural replacement path for legacy `ExtendedPlayer` is now wired.

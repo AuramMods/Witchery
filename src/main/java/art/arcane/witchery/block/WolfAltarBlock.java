@@ -5,6 +5,7 @@ import art.arcane.witchery.capability.WitcheryPlayerData.WolfmanQuestState;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.lycanthropy.Lycanthropy;
+import art.arcane.witchery.lycanthropy.WolfTrials.Trial;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.ChatFormatting;
@@ -109,9 +110,28 @@ public final class WolfAltarBlock extends BaseEntityBlock {
                 huntsmanTrial(server, pos, facing, worshipper);
             } else if (rank == 10) {
                 tell(worshipper, "mastered");
+            } else {
+                Trial trial = Trial.atRank(rank);
+                if (trial != null) countedTrial(server, pos, facing, worshipper, rank, trial);
             }
         }
         return InteractionResult.sidedSuccess(level.isClientSide());
+    }
+
+    private static void countedTrial(ServerLevel level, BlockPos pos, Direction facing, ServerPlayer player, int rank, Trial trial) {
+        WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
+            int remaining = trial.required() - data.getWolfmanQuestCounter();
+            if (data.getWolfmanQuestState() == WolfmanQuestState.COMPLETE || remaining <= 0) {
+                Lycanthropy.setRank(player, rank + 1);
+                rewardEffect(level, pos, facing, SoundEvents.PLAYER_LEVELUP);
+                tell(player, trial.message() + "_finished");
+            } else if (data.getWolfmanQuestState() == WolfmanQuestState.NOT_STARTED) {
+                data.setWolfmanQuestState(WolfmanQuestState.STARTED);
+                tell(player, trial.message() + "_started", trial.required());
+            } else {
+                tell(player, trial.message() + "_remaining", remaining);
+            }
+        });
     }
 
     private static void huntsmanTrial(ServerLevel level, BlockPos pos, Direction facing, ServerPlayer player) {

@@ -6,6 +6,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.item.VampireBookItem;
+import art.arcane.witchery.lycanthropy.WolfTrials;
 import art.arcane.witchery.registry.LegacyRegistryData;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -33,11 +34,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class WitcheryNetwork {
-    private static final String PROTOCOL_VERSION = "49";
+    private static final String PROTOCOL_VERSION = "50";
     private static final int MAX_USERNAME_LENGTH = 64;
     private static final int MAX_PLAYER_SKIN_LENGTH = 256;
     private static final int MAX_MARKUP_CHAPTER_LENGTH = 32;
-    private static final String KEY_PERSISTENT_LAST_HOWL_TICK = "WITCLastHowlTick";
     private static final String KEY_STACK_CURRENT_PAGE = "CurrentPage";
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             ResourceLocation.parse(Witchery.MODID + ":main"),
@@ -708,14 +708,8 @@ public final class WitcheryNetwork {
     }
 
     private static void handleHowlPacket(HowlPacket message, NetworkEvent.Context context) {
-        mutateSenderData(context, "howl", (sender, data) -> {
-            long gameTime = sender.serverLevel().getGameTime();
-            sender.getPersistentData().putLong(KEY_PERSISTENT_LAST_HOWL_TICK, gameTime);
-            data.markHowled(gameTime);
-            data.bumpSyncRevision();
-            sendPlayerSync(sender, data);
-        });
-        Witchery.LOGGER.debug("Handled scaffold packet 'howl' direction={}", context.getDirection());
+        ServerPlayer sender = senderOrWarn(context, "howl");
+        if (sender != null) WolfTrials.howl(sender);
     }
 
     private static ServerPlayer senderOrWarn(NetworkEvent.Context context, String key) {
