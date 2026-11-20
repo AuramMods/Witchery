@@ -124,6 +124,8 @@ public enum WitcheryIngredient {
                 case 6 -> "death_protection_poppet";
                 case 7 -> "voodoo_protection_poppet";
                 case 8 -> "voodoo_poppet";
+                case 9 -> "vampiric_poppet";
+                case 10 -> "poppet_protection";
                 case 11 -> "armor_protection_poppet";
                 default -> null;
             };

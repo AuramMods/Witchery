@@ -41,6 +41,11 @@ public final class FamiliarBinding {
         return record.getBoolean("FamiliarSummoned") && record.getInt("FamiliarType") > 0;
     }
 
+    public static boolean hasCurseMastery(ServerPlayer player) {
+        CompoundTag record = record(player);
+        return record.getBoolean("FamiliarSummoned") && record.getInt("FamiliarType") == CAT;
+    }
+
     public static String familiarName(ServerPlayer player) {
         return record(player).getString("FamiliarName");
     }

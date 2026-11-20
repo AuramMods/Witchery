@@ -111,17 +111,21 @@ public final class VoodooPoppetItem extends BoundPoppetItem {
         target.clearFire();
     }
 
-    private static boolean warded(Entity caster, LivingEntity target, ItemStack poppet) {
+    static boolean warded(Entity caster, LivingEntity target, ItemStack poppet) {
         if (!(target instanceof ServerPlayer player)) return false;
         if (!useWard(player, WitcheryItems.getRequired("voodoo_protection_poppet").get(), DEFLECTION_WEAR)) return false;
         if (caster instanceof ServerPlayer attacker) {
             wear(poppet, DEFLECTION_WEAR);
-            LightningBolt lightning = EntityType.LIGHTNING_BOLT.create(attacker.serverLevel());
-            if (lightning != null) {
-                lightning.moveTo(attacker.getX(), attacker.getY(), attacker.getZ());
-                attacker.serverLevel().addFreshEntity(lightning);
-            }
+            strikeCaster(attacker);
         }
         return true;
+    }
+
+    static void strikeCaster(ServerPlayer attacker) {
+        LightningBolt lightning = EntityType.LIGHTNING_BOLT.create(attacker.serverLevel());
+        if (lightning != null) {
+            lightning.moveTo(attacker.getX(), attacker.getY(), attacker.getZ());
+            attacker.serverLevel().addFreshEntity(lightning);
+        }
     }
 }

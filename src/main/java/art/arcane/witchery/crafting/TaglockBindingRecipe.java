@@ -28,7 +28,9 @@ public final class TaglockBindingRecipe extends CustomRecipe {
         ARMOR_POPPET(() -> WitcheryItems.getRequired("armor_protection_poppet").get(), () -> WitcheryRecipes.BIND_ARMOR_POPPET.get()),
         DEATH_POPPET(() -> WitcheryItems.getRequired("death_protection_poppet").get(), () -> WitcheryRecipes.BIND_DEATH_POPPET.get()),
         VOODOO_POPPET(() -> WitcheryItems.getRequired("voodoo_poppet").get(), () -> WitcheryRecipes.BIND_VOODOO_POPPET.get()),
-        VOODOO_PROTECTION(() -> WitcheryItems.getRequired("voodoo_protection_poppet").get(), () -> WitcheryRecipes.BIND_VOODOO_PROTECTION.get());
+        VOODOO_PROTECTION(() -> WitcheryItems.getRequired("voodoo_protection_poppet").get(), () -> WitcheryRecipes.BIND_VOODOO_PROTECTION.get()),
+        VAMPIRIC_POPPET(() -> WitcheryItems.getRequired("vampiric_poppet").get(), () -> WitcheryRecipes.BIND_VAMPIRIC_POPPET.get()),
+        POPPET_PROTECTION(() -> WitcheryItems.getRequired("poppet_protection").get(), () -> WitcheryRecipes.BIND_POPPET_PROTECTION.get());
 
         private final Supplier<Item> item;
         private final Supplier<RecipeSerializer<?>> serializer;
@@ -57,6 +59,7 @@ public final class TaglockBindingRecipe extends CustomRecipe {
         if (inputs == null) return ItemStack.EMPTY;
         ItemStack signed = inputs.bindable.copyWithCount(1);
         TaglockItem.copyBinding(inputs.taglock, signed);
+        if (!inputs.secondTaglock.isEmpty()) TaglockItem.copyBinding(inputs.secondTaglock, signed, 2);
         return signed;
     }
 
@@ -65,23 +68,28 @@ public final class TaglockBindingRecipe extends CustomRecipe {
         Item target = binding.item.get();
         ItemStack bindable = ItemStack.EMPTY;
         ItemStack taglock = ItemStack.EMPTY;
+        ItemStack secondTaglock = ItemStack.EMPTY;
+        boolean needsSecond = binding == Binding.VAMPIRIC_POPPET;
         for (int slot = 0; slot < grid.getContainerSize(); slot++) {
             ItemStack stack = grid.getItem(slot);
             if (stack.isEmpty()) continue;
             if (stack.is(target) && bindable.isEmpty()) {
                 bindable = stack;
-            } else if (stack.getItem() instanceof TaglockItem && TaglockItem.isBound(stack) && taglock.isEmpty()) {
-                taglock = stack;
+            } else if (stack.getItem() instanceof TaglockItem && TaglockItem.isBound(stack)) {
+                if (taglock.isEmpty()) taglock = stack;
+                else if (needsSecond && secondTaglock.isEmpty()) secondTaglock = stack;
+                else return null;
             } else {
                 return null;
             }
         }
-        return bindable.isEmpty() || taglock.isEmpty() ? null : new Inputs(bindable, taglock);
+        return bindable.isEmpty() || taglock.isEmpty() || (needsSecond && secondTaglock.isEmpty())
+                ? null : new Inputs(bindable, taglock, secondTaglock);
     }
 
     @Override
     public boolean canCraftInDimensions(int width, int height) {
-        return width * height >= 2;
+        return width * height >= (binding == Binding.VAMPIRIC_POPPET ? 3 : 2);
     }
 
     @Override
@@ -89,5 +97,5 @@ public final class TaglockBindingRecipe extends CustomRecipe {
         return binding.serializer.get();
     }
 
-    private record Inputs(ItemStack bindable, ItemStack taglock) {}
+    private record Inputs(ItemStack bindable, ItemStack taglock, ItemStack secondTaglock) {}
 }

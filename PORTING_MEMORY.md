@@ -134,6 +134,12 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Tool repair runs on player interaction, and armor repair runs on injury. Eligible equipment at the original 90% wear threshold gets a full repair. A bound ward is consumed when used. All 72 required Forge GameTests passed, and data generation and reobfuscation succeeded.
 - The muted survival client crafted and personally Taglock-bound the Earth ward. The test supplied already-bound Water, Hunger, Tool and Armor wards. Dedicated damage commands verified unhealed Earth protection, Water Breathing and Saturation. A real stone block break brought a pickaxe from 235 wear to one, and an incoming hit brought an iron chestplate from 222 wear to zero. A full dedicated restart kept both repairs and the equipment wards remained consumed.
 
+### Vampiric Poppet and Corrupting Voodoo Protection (2026-11-20)
+
+- Legacy poppet subtypes 9 and 10 load as `witchery:vampiric_poppet` and `witchery:poppet_protection`. The Vampiric recipe requires a Taglock for the protected player followed by one for the recipient in crafting grid order. A valid use costs 66 wear. A creature can receive up to 15 damage at a time and its signature is cleared if it dies. The muted survival client crafted the poppet, collected both Taglocks, and passed three zombie damage tests without losing health. The first signature and 198 wear persisted through a packaged restart.
+- The muted client also crafted Poppet Protection and bound it at its own bed. Its Corrupting Voodoo Protection test used a medium infernal ring and five offerings. An active Cat familiar supplies Curse Mastery. The rite returned all offerings while Bramble was dismissed. A successful cast spends 7,000 altar power. A matching Poppet Protection reflects it at the caster as lightning and takes 350 wear. An undefended target can lose up to ten matching Voodoo Protection Poppets.
+- All 76 required Forge GameTests passed. Java 17 data generation and JAR reobfuscation succeeded. Protocol 16 includes the new rite action. Ward lookup uses the target's inventory before eligible Poppet Shelves. Witch Hunter, spirit enhancement, wolf form, vampire and draining-bolt interactions depend on legacy systems still to be ported.
+
 ## Session Memory (2026-02-08)
 - Port target is Forge 1.20.1.
 - Legacy source is fully available at `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10`.

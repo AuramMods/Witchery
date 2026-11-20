@@ -92,6 +92,12 @@ public final class WitcheryRecipes {
     public static final RegistryObject<RecipeSerializer<TaglockBindingRecipe>> BIND_VOODOO_PROTECTION =
             SERIALIZERS.register("bind_voodoo_protection_poppet", () -> new SimpleCraftingRecipeSerializer<>(
                     (id, category) -> new TaglockBindingRecipe(id, category, TaglockBindingRecipe.Binding.VOODOO_PROTECTION)));
+    public static final RegistryObject<RecipeSerializer<TaglockBindingRecipe>> BIND_VAMPIRIC_POPPET =
+            SERIALIZERS.register("bind_vampiric_poppet", () -> new SimpleCraftingRecipeSerializer<>(
+                    (id, category) -> new TaglockBindingRecipe(id, category, TaglockBindingRecipe.Binding.VAMPIRIC_POPPET)));
+    public static final RegistryObject<RecipeSerializer<TaglockBindingRecipe>> BIND_POPPET_PROTECTION =
+            SERIALIZERS.register("bind_poppet_protection", () -> new SimpleCraftingRecipeSerializer<>(
+                    (id, category) -> new TaglockBindingRecipe(id, category, TaglockBindingRecipe.Binding.POPPET_PROTECTION)));
 
     private WitcheryRecipes() {
     }

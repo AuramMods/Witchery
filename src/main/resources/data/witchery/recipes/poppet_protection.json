@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["GFG", "EPE", "GLG"],
+  "key": {
+    "P": {"item": "witchery:voodoo_protection_poppet"},
+    "G": {"item": "minecraft:gold_nugget"},
+    "F": {"item": "witchery:toe_of_frog"},
+    "E": {"item": "witchery:ender_dew"},
+    "L": {"item": "witchery:drop_of_luck"}
+  },
+  "result": {"item": "witchery:poppet_protection"}
+}

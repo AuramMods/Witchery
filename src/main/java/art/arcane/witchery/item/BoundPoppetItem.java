@@ -16,6 +16,8 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class BoundPoppetItem extends Item {
     static final int USE_LIMIT = 1_000;
@@ -34,20 +36,29 @@ public class BoundPoppetItem extends Item {
     }
 
     static boolean useWard(ServerPlayer player, Item type, int amount) {
-        if (useWard(player.getInventory(), player, type, amount)) return true;
+        return useWard(player, type, amount, stack -> true, stack -> {});
+    }
+
+    static boolean useWard(ServerPlayer player, Item type, int amount, Predicate<ItemStack> condition, Consumer<ItemStack> use) {
+        if (useWard(player.getInventory(), player, type, amount, condition, use)) return true;
         for (PoppetShelfBlockEntity shelf : PoppetShelfBlockEntity.activeShelves(player.server)) {
-            if (useWard(shelf, player, type, amount)) return true;
+            if (useWard(shelf, player, type, amount, condition, use)) return true;
         }
         return false;
     }
 
-    private static boolean useWard(Container container, ServerPlayer player, Item type, int amount) {
+    private static boolean useWard(Container container, ServerPlayer player, Item type, int amount,
+                                   Predicate<ItemStack> condition, Consumer<ItemStack> use) {
         for (int slot = 0; slot < container.getContainerSize(); slot++) {
             ItemStack stack = container.getItem(slot);
-            if (!stack.is(type) || !TaglockItem.isBoundTo(stack, player)) continue;
+            if (!stack.is(type) || !TaglockItem.isBoundTo(stack, player) || !condition.test(stack)) continue;
             wear(stack, amount);
-            if (stack.isEmpty()) container.setItem(slot, ItemStack.EMPTY);
-            else container.setChanged();
+            try {
+                use.accept(stack);
+            } finally {
+                if (stack.isEmpty() && container.getItem(slot) == stack) container.setItem(slot, ItemStack.EMPTY);
+                else container.setChanged();
+            }
             return true;
         }
         return false;

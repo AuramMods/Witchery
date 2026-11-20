@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [" D ", "BPB", " H "],
+  "key": {
+    "P": {"item": "witchery:poppet"},
+    "D": {"item": "witchery:diamond_vapour"},
+    "B": {"item": "witchery:bat_wool"},
+    "H": {"item": "witchery:exhale_of_the_horned_one"}
+  },
+  "result": {"item": "witchery:vampiric_poppet"}
+}

@@ -1,0 +1,13 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "medium", "glyph": "witchery:circleglyphinfernal"}],
+  "sacrifices": [
+    {"type": "witchery:bound_taglock"},
+    {"item": "witchery:exhale_of_the_horned_one"},
+    {"item": "witchery:voodoo_protection_poppet"},
+    {"item": "minecraft:blaze_powder"},
+    {"item": "witchery:spectral_dust"}
+  ],
+  "power": 7000,
+  "action": "corrupt_voodoo_protection"
+}

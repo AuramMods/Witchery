@@ -22,6 +22,8 @@ import art.arcane.witchery.item.SeerStoneItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.TormentContractItem;
 import art.arcane.witchery.item.VoodooPoppetItem;
+import art.arcane.witchery.item.VampiricPoppetItem;
+import art.arcane.witchery.item.PoppetProtectionItem;
 import art.arcane.witchery.item.ThrowableBrewItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.item.WitchHandItem;
@@ -77,6 +79,8 @@ public final class WitcheryItems {
         registerLegacyItem("death_protection_poppet");
         registerLegacyItem("voodoo_poppet");
         registerLegacyItem("voodoo_protection_poppet");
+        registerLegacyItem("vampiric_poppet");
+        registerLegacyItem("poppet_protection");
 
         for (WitcheryIngredient ingredient : WitcheryIngredient.values()) {
             registerLegacyItem(ingredient.path());
@@ -180,6 +184,8 @@ public final class WitcheryItems {
             case "death_protection_poppet" -> new DeathProtectionPoppetItem();
             case "voodoo_poppet" -> new VoodooPoppetItem();
             case "voodoo_protection_poppet" -> new BoundPoppetItem();
+            case "vampiric_poppet" -> new VampiricPoppetItem();
+            case "poppet_protection" -> new PoppetProtectionItem();
             case "poppet" -> new Item(new Item.Properties().stacksTo(1));
             case "odd_porkchop_raw" -> new Item(new Item.Properties().food(new FoodProperties.Builder()
                     .nutrition(3).saturationMod(0.3F).alwaysEat().build()));

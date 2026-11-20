@@ -6,6 +6,7 @@ import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.entity.Demon;
 import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.infusion.InfusionEnergy;
+import art.arcane.witchery.item.PoppetProtectionItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.power.AltarPower;
@@ -174,6 +175,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         List<ServerPlayer> recipients = List.of();
         Entity result = null;
         LivingEntity curseTarget = null;
+        ServerPlayer corruptionCaster = null;
         int infusionType = switch (rite.action()) {
             case INFUSE_LIGHT -> 1;
             case INFUSE_OVERWORLD -> 2;
@@ -208,13 +210,18 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             result = summon;
         } else if (rite.action() == ItemRiteRecipe.Action.CURSE_WAKING_NIGHTMARE
                 || rite.action() == ItemRiteRecipe.Action.CURE_WAKING_NIGHTMARE) {
-            curseTarget = sacrificed.stream().filter(stack -> stack.getItem() instanceof TaglockItem)
-                    .map(stack -> TaglockItem.resolveTarget(level, stack))
-                    .filter(target -> target != null && target.isAlive()).findFirst().orElse(null);
+            curseTarget = boundOffering(level);
             if (curseTarget == null) {
                 abort(level, "message.witchery.rite.no_taglock_target");
                 return;
             }
+        } else if (rite.action() == ItemRiteRecipe.Action.CORRUPT_VOODOO_PROTECTION) {
+            corruptionCaster = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
+            if (corruptionCaster == null || corruptionCaster.level() != level || !FamiliarBinding.hasCurseMastery(corruptionCaster)) {
+                abort(level, "message.witchery.rite.requires_curse_mastery");
+                return;
+            }
+            curseTarget = boundOffering(level);
         } else if (rite.action() == ItemRiteRecipe.Action.ITEM) {
             ItemEntity drop = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
                     rite.result().copy(), 0, 0.3, 0);
@@ -239,7 +246,12 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             level.sendParticles(ParticleTypes.PORTAL, living.getX(), living.getY(0.5), living.getZ(), 16, 0.4, 0.6, 0.4, 0.05);
             living.discard();
         }
-        if (curseTarget != null) {
+        if (corruptionCaster != null) {
+            if (curseTarget != null) PoppetProtectionItem.corrupt(corruptionCaster, curseTarget);
+            level.sendParticles(ParticleTypes.FLAME, pos.getX() + 0.5, pos.getY() + 0.2, pos.getZ() + 0.5,
+                    16, 0.45, 0.5, 0.45, 0.04);
+            level.playSound(null, pos, SoundEvents.ENDER_DRAGON_GROWL, SoundSource.BLOCKS, 0.7F, 1);
+        } else if (curseTarget != null) {
             WakingNightmareEffect.changeCurse(curseTarget, rite.action() == ItemRiteRecipe.Action.CURSE_WAKING_NIGHTMARE);
         }
         for (ServerPlayer recipient : recipients) {
@@ -265,6 +277,13 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
                 16, 0.4, 0.4, 0.4, 0.05);
         level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.9F, 1.35F);
+    }
+
+    @Nullable
+    private LivingEntity boundOffering(ServerLevel level) {
+        return sacrificed.stream().filter(stack -> stack.getItem() instanceof TaglockItem)
+                .map(stack -> TaglockItem.resolveTarget(level, stack))
+                .filter(target -> target != null && target.isAlive()).findFirst().orElse(null);
     }
 
     private static List<ServerPlayer> nearbyPlayers(ServerLevel level, BlockPos pos, int range) {

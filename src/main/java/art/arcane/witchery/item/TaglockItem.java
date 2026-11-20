@@ -37,15 +37,21 @@ public final class TaglockItem extends Item {
     private static final String CREATURE_NAME = "WITCDisplayName1";
     private static final String CREATURE_MOST = "WITCEntityIDm1";
     private static final String CREATURE_LEAST = "WITCEntityIDl1";
+    private static final List<String> SIGNATURE_KEYS = List.of(PLAYER_NAME, PLAYER_UUID, CREATURE_NAME, CREATURE_MOST, CREATURE_LEAST);
 
     public TaglockItem() {
         super(new Properties().stacksTo(16));
     }
 
     public static boolean isBound(ItemStack stack) {
+        return isBound(stack, 1);
+    }
+
+    public static boolean isBound(ItemStack stack, int index) {
         CompoundTag tag = stack.getTag();
-        return tag != null && (!tag.getString(PLAYER_NAME).isEmpty()
-                || tag.contains(CREATURE_MOST, Tag.TAG_LONG) && tag.contains(CREATURE_LEAST, Tag.TAG_LONG));
+        return tag != null && (!tag.getString(indexed(PLAYER_NAME, index)).isEmpty()
+                || tag.contains(indexed(CREATURE_MOST, index), Tag.TAG_LONG)
+                && tag.contains(indexed(CREATURE_LEAST, index), Tag.TAG_LONG));
     }
 
     public static boolean isBoundTo(ItemStack stack, ServerPlayer player) {
@@ -57,15 +63,23 @@ public final class TaglockItem extends Item {
 
     @Nullable
     public static LivingEntity resolveTarget(ServerLevel level, ItemStack stack) {
+        return resolveTarget(level, stack, 1);
+    }
+
+    @Nullable
+    public static LivingEntity resolveTarget(ServerLevel level, ItemStack stack, int index) {
         CompoundTag tag = stack.getTag();
         if (tag == null) return null;
-        String playerName = tag.getString(PLAYER_NAME);
+        String playerName = tag.getString(indexed(PLAYER_NAME, index));
         if (!playerName.isEmpty()) {
             var players = level.getServer().getPlayerList();
-            return tag.hasUUID(PLAYER_UUID) ? players.getPlayer(tag.getUUID(PLAYER_UUID)) : players.getPlayerByName(playerName);
+            String uuid = indexed(PLAYER_UUID, index);
+            return tag.hasUUID(uuid) ? players.getPlayer(tag.getUUID(uuid)) : players.getPlayerByName(playerName);
         }
-        if (tag.contains(CREATURE_MOST, Tag.TAG_LONG) && tag.contains(CREATURE_LEAST, Tag.TAG_LONG)) {
-            UUID id = new UUID(tag.getLong(CREATURE_MOST), tag.getLong(CREATURE_LEAST));
+        String most = indexed(CREATURE_MOST, index);
+        String least = indexed(CREATURE_LEAST, index);
+        if (tag.contains(most, Tag.TAG_LONG) && tag.contains(least, Tag.TAG_LONG)) {
+            UUID id = new UUID(tag.getLong(most), tag.getLong(least));
             for (ServerLevel world : level.getServer().getAllLevels()) {
                 if (world.getEntity(id) instanceof LivingEntity living) return living;
             }
@@ -88,21 +102,41 @@ public final class TaglockItem extends Item {
     }
 
     public static String boundName(ItemStack stack) {
+        return boundName(stack, 1);
+    }
+
+    public static String boundName(ItemStack stack, int index) {
         CompoundTag tag = stack.getTag();
         if (tag == null) return "";
-        String playerName = tag.getString(PLAYER_NAME);
-        return !playerName.isEmpty() ? playerName : tag.getString(CREATURE_NAME);
+        String playerName = tag.getString(indexed(PLAYER_NAME, index));
+        return !playerName.isEmpty() ? playerName : tag.getString(indexed(CREATURE_NAME, index));
     }
 
     public static void copyBinding(ItemStack source, ItemStack destination) {
+        copyBinding(source, destination, 1);
+    }
+
+    public static void copyBinding(ItemStack source, ItemStack destination, int index) {
         CompoundTag signature = source.getTag();
         if (signature == null) return;
         CompoundTag signed = destination.getOrCreateTag();
-        for (String key : List.of(PLAYER_NAME, PLAYER_UUID, CREATURE_NAME, CREATURE_MOST, CREATURE_LEAST)) {
+        for (String key : SIGNATURE_KEYS) {
             Tag value = signature.get(key);
-            if (value == null) signed.remove(key);
-            else signed.put(key, value.copy());
+            if (value == null) signed.remove(indexed(key, index));
+            else signed.put(indexed(key, index), value.copy());
         }
+    }
+
+    public static void clearBinding(ItemStack stack, int index) {
+        CompoundTag tag = stack.getTag();
+        if (tag == null) return;
+        for (String key : SIGNATURE_KEYS) {
+            tag.remove(indexed(key, index));
+        }
+    }
+
+    private static String indexed(String key, int index) {
+        return index == 1 ? key : key.substring(0, key.length() - 1) + index;
     }
 
     public InteractionResult collectFromEntity(Player collector, InteractionHand hand, LivingEntity target) {
@@ -181,11 +215,7 @@ public final class TaglockItem extends Item {
         ItemStack held = collector.getItemInHand(hand);
         ItemStack filled = held.getCount() == 1 ? held : held.copyWithCount(1);
         CompoundTag tag = filled.getOrCreateTag();
-        tag.remove(PLAYER_NAME);
-        tag.remove(PLAYER_UUID);
-        tag.remove(CREATURE_NAME);
-        tag.remove(CREATURE_MOST);
-        tag.remove(CREATURE_LEAST);
+        clearBinding(filled, 1);
         if (target instanceof ServerPlayer player) {
             tag.putString(PLAYER_NAME, player.getGameProfile().getName());
             tag.putUUID(PLAYER_UUID, player.getUUID());

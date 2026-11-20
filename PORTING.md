@@ -121,7 +121,7 @@
 - [x] Restore the Light and Otherwhere infusion recipes.
 - [x] Restore the infusion charge HUD and the Witch's Hand drop.
 - [x] Restore the Poppet Shelf.
-- [ ] Restore the Vampiric Poppet and Poppet Protection.
+- [x] Restore the Vampiric Poppet and Poppet Protection.
 
 ## Infernal Infusion and Voodoo Poppets (2026-11-19)
 
@@ -195,6 +195,14 @@
 - [x] Restore tools and armor to full durability at 90% wear using the matching bound ward. The Forge tests verify that lower wear preserves the ward. All 72 required Forge GameTests passed, and Java 17 data generation and JAR reobfuscation succeeded.
 - [x] The muted survival client crafted Earth Protection, collected its own Taglock at the bed, and bound the ward. A lethal fall damage test consumed it and preserved six health. Water raised six health to ten and added Water Breathing. Hunger raised three health to ten and added Saturation after a starvation hit. Using a worn pickaxe repaired it before the mined block added one wear. An injury repaired the worn chestplate.
 - [x] A dedicated restart retained the repaired pickaxe and chestplate. The spent Tool and Armor wards stayed gone.
+
+## Vampiric Poppet and Corrupting Voodoo Protection (2026-11-20)
+
+- [x] Restore both original crafting recipes, ordered two-Taglock binding for the Vampiric Poppet, and single-Taglock binding for Poppet Protection. The muted survival client crafted and bound both. The Vampiric Poppet received its first signature from the player's bed and its second from a live pig.
+- [x] Transfer entity-caused injury through the Vampiric Poppet at 66 wear per use, cap each transfer to a creature at 15 damage, and clear its Taglock when that creature dies. Three zombie damage tests left the player at seven health and wore the poppet to 198. The surviving signature and wear persisted after restart. Cyclic bindings stop when a recipient repeats.
+- [x] Restore the Corrupting Voodoo Protection rite with five offerings, 7,000 altar power and 28 infernal glyphs. The muted client cast it with its familiar dismissed. The heart returned all five offerings and the Poppet Protection kept its original wear.
+- [x] Reflect corruption as lightning with 350 wear to Poppet Protection. An undefended cast consumes up to ten matching Voodoo Protection Poppets, including wards on shelves. All 76 Forge GameTests passed, including these mechanics, legacy metadata and both Taglock indices. Java 17 data generation and JAR reobfuscation succeeded.
+- [ ] Connect Witch Hunter equipment, the spirit poppet enhancement and other legacy damage exemptions when their owning systems are restored.
 
 ## Auram Pack Validation (2026-11-20)
 
