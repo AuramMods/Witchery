@@ -191,6 +191,8 @@ public final class WitcheryEventHooks {
             WitcheryDimensionTravelHooks.onPlayerChangedDimension(serverPlayer, event.getFrom(), event.getTo());
             VampireFlight.restore(serverPlayer);
             if (event.getTo().equals(Level.NETHER)) Predictions.onNetherVisit(serverPlayer);
+            WitcheryPlayerDataProvider.get(serverPlayer).ifPresent(data ->
+                    WitcheryNetwork.sendPartialExtendedPlayerSync(serverPlayer, data));
         }
     }
 

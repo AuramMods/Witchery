@@ -1349,6 +1349,7 @@ Status:
 - The rank-ten offering turns an eligible villager into `witchery:vampire` and clears both blood tags from the goblet. The entity keeps `BaseX`, `BaseY` and `BaseZ` as its home and saves `Hunting` and `HuntBites`. Older port entities without the home tags adopt their saved position.
 - `witchery:bloodcrucible` saves its original `BloodLevel` from 0 to 20. The player's `VampireUltimate` preserves legacy IDs 0 for none, 1 for Thunderstorm, 2 for Bat Swarm and 3 for travel. `VampireUltimateCharges` retains the remaining uses.
 - `witchery:attackbat` saves its caster under the original `Owner` GameProfile tag and its remaining life under `SwarmTicks`. Summoned attack bats carry `WITCNoDrops` in their entity data.
+- A bone selects ultimate ID 3. Coffin and village travel uses the existing modern respawn fields and the village information available in loaded chunks. A dimension change refreshes the replacement client's Witchery player data.
 
 ## 1.20.1 Event Hook Scaffold (current)
 Implementation anchor:

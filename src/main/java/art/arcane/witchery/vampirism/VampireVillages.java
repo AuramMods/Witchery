@@ -12,6 +12,7 @@ import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 
@@ -19,6 +20,7 @@ import java.util.ArrayDeque;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 final class VampireVillages {
     private static final int VISIT_RANGE = 32;
@@ -29,16 +31,38 @@ final class VampireVillages {
     private VampireVillages() {}
 
     static Optional<ChunkPos> nearby(ServerLevel world, BlockPos position) {
-        var structures = world.registryAccess().registryOrThrow(Registries.STRUCTURE);
-        var manager = world.structureManager();
-        Optional<ChunkPos> generated = ChunkPos.rangeClosed(new ChunkPos(position), (VISIT_RANGE + 15) / 16)
-                .filter(chunk -> world.hasChunk(chunk.x, chunk.z))
-                .flatMap(chunk -> manager.startsForStructure(chunk, type -> structures.wrapAsHolder(type).is(StructureTags.VILLAGE)).stream())
-                .distinct()
+        Optional<ChunkPos> generated = loadedVillages(world, position, VISIT_RANGE)
                 .filter(start -> distanceTo(start.getBoundingBox(), position) <= VISIT_RANGE * VISIT_RANGE)
                 .min(Comparator.comparingDouble(start -> distanceTo(start.getBoundingBox(), position)))
                 .map(StructureStart::getChunkPos);
         return generated.or(() -> nearbyOccupiedHomes(world.getPoiManager(), position).map(ChunkPos::new));
+    }
+
+    private static Stream<StructureStart> loadedVillages(ServerLevel world, BlockPos position, int radius) {
+        var structures = world.registryAccess().registryOrThrow(Registries.STRUCTURE);
+        var manager = world.structureManager();
+        return ChunkPos.rangeClosed(new ChunkPos(position), (radius + 15) / 16)
+                .filter(chunk -> world.hasChunk(chunk.x, chunk.z))
+                .flatMap(chunk -> manager.startsForStructure(chunk, type -> structures.wrapAsHolder(type).is(StructureTags.VILLAGE)).stream())
+                .distinct();
+    }
+
+    static Optional<BlockPos> forFeedingGrounds(ServerLevel world, BlockPos position) {
+        int range = 512;
+        var poi = world.getPoiManager();
+        var generated = loadedVillages(world, position, range)
+                .filter(start -> distanceTo(start.getBoundingBox(), position) <= range * range)
+                .map(start -> start.getBoundingBox().getCenter())
+                .filter(world::hasChunkAt)
+                .map(center -> world.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, center));
+        var occupied = ChunkPos.rangeClosed(new ChunkPos(position), range / 16)
+                .filter(chunk -> world.hasChunk(chunk.x, chunk.z))
+                .flatMap(chunk -> poi.getInChunk(type -> type.is(PoiTypes.HOME), chunk, PoiManager.Occupancy.IS_OCCUPIED))
+                .map(PoiRecord::getPos)
+                .filter(home -> home.distSqr(position) <= range * range)
+                .min(Comparator.comparingDouble(home -> home.distSqr(position)))
+                .map(home -> clusterAnchor(poi, home));
+        return Stream.concat(generated, occupied.stream()).min(Comparator.comparingDouble(candidate -> candidate.distSqr(position)));
     }
 
     private static double distanceTo(BoundingBox box, BlockPos position) {

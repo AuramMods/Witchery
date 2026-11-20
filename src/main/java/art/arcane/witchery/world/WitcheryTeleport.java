@@ -14,6 +14,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.ITeleporter;
 
 import java.util.function.Function;
+import java.util.function.BiConsumer;
 
 public final class WitcheryTeleport {
     private static final TicketType<Integer> ARRIVAL = TicketType.create("witchery_travel_arrival", Integer::compareTo, 40);
@@ -50,6 +51,10 @@ public final class WitcheryTeleport {
     }
 
     public static boolean move(Entity actor, ServerLevel destination, Vec3 target) {
+        return move(actor, destination, target, TormentTravel::transitionEffect);
+    }
+
+    public static boolean move(Entity actor, ServerLevel destination, Vec3 target, BiConsumer<ServerLevel, Vec3> transitionEffect) {
         ServerLevel origin = (ServerLevel) actor.level();
         Vec3 start = actor.position();
         Entity moved = actor;
@@ -78,8 +83,8 @@ public final class WitcheryTeleport {
             destination.getChunkSource().addRegionTicket(ARRIVAL, moved.chunkPosition(), 2, moved.getId());
         }
         moved.resetFallDistance();
-        TormentTravel.transitionEffect(origin, start);
-        TormentTravel.transitionEffect(destination, target);
+        transitionEffect.accept(origin, start);
+        transitionEffect.accept(destination, target);
         return true;
     }
 }

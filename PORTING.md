@@ -381,7 +381,13 @@
 - [x] Offer Wool of Bat to a full Blood Crucible and obtain five uses of Bat Swarm. The muted survival client used a filled-vessel fixture after the separate nightly hunting test.
 - [x] Summon fifteen flying Attack Bats through the fifth power slot. The muted client aimed at an Iron Golem twelve blocks away. The bats lowered it from 100 to 84 health while the caster kept full health. GameTests covered four-point magic damage and expiration on contact with both vulnerable and protected targets.
 - [x] Preserve swarm ownership and expiry on a dedicated restart. All fifteen bats reloaded and the tracked bat retained its original UUID and owner. The swarm expired as the saved timers ran down. Java 17 data generation, JAR reobfuscation and all 175 required Forge GameTests passed.
-- [ ] Restore and verify the coffin-to-village ultimate power.
+
+## Coffin and Village Travel (2026-11-20)
+
+- [x] Offer a bone at a full Blood Crucible to charge the final ultimate. The muted rank-ten client spent one bone and received five uses. The bowl emptied.
+- [x] Travel to a saved coffin and from the coffin to a village. The client used daytime sleep to set its real respawn at the coffin. A cast from over forty blocks away brought it back to the coffin. A cast while nearby moved it to the settlement where a villager had claimed a bed. Each cast spent one use.
+- [x] Travel home from the Nether. A dimension change now sends the Witchery capability to the replacement client player. The muted client kept its selected power when entering the Nether and returned to the same Overworld coffin. All 178 required Forge GameTests passed, including the bone offering, return to the saved spawn and the village destination.
+- [x] Restart the dedicated server and verify the saved coffin, travel choice and final remaining use. The client rejoined beside its coffin with one travel charge and 1,062 blood.
 
 ## Auram Pack Validation (2026-11-20)
 

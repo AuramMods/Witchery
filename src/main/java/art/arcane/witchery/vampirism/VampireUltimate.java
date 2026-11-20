@@ -1,6 +1,9 @@
 package art.arcane.witchery.vampirism;
 
 import art.arcane.witchery.registry.WitcheryEntities;
+import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.world.WitcheryDimensions;
+import art.arcane.witchery.world.WitcheryTeleport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -8,6 +11,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -25,10 +31,17 @@ public enum VampireUltimate {
         return id >= 0 && id < BY_ID.length ? BY_ID[id] : NONE;
     }
 
+    public static VampireUltimate fromOffering(ItemStack held) {
+        if (held.is(WitcheryIngredient.GLOBE_ARTICHOKE.item())) return STORM;
+        if (held.is(WitcheryIngredient.BAT_WOOL.item())) return SWARM;
+        return held.is(Items.BONE) ? FARM : NONE;
+    }
+
     boolean activate(ServerPlayer player) {
         return switch (this) {
             case STORM -> startStorm(player);
             case SWARM -> startSwarm(player);
+            case FARM -> travelToFeedingGrounds(player);
             default -> false;
         };
     }
@@ -61,6 +74,45 @@ public enum VampireUltimate {
         if (spawned == 0) return false;
         world.playSound(null, player.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.8F, 1);
         return true;
+    }
+
+    private static boolean travelToFeedingGrounds(ServerPlayer player) {
+        ServerLevel here = player.serverLevel();
+        if (here.dimension().equals(WitcheryDimensions.DREAM)) return false;
+        ServerLevel home = player.getServer().getLevel(player.getRespawnDimension());
+        BlockPos respawn = player.getRespawnPosition();
+        Vec3 arrival = home != null && respawn != null ? Player.findRespawnPositionAndUseSpawnBlock(home, respawn,
+                player.getRespawnAngle(), player.isRespawnForced(), true).orElse(null) : null;
+        if (arrival == null) {
+            home = player.getServer().overworld();
+            arrival = safeFooting(player, home, home.getSharedSpawnPos());
+        }
+        if (arrival == null) return false;
+        if (home == here && player.distanceToSqr(arrival.x, player.getY(), arrival.z) <= 36) {
+            var village = VampireVillages.forFeedingGrounds(here, player.blockPosition());
+            if (village.isEmpty()) return false;
+            arrival = safeFooting(player, here, village.get());
+            if (arrival == null) return false;
+        }
+        if (!WitcheryTeleport.canArrive(player, home, arrival)) return false;
+        return WitcheryTeleport.move(player, home, arrival, VampireUltimate::travelEffect);
+    }
+
+    private static void travelEffect(ServerLevel level, Vec3 position) {
+        level.sendParticles(ParticleTypes.SMOKE, position.x, position.y + 0.85, position.z, 16, 0.5, 0.8, 0.5, 0.03);
+        level.playSound(null, position.x, position.y, position.z, SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.8F, 1);
+    }
+
+    @Nullable
+    private static Vec3 safeFooting(ServerPlayer player, ServerLevel world, BlockPos destination) {
+        for (BlockPos spot : BlockPos.withinManhattan(destination, 2, 16, 2)) {
+            BlockPos floor = spot.below();
+            if (!world.getBlockState(floor).isFaceSturdy(world, floor, Direction.UP)
+                    || !world.isEmptyBlock(spot) || !world.isEmptyBlock(spot.above())) continue;
+            Vec3 arrival = Vec3.atBottomCenterOf(spot);
+            if (WitcheryTeleport.canArrive(player, world, arrival)) return arrival;
+        }
+        return null;
     }
 
     @Nullable
