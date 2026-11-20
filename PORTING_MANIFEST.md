@@ -1036,7 +1036,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 ## Prediction Registry (`PredictionManager`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/WitcheryRecipes.java`
 
-| ID | Class | Category | Key |
+| ID | Class | Weight | Key |
 |---:|---|---:|---|
 | 1 | `PredictionFight` | 13 | `witchery.prediction.zombie` |
 | 2 | `PredictionArrow` | 13 | `witchery.prediction.arrowhit` |
@@ -1056,7 +1056,9 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 16 | `PredictionNetherTrip` | 3 | `witchery.prediction.tothenether` |
 | 17 | `PredictionMultiMine` | 13 | `witchery.prediction.coal` |
 
-`Predictions` restores IDs 1–4, 12 and 15–16 with their legacy weights, one active outcome, and `WITCPredict.WITCPreList` entries with `WITCPreID` and `WITCPreTime`. Other known legacy IDs stay in the player record until their effects are restored. `CrystalBallBlockEntity` retains `LastUsedTime` and the training rite grants `WITCFTeller`.
+`Predictions` restores IDs 1–8, 12 and 15–17 with their legacy weights, one active outcome, and `WITCPredict.WITCPreList` entries with `WITCPreID` and `WITCPreTime`. Other known legacy IDs stay in the player record until their effects are restored. `CrystalBallBlockEntity` retains `LastUsedTime` and the training rite grants `WITCFTeller`.
+
+Mining predictions extend Forge block loot after the harvest. Deepslate and its matching ores extend the legacy stone rules. The treasure prediction places a chest with `minecraft:chests/abandoned_mineshaft`, the modern counterpart of `mineshaftCorridor`.
 
 ## Creature Power Registry
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/WitcheryRecipes.java`

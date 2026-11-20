@@ -25,10 +25,15 @@ import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 public final class Predictions {
     private static final String SKILL = "WITCFTeller";
@@ -40,23 +45,34 @@ public final class Predictions {
     private static final String MESSAGE = "witchery.prediction.";
     private static final long DUE_AFTER = 9_600;
 
-    private enum Kind {
+    enum Kind {
         ZOMBIE(1, 13, "zombie"),
         ARROW(2, 13, "arrowhit"),
         ENT(3, 3, "ent"),
         FALL(4, 13, "fall"),
+        IRON(5, 8, "iron", 1_212),
+        DIAMOND(6, 3, "diamond", 1_208),
+        EMERALD(7, 3, "emerald", 1_208),
+        TREASURE(8, 2, "treasure", 1_210),
         FRIEND(12, 3, "friend"),
         WET(15, 13, "wet"),
-        NETHER(16, 3, "tothenether");
+        NETHER(16, 3, "tothenether"),
+        COAL(17, 13, "coal", 1_208);
 
         private final int id;
         private final int weight;
         private final String message;
+        private final long dueAfter;
 
         Kind(int id, int weight, String message) {
+            this(id, weight, message, DUE_AFTER);
+        }
+
+        Kind(int id, int weight, String message, long dueAfter) {
             this.id = id;
             this.weight = weight;
             this.message = message;
+            this.dueAfter = dueAfter;
         }
 
         @Nullable
@@ -65,6 +81,13 @@ public final class Predictions {
                 if (kind.id == id) return kind;
             }
             return null;
+        }
+
+        boolean canForceEncounter() {
+            return switch (this) {
+                case ZOMBIE, ARROW, ENT, FALL, FRIEND, WET, NETHER -> true;
+                default -> false;
+            };
         }
     }
 
@@ -128,6 +151,29 @@ public final class Predictions {
         readings(player).removeIf(entry -> entry instanceof CompoundTag tag && tag.getInt(ID) == Kind.NETHER.id);
     }
 
+    public static void onHarvest(ServerPlayer player, BlockPos pos, BlockState state, List<ItemStack> drops) {
+        ServerLevel level = player.serverLevel();
+        // A real harvest reaches loot generation after the block is removed. Loot previews leave it in place.
+        if (player.isCreative() || player.isSpectator() || level.getBlockState(pos).is(state.getBlock())
+                || !level.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)) return;
+
+        ListTag readings = readings(player);
+        for (int index = readings.size() - 1; index >= 0; index--) {
+            CompoundTag reading = readings.getCompound(index);
+            Kind kind = Kind.byId(reading.getInt(ID));
+            if (kind == null) continue;
+            long elapsed = timeInTicks() - reading.getLong(TIME);
+            double chance = elapsed > kind.dueAfter ? 0.05 : 0.01;
+            boolean fulfilled = switch (kind) {
+                case IRON, DIAMOND, EMERALD, COAL -> MiningPredictions.addOre(kind, level.getRandom(), state, drops,
+                        chance, elapsed > 36_000);
+                case TREASURE -> MiningPredictions.buryChest(player, pos, state, chance);
+                default -> false;
+            };
+            if (fulfilled) readings.remove(index);
+        }
+    }
+
     public static void tick(ServerPlayer player) {
         if (player.tickCount % 100 != 0 || player.isSpectator() || !player.isAlive()) return;
         ListTag readings = readings(player);
@@ -139,7 +185,8 @@ public final class Predictions {
             if (kind == Kind.WET && player.isInWaterRainOrBubble()
                     || kind == Kind.NETHER && player.level().dimension().equals(Level.NETHER)) {
                 readings.remove(index);
-            } else if (now - reading.getLong(TIME) > DUE_AFTER && player.getRandom().nextDouble() < 0.05) {
+            } else if (kind.canForceEncounter() && now - reading.getLong(TIME) > kind.dueAfter
+                    && player.getRandom().nextDouble() < 0.05) {
                 // Remove the reading before effects that can post another player event.
                 readings.remove(index);
                 if (!fulfill(kind, player)) readings.add(index, reading);
@@ -172,6 +219,7 @@ public final class Predictions {
             case FRIEND -> encounter(player, EntityType.WOLF, true);
             case WET -> sinkGround(player, true);
             case NETHER -> sendToNether(player);
+            default -> false;
         };
     }
 

@@ -2,6 +2,7 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.data.GrassSeedLootModifier;
+import art.arcane.witchery.data.PredictionLootModifier;
 import art.arcane.witchery.world.DreamCottonFeature;
 import art.arcane.witchery.world.MirrorChunkGenerator;
 import art.arcane.witchery.world.TormentChunkGenerator;
@@ -23,6 +24,7 @@ public final class WitcheryRegistries {
 
     static {
         LOOT_MODIFIERS.register("grass_seeds", () -> GrassSeedLootModifier.CODEC);
+        LOOT_MODIFIERS.register("mining_predictions", () -> PredictionLootModifier.CODEC);
         FEATURES.register("dream_cotton", DreamCottonFeature::new);
         CHUNK_GENERATORS.register("mirror", () -> MirrorChunkGenerator.CODEC);
         CHUNK_GENERATORS.register("torment", () -> TormentChunkGenerator.CODEC);

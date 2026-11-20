@@ -256,7 +256,8 @@
 - [x] Restore the 500-power reading, five-second cooldown, and legacy saved forecast. A click during cooldown left the saved time unchanged. Reading again after cooldown repeated the same forecast and kept its original timestamp. All 101 required GameTests, data generation and JAR reobfuscation passed.
 - [x] Restore the first seven outcomes using the legacy IDs and weights. Arrows, falls, zombie, Ent and wolf damage, water and a Nether visit can fulfill their corresponding readings. The GameTests covered a matching fall, wrong damage and the overdue gravel cavity.
 - [x] Restart the packaged dedicated server while the undead forecast is active. The player retained training, the same forecast ID and timestamp, and the Crystal Ball's cooldown timestamp. A live zombie's attack cleared the forecast after reconnecting.
-- [ ] Restore mining, treasure, love, Baba Yaga and the Owl and Wolf rescue predictions. Restore the Waystone view and verify readings for nearby players on a dedicated server.
+- [x] Restore Iron, Diamond, Emerald, Coal and Buried Treasure predictions in survival harvesting. The muted player loaded old-format Coal and Treasure forecasts in a disposable save. Mining Deepslate yielded 16 extra coal, and digging dirt exposed a mineshaft chest with a Golden Apple. A loot preview left the Coal forecast active. All 103 required GameTests passed, including age thresholds, ore drops, and protected chest placement.
+- [ ] Restore love, Baba Yaga and the Owl and Wolf rescue predictions. Restore the Waystone view and verify readings for nearby players on a dedicated server.
 
 ## Auram Pack Validation (2026-11-20)
 
