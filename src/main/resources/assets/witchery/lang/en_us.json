@@ -185,6 +185,7 @@
    "message.witchery.glassgoblet.not_drained" : "Drain the villager's blood before making the offering.",
    "message.witchery.glassgoblet.no_coffin" : "There is no coffin nearby.",
    "entity.witchery.vampire" : "Vampire",
+   "entity.witchery.attackbat" : "Attack Bat",
    "message.witchery.vampire.ultimate.none" : "Ultimate power uncharged",
    "message.witchery.vampire.ultimate.storm" : "Thunderstorm (%s uses)",
    "message.witchery.vampire.ultimate.swarm" : "Bat Swarm (%s uses)",

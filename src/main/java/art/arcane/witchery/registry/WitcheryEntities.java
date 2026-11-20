@@ -1,6 +1,7 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.entity.AttackBat;
 import art.arcane.witchery.entity.BabaYaga;
 import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.entity.DarkMark;
@@ -29,6 +30,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.SpawnPlacements;
+import net.minecraft.world.entity.ambient.Bat;
 import net.minecraft.world.entity.animal.Cat;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -97,6 +99,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<Vampire>> VAMPIRE =
             ENTITY_TYPES.register("vampire", () -> EntityType.Builder.of(Vampire::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.95F).clientTrackingRange(8).build(Witchery.MODID + ":vampire"));
+    public static final RegistryObject<EntityType<AttackBat>> ATTACK_BAT =
+            ENTITY_TYPES.register("attackbat", () -> EntityType.Builder.of(AttackBat::new, MobCategory.AMBIENT)
+                    .sized(0.5F, 0.9F).clientTrackingRange(5).build(Witchery.MODID + ":attackbat"));
     public static final RegistryObject<EntityType<WitcheryFollower>> FOLLOWER =
             ENTITY_TYPES.register("follower", () -> EntityType.Builder.of(WitcheryFollower::new, MobCategory.CREATURE)
                     .sized(0.6F, 1.8F).clientTrackingRange(8).build(Witchery.MODID + ":follower"));
@@ -135,6 +140,7 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("babayaga", BABA_YAGA);
         LEGACY_ENTITIES.put("lilith", LILITH);
         LEGACY_ENTITIES.put("vampire", VAMPIRE);
+        LEGACY_ENTITIES.put("attackbat", ATTACK_BAT);
         LEGACY_ENTITIES.put("follower", FOLLOWER);
         LEGACY_ENTITIES.put("imp", IMP);
         LEGACY_ENTITIES.put("darkmark", DARK_MARK);
@@ -184,6 +190,7 @@ public final class WitcheryEntities {
                     : entry == BABA_YAGA ? BabaYaga.attributes()
                     : entry == LILITH ? Lilith.attributes()
                     : entry == VAMPIRE ? Vampire.attributes()
+                    : entry == ATTACK_BAT ? Bat.createAttributes()
                     : entry == FOLLOWER ? WitcheryFollower.attributes()
                     : entry == IMP ? Imp.attributes()
                     : entry == DARK_MARK ? DarkMark.attributes()

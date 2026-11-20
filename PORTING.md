@@ -375,7 +375,13 @@
 - [x] Fill the vessel with four completed vampire hunts. The client saw the blood surface after the first five-point deposit. A dedicated restart preserved the deposit. Three later hunts raised the same vessel to 10, 15 and 20 blood.
 - [x] Offer a Globe Artichoke at rank ten. The vessel emptied, one artichoke was consumed and Thunderstorm gained five uses. The muted client selected the original storm icon and cast through the gameplay controls. The world switched to rain and thunder, and four charges and 1,114 blood remained. An attempt during the storm kept all four charges.
 - [x] Restart during the active Thunderstorm. The same player logged in with four charges and 1,114 blood, the vessel stayed empty and the saved thunderstorm continued. Java 17 data generation, JAR reobfuscation and all 171 required Forge GameTests passed.
-- [ ] Restore and verify the Bat Swarm and coffin-to-village ultimate powers.
+
+## Bat Swarm (2026-11-20)
+
+- [x] Offer Wool of Bat to a full Blood Crucible and obtain five uses of Bat Swarm. The muted survival client used a filled-vessel fixture after the separate nightly hunting test.
+- [x] Summon fifteen flying Attack Bats through the fifth power slot. The muted client aimed at an Iron Golem twelve blocks away. The bats lowered it from 100 to 84 health while the caster kept full health. GameTests covered four-point magic damage and expiration on contact with both vulnerable and protected targets.
+- [x] Preserve swarm ownership and expiry on a dedicated restart. All fifteen bats reloaded and the tracked bat retained its original UUID and owner. The swarm expired as the saved timers ran down. Java 17 data generation, JAR reobfuscation and all 175 required Forge GameTests passed.
+- [ ] Restore and verify the coffin-to-village ultimate power.
 
 ## Auram Pack Validation (2026-11-20)
 

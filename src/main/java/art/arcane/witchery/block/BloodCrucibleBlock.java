@@ -51,9 +51,10 @@ public final class BloodCrucibleBlock extends BaseEntityBlock {
         if (level instanceof ServerLevel world && player instanceof ServerPlayer vampire
                 && level.getBlockEntity(pos) instanceof BloodCrucibleBlockEntity crucible) {
             var held = vampire.getItemInHand(hand);
+            VampireUltimate power = held.is(WitcheryIngredient.GLOBE_ARTICHOKE.item()) ? VampireUltimate.STORM
+                    : held.is(WitcheryIngredient.BAT_WOOL.item()) ? VampireUltimate.SWARM : VampireUltimate.NONE;
             boolean charged = (crucible.isFull() || vampire.getAbilities().instabuild)
-                    && held.is(WitcheryIngredient.GLOBE_ARTICHOKE.item())
-                    && VampireAbilities.chargeUltimate(vampire, VampireUltimate.STORM);
+                    && power != VampireUltimate.NONE && VampireAbilities.chargeUltimate(vampire, power);
             if (charged) {
                 crucible.drain();
                 held.shrink(1);

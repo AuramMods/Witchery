@@ -71,6 +71,7 @@ import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.ChestRenderer;
 import net.minecraft.client.renderer.entity.CatRenderer;
+import net.minecraft.client.renderer.entity.BatRenderer;
 import net.minecraft.client.renderer.entity.ItemEntityRenderer;
 import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
@@ -168,6 +169,7 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.LILITH.get(), LilithRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.FOLLOWER.get(), FollowerRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.VAMPIRE.get(), VampireRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.ATTACK_BAT.get(), BatRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SCRY_EYE.get(), NoopRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.MANDRAKE.get(), MandrakeRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.NIGHTMARE.get(), NightmareRenderer::new);

@@ -28,6 +28,8 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.Predicate;
+
 public final class OtherwhereInfusion {
     public static final int ID = 3;
     private static final String MESSAGE = "message.witchery.otherwhere.";
@@ -157,6 +159,10 @@ public final class OtherwhereInfusion {
     }
 
     static HitResult rayTrace(ServerPlayer player, double distance) {
+        return rayTrace(player, distance, target -> true);
+    }
+
+    public static HitResult rayTrace(ServerPlayer player, double distance, Predicate<Entity> filter) {
         ServerLevel level = player.serverLevel();
         Vec3 eyes = player.getEyePosition();
         Vec3 direction = player.getLookAngle().scale(distance);
@@ -164,7 +170,7 @@ public final class OtherwhereInfusion {
                 ClipContext.Block.COLLIDER, ClipContext.Fluid.SOURCE_ONLY, player));
         EntityHitResult entity = ProjectileUtil.getEntityHitResult(level, player, eyes, block.getLocation(),
                 player.getBoundingBox().expandTowards(block.getLocation().subtract(eyes)).inflate(1),
-                target -> target.isPickable() && !target.isSpectator());
+                target -> target.isPickable() && !target.isSpectator() && filter.test(target));
         return entity == null ? block : entity;
     }
 
