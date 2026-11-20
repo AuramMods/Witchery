@@ -48,6 +48,13 @@ public final class TaglockItem extends Item {
                 || tag.contains(CREATURE_MOST, Tag.TAG_LONG) && tag.contains(CREATURE_LEAST, Tag.TAG_LONG));
     }
 
+    public static boolean isBoundTo(ItemStack stack, ServerPlayer player) {
+        CompoundTag tag = stack.getTag();
+        if (tag == null || tag.getString(PLAYER_NAME).isEmpty()) return false;
+        return tag.hasUUID(PLAYER_UUID) ? tag.getUUID(PLAYER_UUID).equals(player.getUUID())
+                : tag.getString(PLAYER_NAME).equalsIgnoreCase(player.getGameProfile().getName());
+    }
+
     @Nullable
     public static LivingEntity resolveTarget(ServerLevel level, ItemStack stack) {
         CompoundTag tag = stack.getTag();
@@ -68,23 +75,34 @@ public final class TaglockItem extends Item {
 
     @Override
     public Component getName(ItemStack stack) {
-        String name = displayName(stack);
+        String name = boundName(stack);
         return name.isEmpty() ? super.getName(stack) : Component.translatable("item.witchery.taglockkit.named", name);
     }
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flags) {
-        String name = displayName(stack);
+        String name = boundName(stack);
         Component description = name.isEmpty() ? Component.translatable("item.witchery.taglockkit.unbound")
                 : Component.translatable("item.witchery.taglockkit.bound", name);
         tooltip.add(description.copy().withStyle(ChatFormatting.GRAY));
     }
 
-    private static String displayName(ItemStack stack) {
+    public static String boundName(ItemStack stack) {
         CompoundTag tag = stack.getTag();
         if (tag == null) return "";
         String playerName = tag.getString(PLAYER_NAME);
         return !playerName.isEmpty() ? playerName : tag.getString(CREATURE_NAME);
+    }
+
+    public static void copyBinding(ItemStack source, ItemStack destination) {
+        CompoundTag signature = source.getTag();
+        if (signature == null) return;
+        CompoundTag signed = destination.getOrCreateTag();
+        for (String key : List.of(PLAYER_NAME, PLAYER_UUID, CREATURE_NAME, CREATURE_MOST, CREATURE_LEAST)) {
+            Tag value = signature.get(key);
+            if (value == null) signed.remove(key);
+            else signed.put(key, value.copy());
+        }
     }
 
     public InteractionResult collectFromEntity(Player collector, InteractionHand hand, LivingEntity target) {

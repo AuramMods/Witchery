@@ -2,6 +2,7 @@ package art.arcane.witchery.item;
 
 import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.familiar.FamiliarBinding;
+import art.arcane.witchery.infusion.SpellKnowledge;
 import art.arcane.witchery.world.DreamTravel;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -88,7 +89,6 @@ public final class SeerStoneItem extends Item {
         int manifest = DreamTravel.manifestSeconds(target);
         String familiar = FamiliarBinding.familiarName(target);
         int coven = CovenWitch.covenSize(target);
-        CompoundTag knownSpells = persisted.getCompound("WITCSpellBook");
 
         MutableComponent reading = Component.translatable(MESSAGE + "reading", target.getDisplayName())
                 .append(" ").append(Component.translatable(MESSAGE + "manifestation", manifest))
@@ -97,11 +97,9 @@ public final class SeerStoneItem extends Item {
                 .append(" ").append(coven == 0 ? Component.translatable(MESSAGE + "no_coven")
                         : Component.translatable(MESSAGE + "coven", coven));
         MutableComponent spells = Component.empty();
-        for (String known : knownSpells.getAllKeys().stream().sorted().toList()) {
-            if (knownSpells.getBoolean(known)) {
-                if (!spells.getSiblings().isEmpty()) spells.append(", ");
-                spells.append(Component.translatableWithFallback("spell.witchery." + known, known));
-            }
+        for (String known : SpellKnowledge.known(target)) {
+            if (!spells.getSiblings().isEmpty()) spells.append(", ");
+            spells.append(Component.translatableWithFallback("spell.witchery." + known, known));
         }
         reading.append(" ").append(spells.getSiblings().isEmpty() ? Component.translatable(MESSAGE + "no_spells")
                 : Component.translatable(MESSAGE + "spells", spells));

@@ -91,7 +91,8 @@
 - [x] Route upgraded saves to an intact maze. The muted client used the separate maze at X 1032, checked that the old diamond marker remained, and walked through the new exit to the original Overworld respawn point. After a dedicated restart it entered the same maze footprint and the marker was still present.
 - [x] Restore the Lord of Torment's 500 health, ordinary and demonic damage caps, fire immunity, ranged volley, and maze phase. The muted survival client dealt a capped axe hit and triggered the phase transition with another player in range. Both arrived at the same floor and only one 250-health Lord spawned. All 29 required GameTests passed.
 - [x] Verify the same 250-health Lord after a dedicated restart. The muted client defeated it with an axe after a fixture shortened the remaining fight, collected two enchanted books, a Demon Heart and the Brew of Soul Torment, and drank the brew to save its Tormentum knowledge. It exited through the generated portal.
-- [ ] Restore natural access through the coven, Imp, and its summoning contract. Complete the spellcasting system so the Brew of Soul Torment reward unlocks a castable Tormentum spell.
+- [x] Restore the Contract of Torment's standing-stone channel. The muted survival client tested interruption and a complete channel using legacy infusion charge loaded from the fixture. A complete channel spent 80 charge, consumed the contract, and summoned one 500-health Lord of Torment. The standing stones remained with mob griefing disabled.
+- [ ] Restore survival infusion acquisition and recharging for the Contract of Torment. Complete the spellcasting system so the Brew of Soul Torment reward unlocks a castable Tormentum spell.
 
 ## Familiars and Covens (2026-11-19)
 
@@ -103,7 +104,9 @@
 - [x] Restore the Quartz Sphere, Happenstance Oil and the night-only Rite of the Crystal Ball. The kettle test verifies the extended Night Vision potion. In the muted survival client, Angelique Redfern refused the player without a familiar and offered the Crystal Ball quest after the player recalled Bramble. The player crafted the sphere, bottled the oil, cast the rite, handed over the ball, and recruited Angelique. Her membership persisted on the dedicated server after restart.
 - [x] Restore the night-only Rite of the Seer Stone, readings and coven calls. The muted survival client made the stone, read the player's familiar, coven and spell knowledge, and called Angelique. Activating the Rite of the Necromantic Stone with the Seer Stone moved the same witch to the circle. She left after the rite, and she remained in the player's coven. All 35 required Forge GameTests passed.
 - [ ] Restore owl and toad familiars, their specialized abilities, and the cat's curse bonuses.
-- [ ] Use the Seer Stone to perform the original Imp rite, bind the Imp with a signed Contract of Ownership, and obtain the Contract of Torment.
+- [x] Restore the medium Infernal Imp rite and ownership contract. The muted survival client verified the refund when activating without the Seer Stone and summoned a 50-health Imp with the stone. It signed the contract with its own Taglock Kit, verified the refusal at six levels, paid 25 levels, and bound Zul.
+- [x] Restore the Imp's gift progression, cooldown and original Soul Brew knowledge. The muted client verified the cooldown, advanced the fixture clock for subsequent gifts, and received Hunger, Fear, Anguish and the Contract of Torment. The three brews added their spell knowledge. All 38 required Forge GameTests passed, including signed ownership, saved gift progress and power, and the full contract channel.
+- [ ] Restore the Imp's other signed spell contracts and the Mystic Branch's castable spells.
 - [ ] Restore legacy potion bottling skill and include it in Seer Stone readings.
 - [ ] Restore the Crystal Ball's predictions and the coven witch's additional combat and ritual behaviors.
 

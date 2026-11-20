@@ -1,0 +1,12 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "medium", "glyph": "witchery:circleglyphinfernal"}],
+  "sacrifices": [
+    {"item": "witchery:refined_evil"},
+    {"item": "witchery:infernal_blood"},
+    {"item": "minecraft:ender_pearl"},
+    {"item": "witchery:attuned_stone"}
+  ],
+  "power": 5000,
+  "action": "summon_imp"
+}

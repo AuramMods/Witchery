@@ -97,6 +97,25 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .pattern("QBQ")
                 .unlockedBy("has_quartz", has(Items.QUARTZ))
                 .save(recipeOutput);
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.FOOD, WitcheryIngredient.ODD_PORKCHOP_RAW.item())
+                .requires(WitcheryIngredient.MUTANDIS.item())
+                .requires(Items.ROTTEN_FLESH)
+                .unlockedBy("has_mutandis", has(WitcheryIngredient.MUTANDIS.item()))
+                .save(recipeOutput);
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.FOOD, WitcheryIngredient.ODD_PORKCHOP_RAW.item())
+                .requires(WitcheryIngredient.MUTANDIS_EXTREMIS.item())
+                .requires(Items.ROTTEN_FLESH)
+                .unlockedBy("has_mutandis_extremis", has(WitcheryIngredient.MUTANDIS_EXTREMIS.item()))
+                .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "odd_porkchop_raw_from_extremis"));
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryIngredient.CONTRACT_OF_OWNERSHIP.item())
+                .define('P', Items.PAPER)
+                .define('F', WitcheryIngredient.ODD_PORKCHOP_RAW.item())
+                .define('S', Items.STRING)
+                .pattern("PPP")
+                .pattern("PFP")
+                .pattern("PPS")
+                .unlockedBy("has_odd_porkchop", has(WitcheryIngredient.ODD_PORKCHOP_RAW.item()))
+                .save(recipeOutput);
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryIngredient.FUME_FILTER.item())
                 .define('G', Blocks.GLASS)
                 .define('I', Items.IRON_INGOT)

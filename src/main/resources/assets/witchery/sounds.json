@@ -38,5 +38,17 @@
   "mob.baba.baba_death": {
     "subtitle": "subtitles.witchery.coven.talk",
     "sounds": ["witchery:mob/baba/baba_death"]
+  },
+  "mob.imp.laugh": {
+    "subtitle": "subtitles.witchery.imp.laugh",
+    "sounds": ["witchery:mob/imp/laugh"]
+  },
+  "mob.imp.hit": {
+    "subtitle": "subtitles.witchery.imp.hurt",
+    "sounds": ["witchery:mob/imp/hit"]
+  },
+  "mob.imp.death": {
+    "subtitle": "subtitles.witchery.imp.death",
+    "sounds": ["witchery:mob/imp/death"]
   }
 }

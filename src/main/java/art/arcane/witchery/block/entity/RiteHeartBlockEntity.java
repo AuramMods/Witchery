@@ -175,16 +175,22 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 abort(level, "message.witchery.rite.no_nearby_player");
                 return;
             }
-        } else if (rite.action() == ItemRiteRecipe.Action.SUMMON_DEMON) {
-            Demon demon = WitcheryEntities.DEMON.get().create(level);
-            if (demon == null) return;
-            demon.moveTo(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 0, 0);
-            if (hasObstructedSummoningArea(level, pos) || level.getBlockCollisions(demon, demon.getBoundingBox()).iterator().hasNext()) {
+        } else if (rite.action() == ItemRiteRecipe.Action.SUMMON_DEMON || rite.action() == ItemRiteRecipe.Action.SUMMON_IMP) {
+            boolean impRite = rite.action() == ItemRiteRecipe.Action.SUMMON_IMP;
+            if (impRite && covenSize == 0) {
+                abort(level, "message.witchery.rite.coven_required");
+                return;
+            }
+            Mob summon = impRite ? WitcheryEntities.IMP.get().create(level) : WitcheryEntities.DEMON.get().create(level);
+            if (summon == null) return;
+            summon.moveTo(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 0, 0);
+            if (hasObstructedSummoningArea(level, pos) || level.getBlockCollisions(summon, summon.getBoundingBox()).iterator().hasNext()) {
                 abort(level, "message.witchery.rite.obstructed");
                 return;
             }
-            demon.summonedByRite();
-            result = demon;
+            if (summon instanceof Demon demon) demon.summonedByRite();
+            else summon.setPersistenceRequired();
+            result = summon;
         } else if (rite.action() == ItemRiteRecipe.Action.CURSE_WAKING_NIGHTMARE
                 || rite.action() == ItemRiteRecipe.Action.CURE_WAKING_NIGHTMARE) {
             curseTarget = sacrificed.stream().filter(stack -> stack.getItem() instanceof TaglockItem)

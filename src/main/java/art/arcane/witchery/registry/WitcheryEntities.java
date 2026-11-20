@@ -3,6 +3,7 @@ package art.arcane.witchery.registry;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.entity.Demon;
+import art.arcane.witchery.entity.Imp;
 import art.arcane.witchery.entity.LordOfTorment;
 import art.arcane.witchery.entity.Mandrake;
 import art.arcane.witchery.entity.Nightmare;
@@ -59,6 +60,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<CovenWitch>> COVEN_WITCH =
             ENTITY_TYPES.register("covenwitch", () -> EntityType.Builder.of(CovenWitch::new, MobCategory.CREATURE)
                     .sized(0.6F, 1.95F).clientTrackingRange(8).build(Witchery.MODID + ":covenwitch"));
+    public static final RegistryObject<EntityType<Imp>> IMP =
+            ENTITY_TYPES.register("imp", () -> EntityType.Builder.of(Imp::new, MobCategory.MONSTER)
+                    .sized(0.4F, 1.3F).fireImmune().build(Witchery.MODID + ":imp"));
     public static final RegistryObject<EntityType<ThrownBrew>> THROWN_BREW =
             ENTITY_TYPES.register("thrown_brew", () -> EntityType.Builder.<ThrownBrew>of(ThrownBrew::new, MobCategory.MISC)
                     .sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(3).build(Witchery.MODID + ":thrown_brew"));
@@ -72,6 +76,7 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("lordoftorment", LORD_OF_TORMENT);
         LEGACY_ENTITIES.put("cat", WITCH_CAT);
         LEGACY_ENTITIES.put("covenwitch", COVEN_WITCH);
+        LEGACY_ENTITIES.put("imp", IMP);
         for (String legacyName : LegacyRegistryData.ENTITIES) {
             registerLegacyEntity(legacyName);
         }
@@ -113,6 +118,7 @@ public final class WitcheryEntities {
                     : entry == REFLECTION ? Reflection.attributes()
                     : entry == LORD_OF_TORMENT ? LordOfTorment.attributes()
                     : entry == COVEN_WITCH ? CovenWitch.attributes()
+                    : entry == IMP ? Imp.attributes()
                     : entry == WITCH_CAT ? Cat.createAttributes() : Zombie.createAttributes();
             event.put(entry.get(), attributes.build());
         }

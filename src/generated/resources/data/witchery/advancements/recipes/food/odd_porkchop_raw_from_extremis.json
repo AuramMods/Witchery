@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_mutandis_extremis": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "witchery:mutandis_extremis"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "witchery:odd_porkchop_raw_from_extremis"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_mutandis_extremis",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "witchery:odd_porkchop_raw_from_extremis"
+    ]
+  },
+  "sends_telemetry_event": false
+}

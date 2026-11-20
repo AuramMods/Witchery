@@ -13,7 +13,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -41,15 +40,6 @@ public final class TormentTravel {
         CompoundTag data = data(player);
         data.putInt(ACTION, ENTER_PRESET);
         data.putInt(FLOOR, floor);
-    }
-
-    public static void learnTormentum(LivingEntity drinker) {
-        if (drinker instanceof ServerPlayer player) {
-            CompoundTag persistent = data(player);
-            CompoundTag spells = persistent.getCompound("WITCSpellBook");
-            spells.putBoolean("tormentum", true);
-            persistent.put("WITCSpellBook", spells);
-        }
     }
 
     public static void touchPortal(ServerPlayer player) {

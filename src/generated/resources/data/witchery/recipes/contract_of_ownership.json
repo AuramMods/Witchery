@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": {
+      "item": "witchery:odd_porkchop_raw"
+    },
+    "P": {
+      "item": "minecraft:paper"
+    },
+    "S": {
+      "item": "minecraft:string"
+    }
+  },
+  "pattern": [
+    "PPP",
+    "PFP",
+    "PPS"
+  ],
+  "result": {
+    "item": "witchery:contract_of_ownership"
+  },
+  "show_notification": true
+}

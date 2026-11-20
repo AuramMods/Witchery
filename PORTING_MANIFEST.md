@@ -669,8 +669,8 @@ The first migrated subtypes have individual item IDs. Preserve `witchery:ingredi
 | 137 | `brewSoulAnguish` |
 | 138 | `brewSoulFear` |
 | 139 | `brewSoulTorment` |
-| 140 | `contract` |
-| 141 | `contractTorment` |
+| 140 | `contract` → `witchery:contract_of_ownership` |
+| 141 | `contractTorment` → `witchery:contract_of_torment` |
 | 142 | `contractBlaze` |
 | 143 | `contractResistFire` |
 | 144 | `contractEvaporate` |
@@ -817,7 +817,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 120 | `BINKY_HORSE` | `EntityDeathsHorse` | `deathhorse` |
 | 121 | `LORD_OF_TORMENT` | `EntityLordOfTorment` | `lordoftorment` |
 | 122 | `SOULFIRE` | `EntitySoulfire` | `soulfire` |
-| 123 | `IMP` | `EntityImp` | `imp` |
+| 123 | `IMP` | `EntityImp` | `imp` (rite, ownership, gift progression, and power restored) |
 | 124 | `DARK_MARK` | `EntityDarkMark` | `darkmark` |
 | 125 | `MINDRAKE` | `EntityMindrake` | `mindrake` |
 | 126 | `GOBLIN` | `EntityGoblin` | `goblin` |

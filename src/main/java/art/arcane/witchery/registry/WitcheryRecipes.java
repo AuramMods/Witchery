@@ -6,10 +6,12 @@ import art.arcane.witchery.brewing.KettleRecipe;
 import art.arcane.witchery.crafting.BoundTaglockIngredient;
 import art.arcane.witchery.crafting.DistillingRecipe;
 import art.arcane.witchery.crafting.SpinningRecipe;
+import art.arcane.witchery.crafting.SignOwnershipContractRecipe;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
 import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -65,6 +67,8 @@ public final class WitcheryRecipes {
             });
     public static final RegistryObject<RecipeSerializer<ItemRiteRecipe>> ITEM_RITE_SERIALIZER =
             SERIALIZERS.register("item_rite", ItemRiteRecipe.Serializer::new);
+    public static final RegistryObject<RecipeSerializer<SignOwnershipContractRecipe>> SIGN_OWNERSHIP_CONTRACT =
+            SERIALIZERS.register("sign_ownership_contract", () -> new SimpleCraftingRecipeSerializer<>(SignOwnershipContractRecipe::new));
 
     private WitcheryRecipes() {
     }
