@@ -158,7 +158,7 @@ public final class WitcheryItems {
         }
         // Older port saves can contain placeholder spawn eggs for these projectiles.
         for (String name : List.of("soulfire_spawn_egg", "spelleffect_spawn_egg", "grenade_spawn_egg",
-                "bolt_spawn_egg", "droplet_spawn_egg")) {
+                "bolt_spawn_egg", "droplet_spawn_egg", "splatter_spawn_egg")) {
             LEGACY_SPAWN_EGGS.put(name, ITEMS.register(name, () -> new Item(new Item.Properties())));
         }
         ITEMS.register("broom_spawn_egg", () -> new BroomItem(true));

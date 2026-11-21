@@ -6,6 +6,7 @@ import art.arcane.witchery.brewing.ColorfulEffect;
 import art.arcane.witchery.brewing.DiseasedEffect;
 import art.arcane.witchery.vampirism.ParalysisEffect;
 import art.arcane.witchery.brewing.GrotesqueEffect;
+import art.arcane.witchery.brewing.HellishAuraEffect;
 import art.arcane.witchery.brewing.MortalCoilEffect;
 import art.arcane.witchery.brewing.EnvironmentalCurseEffect;
 import art.arcane.witchery.brewing.FoodBrewEffect;
@@ -50,6 +51,8 @@ public final class WitcheryEffects {
             () -> new PlantBrewEffect(false, legacyColor("potion.spiked")));
     public static final RegistryObject<MobEffect> SPROUTING = MOB_EFFECTS.register("potion.sprouting",
             () -> new SproutingEffect(legacyColor("potion.sprouting")));
+    public static final RegistryObject<MobEffect> HELLISH_AURA = MOB_EFFECTS.register("potion.hellishaura",
+            () -> new HellishAuraEffect(legacyColor("potion.hellishaura")));
     public static final RegistryObject<MobEffect> WOLFSBANE = simpleEffect("potion.wolfsbane", MobEffectCategory.NEUTRAL);
     public static final RegistryObject<MobEffect> ENDER_INHIBITION = simpleEffect("potion.enderinhibition", MobEffectCategory.HARMFUL);
     public static final RegistryObject<MobEffect> BREWING_EXPERTISE = simpleEffect("potion.brewingexpertise", MobEffectCategory.BENEFICIAL);
@@ -120,6 +123,7 @@ public final class WitcheryEffects {
         LEGACY_EFFECTS.put("potion.wrappedinvine", WRAPPED_IN_VINE);
         LEGACY_EFFECTS.put("potion.spiked", SPIKED);
         LEGACY_EFFECTS.put("potion.sprouting", SPROUTING);
+        LEGACY_EFFECTS.put("potion.hellishaura", HELLISH_AURA);
         LEGACY_EFFECTS.put("potion.wolfsbane", WOLFSBANE);
         LEGACY_EFFECTS.put("potion.enderinhibition", ENDER_INHIBITION);
         LEGACY_EFFECTS.put("potion.brewingexpertise", BREWING_EXPERTISE);

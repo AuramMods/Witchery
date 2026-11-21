@@ -323,6 +323,7 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.LORD_OF_TORMENT.get(), LordOfTormentRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SOULFIRE.get(), ThrownItemRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.BREW_DROPLET.get(), context -> new ThrownItemRenderer<>(context, 0.5F, false));
+        event.registerEntityRenderer(WitcheryEntities.INFERNO_SPLATTER.get(), context -> new ThrownItemRenderer<>(context, 0.5F, false));
         event.registerEntityRenderer(WitcheryEntities.BOLT.get(), WitcheryBoltRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SYMBOL_PROJECTILE.get(), SymbolProjectileRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.DARK_MARK.get(), DarkMarkRenderer::new);

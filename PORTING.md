@@ -1073,6 +1073,18 @@
 - [x] Pass Java 17 data generation, JAR reobfuscation, and 31 focused GameTests. The eight new cases cover Waystone order, terrain and entity casts, the cross-dimensional transfer, overlap, Forge vetoes, and ore selection and pulse depth.
 - [x] Run the 630-case regression suite. It passed 628 cases, including all eight new cases. The two older summoning and legacy curse failures passed in a targeted run. An older directed-ward refund test failed in that targeted run and passed in the broad run.
 
+## Cauldron Inferno, Hell Gate, and Blast (2026-11-21)
+
+- [x] Restore Glint Weed's Inferno for three effect levels and 750 base power. Direct hits light the target and spray bouncing fire droplets. The original projectile ID and its strength and color fields persist.
+- [x] Restore Refined Evil's Hell Gate for five levels and 3,000 power. Its Hellish Aura deals armor-bypassing fire damage to adjacent creatures. A Dog Tongue ritual summons a Demon within two blocks of a valid medium Infernal circle.
+- [x] Restore Gold Ingot's Blast for five levels and 500 power. Direct hits use brew strength as the radius. Partial exposure rolls against the original scaled chance. Block hits explode at the adjacent face while honoring Forge explosion events.
+- [x] Verify the packaged Inferno, Blast, and Hellish Aura splashes in muted survival. Inferno lit terrain and a direct target. Blast removed wool at the impact and preserved the sample outside the explosion. The green aura rendered on its host and burned the adjacent pig.
+- [x] Save a Waystone-targeted Hell Gate during warmup and resume it on a headless server. The ritual found the medium Infernal circle and summoned one Demon after restart. The active aura, Inferno fire, and Blast damage survived the restart.
+- [x] Reopen the summoned Demon and verify its model in the background client. Boot the packaged JAR on headless Forge with the bundled Auram development mods. The copied world loaded the saved Demon, and a ritual-rain droplet produced three Inferno fires.
+- [x] Pass Java 17 data generation, JAR reobfuscation, and 24 focused GameTests. The nine new cases cover recipe costs, direct and glancing fire, legacy projectile saves, protection events, aura damage, the Infernal circle, explosion placement and probability, and ritual rain. The first Hell Gate fixture failed its spawn assertion. The rerun seeded a clear landing column and passed.
+- [x] Pass all 28 focused GameTests across the new fire brews, area rites, land brews and Transpose. The aura fixture used a sheltered, armor-valued pig to exercise the fire damage and ignition assertions in a controlled environment.
+- [ ] Resolve the broad regression failures. The 639-case run passed 637. The original aura fixture failed in the broad run and the revised fixture passed in the focused run. The pre-existing villager courtship case also failed in a separate nine-test rerun.
+
 ## Brew of Erosion and Brew of Ice (2026-11-21)
 
 - [x] Restore the original six-ingredient Kettle recipes, three servings, Brew Mastery bottling bonus, and legacy metadata 62 and 76. Erosion needs no altar power. Ice waits for 1,000 power and debits the altar once per batch.

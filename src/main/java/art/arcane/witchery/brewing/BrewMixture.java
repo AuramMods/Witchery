@@ -5,6 +5,7 @@ import art.arcane.witchery.block.WitchSaplingBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.entity.CreatureAlignment;
+import art.arcane.witchery.entity.InfernoSplatter;
 import art.arcane.witchery.entity.Leonard;
 import art.arcane.witchery.entity.SpectralUndead;
 import art.arcane.witchery.infusion.InfusionEnergy;
@@ -73,7 +74,7 @@ public final class BrewMixture {
         AIR_HIKE, FROG_TONGUE, KNOCKBACK, BAT_BURST, BODEGA, POISON_TOAD, RAISING,
         FLOWERS, FERTILIZATION, HARVESTING, TILLING, PLANTING, PRUNING, FELLING, PULVERISATION,
         DISSIPATE, TIDE_HOLD, LAVA_HOLD, LILIFY, EROSION, LEVELLING, WEBS, VINES, THORNS, SPROUTING, BLIGHT, RAISE_LAND,
-        TRANSPOSE, TRANSPOSE_ORE,
+        TRANSPOSE, TRANSPOSE_ORE, INFERNO, HELL_GATE, BLAST,
         TREE_OAK(BrewTrees.Species.OAK), TREE_SPRUCE(BrewTrees.Species.SPRUCE), TREE_BIRCH(BrewTrees.Species.BIRCH),
         TREE_JUNGLE(BrewTrees.Species.JUNGLE), TREE_ACACIA(BrewTrees.Species.ACACIA), TREE_DARK_OAK(BrewTrees.Species.DARK_OAK),
         TREE_ROWAN(BrewTrees.Species.ROWAN), TREE_ALDER(BrewTrees.Species.ALDER), TREE_HAWTHORN(BrewTrees.Species.HAWTHORN);
@@ -135,6 +136,9 @@ public final class BrewMixture {
                 case RAISE_LAND -> "brew.witchery.raiseland";
                 case TRANSPOSE -> "brew.witchery.transpose";
                 case TRANSPOSE_ORE -> "brew.witchery.transposeore";
+                case INFERNO -> "brew.witchery.inferno";
+                case HELL_GATE -> "brew.witchery.hellgate";
+                case BLAST -> "brew.witchery.blast";
                 case TREE_OAK, TREE_SPRUCE, TREE_BIRCH, TREE_JUNGLE, TREE_ACACIA, TREE_DARK_OAK,
                      TREE_ROWAN, TREE_ALDER, TREE_HAWTHORN -> tree.nameKey;
             };
@@ -146,7 +150,7 @@ public final class BrewMixture {
                      BAT_BURST, FROG_TONGUE, POISON_TOAD, RAISING,
                      FLOWERS, FERTILIZATION, HARVESTING, TILLING, PLANTING, PRUNING, FELLING, PULVERISATION,
                      DISSIPATE, TIDE_HOLD, LAVA_HOLD, LILIFY, EROSION, LEVELLING, WEBS, VINES, THORNS, SPROUTING,
-                     BLIGHT, RAISE_LAND, TRANSPOSE_ORE -> true;
+                     BLIGHT, RAISE_LAND, TRANSPOSE_ORE, INFERNO, BLAST -> true;
                 default -> tree != null;
             };
         }
@@ -428,7 +432,15 @@ public final class BrewMixture {
     WaystoneItem.Location secondDestination() { return destinations.size() < 2 ? null : destinations.get(1); }
 
     boolean hasTransposition() {
-        return effects.stream().anyMatch(effect -> effect instanceof ActionApplication action && action.action == Action.TRANSPOSE);
+        return hasAction(Action.TRANSPOSE);
+    }
+
+    boolean requiresInfernalCircle() {
+        return hasAction(Action.HELL_GATE);
+    }
+
+    private boolean hasAction(Action wanted) {
+        return effects.stream().anyMatch(effect -> effect instanceof ActionApplication action && action.action == wanted);
     }
 
     public void applyToBlock(ServerLevel level, BlockPos pos, Direction face, int radius, boolean ritual, @Nullable Player caster) {
@@ -463,7 +475,7 @@ public final class BrewMixture {
 
     private void applyToBlock(ServerLevel level, BlockPos pos, Direction face, int radius, boolean ritual,
                               @Nullable Player caster, int coven, Vec3 impact, boolean liquid, boolean fullExposure) {
-        applyToBlock(level, pos, face, radius, ritual, caster, coven, impact, liquid, fullExposure, 1, null);
+        applyToBlock(level, pos, face, radius, ritual, caster, coven, impact, liquid, fullExposure, 0, null);
     }
 
     private boolean applyToBlock(ServerLevel level, BlockPos pos, Direction face, int radius, boolean ritual,
@@ -515,9 +527,14 @@ public final class BrewMixture {
                     }
                 }
                 case TRANSPOSE_ORE -> {
-                    if (ritual && fullExposure) ongoing |= BrewTransposition.orePulse(level, pos, radius, strength, coven, pulse);
+                    if (pulse > 0) ongoing |= BrewTransposition.orePulse(level, pos, radius, strength, coven, pulse);
                     else BrewTransposition.extractOre(level, pos, radius, radius + application.blockStrength, strength, caster);
                 }
+                case INFERNO -> InfernoSplatter.burst(level, pos.relative(face), strength, caster);
+                case HELL_GATE -> {
+                    if (pulse > 0) BrewFireEffects.openHellGate(level, pos);
+                }
+                case BLAST -> BrewFireEffects.blast(level, Vec3.atCenterOf(pos.relative(face)), strength, caster);
                 case TREE_OAK, TREE_SPRUCE, TREE_BIRCH, TREE_JUNGLE, TREE_ACACIA, TREE_DARK_OAK,
                      TREE_ROWAN, TREE_ALDER, TREE_HAWTHORN -> BrewTrees.grow(level, pos, face, application.action.tree,
                         application.action == Action.TREE_JUNGLE ? application.blockStrength : strength, caster);
@@ -709,6 +726,20 @@ public final class BrewMixture {
                 }
             }
             case TRANSPOSE -> BrewTransposition.transpose(target, strength, impact, destination);
+            case INFERNO -> {
+                if (!glancing && target.level() instanceof ServerLevel level) {
+                    target.setSecondsOnFire(2 + 2 * strength);
+                    if (strengthScale == 1) InfernoSplatter.burst(level, target.blockPosition(), strength, caster);
+                }
+            }
+            case HELL_GATE -> target.addEffect(new MobEffectInstance(WitcheryEffects.HELLISH_AURA.get(),
+                    Mth.ceil(3600 * application.durationMultiplier * durationScale), Math.min(strength, 10),
+                    false, application.showParticles, true), source);
+            case BLAST -> {
+                if (target.level() instanceof ServerLevel level && (strengthScale == 1 || level.random.nextDouble() < strengthScale * 0.2)) {
+                    BrewFireEffects.blast(level, target.position(), strength, caster);
+                }
+            }
             case CHANGING_SEASONS, ICE_WORLD, RAISING, TIDE_HOLD, LAVA_HOLD, LEVELLING, TRANSPOSE_ORE,
                  FLOWERS, FERTILIZATION, HARVESTING, TILLING, PLANTING, PRUNING, FELLING, PULVERISATION,
                  TREE_OAK, TREE_SPRUCE, TREE_BIRCH, TREE_JUNGLE, TREE_ACACIA, TREE_DARK_OAK, TREE_ROWAN, TREE_ALDER, TREE_HAWTHORN -> { }
@@ -742,7 +773,6 @@ public final class BrewMixture {
         if (ingredient != null) return ingredient.power;
         return switch (id.toString()) {
             case "minecraft:vine" -> 150;
-            case "witchery:refined_evil" -> 3000;
             default -> 0;
         };
     }
@@ -977,6 +1007,12 @@ public final class BrewMixture {
                 new Ingredient(1000, null, 4, 10, 0, null, null, Action.TRANSPOSE));
         entries.put(ResourceLocation.withDefaultNamespace("iron_ingot"),
                 new Ingredient(2000, null, 4, 10, 0, null, null, Action.TRANSPOSE_ORE));
+        entries.put(ResourceLocation.parse("witchery:glintweed"),
+                new Ingredient(750, null, 3, 10, 0, null, null, Action.INFERNO));
+        entries.put(ResourceLocation.parse("witchery:refined_evil"),
+                new Ingredient(3000, null, 5, 10, 0, null, null, Action.HELL_GATE));
+        entries.put(ResourceLocation.withDefaultNamespace("gold_ingot"),
+                new Ingredient(500, null, 5, 10, 0, null, null, Action.BLAST));
         entries.put(ResourceLocation.fromNamespaceAndPath("witchery", "odour_of_purity"),
                 new Ingredient(100, null, 4, 0, 0, null, null, Action.REVEAL));
         entries.put(ResourceLocation.fromNamespaceAndPath("witchery", "heart_of_gold"),

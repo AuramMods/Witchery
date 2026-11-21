@@ -20,6 +20,7 @@ import art.arcane.witchery.entity.Hobgoblin;
 import art.arcane.witchery.entity.HobgoblinGod;
 import art.arcane.witchery.entity.HornedHuntsman;
 import art.arcane.witchery.entity.Imp;
+import art.arcane.witchery.entity.InfernoSplatter;
 import art.arcane.witchery.entity.LegacyWaystoneEntity;
 import art.arcane.witchery.entity.LordOfTorment;
 import art.arcane.witchery.entity.Lilith;
@@ -199,6 +200,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<BrewDroplet>> BREW_DROPLET =
             ENTITY_TYPES.register("droplet", () -> EntityType.Builder.of(BrewDroplet::new, MobCategory.MISC)
                     .sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(3).build(Witchery.MODID + ":droplet"));
+    public static final RegistryObject<EntityType<InfernoSplatter>> INFERNO_SPLATTER =
+            ENTITY_TYPES.register("splatter", () -> EntityType.Builder.of(InfernoSplatter::new, MobCategory.MISC)
+                    .sized(0.25F, 0.25F).fireImmune().clientTrackingRange(4).updateInterval(3).build(Witchery.MODID + ":splatter"));
     public static final RegistryObject<EntityType<GrenadeProjectile>> GRENADE =
             ENTITY_TYPES.register("grenade", () -> EntityType.Builder.<GrenadeProjectile>of(GrenadeProjectile::new, MobCategory.MISC)
                     .sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(3).build(Witchery.MODID + ":grenade"));
@@ -289,7 +293,8 @@ public final class WitcheryEntities {
     private static void registerLegacyEntity(String legacyName) {
         String path = RegistryNameUtil.normalizePath(legacyName);
         if (LEGACY_ENTITIES.containsKey(path) || path.equals("soulfire") || path.equals("spelleffect") || path.equals("broom")
-                || path.equals("item") || path.equals("eye") || path.equals("grenade") || path.equals("bolt") || path.equals("droplet")) {
+                || path.equals("item") || path.equals("eye") || path.equals("grenade") || path.equals("bolt")
+                || path.equals("droplet") || path.equals("splatter")) {
             return;
         }
 

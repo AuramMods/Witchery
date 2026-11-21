@@ -52,7 +52,7 @@ public final class BrewRituals {
         ServerLevel level = site.level();
         BlockPos target = site.pos();
         boolean transpose = mixture.hasTransposition();
-        if (transpose && !hasOtherwhereCircle(site)) return Result.FAILED;
+        if (!hasRequiredCircles(mixture, site)) return Result.FAILED;
 
         return switch (mixture.impactDelivery()) {
             case TRIGGERED -> BrewItemCurse.attach(source, origin, brew) ? Result.COMPLETE : Result.FAILED;
@@ -91,10 +91,11 @@ public final class BrewRituals {
             return Result.TOO_FAR;
         }
         BrewTransposition.Site destination = null;
-        if (mixture.hasTransposition()) {
-            destination = reachableSite(source, origin, mixture.destination(), coven, leonard);
-            if (destination == null) return Result.TOO_FAR;
-            if (!hasOtherwhereCircle(destination)) return Result.FAILED;
+        if (mixture.hasTransposition() || mixture.requiresInfernalCircle()) {
+            var site = reachableSite(source, origin, mixture.destination(), coven, leonard);
+            if (site == null) return Result.TOO_FAR;
+            if (!hasRequiredCircles(mixture, site)) return Result.FAILED;
+            if (mixture.hasTransposition()) destination = site;
         }
         if (!HunterClothingItem.resistsCurse(target) && !AreaWardBlockEntity.protectsBrew(target)
                 && !VoodooPoppetItem.deflectBrew(target)) {
@@ -132,9 +133,13 @@ public final class BrewRituals {
         return new BrewTransposition.Site(level, pos);
     }
 
-    private static boolean hasOtherwhereCircle(BrewTransposition.Site site) {
+    private static boolean hasRequiredCircles(BrewMixture mixture, BrewTransposition.Site site) {
+        boolean otherwhere = mixture.hasTransposition();
+        boolean infernal = mixture.requiresInfernalCircle();
+        if (!otherwhere && !infernal) return true;
         loadArea(site.level(), site.pos(), 4);
-        return RitualCircle.MEDIUM.matches(site.level(), site.pos(), WitcheryBlocks.getRequired("circleglyphotherwhere").get());
+        return (!otherwhere || RitualCircle.MEDIUM.matches(site.level(), site.pos(), WitcheryBlocks.getRequired("circleglyphotherwhere").get()))
+                && (!infernal || RitualCircle.MEDIUM.matches(site.level(), site.pos(), WitcheryBlocks.getRequired("circleglyphinfernal").get()));
     }
 
     static void loadArea(ServerLevel level, BlockPos pos, int radius) {
