@@ -689,9 +689,9 @@ Variant 156 consumes one flower when the tester targets a living entity within t
 | 145 | `contractFieryTouch` |
 | 146 | `contractSmelting` |
 | 147 | `waystoneCreatureBound` → `witchery:creature_bound_waystone` |
-| 148 | `kobolditedust` |
-| 149 | `kobolditenugget` |
-| 150 | `kobolditeingot` |
+| 148 | `kobolditedust` → `witchery:koboldite_dust` |
+| 149 | `kobolditenugget` → `witchery:koboldite_nugget` |
+| 150 | `kobolditeingot` → `witchery:koboldite_ingot` |
 | 151 | `pentacle` |
 | 152 | `doorIce` |
 | 153 | `annointingPaste` |
@@ -1485,11 +1485,12 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
   - `WorldHandlerCoven`
   - `WorldHandlerShack`
   - `WorldHandlerClonedStructure(ComponentGoblinHut)`
-- `witchery:surface_structures` is a Forge placed feature with one candidate chunk in each region of `8 + worldGenFrequency` chunks. The default frequency is 12 and the salt is 10387312. The seeded choice allocates one quarter of candidates to each original structure. An enabled structure can take over when another choice is disabled or its terrain is unsuitable. The Hobgoblin Hut choice remains reserved. The earlier `witchery:wicker_man` feature remains available to datapacks. Surface placement evaluates the original biome exclusions with current tags.
+- `witchery:surface_structures` is a Forge placed feature with one candidate chunk in each region of `8 + worldGenFrequency` chunks. The default frequency is 12 and the salt is 10387312. The seeded choice allocates one quarter of candidates to each original structure. An enabled structure can take over when another choice is disabled or its terrain is unsuitable. The earlier `witchery:wicker_man` feature remains available to datapacks. Surface placement evaluates the original biome exclusions with current tags.
 - The feature builds the legacy hay effigy, grass and poppies or sand and dead bushes, and a vanilla spawner under one foot. The active chunk generator supplies the sea level for foundation height. `strawmanSpawnerRules` accepts modern entity IDs and old vanilla names. Repeated entries retain their weight and missing choices fall back to zombies.
 - `generateWickerMen` and `worldGenInTwilightForest` default to true. Generation checks the actual dimension, including when a custom dimension reuses Overworld biomes. Twilight Forest biomes are included through its optional tag. [Twilight Forest 1.20.1 biome tag](https://github.com/TeamTwilight/twilightforest/blob/1bc3a4c21213bc443967e92125613cb9ef47891e/src/generated/resources/data/twilightforest/tags/worldgen/biome/in_twilight_forest.json)
 - `generateCovens` and `generateShacks` default to true. The 11-block coven circle has two vanilla witch spawners, a water basin and an east-facing dispenser with the modern mineshaft loot table. Its sandstone variant follows the old desert palette. The 7-block shack keeps its rotated door, spruce roof, connected windows and `witchery:chests/witch_shack` loot table. The table uses the original eight entries and one to three rolls.
 - The coven circle and shack can generate one persistent coven witch with their original 90% and 75% chances. Their generation checks whether the site is dry at the four corners.
+- `generateHobgoblinHuts` defaults to true. The fourth regional choice uses the original 7-by-7-by-6 schematic and spawns one persistent `witchery:goblin` with a profession from zero through three. Wild Hobgoblins may use all five professions. Network protocol 66 carries the restored entity's synced profession and mining animation.
 - Village handlers bootstrapped in `Witchery.preInit`:
   - `WorldHandlerVillageApothecary`
   - `WorldHandlerVillageWitchHut`

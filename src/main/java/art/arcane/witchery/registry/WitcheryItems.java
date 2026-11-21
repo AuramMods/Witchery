@@ -85,6 +85,7 @@ import net.minecraft.world.item.ArmorItem.Type;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.PickaxeItem;
 import net.minecraft.world.item.Tiers;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -231,6 +232,7 @@ public final class WitcheryItems {
             case "huntercoatgarlicked" -> new HunterClothingItem(Piece.COAT, Upgrade.GARLICKED);
             case "hunterlegsgarlicked" -> new HunterClothingItem(Piece.LEGS, Upgrade.GARLICKED);
             case "hunterbootsgarlicked" -> new HunterClothingItem(Piece.BOOTS, Upgrade.GARLICKED);
+            case "kobolditepickaxe" -> new PickaxeItem(Tiers.DIAMOND, 1, -2.8F, new Item.Properties()) {};
             case "silversword" -> new SwordItem(Tiers.GOLD, 4, -2.4F, new Item.Properties()) {
                 @Override
                 public int getEnchantmentValue() {

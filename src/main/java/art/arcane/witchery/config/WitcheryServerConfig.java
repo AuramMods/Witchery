@@ -30,6 +30,8 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.BooleanValue GENERATE_WICKER_MEN;
     public static final ForgeConfigSpec.BooleanValue GENERATE_COVENS;
     public static final ForgeConfigSpec.BooleanValue GENERATE_SHACKS;
+    public static final ForgeConfigSpec.BooleanValue GENERATE_HOBGOBLIN_HUTS;
+    public static final ForgeConfigSpec.BooleanValue HOBGOBLIN_DESPAWN_BLOCK;
     public static final ForgeConfigSpec.IntValue WORLD_GEN_FREQUENCY;
     public static final ForgeConfigSpec.BooleanValue WORLD_GEN_TWILIGHT_FOREST;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> STRAWMAN_SPAWNER_RULES;
@@ -89,6 +91,9 @@ public final class WitcheryServerConfig {
                 .worldRestart().define("generateCovens", true);
         GENERATE_SHACKS = builder.comment("Generate witches' shacks in new chunks.")
                 .worldRestart().define("generateShacks", true);
+        GENERATE_HOBGOBLIN_HUTS = builder.comment("Generate hobgoblin huts in new chunks.")
+                .worldRestart().define("generateHobgoblinHuts", true);
+        HOBGOBLIN_DESPAWN_BLOCK = builder.define("hobgoblinDespawnBlock", true);
         WORLD_GEN_FREQUENCY = builder
                 .comment("Witchery surface structures use regions this many chunks wide plus eight.")
                 .worldRestart().defineInRange("worldGenFrequency", 12, 1, 64);

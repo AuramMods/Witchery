@@ -543,7 +543,16 @@
 - [x] In a fresh world, the muted survival client opened the naturally generated shack door, collected an iron pickaxe, and activated the circle's spawners. The fixtures teleported the client to the generated sites.
 - [x] Restart the dedicated server and verify the same coven witch UUID, the dispenser loot table, the shack door, and the opened chest.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 349 required Forge GameTests. The new cases cover the desert geometry and block entity data, a rotated shack and its loot, and fallback to another enabled type.
-- [ ] Restore the Hobgoblin Hut and its resident, then complete the shared surface structure rotation.
+
+## Hobgoblins and Koboldite (2026-11-20)
+
+- [x] Restore the fourth regional structure. The original hut keeps its raised floor, oriented oak door, cauldron, and one persistent Hobgoblin. The packaged seed 1 world generated its cauldron at `-168 66 -936`, and the muted client met the resident inside.
+- [x] Restore the original Hobgoblin registry ID, five profession trade catalogs, profession skins, sounds, and grassy forest, plains, and swamp spawn groups. Occupied vanilla village points of interest determine trading eligibility.
+- [x] Restore leashing, tool handoff, mining and hauling. The muted survival client gave the hut resident a damaged iron pickaxe. At a prepared ore area, the miner broke iron ore and the client retrieved the pickaxe with all 17 points of wear preserved. The resident resumed hauling after a dedicated restart and placed six Raw Iron in a chest.
+- [x] Restore Koboldite Dust, Nuggets, Ingots, and the Koboldite Pickaxe recipe. Named legacy offer saves migrate the three ingredient metadata values. Refiners unlock higher offers after the player completes the latest trade and closes the menu.
+- [x] Complete all three refining trades in the muted survival client and craft a Koboldite Pickaxe with the three traded ingots. The fixture moved the hut resident near a villager's claimed bed and supplied the lead, starting pickaxe, ores, trade inputs, and other crafting materials. The craft returned two buckets.
+- [x] Restart again and verify the same resident UUID, profession, three refining use counts, six stored Raw Iron, and the generated hut door. Java 17 data generation, JAR reobfuscation, and all 353 required Forge GameTests passed.
+- [ ] Restore Hobgoblin breeding, worship, the two goblin gods, and the original configurable spawn rates.
 
 ## Werewolf Hunts, Howls and Taming (2026-11-20)
 

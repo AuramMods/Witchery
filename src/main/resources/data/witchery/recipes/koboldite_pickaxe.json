@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["BAB", "III", " S "],
+  "key": {
+    "B": {"item": "minecraft:lava_bucket"},
+    "A": {"item": "witchery:charged_attuned_stone"},
+    "I": {"item": "witchery:koboldite_ingot"},
+    "S": {"item": "minecraft:stick"}
+  },
+  "result": {"item": "witchery:kobolditepickaxe"}
+}

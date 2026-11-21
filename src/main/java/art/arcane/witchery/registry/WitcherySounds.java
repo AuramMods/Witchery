@@ -21,6 +21,12 @@ public final class WitcherySounds {
     public static final RegistryObject<SoundEvent> TORMENT_DEATH = sound("mob.torment.death");
     public static final RegistryObject<SoundEvent> COVEN_TALK = sound("mob.baba.baba_living");
     public static final RegistryObject<SoundEvent> COVEN_CACKLE = sound("mob.baba.baba_death");
+    public static final RegistryObject<SoundEvent> GOBLIN_IDLE = sound("mob.goblin.idle");
+    public static final RegistryObject<SoundEvent> GOBLIN_HAGGLE = sound("mob.goblin.haggle");
+    public static final RegistryObject<SoundEvent> GOBLIN_HIT = sound("mob.goblin.hit");
+    public static final RegistryObject<SoundEvent> GOBLIN_DEATH = sound("mob.goblin.death");
+    public static final RegistryObject<SoundEvent> GOBLIN_YES = sound("mob.goblin.yes");
+    public static final RegistryObject<SoundEvent> GOBLIN_NO = sound("mob.goblin.no");
     public static final RegistryObject<SoundEvent> IMP_LAUGH = sound("mob.imp.laugh");
     public static final RegistryObject<SoundEvent> IMP_HURT = sound("mob.imp.hit");
     public static final RegistryObject<SoundEvent> IMP_DEATH = sound("mob.imp.death");

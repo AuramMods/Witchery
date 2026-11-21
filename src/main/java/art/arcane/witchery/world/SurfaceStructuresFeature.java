@@ -24,12 +24,12 @@ public final class SurfaceStructuresFeature extends Feature<NoneFeatureConfigura
     private static final ResourceLocation TWILIGHT_FOREST = ResourceLocation.parse("twilightforest:twilight_forest");
     private static final int SPACING_MARGIN = 8;
     private static final int REGION_SALT = 10387312;
-    private static final int LEGACY_CHOICES = 4;
 
     private enum Structure {
         WICKER_MAN(6, 5, 7, WitcheryServerConfig.GENERATE_WICKER_MEN::get),
         COVEN(11, 11, 4, WitcheryServerConfig.GENERATE_COVENS::get),
-        SHACK(7, 7, 6, WitcheryServerConfig.GENERATE_SHACKS::get);
+        SHACK(7, 7, 6, WitcheryServerConfig.GENERATE_SHACKS::get),
+        HOBGOBLIN_HUT(7, 7, 7, WitcheryServerConfig.GENERATE_HOBGOBLIN_HUTS::get);
 
         private final int width;
         private final int depth;
@@ -57,6 +57,7 @@ public final class SurfaceStructuresFeature extends Feature<NoneFeatureConfigura
                 case WICKER_MAN -> WickerManFeature.build(site, random);
                 case COVEN -> CovenStructures.circle(site, random);
                 case SHACK -> CovenStructures.shack(site, random);
+                case HOBGOBLIN_HUT -> HobgoblinHut.build(site);
             }
             return true;
         }
@@ -90,9 +91,8 @@ public final class SurfaceStructuresFeature extends Feature<NoneFeatureConfigura
         int candidateZ = regionZ * spacing + random.nextInt(spread);
         if (chunk.x != candidateX || chunk.z != candidateZ) return false;
 
-        int first = random.nextInt(LEGACY_CHOICES);
-        // The fourth candidate belongs to the Hobgoblin Hut.
-        if (first >= STRUCTURES.length || (wickerOnly && first != Structure.WICKER_MAN.ordinal())) return false;
+        int first = random.nextInt(STRUCTURES.length);
+        if (wickerOnly && first != Structure.WICKER_MAN.ordinal()) return false;
         int x = chunk.getMiddleBlockX();
         int z = chunk.getMiddleBlockZ();
         var center = new BlockPos(x, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z) - 1, z);
@@ -103,10 +103,13 @@ public final class SurfaceStructuresFeature extends Feature<NoneFeatureConfigura
         boolean sandy = biome.is(Biomes.DESERT);
         if (STRUCTURES[first].generate(context, center, sandy, random)) return true;
         if (wickerOnly) return false;
-        int step = random.nextBoolean() ? 1 : -1;
-        for (int n = 1; n < STRUCTURES.length; n++) {
-            int index = Math.floorMod(first + step * n, STRUCTURES.length);
-            if (STRUCTURES[index].generate(context, center, sandy, random)) return true;
+        Structure[] remaining = STRUCTURES.clone();
+        remaining[first] = remaining[remaining.length - 1];
+        for (int count = remaining.length - 1; count > 0; count--) {
+            int index = random.nextInt(count);
+            Structure alternate = remaining[index];
+            remaining[index] = remaining[count - 1];
+            if (alternate.generate(context, center, sandy, random)) return true;
         }
         return false;
     }

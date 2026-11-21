@@ -16,6 +16,7 @@ import art.arcane.witchery.entity.Ent;
 import art.arcane.witchery.entity.DreamSpirit;
 import art.arcane.witchery.entity.GrenadeProjectile;
 import art.arcane.witchery.entity.Hellhound;
+import art.arcane.witchery.entity.Hobgoblin;
 import art.arcane.witchery.entity.HornedHuntsman;
 import art.arcane.witchery.entity.Imp;
 import art.arcane.witchery.entity.LegacyWaystoneEntity;
@@ -123,6 +124,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<CovenWitch>> COVEN_WITCH =
             ENTITY_TYPES.register("covenwitch", () -> EntityType.Builder.of(CovenWitch::new, MobCategory.CREATURE)
                     .sized(0.6F, 1.95F).clientTrackingRange(8).build(Witchery.MODID + ":covenwitch"));
+    public static final RegistryObject<EntityType<Hobgoblin>> GOBLIN =
+            ENTITY_TYPES.register("goblin", () -> EntityType.Builder.of(Hobgoblin::new, MobCategory.CREATURE)
+                    .sized(0.6F, 0.95F).clientTrackingRange(4).build(Witchery.MODID + ":goblin"));
     public static final RegistryObject<EntityType<BabaYaga>> BABA_YAGA =
             ENTITY_TYPES.register("babayaga", () -> EntityType.Builder.of(BabaYaga::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.95F).clientTrackingRange(8).build(Witchery.MODID + ":babayaga"));
@@ -218,6 +222,7 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("owl", OWL);
         LEGACY_ENTITIES.put("toad", TOAD);
         LEGACY_ENTITIES.put("covenwitch", COVEN_WITCH);
+        LEGACY_ENTITIES.put("goblin", GOBLIN);
         LEGACY_ENTITIES.put("babayaga", BABA_YAGA);
         LEGACY_ENTITIES.put("lilith", LILITH);
         LEGACY_ENTITIES.put("vampire", VAMPIRE);
@@ -296,6 +301,7 @@ public final class WitcheryEntities {
                     : entry == MIRROR_FACE ? Mob.createMobAttributes()
                     : entry == LORD_OF_TORMENT ? LordOfTorment.attributes()
                     : entry == COVEN_WITCH ? CovenWitch.attributes()
+                    : entry == GOBLIN ? Hobgoblin.attributes()
                     : entry == BABA_YAGA ? BabaYaga.attributes()
                     : entry == LILITH ? Lilith.attributes()
                     : entry == VAMPIRE ? Vampire.attributes()
@@ -321,6 +327,8 @@ public final class WitcheryEntities {
                 DreamSpirit::canSpawn, SpawnPlacementRegisterEvent.Operation.REPLACE);
         event.register(COVEN_WITCH.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 CovenWitch::canSpawn, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(GOBLIN.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                Hobgoblin::canSpawn, SpawnPlacementRegisterEvent.Operation.REPLACE);
         event.register(HELLHOUND.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 Monster::checkAnyLightMonsterSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
     }

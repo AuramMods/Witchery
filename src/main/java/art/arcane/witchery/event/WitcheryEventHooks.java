@@ -2,6 +2,7 @@ package art.arcane.witchery.event;
 
 import art.arcane.witchery.brewing.BrewItemCurse;
 import art.arcane.witchery.brewing.ChilledEffect;
+import art.arcane.witchery.entity.Hobgoblin;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.CoffinBlock;
 import art.arcane.witchery.block.entity.AreaWardBlockEntity;
@@ -517,6 +518,14 @@ public final class WitcheryEventHooks {
             event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide));
             event.setCanceled(true);
             return;
+        }
+        if (event.getTarget() instanceof Hobgoblin goblin) {
+            InteractionResult result = goblin.exchangePickaxe(event.getEntity(), event.getHand());
+            if (result.consumesAction()) {
+                event.setCancellationResult(result);
+                event.setCanceled(true);
+                return;
+            }
         }
         var held = event.getItemStack();
         if (held.getItem() instanceof GlassGobletItem && GlassGobletItem.filled(held)
