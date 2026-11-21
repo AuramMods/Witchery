@@ -6,6 +6,7 @@ import art.arcane.witchery.vampirism.ParalysisEffect;
 import art.arcane.witchery.brewing.GrotesqueEffect;
 import art.arcane.witchery.brewing.MortalCoilEffect;
 import art.arcane.witchery.brewing.EnvironmentalCurseEffect;
+import art.arcane.witchery.brewing.FoodBrewEffect;
 import art.arcane.witchery.brewing.IllFittingEffect;
 import art.arcane.witchery.brewing.WakingNightmareEffect;
 import net.minecraft.world.effect.MobEffect;
@@ -52,6 +53,14 @@ public final class WitcheryEffects {
     public static final RegistryObject<MobEffect> REINCARNATION = simpleEffect("potion.reincarnate", MobEffectCategory.BENEFICIAL);
     public static final RegistryObject<MobEffect> ILL_FITTING = MOB_EFFECTS.register("potion.illfitting",
             () -> new IllFittingEffect(legacyColor("potion.illfitting")));
+    public static final RegistryObject<MobEffect> ABSORB_MAGIC = simpleEffect("potion.absorbmagic", MobEffectCategory.BENEFICIAL);
+    public static final RegistryObject<MobEffect> REFLECT_DAMAGE = simpleEffect("potion.reflectdamage", MobEffectCategory.BENEFICIAL);
+    public static final RegistryObject<MobEffect> REPEL_ATTACKER = simpleEffect("potion.repellattacker", MobEffectCategory.BENEFICIAL);
+    public static final RegistryObject<MobEffect> POISON_WEAPONS = simpleEffect("potion.poisonweapons", MobEffectCategory.BENEFICIAL);
+    public static final RegistryObject<MobEffect> STOUT_BELLY = MOB_EFFECTS.register("potion.stoutbelly",
+            () -> new FoodBrewEffect(FoodBrewEffect.Kind.STOUT_BELLY, legacyColor("potion.stoutbelly")));
+    public static final RegistryObject<MobEffect> FEEL_NO_PAIN = MOB_EFFECTS.register("potion.feelnopain",
+            () -> new FoodBrewEffect(FoodBrewEffect.Kind.MOONSHINE, legacyColor("potion.feelnopain")));
     public static final RegistryObject<MobEffect> MORTAL_COIL = MOB_EFFECTS.register("potion.mortalcoil", MortalCoilEffect::new);
     public static final RegistryObject<MobEffect> QUEASY = MOB_EFFECTS.register("potion.queasy",
             () -> new MobEffect(MobEffectCategory.HARMFUL, 0x7C9348) {
@@ -81,6 +90,12 @@ public final class WitcheryEffects {
         LEGACY_EFFECTS.put("potion.keepeffects", KEEP_EFFECTS);
         LEGACY_EFFECTS.put("potion.reincarnate", REINCARNATION);
         LEGACY_EFFECTS.put("potion.illfitting", ILL_FITTING);
+        LEGACY_EFFECTS.put("potion.absorbmagic", ABSORB_MAGIC);
+        LEGACY_EFFECTS.put("potion.reflectdamage", REFLECT_DAMAGE);
+        LEGACY_EFFECTS.put("potion.repellattacker", REPEL_ATTACKER);
+        LEGACY_EFFECTS.put("potion.poisonweapons", POISON_WEAPONS);
+        LEGACY_EFFECTS.put("potion.stoutbelly", STOUT_BELLY);
+        LEGACY_EFFECTS.put("potion.feelnopain", FEEL_NO_PAIN);
         LEGACY_EFFECTS.put("potion.queasy", QUEASY);
         for (String legacyName : LegacyRegistryData.EFFECTS) {
             registerLegacyEffect(legacyName);

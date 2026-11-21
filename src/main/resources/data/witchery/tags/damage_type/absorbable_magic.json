@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:magic",
+    "minecraft:indirect_magic",
+    "minecraft:thorns",
+    "witchery:demonic",
+    "witchery:spectral_touch",
+    "witchery:sunlight",
+    "witchery:vampire_fire"
+  ]
+}

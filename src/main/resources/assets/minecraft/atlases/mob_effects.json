@@ -1,0 +1,10 @@
+{
+  "sources": [
+    {"type": "single", "resource": "witchery:item/ingredient.whiffofmagic", "sprite": "witchery:potion.absorbmagic"},
+    {"type": "single", "resource": "witchery:item/ingredient.spectraldust", "sprite": "witchery:potion.reflectdamage"},
+    {"type": "single", "resource": "witchery:block/bramble_ender", "sprite": "witchery:potion.repellattacker"},
+    {"type": "single", "resource": "minecraft:block/red_mushroom", "sprite": "witchery:potion.poisonweapons"},
+    {"type": "single", "resource": "witchery:item/ingredient.foulfume", "sprite": "witchery:potion.stoutbelly"},
+    {"type": "single", "resource": "minecraft:item/wheat", "sprite": "witchery:potion.feelnopain"}
+  ]
+}

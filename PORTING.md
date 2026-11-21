@@ -825,6 +825,23 @@
 - [x] Fill four heated cauldrons and bottle all four recipes in the muted survival client. After a dedicated restart with the keeping brews active, verify the preserved slot, helmet and shield, ordinary experience loss and vanishing item removal. Speed II and Sinking III persisted, while Strength III and Weakness cleared. Throw the two saved splash brews to turn a pig into a cave spider on death and dislodge a husk's helmet.
 - [x] Run Java 17 data generation, JAR reobfuscation and all six new GameTests. The 513-case regression run passed 511. The older Mog and Gulg combat and Spectral Familiar search cases passed in isolated arenas alongside the new cases and five Prior Incarnation tests.
 
+## Combat Cauldron Brews (2026-11-21)
+
+| Ingredient | Brew | Base altar power | Capacity cost | Base duration |
+| --- | --- | ---: | ---: | ---: |
+| Whiff of Magic | Absorb Magic | 2,000 | 4 | 60 s |
+| Spectral Dust | Reflect Damage | 2,000 | 5 | 90 s |
+| Ender Bramble | Repel Attacker | 250 | 2 | 90 s |
+| Red Mushroom | Poison Weapons | 200 | 2 | 90 s |
+| Foul Fume | Stout Belly | 1,000 | 4 | 90 s |
+| Wheat | Moonshine | 0 | 1 | 90 s |
+
+- [x] Preserve both Bramble variants in a mixture and in the Cauldron guide. The Ender variant retains `BlockStateTag.wild` and reads legacy metadata zero. Wild Bramble still makes Ill-Fitting.
+- [x] Absorb Magic reduces tagged magic damage and restores infusion charge. Reflect Damage returns a rounded fraction of the hit, with the original minimum tier for projectile damage. Repel Attacker pushes a melee attacker within three blocks. Poison Weapons applies the original Poison and Wither tiers through direct attacks.
+- [x] Moonshine spends hunger to absorb hits from living attackers and calculates the cost using 1.20.1 armor, Resistance and enchantments. Stout Belly prevents Moonshine's nausea and clears existing nausea at level II or above. Both effects persist through milk.
+- [x] Fill, heat, brew, bottle and drink all six recipes in the muted survival client against a packaged dedicated server. The test supplied ingredients and altar power. Absorb Magic II reduced ten magic damage to six. Reflect Damage III returned three of eight melee damage. Repel Attacker moved a nearby pig, Poison Weapons IV added Wither, and Stout Belly II cleared nausea. Milk and a dedicated restart preserved both food effects. Moonshine still spent eight hunger and preserved health on a four-point Normal-difficulty hit after the restart.
+- [x] Run Java 17 data generation, JAR reobfuscation and all 15 focused GameTests. The broad run passed 517 of 520. Powered Banishment and Spectral Familiar passed in isolation. The clear-weather cure's seeded fixture rolled the adverse result. A separate ritual test that allowed the original equal-strength cure odds passed alongside all seven combat brew cases.
+
 ## Brew of Erosion and Brew of Ice (2026-11-21)
 
 - [x] Restore the original six-ingredient Kettle recipes, three servings, Brew Mastery bottling bonus, and legacy metadata 62 and 76. Erosion needs no altar power. Ice waits for 1,000 power and debits the altar once per batch.

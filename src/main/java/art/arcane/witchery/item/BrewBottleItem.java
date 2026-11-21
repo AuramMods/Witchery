@@ -62,7 +62,7 @@ public final class BrewBottleItem extends Item {
         BrewMixture mixture = BrewMixture.from(stack.getTag());
         if (mixture == null) return super.getName(stack);
         List<Component> names = new ArrayList<>();
-        for (var effect : mixture.effects()) names.add(effect.effect().getDisplayName());
+        for (var effect : mixture.effects()) names.add(effect.brewName());
         mixture.actionNames().forEach(key -> names.add(Component.translatable(key)));
         Component effects = names.isEmpty() ? Component.translatable("item.witchery.brewbottle.water")
                 : ComponentUtils.formatList(names, Component.literal(", "));

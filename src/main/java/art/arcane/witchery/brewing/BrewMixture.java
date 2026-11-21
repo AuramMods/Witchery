@@ -38,6 +38,8 @@ import java.util.function.Supplier;
 
 public final class BrewMixture {
     private static final String ITEMS = "Items";
+    private static final ResourceLocation BRAMBLE = ResourceLocation.parse("witchery:bramble");
+    private static final ResourceLocation ENDER_BRAMBLE = ResourceLocation.parse("witchery:bramble_ender");
     private static final Map<ResourceLocation, Ingredient> INGREDIENTS = ingredients();
 
     public enum Delivery {
@@ -83,6 +85,15 @@ public final class BrewMixture {
         public MobEffectInstance instance(int duration) {
             return new MobEffectInstance(effect, duration, amplifier, false, showParticles, true);
         }
+
+        public Component brewName() {
+            return BrewMixture.brewName(effect);
+        }
+    }
+
+    private static Component brewName(MobEffect effect) {
+        return effect == WitcheryEffects.FEEL_NO_PAIN.get()
+                ? Component.translatable("brew.witchery.moonshine") : effect.getDisplayName();
     }
 
     private final List<BrewEffect> effects;
@@ -115,7 +126,7 @@ public final class BrewMixture {
     public static boolean canAdd(List<ItemStack> current, ItemStack offered) {
         Mixing mixing = mix(current);
         ResourceLocation id = id(offered);
-        Ingredient ingredient = ingredient(id, offered);
+        Ingredient ingredient = INGREDIENTS.get(id);
         return mixing != null && ingredient != null && ingredient.modifier != Modifier.RITUAL
                 && (ingredient.modifier != Modifier.WAYSTONE || WaystoneItem.location(offered) != null)
                 && (ingredient.action != Action.CHANGING_SEASONS || BiomeNoteItem.biomeId(offered) != null)
@@ -124,7 +135,7 @@ public final class BrewMixture {
     }
 
     public static void add(List<ItemStack> current, ItemStack offered) {
-        Ingredient ingredient = ingredient(id(offered), offered);
+        Ingredient ingredient = INGREDIENTS.get(id(offered));
         if (ingredient != null && ingredient.modifier == Modifier.DELIVERY) {
             current.removeIf(stack -> {
                 Ingredient previous = INGREDIENTS.get(id(stack));
@@ -196,27 +207,31 @@ public final class BrewMixture {
     public record GuideIngredient(ItemStack stack, int power, int capacityCost, Component effect, @Nullable Component reversed) {}
 
     public static List<GuideIngredient> guideIngredients() {
-        return INGREDIENTS.entrySet().stream().sorted(Map.Entry.comparingByKey()).flatMap(entry ->
-                BuiltInRegistries.ITEM.getOptional(entry.getKey()).stream().map(item -> {
-                    Ingredient ingredient = entry.getValue();
-                    Component effect;
-                    Component reversed = null;
-                    if (ingredient.normal != null) {
-                        effect = ingredient.normal.effect.get().getDisplayName();
-                        if (!ingredient.normal.equals(ingredient.inverted)) {
-                            reversed = ingredient.inverted.effect.get().getDisplayName();
-                        }
-                    } else if (ingredient.action != null) {
-                        effect = Component.translatable(ingredient.action.nameKey(false));
-                        if (!ingredient.action.nameKey(false).equals(ingredient.action.nameKey(true))) {
-                            reversed = Component.translatable(ingredient.action.nameKey(true));
-                        }
-                    } else {
-                        effect = Component.translatable("guide.witchery.cauldron.modifier."
-                                + ingredient.modifier.name().toLowerCase(java.util.Locale.ROOT), ingredient.amount, ingredient.ceiling);
+        return INGREDIENTS.entrySet().stream().sorted(Map.Entry.comparingByKey()).flatMap(entry -> {
+            boolean enderBramble = entry.getKey().equals(ENDER_BRAMBLE);
+            return BuiltInRegistries.ITEM.getOptional(enderBramble ? BRAMBLE : entry.getKey()).stream().map(item -> {
+                Ingredient ingredient = entry.getValue();
+                Component effect;
+                Component reversed = null;
+                if (ingredient.normal != null) {
+                    effect = brewName(ingredient.normal.effect.get());
+                    if (!ingredient.normal.equals(ingredient.inverted)) {
+                        reversed = brewName(ingredient.inverted.effect.get());
                     }
-                    return new GuideIngredient(new ItemStack(item), ingredient.power, ingredient.isEffect() ? ingredient.amount : 0, effect, reversed);
-                })).toList();
+                } else if (ingredient.action != null) {
+                    effect = Component.translatable(ingredient.action.nameKey(false));
+                    if (!ingredient.action.nameKey(false).equals(ingredient.action.nameKey(true))) {
+                        reversed = Component.translatable(ingredient.action.nameKey(true));
+                    }
+                } else {
+                    effect = Component.translatable("guide.witchery.cauldron.modifier."
+                            + ingredient.modifier.name().toLowerCase(java.util.Locale.ROOT), ingredient.amount, ingredient.ceiling);
+                }
+                ItemStack stack = new ItemStack(item);
+                if (enderBramble) BrambleBlock.setWild(stack, false);
+                return new GuideIngredient(stack, ingredient.power, ingredient.isEffect() ? ingredient.amount : 0, effect, reversed);
+            });
+        }).toList();
     }
     public int power() { return power; }
     public int used() { return used; }
@@ -339,18 +354,13 @@ public final class BrewMixture {
     }
 
     private static ResourceLocation id(ItemStack stack) {
+        if (stack.getItem() instanceof BrambleBlock.Item && !BrambleBlock.isWild(stack)) return ENDER_BRAMBLE;
         return BuiltInRegistries.ITEM.getKey(stack.getItem());
-    }
-
-    @Nullable
-    private static Ingredient ingredient(ResourceLocation id, ItemStack stack) {
-        if (stack.getItem() instanceof BrambleBlock.Item && !BrambleBlock.isWild(stack)) return null;
-        return INGREDIENTS.get(id);
     }
 
     static int ingredientPower(ItemStack stack) {
         ResourceLocation id = id(stack);
-        Ingredient ingredient = ingredient(id, stack);
+        Ingredient ingredient = INGREDIENTS.get(id);
         if (ingredient != null) return ingredient.power;
         return switch (id.toString()) {
             case "minecraft:ender_pearl" -> 1000;
@@ -367,7 +377,7 @@ public final class BrewMixture {
         Mixing mixing = new Mixing();
         for (ItemStack stack : stacks) {
             ResourceLocation id = id(stack);
-            Ingredient ingredient = ingredient(id, stack);
+            Ingredient ingredient = INGREDIENTS.get(id);
             if (ingredient == null || stack.isEmpty()) return null;
             if (ingredient.action == Action.CHANGING_SEASONS && BiomeNoteItem.biomeId(stack) == null) return null;
             mixing.add(stack, id, ingredient);
@@ -534,7 +544,13 @@ public final class BrewMixture {
         potion(entries, "witchery:focused_will", 10000, 8, WitcheryEffects.KEEP_INVENTORY, 7200);
         potion(entries, "witchery:redstone_soup", 10000, 8, WitcheryEffects.KEEP_EFFECTS, 7200);
         potion(entries, "witchery:hint_of_rebirth", 2500, 6, WitcheryEffects.REINCARNATION, 3600);
-        potion(entries, "witchery:bramble", 8000, 6, WitcheryEffects.ILL_FITTING, 120);
+        potion(entries, BRAMBLE.toString(), 8000, 6, WitcheryEffects.ILL_FITTING, 120);
+        potion(entries, ENDER_BRAMBLE.toString(), 250, 2, WitcheryEffects.REPEL_ATTACKER, 1800);
+        potion(entries, "witchery:whiff_of_magic", 2000, 4, WitcheryEffects.ABSORB_MAGIC, 1200);
+        potion(entries, "witchery:spectral_dust", 2000, 5, WitcheryEffects.REFLECT_DAMAGE, 1800);
+        potion(entries, "witchery:foul_fume", 1000, 4, WitcheryEffects.STOUT_BELLY, 1800);
+        potion(entries, "red_mushroom", 200, 2, WitcheryEffects.POISON_WEAPONS, 1800);
+        potion(entries, "wheat", 0, 1, WitcheryEffects.FEEL_NO_PAIN, 1800);
         return Map.copyOf(entries);
     }
 
