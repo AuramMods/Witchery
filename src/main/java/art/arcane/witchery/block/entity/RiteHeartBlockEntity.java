@@ -28,6 +28,7 @@ import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryRecipes;
 import art.arcane.witchery.ritual.FetishBinding;
+import art.arcane.witchery.ritual.ClimateChange;
 import art.arcane.witchery.ritual.GlyphicTransformation;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
 import art.arcane.witchery.ritual.LandscapeRites;
@@ -433,7 +434,14 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             abort(level, "message.witchery.rite.ice_shell_coven");
             return false;
         }
-        ItemRiteRecipe.Offering stone = rite.action() == ItemRiteRecipe.Action.ICE_SHELL ? null : rite.findLocationOffering(level, heart);
+        if (rite.action() == ItemRiteRecipe.Action.CLIMATE_CHANGE) {
+            String failure = ClimateChange.failure(level, heart, covenSize);
+            if (failure != null) {
+                abort(level, failure);
+                return false;
+            }
+        }
+        ItemRiteRecipe.Offering stone = rite.action().usesWaystoneTarget() ? rite.findLocationOffering(level, heart) : null;
         if (stone != null) {
             target = WaystoneItem.location(stone.stack()).position();
             sacrificed.add(new Sacrifice(stone.stack().copyWithCount(1), stone.grassper()));
@@ -656,19 +664,21 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 oreDepth = stage;
             } else {
                 LandscapeRites.Species species = LandscapeRites.Species.forLegacyRite(rite);
-                if (species == null && rite != 77 && (rite != 65 || members < 2)) continue;
+                if (species == null && rite != 77 && (rite != 65 || members < 2) && (rite != 64 || members < 4)) continue;
                 ItemRiteRecipe.Action action = switch (rite) {
+                    case 64 -> ItemRiteRecipe.Action.CLIMATE_CHANGE;
                     case 65 -> ItemRiteRecipe.Action.ICE_SHELL;
                     case 77 -> ItemRiteRecipe.Action.RAISE_VOLCANO;
                     default -> ItemRiteRecipe.Action.FORESTATION;
                 };
                 var position = tag.getList("Locations", Tag.TAG_COMPOUND).getCompound(index);
-                BlockPos target = position.contains("posX", Tag.TAG_ANY_NUMERIC)
+                BlockPos target = action.usesWaystoneTarget() && position.contains("posX", Tag.TAG_ANY_NUMERIC)
                         && position.contains("posY", Tag.TAG_ANY_NUMERIC) && position.contains("posZ", Tag.TAG_ANY_NUMERIC)
                         ? new BlockPos(position.getInt("posX"), position.getInt("posY"), position.getInt("posZ")) : getBlockPos();
                 var progress = new LandscapeRites.Progress(action, species, target, stage);
                 if (stage >= progress.lastStage(members)) continue;
                 activeRite = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, switch (action) {
+                    case CLIMATE_CHANGE -> "rite_of_climate_change";
                     case ICE_SHELL -> "rite_of_ice_shell";
                     case RAISE_VOLCANO -> "rite_of_raising_a_volcano";
                     default -> "forestation/" + species.name().toLowerCase(Locale.ROOT);

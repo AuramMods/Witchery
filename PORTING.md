@@ -303,7 +303,10 @@
 - [x] Craft the Frozen Heart from Icy Needle, Creeper Heart, and Ghast Tear. Restore its legacy metadata and its use to clear the three saved Imp effects. Perpetual Ice stays frozen under light and drops only with Silk Touch.
 - [x] In the muted client, craft a Frozen Heart from supplied items, toss it with the sword and stone, and activate the ring with a Seer Stone. Two fixture-supplied coven members joined the cast. A dedicated restart after the first offering resumed to the full shell and drained the enclosed water.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 334 required Forge GameTests. New checks cover both Wicker Man orientations, an invalid effigy, Frozen Heart crafting and legacy Imp data, Ice Shell growth after reload, the no-coven refund, and a legacy cast at maximum radius.
-- [ ] Restore climate change, the remaining circle rites, and the Frozen Heart's cauldron effect.
+- [x] Restore the Rite of Climate Change. The large white ring consumes seven offerings and requires four coven witches. Thirteen foci choose the biome family. Glowstone Dust selects a variant. Cactus clears rain, thunder, and surface snow. An Icy Needle starts precipitation in clear weather.
+- [x] Cast with a Seer Stone on the muted survival client using supplied ingredients and four coven records. Resume after a dedicated restart at stage two. Confirm the desert crosses chunk and height boundaries, clears the storm, and preserves snow outside the radius. Cast again with an Icy Needle and confirm the connected client updates to Snowy Plains and sees snow. The new biome survives a second dedicated restart.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 339 required Forge GameTests. The five new cases cover paused upkeep, the second forest variant, the larger coven radius, weather and snow, the small-coven refund, and disabling the rite.
+- [ ] Restore the remaining circle rites and the Frozen Heart's cauldron effect.
 
 ## Familiar Brews and Baba Yaga (2026-11-20)
 

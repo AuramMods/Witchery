@@ -73,10 +73,15 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         GLYPHIC_TRANSFORMATION,
         FORESTATION,
         RAISE_VOLCANO,
-        ICE_SHELL;
+        ICE_SHELL,
+        CLIMATE_CHANGE;
 
         public boolean shapesLandscape() {
-            return this == FORESTATION || this == RAISE_VOLCANO || this == ICE_SHELL;
+            return usesWaystoneTarget() || this == ICE_SHELL || this == CLIMATE_CHANGE;
+        }
+
+        public boolean usesWaystoneTarget() {
+            return this == FORESTATION || this == RAISE_VOLCANO;
         }
     }
 
@@ -271,6 +276,7 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 case "forestation" -> Action.FORESTATION;
                 case "raise_volcano" -> Action.RAISE_VOLCANO;
                 case "ice_shell" -> Action.ICE_SHELL;
+                case "climate_change" -> Action.CLIMATE_CHANGE;
                 case "infuse_overworld" -> Action.INFUSE_OVERWORLD;
                 case "recharge_infusion" -> Action.RECHARGE_INFUSION;
                 case "infuse_infernal" -> Action.INFUSE_INFERNAL;

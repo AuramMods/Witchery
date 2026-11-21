@@ -101,6 +101,7 @@ public final class LandscapeRites {
             return switch (action) {
                 case RAISE_VOLCANO -> 2 * volcanoHeight(coven);
                 case ICE_SHELL -> IceShell.radius(coven) - 4;
+                case CLIMATE_CHANGE -> ClimateChange.CAST_STAGE;
                 default -> 60 + 5 * coven;
             };
         }
@@ -171,6 +172,9 @@ public final class LandscapeRites {
             }
             case RAISE_VOLCANO -> volcanoPulse(level, heart, progress.target(), stage, coven, caster);
             case ICE_SHELL -> IceShell.pulse(level, progress.target(), stage, coven, caster);
+            case CLIMATE_CHANGE -> {
+                if (!ClimateChange.pulse(level, progress.target(), stage, coven, caster)) return null;
+            }
             default -> throw new IllegalStateException("Unexpected landscape rite " + progress.action());
         }
         return stage >= progress.lastStage(coven) ? null : new Progress(progress.action(), progress.species(), progress.target(), stage);

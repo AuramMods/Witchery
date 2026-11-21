@@ -1,0 +1,14 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "large", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [
+    {"item": "minecraft:spider_eye"},
+    {"item": "witchery:toe_of_frog"},
+    {"item": "witchery:bat_wool"},
+    {"item": "witchery:dog_tongue"},
+    {"item": "witchery:owlets_wing"},
+    {"item": "witchery:attuned_stone"},
+    {"item": "witchery:charged_attuned_stone"}
+  ],
+  "action": "climate_change"
+}

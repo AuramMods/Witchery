@@ -24,6 +24,7 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.DoubleValue FAIREST_SPAWN_CHANCE;
     public static final ForgeConfigSpec.BooleanValue ALLOW_CHAT_MASQUERADING;
     public static final ForgeConfigSpec.BooleanValue ALLOW_NAMEPLATE_MASQUERADING;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_BIOME_MODIFICATION_RITUALS;
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -70,6 +71,9 @@ public final class WitcheryServerConfig {
                 .defineInRange("newFairestOfThemAllSpawnChance", 0.01, 0.01, 1.0);
         ALLOW_CHAT_MASQUERADING = builder.define("allowChatMasquerading", true);
         ALLOW_NAMEPLATE_MASQUERADING = builder.define("allowNameplateMasquerading", true);
+        ALLOW_BIOME_MODIFICATION_RITUALS = builder
+                .comment("Allow the Rite of Climate Change to edit saved chunk biomes.")
+                .define("allowBiomeModificationRituals", true);
         SPEC = builder.build();
     }
 
