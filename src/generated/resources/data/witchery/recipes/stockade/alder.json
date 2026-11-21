@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "E": {
+      "item": "witchery:exhale_of_the_horned_one"
+    },
+    "L": {
+      "type": "forge:partial_nbt",
+      "item": "witchery:witchlog",
+      "nbt": "{BlockStateTag:{wood_type:\"alder\"}}"
+    }
+  },
+  "pattern": [
+    " L ",
+    "LEL",
+    "LLL"
+  ],
+  "result": {
+    "count": 9,
+    "item": "witchery:stockade",
+    "nbt": {
+      "BlockStateTag": {
+        "wood_type": "alder"
+      }
+    }
+  },
+  "show_notification": true
+}

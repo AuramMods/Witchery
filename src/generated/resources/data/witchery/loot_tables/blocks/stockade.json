@@ -11,6 +11,27 @@
       "entries": [
         {
           "type": "minecraft:item",
+          "functions": [
+            {
+              "block": "witchery:stockade",
+              "conditions": [
+                {
+                  "condition": "minecraft:inverted",
+                  "term": {
+                    "block": "witchery:stockade",
+                    "condition": "minecraft:block_state_property",
+                    "properties": {
+                      "wood_type": "oak"
+                    }
+                  }
+                }
+              ],
+              "function": "minecraft:copy_state",
+              "properties": [
+                "wood_type"
+              ]
+            }
+          ],
           "name": "witchery:stockade"
         }
       ],

@@ -1,0 +1,53 @@
+{
+  "parent": "witchery:stockade/oak_post",
+  "overrides": [
+    {
+      "model": "witchery:stockade/spruce_post",
+      "predicate": {
+        "witchery:wood_type": 1.0
+      }
+    },
+    {
+      "model": "witchery:stockade/birch_post",
+      "predicate": {
+        "witchery:wood_type": 2.0
+      }
+    },
+    {
+      "model": "witchery:stockade/jungle_post",
+      "predicate": {
+        "witchery:wood_type": 3.0
+      }
+    },
+    {
+      "model": "witchery:stockade/rowan_post",
+      "predicate": {
+        "witchery:wood_type": 4.0
+      }
+    },
+    {
+      "model": "witchery:stockade/alder_post",
+      "predicate": {
+        "witchery:wood_type": 5.0
+      }
+    },
+    {
+      "model": "witchery:stockade/hawthorn_post",
+      "predicate": {
+        "witchery:wood_type": 6.0
+      }
+    },
+    {
+      "model": "witchery:stockade/acacia_post",
+      "predicate": {
+        "witchery:wood_type": 7.0
+      }
+    },
+    {
+      "model": "witchery:stockade/dark_oak_post",
+      "predicate": {
+        "witchery:wood_type": 8.0
+      }
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 package art.arcane.witchery.item;
 
+import art.arcane.witchery.block.StockadeBlock;
+import net.minecraft.world.item.BlockItem;
 import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.block.CritterSnareBlock;
@@ -158,6 +160,7 @@ public enum WitcheryIngredient {
     KOBOLDITE_NUGGET(149, "koboldite_nugget"),
     KOBOLDITE_INGOT(150, "koboldite_ingot"),
     KOBOLDITE_PENTACLE(151, "koboldite_pentacle"),
+    ICE_DOOR(152, "icedoor"),
     ANOINTING_PASTE(153, "anointing_paste"),
     SUBDUED_VILLAGE_SPIRIT(154, "subdued_village_spirit"),
     SILVER_BOLT(155, "silver_bolt"),
@@ -201,6 +204,11 @@ public enum WitcheryIngredient {
             return PotionUtils.setPotion(stack, Potions.NIGHT_VISION);
         }
         if (stackTag.contains("Damage", Tag.TAG_ANY_NUMERIC)) {
+            if (stack.getItem() instanceof StockadeBlock.Item
+                    && (stack.getTagElement(BlockItem.BLOCK_STATE_TAG) == null
+                    || !stack.getTagElement(BlockItem.BLOCK_STATE_TAG).contains(StockadeBlock.WOOD.getName(), Tag.TAG_STRING))) {
+                StockadeBlock.Wood.importLegacyMetadata(stack, stackTag.getInt("Damage"));
+            }
             if (stack.getItem() instanceof ParasyticLouseItem
                     && (!stack.hasTag() || !stack.getTag().contains(LousePotion.TAG, Tag.TAG_ANY_NUMERIC))) {
                 LousePotion.set(stack, stackTag.getInt("Damage"));

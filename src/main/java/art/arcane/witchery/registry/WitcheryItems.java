@@ -13,6 +13,7 @@ import art.arcane.witchery.item.BrewFuelItem;
 import art.arcane.witchery.item.EndlessWaterBrewItem;
 import art.arcane.witchery.item.PlayerCompassItem;
 import art.arcane.witchery.item.ParasyticLouseItem;
+import art.arcane.witchery.block.StockadeBlock;
 import art.arcane.witchery.item.BarkBeltItem;
 import art.arcane.witchery.item.BitingBeltItem;
 import art.arcane.witchery.item.QuicklimeItem;
@@ -222,7 +223,7 @@ public final class WitcheryItems {
             case "bucketbrew" -> new BucketItem(WitcheryFluids.getRequiredSource("brew"), bucketProperties);
             case "brewbottle" -> new BrewBottleItem();
             case "louse" -> new ParasyticLouseItem();
-            case "rowanwooddoor", "alderwooddoor" -> createBlockItem(path);
+            case "rowanwooddoor", "alderwooddoor", "icedoor" -> createBlockItem(path);
             case "door_key", "door_keyring" -> new DoorKeyItem();
             case "anointing_paste" -> new AnointingPasteItem(new Item.Properties());
             case "taglockkit" -> new TaglockItem();
@@ -453,6 +454,9 @@ public final class WitcheryItems {
     private static BlockItem createBlockItem(String path) {
         Block block = WitcheryBlocks.getRequired(path).get();
         switch (path) {
+            case "stockade" -> {
+                return new StockadeBlock.Item(block);
+            }
             case "beartrap", "wolftrap" -> {
                 return new HuntingTrapItem(block);
             }

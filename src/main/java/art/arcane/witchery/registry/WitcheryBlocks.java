@@ -2,6 +2,9 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.block.PerpetualIceBlock;
+import art.arcane.witchery.block.PerpetualIceDoorBlock;
+import art.arcane.witchery.block.PerpetualIceFenceBlock;
+import art.arcane.witchery.block.StockadeBlock;
 import art.arcane.witchery.block.FrozenPressurePlateBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.block.GlowGlobeBlock;
@@ -67,8 +70,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.DoorBlock;
-import net.minecraft.world.level.block.FenceBlock;
 import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.GlassBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -81,7 +82,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockSetType;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -171,7 +171,7 @@ public final class WitcheryBlocks {
             case "lilypad", "leapinglily" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.LILY_PAD), SHAPE_PAD_FLAT, false);
             case "grassper" -> new GrassperBlock();
-            case "icedoor" -> new DoorBlock(BlockBehaviour.Properties.copy(Blocks.IRON_DOOR).noOcclusion(), BlockSetType.IRON);
+            case "icedoor" -> new PerpetualIceDoorBlock();
             case "rowanwooddoor" -> new WitchDoorBlock(false);
             case "alderwooddoor" -> new WitchDoorBlock(true);
             case "cwoodendoor" -> new CursedControls.Door();
@@ -195,14 +195,19 @@ public final class WitcheryBlocks {
             case "leechchest" -> new LeechChestBlock();
             case "stairswoodrowan", "stairswoodalder", "stairswoodhawthorn" ->
                     new StairBlock(Blocks.OAK_PLANKS.defaultBlockState(), BlockBehaviour.Properties.copy(Blocks.OAK_STAIRS));
-            case "icestairs", "snowstairs" ->
-                    new StairBlock(Blocks.STONE.defaultBlockState(), BlockBehaviour.Properties.copy(Blocks.STONE_STAIRS));
-            case "witchwoodslab", "iceslab", "snowslab" ->
-                    new SlabBlock(BlockBehaviour.Properties.copy(Blocks.STONE_SLAB));
-            case "icefence", "stockade", "icestockade" ->
-                    new FenceBlock(BlockBehaviour.Properties.copy(Blocks.OAK_FENCE));
-            case "icefencegate" ->
-                    new FenceGateBlock(BlockBehaviour.Properties.copy(Blocks.OAK_FENCE_GATE), WoodType.OAK);
+            case "icestairs" -> new StairBlock(() -> getRequired("perpetualice").get().defaultBlockState(),
+                    BlockBehaviour.Properties.copy(Blocks.STONE_STAIRS).noOcclusion().friction(0.98F).strength(2, 5));
+            case "snowstairs" -> new StairBlock(Blocks.SNOW_BLOCK.defaultBlockState(),
+                    BlockBehaviour.Properties.copy(Blocks.SNOW_BLOCK));
+            case "witchwoodslab" -> new SlabBlock(BlockBehaviour.Properties.copy(Blocks.STONE_SLAB));
+            case "iceslab" -> new SlabBlock(BlockBehaviour.Properties.copy(Blocks.STONE_SLAB).noOcclusion().strength(2, 5));
+            case "snowslab" -> new SlabBlock(BlockBehaviour.Properties.copy(Blocks.SNOW_BLOCK));
+            case "icedoubleslab" -> new Block(BlockBehaviour.Properties.copy(Blocks.ICE).strength(2, 5));
+            case "snowdoubleslab" -> new Block(BlockBehaviour.Properties.copy(Blocks.SNOW_BLOCK));
+            case "stockade" -> new StockadeBlock.Wooden();
+            case "icestockade" -> new StockadeBlock(true);
+            case "icefence" -> new PerpetualIceFenceBlock();
+            case "icefencegate" -> new FenceGateBlock(BlockBehaviour.Properties.copy(Blocks.OAK_FENCE_GATE).strength(2, 5), WoodType.OAK);
             case "icepressureplate" -> new FrozenPressurePlateBlock(true);
             case "snowpressureplate" -> new FrozenPressurePlateBlock(false);
             case "cwoodpressureplate" -> new CursedControls.Plate(CursedControls.Kind.WOODEN_PLATE);

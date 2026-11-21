@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "E": {
+      "item": "witchery:exhale_of_the_horned_one"
+    },
+    "L": {
+      "item": "minecraft:birch_log"
+    }
+  },
+  "pattern": [
+    " L ",
+    "LEL",
+    "LLL"
+  ],
+  "result": {
+    "count": 9,
+    "item": "witchery:stockade",
+    "nbt": {
+      "BlockStateTag": {
+        "wood_type": "birch"
+      }
+    }
+  },
+  "show_notification": true
+}

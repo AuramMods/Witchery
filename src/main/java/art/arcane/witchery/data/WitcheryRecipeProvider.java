@@ -2,6 +2,7 @@ package art.arcane.witchery.data;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.CritterSnareBlock;
+import art.arcane.witchery.block.StockadeBlock;
 import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.item.HunterClothingItem;
@@ -267,6 +268,13 @@ public class WitcheryRecipeProvider extends RecipeProvider {
         ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, WitcheryBlocks.getRequired("snowpressureplate").get())
                 .define('S', Items.SNOW_BLOCK).pattern("SS")
                 .unlockedBy("has_snow_block", has(Items.SNOW_BLOCK)).save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, WitcheryBlocks.getRequired("snowstairs").get(), 4)
+                .define('S', Items.SNOW_BLOCK).pattern("S  ").pattern("SS ").pattern("SSS")
+                .unlockedBy("has_snow_block", has(Items.SNOW_BLOCK)).save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, WitcheryBlocks.getRequired("snowslab").get(), 6)
+                .define('S', Items.SNOW).pattern("SSS").pattern("SSS")
+                .unlockedBy("has_snow", has(Items.SNOW)).save(recipeOutput);
+        stockadeRecipes(recipeOutput);
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryItems.getRequired("vampirebook").get())
                 .define('W', Items.NETHER_WART)
                 .define('S', Items.NETHER_STAR)
@@ -541,6 +549,45 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .requires(WitcheryIngredient.CLAY_JAR.item(), 3)
                 .unlockedBy("has_odour_of_purity", has(WitcheryIngredient.ODOUR_OF_PURITY.item()))
                 .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "purified_milk_from_cake"));
+    }
+
+    private static void stockadeRecipes(Consumer<FinishedRecipe> output) {
+        Block stockade = WitcheryBlocks.getRequired("stockade").get();
+        Item exhale = WitcheryIngredient.EXHALE_OF_THE_HORNED_ONE.item();
+        for (var wood : StockadeBlock.Wood.values()) {
+            Block log = wood.log();
+            Ingredient logs = Ingredient.of(log);
+            var type = wood.witchWood();
+            if (type == WitchWoodType.ROWAN) {
+                var alder = PartialNBTIngredient.of(log.asItem(), WitchWoodType.ALDER.stack(log).getTag());
+                var hawthorn = PartialNBTIngredient.of(log.asItem(), WitchWoodType.HAWTHORN.stack(log).getTag());
+                logs = DifferenceIngredient.of(logs, CompoundIngredient.of(alder, hawthorn));
+            } else if (type != null) {
+                logs = PartialNBTIngredient.of(log.asItem(), type.stack(log).getTag());
+            }
+            ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, stockade, 9)
+                    .define('L', logs).define('E', exhale).pattern(" L ").pattern("LEL").pattern("LLL")
+                    .unlockedBy("has_exhale", has(exhale)).save(recipe -> output.accept(new StockadeRecipe(recipe, wood)),
+                            "witchery:stockade/" + wood.getSerializedName());
+        }
+    }
+
+    private record StockadeRecipe(FinishedRecipe recipe, StockadeBlock.Wood wood) implements FinishedRecipe {
+        @Override
+        public void serializeRecipeData(JsonObject json) {
+            recipe.serializeRecipeData(json);
+            if (wood == StockadeBlock.Wood.OAK) return;
+            var state = new JsonObject();
+            state.addProperty(StockadeBlock.WOOD.getName(), wood.getSerializedName());
+            var nbt = new JsonObject();
+            nbt.add(BlockItem.BLOCK_STATE_TAG, state);
+            json.getAsJsonObject("result").add("nbt", nbt);
+        }
+
+        @Override public ResourceLocation getId() { return recipe.getId(); }
+        @Override public RecipeSerializer<?> getType() { return recipe.getType(); }
+        @Override public JsonObject serializeAdvancement() { return recipe.serializeAdvancement(); }
+        @Override public ResourceLocation getAdvancementId() { return recipe.getAdvancementId(); }
     }
 
     private static void door(Consumer<FinishedRecipe> output, WitcheryIngredient door, Block planks, Ingredient ingredient) {

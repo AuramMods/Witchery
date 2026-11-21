@@ -1,5 +1,6 @@
 package art.arcane.witchery.registry;
 
+import art.arcane.witchery.block.StockadeBlock;
 import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.block.BrewDispersalBlock;
 import art.arcane.witchery.block.CursedControls;
@@ -33,6 +34,10 @@ public final class WitcheryCreativeTabs {
                         if (entry.get() instanceof WitchWoodBlockItem wood) {
                             for (WitchWoodType type : WitchWoodType.values()) {
                                 output.accept(type.stack(wood));
+                            }
+                        } else if (entry.get() instanceof StockadeBlock.Item stockade) {
+                            for (var wood : StockadeBlock.Wood.values()) {
+                                output.accept(wood.stack(stockade.getBlock()));
                             }
                         } else if (entry.get() instanceof PlantMineBlock.Item mine) {
                             for (PlantMineBlock.Variant variant : PlantMineBlock.Variant.values()) {

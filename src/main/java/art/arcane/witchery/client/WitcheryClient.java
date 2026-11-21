@@ -21,6 +21,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.block.WitchWoodType;
+import art.arcane.witchery.block.StockadeBlock;
 import art.arcane.witchery.client.model.BabaYagaModel;
 import art.arcane.witchery.client.model.MandrakeModel;
 import art.arcane.witchery.client.model.DarkMarkModel;
@@ -385,6 +386,8 @@ public final class WitcheryClient {
                 ItemProperties.register(WitcheryBlocks.getRequired(name).get().asItem(), WOOD_TYPE_MODEL,
                         (stack, level, entity, seed) -> WitchWoodType.fromStack(stack).ordinal());
             }
+            ItemProperties.register(WitcheryBlocks.getRequired("stockade").get().asItem(), WOOD_TYPE_MODEL,
+                    (stack, level, entity, seed) -> StockadeBlock.Wood.fromStack(stack).ordinal());
             ItemProperties.register(WitcheryItems.getRequired("spectralstone").get(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "spectral_type"),
                     (stack, level, entity, seed) -> SpectralStoneItem.typeId(stack));
@@ -432,7 +435,7 @@ public final class WitcheryClient {
                     "kettle", "spinningwheel", "distilleryidle", "distilleryburning",
                     "witchesovenidle", "witchesovenburning", "fumefunnel", "filteredfumefunnel",
                     "coffinblock", "statueofworship", "refillingchest", "leechchest", "statuegoddess", "wolfaltar",
-                    "stockade", "icestockade", "voidbramble"
+                    "voidbramble"
             }) {
                 setRenderType(name, RenderType.cutout());
             }
@@ -440,7 +443,8 @@ public final class WitcheryClient {
             setRenderType("witchleaves", RenderType.cutoutMipped());
 
             for (String name : new String[]{
-                    "shadedglass", "shadedglass_active", "perpetualice",
+                    "shadedglass", "shadedglass_active", "perpetualice", "icestockade",
+                    "icestairs", "iceslab", "icedoubleslab", "icefence", "icefencegate", "icepressureplate",
                     "spiritportal", "tormentportal", "brew", "brewliquid", "disease",
                     "spiritflowing", "hollowtears", "brewgas", "force", "barrier", "slurp",
                     "mirrorwall", "mirrorblock", "mirrorblock2"

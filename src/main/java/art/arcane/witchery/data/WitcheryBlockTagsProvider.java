@@ -46,7 +46,10 @@ public class WitcheryBlockTagsProvider extends BlockTagsProvider {
         tag(BlockTags.MINEABLE_WITH_AXE).add(log, planks, coffin,
                 WitcheryBlocks.getRequired("scarecrow").get(), WitcheryBlocks.getRequired("trent").get(),
                 WitcheryBlocks.getRequired("witchsladder").get(), WitcheryBlocks.getRequired("rowanwooddoor").get(),
-                WitcheryBlocks.getRequired("alderwooddoor").get());
+                WitcheryBlocks.getRequired("alderwooddoor").get(), WitcheryBlocks.getRequired("stockade").get());
+        tag(BlockTags.MINEABLE_WITH_SHOVEL).add(
+                WitcheryBlocks.getRequired("snowstairs").get(), WitcheryBlocks.getRequired("snowslab").get(),
+                WitcheryBlocks.getRequired("snowdoubleslab").get(), WitcheryBlocks.getRequired("snowpressureplate").get());
         Block silverVat = WitcheryBlocks.getRequired("silvervat").get();
         tag(BlockTags.NEEDS_STONE_TOOL).add(silverVat);
         tag(BlockTags.MINEABLE_WITH_PICKAXE).add(
@@ -58,6 +61,10 @@ public class WitcheryBlockTagsProvider extends BlockTagsProvider {
                 WitcheryBlocks.getRequired("leechchest").get(),
                 WitcheryBlocks.getRequired("witchesovenidle").get(),
                 WitcheryBlocks.getRequired("witchesovenburning").get(),
-                WitcheryBlocks.getRequired("cauldron").get());
+                WitcheryBlocks.getRequired("cauldron").get(), WitcheryBlocks.getRequired("perpetualice").get(),
+                WitcheryBlocks.getRequired("icestockade").get(), WitcheryBlocks.getRequired("icefence").get(),
+                WitcheryBlocks.getRequired("icefencegate").get(), WitcheryBlocks.getRequired("icedoor").get(),
+                WitcheryBlocks.getRequired("icestairs").get(), WitcheryBlocks.getRequired("iceslab").get(),
+                WitcheryBlocks.getRequired("icedoubleslab").get(), WitcheryBlocks.getRequired("icepressureplate").get());
     }
 }

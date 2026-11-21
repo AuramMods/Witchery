@@ -1,0 +1,133 @@
+{
+  "parent": "minecraft:block/block",
+  "elements": [
+    {
+      "faces": {
+        "down": {
+          "texture": "#end"
+        },
+        "east": {
+          "texture": "#bark"
+        },
+        "north": {
+          "texture": "#bark"
+        },
+        "south": {
+          "texture": "#bark"
+        },
+        "up": {
+          "texture": "#end"
+        },
+        "west": {
+          "texture": "#bark"
+        }
+      },
+      "from": [
+        0.8,
+        0,
+        4.8
+      ],
+      "to": [
+        7.2000003,
+        16,
+        11.200001
+      ]
+    },
+    {
+      "faces": {
+        "down": {
+          "texture": "#end"
+        },
+        "east": {
+          "texture": "#bark"
+        },
+        "north": {
+          "texture": "#bark"
+        },
+        "south": {
+          "texture": "#bark"
+        },
+        "up": {
+          "texture": "#end"
+        },
+        "west": {
+          "texture": "#bark"
+        }
+      },
+      "from": [
+        8.8,
+        0,
+        4.8
+      ],
+      "to": [
+        15.200001,
+        16,
+        11.200001
+      ]
+    },
+    {
+      "faces": {
+        "down": {
+          "texture": "#end"
+        },
+        "east": {
+          "texture": "#bark"
+        },
+        "north": {
+          "texture": "#bark"
+        },
+        "south": {
+          "texture": "#bark"
+        },
+        "up": {
+          "texture": "#end"
+        },
+        "west": {
+          "texture": "#bark"
+        }
+      },
+      "from": [
+        4.8,
+        0,
+        0.8
+      ],
+      "to": [
+        11.200001,
+        16,
+        7.2000003
+      ]
+    },
+    {
+      "faces": {
+        "down": {
+          "texture": "#end"
+        },
+        "east": {
+          "texture": "#bark"
+        },
+        "north": {
+          "texture": "#bark"
+        },
+        "south": {
+          "texture": "#bark"
+        },
+        "up": {
+          "texture": "#end"
+        },
+        "west": {
+          "texture": "#bark"
+        }
+      },
+      "from": [
+        4.8,
+        0,
+        8.8
+      ],
+      "to": [
+        11.200001,
+        16,
+        15.200001
+      ]
+    }
+  ]
+}

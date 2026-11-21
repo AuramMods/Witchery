@@ -444,6 +444,14 @@
 - [x] Restore the Ice World cauldron action and its terrain conversions, including the Icy Slipper pressure plate. With the shared Forge placement helper, both door halves update together.
 - [x] Verify Ice World from a heated cauldron through bottling and throwing in the muted survival client. The cast converted both door halves and left the chest intact. Icy Slippers powered the resulting pressure plate, which switched off when the wearer left. Data generation, JAR reobfuscation, the 450-test regression suite, and five targeted Forge GameTests passed.
 
+## Stockades and Perpetual Ice Construction (2026-11-21)
+
+- [x] Restore nine Stockade recipes, each using six logs of the same species and an Exhale of the Horned One. Craft nine posts. Preserve the wood through placement, pick-block, mining, and legacy item metadata import.
+- [x] Restore pointed posts, stacked posts with flat tops, the original connected collision shapes and gate joins, and three points of cactus damage on contact. The Ice World brew turns Stockades into translucent Ice Stockades that keep the contact damage.
+- [x] Connect Perpetual Ice Fences and gates. Restore hand opening and redstone for Perpetual Ice Doors, one door item per harvest, and legacy ingredient subtype 152. Restore Ice Stair slipperiness and the Snow Slab and Snow Stair recipes.
+- [x] Restore the original vanilla ice and snow textures for the related fences, gates, stairs, slabs, and pressure plates.
+- [x] In the muted survival client, craft, place, mine, and replace Alder Stockades. Verify three contact damage for each material, freeze the fence run with Ice World, and open, power, harvest, and replace the ice door. A dedicated restart preserved the Alder item tags, stacked ice posts, fence-to-gate connection, and both door halves. The rebuilt JAR rendered the restored ice and snow textures. Java 17 data generation, JAR reobfuscation, 450 regression GameTests, and ten targeted Forge GameTests passed.
+
 ## Coffin (2026-11-20)
 
 - [x] Craft the original placeable coffin from a bed, three planks and five logs. The muted survival client crafted the item and placed the head and foot together. Placement tests refused an obstructed or unsupported second half and retained the item.
@@ -1144,7 +1152,7 @@
   - completed broad non-opaque shape parity pass for legacy decorative/special blocks:
     - extended `WitcheryBlocks` mapping to non-occluding/custom-shape scaffolds for high-impact IDs that were still default full cubes (`demonheart`, `wolfhead`, `alluringskull`, `chalice`, `candelabra`, `brazier`, `crystalball`, `placeditem`, `garlicgarland`, `dreamcatcher`, `poppetshelf`, `silvervat`, `daylightcollector`, `bloodcrucible`, `mirrorblock*`, `circle*`, `beartrap`, `wolftrap`, plus fluid/portal placeholders).
     - added shape-aware horizontal scaffold support for machine/chest-style blocks so existing `facing` blockstates now use non-full bounding where legacy blocks were not full cubes.
-    - mapped `stockade` and `icestockade` to fence behavior scaffold for breadth parity with legacy post/connection behavior.
+    - restored the Stockade family with legacy post geometry, connections, crafting variants, and contact damage.
   - expanded client render-layer coverage to include additional alpha-heavy decorative blocks and portal/fluid-style placeholders (cutout + translucent groups).
   - migrated legacy fluid-like block IDs to true fluid scaffolds:
     - `spiritflowing`, `hollowtears`, `disease`, `brew`, `brewgas`, `brewliquid` now use `LiquidBlock` tied to `WitcheryFluids` source fluids.

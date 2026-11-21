@@ -1,0 +1,8 @@
+{
+  "parent": "witchery:stockade/template_cross_covered",
+  "textures": {
+    "bark": "witchery:block/log_alder",
+    "end": "witchery:block/log_alder_top",
+    "particle": "witchery:block/log_alder"
+  }
+}

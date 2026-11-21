@@ -1,0 +1,106 @@
+{
+  "variants": {
+    "covered=false,east=false,north=false,south=false,west=false": {
+      "model": "witchery:block/icestockade_post"
+    },
+    "covered=false,east=false,north=false,south=false,west=true": {
+      "model": "witchery:block/icestockade_row"
+    },
+    "covered=false,east=false,north=false,south=true,west=false": {
+      "model": "witchery:block/icestockade_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=false,south=true,west=true": {
+      "model": "witchery:block/icestockade_cross"
+    },
+    "covered=false,east=false,north=true,south=false,west=false": {
+      "model": "witchery:block/icestockade_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=true,south=false,west=true": {
+      "model": "witchery:block/icestockade_cross"
+    },
+    "covered=false,east=false,north=true,south=true,west=false": {
+      "model": "witchery:block/icestockade_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=true,south=true,west=true": {
+      "model": "witchery:block/icestockade_cross"
+    },
+    "covered=false,east=true,north=false,south=false,west=false": {
+      "model": "witchery:block/icestockade_row"
+    },
+    "covered=false,east=true,north=false,south=false,west=true": {
+      "model": "witchery:block/icestockade_row"
+    },
+    "covered=false,east=true,north=false,south=true,west=false": {
+      "model": "witchery:block/icestockade_cross"
+    },
+    "covered=false,east=true,north=false,south=true,west=true": {
+      "model": "witchery:block/icestockade_cross"
+    },
+    "covered=false,east=true,north=true,south=false,west=false": {
+      "model": "witchery:block/icestockade_cross"
+    },
+    "covered=false,east=true,north=true,south=false,west=true": {
+      "model": "witchery:block/icestockade_cross"
+    },
+    "covered=false,east=true,north=true,south=true,west=false": {
+      "model": "witchery:block/icestockade_cross"
+    },
+    "covered=false,east=true,north=true,south=true,west=true": {
+      "model": "witchery:block/icestockade_cross"
+    },
+    "covered=true,east=false,north=false,south=false,west=false": {
+      "model": "witchery:block/icestockade_post_covered"
+    },
+    "covered=true,east=false,north=false,south=false,west=true": {
+      "model": "witchery:block/icestockade_row_covered"
+    },
+    "covered=true,east=false,north=false,south=true,west=false": {
+      "model": "witchery:block/icestockade_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=false,south=true,west=true": {
+      "model": "witchery:block/icestockade_cross_covered"
+    },
+    "covered=true,east=false,north=true,south=false,west=false": {
+      "model": "witchery:block/icestockade_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=true,south=false,west=true": {
+      "model": "witchery:block/icestockade_cross_covered"
+    },
+    "covered=true,east=false,north=true,south=true,west=false": {
+      "model": "witchery:block/icestockade_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=true,south=true,west=true": {
+      "model": "witchery:block/icestockade_cross_covered"
+    },
+    "covered=true,east=true,north=false,south=false,west=false": {
+      "model": "witchery:block/icestockade_row_covered"
+    },
+    "covered=true,east=true,north=false,south=false,west=true": {
+      "model": "witchery:block/icestockade_row_covered"
+    },
+    "covered=true,east=true,north=false,south=true,west=false": {
+      "model": "witchery:block/icestockade_cross_covered"
+    },
+    "covered=true,east=true,north=false,south=true,west=true": {
+      "model": "witchery:block/icestockade_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=false,west=false": {
+      "model": "witchery:block/icestockade_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=false,west=true": {
+      "model": "witchery:block/icestockade_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=true,west=false": {
+      "model": "witchery:block/icestockade_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=true,west=true": {
+      "model": "witchery:block/icestockade_cross_covered"
+    }
+  }
+}

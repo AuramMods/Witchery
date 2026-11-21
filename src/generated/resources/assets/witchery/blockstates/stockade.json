@@ -1,0 +1,922 @@
+{
+  "variants": {
+    "covered=false,east=false,north=false,south=false,west=false,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_post"
+    },
+    "covered=false,east=false,north=false,south=false,west=false,wood_type=alder": {
+      "model": "witchery:stockade/alder_post"
+    },
+    "covered=false,east=false,north=false,south=false,west=false,wood_type=birch": {
+      "model": "witchery:stockade/birch_post"
+    },
+    "covered=false,east=false,north=false,south=false,west=false,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_post"
+    },
+    "covered=false,east=false,north=false,south=false,west=false,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_post"
+    },
+    "covered=false,east=false,north=false,south=false,west=false,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_post"
+    },
+    "covered=false,east=false,north=false,south=false,west=false,wood_type=oak": {
+      "model": "witchery:stockade/oak_post"
+    },
+    "covered=false,east=false,north=false,south=false,west=false,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_post"
+    },
+    "covered=false,east=false,north=false,south=false,west=false,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_post"
+    },
+    "covered=false,east=false,north=false,south=false,west=true,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_row"
+    },
+    "covered=false,east=false,north=false,south=false,west=true,wood_type=alder": {
+      "model": "witchery:stockade/alder_row"
+    },
+    "covered=false,east=false,north=false,south=false,west=true,wood_type=birch": {
+      "model": "witchery:stockade/birch_row"
+    },
+    "covered=false,east=false,north=false,south=false,west=true,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_row"
+    },
+    "covered=false,east=false,north=false,south=false,west=true,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_row"
+    },
+    "covered=false,east=false,north=false,south=false,west=true,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_row"
+    },
+    "covered=false,east=false,north=false,south=false,west=true,wood_type=oak": {
+      "model": "witchery:stockade/oak_row"
+    },
+    "covered=false,east=false,north=false,south=false,west=true,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_row"
+    },
+    "covered=false,east=false,north=false,south=false,west=true,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_row"
+    },
+    "covered=false,east=false,north=false,south=true,west=false,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=false,south=true,west=false,wood_type=alder": {
+      "model": "witchery:stockade/alder_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=false,south=true,west=false,wood_type=birch": {
+      "model": "witchery:stockade/birch_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=false,south=true,west=false,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=false,south=true,west=false,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=false,south=true,west=false,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=false,south=true,west=false,wood_type=oak": {
+      "model": "witchery:stockade/oak_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=false,south=true,west=false,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=false,south=true,west=false,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=false,south=true,west=true,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_cross"
+    },
+    "covered=false,east=false,north=false,south=true,west=true,wood_type=alder": {
+      "model": "witchery:stockade/alder_cross"
+    },
+    "covered=false,east=false,north=false,south=true,west=true,wood_type=birch": {
+      "model": "witchery:stockade/birch_cross"
+    },
+    "covered=false,east=false,north=false,south=true,west=true,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_cross"
+    },
+    "covered=false,east=false,north=false,south=true,west=true,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_cross"
+    },
+    "covered=false,east=false,north=false,south=true,west=true,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_cross"
+    },
+    "covered=false,east=false,north=false,south=true,west=true,wood_type=oak": {
+      "model": "witchery:stockade/oak_cross"
+    },
+    "covered=false,east=false,north=false,south=true,west=true,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_cross"
+    },
+    "covered=false,east=false,north=false,south=true,west=true,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_cross"
+    },
+    "covered=false,east=false,north=true,south=false,west=false,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=true,south=false,west=false,wood_type=alder": {
+      "model": "witchery:stockade/alder_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=true,south=false,west=false,wood_type=birch": {
+      "model": "witchery:stockade/birch_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=true,south=false,west=false,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=true,south=false,west=false,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=true,south=false,west=false,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=true,south=false,west=false,wood_type=oak": {
+      "model": "witchery:stockade/oak_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=true,south=false,west=false,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=true,south=false,west=false,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=true,south=false,west=true,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_cross"
+    },
+    "covered=false,east=false,north=true,south=false,west=true,wood_type=alder": {
+      "model": "witchery:stockade/alder_cross"
+    },
+    "covered=false,east=false,north=true,south=false,west=true,wood_type=birch": {
+      "model": "witchery:stockade/birch_cross"
+    },
+    "covered=false,east=false,north=true,south=false,west=true,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_cross"
+    },
+    "covered=false,east=false,north=true,south=false,west=true,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_cross"
+    },
+    "covered=false,east=false,north=true,south=false,west=true,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_cross"
+    },
+    "covered=false,east=false,north=true,south=false,west=true,wood_type=oak": {
+      "model": "witchery:stockade/oak_cross"
+    },
+    "covered=false,east=false,north=true,south=false,west=true,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_cross"
+    },
+    "covered=false,east=false,north=true,south=false,west=true,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_cross"
+    },
+    "covered=false,east=false,north=true,south=true,west=false,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=true,south=true,west=false,wood_type=alder": {
+      "model": "witchery:stockade/alder_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=true,south=true,west=false,wood_type=birch": {
+      "model": "witchery:stockade/birch_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=true,south=true,west=false,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=true,south=true,west=false,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=true,south=true,west=false,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=true,south=true,west=false,wood_type=oak": {
+      "model": "witchery:stockade/oak_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=true,south=true,west=false,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=true,south=true,west=false,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_row",
+      "y": 90
+    },
+    "covered=false,east=false,north=true,south=true,west=true,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_cross"
+    },
+    "covered=false,east=false,north=true,south=true,west=true,wood_type=alder": {
+      "model": "witchery:stockade/alder_cross"
+    },
+    "covered=false,east=false,north=true,south=true,west=true,wood_type=birch": {
+      "model": "witchery:stockade/birch_cross"
+    },
+    "covered=false,east=false,north=true,south=true,west=true,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_cross"
+    },
+    "covered=false,east=false,north=true,south=true,west=true,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_cross"
+    },
+    "covered=false,east=false,north=true,south=true,west=true,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_cross"
+    },
+    "covered=false,east=false,north=true,south=true,west=true,wood_type=oak": {
+      "model": "witchery:stockade/oak_cross"
+    },
+    "covered=false,east=false,north=true,south=true,west=true,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_cross"
+    },
+    "covered=false,east=false,north=true,south=true,west=true,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_cross"
+    },
+    "covered=false,east=true,north=false,south=false,west=false,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_row"
+    },
+    "covered=false,east=true,north=false,south=false,west=false,wood_type=alder": {
+      "model": "witchery:stockade/alder_row"
+    },
+    "covered=false,east=true,north=false,south=false,west=false,wood_type=birch": {
+      "model": "witchery:stockade/birch_row"
+    },
+    "covered=false,east=true,north=false,south=false,west=false,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_row"
+    },
+    "covered=false,east=true,north=false,south=false,west=false,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_row"
+    },
+    "covered=false,east=true,north=false,south=false,west=false,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_row"
+    },
+    "covered=false,east=true,north=false,south=false,west=false,wood_type=oak": {
+      "model": "witchery:stockade/oak_row"
+    },
+    "covered=false,east=true,north=false,south=false,west=false,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_row"
+    },
+    "covered=false,east=true,north=false,south=false,west=false,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_row"
+    },
+    "covered=false,east=true,north=false,south=false,west=true,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_row"
+    },
+    "covered=false,east=true,north=false,south=false,west=true,wood_type=alder": {
+      "model": "witchery:stockade/alder_row"
+    },
+    "covered=false,east=true,north=false,south=false,west=true,wood_type=birch": {
+      "model": "witchery:stockade/birch_row"
+    },
+    "covered=false,east=true,north=false,south=false,west=true,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_row"
+    },
+    "covered=false,east=true,north=false,south=false,west=true,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_row"
+    },
+    "covered=false,east=true,north=false,south=false,west=true,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_row"
+    },
+    "covered=false,east=true,north=false,south=false,west=true,wood_type=oak": {
+      "model": "witchery:stockade/oak_row"
+    },
+    "covered=false,east=true,north=false,south=false,west=true,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_row"
+    },
+    "covered=false,east=true,north=false,south=false,west=true,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_row"
+    },
+    "covered=false,east=true,north=false,south=true,west=false,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_cross"
+    },
+    "covered=false,east=true,north=false,south=true,west=false,wood_type=alder": {
+      "model": "witchery:stockade/alder_cross"
+    },
+    "covered=false,east=true,north=false,south=true,west=false,wood_type=birch": {
+      "model": "witchery:stockade/birch_cross"
+    },
+    "covered=false,east=true,north=false,south=true,west=false,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_cross"
+    },
+    "covered=false,east=true,north=false,south=true,west=false,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_cross"
+    },
+    "covered=false,east=true,north=false,south=true,west=false,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_cross"
+    },
+    "covered=false,east=true,north=false,south=true,west=false,wood_type=oak": {
+      "model": "witchery:stockade/oak_cross"
+    },
+    "covered=false,east=true,north=false,south=true,west=false,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_cross"
+    },
+    "covered=false,east=true,north=false,south=true,west=false,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_cross"
+    },
+    "covered=false,east=true,north=false,south=true,west=true,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_cross"
+    },
+    "covered=false,east=true,north=false,south=true,west=true,wood_type=alder": {
+      "model": "witchery:stockade/alder_cross"
+    },
+    "covered=false,east=true,north=false,south=true,west=true,wood_type=birch": {
+      "model": "witchery:stockade/birch_cross"
+    },
+    "covered=false,east=true,north=false,south=true,west=true,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_cross"
+    },
+    "covered=false,east=true,north=false,south=true,west=true,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_cross"
+    },
+    "covered=false,east=true,north=false,south=true,west=true,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_cross"
+    },
+    "covered=false,east=true,north=false,south=true,west=true,wood_type=oak": {
+      "model": "witchery:stockade/oak_cross"
+    },
+    "covered=false,east=true,north=false,south=true,west=true,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_cross"
+    },
+    "covered=false,east=true,north=false,south=true,west=true,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_cross"
+    },
+    "covered=false,east=true,north=true,south=false,west=false,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_cross"
+    },
+    "covered=false,east=true,north=true,south=false,west=false,wood_type=alder": {
+      "model": "witchery:stockade/alder_cross"
+    },
+    "covered=false,east=true,north=true,south=false,west=false,wood_type=birch": {
+      "model": "witchery:stockade/birch_cross"
+    },
+    "covered=false,east=true,north=true,south=false,west=false,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_cross"
+    },
+    "covered=false,east=true,north=true,south=false,west=false,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_cross"
+    },
+    "covered=false,east=true,north=true,south=false,west=false,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_cross"
+    },
+    "covered=false,east=true,north=true,south=false,west=false,wood_type=oak": {
+      "model": "witchery:stockade/oak_cross"
+    },
+    "covered=false,east=true,north=true,south=false,west=false,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_cross"
+    },
+    "covered=false,east=true,north=true,south=false,west=false,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_cross"
+    },
+    "covered=false,east=true,north=true,south=false,west=true,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_cross"
+    },
+    "covered=false,east=true,north=true,south=false,west=true,wood_type=alder": {
+      "model": "witchery:stockade/alder_cross"
+    },
+    "covered=false,east=true,north=true,south=false,west=true,wood_type=birch": {
+      "model": "witchery:stockade/birch_cross"
+    },
+    "covered=false,east=true,north=true,south=false,west=true,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_cross"
+    },
+    "covered=false,east=true,north=true,south=false,west=true,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_cross"
+    },
+    "covered=false,east=true,north=true,south=false,west=true,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_cross"
+    },
+    "covered=false,east=true,north=true,south=false,west=true,wood_type=oak": {
+      "model": "witchery:stockade/oak_cross"
+    },
+    "covered=false,east=true,north=true,south=false,west=true,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_cross"
+    },
+    "covered=false,east=true,north=true,south=false,west=true,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_cross"
+    },
+    "covered=false,east=true,north=true,south=true,west=false,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_cross"
+    },
+    "covered=false,east=true,north=true,south=true,west=false,wood_type=alder": {
+      "model": "witchery:stockade/alder_cross"
+    },
+    "covered=false,east=true,north=true,south=true,west=false,wood_type=birch": {
+      "model": "witchery:stockade/birch_cross"
+    },
+    "covered=false,east=true,north=true,south=true,west=false,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_cross"
+    },
+    "covered=false,east=true,north=true,south=true,west=false,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_cross"
+    },
+    "covered=false,east=true,north=true,south=true,west=false,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_cross"
+    },
+    "covered=false,east=true,north=true,south=true,west=false,wood_type=oak": {
+      "model": "witchery:stockade/oak_cross"
+    },
+    "covered=false,east=true,north=true,south=true,west=false,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_cross"
+    },
+    "covered=false,east=true,north=true,south=true,west=false,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_cross"
+    },
+    "covered=false,east=true,north=true,south=true,west=true,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_cross"
+    },
+    "covered=false,east=true,north=true,south=true,west=true,wood_type=alder": {
+      "model": "witchery:stockade/alder_cross"
+    },
+    "covered=false,east=true,north=true,south=true,west=true,wood_type=birch": {
+      "model": "witchery:stockade/birch_cross"
+    },
+    "covered=false,east=true,north=true,south=true,west=true,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_cross"
+    },
+    "covered=false,east=true,north=true,south=true,west=true,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_cross"
+    },
+    "covered=false,east=true,north=true,south=true,west=true,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_cross"
+    },
+    "covered=false,east=true,north=true,south=true,west=true,wood_type=oak": {
+      "model": "witchery:stockade/oak_cross"
+    },
+    "covered=false,east=true,north=true,south=true,west=true,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_cross"
+    },
+    "covered=false,east=true,north=true,south=true,west=true,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_cross"
+    },
+    "covered=true,east=false,north=false,south=false,west=false,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_post_covered"
+    },
+    "covered=true,east=false,north=false,south=false,west=false,wood_type=alder": {
+      "model": "witchery:stockade/alder_post_covered"
+    },
+    "covered=true,east=false,north=false,south=false,west=false,wood_type=birch": {
+      "model": "witchery:stockade/birch_post_covered"
+    },
+    "covered=true,east=false,north=false,south=false,west=false,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_post_covered"
+    },
+    "covered=true,east=false,north=false,south=false,west=false,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_post_covered"
+    },
+    "covered=true,east=false,north=false,south=false,west=false,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_post_covered"
+    },
+    "covered=true,east=false,north=false,south=false,west=false,wood_type=oak": {
+      "model": "witchery:stockade/oak_post_covered"
+    },
+    "covered=true,east=false,north=false,south=false,west=false,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_post_covered"
+    },
+    "covered=true,east=false,north=false,south=false,west=false,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_post_covered"
+    },
+    "covered=true,east=false,north=false,south=false,west=true,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_row_covered"
+    },
+    "covered=true,east=false,north=false,south=false,west=true,wood_type=alder": {
+      "model": "witchery:stockade/alder_row_covered"
+    },
+    "covered=true,east=false,north=false,south=false,west=true,wood_type=birch": {
+      "model": "witchery:stockade/birch_row_covered"
+    },
+    "covered=true,east=false,north=false,south=false,west=true,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_row_covered"
+    },
+    "covered=true,east=false,north=false,south=false,west=true,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_row_covered"
+    },
+    "covered=true,east=false,north=false,south=false,west=true,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_row_covered"
+    },
+    "covered=true,east=false,north=false,south=false,west=true,wood_type=oak": {
+      "model": "witchery:stockade/oak_row_covered"
+    },
+    "covered=true,east=false,north=false,south=false,west=true,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_row_covered"
+    },
+    "covered=true,east=false,north=false,south=false,west=true,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_row_covered"
+    },
+    "covered=true,east=false,north=false,south=true,west=false,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=false,south=true,west=false,wood_type=alder": {
+      "model": "witchery:stockade/alder_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=false,south=true,west=false,wood_type=birch": {
+      "model": "witchery:stockade/birch_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=false,south=true,west=false,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=false,south=true,west=false,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=false,south=true,west=false,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=false,south=true,west=false,wood_type=oak": {
+      "model": "witchery:stockade/oak_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=false,south=true,west=false,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=false,south=true,west=false,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=false,south=true,west=true,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_cross_covered"
+    },
+    "covered=true,east=false,north=false,south=true,west=true,wood_type=alder": {
+      "model": "witchery:stockade/alder_cross_covered"
+    },
+    "covered=true,east=false,north=false,south=true,west=true,wood_type=birch": {
+      "model": "witchery:stockade/birch_cross_covered"
+    },
+    "covered=true,east=false,north=false,south=true,west=true,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_cross_covered"
+    },
+    "covered=true,east=false,north=false,south=true,west=true,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_cross_covered"
+    },
+    "covered=true,east=false,north=false,south=true,west=true,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_cross_covered"
+    },
+    "covered=true,east=false,north=false,south=true,west=true,wood_type=oak": {
+      "model": "witchery:stockade/oak_cross_covered"
+    },
+    "covered=true,east=false,north=false,south=true,west=true,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_cross_covered"
+    },
+    "covered=true,east=false,north=false,south=true,west=true,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_cross_covered"
+    },
+    "covered=true,east=false,north=true,south=false,west=false,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=true,south=false,west=false,wood_type=alder": {
+      "model": "witchery:stockade/alder_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=true,south=false,west=false,wood_type=birch": {
+      "model": "witchery:stockade/birch_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=true,south=false,west=false,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=true,south=false,west=false,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=true,south=false,west=false,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=true,south=false,west=false,wood_type=oak": {
+      "model": "witchery:stockade/oak_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=true,south=false,west=false,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=true,south=false,west=false,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=true,south=false,west=true,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_cross_covered"
+    },
+    "covered=true,east=false,north=true,south=false,west=true,wood_type=alder": {
+      "model": "witchery:stockade/alder_cross_covered"
+    },
+    "covered=true,east=false,north=true,south=false,west=true,wood_type=birch": {
+      "model": "witchery:stockade/birch_cross_covered"
+    },
+    "covered=true,east=false,north=true,south=false,west=true,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_cross_covered"
+    },
+    "covered=true,east=false,north=true,south=false,west=true,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_cross_covered"
+    },
+    "covered=true,east=false,north=true,south=false,west=true,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_cross_covered"
+    },
+    "covered=true,east=false,north=true,south=false,west=true,wood_type=oak": {
+      "model": "witchery:stockade/oak_cross_covered"
+    },
+    "covered=true,east=false,north=true,south=false,west=true,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_cross_covered"
+    },
+    "covered=true,east=false,north=true,south=false,west=true,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_cross_covered"
+    },
+    "covered=true,east=false,north=true,south=true,west=false,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=true,south=true,west=false,wood_type=alder": {
+      "model": "witchery:stockade/alder_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=true,south=true,west=false,wood_type=birch": {
+      "model": "witchery:stockade/birch_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=true,south=true,west=false,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=true,south=true,west=false,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=true,south=true,west=false,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=true,south=true,west=false,wood_type=oak": {
+      "model": "witchery:stockade/oak_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=true,south=true,west=false,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=true,south=true,west=false,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_row_covered",
+      "y": 90
+    },
+    "covered=true,east=false,north=true,south=true,west=true,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_cross_covered"
+    },
+    "covered=true,east=false,north=true,south=true,west=true,wood_type=alder": {
+      "model": "witchery:stockade/alder_cross_covered"
+    },
+    "covered=true,east=false,north=true,south=true,west=true,wood_type=birch": {
+      "model": "witchery:stockade/birch_cross_covered"
+    },
+    "covered=true,east=false,north=true,south=true,west=true,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_cross_covered"
+    },
+    "covered=true,east=false,north=true,south=true,west=true,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_cross_covered"
+    },
+    "covered=true,east=false,north=true,south=true,west=true,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_cross_covered"
+    },
+    "covered=true,east=false,north=true,south=true,west=true,wood_type=oak": {
+      "model": "witchery:stockade/oak_cross_covered"
+    },
+    "covered=true,east=false,north=true,south=true,west=true,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_cross_covered"
+    },
+    "covered=true,east=false,north=true,south=true,west=true,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_cross_covered"
+    },
+    "covered=true,east=true,north=false,south=false,west=false,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_row_covered"
+    },
+    "covered=true,east=true,north=false,south=false,west=false,wood_type=alder": {
+      "model": "witchery:stockade/alder_row_covered"
+    },
+    "covered=true,east=true,north=false,south=false,west=false,wood_type=birch": {
+      "model": "witchery:stockade/birch_row_covered"
+    },
+    "covered=true,east=true,north=false,south=false,west=false,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_row_covered"
+    },
+    "covered=true,east=true,north=false,south=false,west=false,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_row_covered"
+    },
+    "covered=true,east=true,north=false,south=false,west=false,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_row_covered"
+    },
+    "covered=true,east=true,north=false,south=false,west=false,wood_type=oak": {
+      "model": "witchery:stockade/oak_row_covered"
+    },
+    "covered=true,east=true,north=false,south=false,west=false,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_row_covered"
+    },
+    "covered=true,east=true,north=false,south=false,west=false,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_row_covered"
+    },
+    "covered=true,east=true,north=false,south=false,west=true,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_row_covered"
+    },
+    "covered=true,east=true,north=false,south=false,west=true,wood_type=alder": {
+      "model": "witchery:stockade/alder_row_covered"
+    },
+    "covered=true,east=true,north=false,south=false,west=true,wood_type=birch": {
+      "model": "witchery:stockade/birch_row_covered"
+    },
+    "covered=true,east=true,north=false,south=false,west=true,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_row_covered"
+    },
+    "covered=true,east=true,north=false,south=false,west=true,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_row_covered"
+    },
+    "covered=true,east=true,north=false,south=false,west=true,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_row_covered"
+    },
+    "covered=true,east=true,north=false,south=false,west=true,wood_type=oak": {
+      "model": "witchery:stockade/oak_row_covered"
+    },
+    "covered=true,east=true,north=false,south=false,west=true,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_row_covered"
+    },
+    "covered=true,east=true,north=false,south=false,west=true,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_row_covered"
+    },
+    "covered=true,east=true,north=false,south=true,west=false,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_cross_covered"
+    },
+    "covered=true,east=true,north=false,south=true,west=false,wood_type=alder": {
+      "model": "witchery:stockade/alder_cross_covered"
+    },
+    "covered=true,east=true,north=false,south=true,west=false,wood_type=birch": {
+      "model": "witchery:stockade/birch_cross_covered"
+    },
+    "covered=true,east=true,north=false,south=true,west=false,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_cross_covered"
+    },
+    "covered=true,east=true,north=false,south=true,west=false,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_cross_covered"
+    },
+    "covered=true,east=true,north=false,south=true,west=false,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_cross_covered"
+    },
+    "covered=true,east=true,north=false,south=true,west=false,wood_type=oak": {
+      "model": "witchery:stockade/oak_cross_covered"
+    },
+    "covered=true,east=true,north=false,south=true,west=false,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_cross_covered"
+    },
+    "covered=true,east=true,north=false,south=true,west=false,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_cross_covered"
+    },
+    "covered=true,east=true,north=false,south=true,west=true,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_cross_covered"
+    },
+    "covered=true,east=true,north=false,south=true,west=true,wood_type=alder": {
+      "model": "witchery:stockade/alder_cross_covered"
+    },
+    "covered=true,east=true,north=false,south=true,west=true,wood_type=birch": {
+      "model": "witchery:stockade/birch_cross_covered"
+    },
+    "covered=true,east=true,north=false,south=true,west=true,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_cross_covered"
+    },
+    "covered=true,east=true,north=false,south=true,west=true,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_cross_covered"
+    },
+    "covered=true,east=true,north=false,south=true,west=true,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_cross_covered"
+    },
+    "covered=true,east=true,north=false,south=true,west=true,wood_type=oak": {
+      "model": "witchery:stockade/oak_cross_covered"
+    },
+    "covered=true,east=true,north=false,south=true,west=true,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_cross_covered"
+    },
+    "covered=true,east=true,north=false,south=true,west=true,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=false,west=false,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=false,west=false,wood_type=alder": {
+      "model": "witchery:stockade/alder_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=false,west=false,wood_type=birch": {
+      "model": "witchery:stockade/birch_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=false,west=false,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=false,west=false,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=false,west=false,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=false,west=false,wood_type=oak": {
+      "model": "witchery:stockade/oak_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=false,west=false,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=false,west=false,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=false,west=true,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=false,west=true,wood_type=alder": {
+      "model": "witchery:stockade/alder_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=false,west=true,wood_type=birch": {
+      "model": "witchery:stockade/birch_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=false,west=true,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=false,west=true,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=false,west=true,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=false,west=true,wood_type=oak": {
+      "model": "witchery:stockade/oak_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=false,west=true,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=false,west=true,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=true,west=false,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=true,west=false,wood_type=alder": {
+      "model": "witchery:stockade/alder_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=true,west=false,wood_type=birch": {
+      "model": "witchery:stockade/birch_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=true,west=false,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=true,west=false,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=true,west=false,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=true,west=false,wood_type=oak": {
+      "model": "witchery:stockade/oak_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=true,west=false,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=true,west=false,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=true,west=true,wood_type=acacia": {
+      "model": "witchery:stockade/acacia_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=true,west=true,wood_type=alder": {
+      "model": "witchery:stockade/alder_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=true,west=true,wood_type=birch": {
+      "model": "witchery:stockade/birch_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=true,west=true,wood_type=dark_oak": {
+      "model": "witchery:stockade/dark_oak_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=true,west=true,wood_type=hawthorn": {
+      "model": "witchery:stockade/hawthorn_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=true,west=true,wood_type=jungle": {
+      "model": "witchery:stockade/jungle_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=true,west=true,wood_type=oak": {
+      "model": "witchery:stockade/oak_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=true,west=true,wood_type=rowan": {
+      "model": "witchery:stockade/rowan_cross_covered"
+    },
+    "covered=true,east=true,north=true,south=true,west=true,wood_type=spruce": {
+      "model": "witchery:stockade/spruce_cross_covered"
+    }
+  }
+}

@@ -12,6 +12,7 @@ import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.block.WitchCropBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.block.WitchWoodType;
+import art.arcane.witchery.block.StockadeBlock;
 import art.arcane.witchery.block.WolfHeadBlock;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
@@ -73,7 +74,7 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                 case "witchesovenburning" -> dropOther(block, WitcheryBlocks.getRequired("witchesovenidle").get());
                 case "distilleryburning" -> dropOther(block, WitcheryBlocks.getRequired("distilleryidle").get());
                 case "chalice" -> dropChalice(block);
-                case "alderwooddoor" -> add(block, createDoorTable(block));
+                case "alderwooddoor", "icedoor" -> add(block, createDoorTable(block));
                 case "demonheart" -> dropOther(block, WitcheryIngredient.DEMON_HEART.item());
                 case "dreamcatcher" -> dropDreamWeave(block);
                 case "coffinblock" -> add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool()
@@ -81,6 +82,12 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                                 .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
                                         .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(BedBlock.PART, BedPart.FOOT)))))));
                 case "witchsapling", "witchlog", "witchwood" -> dropWitchWood(block);
+                case "stockade" -> add(block, LootTable.lootTable()
+                        .withPool(applyExplosionCondition(block, LootPool.lootPool().setRolls(ConstantValue.exactly(1))
+                                .add(LootItem.lootTableItem(block).apply(CopyBlockState.copyState(block).copy(StockadeBlock.WOOD)
+                                        .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
+                                                .setProperties(StatePropertiesPredicate.Builder.properties()
+                                                        .hasProperty(StockadeBlock.WOOD, StockadeBlock.Wood.OAK)).invert()))))));
                 case "perpetualice" -> add(block, createSilkTouchOnlyTable(block));
                 case "wickerbundle" -> add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool()
                         .setRolls(ConstantValue.exactly(1)).add(LootItem.lootTableItem(block)

@@ -1,0 +1,9 @@
+{
+  "parent": "witchery:stockade/template_post_covered",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "bark": "minecraft:block/ice",
+    "end": "minecraft:block/ice",
+    "particle": "minecraft:block/ice"
+  }
+}

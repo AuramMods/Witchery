@@ -291,10 +291,10 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | `WICKER_BUNDLE` | `witchery:wickerbundle` |
 | `GLOW_GLOBE` | `witchery:glowglobe` |
 | `STATUE_GODDESS` | `witchery:statuegoddess` |
-| `STOCKADE` | `witchery:stockade` |
-| `STOCKADE_ICE` | `witchery:icestockade` |
+| `STOCKADE` | `witchery:stockade` (wood subtypes 0–8, contact damage) |
+| `STOCKADE_ICE` | `witchery:icestockade` (Ice World conversion, contact damage) |
 | `PERPETUAL_ICE` | `witchery:perpetualice` |
-| `PERPETUAL_ICE_DOOR` | `witchery:icedoor` |
+| `PERPETUAL_ICE_DOOR` | `witchery:icedoor` (hand and redstone operation, ingredient subtype 152) |
 | `PERPETUAL_ICE_STAIRS` | `witchery:icestairs` |
 | `PERPETUAL_ICE_SLAB_SINGLE` | `witchery:iceslab` |
 | `PERPETUAL_ICE_SLAB_DOUBLE` | `witchery:icedoubleslab` |
@@ -693,7 +693,7 @@ Variant 156 consumes one flower when the tester targets a living entity within t
 | 149 | `kobolditenugget` → `witchery:koboldite_nugget` |
 | 150 | `kobolditeingot` → `witchery:koboldite_ingot` |
 | 151 | `pentacle` → `witchery:koboldite_pentacle` |
-| 152 | `doorIce` |
+| 152 | `doorIce` → `witchery:icedoor` |
 | 153 | `annointingPaste` |
 | 154 | `subduedSpiritVillage` → `witchery:subdued_village_spirit` |
 | 155 | `boltSilver` |

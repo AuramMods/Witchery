@@ -1,0 +1,37 @@
+{
+  "parent": "minecraft:block/block",
+  "elements": [
+    {
+      "faces": {
+        "down": {
+          "texture": "#end"
+        },
+        "east": {
+          "texture": "#bark"
+        },
+        "north": {
+          "texture": "#bark"
+        },
+        "south": {
+          "texture": "#bark"
+        },
+        "up": {
+          "texture": "#end"
+        },
+        "west": {
+          "texture": "#bark"
+        }
+      },
+      "from": [
+        4.8,
+        0,
+        4.8
+      ],
+      "to": [
+        11.200001,
+        16,
+        11.200001
+      ]
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "E": {
+      "item": "witchery:exhale_of_the_horned_one"
+    },
+    "L": {
+      "type": "forge:difference",
+      "base": {
+        "item": "witchery:witchlog"
+      },
+      "subtracted": [
+        {
+          "type": "forge:partial_nbt",
+          "item": "witchery:witchlog",
+          "nbt": "{BlockStateTag:{wood_type:\"alder\"}}"
+        },
+        {
+          "type": "forge:partial_nbt",
+          "item": "witchery:witchlog",
+          "nbt": "{BlockStateTag:{wood_type:\"hawthorn\"}}"
+        }
+      ]
+    }
+  },
+  "pattern": [
+    " L ",
+    "LEL",
+    "LLL"
+  ],
+  "result": {
+    "count": 9,
+    "item": "witchery:stockade",
+    "nbt": {
+      "BlockStateTag": {
+        "wood_type": "rowan"
+      }
+    }
+  },
+  "show_notification": true
+}
