@@ -1,0 +1,15 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [
+    {"size": "medium", "glyph": "witchery:circleglyphinfernal"},
+    {"size": "large", "glyph": "witchery:circleglyphinfernal"}
+  ],
+  "sacrifices": [
+    {"item": "minecraft:wither_skeleton_skull"},
+    {"item": "minecraft:diamond"},
+    {"item": "minecraft:ender_pearl"},
+    {"item": "witchery:attuned_stone"},
+    {"item": "witchery:charged_attuned_stone"}
+  ],
+  "action": "summon_wither"
+}

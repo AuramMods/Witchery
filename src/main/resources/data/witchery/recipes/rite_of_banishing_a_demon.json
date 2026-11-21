@@ -1,0 +1,10 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [
+    {"item": "minecraft:blaze_powder"},
+    {"item": "witchery:waystone"}
+  ],
+  "power": 2000,
+  "action": "banish_demon"
+}

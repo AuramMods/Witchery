@@ -1,0 +1,13 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphinfernal"}],
+  "sacrifices": [
+    {"item": "witchery:diamond_vapour"},
+    {"item": "witchery:exhale_of_the_horned_one"},
+    {"item": "minecraft:magma_cream"},
+    {"item": "witchery:arthana"},
+    {"item": "minecraft:fermented_spider_eye"}
+  ],
+  "power": 2000,
+  "action": "summon_witch"
+}

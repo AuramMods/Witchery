@@ -375,6 +375,15 @@
 - [x] Save the greater and portable barriers together and restart the dedicated server. The portable shell expired while the remote shell stayed up. Removing the remote ward's altar cleared its heart and remaining barrier blocks. Circle Magic showed the greater barrier's two offerings, costs, and collision rules.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 403 required Forge GameTests. The six new cases exercise recipe sync, creature motion, power use, collision, caps, remote restart, portable expiry, and concurrent legacy wards.
 
+## Banishment and Creature Summoning (2026-11-21)
+
+- [x] Restore the two small white banishment rites. Blaze Powder and a blank Waystone banish Demons, Death, the Lord of Torment, Imps, and Reflections within nine blocks. The powered rite uses 2,000 altar power. The portable rite discharges an Attuned Stone.
+- [x] Restore the medium and large Infernal rings for both Wither recipes. The powered rite uses one Wither Skeleton Skull, Diamond Vapour, an Ender Pearl, a villager, and 4,000 power. The portable rite uses a Diamond and both Attuned Stones in place of the vapour and living offering. The Wither enters combat without the vanilla structure's entrance charge.
+- [x] Restore the witch summon with a small Infernal ring and the spectral familiar summon with a small white ring. Both use 2,000 power and return the same Arthana with its wear. Circle Magic describes the original recipes and clearance requirement.
+- [x] Replace the spectral familiar's placeholder at its original entity ID. Restore the owner, the translucent pig model and sitting pose, the seven ore offerings, and the increasing chance it departs after a payment. Preserve the legacy owner, ore, and search-count data. The familiar searches for matching stone and deepslate ores.
+- [x] In a muted survival client, perform all six rites with supplied offerings and prepared rings. A dedicated restart preserved both summoned Withers, the witch, and the familiar's pending paid search. The familiar kept its UUID and found the test deepslate Emerald Ore after the restart.
+- [x] Run Java 17 data generation, JAR reobfuscation, and 11 focused Forge GameTests on the final revision. The broader run passed 470 of 473 checks before the duplicate ore-message fix. The Accio check passed in the focused run once its fixture chunks were ticking. Wolfman migration and Hobgoblin hauling still failed in the broader run.
+
 ## Queued Circle Rites (2026-11-21)
 
 - [x] Match compatible recipes in their original registration order and reserve their dropped stacks and Grassper offerings during activation. Spend the offerings one rite at a time. A failed cast returns its staged offerings and advances the queue.

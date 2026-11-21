@@ -1,0 +1,12 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [
+    {"item": "witchery:drop_of_luck"},
+    {"item": "minecraft:porkchop"},
+    {"item": "minecraft:gold_ingot"},
+    {"item": "witchery:arthana"}
+  ],
+  "power": 2000,
+  "action": "summon_spectral_familiar"
+}

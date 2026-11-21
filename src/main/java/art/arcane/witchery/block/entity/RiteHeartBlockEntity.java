@@ -7,6 +7,7 @@ import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.entity.Demon;
 import art.arcane.witchery.entity.Reflection;
+import art.arcane.witchery.entity.SpectralFamiliar;
 import art.arcane.witchery.entity.WereVillager;
 import art.arcane.witchery.entity.WitchHunterPursuit;
 import art.arcane.witchery.entity.Wolfman;
@@ -31,6 +32,7 @@ import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.ritual.FetishBinding;
 import art.arcane.witchery.ritual.ClimateChange;
 import art.arcane.witchery.ritual.EarthRites;
+import art.arcane.witchery.ritual.Banishment;
 import art.arcane.witchery.ritual.GlyphicTransformation;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
 import art.arcane.witchery.ritual.LandscapeRites;
@@ -56,8 +58,10 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -67,6 +71,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.event.ForgeEventFactory;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
@@ -219,13 +224,17 @@ public final class RiteHeartBlockEntity extends BlockEntity {
 
     private void finish(ServerLevel level, ItemRiteRecipe rite) {
         BlockPos pos = getBlockPos();
-        var protectionKind = rite.action().protection();
+        var action = rite.action();
+        var protectionKind = action.protection();
+        boolean newSummoning = action == ItemRiteRecipe.Action.SUMMON_WITHER
+                || action == ItemRiteRecipe.Action.SUMMON_WITCH || action == ItemRiteRecipe.Action.SUMMON_SPECTRAL_FAMILIAR;
         AltarBlockEntity altar = null;
         if (rite.power() > 0) {
-            altar = protectionKind == null ? AltarPower.nearest(level, pos)
-                    : AltarPower.nearest(level, pos, ProtectionRites.ALTAR_RANGE);
+            altar = protectionKind != null || action == ItemRiteRecipe.Action.BANISH_DEMON || newSummoning
+                    ? AltarPower.nearest(level, pos, ProtectionRites.ALTAR_RANGE) : AltarPower.nearest(level, pos);
         }
-        if (rite.power() > 0 && (altar == null || altar.power() < rite.power())) {
+        boolean missingPower = rite.power() > 0 && (altar == null || altar.power() < rite.power());
+        if (missingPower && action != ItemRiteRecipe.Action.SUMMON_WITHER) {
             abort(level, "message.witchery.rite.missing_power");
             return;
         }
@@ -233,6 +242,15 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (rite.livingOffering() != null && living == null) {
             abort(level, "message.witchery.rite.missing_living_offering");
             return;
+        }
+        if (action == ItemRiteRecipe.Action.SUMMON_WITHER) {
+            // The villager offering is a separate legacy step before the altar debit and clearance check.
+            if (living != null) sacrificeLiving(level, living);
+            living = null;
+            if (missingPower) {
+                abort(level, "message.witchery.rite.missing_power");
+                return;
+            }
         }
         List<ServerPlayer> recipients = List.of();
         Entity result = null;
@@ -257,27 +275,39 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             }
         } else if (infusionType > 0) {
             recipients = nearbyPlayers(level, pos, INFUSION_RANGE);
-        } else if (rite.action() == ItemRiteRecipe.Action.SUMMON_DEMON || rite.action() == ItemRiteRecipe.Action.SUMMON_IMP
-                || rite.action() == ItemRiteRecipe.Action.SUMMON_REFLECTION) {
+        } else if (action.summonsCreature()) {
             if (rite.action() == ItemRiteRecipe.Action.SUMMON_IMP && covenSize == 0) {
                 abort(level, "message.witchery.rite.coven_required");
                 return;
             }
-            Mob summon = switch (rite.action()) {
+            Mob summon = switch (action) {
                 case SUMMON_IMP -> WitcheryEntities.IMP.get().create(level);
                 case SUMMON_REFLECTION -> WitcheryEntities.REFLECTION.get().create(level);
-                default -> WitcheryEntities.DEMON.get().create(level);
+                case SUMMON_WITHER -> EntityType.WITHER.create(level);
+                case SUMMON_WITCH -> EntityType.WITCH.create(level);
+                case SUMMON_SPECTRAL_FAMILIAR -> WitcheryEntities.SPECTRAL_FAMILIAR.get().create(level);
+                case SUMMON_DEMON -> WitcheryEntities.DEMON.get().create(level);
+                default -> throw new IllegalStateException("Unexpected creature rite " + action);
             };
-            if (summon == null) return;
+            if (summon == null) {
+                if (newSummoning) abort(level, "message.witchery.rite.summon_cancelled");
+                return;
+            }
             summon.moveTo(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 0, 0);
             if (hasObstructedSummoningArea(level, pos) || level.getBlockCollisions(summon, summon.getBoundingBox()).iterator().hasNext()) {
-                if (summon instanceof Reflection && altar != null) altar.consumePower(rite.power());
+                if ((summon instanceof Reflection || newSummoning) && altar != null) altar.consumePower(rite.power());
                 abort(level, "message.witchery.rite.obstructed");
                 return;
             }
             if (summon instanceof Demon demon) demon.summonedByRite();
             else if (summon instanceof Reflection reflection) reflection.allowOutsideMirror();
-            else summon.setPersistenceRequired();
+            else if (summon instanceof SpectralFamiliar familiar) {
+                familiar.setOwnerUUID(initiator);
+                familiar.setTame(true);
+                familiar.setPersistenceRequired();
+            } else if (action == ItemRiteRecipe.Action.SUMMON_IMP) summon.setPersistenceRequired();
+            if (newSummoning) ForgeEventFactory.onFinalizeSpawn(summon, level, level.getCurrentDifficultyAt(summon.blockPosition()),
+                    MobSpawnType.MOB_SUMMONED, null, null);
             result = summon;
         } else if (rite.action() == ItemRiteRecipe.Action.CURSE_WAKING_NIGHTMARE
                 || rite.action() == ItemRiteRecipe.Action.CURE_WAKING_NIGHTMARE) {
@@ -376,6 +406,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             result = drop;
         }
         if (result != null && !level.addFreshEntity(result)) {
+            if (newSummoning) abort(level, "message.witchery.rite.summon_cancelled");
             return;
         }
         if (altar != null && !altar.consumePower(rite.power())) {
@@ -391,6 +422,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             abort(level, "message.witchery.rite.eclipse_cooldown");
             return;
         }
+        if (action == ItemRiteRecipe.Action.BANISH_DEMON) Banishment.perform(level, pos);
         if (protectionKind != null && !prepareProtection(level, rite, protectionKind, pos)) return;
         LandscapeRites.Progress landscape = null;
         if (rite.action().shapesLandscape()) {
@@ -441,10 +473,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             ServerPlayer caster = level.getServer().getPlayerList().getPlayer(initiator);
             if (caster != null) Predictions.attune(caster);
         }
-        if (living != null) {
-            level.sendParticles(ParticleTypes.PORTAL, living.getX(), living.getY(0.5), living.getZ(), 16, 0.4, 0.6, 0.4, 0.05);
-            living.discard();
-        }
+        if (living != null) sacrificeLiving(level, living);
         if (corruptionCaster != null) {
             if (curseTarget != null) PoppetProtectionItem.corrupt(corruptionCaster, curseTarget);
             level.sendParticles(ParticleTypes.FLAME, pos.getX() + 0.5, pos.getY() + 0.2, pos.getZ() + 0.5,
@@ -488,6 +517,11 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
                 16, 0.4, 0.4, 0.4, 0.05);
         level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.9F, 1.35F);
+    }
+
+    private static void sacrificeLiving(ServerLevel level, Mob living) {
+        level.sendParticles(ParticleTypes.PORTAL, living.getX(), living.getY(0.5), living.getZ(), 16, 0.4, 0.6, 0.4, 0.05);
+        living.discard();
     }
 
     private void prepareStorm(ServerLevel level, ItemRiteRecipe rite, BlockPos heart) {

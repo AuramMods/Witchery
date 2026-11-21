@@ -1,0 +1,15 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [
+    {"size": "medium", "glyph": "witchery:circleglyphinfernal"},
+    {"size": "large", "glyph": "witchery:circleglyphinfernal"}
+  ],
+  "sacrifices": [
+    {"item": "minecraft:wither_skeleton_skull"},
+    {"item": "witchery:diamond_vapour"},
+    {"item": "minecraft:ender_pearl"}
+  ],
+  "power": 4000,
+  "living_offering": "minecraft:villager",
+  "action": "summon_wither"
+}

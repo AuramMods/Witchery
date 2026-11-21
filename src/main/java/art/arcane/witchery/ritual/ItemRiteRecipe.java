@@ -95,7 +95,18 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         PART_EARTH,
         RAISE_EARTH,
         RAISE_EARTH_MEDIUM,
-        RAISE_EARTH_LARGE;
+        RAISE_EARTH_LARGE,
+        BANISH_DEMON,
+        SUMMON_WITHER,
+        SUMMON_WITCH,
+        SUMMON_SPECTRAL_FAMILIAR;
+
+        public boolean summonsCreature() {
+            return switch (this) {
+                case SUMMON_DEMON, SUMMON_IMP, SUMMON_REFLECTION, SUMMON_WITHER, SUMMON_WITCH, SUMMON_SPECTRAL_FAMILIAR -> true;
+                default -> false;
+            };
+        }
 
         public boolean shapesLandscape() {
             return usesWaystoneTarget() || this == ICE_SHELL || this == CLIMATE_CHANGE || this == PART_EARTH
@@ -403,6 +414,10 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 case "item" -> Action.ITEM;
                 case "manifestation" -> Action.MANIFESTATION;
                 case "summon_demon" -> Action.SUMMON_DEMON;
+                case "banish_demon" -> Action.BANISH_DEMON;
+                case "summon_wither" -> Action.SUMMON_WITHER;
+                case "summon_witch" -> Action.SUMMON_WITCH;
+                case "summon_spectral_familiar" -> Action.SUMMON_SPECTRAL_FAMILIAR;
                 case "summon_imp" -> Action.SUMMON_IMP;
                 case "summon_reflection" -> Action.SUMMON_REFLECTION;
                 case "glyphic_transformation" -> Action.GLYPHIC_TRANSFORMATION;
