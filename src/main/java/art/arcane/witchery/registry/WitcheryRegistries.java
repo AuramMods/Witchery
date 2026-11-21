@@ -10,11 +10,13 @@ import art.arcane.witchery.world.HobgoblinSpawnModifier;
 import art.arcane.witchery.world.MirrorChunkGenerator;
 import art.arcane.witchery.world.SurfaceStructuresFeature;
 import art.arcane.witchery.world.TormentChunkGenerator;
+import art.arcane.witchery.world.VillageBookshopProcessor;
 import art.arcane.witchery.world.WickerManFeature;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.minecraftforge.common.loot.IGlobalLootModifier;
 import net.minecraftforge.common.world.BiomeModifier;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -30,8 +32,12 @@ public final class WitcheryRegistries {
             DeferredRegister.create(Registries.CHUNK_GENERATOR, Witchery.MODID);
     private static final DeferredRegister<Codec<? extends BiomeModifier>> BIOME_MODIFIERS =
             DeferredRegister.create(ForgeRegistries.Keys.BIOME_MODIFIER_SERIALIZERS, Witchery.MODID);
+    private static final DeferredRegister<StructureProcessorType<?>> STRUCTURE_PROCESSORS =
+            DeferredRegister.create(Registries.STRUCTURE_PROCESSOR, Witchery.MODID);
     public static final RegistryObject<Codec<HobgoblinSpawnModifier>> HOBGOBLIN_SPAWNS =
             BIOME_MODIFIERS.register("hobgoblin_spawns", () -> HobgoblinSpawnModifier.CODEC);
+    public static final RegistryObject<StructureProcessorType<VillageBookshopProcessor>> BOOKSHOP_PROCESSOR =
+            STRUCTURE_PROCESSORS.register("village_bookshop", () -> () -> VillageBookshopProcessor.CODEC);
 
     static {
         LOOT_MODIFIERS.register("grass_seeds", () -> GrassSeedLootModifier.CODEC);
@@ -63,5 +69,6 @@ public final class WitcheryRegistries {
         FEATURES.register(eventBus);
         CHUNK_GENERATORS.register(eventBus);
         BIOME_MODIFIERS.register(eventBus);
+        STRUCTURE_PROCESSORS.register(eventBus);
     }
 }

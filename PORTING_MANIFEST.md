@@ -1497,6 +1497,8 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
   - `WorldHandlerVillageWitchHut`
   - `WorldHandlerVillageBookShop`
   - `WorldHandlerVillageDistrict`
+- `witchery:village/bookshop` is a 10-by-8-by-9 template with the modern `minecraft:building_entrance` connector. The village pool hook appends one weight-15 entry to each of the five ordinary house pools. Jigsaw assembly limits each village to one shop. This preserves the ordinary legacy limit. The old custom world-size exception for a second shop has no equivalent in standard 1.20.1 village generation.
+- `generateBookShops` controls new village assembly. `townBookshopAllowedBooks` accepts extra registered item IDs and the old `id,metadata` form for recognized Witchery subtypes. The processor fills the original chest and four frames during placement. The chest rolls five to ten entries and guarantees `witchery:vampirebook`. The original three Torn Page entries have weights three, two, and one. Frames draw uniformly from the catalogue entries.
 
 ## Tile Entity Registration Surfaces
 - Auto-registration path: `BlockBaseContainer.func_149663_c` -> `GameRegistry.registerTileEntity(clazzTile, blockName)`.

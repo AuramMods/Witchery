@@ -365,7 +365,16 @@
 - [x] Restore the rank-three crouching strike. One empty-hand strike in the muted client took a pig from ten to nine health and launched it about six blocks.
 - [x] Finish the rank-three nighttime trial in survival. The counter paused at 158 during a sheltered daytime check. A dedicated restart preserved the accumulated time, rank cap, three attached pages and bookmark. The client reached rank four after 300 nighttime intervals through regular server ticks. The journal reopened at the saved chapter and displayed its ritual diagram.
 - [x] Restore rank-four speed. The muted client selected the new hotbar icon, spent ten blood for Speed II and Jump Boost II, and spent ten more for Speed IV and Jump Boost III. A third use while active spent no blood. Data generation, JAR reobfuscation and all 151 required Forge GameTests passed.
-- [ ] Restore the village bookshop loot for Observations of an Immortal and its Torn Pages.
+- [x] Restore the village bookshop loot for Observations of an Immortal and its Torn Pages.
+
+## Village Bookshop (2026-11-21)
+
+- [x] Add the original cobblestone and oak shop to the five ordinary village house pools. It connects to village streets and is limited to one per modern village. The shop has its original porch, chest, and four framed displays.
+- [x] Restore the configured chest stock and guaranteed journal. In a fresh seed 1 world, the muted survival client walked into the shop, looted the journal and a Torn Page, and combined them in its inventory grid. The server recorded one attached page.
+- [x] Generate the same seed with `generateBookShops` disabled. The village at `640 816` still generated and its saved piece list contained zero bookshops.
+- [x] Rejoin after restarting the dedicated server. The journal kept its attached page, the chest kept its remaining stock, and the four frame UUIDs survived.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 363 required Forge GameTests. The new cases cover the five pool weights, a rotated shop, configured stock, foundations, and supported frames.
+- [ ] Finish the reading behavior and presentation for the Witchery guidebooks that still use legacy ingredient IDs.
 
 ## Daylight Collector and Sun Grenades (2026-11-20)
 

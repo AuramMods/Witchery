@@ -31,6 +31,8 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.BooleanValue GENERATE_COVENS;
     public static final ForgeConfigSpec.BooleanValue GENERATE_SHACKS;
     public static final ForgeConfigSpec.BooleanValue GENERATE_HOBGOBLIN_HUTS;
+    public static final ForgeConfigSpec.BooleanValue GENERATE_BOOK_SHOPS;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> TOWN_BOOKSHOP_ALLOWED_BOOKS;
     public static final ForgeConfigSpec.BooleanValue HOBGOBLIN_DESPAWN_BLOCK;
     public static final ForgeConfigSpec.IntValue HOBGOBLIN_SPAWN_WEIGHT;
     public static final ForgeConfigSpec.IntValue HOBGOBLIN_GOD_SPAWN_CHANCE;
@@ -95,6 +97,15 @@ public final class WitcheryServerConfig {
                 .worldRestart().define("generateShacks", true);
         GENERATE_HOBGOBLIN_HUTS = builder.comment("Generate hobgoblin huts in new chunks.")
                 .worldRestart().define("generateHobgoblinHuts", true);
+        GENERATE_BOOK_SHOPS = builder.comment("Add Witchery bookshops to newly generated villages.")
+                .worldRestart().define("generateBookShops", true);
+        TOWN_BOOKSHOP_ALLOWED_BOOKS = builder.comment("Extra bookshop stock as item IDs or legacy item IDs followed by comma and metadata. Repeat entries for additional weight.")
+                .defineListAllowEmpty("townBookshopAllowedBooks", List.of("minecraft:book", "witchery:ingredient,46",
+                        "witchery:ingredient,47", "witchery:ingredient,48", "witchery:ingredient,49",
+                        "witchery:ingredient,81", "witchery:ingredient,106", "witchery:ingredient,107",
+                        "witchery:ingredient,127", "witchery:bookbiomes2", "witchery:cauldronbook",
+                        "thaumcraft:thaumonomicon", "tconstruct:materials_and_you", "tconstruct:puny_smelting",
+                        "tconstruct:mighty_smelting", "tconstruct:tinkers_gadgetry"), entry -> entry instanceof String);
         HOBGOBLIN_DESPAWN_BLOCK = builder.define("hobgoblinDespawnBlock", true);
         HOBGOBLIN_SPAWN_WEIGHT = builder.comment("Wild hobgoblin spawn weight in forests and swamps. Plains use one less, with a minimum of one.")
                 .worldRestart().defineInRange("hobgoblinSpawnWeight", 4, 1, Integer.MAX_VALUE);
