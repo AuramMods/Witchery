@@ -1,33 +1,84 @@
 {
-  "parent": "minecraft:recipes/root",
-  "criteria": {
-    "has_sapling": {
-      "conditions": {
-        "items": [
-          {
-            "tag": "minecraft:saplings"
+  "advancements": [
+    {
+      "advancement": {
+        "parent": "minecraft:recipes/root",
+        "criteria": {
+          "has_sapling": {
+            "conditions": {
+              "items": [
+                {
+                  "tag": "minecraft:saplings"
+                }
+              ]
+            },
+            "trigger": "minecraft:inventory_changed"
+          },
+          "has_the_recipe": {
+            "conditions": {
+              "recipe": "witchery:wood_ash"
+            },
+            "trigger": "minecraft:recipe_unlocked"
           }
-        ]
+        },
+        "requirements": [
+          [
+            "has_sapling",
+            "has_the_recipe"
+          ]
+        ],
+        "rewards": {
+          "recipes": [
+            "witchery:wood_ash"
+          ]
+        },
+        "sends_telemetry_event": false
       },
-      "trigger": "minecraft:inventory_changed"
+      "conditions": [
+        {
+          "type": "witchery:all_saplings_smelt"
+        }
+      ]
     },
-    "has_the_recipe": {
-      "conditions": {
-        "recipe": "witchery:wood_ash"
+    {
+      "advancement": {
+        "parent": "minecraft:recipes/root",
+        "criteria": {
+          "has_sapling": {
+            "conditions": {
+              "items": [
+                {
+                  "tag": "minecraft:saplings"
+                }
+              ]
+            },
+            "trigger": "minecraft:inventory_changed"
+          },
+          "has_the_recipe": {
+            "conditions": {
+              "recipe": "witchery:wood_ash"
+            },
+            "trigger": "minecraft:recipe_unlocked"
+          }
+        },
+        "requirements": [
+          [
+            "has_sapling",
+            "has_the_recipe"
+          ]
+        ],
+        "rewards": {
+          "recipes": [
+            "witchery:wood_ash"
+          ]
+        },
+        "sends_telemetry_event": false
       },
-      "trigger": "minecraft:recipe_unlocked"
+      "conditions": [
+        {
+          "type": "forge:true"
+        }
+      ]
     }
-  },
-  "requirements": [
-    [
-      "has_sapling",
-      "has_the_recipe"
-    ]
-  ],
-  "rewards": {
-    "recipes": [
-      "witchery:wood_ash"
-    ]
-  },
-  "sends_telemetry_event": false
+  ]
 }

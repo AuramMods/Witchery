@@ -5,6 +5,7 @@ import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.StockadeBlock;
 import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.block.WitchWoodType;
+import art.arcane.witchery.crafting.AllSaplingsSmeltCondition;
 import art.arcane.witchery.item.HunterClothingItem;
 import art.arcane.witchery.item.HunterClothingItem.Piece;
 import art.arcane.witchery.item.HunterClothingItem.Upgrade;
@@ -40,6 +41,7 @@ import net.minecraftforge.common.crafting.PartialNBTIngredient;
 import net.minecraftforge.common.crafting.ConditionalRecipe;
 import net.minecraftforge.common.crafting.conditions.NotCondition;
 import net.minecraftforge.common.crafting.conditions.TagEmptyCondition;
+import net.minecraftforge.common.crafting.conditions.TrueCondition;
 
 import java.util.function.Consumer;
 
@@ -146,10 +148,7 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                         RecipeCategory.MISC, WitcheryIngredient.CLAY_JAR.item(), 0, 200)
                 .unlockedBy("has_soft_jar", has(WitcheryIngredient.SOFT_CLAY_JAR.item()))
                 .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "clay_jar"));
-        SimpleCookingRecipeBuilder.smelting(Ingredient.of(ItemTags.SAPLINGS),
-                        RecipeCategory.MISC, WitcheryIngredient.WOOD_ASH.item(), 0, 200)
-                .unlockedBy("has_sapling", has(ItemTags.SAPLINGS))
-                .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "wood_ash"));
+        woodAshRecipe(recipeOutput);
         SimpleCookingRecipeBuilder.smelting(Ingredient.of(witchLog),
                         RecipeCategory.MISC, Items.CHARCOAL, 0, 200)
                 .unlockedBy("has_witch_log", has(witchLog))
@@ -641,6 +640,28 @@ public class WitcheryRecipeProvider extends RecipeProvider {
         ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, WitcheryIngredient.SILVER_BOLT.item(), 3)
                 .define('S', silver).define('B', stake).pattern(" S ").pattern("BBB")
                 .unlockedBy("has_silver_dust", has(silver)).save(output);
+    }
+
+    private static void woodAshRecipe(Consumer<FinishedRecipe> output) {
+        Item witchSapling = WitcheryBlocks.getRequired("witchsapling").get().asItem();
+        Ingredient nonRowan = CompoundIngredient.of(
+                PartialNBTIngredient.of(witchSapling, WitchWoodType.ALDER.stack(witchSapling).getTag()),
+                PartialNBTIngredient.of(witchSapling, WitchWoodType.HAWTHORN.stack(witchSapling).getTag()));
+        Ingredient originalSaplings = DifferenceIngredient.of(Ingredient.of(witchSapling, Items.OAK_SAPLING,
+                Items.SPRUCE_SAPLING, Items.BIRCH_SAPLING, Items.JUNGLE_SAPLING, Items.ACACIA_SAPLING,
+                Items.DARK_OAK_SAPLING), nonRowan);
+        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "wood_ash");
+        ConditionalRecipe.builder()
+                .addCondition(AllSaplingsSmeltCondition.INSTANCE)
+                .addRecipe(conditional -> SimpleCookingRecipeBuilder.smelting(Ingredient.of(ItemTags.SAPLINGS),
+                                RecipeCategory.MISC, WitcheryIngredient.WOOD_ASH.item(), 0, 200)
+                        .unlockedBy("has_sapling", has(ItemTags.SAPLINGS)).save(conditional, id))
+                .addCondition(TrueCondition.INSTANCE)
+                .addRecipe(conditional -> SimpleCookingRecipeBuilder.smelting(originalSaplings,
+                                RecipeCategory.MISC, WitcheryIngredient.WOOD_ASH.item(), 0, 200)
+                        .unlockedBy("has_sapling", has(ItemTags.SAPLINGS)).save(conditional, id))
+                .generateAdvancement(ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "recipes/misc/wood_ash"))
+                .build(output, id);
     }
 
     private static void hunterClothingRecipes(Consumer<FinishedRecipe> output) {

@@ -3,6 +3,7 @@ package art.arcane.witchery.registry;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.brewing.CauldronRitualRecipe;
 import art.arcane.witchery.brewing.KettleRecipe;
+import art.arcane.witchery.crafting.AllSaplingsSmeltCondition;
 import art.arcane.witchery.crafting.AssembleVampireBookRecipe;
 import art.arcane.witchery.crafting.BoundTaglockIngredient;
 import art.arcane.witchery.crafting.ClothingRepairRecipe;
@@ -141,12 +142,13 @@ public final class WitcheryRecipes {
     public static void register(IEventBus bus) {
         TYPES.register(bus);
         SERIALIZERS.register(bus);
-        bus.addListener(WitcheryRecipes::registerIngredients);
+        bus.addListener(WitcheryRecipes::registerRecipeComponents);
     }
 
-    private static void registerIngredients(RegisterEvent event) {
+    private static void registerRecipeComponents(RegisterEvent event) {
         if (event.getRegistryKey().equals(Registries.RECIPE_SERIALIZER)) {
             CraftingHelper.register(BoundTaglockIngredient.ID, BoundTaglockIngredient.SERIALIZER);
+            CraftingHelper.register(new AllSaplingsSmeltCondition.Serializer());
         }
     }
 }

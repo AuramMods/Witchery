@@ -2,6 +2,7 @@ package art.arcane.witchery;
 
 import art.arcane.witchery.block.entity.PoppetShelfBlockEntity;
 import art.arcane.witchery.config.WitcheryClientConfig;
+import art.arcane.witchery.config.WitcheryCommonConfig;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.item.EndlessWaterBrewItem;
 import art.arcane.witchery.item.GrenadeItem;
@@ -22,6 +23,7 @@ public class Witchery {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public Witchery(FMLJavaModLoadingContext context) {
+        context.registerConfig(ModConfig.Type.COMMON, WitcheryCommonConfig.SPEC);
         context.registerConfig(ModConfig.Type.SERVER, WitcheryServerConfig.SPEC);
         context.registerConfig(ModConfig.Type.CLIENT, WitcheryClientConfig.SPEC);
         IEventBus modEventBus = context.getModEventBus();

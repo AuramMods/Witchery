@@ -1173,6 +1173,8 @@ Owls retain `WITCWaypoint` and their launch coordinates in `HomeX`, `HomeY` and 
 The modern datapack contains the altar's shaped recipe. Rowan logs match untagged stacks and stacks with explicit rowan state. Other Witchery wood variants and non-water potions are excluded.
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/WitcheryRecipes.java`
 
+The `witchery:wood_ash` smelting recipe uses `minecraft:saplings` when `addSmeltingForAllSaplingsToWoodAsh` is true in `config/witchery-common.toml`. The false branch accepts the original six vanilla species and Rowan. Both the vanilla furnace and Witch's Oven load the selected recipe through Forge. The oven saves pending experience under `RecipesUsed` and pays it out when a player takes the main result.
+
 - `RecipeSorter.register`: 7 custom recipes
 - `KettleRecipes.instance().addRecipe`: 39
 - `DistilleryRecipes.instance().addRecipe`: 9

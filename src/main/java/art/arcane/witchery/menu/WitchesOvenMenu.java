@@ -2,12 +2,14 @@ package art.arcane.witchery.menu;
 
 import art.arcane.witchery.block.entity.WitchesOvenBlockEntity;
 import art.arcane.witchery.registry.WitcheryMenus;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.FurnaceResultSlot;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -42,8 +44,16 @@ public final class WitchesOvenMenu extends AbstractContainerMenu {
 
         addOvenSlot(INPUT_SLOT, 56, 17);
         addOvenSlot(FUEL_SLOT, 56, 53);
-        addOvenSlot(RESULT_SLOT, 118, 21);
-        addOvenSlot(FUME_SLOT, 118, 53);
+        addSlot(new FurnaceResultSlot(inventory.player, oven, RESULT_SLOT, 118, 21) {
+            @Override
+            public void onTake(Player player, ItemStack stack) {
+                super.onTake(player, stack);
+                if (player instanceof ServerPlayer serverPlayer && oven instanceof WitchesOvenBlockEntity blockEntity) {
+                    blockEntity.awardSmeltingExperience(serverPlayer);
+                }
+            }
+        });
+        addSlot(new FurnaceResultSlot(inventory.player, oven, FUME_SLOT, 118, 53));
         addOvenSlot(JAR_SLOT, 83, 53);
 
         for (int row = 0; row < 3; row++) {
@@ -105,6 +115,9 @@ public final class WitchesOvenMenu extends AbstractContainerMenu {
         }
         if (!moved) {
             return ItemStack.EMPTY;
+        }
+        if (index == RESULT_SLOT || index == FUME_SLOT) {
+            slot.onQuickCraft(stack, original);
         }
 
         if (stack.isEmpty()) {

@@ -12,10 +12,15 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -39,6 +44,7 @@ import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 
 public final class WitchesOvenBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer {
@@ -62,6 +68,7 @@ public final class WitchesOvenBlockEntity extends BaseContainerBlockEntity imple
 
     private final NonNullList<ItemStack> items = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
     private final RecipeManager.CachedCheck<Container, SmeltingRecipe> recipes = RecipeManager.createCheck(RecipeType.SMELTING);
+    private final Map<ResourceLocation, Integer> recipesUsed = new HashMap<>();
     private final Map<Direction, LazyOptional<IItemHandlerModifiable>> sidedHandlers = new EnumMap<>(Direction.class);
     private int burnTime;
     private int burnDuration;
@@ -109,15 +116,11 @@ public final class WitchesOvenBlockEntity extends BaseContainerBlockEntity imple
         ItemStack input = oven.getItem(INPUT_SLOT);
         ItemStack fuel = oven.getItem(FUEL_SLOT);
         boolean inventoryChanged = false;
-        ItemStack result = ItemStack.EMPTY;
-        if (!input.isEmpty() && (oven.burnTime > 0 || !fuel.isEmpty())) {
-            result = oven.recipes.getRecipeFor(oven, level)
-                    .map(recipe -> recipe.assemble(oven, level.registryAccess()))
-                    .filter(WitchesOvenBlockEntity::isOvenResult)
-                    .orElse(ItemStack.EMPTY);
-        }
+        SmeltingRecipe recipe = !input.isEmpty() && (oven.burnTime > 0 || !fuel.isEmpty())
+                ? oven.recipes.getRecipeFor(oven, level).orElse(null) : null;
+        ItemStack result = recipe == null ? ItemStack.EMPTY : recipe.assemble(oven, level.registryAccess());
 
-        boolean canCook = oven.canStore(RESULT_SLOT, result);
+        boolean canCook = recipe != null && isOvenResult(result) && oven.canStore(RESULT_SLOT, result);
         if (canCook && oven.burnTime == 0) {
             inventoryChanged = oven.consumeFuel(fuel);
         }
@@ -131,6 +134,9 @@ public final class WitchesOvenBlockEntity extends BaseContainerBlockEntity imple
             oven.cookDuration = COOK_TICKS - TICKS_PER_FUNNEL * funnels;
             if (++oven.cookTime >= oven.cookDuration) {
                 oven.store(RESULT_SLOT, result);
+                if (recipe.getExperience() > 0) {
+                    oven.recipesUsed.merge(recipe.getId(), 1, Integer::sum);
+                }
                 oven.collectFume(level, input, 0.3 + left + right);
                 input.shrink(1);
                 oven.cookTime = 0;
@@ -249,6 +255,22 @@ public final class WitchesOvenBlockEntity extends BaseContainerBlockEntity imple
         }
     }
 
+    public void awardSmeltingExperience(ServerPlayer player) {
+        if (recipesUsed.isEmpty()) return;
+        ServerLevel server = player.serverLevel();
+        recipesUsed.forEach((id, count) -> server.getRecipeManager().byKey(id).ifPresent(usedRecipe -> {
+            if (usedRecipe instanceof SmeltingRecipe smelting) {
+                float experience = count * smelting.getExperience();
+                int points = Mth.floor(experience);
+                float fraction = experience - points;
+                if (fraction > 0 && server.random.nextFloat() < fraction) points++;
+                ExperienceOrb.award(server, player.position(), points);
+            }
+        }));
+        recipesUsed.clear();
+        setChanged();
+    }
+
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
@@ -263,6 +285,13 @@ public final class WitchesOvenBlockEntity extends BaseContainerBlockEntity imple
         burnTime = Math.max(0, tag.getInt("BurnTime"));
         burnDuration = Math.max(burnTime, tag.getInt("BurnDuration"));
         cookTime = Math.max(0, Math.min(COOK_TICKS, tag.getInt("CookTime")));
+        recipesUsed.clear();
+        CompoundTag used = tag.getCompound("RecipesUsed");
+        for (String id : used.getAllKeys()) {
+            ResourceLocation recipe = ResourceLocation.tryParse(id);
+            int count = used.getInt(id);
+            if (recipe != null && count > 0) recipesUsed.put(recipe, count);
+        }
     }
 
     @Override
@@ -272,6 +301,11 @@ public final class WitchesOvenBlockEntity extends BaseContainerBlockEntity imple
         tag.putInt("BurnTime", burnTime);
         tag.putInt("BurnDuration", burnDuration);
         tag.putInt("CookTime", cookTime);
+        if (!recipesUsed.isEmpty()) {
+            CompoundTag used = new CompoundTag();
+            recipesUsed.forEach((id, count) -> used.putInt(id.toString(), count));
+            tag.put("RecipesUsed", used);
+        }
     }
 
     @Override
