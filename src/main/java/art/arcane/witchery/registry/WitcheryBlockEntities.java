@@ -9,6 +9,7 @@ import art.arcane.witchery.block.entity.AreaWardBlockEntity;
 import art.arcane.witchery.block.entity.BarrierBlockEntity;
 import art.arcane.witchery.block.entity.BloodRoseBlockEntity;
 import art.arcane.witchery.block.entity.BloodCrucibleBlockEntity;
+import art.arcane.witchery.block.entity.BrazierBlockEntity;
 import art.arcane.witchery.block.entity.ChaliceBlockEntity;
 import art.arcane.witchery.block.entity.CoffinBlockEntity;
 import art.arcane.witchery.block.entity.CrystalBallBlockEntity;
@@ -93,6 +94,9 @@ public final class WitcheryBlockEntities {
             BLOCK_ENTITIES.register("distilleryidle", () -> distilleryType(WitcheryBlockEntities::createDistillery));
     public static final RegistryObject<BlockEntityType<DistilleryBlockEntity>> LEGACY_BURNING_DISTILLERY =
             BLOCK_ENTITIES.register("distilleryburning", () -> distilleryType(WitcheryBlockEntities::createLegacyBurningDistillery));
+    public static final RegistryObject<BlockEntityType<BrazierBlockEntity>> BRAZIER =
+            BLOCK_ENTITIES.register("brazier", () -> BlockEntityType.Builder.of(BrazierBlockEntity::new,
+                    WitcheryBlocks.getRequired("brazier").get()).build(null));
     public static final RegistryObject<BlockEntityType<KettleBlockEntity>> KETTLE =
             BLOCK_ENTITIES.register("kettle", () -> BlockEntityType.Builder.of(KettleBlockEntity::new,
                     WitcheryBlocks.getRequired("kettle").get()).build(null));
@@ -147,6 +151,7 @@ public final class WitcheryBlockEntities {
 
     static {
         LEGACY_BLOCK_ENTITIES.put("beartrap", HUNTING_TRAP);
+        LEGACY_BLOCK_ENTITIES.put("brazier", BRAZIER);
         LEGACY_BLOCK_ENTITIES.put("altar", ALTAR);
         LEGACY_BLOCK_ENTITIES.put("barrier", BARRIER);
         LEGACY_BLOCK_ENTITIES.put("poppetshelf", POPPET_SHELF);

@@ -20,7 +20,15 @@ public final class WitcheryDamageTypes {
     public static final ResourceKey<DamageType> VAMPIRE_BITE = ResourceKey.create(Registries.DAMAGE_TYPE,
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "vampire_bite"));
 
+    public static final ResourceKey<DamageType> SPECTRAL_TOUCH = ResourceKey.create(Registries.DAMAGE_TYPE,
+            ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "spectral_touch"));
+
     private WitcheryDamageTypes() {}
+
+    public static DamageSource spectralTouch(Entity attacker) {
+        var type = attacker.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(SPECTRAL_TOUCH);
+        return new DamageSource(type, attacker);
+    }
 
     public static DamageSource demonic(Level level, Entity projectile, @Nullable Entity attacker) {
         return new DamageSource(level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(DEMONIC),

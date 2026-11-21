@@ -16,10 +16,15 @@ public final class AltarPower {
 
     @Nullable
     public static AltarBlockEntity nearest(ServerLevel level, BlockPos pos) {
+        return nearest(level, pos, RANGE);
+    }
+
+    @Nullable
+    public static AltarBlockEntity nearest(ServerLevel level, BlockPos pos, int range) {
         AltarBlockEntity closest = null;
-        double nearestDistance = RANGE * RANGE;
-        for (int x = SectionPos.blockToSectionCoord(pos.getX() - RANGE); x <= SectionPos.blockToSectionCoord(pos.getX() + RANGE); x++) {
-            for (int z = SectionPos.blockToSectionCoord(pos.getZ() - RANGE); z <= SectionPos.blockToSectionCoord(pos.getZ() + RANGE); z++) {
+        double nearestDistance = range * range;
+        for (int x = SectionPos.blockToSectionCoord(pos.getX() - range); x <= SectionPos.blockToSectionCoord(pos.getX() + range); x++) {
+            for (int z = SectionPos.blockToSectionCoord(pos.getZ() - range); z <= SectionPos.blockToSectionCoord(pos.getZ() + range); z++) {
                 LevelChunk chunk = level.getChunkSource().getChunkNow(x, z);
                 if (chunk == null) {
                     continue;

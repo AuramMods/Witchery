@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "witchery:spectral_dust"
+    },
+    {
+      "item": "minecraft:bone_meal"
+    },
+    {
+      "item": "witchery:mutandis"
+    }
+  ],
+  "result": {
+    "item": "witchery:graveyard_dust"
+  }
+}

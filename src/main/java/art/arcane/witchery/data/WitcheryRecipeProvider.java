@@ -60,6 +60,28 @@ public class WitcheryRecipeProvider extends RecipeProvider {
         Block distillery = WitcheryBlocks.getRequired("distilleryidle").get();
         Block kettle = WitcheryBlocks.getRequired("kettle").get();
 
+        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, WitcheryBlocks.getRequired("brazier").get())
+                .define('I', Items.IRON_INGOT)
+                .define('N', WitcheryIngredient.NECROMANTIC_STONE.item())
+                .define('S', Items.STICK)
+                .pattern("INI")
+                .pattern(" S ")
+                .pattern("SSS")
+                .unlockedBy("has_necromantic_stone", has(WitcheryIngredient.NECROMANTIC_STONE.item()))
+                .save(recipeOutput);
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.FOOD, WitcheryIngredient.WORMY_APPLE.item())
+                .requires(Items.APPLE)
+                .requires(Items.ROTTEN_FLESH)
+                .requires(Items.SUGAR)
+                .unlockedBy("has_apple", has(Items.APPLE))
+                .save(recipeOutput);
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, WitcheryIngredient.GRAVEYARD_DUST.item())
+                .requires(WitcheryIngredient.SPECTRAL_DUST.item())
+                .requires(Items.BONE_MEAL)
+                .requires(WitcheryIngredient.MUTANDIS.item())
+                .unlockedBy("has_spectral_dust", has(WitcheryIngredient.SPECTRAL_DUST.item()))
+                .save(recipeOutput);
+
         ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, oven)
                 .define('B', Blocks.IRON_BARS)
                 .define('I', Items.IRON_INGOT)

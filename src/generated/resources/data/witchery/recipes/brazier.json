@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "N": {
+      "item": "witchery:necromantic_stone"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    }
+  },
+  "pattern": [
+    "INI",
+    " S ",
+    "SSS"
+  ],
+  "result": {
+    "item": "witchery:brazier"
+  },
+  "show_notification": true
+}

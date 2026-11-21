@@ -2,6 +2,7 @@ package art.arcane.witchery.ritual;
 
 import art.arcane.witchery.block.RitualGlyphBlock;
 import art.arcane.witchery.block.entity.GrassperBlockEntity;
+import art.arcane.witchery.item.SpectralStoneItem;
 import art.arcane.witchery.registry.WitcheryRecipes;
 import art.arcane.witchery.world.WitcheryDimensions;
 import com.google.gson.JsonArray;
@@ -62,7 +63,8 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         CURSE_OF_THE_WOLF,
         CURE_LYCANTHROPY,
         TRANSPOSE_CREATURE,
-        TRANSPOSE_ORES
+        TRANSPOSE_ORES,
+        BIND_SPECTRAL_STONE
     }
 
     public record Ring(RitualCircle pattern, Block glyph) {
@@ -115,6 +117,10 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 items.add(new Offering(grassper.getItem(0), Vec3.atBottomCenterOf(point).add(0, 0.8, 0),
                         grassper.getBlockPos(), () -> grassper.removeItem(0, 1)));
             }
+        }
+        if (action == Action.BIND_SPECTRAL_STONE) {
+            items.removeIf(offering -> offering.stack().getItem() instanceof SpectralStoneItem
+                    && SpectralStoneItem.typeId(offering.stack()) != 0);
         }
         List<Ingredient> required = sacrifices.subList(first, sacrifices.size());
         int[] owners = new int[items.size()];
@@ -241,6 +247,7 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 case "cure_lycanthropy" -> Action.CURE_LYCANTHROPY;
                 case "transpose_creature" -> Action.TRANSPOSE_CREATURE;
                 case "transpose_ores" -> Action.TRANSPOSE_ORES;
+                case "bind_spectral_stone" -> Action.BIND_SPECTRAL_STONE;
                 default -> throw new JsonSyntaxException("Unknown rite action for " + id);
             };
             ItemStack result = action == Action.ITEM

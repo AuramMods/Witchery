@@ -85,6 +85,7 @@ public enum WitcheryIngredient {
     BREW_OF_HITCHCOCK(87, "brew_of_hitchcock"),
     OWLETS_WING(89, "owlets_wing"),
     TOE_OF_FROG(90, "toe_of_frog"),
+    WORMY_APPLE(91, "wormy_apple"),
     QUARTZ_SPHERE(92, "quartz_sphere"),
     HAPPENSTANCE_OIL(93, "happenstance_oil"),
     SEER_STONE(94, "seer_stone"),
@@ -110,6 +111,7 @@ public enum WitcheryIngredient {
     BREW_OF_SOARING(122, "brew_of_soaring"),
     BREW_OF_THE_GRAVE(123, "brew_of_the_grave"),
     CONGEALED_SPIRIT(126, "congealed_spirit"),
+    GRAVEYARD_DUST(128, "graveyard_dust"),
     NULL_CATALYST(130, "null_catalyst"),
     NULLIFIED_LEATHER(131, "nullified_leather"),
     STAKE_BOLT(132, "stake_bolt"),
@@ -154,6 +156,9 @@ public enum WitcheryIngredient {
     public static ItemStack loadInventoryStack(CompoundTag stackTag) {
         ItemStack stack = ItemStack.of(stackTag);
         if (stackTag.contains("Damage", Tag.TAG_ANY_NUMERIC)) {
+            if (stack.getItem() instanceof SpectralStoneItem && SpectralStoneItem.typeId(stack) == 0) {
+                SpectralStoneItem.applyLegacyContents(stack, stackTag.getInt("Damage"));
+            }
             if (stack.getItem() instanceof BrewFuelItem) BrewFuelItem.setTier(stack, stackTag.getInt("Damage"));
             if (stack.getItem() instanceof EndlessWaterBrewItem) {
                 stack.setDamageValue(Math.max(0, Math.min(stackTag.getInt("Damage"), stack.getMaxDamage() - 1)));

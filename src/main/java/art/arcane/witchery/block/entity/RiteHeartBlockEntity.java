@@ -16,6 +16,7 @@ import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.VoodooPoppetItem;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.item.SpectralStoneItem;
 import art.arcane.witchery.lycanthropy.Lycanthropy;
 import art.arcane.witchery.lycanthropy.WerewolfVillagers;
 import art.arcane.witchery.power.AltarPower;
@@ -309,6 +310,10 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (altar != null && !altar.consumePower(rite.power())) {
             if (result != null) result.discard();
             abort(level, "message.witchery.rite.missing_power");
+            return;
+        }
+        if (rite.action() == ItemRiteRecipe.Action.BIND_SPECTRAL_STONE && !SpectralStoneItem.bindFromCircle(level, pos)) {
+            abort(level, "message.witchery.rite.no_spectral_creature");
             return;
         }
         if (familiarRite && !(rite.action() == ItemRiteRecipe.Action.BIND_FAMILIAR

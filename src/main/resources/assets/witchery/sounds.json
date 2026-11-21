@@ -1,4 +1,28 @@
 {
+  "mob.spectre.spectre_say": {
+    "subtitle": "subtitles.witchery.spectre_say",
+    "sounds": [
+      "witchery:mob/spectre/spectre_say"
+    ]
+  },
+  "mob.spectre.spectre_hit": {
+    "subtitle": "subtitles.witchery.spectre_hit",
+    "sounds": [
+      "witchery:mob/spectre/spectre_hit"
+    ]
+  },
+  "mob.spectre.spectre_die": {
+    "subtitle": "subtitles.witchery.spectre_die",
+    "sounds": [
+      "witchery:mob/spectre/spectre_die"
+    ]
+  },
+  "mob.banshee.banshee_scream": {
+    "subtitle": "subtitles.witchery.banshee_scream",
+    "sounds": [
+      "witchery:mob/banshee/banshee_scream"
+    ]
+  },
   "random.heartbeat": {
     "subtitle": "subtitles.witchery.heartbeat",
     "sounds": ["witchery:random/heartbeat1"]

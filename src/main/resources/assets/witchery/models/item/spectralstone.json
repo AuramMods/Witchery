@@ -1,6 +1,26 @@
 {
-   "parent" : "minecraft:item/generated",
-   "textures" : {
-      "layer0" : "witchery:item/witchery.spectralstone"
-   }
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "witchery:item/witchery.spectralstone"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "witchery:spectral_type": 1
+      },
+      "model": "witchery:item/spectralstone_spectre"
+    },
+    {
+      "predicate": {
+        "witchery:spectral_type": 2
+      },
+      "model": "witchery:item/spectralstone_banshee"
+    },
+    {
+      "predicate": {
+        "witchery:spectral_type": 3
+      },
+      "model": "witchery:item/spectralstone_poltergeist"
+    }
+  ]
 }

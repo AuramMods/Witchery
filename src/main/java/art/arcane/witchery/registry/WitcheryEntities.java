@@ -23,6 +23,7 @@ import art.arcane.witchery.entity.Reflection;
 import art.arcane.witchery.entity.ScryEye;
 import art.arcane.witchery.entity.SleepingBody;
 import art.arcane.witchery.entity.Soulfire;
+import art.arcane.witchery.entity.SpectralUndead;
 import art.arcane.witchery.entity.SymbolProjectile;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.entity.Vampire;
@@ -71,6 +72,12 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<DreamSpirit>> SPIRIT =
             ENTITY_TYPES.register("spirit", () -> EntityType.Builder.of(DreamSpirit::new, MobCategory.AMBIENT)
                     .sized(0.25F, 0.25F).clientTrackingRange(8).build(Witchery.MODID + ":spirit"));
+    public static final RegistryObject<EntityType<SpectralUndead>> SPECTRE =
+            spectral("spectre", SpectralUndead.Kind.SPECTRE, 0.6F, 2.2F);
+    public static final RegistryObject<EntityType<SpectralUndead>> BANSHEE =
+            spectral("banshee", SpectralUndead.Kind.BANSHEE, 0.6F, 2.2F);
+    public static final RegistryObject<EntityType<SpectralUndead>> POLTERGEIST =
+            spectral("poltergeist", SpectralUndead.Kind.POLTERGEIST, 0.6F, 1.8F);
     public static final RegistryObject<EntityType<Demon>> DEMON =
             ENTITY_TYPES.register("demon", () -> EntityType.Builder.of(Demon::new, MobCategory.MONSTER)
                     .sized(1.0F, 2.9F).fireImmune().build(Witchery.MODID + ":demon"));
@@ -169,6 +176,9 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("nightmare", NIGHTMARE);
         LEGACY_ENTITIES.put("spirit", SPIRIT);
         LEGACY_ENTITIES.put("demon", DEMON);
+        LEGACY_ENTITIES.put("spectre", SPECTRE);
+        LEGACY_ENTITIES.put("banshee", BANSHEE);
+        LEGACY_ENTITIES.put("poltergeist", POLTERGEIST);
         LEGACY_ENTITIES.put("ent", ENT);
         LEGACY_ENTITIES.put("reflection", REFLECTION);
         LEGACY_ENTITIES.put("lordoftorment", LORD_OF_TORMENT);
@@ -207,6 +217,12 @@ public final class WitcheryEntities {
         return Collections.unmodifiableMap(LEGACY_ENTITIES);
     }
 
+    private static RegistryObject<EntityType<SpectralUndead>> spectral(String path, SpectralUndead.Kind kind, float width, float height) {
+        return ENTITY_TYPES.register(path, () -> EntityType.Builder.<SpectralUndead>of(
+                (type, level) -> new SpectralUndead(type, level, kind), MobCategory.MONSTER)
+                .sized(width, height).build(Witchery.MODID + ":" + path));
+    }
+
     private static void registerLegacyEntity(String legacyName) {
         String path = RegistryNameUtil.normalizePath(legacyName);
         if (LEGACY_ENTITIES.containsKey(path) || path.equals("soulfire") || path.equals("spelleffect") || path.equals("broom")
@@ -228,6 +244,9 @@ public final class WitcheryEntities {
                     : entry == SLEEPING_BODY ? SleepingBody.attributes()
                     : entry == NIGHTMARE ? Nightmare.attributes()
                     : entry == SPIRIT ? DreamSpirit.attributes()
+                    : entry == SPECTRE ? SpectralUndead.attributes(SpectralUndead.Kind.SPECTRE)
+                    : entry == BANSHEE ? SpectralUndead.attributes(SpectralUndead.Kind.BANSHEE)
+                    : entry == POLTERGEIST ? SpectralUndead.attributes(SpectralUndead.Kind.POLTERGEIST)
                     : entry == DEMON ? Demon.attributes()
                     : entry == ENT ? Ent.attributes()
                     : entry == REFLECTION ? Reflection.attributes()

@@ -47,6 +47,11 @@ public final class WitcherySounds {
     public static final RegistryObject<SoundEvent> TOAD_CROAK = sound("mob.toad.toad_croak");
     public static final RegistryObject<SoundEvent> TOAD_HURT = sound("mob.toad.toad_hurt");
 
+    public static final RegistryObject<SoundEvent> SPECTRE_AMBIENT = sound("mob.spectre.spectre_say");
+    public static final RegistryObject<SoundEvent> SPECTRE_HIT = sound("mob.spectre.spectre_hit");
+    public static final RegistryObject<SoundEvent> SPECTRE_DEATH = sound("mob.spectre.spectre_die");
+    public static final RegistryObject<SoundEvent> BANSHEE_SCREAM = sound("mob.banshee.banshee_scream");
+
     private WitcherySounds() {
     }
 

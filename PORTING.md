@@ -603,7 +603,19 @@
 - [x] Restore the night-only Rite of Necromancy for a blank Spectral Stone. It uses the small white circle, 6,000 altar power, Congealed Spirit, Condensed Fear, Spectral Dust, a Boline and a Necromantic Stone. This rite consumes the Necromantic Stone.
 - [x] Save the rite after its first three offerings. The dedicated server resumed it after restart. The muted client rejoined and collected one blank Spectral Stone.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 290 required Forge GameTests. Coverage includes Dream spawn rules, legacy guide data and expiry, item release, separate kettle offerings, bottling and the resumed night rite.
-- [ ] Restore the spectral creatures, the charged Spectral Stone's binding and release, and the remaining spirit-binding progression.
+- [x] Restore the spectral creatures and the charged Spectral Stone's binding and release.
+
+## Brazier and Spectral Binding (2026-11-20)
+
+- [x] Craft the Brazier with a Necromantic Stone, iron ingots and sticks. It accepts three separate ingredients by hand or automation and ignites with flint and steel or a redstone pulse. A water bottle or bucket empties it and returns the container. Invalid offerings fizzle. The comparator reflects the occupied slots.
+- [x] Port all eight recipes. Spectres and Banshees burn for 600 ticks and Poltergeists for 900. Graveyard Mist, Strength, Resistance and Invisibility draw altar power while burning. Wilting ages crops backward, heals nearby undead and extends its own burn without drawing power. Graveyard Dust and Wormy Apples keep legacy ingredient subtypes 128 and 91. The existing Arthana drops provide Spectral Dust before the player makes a Brazier.
+- [x] Replace the three spectral entity placeholders with individual combat and haunting behaviors, translucent models and legacy sounds. Spectres drain health on contact, Earmuffs block the Banshee's scream, and a Poltergeist tosses items or attacks wall hangings. Near its summoner it can eject one item from a chest when mob griefing is permitted.
+- [x] Use a medium white chalk ring, a blank Spectral Stone, Spectral Dust, a Boline and 5,000 altar power to bind up to three creatures of one kind. Holding the charged stone for at least two seconds releases the creatures under the player's ownership. The stone becomes blank after it is emptied and preserves any charges it could not place.
+- [x] Verify the packaged Poltergeist recipe with the muted survival client. It placed the Brazier, inserted Wormwood, Refined Evil and Focused Will and lit the batch. The dedicated server saved 634 burn ticks and resumed the same batch after restart. The recipe finished and produced the creature that was then moved into the binding circle fixture.
+- [x] Verify binding, release and the Poltergeist's chest behavior. The muted client tossed the offerings, activated the rite, collected the resulting stone and preserved it on an early release. A full charge released an owned Poltergeist and emptied the stone. The summoned creature ejected a diamond from a test chest and the client collected it.
+- [x] Finish a Banshee batch in the muted client and verify the scream pose. The player lost two health in range. After equipping Earmuffs the player stayed at 18 health through the following scream pulses.
+- [x] Run Java 17 data generation, JAR reobfuscation and all 294 required Forge GameTests. The four new cases cover powered and paused summons, redstone and flint ignition, water cleanup, original spectral offerings, legacy stone metadata and a reloaded rite that binds and releases three creatures.
+- [ ] Restore brazier ignition by the Mystic Branch's Incendio, the Revealing brew's spectral effects, and the rites and abilities for spirit-enchanted fetishes.
 
 ## Auram Pack Validation (2026-11-20)
 

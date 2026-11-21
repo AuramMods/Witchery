@@ -2,6 +2,7 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.entity.DreamSpirit;
 import art.arcane.witchery.item.SpiritOfferingItem;
+import art.arcane.witchery.item.SpectralStoneItem;
 
 import art.arcane.witchery.item.BrewFuelItem;
 import art.arcane.witchery.item.EndlessWaterBrewItem;
@@ -79,6 +80,8 @@ import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.Tiers;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoorBlock;
@@ -250,10 +253,12 @@ public final class WitcheryItems {
             case "demon_heart" -> new DemonHeartItem(WitcheryBlocks.getRequired("demonheart").get(), true);
             case "devilstonguecharm" -> new Item(new Item.Properties().durability(50).rarity(Rarity.UNCOMMON));
             case "necromantic_stone" -> new NecromanticStoneItem();
-            case "spectralstone" -> new Item(new Item.Properties().stacksTo(16).rarity(Rarity.RARE));
+            case "spectralstone" -> new SpectralStoneItem();
             case "attuned_stone" -> new SpiritOfferingItem(DreamSpirit.Kind.GUIDE);
             case "subdued_spirit" -> new SpiritOfferingItem(DreamSpirit.Kind.SPIRIT);
             case "subdued_village_spirit" -> new SpiritOfferingItem(DreamSpirit.Kind.VILLAGE);
+            case "wormy_apple" -> new Item(new Item.Properties().food(new FoodProperties.Builder().alwaysEat()
+                    .effect(() -> new MobEffectInstance(MobEffects.POISON, 60), 1).build()));
             case "congealed_spirit" -> new DrinkableBrewItem(() -> MobEffects.NIGHT_VISION, 600, 1);
             case "brew_of_ink" -> new ThrowableBrewItem(BrewImpacts::splashInk);
             case "brew_of_vines" -> new ThrowableBrewItem(BrewTerrain::vines);

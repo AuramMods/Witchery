@@ -2,6 +2,7 @@ package art.arcane.witchery.client;
 
 import art.arcane.witchery.entity.BrewDroplet;
 import art.arcane.witchery.item.BrewFuelItem;
+import art.arcane.witchery.item.SpectralStoneItem;
 import art.arcane.witchery.item.PlayerCompassItem;
 import art.arcane.witchery.client.screen.AltarScreen;
 import art.arcane.witchery.client.screen.DistilleryScreen;
@@ -23,6 +24,7 @@ import art.arcane.witchery.client.model.LilithModel;
 import art.arcane.witchery.client.model.LordOfTormentModel;
 import art.arcane.witchery.client.model.NightmareModel;
 import art.arcane.witchery.client.model.DreamSpiritModel;
+import art.arcane.witchery.client.model.SpectralUndeadModel;
 import art.arcane.witchery.client.model.WitchOwlModel;
 import art.arcane.witchery.client.model.WitchToadModel;
 import art.arcane.witchery.client.model.WitchClothingModel;
@@ -66,6 +68,7 @@ import art.arcane.witchery.client.renderer.MandrakeRenderer;
 import art.arcane.witchery.client.renderer.MirrorBlockRenderer;
 import art.arcane.witchery.client.renderer.NightmareRenderer;
 import art.arcane.witchery.client.renderer.DreamSpiritRenderer;
+import art.arcane.witchery.client.renderer.SpectralUndeadRenderer;
 import art.arcane.witchery.client.renderer.PlacedItemRenderer;
 import art.arcane.witchery.client.renderer.PoppetShelfRenderer;
 import art.arcane.witchery.client.renderer.ReflectionRenderer;
@@ -156,6 +159,8 @@ public final class WitcheryClient {
         event.registerLayerDefinition(MandrakeModel.LAYER, MandrakeModel::layer);
         event.registerLayerDefinition(NightmareModel.LAYER, NightmareModel::layer);
         event.registerLayerDefinition(DreamSpiritModel.LAYER, DreamSpiritModel::layer);
+        event.registerLayerDefinition(SpectralUndeadModel.ROBED_LAYER, SpectralUndeadModel::robedLayer);
+        event.registerLayerDefinition(SpectralUndeadModel.POLTERGEIST_LAYER, SpectralUndeadModel::poltergeistLayer);
         event.registerLayerDefinition(DemonModel.LAYER, DemonModel::layer);
         event.registerLayerDefinition(EntModel.LAYER, EntModel::layer);
         event.registerLayerDefinition(WitchOwlModel.LAYER, WitchOwlModel::layer);
@@ -220,6 +225,9 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.MANDRAKE.get(), MandrakeRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.NIGHTMARE.get(), NightmareRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SPIRIT.get(), DreamSpiritRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.SPECTRE.get(), context -> new SpectralUndeadRenderer(context, "spectre", false));
+        event.registerEntityRenderer(WitcheryEntities.BANSHEE.get(), context -> new SpectralUndeadRenderer(context, "banshee", false));
+        event.registerEntityRenderer(WitcheryEntities.POLTERGEIST.get(), context -> new SpectralUndeadRenderer(context, "poltergeist", true));
         event.registerEntityRenderer(WitcheryEntities.DEMON.get(), DemonRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.ENT.get(), EntRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.IMP.get(), ImpRenderer::new);
@@ -275,6 +283,9 @@ public final class WitcheryClient {
                 ItemProperties.register(WitcheryBlocks.getRequired(name).get().asItem(), WOOD_TYPE_MODEL,
                         (stack, level, entity, seed) -> WitchWoodType.fromStack(stack).ordinal());
             }
+            ItemProperties.register(WitcheryItems.getRequired("spectralstone").get(),
+                    ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "spectral_type"),
+                    (stack, level, entity, seed) -> SpectralStoneItem.typeId(stack));
             ItemProperties.register(WitcheryItems.getRequired("taglockkit").get(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "bound"),
                     (stack, level, entity, seed) -> TaglockItem.isBound(stack) ? 1 : 0);

@@ -1,4 +1,7 @@
 {
   "replace": false,
-  "values": ["witchery:demonic"]
+  "values": [
+    "witchery:demonic",
+    "witchery:spectral_touch"
+  ]
 }
