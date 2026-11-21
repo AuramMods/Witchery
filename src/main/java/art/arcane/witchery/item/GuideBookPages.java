@@ -103,6 +103,11 @@ public final class GuideBookPages {
         if (recipe.livingOffering() != null) steps.add(text("living_offering", recipe.livingOffering().getDescription()));
         if (recipe.nightOnly()) steps.add(text("night_only"));
         if (recipe.dayOnly()) steps.add(text("day_only"));
+        if (recipe.action().inflictsDirectedCurse()) steps.add(text("storm_only"));
+        if (recipe.action().directedCurse() != null) {
+            if (recipe.action().inflictsDirectedCurse()) steps.add(text("directed_curse." + recipe.action().directedCurse().key()));
+            else steps.add(text("directed_cure"));
+        }
         if (recipe.action().targetsStormWithWaystone()) steps.add(text("storm_waystone"));
         if (recipe.action() == ItemRiteRecipe.Action.PART_EARTH) steps.add(text("broken_earth_heading"));
         if (recipe.action() == ItemRiteRecipe.Action.RAISE_EARTH) steps.add(text("moving_earth_waystone"));

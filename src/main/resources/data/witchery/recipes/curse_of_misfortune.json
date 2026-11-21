@@ -1,0 +1,13 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "medium", "glyph": "witchery:circleglyphinfernal"}],
+  "sacrifices": [
+    {"type": "witchery:bound_taglock"},
+    {"item": "witchery:exhale_of_the_horned_one"},
+    {"item": "minecraft:fermented_spider_eye"},
+    {"item": "minecraft:gunpowder"},
+    {"item": "witchery:brew_of_grotesque"}
+  ],
+  "power": 2000,
+  "action": "curse_misfortune"
+}

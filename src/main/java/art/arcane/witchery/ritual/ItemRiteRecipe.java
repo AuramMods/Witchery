@@ -53,8 +53,8 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         ITEM,
         MANIFESTATION,
         SUMMON_DEMON,
-        CURSE_WAKING_NIGHTMARE,
-        CURE_WAKING_NIGHTMARE,
+        CURSE_WAKING_NIGHTMARE(DirectedCurse.WAKING_NIGHTMARE, true),
+        CURE_WAKING_NIGHTMARE(DirectedCurse.WAKING_NIGHTMARE, false),
         BIND_FAMILIAR,
         CALL_FAMILIAR,
         SUMMON_IMP,
@@ -102,7 +102,36 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         SUMMON_SPECTRAL_FAMILIAR,
         FERTILITY,
         NATURES_POWER,
-        CALL_BEASTS;
+        CALL_BEASTS,
+        CURSE_MISFORTUNE(DirectedCurse.MISFORTUNE, true),
+        CURE_MISFORTUNE(DirectedCurse.MISFORTUNE, false),
+        CURSE_INSANITY(DirectedCurse.INSANITY, true),
+        CURE_INSANITY(DirectedCurse.INSANITY, false),
+        CURSE_SINKING(DirectedCurse.SINKING, true),
+        CURE_SINKING(DirectedCurse.SINKING, false),
+        CURSE_OVERHEATING(DirectedCurse.OVERHEATING, true),
+        CURE_OVERHEATING(DirectedCurse.OVERHEATING, false);
+
+        @Nullable private final DirectedCurse directedCurse;
+        private final boolean inflictsDirectedCurse;
+
+        Action() {
+            this(null, false);
+        }
+
+        Action(@Nullable DirectedCurse directedCurse, boolean inflictsDirectedCurse) {
+            this.directedCurse = directedCurse;
+            this.inflictsDirectedCurse = inflictsDirectedCurse;
+        }
+
+        @Nullable
+        public DirectedCurse directedCurse() {
+            return directedCurse;
+        }
+
+        public boolean inflictsDirectedCurse() {
+            return inflictsDirectedCurse;
+        }
 
         public boolean summonsCreature() {
             return switch (this) {
@@ -190,6 +219,7 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
     @Nullable
     public String startFailure(ServerLevel level) {
         if (level.dimension().equals(WitcheryDimensions.DREAM)) {
+            if (action.directedCurse() != null) return "message.witchery.rite.directed_curse_dream";
             if (action == Action.CALL_BEASTS) return "message.witchery.rite.call_beasts_dream";
             if (action.usesLandscapeUpkeep()) return "message.witchery.rite.landscape_dream";
             if (action == Action.TRANSPOSE_CREATURE || action == Action.TRANSPOSE_ORES) {
@@ -200,7 +230,7 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         }
         if (dayOnly() && !level.isDay()) return "message.witchery.rite.day_only";
         if (nightOnly && !level.isNight()) return "message.witchery.rite.night_only";
-        if (action == Action.CURSE_WAKING_NIGHTMARE && !level.isThundering()) return "message.witchery.rite.storm_only";
+        if (action.inflictsDirectedCurse() && !level.isThundering()) return "message.witchery.rite.storm_only";
         return null;
     }
 
@@ -444,6 +474,14 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 case "corrupt_voodoo_protection" -> Action.CORRUPT_VOODOO_PROTECTION;
                 case "curse_waking_nightmare" -> Action.CURSE_WAKING_NIGHTMARE;
                 case "cure_waking_nightmare" -> Action.CURE_WAKING_NIGHTMARE;
+                case "curse_misfortune" -> Action.CURSE_MISFORTUNE;
+                case "cure_misfortune" -> Action.CURE_MISFORTUNE;
+                case "curse_insanity" -> Action.CURSE_INSANITY;
+                case "cure_insanity" -> Action.CURE_INSANITY;
+                case "curse_sinking" -> Action.CURSE_SINKING;
+                case "cure_sinking" -> Action.CURE_SINKING;
+                case "curse_overheating" -> Action.CURSE_OVERHEATING;
+                case "cure_overheating" -> Action.CURE_OVERHEATING;
                 case "bind_familiar" -> Action.BIND_FAMILIAR;
                 case "call_familiar" -> Action.CALL_FAMILIAR;
                 case "bind_waystone" -> Action.BIND_WAYSTONE;

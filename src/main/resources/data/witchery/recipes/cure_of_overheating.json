@@ -1,0 +1,13 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [
+    {"type": "witchery:bound_taglock"},
+    {"item": "witchery:breath_of_the_goddess"},
+    {"item": "witchery:icy_needle"},
+    {"item": "minecraft:blaze_rod"},
+    {"item": "witchery:brew_of_the_depths"}
+  ],
+  "power": 2000,
+  "action": "cure_overheating"
+}

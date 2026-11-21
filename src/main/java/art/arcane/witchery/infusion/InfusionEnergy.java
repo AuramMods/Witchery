@@ -1,6 +1,7 @@
 package art.arcane.witchery.infusion;
 
 import art.arcane.witchery.network.WitcheryNetwork;
+import art.arcane.witchery.ritual.DirectedCurse;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -83,7 +84,8 @@ public final class InfusionEnergy {
     private static void sync(ServerPlayer player, CompoundTag infusion) {
         InfusedBrews.Status brew = InfusedBrews.status(player);
         WitcheryNetwork.sendInfusionStatus(player, infusion.getInt(TYPE), infusion.getInt(CHARGE), infusion.getInt(CAPACITY),
-                CreaturePower.activeId(player), CreaturePower.charges(player), brew.type(), brew.remainingTicks());
+                CreaturePower.activeId(player), CreaturePower.charges(player), brew.type(), brew.remainingTicks(),
+                DirectedCurse.SINKING.strength(player));
     }
 
     private static CompoundTag data(ServerPlayer player) {

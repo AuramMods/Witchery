@@ -7,7 +7,6 @@ import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.CoffinBlock;
 import art.arcane.witchery.block.entity.AreaWardBlockEntity;
 import art.arcane.witchery.brewing.GrotesqueEffect;
-import art.arcane.witchery.brewing.WakingNightmareEffect;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.familiar.FamiliarBinding;
@@ -53,6 +52,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.ritual.DroppedWaystones;
+import art.arcane.witchery.ritual.DirectedCurse;
 import art.arcane.witchery.world.DreamTravel;
 import art.arcane.witchery.world.MirrorTravel;
 import art.arcane.witchery.world.RubySlipperTravel;
@@ -239,6 +239,7 @@ public final class WitcheryEventHooks {
             VampireFlight.restore(serverPlayer);
             Lycanthropy.restore(serverPlayer);
             if (event.getTo().equals(Level.NETHER)) Predictions.onNetherVisit(serverPlayer);
+            InfusionEnergy.sync(serverPlayer);
             WitcheryPlayerDataProvider.get(serverPlayer).ifPresent(data ->
                     WitcheryNetwork.sendPartialExtendedPlayerSync(serverPlayer, data));
         }
@@ -269,7 +270,7 @@ public final class WitcheryEventHooks {
             return;
         }
         DreamTravel.spawnNightmare(serverPlayer);
-        WakingNightmareEffect.tickCurse(serverPlayer);
+        DirectedCurse.tick(serverPlayer);
         Predictions.tick(serverPlayer);
 
         if (serverPlayer.level().getGameTime() % 20 == 0 && serverPlayer.hasEffect(WitcheryEffects.DEPTHS.get())) {
@@ -297,6 +298,12 @@ public final class WitcheryEventHooks {
             PredictedCourtship.tick(villager, level);
             BloodFeeding.tickVillager(villager, level);
         }
+    }
+
+    @SubscribeEvent
+    public static void onCreatureCurseTick(LivingTickEvent event) {
+        var entity = event.getEntity();
+        if (!(entity instanceof Player) && entity.level() instanceof ServerLevel) DirectedCurse.tick(entity);
     }
 
     @SubscribeEvent

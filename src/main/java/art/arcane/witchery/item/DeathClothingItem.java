@@ -1,5 +1,6 @@
 package art.arcane.witchery.item;
 
+import art.arcane.witchery.ritual.DirectedCurse;
 import art.arcane.witchery.client.model.DeathClothingModel;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.infusion.OtherwhereInfusion;
@@ -60,7 +61,7 @@ public final class DeathClothingItem extends ArmorItem {
             var motion = wearer.getDeltaMovement();
             if (motion.y < 0 && (wearer.isInWater() || wearer.isInLava())
                     && !wearer.hasEffect(WitcheryEffects.SINKING.get())
-                    && wearer.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getInt("witcherySinking") <= 0) {
+                    && DirectedCurse.SINKING.strength(wearer) <= 0) {
                 wearer.setDeltaMovement(motion.add(0, 0.1, 0));
             }
         } else if (getEquipmentSlot() == EquipmentSlot.HEAD && wearer instanceof ServerPlayer player) {

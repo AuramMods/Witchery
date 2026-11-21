@@ -395,6 +395,16 @@
 - [x] Restart the packaged dedicated server while Nature's Power and Calling the Beasts are active. Both advanced from their saved stages and the resumed Calling the Beasts summoned an ocelot from the next search region.
 - [x] Run Java 17 data generation, JAR reobfuscation, and the full 481-case Forge GameTest suite. All 481 passed. Eight cases cover the recipe codec, cure data, Forge event cancellation, cat bonuses, portable resumption, surface conversion, legacy stage import, and coven and octant behavior.
 
+## Taglock Curses and Cures (2026-11-21)
+
+- [x] Restore the original curses and cures for Misfortune, Insanity, Sinking and Overheating. All eight take a filled Taglock Kit and 2,000 altar power. The curses use a medium Infernal ring in a thunderstorm, and the cures use a small white ring.
+- [x] Apply the original persistent effects to players and creatures as appropriate. Misfortune causes ailments and can dislodge held items. Insanity spawns personal apparitions. Sinking changes water and flight motion. Overheating burns afflicted creatures in hot biomes.
+- [x] Use the shared rules for Waking Nightmare. An active cat adds one strength, and a coven adds one at three members or two at six. Voodoo Protection takes one or three strikes, with the Fetish bonus and Witch Hunter clothing applying as in the legacy rites. A directed ward or unavailable target refunds the offerings after the altar debit. A failed cure increases the current curse by one level.
+- [x] Preserve the five legacy data keys on players and creatures, including when upgrading an existing save. Send Sinking strength to the affected client on login, respawn, dimension change, and after a curse or cure. Circle Magic explains the recipes and cure strength, and the Seer Stone reads the saved levels.
+- [x] Cast the four curses in a muted survival client using supplied Taglocks and offerings. Verify that the cat raises the base cast to level two and three summoned coven witches raise Misfortune to level three. Resume with all four levels after a headless dedicated-server restart, then perform the four cures in clear weather with a Seer Stone.
+- [x] Use the same water entry before and after the restart and after clearing Sinking. After 30 game ticks, the cursed player reached the pool floor at Y 201 on both launches. After the cure the player was at Y 230.43.
+- [x] Run Java 17 data generation, JAR reobfuscation and all 489 Forge GameTests. The eight new cases cover the recipe codec and thunder requirement, cure odds, staged Taglock reload, ward and offline refunds, curse strength and poppet wear, persistent effects, and curing separate saved levels.
+
 ## Queued Circle Rites (2026-11-21)
 
 - [x] Match compatible recipes in their original registration order and reserve their dropped stacks and Grassper offerings during activation. Spend the offerings one rite at a time. A failed cast returns its staged offerings and advances the queue.

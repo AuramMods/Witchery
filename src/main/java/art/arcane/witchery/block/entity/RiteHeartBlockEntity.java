@@ -2,7 +2,6 @@ package art.arcane.witchery.block.entity;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.RiteHeartBlock;
-import art.arcane.witchery.brewing.WakingNightmareEffect;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.entity.Demon;
@@ -232,6 +231,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (rite.power() > 0) {
             altar = protectionKind != null || action == ItemRiteRecipe.Action.BANISH_DEMON || newSummoning
                     || action == ItemRiteRecipe.Action.FERTILITY || action == ItemRiteRecipe.Action.CALL_BEASTS
+                    || action.directedCurse() != null
                     ? AltarPower.nearest(level, pos, ProtectionRites.ALTAR_RANGE) : AltarPower.nearest(level, pos);
         }
         boolean missingPower = rite.power() > 0 && (altar == null || altar.power() < rite.power());
@@ -310,25 +310,6 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             if (newSummoning) ForgeEventFactory.onFinalizeSpawn(summon, level, level.getCurrentDifficultyAt(summon.blockPosition()),
                     MobSpawnType.MOB_SUMMONED, null, null);
             result = summon;
-        } else if (rite.action() == ItemRiteRecipe.Action.CURSE_WAKING_NIGHTMARE
-                || rite.action() == ItemRiteRecipe.Action.CURE_WAKING_NIGHTMARE) {
-            curseTarget = boundOffering(level);
-            if (curseTarget == null) {
-                abort(level, "message.witchery.rite.no_taglock_target");
-                return;
-            }
-            if (rite.action() == ItemRiteRecipe.Action.CURSE_WAKING_NIGHTMARE) {
-                ServerPlayer caster = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
-                if (caster != null) WitchHunterPursuit.noticeBlackMagic(caster);
-                if (HunterClothingItem.resistsCurse(curseTarget)) {
-                    abort(level, "message.witchery.rite.hunter_curse_protection");
-                    return;
-                }
-                if (AreaWardBlockEntity.protectsDirectedCurse(curseTarget)) {
-                    abort(level, "message.witchery.rite.area_curse_protection");
-                    return;
-                }
-            }
         } else if (rite.action() == ItemRiteRecipe.Action.CORRUPT_VOODOO_PROTECTION) {
             corruptionCaster = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
             if (corruptionCaster == null || corruptionCaster.level() != level || !FamiliarBinding.hasCurseMastery(corruptionCaster)) {
@@ -415,6 +396,15 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             abort(level, "message.witchery.rite.missing_power");
             return;
         }
+        var directedCurse = action.directedCurse();
+        if (directedCurse != null) {
+            ServerPlayer caster = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
+            String failure = directedCurse.perform(level, pos, caster, boundOffering(level), covenSize, action.inflictsDirectedCurse());
+            if (failure != null) {
+                abort(level, failure);
+                return;
+            }
+        }
         if (rite.action().callsStorm()) {
             prepareStorm(level, rite, pos);
             return;
@@ -480,8 +470,6 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             level.sendParticles(ParticleTypes.FLAME, pos.getX() + 0.5, pos.getY() + 0.2, pos.getZ() + 0.5,
                     16, 0.45, 0.5, 0.45, 0.04);
             level.playSound(null, pos, SoundEvents.ENDER_DRAGON_GROWL, SoundSource.BLOCKS, 0.7F, 1);
-        } else if (curseTarget != null) {
-            WakingNightmareEffect.changeCurse(curseTarget, rite.action() == ItemRiteRecipe.Action.CURSE_WAKING_NIGHTMARE);
         }
         if (vampireCureTarget != null) finishVampireCure(level, pos, vampireCureTarget);
         if (wolfRiteTarget != null && !finishWolfRite(level, pos, wolfRiteTarget,

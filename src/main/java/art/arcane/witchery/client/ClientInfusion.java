@@ -7,6 +7,7 @@ import art.arcane.witchery.infusion.InfusedBrews;
 import art.arcane.witchery.infusion.InfernalInfusion;
 import art.arcane.witchery.infusion.LightInfusion;
 import art.arcane.witchery.item.WitchHandItem;
+import art.arcane.witchery.ritual.DirectedCurse;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -44,7 +45,7 @@ public final class ClientInfusion {
 
     private ClientInfusion() {}
 
-    public static void setStatus(int type, int current, int max, int creature, int remaining, int brew, int brewTicks) {
+    public static void setStatus(int type, int current, int max, int creature, int remaining, int brew, int brewTicks, int sinking) {
         infusion = type;
         capacity = Math.max(max, 0);
         charge = Mth.clamp(current, 0, capacity);
@@ -52,16 +53,19 @@ public final class ClientInfusion {
         powerCharge = Mth.clamp(remaining, 0, CreaturePower.MAX_CHARGES);
         brewId = brew;
         brewExpires = Util.getMillis() + 50L * brewTicks;
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null) DirectedCurse.syncSinking(player, sinking);
     }
 
     @SubscribeEvent
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event) {
-        setStatus(0, 0, 0, 0, 0, 0, 0);
+        setStatus(0, 0, 0, 0, 0, 0, 0, 0);
     }
 
     @SubscribeEvent
     public static void onMovementInput(MovementInputUpdateEvent event) {
         if (!(event.getEntity() instanceof LocalPlayer player) || player.isPassenger()) return;
+        DirectedCurse.tickSinkingPlayer(player);
         CreaturePower power = CreaturePower.forId(powerId);
         boolean light = infusion == LightInfusion.ID && player.isUsingItem() && player.getUseItem().getItem() instanceof WitchHandItem;
         if (!light && power == null) return;

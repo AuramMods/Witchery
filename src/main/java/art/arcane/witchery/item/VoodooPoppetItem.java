@@ -129,13 +129,13 @@ public final class VoodooPoppetItem extends BoundPoppetItem {
                 && useWard(player, WitcheryItems.getRequired("voodoo_protection_poppet").get(), DEFLECTION_WEAR);
     }
 
-    public static boolean deflectRite(ServerPlayer caster, ServerPlayer target, int wards) {
+    public static boolean deflectRite(@Nullable ServerPlayer caster, ServerPlayer target, int wards) {
         var item = WitcheryItems.getRequired("voodoo_protection_poppet").get();
         int required = wards > 1 && FetishBlockEntity.enhancesPoppets(target) ? 1 : wards;
         for (int strike = 0; strike < required; strike++) {
             if (!useWard(target, item, DEFLECTION_WEAR)) return false;
         }
-        strikeCaster(caster);
+        if (caster != null) strikeCaster(caster);
         return true;
     }
 

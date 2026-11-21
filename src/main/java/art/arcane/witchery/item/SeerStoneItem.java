@@ -4,9 +4,9 @@ import art.arcane.witchery.brewing.BrewBottling;
 import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.infusion.SpellKnowledge;
+import art.arcane.witchery.ritual.DirectedCurse;
 import art.arcane.witchery.world.DreamTravel;
 import net.minecraft.ChatFormatting;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
@@ -27,9 +27,6 @@ import net.minecraft.world.phys.Vec3;
 public final class SeerStoneItem extends Item {
     private static final String MESSAGE = "message.witchery.seer_stone.";
     private static final int USE_TICKS = 1200;
-    private static final String[] CURSE_TAGS = {"witcheryCursed", "witcheryInsanity", "witcherySinking",
-            "witcheryOverheating", "witcheryWakingNightmare"};
-    private static final String[] CURSE_NAMES = {"misfortune", "insanity", "sinking", "overheating", "waking_nightmare"};
 
     public SeerStoneItem() {
         super(new Properties().stacksTo(1));
@@ -86,7 +83,6 @@ public final class SeerStoneItem extends Item {
     }
 
     private static void read(ServerPlayer reader, ServerPlayer target) {
-        CompoundTag persisted = target.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
         int manifest = DreamTravel.manifestSeconds(target);
         String familiar = FamiliarBinding.familiarName(target);
         int coven = CovenWitch.covenSize(target);
@@ -106,10 +102,10 @@ public final class SeerStoneItem extends Item {
                 : Component.translatable(MESSAGE + "spells", spells));
         reading.append(" ").append(Component.translatable(MESSAGE + "bottling", BrewBottling.skill(target)));
         boolean cursed = false;
-        for (int index = 0; index < CURSE_TAGS.length; index++) {
-            int level = persisted.getInt(CURSE_TAGS[index]);
+        for (DirectedCurse curse : DirectedCurse.values()) {
+            int level = curse.strength(target);
             if (level > 0) {
-                reading.append(" ").append(Component.translatable(MESSAGE + "curse." + CURSE_NAMES[index], level));
+                reading.append(" ").append(Component.translatable(MESSAGE + "curse." + curse.key(), level));
                 cursed = true;
             }
         }

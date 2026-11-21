@@ -39,7 +39,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class WitcheryNetwork {
-    private static final String PROTOCOL_VERSION = "80";
+    private static final String PROTOCOL_VERSION = "81";
     private static final int MAX_USERNAME_LENGTH = 64;
     private static final int MAX_PLAYER_SKIN_LENGTH = 256;
     private static final int MAX_MARKUP_CHAPTER_LENGTH = 32;
@@ -107,13 +107,14 @@ public final class WitcheryNetwork {
                     buffer.writeVarInt(message.powerCharge());
                     buffer.writeVarInt(message.brew());
                     buffer.writeVarInt(message.brewTicks());
+                    buffer.writeVarInt(message.sinking());
                 })
                 .decoder(buffer -> new InfusionStatusPacket(buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt(),
-                        buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt()))
+                        buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt()))
                 .consumerMainThread((message, context) -> {
                     runClient(() -> art.arcane.witchery.client.ClientInfusion.setStatus(
                             message.type(), message.charge(), message.capacity(), message.power(), message.powerCharge(),
-                            message.brew(), message.brewTicks()));
+                            message.brew(), message.brewTicks(), message.sinking()));
                     context.get().setPacketHandled(true);
                 })
                 .add();
@@ -227,13 +228,14 @@ public final class WitcheryNetwork {
     }
 
     public static void sendInfusionStatus(ServerPlayer player, int type, int charge, int capacity, int power, int powerCharge,
-                                          int brew, int brewTicks) {
+                                          int brew, int brewTicks, int sinking) {
         if (player.connection == null || !player.connection.connection.isConnected()) return;
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
-                new InfusionStatusPacket(type, charge, capacity, power, powerCharge, brew, brewTicks));
+                new InfusionStatusPacket(type, charge, capacity, power, powerCharge, brew, brewTicks, sinking));
     }
 
-    private record InfusionStatusPacket(int type, int charge, int capacity, int power, int powerCharge, int brew, int brewTicks) {
+    private record InfusionStatusPacket(int type, int charge, int capacity, int power, int powerCharge, int brew,
+                                        int brewTicks, int sinking) {
     }
 
     public static void sendPushTarget(ServerPlayer player, int entityId, double velocityX, double velocityY, double velocityZ) {

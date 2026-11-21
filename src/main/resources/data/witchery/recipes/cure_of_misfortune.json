@@ -1,0 +1,13 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [
+    {"type": "witchery:bound_taglock"},
+    {"item": "witchery:breath_of_the_goddess"},
+    {"item": "minecraft:spider_eye"},
+    {"item": "minecraft:gunpowder"},
+    {"item": "witchery:brew_of_love"}
+  ],
+  "power": 2000,
+  "action": "cure_misfortune"
+}
