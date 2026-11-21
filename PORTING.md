@@ -721,6 +721,16 @@
 - [x] In the muted survival client, fill the heated Kettles and bottle three servings from each batch. Store both in the Brew Bag, restart the dedicated server, and cast both by gesture. Erosion carved stone, dropped obsidian and preserved a chest. Ice formed a shield on dry ground and froze three connected water cells on a separate hit, leaving the fourth liquid.
 - [x] Verify both terrain changes after a dedicated restart. Java 17 data generation, JAR reobfuscation and all 430 required Forge GameTests passed.
 
+## Brew of Infection and Quicklime (2026-11-21)
+
+- [x] Restore the original six-ingredient Kettle batch, three servings, legacy metadata 88, and Brew Bag support. The batch needs zero altar power and gives no extra bottling yield.
+- [x] Infest stone, cobblestone, and regular stone bricks. Respect Forge break and placement protections. Return the brew from invalid impacts or blocked conversions.
+- [x] Convert adult and baby villagers on a direct hit. Preserve the profession, trades, reputation, and experience used by vanilla curing. Other living targets take one point of magic damage or four with Toad Brew Mastery, plus five seconds of Slowness IX.
+- [x] Restore right-click Quicklime throws with three seconds of Blindness and additional damage against slimes. A terrain hit returns the ingredient.
+- [x] In the muted survival client, bottle the original batch, load the Brew Bag and cast onto a librarian and regular stone bricks. Throw Quicklime at a slime and recover a separate throw from the ground. Restart the dedicated server and verify the infested bricks, last bag serving and Zombie Villager. Start vanilla curing with a golden apple and verify the restored profession and trade after shortening the test timer.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 436 required Forge GameTests.
+- [ ] Restore the Brew of Substitution and the five Kettle brews that solidify or remove Flowing Spirit.
+
 ## Brew Bag (2026-11-21)
 
 - [x] Craft the Brew Bag from eight Impregnated Leather and Golden Thread. Change its color with one dye while retaining the name and contents. Restore the eight-slot menu through sneak-use, with storage for throwable fixed brews and splash Cauldron mixtures.

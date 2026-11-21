@@ -24,6 +24,10 @@ public final class ThrowableBrewItem extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+        return throwFromHand(level, player, hand);
+    }
+
+    static InteractionResultHolder<ItemStack> throwFromHand(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (level instanceof ServerLevel server && !ThrownBrew.throwBottle(server, player, stack, THROW_SPEED)) {
             return InteractionResultHolder.fail(stack);

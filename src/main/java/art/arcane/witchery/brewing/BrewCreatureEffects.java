@@ -5,11 +5,13 @@ import art.arcane.witchery.entity.SpectralUndead;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.familiar.Familiar;
 import art.arcane.witchery.registry.WitcheryEntities;
+import art.arcane.witchery.vampirism.VampireVillages;
 import art.arcane.witchery.world.MirrorDisguise;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -20,15 +22,21 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.monster.Slime;
+import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.event.ForgeEventFactory;
 
 public final class BrewCreatureEffects {
     private static final TagKey<Block> WASTING_PLANTS = TagKey.create(Registries.BLOCK,
@@ -160,6 +168,76 @@ public final class BrewCreatureEffects {
                 victim.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, ticks, 5), brew.getEffectSource());
                 BrewImpacts.clearTarget(victim);
             }
+        }
+    }
+
+    public static void infection(ThrownBrew brew, HitResult hit) {
+        if (!(brew.level() instanceof ServerLevel level)) return;
+        if (hit instanceof EntityHitResult entity && entity.getEntity() instanceof LivingEntity target) {
+            if (target instanceof Villager villager) {
+                if (infectVillager(level, villager)) return;
+            } else {
+                target.hurt(level.damageSources().indirectMagic(brew, brew.getOwner()), BrewImpacts.enhanced(brew) ? 4 : 1);
+                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 8), brew.getEffectSource());
+                return;
+            }
+        } else if (hit instanceof BlockHitResult block) {
+            BlockPos pos = block.getBlockPos();
+            var original = level.getBlockState(pos);
+            Block infested = null;
+            if (original.is(Blocks.STONE)) infested = Blocks.INFESTED_STONE;
+            if (original.is(Blocks.COBBLESTONE)) infested = Blocks.INFESTED_COBBLESTONE;
+            if (original.is(Blocks.STONE_BRICKS)) infested = Blocks.INFESTED_STONE_BRICKS;
+            if (infested != null && BrewTerrain.setBlock(brew.getOwner(), level, pos, infested.defaultBlockState(),
+                    block.getDirection())) return;
+        }
+        BrewImpacts.recoverBrew(brew, level, hit);
+    }
+
+    private static boolean infectVillager(ServerLevel level, Villager villager) {
+        if (!villager.isAlive() || !ForgeEventFactory.canLivingConvert(villager, EntityType.ZOMBIE_VILLAGER, ignored -> {})) {
+            return false;
+        }
+        var zombie = EntityType.ZOMBIE_VILLAGER.create(level);
+        if (zombie == null) return false;
+        zombie.copyPosition(villager);
+        zombie.finalizeSpawn(level, level.getCurrentDifficultyAt(zombie.blockPosition()), MobSpawnType.CONVERSION,
+                new Zombie.ZombieGroupData(false, true), null);
+        zombie.setBaby(villager.isBaby());
+        zombie.setNoAi(villager.isNoAi());
+        zombie.setInvulnerable(villager.isInvulnerable());
+        zombie.setCustomName(villager.getCustomName());
+        zombie.setCustomNameVisible(villager.isCustomNameVisible());
+        if (villager.isPersistenceRequired()) zombie.setPersistenceRequired();
+        zombie.setVillagerData(villager.getVillagerData());
+        zombie.setGossips(villager.getGossips().store(NbtOps.INSTANCE));
+        zombie.setTradeOffers(villager.getOffers().createTag());
+        zombie.setVillagerXp(villager.getVillagerXp());
+        if (!level.addFreshEntity(zombie)) return false;
+        if (villager.isPassenger()) {
+            var vehicle = villager.getVehicle();
+            villager.stopRiding();
+            zombie.startRiding(vehicle, true);
+        }
+        VampireVillages.releaseResidentClaims(villager);
+        ForgeEventFactory.onLivingConvert(villager, zombie);
+        villager.discard();
+        level.levelEvent(null, 1026, zombie.blockPosition(), 0);
+        return true;
+    }
+
+    public static void quicklime(ThrownBrew shot, HitResult hit) {
+        if (!(shot.level() instanceof ServerLevel level)) return;
+        if (hit instanceof EntityHitResult entity) {
+            if (entity.getEntity() instanceof LivingEntity target) {
+                if (!target.hasEffect(MobEffects.BLINDNESS)) {
+                    target.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 60), shot.getEffectSource());
+                }
+                float damage = target instanceof Slime ? 4 : target.getHealth() == target.getMaxHealth() ? 0.5F : 0.1F;
+                target.hurt(level.damageSources().indirectMagic(shot, shot.getOwner()), damage);
+            }
+        } else {
+            BrewImpacts.recoverBrew(shot, level, hit);
         }
     }
 

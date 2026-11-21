@@ -99,6 +99,7 @@ public enum WitcheryIngredient {
     BREW_OF_FROGS_TONGUE(85, "brew_of_frogs_tongue"),
     BREW_OF_CURSED_LEAPING(86, "brew_of_cursed_leaping"),
     BREW_OF_HITCHCOCK(87, "brew_of_hitchcock"),
+    BREW_OF_INFECTION(88, "brew_of_infection"),
     OWLETS_WING(89, "owlets_wing"),
     TOE_OF_FROG(90, "toe_of_frog"),
     WORMY_APPLE(91, "wormy_apple"),

@@ -1,0 +1,13 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"item": "witchery:toe_of_frog"},
+    {"item": "witchery:creeper_heart"},
+    {"item": "witchery:wormy_apple"},
+    {"item": "witchery:belladonna_flower"},
+    {"item": "minecraft:rotten_flesh"},
+    {"item": "witchery:mutandis"}
+  ],
+  "result": {"item": "witchery:brew_of_infection", "count": 3},
+  "color": -11112850
+}

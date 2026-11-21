@@ -12,6 +12,7 @@ import art.arcane.witchery.item.SpectralStoneItem;
 import art.arcane.witchery.item.BrewFuelItem;
 import art.arcane.witchery.item.EndlessWaterBrewItem;
 import art.arcane.witchery.item.PlayerCompassItem;
+import art.arcane.witchery.item.QuicklimeItem;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.block.DreamWeave;
@@ -311,6 +312,8 @@ public final class WitcheryItems {
             case "brew_of_frogs_tongue" -> new ThrowableBrewItem(BrewCreatureEffects::frogsTongue);
             case "brew_of_cursed_leaping" -> new ThrowableBrewItem(BrewCreatureEffects::cursedLeaping);
             case "brew_of_hitchcock" -> new ThrowableBrewItem(BrewCreatureEffects::hitchcock);
+            case "brew_of_infection" -> new ThrowableBrewItem(BrewCreatureEffects::infection);
+            case "quicklime" -> new QuicklimeItem();
             case "brew_of_bats" -> new ThrowableBrewItem(BrewCreatureEffects::bats);
             case "brew_of_wasting" -> new ThrowableBrewItem(BrewCreatureEffects::wasting);
             case "brew_of_grotesque" -> new DrinkableBrewItem(drinker ->
