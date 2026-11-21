@@ -12,6 +12,7 @@ public final class WitcherySounds {
     private static final DeferredRegister<SoundEvent> SOUNDS =
             DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, Witchery.MODID);
     public static final RegistryObject<SoundEvent> CHALK = sound("random.chalk");
+    public static final RegistryObject<SoundEvent> WOOD_CREAK = sound("random.wood_creak");
     public static final RegistryObject<SoundEvent> HEARTBEAT = sound("random.heartbeat");
     public static final RegistryObject<SoundEvent> NIGHTMARE_LIVE = sound("mob.nightmare.nightmare_live");
     public static final RegistryObject<SoundEvent> NIGHTMARE_HIT = sound("mob.nightmare.nightmare_hit");

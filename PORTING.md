@@ -426,7 +426,14 @@
 - [x] Restore carried louse retaliation and Regeneration. An incoming entity hit spends one charge and adds one health point of damage.
 - [x] In the muted survival client, catch a moving silverfish, mutate it, capture the rendered louse, and charge it with long Poison in the crafting grid. After a dedicated restart, the stored charge poisons an attacking pillager. Recharge and release the louse, then verify that its pursuit ends in a single poisoned bite.
 - [x] Verify the released louse's saved four health and spent charge. Java 17 data generation, JAR reobfuscation, and all 447 required Forge GameTests passed.
-- [ ] Restore the Biting Belt that uses a louse in its recipe.
+
+## Biting Belt and Bark Belt (2026-11-21)
+
+- [x] Craft both original belts, wear them in the leggings slot, and repair them with four Impregnated Leather. Preserve dye, names, and charges on repair, and import legacy armor wear.
+- [x] Charge the Biting Belt with up to two potions. The third charge displaces the older one, while empty first slots refill before rotating. The tooltip displays each effect, potency, and duration. Entity hits trigger the original carried-louse and belt phases and leave an effect stored while the wearer already has it.
+- [x] Recharge the Bark Belt on grass blocks and mycelium. Each worn garment in the witch clothing family supplies two slots. A non-wooden hit from an entity spends one or two charges to cancel the hit and scatters short-lived sticks. Display active bark on the player model and above the survival health and armor icons.
+- [x] Craft and equip both belts in a muted survival client. Verify that the equipped Biting Belt still has both doses after a dedicated restart and delivers Poison and Regeneration on the same hit. Verify the Bark Belt's HUD and worn bark, grass and mycelium recharge, and wooden versus stone sword damage. Four bark charges persisted across a second restart. Java 17 data generation, JAR reobfuscation and all 450 required Forge GameTests passed.
+- [ ] Recheck the Bark Belt's full eight-charge capacity and leg bark when witch footwear is restored. Verify additional worn models on armor stands and non-player mobs.
 
 ## Coffin (2026-11-20)
 

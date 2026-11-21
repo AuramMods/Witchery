@@ -13,6 +13,8 @@ import art.arcane.witchery.item.BrewFuelItem;
 import art.arcane.witchery.item.EndlessWaterBrewItem;
 import art.arcane.witchery.item.PlayerCompassItem;
 import art.arcane.witchery.item.ParasyticLouseItem;
+import art.arcane.witchery.item.BarkBeltItem;
+import art.arcane.witchery.item.BitingBeltItem;
 import art.arcane.witchery.item.QuicklimeItem;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.BrambleBlock;
@@ -397,6 +399,8 @@ public final class WitcheryItems {
             case "witchrobe" -> new WitchClothingItem.Dyeable(WitchClothingItem.Style.WITCH_ROBE);
             case "necromancerrobe" -> new WitchClothingItem.Dyeable(WitchClothingItem.Style.NECROMANCER_ROBE);
             case "babashat" -> new WitchClothingItem(WitchClothingItem.Style.BABA_HAT);
+            case "bitingbelt" -> new BitingBeltItem();
+            case "barkbelt" -> new BarkBeltItem();
             case "witchwoodslab", "witchwooddoubleslab", "iceslab", "icedoubleslab", "snowslab", "snowdoubleslab" ->
                     createBlockItem(path);
             default -> new Item(new Item.Properties());

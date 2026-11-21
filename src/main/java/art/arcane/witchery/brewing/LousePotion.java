@@ -1,6 +1,9 @@
 package art.arcane.witchery.brewing;
 
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffectUtil;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -93,6 +96,14 @@ public enum LousePotion {
 
     public MobEffectInstance effect() {
         return new MobEffectInstance(potion.getEffects().get(0).getEffect(), duration, amplifier);
+    }
+
+    public Component tooltip() {
+        var dose = effect();
+        var line = Component.empty().append(Component.translatable(dose.getDescriptionId()).withStyle(ChatFormatting.GOLD));
+        if (amplifier > 0) line.append(" ").append(Component.translatable("potion.potency." + amplifier));
+        if (duration > 20) line.append(" [").append(MobEffectUtil.formatDuration(dose, 1)).append("]");
+        return line;
     }
 
     public boolean regenerates() {

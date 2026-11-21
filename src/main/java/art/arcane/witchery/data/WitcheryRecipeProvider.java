@@ -215,6 +215,27 @@ public class WitcheryRecipeProvider extends RecipeProvider {
         robe(recipeOutput, "witchrobe", impregnatedLeather, goldenThread, WitcheryIngredient.CREEPER_HEART.item());
         robe(recipeOutput, "necromancerrobe", impregnatedLeather, goldenThread, WitcheryIngredient.NECROMANTIC_STONE.item());
         SpecialRecipeBuilder.special(WitcheryRecipes.CLOTHING_REPAIR.get()).save(recipeOutput, "witchery:repair_witch_clothing");
+        Item bitingBelt = WitcheryItems.getRequired("bitingbelt").get();
+        Item louse = WitcheryItems.getRequired("louse").get();
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, bitingBelt)
+                .define('L', impregnatedLeather)
+                .define('T', goldenThread)
+                .define('P', louse)
+                .define('H', WitcheryIngredient.MELLIFLUOUS_HUNGER.item())
+                .pattern("PLH").pattern("LTL").pattern("L L")
+                .unlockedBy("has_louse", has(louse))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, WitcheryItems.getRequired("barkbelt").get())
+                .define('S', WitcheryIngredient.BREW_OF_FLOWING_SPIRIT.item())
+                .define('E', Items.EMERALD)
+                .define('G', WitcheryIngredient.ENT_BRANCH.item())
+                .define('B', bitingBelt)
+                .define('H', WitcheryIngredient.CREEPER_HEART.item())
+                .pattern("SES").pattern("GBG").pattern("SHS")
+                .unlockedBy("has_biting_belt", has(bitingBelt))
+                .save(recipeOutput);
+        SpecialRecipeBuilder.special(WitcheryRecipes.CHARGE_BITING_BELT.get())
+                .save(recipeOutput, "witchery:charge_biting_belt");
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryItems.getRequired("vampirebook").get())
                 .define('W', Items.NETHER_WART)
                 .define('S', Items.NETHER_STAR)

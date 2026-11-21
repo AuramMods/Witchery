@@ -26,7 +26,8 @@ import java.util.function.Consumer;
 public class WitchClothingItem extends ArmorItem {
     public enum Style {
         WITCH_HAT(Type.HELMET, 3), BABA_HAT(Type.HELMET, 3),
-        WITCH_ROBE(Type.CHESTPLATE, 4), NECROMANCER_ROBE(Type.CHESTPLATE, 4);
+        WITCH_ROBE(Type.CHESTPLATE, 4), NECROMANCER_ROBE(Type.CHESTPLATE, 4),
+        BITING_BELT(Type.LEGGINGS, 4), BARK_BELT(Type.LEGGINGS, 4);
 
         private final Type type;
         private final int repairLeather;
@@ -41,7 +42,11 @@ public class WitchClothingItem extends ArmorItem {
 
     public WitchClothingItem(Style style) {
         super(ArmorMaterials.LEATHER, style.type,
-                new Properties().rarity(style == Style.BABA_HAT ? Rarity.EPIC : Rarity.UNCOMMON));
+                new Properties().rarity(switch (style) {
+                    case BABA_HAT -> Rarity.EPIC;
+                    case BARK_BELT -> Rarity.RARE;
+                    default -> Rarity.UNCOMMON;
+                }));
         this.style = style;
     }
 
@@ -60,7 +65,12 @@ public class WitchClothingItem extends ArmorItem {
 
     @Override
     public String getArmorTexture(ItemStack stack, Entity entity, EquipmentSlot slot, @Nullable String type) {
-        return "witchery:textures/entities/witchclothes" + (type == null ? "" : "_overlay") + ".png";
+        String variant = switch (style) {
+            case BITING_BELT -> "_legs";
+            case BARK_BELT -> type == null ? "2_legs" : "_legs";
+            default -> "";
+        };
+        return "witchery:textures/entities/witchclothes" + variant + (type == null ? "" : "_overlay") + ".png";
     }
 
     @Override
@@ -83,14 +93,15 @@ public class WitchClothingItem extends ArmorItem {
         return true;
     }
 
-    public static final class Dyeable extends WitchClothingItem implements DyeableLeatherItem {
+    public static class Dyeable extends WitchClothingItem implements DyeableLeatherItem {
         public Dyeable(Style style) {
             super(style);
         }
 
         @Override
         public int getColor(ItemStack stack) {
-            return hasCustomColor(stack) ? DyeableLeatherItem.super.getColor(stack) : 2628115;
+            if (hasCustomColor(stack)) return DyeableLeatherItem.super.getColor(stack);
+            return style() == Style.BARK_BELT ? 6968628 : 2628115;
         }
     }
 }

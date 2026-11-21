@@ -48,6 +48,16 @@ public final class WitchClothingModel {
     }
 
     public static LayerDefinition layer(Style style) {
+        if (style == Style.BITING_BELT || style == Style.BARK_BELT) {
+            var beltCloth = new CubeDeformation(0.45F);
+            var beltMesh = HumanoidModel.createMesh(beltCloth, 0);
+            var beltRoot = beltMesh.getRoot();
+            beltRoot.getChild("body").addOrReplaceChild("hem", CubeListBuilder.create().mirror().texOffs(43, 46)
+                    .addBox(-4, 0, -2, 8, 6, 4, beltCloth), PartPose.offset(0, 12, 0));
+            beltRoot.addOrReplaceChild("left_leg", CubeListBuilder.create(), PartPose.ZERO);
+            beltRoot.addOrReplaceChild("right_leg", CubeListBuilder.create(), PartPose.ZERO);
+            return LayerDefinition.create(beltMesh, 128, 64);
+        }
         MeshDefinition mesh = HumanoidModel.createMesh(CLOTH, 0);
         PartDefinition root = mesh.getRoot();
         PartDefinition head = root.getChild("head");

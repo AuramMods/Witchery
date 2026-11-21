@@ -31,6 +31,7 @@ import art.arcane.witchery.item.GlassGobletItem;
 import art.arcane.witchery.item.HunterClothingItem;
 import art.arcane.witchery.item.HuntsmanSpearItem;
 import art.arcane.witchery.item.ParasyticLouseItem;
+import art.arcane.witchery.item.BarkBeltItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.item.WolfsbaneFlowerItem;
 import art.arcane.witchery.lycanthropy.Lycanthropy;
@@ -438,6 +439,10 @@ public final class WitcheryEventHooks {
                 event.setCanceled(true);
                 return;
             }
+            if (!event.isCanceled() && BarkBeltItem.absorb(player, event.getSource())) {
+                event.setCanceled(true);
+                return;
+            }
             if (!event.isCanceled() && !ignoreWards) VampiricPoppetItem.transferDamage(player, event);
             if (!event.isCanceled()) FamiliarBinding.shareDamage(player, event);
             if (!event.isCanceled()) {
@@ -446,6 +451,11 @@ public final class WitcheryEventHooks {
             }
             DeathProtectionPoppetItem.repairArmor(player);
         }
+    }
+
+    @SubscribeEvent
+    public static void rechargeBarkBelt(LivingTickEvent event) {
+        BarkBeltItem.recharge(event.getEntity());
     }
 
     @SubscribeEvent
@@ -474,7 +484,7 @@ public final class WitcheryEventHooks {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void protectFromLethalDamage(LivingDamageEvent event) {
         if (event.getAmount() > 0 && event.getEntity() instanceof ServerPlayer player
-                && ParasyticLouseItem.spendCarriedPotion(player, event.getSource())) {
+                && ParasyticLouseItem.spendOnHit(player, event.getSource())) {
             event.setAmount(event.getAmount() + 1);
         }
         if (VampireMortality.preventLethalDamage(event.getEntity(), event.getSource(), event.getAmount())) {

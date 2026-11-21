@@ -5,11 +5,11 @@ import art.arcane.witchery.brewing.CauldronRitualRecipe;
 import art.arcane.witchery.brewing.KettleRecipe;
 import art.arcane.witchery.crafting.AssembleVampireBookRecipe;
 import art.arcane.witchery.crafting.BoundTaglockIngredient;
-import art.arcane.witchery.crafting.ChargeLouseRecipe;
 import art.arcane.witchery.crafting.ClothingRepairRecipe;
 import art.arcane.witchery.crafting.CopyBiomeNoteRecipe;
 import art.arcane.witchery.crafting.DoorKeyringRecipe;
 import art.arcane.witchery.crafting.DyeBrewBagRecipe;
+import art.arcane.witchery.crafting.PotionChargeRecipe;
 import art.arcane.witchery.crafting.UrnUpgradeRecipe;
 import art.arcane.witchery.crafting.HunterClothingUpgradeRecipe;
 import art.arcane.witchery.crafting.DistillingRecipe;
@@ -38,8 +38,12 @@ public final class WitcheryRecipes {
             SERIALIZERS.register("door_keyring", () -> new SimpleCraftingRecipeSerializer<>(DoorKeyringRecipe::new));
     public static final RegistryObject<RecipeSerializer<DyeBrewBagRecipe>> DYE_BREW_BAG =
             SERIALIZERS.register("dye_brew_bag", () -> new SimpleCraftingRecipeSerializer<>(DyeBrewBagRecipe::new));
-    public static final RegistryObject<RecipeSerializer<ChargeLouseRecipe>> CHARGE_LOUSE =
-            SERIALIZERS.register("charge_louse", () -> new SimpleCraftingRecipeSerializer<>(ChargeLouseRecipe::new));
+    public static final RegistryObject<RecipeSerializer<PotionChargeRecipe>> CHARGE_LOUSE =
+            SERIALIZERS.register("charge_louse", () -> new SimpleCraftingRecipeSerializer<>(
+                    (id, category) -> new PotionChargeRecipe(id, category, false)));
+    public static final RegistryObject<RecipeSerializer<PotionChargeRecipe>> CHARGE_BITING_BELT =
+            SERIALIZERS.register("charge_biting_belt", () -> new SimpleCraftingRecipeSerializer<>(
+                    (id, category) -> new PotionChargeRecipe(id, category, true)));
     public static final RegistryObject<RecipeType<CauldronRitualRecipe>> CAULDRON_RITUAL =
             TYPES.register("cauldron_ritual", () -> new RecipeType<>() {
                 @Override

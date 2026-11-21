@@ -435,8 +435,8 @@ The original `witchhat`, `witchrobe`, `necromancerrobe`, and `babashat` IDs equi
 | `BABAS_HAT` | `witchery:babashat` |
 | `WITCH_ROBES` | `witchery:witchrobe` |
 | `NECROMANCERS_ROBES` | `witchery:necromancerrobe` |
-| `BITING_BELT` | `witchery:bitingbelt` |
-| `BARK_BELT` | `witchery:barkbelt` |
+| `BITING_BELT` | `witchery:bitingbelt` (dyeable leggings, two charges in `WITCPotion` and `WITCPotion2`) |
+| `BARK_BELT` | `witchery:barkbelt` (dyeable leggings, renewable `WITCBarkPieces` ward) |
 | `ICY_SLIPPERS` | `witchery:iceslippers` |
 | `RUBY_SLIPPERS` | `witchery:rubyslippers` |
 | `SEEPING_SHOES` | `witchery:seepingshoes` |

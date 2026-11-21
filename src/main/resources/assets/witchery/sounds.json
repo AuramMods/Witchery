@@ -1,5 +1,6 @@
 {
   "random.poof": {"sounds": ["witchery:random/poof"]},
+  "random.wood_creak": {"sounds": ["witchery:random/wood_creak1", "witchery:random/wood_creak2", "witchery:random/wood_creak3"]},
   "mob.goblin.idle": {"sounds": ["witchery:mob/goblin/idle1", "witchery:mob/goblin/idle2", "witchery:mob/goblin/idle3"]},
   "mob.goblin.haggle": {"sounds": ["witchery:mob/goblin/haggle1", "witchery:mob/goblin/haggle2", "witchery:mob/goblin/haggle3"]},
   "mob.goblin.hit": {"sounds": ["witchery:mob/goblin/hit1", "witchery:mob/goblin/hit2", "witchery:mob/goblin/hit3", "witchery:mob/goblin/hit4"]},

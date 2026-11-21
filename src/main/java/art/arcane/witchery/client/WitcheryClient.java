@@ -72,6 +72,7 @@ import art.arcane.witchery.client.renderer.DemonRenderer;
 import art.arcane.witchery.client.renderer.EntRenderer;
 import art.arcane.witchery.client.renderer.DemonHeartRenderer;
 import art.arcane.witchery.client.renderer.GrotesqueLayer;
+import art.arcane.witchery.client.renderer.BarkBeltLayer;
 import art.arcane.witchery.client.renderer.FollowerRenderer;
 import art.arcane.witchery.client.renderer.BloodCrucibleRenderer;
 import art.arcane.witchery.client.renderer.BrewGasRenderer;
@@ -165,6 +166,7 @@ public final class WitcheryClient {
         event.registerAboveAll("infusion_charge", ClientInfusion::render);
         event.registerAboveAll("vampire_blood", ClientVampirism::render);
         event.registerAboveAll("brew_bag", BrewBagOverlay::render);
+        event.registerAboveAll("bark_belt", BarkBeltOverlay::render);
     }
 
     @SubscribeEvent
@@ -216,6 +218,7 @@ public final class WitcheryClient {
         event.registerLayerDefinition(DarkMarkModel.LAYER, DarkMarkModel::layer);
         event.registerLayerDefinition(LordOfTormentModel.LAYER, LordOfTormentModel::layer);
         event.registerLayerDefinition(GrotesqueLayer.LAYER, GrotesqueLayer::layer);
+        event.registerLayerDefinition(BarkBeltLayer.LAYER, BarkBeltLayer::layer);
         event.registerLayerDefinition(GrassperRenderer.LAYER, GrassperRenderer::layer);
         event.registerLayerDefinition(MirrorBlockRenderer.LAYER, MirrorBlockRenderer::layer);
         event.registerLayerDefinition(MirrorFaceRenderer.LAYER, MirrorFaceRenderer::layer);
@@ -253,6 +256,7 @@ public final class WitcheryClient {
         for (String skin : event.getSkins()) {
             if (event.getPlayerSkin(skin) instanceof PlayerRenderer renderer) {
                 renderer.addLayer(new GrotesqueLayer(renderer, event.getContext().bakeLayer(GrotesqueLayer.LAYER)));
+                renderer.addLayer(new BarkBeltLayer<>(renderer, event.getContext().bakeLayer(BarkBeltLayer.LAYER)));
             }
         }
     }

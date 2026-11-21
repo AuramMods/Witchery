@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "H": {
+      "item": "witchery:mellifluous_hunger"
+    },
+    "L": {
+      "item": "witchery:impregnated_leather"
+    },
+    "P": {
+      "item": "witchery:louse"
+    },
+    "T": {
+      "item": "witchery:golden_thread"
+    }
+  },
+  "pattern": [
+    "PLH",
+    "LTL",
+    "L L"
+  ],
+  "result": {
+    "item": "witchery:bitingbelt"
+  },
+  "show_notification": true
+}

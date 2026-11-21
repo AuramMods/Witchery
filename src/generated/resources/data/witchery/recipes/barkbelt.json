@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "B": {
+      "item": "witchery:bitingbelt"
+    },
+    "E": {
+      "item": "minecraft:emerald"
+    },
+    "G": {
+      "item": "witchery:ent_branch"
+    },
+    "H": {
+      "item": "witchery:creeper_heart"
+    },
+    "S": {
+      "item": "witchery:brew_of_flowing_spirit"
+    }
+  },
+  "pattern": [
+    "SES",
+    "GBG",
+    "SHS"
+  ],
+  "result": {
+    "item": "witchery:barkbelt"
+  },
+  "show_notification": true
+}

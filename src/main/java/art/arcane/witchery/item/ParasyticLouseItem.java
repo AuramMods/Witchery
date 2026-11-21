@@ -2,7 +2,6 @@ package art.arcane.witchery.item;
 
 import art.arcane.witchery.brewing.LousePotion;
 import art.arcane.witchery.registry.WitcheryEntities;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -13,7 +12,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.effect.MobEffectUtil;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
@@ -79,17 +77,10 @@ public final class ParasyticLouseItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flags) {
         LousePotion potion = LousePotion.get(stack);
-        if (potion == null) return;
-        var dose = potion.effect();
-        var line = Component.translatable(dose.getDescriptionId()).withStyle(ChatFormatting.GOLD);
-        if (dose.getAmplifier() > 0) line.append(" ").append(Component.translatable("potion.potency." + dose.getAmplifier()));
-        if (dose.getDuration() > 20) {
-            line.append(" [").append(MobEffectUtil.formatDuration(dose, 1)).append("]");
-        }
-        tooltip.add(line);
+        if (potion != null) tooltip.add(potion.tooltip());
     }
 
-    public static boolean spendCarriedPotion(ServerPlayer player, DamageSource source) {
+    public static boolean spendOnHit(ServerPlayer player, DamageSource source) {
         if (source.getDirectEntity() == null && source.getEntity() == null) return false;
         var inventory = player.getInventory();
         ItemStack firstCharged = ItemStack.EMPTY;
@@ -108,9 +99,12 @@ public final class ParasyticLouseItem extends Item {
                 return true;
             }
         }
-        if (firstCharged.isEmpty()) return false;
-        LousePotion.set(firstCharged, 0);
-        inventory.setChanged();
-        return true;
+        boolean beltBit = BitingBeltItem.spendPotion(player, source, false);
+        if (!firstCharged.isEmpty()) {
+            LousePotion.set(firstCharged, 0);
+            inventory.setChanged();
+            return true;
+        }
+        return BitingBeltItem.spendPotion(player, source, true) || beltBit;
     }
 }
