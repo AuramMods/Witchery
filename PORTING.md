@@ -151,7 +151,17 @@
 - [x] The muted client drew and released Carnosa Diem, Ignianima and Morsmordre. The player's health fell from 20 to 18 and its charge reached 199 after Carnosa Diem. Ignianima lowered a pig's health from 10 to 7 and cost two charge. Morsmordre summoned a Dark Mark and cost 20 charge.
 - [x] The muted client rendered the Dark Mark's original model and smoke. Tormentum moved a second survival client to a maze floor, removed the nearby pig, and spent 25 charge. Repeating the gesture during the cooldown preserved charge. The dedicated server saved the original `tormentumLastUse` field, remaining charge and the second player's Torment dimension.
 - [x] Java 17 data generation and reobfuscation succeeded on Forge 47.4.10. All 46 required Forge GameTests passed, including the long symbol variants, unknown spell rejection, Dark Mark lifespan, and Tormentum's impact against creatures and charge cooldown.
-- [ ] Restore the remaining symbols and their enhanced gestures, and the in-game symbol book.
+- [ ] Restore the remaining symbols and their enhanced gestures. Symbology lists the spells as they are ported.
+
+## Mystic Branch terrain spells (2026-11-21)
+
+- [x] Restore Incendio, Aguamenti, Lumos, Nox, and Meteolojinx Recanto under their original IDs. Their gestures and base costs appear in Symbology. Worship enables the enhanced Incendio and Aguamenti gestures, which cost two or four infusion charges.
+- [x] Restore Incendio's base ignition for creatures, block faces, filled braziers, and bloodied Wicker Men. The two enhanced gestures light three-by-three and five-by-five floor areas and ignite creatures in three- and six-block ranges.
+- [x] Restore Aguamenti's source placement, the two brewing vessel fill amounts, and the enhanced six-direction spread. The highest rank can conjure one source in the Nether. The two lower ranks have no effect there.
+- [x] Make Lumos create the original level-14 Glow Globe. It uses the original crossed sprite without collision and drops no item. Nox breaks permitted light-emitting blocks within ten blocks along each axis. Meteolojinx Recanto clears rain and thunder in the Overworld.
+- [x] Use the five gestures in the muted survival client with a supplied branch, infusion, and prepared blocks. Fill the kettle and cauldron, light the Wilting brazier, summon the Horned Huntsman from a Wicker Man, and place a Glow Globe. Both filled vessels and the globe survived a dedicated restart. Nox then removed the globe and a nearby torch for 50 charge. A separate cast cleared both weather flags for 100 charge.
+- [x] Read Incendio's three patterns in Symbology. With supplied Worship II, the muted client released the longest gesture, spent four charges, and lit the center and corner of the five-by-five area. The first block outside the area stayed clear.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 376 required Forge GameTests. The new cases cover the legacy gesture variants, Worship ranks and cost, vessel volumes, Nether water, Incendio's area, light and loot, Forge protection, and weather.
 
 ## Light and Otherwhere Infusions (2026-11-20)
 
@@ -716,7 +726,7 @@
 - [x] Finish a Banshee batch in the muted client and verify the scream pose. The player lost two health in range. After equipping Earmuffs the player stayed at 18 health through the following scream pulses.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 294 required Forge GameTests. The four new cases cover powered and paused summons, redstone and flint ignition, water cleanup, original spectral offerings, legacy stone metadata and a reloaded rite that binds and releases three creatures.
 - [x] Reveal obscured Spectres and invisible Poltergeists with the original Kettle splash or the Odour of Purity action.
-- [ ] Restore brazier ignition by the Mystic Branch's Incendio.
+- [x] Restore brazier ignition by the Mystic Branch's Incendio.
 
 ## Spirit-Bound Fetishes (2026-11-20)
 

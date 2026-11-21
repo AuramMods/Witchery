@@ -3,6 +3,7 @@ package art.arcane.witchery.registry;
 import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.block.BrewDispersalBlock;
 import art.arcane.witchery.block.CursedControls;
+import art.arcane.witchery.block.GlowGlobeBlock;
 import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.Witchery;
@@ -50,7 +51,8 @@ public final class WitcheryCreativeTabs {
                         } else if (!(entry.get() instanceof BrewBottleItem)) {
                             if (!(entry.get() instanceof BlockItem blockItem
                                     && (blockItem.getBlock() instanceof CursedControls.Control
-                                    || blockItem.getBlock() instanceof BrewDispersalBlock))) {
+                                    || blockItem.getBlock() instanceof BrewDispersalBlock
+                                    || blockItem.getBlock() instanceof GlowGlobeBlock))) {
                                 output.accept(entry.get());
                             }
                         }

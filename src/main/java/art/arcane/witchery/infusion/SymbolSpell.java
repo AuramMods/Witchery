@@ -30,7 +30,12 @@ public enum SymbolSpell {
     LEONARD_4(46, null, 5, 0, 0, 0, false, List.of("↑←↓↓→")),
     FLIPENDO(17, null, 1, 16_775_577, 3, 200, false, ranked("→", "←")),
     IMPEDIMENTA(19, null, 1, 6_191_615, 1.5F, 200, false, ranked("←", "→")),
-    ATTRAHO(47, null, 1, 5_322_534, 1, 200, false, List.of("↑↑↑→→↓←"));
+    ATTRAHO(47, null, 1, 5_322_534, 1, 200, false, List.of("↑↑↑→→↓←")),
+    AGUAMENTI(2, null, 1, 1_176_575, 2, 200, false, List.of("↑↑→→↓", "↑↑→→→↓", "↑↑↑→→↓↓", "↑↑↑→→→↓↓", "↑↑↑↑→→↓↓↓", "↑↑↑↑→→→↓↓↓")),
+    INCENDIO(21, null, 1, 16_724_023, 2, 200, false, List.of("←↑↑↓↓", "←↑↑↑↓↓↓", "←↑↑↑↑↓↓↓↓")),
+    LUMOS(22, null, 1, 16_777_018, 0.5F, 200, false, List.of("↓↓↓→")),
+    METEOLOJINX_RECANTO(23, null, 100, 0, 0, 0, false, List.of("↑↑↑→→↓↑→→↓↓")),
+    NOX(26, null, 50, 0, 0, 0, false, List.of("↑↑→↓→↑"));
 
     public static final int TORMENTUM_COOLDOWN = 30 * 60 * 20;
     private final int id;
@@ -89,6 +94,8 @@ public enum SymbolSpell {
     public int gestureLevel(String strokes) {
         return switch (this) {
             case CONFUNDUS, EXPELLIARMUS, FLIPENDO, IMPEDIMENTA -> Math.max(1, patterns.indexOf(strokes));
+            case AGUAMENTI -> 1 + patterns.indexOf(strokes) / 2;
+            case INCENDIO -> Math.max(1, 1 + patterns.indexOf(strokes));
             default -> 1;
         };
     }
@@ -116,15 +123,23 @@ public enum SymbolSpell {
         int charge = cost << (effectLevel - 1);
         if (!InfusionEnergy.canSpend(player, charge)) return;
 
-        if (this == CARNOSA_DIEM) {
-            player.hurt(WitcheryDamageTypes.demonic(level, player, null), player.getMaxHealth() * 0.1F);
-            InfusionEnergy.recharge(player, 10);
-            level.sendParticles(DustParticleOptions.REDSTONE, player.getX(), player.getY(0.5), player.getZ(),
-                    16, 0.5, 1, 0.5, 0);
-            level.playSound(null, player.blockPosition(), SoundEvents.ENDER_DRAGON_GROWL, SoundSource.PLAYERS, 0.7F, 1);
-        } else {
-            if (!level.addFreshEntity(new SymbolProjectile(level, player, this, effectLevel))) return;
-            level.playSound(null, player.blockPosition(), SoundEvents.GHAST_SHOOT, SoundSource.PLAYERS, 0.8F, 1);
+        switch (this) {
+            case CARNOSA_DIEM -> {
+                player.hurt(WitcheryDamageTypes.demonic(level, player, null), player.getMaxHealth() * 0.1F);
+                InfusionEnergy.recharge(player, 10);
+                level.sendParticles(DustParticleOptions.REDSTONE, player.getX(), player.getY(0.5), player.getZ(),
+                        16, 0.5, 1, 0.5, 0);
+                level.playSound(null, player.blockPosition(), SoundEvents.ENDER_DRAGON_GROWL, SoundSource.PLAYERS, 0.7F, 1);
+            }
+            case METEOLOJINX_RECANTO -> {
+                if (level.isRaining()) level.getServer().overworld().setWeatherParameters(0, 0, false, false);
+                else player.playSound(SoundEvents.NOTE_BLOCK_SNARE.value(), 0.9F, 1);
+            }
+            case NOX -> SymbolTerrain.extinguishLights(level, player);
+            default -> {
+                if (!level.addFreshEntity(new SymbolProjectile(level, player, this, effectLevel))) return;
+                level.playSound(null, player.blockPosition(), SoundEvents.GHAST_SHOOT, SoundSource.PLAYERS, 0.8F, 1);
+            }
         }
         InfusionEnergy.spend(player, charge);
     }

@@ -941,6 +941,8 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 46 | `witchery.pott.leonard4` |
 | 47 | `witchery.pott.attraho` |
 
+- IDs 2, 21, 22, 23, and 26 are active in `SymbolSpell`. The three projectile spells retain `EffectID` and `effectLevel` on saved `witchery:spelleffect` entities. Aguamenti and Incendio accept all original enhanced gestures. Nox and Meteolojinx Recanto take effect immediately when the gesture is released. Lumos uses the original `witchery:glowglobe` block ID and retains the earlier port's item ID for saved inventories.
+
 ## Ritual Registry (`RiteRegistry`)
 
 The modern `witchery:item_rite` recipe type covers item-output rites at the Heart Glyph. Legacy rite 3, the Rite of Charging, is implemented as `witchery:rite_of_charging`. It validates the original 16- and 28-glyph white rings, consumes its five offerings in steps, and draws 2,000 power from the nearest altar.

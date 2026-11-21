@@ -2,6 +2,7 @@ package art.arcane.witchery.entity;
 
 import art.arcane.witchery.infusion.SpellKnowledge;
 import art.arcane.witchery.infusion.SymbolSpell;
+import art.arcane.witchery.infusion.SymbolTerrain;
 import art.arcane.witchery.item.MysticBranchItem;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEntities;
@@ -111,14 +112,14 @@ public final class SymbolProjectile extends ThrowableProjectile {
     protected void onHit(HitResult hit) {
         SymbolSpell spell = spell();
         if (level() instanceof ServerLevel server && spell != null) {
-            LivingEntity direct = hit instanceof EntityHitResult entityHit && entityHit.getEntity() instanceof LivingEntity living
-                    ? living : null;
-            impact(server, spell, hit.getLocation(), direct);
+            impact(server, spell, hit.getLocation(), hit);
             discard();
         }
     }
 
-    private void impact(ServerLevel level, SymbolSpell spell, Vec3 location, @Nullable LivingEntity direct) {
+    private void impact(ServerLevel level, SymbolSpell spell, Vec3 location, @Nullable HitResult hit) {
+        LivingEntity direct = hit instanceof EntityHitResult entityHit && entityHit.getEntity() instanceof LivingEntity living
+                ? living : null;
         level.sendParticles(ParticleTypes.WITCH, location.x, location.y, location.z, 16, 0.6, 0.6, 0.6, 0);
         level.playSound(null, location.x, location.y, location.z, SoundEvents.ENDER_DRAGON_HURT,
                 SoundSource.PLAYERS, 0.8F, 1);
@@ -145,7 +146,10 @@ public final class SymbolProjectile extends ThrowableProjectile {
                 }
             });
             case ATTRAHO -> pullToCaster(level, location);
-            case CARNOSA_DIEM, LEONARD_1, LEONARD_2, LEONARD_3, LEONARD_4 -> { }
+            case AGUAMENTI -> SymbolTerrain.pourWater(level, getOwner(), hit, effectLevel);
+            case INCENDIO -> SymbolTerrain.ignite(level, this, hit, effectLevel);
+            case LUMOS -> SymbolTerrain.placeLight(level, getOwner(), hit);
+            case CARNOSA_DIEM, LEONARD_1, LEONARD_2, LEONARD_3, LEONARD_4, METEOLOJINX_RECANTO, NOX -> { }
         }
     }
 

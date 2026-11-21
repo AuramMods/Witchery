@@ -3,6 +3,7 @@ package art.arcane.witchery.registry;
 import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.block.PerpetualIceBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
+import art.arcane.witchery.block.GlowGlobeBlock;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.BarrierBlock;
 import art.arcane.witchery.block.PoppetShelfBlock;
@@ -103,7 +104,6 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_PAD_FLAT = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 0.5D, 16.0D);
     private static final VoxelShape SHAPE_FUNNEL = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
     private static final VoxelShape SHAPE_SKULL = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 8.0D, 12.0D);
-    private static final VoxelShape SHAPE_GLOW_GLOBE = Block.box(6.4D, 6.4D, 6.4D, 9.6D, 9.6D, 9.6D);
     private static final VoxelShape SHAPE_INFINITY_EGG = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
     private static final VoxelShape SHAPE_CACTUS = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 16.0D, 15.0D);
     private static final VoxelShape SHAPE_VOID_BRAMBLE = Block.box(0.8D, 0.0D, 0.8D, 15.2D, 16.0D, 15.2D);
@@ -230,8 +230,7 @@ public final class WitcheryBlocks {
             case "decurseteleport" -> new AreaWardBlock(AreaWardBlockEntity.Kind.TELEPORT);
             case "scarecrow", "trent", "witchsladder" -> new FetishBlock(path);
             case "placeditem" -> new PlacedItemBlock();
-            case "glowglobe" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.GLASS), SHAPE_GLOW_GLOBE, true);
+            case "glowglobe" -> new GlowGlobeBlock();
             case "infinityegg" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DRAGON_EGG), SHAPE_INFINITY_EGG, true);
             case "garlicgarland" -> new GarlicGarlandBlock();

@@ -66,26 +66,29 @@ public final class WickerBundleBlock extends RotatedPillarBlock {
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
                                  InteractionHand hand, BlockHitResult hit) {
         if (!player.getItemInHand(hand).is(Items.FLINT_AND_STEEL)) return InteractionResult.PASS;
+        if (level instanceof ServerLevel server) return igniteEffigy(server, pos, player.getYRot());
+        return findEffigy(level, pos) == null ? InteractionResult.PASS : InteractionResult.SUCCESS;
+    }
+
+    public static InteractionResult igniteEffigy(ServerLevel level, BlockPos pos, float yaw) {
         Effigy effigy = findEffigy(level, pos);
         if (effigy == null) return InteractionResult.PASS;
-        if (level instanceof ServerLevel server) {
-            double x = effigy.base().getX() + (effigy.direction() == Direction.EAST ? 1 : 0.5);
-            double z = effigy.base().getZ() + (effigy.direction() == Direction.SOUTH ? 1 : 0.5);
-            if (!HornedHuntsman.summonFromWicker(server, x, effigy.base().getY() + 0.1, z, player.getYRot() + 180)) {
-                return InteractionResult.FAIL;
-            }
-            for (int y = 0; y < BURN_ROWS.length; y++) {
-                for (int i = 0; i < BURN_ROWS[y].length(); i++) {
-                    if (BURN_ROWS[y].charAt(i) != '#') continue;
-                    BlockPos burn = effigy.base().above(y).relative(effigy.direction(), i - 2);
-                    if (bloodiedAt(server, burn) || server.isEmptyBlock(burn)) {
-                        server.setBlockAndUpdate(burn, BaseFireBlock.getState(server, burn));
-                    }
+        double x = effigy.base().getX() + (effigy.direction() == Direction.EAST ? 1 : 0.5);
+        double z = effigy.base().getZ() + (effigy.direction() == Direction.SOUTH ? 1 : 0.5);
+        if (!HornedHuntsman.summonFromWicker(level, x, effigy.base().getY() + 0.1, z, yaw + 180)) {
+            return InteractionResult.FAIL;
+        }
+        for (int y = 0; y < BURN_ROWS.length; y++) {
+            for (int i = 0; i < BURN_ROWS[y].length(); i++) {
+                if (BURN_ROWS[y].charAt(i) != '#') continue;
+                BlockPos burn = effigy.base().above(y).relative(effigy.direction(), i - 2);
+                if (bloodiedAt(level, burn) || level.isEmptyBlock(burn)) {
+                    level.setBlockAndUpdate(burn, BaseFireBlock.getState(level, burn));
                 }
             }
-            server.sendParticles(ParticleTypes.POOF, x, effigy.base().getY() + 1.5, z, 120, 0.5, 1.25, 0.5, 0.05);
         }
-        return InteractionResult.sidedSuccess(level.isClientSide);
+        level.sendParticles(ParticleTypes.POOF, x, effigy.base().getY() + 1.5, z, 120, 0.5, 1.25, 0.5, 0.05);
+        return InteractionResult.CONSUME;
     }
 
     private record Effigy(BlockPos base, Direction direction) {}
