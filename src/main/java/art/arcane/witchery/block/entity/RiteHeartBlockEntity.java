@@ -5,6 +5,7 @@ import art.arcane.witchery.brewing.WakingNightmareEffect;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.entity.Demon;
+import art.arcane.witchery.entity.Reflection;
 import art.arcane.witchery.entity.WereVillager;
 import art.arcane.witchery.entity.WitchHunterPursuit;
 import art.arcane.witchery.entity.Wolfman;
@@ -215,20 +216,26 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             }
         } else if (infusionType > 0) {
             recipients = nearbyPlayers(level, pos, INFUSION_RANGE);
-        } else if (rite.action() == ItemRiteRecipe.Action.SUMMON_DEMON || rite.action() == ItemRiteRecipe.Action.SUMMON_IMP) {
-            boolean impRite = rite.action() == ItemRiteRecipe.Action.SUMMON_IMP;
-            if (impRite && covenSize == 0) {
+        } else if (rite.action() == ItemRiteRecipe.Action.SUMMON_DEMON || rite.action() == ItemRiteRecipe.Action.SUMMON_IMP
+                || rite.action() == ItemRiteRecipe.Action.SUMMON_REFLECTION) {
+            if (rite.action() == ItemRiteRecipe.Action.SUMMON_IMP && covenSize == 0) {
                 abort(level, "message.witchery.rite.coven_required");
                 return;
             }
-            Mob summon = impRite ? WitcheryEntities.IMP.get().create(level) : WitcheryEntities.DEMON.get().create(level);
+            Mob summon = switch (rite.action()) {
+                case SUMMON_IMP -> WitcheryEntities.IMP.get().create(level);
+                case SUMMON_REFLECTION -> WitcheryEntities.REFLECTION.get().create(level);
+                default -> WitcheryEntities.DEMON.get().create(level);
+            };
             if (summon == null) return;
             summon.moveTo(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 0, 0);
             if (hasObstructedSummoningArea(level, pos) || level.getBlockCollisions(summon, summon.getBoundingBox()).iterator().hasNext()) {
+                if (summon instanceof Reflection && altar != null) altar.consumePower(rite.power());
                 abort(level, "message.witchery.rite.obstructed");
                 return;
             }
             if (summon instanceof Demon demon) demon.summonedByRite();
+            else if (summon instanceof Reflection reflection) reflection.allowOutsideMirror();
             else summon.setPersistenceRequired();
             result = summon;
         } else if (rite.action() == ItemRiteRecipe.Action.CURSE_WAKING_NIGHTMARE

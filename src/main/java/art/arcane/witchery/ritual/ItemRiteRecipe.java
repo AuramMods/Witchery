@@ -65,7 +65,8 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         TRANSPOSE_CREATURE,
         TRANSPOSE_ORES,
         BIND_SPECTRAL_STONE,
-        BIND_FETISH
+        BIND_FETISH,
+        SUMMON_REFLECTION
     }
 
     public record Ring(RitualCircle pattern, Block glyph) {
@@ -230,6 +231,7 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 case "manifestation" -> Action.MANIFESTATION;
                 case "summon_demon" -> Action.SUMMON_DEMON;
                 case "summon_imp" -> Action.SUMMON_IMP;
+                case "summon_reflection" -> Action.SUMMON_REFLECTION;
                 case "infuse_overworld" -> Action.INFUSE_OVERWORLD;
                 case "recharge_infusion" -> Action.RECHARGE_INFUSION;
                 case "infuse_infernal" -> Action.INFUSE_INFERNAL;

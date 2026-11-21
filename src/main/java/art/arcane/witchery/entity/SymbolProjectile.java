@@ -141,6 +141,7 @@ public final class SymbolProjectile extends ThrowableProjectile {
     }
 
     private static void disarm(LivingEntity target) {
+        if (target instanceof Reflection || target instanceof WitcheryFollower) return;
         var held = target.getMainHandItem();
         if (held.isEmpty()) return;
         if (target instanceof net.minecraft.world.entity.player.Player player) {

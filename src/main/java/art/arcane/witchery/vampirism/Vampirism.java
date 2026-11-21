@@ -4,6 +4,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.config.WitcheryServerConfig;
+import art.arcane.witchery.entity.Reflection;
 import art.arcane.witchery.entity.VillageGuard;
 import art.arcane.witchery.entity.Vampire;
 import art.arcane.witchery.item.CaneSwordItem;
@@ -51,7 +52,8 @@ public final class Vampirism {
     }
 
     public static boolean isVampire(@Nullable Entity entity) {
-        return entity instanceof Vampire || entity instanceof Player player && level(player) > 0;
+        return entity instanceof Vampire || entity instanceof Reflection copy && copy.isVampireCopy()
+                || entity instanceof Player player && level(player) > 0;
     }
 
     public static boolean isBoss(LivingEntity entity) {

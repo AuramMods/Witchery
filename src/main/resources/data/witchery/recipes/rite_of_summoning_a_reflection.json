@@ -1,0 +1,12 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "large", "glyph": "witchery:circleglyphinfernal"}],
+  "sacrifices": [
+    [{"item": "witchery:mirror"}, {"item": "witchery:mirrorblock"}],
+    {"item": "witchery:ender_dew"},
+    {"item": "minecraft:blaze_powder"},
+    {"item": "witchery:quartz_sphere"}
+  ],
+  "power": 5000,
+  "action": "summon_reflection"
+}

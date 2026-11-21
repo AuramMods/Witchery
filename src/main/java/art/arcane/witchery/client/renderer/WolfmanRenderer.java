@@ -19,15 +19,18 @@ import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.Mob;
 
-public final class WolfmanRenderer extends MobRenderer<Wolfman, WolfmanRenderer.Model> {
+import java.util.function.ToIntFunction;
+
+public final class WolfmanRenderer extends MobRenderer<Wolfman, WolfmanRenderer.Model<Wolfman>> {
     public static final ModelLayerLocation LAYER = new ModelLayerLocation(
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "wolfman"), "main");
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "textures/entities/wolfman.png");
+    static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "textures/entities/wolfman.png");
     private static final float THIGH_PITCH = -0.4098033F;
 
     public WolfmanRenderer(EntityRendererProvider.Context context) {
-        super(context, new Model(context.bakeLayer(LAYER)), 0.5F);
+        super(context, new Model<>(context.bakeLayer(LAYER), Wolfman::attackTicks), 0.5F);
         addLayer(new ItemInHandLayer<>(this, context.getItemInHandRenderer()));
     }
 
@@ -62,16 +65,18 @@ public final class WolfmanRenderer extends MobRenderer<Wolfman, WolfmanRenderer.
         thigh.addOrReplaceChild("shin", CubeListBuilder.create().texOffs(38, 13).addBox(-2, 3.5F, 2, 4, 8, 4), PartPose.ZERO);
     }
 
-    static final class Model extends HierarchicalModel<Wolfman> implements ArmedModel {
+    static final class Model<T extends Mob> extends HierarchicalModel<T> implements ArmedModel {
         private final ModelPart root;
         private final ModelPart head;
         private final ModelPart rightArm;
         private final ModelPart leftArm;
         private final ModelPart rightLeg;
         private final ModelPart leftLeg;
+        private final ToIntFunction<T> attackTicks;
 
-        Model(ModelPart root) {
+        Model(ModelPart root, ToIntFunction<T> attackTicks) {
             this.root = root;
+            this.attackTicks = attackTicks;
             head = root.getChild("head");
             rightArm = root.getChild("right_arm");
             leftArm = root.getChild("left_arm");
@@ -89,7 +94,7 @@ public final class WolfmanRenderer extends MobRenderer<Wolfman, WolfmanRenderer.
         }
 
         @Override
-        public void setupAnim(Wolfman wolfman, float swing, float amount, float age, float yaw, float pitch) {
+        public void setupAnim(T wolfman, float swing, float amount, float age, float yaw, float pitch) {
             head.yRot = yaw * Mth.DEG_TO_RAD;
             head.xRot = pitch * Mth.DEG_TO_RAD;
             float walk = Mth.cos(swing * 0.6662F) * amount;
@@ -97,8 +102,9 @@ public final class WolfmanRenderer extends MobRenderer<Wolfman, WolfmanRenderer.
             leftLeg.xRot = Math.max(THIGH_PITCH - walk * 1.4F, -0.8F);
             rightArm.xRot = -walk;
             leftArm.xRot = walk;
-            if (wolfman.attackTicks() > 0) {
-                float strike = Mth.triangleWave(wolfman.attackTicks() - (age - wolfman.tickCount), 10);
+            int attack = attackTicks.applyAsInt(wolfman);
+            if (attack > 0) {
+                float strike = Mth.triangleWave(attack - (age - wolfman.tickCount), 10);
                 rightArm.xRot = -2 + 1.5F * strike;
                 leftArm.xRot = -1 + 0.9F * strike;
             }

@@ -4,6 +4,9 @@
     "subtitle": "subtitles.witchery.mirror_face",
     "sounds": ["witchery:mob/reflection/speech"]
   },
+  "mob.reflection.say": {"sounds": ["witchery:mob/reflection/say1"]},
+  "mob.reflection.hit": {"sounds": ["witchery:mob/reflection/hit"]},
+  "mob.reflection.death": {"sounds": ["witchery:mob/reflection/death"]},
   "mob.leonard.say": {"sounds": ["witchery:mob/leonard/say1", "witchery:mob/leonard/say2", "witchery:mob/leonard/say3", "witchery:mob/leonard/say4", "witchery:mob/leonard/say5"]},
   "mob.leonard.hit": {"sounds": ["witchery:mob/leonard/hit"]},
   "mob.leonard.death": {"sounds": ["witchery:mob/leonard/death"]},
