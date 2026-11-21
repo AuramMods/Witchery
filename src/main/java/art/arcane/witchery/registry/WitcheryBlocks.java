@@ -39,6 +39,7 @@ import art.arcane.witchery.block.KettleBlock;
 import art.arcane.witchery.block.LeechChestBlock;
 import art.arcane.witchery.block.MirrorBlock;
 import art.arcane.witchery.block.RefillingChestBlock;
+import art.arcane.witchery.block.SlurpBlock;
 import art.arcane.witchery.block.SomnianCottonBlock;
 import art.arcane.witchery.block.SpinningWheelBlock;
 import art.arcane.witchery.block.SpiritFluidBlock;
@@ -52,6 +53,7 @@ import art.arcane.witchery.block.RiteHeartBlock;
 import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.block.WitchCropBlock;
 import art.arcane.witchery.block.WitchLeavesBlock;
+import art.arcane.witchery.block.WitchLilyPadBlock;
 import art.arcane.witchery.block.WitchSaplingBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.block.WitchesCauldronBlock;
@@ -169,7 +171,8 @@ public final class WitcheryBlocks {
             case "crittersnare" -> new CritterSnareBlock();
             case "somniancotton" -> new SomnianCottonBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION).randomTicks());
             case "embermoss" -> new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_LOW, false);
-            case "lilypad", "leapinglily" ->
+            case "lilypad" -> new WitchLilyPadBlock();
+            case "leapinglily" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.LILY_PAD), SHAPE_PAD_FLAT, false);
             case "grassper" -> new GrassperBlock();
             case "icedoor" -> new PerpetualIceDoorBlock();
@@ -269,8 +272,7 @@ public final class WitcheryBlocks {
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.BARRIER).noLootTable(), SHAPE_FULL_BLOCK, true);
             case "barrier" -> new BarrierBlock();
             case "light" -> new SunlightBlock();
-            case "slurp" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.BARRIER).noLootTable(), Shapes.empty(), false);
+            case "slurp" -> new SlurpBlock();
             case "cactus" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.CACTUS), SHAPE_CACTUS, true);
             case "voidbramble" ->

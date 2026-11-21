@@ -1,7 +1,5 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/lilypad"
-      }
-   }
+   "multipart" : [
+      { "apply" : { "model" : "witchery:block/lilypad" } }
+   ]
 }

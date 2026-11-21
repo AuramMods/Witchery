@@ -100,6 +100,7 @@ import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.item.ArmorItem.Type;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.PlaceOnWaterBlockItem;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.PickaxeItem;
@@ -454,6 +455,9 @@ public final class WitcheryItems {
     private static BlockItem createBlockItem(String path) {
         Block block = WitcheryBlocks.getRequired(path).get();
         switch (path) {
+            case "lilypad" -> {
+                return new PlaceOnWaterBlockItem(block, new Item.Properties());
+            }
             case "stockade" -> {
                 return new StockadeBlock.Item(block);
             }

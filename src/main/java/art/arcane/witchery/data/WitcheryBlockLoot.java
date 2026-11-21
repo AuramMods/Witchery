@@ -74,6 +74,9 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                 case "witchesovenburning" -> dropOther(block, WitcheryBlocks.getRequired("witchesovenidle").get());
                 case "distilleryburning" -> dropOther(block, WitcheryBlocks.getRequired("distilleryidle").get());
                 case "chalice" -> dropChalice(block);
+                case "lilypad" -> add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1)).add(LootItem.lootTableItem(Items.LILY_PAD))
+                        .when(LootItemRandomChanceCondition.randomChance(0.25F)))));
                 case "alderwooddoor", "icedoor" -> add(block, createDoorTable(block));
                 case "demonheart" -> dropOther(block, WitcheryIngredient.DEMON_HEART.item());
                 case "dreamcatcher" -> dropDreamWeave(block);

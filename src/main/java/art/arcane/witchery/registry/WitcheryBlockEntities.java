@@ -1,6 +1,7 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.block.entity.BrewFluidBlockEntity;
+import art.arcane.witchery.block.entity.SlurpBlockEntity;
 import art.arcane.witchery.block.CursedControls;
 import art.arcane.witchery.block.entity.CursedControlBlockEntity;
 import art.arcane.witchery.Witchery;
@@ -65,6 +66,9 @@ public final class WitcheryBlockEntities {
             BLOCK_ENTITIES.register("brewgas", () -> brewFluidType(WitcheryBlockEntities::createBrewGas));
     public static final RegistryObject<BlockEntityType<BrewFluidBlockEntity>> BREW_LIQUID =
             BLOCK_ENTITIES.register("brewliquid", () -> brewFluidType(WitcheryBlockEntities::createBrewLiquid));
+    public static final RegistryObject<BlockEntityType<SlurpBlockEntity>> SLURP =
+            BLOCK_ENTITIES.register("slurp", () -> BlockEntityType.Builder.of(SlurpBlockEntity::new,
+                    WitcheryBlocks.getRequired("slurp").get()).build(null));
     public static final RegistryObject<BlockEntityType<AltarBlockEntity>> ALTAR =
             BLOCK_ENTITIES.register("altar", () -> BlockEntityType.Builder.of(AltarBlockEntity::new,
                     WitcheryBlocks.getRequired("altar").get()).build(null));
@@ -186,6 +190,7 @@ public final class WitcheryBlockEntities {
         LEGACY_BLOCK_ENTITIES.put("decurseteleport", DECURSE_TELEPORT);
         LEGACY_BLOCK_ENTITIES.put("brewgas", BREW_GAS);
         LEGACY_BLOCK_ENTITIES.put("brewliquid", BREW_LIQUID);
+        LEGACY_BLOCK_ENTITIES.put("slurp", SLURP);
         LEGACY_BLOCK_ENTITIES.put("witchesovenidle", WITCHES_OVEN);
         LEGACY_BLOCK_ENTITIES.put("witchesovenburning", LEGACY_BURNING_OVEN);
         for (CursedControls.Kind kind : CursedControls.Kind.values()) {

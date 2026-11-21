@@ -5,13 +5,17 @@
       "bonus_rolls": 0.0,
       "conditions": [
         {
+          "chance": 0.25,
+          "condition": "minecraft:random_chance"
+        },
+        {
           "condition": "minecraft:survives_explosion"
         }
       ],
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "witchery:lilypad"
+          "name": "minecraft:lily_pad"
         }
       ],
       "rolls": 1.0

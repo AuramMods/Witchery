@@ -1,5 +1,9 @@
 package art.arcane.witchery.brewing;
 
+import art.arcane.witchery.block.BrewDispersalBlock;
+import art.arcane.witchery.block.WitchLilyPadBlock;
+import art.arcane.witchery.block.entity.SlurpBlockEntity;
+import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.world.BiomePainting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -10,12 +14,16 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.storage.ServerLevelData;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.fluids.IFluidBlock;
 import org.jetbrains.annotations.Nullable;
 
 final class BrewTerrainEffects {
@@ -59,6 +67,74 @@ final class BrewTerrainEffects {
                     }
                 }
             }
+        }
+    }
+
+    static void dissipate(ServerLevel level, BlockPos center, int radius, int strength, @Nullable Player caster) {
+        Player actor = caster != null ? caster : FakePlayerFactory.getMinecraft(level);
+        int reach = radius - 1;
+        int[] widths = circleWidths(reach);
+        var cursor = new BlockPos.MutableBlockPos();
+        for (int z = -reach; z <= reach; z++) {
+            int width = widths[Math.abs(z)];
+            for (int x = -width; x <= width; x++) {
+                for (int y = -radius; y <= radius; y++) {
+                    cursor.setWithOffset(center, x, y, z);
+                    if (!level.isInWorldBounds(cursor) || !level.hasChunkAt(cursor)) continue;
+                    BlockState state = level.getBlockState(cursor);
+                    if ((state.getBlock() instanceof BrewDispersalBlock brew && brew.isGas()
+                            || strength > 0 && isGaseousFluid(state))
+                            && BrewTerrain.setBlock(actor, level, cursor, Blocks.AIR.defaultBlockState(), Direction.UP)) {
+                        level.playSound(null, cursor, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1, 2);
+                    }
+                }
+            }
+        }
+    }
+
+    private static boolean isGaseousFluid(BlockState state) {
+        if (state.getBlock() instanceof IFluidBlock modFluid) {
+            var fluid = modFluid.getFluid();
+            return fluid != null && fluid.getFluidType().isLighterThanAir();
+        }
+        return state.getBlock() instanceof LiquidBlock && !state.getFluidState().isEmpty()
+                && state.getFluidState().getFluidType().isLighterThanAir();
+    }
+
+    static void holdFluid(ServerLevel level, BlockPos center, int radius, int duration, Block fluid, @Nullable Player caster) {
+        Player actor = caster != null ? caster : FakePlayerFactory.getMinecraft(level);
+        int reach = radius + 2;
+        int distanceLimit = reach * reach - 1;
+        BlockState barrier = WitcheryBlocks.getRequired("slurp").get().defaultBlockState();
+        var cursor = new BlockPos.MutableBlockPos();
+        for (int x = -reach; x <= reach; x++) {
+            for (int z = -reach; z <= reach; z++) {
+                for (int y = -reach; y <= reach; y++) {
+                    if (x * x + y * y + z * z >= distanceLimit) continue;
+                    cursor.setWithOffset(center, x, y, z);
+                    if (!level.isInWorldBounds(cursor) || !level.hasChunkAt(cursor)) continue;
+                    BlockState previous = level.getBlockState(cursor);
+                    if (previous.is(fluid) && BrewTerrain.setBlock(actor, level, cursor, barrier, Direction.UP)
+                            && level.getBlockEntity(cursor) instanceof SlurpBlockEntity hold) {
+                        hold.hold(previous, duration);
+                    }
+                }
+            }
+        }
+    }
+
+    static void lilify(ServerLevel level, BlockPos pos, Direction face, int strength, @Nullable Player caster) {
+        var water = pos.relative(face).mutable();
+        if (!level.hasChunkAt(water)) return;
+        while (water.getY() < level.getMaxBuildHeight() - 1) {
+            if (level.getBlockState(water).is(Blocks.WATER) && level.isEmptyBlock(water.above())) {
+                BlockState lily = WitcheryBlocks.getRequired("lilypad").get().defaultBlockState()
+                        .setValue(WitchLilyPadBlock.GROWTH, strength & 3);
+                Player actor = caster != null ? caster : FakePlayerFactory.getMinecraft(level);
+                BrewTerrain.setBlock(actor, level, water.above(), lily, Direction.UP);
+                return;
+            }
+            water.move(Direction.UP);
         }
     }
 

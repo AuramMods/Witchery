@@ -1004,6 +1004,23 @@
 - [x] Run Java 17 data generation and JAR reobfuscation. All 11 focused Forge GameTests passed, including the placement veto, Witchery seeds, named legacy ingredients, a real liquid tick, and the Pulverisation footprint.
 - [ ] Resolve the inconsistent Splitting Bolt result. The broad regression passed 585 of 586 cases, including all 11 new cases. The Splitting Bolt case passed on its own on the same revision.
 
+## Cauldron Fluid Holds, Lilify and Dissipate (2026-11-21)
+
+| Ingredient | Brew | Base altar power | Capacity cost |
+| --- | --- | ---: | ---: |
+| Stone | Dissipate | 0 | 1 |
+| Sand | Tide Hold | 0 | 1 |
+| Cobblestone | Lava Hold | 100 | 2 |
+| Lily Pad | Lilify | 200 | 1 |
+
+- [x] Restore the open sphere for Tide Hold and Lava Hold. The invisible `witchery:slurp` block prevents inflow and allows travel through the temporarily drained space. When the timer ends, it restores the original source or flowing block state. Duration modifiers extend the ten-second base.
+- [x] Keep the remaining loaded ticks through saves. Import original `Timeout`, `blockName`, and `blockMeta` fields for held water and lava.
+- [x] Restore Lilify's upward scan from a block face or creature position. Witchery pads use the brew's two strength bits to set their initial growth. They spread over source water on scheduled ticks, return the ordinary Lily Pad when picked, and have the original one-in-four harvest drop.
+- [x] Restore Dissipate's original column footprint, Witchery gas removal, and strength-scaled magic damage to Spectres, Banshees, and Poltergeists. Strengthened casts use Forge fluid density to recognize gases from other mods. All four actions respect Forge protection events.
+- [x] Brew and cast all four recipes with a muted, isolated survival client on packaged Forge. Dissipate cleared the inner cloud and removed ten health from a Spectre. Lava Hold held two source cells and the checked source returned after the enhanced duration. Tide Hold resumed after a dedicated restart and restored the source and falling water. Two Lilify pads spread in their own pond and persisted across a second restart.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all seven focused Forge GameTests. Test the packaged JAR with Mekanism 10.4.16.80 on a headless Forge server. Base Dissipate left Steam intact, and a strengthened brew cleared it while leaving ordinary water.
+- [ ] Resolve the inconsistent broad regression results. The 593-case run passed 587, including all seven new cases. The six failed checks for summoning, courtship, and worship passed in the targeted 18-case rerun.
+
 ## Brew of Erosion and Brew of Ice (2026-11-21)
 
 - [x] Restore the original six-ingredient Kettle recipes, three servings, Brew Mastery bottling bonus, and legacy metadata 62 and 76. Erosion needs no altar power. Ice waits for 1,000 power and debits the altar once per batch.
