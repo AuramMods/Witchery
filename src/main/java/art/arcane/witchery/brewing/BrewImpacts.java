@@ -13,6 +13,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -23,6 +24,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -35,6 +37,7 @@ import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.living.BabyEntitySpawnEvent;
 import net.minecraftforge.event.level.BlockEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,13 +51,24 @@ public final class BrewImpacts {
     public static void splashInk(ThrownBrew brew, HitResult hit) {
         Vec3 impact = hit.getLocation();
         double radius = enhanced(brew) ? 5 : SPLASH_RADIUS;
-        for (LivingEntity entity : brew.level().getEntitiesOfClass(LivingEntity.class, splashBounds(brew, impact, radius))) {
-            boolean direct = hit instanceof EntityHitResult entityHit && entityHit.getEntity() == entity;
+        Entity directHit = hit instanceof EntityHitResult result ? result.getEntity() : null;
+        applyInk(brew.level(), impact, splashBounds(brew, impact, radius), radius, directHit, brew.getEffectSource());
+    }
+
+    public static void mineInk(ServerLevel level, BlockPos pos, Entity trigger) {
+        applyInk(level, Vec3.atLowerCornerOf(pos), new AABB(pos).inflate(SPLASH_RADIUS, 2, SPLASH_RADIUS),
+                SPLASH_RADIUS, trigger, null);
+    }
+
+    private static void applyInk(Level level, Vec3 impact, AABB bounds, double radius,
+                                 @Nullable Entity directHit, @Nullable Entity source) {
+        for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, bounds)) {
+            boolean direct = entity == directHit;
             double distance = entity.distanceToSqr(impact);
             if (direct || distance < radius * radius) {
                 int duration = direct ? 400 : (int) Math.round((1 - Math.sqrt(distance) / radius) * 400);
                 if (duration > 0) {
-                    entity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, duration), brew.getEffectSource());
+                    entity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, duration), source);
                 }
                 clearTarget(entity);
             }

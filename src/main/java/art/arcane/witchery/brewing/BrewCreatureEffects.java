@@ -187,7 +187,7 @@ public final class BrewCreatureEffects {
         for (BlockPos pos : BlockPos.betweenClosed(center.offset(-reach, -reach, -reach), center.offset(reach, reach, reach))) {
             if (pos.distSqr(center) > reach * reach) continue;
             var plant = level.getBlockState(pos);
-            if (plant.is(WASTING_PLANTS) && BrewTerrain.canChange(brew, level, pos, plant)) {
+            if (plant.is(WASTING_PLANTS) && BrewTerrain.canChange(brew.getOwner(), level, pos, plant)) {
                 level.destroyBlock(pos, true, brew.getOwner());
             }
         }

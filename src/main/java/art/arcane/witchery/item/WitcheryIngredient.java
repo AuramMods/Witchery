@@ -1,5 +1,6 @@
 package art.arcane.witchery.item;
 
+import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.BrambleBlock;
 
@@ -181,6 +182,10 @@ public enum WitcheryIngredient {
         }
         if (!stack.isEmpty() && "witchery:crittersnare".equals(stackTag.getString("id"))) {
             CritterSnareBlock.applyLegacyMetadata(stack, stackTag.getInt("Damage"));
+            return stack;
+        }
+        if (stack.getItem() instanceof PlantMineBlock.Item && stackTag.contains("Damage", Tag.TAG_ANY_NUMERIC)) {
+            PlantMineBlock.Variant.applyLegacyMetadata(stack, stackTag.getInt("Damage"));
             return stack;
         }
         if (stack.getItem() instanceof BrambleBlock.Item && stackTag.contains("Damage", Tag.TAG_ANY_NUMERIC)) {

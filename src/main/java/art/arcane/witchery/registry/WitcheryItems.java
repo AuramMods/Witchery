@@ -1,5 +1,6 @@
 package art.arcane.witchery.registry;
 
+import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.entity.DreamSpirit;
 import art.arcane.witchery.item.SpiritOfferingItem;
 import art.arcane.witchery.item.SpectralStoneItem;
@@ -416,6 +417,9 @@ public final class WitcheryItems {
             }
             case "bramble" -> {
                 return new BrambleBlock.Item(block);
+            }
+            case "plantmine" -> {
+                return new PlantMineBlock.Item(block);
             }
             case "leechchest" -> {
                 return new LeechChestItem(block);

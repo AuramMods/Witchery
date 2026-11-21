@@ -1,6 +1,9 @@
 package art.arcane.witchery.ritual;
 
+import art.arcane.witchery.block.RitualGlyphBlock;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
@@ -99,6 +102,18 @@ public enum RitualCircle {
         for (BlockPos offset : offsets) {
             BlockPos pos = center.offset(offset);
             if (level.getBlockState(pos).is(glyph)) level.removeBlock(pos, false);
+        }
+    }
+
+    void recolor(ServerLevel level, BlockPos center, Block glyph) {
+        for (BlockPos offset : offsets) {
+            BlockPos pos = center.offset(offset);
+            var state = level.getBlockState(pos);
+            if (state.getBlock() instanceof RitualGlyphBlock && !state.is(glyph)) {
+                level.setBlockAndUpdate(pos, glyph.defaultBlockState().setValue(RitualGlyphBlock.PATTERN, state.getValue(RitualGlyphBlock.PATTERN)));
+                level.sendParticles(ParticleTypes.SMOKE, pos.getX() + 0.5, pos.getY() + 0.4, pos.getZ() + 0.5,
+                        6, 0.25, 0.12, 0.25, 0.02);
+            }
         }
     }
 }

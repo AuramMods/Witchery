@@ -1,5 +1,6 @@
 package art.arcane.witchery.registry;
 
+import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.BarrierBlock;
 import art.arcane.witchery.block.PoppetShelfBlock;
@@ -94,7 +95,6 @@ import java.util.Map;
 
 public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_FULL_BLOCK = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 16.0D, 16.0D);
-    private static final VoxelShape SHAPE_FLOWER_SMALL = Block.box(4.8D, 0.0D, 4.8D, 11.2D, 9.6D, 11.2D);
     private static final VoxelShape SHAPE_FLOWER_TALL = Block.box(0.8D, 0.0D, 0.8D, 15.2D, 16.0D, 15.2D);
     private static final VoxelShape SHAPE_FLOWER_LOW = Block.box(1.6D, 0.0D, 1.6D, 14.4D, 6.4D, 14.4D);
     private static final VoxelShape SHAPE_PAD_FLAT = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 0.5D, 16.0D);
@@ -157,7 +157,7 @@ public final class WitcheryBlocks {
             case "shadedglass_active" -> new LegacyShadedGlassBlock(true);
             case "bloodrose" -> new BloodRoseBlock();
             case "bloodedwool" -> new Block(BlockBehaviour.Properties.copy(Blocks.RED_WOOL));
-            case "plantmine" -> new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_SMALL, true);
+            case "plantmine" -> new PlantMineBlock();
             case "glintweed", "spanishmoss", "vine", "web" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_TALL, false);
             case "bramble" -> new BrambleBlock();

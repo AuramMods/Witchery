@@ -289,7 +289,11 @@
 - [x] Restore kettle recipes and projectile impacts for Vines, Webs, Thorns and Sprouting. The muted survival client crafted the Web ingredient, filled the heated kettle, bottled Brew of Webs and threw it onto the floor. It also threw supplied portions of the other three. Vines attached on the wall face, Thorns produced three cactus segments, and Sprouting produced a horizontal birch branch.
 - [x] Verify the active Toad bonus, the three distinct Sprouting saplings, and Baba Yaga's Webs and Thorns projectiles. All 118 required GameTests, data generation and JAR reobfuscation passed.
 - [x] Restart the packaged server after the terrain changed. The webs, vines, cactus, birch branch, two owned Zombie Villagers, and two unbottled Kettle servings persisted.
-- [ ] Connect the terrain impacts to the legacy plant mines and circle rites.
+- [x] Restore all twelve Plant Mine recipes. Three matching brews, two stone pressure plates, and a poppy, dandelion, or dead bush craft four matching traps. Contact consumes the plant and releases Webs, Ink, Thorns, or Sprouting. A Boline recovers the armed plant with its variant intact.
+- [x] In fresh survival on the packaged server, craft Dandelions of Webs, plant one, recover it with the Boline, and walk into a second armed plant to release cobwebs.
+- [x] Restore the Rite of Glyphic Transformation. Gypsum, an Arthana, and 1,000 power recolor the chosen ring while preserving its glyph patterns. One, two, or three unused chalk sticks of one color select the small, medium, or large ring. The rite consumes one stick.
+- [x] Save the active rite after its first offering. On restart, all 28 glyphs in the medium ring changed to Otherwhere Chalk and kept their patterns. The separate white glyph, the second chalk stick, and the armed Dandelion of Webs survived. Data generation, JAR reobfuscation, and all 323 required Forge GameTests passed.
+- [ ] Restore the Rites of Forestation and the other landscape-changing circle rites.
 
 ## Familiar Brews and Baba Yaga (2026-11-20)
 

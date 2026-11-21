@@ -1,0 +1,10 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [],
+  "sacrifices": [
+    {"item": "witchery:gypsum"},
+    {"item": "witchery:arthana"}
+  ],
+  "power": 1000,
+  "action": "glyphic_transformation"
+}

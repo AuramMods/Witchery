@@ -1,5 +1,6 @@
 package art.arcane.witchery.client;
 
+import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.entity.BrewDroplet;
 import art.arcane.witchery.item.BrewFuelItem;
 import art.arcane.witchery.item.SpectralStoneItem;
@@ -355,6 +356,9 @@ public final class WitcheryClient {
             ItemProperties.register(WitcheryBlocks.getRequired("bramble").get().asItem(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "ender"),
                     (stack, level, entity, seed) -> BrambleBlock.isWild(stack) ? 0 : 1);
+            ItemProperties.register(WitcheryBlocks.getRequired("plantmine").get().asItem(),
+                    ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "plant"),
+                    (stack, level, entity, seed) -> PlantMineBlock.Item.plantModel(stack));
 
             for (String name : new String[]{
                     "belladonna", "mandrake", "artichoke", "snowbell", "wormwood", "mindrake", "wolfsbane", "garlicplant",

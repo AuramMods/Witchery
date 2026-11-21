@@ -1,7 +1,16 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/plantmine"
-      }
-   }
+  "variants": {
+    "variant=rose_webs": {"model": "witchery:block/plantmine"},
+    "variant=rose_ink": {"model": "witchery:block/plantmine"},
+    "variant=rose_thorns": {"model": "witchery:block/plantmine"},
+    "variant=rose_sprouting": {"model": "witchery:block/plantmine"},
+    "variant=dandelion_webs": {"model": "witchery:block/plantmine_dandelion"},
+    "variant=dandelion_ink": {"model": "witchery:block/plantmine_dandelion"},
+    "variant=dandelion_thorns": {"model": "witchery:block/plantmine_dandelion"},
+    "variant=dandelion_sprouting": {"model": "witchery:block/plantmine_dandelion"},
+    "variant=grass_webs": {"model": "witchery:block/plantmine_grass"},
+    "variant=grass_ink": {"model": "witchery:block/plantmine_grass"},
+    "variant=grass_thorns": {"model": "witchery:block/plantmine_grass"},
+    "variant=grass_sprouting": {"model": "witchery:block/plantmine_grass"}
+  }
 }

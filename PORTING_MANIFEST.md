@@ -264,7 +264,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | `GLINT_WEED` | `witchery:glintweed` |
 | `SPANISH_MOSS` | `witchery:spanishmoss` |
 | `LEAPING_LILY` | `witchery:leapinglily` |
-| `TRAPPED_PLANT` | `witchery:plantmine` |
+| `TRAPPED_PLANT` | `witchery:plantmine` (twelve crafting, placed, and Boline-recoverable variants) |
 | `EMBER_MOSS` | `witchery:embermoss` |
 | `CRITTER_SNARE` | `witchery:crittersnare` |
 | `GRASSPER` | `witchery:grassper` |
@@ -1047,6 +1047,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 - Rites 6 and 7 are `witchery:rite_of_transposition_creature` and `witchery:rite_of_transposition_ores`. They use medium and large Otherwhere circles, respectively. The protocol 55 item-rite actions retain the required sacrifices and altar power. An active ore rite migrates legacy `Rituals`, `RitualStages` and `RitualCovens` and saves the completed layer as `OreDepth`.
 - The Scarecrow, Trent Effigy and Witch's Ladder retain their block entity IDs. The legacy `EffectTypeID` and item `WITCSpiritEffect` identify the active spirit enhancement. Effect 1 applies to carried Voodoo Protection against a forced summon and Death Protection against powered bolts within 16 blocks. Effects 2 through 5 drive Sentinel, Screamer, Twister and Ghost Walker using the alarm's Taglock list. Effect 6 is the hidden Death encounter, checked last. It consumes five of each spectral undead species and creates no bound fetish.
 - Rite 82 uses `witchery:rite_of_necromancy_spectral_stone`. It consumes the Necromantic Stone and produces one blank `witchery:spectralstone`. Protocol 56 carries the explicit `consume_necromantic_stone` field and the Spirit's synchronized color.
+- Rite 67 uses `witchery:rite_of_glyphic_transformation`. It consumes Gypsum, an Arthana, and 1,000 altar power. The first color of fresh chalk among nearby drops selects the target color. The number of sticks of that color selects the ring size and one chalk is consumed. Protocol 62 carries the new action.
 - Rite 96 uses `witchery:rite_of_summoning_a_reflection`, the large Infernal circle, and 5,000 altar power. It accepts the original Mirror or the earlier modern `witchery:mirrorblock` item. The spawned Reflection saves `FreeSpawn` and can live outside the Mirror. Protocol 61 adds the rite action and the Reflection's synchronized skin and Wolfman state.
 
 ## Prediction Registry (`PredictionManager`)
@@ -1165,6 +1166,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 - The 26 built-in fixed recipes use `witchery:cauldron_ritual`. The legacy rules retain subset matching, firing priority, and ingredient power. Brew Fuel retains the original item ID and maps metadata 0–3 to `FuelTier`. Endless Water retains its item ID and maps named legacy top-level `Damage` to modern durability. The Player Compass keeps the original Taglock keys and the supplied 33-frame sprite set.
 - A `witchery:taglockkit` costs 1,000 base power to cast a brew on the bound creature or player. The cauldron saves the ordered Taglock and warmup in `Ingredients`, `RitualTriggered`, and `RitualTicks`. Both `decursedirected` and `decurseteleport` keep their original block and block entity IDs and save `WITCPlacer` and `Killers`. The new horizontal block states use network protocol 54.
 - Legacy terrain brew subtypes 57, 58, 59, and 61 use named `brew_of_*` items. The Kettle recipes are under `data/witchery/recipes/kettle/` and their projectiles dispatch to `BrewTerrain`.
+- Plant Mine metadata 0 through 11 uses `BlockStateTag.variant` on the shared item and `variant` in the placed state. It encodes poppy, dandelion, or shrub in groups of four, ordered Webs, Ink, Thorns, and Sprouting. Legacy stack conversion retains other item tags.
 - Kettle `bottling_familiar` accepts `cat`, `toad` and `owl`. Finished batches save `FinishedRecipe` alongside the result. The original 85, 86, 87, 97, 108 and 109 ingredient subtypes map to Frog's Tongue, Cursed Leaping, Hitchcock, Wasting, Bat Ball and Bats.
 - Revealing uses `witchery:kettle/brew_of_revealing` for the fixed splash. Named vanilla potion damage 8198 imports as regular Night Vision. Odour of Purity adds Revealing to cauldron mixtures. Heart of Gold adds Animal Attraction and Fermented Spider Eye inverts it to Animal Repulsion. The ordered `Items` list retains the action order and inversion.
 - Legacy infused brew subtype 123 maps to `witchery:brew_of_the_grave`. `InfusedBrews` uses the original type, start and Grave cooldown keys.

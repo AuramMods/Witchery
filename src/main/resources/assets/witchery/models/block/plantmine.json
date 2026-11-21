@@ -1,6 +1,4 @@
 {
   "parent": "minecraft:block/cross",
-  "textures": {
-    "cross": "witchery:block/plantmine"
-  }
+  "textures": {"cross": "minecraft:block/poppy"}
 }

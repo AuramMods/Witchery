@@ -1,6 +1,7 @@
 package art.arcane.witchery.item;
 
 import art.arcane.witchery.block.BloodRoseBlock;
+import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -39,7 +40,8 @@ public final class BolineItem extends SwordItem {
         Player player = context.getPlayer();
         boolean rose = state.getBlock() instanceof BloodRoseBlock;
         boolean noWear = rose || state.is(Blocks.COBWEB);
-        boolean harvest = noWear || state.is(BlockTags.LEAVES) || state.is(Blocks.GRASS) || state.is(Blocks.FERN)
+        boolean mine = state.getBlock() instanceof PlantMineBlock;
+        boolean harvest = noWear || mine || state.is(BlockTags.LEAVES) || state.is(Blocks.GRASS) || state.is(Blocks.FERN)
                 || state.is(Blocks.VINE) || state.is(Blocks.DEAD_BUSH);
         if (!harvest && !(state.getBlock() instanceof IForgeShearable)) return InteractionResult.PASS;
         if (player == null || !level.mayInteract(player, pos)) return InteractionResult.PASS;
@@ -48,6 +50,8 @@ public final class BolineItem extends SwordItem {
             List<ItemStack> cuttings;
             if (rose) {
                 cuttings = List.of(new ItemStack(state.getBlock()));
+            } else if (mine) {
+                cuttings = List.of(state.getBlock().getCloneItemStack(server, pos, state));
             } else if (harvest) {
                 cuttings = Block.getDrops(state, server, pos, level.getBlockEntity(pos), player, new ItemStack(Items.SHEARS));
             } else if (state.getBlock() instanceof IForgeShearable shearable && shearable.isShearable(tool, level, pos)) {

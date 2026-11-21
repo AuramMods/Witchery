@@ -1,5 +1,6 @@
 package art.arcane.witchery.block.entity;
 
+import art.arcane.witchery.ritual.GlyphicTransformation;
 import art.arcane.witchery.block.RiteHeartBlock;
 import art.arcane.witchery.brewing.WakingNightmareEffect;
 import art.arcane.witchery.config.WitcheryServerConfig;
@@ -322,6 +323,10 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         }
         if (rite.action() == ItemRiteRecipe.Action.BIND_SPECTRAL_STONE && !SpectralStoneItem.bindFromCircle(level, pos)) {
             abort(level, "message.witchery.rite.no_spectral_creature");
+            return;
+        }
+        if (rite.action() == ItemRiteRecipe.Action.GLYPHIC_TRANSFORMATION && !GlyphicTransformation.transform(level, pos)) {
+            abort(level, "message.witchery.rite.missing_chalk");
             return;
         }
         if (rite.action() == ItemRiteRecipe.Action.BIND_FETISH) {
