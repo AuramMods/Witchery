@@ -1,5 +1,6 @@
 package art.arcane.witchery.brewing;
 
+import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.entity.CreatureAlignment;
 import art.arcane.witchery.entity.Leonard;
 import art.arcane.witchery.item.WitcheryIngredient;
@@ -114,7 +115,7 @@ public final class BrewMixture {
     public static boolean canAdd(List<ItemStack> current, ItemStack offered) {
         Mixing mixing = mix(current);
         ResourceLocation id = id(offered);
-        Ingredient ingredient = INGREDIENTS.get(id);
+        Ingredient ingredient = ingredient(id, offered);
         return mixing != null && ingredient != null && ingredient.modifier != Modifier.RITUAL
                 && (ingredient.modifier != Modifier.WAYSTONE || WaystoneItem.location(offered) != null)
                 && (ingredient.action != Action.CHANGING_SEASONS || BiomeNoteItem.biomeId(offered) != null)
@@ -123,7 +124,7 @@ public final class BrewMixture {
     }
 
     public static void add(List<ItemStack> current, ItemStack offered) {
-        Ingredient ingredient = INGREDIENTS.get(id(offered));
+        Ingredient ingredient = ingredient(id(offered), offered);
         if (ingredient != null && ingredient.modifier == Modifier.DELIVERY) {
             current.removeIf(stack -> {
                 Ingredient previous = INGREDIENTS.get(id(stack));
@@ -341,9 +342,15 @@ public final class BrewMixture {
         return BuiltInRegistries.ITEM.getKey(stack.getItem());
     }
 
+    @Nullable
+    private static Ingredient ingredient(ResourceLocation id, ItemStack stack) {
+        if (stack.getItem() instanceof BrambleBlock.Item && !BrambleBlock.isWild(stack)) return null;
+        return INGREDIENTS.get(id);
+    }
+
     static int ingredientPower(ItemStack stack) {
         ResourceLocation id = id(stack);
-        Ingredient ingredient = INGREDIENTS.get(id);
+        Ingredient ingredient = ingredient(id, stack);
         if (ingredient != null) return ingredient.power;
         return switch (id.toString()) {
             case "minecraft:ender_pearl" -> 1000;
@@ -360,7 +367,7 @@ public final class BrewMixture {
         Mixing mixing = new Mixing();
         for (ItemStack stack : stacks) {
             ResourceLocation id = id(stack);
-            Ingredient ingredient = INGREDIENTS.get(id);
+            Ingredient ingredient = ingredient(id, stack);
             if (ingredient == null || stack.isEmpty()) return null;
             if (ingredient.action == Action.CHANGING_SEASONS && BiomeNoteItem.biomeId(stack) == null) return null;
             mixing.add(stack, id, ingredient);
@@ -524,6 +531,10 @@ public final class BrewMixture {
         potion(entries, "ink_sac", 1000, 4, () -> MobEffects.BLINDNESS, 300);
         potion(entries, "witchery:infernal_blood", 500, 2, WitcheryEffects.GROTESQUE, 3600);
         potion(entries, "witchery:demon_heart", 750, 4, WitcheryEffects.PARALYSIS, 200);
+        potion(entries, "witchery:focused_will", 10000, 8, WitcheryEffects.KEEP_INVENTORY, 7200);
+        potion(entries, "witchery:redstone_soup", 10000, 8, WitcheryEffects.KEEP_EFFECTS, 7200);
+        potion(entries, "witchery:hint_of_rebirth", 2500, 6, WitcheryEffects.REINCARNATION, 3600);
+        potion(entries, "witchery:bramble", 8000, 6, WitcheryEffects.ILL_FITTING, 120);
         return Map.copyOf(entries);
     }
 

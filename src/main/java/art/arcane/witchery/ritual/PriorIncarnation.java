@@ -3,6 +3,7 @@ package art.arcane.witchery.ritual;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.registry.WitcheryEffects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -57,7 +58,8 @@ public final class PriorIncarnation {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void markDrops(LivingDropsEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || event.getDrops().isEmpty() || !isAllowed(player.serverLevel())) return;
+        if (!(event.getEntity() instanceof ServerPlayer player) || event.getDrops().isEmpty()
+                || player.hasEffect(WitcheryEffects.KEEP_INVENTORY.get()) || !isAllowed(player.serverLevel())) return;
         UUID death = UUID.randomUUID();
         CompoundTag data = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
         data.remove(INVENTORY);

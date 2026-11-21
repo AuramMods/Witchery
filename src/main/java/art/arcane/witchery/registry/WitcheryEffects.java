@@ -6,6 +6,7 @@ import art.arcane.witchery.vampirism.ParalysisEffect;
 import art.arcane.witchery.brewing.GrotesqueEffect;
 import art.arcane.witchery.brewing.MortalCoilEffect;
 import art.arcane.witchery.brewing.EnvironmentalCurseEffect;
+import art.arcane.witchery.brewing.IllFittingEffect;
 import art.arcane.witchery.brewing.WakingNightmareEffect;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -46,6 +47,11 @@ public final class WitcheryEffects {
     public static final RegistryObject<MobEffect> OVERHEATING = environmentalCurse("potion.overheating", EnvironmentalCurseEffect.Kind.OVERHEATING);
     public static final RegistryObject<MobEffect> INSANITY = environmentalCurse("potion.insane", EnvironmentalCurseEffect.Kind.INSANITY);
     public static final RegistryObject<MobEffect> RESIZING = simpleEffect("potion.resizing", MobEffectCategory.NEUTRAL);
+    public static final RegistryObject<MobEffect> KEEP_INVENTORY = simpleEffect("potion.keepinventory", MobEffectCategory.BENEFICIAL);
+    public static final RegistryObject<MobEffect> KEEP_EFFECTS = simpleEffect("potion.keepeffects", MobEffectCategory.BENEFICIAL);
+    public static final RegistryObject<MobEffect> REINCARNATION = simpleEffect("potion.reincarnate", MobEffectCategory.BENEFICIAL);
+    public static final RegistryObject<MobEffect> ILL_FITTING = MOB_EFFECTS.register("potion.illfitting",
+            () -> new IllFittingEffect(legacyColor("potion.illfitting")));
     public static final RegistryObject<MobEffect> MORTAL_COIL = MOB_EFFECTS.register("potion.mortalcoil", MortalCoilEffect::new);
     public static final RegistryObject<MobEffect> QUEASY = MOB_EFFECTS.register("potion.queasy",
             () -> new MobEffect(MobEffectCategory.HARMFUL, 0x7C9348) {
@@ -71,6 +77,10 @@ public final class WitcheryEffects {
         LEGACY_EFFECTS.put("potion.overheating", OVERHEATING);
         LEGACY_EFFECTS.put("potion.insane", INSANITY);
         LEGACY_EFFECTS.put("potion.resizing", RESIZING);
+        LEGACY_EFFECTS.put("potion.keepinventory", KEEP_INVENTORY);
+        LEGACY_EFFECTS.put("potion.keepeffects", KEEP_EFFECTS);
+        LEGACY_EFFECTS.put("potion.reincarnate", REINCARNATION);
+        LEGACY_EFFECTS.put("potion.illfitting", ILL_FITTING);
         LEGACY_EFFECTS.put("potion.queasy", QUEASY);
         for (String legacyName : LegacyRegistryData.EFFECTS) {
             registerLegacyEffect(legacyName);

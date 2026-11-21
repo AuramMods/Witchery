@@ -2,6 +2,7 @@ package art.arcane.witchery.event;
 
 import art.arcane.witchery.brewing.BrewItemCurse;
 import art.arcane.witchery.brewing.ChilledEffect;
+import art.arcane.witchery.brewing.DeathBrewEffects;
 import art.arcane.witchery.entity.Hobgoblin;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.CoffinBlock;
@@ -163,6 +164,7 @@ public final class WitcheryEventHooks {
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
             if (serverPlayer.level().dimension().equals(Level.NETHER)) Predictions.onNetherVisit(serverPlayer);
+            DeathBrewEffects.restoreEffects(serverPlayer);
             GrotesqueEffect.restoreLegacyBrew(serverPlayer);
             InfusionEnergy.sync(serverPlayer);
             VampireFlight.restore(serverPlayer);
@@ -189,6 +191,7 @@ public final class WitcheryEventHooks {
     @SubscribeEvent
     public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
+            if (!event.isEndConquered()) DeathBrewEffects.restoreEffects(serverPlayer);
             InfusionEnergy.sync(serverPlayer);
             VampireFlight.restore(serverPlayer);
             Lycanthropy.restore(serverPlayer);
@@ -217,6 +220,7 @@ public final class WitcheryEventHooks {
 
     @SubscribeEvent
     public static void onPlayerClone(PlayerEvent.Clone event) {
+        if (event.isWasDeath()) DeathBrewEffects.restoreInventory(event.getOriginal(), event.getEntity());
         event.getOriginal().reviveCaps();
         try {
             WitcheryPlayerDataProvider.get(event.getOriginal()).ifPresent(oldData ->
@@ -392,7 +396,9 @@ public final class WitcheryEventHooks {
             return;
         }
         FamiliarBinding.handleDeath(event);
-        if (!event.isCanceled() && event.getSource().getEntity() instanceof ServerPlayer killer) {
+        if (event.isCanceled()) return;
+        DeathBrewEffects.onDeath(event.getEntity());
+        if (event.getSource().getEntity() instanceof ServerPlayer killer) {
             if (event.getEntity() instanceof ServerPlayer victim && killer != victim) AreaWardBlockEntity.recordKiller(killer);
             Vampirism.onKilled(event.getEntity(), killer, event.getSource());
             WolfTrials.onKilled(event.getEntity(), killer, event.getSource());

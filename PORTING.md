@@ -816,6 +816,15 @@
 - [x] Run Java 17 data generation, JAR reobfuscation and all 253 required Forge GameTests. The tests cover solo and mixed brews, the first bottling threshold, named legacy ingredient metadata, splash scaling, Ender Inhibition and the fixed Mutandis recipe.
 - [ ] Port the remaining brew actions and effects, including brew fluid containers, additional modifiers and castable cauldron rituals.
 
+## Death and Armor Cauldron Brews (2026-11-21)
+
+- [x] Brew Keeping Inventory from Focused Will and Keeping Effects from Redstone Soup. Both use eight capacity, 10,000 base altar power and six minutes of base duration. Reincarnation uses Hint of Rebirth for six capacity, 2,500 base power and three minutes. Ill-Fitting uses Wild Bramble for six capacity, 8,000 base power and six seconds.
+- [x] Keep the original carried slots, armor and offhand on death when Keeping Inventory is active. The potion follows the 1.20.1 vanishing enchantment and experience rules. Prior Incarnation leaves its previous record intact when the potion protects the new inventory.
+- [x] Restore non-harmful effects through the Keeping Effects amplifier and carry the original permanent curse effects through death. Persist pending effects in `WITCPoSpawn` and read the original vanilla and default Witchery effect IDs.
+- [x] Restore all six Reincarnation outcomes at the first clear surface in the death column. Ill-Fitting rolls one armor slot every 15 ticks in its final pulse window. Keep its milk immunity and its Reflection and Follower exemptions.
+- [x] Fill four heated cauldrons and bottle all four recipes in the muted survival client. After a dedicated restart with the keeping brews active, verify the preserved slot, helmet and shield, ordinary experience loss and vanishing item removal. Speed II and Sinking III persisted, while Strength III and Weakness cleared. Throw the two saved splash brews to turn a pig into a cave spider on death and dislodge a husk's helmet.
+- [x] Run Java 17 data generation, JAR reobfuscation and all six new GameTests. The 513-case regression run passed 511. The older Mog and Gulg combat and Spectral Familiar search cases passed in isolated arenas alongside the new cases and five Prior Incarnation tests.
+
 ## Brew of Erosion and Brew of Ice (2026-11-21)
 
 - [x] Restore the original six-ingredient Kettle recipes, three servings, Brew Mastery bottling bonus, and legacy metadata 62 and 76. Erosion needs no altar power. Ice waits for 1,000 power and debits the altar once per batch.
