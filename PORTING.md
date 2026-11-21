@@ -1019,7 +1019,18 @@
 - [x] Restore Dissipate's original column footprint, Witchery gas removal, and strength-scaled magic damage to Spectres, Banshees, and Poltergeists. Strengthened casts use Forge fluid density to recognize gases from other mods. All four actions respect Forge protection events.
 - [x] Brew and cast all four recipes with a muted, isolated survival client on packaged Forge. Dissipate cleared the inner cloud and removed ten health from a Spectre. Lava Hold held two source cells and the checked source returned after the enhanced duration. Tide Hold resumed after a dedicated restart and restored the source and falling water. Two Lilify pads spread in their own pond and persisted across a second restart.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all seven focused Forge GameTests. Test the packaged JAR with Mekanism 10.4.16.80 on a headless Forge server. Base Dissipate left Steam intact, and a strengthened brew cleared it while leaving ordinary water.
-- [ ] Resolve the inconsistent broad regression results. The 593-case run passed 587, including all seven new cases. The six failed checks for summoning, courtship, and worship passed in the targeted 18-case rerun.
+- [ ] Resolve the inconsistent broad regression results. The 593-case run passed 587, including all seven new cases. Five of its failed checks passed in the targeted 18-case rerun. The Spectral Familiar ore-search test ran in a different namespace and was omitted from that rerun.
+
+## Cauldron Erosion and Levelling (2026-11-21)
+
+- [x] Restore the two-capacity, 200-power Oil of Vitriol and Netherrack effects. Oil of Vitriol comes from the Foul Fume and Quicklime distillery batch. The original ingredient subtype 30 imports into ordered cauldron recipes and bottled mixtures.
+- [x] Reproduce the actual 0.24.1 Erosion cast. Its outer disk clears one impact layer and returns the original Obsidian as items. Direct exposure can deal eight thrown damage and wears 50–74 durability from damageable main-hand and armor items. Glancing exposure scales both effects.
+- [x] Reproduce Levelling's two passes. It clears raised blocks and uses their material to fill replaceable cells from the surface downward. End Stone, Netherrack, Sandstone, Sand, Stone, and Dirt fill in that order. The center material supplies an initial reserve. Rituals use the plane one block below the target and increase the reach and reserve with strength.
+- [x] Reuse the original scan order for farming and Levelling. Terrain casts preserve containers and protected blocks. A denied fill retains the material for the next eligible cell.
+- [x] Brew and cast both recipes in the muted survival client. Erosion yielded two Obsidian, preserved the chest and adjoining layers, and took 66 durability from the test Zombie's pickaxe. Its worn helmet broke and its shield retained zero damage. Levelling moved End Stone, Netherrack, and Sandstone into the expected positions while preserving the filled chest and higher ground.
+- [x] Save a Waystone-targeted Levelling cast during warmup. Reopen the same world with the production JAR, verify both splash results and the player's recovered Obsidian, and confirm the pending ritual fills the lower plane at the remote target. With zero coven members the ritual cleared its height-four test block and kept the higher and out-of-range blocks.
+- [x] Run Java 17 data generation and JAR reobfuscation. Pass all eight new and eleven farming GameTests, including the original ingredient subtype, exact material order, protection vetoes, glancing corrosion, 97-block Obsidian recovery and the ritual strength cap.
+- [x] Pass the complete 601-case regression run after separating two test-only Forge event listeners with the same name. The run includes the earlier Spectral Familiar ore-search, courtship, and rite cases.
 
 ## Brew of Erosion and Brew of Ice (2026-11-21)
 

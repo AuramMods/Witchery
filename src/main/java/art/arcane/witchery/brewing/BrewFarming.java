@@ -47,7 +47,7 @@ final class BrewFarming {
     static void flowers(ServerLevel level, BlockPos center, int radius, int strength, @Nullable Player caster) {
         Player actor = actor(level, caster);
         int odds = Math.max(1, 8 - strength);
-        forEachColumn(level, center, radius + strength, column -> {
+        BrewTerrain.forEachColumn(level, center, radius + strength, column -> {
             for (int dy = -1; dy <= 1; dy++) {
                 BlockPos pos = column.offset(0, dy, 0);
                 if (!level.getBlockState(pos).canBeReplaced() || !level.getFluidState(pos).isEmpty()
@@ -61,7 +61,7 @@ final class BrewFarming {
 
     static void fertilize(ServerLevel level, BlockPos center, int radius, int strength, @Nullable Player caster) {
         Player actor = actor(level, caster);
-        forEachColumn(level, center, radius + strength, column -> {
+        BrewTerrain.forEachColumn(level, center, radius + strength, column -> {
             for (int dy = 1; dy >= -1; dy--) {
                 BlockPos pos = column.offset(0, dy, 0);
                 var state = level.getBlockState(pos);
@@ -80,7 +80,7 @@ final class BrewFarming {
         Player actor = actor(level, caster);
         var changed = new MutableInt();
         ItemStack tool = lootTool(Math.max(strength - 1, 0));
-        forEachColumn(level, center, radius + strength, column -> {
+        BrewTerrain.forEachColumn(level, center, radius + strength, column -> {
             for (int dy = -1; dy <= 1; dy++) {
                 BlockPos pos = column.offset(0, dy, 0);
                 var state = level.getBlockState(pos);
@@ -98,7 +98,7 @@ final class BrewFarming {
     static void till(ServerLevel level, BlockPos center, int radius, int strength, @Nullable Player caster) {
         Player actor = actor(level, caster);
         var changed = new MutableInt();
-        forEachColumn(level, center, radius + strength, column -> {
+        BrewTerrain.forEachColumn(level, center, radius + strength, column -> {
             for (int dy = -1; dy <= 1; dy++) {
                 BlockPos pos = column.offset(0, dy, 0);
                 var state = level.getBlockState(pos);
@@ -128,7 +128,7 @@ final class BrewFarming {
         if (seeds.isEmpty()) return;
 
         Player actor = actor(level, caster);
-        forEachColumn(level, center, reach, column -> {
+        BrewTerrain.forEachColumn(level, center, reach, column -> {
             while (!seeds.isEmpty() && !seeds.getLast().isAlive()) seeds.removeLast();
             ItemEntity seed = seeds.peekLast();
             if (seed == null) return;
@@ -229,35 +229,6 @@ final class BrewFarming {
                     16, 0.25, 0.25, 0.25, 0);
         });
         level.playSound(null, center, SoundEvents.GHAST_SHOOT, SoundSource.BLOCKS, 0.5F, 2);
-    }
-
-    private static void forEachColumn(ServerLevel level, BlockPos center, int radius, Consumer<BlockPos> action) {
-        if (radius == 1) {
-            visit(level, center, action);
-            return;
-        }
-        // Overlapping scanlines are intentional. The old circle could fertilize some columns more than once.
-        int reach = radius - 1;
-        int x = reach;
-        int z = 0;
-        int error = 1 - reach;
-        while (x >= z) {
-            scanRow(level, center, z, x, action);
-            scanRow(level, center, x, z, action);
-            scanRow(level, center, -z, x, action);
-            scanRow(level, center, -x, z, action);
-            z++;
-            if (error < 0) {
-                error += 2 * z + 1;
-            } else {
-                x--;
-                error += 2 * (z - x + 1);
-            }
-        }
-    }
-
-    private static void scanRow(ServerLevel level, BlockPos center, int z, int width, Consumer<BlockPos> action) {
-        for (int x = -width; x <= width; x++) visit(level, center.offset(x, 0, z), action);
     }
 
     private static void forEachBlock(ServerLevel level, BlockPos center, int reach, int limit, Consumer<BlockPos> action) {

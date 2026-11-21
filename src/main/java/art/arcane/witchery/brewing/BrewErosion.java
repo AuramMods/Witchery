@@ -2,12 +2,17 @@ package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.entity.ThrownBrew;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -17,6 +22,9 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.util.FakePlayerFactory;
+import org.apache.commons.lang3.mutable.MutableInt;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
 
@@ -29,6 +37,44 @@ public final class BrewErosion {
             Items.CHAINMAIL_HELMET, Items.CHAINMAIL_CHESTPLATE, Items.CHAINMAIL_LEGGINGS, Items.CHAINMAIL_BOOTS);
 
     private BrewErosion() {}
+
+    static void erodeFromCauldron(ServerLevel level, BlockPos center, int radius, @Nullable Player caster) {
+        Player actor = caster != null ? caster : FakePlayerFactory.getMinecraft(level);
+        var obsidian = new MutableInt();
+        BrewTerrain.forEachColumn(level, center, radius, pos -> {
+            BlockState state = level.getBlockState(pos);
+            if (state.isAir() || BrewTerrain.isProtectedTerrain(state)
+                    || !BrewTerrain.setBlock(actor, level, pos, Blocks.AIR.defaultBlockState(), Direction.UP)) return;
+            if (state.is(Blocks.OBSIDIAN)) obsidian.increment();
+            Vec3 removed = Vec3.atCenterOf(pos);
+            level.sendParticles(ParticleTypes.SPLASH, removed.x, removed.y, removed.z, 16, 0.5, 0.5, 0.5, 0);
+        });
+        level.playSound(null, center, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1, 2);
+        Vec3 impact = Vec3.atCenterOf(center);
+        int stackSize = new ItemStack(Items.OBSIDIAN).getMaxStackSize();
+        for (int remaining = obsidian.intValue(); remaining > 0; remaining -= stackSize) {
+            level.addFreshEntity(new ItemEntity(level, impact.x, impact.y, impact.z,
+                    new ItemStack(Items.OBSIDIAN, Math.min(stackSize, remaining))));
+        }
+    }
+
+    static void corrodeFromCauldron(LivingEntity target, @Nullable LivingEntity caster, double scale) {
+        if (!(target.level() instanceof ServerLevel level) || scale <= 0) return;
+        int odds = Math.max(1, (int) Math.ceil(5 / scale));
+        if (level.random.nextInt(odds) == 0) {
+            target.hurt(level.damageSources().thrown(target, caster), Mth.ceil(8 * scale));
+        }
+
+        LivingEntity actor = caster != null ? caster : FakePlayerFactory.getMinecraft(level);
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            if (slot == EquipmentSlot.OFFHAND) continue;
+            ItemStack stack = target.getItemBySlot(slot);
+            if (stack.isDamageableItem()) {
+                int damage = Mth.ceil((50 + level.random.nextInt(25)) * scale);
+                stack.hurtAndBreak(damage, actor, ignored -> target.broadcastBreakEvent(slot));
+            }
+        }
+    }
 
     public static void impact(ThrownBrew brew, HitResult hit) {
         if (!(brew.level() instanceof ServerLevel level)) return;

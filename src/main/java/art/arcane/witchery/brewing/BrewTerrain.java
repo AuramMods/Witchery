@@ -33,6 +33,7 @@ import net.minecraftforge.event.level.BlockEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public final class BrewTerrain {
     private static final List<Direction> SIDES = List.of(Direction.EAST, Direction.WEST, Direction.SOUTH, Direction.NORTH);
@@ -226,6 +227,40 @@ public final class BrewTerrain {
 
     public static boolean setBlock(@Nullable Entity owner, ServerLevel level, BlockPos pos, BlockState state, Direction face) {
         return setBlock(owner, level, pos, state, face, false);
+    }
+
+    static void forEachColumn(ServerLevel level, BlockPos center, int radius, Consumer<BlockPos> action) {
+        int reach = radius - 1;
+        if (reach == 0) {
+            scanRow(level, center, 0, 0, action);
+            return;
+        }
+        // Preserve the original scan order, including overlapping rows.
+        int x = reach;
+        int z = 0;
+        int error = 1 - reach;
+        while (x >= z) {
+            scanRow(level, center, z, x, action);
+            scanRow(level, center, x, z, action);
+            scanRow(level, center, -z, x, action);
+            scanRow(level, center, -x, z, action);
+            z++;
+            if (error < 0) {
+                error += 2 * z + 1;
+            } else {
+                x--;
+                error += 2 * (z - x + 1);
+            }
+        }
+    }
+
+    private static void scanRow(ServerLevel level, BlockPos center, int z, int width, Consumer<BlockPos> action) {
+        for (int x = -width; x <= width; x++) {
+            BlockPos pos = center.offset(x, 0, z);
+            if (level.isInWorldBounds(pos) && level.getWorldBorder().isWithinBounds(pos) && level.hasChunkAt(pos)) {
+                action.accept(pos);
+            }
+        }
     }
 
     private static boolean setBlock(@Nullable Entity owner, ServerLevel level, BlockPos pos, BlockState state,

@@ -68,7 +68,7 @@ public final class BrewMixture {
         REMOVE_DEBUFFS, REMOVE_BUFFS, WASTING, DRAIN_MAGIC, DURATION_BOOST, STEAL_BUFFS, SPREAD_DEBUFFS,
         AIR_HIKE, FROG_TONGUE, KNOCKBACK, BAT_BURST, BODEGA, POISON_TOAD, RAISING,
         FLOWERS, FERTILIZATION, HARVESTING, TILLING, PLANTING, PRUNING, FELLING, PULVERISATION,
-        DISSIPATE, TIDE_HOLD, LAVA_HOLD, LILIFY;
+        DISSIPATE, TIDE_HOLD, LAVA_HOLD, LILIFY, EROSION, LEVELLING;
 
         String nameKey(boolean inverted) {
             return switch (this) {
@@ -111,6 +111,8 @@ public final class BrewMixture {
                 case TIDE_HOLD -> "brew.witchery.tide_hold";
                 case LAVA_HOLD -> "brew.witchery.lava_hold";
                 case LILIFY -> "brew.witchery.lilify";
+                case EROSION -> "brew.witchery.erosion";
+                case LEVELLING -> "brew.witchery.levelling";
             };
         }
 
@@ -119,7 +121,7 @@ public final class BrewMixture {
                 case EXTINGUISH, COLD, ICE_SHELL, ICE_WORLD, CHANGING_SEASONS, SNOW,
                      BAT_BURST, FROG_TONGUE, POISON_TOAD, RAISING,
                      FLOWERS, FERTILIZATION, HARVESTING, TILLING, PLANTING, PRUNING, FELLING, PULVERISATION,
-                     DISSIPATE, TIDE_HOLD, LAVA_HOLD, LILIFY -> true;
+                     DISSIPATE, TIDE_HOLD, LAVA_HOLD, LILIFY, EROSION, LEVELLING -> true;
                 default -> false;
             };
         }
@@ -434,6 +436,8 @@ public final class BrewMixture {
                 case TIDE_HOLD, LAVA_HOLD -> BrewTerrainEffects.holdFluid(level, pos, radius,
                         200 * application.durationMultiplier, application.action == Action.TIDE_HOLD ? Blocks.WATER : Blocks.LAVA, caster);
                 case LILIFY -> BrewTerrainEffects.lilify(level, pos, face, strength, caster);
+                case EROSION -> BrewErosion.erodeFromCauldron(level, pos, radius, caster);
+                case LEVELLING -> BrewLevelling.levelTerrain(level, pos, radius, strength, ritual, caster);
                 default -> { }
             }
         }
@@ -591,7 +595,8 @@ public final class BrewMixture {
                     BrewTerrainEffects.lilify(level, target.blockPosition(), Direction.UP, strength, caster instanceof Player player ? player : null);
                 }
             }
-            case CHANGING_SEASONS, ICE_WORLD, RAISING, TIDE_HOLD, LAVA_HOLD,
+            case EROSION -> BrewErosion.corrodeFromCauldron(target, caster, strengthScale);
+            case CHANGING_SEASONS, ICE_WORLD, RAISING, TIDE_HOLD, LAVA_HOLD, LEVELLING,
                  FLOWERS, FERTILIZATION, HARVESTING, TILLING, PLANTING, PRUNING, FELLING, PULVERISATION -> { }
         }
     }
@@ -838,6 +843,8 @@ public final class BrewMixture {
         entries.put(ResourceLocation.withDefaultNamespace("sand"), new Ingredient(0, null, 1, 10, 0, null, null, Action.TIDE_HOLD));
         entries.put(ResourceLocation.withDefaultNamespace("cobblestone"), new Ingredient(100, null, 2, 10, 0, null, null, Action.LAVA_HOLD));
         entries.put(ResourceLocation.withDefaultNamespace("lily_pad"), new Ingredient(200, null, 1, 10, 0, null, null, Action.LILIFY));
+        entries.put(ResourceLocation.parse("witchery:oil_of_vitriol"), new Ingredient(200, null, 2, 10, 0, null, null, Action.EROSION));
+        entries.put(ResourceLocation.withDefaultNamespace("netherrack"), new Ingredient(200, null, 2, 10, 0, null, null, Action.LEVELLING));
         entries.put(ResourceLocation.fromNamespaceAndPath("witchery", "odour_of_purity"),
                 new Ingredient(100, null, 4, 0, 0, null, null, Action.REVEAL));
         entries.put(ResourceLocation.fromNamespaceAndPath("witchery", "heart_of_gold"),
