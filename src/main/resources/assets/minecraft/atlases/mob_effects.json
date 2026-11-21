@@ -11,6 +11,13 @@
     {"type": "single", "resource": "minecraft:item/cod", "sprite": "witchery:potion.swimming"},
     {"type": "single", "resource": "witchery:item/ingredient.toeoffrog", "sprite": "witchery:potion.doublejump"},
     {"type": "single", "resource": "minecraft:block/cobweb", "sprite": "witchery:potion.reflectprojectiles"},
-    {"type": "single", "resource": "minecraft:block/cobweb", "sprite": "witchery:potion.attractprojectiles"}
+    {"type": "single", "resource": "minecraft:block/cobweb", "sprite": "witchery:potion.attractprojectiles"},
+    {"type": "single", "resource": "witchery:item/ingredient.dropofluck", "sprite": "witchery:potion.brewingexpertise"},
+    {"type": "single", "resource": "witchery:item/ingredient.dropofluck", "sprite": "witchery:potion.insane"},
+    {"type": "single", "resource": "witchery:item/ingredient.disturbedcotton", "sprite": "witchery:potion.sinking"},
+    {"type": "single", "resource": "witchery:block/embermoss", "sprite": "witchery:potion.overheating"},
+    {"type": "single", "resource": "witchery:item/ingredient.mellifluoushunger", "sprite": "witchery:potion.wakingnightmare"},
+    {"type": "single", "resource": "minecraft:item/salmon", "sprite": "witchery:potion.allergysun"},
+    {"type": "single", "resource": "minecraft:block/soul_sand", "sprite": "witchery:potion.allergydark"}
   ]
 }

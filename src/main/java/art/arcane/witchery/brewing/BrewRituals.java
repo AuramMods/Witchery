@@ -76,13 +76,14 @@ public final class BrewRituals {
                                       boolean leonard) {
         LivingEntity target = TaglockItem.resolveTarget(source, trigger);
         if (target == null || !target.isAlive() || !(target.level() instanceof ServerLevel level)) return Result.FAILED;
-        if (!canReach(source, level, target.distanceToSqr(Vec3.atLowerCornerOf(origin)), leonard, nearbyCoven(source, origin))) {
+        int coven = nearbyCoven(source, origin);
+        if (!canReach(source, level, target.distanceToSqr(Vec3.atLowerCornerOf(origin)), leonard, coven)) {
             return Result.TOO_FAR;
         }
         if (!HunterClothingItem.resistsCurse(target) && !AreaWardBlockEntity.protectsBrew(target)
                 && !VoodooPoppetItem.deflectBrew(target)) {
             var caster = FakePlayerFactory.getMinecraft(source);
-            mixture.apply(target, caster, caster, 1, 1);
+            mixture.applyTaglock(target, caster, coven);
         }
         return Result.COMPLETE;
     }

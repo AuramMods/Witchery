@@ -275,6 +275,16 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Java 17 data generation and JAR reobfuscation passed. The final packaged SHA-256 is `3abc65569daede41bc100d707a422584c0d0bd597573d5cbb5a354754a75dc35`.
 - All 18 initial focused GameTests passed. The broad suite passed 524 of 525. The Cooking Rite burn-roll fixture passed in the final 23-case rerun with the movement, combat and fire rite namespaces.
 
+### Expertise, Curses and Allergy Cauldron Brews (2026-11-21)
+
+- Drop of Luck brews Brewing Expertise or, if inverted, Insanity. Disturbed Cotton, Embermoss and Mellifluous Hunger add Sinking, Overheating and Waking Nightmare. The four curses use the previously migrated status effects. Brewing Expertise uses the existing yield calculation.
+- `BrewMixture` extends harmful curse recipes on a successfully resolved Taglock cast. The duration override is the unmodified base duration times 10,001, and particles are suppressed. Regular drinks and splashes use the ordinary duration modifiers. Taglock strength uses the original amplifier ceilings of one through four according to coven size.
+- `LightAllergyEffect` implements the two original incurable effects. Soul Sand reacts to local light below the amplifier threshold. Salmon reacts to direct daylight while dry and follows the original per-second chance. Players take void damage and other creatures burn or wear their helmets.
+- The ordinary apple gives Absorption and the enchanted apple gives Health Boost. The named legacy apple's root metadata selects the correct item inside old `Items` and cauldron `Ingredients` lists.
+- Java 17 data generation and JAR reobfuscation passed. Packaged SHA-256 is `4ac9e6748adc0891708a7218cccc1e36b53a007dc53ed308bfd9d373bbbaa9c3`. The isolated Xvfb client used master volume zero and OpenAL No Output. It brewed and drank all nine, verified the bottle yield with a seeded skill value of 30, and exercised both allergy conditions in a lit and covered arena.
+- The survival client captured a real Taglock and used it on a full, heated Sinking cauldron. The fourth-level mixture applied Sinking II with particles hidden and 36,003,598 ticks at the first sample. With the same pig loaded after a dedicated restart it still had 36,001,916 ticks. A neighboring pig remained unaffected. The 17 focused tests passed, including legacy ingredient fixtures, helmet protection, and the taglock duration and coven limits.
+- The 530-case broad run passed 529. The Cooking Rite burn-roll fixture passed with its arena setup delay. The powered Wither case passed with all 13 cases in the focused summoning and brewing rerun.
+
 ### Cold and Ice Shell Cauldron Brews (2026-11-20)
 
 - Icy Needle contributes two effect levels and 200 power for Cold. Frozen Heart contributes five effect levels and 500 power for Ice Shell. Their original ingredient metadata resolves inside saved cauldrons and bottles. Both actions keep the brew's strength, duration, and hidden-particle modifiers.

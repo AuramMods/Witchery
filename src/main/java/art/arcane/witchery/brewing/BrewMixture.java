@@ -40,6 +40,7 @@ import java.util.function.Supplier;
 
 public final class BrewMixture {
     private static final String ITEMS = "Items";
+    private static final int TAGLOCK_DURATION_MULTIPLIER = 10_001;
     private static final ResourceLocation BRAMBLE = ResourceLocation.parse("witchery:bramble");
     private static final ResourceLocation ENDER_BRAMBLE = ResourceLocation.parse("witchery:bramble_ender");
     private static final Map<ResourceLocation, Ingredient> INGREDIENTS = ingredients();
@@ -81,11 +82,20 @@ public final class BrewMixture {
         boolean isEffect() { return normal != null || action != null; }
     }
 
-    private record Potion(Supplier<MobEffect> effect, int duration) {}
+    private record Potion(Supplier<MobEffect> effect, int duration, boolean curse) {
+        Potion(Supplier<MobEffect> effect, int duration) {
+            this(effect, duration, false);
+        }
+    }
 
-    public record Application(MobEffect effect, int ticks, int amplifier, boolean showParticles, boolean inverted) implements BrewEffect {
+    public record Application(MobEffect effect, int ticks, int amplifier, boolean showParticles,
+                              boolean inverted, int taglockTicks) implements BrewEffect {
         public MobEffectInstance instance(int duration) {
-            return new MobEffectInstance(effect, duration, amplifier, false, showParticles, true);
+            return instance(duration, amplifier, showParticles);
+        }
+
+        private MobEffectInstance instance(int duration, int strength, boolean particles) {
+            return new MobEffectInstance(effect, duration, strength, false, particles, true);
         }
 
         public Component brewName() {
@@ -183,6 +193,7 @@ public final class BrewMixture {
             };
             case "minecraft:web" -> "minecraft:cobweb";
             case "minecraft:reeds" -> "minecraft:sugar_cane";
+            case "minecraft:golden_apple" -> metadata == 1 ? "minecraft:enchanted_golden_apple" : null;
             default -> null;
         };
         if (id == null) return WitcheryIngredient.loadInventoryStack(tag);
@@ -300,36 +311,45 @@ public final class BrewMixture {
 
     public void apply(LivingEntity target, @Nullable Entity source, @Nullable LivingEntity caster,
                       double strengthScale, double durationScale, boolean blocksHarmfulEffects) {
-        apply(target, source, caster, strengthScale, durationScale, blocksHarmfulEffects, false);
+        apply(target, source, caster, strengthScale, durationScale, blocksHarmfulEffects, false, -1);
     }
 
     public void applySplash(LivingEntity target, Entity source, @Nullable LivingEntity caster, double scale, boolean glancing) {
-        apply(target, source, caster, scale, scale * 0.5, false, glancing);
+        apply(target, source, caster, scale, scale * 0.5, false, glancing, -1);
+    }
+
+    void applyTaglock(LivingEntity target, ServerPlayer caster, int coven) {
+        apply(target, caster, caster, 1, 1, false, false, coven);
     }
 
     private void apply(LivingEntity target, @Nullable Entity source, @Nullable LivingEntity caster,
-                       double strengthScale, double durationScale, boolean blocksHarmfulEffects, boolean glancing) {
+                       double strengthScale, double durationScale, boolean blocksHarmfulEffects, boolean glancing,
+                       int taglockCoven) {
         if (target.isDeadOrDying() || durationScale <= 0) return;
+        int strengthLimit = taglockCoven < 0 ? Integer.MAX_VALUE : 1 + Math.min(taglockCoven, 6) / 2;
         for (BrewEffect effect : effects) {
             if (effect instanceof Application application) {
                 if (blocksHarmfulEffects && application.effect.getCategory() == MobEffectCategory.HARMFUL) continue;
                 if (application.effect == WitcheryEffects.DOUBLE_JUMP.get() && !application.inverted
                         && !(caster instanceof ServerPlayer player && FamiliarBinding.hasBrewMastery(player))) continue;
+                int amplifier = Math.min(application.amplifier, strengthLimit);
                 if (application.effect.isInstantenous()) {
-                    application.effect.applyInstantenousEffect(source, caster, target, application.amplifier, strengthScale);
+                    application.effect.applyInstantenousEffect(source, caster, target, amplifier, strengthScale);
                 } else {
-                    target.addEffect(application.instance(Mth.ceil(application.ticks * durationScale)), source);
+                    boolean extended = taglockCoven >= 0 && application.taglockTicks > 0;
+                    int duration = extended ? application.taglockTicks : Mth.ceil(application.ticks * durationScale);
+                    target.addEffect(application.instance(duration, amplifier, !extended && application.showParticles), source);
                 }
             } else if (effect instanceof ActionApplication application) {
-                applyAction(application, target, source, caster, strengthScale, durationScale, blocksHarmfulEffects, glancing);
+                int strength = Math.min(application.strength, strengthLimit);
+                applyAction(application, target, source, caster, strengthScale, durationScale, blocksHarmfulEffects, glancing, strength);
             }
         }
     }
 
     private static void applyAction(ActionApplication application, LivingEntity target, @Nullable Entity source,
                                     @Nullable LivingEntity caster, double strengthScale, double durationScale,
-                                    boolean blocksHarmfulEffects, boolean glancing) {
-        int strength = application.strength;
+                                    boolean blocksHarmfulEffects, boolean glancing, int strength) {
         switch (application.action) {
             case EXTINGUISH -> {
                 if (strength <= 1 && target.level().dimensionType().ultraWarm()) return;
@@ -446,7 +466,8 @@ public final class BrewMixture {
             } else {
                 Potion effect = inverted ? ingredient.inverted : ingredient.normal;
                 effects.add(new Application(effect.effect.get(), effect.duration * (duration + 1),
-                        Math.min(strength, ingredient.ceiling), !hideParticles, inverted));
+                        Math.min(strength, ingredient.ceiling), !hideParticles, inverted,
+                        effect.curse ? effect.duration * TAGLOCK_DURATION_MULTIPLIER : 0));
             }
             strength = 0;
             duration = 0;
@@ -571,6 +592,15 @@ public final class BrewMixture {
         potion(entries, "witchery:toe_of_frog", 500, 4, WitcheryEffects.DOUBLE_JUMP, 7200);
         potion(entries, "cobweb", 250, 2, 10,
                 new Potion(WitcheryEffects.REFLECT_PROJECTILES, 1800), new Potion(WitcheryEffects.ATTRACT_PROJECTILES, 900));
+        potion(entries, "witchery:drop_of_luck", 5000, 4, 10,
+                new Potion(WitcheryEffects.BREWING_EXPERTISE, 7200), new Potion(WitcheryEffects.INSANITY, 3600, true));
+        curse(entries, "witchery:disturbed_cotton", 3000, WitcheryEffects.SINKING);
+        curse(entries, "witchery:embermoss", 3000, WitcheryEffects.OVERHEATING);
+        curse(entries, "witchery:mellifluous_hunger", 10000, WitcheryEffects.WAKING_NIGHTMARE);
+        potion(entries, "soul_sand", 4000, 4, WitcheryEffects.DARKNESS_ALLERGY, 2400);
+        potion(entries, "salmon", 1000, 6, WitcheryEffects.SUN_ALLERGY, 1200);
+        potion(entries, "golden_apple", 1000, 4, () -> MobEffects.ABSORPTION, 600);
+        potion(entries, "enchanted_golden_apple", 1000, 4, () -> MobEffects.HEALTH_BOOST, 2400);
         return Map.copyOf(entries);
     }
 
@@ -583,6 +613,11 @@ public final class BrewMixture {
                                Supplier<MobEffect> effect, int duration) {
         Potion potion = new Potion(effect, duration);
         potion(entries, id, power, levels, 10, potion, potion);
+    }
+
+    private static void curse(Map<ResourceLocation, Ingredient> entries, String id, int power, Supplier<MobEffect> effect) {
+        Potion potion = new Potion(effect, 3600, true);
+        potion(entries, id, power, 4, 10, potion, potion);
     }
 
     private static void potion(Map<ResourceLocation, Ingredient> entries, String id, int power, int levels,

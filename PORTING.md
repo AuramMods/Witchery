@@ -861,6 +861,27 @@
 - [x] Bind a Toad through the normal familiar rite. A bottle consumed before binding gives no Double Jump. A level II bottle after binding adds airborne jumps. The active effect and familiar survived the dedicated restart, and a new takeoff could use the jumps again. After the restart, Swimming covered 15.8 blocks during the forward trial against 3.9 without it. The backward trial covered 3.8 blocks both times.
 - [x] Run Java 17 data generation, JAR reobfuscation, and 18 focused GameTests. The broad suite passed 524 of 525. The Cooking Rite burn-roll case passed with all 23 cases in the final focused rerun.
 
+## Expertise, Curses and Allergy Cauldron Brews (2026-11-21)
+
+| Ingredient | Brew | Base altar power | Capacity cost | Base duration |
+| --- | --- | ---: | ---: | ---: |
+| Drop of Luck | Brewing Expertise | 5,000 | 4 | 360 s |
+| Drop of Luck after Fermented Spider Eye | Insanity | 5,000 | 4 | 180 s |
+| Disturbed Cotton | Sinking | 3,000 | 4 | 180 s |
+| Embermoss | Overheating | 3,000 | 4 | 180 s |
+| Mellifluous Hunger | Waking Nightmare | 10,000 | 4 | 180 s |
+| Soul Sand | Darkness Allergy | 4,000 | 4 | 120 s |
+| Salmon | Sun Allergy | 1,000 | 6 | 60 s |
+| Golden Apple | Absorption | 1,000 | 4 | 30 s |
+| Enchanted Golden Apple | Health Boost | 1,000 | 4 | 120 s |
+
+- [x] Restore the original recipes and bottle names. Saved raw fish metadata 1 loads as Salmon and golden apple metadata 1 loads as an Enchanted Golden Apple. Brewing Expertise uses the original skill and garment yield rules.
+- [x] Restore the original light thresholds, damage, milk immunity, and sun protection for creatures wearing helmets. Both allergies use void damage where the legacy code did. Sun Allergy ignites uncovered creatures and wears damageable helmets.
+- [x] Give the four environmental curses their 36,003,600-tick, particle-free duration when cast through a Taglock. Brewing Expertise retains its ordinary duration. The original ritual caps the delivered amplifier at `1 + floor(coven / 2)`, up to four.
+- [x] Brew and drink all nine variants in the muted survival client using supplied ingredients. At the fixture's first bottling skill tier, Expertise reduced the draw from 1.5 buckets to one. Absorption gave four temporary health points and Health Boost raised maximum health to 24. Darkness damaged the player until a torch was placed. A roof blocked Sun Allergy damage, and milk left Darkness Allergy active.
+- [x] Capture a pig's Taglock and drop it into a heated cauldron with Sinking IV and a duration modifier. With no coven, the cast applied Sinking II for nearly 36,003,600 ticks, with particles hidden. The bound pig retained that effect after a dedicated restart. The neighboring pig remained unaffected.
+- [x] Run Java 17 data generation, JAR reobfuscation and all 17 focused GameTests. The broad suite passed 529 of 530. The powered Wither case passed in the 13-test summoning and brewing rerun.
+
 ## Brew of Erosion and Brew of Ice (2026-11-21)
 
 - [x] Restore the original six-ingredient Kettle recipes, three servings, Brew Mastery bottling bonus, and legacy metadata 62 and 76. Erosion needs no altar power. Ice waits for 1,000 power and debits the altar once per batch.

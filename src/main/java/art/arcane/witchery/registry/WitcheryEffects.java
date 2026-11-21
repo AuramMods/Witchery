@@ -8,6 +8,7 @@ import art.arcane.witchery.brewing.MortalCoilEffect;
 import art.arcane.witchery.brewing.EnvironmentalCurseEffect;
 import art.arcane.witchery.brewing.FoodBrewEffect;
 import art.arcane.witchery.brewing.IllFittingEffect;
+import art.arcane.witchery.brewing.LightAllergyEffect;
 import art.arcane.witchery.brewing.MovementBrewEffect;
 import art.arcane.witchery.brewing.ProjectileBrewEffect;
 import art.arcane.witchery.brewing.WakingNightmareEffect;
@@ -71,6 +72,10 @@ public final class WitcheryEffects {
             () -> new ProjectileBrewEffect(false, legacyColor("potion.reflectprojectiles")));
     public static final RegistryObject<MobEffect> ATTRACT_PROJECTILES = MOB_EFFECTS.register("potion.attractprojectiles",
             () -> new ProjectileBrewEffect(true, legacyColor("potion.attractprojectiles")));
+    public static final RegistryObject<MobEffect> SUN_ALLERGY = MOB_EFFECTS.register("potion.allergysun",
+            () -> new LightAllergyEffect(true, legacyColor("potion.allergysun")));
+    public static final RegistryObject<MobEffect> DARKNESS_ALLERGY = MOB_EFFECTS.register("potion.allergydark",
+            () -> new LightAllergyEffect(false, legacyColor("potion.allergydark")));
     public static final RegistryObject<MobEffect> MORTAL_COIL = MOB_EFFECTS.register("potion.mortalcoil", MortalCoilEffect::new);
     public static final RegistryObject<MobEffect> QUEASY = MOB_EFFECTS.register("potion.queasy",
             () -> new MobEffect(MobEffectCategory.HARMFUL, 0x7C9348) {
@@ -112,6 +117,8 @@ public final class WitcheryEffects {
         LEGACY_EFFECTS.put("potion.doublejump", DOUBLE_JUMP);
         LEGACY_EFFECTS.put("potion.reflectprojectiles", REFLECT_PROJECTILES);
         LEGACY_EFFECTS.put("potion.attractprojectiles", ATTRACT_PROJECTILES);
+        LEGACY_EFFECTS.put("potion.allergysun", SUN_ALLERGY);
+        LEGACY_EFFECTS.put("potion.allergydark", DARKNESS_ALLERGY);
         LEGACY_EFFECTS.put("potion.queasy", QUEASY);
         for (String legacyName : LegacyRegistryData.EFFECTS) {
             registerLegacyEffect(legacyName);
