@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "witchery:guidebooks",
+  "pattern": [
+    " a ",
+    "dbf",
+    " c "
+  ],
+  "key": {
+    "d": [
+      {
+        "tag": "forge:dyes/black"
+      },
+      {
+        "item": "minecraft:ink_sac"
+      }
+    ],
+    "b": {
+      "item": "minecraft:book"
+    },
+    "f": {
+      "item": "minecraft:feather"
+    },
+    "a": {
+      "item": "witchery:wood_ash"
+    },
+    "c": {
+      "item": "minecraft:flint_and_steel"
+    }
+  },
+  "result": {
+    "item": "witchery:book_conjuration_and_fetishes"
+  }
+}

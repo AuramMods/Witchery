@@ -11,6 +11,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
@@ -45,14 +46,11 @@ public final class BrewMixture {
         CAPACITY, STRENGTH, DURATION, INVERT, HIDE_PARTICLES, DRINK_SPEED, DELIVERY, EXTENT, LIFETIME, WAYSTONE, RITUAL
     }
 
-    private enum Action { EXTINGUISH, COLD, ICE_SHELL, HARM_DEMONS, REVEAL, MOVE_ANIMALS }
+    private enum Action {
+        EXTINGUISH, COLD, ICE_SHELL, HARM_DEMONS, REVEAL, MOVE_ANIMALS;
 
-    private sealed interface BrewEffect permits Application, ActionApplication {}
-
-    private record ActionApplication(Action action, int strength, boolean inverted, int durationMultiplier,
-                                     boolean showParticles) implements BrewEffect {
-        String nameKey() {
-            return switch (action) {
+        String nameKey(boolean inverted) {
+            return switch (this) {
                 case EXTINGUISH -> "brew.witchery.extinguish";
                 case COLD -> "brew.witchery.cold";
                 case ICE_SHELL -> "brew.witchery.ice_shell";
@@ -61,6 +59,13 @@ public final class BrewMixture {
                 case MOVE_ANIMALS -> inverted ? "brew.witchery.animal_repulsion" : "brew.witchery.animal_attraction";
             };
         }
+    }
+
+    private sealed interface BrewEffect permits Application, ActionApplication {}
+
+    private record ActionApplication(Action action, int strength, boolean inverted, int durationMultiplier,
+                                     boolean showParticles) implements BrewEffect {
+        String nameKey() { return action.nameKey(inverted); }
     }
 
     private record Ingredient(int power, @Nullable Modifier modifier, int amount, int ceiling,
@@ -180,6 +185,32 @@ public final class BrewMixture {
     public List<String> actionNames() {
         return effects.stream().filter(ActionApplication.class::isInstance).map(ActionApplication.class::cast)
                 .map(ActionApplication::nameKey).distinct().toList();
+    }
+
+    public record GuideIngredient(ItemStack stack, int power, int capacityCost, Component effect, @Nullable Component reversed) {}
+
+    public static List<GuideIngredient> guideIngredients() {
+        return INGREDIENTS.entrySet().stream().sorted(Map.Entry.comparingByKey()).flatMap(entry ->
+                BuiltInRegistries.ITEM.getOptional(entry.getKey()).stream().map(item -> {
+                    Ingredient ingredient = entry.getValue();
+                    Component effect;
+                    Component reversed = null;
+                    if (ingredient.normal != null) {
+                        effect = ingredient.normal.effect.get().getDisplayName();
+                        if (!ingredient.normal.equals(ingredient.inverted)) {
+                            reversed = ingredient.inverted.effect.get().getDisplayName();
+                        }
+                    } else if (ingredient.action != null) {
+                        effect = Component.translatable(ingredient.action.nameKey(false));
+                        if (!ingredient.action.nameKey(false).equals(ingredient.action.nameKey(true))) {
+                            reversed = Component.translatable(ingredient.action.nameKey(true));
+                        }
+                    } else {
+                        effect = Component.translatable("guide.witchery.cauldron.modifier."
+                                + ingredient.modifier.name().toLowerCase(java.util.Locale.ROOT), ingredient.amount, ingredient.ceiling);
+                    }
+                    return new GuideIngredient(new ItemStack(item), ingredient.power, ingredient.isEffect() ? ingredient.amount : 0, effect, reversed);
+                })).toList();
     }
     public int power() { return power; }
     public int used() { return used; }

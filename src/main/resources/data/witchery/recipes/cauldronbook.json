@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "witchery:guidebooks",
+  "pattern": [
+    " a ",
+    "dbf"
+  ],
+  "key": {
+    "a": {
+      "item": "minecraft:dirt"
+    },
+    "d": [
+      {
+        "tag": "forge:dyes/black"
+      },
+      {
+        "item": "minecraft:ink_sac"
+      }
+    ],
+    "b": {
+      "item": "minecraft:book"
+    },
+    "f": {
+      "item": "minecraft:feather"
+    }
+  },
+  "result": {
+    "item": "witchery:cauldronbook"
+  }
+}

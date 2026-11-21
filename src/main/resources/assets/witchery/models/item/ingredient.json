@@ -1,6 +1,56 @@
 {
-   "parent" : "minecraft:item/generated",
-   "textures" : {
-      "layer0" : "witchery:item/taglockkit"
-   }
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "witchery:item/taglockkit"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "witchery:guide_book": 1
+      },
+      "model": "witchery:item/book_collecting_fumes"
+    },
+    {
+      "predicate": {
+        "witchery:guide_book": 2
+      },
+      "model": "witchery:item/book_distilling"
+    },
+    {
+      "predicate": {
+        "witchery:guide_book": 3
+      },
+      "model": "witchery:item/book_circle_magic"
+    },
+    {
+      "predicate": {
+        "witchery:guide_book": 4
+      },
+      "model": "witchery:item/book_brews_and_infusions"
+    },
+    {
+      "predicate": {
+        "witchery:guide_book": 5
+      },
+      "model": "witchery:item/book_herbology"
+    },
+    {
+      "predicate": {
+        "witchery:guide_book": 6
+      },
+      "model": "witchery:item/book_of_biomes"
+    },
+    {
+      "predicate": {
+        "witchery:guide_book": 7
+      },
+      "model": "witchery:item/book_symbology"
+    },
+    {
+      "predicate": {
+        "witchery:guide_book": 8
+      },
+      "model": "witchery:item/book_conjuration_and_fetishes"
+    }
+  ]
 }

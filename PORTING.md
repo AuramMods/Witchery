@@ -374,7 +374,17 @@
 - [x] Generate the same seed with `generateBookShops` disabled. The village at `640 816` still generated and its saved piece list contained zero bookshops.
 - [x] Rejoin after restarting the dedicated server. The journal kept its attached page, the chest kept its remaining stock, and the four frame UUIDs survived.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 363 required Forge GameTests. The new cases cover the five pool weights, a rotated shop, configured stock, foundations, and supported frames.
-- [ ] Finish the reading behavior and presentation for the Witchery guidebooks that still use legacy ingredient IDs.
+- [x] Restore the reading behavior and covers of existing bookshop guide stacks.
+
+## Witchery Guidebooks (2026-11-21)
+
+- [x] Restore ten readable volumes and their original crafting combinations. Eight named item IDs import the original ingredient metadata. Tagged guide stacks from the earlier bookshop remain readable and show the right cover.
+- [x] Show the active distilling, cauldron, kettle and circle recipes. Circle Magic diagrams use the actual chalk layout. Herbology has its 19 illustrated plant chapters. The Symbology and Conjuration volumes use their live spell, brazier and fetish data.
+- [x] Restore the Book of Biomes and the selectable climate atlas. The climate focus pages report the exact Glowstone Dust choices used by the rite. The atlas stores the chosen biome ID and can copy it to paper while returning the book.
+- [x] In the muted survival client, loot and read the old Circle Magic stack, browse the cauldron contents, and craft the Fumes guide with supplied ingredients. Learn Ignianima by drinking a supplied Brew of Soul Anguish. Its chapter appears in Symbology.
+- [x] Copy Snowy Beach from the shop's atlas using the inventory crafting grid. Restart the dedicated server and verify the note, atlas selection, learned chapter, and legacy book bookmark.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 366 required Forge GameTests. The new cases cover the original recipes, legacy metadata and bookmarks, active guide content, and atlas copying.
+- [ ] Use the resulting Biome Note in the Brew of the Changing Seasons.
 
 ## Daylight Collector and Sun Grenades (2026-11-20)
 

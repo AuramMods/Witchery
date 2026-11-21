@@ -84,6 +84,10 @@ public enum RitualCircle {
         offsets = List.copyOf(outline);
     }
 
+    public List<BlockPos> offsets() {
+        return offsets;
+    }
+
     public boolean matches(LevelReader level, BlockPos center, Block glyph) {
         for (BlockPos offset : offsets) {
             BlockPos pos = center.offset(offset);

@@ -6,6 +6,11 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.item.VampireBookItem;
+import art.arcane.witchery.item.GuideBookItem;
+import art.arcane.witchery.item.GuideBookPages;
+import art.arcane.witchery.item.BiomeBookIndex;
+import art.arcane.witchery.item.BiomeNoteItem;
+import art.arcane.witchery.infusion.SpellKnowledge;
 import art.arcane.witchery.lycanthropy.WolfTrials;
 import art.arcane.witchery.registry.LegacyRegistryData;
 import net.minecraft.nbt.CompoundTag;
@@ -34,11 +39,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class WitcheryNetwork {
-    private static final String PROTOCOL_VERSION = "68";
+    private static final String PROTOCOL_VERSION = "69";
     private static final int MAX_USERNAME_LENGTH = 64;
     private static final int MAX_PLAYER_SKIN_LENGTH = 256;
     private static final int MAX_MARKUP_CHAPTER_LENGTH = 32;
-    private static final String KEY_STACK_CURRENT_PAGE = "CurrentPage";
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             ResourceLocation.parse(Witchery.MODID + ":main"),
             () -> PROTOCOL_VERSION,
@@ -94,7 +98,7 @@ public final class WitcheryNetwork {
                     context.get().setPacketHandled(true);
                 })
                 .add();
-        CHANNEL.messageBuilder(InfusionStatusPacket.class, discriminator, NetworkDirection.PLAY_TO_CLIENT)
+        CHANNEL.messageBuilder(InfusionStatusPacket.class, discriminator++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder((message, buffer) -> {
                     buffer.writeVarInt(message.type());
                     buffer.writeVarInt(message.charge());
@@ -110,6 +114,19 @@ public final class WitcheryNetwork {
                     runClient(() -> art.arcane.witchery.client.ClientInfusion.setStatus(
                             message.type(), message.charge(), message.capacity(), message.power(), message.powerCharge(),
                             message.brew(), message.brewTicks()));
+                    context.get().setPacketHandled(true);
+                })
+                .add();
+        CHANNEL.messageBuilder(GuideBookOpenPacket.class, discriminator, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder((message, buffer) -> {
+                    buffer.writeVarInt(message.slot());
+                    buffer.writeEnum(message.volume());
+                    buffer.writeVarInt(message.knownSpells());
+                })
+                .decoder(buffer -> new GuideBookOpenPacket(buffer.readVarInt(), buffer.readEnum(GuideBookItem.Volume.class),
+                        buffer.readVarInt()))
+                .consumerMainThread((message, context) -> {
+                    runClient(() -> art.arcane.witchery.client.GuideBookScreen.open(message.slot(), message.volume(), message.knownSpells()));
                     context.get().setPacketHandled(true);
                 })
                 .add();
@@ -172,8 +189,13 @@ public final class WitcheryNetwork {
         );
     }
 
-    public static void sendItemUpdateToServer(int slotIndex, int damageValue, int pageIndex) {
-        CHANNEL.sendToServer(new ItemUpdatePacket(slotIndex, damageValue, pageIndex));
+    public static void sendGuideBookmark(int slotIndex, GuideBookItem.Volume volume, int pageIndex) {
+        CHANNEL.sendToServer(new ItemUpdatePacket(slotIndex, volume, pageIndex));
+    }
+
+    public static void openGuideBook(ServerPlayer reader, int slot, GuideBookItem.Volume volume) {
+        int known = volume == GuideBookItem.Volume.SYMBOLOGY ? SpellKnowledge.knownMask(reader) : 0;
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> reader), new GuideBookOpenPacket(slot, volume, known));
     }
 
     public static void sendSyncEntitySize(ServerPlayer player, int entityId, float width, float height) {
@@ -571,38 +593,25 @@ public final class WitcheryNetwork {
     private static void handleItemUpdatePacket(ItemUpdatePacket message, NetworkEvent.Context context) {
         mutateSenderData(context, "item_update", (sender, data) -> {
             int slot = message.slotIndex();
-            if (slot < 0 || slot >= sender.getInventory().getContainerSize()) {
-                Witchery.LOGGER.debug("Ignoring scaffold packet 'item_update' with out-of-range slot={} player={}", slot, sender.getScoreboardName());
-                return;
-            }
-
+            if (sender.isSpectator() || slot != sender.getInventory().selected && slot != sender.getInventory().getContainerSize() - 1) return;
             ItemStack stack = sender.getInventory().getItem(slot);
-            if (stack.isEmpty()) {
-                Witchery.LOGGER.debug("Ignoring scaffold packet 'item_update' for empty slot={} player={}", slot, sender.getScoreboardName());
-                return;
+            var volume = GuideBookItem.volume(stack);
+            if (volume != message.volume() || message.pageIndex() < 0) return;
+            if (volume == GuideBookItem.Volume.ATLAS) {
+                var biomes = BiomeBookIndex.pages(sender.level().registryAccess());
+                if (message.pageIndex() >= biomes.size()) return;
+                stack.getOrCreateTag().putString(BiomeNoteItem.BIOME, biomes.get(message.pageIndex()).id().toString());
+            } else {
+                var pages = GuideBookPages.entries(volume, sender.level(), SpellKnowledge.knownMask(sender));
+                if (message.pageIndex() >= pages.size()) return;
             }
-
-            if (stack.getDamageValue() != message.damageValue()) {
-                Witchery.LOGGER.debug(
-                        "Ignoring scaffold packet 'item_update' with damage mismatch slot={} expected={} actual={} player={}",
-                        slot, message.damageValue(), stack.getDamageValue(), sender.getScoreboardName()
-                );
-                return;
-            }
-
-            int clampedPage = Math.max(0, Math.min(message.pageIndex(), 999));
-            stack.getOrCreateTag().putInt(KEY_STACK_CURRENT_PAGE, clampedPage);
+            GuideBookItem.setBookmark(stack, message.pageIndex());
             sender.getInventory().setChanged();
             sender.containerMenu.broadcastChanges();
-
-            data.applyItemUpdate(slot, message.damageValue(), clampedPage);
+            data.applyItemUpdate(slot, stack.getDamageValue(), message.pageIndex());
             data.bumpSyncRevision();
             sendPlayerSync(sender, data);
         });
-        Witchery.LOGGER.debug(
-                "Handled scaffold packet 'item_update' slot={} damage={} page={} direction={}",
-                message.slotIndex(), message.damageValue(), message.pageIndex(), context.getDirection()
-        );
     }
 
     private static void handleParticlesPacket(ParticlesPacket message, NetworkEvent.Context context) {
@@ -829,19 +838,21 @@ public final class WitcheryNetwork {
         }
     }
 
-    public record ItemUpdatePacket(int slotIndex, int damageValue, int pageIndex) {
+    private record GuideBookOpenPacket(int slot, GuideBookItem.Volume volume, int knownSpells) {}
+
+    public record ItemUpdatePacket(int slotIndex, GuideBookItem.Volume volume, int pageIndex) {
         public static ItemUpdatePacket placeholder() {
-            return new ItemUpdatePacket(0, 0, 0);
+            return new ItemUpdatePacket(0, GuideBookItem.Volume.FUMES, 0);
         }
 
         public static void encode(ItemUpdatePacket message, FriendlyByteBuf buffer) {
             buffer.writeVarInt(message.slotIndex());
-            buffer.writeVarInt(message.damageValue());
+            buffer.writeEnum(message.volume());
             buffer.writeVarInt(message.pageIndex());
         }
 
         public static ItemUpdatePacket decode(FriendlyByteBuf buffer) {
-            return new ItemUpdatePacket(buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt());
+            return new ItemUpdatePacket(buffer.readVarInt(), buffer.readEnum(GuideBookItem.Volume.class), buffer.readVarInt());
         }
     }
 

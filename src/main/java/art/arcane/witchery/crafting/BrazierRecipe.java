@@ -49,6 +49,10 @@ public enum BrazierRecipe {
         return burnTicks;
     }
 
+    public List<Item> ingredients() {
+        return ingredients.stream().map(Supplier::get).toList();
+    }
+
     public boolean needsPower() {
         return this != WILTING;
     }

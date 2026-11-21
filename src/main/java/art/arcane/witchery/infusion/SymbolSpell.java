@@ -59,6 +59,9 @@ public enum SymbolSpell {
     public float size() { return size; }
     public int lifetime() { return lifetime; }
     public boolean falls() { return falls; }
+    public int baseCost() { return cost; }
+    public List<String> gestures() { return patterns; }
+    public boolean visibleInGuide(int knownMask) { return knowledge == null || (knownMask & (1 << knowledge.ordinal())) != 0; }
     public Component displayName() {
         return knowledge == null ? Component.translatable("spell.witchery." + name().toLowerCase(Locale.ROOT)) : knowledge.nameComponent();
     }

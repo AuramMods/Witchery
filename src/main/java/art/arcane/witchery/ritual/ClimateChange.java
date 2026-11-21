@@ -48,7 +48,7 @@ public final class ClimateChange {
 
     private enum Weather { NONE, CLEAR, RAIN }
 
-    private enum Focus {
+    public enum Focus {
         FOREST(Items.OAK_SAPLING, BiomeTags.IS_FOREST, Biomes.FOREST, Biomes.BIRCH_FOREST, Biomes.DARK_FOREST),
         PLAINS(Items.GRASS, Tags.Biomes.IS_PLAINS, Biomes.PLAINS, Biomes.SUNFLOWER_PLAINS),
         MOUNTAINS(Items.OBSIDIAN, BiomeTags.IS_MOUNTAIN, Biomes.WINDSWEPT_HILLS, Biomes.JAGGED_PEAKS, Biomes.STONY_PEAKS),
@@ -82,7 +82,11 @@ public final class ClimateChange {
             return stack.is(WitcheryIngredient.ICY_NEEDLE.item()) ? FROZEN : null;
         }
 
-        List<Holder<Biome>> candidates(Registry<Biome> biomes) {
+        public Item focusItem() {
+            return item == null ? WitcheryIngredient.ICY_NEEDLE.item() : item;
+        }
+
+        public List<Holder<Biome>> candidates(Registry<Biome> biomes) {
             var ordered = new LinkedHashSet<Holder<Biome>>();
             for (var key : preferred) biomes.getHolder(key).ifPresent(ordered::add);
             biomes.getTag(tag).ifPresent(entries -> entries.stream()

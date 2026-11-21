@@ -111,6 +111,7 @@ import art.arcane.witchery.item.BrewBottleItem;
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
 import art.arcane.witchery.item.CaneSwordItem;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.item.GuideBookItem;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
@@ -339,6 +340,12 @@ public final class WitcheryClient {
             MenuScreens.register(WitcheryMenus.DISTILLERY.get(), DistilleryScreen::new);
             MenuScreens.register(WitcheryMenus.SPINNING_WHEEL.get(), SpinningWheelScreen::new);
             MenuScreens.register(WitcheryMenus.LEONARDS_URN.get(), LeonardsUrnScreen::new);
+            ItemProperties.register(WitcheryItems.getRequired("ingredient").get(),
+                    ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "guide_book"),
+                    (stack, level, entity, seed) -> {
+                        var volume = GuideBookItem.volume(stack);
+                        return volume == null ? 0 : volume.ordinal() + 1;
+                    });
             ItemProperties.register(WitcheryItems.getRequired("leonardsurn").get(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "urn_tier"),
                     (stack, level, entity, seed) -> LeonardsUrnItem.tier(stack));

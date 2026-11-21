@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "witchery:guidebooks",
+  "pattern": [
+    " a ",
+    "dbf"
+  ],
+  "key": {
+    "d": [
+      {
+        "tag": "forge:dyes/black"
+      },
+      {
+        "item": "minecraft:ink_sac"
+      }
+    ],
+    "b": {
+      "item": "minecraft:book"
+    },
+    "f": {
+      "item": "minecraft:feather"
+    },
+    "a": {
+      "item": "witchery:ent_branch"
+    }
+  },
+  "result": {
+    "item": "witchery:book_symbology"
+  }
+}

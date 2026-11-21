@@ -588,10 +588,10 @@ Variant 156 consumes one flower when the tester targets a living entity within t
 | 43 | `soulOfTheWorld` → `witchery:soul_of_the_world` |
 | 44 | `spiritOfOtherwhere` → `witchery:spirit_of_otherwhere` |
 | 45 | `infernalAnimus` → `witchery:infernal_animus` |
-| 46 | `bookOven` |
-| 47 | `bookDistilling` |
-| 48 | `bookCircleMagic` |
-| 49 | `bookInfusions` |
+| 46 | `bookOven` → `witchery:book_collecting_fumes` |
+| 47 | `bookDistilling` → `witchery:book_distilling` |
+| 48 | `bookCircleMagic` → `witchery:book_circle_magic` |
+| 49 | `bookInfusions` → `witchery:book_brews_and_infusions` |
 | 50 | `oddPorkchopRaw` |
 | 51 | `oddPorkchopCooked` |
 | 52 | `doorRowan` |
@@ -622,7 +622,7 @@ Variant 156 consumes one flower when the tester targets a living entity within t
 | 78 | `icyNeedle` |
 | 79 | `frozenHeart` |
 | 80 | `infernalBlood` |
-| 81 | `bookHerbology` |
+| 81 | `bookHerbology` → `witchery:book_herbology` |
 | 82 | `entbranch` |
 | 83 | `mysticunguent` → `witchery:mystic_unguent` |
 | 84 | `doorKeyring` |
@@ -647,8 +647,8 @@ Variant 156 consumes one flower when the tester targets a living entity within t
 | 103 | `mellifluousHunger` |
 | 104 | `weaveIntensity` |
 | 105 | `purifiedMilk` |
-| 106 | `bookBiomes` |
-| 107 | `bookWands` |
+| 106 | `bookBiomes` → `witchery:book_of_biomes` |
+| 107 | `bookWands` → `witchery:book_symbology` |
 | 108 | `batBall` |
 | 109 | `brewBats` |
 | 110 | `charmDisruptedDreams` |
@@ -668,7 +668,7 @@ Variant 156 consumes one flower when the tester targets a living entity within t
 | 124 | `brewRevealing` → `witchery:brew_of_revealing` (Kettle splash) |
 | 125 | `brewSubstitution` |
 | 126 | `brewCongealedSpirit` → `witchery:congealed_spirit` |
-| 127 | `bookBurning` |
+| 127 | `bookBurning` → `witchery:book_conjuration_and_fetishes` |
 | 128 | `graveyardDust` |
 | 129 | `binkyhead` → `witchery:binky_head` (places Binky) |
 | 130 | `nullcatalyst` |

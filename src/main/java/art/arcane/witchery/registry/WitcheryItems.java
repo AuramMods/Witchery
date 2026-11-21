@@ -70,6 +70,8 @@ import art.arcane.witchery.item.PoppetProtectionItem;
 import art.arcane.witchery.item.ThrowableBrewItem;
 import art.arcane.witchery.item.WitchClothingItem;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.item.GuideBookItem;
+import art.arcane.witchery.item.BiomeNoteItem;
 import art.arcane.witchery.item.WitchHandItem;
 import art.arcane.witchery.item.WitchWoodBlockItem;
 import art.arcane.witchery.item.WitchSeedsItem;
@@ -247,6 +249,11 @@ public final class WitcheryItems {
                 }
             };
             case "vampirebook" -> new VampireBookItem();
+            case "ingredient" -> new GuideBookItem.LegacyIngredient();
+            case "book_collecting_fumes", "book_distilling", "book_circle_magic", "book_brews_and_infusions",
+                 "book_herbology", "book_of_biomes", "book_symbology", "book_conjuration_and_fetishes",
+                 "bookbiomes2", "cauldronbook" -> new GuideBookItem(GuideBookItem.Volume.fromPath(path));
+            case "biomenote" -> new BiomeNoteItem();
             case "vampirehat" -> new VampireClothingItem(VampireClothingItem.Style.HAT);
             case "vampirehelmet" -> new VampireClothingItem(VampireClothingItem.Style.HELMET);
             case "vampirecoat" -> new VampireClothingItem(VampireClothingItem.Style.COAT);

@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " s ",
+    "sbs",
+    " s "
+  ],
+  "key": {
+    "s": {
+      "item": "minecraft:stone"
+    },
+    "b": [
+      {
+        "item": "witchery:book_of_biomes"
+      },
+      {
+        "type": "forge:partial_nbt",
+        "item": "witchery:ingredient",
+        "nbt": {
+          "LegacyIngredientDamage": 106
+        }
+      }
+    ]
+  },
+  "result": {
+    "item": "witchery:bookbiomes2"
+  }
+}

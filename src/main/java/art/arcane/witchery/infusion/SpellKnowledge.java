@@ -30,6 +30,14 @@ public enum SpellKnowledge {
         return book(player).getBoolean(key);
     }
 
+    public static int knownMask(ServerPlayer player) {
+        int mask = 0;
+        for (SpellKnowledge spell : values()) {
+            if (player.getAbilities().instabuild || spell.isKnown(player)) mask |= 1 << spell.ordinal();
+        }
+        return mask;
+    }
+
     public long cooldownRemaining(ServerPlayer player, int duration) {
         String lastUse = key + "LastUse";
         CompoundTag book = book(player);
