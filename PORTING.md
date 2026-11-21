@@ -729,7 +729,14 @@
 - [x] Restore right-click Quicklime throws with three seconds of Blindness and additional damage against slimes. A terrain hit returns the ingredient.
 - [x] In the muted survival client, bottle the original batch, load the Brew Bag and cast onto a librarian and regular stone bricks. Throw Quicklime at a slime and recover a separate throw from the ground. Restart the dedicated server and verify the infested bricks, last bag serving and Zombie Villager. Start vanilla curing with a golden apple and verify the restored profession and trade after shortening the test timer.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 436 required Forge GameTests.
-- [ ] Restore the Brew of Substitution and the five Kettle brews that solidify or remove Flowing Spirit.
+
+## Substitution and Solidifying Brews (2026-11-21)
+
+- [x] Restore the original six Kettle batches, three servings, bottling bonus, and legacy metadata 116–120 and 125. The five Solidifying Brews cost 2,000 altar power each. Substitution needs no power. The Book of Brews and Infusions lists Substitution and the dirt recipe.
+- [x] Exchange exposed instances of the struck block for dropped block items in the original spiral order. Each successful exchange returns one of the old blocks and uses one replacement. Active Toad Brew Mastery extends both search radii from four to six blocks.
+- [x] Convert connected Hollow Tears to stone, dirt, sand, or sandstone within the original 64-block reach. The erosion variant removes the fluid and eligible support blocks. Invalid impacts return the brew.
+- [x] In the muted survival client, bottle Substitution and the dirt and erosion Solidifying Brews. Verify that four dropped bricks yield four stone blocks. Use the dirt brew on connected Tears and the erosion brew on a separate pool. Restart the dedicated server and verify the changed blocks and the emerald in a protected chest.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 442 required Forge GameTests.
 
 ## Brew Bag (2026-11-21)
 

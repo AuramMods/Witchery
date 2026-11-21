@@ -1,7 +1,6 @@
 package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.entity.ThrownBrew;
-import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -70,10 +69,8 @@ public final class BrewErosion {
     }
 
     private static boolean canDissolve(BlockState state) {
-        return !state.isAir() && state.getFluidState().isEmpty() && !state.hasBlockEntity()
-                && !state.is(BlockTags.FIRE) && !state.is(Blocks.DRAGON_EGG)
-                && !state.is(WitcheryBlocks.getRequired("force").get())
-                && !state.is(WitcheryBlocks.getRequired("barrier").get());
+        return !state.isAir() && state.getFluidState().isEmpty()
+                && !state.is(BlockTags.FIRE) && !BrewTerrain.isProtectedTerrain(state);
     }
 
     private static void corrode(ServerLevel level, ThrownBrew brew, LivingEntity target) {

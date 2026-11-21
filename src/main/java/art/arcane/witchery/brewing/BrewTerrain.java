@@ -249,6 +249,12 @@ public final class BrewTerrain {
         return !old.hasBlockEntity() && canEdit(owner, level, pos, old);
     }
 
+    static boolean isProtectedTerrain(BlockState state) {
+        return state.hasBlockEntity() || state.is(Blocks.BEDROCK) || state.is(Blocks.DRAGON_EGG)
+                || state.is(WitcheryBlocks.getRequired("force").get())
+                || state.is(WitcheryBlocks.getRequired("barrier").get());
+    }
+
     static boolean canEdit(@Nullable Entity owner, ServerLevel level, BlockPos pos, BlockState old) {
         if (!level.isInWorldBounds(pos) || !level.getWorldBorder().isWithinBounds(pos)
                 || old.getDestroySpeed(level, pos) < 0) return false;

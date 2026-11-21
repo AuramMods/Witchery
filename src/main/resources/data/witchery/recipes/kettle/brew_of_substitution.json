@@ -1,0 +1,14 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"item": "witchery:ender_dew"},
+    {"item": "witchery:ender_dew"},
+    {"item": "witchery:mutandis_extremis"},
+    {"item": "minecraft:egg"},
+    {"item": "minecraft:magma_cream"},
+    {"item": "witchery:ent_branch"}
+  ],
+  "result": {"item": "witchery:brew_of_substitution", "count": 3},
+  "color": -7010720,
+  "bottling_bonus": 1
+}

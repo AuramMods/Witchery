@@ -1,0 +1,15 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"item": "witchery:brew_of_erosion"},
+    {"item": "witchery:foul_fume"},
+    {"item": "witchery:odour_of_purity"},
+    {"item": "witchery:mutandis"},
+    {"item": "witchery:wood_ash"},
+    {"item": "witchery:spanishmoss"}
+  ],
+  "result": {"item": "witchery:brew_of_solid_erosion", "count": 3},
+  "color": -3300,
+  "power": 2000,
+  "bottling_bonus": 1
+}

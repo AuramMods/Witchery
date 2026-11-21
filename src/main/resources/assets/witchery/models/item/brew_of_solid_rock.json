@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "witchery:item/ingredient.brewsolidstone",
+    "layer1": "witchery:item/ingredient.brewsolidoverlay"
+  }
+}

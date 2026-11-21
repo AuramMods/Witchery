@@ -1,0 +1,15 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"item": "minecraft:sandstone"},
+    {"item": "witchery:foul_fume"},
+    {"item": "witchery:odour_of_purity"},
+    {"item": "witchery:mutandis"},
+    {"item": "witchery:wood_ash"},
+    {"item": "witchery:spanishmoss"}
+  ],
+  "result": {"item": "witchery:brew_of_solid_sandstone", "count": 3},
+  "color": -8427008,
+  "power": 2000,
+  "bottling_bonus": 1
+}
