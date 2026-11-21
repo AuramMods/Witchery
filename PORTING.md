@@ -405,6 +405,17 @@
 - [x] Use the same water entry before and after the restart and after clearing Sinking. After 30 game ticks, the cursed player reached the pool floor at Y 201 on both launches. After the cure the player was at Y 230.43.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 489 Forge GameTests. The eight new cases cover the recipe codec and thunder requirement, cure odds, staged Taglock reload, ward and offline refunds, curse strength and poppet wear, persistent effects, and curing separate saved levels.
 
+## Portable Volcano and Cooking Rites (2026-11-21)
+
+- [x] Restore the portable volcano with Stone, Magma Cream, an unworn Golden Sword, and a Charged Attuned Stone in the small Infernal ring. Erupt locally without altar power or a Waystone and keep the original lava reservoir requirement and staged cone.
+- [x] Keep the local eruption's progress across saves and import legacy rite ID 13. A dry site refunds Stone, Magma Cream, and the sword and returns a discharged Attuned Stone. The powered rite still accepts a Bound Waystone and draws its power from an altar within the original 16 blocks.
+- [x] Restore the two small Infernal cooking rites. The powered recipe takes Blaze Rod, Wood Ash, Coal, and 1,000 power. The portable recipe takes a Charged Attuned Stone, Blaze Rod, Wood Ash, and Blaze Powder and discharges its stone.
+- [x] Cook loose food within five blocks on the chalk's level. Use edible outputs from smelting recipes, including Cooked Odd Porkchop. Apply the original per-item 8% or 16% burn rate and return one Charcoal per burnt item. Keep smeltable ores, food outside range, and food whose output is rejected by Forge.
+- [x] Add Circle Magic pages with the offerings, site and optional Waystone for the appropriate volcano recipes, and the two cooking burn rates. Refund cooking ingredients when there is no eligible food after the powered rite's altar payment.
+- [x] In the muted survival client, drop a stack of 48 Beef and cast the powered cooking rite to produce 45 Steak and three Charcoal. Confirm that a worn sword cannot start the portable volcano and that a dry location returns the other offerings and discharged stone.
+- [x] Save the portable volcano at stage ten and portable cooking after two offerings in the same packaged world. After the headless restart, verify a lava source at the summit, an open shaft, the four diamonds in the preserved chest, and the nearby bedrock. Portable cooking converts its stack of 64 Potatoes into 56 Baked Potatoes and eight Charcoal and leaves one discharged stone.
+- [x] Run Java 17 data generation, JAR reobfuscation and all nine new Forge GameTests. The cases cover both burn rates, spawn cancellation, recipe matching, dry refunds, reloads, and legacy volcano migration. The latest broad run passed 497 of 498. The older Death summoning case passed in a separate batch alongside the nine new cases and the legacy offering return check.
+
 ## Queued Circle Rites (2026-11-21)
 
 - [x] Match compatible recipes in their original registration order and reserve their dropped stacks and Grassper offerings during activation. Spend the offerings one rite at a time. A failed cast returns its staged offerings and advances the queue.

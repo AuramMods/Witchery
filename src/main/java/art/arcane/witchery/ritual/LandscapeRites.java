@@ -93,7 +93,7 @@ public final class LandscapeRites {
                            @Nullable EarthRites.Fissure fissure, boolean followsHeart) {
         public int interval() {
             return switch (action) {
-                case RAISE_VOLCANO -> 15;
+                case RAISE_VOLCANO, RAISE_PORTABLE_VOLCANO -> 15;
                 case ICE_SHELL, RAISE_EARTH, RAISE_EARTH_MEDIUM, RAISE_EARTH_LARGE, FERTILITY -> 5;
                 case CALL_BEASTS -> 60;
                 default -> 20;
@@ -102,7 +102,7 @@ public final class LandscapeRites {
 
         public int lastStage(int coven) {
             return switch (action) {
-                case RAISE_VOLCANO -> 2 * volcanoHeight(coven);
+                case RAISE_VOLCANO, RAISE_PORTABLE_VOLCANO -> 2 * volcanoHeight(coven);
                 case ICE_SHELL -> IceShell.radius(coven) - 4;
                 case CLIMATE_CHANGE -> ClimateChange.CAST_STAGE;
                 case PART_EARTH -> EarthRites.FISSURE_PULSES;
@@ -187,7 +187,7 @@ public final class LandscapeRites {
             case FORESTATION -> {
                 if (stage < progress.lastStage(coven)) forestPulse(level, progress.target(), progress.species(), coven, caster);
             }
-            case RAISE_VOLCANO -> volcanoPulse(level, heart, progress.target(), stage, coven, caster);
+            case RAISE_VOLCANO, RAISE_PORTABLE_VOLCANO -> volcanoPulse(level, heart, progress.target(), stage, coven, caster);
             case ICE_SHELL -> IceShell.pulse(level, progress.target(), stage, coven, caster);
             case CLIMATE_CHANGE -> {
                 if (!ClimateChange.pulse(level, progress.target(), stage, coven, caster)) return null;

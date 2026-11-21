@@ -1,0 +1,11 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphinfernal"}],
+  "sacrifices": [
+    {"item": "witchery:charged_attuned_stone"},
+    {"item": "minecraft:blaze_rod"},
+    {"item": "witchery:wood_ash"},
+    {"item": "minecraft:blaze_powder"}
+  ],
+  "action": "cook_food_portable"
+}

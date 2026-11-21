@@ -1,0 +1,11 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphinfernal"}],
+  "sacrifices": [
+    {"item": "minecraft:blaze_rod"},
+    {"item": "witchery:wood_ash"},
+    {"item": "minecraft:coal"}
+  ],
+  "power": 1000,
+  "action": "cook_food"
+}

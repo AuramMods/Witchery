@@ -30,6 +30,7 @@ import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.ritual.FetishBinding;
 import art.arcane.witchery.ritual.ClimateChange;
+import art.arcane.witchery.ritual.CookingRite;
 import art.arcane.witchery.ritual.EarthRites;
 import art.arcane.witchery.ritual.Banishment;
 import art.arcane.witchery.ritual.GlyphicTransformation;
@@ -231,7 +232,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (rite.power() > 0) {
             altar = protectionKind != null || action == ItemRiteRecipe.Action.BANISH_DEMON || newSummoning
                     || action == ItemRiteRecipe.Action.FERTILITY || action == ItemRiteRecipe.Action.CALL_BEASTS
-                    || action.directedCurse() != null
+                    || action.directedCurse() != null || action.isVolcano() || action.cooksFood()
                     ? AltarPower.nearest(level, pos, ProtectionRites.ALTAR_RANGE) : AltarPower.nearest(level, pos);
         }
         boolean missingPower = rite.power() > 0 && (altar == null || altar.power() < rite.power());
@@ -414,6 +415,10 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             return;
         }
         if (action == ItemRiteRecipe.Action.BANISH_DEMON) Banishment.perform(level, pos);
+        if (action.cooksFood() && !CookingRite.cook(level, pos, action == ItemRiteRecipe.Action.COOK_FOOD_PORTABLE)) {
+            abort(level, "message.witchery.rite.no_food_to_cook");
+            return;
+        }
         if (protectionKind != null && !prepareProtection(level, rite, protectionKind, pos)) return;
         LandscapeRites.Progress landscape = null;
         if (rite.action().usesLandscapeUpkeep()) {
@@ -584,7 +589,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 abort(level, "message.witchery.rite.missing_ingredient");
                 return null;
             }
-        } else if (rite.action() == ItemRiteRecipe.Action.RAISE_VOLCANO) {
+        } else if (rite.action().isVolcano()) {
             if (!LandscapeRites.hasLavaBelow(level, target)) {
                 abort(level, "message.witchery.rite.missing_lava");
                 return null;
@@ -838,6 +843,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             } else {
                 LandscapeRites.Species species = LandscapeRites.Species.forLegacyRite(rite);
                 ItemRiteRecipe.Action action = switch (rite) {
+                    case 13 -> ItemRiteRecipe.Action.RAISE_PORTABLE_VOLCANO;
                     case 19 -> ItemRiteRecipe.Action.PART_EARTH;
                     case 20 -> ItemRiteRecipe.Action.RAISE_EARTH;
                     case 35, 36 -> ItemRiteRecipe.Action.FERTILITY;
@@ -862,6 +868,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                     case CLIMATE_CHANGE -> "rite_of_climate_change";
                     case ICE_SHELL -> "rite_of_ice_shell";
                     case RAISE_VOLCANO -> "rite_of_raising_a_volcano";
+                    case RAISE_PORTABLE_VOLCANO -> "rite_of_raising_a_volcano_portable";
                     case PART_EARTH -> "rite_of_broken_earth";
                     case RAISE_EARTH -> "rite_of_moving_earth";
                     case RAISE_EARTH_MEDIUM -> "rite_of_moving_earth_medium";

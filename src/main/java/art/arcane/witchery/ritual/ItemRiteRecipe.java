@@ -110,7 +110,10 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         CURSE_SINKING(DirectedCurse.SINKING, true),
         CURE_SINKING(DirectedCurse.SINKING, false),
         CURSE_OVERHEATING(DirectedCurse.OVERHEATING, true),
-        CURE_OVERHEATING(DirectedCurse.OVERHEATING, false);
+        CURE_OVERHEATING(DirectedCurse.OVERHEATING, false),
+        RAISE_PORTABLE_VOLCANO,
+        COOK_FOOD,
+        COOK_FOOD_PORTABLE;
 
         @Nullable private final DirectedCurse directedCurse;
         private final boolean inflictsDirectedCurse;
@@ -141,12 +144,20 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         }
 
         public boolean usesLandscapeUpkeep() {
-            return usesWaystoneTarget() || this == ICE_SHELL || this == CLIMATE_CHANGE || this == PART_EARTH
+            return usesWaystoneTarget() || this == RAISE_PORTABLE_VOLCANO || this == ICE_SHELL || this == CLIMATE_CHANGE || this == PART_EARTH
                     || raisedEarthRadius() > 0 || this == FERTILITY || this == NATURES_POWER || this == CALL_BEASTS;
         }
 
         public boolean usesWaystoneTarget() {
             return this == FORESTATION || this == RAISE_VOLCANO || this == RAISE_EARTH;
+        }
+
+        public boolean isVolcano() {
+            return this == RAISE_VOLCANO || this == RAISE_PORTABLE_VOLCANO;
+        }
+
+        public boolean cooksFood() {
+            return this == COOK_FOOD || this == COOK_FOOD_PORTABLE;
         }
 
         public int raisedEarthRadius() {
@@ -219,6 +230,7 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
     @Nullable
     public String startFailure(ServerLevel level) {
         if (level.dimension().equals(WitcheryDimensions.DREAM)) {
+            if (action.cooksFood()) return "message.witchery.rite.cooking_dream";
             if (action.directedCurse() != null) return "message.witchery.rite.directed_curse_dream";
             if (action == Action.CALL_BEASTS) return "message.witchery.rite.call_beasts_dream";
             if (action.usesLandscapeUpkeep()) return "message.witchery.rite.landscape_dream";
@@ -280,7 +292,7 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         } else if (action == Action.BIND_SPECTRAL_STONE) {
             items.removeIf(offering -> offering.stack().getItem() instanceof SpectralStoneItem
                     && SpectralStoneItem.typeId(offering.stack()) != 0);
-        } else if (action == Action.RAISE_VOLCANO) {
+        } else if (action.isVolcano()) {
             items.removeIf(offering -> offering.stack().is(Items.GOLDEN_SWORD) && offering.stack().isDamaged());
         } else if (action == Action.ICE_SHELL) {
             items.removeIf(offering -> offering.stack().is(Items.DIAMOND_SWORD) && offering.stack().isDamaged());
@@ -457,6 +469,9 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 case "glyphic_transformation" -> Action.GLYPHIC_TRANSFORMATION;
                 case "forestation" -> Action.FORESTATION;
                 case "raise_volcano" -> Action.RAISE_VOLCANO;
+                case "raise_portable_volcano" -> Action.RAISE_PORTABLE_VOLCANO;
+                case "cook_food" -> Action.COOK_FOOD;
+                case "cook_food_portable" -> Action.COOK_FOOD_PORTABLE;
                 case "part_earth" -> Action.PART_EARTH;
                 case "raise_earth" -> Action.RAISE_EARTH;
                 case "raise_earth_medium" -> Action.RAISE_EARTH_MEDIUM;

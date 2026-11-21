@@ -1,0 +1,11 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphinfernal"}],
+  "sacrifices": [
+    {"item": "minecraft:stone"},
+    {"item": "minecraft:magma_cream"},
+    {"item": "minecraft:golden_sword"},
+    {"item": "witchery:charged_attuned_stone"}
+  ],
+  "action": "raise_portable_volcano"
+}
