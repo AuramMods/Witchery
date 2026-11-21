@@ -423,6 +423,14 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - The villager courtship diagnostic observed two pending goals finish one tick apart. Forge ticked the second goal after the first set both parents' age cooldowns. Rechecking the parents at birth fixed the duplicate. All nine focused tests passed. The packaged server produced one child for two dosed parents and none when only one had the effect. The saved counts matched after restart.
 - The broad suite passed 638 of 640 with the courtship and wood changes and the revised aura fixture. The two failures were the witch rite returning a damaged Arthana and the portable eclipse at night.
 
+### Packaged Legacy World Import (2026-11-21)
+
+- A packaged Forge 47.4.10 server with `-Dwitchery.importLegacyWorld=true --forceUpgrade` captured 121 block and 217 item IDs from the 0.24.1 save before `level.dat` was rewritten. It upgraded the 1,248-chunk copy. The compressed registry is saved as `witchery-legacy-ids.dat` and remains available to later logins.
+- At data version 1493 the chunk hook reconstructs oven and witchwood states from the old `Blocks`, `Add`, and `Data` arrays. The real world fixture retained the south-facing oven and clay jars, active oven fuel, alder planks and log axis, persistent hawthorn leaves, alder sapling stage and the alder stair's facing and half. The vanilla chest and its four stacks survived, including Witchery variants, a custom tag, and vanilla charcoal. Vanilla birch remained at its original location.
+- A synthetic dedicated player file using the real numeric table logged in with Arthana damage 13, clay jars with a nested Death Protection Poppet and custom tag, vanilla charcoal, and hawthorn planks in the Ender Chest. The packaged client used master volume zero in a background Xvfb session.
+- The ordinary packaged restart preserved the south-facing oven and its jar stack, the alder and birch planks, the chest, and all checked player inventory data. All 26 focused Forge GameTests passed in a fresh world. The packaged JAR SHA-256 is `d2b75200df35ca57a58d399dfeaa5dd14d593ae9059333c860e53e32624e3c01`.
+- This workflow uses disposable copies. The remaining migration includes unsupported terrain and block entities, entity data, integrated `level.dat` player records, and legacy dimension folders.
+
 ### Auram Armor Compatibility (2026-11-21)
 
 - The muted copy with Evolved Mekanism 1.2.1-fix4 reached a conflict between the Witch Hunter armor redirect and Apothic Attributes 1.3.7. The fix captures the armor bonus before the `getArmorValue` call, consumes it as a modification of the float armor argument, and keeps the target calculation available for Apothic Attributes. A scratch `ModifyArgs` build had failed on a minimal Forge server because its generated argument class could not load.
@@ -432,6 +440,7 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Evolved Mekanism 1.3.0-fix3 passed QIO initialization in the isolated Auram copy. Its new Curios packet redirect conflicts with Mekanism Curios 1.2.1 during Mekanism setup. Disabling only that addon in the test copy reached texture loading. Docker emitted an `oom` event and the process exited 137 at its 6 GiB limit. A 9 GiB retry initialized the No Output audio device and was killed creating the 16,384 by 16,384 block atlas with four mip levels. The next isolated launch uses zero mip levels, a 6 GiB Java heap, and a 10 GiB container limit. [Evolved Mekanism 1.3.0-fix3 notes](https://www.curseforge.com/minecraft/mc-mods/evolved-mekanism/files/9685752)
 - The pack's resource reload found the crossbow `random.click` and `random.wind_up` recordings missing. Both OGGs exist in the supplied legacy assets. A direct check of the modern sound definitions found these two unresolvable Witchery files.
 - The 10 GiB retry at zero mip levels initialized OpenAL on No Output and passed the full block atlas. It created smaller atlases and was then killed by Docker during resource loading. The isolated profile had the AuramBSL shader enabled on this run. The subsequent isolated retry disables shaders and uses the new sounds and stairs JAR.
+- The muted, shader-free retry with the sounds and stairs JAR reached the 634-mod title screen. Opening the fresh-world screen reached datapack and recipe preparation, then Docker logged an out-of-memory event and exit 137. The isolated profile used a 6 GiB Java heap and 10 GiB container limit. No new world was saved.
 
 ### Witchwood Stairs and Sound Parity (2026-11-21)
 

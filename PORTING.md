@@ -1093,7 +1093,20 @@
 - [x] Import named legacy sapling, log, leaves, and plank variants through the shared Witchery inventory loader. Existing explicit wood state wins when both formats are present. The loader also retains stack count and unrelated tags.
 - [x] Resolve the real fixture's numeric items against its original per-world item table. Load those tags into a modern oven with the packaged JAR. The saved Soft Clay Jars, Death Protection Poppet, and alder plank stack kept their variants and counts through restart. The custom tag on the first jar stack also survived.
 - [x] Prove the chunk conversion approach on a test copy. A scratch script reapplied the original block and item data after the vanilla upgrade. The packaged server loaded the original south-facing oven and stack, alder plank block, and all four chest stacks at their original coordinates. All eight terrain and inventory checks passed before and after a restart.
-- [ ] Implement the reusable legacy save converter. The fixture script covered one section and two block IDs. General block palettes, vanilla inventories, entities, players, nested containers, and custom dimensions still need a supported conversion path.
+- [x] Import a copy of the original Forge world through the packaged JAR. The importer captures 121 legacy block IDs and 217 legacy item IDs before Minecraft rewrites `level.dat`. It restores supported blocks in the flattened section palette and resolves Witchery stacks before vanilla converts inventories.
+- [x] Upgrade the 1,248-chunk fixture and verify the oven's facing, remaining fuel and inventory, wood species, log axis, leaf persistence, sapling stage, and stair facing and half. The original chest retained all three Witchery stacks and vanilla charcoal. A synthetic 1.7.10 player record exercised login conversion of Arthana wear, nested item tags, charcoal, and hawthorn planks in the Ender Chest.
+- [x] Restart the packaged server without the import flag and reconnect the muted client. Recheck the oven, plank blocks, chest, and player inventories. All 26 focused GameTests passed on fresh Forge with the importer inactive.
+- [ ] Expand migration to the other Witchery blocks and subtype data, entity and block-entity state, integrated single-player data, and numeric dimension folders. Add fixtures for each before calling the migration complete.
+
+### Importing a copy of a legacy world
+
+Keep an untouched backup of the original. Place a copy in an installed Forge 47.4.10 test server and set `level-name` to the copied world's folder. Install the Witchery JAR and run from the server folder with Java 17.
+
+```sh
+java -Dwitchery.importLegacyWorld=true @user_jvm_args.txt @libraries/net/minecraftforge/forge/1.20.1-47.4.10/unix_args.txt --nogui --forceUpgrade
+```
+
+The first boot records the old IDs in `witchery-legacy-ids.dat` inside the copy. Keep that file with the save so old dedicated player files can convert when their owners log in. Subsequent boots use the normal launch command. This partial importer covers Witch's Ovens, witchwood planks, logs, leaves, saplings, and stairs, along with stacks handled by the existing inventory loader. Unsupported legacy content can be lost during conversion of the copy.
 
 ## Villager Courtship Regression (2026-11-21)
 
@@ -1108,7 +1121,8 @@
 - [x] Verify the exact JAR on clean headless Forge as well. The silvered coat reduced the same hit and retaliated. All 48 focused Forge GameTests passed, including the hunter clothing and wolf combat checks. The packaged SHA-256 is `a8e178e4dd26ccead5e0c861a61f46879b312e8659f10ec596dd711cbf3bf397`.
 - [x] Verify the final JAR passes the previous startup redirect in the muted full Auram copy. With Evolved Mekanism 1.2.1-fix4, the client reached the render thread and mod construction. Evolved Mekanism still failed with the same null `QIODriveTier` as 1.2.1-fix3. [Evolved Mekanism 1.2.1-fix4 notes](https://www.curseforge.com/minecraft/mc-mods/evolved-mekanism/files/7599591)
 - [x] Verify the isolated copy with Evolved Mekanism 1.3.0-fix3 gets through the QIO tier initialization. Setup later failed because Evolved Mekanism and Mekanism Curios 1.2.1 both redirect the same packet handler. The next diagnostic launch disabled Mekanism Curios in the isolated copy and reached texture loading before Docker reported an out-of-memory kill at its 6 GiB limit. [Evolved Mekanism 1.3.0-fix3 notes](https://www.curseforge.com/minecraft/mc-mods/evolved-mekanism/files/9685752)
-- [ ] Verify title and fresh survival on the diagnostic pack copy. A 9 GiB retry initialized OpenAL on No Output and was killed as it created the 16,384 by 16,384 block atlas with four mip levels. At 10 GiB and zero mip levels, the client finished creating that atlas and several smaller atlases. Docker reported another out-of-memory kill before the title screen. The next isolated launch disables shaders at the same memory limit.
+- [x] Reach the 634-mod Auram title screen with the stairs and sounds JAR in the muted diagnostic copy. This run kept Evolved Mekanism 1.3.0-fix3, disabled Mekanism Curios and shaders, and used zero mip levels, a 6 GiB Java heap, and a 10 GiB container limit.
+- [ ] Verify fresh survival in Auram. The diagnostic client reached world creation and Docker killed it for exceeding the memory limit during datapack and recipe loading. The attempt produced no world save.
 
 ## Witchwood Stairs and Sound Parity (2026-11-21)
 
@@ -1277,7 +1291,8 @@
 ## Auram Pack Validation (2026-11-20)
 
 - [x] Reproduce the Evolved Mekanism 1.2.1-fix3 startup crash in the matched Auram profile before adding Witchery. Both pack runs reported the null `QIODriveTier` during Evolved Mekanism construction.
-- [ ] Verify the packaged port at the Auram title screen and in fresh survival after the pack can start.
+- [x] Verify the packaged stairs and sounds milestone at the title screen in the muted diagnostic copy under the settings above.
+- [ ] Verify the supported Auram profile in fresh survival and on a dedicated server.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.
