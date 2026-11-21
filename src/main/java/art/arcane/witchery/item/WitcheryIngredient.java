@@ -135,6 +135,7 @@ public enum WitcheryIngredient {
     KOBOLDITE_DUST(148, "koboldite_dust"),
     KOBOLDITE_NUGGET(149, "koboldite_nugget"),
     KOBOLDITE_INGOT(150, "koboldite_ingot"),
+    KOBOLDITE_PENTACLE(151, "koboldite_pentacle"),
     ANOINTING_PASTE(153, "anointing_paste"),
     SUBDUED_VILLAGE_SPIRIT(154, "subdued_village_spirit"),
     SILVER_BOLT(155, "silver_bolt"),

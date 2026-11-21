@@ -51,6 +51,7 @@ public class WitcheryBlockTagsProvider extends BlockTagsProvider {
         tag(BlockTags.MINEABLE_WITH_PICKAXE).add(
                 silverVat,
                 WitcheryBlocks.getRequired("altar").get(),
+                WitcheryBlocks.getRequired("statueofworship").get(),
                 WitcheryBlocks.getRequired("distilleryidle").get(),
                 WitcheryBlocks.getRequired("distilleryburning").get(),
                 WitcheryBlocks.getRequired("leechchest").get(),

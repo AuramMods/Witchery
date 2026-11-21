@@ -23,6 +23,7 @@ import art.arcane.witchery.block.entity.KettleBlockEntity;
 import art.arcane.witchery.block.entity.LeechChestBlockEntity;
 import art.arcane.witchery.block.entity.MirrorBlockEntity;
 import art.arcane.witchery.block.entity.PlacedItemBlockEntity;
+import art.arcane.witchery.block.entity.StatueOfWorshipBlockEntity;
 import art.arcane.witchery.block.entity.PoppetShelfBlockEntity;
 import art.arcane.witchery.block.entity.RefillingChestBlockEntity;
 import art.arcane.witchery.block.entity.RiteHeartBlockEntity;
@@ -109,6 +110,9 @@ public final class WitcheryBlockEntities {
     public static final RegistryObject<BlockEntityType<PlacedItemBlockEntity>> PLACED_ITEM =
             BLOCK_ENTITIES.register("placeditem", () -> BlockEntityType.Builder.of(PlacedItemBlockEntity::new,
                     WitcheryBlocks.getRequired("placeditem").get()).build(null));
+    public static final RegistryObject<BlockEntityType<StatueOfWorshipBlockEntity>> WORSHIP_STATUE =
+            BLOCK_ENTITIES.register("statueofworship", () -> BlockEntityType.Builder.of(StatueOfWorshipBlockEntity::new,
+                    WitcheryBlocks.getRequired("statueofworship").get()).build(null));
     public static final RegistryObject<BlockEntityType<MirrorBlockEntity>> MIRROR =
             BLOCK_ENTITIES.register("mirrorblock", () -> BlockEntityType.Builder.of(WitcheryBlockEntities::createMirror,
                     WitcheryBlocks.getRequired("mirrorblock").get()).build(null));
@@ -164,6 +168,7 @@ public final class WitcheryBlockEntities {
         LEGACY_BLOCK_ENTITIES.put("demonheart", DEMON_HEART);
         LEGACY_BLOCK_ENTITIES.put("circle", CIRCLE);
         LEGACY_BLOCK_ENTITIES.put("placeditem", PLACED_ITEM);
+        LEGACY_BLOCK_ENTITIES.put("statueofworship", WORSHIP_STATUE);
         LEGACY_BLOCK_ENTITIES.put("distilleryidle", DISTILLERY);
         LEGACY_BLOCK_ENTITIES.put("distilleryburning", LEGACY_BURNING_DISTILLERY);
         LEGACY_BLOCK_ENTITIES.put("kettle", KETTLE);

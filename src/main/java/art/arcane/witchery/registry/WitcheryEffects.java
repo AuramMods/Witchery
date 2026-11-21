@@ -34,6 +34,7 @@ public final class WitcheryEffects {
     public static final RegistryObject<MobEffect> WOLFSBANE = simpleEffect("potion.wolfsbane", MobEffectCategory.NEUTRAL);
     public static final RegistryObject<MobEffect> ENDER_INHIBITION = simpleEffect("potion.enderinhibition", MobEffectCategory.HARMFUL);
     public static final RegistryObject<MobEffect> BREWING_EXPERTISE = simpleEffect("potion.brewingexpertise", MobEffectCategory.BENEFICIAL);
+    public static final RegistryObject<MobEffect> WORSHIP = simpleEffect("potion.worship", MobEffectCategory.BENEFICIAL);
     public static final RegistryObject<MobEffect> GAS_MASK = MOB_EFFECTS.register("potion.gasmask",
             () -> new MobEffect(MobEffectCategory.BENEFICIAL, legacyColor("potion.gasmask")) {
                 @Override
@@ -63,6 +64,7 @@ public final class WitcheryEffects {
         LEGACY_EFFECTS.put("potion.wolfsbane", WOLFSBANE);
         LEGACY_EFFECTS.put("potion.enderinhibition", ENDER_INHIBITION);
         LEGACY_EFFECTS.put("potion.brewingexpertise", BREWING_EXPERTISE);
+        LEGACY_EFFECTS.put("potion.worship", WORSHIP);
         LEGACY_EFFECTS.put("potion.gasmask", GAS_MASK);
         LEGACY_EFFECTS.put("potion.mortalcoil", MORTAL_COIL);
         LEGACY_EFFECTS.put("potion.sinking", SINKING);

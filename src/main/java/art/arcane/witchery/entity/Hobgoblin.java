@@ -63,11 +63,15 @@ public final class Hobgoblin extends AbstractVillager {
             SynchedEntityData.defineId(Hobgoblin.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> WORKING =
             SynchedEntityData.defineId(Hobgoblin.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> WORSHIPPING =
+            SynchedEntityData.defineId(Hobgoblin.class, EntityDataSerializers.BOOLEAN);
 
     private int riches;
     private int restockTicks;
     private boolean preventDespawn;
     private boolean hauling;
+    private HobgoblinWorshipGoal worship;
+    private HobgoblinMateGoal mating;
 
     public Hobgoblin(EntityType<? extends Hobgoblin> type, Level level) {
         super(type, level);
@@ -90,6 +94,7 @@ public final class Hobgoblin extends AbstractVillager {
         super.defineSynchedData();
         entityData.define(PROFESSION, 0);
         entityData.define(WORKING, false);
+        entityData.define(WORSHIPPING, false);
     }
 
     public int profession() {
@@ -104,13 +109,29 @@ public final class Hobgoblin extends AbstractVillager {
         entityData.set(WORKING, working);
     }
 
+    public boolean isWorshipping() {
+        return entityData.get(WORSHIPPING);
+    }
+
+    void setWorshipping(boolean worshipping) {
+        entityData.set(WORSHIPPING, worshipping);
+    }
+
+    public void offerWorship(BlockPos statue) {
+        if (worship != null) worship.offer(statue);
+    }
+
+    HobgoblinMateGoal mateGoal() {
+        return mating;
+    }
+
     void setHauling(boolean hauling) {
         this.hauling = hauling;
     }
 
     @Override
     protected boolean shouldStayCloseToLeashHolder() {
-        return !isWorking() && !hauling;
+        return !isWorking() && !hauling && !isWorshipping();
     }
 
     @Override
@@ -124,6 +145,8 @@ public final class Hobgoblin extends AbstractVillager {
     @Override
     protected void registerGoals() {
         goalSelector.addGoal(0, new FloatGoal(this));
+        worship = new HobgoblinWorshipGoal(this);
+        goalSelector.addGoal(1, worship);
         goalSelector.addGoal(1, new TradeWithPlayerGoal(this));
         goalSelector.addGoal(1, new LookAtTradingPlayerGoal(this));
         goalSelector.addGoal(2, new HobgoblinHaulGoal(this));
@@ -134,6 +157,8 @@ public final class Hobgoblin extends AbstractVillager {
                 guard -> !isLeashed() && hasRaidingParty()));
         goalSelector.addGoal(4, new MeleeAttackGoal(this, 1, true));
         goalSelector.addGoal(6, new OpenDoorGoal(this, true));
+        mating = new HobgoblinMateGoal(this);
+        goalSelector.addGoal(7, mating);
         goalSelector.addGoal(8, new WaterAvoidingRandomStrollGoal(this, 0.6));
         goalSelector.addGoal(9, new LookAtPlayerGoal(this, Player.class, 3));
         goalSelector.addGoal(10, new RandomLookAroundGoal(this));
@@ -173,7 +198,7 @@ public final class Hobgoblin extends AbstractVillager {
     @Override
     protected InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (hand != InteractionHand.MAIN_HAND || !isAlive() || isTrading() || isBaby()
-                || isLeashed() || player.isShiftKeyDown()) return super.mobInteract(player, hand);
+                || isLeashed() || isWorshipping() || player.isShiftKeyDown()) return super.mobInteract(player, hand);
         if (!level().isClientSide && nearVillage() && !getOffers().isEmpty()) {
             setTradingPlayer(player);
             openTradingScreen(player, getDisplayName(), 1);
@@ -208,7 +233,8 @@ public final class Hobgoblin extends AbstractVillager {
 
     @Override
     public boolean removeWhenFarAway(double distanceSquared) {
-        return !WitcheryServerConfig.HOBGOBLIN_DESPAWN_BLOCK.get() && !preventDespawn && !isLeashed() && !nearVillage();
+        return !WitcheryServerConfig.HOBGOBLIN_DESPAWN_BLOCK.get() && !preventDespawn && !isLeashed()
+                && !isWorshipping() && !nearVillage();
     }
 
     @Override
@@ -273,6 +299,18 @@ public final class Hobgoblin extends AbstractVillager {
     }
 
     @Override
+    public void handleEntityEvent(byte event) {
+        if (event != 12) {
+            super.handleEntityEvent(event);
+            return;
+        }
+        for (int i = 0; i < 5; i++) {
+            level().addParticle(net.minecraft.core.particles.ParticleTypes.HEART, getRandomX(1),
+                    getRandomY() + 0.4, getRandomZ(1), 0, 0, 0);
+        }
+    }
+
+    @Override
     @Nullable
     public Hobgoblin getBreedOffspring(ServerLevel level, AgeableMob mate) {
         Hobgoblin child = WitcheryEntities.GOBLIN.get().create(level);
@@ -287,6 +325,7 @@ public final class Hobgoblin extends AbstractVillager {
         tag.putInt("Riches", riches);
         tag.putInt("RestockTicks", restockTicks);
         tag.putBoolean("PreventDespawn", preventDespawn);
+        if (worship != null) worship.save(tag);
     }
 
     @Override
@@ -296,6 +335,7 @@ public final class Hobgoblin extends AbstractVillager {
         riches = Math.max(0, tag.getInt("Riches"));
         restockTicks = Mth.clamp(tag.getInt("RestockTicks"), 0, RESTOCK_DELAY);
         preventDespawn = tag.getBoolean("PreventDespawn");
+        if (worship != null) worship.load(tag);
         if (tag.contains("Offers", Tag.TAG_COMPOUND)) {
             CompoundTag migrated = tag.getCompound("Offers").copy();
             for (Tag entry : migrated.getList("Recipes", Tag.TAG_COMPOUND)) {

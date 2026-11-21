@@ -692,7 +692,7 @@ Variant 156 consumes one flower when the tester targets a living entity within t
 | 148 | `kobolditedust` → `witchery:koboldite_dust` |
 | 149 | `kobolditenugget` → `witchery:koboldite_nugget` |
 | 150 | `kobolditeingot` → `witchery:koboldite_ingot` |
-| 151 | `pentacle` |
+| 151 | `pentacle` → `witchery:koboldite_pentacle` |
 | 152 | `doorIce` |
 | 153 | `annointingPaste` |
 | 154 | `subduedSpiritVillage` → `witchery:subdued_village_spirit` |
@@ -1046,6 +1046,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 96 | 28 | `witchery.rite.summonreflection` |
 
 - Rites 6 and 7 are `witchery:rite_of_transposition_creature` and `witchery:rite_of_transposition_ores`. They use medium and large Otherwhere circles, respectively. The protocol 55 item-rite actions retain the required sacrifices and altar power. An active ore rite migrates legacy `Rituals`, `RitualStages` and `RitualCovens` and saves the completed layer as `OreDepth`.
+- Rite 90 is `witchery:rite_of_binding_a_worship_statue`. It uses the small white circle and 4,000 altar power. The bound item keeps `WITCBoundPlayer` and adds the player UUID. The placed `witchery:statueofworship` block entity accepts the original `Owner` string and carries it back onto drops. Protocol 67 adds the recipe action and the Hobgoblin worship pose.
 - The Scarecrow, Trent Effigy and Witch's Ladder retain their block entity IDs. The legacy `EffectTypeID` and item `WITCSpiritEffect` identify the active spirit enhancement. Effect 1 applies to carried Voodoo Protection against a forced summon and Death Protection against powered bolts within 16 blocks. Effects 2 through 5 drive Sentinel, Screamer, Twister and Ghost Walker using the alarm's Taglock list. Effect 6 is the hidden Death encounter, checked last. It consumes five of each spectral undead species and creates no bound fetish.
 - Rite 82 uses `witchery:rite_of_necromancy_spectral_stone`. It consumes the Necromantic Stone and produces one blank `witchery:spectralstone`. Protocol 56 carries the explicit `consume_necromantic_stone` field and the Spirit's synchronized color.
 - Rite 67 uses `witchery:rite_of_glyphic_transformation`. It consumes Gypsum, an Arthana, and 1,000 altar power. The first color of fresh chalk among nearby drops selects the target color. The number of sticks of that color selects the ring size and one chalk is consumed. Protocol 62 carries the new action.

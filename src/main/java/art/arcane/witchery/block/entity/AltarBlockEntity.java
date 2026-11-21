@@ -3,6 +3,7 @@ package art.arcane.witchery.block.entity;
 import art.arcane.witchery.block.AltarBlock;
 import art.arcane.witchery.block.ChaliceBlock;
 import art.arcane.witchery.block.PlacedItemBlock;
+import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.power.AltarNature;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryBlocks;
@@ -88,6 +89,7 @@ public final class AltarBlockEntity extends BlockEntity {
         int chaliceBonus = 0;
         boolean infinityEgg = false;
         boolean arthana = false;
+        boolean pentacle = false;
         for (BlockPos part : structure) {
             BlockPos artifactPos = part.above();
             BlockState artifact = level.getBlockState(artifactPos);
@@ -114,13 +116,13 @@ public final class AltarBlockEntity extends BlockEntity {
             } else if (artifact.is(WitcheryBlocks.getRequired("infinityegg").get())) {
                 infinityEgg = true;
             } else if (artifact.getBlock() instanceof PlacedItemBlock
-                    && level.getBlockEntity(artifactPos) instanceof PlacedItemBlockEntity placed
-                    && placed.stack().is(WitcheryItems.getRequired("arthana").get())) {
-                arthana = true;
+                    && level.getBlockEntity(artifactPos) instanceof PlacedItemBlockEntity placed) {
+                arthana |= placed.stack().is(WitcheryItems.getRequired("arthana").get());
+                pentacle |= placed.stack().is(WitcheryIngredient.KOBOLDITE_PENTACLE.item());
             }
         }
         powerScale = (1 + skullBonus + chaliceBonus) * (infinityEgg ? 10 : 1);
-        recharge = (1 + skullBonus + candleBonus) * (infinityEgg ? 10 : 1);
+        recharge = (1 + skullBonus + candleBonus) * (pentacle ? 2 : 1) * (infinityEgg ? 10 : 1);
         range = arthana ? MAX_RANGE : BASE_RANGE;
     }
 

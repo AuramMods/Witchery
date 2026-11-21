@@ -77,7 +77,7 @@ public final class MysticBranchItem extends Item {
         data.remove(DRAWING);
         recordStroke(player, drawing);
         SymbolSpell spell = SymbolSpell.byId(drawing.getInt("Prepared"));
-        if (spell != null) spell.cast(server, player);
+        if (spell != null) spell.cast(server, player, spell.gestureLevel(drawing.getString("Strokes")));
         else SymbolSpell.reject(player, "unknown_symbol");
     }
 

@@ -60,6 +60,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -303,7 +304,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             }
             wolfRiteTarget = target;
         } else if (rite.action() == ItemRiteRecipe.Action.ITEM || rite.action() == ItemRiteRecipe.Action.BIND_WAYSTONE
-                || rite.action() == ItemRiteRecipe.Action.BIND_CREATURE_WAYSTONE) {
+                || rite.action() == ItemRiteRecipe.Action.BIND_CREATURE_WAYSTONE
+                || rite.action() == ItemRiteRecipe.Action.BIND_WORSHIP_STATUE) {
             ItemStack output = rite.result().copy();
             if (rite.action() == ItemRiteRecipe.Action.BIND_WAYSTONE) {
                 output = new ItemStack(WitcheryIngredient.BOUND_WAYSTONE.item());
@@ -316,6 +318,16 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 }
                 output = new ItemStack(WitcheryIngredient.CREATURE_BOUND_WAYSTONE.item());
                 TaglockItem.bindSignature(output, target);
+            } else if (rite.action() == ItemRiteRecipe.Action.BIND_WORSHIP_STATUE) {
+                Vec3 center = Vec3.atBottomCenterOf(pos);
+                var target = level.getNearestPlayer(center.x, center.y, center.z, 4,
+                        player -> !player.isSpectator() && player.getY() >= pos.getY() && player.getY() <= pos.getY() + 1);
+                if (!(target instanceof ServerPlayer owner)) {
+                    abort(level, "message.witchery.rite.no_nearby_player");
+                    return;
+                }
+                output = new ItemStack(WitcheryBlocks.getRequired("statueofworship").get());
+                StatueOfWorshipBlockEntity.bindItem(output, owner);
             }
             ItemEntity drop = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5, output, 0, 0.3, 0);
             drop.setDefaultPickUpDelay();

@@ -39,6 +39,7 @@ import art.arcane.witchery.block.SpiritPortalBlock;
 import art.arcane.witchery.block.SunlightBlock;
 import art.arcane.witchery.block.TormentPortalBlock;
 import art.arcane.witchery.block.PlacedItemBlock;
+import art.arcane.witchery.block.StatueOfWorshipBlock;
 import art.arcane.witchery.block.RitualGlyphBlock;
 import art.arcane.witchery.block.RiteHeartBlock;
 import art.arcane.witchery.block.WitchCrop;
@@ -101,7 +102,6 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_FLOWER_LOW = Block.box(1.6D, 0.0D, 1.6D, 14.4D, 6.4D, 14.4D);
     private static final VoxelShape SHAPE_PAD_FLAT = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 0.5D, 16.0D);
     private static final VoxelShape SHAPE_FUNNEL = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
-    private static final VoxelShape SHAPE_STATUE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 22.0D, 14.0D);
     private static final VoxelShape SHAPE_SKULL = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 8.0D, 12.0D);
     private static final VoxelShape SHAPE_GLOW_GLOBE = Block.box(6.4D, 6.4D, 6.4D, 9.6D, 9.6D, 9.6D);
     private static final VoxelShape SHAPE_INFINITY_EGG = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
@@ -189,8 +189,7 @@ public final class WitcheryBlocks {
             case "fumefunnel", "filteredfumefunnel" ->
                     new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion(), SHAPE_FUNNEL, true);
             case "coffinblock" -> new CoffinBlock();
-            case "statueofworship" ->
-                    new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion(), SHAPE_STATUE, true);
+            case "statueofworship" -> new StatueOfWorshipBlock();
             case "refillingchest" -> new RefillingChestBlock();
             case "leechchest" -> new LeechChestBlock();
             case "stairswoodrowan", "stairswoodalder", "stairswoodhawthorn" ->

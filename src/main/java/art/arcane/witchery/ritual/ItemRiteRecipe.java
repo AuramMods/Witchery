@@ -74,7 +74,8 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         FORESTATION,
         RAISE_VOLCANO,
         ICE_SHELL,
-        CLIMATE_CHANGE;
+        CLIMATE_CHANGE,
+        BIND_WORSHIP_STATUE;
 
         public boolean shapesLandscape() {
             return usesWaystoneTarget() || this == ICE_SHELL || this == CLIMATE_CHANGE;
@@ -297,6 +298,7 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 case "transpose_ores" -> Action.TRANSPOSE_ORES;
                 case "bind_spectral_stone" -> Action.BIND_SPECTRAL_STONE;
                 case "bind_fetish" -> Action.BIND_FETISH;
+                case "bind_worship_statue" -> Action.BIND_WORSHIP_STATUE;
                 default -> throw new JsonSyntaxException("Unknown rite action for " + id);
             };
             ItemStack result = action == Action.ITEM

@@ -404,6 +404,7 @@ public final class BrewMixture {
         modifier(entries, "witchery:diamond_vapour", 150, Modifier.CAPACITY, 2, 6, 0);
         modifier(entries, "diamond", 150, Modifier.CAPACITY, 2, 8, -2);
         modifier(entries, "nether_star", 150, Modifier.CAPACITY, 4, 10, 0);
+        modifier(entries, "witchery:koboldite_pentacle", 1000, Modifier.CAPACITY, 6, 16, 0);
         modifier(entries, "glowstone_dust", 50, Modifier.STRENGTH, 1, 1, 0);
         modifier(entries, "blaze_rod", 100, Modifier.STRENGTH, 1, 2, 0);
         modifier(entries, "witchery:charged_attuned_stone", 150, Modifier.STRENGTH, 1, 3, 0);

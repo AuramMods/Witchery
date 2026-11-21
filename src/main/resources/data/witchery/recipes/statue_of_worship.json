@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["SIS", " S ", "S S"],
+  "key": {
+    "S": {"item": "minecraft:stone"},
+    "I": {"item": "witchery:koboldite_ingot"}
+  },
+  "result": {"item": "witchery:statueofworship"}
+}

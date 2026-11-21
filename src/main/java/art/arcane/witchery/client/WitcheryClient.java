@@ -57,6 +57,7 @@ import art.arcane.witchery.client.renderer.BroomRenderer;
 import art.arcane.witchery.client.renderer.DarkMarkRenderer;
 import art.arcane.witchery.client.renderer.CovenWitchRenderer;
 import art.arcane.witchery.client.renderer.HobgoblinRenderer;
+import art.arcane.witchery.client.renderer.StatueOfWorshipRenderer;
 import art.arcane.witchery.client.renderer.CoffinRenderer;
 import art.arcane.witchery.client.renderer.CrystalBallRenderer;
 import art.arcane.witchery.client.renderer.DemonRenderer;
@@ -196,6 +197,7 @@ public final class WitcheryClient {
         event.registerLayerDefinition(CrystalBallRenderer.LAYER, CrystalBallRenderer::layer);
         event.registerLayerDefinition(ImpModel.LAYER, ImpModel::layer);
         event.registerLayerDefinition(HobgoblinModel.LAYER, HobgoblinModel::layer);
+        event.registerLayerDefinition(StatueOfWorshipRenderer.STONE_LAYER, StatueOfWorshipRenderer::layer);
         event.registerLayerDefinition(DarkMarkModel.LAYER, DarkMarkModel::layer);
         event.registerLayerDefinition(LordOfTormentModel.LAYER, LordOfTormentModel::layer);
         event.registerLayerDefinition(GrotesqueLayer.LAYER, GrotesqueLayer::layer);
@@ -298,6 +300,7 @@ public final class WitcheryClient {
         event.registerBlockEntityRenderer(WitcheryBlockEntities.SPINNING_WHEEL.get(), SpinningWheelRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.WOLF_HEAD.get(), WolfHeadRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.WOLF_ALTAR.get(), WolfAltarRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.WORSHIP_STATUE.get(), StatueOfWorshipRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.HUNTING_TRAP.get(), HuntingTrapRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.PLACED_ITEM.get(), PlacedItemRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.GRASSPER.get(), GrassperRenderer::new);

@@ -151,7 +151,7 @@
 - [x] The muted client drew and released Carnosa Diem, Ignianima and Morsmordre. The player's health fell from 20 to 18 and its charge reached 199 after Carnosa Diem. Ignianima lowered a pig's health from 10 to 7 and cost two charge. Morsmordre summoned a Dark Mark and cost 20 charge.
 - [x] The muted client rendered the Dark Mark's original model and smoke. Tormentum moved a second survival client to a maze floor, removed the nearby pig, and spent 25 charge. Repeating the gesture during the cooldown preserved charge. The dedicated server saved the original `tormentumLastUse` field, remaining charge and the second player's Torment dimension.
 - [x] Java 17 data generation and reobfuscation succeeded on Forge 47.4.10. All 46 required Forge GameTests passed, including the long symbol variants, unknown spell rejection, Dark Mark lifespan, and Tormentum's impact against creatures and charge cooldown.
-- [ ] Restore the remaining symbols, enhanced casting with Worship, and the in-game symbol book.
+- [ ] Restore the remaining symbols and their enhanced gestures, and the in-game symbol book.
 
 ## Light and Otherwhere Infusions (2026-11-20)
 
@@ -552,7 +552,17 @@
 - [x] Restore Koboldite Dust, Nuggets, Ingots, and the Koboldite Pickaxe recipe. Named legacy offer saves migrate the three ingredient metadata values. Refiners unlock higher offers after the player completes the latest trade and closes the menu.
 - [x] Complete all three refining trades in the muted survival client and craft a Koboldite Pickaxe with the three traded ingots. The fixture moved the hut resident near a villager's claimed bed and supplied the lead, starting pickaxe, ores, trade inputs, and other crafting materials. The craft returned two buckets.
 - [x] Restart again and verify the same resident UUID, profession, three refining use counts, six stored Raw Iron, and the generated hut door. Java 17 data generation, JAR reobfuscation, and all 353 required Forge GameTests passed.
-- [ ] Restore Hobgoblin breeding, worship, the two goblin gods, and the original configurable spawn rates.
+
+## Hobgoblin Worship and Breeding (2026-11-20)
+
+- [x] Restore the Statue of the Hobgoblin Patron recipe, the small white-circle binding rite, and the original player-skin and stone rendering. The muted survival client crafted an unbound statue, threw the four offerings, used a Seer Stone, picked up the bound result, and placed it with its owner data.
+- [x] Restore the Koboldite Pentacle recipe and metadata 151. A pentacle on the altar doubles its recharge multiplier. Adding one to a cauldron raises capacity by six at 1,000 power when the mixture has less than 16 capacity.
+- [x] Restore adult Hobgoblin courtship and a single baby with the original 300-tick courtship, 6,000-tick parent cooldown, and 24,000-tick growth time. The port uses registered village beds for capacity. A claimed home marks the occupied village.
+- [x] Restore Hobgoblin worship, its pose and saved duration, the infusion recharge at five active worshippers, and Worship at ten and fifteen. Worship lowers Leonard's Urn costs and permits enhanced Mystic Branch gestures. Confundus, Expelliarmus, Flipendo, and Impedimenta use their original gesture levels and areas.
+- [x] Verify the three thresholds in the muted survival client. Five worshippers recharged the fixture infusion from 10 to 40. The larger groups granted both Worship tiers. A nine-stroke Expelliarmus disarmed two husks, left the farther husk armed, and spent four charges.
+- [x] Mine the placed statue with an iron pickaxe after restart. The recovered item kept the patron name and UUID. The Pentacle's recharge multiplier also survived the restart.
+- [x] Pass Java 17 data generation, JAR reobfuscation, and all 357 required Forge GameTests. New cases cover restored patron data, a worshipper save, breeding, ranked disarm, and the pentacle's two functions.
+- [ ] Restore Mog and Gulg, their Nether Star summons and their chance to appear during high-tier worship. Restore the original Hobgoblin spawn configuration.
 
 ## Werewolf Hunts, Howls and Taming (2026-11-20)
 

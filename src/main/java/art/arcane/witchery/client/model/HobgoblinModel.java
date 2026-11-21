@@ -82,6 +82,9 @@ public final class HobgoblinModel extends AgeableListModel<Hobgoblin> implements
         leftArm.xRot = swing;
         rightLeg.xRot = swing * 1.4F;
         leftLeg.xRot = -swing * 1.4F;
+        body.xRot = 0;
+        head.y = body.y = 11;
+        rightLeg.z = leftLeg.z = 0.1F;
         if (!goblin.getMainHandItem().isEmpty()) rightArm.xRot = 0.5F * rightArm.xRot - Mth.PI / 10;
         if (goblin.isWorking()) {
             boolean koboldite = goblin.getMainHandItem().is(WitcheryItems.getRequired("kobolditepickaxe").get());
@@ -89,6 +92,13 @@ public final class HobgoblinModel extends AgeableListModel<Hobgoblin> implements
         }
         rightArm.xRot += Mth.sin(age * 0.067F) * 0.05F - Mth.sin(attackTime * Mth.PI) * 1.2F;
         leftArm.xRot -= Mth.sin(age * 0.067F) * 0.05F;
+        if (goblin.isWorshipping()) {
+            body.xRot = head.xRot = 0.5F;
+            rightArm.xRot -= 2.2F;
+            leftArm.xRot -= 2.2F;
+            rightLeg.z = leftLeg.z = 3;
+            head.y = body.y = 13;
+        }
         rightArm.zRot = Mth.cos(age * 0.09F) * 0.05F + 0.05F;
         leftArm.zRot = -rightArm.zRot;
     }
