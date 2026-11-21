@@ -1,5 +1,6 @@
 {
   "processors": [
-    {"processor_type": "witchery:village_bookshop"}
+    {"processor_type": "witchery:village_bookshop"},
+    {"processor_type": "witchery:village_foundation", "min_x": 1, "max_x": 6, "min_z": 1, "max_z": 6}
   ]
 }

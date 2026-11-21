@@ -5,14 +5,10 @@ import art.arcane.witchery.registry.WitcheryRegistries;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
-
-import java.util.List;
 
 public final class VillageApothecaryProcessor extends StructureProcessor {
     public static final Codec<VillageApothecaryProcessor> CODEC = Codec.unit(new VillageApothecaryProcessor());
@@ -29,14 +25,6 @@ public final class VillageApothecaryProcessor extends StructureProcessor {
         var tag = placed.nbt.copy();
         tag.put("Offers", WitcheryApothecary.residentOffers().createTag());
         return new StructureTemplate.StructureEntityInfo(placed.pos, placed.blockPos, tag);
-    }
-
-    @Override
-    public List<StructureTemplate.StructureBlockInfo> finalizeProcessing(ServerLevelAccessor level, BlockPos origin,
-            BlockPos pivot, List<StructureTemplate.StructureBlockInfo> raw,
-            List<StructureTemplate.StructureBlockInfo> placed, StructurePlaceSettings settings) {
-        if (raw.stream().noneMatch(block -> block.state().is(Blocks.CHEST))) return placed;
-        return VillageFoundation.fill(level, origin, settings, placed, 0, 8, 1, 6);
     }
 
     @Override

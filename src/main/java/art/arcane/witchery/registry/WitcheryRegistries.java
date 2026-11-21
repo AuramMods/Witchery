@@ -12,6 +12,7 @@ import art.arcane.witchery.world.SurfaceStructuresFeature;
 import art.arcane.witchery.world.VillageApothecaryProcessor;
 import art.arcane.witchery.world.TormentChunkGenerator;
 import art.arcane.witchery.world.VillageBookshopProcessor;
+import art.arcane.witchery.world.VillageFoundation;
 import art.arcane.witchery.world.WickerManFeature;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.registries.Registries;
@@ -41,6 +42,8 @@ public final class WitcheryRegistries {
             STRUCTURE_PROCESSORS.register("village_bookshop", () -> () -> VillageBookshopProcessor.CODEC);
     public static final RegistryObject<StructureProcessorType<VillageApothecaryProcessor>> APOTHECARY_PROCESSOR =
             STRUCTURE_PROCESSORS.register("village_apothecary", () -> () -> VillageApothecaryProcessor.CODEC);
+    public static final RegistryObject<StructureProcessorType<VillageFoundation>> VILLAGE_FOUNDATION =
+            STRUCTURE_PROCESSORS.register("village_foundation", () -> () -> VillageFoundation.CODEC);
 
     static {
         LOOT_MODIFIERS.register("grass_seeds", () -> GrassSeedLootModifier.CODEC);

@@ -26,6 +26,7 @@ import java.util.Optional;
 public final class WitcheryVillagePools {
     public static final ResourceLocation BOOKSHOP = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "village/bookshop");
     public static final ResourceLocation APOTHECARY = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "village/apothecary");
+    public static final ResourceLocation WITCH_HUT = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "village/witch_hut");
     private static final List<String> VILLAGE_STYLES = List.of("plains", "desert", "savanna", "snowy", "taiga");
 
     private WitcheryVillagePools() {}
@@ -37,6 +38,7 @@ public final class WitcheryVillagePools {
         var processors = registries.registryOrThrow(Registries.PROCESSOR_LIST);
         if (WitcheryServerConfig.GENERATE_BOOK_SHOPS.get()) addVillagePiece(pools, processors, BOOKSHOP, 15);
         if (WitcheryServerConfig.GENERATE_APOTHECARIES.get()) addVillagePiece(pools, processors, APOTHECARY, 15);
+        if (WitcheryServerConfig.GENERATE_WITCH_HUTS.get()) addVillagePiece(pools, processors, WITCH_HUT, 10);
     }
 
     private static void addVillagePiece(Registry<StructureTemplatePool> pools, Registry<StructureProcessorList> processors,
@@ -66,7 +68,7 @@ public final class WitcheryVillagePools {
     public static Optional<ResourceLocation> limitedBuilding(StructurePoolElement element) {
         return element instanceof SinglePoolElement single
                 ? ((SinglePoolElementAccessor) single).witchery$getTemplate().left()
-                        .filter(id -> id.equals(BOOKSHOP) || id.equals(APOTHECARY))
+                        .filter(id -> id.equals(BOOKSHOP) || id.equals(APOTHECARY) || id.equals(WITCH_HUT))
                 : Optional.empty();
     }
 }

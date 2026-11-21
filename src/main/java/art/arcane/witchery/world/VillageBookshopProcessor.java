@@ -16,7 +16,6 @@ import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
@@ -67,14 +66,6 @@ public final class VillageBookshopProcessor extends StructureProcessor {
         tag.putInt("TileY", placed.blockPos.getY());
         tag.putInt("TileZ", placed.blockPos.getZ());
         return new StructureTemplate.StructureEntityInfo(placed.pos, placed.blockPos, tag);
-    }
-
-    @Override
-    public List<StructureTemplate.StructureBlockInfo> finalizeProcessing(ServerLevelAccessor level, BlockPos origin,
-            BlockPos pivot, List<StructureTemplate.StructureBlockInfo> raw,
-            List<StructureTemplate.StructureBlockInfo> placed, StructurePlaceSettings settings) {
-        if (raw.stream().noneMatch(block -> block.state().is(Blocks.CHEST))) return placed;
-        return VillageFoundation.fill(level, origin, settings, placed, 1, 6, 1, 6);
     }
 
     private static List<WeightedEntry.Wrapper<ItemStack>> stock() {

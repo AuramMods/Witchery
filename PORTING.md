@@ -575,6 +575,14 @@
 - [x] Verify the generated merchant and chest in muted survival. The player bought 14 Dog Tongues in seven purchases and used an iron pickaxe to uncover and open the chest. The merchant restocked at its shelf. Java 17 data generation, JAR reobfuscation, and all four focused apothecary and bookshop GameTests passed.
 - [x] Restart the dedicated server and rejoin with the packaged client. Verify the same resident UUID, workstation, eight trades, restocked offer, chest inventory, and player purchase.
 
+## Village Witch Hut (2026-11-21)
+
+- [x] Restore the tall oak, birch, and spruce hut with the original cobblestone footing, oak door, pane windows, filled cauldron, Rowan log, and potted spruce sapling. Connect it to village roads and place one persistent coven witch.
+- [x] Give each inhabited village a seeded roll for a hut limit of zero or one. Eligible villages select the hut at the original weight of 10. `generateWitchHuts` controls the village hut independently of the other village pieces and the surface witch shacks.
+- [x] Generate the hut naturally in the seed-1 village at `640 816`. It appeared alongside the bookshop and apothecary. The same village generated both other buildings with huts disabled. Java 17 data generation, the reobfuscated JAR, and all six focused Forge GameTests passed.
+- [x] Open the hut door and walk inside in muted survival. Confirm the Rowan log, full cauldron and potted spruce, and speak to the naturally spawned resident. The witch introduced herself as Pixie Calamity and declined the player without a familiar.
+- [x] Restart and speak to the same resident UUID with a supplied active familiar. Accept her Zombie quest, recover the witch-bound trophy through normal combat and pickup, and give it back to recruit her. The test used supplied equipment and combat effects. The saved player coven contains Pixie Calamity with her original skin and offered quest.
+
 ## Witchery Guidebooks (2026-11-21)
 
 - [x] Restore ten readable volumes and their original crafting combinations. Eight named item IDs import the original ingredient metadata. Tagged guide stacks from the earlier bookshop remain readable and show the right cover.

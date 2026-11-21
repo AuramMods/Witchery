@@ -1,3 +1,6 @@
 {
-  "processors": [{"processor_type": "witchery:village_apothecary"}]
+  "processors": [
+    {"processor_type": "witchery:village_apothecary"},
+    {"processor_type": "witchery:village_foundation", "min_x": 0, "max_x": 8, "min_z": 1, "max_z": 6}
+  ]
 }

@@ -1,0 +1,5 @@
+{
+  "processors": [
+    {"processor_type": "witchery:village_foundation", "min_x": 0, "max_x": 3, "min_z": 1, "max_z": 5}
+  ]
+}
