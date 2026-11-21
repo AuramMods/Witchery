@@ -60,8 +60,15 @@ public class WitcheryRecipeProvider extends RecipeProvider {
         Block funnel = WitcheryBlocks.getRequired("fumefunnel").get();
         Block filteredFunnel = WitcheryBlocks.getRequired("filteredfumefunnel").get();
         Block witchLog = WitcheryBlocks.getRequired("witchlog").get();
+        Block witchPlanks = WitcheryBlocks.getRequired("witchwood").get();
         Block distillery = WitcheryBlocks.getRequired("distilleryidle").get();
         Block kettle = WitcheryBlocks.getRequired("kettle").get();
+
+        Ingredient alderPlanks = PartialNBTIngredient.of(witchPlanks.asItem(), WitchWoodType.ALDER.stack(witchPlanks).getTag());
+        Ingredient rowanPlanks = DifferenceIngredient.of(Ingredient.of(witchPlanks), CompoundIngredient.of(alderPlanks,
+                PartialNBTIngredient.of(witchPlanks.asItem(), WitchWoodType.HAWTHORN.stack(witchPlanks).getTag())));
+        door(recipeOutput, WitcheryIngredient.ROWAN_DOOR, witchPlanks, rowanPlanks);
+        door(recipeOutput, WitcheryIngredient.ALDER_DOOR, witchPlanks, alderPlanks);
 
         ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, WitcheryBlocks.getRequired("brazier").get())
                 .define('I', Items.IRON_INGOT)
@@ -475,6 +482,12 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .requires(WitcheryIngredient.CLAY_JAR.item(), 3)
                 .unlockedBy("has_odour_of_purity", has(WitcheryIngredient.ODOUR_OF_PURITY.item()))
                 .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "purified_milk_from_cake"));
+    }
+
+    private static void door(Consumer<FinishedRecipe> output, WitcheryIngredient door, Block planks, Ingredient ingredient) {
+        ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, door.item())
+                .define('#', ingredient).pattern("##").pattern("##").pattern("##")
+                .unlockedBy("has_witchwood", has(planks)).save(output);
     }
 
     private static void handBowRecipes(Consumer<FinishedRecipe> output) {

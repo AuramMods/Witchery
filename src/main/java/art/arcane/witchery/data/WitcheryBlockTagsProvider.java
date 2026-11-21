@@ -45,7 +45,8 @@ public class WitcheryBlockTagsProvider extends BlockTagsProvider {
         tag(BlockTags.BEDS).add(coffin);
         tag(BlockTags.MINEABLE_WITH_AXE).add(log, planks, coffin,
                 WitcheryBlocks.getRequired("scarecrow").get(), WitcheryBlocks.getRequired("trent").get(),
-                WitcheryBlocks.getRequired("witchsladder").get());
+                WitcheryBlocks.getRequired("witchsladder").get(), WitcheryBlocks.getRequired("rowanwooddoor").get(),
+                WitcheryBlocks.getRequired("alderwooddoor").get());
         Block silverVat = WitcheryBlocks.getRequired("silvervat").get();
         tag(BlockTags.NEEDS_STONE_TOOL).add(silverVat);
         tag(BlockTags.MINEABLE_WITH_PICKAXE).add(

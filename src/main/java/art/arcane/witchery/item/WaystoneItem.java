@@ -19,13 +19,8 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Map;
 
 public final class WaystoneItem extends Item {
-    private static final Map<Integer, ResourceKey<Level>> LEGACY_DIMENSIONS = Map.of(
-            -1, Level.NETHER, 0, Level.OVERWORLD, 1, Level.END,
-            -37, WitcheryDimensions.DREAM, -38, WitcheryDimensions.TORMENT, -39, WitcheryDimensions.MIRROR);
-
     public record Location(ResourceKey<Level> dimension, BlockPos position) {}
 
     public WaystoneItem() {
@@ -54,12 +49,8 @@ public final class WaystoneItem extends Item {
         tag.putInt("PosZ", pos.getZ());
         tag.putString("Dimension", dimension.location().toString());
         tag.putString("NameD", dimension.location().toString());
-        for (var legacy : LEGACY_DIMENSIONS.entrySet()) {
-            if (legacy.getValue().equals(dimension)) {
-                tag.putInt("PosD", legacy.getKey());
-                break;
-            }
-        }
+        Integer legacy = WitcheryDimensions.legacyId(dimension);
+        if (legacy != null) tag.putInt("PosD", legacy);
     }
 
     @Nullable
@@ -71,7 +62,7 @@ public final class WaystoneItem extends Item {
         }
         ResourceLocation id = tag.contains("Dimension", Tag.TAG_STRING) ? ResourceLocation.tryParse(tag.getString("Dimension")) : null;
         ResourceKey<Level> dimension = id != null ? ResourceKey.create(Registries.DIMENSION, id)
-                : tag.contains("PosD", Tag.TAG_ANY_NUMERIC) ? LEGACY_DIMENSIONS.get(tag.getInt("PosD")) : null;
+                : tag.contains("PosD", Tag.TAG_ANY_NUMERIC) ? WitcheryDimensions.fromLegacyId(tag.getInt("PosD")) : null;
         return dimension == null ? null : new Location(dimension,
                 new BlockPos(tag.getInt("PosX"), tag.getInt("PosY"), tag.getInt("PosZ")));
     }

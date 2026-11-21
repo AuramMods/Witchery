@@ -25,6 +25,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.level.Level;
@@ -146,10 +147,25 @@ public final class SymbolProjectile extends ThrowableProjectile {
                 }
             });
             case ATTRAHO -> pullToCaster(level, location);
+            case ACCIO -> retrieveItems(level, location);
+            case ALOHOMORA -> SymbolTerrain.toggleDoor(level, getOwner(), hit);
+            case CAVE_INIMICUM -> SymbolTerrain.reinforce(level, getOwner(), hit, effectLevel);
+            case COLLOPORTUS -> SymbolTerrain.sealDoor(level, getOwner(), hit);
+            case DEFODIO -> SymbolTerrain.excavate(level, getOwner(), hit, effectLevel);
             case AGUAMENTI -> SymbolTerrain.pourWater(level, getOwner(), hit, effectLevel);
             case INCENDIO -> SymbolTerrain.ignite(level, this, hit, effectLevel);
             case LUMOS -> SymbolTerrain.placeLight(level, getOwner(), hit);
             case CARNOSA_DIEM, LEONARD_1, LEONARD_2, LEONARD_3, LEONARD_4, METEOLOJINX_RECANTO, NOX -> { }
+        }
+    }
+
+    private void retrieveItems(ServerLevel level, Vec3 impact) {
+        var owner = getOwner();
+        if (owner == null) return;
+        double radius = effectLevel == 1 ? 0.8 : effectLevel == 2 ? 3 : 9;
+        for (ItemEntity item : level.getEntitiesOfClass(ItemEntity.class, new AABB(impact, impact).inflate(radius),
+                target -> target.distanceToSqr(impact) <= radius * radius)) {
+            item.setPos(owner.getX(), owner.getY() + 1, owner.getZ());
         }
     }
 

@@ -3,26 +3,34 @@ package art.arcane.witchery.infusion;
 import art.arcane.witchery.block.BrazierBlock;
 import art.arcane.witchery.block.KettleBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
+import art.arcane.witchery.block.WitchDoorBlock;
 import art.arcane.witchery.block.WitchesCauldronBlock;
 import art.arcane.witchery.block.entity.BrazierBlockEntity;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.DoorHingeSide;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
@@ -38,7 +46,12 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 public final class SymbolTerrain {
+    private static final TagKey<Block> DEFODIO_BLOCKS = TagKey.create(Registries.BLOCK,
+            ResourceLocation.parse("witchery:defodio_blocks"));
+
     private SymbolTerrain() {}
 
     public static void pourWater(ServerLevel level, @Nullable Entity caster, @Nullable HitResult hit, int strength) {
@@ -95,9 +108,7 @@ public final class SymbolTerrain {
                 target.setSecondsOnFire(strength);
             }
             if (hit instanceof BlockHitResult blockHit && blockHit.getDirection() == Direction.UP) {
-                BlockPos center = blockHit.getBlockPos();
-                int reach = strength - 1;
-                for (BlockPos pos : BlockPos.betweenClosed(center.offset(-reach, 0, -reach), center.offset(reach, 0, reach))) {
+                for (BlockPos pos : impactPlane(blockHit, strength)) {
                     BlockPos above = pos.above();
                     var support = level.getBlockState(pos);
                     if (!support.isAir() && level.isEmptyBlock(above) && canDestroy(level, caster, pos, support)) {
@@ -140,6 +151,120 @@ public final class SymbolTerrain {
                 place(level, caster, pos, WitcheryBlocks.getRequired("glowglobe").get().defaultBlockState(), face);
             }
         }
+    }
+
+    public static void toggleDoor(ServerLevel level, @Nullable Entity caster, @Nullable HitResult hit) {
+        if (!(hit instanceof BlockHitResult blockHit)) return;
+        BlockPos pos = blockHit.getBlockPos();
+        var state = level.getBlockState(pos);
+        if (state.getBlock() instanceof DoorBlock door && canModify(level, caster, pos, state)) {
+            door.setOpen(caster, level, state, pos, !door.isOpen(state));
+        }
+    }
+
+    public static void sealDoor(ServerLevel level, @Nullable Entity caster, @Nullable HitResult hit) {
+        if (caster != null && hit instanceof BlockHitResult blockHit) {
+            BlockPos pos = blockHit.getBlockPos();
+            var state = level.getBlockState(pos);
+            if (state.getBlock() instanceof DoorBlock) {
+                replaceDoor(level, caster, WitchDoorBlock.lowerHalf(pos, state), state.getBlock(),
+                        WitcheryBlocks.getRequired("rowanwooddoor").get(), blockHit.getDirection());
+            }
+        }
+    }
+
+    public static void reinforce(ServerLevel level, @Nullable Entity caster, @Nullable HitResult hit, int strength) {
+        if (!(hit instanceof BlockHitResult blockHit)) return;
+        for (BlockPos pos : impactPlane(blockHit, strength)) {
+            var state = level.getBlockState(pos);
+            if (caster != null && state.is(Blocks.OAK_DOOR)) {
+                replaceDoor(level, caster, WitchDoorBlock.lowerHalf(pos, state), Blocks.OAK_DOOR, Blocks.IRON_DOOR, blockHit.getDirection());
+                continue;
+            }
+            Block replacement = reinforcedBlock(state);
+            if (replacement != null && canDestroy(level, caster, pos, state)) {
+                level.setBlockAndUpdate(pos, replacement.defaultBlockState());
+            }
+        }
+    }
+
+    @Nullable
+    private static Block reinforcedBlock(BlockState state) {
+        if (state.is(Blocks.DIRT) || state.is(Blocks.COARSE_DIRT) || state.is(Blocks.PODZOL) || state.is(Blocks.GRASS_BLOCK)
+                || state.is(Blocks.MYCELIUM) || state.is(Blocks.COBBLESTONE) || state.is(BlockTags.PLANKS)
+                || state.is(WitcheryBlocks.getRequired("witchwood").get())) return Blocks.STONE;
+        if (state.is(BlockTags.STONE_BRICKS)) return Blocks.BRICKS;
+        if (state.is(BlockTags.SAND)) return Blocks.SANDSTONE;
+        if (state.is(Blocks.CLAY)) return Blocks.TERRACOTTA;
+        return null;
+    }
+
+    private static void replaceDoor(ServerLevel level, Entity caster, BlockPos base, Block original, Block replacement, Direction face) {
+        base = base.immutable();
+        BlockPos above = base.above();
+        var bottom = level.getBlockState(base);
+        var top = level.getBlockState(above);
+        if (!bottom.is(original) || bottom.getValue(DoorBlock.HALF) != DoubleBlockHalf.LOWER || !top.is(original)
+                || top.getValue(DoorBlock.HALF) != DoubleBlockHalf.UPPER || !canModify(level, caster, base, bottom)
+                || !canModify(level, caster, above, top)) return;
+
+        Direction facing = Direction.fromYRot(caster.getYRot());
+        Direction left = facing.getCounterClockWise();
+        Direction right = facing.getClockWise();
+        DoorHingeSide hinge = (level.getBlockState(base.relative(left)).is(replacement)
+                && !level.getBlockState(base.relative(right)).is(replacement))
+                || solidSides(level, base, right) > solidSides(level, base, left) ? DoorHingeSide.RIGHT : DoorHingeSide.LEFT;
+        var lower = replacement.defaultBlockState().setValue(DoorBlock.FACING, facing).setValue(DoorBlock.HINGE, hinge);
+        var upper = lower.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER);
+        if (lower.equals(bottom) && upper.equals(top)) return;
+
+        var snapshots = List.of(BlockSnapshot.create(level.dimension(), level, base), BlockSnapshot.create(level.dimension(), level, above));
+        // Write both halves before checking the placement event. Adjacent blocks see the result only after it is accepted.
+        int isolated = Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS;
+        level.setBlock(base, lower, isolated);
+        level.setBlock(above, upper, isolated);
+        if (!level.getBlockState(base).equals(lower) || !level.getBlockState(above).equals(upper)
+                || ForgeEventFactory.onMultiBlockPlace(caster, snapshots, face)) {
+            level.setBlock(base, bottom, isolated);
+            level.setBlock(above, top, isolated);
+            for (var snapshot : snapshots) snapshot.restore(true, false);
+            return;
+        }
+        level.sendBlockUpdated(base, bottom, lower, Block.UPDATE_CLIENTS);
+        level.sendBlockUpdated(above, top, upper, Block.UPDATE_CLIENTS);
+        level.updateNeighborsAt(base, replacement);
+        level.updateNeighborsAt(above, replacement);
+    }
+
+    private static int solidSides(ServerLevel level, BlockPos base, Direction side) {
+        BlockPos lower = base.relative(side);
+        BlockPos upper = lower.above();
+        return (level.getBlockState(lower).isCollisionShapeFullBlock(level, lower) ? 1 : 0)
+                + (level.getBlockState(upper).isCollisionShapeFullBlock(level, upper) ? 1 : 0);
+    }
+
+    public static void excavate(ServerLevel level, @Nullable Entity caster, @Nullable HitResult hit, int strength) {
+        if (!(hit instanceof BlockHitResult blockHit)) return;
+        for (BlockPos pos : impactPlane(blockHit, strength)) {
+            var state = level.getBlockState(pos);
+            if (!state.is(DEFODIO_BLOCKS) || !canDestroy(level, caster, pos, state)) continue;
+            var drops = Block.getDrops(state, level, pos, null, caster, ItemStack.EMPTY);
+            if (level.removeBlock(pos, false)) {
+                for (var drop : drops) {
+                    level.addFreshEntity(new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, drop));
+                }
+            }
+        }
+    }
+
+    private static Iterable<BlockPos> impactPlane(BlockHitResult hit, int strength) {
+        var axis = hit.getDirection().getAxis();
+        int reach = strength - 1;
+        int x = axis == Direction.Axis.X ? 0 : reach;
+        int y = axis == Direction.Axis.Y ? 0 : reach;
+        int z = axis == Direction.Axis.Z ? 0 : reach;
+        var center = hit.getBlockPos();
+        return BlockPos.betweenClosed(center.offset(-x, -y, -z), center.offset(x, y, z));
     }
 
     static void extinguishLights(ServerLevel level, Player caster) {

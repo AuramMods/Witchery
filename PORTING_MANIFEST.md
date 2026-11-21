@@ -282,8 +282,8 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | `STAIRS_HAWTHORN` | `witchery:stairswoodhawthorn` |
 | `WOOD_SLAB_SINGLE` | `witchery:witchwoodslab` |
 | `WOOD_SLAB_DOUBLE` | `witchery:witchwooddoubleslab` |
-| `DOOR_ROWAN` | `witchery:rowanwooddoor` |
-| `DOOR_ALDER` | `witchery:alderwooddoor` |
+| `DOOR_ROWAN` | `witchery:rowanwooddoor` (location-bound lock, key from item placement) |
+| `DOOR_ALDER` | `witchery:alderwooddoor` (emits redstone when open) |
 | `CHALICE` | `witchery:chalice` |
 | `CANDELABRA` | `witchery:candelabra` |
 | `PLACED_ITEMSTACK` | `witchery:placeditem` |
@@ -594,9 +594,9 @@ Variant 156 consumes one flower when the tester targets a living entity within t
 | 49 | `bookInfusions` → `witchery:book_brews_and_infusions` |
 | 50 | `oddPorkchopRaw` |
 | 51 | `oddPorkchopCooked` |
-| 52 | `doorRowan` |
-| 53 | `doorAlder` |
-| 54 | `doorKey` |
+| 52 | `doorRowan` → `witchery:rowanwooddoor` |
+| 53 | `doorAlder` → `witchery:alderwooddoor` |
+| 54 | `doorKey` → `witchery:door_key` |
 | 55 | `rock` → `witchery:rock` |
 | 56 | `web` → `witchery:thrown_web` |
 | 57 | `brewVines` |
@@ -625,7 +625,7 @@ Variant 156 consumes one flower when the tester targets a living entity within t
 | 81 | `bookHerbology` → `witchery:book_herbology` |
 | 82 | `entbranch` |
 | 83 | `mysticunguent` → `witchery:mystic_unguent` |
-| 84 | `doorKeyring` |
+| 84 | `doorKeyring` → `witchery:door_keyring` |
 | 85 | `brewFrogsTongue` |
 | 86 | `brewCursedLeaping` |
 | 87 | `brewHitchcock` |
@@ -942,6 +942,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 47 | `witchery.pott.attraho` |
 
 - IDs 2, 21, 22, 23, and 26 are active in `SymbolSpell`. The three projectile spells retain `EffectID` and `effectLevel` on saved `witchery:spelleffect` entities. Aguamenti and Incendio accept all original enhanced gestures. Nox and Meteolojinx Recanto take effect immediately when the gesture is released. Lumos uses the original `witchery:glowglobe` block ID and retains the earlier port's item ID for saved inventories.
+- IDs 1, 3, 5, 6, and 10 restore Accio, Alohomora, Cave Inimicum, Colloportus, and Defodio. Door keys keep `doorX`, `doorY`, `doorZ`, `doorD`, and `doorDN`, with `doorDimension` for modern dimension IDs. Rings keep `doorKeys`. Protocol 70 includes the `witchery:door_keyring` crafting serializer.
 
 ## Ritual Registry (`RiteRegistry`)
 

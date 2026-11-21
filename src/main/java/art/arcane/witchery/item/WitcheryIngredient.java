@@ -65,6 +65,9 @@ public enum WitcheryIngredient {
     BOOK_BREWS_AND_INFUSIONS(49, "book_brews_and_infusions"),
     ODD_PORKCHOP_RAW(50, "odd_porkchop_raw"),
     ODD_PORKCHOP_COOKED(51, "odd_porkchop_cooked"),
+    ROWAN_DOOR(52, "rowanwooddoor"),
+    ALDER_DOOR(53, "alderwooddoor"),
+    DOOR_KEY(54, "door_key"),
     ROCK(55, "rock"),
     WEB(56, "thrown_web"),
     BREW_OF_VINES(57, "brew_of_vines"),
@@ -90,6 +93,7 @@ public enum WitcheryIngredient {
     BOOK_HERBOLOGY(81, "book_herbology"),
     ENT_BRANCH(82, "ent_branch"),
     MYSTIC_UNGUENT(83, "mystic_unguent"),
+    DOOR_KEYRING(84, "door_keyring"),
     BREW_OF_FROGS_TONGUE(85, "brew_of_frogs_tongue"),
     BREW_OF_CURSED_LEAPING(86, "brew_of_cursed_leaping"),
     BREW_OF_HITCHCOCK(87, "brew_of_hitchcock"),
@@ -170,6 +174,13 @@ public enum WitcheryIngredient {
 
     public Item item() {
         return WitcheryItems.getRequired(path).get();
+    }
+
+    public boolean matches(ItemStack stack) {
+        if (stack.is(item())) return true;
+        var tag = stack.getTag();
+        return stack.is(WitcheryItems.getRequired("ingredient").get()) && tag != null
+                && tag.contains(LEGACY_DAMAGE_TAG, Tag.TAG_ANY_NUMERIC) && tag.getInt(LEGACY_DAMAGE_TAG) == legacyDamage;
     }
 
     /** Loads an inventory stack after upgrading the legacy Witchery subtype, when present. */

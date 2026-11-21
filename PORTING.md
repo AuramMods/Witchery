@@ -163,6 +163,18 @@
 - [x] Read Incendio's three patterns in Symbology. With supplied Worship II, the muted client released the longest gesture, spent four charges, and lit the center and corner of the five-by-five area. The first block outside the area stayed clear.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 376 required Forge GameTests. The new cases cover the legacy gesture variants, Worship ranks and cost, vessel volumes, Nether water, Incendio's area, light and loot, Forge protection, and weather.
 
+## Mystic Branch doors and excavation (2026-11-21)
+
+- [x] Restore Accio, Alohomora, Cave Inimicum, Colloportus, and Defodio under their original IDs. Their gestures and costs appear in Symbology. Accio retrieves loose items within 0.8, 3, or 9 blocks of impact. Defodio and Cave Inimicum operate on one block or on a three-by-three or five-by-five area of the struck face, depending on Worship and the gesture.
+- [x] Verify Defodio's original material classes against a running 1.7.10 Forge server and map them to a 1.20.1 block tag. Defodio drops ordinary block loot. Cave Inimicum reinforces the original materials and turns oak doors into iron doors.
+- [x] Restore both original six-plank door recipes. Rowan placement produces a key bound to the lower door's coordinates and dimension. A keyring combines two keys or adds a key to a ring, without duplicating the same binding. Alder doors emit redstone power while open. Rowan doors close when neighboring power goes away.
+- [x] Make Colloportus replace both halves with a closed Rowan door. The spell produces no key. Alohomora can operate the resulting lock. A canceled Forge replacement restores both original halves.
+- [x] In the muted survival client, craft two Rowan doors and one Alder door from supplied planks. Place them, make a keyring from the two issued keys, and open both Rowan doors with the ring in the offhand. The Alder door powered a nearby lamp.
+- [x] Cast all five spells through the held Branch in the packaged survival client. Colloportus sealed both halves, keyless use left them shut, and Alohomora opened them. Cave Inimicum converted another door to iron. Accio retrieved a dropped emerald. Defodio excavated diamond ore and left the stone behind it intact. It also excavated Perpetual Ice Slab and preserved the adjacent Packed Ice.
+- [x] Reload the ring, the sealed door's state, the reinforced iron door, and the Alder lamp after a dedicated restart. The ring still matched its two saved coordinates. Keyless harvesting removed both halves and returned 24 sticks.
+- [x] Apply the axe mining tag to Rowan and Alder. On the final packaged server, the reloaded offhand ring closed its Rowan door and axing the door returned one Rowan Door item.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 383 required Forge GameTests. The new tests cover exact plank ingredients, axe tags, legacy key dimensions, keyring deduplication, canceled key issuance and door replacement, redstone, spell planes, loot, and Accio range.
+
 ## Light and Otherwhere Infusions (2026-11-20)
 
 - [x] Restore the Fire Protection Poppet with a Poppet, two Embermoss and two Wool of Bat. The muted survival client crafted it, filled a Taglock Kit at its bed, and bound the poppet to itself. Lethal fire consumed the ward and granted three seconds of Fire Resistance. The Forge tests verify that the fire ward protects before a Death Protection Poppet.

@@ -7,8 +7,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.LevelStem;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Map;
 
 public final class WitcheryDimensions {
     public static final ResourceKey<Level> DREAM = levelKey("dream");
@@ -23,11 +25,27 @@ public final class WitcheryDimensions {
     public static final ResourceKey<DimensionType> TORMENT_TYPE = dimensionTypeKey("torment");
     public static final ResourceKey<DimensionType> MIRROR_TYPE = dimensionTypeKey("mirror");
 
+    private static final Map<Integer, ResourceKey<Level>> LEGACY_LEVELS = Map.of(
+            -1, Level.NETHER, 0, Level.OVERWORLD, 1, Level.END, -37, DREAM, -38, TORMENT, -39, MIRROR);
+
     private WitcheryDimensions() {
     }
 
     public static List<ResourceKey<Level>> levels() {
         return List.of(DREAM, TORMENT, MIRROR);
+    }
+
+    @Nullable
+    public static ResourceKey<Level> fromLegacyId(int id) {
+        return LEGACY_LEVELS.get(id);
+    }
+
+    @Nullable
+    public static Integer legacyId(ResourceKey<Level> dimension) {
+        for (var entry : LEGACY_LEVELS.entrySet()) {
+            if (entry.getValue().equals(dimension)) return entry.getKey();
+        }
+        return null;
     }
 
     public static List<ResourceKey<LevelStem>> stems() {

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "#": {
+      "type": "forge:partial_nbt",
+      "item": "witchery:witchwood",
+      "nbt": "{BlockStateTag:{wood_type:\"alder\"}}"
+    }
+  },
+  "pattern": [
+    "##",
+    "##",
+    "##"
+  ],
+  "result": {
+    "item": "witchery:alderwooddoor"
+  },
+  "show_notification": true
+}

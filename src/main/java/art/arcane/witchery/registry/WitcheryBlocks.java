@@ -4,6 +4,7 @@ import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.block.PerpetualIceBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.block.GlowGlobeBlock;
+import art.arcane.witchery.block.WitchDoorBlock;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.BarrierBlock;
 import art.arcane.witchery.block.PoppetShelfBlock;
@@ -171,8 +172,8 @@ public final class WitcheryBlocks {
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.LILY_PAD), SHAPE_PAD_FLAT, false);
             case "grassper" -> new GrassperBlock();
             case "icedoor" -> new DoorBlock(BlockBehaviour.Properties.copy(Blocks.IRON_DOOR).noOcclusion(), BlockSetType.IRON);
-            case "rowanwooddoor", "alderwooddoor" ->
-                    new DoorBlock(BlockBehaviour.Properties.copy(Blocks.OAK_DOOR).noOcclusion(), BlockSetType.OAK);
+            case "rowanwooddoor" -> new WitchDoorBlock(false);
+            case "alderwooddoor" -> new WitchDoorBlock(true);
             case "cwoodendoor" -> new CursedControls.Door();
             case "altar" -> new AltarBlock(BlockBehaviour.Properties.copy(Blocks.STONE).strength(2.0F));
             case "kettle" -> new KettleBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion());

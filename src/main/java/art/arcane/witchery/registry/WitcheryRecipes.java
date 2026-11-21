@@ -7,6 +7,7 @@ import art.arcane.witchery.crafting.AssembleVampireBookRecipe;
 import art.arcane.witchery.crafting.BoundTaglockIngredient;
 import art.arcane.witchery.crafting.ClothingRepairRecipe;
 import art.arcane.witchery.crafting.CopyBiomeNoteRecipe;
+import art.arcane.witchery.crafting.DoorKeyringRecipe;
 import art.arcane.witchery.crafting.UrnUpgradeRecipe;
 import art.arcane.witchery.crafting.HunterClothingUpgradeRecipe;
 import art.arcane.witchery.crafting.DistillingRecipe;
@@ -31,6 +32,8 @@ public final class WitcheryRecipes {
             SERIALIZERS.register("assemble_vampire_book", () -> new SimpleCraftingRecipeSerializer<>(AssembleVampireBookRecipe::new));
     public static final RegistryObject<RecipeSerializer<CopyBiomeNoteRecipe>> COPY_BIOME_NOTE =
             SERIALIZERS.register("copy_biome_note", () -> new SimpleCraftingRecipeSerializer<>(CopyBiomeNoteRecipe::new));
+    public static final RegistryObject<RecipeSerializer<DoorKeyringRecipe>> DOOR_KEYRING =
+            SERIALIZERS.register("door_keyring", () -> new SimpleCraftingRecipeSerializer<>(DoorKeyringRecipe::new));
     public static final RegistryObject<RecipeType<CauldronRitualRecipe>> CAULDRON_RITUAL =
             TYPES.register("cauldron_ritual", () -> new RecipeType<>() {
                 @Override

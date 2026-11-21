@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "#": {
+      "type": "forge:difference",
+      "base": {
+        "item": "witchery:witchwood"
+      },
+      "subtracted": [
+        {
+          "type": "forge:partial_nbt",
+          "item": "witchery:witchwood",
+          "nbt": "{BlockStateTag:{wood_type:\"alder\"}}"
+        },
+        {
+          "type": "forge:partial_nbt",
+          "item": "witchery:witchwood",
+          "nbt": "{BlockStateTag:{wood_type:\"hawthorn\"}}"
+        }
+      ]
+    }
+  },
+  "pattern": [
+    "##",
+    "##",
+    "##"
+  ],
+  "result": {
+    "item": "witchery:rowanwooddoor"
+  },
+  "show_notification": true
+}

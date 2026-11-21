@@ -35,7 +35,12 @@ public enum SymbolSpell {
     INCENDIO(21, null, 1, 16_724_023, 2, 200, false, List.of("←↑↑↓↓", "←↑↑↑↓↓↓", "←↑↑↑↑↓↓↓↓")),
     LUMOS(22, null, 1, 16_777_018, 0.5F, 200, false, List.of("↓↓↓→")),
     METEOLOJINX_RECANTO(23, null, 100, 0, 0, 0, false, List.of("↑↑↑→→↓↑→→↓↓")),
-    NOX(26, null, 50, 0, 0, 0, false, List.of("↑↑→↓→↑"));
+    NOX(26, null, 50, 0, 0, 0, false, List.of("↑↑→↓→↑")),
+    ACCIO(1, null, 1, 5_322_534, 1, 200, false, List.of("←↑→→↓", "←↑→→→↓", "←↑↑→→↓↓", "←↑↑→→→↓↓", "←↑↑↑→→→↓↓↓", "←↑↑↑→→→→↓↓↓")),
+    ALOHOMORA(3, null, 1, 5_322_534, 0.5F, 200, false, List.of("→↑→→↓", "→↑→→→↓", "→↑↑→→↓↓", "→↑↑→→→↓↓")),
+    CAVE_INIMICUM(5, null, 1, 3_158_064, 3, 200, false, List.of("↑←↑↑→", "↑←↑↑↑→", "↑←←↑↑→→", "↑←←↑↑↑→→", "↑←←←↑↑↑↑→→→")),
+    COLLOPORTUS(6, null, 1, 5_322_534, 1, 200, false, List.of("←←↓↓→", "←←↓↓↓→", "←←←↓↓→→", "←←←↓↓→↓→")),
+    DEFODIO(10, null, 3, 4_008_220, 2.5F, 200, false, List.of("↑↑←↓", "↑↑↑←↓↓", "↑↑←←↓→", "↑↑↑←←↓↓→", "↑↑↑↑←←↓↓↓→", "↑↑↑←←←↓↓→→", "↑↑↑↑←←←↓↓↓→→"));
 
     public static final int TORMENTUM_COOLDOWN = 30 * 60 * 20;
     private final int id;
@@ -94,8 +99,10 @@ public enum SymbolSpell {
     public int gestureLevel(String strokes) {
         return switch (this) {
             case CONFUNDUS, EXPELLIARMUS, FLIPENDO, IMPEDIMENTA -> Math.max(1, patterns.indexOf(strokes));
-            case AGUAMENTI -> 1 + patterns.indexOf(strokes) / 2;
+            case AGUAMENTI, ACCIO -> 1 + patterns.indexOf(strokes) / 2;
             case INCENDIO -> Math.max(1, 1 + patterns.indexOf(strokes));
+            case DEFODIO -> 1 + patterns.indexOf(strokes) / 3;
+            case CAVE_INIMICUM -> Math.max(1, patterns.indexOf(strokes) - 1);
             default -> 1;
         };
     }
