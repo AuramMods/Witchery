@@ -1,5 +1,6 @@
 package art.arcane.witchery.brewing;
 
+import art.arcane.witchery.block.BrewDispersalBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.registry.WitcheryBlocks;
@@ -220,19 +221,37 @@ public final class BrewTerrain {
     }
 
     private static boolean replace(@Nullable Entity owner, ServerLevel level, BlockPos pos, BlockState state, Direction face) {
+        return setBlock(owner, level, pos, state, face, true);
+    }
+
+    static boolean setBlock(@Nullable Entity owner, ServerLevel level, BlockPos pos, BlockState state, Direction face) {
+        return setBlock(owner, level, pos, state, face, false);
+    }
+
+    private static boolean setBlock(@Nullable Entity owner, ServerLevel level, BlockPos pos, BlockState state,
+                                    Direction face, boolean particles) {
         BlockState old = level.getBlockState(pos);
         if (old.equals(state)) return true;
-        if (!canChange(owner, level, pos, old)) return false;
-        if (owner != null && ForgeEventFactory.onBlockPlace(owner,
+        boolean replacingDispersal = old.getBlock() instanceof BrewDispersalBlock && (state.isAir()
+                || state.is(WitcheryBlocks.getRequired("perpetualice").get()));
+        if ((old.hasBlockEntity() && !replacingDispersal) || !canEdit(owner, level, pos, old)) return false;
+        if (!state.isAir() && owner != null && ForgeEventFactory.onBlockPlace(owner,
                 BlockSnapshot.create(level.dimension(), level, pos), face)) return false;
         if (!level.setBlockAndUpdate(pos, state)) return false;
-        level.sendParticles(ParticleTypes.POOF, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 6, 0.25, 0.25, 0.25, 0.02);
+        if (particles) {
+            level.sendParticles(ParticleTypes.POOF, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                    6, 0.25, 0.25, 0.25, 0.02);
+        }
         return true;
     }
 
     static boolean canChange(@Nullable Entity owner, ServerLevel level, BlockPos pos, BlockState old) {
+        return !old.hasBlockEntity() && canEdit(owner, level, pos, old);
+    }
+
+    static boolean canEdit(@Nullable Entity owner, ServerLevel level, BlockPos pos, BlockState old) {
         if (!level.isInWorldBounds(pos) || !level.getWorldBorder().isWithinBounds(pos)
-                || old.hasBlockEntity() || old.getDestroySpeed(level, pos) < 0) return false;
+                || old.getDestroySpeed(level, pos) < 0) return false;
         return !(owner instanceof Player player) || level.mayInteract(player, pos)
                 && (old.isAir() || !MinecraftForge.EVENT_BUS.post(new BlockEvent.BreakEvent(level, pos, old, player)));
     }

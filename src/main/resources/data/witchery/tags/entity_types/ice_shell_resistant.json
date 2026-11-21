@@ -1,0 +1,19 @@
+{
+  "replace": false,
+  "values": [
+    { "id": "#forge:bosses", "required": false },
+    "minecraft:blaze",
+    "minecraft:iron_golem",
+    "witchery:demon",
+    "witchery:ent",
+    "witchery:babayaga",
+    "witchery:death",
+    "witchery:goblingulg",
+    "witchery:goblinmog",
+    "witchery:hornedhuntsman",
+    "witchery:leonard",
+    "witchery:lilith",
+    "witchery:lordoftorment",
+    "witchery:reflection"
+  ]
+}

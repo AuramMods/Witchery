@@ -8,6 +8,7 @@ import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.VoodooPoppetItem;
 import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -50,7 +51,7 @@ public final class BrewRituals {
         return switch (mixture.delivery()) {
             case TRIGGERED -> BrewItemCurse.attach(source, origin, brew) ? Result.COMPLETE : Result.FAILED;
             case SPLASH -> {
-                mixture.applyToBlock(level, target, mixture.splashRadius(), true, null);
+                mixture.applyToBlock(level, target, Direction.UP, mixture.splashRadius(), true, null);
                 yield Result.COMPLETE;
             }
             case GAS -> {
@@ -141,7 +142,7 @@ public final class BrewRituals {
                 || !level.getBlockState(ground.above()).isAir()) return false;
         level.sendParticles(ParticleTypes.EFFECT, ground.getX() + 0.5, ground.getY() + 1, ground.getZ() + 0.5,
                 16, 0.48, 0.35, 0.48, 0.05);
-        if (level.getRandom().nextFloat() < 0.01F) mixture.applyToBlock(level, ground, 1, true, null);
+        if (level.getRandom().nextFloat() < 0.01F) mixture.applyToBlock(level, ground, Direction.UP, 1, true, null);
         Vec3 center = Vec3.atLowerCornerOf(ground);
         AABB contacts = new AABB(center, center).inflate(1.5);
         for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, contacts,

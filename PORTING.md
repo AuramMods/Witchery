@@ -306,7 +306,10 @@
 - [x] Restore the Rite of Climate Change. The large white ring consumes seven offerings and requires four coven witches. Thirteen foci choose the biome family. Glowstone Dust selects a variant. Cactus clears rain, thunder, and surface snow. An Icy Needle starts precipitation in clear weather.
 - [x] Cast with a Seer Stone on the muted survival client using supplied ingredients and four coven records. Resume after a dedicated restart at stage two. Confirm the desert crosses chunk and height boundaries, clears the storm, and preserves snow outside the radius. Cast again with an Icy Needle and confirm the connected client updates to Snowy Plains and sees snow. The new biome survives a second dedicated restart.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 339 required Forge GameTests. The five new cases cover paused upkeep, the second forest variant, the larger coven radius, weather and snow, the small-coven refund, and disabling the rite.
-- [ ] Restore the remaining circle rites and the Frozen Heart's cauldron effect.
+- [x] Restore the Frozen Heart's Ice Shell and the Icy Needle's Cold in the Witch's Cauldron. Strength expands the shell or the water-freezing range. Direct hits with Ice Shell encase susceptible creatures. Glancing hits apply Chilled with a shorter duration.
+- [x] In a fresh disposable world, fill the cauldron through the muted survival client and throw in the supplied ingredients. Bottle Ice Shell after a dedicated restart, then verify the direct-hit shell and shorter glancing Chilled. Brew Cold and confirm connected water freezes to the expected boundary. The resulting blocks persist across another restart. The test used a prepared altar and targets.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 344 required Forge GameTests. New cases cover the original Chilled attribute and damage rules, migrated ingredients, glancing hits, the radius boundary, resistant entities, and preserving a container while clearing brew gas inside a shell.
+- [ ] Restore the remaining circle rites.
 
 ## Familiar Brews and Baba Yaga (2026-11-20)
 

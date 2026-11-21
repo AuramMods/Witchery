@@ -6,6 +6,7 @@ import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.registry.WitcheryEffects;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -44,14 +45,17 @@ public final class BrewMixture {
         CAPACITY, STRENGTH, DURATION, INVERT, HIDE_PARTICLES, DRINK_SPEED, DELIVERY, EXTENT, LIFETIME, WAYSTONE, RITUAL
     }
 
-    private enum Action { EXTINGUISH, HARM_DEMONS, REVEAL, MOVE_ANIMALS }
+    private enum Action { EXTINGUISH, COLD, ICE_SHELL, HARM_DEMONS, REVEAL, MOVE_ANIMALS }
 
     private sealed interface BrewEffect permits Application, ActionApplication {}
 
-    private record ActionApplication(Action action, int strength, boolean inverted) implements BrewEffect {
+    private record ActionApplication(Action action, int strength, boolean inverted, int durationMultiplier,
+                                     boolean showParticles) implements BrewEffect {
         String nameKey() {
             return switch (action) {
                 case EXTINGUISH -> "brew.witchery.extinguish";
+                case COLD -> "brew.witchery.cold";
+                case ICE_SHELL -> "brew.witchery.ice_shell";
                 case HARM_DEMONS -> "brew.witchery.harm_demons";
                 case REVEAL -> "brew.witchery.revealing";
                 case MOVE_ANIMALS -> inverted ? "brew.witchery.animal_repulsion" : "brew.witchery.animal_attraction";
@@ -192,10 +196,14 @@ public final class BrewMixture {
     @Nullable
     public WaystoneItem.Location destination() { return destination; }
 
-    public void applyToBlock(ServerLevel level, BlockPos pos, int radius, boolean ritual, @Nullable Player caster) {
+    public void applyToBlock(ServerLevel level, BlockPos pos, Direction face, int radius, boolean ritual, @Nullable Player caster) {
         for (BrewEffect effect : effects) {
-            if (effect instanceof ActionApplication application && application.action == Action.EXTINGUISH) {
-                BrewTerrainEffects.extinguish(level, pos, radius, ritual, application.strength, caster);
+            if (!(effect instanceof ActionApplication application)) continue;
+            switch (application.action) {
+                case EXTINGUISH -> BrewTerrainEffects.extinguish(level, pos, radius, ritual, application.strength, caster);
+                case COLD -> BrewColdEffects.freezeWater(level, pos, application.strength, caster);
+                case ICE_SHELL -> BrewColdEffects.shellOnImpact(level, pos, face, application.strength, caster);
+                default -> { }
             }
         }
     }
@@ -207,6 +215,15 @@ public final class BrewMixture {
 
     public void apply(LivingEntity target, @Nullable Entity source, @Nullable LivingEntity caster,
                       double strengthScale, double durationScale, boolean blocksHarmfulEffects) {
+        apply(target, source, caster, strengthScale, durationScale, blocksHarmfulEffects, false);
+    }
+
+    public void applySplash(LivingEntity target, Entity source, @Nullable LivingEntity caster, double scale, boolean glancing) {
+        apply(target, source, caster, scale, scale * 0.5, false, glancing);
+    }
+
+    private void apply(LivingEntity target, @Nullable Entity source, @Nullable LivingEntity caster,
+                       double strengthScale, double durationScale, boolean blocksHarmfulEffects, boolean glancing) {
         if (target.isDeadOrDying() || durationScale <= 0) return;
         for (BrewEffect effect : effects) {
             if (effect instanceof Application application) {
@@ -217,13 +234,14 @@ public final class BrewMixture {
                     target.addEffect(application.instance(Mth.ceil(application.ticks * durationScale)), source);
                 }
             } else if (effect instanceof ActionApplication application) {
-                applyAction(application, target, source, caster, strengthScale, blocksHarmfulEffects);
+                applyAction(application, target, source, caster, strengthScale, durationScale, blocksHarmfulEffects, glancing);
             }
         }
     }
 
     private static void applyAction(ActionApplication application, LivingEntity target, @Nullable Entity source,
-                                    @Nullable LivingEntity caster, double strengthScale, boolean blocksHarmfulEffects) {
+                                    @Nullable LivingEntity caster, double strengthScale, double durationScale,
+                                    boolean blocksHarmfulEffects, boolean glancing) {
         int strength = application.strength;
         switch (application.action) {
             case EXTINGUISH -> {
@@ -233,6 +251,19 @@ public final class BrewMixture {
                             : target.damageSources().magic(), (strength + 1) * 4.0F);
                 }
                 target.clearFire();
+            }
+            case COLD, ICE_SHELL -> {
+                if (!(target.level() instanceof ServerLevel level)) return;
+                Player player = caster instanceof Player actor ? actor : null;
+                boolean shell = application.action == Action.ICE_SHELL;
+                if (shell && target.getType().is(BrewColdEffects.SHELL_RESISTANT)) {
+                    BrewColdEffects.wetResistantTarget(level, target.blockPosition(), player);
+                    return;
+                }
+                int ticks = Mth.ceil((shell ? 200 : 3600) * application.durationMultiplier * durationScale);
+                target.addEffect(new MobEffectInstance(WitcheryEffects.CHILLED.get(), ticks, Math.min(strength, 10),
+                        false, application.showParticles, true), source);
+                if (shell && !glancing) BrewColdEffects.shell(level, target.blockPosition(), strength, player);
             }
             case HARM_DEMONS -> {
                 if (blocksHarmfulEffects) return;
@@ -320,7 +351,7 @@ public final class BrewMixture {
             if (ingredient.action != null) {
                 int actionStrength = ingredient.action == Action.HARM_DEMONS
                         ? Math.min(strength, unlimitedBoosts ? 3 : 1) : strength;
-                effects.add(new ActionApplication(ingredient.action, actionStrength, inverted));
+                effects.add(new ActionApplication(ingredient.action, actionStrength, inverted, duration + 1, !hideParticles));
             } else {
                 Potion effect = inverted ? ingredient.inverted : ingredient.normal;
                 effects.add(new Application(effect.effect.get(), effect.duration * (duration + 1),
@@ -400,6 +431,8 @@ public final class BrewMixture {
         modifier(entries, "witchery:taglockkit", 1000, Modifier.RITUAL, 0, 0, 0);
         entries.put(ResourceLocation.withDefaultNamespace("coal"), new Ingredient(0, null, 1, 10, 0, null, null, Action.EXTINGUISH));
 
+        entries.put(ResourceLocation.parse("witchery:icy_needle"), new Ingredient(200, null, 2, 10, 0, null, null, Action.COLD));
+        entries.put(ResourceLocation.parse("witchery:frozen_heart"), new Ingredient(500, null, 5, 10, 0, null, null, Action.ICE_SHELL));
         entries.put(ResourceLocation.withDefaultNamespace("ice"), new Ingredient(500, null, 5, 3, 0, null, null, Action.HARM_DEMONS));
         entries.put(ResourceLocation.fromNamespaceAndPath("witchery", "odour_of_purity"),
                 new Ingredient(100, null, 4, 0, 0, null, null, Action.REVEAL));

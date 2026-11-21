@@ -1,6 +1,7 @@
 package art.arcane.witchery.event;
 
 import art.arcane.witchery.brewing.BrewItemCurse;
+import art.arcane.witchery.brewing.ChilledEffect;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.CoffinBlock;
 import art.arcane.witchery.block.entity.AreaWardBlockEntity;
@@ -417,6 +418,7 @@ public final class WitcheryEventHooks {
         if (event.getSource().getDirectEntity() instanceof WitcheryBolt bolt) {
             event.setAmount(bolt.modifyDamage(event.getEntity(), event.getAmount()));
         }
+        ChilledEffect.reduceFireDamage(event);
         Lycanthropy.adjustDamage(event);
         if (event.isCanceled()) return;
         if (event.getAmount() >= 1 && BloodFeeding.paralysis(event.getEntity(), 4)) {

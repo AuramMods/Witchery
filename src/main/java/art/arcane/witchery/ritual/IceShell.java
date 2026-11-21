@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 
-final class IceShell {
+public final class IceShell {
     private IceShell() {}
 
     static int radius(int coven) {
@@ -36,7 +36,7 @@ final class IceShell {
         }
     }
 
-    private static Set<BlockPos> outline(int radius) {
+    public static Set<BlockPos> outline(int radius) {
         Set<BlockPos> points = new HashSet<>();
         int error = 1 - radius;
         for (int x = radius, y = 0; x >= y; y++) {
