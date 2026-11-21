@@ -961,6 +961,27 @@
 - [x] Verify that a thrown Raising brew binds a zombie and leaves the struck stone intact. Ritual Raising summoned a temporary skeleton with 398 ticks of Mortal Coil at the first sample. The skeleton expired, and after a dedicated server restart only the bound zombie remained with its owner and no-drop marker.
 - [x] Run Java 17 data generation and JAR reobfuscation. All 566 regression cases passed before the final Raising collision adjustment. The final revision passed 21 focused GameTests, including a spawn with another creature at the launch position and actual liquid and gas delivery.
 
+## Cauldron Love, Volatility, Fortune and Resizing (2026-11-21)
+
+| Ingredient | Effect | Base altar power | Capacity cost | Base duration |
+| --- | --- | ---: | ---: | ---: |
+| Poppy | Love | 500 | 4 | 10 seconds |
+| Dead Bush | Volatility | 1,000 | 4 | 3 minutes |
+| Clay Ball | Fortune | 1,000 | 6 | 3 minutes |
+| Emerald | Resizing | 2,500 | 6 | 20 seconds |
+
+- [x] Restore Love's adult animal cooldown reset, player hearts, 30-second zombie courtship, and 15-second villager courtship. One zombie dose starts the pair. Villager courtship uses modern village points of interest and preserves the original food-independent birth and 500-tick cooldown.
+- [x] Restore Volatility's damage triggers, removal chance, radius scaling, incurability, and default-on terrain damage option. A victim can start a chain reaction without detonating again inside the same chain.
+- [x] Apply Fortune to eligible player block loot. Add one enchantment level or two at amplifier three and above. Preserve the actual tool, Silk Touch, and block entity loot.
+- [x] Restore all four Resizing sizes, collision bounds, camera and rendering, jump and step behavior, melee and fall damage, and the bed restriction. Apply the same effect to Leonard and Lilith.
+- [x] Import the original Poppy and Dead Bush names and metadata. Save the active Resizing scale and send it to tracking and joining clients with the existing entity-size packet.
+- [x] Brew all four effects in the muted survival client. Love reset an adult pig's cooldown. An explosion detonated Volatility and broke nearby wool. Fortune yielded six redstone without adding Fortune to the tool.
+- [x] Run both timed Love courtships with the packaged JAR and bundled Auram development mods. Two villagers who claimed beds produced a child without food. One dosed zombie produced a wild baby, and both converted parents kept their tags.
+- [x] Confirm the resized pig's saved scale and remaining duration after a dedicated restart. The returning client saw the enlarged model next to an ordinary pig and saw both return to the same height. The resized survival player was refused at a bed and walked under top slabs. After drinking milk, the same passage blocked normal movement again.
+- [x] Verify multiplayer Resizing with two muted clients. The player crossed a low passage after traveling to the Nether. A newly tracking client saw the quarter-size model and its return to normal.
+- [x] Run Java 17 data generation, JAR reobfuscation, and nine focused GameTests. They cover ordered ingredients, breeding, Fortune and Silk Touch, Volatility protection, and Resizing collision, persistence, combat, and boss behavior.
+- [ ] Resolve the five older rite failures found in the 575-case regression run. Both Wither summons, the focused barrier, corruption refunds, and the Witch's Ladder binding passed in focused reruns. All nine new cases passed in the broad run.
+
 ## Brew of Erosion and Brew of Ice (2026-11-21)
 
 - [x] Restore the original six-ingredient Kettle recipes, three servings, Brew Mastery bottling bonus, and legacy metadata 62 and 76. Erosion needs no altar power. Ice waits for 1,000 power and debits the altar once per batch.

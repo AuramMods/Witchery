@@ -252,7 +252,13 @@ public final class BrewMixture {
             case "minecraft:dye" -> "minecraft:" + BrewDye.byLegacyId(metadata).item();
             case "minecraft:double_plant" -> metadata == 0 ? "minecraft:sunflower" : null;
             case "minecraft:netherbrick" -> "minecraft:nether_brick";
-            case "minecraft:red_flower" -> metadata == 1 ? "minecraft:blue_orchid" : null;
+            case "minecraft:red_flower" -> switch (metadata) {
+                case 0 -> "minecraft:poppy";
+                case 1 -> "minecraft:blue_orchid";
+                default -> null;
+            };
+            case "minecraft:tallgrass" -> metadata == 0 ? "minecraft:dead_bush" : null;
+            case "minecraft:deadbush" -> "minecraft:dead_bush";
             case "minecraft:golden_apple" -> metadata == 1 ? "minecraft:enchanted_golden_apple" : null;
             default -> null;
         };
@@ -826,6 +832,10 @@ public final class BrewMixture {
         potion(entries, "salmon", 1000, 6, WitcheryEffects.SUN_ALLERGY, 1200);
         potion(entries, "golden_apple", 1000, 4, () -> MobEffects.ABSORPTION, 600);
         potion(entries, "enchanted_golden_apple", 1000, 4, () -> MobEffects.HEALTH_BOOST, 2400);
+        potion(entries, "poppy", 500, 4, WitcheryEffects.LOVE, 200);
+        potion(entries, "dead_bush", 1000, 4, WitcheryEffects.VOLATILITY, 3600);
+        potion(entries, "clay_ball", 1000, 6, WitcheryEffects.FORTUNE, 3600);
+        potion(entries, "emerald", 2500, 6, WitcheryEffects.RESIZING, 400);
         return Map.copyOf(entries);
     }
 

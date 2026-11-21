@@ -60,7 +60,7 @@ public final class CombatBrewEffects {
         if (moonshine != null && target instanceof ServerPlayer player) spendHunger(player, event, moonshine.getAmplifier());
     }
 
-    private static boolean isMelee(DamageSource source) {
+    static boolean isMelee(DamageSource source) {
         return source.getDirectEntity() == source.getEntity()
                 && (source.is(DamageTypes.PLAYER_ATTACK) || source.is(DamageTypes.MOB_ATTACK)
                 || source.is(DamageTypes.MOB_ATTACK_NO_AGGRO));

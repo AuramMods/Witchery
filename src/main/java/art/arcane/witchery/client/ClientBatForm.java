@@ -1,6 +1,7 @@
 package art.arcane.witchery.client;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.brewing.ResizingEffect;
 import art.arcane.witchery.vampirism.VampireFlight;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.EntityType;
@@ -26,6 +27,7 @@ public final class ClientBatForm {
         if (modelEntity == null || modelEntity.level() != player.level()) modelEntity = EntityType.BAT.create(player.level());
         if (modelEntity == null) return;
         modelEntity.setResting(false);
+        ResizingEffect.setScale(modelEntity, ResizingEffect.scale(player));
         modelEntity.setPos(player.position());
         modelEntity.setInvisible(player.isInvisible());
         modelEntity.tickCount = player.tickCount;

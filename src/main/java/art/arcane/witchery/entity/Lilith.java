@@ -21,6 +21,7 @@ import net.minecraft.world.BossEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -94,6 +95,9 @@ public final class Lilith extends Monster implements RangedAttackMob {
         if (attackTicks > 0) attackTicks--;
         if (!(level() instanceof ServerLevel world)) return;
         bar.setProgress(getHealth() / getMaxHealth());
+        if (invulnerableTicks == 0 && !hasEffect(WitcheryEffects.RESIZING.get())) {
+            addEffect(new MobEffectInstance(WitcheryEffects.RESIZING.get(), 10000, 3, true, false), this);
+        }
         if (friendly()) return;
         if (invulnerableTicks > 0) {
             if (--invulnerableTicks == 0) playSound(SoundEvents.WITHER_SPAWN, 1, 1);

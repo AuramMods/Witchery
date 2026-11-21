@@ -1228,13 +1228,14 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 - Breath of the Goddess subtype 32, Slimeball, and Stick restore Air Hike, Frog Tongue, and Knockback. The current delivery path carries the impact position separately from the caster, including for gas cells, ritual rain, and triggered brews.
 - Bat Ball subtype 108 and Owlet's Wing subtype 89 restore Bat Burst and Bodega. Bats use the original `WITCNoDrops` key. Bodega uses active Owl familiar mastery and the existing temporary Owl entity. Sunflower adds Poison Toad with the original `SuicideIn` and `Poisonous` fields. Named `minecraft:double_plant` metadata zero imports as Sunflower.
 - Bone adds Raising. The raised creatures retain the original weighted Zombie, Skeleton, and Zombified Piglin selection. Normal throws use the existing enslaver name and UUID. Ritual minions use `witchery:potion.mortalcoil` for the strength-scaled lifetime. Spawns require room for the creature in the modern world.
+- Poppy, Dead Bush, Clay Ball, and Emerald add Love, Volatility, Fortune, and Resizing. Named legacy Red Flower metadata zero maps to Poppy. Named Tall Grass metadata zero and `minecraft:deadbush` map to Dead Bush. Love uses separate courtship from the fixed Kettle recipe. Volatility's block damage follows the server option. Fortune adjusts the block's loot tool before evaluating the actual loot table. Resizing uses the original scale levels and saves active dimensions independently of the ordered recipe.
 - A `witchery:biomenote` adds Changing Seasons for eight effect levels and 5,000 base altar power. Its `WitcheryBiome` persists in the ordered `Items` list. The block-targeted action forces instant dispersal and supports a Tongue of Dog ritual at a Waystone. The biome writer updates and resends every intersecting quart column, and dry biomes clear snow layers within the original block footprint.
 
 ### Remaining cauldron actions
 
 - Terrain and world actions still include Dissipate, Flowers, Fertilization, Harvesting, Tilling, Planting, Pruning, Pulverisation, Tide Hold, Lilify, Lava Hold, Erosion, Levelling, Webs, Vines, Thorns, Sprouting, the nine tree-growth variants, Blight, Transpose, Transpose Ore, Raise Land, Inferno, Hell Gate, and Blast. Some also have independent Kettle recipes or circle rites.
-- The remaining potion recipes include Love, Volatility, Fortune, and Resizing.
 - Drain Magic's legacy Blood Magic and Thaumcraft hooks remain open for the optional integration pass.
+- The Resizing suffocation exception specific to Ars Magica 2 remains for the optional integration audit.
 
 ## Network Packets (`PacketPipeline`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/network/PacketPipeline.java`
@@ -1282,7 +1283,7 @@ Current scaffold behavior:
   - `partial_extended_player_sync` -> `(UUID playerId, int syncRevision, CompoundTag playerData)`
 - Adds codec-backed payload + handler scaffolding for additional interaction packets:
   - `item_update` -> `(int slotIndex, int damageValue, int pageIndex)` (serverbound, aligned to legacy packet shape)
-  - `sync_entity_size` -> `(int entityId, float width, float height)` (clientbound)
+  - `sync_entity_size` -> `(int entityId, float scale)` (clientbound, protocol 86)
   - `set_client_player_facing` -> `(float yaw, float pitch)` (clientbound)
   - `cam_pos` -> `(boolean active, boolean updatePosition, int entityId)` (clientbound; aligned with legacy packet shape)
   - `push_target` -> `(int entityId, double velocityX, double velocityY, double velocityZ)` (clientbound)
@@ -1301,7 +1302,7 @@ Current scaffold behavior:
   - `sound` now dispatches to client packet bridge to resolve legacy/modern ids and play local scaffold sound.
   - `push_target` now dispatches to client packet bridge to apply motion vectors to client entities.
   - `set_client_player_facing` now dispatches to client packet bridge to apply local player rotation.
-  - `sync_entity_size` now dispatches to client packet bridge and stages width/height sync metadata on target entities.
+  - `sync_entity_size` restores the active Resizing scale on the client. The client uses its local pose and creature form to compute physical dimensions from that scale.
   - `cam_pos` now dispatches to client packet bridge with legacy semantics (`active`, `updatePosition`, `entityId`) and stages camera-active/target data in `WitcheryClientCameraState`.
   - `WitcheryClientCameraHooks` now consumes staged camera state each client tick and applies scaffold camera-entity override/reset behavior (`setCameraEntity(target)` while active, fallback to local player when inactive/invalid target).
 - Adds first functional serverbound behavior hooks:

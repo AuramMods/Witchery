@@ -23,6 +23,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.monster.ZombifiedPiglin;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -94,7 +95,7 @@ public final class BrewImpacts {
             }
         }
         for (int pair = 0; pair < Math.min(10, villagers.size() / 2); pair++) {
-            breedVillagers(level, villagers.get(pair * 2), villagers.get(pair * 2 + 1));
+            breedVillagers(level, villagers.get(pair * 2), villagers.get(pair * 2 + 1), 6000);
         }
         if (brew.getOwner() instanceof ServerPlayer player) {
             List<Zombie> zombies = level.getEntitiesOfClass(Zombie.class, bounds, candidate -> candidate.isAlive()
@@ -287,14 +288,14 @@ public final class BrewImpacts {
         return brew.getBoundingBox().move(impact.subtract(brew.position())).inflate(radius, 2, radius);
     }
 
-    private static void breedVillagers(ServerLevel level, Villager first, Villager mate) {
+    static void breedVillagers(ServerLevel level, Villager first, Villager mate, int cooldown) {
         BabyEntitySpawnEvent birth = new BabyEntitySpawnEvent(first, mate, first.getBreedOffspring(level, mate));
         if (MinecraftForge.EVENT_BUS.post(birth) || birth.getChild() == null) {
             return;
         }
         AgeableMob child = birth.getChild();
-        first.setAge(6000);
-        mate.setAge(6000);
+        first.setAge(cooldown);
+        mate.setAge(cooldown);
         first.teleportTo(mate.getX(), mate.getY(), mate.getZ());
         level.sendParticles(ParticleTypes.HEART, mate.getX(), mate.getY() + 1, mate.getZ(), 8, 0.5, 1, 0.5, 0.05);
         child.setAge(-24000);
@@ -303,8 +304,8 @@ public final class BrewImpacts {
         level.broadcastEntityEvent(child, (byte) 12);
     }
 
-    private static void breedZombies(ServerLevel level, Zombie first, Zombie mate, ServerPlayer owner) {
-        if (!mayBecomeZombieVillager(first) || !mayBecomeZombieVillager(mate)) return;
+    static void breedZombies(ServerLevel level, Zombie first, Zombie mate, @Nullable ServerPlayer owner) {
+        if (!mayBecomeZombieVillager(first, owner) || !mayBecomeZombieVillager(mate, owner)) return;
         Zombie child = EntityType.ZOMBIE.create(level);
         if (child == null) return;
         child.setBaby(true);
@@ -316,19 +317,20 @@ public final class BrewImpacts {
         level.sendParticles(ParticleTypes.HEART, child.getX(), child.getY() + 1, child.getZ(), 8, 0.5, 1, 0.5, 0.05);
     }
 
-    private static boolean mayBecomeZombieVillager(Zombie zombie) {
-        return zombie.getType() == EntityType.ZOMBIE_VILLAGER
+    private static boolean mayBecomeZombieVillager(Zombie zombie, @Nullable ServerPlayer owner) {
+        return zombie.getType() == EntityType.ZOMBIE_VILLAGER || owner == null && zombie instanceof ZombifiedPiglin
                 || ForgeEventFactory.canLivingConvert(zombie, EntityType.ZOMBIE_VILLAGER, ignored -> {});
     }
 
-    private static void becomeZombieVillager(Zombie zombie, ServerPlayer owner) {
-        if (zombie.getType() == EntityType.ZOMBIE_VILLAGER) return;
+    private static void becomeZombieVillager(Zombie zombie, @Nullable ServerPlayer owner) {
+        if (zombie.getType() == EntityType.ZOMBIE_VILLAGER || owner == null && zombie instanceof ZombifiedPiglin) return;
         var villager = zombie.convertTo(EntityType.ZOMBIE_VILLAGER, true);
         if (villager == null) return;
         villager.getPersistentData().merge(zombie.getPersistentData());
+        zombie.getTags().forEach(villager::addTag);
         villager.setHealth(Math.min(zombie.getHealth(), villager.getMaxHealth()));
         for (MobEffectInstance effect : zombie.getActiveEffects()) villager.addEffect(new MobEffectInstance(effect));
-        InfernalInfusion.bind(villager, owner);
+        if (owner != null) InfernalInfusion.bind(villager, owner);
         ForgeEventFactory.onLivingConvert(zombie, villager);
     }
 }

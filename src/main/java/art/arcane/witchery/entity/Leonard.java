@@ -12,9 +12,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -26,10 +23,8 @@ import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
@@ -48,8 +43,6 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 public final class Leonard extends Monster implements RangedAttackMob {
-    private static final EntityDataAccessor<Boolean> ENLARGED =
-            SynchedEntityData.defineId(Leonard.class, EntityDataSerializers.BOOLEAN);
     private static final int ENTRANCE_TICKS = 150;
     private static final int SOUL_RADIUS = 15;
 
@@ -77,12 +70,6 @@ public final class Leonard extends Monster implements RangedAttackMob {
     public void beginSummoning() {
         entranceTicks = ENTRANCE_TICKS;
         setHealth(getMaxHealth() * 0.25F);
-    }
-
-    @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        entityData.define(ENLARGED, false);
     }
 
     @Override
@@ -116,8 +103,6 @@ public final class Leonard extends Monster implements RangedAttackMob {
                 updateSoulPhase(level);
             }
         }
-        boolean large = hasEffect(WitcheryEffects.RESIZING.get());
-        if (entityData.get(ENLARGED) != large) entityData.set(ENLARGED, large);
         bossBar.setProgress(getHealth() / getMaxHealth());
     }
 
@@ -160,7 +145,7 @@ public final class Leonard extends Monster implements RangedAttackMob {
         shielded = level.getEntitiesOfClass(LostSoul.class, getBoundingBox().inflate(SOUL_RADIUS, 5, SOUL_RADIUS),
                 LivingEntity::isAlive).stream().anyMatch(soul -> distanceToSqr(soul.getX(), getY(), soul.getZ()) <= 225);
         if (!engaged()) return;
-        if (getHealth() < getMaxHealth() * 0.25F && random.nextInt(3) == 1 && !enlarged()) {
+        if (getHealth() < getMaxHealth() * 0.25F && random.nextInt(3) == 1 && !hasEffect(WitcheryEffects.RESIZING.get())) {
             addEffect(new MobEffectInstance(WitcheryEffects.RESIZING.get(), 1200, 3), this);
         }
         if (!shielded && --soulDelay <= 0) {
@@ -270,17 +255,9 @@ public final class Leonard extends Monster implements RangedAttackMob {
     }
 
     public int attackTicks() { return attackTicks; }
-    public boolean enlarged() { return entityData.get(ENLARGED); }
-
-    @Override
-    public EntityDimensions getDimensions(Pose pose) {
-        return super.getDimensions(pose).scale(enlarged() ? 3 : 1);
-    }
-
-    @Override
-    public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
-        super.onSyncedDataUpdated(key);
-        if (ENLARGED.equals(key)) refreshDimensions();
+    public boolean enlarged() {
+        var effect = getEffect(WitcheryEffects.RESIZING.get());
+        return effect != null && effect.getAmplifier() >= 2;
     }
 
     @Override
@@ -301,7 +278,6 @@ public final class Leonard extends Monster implements RangedAttackMob {
         lifetime = Math.max(0, tag.getInt("Lifetime"));
         soulDelay = tag.getInt("SoulDelay");
         shielded = tag.getBoolean("Shielded");
-        entityData.set(ENLARGED, hasEffect(WitcheryEffects.RESIZING.get()));
     }
 
     @Override

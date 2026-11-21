@@ -40,7 +40,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class WitcheryNetwork {
-    private static final String PROTOCOL_VERSION = "85";
+    private static final String PROTOCOL_VERSION = "86";
     private static final int MAX_USERNAME_LENGTH = 64;
     private static final int MAX_PLAYER_SKIN_LENGTH = 256;
     private static final int MAX_MARKUP_CHAPTER_LENGTH = 32;
@@ -208,10 +208,10 @@ public final class WitcheryNetwork {
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> reader), new GuideBookOpenPacket(slot, volume, known));
     }
 
-    public static void sendSyncEntitySize(ServerPlayer player, int entityId, float width, float height) {
+    public static void sendSyncEntitySize(ServerPlayer player, int entityId, float scale) {
         CHANNEL.send(
                 PacketDistributor.PLAYER.with(() -> player),
-                new SyncEntitySizePacket(entityId, width, height)
+                new SyncEntitySizePacket(entityId, scale)
         );
     }
 
@@ -674,10 +674,6 @@ public final class WitcheryNetwork {
 
     private static void handleSyncEntitySizePacket(SyncEntitySizePacket message, NetworkEvent.Context context) {
         runClient(() -> art.arcane.witchery.client.packet.WitcheryClientPacketHandlers.handleSyncEntitySize(message));
-        Witchery.LOGGER.debug(
-                "Handled scaffold packet 'sync_entity_size' entityId={} width={} height={} direction={}",
-                message.entityId(), message.width(), message.height(), context.getDirection()
-        );
     }
 
     private static void handleSetClientPlayerFacingPacket(SetClientPlayerFacingPacket message, NetworkEvent.Context context) {
@@ -994,19 +990,18 @@ public final class WitcheryNetwork {
 
     private record BrewJumpPacket() {}
 
-    public record SyncEntitySizePacket(int entityId, float width, float height) {
+    public record SyncEntitySizePacket(int entityId, float scale) {
         public static SyncEntitySizePacket placeholder() {
-            return new SyncEntitySizePacket(0, 0.6F, 1.8F);
+            return new SyncEntitySizePacket(0, 1);
         }
 
         public static void encode(SyncEntitySizePacket message, FriendlyByteBuf buffer) {
             buffer.writeVarInt(message.entityId());
-            buffer.writeFloat(message.width());
-            buffer.writeFloat(message.height());
+            buffer.writeFloat(message.scale());
         }
 
         public static SyncEntitySizePacket decode(FriendlyByteBuf buffer) {
-            return new SyncEntitySizePacket(buffer.readVarInt(), buffer.readFloat(), buffer.readFloat());
+            return new SyncEntitySizePacket(buffer.readVarInt(), buffer.readFloat());
         }
     }
 

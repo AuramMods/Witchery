@@ -1,6 +1,7 @@
 package art.arcane.witchery.client.packet;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.brewing.ResizingEffect;
 import art.arcane.witchery.client.WitcheryClientCameraState;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.network.WitcheryNetwork;
@@ -18,6 +19,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import org.joml.Vector3f;
 
@@ -29,9 +31,6 @@ public final class WitcheryClientPacketHandlers {
     private static final String KEY_CLIENT_GHOST = "WitcheryGhostState";
     private static final String KEY_CLIENT_SYNC_REVISION = "WitcherySyncRevision";
     private static final String KEY_CLIENT_SYNC_INITIALIZED = "WitcherySyncInitialized";
-    private static final String KEY_CLIENT_SYNCED_WIDTH = "WitcherySyncedWidth";
-    private static final String KEY_CLIENT_SYNCED_HEIGHT = "WitcherySyncedHeight";
-    private static final String KEY_CLIENT_SYNCED_TARGET_ID = "WitcherySyncedTargetId";
 
     private WitcheryClientPacketHandlers() {
     }
@@ -186,14 +185,9 @@ public final class WitcheryClientPacketHandlers {
             return;
         }
 
-        Entity target = level.getEntity(message.entityId());
-        if (target == null) {
-            return;
+        if (level.getEntity(message.entityId()) instanceof LivingEntity target) {
+            ResizingEffect.setScale(target, message.scale());
         }
-
-        target.getPersistentData().putFloat(KEY_CLIENT_SYNCED_WIDTH, message.width());
-        target.getPersistentData().putFloat(KEY_CLIENT_SYNCED_HEIGHT, message.height());
-        target.getPersistentData().putInt(KEY_CLIENT_SYNCED_TARGET_ID, message.entityId());
     }
 
     public static void handleSetClientPlayerFacing(WitcheryNetwork.SetClientPlayerFacingPacket message) {

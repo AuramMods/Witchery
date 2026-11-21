@@ -11,9 +11,12 @@ import art.arcane.witchery.brewing.EnvironmentalCurseEffect;
 import art.arcane.witchery.brewing.FoodBrewEffect;
 import art.arcane.witchery.brewing.IllFittingEffect;
 import art.arcane.witchery.brewing.LightAllergyEffect;
+import art.arcane.witchery.brewing.LoveEffect;
 import art.arcane.witchery.brewing.MovementBrewEffect;
 import art.arcane.witchery.brewing.ProjectileBrewEffect;
+import art.arcane.witchery.brewing.ResizingEffect;
 import art.arcane.witchery.brewing.SnowTrailEffect;
+import art.arcane.witchery.brewing.VolatilityEffect;
 import art.arcane.witchery.brewing.WakingNightmareEffect;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -53,7 +56,13 @@ public final class WitcheryEffects {
     public static final RegistryObject<MobEffect> SINKING = environmentalCurse("potion.sinking", EnvironmentalCurseEffect.Kind.SINKING);
     public static final RegistryObject<MobEffect> OVERHEATING = environmentalCurse("potion.overheating", EnvironmentalCurseEffect.Kind.OVERHEATING);
     public static final RegistryObject<MobEffect> INSANITY = environmentalCurse("potion.insane", EnvironmentalCurseEffect.Kind.INSANITY);
-    public static final RegistryObject<MobEffect> RESIZING = simpleEffect("potion.resizing", MobEffectCategory.NEUTRAL);
+    public static final RegistryObject<MobEffect> LOVE = MOB_EFFECTS.register("potion.love",
+            () -> new LoveEffect(legacyColor("potion.love")));
+    public static final RegistryObject<MobEffect> VOLATILITY = MOB_EFFECTS.register("potion.volatility",
+            () -> new VolatilityEffect(legacyColor("potion.volatility")));
+    public static final RegistryObject<MobEffect> FORTUNE = simpleEffect("potion.fortune", MobEffectCategory.BENEFICIAL);
+    public static final RegistryObject<MobEffect> RESIZING = MOB_EFFECTS.register("potion.resizing",
+            () -> new ResizingEffect(legacyColor("potion.resizing")));
     public static final RegistryObject<MobEffect> KEEP_INVENTORY = simpleEffect("potion.keepinventory", MobEffectCategory.BENEFICIAL);
     public static final RegistryObject<MobEffect> KEEP_EFFECTS = simpleEffect("potion.keepeffects", MobEffectCategory.BENEFICIAL);
     public static final RegistryObject<MobEffect> REINCARNATION = simpleEffect("potion.reincarnate", MobEffectCategory.BENEFICIAL);
@@ -109,6 +118,9 @@ public final class WitcheryEffects {
         LEGACY_EFFECTS.put("potion.sinking", SINKING);
         LEGACY_EFFECTS.put("potion.overheating", OVERHEATING);
         LEGACY_EFFECTS.put("potion.insane", INSANITY);
+        LEGACY_EFFECTS.put("potion.love", LOVE);
+        LEGACY_EFFECTS.put("potion.volatility", VOLATILITY);
+        LEGACY_EFFECTS.put("potion.fortune", FORTUNE);
         LEGACY_EFFECTS.put("potion.resizing", RESIZING);
         LEGACY_EFFECTS.put("potion.keepinventory", KEEP_INVENTORY);
         LEGACY_EFFECTS.put("potion.keepeffects", KEEP_EFFECTS);

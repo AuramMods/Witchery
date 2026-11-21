@@ -1,6 +1,7 @@
 package art.arcane.witchery.client;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.brewing.ResizingEffect;
 import art.arcane.witchery.entity.Wolfman;
 import art.arcane.witchery.lycanthropy.Lycanthropy;
 import art.arcane.witchery.network.WitcheryNetwork;
@@ -56,6 +57,7 @@ public final class ClientWolfForm {
         Mob proxy = MODELS.compute(player, (key, existing) -> existing != null && existing.getType() == type
                 ? existing : type.create(key.level()));
         if (proxy == null) return;
+        ResizingEffect.setScale(proxy, ResizingEffect.scale(player));
         proxy.setPos(player.position());
         proxy.setInvisible(player.isInvisible());
         if (proxy instanceof Wolf wolf) wolf.setInSittingPose(player.isPassenger());
