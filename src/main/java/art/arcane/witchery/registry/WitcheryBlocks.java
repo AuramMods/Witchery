@@ -22,6 +22,7 @@ import art.arcane.witchery.block.CursedControls;
 import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.block.BrazierBlock;
 import art.arcane.witchery.block.BrewDispersalBlock;
+import art.arcane.witchery.block.BrewPlantBlocks;
 import art.arcane.witchery.block.BloodRoseBlock;
 import art.arcane.witchery.block.BloodCrucibleBlock;
 import art.arcane.witchery.block.GarlicGarlandBlock;
@@ -109,7 +110,6 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_FUNNEL = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
     private static final VoxelShape SHAPE_SKULL = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 8.0D, 12.0D);
     private static final VoxelShape SHAPE_INFINITY_EGG = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
-    private static final VoxelShape SHAPE_CACTUS = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 16.0D, 15.0D);
     private static final VoxelShape SHAPE_VOID_BRAMBLE = Block.box(0.8D, 0.0D, 0.8D, 15.2D, 16.0D, 15.2D);
     private static final VoxelShape SHAPE_STATUE_GODDESS = Block.box(0.0D, 0.0D, 1.6D, 16.0D, 32.0D, 14.4D);
 
@@ -165,8 +165,10 @@ public final class WitcheryBlocks {
             case "bloodrose" -> new BloodRoseBlock();
             case "bloodedwool" -> new Block(BlockBehaviour.Properties.copy(Blocks.RED_WOOL));
             case "plantmine" -> new PlantMineBlock();
-            case "glintweed", "spanishmoss", "vine", "web" ->
+            case "glintweed", "spanishmoss" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_TALL, false);
+            case "vine" -> new BrewPlantBlocks.Vine();
+            case "web" -> new BrewPlantBlocks.Web();
             case "bramble" -> new BrambleBlock();
             case "crittersnare" -> new CritterSnareBlock();
             case "somniancotton" -> new SomnianCottonBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION).randomTicks());
@@ -273,8 +275,7 @@ public final class WitcheryBlocks {
             case "barrier" -> new BarrierBlock();
             case "light" -> new SunlightBlock();
             case "slurp" -> new SlurpBlock();
-            case "cactus" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.CACTUS), SHAPE_CACTUS, true);
+            case "cactus" -> new BrewPlantBlocks.Cactus();
             case "voidbramble" ->
                     new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.SWEET_BERRY_BUSH), SHAPE_VOID_BRAMBLE, false);
             case "cauldron" -> new WitchesCauldronBlock(BlockBehaviour.Properties.copy(Blocks.CAULDRON));

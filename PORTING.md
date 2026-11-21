@@ -1032,6 +1032,17 @@
 - [x] Run Java 17 data generation and JAR reobfuscation. Pass all eight new and eleven farming GameTests, including the original ingredient subtype, exact material order, protection vetoes, glancing corrosion, 97-block Obsidian recovery and the ritual strength cap.
 - [x] Pass the complete 601-case regression run after separating two test-only Forge event listeners with the same name. The run includes the earlier Spectral Familiar ore-search, courtship, and rite cases.
 
+## Cauldron Webs, Vines and Thorns (2026-11-21)
+
+- [x] Restore the two-capacity recipes. Thrown Web adds Webs for 200 altar power. Vanilla Vine and Cactus add Vines and Thorns for 150 each. Thrown Web retains original ingredient subtype 56.
+- [x] Restore Witchery's slowing Web block and the three original coverage tiers on terrain and living targets. Respect Forge protection events. Ordinary spiders retain their web immunity.
+- [x] Restore directional, climbable Vines. They follow the side of the struck wall and can hang below its support with a strength boost. A living target receives Wrapped in Vine with strength-based fire vulnerability and the original milk immunity.
+- [x] Restore Thorns' cactus columns, supported growth, and contact damage. A living target receives Spiked and damages nearby creatures. The two effects retain their original synced creature overlays.
+- [x] Brew all three recipes in the muted survival client. Strength-two Webs filled faces and edges around a side impact and preserved the chest with three diamonds. The client climbed the north-facing Vines from Y 200 to Y 203.76. Strength-one Thorns grew four blocks on stone.
+- [x] Cast the targeted effects and verify the overlays in the background client. Wrapped in Vine turned one fire damage into three. Spiked removed three health from a nearby pig and left its host at full health. Reopen the dedicated world and confirm all three placed blocks and both still-active effects.
+- [x] Run Java 17 data generation, JAR reobfuscation, and seven focused Forge GameTests covering the three recipes, metadata, web movement, block protection, climbing, cactus support, and the two effects.
+- [ ] Resolve the inconsistent full-suite results. The full run passed 605 of 608 cases, including all seven new cases. Hobgoblin worship recruitment, villager courtship, and gas dispersal passed in the subsequent targeted 18-case run.
+
 ## Brew of Erosion and Brew of Ice (2026-11-21)
 
 - [x] Restore the original six-ingredient Kettle recipes, three servings, Brew Mastery bottling bonus, and legacy metadata 62 and 76. Erosion needs no altar power. Ice waits for 1,000 power and debits the altar once per batch.

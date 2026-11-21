@@ -1,7 +1,8 @@
 {
    "variants" : {
-      "" : {
-         "model" : "witchery:block/vine"
-      }
+      "facing=north": { "model": "witchery:block/vine" },
+      "facing=east": { "model": "witchery:block/vine", "y": 90 },
+      "facing=south": { "model": "witchery:block/vine", "y": 180 },
+      "facing=west": { "model": "witchery:block/vine", "y": 270 }
    }
 }

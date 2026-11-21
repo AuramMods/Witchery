@@ -13,6 +13,7 @@ import art.arcane.witchery.brewing.IllFittingEffect;
 import art.arcane.witchery.brewing.LightAllergyEffect;
 import art.arcane.witchery.brewing.LoveEffect;
 import art.arcane.witchery.brewing.MovementBrewEffect;
+import art.arcane.witchery.brewing.PlantBrewEffect;
 import art.arcane.witchery.brewing.ProjectileBrewEffect;
 import art.arcane.witchery.brewing.ResizingEffect;
 import art.arcane.witchery.brewing.SnowTrailEffect;
@@ -42,6 +43,10 @@ public final class WitcheryEffects {
             () -> new MobEffect(MobEffectCategory.HARMFUL, 0x4F2756) {});
     public static final RegistryObject<MobEffect> PARALYSIS = MOB_EFFECTS.register("potion.paralysed", ParalysisEffect::new);
     public static final RegistryObject<MobEffect> CHILLED = MOB_EFFECTS.register("potion.chilled", ChilledEffect::new);
+    public static final RegistryObject<MobEffect> WRAPPED_IN_VINE = MOB_EFFECTS.register("potion.wrappedinvine",
+            () -> new PlantBrewEffect(true, legacyColor("potion.wrappedinvine")));
+    public static final RegistryObject<MobEffect> SPIKED = MOB_EFFECTS.register("potion.spiked",
+            () -> new PlantBrewEffect(false, legacyColor("potion.spiked")));
     public static final RegistryObject<MobEffect> WOLFSBANE = simpleEffect("potion.wolfsbane", MobEffectCategory.NEUTRAL);
     public static final RegistryObject<MobEffect> ENDER_INHIBITION = simpleEffect("potion.enderinhibition", MobEffectCategory.HARMFUL);
     public static final RegistryObject<MobEffect> BREWING_EXPERTISE = simpleEffect("potion.brewingexpertise", MobEffectCategory.BENEFICIAL);
@@ -109,6 +114,8 @@ public final class WitcheryEffects {
         LEGACY_EFFECTS.put("potion.enslaved", ENSLAVED);
         LEGACY_EFFECTS.put("potion.paralysed", PARALYSIS);
         LEGACY_EFFECTS.put("potion.chilled", CHILLED);
+        LEGACY_EFFECTS.put("potion.wrappedinvine", WRAPPED_IN_VINE);
+        LEGACY_EFFECTS.put("potion.spiked", SPIKED);
         LEGACY_EFFECTS.put("potion.wolfsbane", WOLFSBANE);
         LEGACY_EFFECTS.put("potion.enderinhibition", ENDER_INHIBITION);
         LEGACY_EFFECTS.put("potion.brewingexpertise", BREWING_EXPERTISE);

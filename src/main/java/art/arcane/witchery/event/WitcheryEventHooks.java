@@ -8,6 +8,7 @@ import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.CoffinBlock;
 import art.arcane.witchery.block.entity.AreaWardBlockEntity;
 import art.arcane.witchery.brewing.GrotesqueEffect;
+import art.arcane.witchery.brewing.PlantBrewEffect;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.familiar.FamiliarBinding;
@@ -442,6 +443,7 @@ public final class WitcheryEventHooks {
             event.setAmount(bolt.modifyDamage(event.getEntity(), event.getAmount()));
         }
         ChilledEffect.reduceFireDamage(event);
+        PlantBrewEffect.amplifyFireDamage(event);
         Lycanthropy.adjustDamage(event);
         if (event.isCanceled()) return;
         if (event.getAmount() >= 1 && BloodFeeding.paralysis(event.getEntity(), 4)) {

@@ -1,6 +1,18 @@
 {
-  "parent": "minecraft:block/cross",
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
   "textures": {
-    "cross": "witchery:block/vine"
-  }
+    "vine": "witchery:block/vine",
+    "particle": "#vine"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 15.5],
+      "to": [16, 16, 15.5],
+      "faces": {
+        "north": {"texture": "#vine", "uv": [0, 0, 16, 16]},
+        "south": {"texture": "#vine", "uv": [0, 0, 16, 16]}
+      }
+    }
+  ]
 }

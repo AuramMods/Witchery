@@ -42,7 +42,7 @@ import art.arcane.witchery.entity.LostSoul;
 import art.arcane.witchery.client.renderer.LeonardRenderer;
 import art.arcane.witchery.client.renderer.IllusionRenderer;
 import art.arcane.witchery.client.renderer.BrewProjectileRenderer;
-import art.arcane.witchery.client.renderer.DiseaseLayer;
+import art.arcane.witchery.client.renderer.BrewOverlayLayer;
 import net.minecraft.client.model.CreeperModel;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
@@ -267,14 +267,14 @@ public final class WitcheryClient {
             if (event.getPlayerSkin(skin) instanceof PlayerRenderer renderer) {
                 renderer.addLayer(new GrotesqueLayer(renderer, event.getContext().bakeLayer(GrotesqueLayer.LAYER)));
                 addBarkLayer(event, renderer);
-                addDiseaseLayer(renderer);
+                addBrewOverlayLayer(renderer);
             }
         }
         for (var type : BuiltInRegistries.ENTITY_TYPE) {
             var renderer = event.getEntityRenderer(type);
             if (renderer instanceof HumanoidMobRenderer<?, ?> humanoid) addBarkLayer(event, humanoid);
             if (renderer instanceof ArmorStandRenderer stand) addBarkLayer(event, stand);
-            if (renderer instanceof LivingEntityRenderer<?, ?> living) addDiseaseLayer(living);
+            if (renderer instanceof LivingEntityRenderer<?, ?> living) addBrewOverlayLayer(living);
         }
     }
 
@@ -283,8 +283,8 @@ public final class WitcheryClient {
         renderer.addLayer(new BarkBeltLayer<>(renderer, event.getEntityModels().bakeLayer(BarkBeltLayer.LAYER)));
     }
 
-    private static <T extends LivingEntity, M extends EntityModel<T>> void addDiseaseLayer(LivingEntityRenderer<T, M> renderer) {
-        renderer.addLayer(new DiseaseLayer<>(renderer));
+    private static <T extends LivingEntity, M extends EntityModel<T>> void addBrewOverlayLayer(LivingEntityRenderer<T, M> renderer) {
+        renderer.addLayer(new BrewOverlayLayer<>(renderer));
     }
 
     @SubscribeEvent

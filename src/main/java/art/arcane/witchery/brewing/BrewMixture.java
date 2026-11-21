@@ -68,7 +68,7 @@ public final class BrewMixture {
         REMOVE_DEBUFFS, REMOVE_BUFFS, WASTING, DRAIN_MAGIC, DURATION_BOOST, STEAL_BUFFS, SPREAD_DEBUFFS,
         AIR_HIKE, FROG_TONGUE, KNOCKBACK, BAT_BURST, BODEGA, POISON_TOAD, RAISING,
         FLOWERS, FERTILIZATION, HARVESTING, TILLING, PLANTING, PRUNING, FELLING, PULVERISATION,
-        DISSIPATE, TIDE_HOLD, LAVA_HOLD, LILIFY, EROSION, LEVELLING;
+        DISSIPATE, TIDE_HOLD, LAVA_HOLD, LILIFY, EROSION, LEVELLING, WEBS, VINES, THORNS;
 
         String nameKey(boolean inverted) {
             return switch (this) {
@@ -113,6 +113,9 @@ public final class BrewMixture {
                 case LILIFY -> "brew.witchery.lilify";
                 case EROSION -> "brew.witchery.erosion";
                 case LEVELLING -> "brew.witchery.levelling";
+                case WEBS -> "brew.witchery.webs";
+                case VINES -> "brew.witchery.vines";
+                case THORNS -> "brew.witchery.thorns";
             };
         }
 
@@ -121,7 +124,7 @@ public final class BrewMixture {
                 case EXTINGUISH, COLD, ICE_SHELL, ICE_WORLD, CHANGING_SEASONS, SNOW,
                      BAT_BURST, FROG_TONGUE, POISON_TOAD, RAISING,
                      FLOWERS, FERTILIZATION, HARVESTING, TILLING, PLANTING, PRUNING, FELLING, PULVERISATION,
-                     DISSIPATE, TIDE_HOLD, LAVA_HOLD, LILIFY, EROSION, LEVELLING -> true;
+                     DISSIPATE, TIDE_HOLD, LAVA_HOLD, LILIFY, EROSION, LEVELLING, WEBS, VINES, THORNS -> true;
                 default -> false;
             };
         }
@@ -438,6 +441,9 @@ public final class BrewMixture {
                 case LILIFY -> BrewTerrainEffects.lilify(level, pos, face, strength, caster);
                 case EROSION -> BrewErosion.erodeFromCauldron(level, pos, radius, caster);
                 case LEVELLING -> BrewLevelling.levelTerrain(level, pos, radius, strength, ritual, caster);
+                case WEBS -> BrewPlantEffects.webs(level, pos, face, strength, caster);
+                case VINES -> BrewPlantEffects.vines(level, pos, face, strength, caster);
+                case THORNS -> BrewPlantEffects.thorns(level, pos, face, strength, caster);
                 default -> { }
             }
         }
@@ -596,6 +602,17 @@ public final class BrewMixture {
                 }
             }
             case EROSION -> BrewErosion.corrodeFromCauldron(target, caster, strengthScale);
+            case WEBS -> {
+                if (target.level() instanceof ServerLevel level) {
+                    BrewPlantEffects.webs(level, target.blockPosition(), null, strength, caster instanceof Player player ? player : null);
+                }
+            }
+            case VINES, THORNS -> {
+                var effect = application.action == Action.VINES ? WitcheryEffects.WRAPPED_IN_VINE : WitcheryEffects.SPIKED;
+                int ticks = Mth.ceil(1800 * application.durationMultiplier * durationScale);
+                target.addEffect(new MobEffectInstance(effect.get(), ticks, Math.min(strength, 10),
+                        false, application.showParticles, true), source);
+            }
             case CHANGING_SEASONS, ICE_WORLD, RAISING, TIDE_HOLD, LAVA_HOLD, LEVELLING,
                  FLOWERS, FERTILIZATION, HARVESTING, TILLING, PLANTING, PRUNING, FELLING, PULVERISATION -> { }
         }
@@ -845,6 +862,9 @@ public final class BrewMixture {
         entries.put(ResourceLocation.withDefaultNamespace("lily_pad"), new Ingredient(200, null, 1, 10, 0, null, null, Action.LILIFY));
         entries.put(ResourceLocation.parse("witchery:oil_of_vitriol"), new Ingredient(200, null, 2, 10, 0, null, null, Action.EROSION));
         entries.put(ResourceLocation.withDefaultNamespace("netherrack"), new Ingredient(200, null, 2, 10, 0, null, null, Action.LEVELLING));
+        entries.put(ResourceLocation.parse("witchery:thrown_web"), new Ingredient(200, null, 2, 10, 0, null, null, Action.WEBS));
+        entries.put(ResourceLocation.withDefaultNamespace("vine"), new Ingredient(150, null, 2, 10, 0, null, null, Action.VINES));
+        entries.put(ResourceLocation.withDefaultNamespace("cactus"), new Ingredient(150, null, 2, 10, 0, null, null, Action.THORNS));
         entries.put(ResourceLocation.fromNamespaceAndPath("witchery", "odour_of_purity"),
                 new Ingredient(100, null, 4, 0, 0, null, null, Action.REVEAL));
         entries.put(ResourceLocation.fromNamespaceAndPath("witchery", "heart_of_gold"),
