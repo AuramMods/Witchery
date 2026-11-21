@@ -419,8 +419,8 @@ The original `witchhat`, `witchrobe`, `necromancerrobe`, and `babashat` IDs equi
 | `BREW` | `witchery:brewbottle` |
 | `BREW_FUEL` | `witchery:brew.fuel` |
 | `BREW_ENDLESS_WATER` | `witchery:brew.water` |
-| `BIOME_BOOK` | `witchery:bookbiomes2` |
-| `BIOME_NOTE` | `witchery:biomenote` |
+| `BIOME_BOOK` | `witchery:bookbiomes2` (stable `WitcheryBiome` ID and legacy `CurrentPage` import) |
+| `BIOME_NOTE` | `witchery:biomenote` (legacy atlas `Damage` index imports to `WitcheryBiome`) |
 | `CAULDRON_BOOK` | `witchery:cauldronbook` |
 | `LEONARDS_URN` | `witchery:leonardsurn` (legacy tiers 0–3, stored splash brews and Mystic Branch slots) |
 | `PLAYER_COMPASS` | `witchery:playercompass` |
@@ -1182,6 +1182,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 - Icy Needle subtype 78 adds Cold for two effect levels and 200 altar power. It applies three minutes of base Chilled and freezes connected water at a block impact. The range starts at two blocks and increases by two for each strength boost.
 - Frozen Heart subtype 79 adds Ice Shell for five effect levels and 500 altar power. It applies ten seconds of base Chilled to susceptible entities. A direct hit or supported block impact forms Perpetual Ice. A glancing splash applies only the shorter Chilled effect. The shell uses the rite's original outline geometry and clears water, brew gas, and brew liquid inside its radius. The `witchery:ice_shell_resistant` entity tag includes blazes, golems, demons, ents, and boss types. Resistant targets receive water at their feet when the block is replaceable and the dimension permits water.
 - `witchery:potion.chilled` keeps the original movement modifier, reduction to incoming fire damage, and periodic magic damage for blazes or at level III and above. Both cold brews keep the strength, duration, and particle suppression modifiers that preceded the ingredient.
+- A `witchery:biomenote` adds Changing Seasons for eight effect levels and 5,000 base altar power. Its `WitcheryBiome` persists in the ordered `Items` list. The block-targeted action forces instant dispersal and supports a Tongue of Dog ritual at a Waystone. The biome writer updates and resends every intersecting quart column, and dry biomes clear snow layers within the original block footprint.
 
 ## Network Packets (`PacketPipeline`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/network/PacketPipeline.java`

@@ -4,6 +4,7 @@ import art.arcane.witchery.entity.CreatureAlignment;
 import art.arcane.witchery.entity.Leonard;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.item.WaystoneItem;
+import art.arcane.witchery.item.BiomeNoteItem;
 import art.arcane.witchery.registry.WitcheryEffects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -47,7 +48,7 @@ public final class BrewMixture {
     }
 
     private enum Action {
-        EXTINGUISH, COLD, ICE_SHELL, HARM_DEMONS, REVEAL, MOVE_ANIMALS;
+        EXTINGUISH, COLD, ICE_SHELL, HARM_DEMONS, REVEAL, MOVE_ANIMALS, CHANGING_SEASONS;
 
         String nameKey(boolean inverted) {
             return switch (this) {
@@ -57,6 +58,7 @@ public final class BrewMixture {
                 case HARM_DEMONS -> "brew.witchery.harm_demons";
                 case REVEAL -> "brew.witchery.revealing";
                 case MOVE_ANIMALS -> inverted ? "brew.witchery.animal_repulsion" : "brew.witchery.animal_attraction";
+                case CHANGING_SEASONS -> "brew.witchery.changing_seasons";
             };
         }
     }
@@ -64,7 +66,7 @@ public final class BrewMixture {
     private sealed interface BrewEffect permits Application, ActionApplication {}
 
     private record ActionApplication(Action action, int strength, boolean inverted, int durationMultiplier,
-                                     boolean showParticles) implements BrewEffect {
+                                     boolean showParticles, @Nullable ResourceLocation biome) implements BrewEffect {
         String nameKey() { return action.nameKey(inverted); }
     }
 
@@ -113,7 +115,9 @@ public final class BrewMixture {
         ResourceLocation id = id(offered);
         Ingredient ingredient = INGREDIENTS.get(id);
         return mixing != null && ingredient != null && ingredient.modifier != Modifier.RITUAL
-                && (ingredient.modifier != Modifier.WAYSTONE || WaystoneItem.location(offered) != null) && !mixing.segment.contains(id)
+                && (ingredient.modifier != Modifier.WAYSTONE || WaystoneItem.location(offered) != null)
+                && (ingredient.action != Action.CHANGING_SEASONS || BiomeNoteItem.biomeId(offered) != null)
+                && !mixing.segment.contains(id)
                 && (!ingredient.isEffect() || mixing.used + ingredient.amount <= mixing.capacity);
     }
 
@@ -220,6 +224,15 @@ public final class BrewMixture {
     public int color() { return color; }
     public boolean splash() { return delivery != Delivery.DRINK; }
     public Delivery delivery() { return delivery; }
+    public Delivery impactDelivery() {
+        if (!splash()) return delivery;
+        for (BrewEffect effect : effects) {
+            if (effect instanceof ActionApplication application && application.action == Action.CHANGING_SEASONS) {
+                return Delivery.SPLASH;
+            }
+        }
+        return delivery;
+    }
     public int extent() { return extent; }
     public int lifetime() { return lifetime; }
     public int splashRadius() { return 3 + extent; }
@@ -228,12 +241,23 @@ public final class BrewMixture {
     public WaystoneItem.Location destination() { return destination; }
 
     public void applyToBlock(ServerLevel level, BlockPos pos, Direction face, int radius, boolean ritual, @Nullable Player caster) {
+        applyToBlock(level, pos, face, radius, ritual, caster, 0);
+    }
+
+    void applyRitualToBlock(ServerLevel level, BlockPos pos, int coven) {
+        applyToBlock(level, pos, Direction.UP, splashRadius(), true, null, coven);
+    }
+
+    private void applyToBlock(ServerLevel level, BlockPos pos, Direction face, int radius, boolean ritual,
+                              @Nullable Player caster, int coven) {
         for (BrewEffect effect : effects) {
             if (!(effect instanceof ActionApplication application)) continue;
             switch (application.action) {
                 case EXTINGUISH -> BrewTerrainEffects.extinguish(level, pos, radius, ritual, application.strength, caster);
                 case COLD -> BrewColdEffects.freezeWater(level, pos, application.strength, caster);
                 case ICE_SHELL -> BrewColdEffects.shellOnImpact(level, pos, face, application.strength, caster);
+                case CHANGING_SEASONS -> BrewTerrainEffects.changeSeasons(level, pos, application.biome,
+                        application.strength, ritual, coven, caster);
                 default -> { }
             }
         }
@@ -307,6 +331,7 @@ public final class BrewMixture {
             }
             case REVEAL -> BrewCreatureEffects.reveal(target);
             case MOVE_ANIMALS -> BrewCreatureEffects.moveAnimals(target, strength, application.inverted);
+            case CHANGING_SEASONS -> { }
         }
     }
 
@@ -335,6 +360,7 @@ public final class BrewMixture {
             ResourceLocation id = id(stack);
             Ingredient ingredient = INGREDIENTS.get(id);
             if (ingredient == null || stack.isEmpty()) return null;
+            if (ingredient.action == Action.CHANGING_SEASONS && BiomeNoteItem.biomeId(stack) == null) return null;
             mixing.add(stack, id, ingredient);
         }
         return mixing;
@@ -367,7 +393,7 @@ public final class BrewMixture {
             yieldModifier += ingredient.yieldModifier;
             color = color * 37 + id.hashCode();
             if (ingredient.isEffect()) {
-                applyEffect(ingredient);
+                applyEffect(stack, ingredient);
                 segment.clear();
             } else {
                 applyModifier(ingredient);
@@ -376,13 +402,14 @@ public final class BrewMixture {
             segment.add(id);
         }
 
-        private void applyEffect(Ingredient ingredient) {
+        private void applyEffect(ItemStack stack, Ingredient ingredient) {
             if (used + ingredient.amount > capacity) return;
             used += ingredient.amount;
             if (ingredient.action != null) {
                 int actionStrength = ingredient.action == Action.HARM_DEMONS
                         ? Math.min(strength, unlimitedBoosts ? 3 : 1) : strength;
-                effects.add(new ActionApplication(ingredient.action, actionStrength, inverted, duration + 1, !hideParticles));
+                var biome = ingredient.action == Action.CHANGING_SEASONS ? BiomeNoteItem.biomeId(stack) : null;
+                effects.add(new ActionApplication(ingredient.action, actionStrength, inverted, duration + 1, !hideParticles, biome));
             } else {
                 Potion effect = inverted ? ingredient.inverted : ingredient.normal;
                 effects.add(new Application(effect.effect.get(), effect.duration * (duration + 1),
@@ -470,6 +497,8 @@ public final class BrewMixture {
                 new Ingredient(100, null, 4, 0, 0, null, null, Action.REVEAL));
         entries.put(ResourceLocation.fromNamespaceAndPath("witchery", "heart_of_gold"),
                 new Ingredient(500, null, 4, 0, 0, null, null, Action.MOVE_ANIMALS));
+        entries.put(ResourceLocation.fromNamespaceAndPath("witchery", "biomenote"),
+                new Ingredient(5000, null, 8, 0, 0, null, null, Action.CHANGING_SEASONS));
 
         potion(entries, "witchery:wolfsbane_flower", 0, 1, WitcheryEffects.WOLFSBANE, 1200);
         potion(entries, "witchery:ender_dew", 200, 1, WitcheryEffects.ENDER_INHIBITION, 1800);

@@ -2,11 +2,10 @@ package art.arcane.witchery.ritual;
 
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.world.BiomePainting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.QuartPos;
 import net.minecraft.core.Registry;
-import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -26,14 +25,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.Tags;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -41,8 +37,6 @@ import java.util.List;
 public final class ClimateChange {
     static final int CAST_STAGE = 5;
     private static final int MINIMUM_COVEN = 4;
-    private static final int QUART_WIDTH = QuartPos.fromBlock(16);
-    private static final int QUART_CENTER = QuartPos.toBlock(1) / 2;
 
     private ClimateChange() {}
 
@@ -143,7 +137,7 @@ public final class ClimateChange {
         if (choices.isEmpty()) return fail(level, center, caster, "message.witchery.rite.climate_focus");
         int radius = 16 * (coven - 3);
         Holder<Biome> biome = select(choices, glowstone, level.getRandom());
-        repaint(level, center, radius, biome);
+        BiomePainting.paint(level, center, radius, biome);
         if (weather == Weather.CLEAR) {
             removeSnow(level, center, radius, caster);
             if (level.isRaining() || level.isThundering()) level.setWeatherParameters(0, 0, false, false);
@@ -158,57 +152,11 @@ public final class ClimateChange {
         return choices.get(index);
     }
 
-    private static void repaint(ServerLevel level, BlockPos center, int radius, Holder<Biome> biome) {
-        List<ChunkAccess> changed = new ArrayList<>();
-        var chunkSource = level.getChunkSource();
-        var sampler = chunkSource.randomState().sampler();
-        int minChunkX = SectionPos.blockToSectionCoord(center.getX() - radius);
-        int maxChunkX = SectionPos.blockToSectionCoord(center.getX() + radius);
-        int minChunkZ = SectionPos.blockToSectionCoord(center.getZ() - radius);
-        int maxChunkZ = SectionPos.blockToSectionCoord(center.getZ() + radius);
-        for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++) {
-            for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
-                var quartColumns = quartColumns(level, center, radius, chunkX, chunkZ);
-                if (quartColumns.isEmpty()) continue;
-                ChunkAccess chunk = level.getChunk(chunkX, chunkZ);
-                chunk.fillBiomesFromNoise((x, y, z, ignored) -> quartColumns.get(columnIndex(x, z))
-                        ? biome : chunk.getNoiseBiome(x, y, z), sampler);
-                chunk.setUnsaved(true);
-                changed.add(chunk);
-            }
-        }
-        chunkSource.chunkMap.resendBiomesForChunks(changed);
-    }
-
-    private static BitSet quartColumns(ServerLevel level, BlockPos center, int radius, int chunkX, int chunkZ) {
-        BitSet result = new BitSet(QUART_WIDTH * QUART_WIDTH);
-        for (int qz = 0; qz < QUART_WIDTH; qz++) {
-            for (int qx = 0; qx < QUART_WIDTH; qx++) {
-                int x = SectionPos.sectionToBlockCoord(chunkX) + QuartPos.toBlock(qx) + QUART_CENTER;
-                int z = SectionPos.sectionToBlockCoord(chunkZ) + QuartPos.toBlock(qz) + QUART_CENTER;
-                if (inCircle(center, radius, x, z) && level.getWorldBorder().isWithinBounds(x, z)) {
-                    result.set(columnIndex(qx, qz));
-                }
-            }
-        }
-        return result;
-    }
-
-    private static int columnIndex(int quartX, int quartZ) {
-        return Math.floorMod(quartZ, QUART_WIDTH) * QUART_WIDTH + Math.floorMod(quartX, QUART_WIDTH);
-    }
-
-    private static boolean inCircle(BlockPos center, int radius, int x, int z) {
-        int dx = x - center.getX();
-        int dz = z - center.getZ();
-        return dx * dx + dz * dz <= radius * radius;
-    }
-
     private static void removeSnow(ServerLevel level, BlockPos center, int radius, @Nullable ServerPlayer caster) {
         var top = new BlockPos.MutableBlockPos();
         for (int z = center.getZ() - radius; z <= center.getZ() + radius; z++) {
             for (int x = center.getX() - radius; x <= center.getX() + radius; x++) {
-                if (!inCircle(center, radius, x, z) || !level.getWorldBorder().isWithinBounds(x, z)) continue;
+                if (!BiomePainting.insideCircle(center, radius, x, z) || !level.getWorldBorder().isWithinBounds(x, z)) continue;
                 top.set(x, level.getHeight(Heightmap.Types.WORLD_SURFACE, x, z) - 1, z);
                 var state = level.getBlockState(top);
                 if (state.is(Blocks.SNOW_BLOCK) || state.is(Blocks.SNOW)) {

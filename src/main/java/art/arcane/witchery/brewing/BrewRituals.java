@@ -46,12 +46,13 @@ public final class BrewRituals {
         ServerLevel level = destination == null ? source : source.getServer().getLevel(destination.dimension());
         BlockPos target = destination == null ? origin : destination.position();
         if (level == null || !level.isInWorldBounds(target) || !level.getWorldBorder().isWithinBounds(target)) return Result.TOO_FAR;
-        if (destination != null && !canReach(source, origin, level, target.distSqr(origin), leonard)) return Result.TOO_FAR;
+        int coven = nearbyCoven(source, origin);
+        if (destination != null && !canReach(source, level, target.distSqr(origin), leonard, coven)) return Result.TOO_FAR;
 
-        return switch (mixture.delivery()) {
+        return switch (mixture.impactDelivery()) {
             case TRIGGERED -> BrewItemCurse.attach(source, origin, brew) ? Result.COMPLETE : Result.FAILED;
             case SPLASH -> {
-                mixture.applyToBlock(level, target, Direction.UP, mixture.splashRadius(), true, null);
+                mixture.applyRitualToBlock(level, target, coven);
                 yield Result.COMPLETE;
             }
             case GAS -> {
@@ -75,7 +76,7 @@ public final class BrewRituals {
                                       boolean leonard) {
         LivingEntity target = TaglockItem.resolveTarget(source, trigger);
         if (target == null || !target.isAlive() || !(target.level() instanceof ServerLevel level)) return Result.FAILED;
-        if (!canReach(source, origin, level, target.distanceToSqr(Vec3.atLowerCornerOf(origin)), leonard)) {
+        if (!canReach(source, level, target.distanceToSqr(Vec3.atLowerCornerOf(origin)), leonard, nearbyCoven(source, origin))) {
             return Result.TOO_FAR;
         }
         if (!HunterClothingItem.resistsCurse(target) && !AreaWardBlockEntity.protectsBrew(target)
@@ -86,15 +87,17 @@ public final class BrewRituals {
         return Result.COMPLETE;
     }
 
-    private static boolean canReach(ServerLevel source, BlockPos origin, ServerLevel level, double distanceSquared,
-                                    boolean leonard) {
+    private static int nearbyCoven(ServerLevel source, BlockPos origin) {
         AABB covenArea = new AABB(origin).inflate(6);
         Vec3 center = Vec3.atCenterOf(origin);
         int coven = source.getEntitiesOfClass(CovenWitch.class, covenArea, witch -> witch.hasCovenOwner()
                 && witch.distanceToSqr(center.x, witch.getY(), center.z) <= 36).size();
         int otherPlayers = source.getEntitiesOfClass(ServerPlayer.class, covenArea, player -> !player.isSpectator()
                 && player.distanceToSqr(center.x, player.getY(), center.z) <= 36 && CovenWitch.covenSize(player) > 0).size() - 1;
-        coven += Math.max(0, otherPlayers);
+        return coven + Math.max(0, otherPlayers);
+    }
+
+    private static boolean canReach(ServerLevel source, ServerLevel level, double distanceSquared, boolean leonard, int coven) {
         if (source != level) return coven >= 6 && leonard;
         if (coven >= 6) return true;
         int scale = (1 + coven) * 4;

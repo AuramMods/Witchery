@@ -384,7 +384,16 @@
 - [x] In the muted survival client, loot and read the old Circle Magic stack, browse the cauldron contents, and craft the Fumes guide with supplied ingredients. Learn Ignianima by drinking a supplied Brew of Soul Anguish. Its chapter appears in Symbology.
 - [x] Copy Snowy Beach from the shop's atlas using the inventory crafting grid. Restart the dedicated server and verify the note, atlas selection, learned chapter, and legacy book bookmark.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 366 required Forge GameTests. The new cases cover the original recipes, legacy metadata and bookmarks, active guide content, and atlas copying.
-- [ ] Use the resulting Biome Note in the Brew of the Changing Seasons.
+- [x] Use the resulting Biome Note in the Brew of the Changing Seasons.
+
+## Brew of the Changing Seasons (2026-11-21)
+
+- [x] Accept a signed Biome Note for eight effect levels and 5,000 base altar power. A throw or a ritual cast with Tongue of Dog resolves instantly, including when the mix contains Wool of Bat. A Waystone can send the rite to its bound location. Strength modifiers increase the area, with the ritual boost limited by nearby coven size.
+- [x] Preserve the original horizontal footprint and adapt it to the 1.20.1 biome grid. Every intersecting four-block-wide column changes at all heights. Clients tracking the chunks receive the new biome data immediately. A dry biome clears surface snow layers inside the original footprint.
+- [x] Recover atlas bookmarks and named Biome Notes that only carry a legacy number. Verified all 82 positions from vanilla biomes in [Forge 1.7.10](https://raw.githubusercontent.com/MinecraftForge/MinecraftForge/1.7.10/src/main/java/net/minecraftforge/common/BiomeDictionary.java) against the 1.20.1 biome data fixes. A modpack that changed the original atlas order needs its own map.
+- [x] In the muted survival client, use the Snowy Beach note crafted from the bookshop atlas. The bottle retained the note, used all eight effect levels and cost 5,450 power with the four supplied capacity modifiers. Throwing it changed one saved biome column from Plains to Snowy Beach all the way from bedrock to the build limit. Its neighboring column was unchanged.
+- [x] Start a Desert ritual with a supplied note and a Waystone bound 27 blocks from the cauldron. The trigger and ingredients survived a dedicated restart. Mounting an Arthana at the prepared altar extended its range so the pending cast could finish. The ritual painted 62 biome columns around the Waystone and emptied the cauldron. Two surface snow layers inside the footprint cleared. A full snow block, a snow layer outside the footprint, and the world's rain persisted.
+- [x] Reload both changed biomes, the cleared snow and the empty cauldron on a second dedicated restart. Java 17 data generation, JAR reobfuscation, and all 370 required Forge GameTests passed. The new tests cover note capacity and power, persistent delivery and biome selection, legacy atlas positions, single-column splash behavior, and coven scaling.
 
 ## Daylight Collector and Sun Grenades (2026-11-20)
 

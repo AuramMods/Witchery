@@ -149,7 +149,7 @@ public final class BrewBottleItem extends Item {
     public void impact(ServerLevel level, ThrownBrew brew, HitResult hit) {
         BrewMixture mixture = BrewMixture.from(brew.getItem().getTag());
         if (mixture == null || !mixture.splash()) return;
-        switch (mixture.delivery()) {
+        switch (mixture.impactDelivery()) {
             case SPLASH -> splash(level, brew, hit, mixture);
             case GAS, LIQUID -> releaseFluid(level, brew, hit, mixture);
             case TRIGGERED -> CursedControls.impact(level, hit, brew.getItem().getTag(), mixture, color(brew.getItem()),

@@ -27,4 +27,10 @@ public final class BiomeNoteItem extends Item {
         String id = stack.getTag().getString(BIOME);
         return id.isEmpty() ? null : ResourceLocation.tryParse(id);
     }
+
+    static void importPage(ItemStack stack, int page) {
+        if (stack.hasTag() && stack.getTag().contains(BIOME, Tag.TAG_STRING)) return;
+        var biome = LegacyBiomeAtlas.biomeAt(page);
+        if (biome != null) stack.getOrCreateTag().putString(BIOME, biome.toString());
+    }
 }

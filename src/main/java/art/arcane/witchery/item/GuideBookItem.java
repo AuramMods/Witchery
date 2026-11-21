@@ -17,7 +17,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public final class GuideBookItem extends Item {
-    private static final String CURRENT_PAGE = "CurrentPage";
+    static final String CURRENT_PAGE = "CurrentPage";
     private static final String INGREDIENT_DAMAGE = "LegacyIngredientDamage";
 
     public enum Volume {

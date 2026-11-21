@@ -10,6 +10,8 @@ import net.minecraft.world.entity.Mob;
 import art.arcane.witchery.brewing.CauldronRitualRecipe;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.item.BiomeNoteItem;
+import net.minecraft.core.registries.Registries;
 import art.arcane.witchery.power.AltarPower;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryBlocks;
@@ -333,6 +335,8 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
             }
         }
         if (BrewMixture.canAdd(ingredients, offered)) {
+            if (offered.getItem() instanceof BiomeNoteItem && !server.registryAccess().registryOrThrow(Registries.BIOME)
+                    .containsKey(BiomeNoteItem.biomeId(offered))) return false;
             BrewMixture.add(ingredients, offered);
             onIngredientAdded(server);
             return true;
