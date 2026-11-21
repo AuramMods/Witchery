@@ -71,9 +71,9 @@ public final class BrewDroplet extends ThrowableProjectile implements ItemSuppli
         if (!(level() instanceof ServerLevel server)) return;
         if (mixture != null) {
             if (hit instanceof BlockHitResult block) {
-                mixture.applyToBlock(server, block.getBlockPos(), block.getDirection(), 1, true, null);
+                mixture.applyToBlock(server, block.getBlockPos(), block.getDirection(), 1, true, null, hit.getLocation());
             } else if (hit instanceof EntityHitResult entity && entity.getEntity() instanceof LivingEntity living) {
-                mixture.apply(living, this, null, 1, 1);
+                mixture.applyRitualExposure(living, this, 1, hit.getLocation());
             }
             server.levelEvent(2002, BlockPos.containing(hit.getLocation()), entityData.get(COLOR));
         }

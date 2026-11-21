@@ -3,7 +3,10 @@ package art.arcane.witchery.brewing;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.entity.SpectralUndead;
 import art.arcane.witchery.entity.ThrownBrew;
+import art.arcane.witchery.entity.WitchOwl;
+import art.arcane.witchery.entity.WitchToad;
 import art.arcane.witchery.familiar.Familiar;
+import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.vampirism.VampireVillages;
 import art.arcane.witchery.world.MirrorDisguise;
@@ -20,11 +23,14 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.ambient.Bat;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Slime;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.npc.Villager;
@@ -33,16 +39,101 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraftforge.common.util.FakePlayer;
+import org.jetbrains.annotations.Nullable;
 
 public final class BrewCreatureEffects {
     private static final TagKey<Block> WASTING_PLANTS = TagKey.create(Registries.BLOCK,
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "wasting_plants"));
 
     private BrewCreatureEffects() {}
+
+    static void airHike(LivingEntity target, int strength) {
+        double lift = 0.6 + 0.2 * strength;
+        target.resetFallDistance();
+        Vec3 horizontal = target instanceof Player ? Vec3.ZERO : target.getDeltaMovement();
+        move(target, new Vec3(horizontal.x, lift, horizontal.z));
+    }
+
+    static void frogTongue(Entity target, @Nullable LivingEntity caster, @Nullable Vec3 impact, int strength) {
+        Vec3 origin = tongueOrigin(caster, impact, strength);
+        if (origin == null || target.getType() == EntityType.ENDER_DRAGON
+                || target.getType() == WitcheryEntities.all().get("hornedhuntsman").get()) return;
+        Vec3 difference = origin.subtract(target.position());
+        if (difference.lengthSqr() < 0.0001) return;
+        if (target instanceof LivingEntity living) living.addEffect(new MobEffectInstance(MobEffects.JUMP, 20, 1));
+        move(target, new Vec3(difference.x * 0.15, 0.4, difference.z * 0.15));
+    }
+
+    static void frogTongue(ServerLevel level, Vec3 impact, int radius, @Nullable LivingEntity caster, int strength) {
+        for (Entity entity : level.getEntitiesOfClass(Entity.class, new AABB(impact, impact).inflate(radius),
+                candidate -> !(candidate instanceof LivingEntity) && candidate.distanceToSqr(impact) <= radius * radius)) {
+            frogTongue(entity, caster, impact, strength);
+        }
+    }
+
+    @Nullable
+    private static Vec3 tongueOrigin(@Nullable LivingEntity caster, @Nullable Vec3 impact, int strength) {
+        return strength > 0 && caster instanceof Player && !(caster instanceof FakePlayer) ? caster.position() : impact;
+    }
+
+    static void knockback(LivingEntity target, @Nullable Vec3 impact, int strength, double scale) {
+        double horizontal = 1 + strength * scale;
+        double lift = 0.5 + strength * 0.2;
+        if (impact != null) {
+            pushFrom(target, impact, horizontal, lift);
+            return;
+        }
+        int radius = 3 + strength;
+        Vec3 center = target.position();
+        for (Entity neighbor : target.level().getEntities(target, new AABB(center, center).inflate(radius),
+                entity -> (entity instanceof LivingEntity || entity instanceof ItemEntity)
+                        && entity.distanceToSqr(center) <= radius * radius)) {
+            pushFrom(neighbor, center, horizontal, lift);
+        }
+    }
+
+    private static void pushFrom(Entity target, Vec3 center, double horizontal, double lift) {
+        Vec3 offset = target.position().subtract(center).normalize();
+        move(target, new Vec3(offset.x * horizontal, Math.max(offset.y, lift), offset.z * horizontal));
+    }
+
+    static void batBurst(LivingEntity target, int strength, double scale, boolean glancing) {
+        if (!(target.level() instanceof ServerLevel level) || target instanceof Bat || target instanceof WitchOwl) return;
+        boolean full = scale == 1 && !glancing;
+        if (full || level.random.nextInt(20) == 0) {
+            releaseBats(level, target.blockPosition().above(), (full ? 10 : 1) + strength);
+        }
+    }
+
+    static void bodega(LivingEntity target, @Nullable LivingEntity caster, int strength, double scale, boolean glancing) {
+        if (!(target.level() instanceof ServerLevel level) || !(caster instanceof ServerPlayer player)
+                || target instanceof Bat || target instanceof WitchOwl || !FamiliarBinding.hasBroomMastery(player)) return;
+        boolean full = scale == 1 && !glancing;
+        if (full || level.random.nextInt(20) == 0) {
+            summonOwls(level, target, (full ? 3 + level.random.nextInt(2) : 1) + strength);
+        }
+    }
+
+    static void poisonToad(LivingEntity target, int strength, double scale) {
+        if (target.level() instanceof ServerLevel level && ((!(target instanceof WitchToad) && scale == 1)
+                || level.random.nextDouble() < scale * 0.2)) {
+            poisonToad(level, new Vec3(target.getX(), target.getY() + target.getBbHeight() + 1, target.getZ()), strength);
+        }
+    }
+
+    static void poisonToad(ServerLevel level, Vec3 landing, int strength) {
+        var toad = WitcheryEntities.TOAD.get().create(level);
+        if (toad == null) return;
+        toad.moveTo(landing.x, landing.y, landing.z, 0, 0);
+        toad.preparePoisonousToad(60 + 40 * strength);
+        level.addFreshEntity(toad);
+    }
 
     static void reveal(LivingEntity target) {
         target.removeEffect(MobEffects.INVISIBILITY);
@@ -131,7 +222,10 @@ public final class BrewCreatureEffects {
             BrewImpacts.recoverBrew(brew, level, hit);
             return;
         }
-        int count = 3 + level.random.nextInt(2);
+        summonOwls(level, victim, 3 + level.random.nextInt(2));
+    }
+
+    private static void summonOwls(ServerLevel level, LivingEntity victim, int count) {
         for (int i = 0; i < count; i++) {
             var owl = WitcheryEntities.OWL.get().create(level);
             if (owl == null) continue;
@@ -150,16 +244,7 @@ public final class BrewCreatureEffects {
         if (!(brew.level() instanceof ServerLevel level)) return;
         boolean enhanced = BrewImpacts.enhanced(brew);
         BlockPos release = BrewTerrain.splashPosition(level, hit);
-        for (int i = 0; i < (enhanced ? 14 : 10); i++) {
-            var bat = EntityType.BAT.create(level);
-            if (bat == null) continue;
-            Vec3 position = Vec3.atCenterOf(release);
-            bat.moveTo(position.x, position.y, position.z, 0, 0);
-            bat.setResting(false);
-            bat.getPersistentData().putBoolean("WITCNoDrops", true);
-            level.addFreshEntity(bat);
-        }
-        level.playSound(null, release, SoundEvents.ENDERMAN_TELEPORT, SoundSource.NEUTRAL, 1, 1);
+        spawnBats(level, Vec3.atCenterOf(release), enhanced ? 14 : 10);
         Vec3 impact = hit.getLocation();
         double radius = enhanced ? 4 : 3;
         for (LivingEntity victim : level.getEntitiesOfClass(LivingEntity.class, BrewImpacts.splashBounds(brew, impact, radius))) {
@@ -169,6 +254,24 @@ public final class BrewCreatureEffects {
                 BrewImpacts.clearTarget(victim);
             }
         }
+    }
+
+    static void releaseBats(ServerLevel level, BlockPos release, int count) {
+        spawnBats(level, Vec3.atLowerCornerOf(release), count);
+        Vec3 center = Vec3.atCenterOf(release);
+        level.sendParticles(ParticleTypes.POOF, center.x, center.y, center.z, 16, 1.5, 1.5, 1.5, 0.05);
+    }
+
+    private static void spawnBats(ServerLevel level, Vec3 position, int count) {
+        for (int i = 0; i < count; i++) {
+            var bat = EntityType.BAT.create(level);
+            if (bat == null) continue;
+            bat.moveTo(position.x, position.y, position.z, 0, 0);
+            bat.setResting(false);
+            bat.getPersistentData().putBoolean("WITCNoDrops", true);
+            level.addFreshEntity(bat);
+        }
+        level.playSound(null, BlockPos.containing(position), SoundEvents.ENDERMAN_TELEPORT, SoundSource.NEUTRAL, 1, 1);
     }
 
     public static void infection(ThrownBrew brew, HitResult hit) {
@@ -280,7 +383,7 @@ public final class BrewCreatureEffects {
         return (int) Math.round(base * (1 - Math.sqrt(victim.distanceToSqr(impact)) / radius));
     }
 
-    private static void move(LivingEntity victim, Vec3 speed) {
+    private static void move(Entity victim, Vec3 speed) {
         victim.setDeltaMovement(speed);
         victim.hurtMarked = true;
     }

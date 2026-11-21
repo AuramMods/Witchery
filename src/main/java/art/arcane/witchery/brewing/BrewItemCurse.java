@@ -71,7 +71,7 @@ public final class BrewItemCurse {
             CompoundTag brew = curse.getCompound(BREW_KEY);
             BrewMixture mixture = BrewMixture.from(brew);
             if (mixture == null || mixture.delivery() != BrewMixture.Delivery.TRIGGERED || !mixture.hasEffects()) return;
-            mixture.apply(player, player, player, 1, 1);
+            mixture.applyAt(player, player, player, 1, 1, false, player.position());
             int color = brew.contains("Color", Tag.TAG_ANY_NUMERIC) ? brew.getInt("Color") : mixture.color();
             var tint = new Vector3f((color >> 16 & 255) / 255F, (color >> 8 & 255) / 255F, (color & 255) / 255F);
             player.serverLevel().sendParticles(new DustParticleOptions(tint, 1), player.getX(), player.getY(0.5),

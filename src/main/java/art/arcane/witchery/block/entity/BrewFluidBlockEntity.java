@@ -3,6 +3,7 @@ package art.arcane.witchery.block.entity;
 import art.arcane.witchery.brewing.BrewMixture;
 import art.arcane.witchery.registry.WitcheryEffects;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
@@ -12,11 +13,13 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
@@ -94,12 +97,31 @@ public final class BrewFluidBlockEntity extends BlockEntity {
 
     public void expose(ServerLevel server, LivingEntity target, boolean gas) {
         if (mixture == null) return;
+        LivingEntity caster = resolveCaster(server);
+        boolean mask = gas && target.hasEffect(WitcheryEffects.GAS_MASK.get());
+        mixture.applyAt(target, caster, caster, 0.25, 0.5, mask, Vec3.atCenterOf(worldPosition));
+    }
+
+    public void sampleTerrainContacts(ServerLevel server) {
+        if (mixture == null || !mixture.hasTerrainEffects()) return;
+        Vec3 impact = Vec3.atBottomCenterOf(worldPosition);
+        for (Direction direction : Direction.values()) {
+            if (server.random.nextDouble() >= 0.01) continue;
+            BlockPos target = worldPosition.relative(direction);
+            if (!server.isInWorldBounds(target) || !server.hasChunkAt(target)) continue;
+            BlockState state = server.getBlockState(target);
+            if (state.is(getBlockState().getBlock()) || state.isAir() && !server.getBlockState(target.below()).blocksMotion()) continue;
+            LivingEntity caster = resolveCaster(server);
+            mixture.applyLiquidToBlock(server, target, direction.getOpposite(), impact, caster instanceof Player player ? player : null);
+        }
+    }
+
+    @Nullable
+    private LivingEntity resolveCaster(ServerLevel server) {
         Entity owner = thrower != null ? server.getEntity(thrower) : null;
         if (owner == null && thrower != null) owner = server.getServer().getPlayerList().getPlayer(thrower);
         if (owner == null && !throwerName.isEmpty()) owner = server.getServer().getPlayerList().getPlayerByName(throwerName);
-        LivingEntity caster = owner instanceof LivingEntity living ? living : null;
-        boolean mask = gas && target.hasEffect(WitcheryEffects.GAS_MASK.get());
-        mixture.apply(target, caster, caster, 0.25, 0.5, mask);
+        return owner instanceof LivingEntity living ? living : null;
     }
 
     private void sync() {

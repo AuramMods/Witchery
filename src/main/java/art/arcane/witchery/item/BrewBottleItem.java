@@ -179,10 +179,10 @@ public final class BrewBottleItem extends Item {
             double distance = target.position().distanceTo(impact);
             if (distance >= radius && target != direct) continue;
             double scale = target == direct ? 1 : 1 - distance / radius;
-            mixture.applySplash(target, brew, caster, scale, target != direct);
+            mixture.applySplash(target, brew, caster, scale, target != direct, impact);
         }
         if (hit instanceof BlockHitResult block) {
-            mixture.applyToBlock(level, block.getBlockPos(), block.getDirection(), radius, false,
+            mixture.applySplashToBlock(level, block.getBlockPos(), block.getDirection(), impact,
                     caster instanceof Player player ? player : null);
         }
     }

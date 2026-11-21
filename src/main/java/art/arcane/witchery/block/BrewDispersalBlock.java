@@ -132,6 +132,7 @@ public final class BrewDispersalBlock extends LiquidBlock implements EntityBlock
                 : tickLiquid(level, pos, state, fluid, depth, random);
         if (remains) {
             fluid.sampleStationaryContacts(level, gas);
+            if (!gas) fluid.sampleTerrainContacts(level);
             level.scheduleTick(pos, this, TICK_DELAY);
         }
     }

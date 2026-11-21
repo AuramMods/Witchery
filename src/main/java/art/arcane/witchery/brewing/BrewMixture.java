@@ -33,6 +33,7 @@ import net.minecraft.world.entity.monster.Blaze;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -62,7 +63,8 @@ public final class BrewMixture {
     private enum Action {
         EXTINGUISH, COLD, ICE_SHELL, HARM_DEMONS, HARM_UNDEAD, HARM_INSECTS, HARM_WEREWOLVES,
         WEAKEN_VAMPIRES, REVEAL, MOVE_ANIMALS, CHANGING_SEASONS, ICE_WORLD, SNOW,
-        REMOVE_DEBUFFS, REMOVE_BUFFS, WASTING, DRAIN_MAGIC, DURATION_BOOST, STEAL_BUFFS, SPREAD_DEBUFFS;
+        REMOVE_DEBUFFS, REMOVE_BUFFS, WASTING, DRAIN_MAGIC, DURATION_BOOST, STEAL_BUFFS, SPREAD_DEBUFFS,
+        AIR_HIKE, FROG_TONGUE, KNOCKBACK, BAT_BURST, BODEGA, POISON_TOAD, RAISING;
 
         String nameKey(boolean inverted) {
             return switch (this) {
@@ -86,6 +88,21 @@ public final class BrewMixture {
                 case DURATION_BOOST -> "brew.witchery.duration_boost";
                 case STEAL_BUFFS -> "brew.witchery.steal_buffs";
                 case SPREAD_DEBUFFS -> "brew.witchery.spread_debuffs";
+                case AIR_HIKE -> "brew.witchery.air_hike";
+                case FROG_TONGUE -> "brew.witchery.frog_tongue";
+                case KNOCKBACK -> "brew.witchery.knockback";
+                case BAT_BURST -> "brew.witchery.bat_burst";
+                case BODEGA -> "brew.witchery.bodega";
+                case POISON_TOAD -> "brew.witchery.poison_toad";
+                case RAISING -> "brew.witchery.raising";
+            };
+        }
+
+        boolean affectsTerrain() {
+            return switch (this) {
+                case EXTINGUISH, COLD, ICE_SHELL, ICE_WORLD, CHANGING_SEASONS, SNOW,
+                     BAT_BURST, FROG_TONGUE, POISON_TOAD, RAISING -> true;
+                default -> false;
             };
         }
     }
@@ -233,6 +250,7 @@ public final class BrewMixture {
             case "minecraft:reeds" -> "minecraft:sugar_cane";
             case "minecraft:wool" -> "minecraft:" + DyeColor.byId(metadata).getName() + "_wool";
             case "minecraft:dye" -> "minecraft:" + BrewDye.byLegacyId(metadata).item();
+            case "minecraft:double_plant" -> metadata == 0 ? "minecraft:sunflower" : null;
             case "minecraft:netherbrick" -> "minecraft:nether_brick";
             case "minecraft:red_flower" -> metadata == 1 ? "minecraft:blue_orchid" : null;
             case "minecraft:golden_apple" -> metadata == 1 ? "minecraft:enchanted_golden_apple" : null;
@@ -319,22 +337,44 @@ public final class BrewMixture {
     public int lifetime() { return lifetime; }
     public int splashRadius() { return 3 + extent; }
     public boolean hasEffects() { return !effects.isEmpty(); }
+    public boolean hasTerrainEffects() {
+        return effects.stream().anyMatch(effect -> effect instanceof ActionApplication action
+                && action.affectsBlocks && action.action.affectsTerrain());
+    }
     @Nullable
     public WaystoneItem.Location destination() { return destination; }
 
     public void applyToBlock(ServerLevel level, BlockPos pos, Direction face, int radius, boolean ritual, @Nullable Player caster) {
-        applyToBlock(level, pos, face, radius, ritual, caster, 0);
+        applyToBlock(level, pos, face, radius, ritual, caster, Vec3.atLowerCornerOf(pos));
+    }
+
+    public void applyToBlock(ServerLevel level, BlockPos pos, Direction face, int radius, boolean ritual,
+                             @Nullable Player caster, Vec3 impact) {
+        applyToBlock(level, pos, face, radius, ritual, caster, 0, impact, false, true);
+    }
+
+    public void applySplashToBlock(ServerLevel level, BlockPos pos, Direction face, Vec3 impact, @Nullable Player caster) {
+        applyToBlock(level, pos, face, splashRadius(), false, caster, 0, impact, false, true);
+    }
+
+    public void applyLiquidToBlock(ServerLevel level, BlockPos pos, Direction face, Vec3 impact, @Nullable Player caster) {
+        applyToBlock(level, pos, face, 1, false, caster, 0, impact, true, false);
     }
 
     void applyRitualToBlock(ServerLevel level, BlockPos pos, int coven) {
-        applyToBlock(level, pos, Direction.UP, splashRadius(), true, null, coven);
+        applyToBlock(level, pos, Direction.UP, splashRadius(), true, null, coven, Vec3.atLowerCornerOf(pos), false, true);
+    }
+
+    void applyGasRitualToBlock(ServerLevel level, BlockPos pos, int coven) {
+        applyToBlock(level, pos, Direction.UP, 1, true, null, coven, Vec3.atLowerCornerOf(pos), false, false);
     }
 
     private void applyToBlock(ServerLevel level, BlockPos pos, Direction face, int radius, boolean ritual,
-                              @Nullable Player caster, int coven) {
+                              @Nullable Player caster, int coven, Vec3 impact, boolean liquid, boolean fullExposure) {
         for (BrewEffect effect : effects) {
             if (!(effect instanceof ActionApplication application) || !application.affectsBlocks) continue;
-            int strength = ritual ? Math.min(application.blockStrength, ritualStrengthLimit(coven)) : application.blockStrength;
+            int strength = Math.max(0, application.blockStrength - (liquid ? 1 : 0));
+            if (ritual) strength = Math.min(strength, ritualStrengthLimit(coven));
             switch (application.action) {
                 case EXTINGUISH -> BrewTerrainEffects.extinguish(level, pos, radius, ritual, strength, caster);
                 case COLD -> BrewColdEffects.freezeWater(level, pos, strength, caster);
@@ -343,8 +383,13 @@ public final class BrewMixture {
                 case CHANGING_SEASONS -> BrewTerrainEffects.changeSeasons(level, pos, application.biome, strength, ritual, caster);
                 case SNOW -> SnowTrailEffect.cover(level, pos, 2 + 2 * strength, caster);
                 case HARM_WEREWOLVES -> {
-                    if (ritual) BrewTerrainEffects.summonRain(level, strength);
+                    if (ritual && fullExposure) BrewTerrainEffects.summonRain(level, strength);
                 }
+                case BAT_BURST -> BrewCreatureEffects.releaseBats(level, pos.relative(face), (fullExposure ? 10 : 1) + strength);
+                case FROG_TONGUE -> BrewCreatureEffects.frogTongue(level, impact, radius, caster, strength);
+                case POISON_TOAD -> BrewCreatureEffects.poisonToad(level, Vec3.atCenterOf(pos).add(0, 2, 0), strength);
+                case RAISING -> BrewImpacts.raiseFromCauldron(level, pos, face, strength, ritual,
+                        caster instanceof ServerPlayer player ? player : null);
                 default -> { }
             }
         }
@@ -357,22 +402,36 @@ public final class BrewMixture {
 
     public void apply(LivingEntity target, @Nullable Entity source, @Nullable LivingEntity caster,
                       double strengthScale, double durationScale, boolean blocksHarmfulEffects) {
-        apply(target, source, caster, strengthScale, durationScale, blocksHarmfulEffects, false, -1);
+        apply(target, source, caster, strengthScale, durationScale, blocksHarmfulEffects, false, -1, false, null);
+    }
+
+    public void applyAt(LivingEntity target, @Nullable Entity source, @Nullable LivingEntity caster,
+                        double strengthScale, double durationScale, boolean blocksHarmfulEffects, Vec3 impact) {
+        apply(target, source, caster, strengthScale, durationScale, blocksHarmfulEffects, false, -1, false, impact);
     }
 
     public void applySplash(LivingEntity target, Entity source, @Nullable LivingEntity caster, double scale, boolean glancing) {
-        apply(target, source, caster, scale, scale * 0.5, false, glancing, -1);
+        applySplash(target, source, caster, scale, glancing, source.position());
+    }
+
+    public void applySplash(LivingEntity target, Entity source, @Nullable LivingEntity caster, double scale,
+                            boolean glancing, Vec3 impact) {
+        apply(target, source, caster, scale, scale * 0.5, false, glancing, -1, false, impact);
     }
 
     void applyTaglock(LivingEntity target, ServerPlayer caster, int coven) {
-        apply(target, caster, caster, 1, 1, false, false, coven);
+        apply(target, caster, caster, 1, 1, false, false, coven, true, target.position());
+    }
+
+    public void applyRitualExposure(LivingEntity target, @Nullable Entity source, int coven, Vec3 impact) {
+        apply(target, source, null, 1, 1, false, false, coven, false, impact);
     }
 
     private void apply(LivingEntity target, @Nullable Entity source, @Nullable LivingEntity caster,
                        double strengthScale, double durationScale, boolean blocksHarmfulEffects, boolean glancing,
-                       int taglockCoven) {
+                       int ritualCoven, boolean taglock, @Nullable Vec3 impact) {
         if (target.isDeadOrDying() || durationScale <= 0) return;
-        int strengthLimit = taglockCoven < 0 ? Integer.MAX_VALUE : ritualStrengthLimit(taglockCoven);
+        int strengthLimit = ritualCoven < 0 ? Integer.MAX_VALUE : ritualStrengthLimit(ritualCoven);
         for (BrewEffect effect : effects) {
             if (!effect.affectsEntities()) continue;
             if (effect instanceof Application application) {
@@ -387,13 +446,13 @@ public final class BrewMixture {
                 if (application.effect.isInstantenous()) {
                     application.effect.applyInstantenousEffect(source, caster, target, amplifier, strengthScale);
                 } else {
-                    boolean extended = taglockCoven >= 0 && application.taglockTicks > 0;
+                    boolean extended = taglock && application.taglockTicks > 0;
                     int duration = extended ? application.taglockTicks : Mth.ceil(application.ticks * durationScale);
                     target.addEffect(application.instance(duration, amplifier, !extended && application.showParticles), source);
                 }
             } else if (effect instanceof ActionApplication application) {
                 int strength = Math.min(application.strength, strengthLimit);
-                applyAction(application, target, source, caster, strengthScale, durationScale, glancing, strength, taglockCoven >= 0);
+                applyAction(application, target, source, caster, strengthScale, durationScale, glancing, strength, taglock, impact);
             }
         }
     }
@@ -404,7 +463,7 @@ public final class BrewMixture {
 
     private static void applyAction(ActionApplication application, LivingEntity target, @Nullable Entity source,
                                     @Nullable LivingEntity caster, double strengthScale, double durationScale,
-                                    boolean glancing, int strength, boolean taglock) {
+                                    boolean glancing, int strength, boolean taglock, @Nullable Vec3 impact) {
         switch (application.action) {
             case EXTINGUISH -> {
                 if (strength <= 1 && target.level().dimensionType().ultraWarm()) return;
@@ -472,7 +531,13 @@ public final class BrewMixture {
             case DURATION_BOOST -> BrewStatusActions.extendBuffs(target, strength, strengthScale);
             case STEAL_BUFFS -> BrewStatusActions.stealBuffs(target, strength, strengthScale);
             case SPREAD_DEBUFFS -> BrewStatusActions.spreadDebuffs(target, strength, strengthScale);
-            case CHANGING_SEASONS, ICE_WORLD -> { }
+            case AIR_HIKE -> BrewCreatureEffects.airHike(target, strength);
+            case FROG_TONGUE -> BrewCreatureEffects.frogTongue(target, caster, impact, strength);
+            case KNOCKBACK -> BrewCreatureEffects.knockback(target, impact, strength, strengthScale);
+            case BAT_BURST -> BrewCreatureEffects.batBurst(target, strength, strengthScale, glancing);
+            case BODEGA -> BrewCreatureEffects.bodega(target, caster, strength, strengthScale, glancing);
+            case POISON_TOAD -> BrewCreatureEffects.poisonToad(target, strength, strengthScale);
+            case CHANGING_SEASONS, ICE_WORLD, RAISING -> { }
         }
     }
 
@@ -700,6 +765,13 @@ public final class BrewMixture {
         entries.put(ResourceLocation.parse("witchery:creeper_heart"), new Ingredient(5000, null, 6, 10, 0, null, null, Action.DURATION_BOOST));
         entries.put(ResourceLocation.withDefaultNamespace("skeleton_skull"), new Ingredient(100, null, 6, 10, 0, null, null, Action.STEAL_BUFFS));
         entries.put(ResourceLocation.withDefaultNamespace("creeper_head"), new Ingredient(2000, null, 8, 10, 0, null, null, Action.SPREAD_DEBUFFS));
+        entries.put(ResourceLocation.parse("witchery:bat_ball"), new Ingredient(1000, null, 2, 10, 0, null, null, Action.BAT_BURST));
+        entries.put(ResourceLocation.parse("witchery:owlets_wing"), new Ingredient(1000, null, 2, 10, 0, null, null, Action.BODEGA));
+        entries.put(ResourceLocation.parse("witchery:breath_of_the_goddess"), new Ingredient(750, null, 2, 10, 0, null, null, Action.AIR_HIKE));
+        entries.put(ResourceLocation.withDefaultNamespace("slime_ball"), new Ingredient(150, null, 2, 10, 0, null, null, Action.FROG_TONGUE));
+        entries.put(ResourceLocation.withDefaultNamespace("stick"), new Ingredient(200, null, 2, 10, 0, null, null, Action.KNOCKBACK));
+        entries.put(ResourceLocation.withDefaultNamespace("sunflower"), new Ingredient(500, null, 5, 10, 0, null, null, Action.POISON_TOAD));
+        entries.put(ResourceLocation.withDefaultNamespace("bone"), new Ingredient(2000, null, 4, 10, 0, null, null, Action.RAISING));
         entries.put(ResourceLocation.fromNamespaceAndPath("witchery", "odour_of_purity"),
                 new Ingredient(100, null, 4, 0, 0, null, null, Action.REVEAL));
         entries.put(ResourceLocation.fromNamespaceAndPath("witchery", "heart_of_gold"),

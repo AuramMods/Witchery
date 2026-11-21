@@ -59,7 +59,7 @@ public final class BrewRituals {
                 if (level != source || !target.equals(origin)) {
                     level.getChunkSource().addRegionTicket(CAST_TICKET, new ChunkPos(target), 3, target);
                 }
-                gasWave(level, target, mixture, pulse - 1);
+                gasWave(level, target, mixture, pulse - 1, coven);
                 yield pulse < 8 + mixture.extent() * 8 ? Result.ONGOING : Result.COMPLETE;
             }
             case LIQUID -> {
@@ -106,23 +106,23 @@ public final class BrewRituals {
         return distanceSquared <= (double) distance * distance;
     }
 
-    private static void gasWave(ServerLevel level, BlockPos center, BrewMixture mixture, int radius) {
+    private static void gasWave(ServerLevel level, BlockPos center, BrewMixture mixture, int radius, int coven) {
         if (radius == 0) {
-            gasColumn(level, center, mixture);
+            gasColumn(level, center, mixture, coven);
             return;
         }
         int x = radius;
         int z = 0;
         int error = 1 - radius;
         while (x >= z) {
-            gasColumn(level, center.offset(x, 0, z), mixture);
-            gasColumn(level, center.offset(z, 0, x), mixture);
-            gasColumn(level, center.offset(-x, 0, z), mixture);
-            gasColumn(level, center.offset(-z, 0, x), mixture);
-            gasColumn(level, center.offset(-x, 0, -z), mixture);
-            gasColumn(level, center.offset(-z, 0, -x), mixture);
-            gasColumn(level, center.offset(x, 0, -z), mixture);
-            gasColumn(level, center.offset(z, 0, -x), mixture);
+            gasColumn(level, center.offset(x, 0, z), mixture, coven);
+            gasColumn(level, center.offset(z, 0, x), mixture, coven);
+            gasColumn(level, center.offset(-x, 0, z), mixture, coven);
+            gasColumn(level, center.offset(-z, 0, x), mixture, coven);
+            gasColumn(level, center.offset(-x, 0, -z), mixture, coven);
+            gasColumn(level, center.offset(-z, 0, -x), mixture, coven);
+            gasColumn(level, center.offset(x, 0, -z), mixture, coven);
+            gasColumn(level, center.offset(z, 0, -x), mixture, coven);
             z++;
             if (error < 0) {
                 error += 2 * z + 1;
@@ -133,25 +133,25 @@ public final class BrewRituals {
         }
     }
 
-    private static void gasColumn(ServerLevel level, BlockPos column, BrewMixture mixture) {
+    private static void gasColumn(ServerLevel level, BlockPos column, BrewMixture mixture, int coven) {
         if (!level.getWorldBorder().isWithinBounds(column)) return;
         for (int distance = 0; distance < 8; distance++) {
-            if (gasSurface(level, column.above(distance), mixture)) return;
-            if (distance > 0 && gasSurface(level, column.below(distance), mixture)) return;
+            if (gasSurface(level, column.above(distance), mixture, coven)) return;
+            if (distance > 0 && gasSurface(level, column.below(distance), mixture, coven)) return;
         }
     }
 
-    private static boolean gasSurface(ServerLevel level, BlockPos ground, BrewMixture mixture) {
+    private static boolean gasSurface(ServerLevel level, BlockPos ground, BrewMixture mixture, int coven) {
         if (level.isOutsideBuildHeight(ground.getY()) || level.getBlockState(ground).isAir()
                 || !level.getBlockState(ground.above()).isAir()) return false;
         level.sendParticles(ParticleTypes.EFFECT, ground.getX() + 0.5, ground.getY() + 1, ground.getZ() + 0.5,
                 16, 0.48, 0.35, 0.48, 0.05);
-        if (level.getRandom().nextFloat() < 0.01F) mixture.applyToBlock(level, ground, Direction.UP, 1, true, null);
+        if (level.getRandom().nextFloat() < 0.01F) mixture.applyGasRitualToBlock(level, ground, coven);
         Vec3 center = Vec3.atLowerCornerOf(ground);
         AABB contacts = new AABB(center, center).inflate(1.5);
         for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, contacts,
                 candidate -> candidate.distanceToSqr(center.x, candidate.getY(), center.z) <= 2.25)) {
-            mixture.apply(target, null, null, 1, 1);
+            mixture.applyRitualExposure(target, null, coven, center);
         }
         return true;
     }

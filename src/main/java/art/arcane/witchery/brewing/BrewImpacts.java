@@ -4,6 +4,7 @@ import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.infusion.InfernalInfusion;
 import art.arcane.witchery.registry.WitcheryBlocks;
+import art.arcane.witchery.registry.WitcheryEffects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -148,6 +149,42 @@ public final class BrewImpacts {
         }
     }
 
+    static void raiseFromCauldron(ServerLevel level, BlockPos ground, Direction face, int strength,
+                                  boolean ritual, @Nullable ServerPlayer caster) {
+        BlockPos center = ground.relative(face);
+        raiseCauldronUndead(level, center, caster, ritual ? 200 * (strength + 1) : 0);
+        if (ritual) return;
+        RandomSource random = level.random;
+        int extra = 0;
+        if (strength >= 1 && random.nextDouble() < strength * 0.5) extra++;
+        if (strength >= 2 && random.nextDouble() < strength * 0.25) extra++;
+        if (strength >= 3 && random.nextDouble() < strength * 0.25) extra++;
+        for (int attempt = 0; attempt < extra; attempt++) {
+            BlockPos column = center.offset(random.nextInt(6) - 2, 0, random.nextInt(6) - 2);
+            if (!level.hasChunkAt(column)) continue;
+            for (int offset = 6; offset >= -6; offset--) {
+                BlockPos feet = column.above(offset);
+                if (level.isEmptyBlock(feet) && level.getBlockState(feet.below()).blocksMotion()) {
+                    raiseCauldronUndead(level, feet, caster, 0);
+                    break;
+                }
+            }
+        }
+    }
+
+    private static void raiseCauldronUndead(ServerLevel level, BlockPos feet, @Nullable ServerPlayer caster, int lifespan) {
+        if (!level.isInWorldBounds(feet) || !level.getWorldBorder().isWithinBounds(feet) || !level.hasChunkAt(feet)) return;
+        Mob undead = createRaisedUndead(level);
+        if (undead == null) return;
+        Vec3 landing = Vec3.atBottomCenterOf(feet).add(0, 0.1, 0);
+        undead.moveTo(landing.x, landing.y, landing.z, 0, 0);
+        if (level.getBlockCollisions(undead, undead.getBoundingBox()).iterator().hasNext()) return;
+        finishRaisedUndead(level, feet, undead, caster);
+        undead.getPersistentData().putBoolean("WITCNoDrops", true);
+        if (lifespan > 0) undead.addEffect(new MobEffectInstance(WitcheryEffects.MORTAL_COIL.get(), lifespan));
+        if (level.addFreshEntity(undead)) raisingParticles(level, landing);
+    }
+
     static void recoverBrew(ThrownBrew brew, ServerLevel level, HitResult hit) {
         Vec3 drop = hit instanceof BlockHitResult block
                 ? Vec3.atCenterOf(block.getBlockPos().relative(block.getDirection() == Direction.DOWN ? Direction.DOWN : Direction.UP))
@@ -167,21 +204,34 @@ public final class BrewImpacts {
         BlockPos feet = emergeThroughGround ? ground : ground.above();
         if (!canClearRaisingSpace(level, feet, owner) || !canClearRaisingSpace(level, feet.above(), owner)) return;
 
-        double roll = level.getRandom().nextDouble();
-        EntityType<? extends Mob> type = roll < 0.60 ? EntityType.ZOMBIE
-                : roll < 0.97 ? EntityType.SKELETON : EntityType.ZOMBIFIED_PIGLIN;
-        Mob undead = type.create(level);
+        Mob undead = createRaisedUndead(level);
         if (undead == null) return;
         Vec3 landing = Vec3.atBottomCenterOf(feet);
         undead.moveTo(landing.x, landing.y, landing.z, 1, 0);
-        ForgeEventFactory.onFinalizeSpawn(undead, level, level.getCurrentDifficultyAt(feet), MobSpawnType.MOB_SUMMONED, null, null);
-        undead.setPersistenceRequired();
-        if (owner != null) InfernalInfusion.bind(undead, owner);
+        finishRaisedUndead(level, feet, undead, owner);
         if (level.addFreshEntity(undead)) {
             level.removeBlock(feet, false);
             level.removeBlock(feet.above(), false);
-            level.sendParticles(ParticleTypes.SMOKE, landing.x, landing.y + 0.5, landing.z, 16, 0.5, 0.5, 0.5, 0.04);
+            raisingParticles(level, landing);
         }
+    }
+
+    @Nullable
+    private static Mob createRaisedUndead(ServerLevel level) {
+        double roll = level.random.nextDouble();
+        EntityType<? extends Mob> type = roll < 0.60 ? EntityType.ZOMBIE
+                : roll < 0.97 ? EntityType.SKELETON : EntityType.ZOMBIFIED_PIGLIN;
+        return type.create(level);
+    }
+
+    private static void finishRaisedUndead(ServerLevel level, BlockPos feet, Mob undead, @Nullable ServerPlayer caster) {
+        ForgeEventFactory.onFinalizeSpawn(undead, level, level.getCurrentDifficultyAt(feet), MobSpawnType.MOB_SUMMONED, null, null);
+        undead.setPersistenceRequired();
+        if (caster != null) InfernalInfusion.bind(undead, caster);
+    }
+
+    private static void raisingParticles(ServerLevel level, Vec3 landing) {
+        level.sendParticles(ParticleTypes.SMOKE, landing.x, landing.y + 0.5, landing.z, 16, 0.5, 0.5, 0.5, 0.04);
     }
 
     private static boolean canClearRaisingSpace(ServerLevel level, BlockPos pos, ServerPlayer owner) {

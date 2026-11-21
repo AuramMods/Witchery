@@ -53,7 +53,11 @@ public final class WitchToad extends WitchPet {
     }
 
     public void prepareRainToad() {
-        timeToLive = 30;
+        preparePoisonousToad(30);
+    }
+
+    public void preparePoisonousToad(int ticks) {
+        timeToLive = ticks;
         poisonous = true;
         setColor(random.nextInt(16));
     }

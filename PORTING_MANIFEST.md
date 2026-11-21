@@ -1225,12 +1225,15 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 - Rotten Flesh adds the `witchery:potion.diseased` curse. That effect uses the original attack-damage modifier UUID and overlay texture. Tracking clients receive updates through vanilla effect packets. Contact with the `witchery:disease` fluid can apply the effect, and `diseaseBlockRemovalChance` sets the fluid's scheduled removal roll.
 - All sixteen wools set the original RGB without spending power, consuming capacity, or entering the ordered `Items` list. The cauldron persists the separate `Color` field and reads the legacy nested fluid `Tag.Color`. Bottle and dispersal tags retain their saved color.
 - The twelve original coloring dyes add `witchery:potion.colorful` for 1,800 ticks and one effect level at zero power. The amplifier is the original dye ordinal. The color label and tint use that ordinal. Named `minecraft:dye` and `minecraft:wool` metadata resolve to their modern items. Ink Sac, Cocoa Beans, Lapis Lazuli, and Bone Meal retain their original ingredient identities.
+- Breath of the Goddess subtype 32, Slimeball, and Stick restore Air Hike, Frog Tongue, and Knockback. The current delivery path carries the impact position separately from the caster, including for gas cells, ritual rain, and triggered brews.
+- Bat Ball subtype 108 and Owlet's Wing subtype 89 restore Bat Burst and Bodega. Bats use the original `WITCNoDrops` key. Bodega uses active Owl familiar mastery and the existing temporary Owl entity. Sunflower adds Poison Toad with the original `SuicideIn` and `Poisonous` fields. Named `minecraft:double_plant` metadata zero imports as Sunflower.
+- Bone adds Raising. The raised creatures retain the original weighted Zombie, Skeleton, and Zombified Piglin selection. Normal throws use the existing enslaver name and UUID. Ritual minions use `witchery:potion.mortalcoil` for the strength-scaled lifetime. Spawns require room for the creature in the modern world.
 - A `witchery:biomenote` adds Changing Seasons for eight effect levels and 5,000 base altar power. Its `WitcheryBiome` persists in the ordered `Items` list. The block-targeted action forces instant dispersal and supports a Tongue of Dog ritual at a Waystone. The biome writer updates and resends every intersecting quart column, and dry biomes clear snow layers within the original block footprint.
 
 ### Remaining cauldron actions
 
 - Terrain and world actions still include Dissipate, Flowers, Fertilization, Harvesting, Tilling, Planting, Pruning, Pulverisation, Tide Hold, Lilify, Lava Hold, Erosion, Levelling, Webs, Vines, Thorns, Sprouting, the nine tree-growth variants, Blight, Transpose, Transpose Ore, Raise Land, Inferno, Hell Gate, and Blast. Some also have independent Kettle recipes or circle rites.
-- Creature and movement actions still include Bat Burst, Bodega, Air Hike, Frog Tongue, Knockback, Raising, and Poison Toad. The remaining potion recipes include Love, Volatility, Fortune, and Resizing.
+- The remaining potion recipes include Love, Volatility, Fortune, and Resizing.
 - Drain Magic's legacy Blood Magic and Thaumcraft hooks remain open for the optional integration pass.
 
 ## Network Packets (`PacketPipeline`)

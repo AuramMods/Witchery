@@ -58,7 +58,7 @@ public final class CursedControlBlockEntity extends BlockEntity {
             if (owner == null && thrower != null) owner = server.getServer().getPlayerList().getPlayer(thrower);
             if (owner == null && !throwerName.isEmpty()) owner = server.getServer().getPlayerList().getPlayerByName(throwerName);
             LivingEntity caster = owner instanceof LivingEntity source ? source : null;
-            mixture.apply(living, caster, caster, 1, 1);
+            mixture.applyAt(living, caster, caster, 1, 1, false, living.position());
             var tint = new Vector3f((color >> 16 & 255) / 255F, (color >> 8 & 255) / 255F, (color & 255) / 255F);
             server.sendParticles(new DustParticleOptions(tint, 1), living.getX(), living.getY(0.5), living.getZ(),
                     16, 0.3, 0.5, 0.3, 0.05);

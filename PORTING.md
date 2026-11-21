@@ -941,6 +941,26 @@
 - [x] Capture a pig's Taglock through the normal interaction and cast Orange Dye. The bound pig received the original 90-second effect and its neighbor stayed unchanged. After the dedicated restart, the client rendered the pig's saved orange tint and bottled the red wool-only batch that remained in the other cauldron.
 - [x] Run Java 17 data generation and JAR reobfuscation. All 558 dedicated-server regression cases passed before the client render hook was revised. The final revision passed all 21 focused GameTests and the muted packaged client checks.
 
+## Cauldron Movement and Creature Summons (2026-11-21)
+
+| Ingredient | Brew | Base altar power | Capacity cost |
+| --- | --- | ---: | ---: |
+| Breath of the Goddess | Air Hike | 750 | 2 |
+| Slimeball | Frog Tongue | 150 | 2 |
+| Stick | Knockback | 200 | 2 |
+| Bat Ball | Bat Burst | 1,000 | 2 |
+| Owlet's Wing | Bodega | 1,000 | 2 |
+| Sunflower | Poison Toad | 500 | 5 |
+| Bone | Raising | 2,000 | 4 |
+
+- [x] Restore the original launch and knockback vectors. Air Hike clears fall distance. Frog Tongue uses the impact or a boosted caster and can pull loose entities on a block hit. Drinking Knockback pushes nearby creatures and items away from the drinker.
+- [x] Restore the full and glancing Bat Burst counts and no-drop bats, the active Owl familiar requirement and timed attackers for Bodega, and the strength-based lifetime and area poison for Poison Toad. Named legacy Double Plant metadata zero resolves to Sunflower.
+- [x] Restore the Bone recipe's direct block summoning and enhanced chance for extra undead. Normal splashes bind the minion to the caster. Ritual summons use a coven-capped Mortal Coil duration. The raised undead retain the original no-drop marker.
+- [x] Carry the impact position into splash, gas, liquid, and triggered applications. Flowing brews sample adjacent terrain at the original one-in-a-hundred chance and apply the one-strength penalty. Gas waves and ritual rain preserve their ritual strength limits.
+- [x] Make all seven recipes in the muted survival client and verify movement through the normal drink and throw controls. Verify the ten-bat burst and area poison when a toad expires. Bodega created three attackers with the active-Owl fixture and none before the Owl was active.
+- [x] Verify that a thrown Raising brew binds a zombie and leaves the struck stone intact. Ritual Raising summoned a temporary skeleton with 398 ticks of Mortal Coil at the first sample. The skeleton expired, and after a dedicated server restart only the bound zombie remained with its owner and no-drop marker.
+- [x] Run Java 17 data generation and JAR reobfuscation. All 566 regression cases passed before the final Raising collision adjustment. The final revision passed 21 focused GameTests, including a spawn with another creature at the launch position and actual liquid and gas delivery.
+
 ## Brew of Erosion and Brew of Ice (2026-11-21)
 
 - [x] Restore the original six-ingredient Kettle recipes, three servings, Brew Mastery bottling bonus, and legacy metadata 62 and 76. Erosion needs no altar power. Ice waits for 1,000 power and debits the altar once per batch.
