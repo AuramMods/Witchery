@@ -151,7 +151,7 @@
 - [x] The muted client drew and released Carnosa Diem, Ignianima and Morsmordre. The player's health fell from 20 to 18 and its charge reached 199 after Carnosa Diem. Ignianima lowered a pig's health from 10 to 7 and cost two charge. Morsmordre summoned a Dark Mark and cost 20 charge.
 - [x] The muted client rendered the Dark Mark's original model and smoke. Tormentum moved a second survival client to a maze floor, removed the nearby pig, and spent 25 charge. Repeating the gesture during the cooldown preserved charge. The dedicated server saved the original `tormentumLastUse` field, remaining charge and the second player's Torment dimension.
 - [x] Java 17 data generation and reobfuscation succeeded on Forge 47.4.10. All 46 required Forge GameTests passed, including the long symbol variants, unknown spell rejection, Dark Mark lifespan, and Tormentum's impact against creatures and charge cooldown.
-- [ ] Restore the remaining symbols and their enhanced gestures. Symbology lists the spells as they are ported.
+- [x] Restore the remaining symbols and their enhanced gestures. The later Mystic Branch milestones cover all 31 original spell IDs.
 
 ## Mystic Branch terrain spells (2026-11-21)
 
@@ -174,6 +174,15 @@
 - [x] Reload the ring, the sealed door's state, the reinforced iron door, and the Alder lamp after a dedicated restart. The ring still matched its two saved coordinates. Keyless harvesting removed both halves and returned 24 sticks.
 - [x] Apply the axe mining tag to Rowan and Alder. On the final packaged server, the reloaded offhand ring closed its Rowan door and axing the door returned one Rowan Door item.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 383 required Forge GameTests. The new tests cover exact plank ingredients, axe tags, legacy key dimensions, keyring deduplication, canceled key issuance and door replacement, redstone, spell planes, loot, and Accio range.
+
+## Remaining Mystic Branch spells (2026-11-21)
+
+- [x] Restore Avada Kedavra, Crucio, Ennervate, Episkey, Flagrate, Imperio, Protego, and Stupefy. The 1.20.1 registry now matches all 31 legacy IDs and their gesture sets. Symbology omits the original hidden Avada Kedavra and Flagrate gestures.
+- [x] Require Infernal Infusion for Avada Kedavra, Crucio and Imperio in survival. Crucio deals four damage to creatures, with damage to players scaling by Worship rank. Avada Kedavra uses the original creature health threshold and respects modern PvP and team permissions. Imperio uses the Infernal Infusion's saved minion owner and transfers existing ownership.
+- [x] Restore Stupefy's five-minute Slowness X and Ennervate's removal of Slowness, Mining Fatigue, and Nausea. Episkey spends up to five food on healing, gives four seconds of Nausea, and reaches nearby targets with its enhanced gestures. Flagrate shares the chalk support and replacement rules, including Forge placement cancellation for the spell. Protego shares the Light Infusion's temporary three-by-three barrier wall.
+- [x] Draw and release all eight gestures with a supplied Branch in the muted packaged survival client. The casts cost 125 charge. Episkey changed health from 13 to 18 and food from 20 to 15. Crucio dealt four damage, Avada Kedavra killed its target, Imperio bound a zombie, and the server recorded both Flagrate's red chalk and Protego's barrier wall.
+- [x] Restart the dedicated server with the final packaged build. Verify the 75 remaining charges, saved glyph, and minion ownership. Cast Flagrate on white chalk after reconnecting and verify its conversion and one-charge cost.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 391 required Forge GameTests. The new cases exercise the legacy gesture registry, hidden spells, Infernal and Worship requirements, healing and effect limits, damage tiers, canceled glyph placement, barrier behavior and minion ownership.
 
 ## Light and Otherwhere Infusions (2026-11-20)
 

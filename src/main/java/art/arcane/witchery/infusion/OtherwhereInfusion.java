@@ -163,11 +163,19 @@ public final class OtherwhereInfusion {
     }
 
     public static HitResult rayTrace(ServerPlayer player, double distance, Predicate<Entity> filter) {
+        return rayTrace(player, distance, ClipContext.Block.COLLIDER, filter);
+    }
+
+    static HitResult rayTrace(ServerPlayer player, double distance, ClipContext.Block shape) {
+        return rayTrace(player, distance, shape, target -> true);
+    }
+
+    private static HitResult rayTrace(ServerPlayer player, double distance, ClipContext.Block shape, Predicate<Entity> filter) {
         ServerLevel level = player.serverLevel();
         Vec3 eyes = player.getEyePosition();
         Vec3 direction = player.getLookAngle().scale(distance);
         BlockHitResult block = level.clip(new ClipContext(eyes, eyes.add(direction),
-                ClipContext.Block.COLLIDER, ClipContext.Fluid.SOURCE_ONLY, player));
+                shape, ClipContext.Fluid.SOURCE_ONLY, player));
         EntityHitResult entity = ProjectileUtil.getEntityHitResult(level, player, eyes, block.getLocation(),
                 player.getBoundingBox().expandTowards(block.getLocation().subtract(eyes)).inflate(1),
                 target -> target.isPickable() && !target.isSpectator() && filter.test(target));

@@ -3,15 +3,25 @@ package art.arcane.witchery.infusion;
 import art.arcane.witchery.entity.SymbolProjectile;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.item.LeonardsUrnItem;
-import art.arcane.witchery.registry.WitcheryEffects;
+import art.arcane.witchery.item.RitualChalkItem;
 import art.arcane.witchery.registry.WitcheryDamageTypes;
+import art.arcane.witchery.registry.WitcheryEffects;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -40,7 +50,15 @@ public enum SymbolSpell {
     ALOHOMORA(3, null, 1, 5_322_534, 0.5F, 200, false, List.of("→↑→→↓", "→↑→→→↓", "→↑↑→→↓↓", "→↑↑→→→↓↓")),
     CAVE_INIMICUM(5, null, 1, 3_158_064, 3, 200, false, List.of("↑←↑↑→", "↑←↑↑↑→", "↑←←↑↑→→", "↑←←↑↑↑→→", "↑←←←↑↑↑↑→→→")),
     COLLOPORTUS(6, null, 1, 5_322_534, 1, 200, false, List.of("←←↓↓→", "←←↓↓↓→", "←←←↓↓→→", "←←←↓↓→↓→")),
-    DEFODIO(10, null, 3, 4_008_220, 2.5F, 200, false, List.of("↑↑←↓", "↑↑↑←↓↓", "↑↑←←↓→", "↑↑↑←←↓↓→", "↑↑↑↑←←↓↓↓→", "↑↑↑←←←↓↓→→", "↑↑↑↑←←←↓↓↓→→"));
+    DEFODIO(10, null, 3, 4_008_220, 2.5F, 200, false, List.of("↑↑←↓", "↑↑↑←↓↓", "↑↑←←↓→", "↑↑↑←←↓↓→", "↑↑↑↑←←↓↓↓→", "↑↑↑←←←↓↓→→", "↑↑↑↑←←←↓↓↓→→")),
+    AVADA_KEDAVRA(4, null, 101, 65_280, 2, 200, false, List.of("↓↓→→↑↑←←←←↓↓→")),
+    CRUCIO(9, null, 5, 6_684_927, 2, 200, false, List.of("↓←↓↓→", "↓←←↓↓→→", "↓←↓↓↓→", "↓←←↓↓↓→→", "↓←←←↓↓↓↓→→→")),
+    ENNERVATE(12, null, 1, 16_713_595, 1.5F, 200, true, List.of("↑←↑→←↑→", "↑←←↑→→←←↑→→", "↑←←←↑→→→←←←↑→→→")),
+    EPISKEY(13, null, 1, 0, 0, 0, false, List.of("→↑←↓↓→", "→↑↑←↓↓↓↓→", "→→↑←←↓↓→→", "→→↑↑←←↓↓↓↓→→")),
+    FLAGRATE(16, null, 1, 0, 0, 0, false, List.of("→↑→←↑→")),
+    IMPERIO(20, null, 10, 10_686_463, 1.5F, 200, false, List.of("→↓↓↓↓")),
+    PROTEGO(31, null, 1, 0, 0, 0, false, List.of("↓↓↑", "↓↓↓↑↑", "↓↓↓↓↑↑↑")),
+    STUPEFY(36, null, 5, 1_279, 1.5F, 200, true, List.of("→→↑←↑→", "→→→↑←←↑→→", "→→↑↑←↑↑→", "→→→↑↑←←↑↑→→"));
 
     public static final int TORMENTUM_COOLDOWN = 30 * 60 * 20;
     private final int id;
@@ -71,7 +89,10 @@ public enum SymbolSpell {
     public boolean falls() { return falls; }
     public int baseCost() { return cost; }
     public List<String> gestures() { return patterns; }
-    public boolean visibleInGuide(int knownMask) { return knowledge == null || (knownMask & (1 << knowledge.ordinal())) != 0; }
+    public boolean visibleInGuide(int knownMask) {
+        return this != AVADA_KEDAVRA && this != FLAGRATE
+                && (knowledge == null || (knownMask & (1 << knowledge.ordinal())) != 0);
+    }
     public Component displayName() {
         return knowledge == null ? Component.translatable("spell.witchery." + name().toLowerCase(Locale.ROOT)) : knowledge.nameComponent();
     }
@@ -99,8 +120,9 @@ public enum SymbolSpell {
     public int gestureLevel(String strokes) {
         return switch (this) {
             case CONFUNDUS, EXPELLIARMUS, FLIPENDO, IMPEDIMENTA -> Math.max(1, patterns.indexOf(strokes));
-            case AGUAMENTI, ACCIO -> 1 + patterns.indexOf(strokes) / 2;
-            case INCENDIO -> Math.max(1, 1 + patterns.indexOf(strokes));
+            case AGUAMENTI, ACCIO, CRUCIO, STUPEFY -> 1 + patterns.indexOf(strokes) / 2;
+            case INCENDIO, ENNERVATE -> Math.max(1, 1 + patterns.indexOf(strokes));
+            case EPISKEY -> 1 + (patterns.indexOf(strokes) + 1) / 2;
             case DEFODIO -> 1 + patterns.indexOf(strokes) / 3;
             case CAVE_INIMICUM -> Math.max(1, patterns.indexOf(strokes) - 1);
             default -> 1;
@@ -111,6 +133,11 @@ public enum SymbolSpell {
         if (!InfusionEnergy.canSpend(player, 0)) return;
         if (id >= LEONARD_1.id && id <= LEONARD_4.id) {
             castUrn(level, player);
+            return;
+        }
+        if ((this == AVADA_KEDAVRA || this == CRUCIO || this == IMPERIO)
+                && !player.getAbilities().instabuild && InfusionEnergy.type(player) != InfernalInfusion.ID) {
+            reject(player, "infernal_required");
             return;
         }
         if (!player.getAbilities().instabuild && knowledge != null) {
@@ -143,12 +170,43 @@ public enum SymbolSpell {
                 else player.playSound(SoundEvents.NOTE_BLOCK_SNARE.value(), 0.9F, 1);
             }
             case NOX -> SymbolTerrain.extinguishLights(level, player);
+            case EPISKEY -> {
+                if (effectLevel == 1) heal(level, player);
+                else {
+                    double radius = effectLevel == 2 ? 2 : 4;
+                    for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, new AABB(player.position(), player.position()).inflate(radius),
+                            target -> target.isAlive() && target.distanceToSqr(player) <= radius * radius)) {
+                        heal(level, target);
+                    }
+                }
+            }
+            case FLAGRATE, PROTEGO -> {
+                if (OtherwhereInfusion.rayTrace(player, 4, ClipContext.Block.OUTLINE) instanceof BlockHitResult hit
+                        && hit.getType() == HitResult.Type.BLOCK) {
+                    if (this == FLAGRATE) RitualChalkItem.drawInfernal(level, hit, player);
+                    else LightInfusion.shield(level, hit.getBlockPos(), player);
+                } else {
+                    player.playSound(SoundEvents.NOTE_BLOCK_SNARE.value(), 0.9F, 1);
+                }
+            }
             default -> {
                 if (!level.addFreshEntity(new SymbolProjectile(level, player, this, effectLevel))) return;
                 level.playSound(null, player.blockPosition(), SoundEvents.GHAST_SHOOT, SoundSource.PLAYERS, 0.8F, 1);
             }
         }
         InfusionEnergy.spend(player, charge);
+    }
+
+    private static void heal(ServerLevel level, LivingEntity target) {
+        Player player = target instanceof Player hurtPlayer ? hurtPlayer : null;
+        int food = player == null ? 5 : player.getFoodData().getFoodLevel();
+        if (food <= 1 || target.getHealth() >= target.getMaxHealth()) return;
+        int amount = Math.min(5, food);
+        target.heal(amount);
+        if (player != null) player.getFoodData().eat(-amount, 0);
+        if (!target.hasEffect(MobEffects.CONFUSION)) target.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 80));
+        level.sendParticles(ParticleTypes.SPLASH, target.getX(), target.getY(0.5), target.getZ(), 16, 0.45, 0.5, 0.45, 0);
+        level.playSound(null, target.blockPosition(), SoundEvents.SLIME_SQUISH_SMALL, target.getSoundSource(), 1, 1);
     }
 
     private void castUrn(ServerLevel level, ServerPlayer player) {

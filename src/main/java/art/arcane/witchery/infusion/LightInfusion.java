@@ -114,7 +114,7 @@ public final class LightInfusion {
         }
     }
 
-    private static void shield(ServerLevel level, BlockPos hit, ServerPlayer owner) {
+    static void shield(ServerLevel level, BlockPos hit, ServerPlayer owner) {
         BlockPos base = level.getBlockState(hit).blocksMotion() ? hit.above() : hit;
         Vec3 across = Vec3.directionFromRotation(0, owner.getYRot()).yRot(Mth.HALF_PI);
         int dx = Mth.floor(0.5 + across.x);

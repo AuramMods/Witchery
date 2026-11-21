@@ -14,6 +14,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -30,6 +31,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraftforge.common.Tags;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
@@ -152,10 +154,19 @@ public final class InfernalInfusion {
         return player.serverLevel().getEntitiesOfClass(Mob.class, area, mob -> mob.isAlive() && owns(mob, player));
     }
 
-    private static boolean canBind(Mob mob) {
+    public static boolean canBind(Mob mob) {
         return !(mob instanceof AbstractGolem) && !(mob instanceof WitherBoss) && !(mob instanceof ElderGuardian)
                 && !(mob instanceof Demon) && !(mob instanceof LordOfTorment) && !(mob instanceof Witch)
-                && !(mob instanceof Imp) && mob.getType() != WitcheryEntities.all().get("ent").get();
+                && !(mob instanceof Imp) && mob.getType() != WitcheryEntities.all().get("ent").get()
+                && !mob.getType().is(Tags.EntityTypes.BOSSES);
+    }
+
+    public static void castImperio(ServerPlayer player, Mob mob) {
+        if (!canBind(mob) || owns(mob, player)) return;
+        bind(mob, player);
+        ServerLevel level = player.serverLevel();
+        level.sendParticles(ParticleTypes.ENTITY_EFFECT, mob.getX(), mob.getY(0.5), mob.getZ(), 8, 0.45, 0.65, 0.45, 0.04);
+        level.playSound(null, mob.blockPosition(), SoundEvents.ZOMBIE_INFECT, SoundSource.PLAYERS, 1, 1);
     }
 
     public static boolean owns(Mob mob, @Nullable LivingEntity owner) {

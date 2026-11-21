@@ -1,11 +1,14 @@
 package art.arcane.witchery.entity;
 
+import art.arcane.witchery.infusion.InfernalInfusion;
 import art.arcane.witchery.infusion.SpellKnowledge;
 import art.arcane.witchery.infusion.SymbolSpell;
 import art.arcane.witchery.infusion.SymbolTerrain;
 import art.arcane.witchery.item.MysticBranchItem;
 import art.arcane.witchery.network.WitcheryNetwork;
+import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryEntities;
+import art.arcane.witchery.vampirism.Vampirism;
 import art.arcane.witchery.world.TormentTravel;
 import art.arcane.witchery.world.WitcheryDimensions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -25,8 +28,11 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.animal.AbstractGolem;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.Witch;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -125,6 +131,20 @@ public final class SymbolProjectile extends ThrowableProjectile {
         level.playSound(null, location.x, location.y, location.z, SoundEvents.ENDER_DRAGON_HURT,
                 SoundSource.PLAYERS, 0.8F, 1);
         switch (spell) {
+            case AVADA_KEDAVRA, CRUCIO -> damageCurse(spell, direct);
+            case ENNERVATE -> applyToTargets(level, location, direct, 2, 4, target -> {
+                target.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
+                target.removeEffect(MobEffects.DIG_SLOWDOWN);
+                target.removeEffect(MobEffects.CONFUSION);
+            });
+            case IMPERIO -> {
+                if (direct instanceof Mob mob && getOwner() instanceof ServerPlayer player) InfernalInfusion.castImperio(player, mob);
+            }
+            case STUPEFY -> {
+                if (direct != null && !direct.hasEffect(MobEffects.MOVEMENT_SLOWDOWN)) {
+                    direct.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 6000, 9));
+                }
+            }
             case IGNIANIMA -> Soulfire.ignite(level, this, getOwner(), location);
             case MORSMORDRE -> DarkMark.summon(level, location);
             case TORMENTUM -> sendToTorment(level, location);
@@ -155,8 +175,41 @@ public final class SymbolProjectile extends ThrowableProjectile {
             case AGUAMENTI -> SymbolTerrain.pourWater(level, getOwner(), hit, effectLevel);
             case INCENDIO -> SymbolTerrain.ignite(level, this, hit, effectLevel);
             case LUMOS -> SymbolTerrain.placeLight(level, getOwner(), hit);
-            case CARNOSA_DIEM, LEONARD_1, LEONARD_2, LEONARD_3, LEONARD_4, METEOLOJINX_RECANTO, NOX -> { }
+            case CARNOSA_DIEM, LEONARD_1, LEONARD_2, LEONARD_3, LEONARD_4, METEOLOJINX_RECANTO, NOX,
+                    EPISKEY, FLAGRATE, PROTEGO -> { }
         }
+    }
+
+    private void damageCurse(SymbolSpell spell, @Nullable LivingEntity target) {
+        if (target == null || !target.isAlive() || !(getOwner() instanceof LivingEntity caster)) return;
+        if (target instanceof Player player && caster instanceof Player attacker && !attacker.canHarmPlayer(player)) return;
+        DamageSource thrown = damageSources().thrown(this, caster);
+        if (spell == SymbolSpell.CRUCIO) {
+            if (target instanceof Player) target.hurt(thrown, 4 * effectLevel);
+            else if (target instanceof Mob) target.hurt(thrown, 4);
+        } else if (target instanceof Player player) {
+            if (!player.isCreative() && !player.isSpectator()) instantDeath(player, caster);
+        } else if (target instanceof Mob mob) {
+            if (caster instanceof Player player && player.isCreative()) {
+                instantDeath(mob, caster);
+            } else {
+                boolean vulnerable = mob.getMaxHealth() <= 200 && (InfernalInfusion.canBind(mob)
+                        || mob instanceof Witch || mob instanceof Ent || mob instanceof AbstractGolem);
+                mob.hurt(thrown, vulnerable ? 200 : 25);
+            }
+        }
+    }
+
+    private static void instantDeath(LivingEntity target, LivingEntity caster) {
+        DamageSource kind = target instanceof Player && Vampirism.isVampire(target)
+                ? WitcheryDamageTypes.sunlight(target.level()) : target.damageSources().genericKill();
+        DamageSource source = new DamageSource(kind.typeHolder(), caster);
+        if (target.isSleeping()) target.stopSleeping();
+        target.setLastHurtByMob(caster);
+        if (caster instanceof Player player) target.setLastHurtByPlayer(player);
+        target.getCombatTracker().recordDamage(source, target.getHealth());
+        target.setHealth(0);
+        target.die(source);
     }
 
     private void retrieveItems(ServerLevel level, Vec3 impact) {
