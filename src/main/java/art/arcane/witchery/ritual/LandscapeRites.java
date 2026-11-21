@@ -88,17 +88,26 @@ public final class LandscapeRites {
         }
     }
 
-    public record Progress(@Nullable Species species, BlockPos target, int stage) {
+    public record Progress(ItemRiteRecipe.Action action, @Nullable Species species, BlockPos target, int stage) {
         public int interval() {
-            return species == null ? 15 : 20;
+            return switch (action) {
+                case RAISE_VOLCANO -> 15;
+                case ICE_SHELL -> 5;
+                default -> 20;
+            };
         }
 
         public int lastStage(int coven) {
-            return species == null ? 2 * volcanoHeight(coven) : 60 + 5 * coven;
+            return switch (action) {
+                case RAISE_VOLCANO -> 2 * volcanoHeight(coven);
+                case ICE_SHELL -> IceShell.radius(coven) - 4;
+                default -> 60 + 5 * coven;
+            };
         }
 
         public CompoundTag save() {
             var tag = new CompoundTag();
+            tag.putString("Action", action.name());
             if (species != null) tag.putString("Species", species.name());
             tag.putLong("Target", target.asLong());
             tag.putInt("Stage", stage);
@@ -116,7 +125,16 @@ public final class LandscapeRites {
                     return null;
                 }
             }
-            var progress = new Progress(species, BlockPos.of(tag.getLong("Target")), tag.getInt("Stage"));
+            ItemRiteRecipe.Action action = species == null ? ItemRiteRecipe.Action.RAISE_VOLCANO : ItemRiteRecipe.Action.FORESTATION;
+            if (tag.contains("Action", Tag.TAG_STRING)) {
+                try {
+                    action = ItemRiteRecipe.Action.valueOf(tag.getString("Action"));
+                } catch (IllegalArgumentException invalid) {
+                    return null;
+                }
+            }
+            if (!action.shapesLandscape() || (action == ItemRiteRecipe.Action.FORESTATION) != (species != null)) return null;
+            var progress = new Progress(action, species, BlockPos.of(tag.getLong("Target")), tag.getInt("Stage"));
             return progress.stage() > 0 && progress.stage() < progress.lastStage(coven) ? progress : null;
         }
     }
@@ -147,12 +165,15 @@ public final class LandscapeRites {
     @Nullable
     public static Progress pulse(ServerLevel level, BlockPos heart, Progress progress, int coven, @Nullable ServerPlayer caster) {
         int stage = progress.stage() + 1;
-        if (progress.species() != null) {
-            if (stage < progress.lastStage(coven)) forestPulse(level, progress.target(), progress.species(), coven, caster);
-        } else {
-            volcanoPulse(level, heart, progress.target(), stage, coven, caster);
+        switch (progress.action()) {
+            case FORESTATION -> {
+                if (stage < progress.lastStage(coven)) forestPulse(level, progress.target(), progress.species(), coven, caster);
+            }
+            case RAISE_VOLCANO -> volcanoPulse(level, heart, progress.target(), stage, coven, caster);
+            case ICE_SHELL -> IceShell.pulse(level, progress.target(), stage, coven, caster);
+            default -> throw new IllegalStateException("Unexpected landscape rite " + progress.action());
         }
-        return stage >= progress.lastStage(coven) ? null : new Progress(progress.species(), progress.target(), stage);
+        return stage >= progress.lastStage(coven) ? null : new Progress(progress.action(), progress.species(), progress.target(), stage);
     }
 
     private static void forestPulse(ServerLevel level, BlockPos origin, Species species, int coven, @Nullable ServerPlayer caster) {
@@ -289,7 +310,7 @@ public final class LandscapeRites {
         return level.getFluidState(pos).is(FluidTags.LAVA);
     }
 
-    private static boolean replace(ServerLevel level, BlockPos pos, BlockState replacement, @Nullable ServerPlayer caster) {
+    static boolean replace(ServerLevel level, BlockPos pos, BlockState replacement, @Nullable ServerPlayer caster) {
         if (!level.isInWorldBounds(pos) || !level.getWorldBorder().isWithinBounds(pos)) return false;
         BlockState existing = level.getBlockState(pos);
         if (existing.equals(replacement)) return true;

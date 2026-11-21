@@ -1,6 +1,7 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.block.PlantMineBlock;
+import art.arcane.witchery.block.PerpetualIceBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.BarrierBlock;
@@ -154,6 +155,7 @@ public final class WitcheryBlocks {
             case "witchleaves" -> new WitchLeavesBlock(BlockBehaviour.Properties.copy(Blocks.OAK_LEAVES));
             case "witchsapling" -> new WitchSaplingBlock(BlockBehaviour.Properties.copy(Blocks.OAK_SAPLING));
             case "wickerbundle" -> new WickerBundleBlock();
+            case "perpetualice" -> new PerpetualIceBlock();
             case "shadedglass" -> new LegacyShadedGlassBlock(false);
             case "shadedglass_active" -> new LegacyShadedGlassBlock(true);
             case "bloodrose" -> new BloodRoseBlock();

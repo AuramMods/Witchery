@@ -1,0 +1,10 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [
+    {"item": "minecraft:diamond_sword"},
+    {"item": "witchery:frozen_heart"},
+    {"item": "witchery:charged_attuned_stone"}
+  ],
+  "action": "ice_shell"
+}

@@ -12,6 +12,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUtils;
+import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -22,13 +23,19 @@ import java.util.function.Supplier;
 
 public final class DrinkableBrewItem extends Item {
     private final Consumer<LivingEntity> effect;
+    private final UseAnim useAnimation;
 
     public DrinkableBrewItem(Supplier<MobEffect> effect, int duration, int amplifier) {
         this(drinker -> drinker.addEffect(new MobEffectInstance(effect.get(), duration, amplifier)));
     }
 
     public DrinkableBrewItem(Consumer<LivingEntity> effect) {
-        super(new Properties());
+        this(new Properties(), UseAnim.DRINK, effect);
+    }
+
+    private DrinkableBrewItem(Properties properties, UseAnim animation, Consumer<LivingEntity> effect) {
+        super(properties);
+        this.useAnimation = animation;
         this.effect = effect;
     }
 
@@ -44,7 +51,7 @@ public final class DrinkableBrewItem extends Item {
 
     @Override
     public UseAnim getUseAnimation(ItemStack stack) {
-        return UseAnim.DRINK;
+        return useAnimation;
     }
 
     @Override
@@ -55,7 +62,7 @@ public final class DrinkableBrewItem extends Item {
         }
         if (!level.isClientSide) {
             effect.accept(drinker);
-            drinker.gameEvent(GameEvent.DRINK);
+            drinker.gameEvent(useAnimation == UseAnim.EAT ? GameEvent.EAT : GameEvent.DRINK);
         }
         if (!(drinker instanceof Player player) || !player.getAbilities().instabuild) {
             stack.shrink(1);
@@ -68,5 +75,17 @@ public final class DrinkableBrewItem extends Item {
             List<MobEffectInstance> effects = List.copyOf(drinker.getActiveEffects());
             drinker.removeEffect(effects.get(drinker.getRandom().nextInt(effects.size())).getEffect());
         }
+    }
+
+    public static DrinkableBrewItem frozenHeart() {
+        return new DrinkableBrewItem(new Properties().rarity(Rarity.UNCOMMON), UseAnim.EAT, drinker -> {
+            if (!(drinker instanceof Player player)) return;
+            var persisted = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
+            var effects = persisted.getCompound("witchery.effects");
+            effects.remove("witchery.imp.firetouch");
+            effects.remove("witchery.imp.evaporation");
+            effects.remove("witchery.im.meltingtouch");
+            if (effects.isEmpty()) persisted.remove("witchery.effects");
+        });
     }
 }

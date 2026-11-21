@@ -299,7 +299,11 @@
 - [x] Restore optional same-dimension Waystone targeting for both rites. A valid bound stone is consumed on success. Targets begin within 50 blocks and each coven member adds another 50. Out-of-range and dry volcano attempts refund offerings after the altar charge.
 - [x] In the muted survival client, craft the Wicker Bundle from supplied saplings, bind a Waystone through a prepared Otherwhere glyph ring, and activate the Alder rite. After a dedicated restart at pulse 15, 53 alder trunks grew at ground level in the target area.
 - [x] Activate a separate Waystone-targeted volcano with a prepared lava reservoir. The dedicated server saved pulse four and resumed to a full cone with a persistent summit source and an open shaft. The remote Heart Glyph and an emerald in a chest inside the cone survived. Data generation, JAR reobfuscation, and all 328 required Forge GameTests passed.
-- [ ] Restore the remaining landscape-changing rites and the Bloodied Wicker Man's summons.
+- [x] Restore the Ice Shell rite, its Small White Circle, and the original unworn Diamond Sword, Frozen Heart, and Charged Attuned Stone offerings. Two coven witches create an eight-block radius. Three to five extend it to twelve, and six extend it to sixteen.
+- [x] Craft the Frozen Heart from Icy Needle, Creeper Heart, and Ghast Tear. Restore its legacy metadata and its use to clear the three saved Imp effects. Perpetual Ice stays frozen under light and drops only with Silk Touch.
+- [x] In the muted client, craft a Frozen Heart from supplied items, toss it with the sword and stone, and activate the ring with a Seer Stone. Two fixture-supplied coven members joined the cast. A dedicated restart after the first offering resumed to the full shell and drained the enclosed water.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 334 required Forge GameTests. New checks cover both Wicker Man orientations, an invalid effigy, Frozen Heart crafting and legacy Imp data, Ice Shell growth after reload, the no-coven refund, and a legacy cast at maximum radius.
+- [ ] Restore climate change, the remaining circle rites, and the Frozen Heart's cauldron effect.
 
 ## Familiar Brews and Baba Yaga (2026-11-20)
 
@@ -513,6 +517,10 @@
 - [x] Restart the dedicated server at the same full moon. The reconnected player kept rank four, human form and the charm with one durability point spent. The placed Wolf Altar retained its block entity.
 
 ## Horned Huntsman Trial (2026-11-20)
+
+- [x] Light the original Bloodied Wicker Man in either orientation with Flint and Steel. The specific blocks burn and summon one Horned Huntsman at the feet, with the original 150-tick entrance. The Wicker Bundle's texture follows its placement axis.
+- [x] Verify the real Flint and Steel interaction in the muted survival client with fire spread disabled. The Huntsman entered at partial health, retained its UUID across a dedicated restart, and reached 400 health.
+- [ ] Restore naturally generated Wicker Men and their spawners.
 
 - [x] Claim one Horn of the Hunt at rank four and hold it for two seconds to summon the Huntsman. The muted client picked up the altar's horn, kept it after an early release, and saw it break after a successful call. The boss appeared with its original model, texture and spear, and a boss bar tracked its entrance.
 - [x] Restart the dedicated server during the entrance. The same Huntsman reached 400 health after loading. GameTests verified the serialized entrance countdown, player-attributed defeat and altar turn-in, the 15-point raw damage cap, ranged arrows, and the skull, blood and enchanted book drops.

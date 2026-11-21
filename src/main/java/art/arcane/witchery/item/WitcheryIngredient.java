@@ -81,6 +81,7 @@ public enum WitcheryIngredient {
     BREW_OF_LOVE(75, "brew_of_love"),
     BREW_OF_THE_DEPTHS(77, "brew_of_the_depths"),
     ICY_NEEDLE(78, "icy_needle"),
+    FROZEN_HEART(79, "frozen_heart"),
     INFERNAL_BLOOD(80, "infernal_blood"),
     ENT_BRANCH(82, "ent_branch"),
     MYSTIC_UNGUENT(83, "mystic_unguent"),

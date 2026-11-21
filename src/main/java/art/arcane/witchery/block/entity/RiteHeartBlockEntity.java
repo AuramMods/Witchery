@@ -429,7 +429,11 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     private boolean prepareLandscape(ServerLevel level, ItemRiteRecipe rite) {
         BlockPos heart = getBlockPos();
         BlockPos target = heart;
-        ItemRiteRecipe.Offering stone = rite.findLocationOffering(level, heart);
+        if (rite.action() == ItemRiteRecipe.Action.ICE_SHELL && covenSize < 2) {
+            abort(level, "message.witchery.rite.ice_shell_coven");
+            return false;
+        }
+        ItemRiteRecipe.Offering stone = rite.action() == ItemRiteRecipe.Action.ICE_SHELL ? null : rite.findLocationOffering(level, heart);
         if (stone != null) {
             target = WaystoneItem.location(stone.stack()).position();
             sacrificed.add(new Sacrifice(stone.stack().copyWithCount(1), stone.grassper()));
@@ -447,14 +451,14 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 abort(level, "message.witchery.rite.missing_ingredient");
                 return false;
             }
-        } else {
+        } else if (rite.action() == ItemRiteRecipe.Action.RAISE_VOLCANO) {
             if (!LandscapeRites.hasLavaBelow(level, target)) {
                 abort(level, "message.witchery.rite.missing_lava");
                 return false;
             }
             LandscapeRites.startVolcano(level, target);
         }
-        landscape = new LandscapeRites.Progress(species, target, 0);
+        landscape = new LandscapeRites.Progress(rite.action(), species, target, 0);
         return true;
     }
 
@@ -652,15 +656,23 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 oreDepth = stage;
             } else {
                 LandscapeRites.Species species = LandscapeRites.Species.forLegacyRite(rite);
-                if (species == null && rite != 77) continue;
+                if (species == null && rite != 77 && (rite != 65 || members < 2)) continue;
+                ItemRiteRecipe.Action action = switch (rite) {
+                    case 65 -> ItemRiteRecipe.Action.ICE_SHELL;
+                    case 77 -> ItemRiteRecipe.Action.RAISE_VOLCANO;
+                    default -> ItemRiteRecipe.Action.FORESTATION;
+                };
                 var position = tag.getList("Locations", Tag.TAG_COMPOUND).getCompound(index);
                 BlockPos target = position.contains("posX", Tag.TAG_ANY_NUMERIC)
                         && position.contains("posY", Tag.TAG_ANY_NUMERIC) && position.contains("posZ", Tag.TAG_ANY_NUMERIC)
                         ? new BlockPos(position.getInt("posX"), position.getInt("posY"), position.getInt("posZ")) : getBlockPos();
-                var progress = new LandscapeRites.Progress(species, target, stage);
+                var progress = new LandscapeRites.Progress(action, species, target, stage);
                 if (stage >= progress.lastStage(members)) continue;
-                activeRite = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, species == null ? "rite_of_raising_a_volcano"
-                        : "forestation/" + species.name().toLowerCase(Locale.ROOT));
+                activeRite = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, switch (action) {
+                    case ICE_SHELL -> "rite_of_ice_shell";
+                    case RAISE_VOLCANO -> "rite_of_raising_a_volcano";
+                    default -> "forestation/" + species.name().toLowerCase(Locale.ROOT);
+                });
                 landscape = progress;
             }
             covenSize = members;

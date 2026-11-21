@@ -80,6 +80,7 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                                 .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
                                         .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(BedBlock.PART, BedPart.FOOT)))))));
                 case "witchsapling", "witchlog", "witchwood" -> dropWitchWood(block);
+                case "perpetualice" -> add(block, createSilkTouchOnlyTable(block));
                 case "wickerbundle" -> add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool()
                         .setRolls(ConstantValue.exactly(1)).add(LootItem.lootTableItem(block)
                                 .apply(CopyBlockState.copyState(block).copy(WickerBundleBlock.BUNDLE_TYPE)

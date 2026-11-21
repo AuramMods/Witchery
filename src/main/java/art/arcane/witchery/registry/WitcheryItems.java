@@ -331,6 +331,7 @@ public final class WitcheryItems {
             case "seer_stone" -> new SeerStoneItem();
             case "purified_milk" -> new DrinkableBrewItem(DrinkableBrewItem::purifyMilk);
             case "icy_needle" -> new IcyNeedleItem();
+            case "frozen_heart" -> DrinkableBrewItem.frozenHeart();
             case "dreamweave_of_fleet_feet" -> dreamWeave(DreamWeave.MOVEMENT);
             case "dreamweave_of_the_iron_arm" -> dreamWeave(DreamWeave.MINING);
             case "dreamweave_of_fasting" -> dreamWeave(DreamWeave.HUNGER);

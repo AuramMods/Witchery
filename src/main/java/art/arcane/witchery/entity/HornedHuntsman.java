@@ -111,6 +111,16 @@ public final class HornedHuntsman extends Monster implements RangedAttackMob {
         return offset > -2 ? offset + 4 : offset;
     }
 
+    public static boolean summonFromWicker(ServerLevel level, double x, double y, double z, float yaw) {
+        HornedHuntsman huntsman = WitcheryEntities.HORNED_HUNTSMAN.get().create(level);
+        if (huntsman == null) return false;
+        huntsman.moveTo(x, y, z, yaw, 0);
+        huntsman.setYHeadRot(yaw);
+        huntsman.setYBodyRot(yaw);
+        huntsman.beginEntrance();
+        return level.addFreshEntity(huntsman);
+    }
+
     private void beginEntrance() {
         entranceTicks = ENTRANCE_TICKS;
         explosiveEntrance = true;

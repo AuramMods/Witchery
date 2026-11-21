@@ -72,10 +72,11 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         SUMMON_REFLECTION,
         GLYPHIC_TRANSFORMATION,
         FORESTATION,
-        RAISE_VOLCANO;
+        RAISE_VOLCANO,
+        ICE_SHELL;
 
         public boolean shapesLandscape() {
-            return this == FORESTATION || this == RAISE_VOLCANO;
+            return this == FORESTATION || this == RAISE_VOLCANO || this == ICE_SHELL;
         }
     }
 
@@ -120,6 +121,8 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                     && SpectralStoneItem.typeId(offering.stack()) != 0);
         } else if (action == Action.RAISE_VOLCANO) {
             items.removeIf(offering -> offering.stack().is(Items.GOLDEN_SWORD) && offering.stack().isDamaged());
+        } else if (action == Action.ICE_SHELL) {
+            items.removeIf(offering -> offering.stack().is(Items.DIAMOND_SWORD) && offering.stack().isDamaged());
         }
         List<Ingredient> required = sacrifices.subList(first, sacrifices.size());
         int[] owners = new int[items.size()];
@@ -267,6 +270,7 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 case "glyphic_transformation" -> Action.GLYPHIC_TRANSFORMATION;
                 case "forestation" -> Action.FORESTATION;
                 case "raise_volcano" -> Action.RAISE_VOLCANO;
+                case "ice_shell" -> Action.ICE_SHELL;
                 case "infuse_overworld" -> Action.INFUSE_OVERWORLD;
                 case "recharge_infusion" -> Action.RECHARGE_INFUSION;
                 case "infuse_infernal" -> Action.INFUSE_INFERNAL;

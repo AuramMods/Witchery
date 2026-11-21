@@ -1,6 +1,3 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/perpetualice"
-   }
+  "parent": "minecraft:block/ice"
 }
