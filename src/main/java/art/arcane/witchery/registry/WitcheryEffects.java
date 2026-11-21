@@ -17,6 +17,7 @@ import art.arcane.witchery.brewing.PlantBrewEffect;
 import art.arcane.witchery.brewing.ProjectileBrewEffect;
 import art.arcane.witchery.brewing.ResizingEffect;
 import art.arcane.witchery.brewing.SnowTrailEffect;
+import art.arcane.witchery.brewing.SproutingEffect;
 import art.arcane.witchery.brewing.VolatilityEffect;
 import art.arcane.witchery.brewing.WakingNightmareEffect;
 import net.minecraft.world.effect.MobEffect;
@@ -47,6 +48,8 @@ public final class WitcheryEffects {
             () -> new PlantBrewEffect(true, legacyColor("potion.wrappedinvine")));
     public static final RegistryObject<MobEffect> SPIKED = MOB_EFFECTS.register("potion.spiked",
             () -> new PlantBrewEffect(false, legacyColor("potion.spiked")));
+    public static final RegistryObject<MobEffect> SPROUTING = MOB_EFFECTS.register("potion.sprouting",
+            () -> new SproutingEffect(legacyColor("potion.sprouting")));
     public static final RegistryObject<MobEffect> WOLFSBANE = simpleEffect("potion.wolfsbane", MobEffectCategory.NEUTRAL);
     public static final RegistryObject<MobEffect> ENDER_INHIBITION = simpleEffect("potion.enderinhibition", MobEffectCategory.HARMFUL);
     public static final RegistryObject<MobEffect> BREWING_EXPERTISE = simpleEffect("potion.brewingexpertise", MobEffectCategory.BENEFICIAL);
@@ -116,6 +119,7 @@ public final class WitcheryEffects {
         LEGACY_EFFECTS.put("potion.chilled", CHILLED);
         LEGACY_EFFECTS.put("potion.wrappedinvine", WRAPPED_IN_VINE);
         LEGACY_EFFECTS.put("potion.spiked", SPIKED);
+        LEGACY_EFFECTS.put("potion.sprouting", SPROUTING);
         LEGACY_EFFECTS.put("potion.wolfsbane", WOLFSBANE);
         LEGACY_EFFECTS.put("potion.enderinhibition", ENDER_INHIBITION);
         LEGACY_EFFECTS.put("potion.brewingexpertise", BREWING_EXPERTISE);

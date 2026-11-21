@@ -1043,6 +1043,17 @@
 - [x] Run Java 17 data generation, JAR reobfuscation, and seven focused Forge GameTests covering the three recipes, metadata, web movement, block protection, climbing, cactus support, and the two effects.
 - [ ] Resolve the inconsistent full-suite results. The full run passed 605 of 608 cases, including all seven new cases. Hobgoblin worship recruitment, villager courtship, and gas dispersal passed in the subsequent targeted 18-case run.
 
+## Cauldron Sprouting and Tree Growth (2026-11-21)
+
+- [x] Restore Sprouting for two levels and 350 base altar power. Ent Branch retains legacy ingredient subtype 82. Casts extend a branch along the impact axis, inherit the struck wood's species, and choose a random species on ordinary terrain.
+- [x] Restore the 15-second targeted effect and its strength and duration scaling. It periodically grows logs under the creature and lifts nearby entities when there is room. Keep the separate Kettle and mine behavior.
+- [x] Restore all six legacy vanilla sapling recipes and the three typed Witchery saplings for two levels and 200 power each. Test the large Oak, giant Spruce, and giant Jungle strength tiers using the corresponding configured tree features.
+- [x] Apply Forge growth and placement permission checks to the complete tree footprint. Restore the original blocks if a placement is denied. Verify typed Witchery saplings in the brewing guide and named legacy metadata in saved mixtures.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all seven focused Forge GameTests. The tests cover all recipes and tree forms, invalid soil, placement cancellation, branch direction and species, and the saved targeted effect.
+- [x] Brew and cast all nine tree mixtures and both Sprouting mixtures in muted survival. Giant Spruce, giant Jungle, and Dark Oak formed four-block trunk bases. A side hit grew ten horizontal Alder logs. A pig's timed effect grew two Birch logs and lifted it four blocks. A dedicated restart preserved all eleven placements and the pig's still-active effect.
+- [x] Run the 615-case regression suite. It passed 613 cases, including all seven new cases. Spectral Familiar ore-search and zombie courtship passed in targeted reruns after failing in the full run.
+- [ ] Resolve the intermittent broader regression failures. The targeted courtship run passed eight of nine cases and failed the older villager courtship check.
+
 ## Brew of Erosion and Brew of Ice (2026-11-21)
 
 - [x] Restore the original six-ingredient Kettle recipes, three servings, Brew Mastery bottling bonus, and legacy metadata 62 and 76. Erosion needs no altar power. Ice waits for 1,000 power and debits the altar once per batch.

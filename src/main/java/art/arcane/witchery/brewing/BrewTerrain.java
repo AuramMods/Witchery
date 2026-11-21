@@ -28,6 +28,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.BlockSnapshot;
+import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.level.BlockEvent;
 import org.jetbrains.annotations.Nullable;
@@ -152,6 +153,34 @@ public final class BrewTerrain {
     public static void mineSprouting(ServerLevel level, BlockPos pos) {
         BlockPos end = growBranch(null, level, pos, pos, Direction.UP, 10);
         if (end != null) lift(level, end.above(2), new AABB(pos).inflate(0, 2, 0));
+    }
+
+    static void sprout(ServerLevel level, BlockPos impact, Direction face, int extent, AABB bounds, @Nullable Player caster) {
+        if (!level.isInWorldBounds(impact) || !level.hasChunkAt(impact)) return;
+        Player actor = caster != null ? caster : FakePlayerFactory.getMinecraft(level);
+        var source = level.getBlockState(impact);
+        var random = level.getRandom();
+        var branch = branch(source, random);
+        Direction.Axis axis = face.getAxis();
+        BlockState log = branch.log().setValue(RotatedPillarBlock.AXIS, axis);
+        int start = face == Direction.UP && !source.blocksMotion() ? 0 : 1;
+        int offset = start;
+        for (; offset <= extent; offset++) {
+            BlockPos pos = impact.relative(face, offset);
+            if (!plantBranchBlock(level, pos, log, face, actor)) break;
+            int x = axis != Direction.Axis.X && random.nextInt(4) == 0 ? random.nextInt(3) - 1 : 0;
+            int y = axis != Direction.Axis.Y && x == 0 && random.nextInt(4) == 0 ? random.nextInt(3) - 1 : 0;
+            int z = axis != Direction.Axis.Z && x == 0 && y == 0 && random.nextInt(4) == 0 ? random.nextInt(3) - 1 : 0;
+            if (x != 0 || y != 0 || z != 0) plantBranchBlock(level, pos.offset(x, y, z), branch.leaves(), face, actor);
+        }
+        if (face == Direction.UP && offset > start && !level.getBlockState(impact.above(offset + 1)).blocksMotion()) {
+            lift(level, impact.above(offset + 2), bounds.inflate(0, 2, 0));
+        }
+    }
+
+    private static boolean plantBranchBlock(ServerLevel level, BlockPos pos, BlockState state, Direction face, Player actor) {
+        return level.isInWorldBounds(pos) && level.hasChunkAt(pos) && level.getBlockState(pos).canBeReplaced()
+                && BrewTerrain.setBlock(actor, level, pos, state, face, true);
     }
 
     @Nullable

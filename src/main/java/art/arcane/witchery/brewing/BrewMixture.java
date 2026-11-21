@@ -1,6 +1,8 @@
 package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.block.BrambleBlock;
+import art.arcane.witchery.block.WitchSaplingBlock;
+import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.entity.CreatureAlignment;
 import art.arcane.witchery.entity.Leonard;
@@ -33,8 +35,10 @@ import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.monster.Blaze;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -68,7 +72,16 @@ public final class BrewMixture {
         REMOVE_DEBUFFS, REMOVE_BUFFS, WASTING, DRAIN_MAGIC, DURATION_BOOST, STEAL_BUFFS, SPREAD_DEBUFFS,
         AIR_HIKE, FROG_TONGUE, KNOCKBACK, BAT_BURST, BODEGA, POISON_TOAD, RAISING,
         FLOWERS, FERTILIZATION, HARVESTING, TILLING, PLANTING, PRUNING, FELLING, PULVERISATION,
-        DISSIPATE, TIDE_HOLD, LAVA_HOLD, LILIFY, EROSION, LEVELLING, WEBS, VINES, THORNS;
+        DISSIPATE, TIDE_HOLD, LAVA_HOLD, LILIFY, EROSION, LEVELLING, WEBS, VINES, THORNS, SPROUTING,
+        TREE_OAK(BrewTrees.Species.OAK), TREE_SPRUCE(BrewTrees.Species.SPRUCE), TREE_BIRCH(BrewTrees.Species.BIRCH),
+        TREE_JUNGLE(BrewTrees.Species.JUNGLE), TREE_ACACIA(BrewTrees.Species.ACACIA), TREE_DARK_OAK(BrewTrees.Species.DARK_OAK),
+        TREE_ROWAN(BrewTrees.Species.ROWAN), TREE_ALDER(BrewTrees.Species.ALDER), TREE_HAWTHORN(BrewTrees.Species.HAWTHORN);
+
+        @Nullable private final BrewTrees.Species tree;
+
+        Action() { this(null); }
+
+        Action(@Nullable BrewTrees.Species tree) { this.tree = tree; }
 
         String nameKey(boolean inverted) {
             return switch (this) {
@@ -116,6 +129,9 @@ public final class BrewMixture {
                 case WEBS -> "brew.witchery.webs";
                 case VINES -> "brew.witchery.vines";
                 case THORNS -> "brew.witchery.thorns";
+                case SPROUTING -> "brew.witchery.sprouting";
+                case TREE_OAK, TREE_SPRUCE, TREE_BIRCH, TREE_JUNGLE, TREE_ACACIA, TREE_DARK_OAK,
+                     TREE_ROWAN, TREE_ALDER, TREE_HAWTHORN -> tree.nameKey;
             };
         }
 
@@ -124,8 +140,8 @@ public final class BrewMixture {
                 case EXTINGUISH, COLD, ICE_SHELL, ICE_WORLD, CHANGING_SEASONS, SNOW,
                      BAT_BURST, FROG_TONGUE, POISON_TOAD, RAISING,
                      FLOWERS, FERTILIZATION, HARVESTING, TILLING, PLANTING, PRUNING, FELLING, PULVERISATION,
-                     DISSIPATE, TIDE_HOLD, LAVA_HOLD, LILIFY, EROSION, LEVELLING, WEBS, VINES, THORNS -> true;
-                default -> false;
+                     DISSIPATE, TIDE_HOLD, LAVA_HOLD, LILIFY, EROSION, LEVELLING, WEBS, VINES, THORNS, SPROUTING -> true;
+                default -> tree != null;
             };
         }
     }
@@ -254,6 +270,19 @@ public final class BrewMixture {
 
     public static ItemStack loadIngredient(CompoundTag tag) {
         int metadata = tag.getInt("Damage");
+        if (tag.getString("id").equals("witchery:witchsapling") && tag.contains("Damage", Tag.TAG_ANY_NUMERIC)) {
+            ItemStack sapling = WitcheryIngredient.loadInventoryStack(tag);
+            CompoundTag state = sapling.getTagElement(BlockItem.BLOCK_STATE_TAG);
+            if (state == null || !state.contains(WitchWoodType.PROPERTY.getName(), Tag.TAG_STRING)) {
+                WitchWoodType[] woods = WitchWoodType.values();
+                int type = metadata & 3;
+                if (type < woods.length) {
+                    sapling.getOrCreateTagElement(BlockItem.BLOCK_STATE_TAG)
+                            .putString(WitchWoodType.PROPERTY.getName(), woods[type].getSerializedName());
+                }
+            }
+            return sapling;
+        }
         String id = switch (tag.getString("id")) {
             case "minecraft:skull" -> switch (metadata) {
                 case 0 -> "minecraft:skeleton_skull";
@@ -277,6 +306,15 @@ public final class BrewMixture {
             case "minecraft:netherbrick" -> "minecraft:nether_brick";
             case "minecraft:yellow_flower" -> metadata == 0 ? "minecraft:dandelion" : null;
             case "minecraft:waterlily" -> "minecraft:lily_pad";
+            case "minecraft:sapling" -> switch (metadata & 7) {
+                case 0 -> "minecraft:oak_sapling";
+                case 1 -> "minecraft:spruce_sapling";
+                case 2 -> "minecraft:birch_sapling";
+                case 3 -> "minecraft:jungle_sapling";
+                case 4 -> "minecraft:acacia_sapling";
+                case 5 -> "minecraft:dark_oak_sapling";
+                default -> null;
+            };
             case "minecraft:sand" -> metadata == 1 ? "minecraft:red_sand" : null;
             case "minecraft:dirt" -> switch (metadata) {
                 case 1 -> "minecraft:coarse_dirt";
@@ -327,31 +365,31 @@ public final class BrewMixture {
     public record GuideIngredient(ItemStack stack, int power, int capacityCost, Component effect, @Nullable Component reversed) {}
 
     public static List<GuideIngredient> guideIngredients() {
-        return INGREDIENTS.entrySet().stream().sorted(Map.Entry.comparingByKey()).flatMap(entry -> {
+        return INGREDIENTS.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(entry -> {
+            Ingredient ingredient = entry.getValue();
+            BrewTrees.Species tree = ingredient.action != null ? ingredient.action.tree : null;
             boolean enderBramble = entry.getKey().equals(ENDER_BRAMBLE);
-            return BuiltInRegistries.ITEM.getOptional(enderBramble ? BRAMBLE : entry.getKey()).stream().map(item -> {
-                Ingredient ingredient = entry.getValue();
-                Component effect;
-                Component reversed = null;
-                if (ingredient.normal != null) {
-                    effect = ingredient.normal.brewName();
-                    if (!ingredient.normal.equals(ingredient.inverted)) {
-                        reversed = ingredient.inverted.brewName();
-                    }
-                } else if (ingredient.action != null) {
-                    effect = Component.translatable(ingredient.action.nameKey(false));
-                    if (!ingredient.action.nameKey(false).equals(ingredient.action.nameKey(true))) {
-                        reversed = Component.translatable(ingredient.action.nameKey(true));
-                    }
-                } else {
-                    effect = Component.translatable("guide.witchery.cauldron.modifier."
-                            + ingredient.modifier.name().toLowerCase(java.util.Locale.ROOT), ingredient.amount, ingredient.ceiling);
+            ItemStack stack = tree != null ? tree.ingredient()
+                    : new ItemStack(BuiltInRegistries.ITEM.get(enderBramble ? BRAMBLE : entry.getKey()));
+            if (enderBramble) BrambleBlock.setWild(stack, false);
+            Component effect;
+            Component reversed = null;
+            if (ingredient.normal != null) {
+                effect = ingredient.normal.brewName();
+                if (!ingredient.normal.equals(ingredient.inverted)) {
+                    reversed = ingredient.inverted.brewName();
                 }
-                ItemStack stack = new ItemStack(item);
-                if (enderBramble) BrambleBlock.setWild(stack, false);
-                return new GuideIngredient(stack, ingredient.power, ingredient.isEffect() ? ingredient.amount : 0, effect, reversed);
-            });
-        }).toList();
+            } else if (ingredient.action != null) {
+                effect = Component.translatable(ingredient.action.nameKey(false));
+                if (!ingredient.action.nameKey(false).equals(ingredient.action.nameKey(true))) {
+                    reversed = Component.translatable(ingredient.action.nameKey(true));
+                }
+            } else {
+                effect = Component.translatable("guide.witchery.cauldron.modifier."
+                        + ingredient.modifier.name().toLowerCase(java.util.Locale.ROOT), ingredient.amount, ingredient.ceiling);
+            }
+            return new GuideIngredient(stack, ingredient.power, ingredient.isEffect() ? ingredient.amount : 0, effect, reversed);
+        }).filter(ingredient -> !ingredient.stack().isEmpty()).toList();
     }
     public int power() { return power; }
     public int used() { return used; }
@@ -444,6 +482,10 @@ public final class BrewMixture {
                 case WEBS -> BrewPlantEffects.webs(level, pos, face, strength, caster);
                 case VINES -> BrewPlantEffects.vines(level, pos, face, strength, caster);
                 case THORNS -> BrewPlantEffects.thorns(level, pos, face, strength, caster);
+                case SPROUTING -> BrewTerrain.sprout(level, pos, face, 8 + 2 * strength, new AABB(pos), caster);
+                case TREE_OAK, TREE_SPRUCE, TREE_BIRCH, TREE_JUNGLE, TREE_ACACIA, TREE_DARK_OAK,
+                     TREE_ROWAN, TREE_ALDER, TREE_HAWTHORN -> BrewTrees.grow(level, pos, face, application.action.tree,
+                        application.action == Action.TREE_JUNGLE ? application.blockStrength : strength, caster);
                 default -> { }
             }
         }
@@ -613,13 +655,19 @@ public final class BrewMixture {
                 target.addEffect(new MobEffectInstance(effect.get(), ticks, Math.min(strength, 10),
                         false, application.showParticles, true), source);
             }
+            case SPROUTING -> target.addEffect(new MobEffectInstance(WitcheryEffects.SPROUTING.get(),
+                    Mth.ceil(300 * application.durationMultiplier * durationScale), strength), source);
             case CHANGING_SEASONS, ICE_WORLD, RAISING, TIDE_HOLD, LAVA_HOLD, LEVELLING,
-                 FLOWERS, FERTILIZATION, HARVESTING, TILLING, PLANTING, PRUNING, FELLING, PULVERISATION -> { }
+                 FLOWERS, FERTILIZATION, HARVESTING, TILLING, PLANTING, PRUNING, FELLING, PULVERISATION,
+                 TREE_OAK, TREE_SPRUCE, TREE_BIRCH, TREE_JUNGLE, TREE_ACACIA, TREE_DARK_OAK, TREE_ROWAN, TREE_ALDER, TREE_HAWTHORN -> { }
         }
     }
 
     private static ResourceLocation id(ItemStack stack) {
         if (stack.getItem() instanceof BrambleBlock.Item && !BrambleBlock.isWild(stack)) return ENDER_BRAMBLE;
+        if (stack.getItem() instanceof BlockItem item && item.getBlock() instanceof WitchSaplingBlock) {
+            return BrewTrees.witchSaplingKey(WitchWoodType.fromStack(stack));
+        }
         return BuiltInRegistries.ITEM.getKey(stack.getItem());
     }
 
@@ -643,7 +691,6 @@ public final class BrewMixture {
         return switch (id.toString()) {
             case "minecraft:ender_pearl" -> 1000;
             case "minecraft:vine" -> 150;
-            case "witchery:ent_branch" -> 350;
             case "witchery:refined_evil" -> 3000;
             default -> 0;
         };
@@ -865,6 +912,10 @@ public final class BrewMixture {
         entries.put(ResourceLocation.parse("witchery:thrown_web"), new Ingredient(200, null, 2, 10, 0, null, null, Action.WEBS));
         entries.put(ResourceLocation.withDefaultNamespace("vine"), new Ingredient(150, null, 2, 10, 0, null, null, Action.VINES));
         entries.put(ResourceLocation.withDefaultNamespace("cactus"), new Ingredient(150, null, 2, 10, 0, null, null, Action.THORNS));
+        entries.put(ResourceLocation.parse("witchery:ent_branch"), new Ingredient(350, null, 2, 10, 0, null, null, Action.SPROUTING));
+        for (Action action : Action.values()) {
+            if (action.tree != null) entries.put(action.tree.key, new Ingredient(200, null, 2, 10, 0, null, null, action));
+        }
         entries.put(ResourceLocation.fromNamespaceAndPath("witchery", "odour_of_purity"),
                 new Ingredient(100, null, 4, 0, 0, null, null, Action.REVEAL));
         entries.put(ResourceLocation.fromNamespaceAndPath("witchery", "heart_of_gold"),

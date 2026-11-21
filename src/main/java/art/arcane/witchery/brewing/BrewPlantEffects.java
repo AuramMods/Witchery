@@ -71,7 +71,7 @@ final class BrewPlantEffects {
     }
 
     @Nullable
-    private static BlockPos plantSite(ServerLevel level, BlockPos impact, @Nullable Direction face, boolean allowAir) {
+    static BlockPos plantSite(ServerLevel level, BlockPos impact, @Nullable Direction face, boolean allowAir) {
         if (!available(level, impact)) return null;
         BlockPos base = impact;
         BlockState state = level.getBlockState(base);
