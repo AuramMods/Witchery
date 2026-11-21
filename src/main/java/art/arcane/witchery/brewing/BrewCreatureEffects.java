@@ -29,6 +29,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.Cow;
 import net.minecraft.world.entity.ambient.Bat;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Slime;
@@ -327,6 +328,35 @@ public final class BrewCreatureEffects {
         villager.discard();
         level.levelEvent(null, 1026, zombie.blockPosition(), 0);
         return true;
+    }
+
+    static void blight(LivingEntity target, int strength) {
+        if (!(target.level() instanceof ServerLevel level) || !target.isAlive()) return;
+        if (target instanceof Villager villager && level.random.nextInt(Math.max(1, 10 - strength * 2)) == 0) {
+            infectVillager(level, villager);
+        } else if (target instanceof Cow cow && level.random.nextInt(Math.max(1, 20 - strength * 3)) == 0) {
+            turnIntoMooshroom(level, cow);
+        } else if (target instanceof Animal && level.random.nextInt(strength > 1 ? 2 : 3) == 0) {
+            target.hurt(level.damageSources().magic(), 20);
+        }
+    }
+
+    public static void turnIntoMooshroom(ServerLevel level, Cow cow) {
+        if (!ForgeEventFactory.canLivingConvert(cow, EntityType.MOOSHROOM, delay -> {}) || !cow.isAlive()) return;
+        var mooshroom = EntityType.MOOSHROOM.create(level);
+        if (mooshroom == null) return;
+        mooshroom.copyPosition(cow);
+        mooshroom.setAge(cow.getAge());
+        mooshroom.setNoAi(cow.isNoAi());
+        mooshroom.setInvulnerable(cow.isInvulnerable());
+        mooshroom.setCustomName(cow.getCustomName());
+        mooshroom.setCustomNameVisible(cow.isCustomNameVisible());
+        if (cow.isPersistenceRequired()) mooshroom.setPersistenceRequired();
+        if (!level.addFreshEntity(mooshroom)) return;
+        if (cow.isPassenger()) mooshroom.startRiding(cow.getVehicle(), true);
+        ForgeEventFactory.onLivingConvert(cow, mooshroom);
+        cow.discard();
+        level.levelEvent(null, 1026, mooshroom.blockPosition(), 0);
     }
 
     public static void quicklime(ThrownBrew shot, HitResult hit) {

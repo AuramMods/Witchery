@@ -34,6 +34,7 @@ import net.minecraftforge.event.level.BlockEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 public final class BrewTerrain {
@@ -202,7 +203,7 @@ public final class BrewTerrain {
         return top;
     }
 
-    private static void lift(ServerLevel level, BlockPos destination, AABB bounds) {
+    static void lift(ServerLevel level, BlockPos destination, AABB bounds) {
         Vec3 landing = Vec3.atBottomCenterOf(destination);
         for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, bounds, LivingEntity::isAlive)) {
             if (WitcheryTeleport.canArrive(entity, level, landing)) WitcheryTeleport.move(entity, level, landing);
@@ -256,6 +257,51 @@ public final class BrewTerrain {
 
     public static boolean setBlock(@Nullable Entity owner, ServerLevel level, BlockPos pos, BlockState state, Direction face) {
         return setBlock(owner, level, pos, state, face, false);
+    }
+
+    static boolean placeGroup(ServerLevel level, Player actor, Direction face, BooleanSupplier writeBlocks) {
+        boolean alreadyCapturing = level.captureBlockSnapshots;
+        int first = level.capturedBlockSnapshots.size();
+        boolean placed = false;
+        List<BlockSnapshot> changes;
+        level.captureBlockSnapshots = true;
+        try {
+            if (writeBlocks.getAsBoolean()) {
+                changes = List.copyOf(level.capturedBlockSnapshots.subList(first, level.capturedBlockSnapshots.size()));
+                placed = !changes.isEmpty() && changes.stream().allMatch(change ->
+                        canChange(actor, level, change.getPos(), change.getReplacedBlock()))
+                        && !ForgeEventFactory.onMultiBlockPlace(actor, changes, face);
+            }
+        } finally {
+            level.captureBlockSnapshots = alreadyCapturing;
+            var captured = level.capturedBlockSnapshots.subList(first, level.capturedBlockSnapshots.size());
+            changes = List.copyOf(captured);
+            if (!alreadyCapturing || !placed) captured.clear();
+            if (!placed) restore(level, changes);
+        }
+        if (placed && !alreadyCapturing) {
+            for (BlockSnapshot change : changes) {
+                BlockPos pos = change.getPos();
+                var state = level.getBlockState(pos);
+                var previous = change.getReplacedBlock();
+                state.onPlace(level, pos, previous, false);
+                level.markAndNotifyBlock(pos, level.getChunkAt(pos), previous, state, change.getFlag(), 512);
+            }
+        }
+        return placed;
+    }
+
+    private static void restore(ServerLevel level, List<BlockSnapshot> changes) {
+        boolean capturing = level.captureBlockSnapshots;
+        boolean restoring = level.restoringBlockSnapshots;
+        level.captureBlockSnapshots = false;
+        level.restoringBlockSnapshots = true;
+        try {
+            for (int i = changes.size() - 1; i >= 0; i--) changes.get(i).restore(true, false);
+        } finally {
+            level.captureBlockSnapshots = capturing;
+            level.restoringBlockSnapshots = restoring;
+        }
     }
 
     static void forEachColumn(ServerLevel level, BlockPos center, int radius, Consumer<BlockPos> action) {

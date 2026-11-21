@@ -16,13 +16,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
-import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.eventbus.api.Event;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
 
 final class BrewTrees {
     private BrewTrees() {}
@@ -88,52 +85,8 @@ final class BrewTrees {
         var feature = features.getHolder(species.feature(strength, random)).orElse(null);
         var event = ForgeEventFactory.blockGrowFeature(level, random, pos, feature);
         if (event.getResult() != Event.Result.DENY && event.getFeature() != null) {
-            place(level, pos, face, actor, event.getFeature().value(), random);
-        }
-    }
-
-    private static void place(ServerLevel level, BlockPos pos, Direction face, Player actor,
-                              ConfiguredFeature<?, ?> feature, RandomSource random) {
-        boolean alreadyCapturing = level.captureBlockSnapshots;
-        int first = level.capturedBlockSnapshots.size();
-        boolean placed = false;
-        List<BlockSnapshot> changes;
-        level.captureBlockSnapshots = true;
-        try {
-            if (feature.place(level, level.getChunkSource().getGenerator(), random, pos)) {
-                changes = List.copyOf(level.capturedBlockSnapshots.subList(first, level.capturedBlockSnapshots.size()));
-                placed = !changes.isEmpty() && changes.stream().allMatch(change ->
-                        BrewTerrain.canChange(actor, level, change.getPos(), change.getReplacedBlock()))
-                        && !ForgeEventFactory.onMultiBlockPlace(actor, changes, face);
-            }
-        } finally {
-            level.captureBlockSnapshots = alreadyCapturing;
-            var captured = level.capturedBlockSnapshots.subList(first, level.capturedBlockSnapshots.size());
-            changes = List.copyOf(captured);
-            if (!alreadyCapturing || !placed) captured.clear();
-            if (!placed) restore(level, changes);
-        }
-        if (placed && !alreadyCapturing) {
-            for (BlockSnapshot change : changes) {
-                BlockPos changed = change.getPos();
-                var state = level.getBlockState(changed);
-                var previous = change.getReplacedBlock();
-                state.onPlace(level, changed, previous, false);
-                level.markAndNotifyBlock(changed, level.getChunkAt(changed), previous, state, change.getFlag(), 512);
-            }
-        }
-    }
-
-    private static void restore(ServerLevel level, List<BlockSnapshot> changes) {
-        boolean capturing = level.captureBlockSnapshots;
-        boolean restoring = level.restoringBlockSnapshots;
-        level.captureBlockSnapshots = false;
-        level.restoringBlockSnapshots = true;
-        try {
-            for (int i = changes.size() - 1; i >= 0; i--) changes.get(i).restore(true, false);
-        } finally {
-            level.captureBlockSnapshots = capturing;
-            level.restoringBlockSnapshots = restoring;
+            BrewTerrain.placeGroup(level, actor, face,
+                    () -> event.getFeature().value().place(level, level.getChunkSource().getGenerator(), random, pos));
         }
     }
 }

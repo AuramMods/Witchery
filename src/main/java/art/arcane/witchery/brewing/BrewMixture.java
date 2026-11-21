@@ -72,7 +72,7 @@ public final class BrewMixture {
         REMOVE_DEBUFFS, REMOVE_BUFFS, WASTING, DRAIN_MAGIC, DURATION_BOOST, STEAL_BUFFS, SPREAD_DEBUFFS,
         AIR_HIKE, FROG_TONGUE, KNOCKBACK, BAT_BURST, BODEGA, POISON_TOAD, RAISING,
         FLOWERS, FERTILIZATION, HARVESTING, TILLING, PLANTING, PRUNING, FELLING, PULVERISATION,
-        DISSIPATE, TIDE_HOLD, LAVA_HOLD, LILIFY, EROSION, LEVELLING, WEBS, VINES, THORNS, SPROUTING,
+        DISSIPATE, TIDE_HOLD, LAVA_HOLD, LILIFY, EROSION, LEVELLING, WEBS, VINES, THORNS, SPROUTING, BLIGHT, RAISE_LAND,
         TREE_OAK(BrewTrees.Species.OAK), TREE_SPRUCE(BrewTrees.Species.SPRUCE), TREE_BIRCH(BrewTrees.Species.BIRCH),
         TREE_JUNGLE(BrewTrees.Species.JUNGLE), TREE_ACACIA(BrewTrees.Species.ACACIA), TREE_DARK_OAK(BrewTrees.Species.DARK_OAK),
         TREE_ROWAN(BrewTrees.Species.ROWAN), TREE_ALDER(BrewTrees.Species.ALDER), TREE_HAWTHORN(BrewTrees.Species.HAWTHORN);
@@ -130,6 +130,8 @@ public final class BrewMixture {
                 case VINES -> "brew.witchery.vines";
                 case THORNS -> "brew.witchery.thorns";
                 case SPROUTING -> "brew.witchery.sprouting";
+                case BLIGHT -> "brew.witchery.blight";
+                case RAISE_LAND -> "brew.witchery.raiseland";
                 case TREE_OAK, TREE_SPRUCE, TREE_BIRCH, TREE_JUNGLE, TREE_ACACIA, TREE_DARK_OAK,
                      TREE_ROWAN, TREE_ALDER, TREE_HAWTHORN -> tree.nameKey;
             };
@@ -140,7 +142,8 @@ public final class BrewMixture {
                 case EXTINGUISH, COLD, ICE_SHELL, ICE_WORLD, CHANGING_SEASONS, SNOW,
                      BAT_BURST, FROG_TONGUE, POISON_TOAD, RAISING,
                      FLOWERS, FERTILIZATION, HARVESTING, TILLING, PLANTING, PRUNING, FELLING, PULVERISATION,
-                     DISSIPATE, TIDE_HOLD, LAVA_HOLD, LILIFY, EROSION, LEVELLING, WEBS, VINES, THORNS, SPROUTING -> true;
+                     DISSIPATE, TIDE_HOLD, LAVA_HOLD, LILIFY, EROSION, LEVELLING, WEBS, VINES, THORNS, SPROUTING,
+                     BLIGHT, RAISE_LAND -> true;
                 default -> tree != null;
             };
         }
@@ -483,6 +486,8 @@ public final class BrewMixture {
                 case VINES -> BrewPlantEffects.vines(level, pos, face, strength, caster);
                 case THORNS -> BrewPlantEffects.thorns(level, pos, face, strength, caster);
                 case SPROUTING -> BrewTerrain.sprout(level, pos, face, 8 + 2 * strength, new AABB(pos), caster);
+                case BLIGHT -> BrewLandscape.blight(level, pos, radius, caster);
+                case RAISE_LAND -> BrewLandscape.raise(level, pos, strength, ritual, caster);
                 case TREE_OAK, TREE_SPRUCE, TREE_BIRCH, TREE_JUNGLE, TREE_ACACIA, TREE_DARK_OAK,
                      TREE_ROWAN, TREE_ALDER, TREE_HAWTHORN -> BrewTrees.grow(level, pos, face, application.action.tree,
                         application.action == Action.TREE_JUNGLE ? application.blockStrength : strength, caster);
@@ -548,7 +553,8 @@ public final class BrewMixture {
                 }
             } else if (effect instanceof ActionApplication application) {
                 int strength = Math.min(application.strength, strengthLimit);
-                applyAction(application, target, source, caster, strengthScale, durationScale, glancing, strength, taglock, impact);
+                applyAction(application, target, source, caster, strengthScale, durationScale, glancing, strength,
+                        ritualCoven >= 0, taglock, impact);
             }
         }
     }
@@ -559,7 +565,7 @@ public final class BrewMixture {
 
     private static void applyAction(ActionApplication application, LivingEntity target, @Nullable Entity source,
                                     @Nullable LivingEntity caster, double strengthScale, double durationScale,
-                                    boolean glancing, int strength, boolean taglock, @Nullable Vec3 impact) {
+                                    boolean glancing, int strength, boolean ritual, boolean taglock, @Nullable Vec3 impact) {
         switch (application.action) {
             case EXTINGUISH -> {
                 if (strength <= 1 && target.level().dimensionType().ultraWarm()) return;
@@ -657,6 +663,13 @@ public final class BrewMixture {
             }
             case SPROUTING -> target.addEffect(new MobEffectInstance(WitcheryEffects.SPROUTING.get(),
                     Mth.ceil(300 * application.durationMultiplier * durationScale), strength), source);
+            case BLIGHT -> BrewCreatureEffects.blight(target, strength);
+            case RAISE_LAND -> {
+                if (target.level() instanceof ServerLevel level) {
+                    BrewLandscape.raiseColumn(level, target.blockPosition().below(), (strength + 1) * (ritual ? 2 : 3),
+                            caster instanceof Player player ? player : null);
+                }
+            }
             case CHANGING_SEASONS, ICE_WORLD, RAISING, TIDE_HOLD, LAVA_HOLD, LEVELLING,
                  FLOWERS, FERTILIZATION, HARVESTING, TILLING, PLANTING, PRUNING, FELLING, PULVERISATION,
                  TREE_OAK, TREE_SPRUCE, TREE_BIRCH, TREE_JUNGLE, TREE_ACACIA, TREE_DARK_OAK, TREE_ROWAN, TREE_ALDER, TREE_HAWTHORN -> { }
@@ -916,6 +929,10 @@ public final class BrewMixture {
         for (Action action : Action.values()) {
             if (action.tree != null) entries.put(action.tree.key, new Ingredient(200, null, 2, 10, 0, null, null, action));
         }
+        entries.put(ResourceLocation.withDefaultNamespace("poisonous_potato"),
+                new Ingredient(2000, null, 4, 10, 0, null, null, Action.BLIGHT));
+        entries.put(ResourceLocation.withDefaultNamespace("quartz"),
+                new Ingredient(2000, null, 4, 10, 0, null, null, Action.RAISE_LAND));
         entries.put(ResourceLocation.fromNamespaceAndPath("witchery", "odour_of_purity"),
                 new Ingredient(100, null, 4, 0, 0, null, null, Action.REVEAL));
         entries.put(ResourceLocation.fromNamespaceAndPath("witchery", "heart_of_gold"),

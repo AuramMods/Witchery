@@ -75,7 +75,7 @@ final class AreaCurses {
             } else if (mob instanceof Villager villager) {
                 if (level.random.nextInt(10) == 0) BrewCreatureEffects.infectVillager(level, villager);
             } else if (mob instanceof Cow cow && level.random.nextInt(20) == 0) {
-                turnIntoMooshroom(level, cow);
+                BrewCreatureEffects.turnIntoMooshroom(level, cow);
             } else if (mob instanceof Animal && level.random.nextInt(3) == 0) {
                 mob.hurt(level.damageSources().magic(), 20);
             }
@@ -84,24 +84,6 @@ final class AreaCurses {
             if (!blind) alterSurface(level, pos, radius, false, enhanced, terrainActor);
         });
         return true;
-    }
-
-    private static void turnIntoMooshroom(ServerLevel level, Cow cow) {
-        if (!ForgeEventFactory.canLivingConvert(cow, EntityType.MOOSHROOM, delay -> {}) || !cow.isAlive()) return;
-        var mooshroom = EntityType.MOOSHROOM.create(level);
-        if (mooshroom == null) return;
-        mooshroom.copyPosition(cow);
-        mooshroom.setAge(cow.getAge());
-        mooshroom.setNoAi(cow.isNoAi());
-        mooshroom.setInvulnerable(cow.isInvulnerable());
-        mooshroom.setCustomName(cow.getCustomName());
-        mooshroom.setCustomNameVisible(cow.isCustomNameVisible());
-        if (cow.isPersistenceRequired()) mooshroom.setPersistenceRequired();
-        if (!level.addFreshEntity(mooshroom)) return;
-        if (cow.isPassenger()) mooshroom.startRiding(cow.getVehicle(), true);
-        ForgeEventFactory.onLivingConvert(cow, mooshroom);
-        cow.discard();
-        level.levelEvent(null, 1026, mooshroom.blockPosition(), 0);
     }
 
     private static void alterSurface(ServerLevel level, BlockPos surface, int radius, boolean hell,

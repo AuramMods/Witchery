@@ -1054,6 +1054,15 @@
 - [x] Run the 615-case regression suite. It passed 613 cases, including all seven new cases. Spectral Familiar ore-search and zombie courtship passed in targeted reruns after failing in the full run.
 - [ ] Resolve the intermittent broader regression failures. The targeted courtship run passed eight of nine cases and failed the older villager courtship check.
 
+## Cauldron Blight and Raise Land (2026-11-21)
+
+- [x] Restore the Poisonous Potato and Nether Quartz cauldron recipes. Each uses four effect levels and 2,000 base altar power.
+- [x] Restore Blight's original impact plane and overlapping disk. Short grass disappears, susceptible crops and flowers wither, and farmland or soil can turn to sand. Creature casts can zombify villagers, turn cows into mooshrooms, or deal 20 magic damage to animals.
+- [x] Restore Raise Land's single-column splash and creature casts and coven-limited ritual disk. Move exact block states and lift nearby creatures. Roll back the whole column on a Forge veto and leave buried containers intact.
+- [x] Brew and throw both splashes in the muted survival client. Blight withered a poppy, cleared a fern, and converted farmland to sand inside the footprint. Strength-one Raise Land moved six layers and lifted the pig from Y 201 to Y 207.
+- [x] Restart the headless dedicated server with a Waystone-targeted Raise Land ritual saved in warmup. Rejoin the same world and verify the two splash results, the four-block ritual lift inside the radius, and the preserved outer edge and buried chest containing four diamonds.
+- [x] Run Java 17 data generation, JAR reobfuscation, and the 18 focused Forge GameTests for the new brews, tree brews, and area curses. An initial combined run failed the Sprouting side branch and Raise Land ritual creature lift. Both passed on rerun after moving the Sprouting fixture to a separate elevation.
+
 ## Brew of Erosion and Brew of Ice (2026-11-21)
 
 - [x] Restore the original six-ingredient Kettle recipes, three servings, Brew Mastery bottling bonus, and legacy metadata 62 and 76. Erosion needs no altar power. Ice waits for 1,000 power and debits the altar once per batch.
