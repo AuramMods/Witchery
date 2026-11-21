@@ -66,10 +66,13 @@ public class WitcheryRecipeProvider extends RecipeProvider {
         Block kettle = WitcheryBlocks.getRequired("kettle").get();
 
         Ingredient alderPlanks = PartialNBTIngredient.of(witchPlanks.asItem(), WitchWoodType.ALDER.stack(witchPlanks).getTag());
-        Ingredient rowanPlanks = DifferenceIngredient.of(Ingredient.of(witchPlanks), CompoundIngredient.of(alderPlanks,
-                PartialNBTIngredient.of(witchPlanks.asItem(), WitchWoodType.HAWTHORN.stack(witchPlanks).getTag())));
+        Ingredient hawthornPlanks = PartialNBTIngredient.of(witchPlanks.asItem(), WitchWoodType.HAWTHORN.stack(witchPlanks).getTag());
+        Ingredient rowanPlanks = DifferenceIngredient.of(Ingredient.of(witchPlanks), CompoundIngredient.of(alderPlanks, hawthornPlanks));
         door(recipeOutput, WitcheryIngredient.ROWAN_DOOR, witchPlanks, rowanPlanks);
         door(recipeOutput, WitcheryIngredient.ALDER_DOOR, witchPlanks, alderPlanks);
+        witchWoodStairs(recipeOutput, WitchWoodType.ROWAN, witchPlanks, rowanPlanks);
+        witchWoodStairs(recipeOutput, WitchWoodType.ALDER, witchPlanks, alderPlanks);
+        witchWoodStairs(recipeOutput, WitchWoodType.HAWTHORN, witchPlanks, hawthornPlanks);
 
         ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, WitcheryBlocks.getRequired("brazier").get())
                 .define('I', Items.IRON_INGOT)
@@ -593,6 +596,13 @@ public class WitcheryRecipeProvider extends RecipeProvider {
     private static void door(Consumer<FinishedRecipe> output, WitcheryIngredient door, Block planks, Ingredient ingredient) {
         ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, door.item())
                 .define('#', ingredient).pattern("##").pattern("##").pattern("##")
+                .unlockedBy("has_witchwood", has(planks)).save(output);
+    }
+
+    private static void witchWoodStairs(Consumer<FinishedRecipe> output, WitchWoodType wood, Block planks, Ingredient ingredient) {
+        Block stairs = WitcheryBlocks.getRequired("stairswood" + wood.getSerializedName()).get();
+        ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, stairs, 4)
+                .define('#', ingredient).pattern("#  ").pattern("## ").pattern("###")
                 .unlockedBy("has_witchwood", has(planks)).save(output);
     }
 

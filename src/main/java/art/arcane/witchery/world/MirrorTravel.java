@@ -6,6 +6,7 @@ import art.arcane.witchery.entity.Reflection;
 import art.arcane.witchery.power.AltarPower;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
+import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
@@ -15,7 +16,6 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -335,7 +335,7 @@ public final class MirrorTravel {
 
     private static void effects(ServerLevel level, Vec3 position) {
         level.sendParticles(ParticleTypes.SPLASH, position.x, position.y + 0.7, position.z, 16, 0.35, 0.5, 0.35, 0.04);
-        level.playSound(null, position.x, position.y, position.z, SoundEvents.PLAYER_SPLASH, SoundSource.BLOCKS, 0.9F, 1);
+        level.playSound(null, position.x, position.y, position.z, WitcherySounds.MIRROR_SPLASH.get(), SoundSource.NEUTRAL, 0.9F, 1);
     }
 
     @Nullable

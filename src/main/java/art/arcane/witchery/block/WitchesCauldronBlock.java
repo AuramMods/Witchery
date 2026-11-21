@@ -2,9 +2,11 @@ package art.arcane.witchery.block;
 
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
+import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -124,10 +126,16 @@ public final class WitchesCauldronBlock extends BaseEntityBlock {
             level.addParticle(ParticleTypes.BUBBLE_POP, pos.getX() + 0.2 + random.nextDouble() * 0.6,
                     pos.getY() + (3.0 + 3.0 * state.getValue(WATER)) / 16.0,
                     pos.getZ() + 0.2 + random.nextDouble() * 0.6, 0, 0.07, 0);
-            if (level.getBlockEntity(pos) instanceof WitchesCauldronBlockEntity cauldron && cauldron.clientRitual()) {
-                double angle = level.getGameTime() * 0.22;
-                level.addParticle(ParticleTypes.WITCH, pos.getX() + 0.5 + Math.cos(angle) * 0.65,
-                        pos.getY() + 1.15, pos.getZ() + 0.5 + Math.sin(angle) * 0.65, 0, 0.03, 0);
+            if (level.getBlockEntity(pos) instanceof WitchesCauldronBlockEntity cauldron) {
+                if (cauldron.clientBrewColor() >= 0 && random.nextInt(5) == 0) {
+                    level.playLocalSound(pos, WitcherySounds.CAULDRON_BUBBLE.get(), SoundSource.BLOCKS,
+                            0.8F + random.nextFloat() * 0.2F, 0.8F + random.nextFloat() * 0.2F, false);
+                }
+                if (cauldron.clientRitual()) {
+                    double angle = level.getGameTime() * 0.22;
+                    level.addParticle(ParticleTypes.WITCH, pos.getX() + 0.5 + Math.cos(angle) * 0.65,
+                            pos.getY() + 1.15, pos.getZ() + 0.5 + Math.sin(angle) * 0.65, 0, 0.03, 0);
+                }
             }
         }
     }

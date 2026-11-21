@@ -594,6 +594,8 @@
    "subtitles.witchery.sword_sheathe" : "Cane Sword sheathed",
    "subtitles.witchery.handbow_click" : "Crossbow clicks",
    "subtitles.witchery.handbow_load" : "Crossbow loads",
+   "subtitles.witchery.cauldron_bubble" : "Cauldron bubbles",
+   "subtitles.witchery.mirror_splash" : "Mirror ripples",
    "subtitles.witchery.witch_hunters_arrive" : "Witch Hunters arrive",
    "subtitles.witchery.hypnosis" : "Vampire mesmerizes",
    "message.witchery.vampire.rank" : "You have reached vampire rank %s.",

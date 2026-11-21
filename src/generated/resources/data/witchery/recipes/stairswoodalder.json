@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "#": {
+      "type": "forge:partial_nbt",
+      "item": "witchery:witchwood",
+      "nbt": "{BlockStateTag:{wood_type:\"alder\"}}"
+    }
+  },
+  "pattern": [
+    "#  ",
+    "## ",
+    "###"
+  ],
+  "result": {
+    "count": 4,
+    "item": "witchery:stairswoodalder"
+  },
+  "show_notification": true
+}

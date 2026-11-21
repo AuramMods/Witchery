@@ -102,6 +102,7 @@ Lifecycle stages:
 - `witchwoodslab`, `iceslab`, `snowslab`, and their three legacy double IDs appear in both lists. The modern item IDs match their blocks. Both modern double states and the legacy double blocks drop two matching single slabs. Legacy witchwood color metadata remains a separate parity item.
 - Legacy tree metadata `0/1/2` maps to `rowan/alder/hawthorn` on `witchsapling`, `witchlog`, `witchleaves`, and `witchwood`. Non-rowan item stacks preserve the variant in `BlockStateTag.wood_type`. Untagged stacks retain the rowan default. Sapling growth stage and leaves persistence use their modern vanilla block properties.
 - Once a legacy wood stack has its namespaced ID, the shared Witchery inventory loader reads its legacy top-level `Damage` and writes `BlockStateTag.wood_type`. Existing explicit wood state and unrelated tags take precedence. Saved cauldron mixtures use the same loader for Witchery saplings.
+- The three witchwood stair IDs use their corresponding plank textures and original four-stair recipes. Recipes read the plank stack's wood state and require all six inputs to match. Hawthorn stairs retain the original lower fire spread and ignition values.
 
 ## Spawn Egg Model Coverage (2026-02-09)
 - Runtime spawn egg item registration source:

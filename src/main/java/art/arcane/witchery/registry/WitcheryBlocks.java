@@ -56,6 +56,7 @@ import art.arcane.witchery.block.WitchCropBlock;
 import art.arcane.witchery.block.WitchLeavesBlock;
 import art.arcane.witchery.block.WitchLilyPadBlock;
 import art.arcane.witchery.block.WitchSaplingBlock;
+import art.arcane.witchery.block.WitchWoodStairBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.block.WitchesCauldronBlock;
 import art.arcane.witchery.block.WitchesOvenBlock;
@@ -199,8 +200,9 @@ public final class WitcheryBlocks {
             case "statueofworship" -> new StatueOfWorshipBlock();
             case "refillingchest" -> new RefillingChestBlock();
             case "leechchest" -> new LeechChestBlock();
-            case "stairswoodrowan", "stairswoodalder", "stairswoodhawthorn" ->
-                    new StairBlock(Blocks.OAK_PLANKS.defaultBlockState(), BlockBehaviour.Properties.copy(Blocks.OAK_STAIRS));
+            case "stairswoodrowan" -> new WitchWoodStairBlock(WitchWoodType.ROWAN);
+            case "stairswoodalder" -> new WitchWoodStairBlock(WitchWoodType.ALDER);
+            case "stairswoodhawthorn" -> new WitchWoodStairBlock(WitchWoodType.HAWTHORN);
             case "icestairs" -> new StairBlock(() -> getRequired("perpetualice").get().defaultBlockState(),
                     BlockBehaviour.Properties.copy(Blocks.STONE_STAIRS).noOcclusion().friction(0.98F).strength(2, 5));
             case "snowstairs" -> new StairBlock(Blocks.SNOW_BLOCK.defaultBlockState(),

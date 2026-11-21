@@ -694,7 +694,7 @@
 - [x] Power Anti-Magic Bolts with the full Witch Hunter set. In a two-client test, a shot drained the shooter's 20 infusion charge, took the target's charge from 20 to 10, and left Poison active after dispelling Resistance.
 - [x] Connect Silver Bolts and silvered armor to lycanthropy. The dedicated server recorded both the Silver Bolt selection against a Wolfman and the protection, durability and retaliatory damage from silvered armor.
 - [x] A nearby Enhanced Poppets fetish allows a carried Death Protection Poppet to absorb a lethal powered anti-magic bolt. Shelf wards retain their ordinary restrictions.
-- [ ] Package the original crossbow click and wind-up recordings. The full Auram resource reload reported both Witchery files missing and the asset audit located them in the supplied 1.7.10 source.
+- [x] Package the original crossbow click and wind-up recordings. In the isolated muted client, loading a Wooden Bolt displayed both crossbow subtitles and left the bolt chambered.
 
 ## Witch Hunter Clothing (2026-11-20)
 
@@ -1108,7 +1108,15 @@
 - [x] Verify the exact JAR on clean headless Forge as well. The silvered coat reduced the same hit and retaliated. All 48 focused Forge GameTests passed, including the hunter clothing and wolf combat checks. The packaged SHA-256 is `a8e178e4dd26ccead5e0c861a61f46879b312e8659f10ec596dd711cbf3bf397`.
 - [x] Verify the final JAR passes the previous startup redirect in the muted full Auram copy. With Evolved Mekanism 1.2.1-fix4, the client reached the render thread and mod construction. Evolved Mekanism still failed with the same null `QIODriveTier` as 1.2.1-fix3. [Evolved Mekanism 1.2.1-fix4 notes](https://www.curseforge.com/minecraft/mc-mods/evolved-mekanism/files/7599591)
 - [x] Verify the isolated copy with Evolved Mekanism 1.3.0-fix3 gets through the QIO tier initialization. Setup later failed because Evolved Mekanism and Mekanism Curios 1.2.1 both redirect the same packet handler. The next diagnostic launch disabled Mekanism Curios in the isolated copy and reached texture loading before Docker reported an out-of-memory kill at its 6 GiB limit. [Evolved Mekanism 1.3.0-fix3 notes](https://www.curseforge.com/minecraft/mc-mods/evolved-mekanism/files/9685752)
-- [ ] Verify title and fresh survival on the diagnostic pack copy. A 9 GiB retry initialized OpenAL on No Output and was killed as it created the 16,384 by 16,384 block atlas with four mip levels. The next isolated launch uses zero mip levels and a 10 GiB container limit.
+- [ ] Verify title and fresh survival on the diagnostic pack copy. A 9 GiB retry initialized OpenAL on No Output and was killed as it created the 16,384 by 16,384 block atlas with four mip levels. At 10 GiB and zero mip levels, the client finished creating that atlas and several smaller atlases. Docker reported another out-of-memory kill before the title screen. The next isolated launch disables shaders at the same memory limit.
+
+## Witchwood Stairs and Sound Parity (2026-11-21)
+
+- [x] Restore the original Rowan, Alder, and Hawthorn stair patterns. Six planks of one species yield four matching stairs, and mixed species fail the recipe. All three stairs use the wooden stairs and axe tags. Dry Rowan and Alder use the original fire values, while Hawthorn has lower ignition and spread. Waterlogged states follow modern fire behavior.
+- [x] Use the matching plank texture on each straight, inner, and outer stair model. The first packaged client run exposed that all three colors previously rendered the same placeholder texture. Reopen that world with the final JAR and verify all three stair blocks survived with their distinct wood textures visible from the front and back.
+- [x] Restore the Witch's Cauldron bubble sound and the mirror splash using the supplied recordings. The cauldron uses the original one-in-five chance on display ticks while boiling a colored mixture. Successful mirror travel emits the splash at both locations.
+- [x] Verify the sounds through normal actions on a muted survival client. Fill the cauldron with three buckets and add lime wool to see the bubbling subtitle. Mount and walk through a bridge between two opposed mirrors and see the ripples subtitle at the other end.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 26 focused Forge GameTests. The final JAR audit resolved all 82 recording references across 58 sound definitions and verified the four restored OGG files against their source bytes.
 
 ## Brew of Erosion and Brew of Ice (2026-11-21)
 
