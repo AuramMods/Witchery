@@ -604,7 +604,16 @@
 - [x] Save the plains fixture after 285 of its 526 wall columns generated. Restart and finish all 526 from the same plan. Confirm six gate lintels and the same ten armed guard UUIDs, including both wall sentries.
 - [x] Walk through a generated plains gate in both directions with the muted client in survival. Cross one gate each in the snowy and desert fixtures and inspect their material palettes. Existing solid terrain can cover an opening, as observed on a snowy shoreline.
 - [x] Pass Java 17 data generation, JAR reobfuscation, and all 14 focused Forge GameTests. The wall tests cover the ordinary and abandoned pools, plan round-trip, chunk clipping, protected solid blocks, guard equipment, gate clearance, and three material palettes.
-- [ ] Review the remaining legacy village biome settings and the vanilla church and blacksmith weighting overrides against 1.20.1 village generation.
+
+## Village Biomes, Building Groups, and Defense Settings (2026-11-21)
+
+- [x] Restore the nine `townBiome` switches with their original defaults. A Forge structure modifier extends the five vanilla village styles into eligible tagged Overworld biomes. Each switch controls additions alongside the existing vanilla and datapack eligibility. Water, beaches, swamps, and underground biomes are excluded from the additions. The jungle switch now enables the previously unreachable opt-in.
+- [x] Restore the nine legacy vanilla building cluster families alongside the guard tower settings. Each additional group uses its configured weight and a seeded placement quota. Existing village templates provide the matching homes, libraries, butcher shops, farms, weaponsmiths, and temples. Abandoned village pools use their normal entries.
+- [x] Restore `townZombieAttackReductionMode`. Modes one and two set a zombie hit against a villager to 0.5 health points. Mode two also prevents targeting. Restore golem targeting protection for village guards.
+- [x] Generate a plains-style village in a fixed forest biome at `640 816`. Disabling the forest switch removed eligibility in the same forest fixture, and the same profile generated a village in a vanilla plains biome. The default forest start included seven farms. The muted survival client harvested wheat and picked up the seeds.
+- [x] Generate a village in a fixed jungle biome with the opt-in enabled. A custom profile with two weight-250 temple groups placed two temples in each of its plains and jungle starts. Verify the configurable quotas through Jigsaw generation and check the mode-zero, mode-one, and mode-two damage and targeting behavior.
+- [x] Reconnect the muted client with the final JAR and verify the player's wheat and three seeds. Compare all 185 saved structure pieces from the second forest village before and after another dedicated restart.
+- [x] Pass Java 17 data generation and JAR reobfuscation. Run 18 Forge GameTests with default settings and four each for the restricted and custom profiles. The tests cover additional biome eligibility, intact vanilla eligibility, family weights and quotas, existing placement processors, abandoned pools, zombie damage and targeting, and golem behavior.
 
 ## Witchery Guidebooks (2026-11-21)
 

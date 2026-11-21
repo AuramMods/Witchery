@@ -1,8 +1,11 @@
 package art.arcane.witchery.config;
 
+import art.arcane.witchery.world.VillageBuildingFamily;
 import net.minecraftforge.common.ForgeConfigSpec;
 
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 public final class WitcheryServerConfig {
     public static final ForgeConfigSpec SPEC;
@@ -48,6 +51,17 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.IntValue TOWN_GUARD_TOWER_CLUSTER_WEIGHT;
     public static final ForgeConfigSpec.IntValue TOWN_GUARD_TOWER_CLUSTER_MIN;
     public static final ForgeConfigSpec.IntValue TOWN_GUARD_TOWER_CLUSTER_MAX;
+    public static final ForgeConfigSpec.BooleanValue TOWN_BIOME_SANDY_ALLOWED;
+    public static final ForgeConfigSpec.BooleanValue TOWN_BIOME_PLAINS_ALLOWED;
+    public static final ForgeConfigSpec.BooleanValue TOWN_BIOME_MOUNTAIN_ALLOWED;
+    public static final ForgeConfigSpec.BooleanValue TOWN_BIOME_HILLS_ALLOWED;
+    public static final ForgeConfigSpec.BooleanValue TOWN_BIOME_FOREST_ALLOWED;
+    public static final ForgeConfigSpec.BooleanValue TOWN_BIOME_SNOWY_ALLOWED;
+    public static final ForgeConfigSpec.BooleanValue TOWN_BIOME_WASTELAND_ALLOWED;
+    public static final ForgeConfigSpec.BooleanValue TOWN_BIOME_MESA_ALLOWED;
+    public static final ForgeConfigSpec.BooleanValue TOWN_BIOME_JUNGLE_ALLOWED;
+    public static final ForgeConfigSpec.IntValue TOWN_ZOMBIE_ATTACK_REDUCTION_MODE;
+    private static final Map<VillageBuildingFamily, VillageClusterSettings> VILLAGE_CLUSTERS;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> TOWN_BOOKSHOP_ALLOWED_BOOKS;
     public static final ForgeConfigSpec.BooleanValue HOBGOBLIN_DESPAWN_BLOCK;
     public static final ForgeConfigSpec.IntValue HOBGOBLIN_SPAWN_WEIGHT;
@@ -151,6 +165,22 @@ public final class WitcheryServerConfig {
                 .worldRestart().defineInRange("townGuardTowerClusterMin", 0, 0, Integer.MAX_VALUE - 1);
         TOWN_GUARD_TOWER_CLUSTER_MAX = builder.comment("Upper bound of the placement limit drawn per watchtower group.")
                 .worldRestart().defineInRange("townGuardTowerClusterMax", 1, 0, Integer.MAX_VALUE - 1);
+        TOWN_BIOME_SANDY_ALLOWED = villageBiome(builder, "Sandy", true);
+        TOWN_BIOME_PLAINS_ALLOWED = villageBiome(builder, "Plains", true);
+        TOWN_BIOME_MOUNTAIN_ALLOWED = villageBiome(builder, "Mountain", true);
+        TOWN_BIOME_HILLS_ALLOWED = villageBiome(builder, "Hills", true);
+        TOWN_BIOME_FOREST_ALLOWED = villageBiome(builder, "Forest", true);
+        TOWN_BIOME_SNOWY_ALLOWED = villageBiome(builder, "Snowy", true);
+        TOWN_BIOME_WASTELAND_ALLOWED = villageBiome(builder, "Wasteland", true);
+        TOWN_BIOME_MESA_ALLOWED = villageBiome(builder, "Mesa", true);
+        TOWN_BIOME_JUNGLE_ALLOWED = villageBiome(builder, "Jungle", false);
+        TOWN_ZOMBIE_ATTACK_REDUCTION_MODE = builder.comment("Zombie attacks on villagers. 0 uses normal damage, 1 sets damage to half a health point, and 2 also prevents targeting villagers.")
+                .defineInRange("townZombieAttackReductionMode", 1, 0, 2);
+        var villageClusters = new EnumMap<VillageBuildingFamily, VillageClusterSettings>(VillageBuildingFamily.class);
+        for (var family : VillageBuildingFamily.values()) {
+            villageClusters.put(family, VillageClusterSettings.define(builder, family));
+        }
+        VILLAGE_CLUSTERS = Map.copyOf(villageClusters);
         TOWN_BOOKSHOP_ALLOWED_BOOKS = builder.comment("Extra bookshop stock as item IDs or legacy item IDs followed by comma and metadata. Repeat entries for additional weight.")
                 .defineListAllowEmpty("townBookshopAllowedBooks", List.of("minecraft:book", "witchery:ingredient,46",
                         "witchery:ingredient,47", "witchery:ingredient,48", "witchery:ingredient,49",
@@ -177,5 +207,30 @@ public final class WitcheryServerConfig {
     }
 
     private WitcheryServerConfig() {
+    }
+
+    private static ForgeConfigSpec.BooleanValue villageBiome(ForgeConfigSpec.Builder builder, String biome, boolean enabled) {
+        return builder.comment("Allow village expansion into additional " + biome.toLowerCase(java.util.Locale.ROOT) + " biomes.")
+                .worldRestart().define("townBiome" + biome + "Allowed", enabled);
+    }
+
+    public static VillageClusterSettings villageCluster(VillageBuildingFamily family) {
+        return VILLAGE_CLUSTERS.get(family);
+    }
+
+    public record VillageClusterSettings(ForgeConfigSpec.IntValue groups, ForgeConfigSpec.IntValue weight,
+            ForgeConfigSpec.IntValue min, ForgeConfigSpec.IntValue max) {
+        private static VillageClusterSettings define(ForgeConfigSpec.Builder builder, VillageBuildingFamily family) {
+            String key = "town" + family.configName() + "Cluster";
+            return new VillageClusterSettings(
+                    builder.comment("Number of additional " + family.configName() + " groups in new villages.")
+                            .worldRestart().defineInRange(key + "Groups", family.defaultGroups(), 0, 1000),
+                    builder.comment("Village house pool weight per group.")
+                            .worldRestart().defineInRange(key + "Weight", family.defaultWeight(), 0, 1000),
+                    builder.comment("Lower bound for the seeded placement quota per group.")
+                            .worldRestart().defineInRange(key + "Min", family.defaultMin(), 0, Integer.MAX_VALUE - 1),
+                    builder.comment("Upper bound for the seeded placement quota per group.")
+                            .worldRestart().defineInRange(key + "Max", family.defaultMax(), 0, Integer.MAX_VALUE - 1));
+        }
     }
 }

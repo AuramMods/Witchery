@@ -1,0 +1,5 @@
+{
+  "type": "witchery:village_biomes",
+  "candidates": "#minecraft:is_overworld",
+  "villages": "#minecraft:village"
+}

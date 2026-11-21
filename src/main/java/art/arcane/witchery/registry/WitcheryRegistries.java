@@ -10,6 +10,7 @@ import art.arcane.witchery.world.HobgoblinSpawnModifier;
 import art.arcane.witchery.world.MirrorChunkGenerator;
 import art.arcane.witchery.world.SurfaceStructuresFeature;
 import art.arcane.witchery.world.VillageApothecaryProcessor;
+import art.arcane.witchery.world.VillageBiomeModifier;
 import art.arcane.witchery.world.TormentChunkGenerator;
 import art.arcane.witchery.world.VillageBookshopProcessor;
 import art.arcane.witchery.world.VillageFoundation;
@@ -23,6 +24,7 @@ import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.minecraftforge.common.loot.IGlobalLootModifier;
 import net.minecraftforge.common.world.BiomeModifier;
+import net.minecraftforge.common.world.StructureModifier;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -36,12 +38,16 @@ public final class WitcheryRegistries {
             DeferredRegister.create(Registries.CHUNK_GENERATOR, Witchery.MODID);
     private static final DeferredRegister<Codec<? extends BiomeModifier>> BIOME_MODIFIERS =
             DeferredRegister.create(ForgeRegistries.Keys.BIOME_MODIFIER_SERIALIZERS, Witchery.MODID);
+    private static final DeferredRegister<Codec<? extends StructureModifier>> STRUCTURE_MODIFIERS =
+            DeferredRegister.create(ForgeRegistries.Keys.STRUCTURE_MODIFIER_SERIALIZERS, Witchery.MODID);
     private static final DeferredRegister<StructureProcessorType<?>> STRUCTURE_PROCESSORS =
             DeferredRegister.create(Registries.STRUCTURE_PROCESSOR, Witchery.MODID);
     private static final DeferredRegister<StructurePieceType> STRUCTURE_PIECES =
             DeferredRegister.create(Registries.STRUCTURE_PIECE, Witchery.MODID);
     public static final RegistryObject<Codec<HobgoblinSpawnModifier>> HOBGOBLIN_SPAWNS =
             BIOME_MODIFIERS.register("hobgoblin_spawns", () -> HobgoblinSpawnModifier.CODEC);
+    public static final RegistryObject<Codec<VillageBiomeModifier>> VILLAGE_BIOMES =
+            STRUCTURE_MODIFIERS.register("village_biomes", () -> VillageBiomeModifier.CODEC);
     public static final RegistryObject<StructureProcessorType<VillageBookshopProcessor>> BOOKSHOP_PROCESSOR =
             STRUCTURE_PROCESSORS.register("village_bookshop", () -> () -> VillageBookshopProcessor.CODEC);
     public static final RegistryObject<StructureProcessorType<VillageApothecaryProcessor>> APOTHECARY_PROCESSOR =
@@ -82,6 +88,7 @@ public final class WitcheryRegistries {
         FEATURES.register(eventBus);
         CHUNK_GENERATORS.register(eventBus);
         BIOME_MODIFIERS.register(eventBus);
+        STRUCTURE_MODIFIERS.register(eventBus);
         STRUCTURE_PROCESSORS.register(eventBus);
         STRUCTURE_PIECES.register(eventBus);
     }

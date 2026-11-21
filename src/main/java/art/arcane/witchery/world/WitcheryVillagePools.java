@@ -9,6 +9,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.levelgen.structure.pools.LegacySinglePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
@@ -16,9 +17,11 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProc
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -52,6 +55,10 @@ public final class WitcheryVillagePools {
         }
         addVillagePiece(pools, processors, WATCHTOWER, WitcheryServerConfig.TOWN_GUARD_TOWER_CLUSTER_WEIGHT.get(),
                 WitcheryServerConfig.TOWN_GUARD_TOWER_CLUSTER_GROUPS.get(), true);
+        for (String style : VILLAGE_STYLES) {
+            var poolId = ResourceLocation.withDefaultNamespace("village/" + style + "/houses");
+            pools.getOptional(poolId).ifPresent(pool -> addVanillaClusters(pool, style));
+        }
     }
 
     private static void addVillagePiece(Registry<StructureTemplatePool> pools, Registry<StructureProcessorList> processors,
@@ -80,13 +87,62 @@ public final class WitcheryVillagePools {
         if (entries.stream().anyMatch(entry -> limitedBuilding(entry.getFirst()).filter(template::equals).isPresent())) return;
         for (int group = 0; group < groups; group++) {
             var element = createElement.apply(StructureTemplatePool.Projection.RIGID);
-            for (int remaining = weight; remaining > 0; remaining -= MAX_POOL_ENTRY_WEIGHT) {
-                entries.add(Pair.of(element, Math.min(remaining, MAX_POOL_ENTRY_WEIGHT)));
-            }
-            access.witchery$getTemplates().addAll(Collections.nCopies(weight, element));
+            appendWeighted(access, entries, element, weight);
         }
         access.witchery$setRawTemplates(entries);
     }
+
+    private static void addVanillaClusters(StructureTemplatePool pool, String style) {
+        var access = (StructureTemplatePoolAccessor) pool;
+        var entries = new ArrayList<>(access.witchery$getRawTemplates());
+        if (entries.stream().anyMatch(entry -> clusterLimit(entry.getFirst()) != null)) return;
+
+        var families = new EnumMap<VillageBuildingFamily, List<SinglePoolElement>>(VillageBuildingFamily.class);
+        for (var entry : entries) {
+            if (!(entry.getFirst() instanceof SinglePoolElement original)) continue;
+            var family = templateId(original).map(id -> VillageBuildingFamily.forTemplate(style, id)).orElse(null);
+            if (family != null) families.computeIfAbsent(family, key -> new ArrayList<>()).add(original);
+        }
+        for (var entry : families.entrySet()) {
+            var settings = WitcheryServerConfig.villageCluster(entry.getKey());
+            int groups = settings.groups().get();
+            int weight = settings.weight().get();
+            if (groups == 0 || weight == 0) continue;
+            var quota = new ClusterLimit(settings.min().get(), settings.max().get());
+            var variants = entry.getValue();
+            for (int group = 0; group < groups; group++) {
+                var original = variants.get(group % variants.size());
+                var template = templateId(original).orElseThrow().toString();
+                var processors = ((SinglePoolElementAccessor) original).witchery$getProcessors();
+                var create = original instanceof LegacySinglePoolElement ? StructurePoolElement.legacy(template, processors)
+                        : StructurePoolElement.single(template, processors);
+                var extra = create.apply(original.getProjection());
+                ((ClusteredElement) extra).witchery$setClusterLimit(quota);
+                appendWeighted(access, entries, extra, weight);
+            }
+        }
+        access.witchery$setRawTemplates(entries);
+    }
+
+    private static void appendWeighted(StructureTemplatePoolAccessor access, List<Pair<StructurePoolElement, Integer>> entries,
+            StructurePoolElement element, int weight) {
+        for (int remaining = weight; remaining > 0; remaining -= MAX_POOL_ENTRY_WEIGHT) {
+            entries.add(Pair.of(element, Math.min(remaining, MAX_POOL_ENTRY_WEIGHT)));
+        }
+        access.witchery$getTemplates().addAll(Collections.nCopies(weight, element));
+    }
+
+    @Nullable
+    public static ClusterLimit clusterLimit(StructurePoolElement element) {
+        return element instanceof ClusteredElement grouped ? grouped.witchery$getClusterLimit() : null;
+    }
+
+    public interface ClusteredElement {
+        @Nullable ClusterLimit witchery$getClusterLimit();
+        void witchery$setClusterLimit(ClusterLimit limit);
+    }
+
+    public record ClusterLimit(int min, int max) {}
 
     public static boolean isBookshop(StructurePoolElement element) {
         return limitedBuilding(element).filter(BOOKSHOP::equals).isPresent();

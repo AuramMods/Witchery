@@ -37,30 +37,35 @@ abstract class VillageBuildingLimitMixin {
     @Unique
     private Boolean witchery$allowsWall;
     @Unique
-    private final Map<StructurePoolElement, Integer> witchery$towerLimits = new IdentityHashMap<>();
+    private final Map<StructurePoolElement, Integer> witchery$groupLimits = new IdentityHashMap<>();
 
     @ModifyArg(method = "tryPlacingChildren", at = @At(value = "INVOKE", target = "Ljava/util/List;addAll(Ljava/util/Collection;)Z"))
     private Collection<StructurePoolElement> witchery$limitBuildings(Collection<StructurePoolElement> candidates) {
-        if (candidates.stream().noneMatch(candidate -> WitcheryVillagePools.limitedBuilding(candidate).isPresent())) return candidates;
+        if (candidates.stream().noneMatch(candidate -> WitcheryVillagePools.clusterLimit(candidate) != null
+                || WitcheryVillagePools.limitedBuilding(candidate).isPresent())) return candidates;
         Set<ResourceLocation> used = new HashSet<>();
-        Map<StructurePoolElement, Integer> towerCounts = new IdentityHashMap<>();
+        Map<StructurePoolElement, Integer> groupCounts = new IdentityHashMap<>();
         for (Object piece : pieces) {
             if (!(piece instanceof PoolElementStructurePiece placed)) continue;
             var element = placed.getElement();
-            WitcheryVillagePools.limitedBuilding(element).ifPresent(id -> {
-                if (id.equals(WitcheryVillagePools.WATCHTOWER)) towerCounts.merge(element, 1, Integer::sum);
-                else used.add(id);
-            });
+            var id = WitcheryVillagePools.limitedBuilding(element);
+            if (WitcheryVillagePools.clusterLimit(element) != null || id.filter(WitcheryVillagePools.WATCHTOWER::equals).isPresent()) {
+                groupCounts.merge(element, 1, Integer::sum);
+            } else {
+                id.ifPresent(used::add);
+            }
         }
         Map<StructurePoolElement, Boolean> eligible = new IdentityHashMap<>();
-        return candidates.stream().filter(candidate -> eligible.computeIfAbsent(candidate, element ->
-                WitcheryVillagePools.limitedBuilding(element).map(id -> witchery$canPlace(id, element, used, towerCounts)).orElse(true)))
-                .toList();
+        return candidates.stream().filter(candidate -> eligible.computeIfAbsent(candidate, element -> {
+            var quota = WitcheryVillagePools.clusterLimit(element);
+            if (quota != null) return witchery$allowsGroup(element, groupCounts, quota.min(), quota.max());
+            return WitcheryVillagePools.limitedBuilding(element).map(id -> witchery$canPlace(id, element, used, groupCounts)).orElse(true);
+        })).toList();
     }
 
     @Unique
     private boolean witchery$canPlace(ResourceLocation id, StructurePoolElement element,
-            Set<ResourceLocation> used, Map<StructurePoolElement, Integer> towerCounts) {
+            Set<ResourceLocation> used, Map<StructurePoolElement, Integer> groupCounts) {
         if (used.contains(id)) return false;
         if (id.equals(WitcheryVillagePools.WITCH_HUT)) {
             if (witchery$allowsWitchHut == null) witchery$allowsWitchHut = random.nextBoolean();
@@ -81,14 +86,17 @@ abstract class VillageBuildingLimitMixin {
             return witchery$allowsWall;
         }
         if (id.equals(WitcheryVillagePools.WATCHTOWER)) {
-            // Each legacy weighted entry drew its own limit and stopped competing once it was full.
-            int limit = witchery$towerLimits.computeIfAbsent(element, group -> {
-                int min = WitcheryServerConfig.TOWN_GUARD_TOWER_CLUSTER_MIN.get();
-                int max = WitcheryServerConfig.TOWN_GUARD_TOWER_CLUSTER_MAX.get();
-                return max <= min ? min : min + random.nextInt(max - min + 1);
-            });
-            return towerCounts.getOrDefault(element, 0) < limit;
+            return witchery$allowsGroup(element, groupCounts, WitcheryServerConfig.TOWN_GUARD_TOWER_CLUSTER_MIN.get(),
+                    WitcheryServerConfig.TOWN_GUARD_TOWER_CLUSTER_MAX.get());
         }
         return true;
+    }
+
+    @Unique
+    private boolean witchery$allowsGroup(StructurePoolElement element, Map<StructurePoolElement, Integer> groupCounts,
+            int min, int max) {
+        // Stop offering the individual entry once its seeded quota is used.
+        int limit = witchery$groupLimits.computeIfAbsent(element, group -> max <= min ? min : min + random.nextInt(max - min + 1));
+        return groupCounts.getOrDefault(element, 0) < limit;
     }
 }

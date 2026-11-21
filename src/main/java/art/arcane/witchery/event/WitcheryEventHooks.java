@@ -75,8 +75,10 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.animal.AbstractGolem;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -489,6 +491,23 @@ public final class WitcheryEventHooks {
     public static void preventVillageFriendlyFire(LivingAttackEvent event) {
         if (event.getEntity() instanceof Villager && VillageGuard.isVillageDefender(event.getSource().getEntity())) {
             event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void protectVillageFromTargeting(LivingChangeTargetEvent event) {
+        if (event.getEntity() instanceof AbstractGolem && event.getNewTarget() instanceof VillageGuard
+                || event.getEntity() instanceof Zombie && event.getNewTarget() instanceof Villager
+                && WitcheryServerConfig.TOWN_ZOMBIE_ATTACK_REDUCTION_MODE.get() == 2) {
+            event.setNewTarget(null);
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void reduceZombieDamageToVillagers(LivingHurtEvent event) {
+        if (event.getEntity() instanceof Villager && event.getSource().getEntity() instanceof Zombie
+                && WitcheryServerConfig.TOWN_ZOMBIE_ATTACK_REDUCTION_MODE.get() > 0) {
+            event.setAmount(0.5F);
         }
     }
 
