@@ -364,7 +364,17 @@
 - [x] Activate all five recipes in the muted survival client. Protection pushed a pig beyond four blocks, and Imprisonment turned another inward. The player crossed the focused wall and stopped at the Waystone-targeted greater wall.
 - [x] Save the greater and portable barriers together and restart the dedicated server. The portable shell expired while the remote shell stayed up. Removing the remote ward's altar cleared its heart and remaining barrier blocks. Circle Magic showed the greater barrier's two offerings, costs, and collision rules.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 403 required Forge GameTests. The six new cases exercise recipe sync, creature motion, power use, collision, caps, remote restart, portable expiry, and concurrent legacy wards.
-- [ ] Restore simultaneous recipe matching when a new cast has offerings for multiple rites. The current activation resolver starts one matching recipe.
+
+## Queued Circle Rites (2026-11-21)
+
+- [x] Match compatible recipes in their original registration order and reserve their dropped stacks and Grassper offerings during activation. Spend the offerings one rite at a time. A failed cast returns its staged offerings and advances the queue.
+- [x] Run wards, ore extraction, landscape rites, and infusion recharge while later recipes stage. Keep storms in the foreground through their last phase. One cancellation stops pending and ongoing rites and returns the current staged offerings.
+- [x] Persist the pending order, the active cast, and each upkeep timer. Resume older Forge port saves and import concurrent supported 1.7.10 upkeep entries, including stage-zero infusion recharge.
+- [x] Give location-bound and creature-bound Waystones their separate legacy travel matches. Load an in-progress creature offering from the preceding combined recipe.
+- [x] Use one muted survival click to queue Recharge, Protection and Portable Barrier. Restart after the feather was staged and verify all three start in order and run together. Recharge added ten charges while Protection repelled a pig. One click cleared upkeep and the portable roof expired.
+- [x] Verify whole offering reservations in the packaged build. One dropped Redstone stack and one matching filled Grassper queued Protection alone. Adding another dropped stack queued Imprisonment as well. Both wards began upkeep, and the muted client stopped them with one click.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 409 required Forge GameTests. The six new cases cover offering reservations, concurrent upkeep, cancellation, failure refunds, legacy upkeep saves, and both Waystone routes.
+- [ ] Restore the original point in the offering sequence at which charged stones and reusable rite tools return to the player.
 
 ## Familiar Brews and Baba Yaga (2026-11-20)
 

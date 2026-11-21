@@ -39,6 +39,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.function.Predicate;
 
 public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, List<Ring> rings, int power,
                              ItemStack result, Action action, boolean nightOnly, @Nullable EntityType<?> livingOffering,
@@ -102,6 +104,11 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
             return targetsStormWithWaystone() || this == CALL_PORTABLE_STORM;
         }
 
+        public boolean acceptsOptionalWaystone() {
+            var ward = protection();
+            return usesWaystoneTarget() || targetsStormWithWaystone() || ward != null && ward.acceptsWaystone();
+        }
+
         @Nullable
         public ProtectionRites.Kind protection() {
             return switch (this) {
@@ -118,7 +125,14 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
     public record Ring(RitualCircle pattern, Block glyph) {
     }
 
-    public record Offering(ItemStack stack, Vec3 position, @Nullable BlockPos grassper, Runnable consume) {
+    public record OfferingSource(@Nullable UUID drop, @Nullable BlockPos grassper) {
+    }
+
+    public record Offering(ItemStack stack, Vec3 position, OfferingSource source, Runnable consume) {
+        @Nullable
+        public BlockPos grassper() {
+            return source.grassper();
+        }
     }
 
     public boolean hasCircles(ServerLevel level, BlockPos pos) {
@@ -158,6 +172,32 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
 
     @Nullable
     public List<Offering> findSacrifices(ServerLevel level, BlockPos pos, int first) {
+        return matchSacrifices(validOfferings(level, pos), first);
+    }
+
+    @Nullable
+    List<Offering> activationOfferings(ServerLevel level, BlockPos pos, Predicate<Offering> available) {
+        List<Offering> items = validOfferings(level, pos);
+        items.removeIf(available.negate());
+        List<Offering> matched = matchSacrifices(items, 0);
+        if (matched == null) return null;
+
+        // The legacy matcher also checked the Grasspers after finding a dropped stack.
+        var reserved = new ArrayList<>(matched);
+        for (int index = 0; index < matched.size(); index++) {
+            if (matched.get(index).grassper() != null) continue;
+            Ingredient ingredient = sacrifices.get(index);
+            for (Offering offering : items) {
+                if (offering.grassper() != null && !reserved.contains(offering) && ingredient.test(offering.stack())) {
+                    reserved.add(offering);
+                    break;
+                }
+            }
+        }
+        return reserved;
+    }
+
+    private List<Offering> validOfferings(ServerLevel level, BlockPos pos) {
         List<Offering> items = nearbyOfferings(level, pos);
         if (action == Action.BIND_SPECTRAL_STONE) {
             items.removeIf(offering -> offering.stack().getItem() instanceof SpectralStoneItem
@@ -169,6 +209,11 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         } else if (action.callsStorm() || action == Action.ECLIPSE) {
             items.removeIf(offering -> offering.stack().isDamaged());
         }
+        return items;
+    }
+
+    @Nullable
+    private List<Offering> matchSacrifices(List<Offering> items, int first) {
         List<Ingredient> required = sacrifices.subList(first, sacrifices.size());
         int[] owners = new int[items.size()];
         int[] assigned = new int[required.size()];
@@ -181,14 +226,29 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         return Arrays.stream(assigned).mapToObj(items::get).toList();
     }
 
+    List<Offering> activationWaystones(ServerLevel level, BlockPos pos, Predicate<Offering> available) {
+        var selected = new ArrayList<Offering>(2);
+        boolean foundDrop = false;
+        for (Offering offering : nearbyOfferings(level, pos)) {
+            if (!offering.stack().is(WitcheryIngredient.BOUND_WAYSTONE.item()) || !available.test(offering)) continue;
+            if (offering.grassper() != null) {
+                selected.add(offering);
+                break;
+            }
+            if (!foundDrop) {
+                selected.add(offering);
+                foundDrop = true;
+            }
+        }
+        return selected;
+    }
+
     @Nullable
     public Offering findLocationOffering(ServerLevel level, BlockPos pos) {
         for (Offering offering : nearbyOfferings(level, pos)) {
-            if (offering.stack().is(WitcheryIngredient.BOUND_WAYSTONE.item())) {
-                var location = WaystoneItem.location(offering.stack());
-                if (location != null && location.dimension().equals(level.dimension())) return offering;
-                return null;
-            }
+            if (!offering.stack().is(WitcheryIngredient.BOUND_WAYSTONE.item())) continue;
+            var location = WaystoneItem.location(offering.stack());
+            return location != null && location.dimension().equals(level.dimension()) ? offering : null;
         }
         return null;
     }
@@ -202,7 +262,7 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         for (ItemEntity entity : level.getEntitiesOfClass(ItemEntity.class, area, item -> item.isAlive()
                 && (item.getX() - x) * (item.getX() - x) + (item.getZ() - z) * (item.getZ() - z) <= radius * radius)) {
             ItemStack stack = entity.getItem();
-            items.add(new Offering(stack, entity.position(), null, () -> {
+            items.add(new Offering(stack, entity.position(), new OfferingSource(entity.getUUID(), null), () -> {
                 if (stack.getCount() == 1) entity.discard();
                 else entity.setItem(stack.copyWithCount(stack.getCount() - 1));
             }));
@@ -210,7 +270,7 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         for (BlockPos point : BlockPos.betweenClosed(pos.offset(-5, 0, -5), pos.offset(5, 0, 5))) {
             if (level.getBlockEntity(point) instanceof GrassperBlockEntity grassper && !grassper.isEmpty()) {
                 items.add(new Offering(grassper.getItem(0), Vec3.atBottomCenterOf(point).add(0, 0.8, 0),
-                        grassper.getBlockPos(), () -> grassper.removeItem(0, 1)));
+                        new OfferingSource(null, grassper.getBlockPos()), () -> grassper.removeItem(0, 1)));
             }
         }
         return items;

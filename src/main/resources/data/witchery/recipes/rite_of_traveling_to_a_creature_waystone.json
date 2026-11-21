@@ -1,0 +1,6 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphotherwhere"}],
+  "sacrifices": [{"item": "witchery:creature_bound_waystone"}],
+  "action": "travel_waystone"
+}

@@ -1,0 +1,135 @@
+package art.arcane.witchery.block.entity;
+
+import art.arcane.witchery.entity.CovenWitch;
+import art.arcane.witchery.infusion.InfusionEnergy;
+import art.arcane.witchery.power.AltarPower;
+import art.arcane.witchery.ritual.LandscapeRites;
+import art.arcane.witchery.ritual.ProtectionRites;
+import art.arcane.witchery.ritual.RiteOfTransposition;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.UUID;
+
+interface RiteUpkeep {
+    boolean tick(ServerLevel level, BlockPos heart);
+
+    record Ward(ProtectionRites.Upkeep progress) implements RiteUpkeep {
+        @Override
+        public boolean tick(ServerLevel level, BlockPos heart) {
+            return progress.tick(level, heart);
+        }
+    }
+
+    final class Timed implements RiteUpkeep {
+        private final ResourceLocation rite;
+        private final int coven;
+        @Nullable private final UUID initiator;
+        @Nullable private LandscapeRites.Progress landscape;
+        private int oreDepth;
+        private int ticks;
+
+        private Timed(ResourceLocation rite, int coven, @Nullable UUID initiator,
+                      @Nullable LandscapeRites.Progress landscape, int oreDepth) {
+            this.rite = rite;
+            this.coven = coven;
+            this.initiator = initiator;
+            this.landscape = landscape;
+            this.oreDepth = oreDepth;
+        }
+
+        static Timed landscape(ResourceLocation rite, int coven, @Nullable UUID initiator, LandscapeRites.Progress progress) {
+            return new Timed(rite, coven, initiator, progress, 0);
+        }
+
+        static Timed transposeOres(ResourceLocation rite, int coven, @Nullable UUID initiator, int completedDepth) {
+            return new Timed(rite, coven, initiator, null, completedDepth);
+        }
+
+        static Timed recharge(ResourceLocation rite, int coven, @Nullable UUID initiator) {
+            return new Timed(rite, coven, initiator, null, 0);
+        }
+
+        private int interval() {
+            if (landscape != null) return landscape.interval();
+            return oreDepth > 0 ? RiteOfTransposition.ORE_PULSE_TICKS : 20;
+        }
+
+        void restoreTicks(int savedTicks) {
+            ticks = Mth.clamp(savedTicks, 0, interval() - 1);
+        }
+
+        @Override
+        public boolean tick(ServerLevel level, BlockPos heart) {
+            if (++ticks < interval()) return true;
+            ticks = 0;
+            if (landscape != null) {
+                if (!LandscapeRites.canReach(level, heart, landscape.target(), coven)) return false;
+                landscape = LandscapeRites.pulse(level, heart, landscape, coven, caster(level));
+                return landscape != null;
+            }
+            if (oreDepth > 0) return RiteOfTransposition.transposeOreLayer(level, heart, ++oreDepth, coven);
+            return rechargeNearby(level, heart);
+        }
+
+        private boolean rechargeNearby(ServerLevel level, BlockPos heart) {
+            AltarBlockEntity altar = AltarPower.nearest(level, heart, 16);
+            if (altar == null || !altar.consumePower(40)) {
+                ServerPlayer player = caster(level);
+                if (player != null) player.displayClientMessage(Component.translatable("message.witchery.rite.missing_power"), true);
+                level.playSound(null, heart, SoundEvents.NOTE_BLOCK_SNARE.value(), SoundSource.BLOCKS, 0.9F, 1);
+                return false;
+            }
+            for (ServerPlayer player : RiteHeartBlockEntity.nearbyPlayers(level, heart, 4)) {
+                if (InfusionEnergy.recharge(player, 10)) {
+                    level.sendParticles(ParticleTypes.INSTANT_EFFECT, player.getX(), player.getY(0.5), player.getZ(),
+                            8, 0.35, 0.65, 0.35, 0);
+                    player.playSound(SoundEvents.NOTE_BLOCK_PLING.value(), 0.8F, 1);
+                }
+            }
+            return true;
+        }
+
+        @Nullable
+        private ServerPlayer caster(ServerLevel level) {
+            return initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
+        }
+
+        void save(CompoundTag tag) {
+            tag.putString("Rite", rite.toString());
+            tag.putInt("StepTicks", ticks);
+            if (coven > 0) {
+                tag.putInt("CovenSize", coven);
+                tag.putInt("CovenSummoned", coven);
+            }
+            if (initiator != null) tag.putUUID("Initiator", initiator);
+            if (landscape != null) tag.put("Landscape", landscape.save());
+            else if (oreDepth > 0) tag.putInt("OreDepth", oreDepth);
+            else tag.putBoolean("Recharging", true);
+        }
+
+        @Nullable
+        static Timed load(CompoundTag tag) {
+            ResourceLocation rite = tag.contains("Rite", Tag.TAG_STRING) ? ResourceLocation.tryParse(tag.getString("Rite")) : null;
+            if (rite == null) return null;
+            int coven = Mth.clamp(tag.getInt("CovenSize"), 0, CovenWitch.MAX_MEMBERS);
+            UUID initiator = tag.hasUUID("Initiator") ? tag.getUUID("Initiator") : null;
+            LandscapeRites.Progress landscape = LandscapeRites.Progress.load(tag.getCompound("Landscape"), coven);
+            int depth = Mth.clamp(tag.getInt("OreDepth"), 0, RiteOfTransposition.oreDepthLimit(coven) - 1);
+            if (landscape == null && depth == 0 && !tag.getBoolean("Recharging")) return null;
+            var upkeep = new Timed(rite, coven, initiator, landscape, depth);
+            upkeep.restoreTicks(tag.getInt("StepTicks"));
+            return upkeep;
+        }
+    }
+}
