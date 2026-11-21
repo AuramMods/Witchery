@@ -133,8 +133,9 @@ public final class MirrorTravel {
     private static MirrorBlockEntity createRoom(ServerLevel exterior, ServerLevel mirror, MirrorBlockEntity source) {
         RoomCounter counter = mirror.getDataStorage().computeIfAbsent(RoomCounter::load, RoomCounter::new, "witchery_mirror_rooms");
         MirrorBlock inner = (MirrorBlock) WitcheryBlocks.getRequired("mirrorblock2").get();
+        int top = MirrorChunkGenerator.chamberTop();
         for (int attempt = 0; attempt < 45; attempt++) {
-            BlockPos pos = counter.next();
+            BlockPos pos = counter.next(top);
             if (!mirror.getBlockState(pos.below(3)).is(WitcheryBlocks.getRequired("mirrorwall").get())) {
                 continue;
             }
@@ -375,6 +376,7 @@ public final class MirrorTravel {
     }
 
     private static final class RoomCounter extends SavedData {
+        private static final int ROOMS_PER_COLUMN = 15;
         private int next;
 
         static RoomCounter load(CompoundTag data) {
@@ -383,14 +385,18 @@ public final class MirrorTravel {
             return counter;
         }
 
-        BlockPos next() {
-            int room = next++;
+        BlockPos next(int top) {
+            int tier = next % ROOMS_PER_COLUMN;
+            if (tier * 16 + 8 >= top) {
+                next += ROOMS_PER_COLUMN - tier;
+                tier = 0;
+            }
+            int column = next++ / ROOMS_PER_COLUMN;
             setDirty();
             // Keep newer room allocation away from terrain generated near the old End-like spawn.
-            int column = room / 15;
             int chunkX = 32 + column % 32;
             int chunkZ = column / 32;
-            return new BlockPos(chunkX * 16 + 4, room % 15 * 16 + 8, chunkZ * 16 + 8);
+            return new BlockPos(chunkX * 16 + 4, tier * 16 + 8, chunkZ * 16 + 8);
         }
 
         @Override

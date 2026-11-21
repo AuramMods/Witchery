@@ -1,5 +1,6 @@
 package art.arcane.witchery.world;
 
+import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
@@ -26,6 +27,7 @@ public final class MirrorChunkGenerator extends ChunkGenerator {
     public static final Codec<MirrorChunkGenerator> CODEC = BiomeSource.CODEC.fieldOf("biome_source")
             .xmap(MirrorChunkGenerator::new, MirrorChunkGenerator::getBiomeSource).codec();
     private static final int LEGACY_TOP = 255;
+    private static final int SHRUNK_TOP = 128;
 
     public MirrorChunkGenerator(BiomeSource source) {
         super(source);
@@ -36,11 +38,15 @@ public final class MirrorChunkGenerator extends ChunkGenerator {
         return CODEC;
     }
 
-    private static boolean wallAt(int x, int y, int z) {
+    static int chamberTop() {
+        return WitcheryServerConfig.SHRINK_MIRROR_WORLD.get() ? SHRUNK_TOP : LEGACY_TOP;
+    }
+
+    private static boolean wallAt(int x, int y, int z, int top) {
         int cellY = y & 15;
         int cellX = x & 15;
         int cellZ = z & 15;
-        return y >= 0 && y < LEGACY_TOP && (cellY <= 5 || cellY == 15
+        return y >= 0 && y < top && (cellY <= 5 || cellY == 15
                 || cellX < 4 || cellX > 12 || cellZ < 4 || cellZ > 12);
     }
 
@@ -51,10 +57,11 @@ public final class MirrorChunkGenerator extends ChunkGenerator {
         BlockPos.MutableBlockPos place = new BlockPos.MutableBlockPos();
         Heightmap surface = chunk.getOrCreateHeightmapUnprimed(Heightmap.Types.WORLD_SURFACE_WG);
         Heightmap floor = chunk.getOrCreateHeightmapUnprimed(Heightmap.Types.OCEAN_FLOOR_WG);
-        for (int y = Math.max(0, chunk.getMinBuildHeight()); y < Math.min(LEGACY_TOP, chunk.getMaxBuildHeight()); y++) {
+        int top = Math.min(chamberTop(), chunk.getMaxBuildHeight());
+        for (int y = Math.max(0, chunk.getMinBuildHeight()); y < top; y++) {
             for (int x = 0; x < 16; x++) {
                 for (int z = 0; z < 16; z++) {
-                    if (wallAt(x, y, z)) {
+                    if (wallAt(x, y, z, top)) {
                         chunk.setBlockState(place.set(x, y, z), wall, false);
                         surface.update(x, y, z, wall);
                         floor.update(x, y, z, wall);
@@ -68,8 +75,9 @@ public final class MirrorChunkGenerator extends ChunkGenerator {
     @Override
     public int getBaseHeight(int x, int z, Heightmap.Types type, LevelHeightAccessor height, RandomState random) {
         if (type.isOpaque().test(WitcheryBlocks.getRequired("mirrorwall").get().defaultBlockState())) {
-            for (int y = Math.min(LEGACY_TOP, height.getMaxBuildHeight()) - 1; y >= height.getMinBuildHeight(); y--) {
-                if (wallAt(x, y, z)) return y + 1;
+            int top = Math.min(chamberTop(), height.getMaxBuildHeight());
+            for (int y = top - 1; y >= Math.max(0, height.getMinBuildHeight()); y--) {
+                if (wallAt(x, y, z, top)) return y + 1;
             }
         }
         return height.getMinBuildHeight();
@@ -81,8 +89,9 @@ public final class MirrorChunkGenerator extends ChunkGenerator {
         BlockState wall = WitcheryBlocks.getRequired("mirrorwall").get().defaultBlockState();
         BlockState air = Blocks.AIR.defaultBlockState();
         int bottom = height.getMinBuildHeight();
+        int top = chamberTop();
         for (int index = 0; index < states.length; index++) {
-            states[index] = wallAt(x, bottom + index, z) ? wall : air;
+            states[index] = wallAt(x, bottom + index, z, top) ? wall : air;
         }
         return new NoiseColumn(bottom, states);
     }

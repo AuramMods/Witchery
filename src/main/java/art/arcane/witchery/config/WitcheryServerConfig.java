@@ -20,6 +20,7 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.BooleanValue DECURSE_TELEPORT_ENABLED;
     public static final ForgeConfigSpec.IntValue DECURSE_DIRECTED_RADIUS;
     public static final ForgeConfigSpec.IntValue DECURSE_TELEPORT_RADIUS;
+    public static final ForgeConfigSpec.BooleanValue SHRINK_MIRROR_WORLD;
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -57,6 +58,10 @@ public final class WitcheryServerConfig {
                 .comment("Horizontal range of a Statue of Occluded Summons, in blocks.")
                 .defineInRange("decurseTeleportPullProtectRadius", 32, 0, 128);
         ALLOW_DEATHS_HOOD_TO_FREEZE_VICTIMS = builder.define("allowDeathsHoodToFreezeVictims", true);
+        SHRINK_MIRROR_WORLD = builder
+                .comment("Generate eight chamber tiers in new Mirror chunks. Existing chambers and links are preserved.")
+                .worldRestart()
+                .define("shrinkMirrorWorld", false);
         SPEC = builder.build();
     }
 

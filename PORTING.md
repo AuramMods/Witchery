@@ -80,7 +80,8 @@
 - [x] Walk out through the chamber's exit, break and pick up the exterior Mirror, and remount it with its original chamber and defeated state. Walk through the defeated frame and emerge at an opposing frame in the Overworld. The fixed build crossed both dimensions without a movement warning.
 - [x] Verify both chat escapes. The muted client returned to its chamber's entrance or left for the Overworld, and a restart preserved the remaining cooldowns. The older port's Mirror block item mounted the same two-block frame.
 - [x] Verify vertical linking, the 3,000-power passage through a chamber wall, and exiting through a Mirror carried by another player. The two muted clients confirmed that a carrying player can move while the chamber occupant is inside and that the exit follows the carrier.
-- [ ] Restore the Mirror Face, conversations, disguises, and Mirror-related poppet and duplicate grenade behavior. Finish Reflection's advanced attacks and the shorter world setting.
+- [x] Restore `shrinkMirrorWorld`. It limits new Mirror chunks and room allocation to eight chamber tiers, ending at Y 127. All 12 packaged geometry checks passed across restarts, including preserving existing chunks when switching the setting in either direction. A muted survival client entered and exited the eighth tier. After the dedicated server restarted, the link persisted and a second Mirror opened the first tier of the next column. All 307 required Forge GameTests passed.
+- [ ] Restore the Mirror Face, conversations, disguises, and Mirror-related poppet and duplicate grenade behavior. Finish Reflection's advanced attacks.
 
 ## Torment Milestone (2026-11-19)
 
