@@ -931,6 +931,16 @@
 - [x] Run Java 17 data generation and JAR reobfuscation. All 553 regression cases passed before adding disease overlay synchronization. All 21 focused cases passed on the final revision.
 - [ ] Resolve the legacy Drain Magic integrations during the optional mod compatibility pass.
 
+## Cauldron Wool and Dye Colors (2026-11-21)
+
+- [x] Accept all sixteen wools in heated cauldrons. Consume the wool and store its legacy RGB separately from the recipe. Later ingredients mix into that color and later wool replaces it. Reset the color when the cauldron is emptied or cleared with Gypsum.
+- [x] Restore the twelve creature dye recipes with their original one-level capacity cost, zero altar power, and 90-second duration. Preserve the color regardless of strength, duration, ordinary splash falloff, or Taglock amplification. Keep Gas Mask and Brick targeting rules.
+- [x] Preserve legacy named wool and dye metadata and read the saved brew color from the cauldron's original fluid tag or a bottled brew. Allow a wool-only batch to bottle its color with an empty recipe.
+- [x] Use each dye's legacy name in the Cauldron guide, bottle, and active-effect display. Tint the creature model and its render layers, and send the status effect when a client starts or resumes tracking it.
+- [x] Brew a blue splash with Red Dye, observe the sheep's red tint, and verify that its original appearance returns when the effect clears. A lime drink with Magenta Dye displayed Magenta in the inventory. A lime gas brew kept the assigned color in its spawned cloud.
+- [x] Capture a pig's Taglock through the normal interaction and cast Orange Dye. The bound pig received the original 90-second effect and its neighbor stayed unchanged. After the dedicated restart, the client rendered the pig's saved orange tint and bottled the red wool-only batch that remained in the other cauldron.
+- [x] Run Java 17 data generation and JAR reobfuscation. All 558 dedicated-server regression cases passed before the client render hook was revised. The final revision passed all 21 focused GameTests and the muted packaged client checks.
+
 ## Brew of Erosion and Brew of Ice (2026-11-21)
 
 - [x] Restore the original six-ingredient Kettle recipes, three servings, Brew Mastery bottling bonus, and legacy metadata 62 and 76. Erosion needs no altar power. Ice waits for 1,000 power and debits the altar once per batch.

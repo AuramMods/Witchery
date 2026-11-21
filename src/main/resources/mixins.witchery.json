@@ -5,7 +5,7 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "witchery.refmap.json",
   "mixins": ["ScryingChunkMapMixin", "ScryingEntityTrackingMixin", "HunterArmorProtectionMixin", "HunterArmorWearMixin", "PriorIncarnationPickupMixin", "KeepInventoryBrewMixin", "MirrorChatMixin", "StructureTemplatePoolAccessor", "SinglePoolElementAccessor", "VillageBookshopLimitMixin"],
-  "client": ["ScryingWorldRendererMixin", "MirrorSkinMixin"],
+  "client": ["ScryingWorldRendererMixin", "MirrorSkinMixin", "BrewColorRenderMixin", "BrewColorInventoryMixin"],
   "injectors": {
     "defaultRequire": 1
   }

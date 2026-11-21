@@ -1223,13 +1223,15 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 - Subdued Spirit subtype 112 adds Wasting or, after Fermented Spider Eye, Fullness. Condensed Fear subtype 114 lowers Witchery infusion charge according to capacity, strength, and exposure. Creeper Heart subtype 74 extends active buffs and adds the original Queasy penalty. The standalone Brew of Wasting retains its own projectile behavior.
 - Skeleton Skull and Creeper Head add Steal Buffs and Spread Debuffs. Named legacy `minecraft:skull` metadata 0 and 4 restore these recipes inside saved mixtures. The actions preserve donor and recipient selection, amplifier limits, remaining durations, and the exposure-scaled number of effects.
 - Rotten Flesh adds the `witchery:potion.diseased` curse. That effect uses the original attack-damage modifier UUID and overlay texture. Tracking clients receive updates through vanilla effect packets. Contact with the `witchery:disease` fluid can apply the effect, and `diseaseBlockRemovalChance` sets the fluid's scheduled removal roll.
+- All sixteen wools set the original RGB without spending power, consuming capacity, or entering the ordered `Items` list. The cauldron persists the separate `Color` field and reads the legacy nested fluid `Tag.Color`. Bottle and dispersal tags retain their saved color.
+- The twelve original coloring dyes add `witchery:potion.colorful` for 1,800 ticks and one effect level at zero power. The amplifier is the original dye ordinal. The color label and tint use that ordinal. Named `minecraft:dye` and `minecraft:wool` metadata resolve to their modern items. Ink Sac, Cocoa Beans, Lapis Lazuli, and Bone Meal retain their original ingredient identities.
 - A `witchery:biomenote` adds Changing Seasons for eight effect levels and 5,000 base altar power. Its `WitcheryBiome` persists in the ordered `Items` list. The block-targeted action forces instant dispersal and supports a Tongue of Dog ritual at a Waystone. The biome writer updates and resends every intersecting quart column, and dry biomes clear snow layers within the original block footprint.
 
 ### Remaining cauldron actions
 
-- Terrain and world actions still in the legacy registry include Dissipate, Pruning, Pulverisation, Tide Hold, Lava Hold, Levelling, Webs, Vines, Thorns, the nine tree-growth variants, Transpose Ore, Inferno, Hell Gate, and Blast. The cauldron version of Erosion still needs its ordered ingredient action. The Kettle already has its fixed Brew of Erosion recipe.
-- Creature and movement actions still include Bat Burst, Bodega, Air Hike, Frog Tongue, Knockback, and Poison Toad.
-- The wool color modifiers and dye effects still need their original recipes. Drain Magic's legacy Blood Magic and Thaumcraft hooks remain open for the optional integration pass.
+- Terrain and world actions still include Dissipate, Flowers, Fertilization, Harvesting, Tilling, Planting, Pruning, Pulverisation, Tide Hold, Lilify, Lava Hold, Erosion, Levelling, Webs, Vines, Thorns, Sprouting, the nine tree-growth variants, Blight, Transpose, Transpose Ore, Raise Land, Inferno, Hell Gate, and Blast. Some also have independent Kettle recipes or circle rites.
+- Creature and movement actions still include Bat Burst, Bodega, Air Hike, Frog Tongue, Knockback, Raising, and Poison Toad. The remaining potion recipes include Love, Volatility, Fortune, and Resizing.
+- Drain Magic's legacy Blood Magic and Thaumcraft hooks remain open for the optional integration pass.
 
 ## Network Packets (`PacketPipeline`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/network/PacketPipeline.java`

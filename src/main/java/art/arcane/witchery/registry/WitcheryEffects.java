@@ -2,6 +2,7 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.brewing.ChilledEffect;
+import art.arcane.witchery.brewing.ColorfulEffect;
 import art.arcane.witchery.brewing.DiseasedEffect;
 import art.arcane.witchery.vampirism.ParalysisEffect;
 import art.arcane.witchery.brewing.GrotesqueEffect;
@@ -83,6 +84,8 @@ public final class WitcheryEffects {
     public static final RegistryObject<MobEffect> MORTAL_COIL = MOB_EFFECTS.register("potion.mortalcoil", MortalCoilEffect::new);
     public static final RegistryObject<MobEffect> DISEASED = MOB_EFFECTS.register("potion.diseased",
             () -> new DiseasedEffect(legacyColor("potion.diseased")));
+    public static final RegistryObject<MobEffect> COLORFUL = MOB_EFFECTS.register("potion.colorful",
+            () -> new ColorfulEffect(legacyColor("potion.colorful")));
     public static final RegistryObject<MobEffect> QUEASY = MOB_EFFECTS.register("potion.queasy",
             () -> new MobEffect(MobEffectCategory.HARMFUL, 0x7C9348) {
                 @Override
@@ -128,6 +131,7 @@ public final class WitcheryEffects {
         LEGACY_EFFECTS.put("potion.snowtrail", SNOW_TRAIL);
         LEGACY_EFFECTS.put("potion.queasy", QUEASY);
         LEGACY_EFFECTS.put("potion.diseased", DISEASED);
+        LEGACY_EFFECTS.put("potion.colorful", COLORFUL);
         for (String legacyName : LegacyRegistryData.EFFECTS) {
             registerLegacyEffect(legacyName);
         }

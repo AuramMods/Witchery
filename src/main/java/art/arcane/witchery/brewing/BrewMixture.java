@@ -31,6 +31,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.monster.Blaze;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -55,7 +56,7 @@ public final class BrewMixture {
 
     private enum Modifier {
         CAPACITY, STRENGTH, DURATION, INVERT, HIDE_PARTICLES, DRINK_SPEED, DELIVERY, EXTENT, LIFETIME, WAYSTONE, RITUAL,
-        NO_BLOCK_TARGET, NO_ENTITY_TARGET, RAISE_EFFECT_CEILING
+        NO_BLOCK_TARGET, NO_ENTITY_TARGET, RAISE_EFFECT_CEILING, SET_COLOR
     }
 
     private enum Action {
@@ -104,9 +105,17 @@ public final class BrewMixture {
         boolean isEffect() { return normal != null || action != null; }
     }
 
-    private record Potion(Supplier<MobEffect> effect, int duration, boolean curse) {
+    private record Potion(Supplier<MobEffect> effect, int duration, boolean curse, @Nullable BrewDye dye) {
         Potion(Supplier<MobEffect> effect, int duration) {
             this(effect, duration, false);
+        }
+
+        Potion(Supplier<MobEffect> effect, int duration, boolean curse) {
+            this(effect, duration, curse, null);
+        }
+
+        Component brewName() {
+            return dye == null ? BrewMixture.brewName(effect.get()) : dye.label();
         }
     }
 
@@ -117,11 +126,11 @@ public final class BrewMixture {
         }
 
         private MobEffectInstance instance(int duration, int strength, boolean particles) {
-            return new MobEffectInstance(effect, duration, strength, false, particles, true);
+            return new MobEffectInstance(effect, duration, strength, effect == WitcheryEffects.COLORFUL.get(), particles, true);
         }
 
         public Component brewName() {
-            return BrewMixture.brewName(effect);
+            return effect == WitcheryEffects.COLORFUL.get() ? BrewDye.byLegacyId(amplifier).label() : BrewMixture.brewName(effect);
         }
     }
 
@@ -144,14 +153,14 @@ public final class BrewMixture {
     @Nullable
     private final WaystoneItem.Location destination;
 
-    private BrewMixture(Mixing mixing) {
+    private BrewMixture(Mixing mixing, int savedColor) {
         effects = List.copyOf(mixing.effects);
         capacity = mixing.capacity;
         used = mixing.used;
         power = mixing.power;
         drinkTicks = Math.max(2, mixing.drinkTicks);
         yieldModifier = mixing.yieldModifier;
-        color = mixing.color & 0xFFFFFF;
+        color = (savedColor >= 0 ? savedColor : mixing.color) & 0xFFFFFF;
         delivery = mixing.delivery;
         extent = mixing.extent;
         lifetime = mixing.lifetime;
@@ -182,19 +191,24 @@ public final class BrewMixture {
 
     @Nullable
     public static BrewMixture from(List<ItemStack> stacks) {
-        if (stacks.isEmpty()) return null;
+        return from(stacks, -1);
+    }
+
+    @Nullable
+    public static BrewMixture from(List<ItemStack> stacks, int savedColor) {
+        if (stacks.isEmpty() && savedColor < 0) return null;
         Mixing mixing = mix(stacks);
-        return mixing != null ? new BrewMixture(mixing) : null;
+        return mixing != null ? new BrewMixture(mixing, savedColor) : null;
     }
 
     @Nullable
     public static BrewMixture from(@Nullable CompoundTag tag) {
-        if (tag == null) return null;
+        if (tag == null || !tag.contains(ITEMS, Tag.TAG_LIST)) return null;
         List<ItemStack> stacks = new ArrayList<>();
         for (Tag entry : tag.getList(ITEMS, Tag.TAG_COMPOUND)) {
             stacks.add(loadIngredient((CompoundTag) entry));
         }
-        BrewMixture mixture = from(stacks);
+        BrewMixture mixture = from(stacks, tag.contains("Color", Tag.TAG_ANY_NUMERIC) ? tag.getInt("Color") & 0xFFFFFF : -1);
         return mixture != null && (!tag.getBoolean("Splash") || mixture.splash()) ? mixture : null;
     }
 
@@ -217,6 +231,8 @@ public final class BrewMixture {
             };
             case "minecraft:web" -> "minecraft:cobweb";
             case "minecraft:reeds" -> "minecraft:sugar_cane";
+            case "minecraft:wool" -> "minecraft:" + DyeColor.byId(metadata).getName() + "_wool";
+            case "minecraft:dye" -> "minecraft:" + BrewDye.byLegacyId(metadata).item();
             case "minecraft:netherbrick" -> "minecraft:nether_brick";
             case "minecraft:red_flower" -> metadata == 1 ? "minecraft:blue_orchid" : null;
             case "minecraft:golden_apple" -> metadata == 1 ? "minecraft:enchanted_golden_apple" : null;
@@ -263,9 +279,9 @@ public final class BrewMixture {
                 Component effect;
                 Component reversed = null;
                 if (ingredient.normal != null) {
-                    effect = brewName(ingredient.normal.effect.get());
+                    effect = ingredient.normal.brewName();
                     if (!ingredient.normal.equals(ingredient.inverted)) {
-                        reversed = brewName(ingredient.inverted.effect.get());
+                        reversed = ingredient.inverted.brewName();
                     }
                 } else if (ingredient.action != null) {
                     effect = Component.translatable(ingredient.action.nameKey(false));
@@ -361,6 +377,10 @@ public final class BrewMixture {
             if (!effect.affectsEntities()) continue;
             if (effect instanceof Application application) {
                 if (blocksHarmfulEffects && application.effect.getCategory() == MobEffectCategory.HARMFUL) continue;
+                if (application.effect == WitcheryEffects.COLORFUL.get()) {
+                    target.addEffect(application.instance(application.ticks), source);
+                    continue;
+                }
                 if (application.effect == WitcheryEffects.DOUBLE_JUMP.get() && !application.inverted
                         && !(caster instanceof ServerPlayer player && FamiliarBinding.hasBrewMastery(player))) continue;
                 int amplifier = Math.min(application.amplifier, strengthLimit);
@@ -461,6 +481,19 @@ public final class BrewMixture {
         return BuiltInRegistries.ITEM.getKey(stack.getItem());
     }
 
+    public static int woolColor(ItemStack stack) {
+        Ingredient ingredient = INGREDIENTS.get(id(stack));
+        return ingredient != null && ingredient.modifier == Modifier.SET_COLOR ? ingredient.amount : -1;
+    }
+
+    public static int blendColor(int color, ItemStack stack) {
+        return hashColor(color, id(stack)) & 0xFFFFFF;
+    }
+
+    private static int hashColor(int color, ResourceLocation ingredient) {
+        return (color == 0 ? 17 : color) * 37 + ingredient.hashCode();
+    }
+
     static int ingredientPower(ItemStack stack) {
         ResourceLocation id = id(stack);
         Ingredient ingredient = INGREDIENTS.get(id);
@@ -528,7 +561,7 @@ public final class BrewMixture {
         void add(ItemStack stack, ResourceLocation id, Ingredient ingredient) {
             power += ingredient.power;
             yieldModifier += ingredient.yieldModifier;
-            color = color * 37 + id.hashCode();
+            color = hashColor(color, id);
             if (ingredient.isEffect()) {
                 applyEffect(stack, ingredient);
                 segment.clear();
@@ -554,10 +587,15 @@ public final class BrewMixture {
                 blockStrength.current = 0;
             } else {
                 Potion effect = inverted ? ingredient.inverted : ingredient.normal;
-                int ceiling = raisedEffectCeiling ? 10 : ingredient.ceiling;
-                effects.add(new Application(effect.effect.get(), effect.duration * (duration + 1),
-                        Math.min(entityStrength.current, ceiling), !hideParticles, inverted,
-                        effect.curse ? effect.duration * TAGLOCK_DURATION_MULTIPLIER : 0, !noEntityTarget));
+                if (effect.dye != null) {
+                    effects.add(new Application(effect.effect.get(), effect.duration, effect.dye.ordinal(),
+                            true, false, 0, !noEntityTarget));
+                } else {
+                    int ceiling = raisedEffectCeiling ? 10 : ingredient.ceiling;
+                    effects.add(new Application(effect.effect.get(), effect.duration * (duration + 1),
+                            Math.min(entityStrength.current, ceiling), !hideParticles, inverted,
+                            effect.curse ? effect.duration * TAGLOCK_DURATION_MULTIPLIER : 0, !noEntityTarget));
+                }
             }
             entityStrength.current = 0;
             duration = 0;
@@ -594,6 +632,7 @@ public final class BrewMixture {
                 case NO_BLOCK_TARGET -> noBlockTarget = true;
                 case NO_ENTITY_TARGET -> noEntityTarget = true;
                 case RAISE_EFFECT_CEILING -> raisedEffectCeiling = true;
+                case SET_COLOR -> color = ingredient.amount;
                 case WAYSTONE, RITUAL -> { }
             }
         }
@@ -636,6 +675,13 @@ public final class BrewMixture {
         modifier(entries, "nether_brick", 50, Modifier.NO_BLOCK_TARGET, 0, 0, 0);
         modifier(entries, "brick", 50, Modifier.NO_ENTITY_TARGET, 0, 0, 0);
         modifier(entries, "tropical_fish", 200, Modifier.RAISE_EFFECT_CEILING, 0, 0, 0);
+        for (BrewDye dye : BrewDye.values()) {
+            modifier(entries, dye.wool(), 0, Modifier.SET_COLOR, dye.rgb(), 0, 0);
+            if (dye.colorsCreatures()) {
+                Potion color = new Potion(WitcheryEffects.COLORFUL, ColorfulEffect.DURATION, false, dye);
+                potion(entries, dye.item(), 0, 1, 0, color, color);
+            }
+        }
         entries.put(ResourceLocation.withDefaultNamespace("coal"), new Ingredient(0, null, 1, 10, 0, null, null, Action.EXTINGUISH));
         entries.put(ResourceLocation.withDefaultNamespace("snowball"), new Ingredient(0, null, 1, 10, 0, null, null, Action.SNOW));
 

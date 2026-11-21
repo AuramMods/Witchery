@@ -3,6 +3,7 @@ package art.arcane.witchery.item;
 import art.arcane.witchery.block.BrewDispersalBlock;
 import art.arcane.witchery.block.CursedControls;
 import art.arcane.witchery.brewing.BrewMixture;
+import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -81,8 +82,9 @@ public final class BrewBottleItem extends Item {
         BrewMixture mixture = BrewMixture.from(stack.getTag());
         if (mixture == null) return;
         for (var application : mixture.effects()) {
-            MutableComponent text = application.effect().getDisplayName().copy();
-            if (application.amplifier() > 0) {
+            boolean colorful = application.effect() == WitcheryEffects.COLORFUL.get();
+            MutableComponent text = (colorful ? application.brewName() : application.effect().getDisplayName()).copy();
+            if (application.amplifier() > 0 && !colorful) {
                 text.append(" ").append(Component.translatable("potion.potency." + application.amplifier()));
             }
             if (application.ticks() > 0) {
