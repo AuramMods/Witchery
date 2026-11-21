@@ -29,6 +29,7 @@ import art.arcane.witchery.block.SilverVatBlock;
 import art.arcane.witchery.block.CrystalBallBlock;
 import art.arcane.witchery.block.DaylightCollectorBlock;
 import art.arcane.witchery.block.DemonHeartBlock;
+import art.arcane.witchery.block.DiseaseBlock;
 import art.arcane.witchery.block.DistilleryBlock;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.FetishBlock;
@@ -260,7 +261,7 @@ public final class WitcheryBlocks {
                     .strength(-1, 9_999).noLootTable().noOcclusion());
             case "spiritflowing" -> new SpiritFluidBlock(WitcheryFluids.getRequiredSource("fluidspirit"), spiritProperties(), true);
             case "hollowtears" -> new SpiritFluidBlock(WitcheryFluids.getRequiredSource("hollowtears"), spiritProperties(), false);
-            case "disease" -> createLegacyFluidBlock("fluiddisease");
+            case "disease" -> new DiseaseBlock();
             case "brew" -> createLegacyFluidBlock("brew");
             case "brewgas" -> new BrewDispersalBlock(true);
             case "brewliquid" -> new BrewDispersalBlock(false);

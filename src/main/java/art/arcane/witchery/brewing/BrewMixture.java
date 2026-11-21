@@ -4,6 +4,7 @@ import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.entity.CreatureAlignment;
 import art.arcane.witchery.entity.Leonard;
+import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.BiomeNoteItem;
@@ -59,7 +60,8 @@ public final class BrewMixture {
 
     private enum Action {
         EXTINGUISH, COLD, ICE_SHELL, HARM_DEMONS, HARM_UNDEAD, HARM_INSECTS, HARM_WEREWOLVES,
-        WEAKEN_VAMPIRES, REVEAL, MOVE_ANIMALS, CHANGING_SEASONS, ICE_WORLD, SNOW;
+        WEAKEN_VAMPIRES, REVEAL, MOVE_ANIMALS, CHANGING_SEASONS, ICE_WORLD, SNOW,
+        REMOVE_DEBUFFS, REMOVE_BUFFS, WASTING, DRAIN_MAGIC, DURATION_BOOST, STEAL_BUFFS, SPREAD_DEBUFFS;
 
         String nameKey(boolean inverted) {
             return switch (this) {
@@ -76,6 +78,13 @@ public final class BrewMixture {
                 case MOVE_ANIMALS -> inverted ? "brew.witchery.animal_repulsion" : "brew.witchery.animal_attraction";
                 case CHANGING_SEASONS -> "brew.witchery.changing_seasons";
                 case SNOW -> "brew.witchery.snow";
+                case REMOVE_DEBUFFS -> "brew.witchery.remove_debuffs";
+                case REMOVE_BUFFS -> "brew.witchery.remove_buffs";
+                case WASTING -> inverted ? "brew.witchery.fullness" : "brew.witchery.wasting";
+                case DRAIN_MAGIC -> "brew.witchery.drain_magic";
+                case DURATION_BOOST -> "brew.witchery.duration_boost";
+                case STEAL_BUFFS -> "brew.witchery.steal_buffs";
+                case SPREAD_DEBUFFS -> "brew.witchery.spread_debuffs";
             };
         }
     }
@@ -193,8 +202,10 @@ public final class BrewMixture {
         int metadata = tag.getInt("Damage");
         String id = switch (tag.getString("id")) {
             case "minecraft:skull" -> switch (metadata) {
+                case 0 -> "minecraft:skeleton_skull";
                 case 1 -> "minecraft:wither_skeleton_skull";
                 case 2 -> "minecraft:zombie_head";
+                case 4 -> "minecraft:creeper_head";
                 default -> null;
             };
             case "minecraft:fish" -> switch (metadata) {
@@ -362,7 +373,7 @@ public final class BrewMixture {
                 }
             } else if (effect instanceof ActionApplication application) {
                 int strength = Math.min(application.strength, strengthLimit);
-                applyAction(application, target, source, caster, strengthScale, durationScale, glancing, strength);
+                applyAction(application, target, source, caster, strengthScale, durationScale, glancing, strength, taglockCoven >= 0);
             }
         }
     }
@@ -373,7 +384,7 @@ public final class BrewMixture {
 
     private static void applyAction(ActionApplication application, LivingEntity target, @Nullable Entity source,
                                     @Nullable LivingEntity caster, double strengthScale, double durationScale,
-                                    boolean glancing, int strength) {
+                                    boolean glancing, int strength, boolean taglock) {
         switch (application.action) {
             case EXTINGUISH -> {
                 if (strength <= 1 && target.level().dimensionType().ultraWarm()) return;
@@ -428,6 +439,19 @@ public final class BrewMixture {
             case SNOW -> target.addEffect(new MobEffectInstance(WitcheryEffects.SNOW_TRAIL.get(),
                     Mth.ceil(3600 * application.durationMultiplier * durationScale), strength,
                     false, application.showParticles, true), source);
+            case REMOVE_DEBUFFS -> {
+                if (taglock) BrewStatusActions.ritualCleanse(target, strength);
+                else BrewStatusActions.cleanse(target, caster, strength);
+            }
+            case REMOVE_BUFFS -> BrewStatusActions.removeBuffs(target, strength);
+            case WASTING -> BrewStatusActions.wasting(target, source, strength,
+                    application.durationMultiplier * durationScale, application.inverted);
+            case DRAIN_MAGIC -> {
+                if (target instanceof ServerPlayer player) InfusionEnergy.drain(player, (float) (0.25 * (1 + strength) * strengthScale));
+            }
+            case DURATION_BOOST -> BrewStatusActions.extendBuffs(target, strength, strengthScale);
+            case STEAL_BUFFS -> BrewStatusActions.stealBuffs(target, strength, strengthScale);
+            case SPREAD_DEBUFFS -> BrewStatusActions.spreadDebuffs(target, strength, strengthScale);
             case CHANGING_SEASONS, ICE_WORLD -> { }
         }
     }
@@ -623,6 +647,13 @@ public final class BrewMixture {
         entries.put(ResourceLocation.withDefaultNamespace("blue_orchid"), new Ingredient(200, null, 2, 3, 0, null, null, Action.HARM_INSECTS));
         entries.put(ResourceLocation.parse("witchery:silver_dust"), new Ingredient(1000, null, 4, 3, 0, null, null, Action.HARM_WEREWOLVES));
         entries.put(ResourceLocation.parse("witchery:garlic"), new Ingredient(500, null, 4, 10, 0, null, null, Action.WEAKEN_VAMPIRES));
+        entries.put(ResourceLocation.parse("witchery:purified_milk"), new Ingredient(200, null, 2, 10, 0, null, null, Action.REMOVE_DEBUFFS));
+        entries.put(ResourceLocation.parse("witchery:reek_of_misfortune"), new Ingredient(250, null, 2, 10, 0, null, null, Action.REMOVE_BUFFS));
+        entries.put(ResourceLocation.parse("witchery:subdued_spirit"), new Ingredient(500, null, 4, 10, 0, null, null, Action.WASTING));
+        entries.put(ResourceLocation.parse("witchery:condensed_fear"), new Ingredient(1000, null, 6, 10, 0, null, null, Action.DRAIN_MAGIC));
+        entries.put(ResourceLocation.parse("witchery:creeper_heart"), new Ingredient(5000, null, 6, 10, 0, null, null, Action.DURATION_BOOST));
+        entries.put(ResourceLocation.withDefaultNamespace("skeleton_skull"), new Ingredient(100, null, 6, 10, 0, null, null, Action.STEAL_BUFFS));
+        entries.put(ResourceLocation.withDefaultNamespace("creeper_head"), new Ingredient(2000, null, 8, 10, 0, null, null, Action.SPREAD_DEBUFFS));
         entries.put(ResourceLocation.fromNamespaceAndPath("witchery", "odour_of_purity"),
                 new Ingredient(100, null, 4, 0, 0, null, null, Action.REVEAL));
         entries.put(ResourceLocation.fromNamespaceAndPath("witchery", "heart_of_gold"),
@@ -670,6 +701,7 @@ public final class BrewMixture {
         potion(entries, "witchery:drop_of_luck", 5000, 4, 10,
                 new Potion(WitcheryEffects.BREWING_EXPERTISE, 7200), new Potion(WitcheryEffects.INSANITY, 3600, true));
         curse(entries, "witchery:disturbed_cotton", 3000, WitcheryEffects.SINKING);
+        curse(entries, "rotten_flesh", 2000, WitcheryEffects.DISEASED);
         curse(entries, "witchery:embermoss", 3000, WitcheryEffects.OVERHEATING);
         curse(entries, "witchery:mellifluous_hunger", 10000, WitcheryEffects.WAKING_NIGHTMARE);
         potion(entries, "soul_sand", 4000, 4, WitcheryEffects.DARKNESS_ALLERGY, 2400);

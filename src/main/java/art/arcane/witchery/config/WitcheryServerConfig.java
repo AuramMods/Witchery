@@ -8,6 +8,7 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec SPEC;
     public static final ForgeConfigSpec.BooleanValue ALLOW_DEATHS_HOOD_TO_FREEZE_VICTIMS;
     public static final ForgeConfigSpec.BooleanValue DOUBLE_FUME_FILTER_CHANCE;
+    public static final ForgeConfigSpec.IntValue DISEASE_REMOVAL_CHANCE;
     public static final ForgeConfigSpec.BooleanValue RESTRICT_TAGLOCK_COLLECTION_ON_NON_PVP_SERVERS;
     public static final ForgeConfigSpec.BooleanValue RESTRICT_TAGLOCK_COLLECTION_FOR_OPS;
     public static final ForgeConfigSpec.IntValue COVEN_WITCH_SPAWN_WEIGHT;
@@ -49,6 +50,9 @@ public final class WitcheryServerConfig {
         DOUBLE_FUME_FILTER_CHANCE = builder
                 .comment("Increase the chance bonus from an aligned filtered fume funnel from 30% to 80%.")
                 .define("doubleFumeFilterChance", false);
+        DISEASE_REMOVAL_CHANCE = builder
+                .comment("One in this many scheduled ticks removes a disease fluid cell. Zero keeps the cells.")
+                .defineInRange("diseaseBlockRemovalChance", 10, 0, Integer.MAX_VALUE);
         RESTRICT_TAGLOCK_COLLECTION_ON_NON_PVP_SERVERS = builder
                 .comment("Block collecting other players' taglocks while server PvP is disabled.")
                 .define("restrictTaglockCollectionOnNonPvpServers", false);

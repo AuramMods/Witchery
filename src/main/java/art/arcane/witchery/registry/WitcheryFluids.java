@@ -1,6 +1,7 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.DiseaseBlock;
 import art.arcane.witchery.block.entity.BrewFluidBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -153,6 +154,9 @@ public final class WitcheryFluids {
         properties[0] = new ForgeFlowingFluid.Properties(fluidType, source, flowing)
                 .slopeFindDistance(2)
                 .levelDecreasePerBlock(1);
+        if (path.equals("fluiddisease")) {
+            properties[0].levelDecreasePerBlock(8).tickRate(DiseaseBlock.TICK_INTERVAL);
+        }
 
         if (config.blockPath() != null) {
             properties[0].block(() -> (LiquidBlock) WitcheryBlocks.getRequired(config.blockPath()).get());

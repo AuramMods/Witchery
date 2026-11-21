@@ -909,6 +909,28 @@
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 18 focused GameTests on the final revision. The focused checks cover armor reduction, the original creature classifications, splash falloff, the Gas Mask distinction, and legacy ingredient migration.
 - [x] Pass all 543 regression cases on the milestone build before the final Reflection classification adjustment. The final focused run verified the adjustment with a vampire Reflection taking the three-point fallback.
 
+## Cauldron Status Effects and Disease (2026-11-21)
+
+| Ingredient | Brew | Base altar power | Capacity cost |
+| --- | --- | ---: | ---: |
+| Purified Milk | Remove Debuffs | 200 | 2 |
+| Reek of Misfortune | Remove Buffs | 250 | 2 |
+| Subdued Spirit | Wasting or Fullness | 500 | 4 |
+| Condensed Fear | Drain Magic | 1,000 | 6 |
+| Creeper Heart | Duration Boost | 5,000 | 6 |
+| Skeleton Skull | Steal Buffs | 100 | 6 |
+| Creeper Head | Spread Debuffs | 2,000 | 8 |
+| Rotten Flesh | Diseased | 2,000 | 4 |
+
+- [x] Restore the strength limits for ordinary buff and debuff removal. Purified Milk III clears Diseased, and Milk IV also clears its fluid within nine blocks on each axis. A Taglock purification attempts all harmful effects and can raise each amplifier by one, with the original 1%, 25%, or 75% chance according to the effect's strength relative to the brew.
+- [x] Restore Wasting's original food loss, Hunger, Wither and Poison, and Fullness's food and Regeneration. Drain Magic takes a fraction of maximum Witchery infusion charge. Duration Boost clears debuffs, adds up to three minutes to the remaining time of buffs, and adds Queasy. A repeat dose while Queasy can give Blindness or Nausea.
+- [x] Transfer buffs and debuffs within the original strength-scaled distances. Preserve the number, level and curability limits. Restore legacy skull metadata 0 and 4 inside saved mixtures.
+- [x] Restore the Diseased effect, legacy attack-damage modifier, overlay, fluid contact and configurable cell expiry. Keep the original difference between being dosed directly and touching the fluid.
+- [x] Brew all nine variants in the muted survival client. Confirm the effects through the normal drink control. Walk through a disease cell, restart the dedicated server, and verify the saved effect. Purified Milk IV then removed the active disease, Weakness IV, and the observed cell. Drain Magic reduced the fixture's stored charge from 200 to 150.
+- [x] Verify the original disease overlay on a dedicated-server pig in the isolated client. The overlay appeared on application, disappeared when the effect cleared, and appeared on reentering tracking range with the effect already active.
+- [x] Run Java 17 data generation and JAR reobfuscation. All 553 regression cases passed before adding disease overlay synchronization. All 21 focused cases passed on the final revision.
+- [ ] Resolve the legacy Drain Magic integrations during the optional mod compatibility pass.
+
 ## Brew of Erosion and Brew of Ice (2026-11-21)
 
 - [x] Restore the original six-ingredient Kettle recipes, three servings, Brew Mastery bottling bonus, and legacy metadata 62 and 76. Erosion needs no altar power. Ice waits for 1,000 power and debits the altar once per batch.
