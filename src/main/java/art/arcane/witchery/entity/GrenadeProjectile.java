@@ -1,6 +1,7 @@
 package art.arcane.witchery.entity;
 
 import art.arcane.witchery.block.SunlightBlock;
+import art.arcane.witchery.item.GrenadeItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
@@ -69,10 +70,11 @@ public final class GrenadeProjectile extends ThrowableItemProjectile {
     public void tick() {
         if (hasImpacted()) baseTick();
         else super.tick();
+        if (isRemoved()) return;
 
         if (level() instanceof ServerLevel server) {
-            if (--remainingTicks <= 0) burst(server);
-            else if (tickCount % 5 == 0) {
+            if (--remainingTicks <= 0) finish(server);
+            else if (!GrenadeItem.isDuplicate(getItem()) && tickCount % 5 == 0) {
                 SunlightBlock light = (SunlightBlock) WitcheryBlocks.getRequired("light").get();
                 light.illuminate(server, lightPosition());
                 if (hasImpacted()) for (LivingEntity entity : server.getEntitiesOfClass(LivingEntity.class,
@@ -89,8 +91,21 @@ public final class GrenadeProjectile extends ThrowableItemProjectile {
     protected void onHit(HitResult hit) {
         if (hasImpacted()) return;
         super.onHit(hit);
-        if (!level().isClientSide) {
+        if (level() instanceof ServerLevel server) {
             Vec3 point = hit.getLocation();
+            if (GrenadeItem.isDuplicate(getItem())) {
+                if (hit instanceof BlockHitResult block) {
+                    double clearance = switch (block.getDirection()) {
+                        case UP -> 0.02;
+                        case DOWN -> 1.85;
+                        default -> 0.32;
+                    };
+                    point = point.add(Vec3.atLowerCornerOf(block.getDirection().getNormal()).scale(clearance));
+                }
+                setPos(point);
+                finish(server);
+                return;
+            }
             if (hit instanceof BlockHitResult block) point = point.add(Vec3.atLowerCornerOf(block.getDirection().getNormal()).scale(0.02));
             setPos(point);
             setDeltaMovement(Vec3.ZERO);
@@ -107,7 +122,17 @@ public final class GrenadeProjectile extends ThrowableItemProjectile {
         return state.isAir() || state.is(WitcheryBlocks.getRequired("light").get()) ? pos : pos.above();
     }
 
-    private void burst(ServerLevel level) {
+    private void finish(ServerLevel level) {
+        spawnAtLocation(new ItemStack(WitcheryIngredient.QUARTZ_SPHERE.item()), 0.5F);
+        if (GrenadeItem.isDuplicate(getItem())) {
+            WitcheryFollower.spawnDuplicate(level, position(), GrenadeItem.ownerName(getItem()));
+        } else {
+            burstSunlight(level);
+        }
+        discard();
+    }
+
+    private void burstSunlight(ServerLevel level) {
         for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(3, 2, 3),
                 target -> target.isAlive() && target.isPickable())) {
             if (isUndead(entity)) {
@@ -116,9 +141,7 @@ public final class GrenadeProjectile extends ThrowableItemProjectile {
             }
             entity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 20 * (10 + random.nextInt(3)), 0, true, true));
         }
-        spawnAtLocation(new ItemStack(WitcheryIngredient.QUARTZ_SPHERE.item()), 0.5F);
         level.sendParticles(SUNLIGHT, getX(), getY() + 0.1, getZ(), 20, 0.32, 0.18, 0.32, 0.1);
-        discard();
     }
 
     private static boolean isUndead(LivingEntity entity) {
@@ -130,11 +153,16 @@ public final class GrenadeProjectile extends ThrowableItemProjectile {
         super.addAdditionalSaveData(tag);
         tag.putBoolean("Impacted", hasImpacted());
         tag.putInt("Remaining", remainingTicks);
+        tag.putInt("Mode", GrenadeItem.isDuplicate(getItem()) ? 1 : 0);
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+        if (tag.getInt("Mode") == 1 && !GrenadeItem.isDuplicate(getItem())) {
+            // An original duplicate stored the skin name under Owner. Vanilla now uses Owner for a UUID.
+            setItem(GrenadeItem.duplicate(tag.getString("Owner")));
+        }
         boolean impacted = tag.getBoolean("Impacted");
         entityData.set(IMPACTED, impacted);
         int limit = impacted ? LANDED_TICKS : FLIGHT_TICKS;

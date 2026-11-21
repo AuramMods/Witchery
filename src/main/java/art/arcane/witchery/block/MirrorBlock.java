@@ -2,8 +2,6 @@ package art.arcane.witchery.block;
 
 import art.arcane.witchery.block.entity.MirrorBlockEntity;
 import art.arcane.witchery.entity.MirrorFace;
-import art.arcane.witchery.item.TaglockItem;
-import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.world.MirrorTravel;
@@ -88,11 +86,9 @@ public final class MirrorBlock extends BaseEntityBlock {
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
                                  BlockHitResult hit) {
-        ItemStack stack = player.getItemInHand(hand);
-        if (!unbreakable && !(stack.getItem() instanceof TaglockItem) && !stack.is(WitcheryIngredient.QUARTZ_SPHERE.item())
-                && level instanceof ServerLevel server && player instanceof ServerPlayer speaker) {
+        if (!unbreakable && level instanceof ServerLevel server && player instanceof ServerPlayer speaker) {
             MirrorBlockEntity mirror = upperEntity(server, pos, state);
-            if (mirror != null) mirror.ask(server, speaker);
+            if (mirror != null) mirror.interact(server, speaker, hand);
         }
         return InteractionResult.sidedSuccess(level.isClientSide());
     }

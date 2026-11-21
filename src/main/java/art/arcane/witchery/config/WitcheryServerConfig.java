@@ -22,6 +22,8 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.IntValue DECURSE_TELEPORT_RADIUS;
     public static final ForgeConfigSpec.BooleanValue SHRINK_MIRROR_WORLD;
     public static final ForgeConfigSpec.DoubleValue FAIREST_SPAWN_CHANCE;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_CHAT_MASQUERADING;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_NAMEPLATE_MASQUERADING;
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -66,6 +68,8 @@ public final class WitcheryServerConfig {
         FAIREST_SPAWN_CHANCE = builder
                 .comment("Chance that a Mirror introduces a new Fairest during an eligible conversation.")
                 .defineInRange("newFairestOfThemAllSpawnChance", 0.01, 0.01, 1.0);
+        ALLOW_CHAT_MASQUERADING = builder.define("allowChatMasquerading", true);
+        ALLOW_NAMEPLATE_MASQUERADING = builder.define("allowNameplateMasquerading", true);
         SPEC = builder.build();
     }
 

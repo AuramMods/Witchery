@@ -1,8 +1,13 @@
 package art.arcane.witchery.block.entity;
 
 import art.arcane.witchery.block.MirrorBlock;
+import art.arcane.witchery.item.GrenadeItem;
 import art.arcane.witchery.item.MirrorItem;
+import art.arcane.witchery.item.TaglockItem;
+import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.power.AltarPower;
 import art.arcane.witchery.registry.WitcheryItems;
+import art.arcane.witchery.world.MirrorDisguise;
 import art.arcane.witchery.world.WitcheryDimensions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -15,6 +20,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -62,9 +69,32 @@ public final class MirrorBlockEntity extends BlockEntity {
         return demonSlain;
     }
 
-    public void ask(ServerLevel level, ServerPlayer player) {
-        if (!demonSlain && !level.dimension().equals(WitcheryDimensions.MIRROR)
-                && conversation.ask(level, worldPosition, facing(), player)) setChanged();
+    public void interact(ServerLevel level, ServerPlayer player, InteractionHand hand) {
+        if (demonSlain || level.dimension().equals(WitcheryDimensions.MIRROR)) return;
+        ItemStack held = player.getItemInHand(hand);
+        if (held.getItem() instanceof TaglockItem) {
+            MirrorDisguise.use(level, worldPosition, player, held);
+        } else if (held.is(WitcheryIngredient.QUARTZ_SPHERE.item())) {
+            fillDuplicate(level, player, hand, held);
+        } else if (conversation.ask(level, worldPosition, facing(), player)) {
+            setChanged();
+        }
+    }
+
+    private void fillDuplicate(ServerLevel level, ServerPlayer player, InteractionHand hand, ItemStack sphere) {
+        var altar = AltarPower.nearest(level, worldPosition);
+        if (altar == null || !altar.consumePower(2_000)) {
+            MirrorDisguise.smoke(player, SoundEvents.NOTE_BLOCK_SNARE.value());
+            return;
+        }
+        ItemStack grenade = GrenadeItem.duplicate(player.getGameProfile().getName());
+        if (sphere.getCount() == 1) {
+            player.setItemInHand(hand, grenade);
+        } else {
+            sphere.shrink(1);
+            if (!player.getInventory().add(grenade)) player.drop(grenade, false);
+        }
+        MirrorDisguise.smoke(player, SoundEvents.EXPERIENCE_ORB_PICKUP);
     }
 
     public static void tickMirror(Level level, BlockPos pos, BlockState state, MirrorBlockEntity mirror) {

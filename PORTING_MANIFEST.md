@@ -430,7 +430,7 @@ The original `witchhat`, `witchrobe`, `necromancerrobe`, and `babashat` IDs equi
 | `BLOOD_GOBLET` | `witchery:glassgoblet` |
 | `SUN_GRENADE` | `witchery:sungrenade` (from the loaded Daylight Collector) |
 | `VAMPIRE_BOOK` | `witchery:vampirebook` (`Damage` 0–9 becomes `VampireBookPages`; retains `pageStack` bookmarks) |
-| `DUP_GRENADE` | `witchery:dupgrenade` |
+| `DUP_GRENADE` | `witchery:dupgrenade` (Mirror-charged sphere with `Owner` tag) |
 | `WITCH_HAT` | `witchery:witchhat` |
 | `BABAS_HAT` | `witchery:babashat` |
 | `WITCH_ROBES` | `witchery:witchrobe` |
@@ -845,9 +845,9 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 137 | `WERE_VILLAGER` | `EntityVillagerWere` | `werevillager` |
 | 138 | `VILLAGE_GUARD` | `EntityVillageGuard` | `villageguard` |
 | 139 | `VAMPIRE_VILLAGER` | `EntityVampire` | `vampire` |
-| 140 | `GRENADE` | `EntityGrenade` | `grenade` (Sun Grenade; saved `Impacted` and `Remaining`) |
+| 140 | `GRENADE` | `EntityGrenade` | `grenade` (Sun and Duplicate Grenades, saved `Mode`, `Impacted`, and `Remaining`) |
 | 141 | `LILITH` | `EntityLilith` | `lilith` |
-| 142 | `FOLLOWER` | `EntityFollower` | `follower` (Elle and four named Fairest variants) |
+| 142 | `FOLLOWER` | `EntityFollower` | `follower` (Elle, four named Fairest variants, and type-five duplicate with saved `Skin` and `TicksToLive`) |
 | 143 | `WINGED_MONKEY` | `EntityWingedMonkey` | `wingedmonkey` |
 | 144 | `ATTACK_BAT` | `EntityAttackBat` | `attackbat` |
 | 145 | `MIRROR_FACE` | `EntityMirrorFace` | `mirrorface` (inhabited Mirror conversation and saved lifetime) |
@@ -1361,6 +1361,7 @@ Status:
 - The Mirror uses the `witchery:mirror` chunk generator and biome. New chunks contain the original stacked chambers. The dimension uses the same modern build bounds as the previous port, including for chunks saved before the generator change. The opt-in `shrinkMirrorWorld` server setting restores eight tiers and caps wall generation at Y 127 after a restart. Room allocation retains the `NextCell` saved index and honors the shorter span for new links.
 - The Rite of the Mirror creates `witchery:mirror`. The previous port's `witchery:mirrorblock` item also mounts two halves. The block entities preserve `DimCoords`, `Connected`, and `DemonSlain` and use a UUID to verify both ends. `PlayerPersisted.MirrorWorldEntryPoint` retains the chamber entry. `witchery:reflection` saves its pose, equipment, health, and identity. The encounter waits for saved entities to load before checking whether the room has a Reflection.
 - Inhabited exterior Mirrors keep `Favorite`, `Fairest`, `PlayersSeen`, and `LastFairestSpawnTime` for conversations. `witchery:mirrorface` retains its age in `WITCTicksAlive`. The `newFairestOfThemAllSpawnChance` server setting controls the original 1% chance after the two-minute cooldown.
+- Inhabited exterior Mirrors use a Taglock Kit to apply creature form 4 for 4,000 power. `LastPlayerSkin` imports into `OtherPlayerSkin`. The `allowChatMasquerading` and `allowNameplateMasquerading` server settings control the display names. Quartz Spheres charge into named Duplicate Grenades for 2,000 power.
 - Torment uses `witchery:torment` as its maze generator and biome. The original `witchery:force`, `witchery:tormentstone`, `witchery:tormentportal`, and `witchery:refillingchest` IDs appear in six stacked mazes. Refilling Chest now uses a chest block entity and preserves `Items` and `WITCLifeTicks`. The old Torment build bounds and saves remain readable.
 - `witchery:lordoftorment` and `witchery:soulfire` retain their legacy IDs. The Lord preserves its attacker names under `WITCAttackers`. `PendingBossFloors` in `witchery_torment_maze` holds the queued second phase until the destination entities load. The Brew of Soul Torment uses ingredient damage 139 and writes `PlayerPersisted.WITCSpellBook.tormentum` on drinking.
 - `witchery:cat` is the familiar subtype of a vanilla cat. The cat, Owl and Toad carry the legacy `Familiar` flag. `FamiliarBinding` reads and writes `PlayerPersisted.WITCFamiliar`, including the original `UUIDMost`, `UUIDLeast`, `FamiliarType`, `FamiliarColor`, `FamiliarName` and `FamiliarSummoned` fields. Species IDs remain `1` for cat, `2` for Toad and `3` for Owl. Both familiar rites use the medium white circle. The calling rite recalled a loaded cat from Torment without changing its UUID. Dismissing an Owl drops any item it is carrying.

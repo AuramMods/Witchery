@@ -1,6 +1,7 @@
 {
    "parent" : "minecraft:item/generated",
    "textures" : {
-      "layer0" : "witchery:item/dupgrenade"
+      "layer0" : "witchery:item/ingredient.quartzsphere",
+      "layer1" : "witchery:item/dupgrenade"
    }
 }

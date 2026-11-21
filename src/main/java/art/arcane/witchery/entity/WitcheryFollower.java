@@ -20,6 +20,9 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -27,6 +30,7 @@ import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.FollowOwnerGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -140,6 +144,26 @@ public final class WitcheryFollower extends TamableAnimal {
         return level.noCollision(follower) && level.addFreshEntity(follower) ? follower : null;
     }
 
+    public static void spawnDuplicate(ServerLevel level, Vec3 position, String skin) {
+        WitcheryFollower follower = WitcheryEntities.FOLLOWER.get().create(level);
+        if (follower == null) return;
+        follower.entityData.set(TYPE, 5);
+        follower.entityData.set(SKIN, skin);
+        follower.setCustomName(Component.literal(skin.isEmpty() ? "Steve" : skin));
+        follower.lifetime = 200;
+        follower.setPersistenceRequired();
+        follower.moveTo(position.x, position.y, position.z, 0, 0);
+        ServerPlayer copied = level.getServer().getPlayerList().getPlayerByName(skin);
+        if (copied != null && copied.level() == level) {
+            follower.setLeftHanded(copied.getMainArm() == HumanoidArm.LEFT);
+            for (EquipmentSlot slot : EquipmentSlot.values()) {
+                follower.setItemSlot(slot, copied.getItemBySlot(slot).copy());
+                follower.setDropChance(slot, 0);
+            }
+        }
+        if (level.addFreshEntity(follower)) follower.attractAttention(level);
+    }
+
     public void bind(ServerPlayer owner) {
         tame(owner);
         setPersistenceRequired();
@@ -147,6 +171,10 @@ public final class WitcheryFollower extends TamableAnimal {
 
     public int followerType() {
         return entityData.get(TYPE);
+    }
+
+    public String playerSkin() {
+        return entityData.get(SKIN);
     }
 
     @Override
@@ -185,9 +213,20 @@ public final class WitcheryFollower extends TamableAnimal {
             discard();
             return;
         }
+        if (followerType() == 5 && tickCount % 40 == 5) attractAttention(world);
         if (followerType() != 0) return;
         if (lavaPool == null && tickCount % 10 == 1) lookForPool(world);
         if (lavaPool != null) approachPool(world);
+    }
+
+    private void attractAttention(ServerLevel level) {
+        if (playerSkin().isEmpty()) return;
+        ServerPlayer copied = level.getServer().getPlayerList().getPlayerByName(playerSkin());
+        if (copied == null || copied.level() != level) return;
+        for (Mob mob : level.getEntitiesOfClass(Mob.class, getBoundingBox().inflate(16, 8, 16),
+                candidate -> candidate instanceof Enemy && candidate.getTarget() == copied)) {
+            mob.setTarget(this);
+        }
     }
 
     private void lookForPool(ServerLevel world) {

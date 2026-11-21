@@ -52,7 +52,7 @@ import art.arcane.witchery.item.MysticBranchItem;
 import art.arcane.witchery.item.NecromanticStoneItem;
 import art.arcane.witchery.item.RitualChalkItem;
 import art.arcane.witchery.item.SeerStoneItem;
-import art.arcane.witchery.item.SunGrenadeItem;
+import art.arcane.witchery.item.GrenadeItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.MutatingSprigItem;
 import art.arcane.witchery.item.TormentContractItem;
@@ -245,7 +245,8 @@ public final class WitcheryItems {
             case "vampirelegs" -> new VampireClothingItem(VampireClothingItem.Style.TROUSERS);
             case "vampirelegs_kilt" -> new VampireClothingItem(VampireClothingItem.Style.KILT);
             case "vampireboots" -> new VampireClothingItem(VampireClothingItem.Style.BOOTS);
-            case "sungrenade" -> new SunGrenadeItem();
+            case "sungrenade" -> new GrenadeItem(false);
+            case "dupgrenade" -> new GrenadeItem(true);
             case "glassgoblet" -> new GlassGobletItem();
             case "bone_needle" -> new BoneNeedleItem();
             case "mirror" -> new MirrorItem();

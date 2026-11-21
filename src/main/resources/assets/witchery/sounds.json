@@ -1,4 +1,5 @@
 {
+  "random.poof": {"sounds": ["witchery:random/poof"]},
   "mob.reflection.speech": {
     "subtitle": "subtitles.witchery.mirror_face",
     "sounds": ["witchery:mob/reflection/speech"]

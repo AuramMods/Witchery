@@ -297,6 +297,10 @@ public final class WitcheryPlayerData {
         return otherPlayerSkin;
     }
 
+    public void setOtherPlayerSkin(String name) {
+        otherPlayerSkin = name;
+    }
+
     public int getPreparedSpellEffectId() {
         return preparedSpellEffectId;
     }
@@ -511,7 +515,8 @@ public final class WitcheryPlayerData {
         grotesqueTicks = tag.getInt(KEY_GROTESQUE_TICKS);
         nightmareLevel = tag.getInt(KEY_NIGHTMARE_LEVEL);
         ghost = tag.getBoolean(KEY_GHOST);
-        otherPlayerSkin = tag.getString(KEY_OTHER_PLAYER_SKIN);
+        otherPlayerSkin = tag.contains(KEY_OTHER_PLAYER_SKIN, Tag.TAG_STRING)
+                ? tag.getString(KEY_OTHER_PLAYER_SKIN) : bloodData.getString("LastPlayerSkin");
         preparedSpellEffectId = tag.getInt(KEY_PREPARED_SPELL_EFFECT_ID);
         preparedSpellLevel = tag.getInt(KEY_PREPARED_SPELL_LEVEL);
         lastItemUpdateSlot = tag.getInt(KEY_LAST_ITEM_UPDATE_SLOT);
