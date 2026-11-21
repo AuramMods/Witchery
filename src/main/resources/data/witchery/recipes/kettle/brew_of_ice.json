@@ -1,0 +1,15 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"item": "witchery:icy_needle"},
+    {"item": "minecraft:snowball"},
+    {"item": "witchery:globe_artichoke"},
+    {"item": "minecraft:glistering_melon_slice"},
+    {"item": "minecraft:red_mushroom"},
+    {"item": "witchery:odour_of_purity"}
+  ],
+  "result": {"item": "witchery:brew_of_ice", "count": 3},
+  "color": -13565953,
+  "power": 1000,
+  "bottling_bonus": 1
+}

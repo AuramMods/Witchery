@@ -9,6 +9,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
@@ -18,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.HashSet;
+import java.util.function.Predicate;
 
 final class BrewColdEffects {
     static final TagKey<EntityType<?>> SHELL_RESISTANT = TagKey.create(Registries.ENTITY_TYPE,
@@ -29,12 +31,17 @@ final class BrewColdEffects {
         Player actor = caster == null ? FakePlayerFactory.getMinecraft(level) : caster;
         if (!BrewTerrain.canEdit(actor, level, center, level.getBlockState(center))) return;
         int radius = 2 + 2 * strength;
+        freezeConnectedWater(level, center, actor, pos -> pos.distSqr(center) < radius * radius);
+    }
+
+    static void freezeConnectedWater(ServerLevel level, BlockPos center, @Nullable Entity actor,
+                                     Predicate<BlockPos> canSpreadFrom) {
         var queue = new ArrayDeque<BlockPos>();
         var visited = new HashSet<BlockPos>();
         queue.add(center);
         while (!queue.isEmpty()) {
             BlockPos current = queue.removeFirst();
-            if (current.distSqr(center) >= radius * radius) continue;
+            if (!canSpreadFrom.test(current)) continue;
             for (Direction direction : Direction.values()) {
                 BlockPos next = current.relative(direction);
                 if (visited.add(next) && level.getBlockState(next).is(Blocks.WATER)
@@ -86,8 +93,12 @@ final class BrewColdEffects {
     }
 
     static void wetResistantTarget(ServerLevel level, BlockPos pos, @Nullable Player caster) {
+        Entity actor = caster == null ? FakePlayerFactory.getMinecraft(level) : caster;
+        wetTarget(level, pos, actor);
+    }
+
+    static void wetTarget(ServerLevel level, BlockPos pos, @Nullable Entity actor) {
         if (!level.dimensionType().ultraWarm() && level.getBlockState(pos).canBeReplaced()) {
-            Player actor = caster == null ? FakePlayerFactory.getMinecraft(level) : caster;
             BrewTerrain.setBlock(actor, level, pos, Blocks.WATER.defaultBlockState(), Direction.UP);
         }
     }

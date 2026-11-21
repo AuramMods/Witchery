@@ -18,6 +18,8 @@ import art.arcane.witchery.block.DreamWeave;
 import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.brewing.BrewImpacts;
 import art.arcane.witchery.brewing.BrewCreatureEffects;
+import art.arcane.witchery.brewing.BrewErosion;
+import art.arcane.witchery.brewing.BrewIce;
 import art.arcane.witchery.brewing.BrewTerrain;
 import art.arcane.witchery.item.AnointingPasteItem;
 import art.arcane.witchery.item.BoundPoppetItem;
@@ -301,6 +303,8 @@ public final class WitcheryItems {
             case "brew_of_webs" -> new ThrowableBrewItem(BrewTerrain::webs);
             case "brew_of_thorns" -> new ThrowableBrewItem(BrewTerrain::thorns);
             case "brew_of_sprouting" -> new ThrowableBrewItem(BrewTerrain::sprouting);
+            case "brew_of_erosion" -> new ThrowableBrewItem(BrewErosion::impact);
+            case "brew_of_ice" -> new ThrowableBrewItem(BrewIce::impact);
             case "brew_of_love" -> new ThrowableBrewItem(BrewImpacts::splashLove);
             case "brew_of_revealing" -> new ThrowableBrewItem(BrewImpacts::splashRevealing);
             case "brew_of_raising" -> new ThrowableBrewItem(BrewImpacts::raiseDead);

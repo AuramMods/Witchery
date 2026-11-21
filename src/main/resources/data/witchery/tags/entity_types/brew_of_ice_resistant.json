@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:blaze",
+    "minecraft:ender_dragon",
+    "minecraft:iron_golem",
+    "minecraft:wither",
+    "witchery:demon",
+    "witchery:ent",
+    "witchery:hornedhuntsman"
+  ]
+}

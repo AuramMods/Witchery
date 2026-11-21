@@ -713,6 +713,14 @@
 - [x] Run Java 17 data generation, JAR reobfuscation and all 253 required Forge GameTests. The tests cover solo and mixed brews, the first bottling threshold, named legacy ingredient metadata, splash scaling, Ender Inhibition and the fixed Mutandis recipe.
 - [ ] Port the remaining brew actions and effects, including brew fluid containers, additional modifiers and castable cauldron rituals.
 
+## Brew of Erosion and Brew of Ice (2026-11-21)
+
+- [x] Restore the original six-ingredient Kettle recipes, three servings, Brew Mastery bottling bonus, and legacy metadata 62 and 76. Erosion needs no altar power. Ice waits for 1,000 power and debits the altar once per batch.
+- [x] Restore Erosion's layered carve, obsidian recovery, eight points of direct damage, and 100 durability loss to original iron, gold, and chainmail equipment. Active Toad Brew Mastery raises the direct damage to ten. Terrain edits respect Forge protections.
+- [x] Restore Ice's connected-water freeze, three-column shield and four-layer cage using ordinary Ice. A dry underside returns the bottle. The original resistant creatures receive water at their feet, and a directly hit creeper detonates subject to mob griefing.
+- [x] In the muted survival client, fill the heated Kettles and bottle three servings from each batch. Store both in the Brew Bag, restart the dedicated server, and cast both by gesture. Erosion carved stone, dropped obsidian and preserved a chest. Ice formed a shield on dry ground and froze three connected water cells on a separate hit, leaving the fourth liquid.
+- [x] Verify both terrain changes after a dedicated restart. Java 17 data generation, JAR reobfuscation and all 430 required Forge GameTests passed.
+
 ## Brew Bag (2026-11-21)
 
 - [x] Craft the Brew Bag from eight Impregnated Leather and Golden Thread. Change its color with one dye while retaining the name and contents. Restore the eight-slot menu through sneak-use, with storage for throwable fixed brews and splash Cauldron mixtures.
