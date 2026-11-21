@@ -10,10 +10,13 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.stats.Stats;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
@@ -28,6 +31,18 @@ public final class ThrownBrew extends ThrowableItemProjectile {
 
     public ThrownBrew(LivingEntity thrower, Level level) {
         super(WitcheryEntities.THROWN_BREW.get(), thrower, level);
+    }
+
+    public static boolean throwBottle(ServerLevel level, Player player, ItemStack stack, float speed) {
+        var brew = new ThrownBrew(player, level);
+        brew.setItem(stack);
+        brew.shootFromRotation(player, player.getXRot(), player.getYRot(), -20, speed, 1);
+        if (!level.addFreshEntity(brew)) return false;
+        level.playSound(null, player, SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 0.5F,
+                0.4F / (level.random.nextFloat() * 0.4F + 0.8F));
+        player.awardStat(Stats.ITEM_USED.get(stack.getItem()));
+        if (!player.getAbilities().instabuild) stack.shrink(1);
+        return true;
     }
 
     @Override

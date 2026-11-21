@@ -2,6 +2,7 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.menu.AltarMenu;
+import art.arcane.witchery.menu.BrewBagMenu;
 import art.arcane.witchery.menu.DistilleryMenu;
 import art.arcane.witchery.menu.LegacyPlaceholderMenu;
 import art.arcane.witchery.menu.SpinningWheelMenu;
@@ -32,6 +33,8 @@ public final class WitcheryMenus {
             () -> new MenuType<>(DistilleryMenu::new, FeatureFlags.DEFAULT_FLAGS));
     public static final RegistryObject<MenuType<LeonardsUrnMenu>> LEONARDS_URN = MENU_TYPES.register("leonards_urn",
             () -> IForgeMenuType.create(LeonardsUrnMenu::new));
+    public static final RegistryObject<MenuType<BrewBagMenu>> BREW_BAG = MENU_TYPES.register("brew_bag",
+            () -> IForgeMenuType.create(BrewBagMenu::new));
     public static final RegistryObject<MenuType<SpinningWheelMenu>> SPINNING_WHEEL = MENU_TYPES.register("spinning_wheel",
             () -> new MenuType<>(SpinningWheelMenu::new, FeatureFlags.DEFAULT_FLAGS));
 
@@ -100,6 +103,11 @@ public final class WitcheryMenus {
             return;
         }
 
+        if ("brew_bag".equals(path)) {
+            LEGACY_MENUS.put(path, BREW_BAG);
+            LEGACY_MENUS_BY_GUI_ID.put(menuIntent.legacyGuiId(), BREW_BAG);
+            return;
+        }
         if ("leonards_urn".equals(path)) {
             LEGACY_MENUS.put(path, LEONARDS_URN);
             LEGACY_MENUS_BY_GUI_ID.put(menuIntent.legacyGuiId(), LEONARDS_URN);

@@ -13,8 +13,6 @@ import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -40,6 +38,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class BrewBottleItem extends Item {
+    public static final float THROW_SPEED = 0.75F;
+
     public BrewBottleItem() {
         super(new Properties().stacksTo(8));
     }
@@ -111,15 +111,8 @@ public final class BrewBottleItem extends Item {
         if (mixture == null) return InteractionResultHolder.pass(stack);
         if (!mixture.splash()) return ItemUtils.startUsingInstantly(level, player, hand);
 
-        if (!level.isClientSide) {
-            ThrownBrew brew = new ThrownBrew(player, level);
-            brew.setItem(stack);
-            brew.shootFromRotation(player, player.getXRot(), player.getYRot(), -20, 0.75F, 1);
-            if (!level.addFreshEntity(brew)) return InteractionResultHolder.fail(stack);
-            level.playSound(null, player, SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 0.5F,
-                    0.4F / (level.random.nextFloat() * 0.4F + 0.8F));
-            player.awardStat(Stats.ITEM_USED.get(this));
-            if (!player.getAbilities().instabuild) stack.shrink(1);
+        if (level instanceof ServerLevel server && !ThrownBrew.throwBottle(server, player, stack, THROW_SPEED)) {
+            return InteractionResultHolder.fail(stack);
         }
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
     }

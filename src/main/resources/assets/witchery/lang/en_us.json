@@ -440,7 +440,7 @@
    "item.witchery.brew.water" : "Brew of Endless Water",
    "tooltip.witchery.brew.fuel" : "Burns for %s seconds",
    "tooltip.witchery.brew.water" : "Uses remaining %s of %s",
-   "item.witchery.brewbag" : "Brewbag",
+   "item.witchery.brewbag" : "Brew Bag",
    "item.witchery.brewbottle" : "Brew Bottle",
    "item.witchery.brewbottle.drink" : "Brew of %s",
    "item.witchery.brewbottle.splash" : "Splash Brew of %s",

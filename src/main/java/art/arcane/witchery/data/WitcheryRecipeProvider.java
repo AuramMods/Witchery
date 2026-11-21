@@ -186,6 +186,13 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_quartz", has(Items.QUARTZ))
                 .save(recipeOutput);
         Item impregnatedLeather = WitcheryIngredient.IMPREGNATED_LEATHER.item();
+        ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, WitcheryItems.getRequired("brewbag").get())
+                .define('L', impregnatedLeather)
+                .define('T', WitcheryIngredient.GOLDEN_THREAD.item())
+                .pattern("LLL").pattern("LTL").pattern("LLL")
+                .unlockedBy("has_golden_thread", has(WitcheryIngredient.GOLDEN_THREAD.item()))
+                .save(recipeOutput);
+        SpecialRecipeBuilder.special(WitcheryRecipes.DYE_BREW_BAG.get()).save(recipeOutput, "witchery:dye_brew_bag");
         Item goldenThread = WitcheryIngredient.GOLDEN_THREAD.item();
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, impregnatedLeather, 4)
                 .define('M', WitcheryIngredient.WHIFF_OF_MAGIC.item())

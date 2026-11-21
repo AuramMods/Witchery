@@ -4,10 +4,12 @@ import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.entity.BrewDroplet;
 import art.arcane.witchery.item.BrewFuelItem;
+import art.arcane.witchery.item.BrewBagItem;
 import art.arcane.witchery.item.CircleTalismanItem;
 import art.arcane.witchery.item.SpectralStoneItem;
 import art.arcane.witchery.item.PlayerCompassItem;
 import art.arcane.witchery.client.screen.AltarScreen;
+import art.arcane.witchery.client.screen.BrewBagScreen;
 import art.arcane.witchery.client.screen.DistilleryScreen;
 import art.arcane.witchery.client.screen.LegacyPlaceholderScreen;
 import art.arcane.witchery.client.screen.SpinningWheelScreen;
@@ -160,6 +162,7 @@ public final class WitcheryClient {
     public static void registerGuiOverlays(RegisterGuiOverlaysEvent event) {
         event.registerAboveAll("infusion_charge", ClientInfusion::render);
         event.registerAboveAll("vampire_blood", ClientVampirism::render);
+        event.registerAboveAll("brew_bag", BrewBagOverlay::render);
     }
 
     @SubscribeEvent
@@ -338,6 +341,7 @@ public final class WitcheryClient {
         event.enqueueWork(() -> {
             MenuScreens.register(WitcheryMenus.WITCHES_OVEN.get(), WitchesOvenScreen::new);
             MenuScreens.register(WitcheryMenus.ALTAR.get(), AltarScreen::new);
+            MenuScreens.register(WitcheryMenus.BREW_BAG.get(), BrewBagScreen::new);
             MenuScreens.register(WitcheryMenus.DISTILLERY.get(), DistilleryScreen::new);
             MenuScreens.register(WitcheryMenus.SPINNING_WHEEL.get(), SpinningWheelScreen::new);
             MenuScreens.register(WitcheryMenus.LEONARDS_URN.get(), LeonardsUrnScreen::new);
@@ -454,6 +458,7 @@ public final class WitcheryClient {
     @SubscribeEvent
     public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
         event.register((stack, tint) -> tint == 0 ? BrewBottleItem.color(stack) : -1, WitcheryItems.getRequired("brewbottle").get());
+        event.register((stack, tint) -> tint == 0 ? BrewBagItem.color(stack) : -1, WitcheryItems.getRequired("brewbag").get());
         event.register((stack, tint) -> tint == 0 ? BrewFuelItem.color(stack) : -1, WitcheryItems.getRequired("brew.fuel").get());
         event.register((stack, tint) -> tint == 0 ? 0x0000FF : -1, WitcheryItems.getRequired("brew.water").get());
         event.register((stack, tint) -> tint == 0 ? net.minecraft.world.level.GrassColor.get(0.5, 1) : -1,

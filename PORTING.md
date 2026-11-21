@@ -713,6 +713,16 @@
 - [x] Run Java 17 data generation, JAR reobfuscation and all 253 required Forge GameTests. The tests cover solo and mixed brews, the first bottling threshold, named legacy ingredient metadata, splash scaling, Ender Inhibition and the fixed Mutandis recipe.
 - [ ] Port the remaining brew actions and effects, including brew fluid containers, additional modifiers and castable cauldron rituals.
 
+## Brew Bag (2026-11-21)
+
+- [x] Craft the Brew Bag from eight Impregnated Leather and Golden Thread. Change its color with one dye while retaining the name and contents. Restore the eight-slot menu through sneak-use, with storage for throwable fixed brews and splash Cauldron mixtures.
+- [x] Preserve the bag's original color, inventory slots, and plain-text names in legacy named-item saves. Lock the open bag's held slot and save inserts, merges, and withdrawals to the same item.
+- [x] Show the eight-direction selector while holding use. Match the legacy pitch and yaw thresholds. Releasing throws the selected brew and consumes one serving. Sneaking cancels a prepared throw, and Creative keeps the serving.
+- [x] In muted survival, craft and dye the bag, shift-click two Brews of Ink into it, and place a Cauldron poison in the third slot. Verify that a vanilla splash potion stays in the player's inventory.
+- [x] Restart the dedicated server. Use an up gesture to blind a husk and a right gesture to poison a pig. Verify that each throw spends one serving from its selected slot and that the remaining Ink can be shift-clicked back into the player inventory.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 424 required Forge GameTests. The new cases cover crafting and dyeing, legacy names and contents, slot locking, all eight gestures, both launch paths, and cancellation.
+- [ ] Verify storage and casting for the remaining legacy throwable brews as their items and effects are ported.
+
 ## Gaseous and Liquid Brews (2026-11-20)
 
 - [x] Restore Bat Wool and Wormwood dispersal, replacement of the previous dispersal ingredient, and lifetime modifiers. Pressing the bottle's use control releases the mixture at impact. The saved block entities carry the original effect list, color, lifetime, expansion and thrower.

@@ -1,9 +1,7 @@
 package art.arcane.witchery.item;
 
 import art.arcane.witchery.entity.ThrownBrew;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.stats.Stats;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
@@ -15,6 +13,8 @@ import net.minecraft.world.phys.HitResult;
 import java.util.function.BiConsumer;
 
 public final class ThrowableBrewItem extends Item {
+    public static final float THROW_SPEED = 0.5F;
+
     private final BiConsumer<ThrownBrew, HitResult> effect;
 
     public ThrowableBrewItem(BiConsumer<ThrownBrew, HitResult> effect) {
@@ -25,17 +25,8 @@ public final class ThrowableBrewItem extends Item {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        level.playSound(null, player, SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS,
-                0.5F, 0.4F / (level.random.nextFloat() * 0.4F + 0.8F));
-        if (!level.isClientSide) {
-            ThrownBrew brew = new ThrownBrew(player, level);
-            brew.setItem(stack);
-            brew.shootFromRotation(player, player.getXRot(), player.getYRot(), -20.0F, 0.5F, 1.0F);
-            level.addFreshEntity(brew);
-        }
-        player.awardStat(Stats.ITEM_USED.get(this));
-        if (!player.getAbilities().instabuild) {
-            stack.shrink(1);
+        if (level instanceof ServerLevel server && !ThrownBrew.throwBottle(server, player, stack, THROW_SPEED)) {
+            return InteractionResultHolder.fail(stack);
         }
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
     }

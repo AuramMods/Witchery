@@ -3,8 +3,6 @@ package art.arcane.witchery.item;
 import art.arcane.witchery.brewing.BrewMixture;
 import art.arcane.witchery.menu.LeonardsUrnMenu;
 import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -38,27 +36,11 @@ public final class LeonardsUrnItem extends Item {
     }
 
     public static NonNullList<ItemStack> contents(ItemStack stack) {
-        var contents = NonNullList.withSize(tier(stack) + 1, ItemStack.EMPTY);
-        var inventory = stack.getTagElement("Inventory");
-        if (inventory == null) return contents;
-        for (Tag entry : inventory.getList("Items", Tag.TAG_COMPOUND)) {
-            CompoundTag item = (CompoundTag) entry;
-            int slot = item.getByte("Slot") & 255;
-            if (slot < contents.size()) contents.set(slot, WitcheryIngredient.loadInventoryStack(item));
-        }
-        return contents;
+        return ItemInventory.load(stack, tier(stack) + 1);
     }
 
     public static void saveContents(ItemStack urn, List<ItemStack> contents) {
-        var items = new ListTag();
-        for (int slot = 0; slot < contents.size(); slot++) {
-            if (contents.get(slot).isEmpty()) continue;
-            var entry = new CompoundTag();
-            entry.putByte("Slot", (byte) slot);
-            contents.get(slot).save(entry);
-            items.add(entry);
-        }
-        urn.getOrCreateTagElement("Inventory").put("Items", items);
+        ItemInventory.save(urn, contents);
     }
 
     public static BrewMixture splash(ItemStack stack) {

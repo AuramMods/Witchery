@@ -1176,6 +1176,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 
 - `WitcheryBrewRegistry.INSTANCE` has `158` `register(...)` entries.
 - `witchery:brewbottle` uses an ordered `Items` list for drinkable and instant splash effects. Ingredient stacks inside `Items` support the named legacy `witchery:ingredient` plus `Damage` format. The `Splash` flag can be derived from known dispersal ingredients when absent. Native numeric 1.7.10 item IDs still require the save conversion workflow.
+- `witchery:brewbag` preserves `WITCColor` and eight numbered slots in `Inventory.Items`. Sneak-use opens `witchery:brew_bag`. Normal use shows the eight-direction selector. The server derives selection from player rotation and throws the matching brew on release. The menu and dye recipe use protocol 75.
 - `PotionBottling` retains the original player-data key. Successful bottling can grant skill according to the batch's used capacity. The Seer Stone reports it. Successful withdrawal charges the closest altar once per portion.
 - Bat Wool and Wormwood select gas or liquid dispersal. Both original block entity IDs resolve to brew fluid cells and can read legacy effect, tint, duration, expansion and thrower data. Current saves also retain their age.
 - Zombie Head selects triggered dispersal. The original stone and oak buttons, lever, oak, stone and snow plates, and oak door have cursed counterparts with the original block entity IDs. Cursed controls persist the ordered mixture, tint, charge count, duration, expansion and thrower. Named `minecraft:skull` metadata 2 decodes to the Zombie Head ingredient.
@@ -1319,7 +1320,7 @@ Implementation anchors:
 Current scaffold behavior:
 - menu metadata now tracks both legacy GUI ID and normalized menu key (`LegacyMenuIntent`).
 - every legacy GUI entry (`0..8`) registers a dedicated menu type keyed to its legacy menu name.
-- GUI ID 2 opens `WitchesOvenMenu` with five slots and synchronized burn and cook progress. Client setup binds `WitchesOvenScreen` for this menu and uses `LegacyPlaceholderScreen` for the other eight.
+- The altar, oven, distillery, spinning wheel, Brew Bag, and Leonard's Urn have working Forge menus and screens. Guide volumes open the guide screen from the held item through the guide book packet.
 
 ID mapping used by scaffold:
 | Legacy GUI ID | Key | Menu Type ID |
@@ -1329,14 +1330,10 @@ ID mapping used by scaffold:
 | 2 | `witches_oven` | `witchery:witches_oven` |
 | 3 | `distillery` | `witchery:distillery` |
 | 4 | `spinning_wheel` | `witchery:spinning_wheel` |
-| 5 | `brew_bag` | `witchery:brew_bag` |
+| 5 | `brew_bag` | `witchery:brew_bag` (eight slots backed by the held bag) |
 | 6 | `biome_book` | `witchery:biome_book` |
 | 7 | `markup_book` | `witchery:markup_book` |
 | 8 | `leonards_urn` | `witchery:leonards_urn` (original layout backed by item inventory) |
-
-Status:
-- The oven has a live menu and screen implementation. Graphical client validation is pending.
-- The other eight menus still need container and screen behavior.
 
 ## Dimensions
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/Witchery.java`

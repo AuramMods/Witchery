@@ -23,6 +23,7 @@ import art.arcane.witchery.item.AnointingPasteItem;
 import art.arcane.witchery.item.BoundPoppetItem;
 import art.arcane.witchery.item.ArthanaItem;
 import art.arcane.witchery.item.BolineItem;
+import art.arcane.witchery.item.BrewBagItem;
 import art.arcane.witchery.item.BrewBottleItem;
 import art.arcane.witchery.item.DoorKeyItem;
 import art.arcane.witchery.item.BroomItem;
@@ -361,6 +362,7 @@ public final class WitcheryItems {
             case "chalice", "candelabra" -> createBlockItem(path);
             case "mutandis", "mutandis_extremis" -> new MutandisItem(new Item.Properties(), path.equals("mutandis_extremis"));
             case "boline" -> new BolineItem();
+            case "brewbag" -> new BrewBagItem();
             case "circletalisman" -> new CircleTalismanItem();
             case "chalkritual" -> new RitualChalkItem("circleglyphritual");
             case "chalkotherwhere" -> new RitualChalkItem("circleglyphotherwhere");
