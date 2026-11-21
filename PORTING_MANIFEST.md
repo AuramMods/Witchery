@@ -813,7 +813,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 104 | `OWL` | `EntityOwl` | `owl` (Mutating Sprig, taming, feathers, Waystone delivery, Infernal power 24) |
 | 105 | `TOAD` | `EntityToad` | `toad` (Mutating Sprig, taming, amphibious behavior, Infernal power 25) |
 | 106 | `CAT_FAMILIAR` | `EntityWitchCat` | `cat` |
-| 107 | `LOUSE` | `EntityParasyticLouse` | `louse` |
+| 107 | `LOUSE` | `EntityParasyticLouse` | `louse` (original arthropod model and mutation, saved `BitePotionEffect`) |
 | 108 | `EYE` | `EntityEye` | `eye` |
 | 109 | `BABA_YAGA` | `EntityBabaYaga` | `babayaga` |
 | 110 | `COVEN_WITCH` | `EntityCovenWitch` | `covenwitch` (spawn, appearance, recruitment, quests and membership restored) |

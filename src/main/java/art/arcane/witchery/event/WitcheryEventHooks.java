@@ -30,6 +30,7 @@ import art.arcane.witchery.item.VampiricPoppetItem;
 import art.arcane.witchery.item.GlassGobletItem;
 import art.arcane.witchery.item.HunterClothingItem;
 import art.arcane.witchery.item.HuntsmanSpearItem;
+import art.arcane.witchery.item.ParasyticLouseItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.item.WolfsbaneFlowerItem;
 import art.arcane.witchery.lycanthropy.Lycanthropy;
@@ -472,6 +473,10 @@ public final class WitcheryEventHooks {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void protectFromLethalDamage(LivingDamageEvent event) {
+        if (event.getAmount() > 0 && event.getEntity() instanceof ServerPlayer player
+                && ParasyticLouseItem.spendCarriedPotion(player, event.getSource())) {
+            event.setAmount(event.getAmount() + 1);
+        }
         if (VampireMortality.preventLethalDamage(event.getEntity(), event.getSource(), event.getAmount())) {
             event.setCanceled(true);
             return;

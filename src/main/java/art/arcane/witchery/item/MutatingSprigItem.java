@@ -77,6 +77,7 @@ public final class MutatingSprigItem extends Item {
         boolean cobweb = water && clicked.is(Blocks.COBWEB);
         boolean snares = cobweb && sides(level, pos, WitcheryBlocks.getRequired("witchsapling").get(), true);
         CreatureMutation mutation = cobweb && !snares ? findCreatureMutation(level, pos) : null;
+        LouseMutation louse = findLouseMutation(level, pos, clicked);
         if (level instanceof ServerLevel server) {
             if (surface) {
                 Block changed = clicked.is(Blocks.GRASS_BLOCK) ? Blocks.MYCELIUM : Blocks.GRASS_BLOCK;
@@ -107,6 +108,8 @@ public final class MutatingSprigItem extends Item {
                 replaceAround(server, pos, WitcheryBlocks.getRequired("crittersnare").get());
             } else if (mutation != null) {
                 if (!mutation.apply(server, pos)) return InteractionResult.PASS;
+            } else if (louse != null) {
+                if (!louse.apply(server, pos)) return InteractionResult.PASS;
             } else {
                 return InteractionResult.PASS;
             }
@@ -116,7 +119,7 @@ public final class MutatingSprigItem extends Item {
             server.playSound(null, pos, SoundEvents.SLIME_SQUISH, SoundSource.BLOCKS, 1, 1);
             return InteractionResult.CONSUME;
         }
-        return surface || clay || plant != null || wormwood || grasspers || leech || roses || snares || mutation != null
+        return surface || clay || plant != null || wormwood || grasspers || leech || roses || snares || mutation != null || louse != null
                 ? InteractionResult.SUCCESS : InteractionResult.PASS;
     }
 
@@ -194,6 +197,37 @@ public final class MutatingSprigItem extends Item {
             }
         }
         return offerings;
+    }
+
+    @Nullable
+    private static LouseMutation findLouseMutation(Level level, BlockPos center, BlockState clicked) {
+        if (!(clicked.getBlock() instanceof CritterSnareBlock)
+                || clicked.getValue(CritterSnareBlock.CRITTER) != CritterSnareBlock.Critter.SILVERFISH
+                || clicked.getValue(CritterSnareBlock.STOCKED)) return null;
+        var vines = Direction.Plane.HORIZONTAL.stream().map(center::relative)
+                .filter(pos -> level.getBlockState(pos).is(Blocks.VINE)).toList();
+        if (vines.size() < 2 || Direction.Plane.HORIZONTAL.stream().map(center.below()::relative)
+                .noneMatch(pos -> sourceWater(level, pos))) return null;
+        var offerings = diagonalGrasspers(level, center);
+        long mutandis = offerings.stream().filter(grassper -> WitcheryIngredient.MUTANDIS.matches(grassper.getItem(0))).count();
+        long tongues = offerings.stream().filter(grassper -> WitcheryIngredient.DOG_TONGUE.matches(grassper.getItem(0))).count();
+        long stones = offerings.stream().filter(grassper -> WitcheryIngredient.CHARGED_ATTUNED_STONE.matches(grassper.getItem(0))).count();
+        return mutandis == 2 && tongues == 1 && stones == 1 ? new LouseMutation(vines, offerings) : null;
+    }
+
+    private record LouseMutation(List<BlockPos> vines, List<GrassperBlockEntity> offerings) {
+        boolean apply(ServerLevel level, BlockPos center) {
+            var louse = WitcheryEntities.LOUSE.get().create(level);
+            if (louse == null) return false;
+            louse.moveTo(center.getX() + 0.5, center.getY() + 0.001, center.getZ() + 0.5, 1, 0);
+            louse.setPersistenceRequired();
+            ForgeEventFactory.onFinalizeSpawn(louse, level, level.getCurrentDifficultyAt(center), MobSpawnType.EVENT, null, null);
+            if (!level.addFreshEntity(louse)) return false;
+            level.removeBlock(center, false);
+            for (BlockPos vine : vines) level.removeBlock(vine, false);
+            for (GrassperBlockEntity offering : offerings) offering.removeItem(0, 1);
+            return true;
+        }
     }
 
     @Nullable

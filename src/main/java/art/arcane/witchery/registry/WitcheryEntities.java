@@ -27,6 +27,7 @@ import art.arcane.witchery.entity.WitcheryFollower;
 import art.arcane.witchery.entity.Mandrake;
 import art.arcane.witchery.entity.MirrorFace;
 import art.arcane.witchery.entity.Nightmare;
+import art.arcane.witchery.entity.ParasyticLouse;
 import art.arcane.witchery.entity.Reflection;
 import art.arcane.witchery.entity.ScryEye;
 import art.arcane.witchery.entity.SleepingBody;
@@ -71,6 +72,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<Mandrake>> MANDRAKE =
             ENTITY_TYPES.register("mandrake", () -> EntityType.Builder.of(Mandrake::new, MobCategory.MONSTER)
                     .sized(0.6F, 0.9F).build(Witchery.MODID + ":mandrake"));
+    public static final RegistryObject<EntityType<ParasyticLouse>> LOUSE =
+            ENTITY_TYPES.register("louse", () -> EntityType.Builder.of(ParasyticLouse::new, MobCategory.MONSTER)
+                    .sized(0.3F, 0.7F).build(Witchery.MODID + ":louse"));
     public static final RegistryObject<EntityType<SleepingBody>> SLEEPING_BODY =
             ENTITY_TYPES.register("corpse", () -> EntityType.Builder.of(SleepingBody::new, MobCategory.MISC)
                     .sized(1.2F, 0.5F).clientTrackingRange(8).build(Witchery.MODID + ":corpse"));
@@ -241,6 +245,7 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("follower", FOLLOWER);
         LEGACY_ENTITIES.put("imp", IMP);
         LEGACY_ENTITIES.put("darkmark", DARK_MARK);
+        LEGACY_ENTITIES.put("louse", LOUSE);
         for (String legacyName : LegacyRegistryData.ENTITIES) {
             registerLegacyEntity(legacyName);
         }
@@ -294,6 +299,7 @@ public final class WitcheryEntities {
     private static void registerEntityAttributes(EntityAttributeCreationEvent event) {
         for (RegistryObject<? extends EntityType<? extends Mob>> entry : LEGACY_ENTITIES.values()) {
             var attributes = entry == MANDRAKE ? Mandrake.attributes()
+                    : entry == LOUSE ? ParasyticLouse.attributes()
                     : entry == LEONARD ? Leonard.attributes()
                     : entry == LOST_SOUL ? LostSoul.attributes()
                     : entry == ILLUSION_CREEPER || entry == ILLUSION_SPIDER || entry == ILLUSION_ZOMBIE ? Illusion.attributes()

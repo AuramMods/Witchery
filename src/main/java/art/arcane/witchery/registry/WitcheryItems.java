@@ -12,6 +12,7 @@ import art.arcane.witchery.item.SpectralStoneItem;
 import art.arcane.witchery.item.BrewFuelItem;
 import art.arcane.witchery.item.EndlessWaterBrewItem;
 import art.arcane.witchery.item.PlayerCompassItem;
+import art.arcane.witchery.item.ParasyticLouseItem;
 import art.arcane.witchery.item.QuicklimeItem;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.BrambleBlock;
@@ -218,6 +219,7 @@ public final class WitcheryItems {
             case "buckethollowtears" -> new BucketItem(WitcheryFluids.getRequiredSource("hollowtears"), bucketProperties);
             case "bucketbrew" -> new BucketItem(WitcheryFluids.getRequiredSource("brew"), bucketProperties);
             case "brewbottle" -> new BrewBottleItem();
+            case "louse" -> new ParasyticLouseItem();
             case "rowanwooddoor", "alderwooddoor" -> createBlockItem(path);
             case "door_key", "door_keyring" -> new DoorKeyItem();
             case "anointing_paste" -> new AnointingPasteItem(new Item.Properties());

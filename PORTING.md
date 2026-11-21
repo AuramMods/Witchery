@@ -262,7 +262,7 @@
 - [x] Restore bat, silverfish, tiny slime and tiny magma cube capture and sneak-release. Captured state and the bat shop stock flag carry through block item drops and legacy metadata. The packaged server captured a moving bat and kept its stocked state.
 - [x] Save a live Mystic Branch rite after the first Grassper offering. The packaged restart emptied the second Grassper and completed the rite. A separate Grassper still held one ingot and emitted comparator output 15. The client released the bat from the restored snare, and the bat kept its shop stock flag.
 - [x] Pass all 84 required Forge GameTests and package the reobfuscated JAR on Java 17.
-- [ ] Restore the remaining Sprig mutations, including Leech Chest, Blood Roses, Parasytic Louse and Winged Monkey.
+- [ ] Restore the remaining Sprig mutations, including Mindrake and Winged Monkey.
 
 ## Owl and Toad (2026-11-20)
 
@@ -417,6 +417,16 @@
 - [x] Re-place the harvested chest with its sample and join it to a second chest. The muted client opened the combined six-row menu.
 - [x] Restore the Blood Rose mutation, the original empty and full textures, and the legacy Boline recipe. The muted player crafted the Boline using iron, bone and emerald. GameTests verified the original red flower variants, replacement of older samples, and replantable cuttings.
 - [x] Verify the Blood Rose across restart. The muted client mutated its empty Leech Chest into four roses. A second player walked through one, which displayed its full texture and kept their sample after restart. The first player collected the sample and drained the rose. It cut the rose with the crafted Boline without wear, and the second player replanted it empty. The rose also allowed the first player to collect its own sample. Data generation, JAR reobfuscation, and all 133 required Forge GameTests passed.
+
+## Parasytic Louse (2026-11-21)
+
+- [x] Mutate a captured silverfish with at least two cardinal vines, one cardinal water source below, and four diagonal Grasspers holding two Mutandis, a Tongue of Dog, and a Charged Attuned Stone. Spend one Sprig durability. A rejected spawn keeps the offerings.
+- [x] Restore the four-health arthropod, original segmented model and texture, and its silverfish sounds. Right-click captures it as one uncharged item. Use the item to release the louse again.
+- [x] Charge the louse in the crafting grid with one of the original potion forms. Restore the stored effect tooltip, legacy potion metadata, and the entity's `BitePotionEffect` save field. A released louse delivers its potion on the first bite.
+- [x] Restore carried louse retaliation and Regeneration. An incoming entity hit spends one charge and adds one health point of damage.
+- [x] In the muted survival client, catch a moving silverfish, mutate it, capture the rendered louse, and charge it with long Poison in the crafting grid. After a dedicated restart, the stored charge poisons an attacking pillager. Recharge and release the louse, then verify that its pursuit ends in a single poisoned bite.
+- [x] Verify the released louse's saved four health and spent charge. Java 17 data generation, JAR reobfuscation, and all 447 required Forge GameTests passed.
+- [ ] Restore the Biting Belt that uses a louse in its recipe.
 
 ## Coffin (2026-11-20)
 

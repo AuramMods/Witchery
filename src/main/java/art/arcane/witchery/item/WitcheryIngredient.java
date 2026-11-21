@@ -4,6 +4,7 @@ import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.BrambleBlock;
+import art.arcane.witchery.brewing.LousePotion;
 
 import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.nbt.CompoundTag;
@@ -200,6 +201,10 @@ public enum WitcheryIngredient {
             return PotionUtils.setPotion(stack, Potions.NIGHT_VISION);
         }
         if (stackTag.contains("Damage", Tag.TAG_ANY_NUMERIC)) {
+            if (stack.getItem() instanceof ParasyticLouseItem
+                    && (!stack.hasTag() || !stack.getTag().contains(LousePotion.TAG, Tag.TAG_ANY_NUMERIC))) {
+                LousePotion.set(stack, stackTag.getInt("Damage"));
+            }
             if (stack.getItem() instanceof SpectralStoneItem && SpectralStoneItem.typeId(stack) == 0) {
                 SpectralStoneItem.applyLegacyContents(stack, stackTag.getInt("Damage"));
             }
