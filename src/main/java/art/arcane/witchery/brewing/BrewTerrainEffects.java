@@ -12,6 +12,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.storage.ServerLevelData;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.event.level.BlockEvent;
@@ -19,6 +20,21 @@ import org.jetbrains.annotations.Nullable;
 
 final class BrewTerrainEffects {
     private BrewTerrainEffects() {}
+
+    static void summonRain(ServerLevel level, int strength) {
+        if (!(level.getLevelData() instanceof ServerLevelData weather)) return;
+        int duration = (300 + level.random.nextInt(600)) * 20;
+        if (!weather.isRaining()) {
+            weather.setClearWeatherTime(0);
+            weather.setRainTime(duration);
+            weather.setRaining(true);
+        }
+        if (strength > 0 && !weather.isThundering()) {
+            weather.setClearWeatherTime(0);
+            weather.setThunderTime(duration);
+            weather.setThundering(true);
+        }
+    }
 
     static void extinguish(ServerLevel level, BlockPos center, int radius, boolean ritual, int strength,
                            @Nullable Player caster) {

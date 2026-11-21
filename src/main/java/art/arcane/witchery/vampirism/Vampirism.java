@@ -110,6 +110,15 @@ public final class Vampirism {
         }).orElse(false);
     }
 
+    public static void drainBloodPower(ServerPlayer player, int amount) {
+        if (player.getAbilities().instabuild) return;
+        WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
+            if (data.getVampireLevel() == 0 || data.getBloodPower() == 0) return;
+            data.setBloodPower(data.getBloodPower() - amount);
+            sync(player, data);
+        });
+    }
+
     public static boolean drinkCaneReserve(ServerPlayer player) {
         return WitcheryPlayerDataProvider.get(player).map(data -> {
             int reserve = data.getBloodReserve();

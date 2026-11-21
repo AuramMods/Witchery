@@ -2,6 +2,7 @@ package art.arcane.witchery.entity;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.infusion.InfusedBrews;
+import art.arcane.witchery.lycanthropy.Lycanthropy;
 import art.arcane.witchery.vampirism.Vampirism;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -21,10 +22,14 @@ public final class CreatureAlignment {
         return entity.getType().is(DEMONIC);
     }
 
-    static boolean undead(LivingEntity entity) {
+    public static boolean undead(LivingEntity entity) {
         if (entity.getMobType() == MobType.UNDEAD || Vampirism.isVampire(entity)) return true;
         if (!(entity instanceof ServerPlayer player)) return false;
         var brew = InfusedBrews.status(player);
         return brew.type() == InfusedBrews.GRAVE && brew.remainingTicks() > 0;
+    }
+
+    public static boolean werewolf(LivingEntity entity) {
+        return Lycanthropy.isShifted(entity) || entity instanceof Reflection copy && copy.hasWolfmanModel();
     }
 }

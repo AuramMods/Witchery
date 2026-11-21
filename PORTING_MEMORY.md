@@ -295,6 +295,16 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - The seven-case Snow rerun passed with a Desert fixture. The trail respected the temperature threshold and the terrain impact still covered the block.
 - All 536 required GameTests passed in the full regression run. The Brew Registry manifest lists the remaining cauldron actions by behavior.
 
+### Creature-Targeted Cauldron Brews (2026-11-21)
+
+- Pumpkin and Blue Orchid add Harm Undead and Harm Insects. They use the legacy ten-point species damage, three-point fallback, and strength ceiling of amplifier one or three with Tropical Fish. The undead action checks the mob's original undead classification and includes vampire and Grave players. A vampire Reflection takes fallback damage. Legacy Red Flower metadata 1 resolves to Blue Orchid.
+- Silver Dust keeps the original shifted-player, Wolfman, and Wolfman Reflection checks. `witchery:silver_brew` applies the existing silver vulnerability and respects armor. The damage actions still reach creatures wearing Gas Mask. Harmful potion effects from gas use the mask's normal protection.
+- Garlic applies 90 seconds of base Weakness to vampires and drains 50 blood plus 20 per strength boost from a vampire player. Distance scales the duration. The blood drain uses the full strength of any successful application, clamps at zero, and preserves creative blood.
+- Silver Dust sets a 6,000 to 17,980 tick interval for newly started rain and, at higher strength, thunder during a block-targeted ritual. Existing weather retains its timer. Nether Brick suppresses the ritual's block action.
+- Java 17 data generation, JAR reobfuscation, and all 18 focused GameTests passed on the final revision. Packaged SHA-256 is `baa31a40b6bd693e41a217321d85082570a71b62d49a517a091b3ceef4530324`. The isolated Xvfb client used master volume zero and OpenAL No Output.
+- The muted survival client brewed all four recipes. A direct splash left the zombie and spider at 30 health and the unarmored Wolfman at 31, from 40 each. The first Silver Dust ritual started 8,260 ticks of rain and the second added 16,360 ticks of thunder. Both timers survived the headless restart. The returning vampire test player drank the saved Garlic bottle, lost 90 of its 100 blood, and gained Weakness III.
+- All 543 required cases passed in the full regression run started before the final Reflection adjustment. The final focused run verified the original fallback damage on a vampire Reflection and the silver classification on a Wolfman Reflection.
+
 ### Cold and Ice Shell Cauldron Brews (2026-11-20)
 
 - Icy Needle contributes two effect levels and 200 power for Cold. Frozen Heart contributes five effect levels and 500 power for Ice Shell. Their original ingredient metadata resolves inside saved cauldrons and bottles. Both actions keep the brew's strength, duration, and hidden-particle modifiers.

@@ -6,6 +6,7 @@ import art.arcane.witchery.entity.WereVillager;
 import art.arcane.witchery.entity.WitcheryBolt;
 import art.arcane.witchery.entity.Wolfman;
 import art.arcane.witchery.network.WitcheryNetwork;
+import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcherySounds;
@@ -282,6 +283,7 @@ public final class Lycanthropy {
     }
 
     public static boolean isSilver(DamageSource source) {
+        if (source.is(WitcheryDamageTypes.SILVER_BREW)) return true;
         if (source.getDirectEntity() instanceof WitcheryBolt bolt) return bolt.kind() == WitcheryBolt.Kind.SILVER;
         return !source.is(DamageTypeTags.IS_PROJECTILE) && source.getEntity() instanceof LivingEntity living
                 && living.getMainHandItem().is(WitcheryItems.getRequired("silversword").get());

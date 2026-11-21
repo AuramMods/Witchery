@@ -892,6 +892,23 @@
 - [x] Verify the hot-biome threshold. In the Desert fixture, Snow Trail withheld snow and a block impact still placed it. All seven Snow tests passed in this rerun.
 - [x] Run Java 17 data generation, JAR reobfuscation, and the full 536-case regression suite. All 536 required GameTests passed.
 
+## Creature-Targeted Cauldron Brews (2026-11-21)
+
+| Ingredient | Brew | Base altar power | Capacity cost |
+| --- | --- | ---: | ---: |
+| Pumpkin | Harm Undead | 200 | 2 |
+| Blue Orchid | Harm Insects | 200 | 2 |
+| Silver Dust | Harm Werewolves | 1,000 | 4 |
+| Garlic | Weaken Vampires | 500 | 4 |
+
+- [x] Restore the original species checks, splash damage scaling, and individual strength limits. At base strength, Pumpkin and Blue Orchid deal ten damage to the intended creatures and three to others. Silver Dust deals three raw silver damage to shifted werewolves and one magic damage to other creatures. Silver retains armor reduction and the existing werewolf vulnerability. Legacy Red Flower metadata 1 loads as Blue Orchid.
+- [x] Drain 50 blood plus 20 per strength boost from a vampire player and apply 90 seconds of base Weakness to vampire targets. The duration follows the ordered modifiers and splash distance. Bricks still control which targets receive the brew.
+- [x] Use Silver Dust in a block-targeted Tongue of Dog ritual to start rain. A strength boost also starts thunder. Both timers use the original range of 300 to 899 seconds, and already active weather keeps its timer.
+- [x] Brew and bottle all four recipes with supplied ingredients in the muted survival client. Direct hits dealt ten damage each to a zombie and spider, and nine to an unarmored Wolfman with one strength boost.
+- [x] Cast both weather rituals on the packaged dedicated server. The first set rain for 8,260 ticks. The second set thunder for 16,360 ticks and kept the first timer. Both persisted through a restart. After reconnecting, the vampire fixture drank the saved Garlic brew, went from 100 blood to 10, and received Weakness III.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 18 focused GameTests on the final revision. The focused checks cover armor reduction, the original creature classifications, splash falloff, the Gas Mask distinction, and legacy ingredient migration.
+- [x] Pass all 543 regression cases on the milestone build before the final Reflection classification adjustment. The final focused run verified the adjustment with a vampire Reflection taking the three-point fallback.
+
 ## Brew of Erosion and Brew of Ice (2026-11-21)
 
 - [x] Restore the original six-ingredient Kettle recipes, three servings, Brew Mastery bottling bonus, and legacy metadata 62 and 76. Erosion needs no altar power. Ice waits for 1,000 power and debits the altar once per batch.
@@ -930,7 +947,7 @@
 ## Gaseous and Liquid Brews (2026-11-20)
 
 - [x] Restore Bat Wool and Wormwood dispersal, replacement of the previous dispersal ingredient, and lifetime modifiers. Pressing the bottle's use control releases the mixture at impact. The saved block entities carry the original effect list, color, lifetime, expansion and thrower.
-- [x] Restore gas spread and Gas Mask. Gas spreads in six directions and preserves its data in each new cell. Gravel brews Gas Mask, which survives milk and blocks harmful gas effects. The muted client brewed and threw a poisonous cloud. The server recorded Poison on the unmasked pig and only Gas Mask on the masked pig.
+- [x] Restore gas spread and Gas Mask. Gas spreads in six directions and preserves its data in each new cell. Gravel brews Gas Mask, which survives milk and blocks harmful potion effects from gas. The muted client brewed and threw a poisonous cloud. The server recorded Poison on the unmasked pig and only Gas Mask on the masked pig.
 - [x] Restore liquid flow and contact. The muted client threw a Liquid Brew of Wolfsbane onto a raised pig. The dyed liquid fell beside the support, reached the ground, and applied Wolfsbane to both the elevated and ground-level pigs. The source, falling stream, and runoff all returned to air.
 - [x] Save and restart during an active gas brew. Both the source cell and a neighboring cell retained the poison mixture, color, thrower and age, then continued aging.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 256 required Forge GameTests. The new tests check dispersal precedence, gas expansion and expiry, Gas Mask, and liquid flow and recession.

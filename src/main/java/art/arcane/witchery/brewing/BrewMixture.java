@@ -7,7 +7,9 @@ import art.arcane.witchery.entity.Leonard;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.BiomeNoteItem;
+import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryEffects;
+import art.arcane.witchery.vampirism.Vampirism;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -25,6 +27,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.monster.Blaze;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -55,7 +58,8 @@ public final class BrewMixture {
     }
 
     private enum Action {
-        EXTINGUISH, COLD, ICE_SHELL, HARM_DEMONS, REVEAL, MOVE_ANIMALS, CHANGING_SEASONS, ICE_WORLD, SNOW;
+        EXTINGUISH, COLD, ICE_SHELL, HARM_DEMONS, HARM_UNDEAD, HARM_INSECTS, HARM_WEREWOLVES,
+        WEAKEN_VAMPIRES, REVEAL, MOVE_ANIMALS, CHANGING_SEASONS, ICE_WORLD, SNOW;
 
         String nameKey(boolean inverted) {
             return switch (this) {
@@ -64,6 +68,10 @@ public final class BrewMixture {
                 case ICE_SHELL -> "brew.witchery.ice_shell";
                 case ICE_WORLD -> "brew.witchery.ice_world";
                 case HARM_DEMONS -> "brew.witchery.harm_demons";
+                case HARM_UNDEAD -> "brew.witchery.harm_undead";
+                case HARM_INSECTS -> "brew.witchery.harm_insects";
+                case HARM_WEREWOLVES -> "brew.witchery.harm_werewolves";
+                case WEAKEN_VAMPIRES -> "brew.witchery.weaken_vampires";
                 case REVEAL -> "brew.witchery.revealing";
                 case MOVE_ANIMALS -> inverted ? "brew.witchery.animal_repulsion" : "brew.witchery.animal_attraction";
                 case CHANGING_SEASONS -> "brew.witchery.changing_seasons";
@@ -199,6 +207,7 @@ public final class BrewMixture {
             case "minecraft:web" -> "minecraft:cobweb";
             case "minecraft:reeds" -> "minecraft:sugar_cane";
             case "minecraft:netherbrick" -> "minecraft:nether_brick";
+            case "minecraft:red_flower" -> metadata == 1 ? "minecraft:blue_orchid" : null;
             case "minecraft:golden_apple" -> metadata == 1 ? "minecraft:enchanted_golden_apple" : null;
             default -> null;
         };
@@ -306,6 +315,9 @@ public final class BrewMixture {
                 case ICE_WORLD -> IceWorldBrew.freeze(level, pos, radius, caster);
                 case CHANGING_SEASONS -> BrewTerrainEffects.changeSeasons(level, pos, application.biome, strength, ritual, caster);
                 case SNOW -> SnowTrailEffect.cover(level, pos, 2 + 2 * strength, caster);
+                case HARM_WEREWOLVES -> {
+                    if (ritual) BrewTerrainEffects.summonRain(level, strength);
+                }
                 default -> { }
             }
         }
@@ -350,7 +362,7 @@ public final class BrewMixture {
                 }
             } else if (effect instanceof ActionApplication application) {
                 int strength = Math.min(application.strength, strengthLimit);
-                applyAction(application, target, source, caster, strengthScale, durationScale, blocksHarmfulEffects, glancing, strength);
+                applyAction(application, target, source, caster, strengthScale, durationScale, glancing, strength);
             }
         }
     }
@@ -361,7 +373,7 @@ public final class BrewMixture {
 
     private static void applyAction(ActionApplication application, LivingEntity target, @Nullable Entity source,
                                     @Nullable LivingEntity caster, double strengthScale, double durationScale,
-                                    boolean blocksHarmfulEffects, boolean glancing, int strength) {
+                                    boolean glancing, int strength) {
         switch (application.action) {
             case EXTINGUISH -> {
                 if (strength <= 1 && target.level().dimensionType().ultraWarm()) return;
@@ -384,14 +396,32 @@ public final class BrewMixture {
                         false, application.showParticles, true), source);
                 if (shell && !glancing) BrewColdEffects.shell(level, target.blockPosition(), strength, player);
             }
-            case HARM_DEMONS -> {
-                if (blocksHarmfulEffects) return;
-                if (target instanceof Leonard leonard) {
+            case HARM_DEMONS, HARM_UNDEAD, HARM_INSECTS, HARM_WEREWOLVES -> {
+                if (application.action == Action.HARM_DEMONS && target instanceof Leonard leonard) {
                     leonard.harmedByIce(caster, Mth.ceil((10 << strength) * strengthScale));
                 } else {
-                    int damage = (CreatureAlignment.demonic(target) ? 10 : 3) << strength;
-                    target.hurt(target.damageSources().indirectMagic(source, caster), Mth.ceil(damage * strengthScale));
+                    boolean silver = application.action == Action.HARM_WEREWOLVES && CreatureAlignment.werewolf(target);
+                    int damage = switch (application.action) {
+                        case HARM_DEMONS -> CreatureAlignment.demonic(target) ? 10 : 3;
+                        case HARM_UNDEAD -> {
+                            boolean undead = target instanceof Player ? CreatureAlignment.undead(target)
+                                    : target.isInvertedHealAndHarm();
+                            yield undead ? 10 : 3;
+                        }
+                        case HARM_INSECTS -> target.getMobType() == MobType.ARTHROPOD ? 10 : 3;
+                        default -> silver ? 3 : 1;
+                    };
+                    Entity direct = application.action != Action.HARM_DEMONS && caster != null ? caster : source;
+                    var damageSource = silver ? WitcheryDamageTypes.silverBrew(target.level(), direct, caster)
+                            : target.damageSources().indirectMagic(direct, caster);
+                    target.hurt(damageSource, Mth.ceil((damage << strength) * strengthScale));
                 }
+            }
+            case WEAKEN_VAMPIRES -> {
+                if (!Vampirism.isVampire(target)) return;
+                if (target instanceof ServerPlayer player) Vampirism.drainBloodPower(player, 50 + 20 * strength);
+                int ticks = Mth.ceil(1800 * application.durationMultiplier * durationScale);
+                target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, ticks, strength), source);
             }
             case REVEAL -> BrewCreatureEffects.reveal(target);
             case MOVE_ANIMALS -> BrewCreatureEffects.moveAnimals(target, strength, application.inverted);
@@ -489,8 +519,11 @@ public final class BrewMixture {
             if (used + ingredient.amount > capacity) return;
             used += ingredient.amount;
             if (ingredient.action != null) {
-                int actionStrength = ingredient.action == Action.HARM_DEMONS
-                        ? Math.min(entityStrength.current, raisedEffectCeiling ? 3 : 1) : entityStrength.current;
+                int actionStrength = switch (ingredient.action) {
+                    case HARM_DEMONS, HARM_UNDEAD, HARM_INSECTS, HARM_WEREWOLVES ->
+                            Math.min(entityStrength.current, raisedEffectCeiling ? 3 : 1);
+                    default -> entityStrength.current;
+                };
                 var biome = ingredient.action == Action.CHANGING_SEASONS ? BiomeNoteItem.biomeId(stack) : null;
                 effects.add(new ActionApplication(ingredient.action, actionStrength, blockStrength.current, inverted,
                         duration + 1, !hideParticles, !noEntityTarget, !noBlockTarget, biome));
@@ -586,6 +619,10 @@ public final class BrewMixture {
         entries.put(ResourceLocation.parse("witchery:frozen_heart"), new Ingredient(500, null, 5, 10, 0, null, null, Action.ICE_SHELL));
         entries.put(ResourceLocation.withDefaultNamespace("ender_eye"), new Ingredient(2000, null, 5, 0, 0, null, null, Action.ICE_WORLD));
         entries.put(ResourceLocation.withDefaultNamespace("ice"), new Ingredient(500, null, 5, 3, 0, null, null, Action.HARM_DEMONS));
+        entries.put(ResourceLocation.withDefaultNamespace("pumpkin"), new Ingredient(200, null, 2, 3, 0, null, null, Action.HARM_UNDEAD));
+        entries.put(ResourceLocation.withDefaultNamespace("blue_orchid"), new Ingredient(200, null, 2, 3, 0, null, null, Action.HARM_INSECTS));
+        entries.put(ResourceLocation.parse("witchery:silver_dust"), new Ingredient(1000, null, 4, 3, 0, null, null, Action.HARM_WEREWOLVES));
+        entries.put(ResourceLocation.parse("witchery:garlic"), new Ingredient(500, null, 4, 10, 0, null, null, Action.WEAKEN_VAMPIRES));
         entries.put(ResourceLocation.fromNamespaceAndPath("witchery", "odour_of_purity"),
                 new Ingredient(100, null, 4, 0, 0, null, null, Action.REVEAL));
         entries.put(ResourceLocation.fromNamespaceAndPath("witchery", "heart_of_gold"),
