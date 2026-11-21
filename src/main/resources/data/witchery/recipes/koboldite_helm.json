@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["III", "IAI"],
+  "key": {
+    "I": {"item": "witchery:koboldite_ingot"},
+    "A": {"item": "witchery:charged_attuned_stone"}
+  },
+  "result": {"item": "witchery:kobolditehelm"}
+}

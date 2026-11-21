@@ -17,6 +17,7 @@ import art.arcane.witchery.entity.DreamSpirit;
 import art.arcane.witchery.entity.GrenadeProjectile;
 import art.arcane.witchery.entity.Hellhound;
 import art.arcane.witchery.entity.Hobgoblin;
+import art.arcane.witchery.entity.HobgoblinGod;
 import art.arcane.witchery.entity.HornedHuntsman;
 import art.arcane.witchery.entity.Imp;
 import art.arcane.witchery.entity.LegacyWaystoneEntity;
@@ -127,6 +128,8 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<Hobgoblin>> GOBLIN =
             ENTITY_TYPES.register("goblin", () -> EntityType.Builder.of(Hobgoblin::new, MobCategory.CREATURE)
                     .sized(0.6F, 0.95F).clientTrackingRange(4).build(Witchery.MODID + ":goblin"));
+    public static final RegistryObject<EntityType<HobgoblinGod>> MOG = goblinGod("goblinmog");
+    public static final RegistryObject<EntityType<HobgoblinGod>> GULG = goblinGod("goblingulg");
     public static final RegistryObject<EntityType<BabaYaga>> BABA_YAGA =
             ENTITY_TYPES.register("babayaga", () -> EntityType.Builder.of(BabaYaga::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.95F).clientTrackingRange(8).build(Witchery.MODID + ":babayaga"));
@@ -223,6 +226,8 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("toad", TOAD);
         LEGACY_ENTITIES.put("covenwitch", COVEN_WITCH);
         LEGACY_ENTITIES.put("goblin", GOBLIN);
+        LEGACY_ENTITIES.put("goblinmog", MOG);
+        LEGACY_ENTITIES.put("goblingulg", GULG);
         LEGACY_ENTITIES.put("babayaga", BABA_YAGA);
         LEGACY_ENTITIES.put("lilith", LILITH);
         LEGACY_ENTITIES.put("vampire", VAMPIRE);
@@ -266,6 +271,11 @@ public final class WitcheryEntities {
                 .sized(width, height).build(Witchery.MODID + ":" + path));
     }
 
+    private static RegistryObject<EntityType<HobgoblinGod>> goblinGod(String path) {
+        return ENTITY_TYPES.register(path, () -> EntityType.Builder.of(HobgoblinGod::new, MobCategory.MONSTER)
+                .sized(0.8F, 1.8F).fireImmune().clientTrackingRange(8).build(Witchery.MODID + ":" + path));
+    }
+
     private static void registerLegacyEntity(String legacyName) {
         String path = RegistryNameUtil.normalizePath(legacyName);
         if (LEGACY_ENTITIES.containsKey(path) || path.equals("soulfire") || path.equals("spelleffect") || path.equals("broom")
@@ -302,6 +312,8 @@ public final class WitcheryEntities {
                     : entry == LORD_OF_TORMENT ? LordOfTorment.attributes()
                     : entry == COVEN_WITCH ? CovenWitch.attributes()
                     : entry == GOBLIN ? Hobgoblin.attributes()
+                    : entry == MOG ? HobgoblinGod.attributes(true)
+                    : entry == GULG ? HobgoblinGod.attributes(false)
                     : entry == BABA_YAGA ? BabaYaga.attributes()
                     : entry == LILITH ? Lilith.attributes()
                     : entry == VAMPIRE ? Vampire.attributes()

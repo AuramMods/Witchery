@@ -833,8 +833,8 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 124 | `DARK_MARK` | `EntityDarkMark` | `darkmark` |
 | 125 | `MINDRAKE` | `EntityMindrake` | `mindrake` |
 | 126 | `GOBLIN` | `EntityGoblin` | `goblin` |
-| 127 | `GOBLIN_MOG` | `EntityGoblinMog` | `goblinmog` |
-| 128 | `GOBLIN_GULG` | `EntityGoblinGulg` | `goblingulg` |
+| 127 | `GOBLIN_MOG` | `EntityGoblinMog` | `goblinmog` (ranged patron boss, `Invul` and `WitcheryTarget` saved) |
+| 128 | `GOBLIN_GULG` | `EntityGoblinGulg` | `goblingulg` (melee patron boss, `Invul` and `WitcheryTarget` saved) |
 | 129 | `BREW2` | `EntityBrew` | `brew2` |
 | 130 | `ITEM_WAYSTONE` | `EntityItemWaystone` | `item` (legacy dropped Waystone, item subtype and age) |
 | 131 | `DROPLET` | `EntityDroplet` | `droplet` |

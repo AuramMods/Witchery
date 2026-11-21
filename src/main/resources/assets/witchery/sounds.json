@@ -6,6 +6,8 @@
   "mob.goblin.death": {"sounds": ["witchery:mob/goblin/death"]},
   "mob.goblin.yes": {"sounds": ["witchery:mob/goblin/yes1", "witchery:mob/goblin/yes2", "witchery:mob/goblin/yes3"]},
   "mob.goblin.no": {"sounds": ["witchery:mob/goblin/no1", "witchery:mob/goblin/no2", "witchery:mob/goblin/no3"]},
+  "mob.goblin.mog_idle": {"sounds": ["witchery:mob/goblin/mog_idle"]},
+  "mob.goblin.gulg_idle": {"sounds": ["witchery:mob/goblin/gulg_idle"]},
   "mob.reflection.speech": {
     "subtitle": "subtitles.witchery.mirror_face",
     "sounds": ["witchery:mob/reflection/speech"]

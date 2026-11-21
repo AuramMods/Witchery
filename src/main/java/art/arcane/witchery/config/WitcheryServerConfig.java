@@ -32,6 +32,8 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.BooleanValue GENERATE_SHACKS;
     public static final ForgeConfigSpec.BooleanValue GENERATE_HOBGOBLIN_HUTS;
     public static final ForgeConfigSpec.BooleanValue HOBGOBLIN_DESPAWN_BLOCK;
+    public static final ForgeConfigSpec.IntValue HOBGOBLIN_SPAWN_WEIGHT;
+    public static final ForgeConfigSpec.IntValue HOBGOBLIN_GOD_SPAWN_CHANCE;
     public static final ForgeConfigSpec.IntValue WORLD_GEN_FREQUENCY;
     public static final ForgeConfigSpec.BooleanValue WORLD_GEN_TWILIGHT_FOREST;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> STRAWMAN_SPAWNER_RULES;
@@ -94,6 +96,10 @@ public final class WitcheryServerConfig {
         GENERATE_HOBGOBLIN_HUTS = builder.comment("Generate hobgoblin huts in new chunks.")
                 .worldRestart().define("generateHobgoblinHuts", true);
         HOBGOBLIN_DESPAWN_BLOCK = builder.define("hobgoblinDespawnBlock", true);
+        HOBGOBLIN_SPAWN_WEIGHT = builder.comment("Wild hobgoblin spawn weight in forests and swamps. Plains use one less, with a minimum of one.")
+                .worldRestart().defineInRange("hobgoblinSpawnWeight", 4, 1, Integer.MAX_VALUE);
+        HOBGOBLIN_GOD_SPAWN_CHANCE = builder.comment("Chance out of 10,000 for a statue with fifteen worshippers to summon Mog and Gulg each pulse.")
+                .defineInRange("hobgoblinGodSpawnChance", 10, 0, 100);
         WORLD_GEN_FREQUENCY = builder
                 .comment("Witchery surface structures use regions this many chunks wide plus eight.")
                 .worldRestart().defineInRange("worldGenFrequency", 12, 1, 64);

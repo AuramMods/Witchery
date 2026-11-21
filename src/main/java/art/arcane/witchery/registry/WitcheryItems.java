@@ -4,6 +4,7 @@ import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.block.StatueOfWorshipBlock;
 import art.arcane.witchery.item.KobolditePentacleItem;
+import art.arcane.witchery.item.GoblinEquipmentItem;
 import art.arcane.witchery.entity.DreamSpirit;
 import art.arcane.witchery.item.SpiritOfferingItem;
 import art.arcane.witchery.item.SpectralStoneItem;
@@ -235,6 +236,9 @@ public final class WitcheryItems {
             case "hunterlegsgarlicked" -> new HunterClothingItem(Piece.LEGS, Upgrade.GARLICKED);
             case "hunterbootsgarlicked" -> new HunterClothingItem(Piece.BOOTS, Upgrade.GARLICKED);
             case "kobolditepickaxe" -> new PickaxeItem(Tiers.DIAMOND, 1, -2.8F, new Item.Properties()) {};
+            case "quiverofmog" -> new GoblinEquipmentItem(GoblinEquipmentItem.Piece.QUIVER);
+            case "gurdleofgulg" -> new GoblinEquipmentItem(GoblinEquipmentItem.Piece.GURDLE);
+            case "kobolditehelm" -> new GoblinEquipmentItem(GoblinEquipmentItem.Piece.HELM);
             case "koboldite_pentacle" -> new KobolditePentacleItem();
             case "silversword" -> new SwordItem(Tiers.GOLD, 4, -2.4F, new Item.Properties()) {
                 @Override

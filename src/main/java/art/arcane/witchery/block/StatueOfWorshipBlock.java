@@ -3,10 +3,19 @@ package art.arcane.witchery.block;
 import art.arcane.witchery.block.entity.StatueOfWorshipBlockEntity;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -25,6 +34,8 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
@@ -87,6 +98,25 @@ public final class StatueOfWorshipBlock extends BaseEntityBlock {
         if (!level.isClientSide && level.getBlockEntity(pos) instanceof StatueOfWorshipBlockEntity statue) {
             statue.loadItem(stack);
         }
+    }
+
+    @Override
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
+                                 InteractionHand hand, BlockHitResult hit) {
+        ItemStack held = player.getItemInHand(hand);
+        if (!held.is(Items.NETHER_STAR)) return InteractionResult.PASS;
+        if (level.isClientSide) return InteractionResult.SUCCESS;
+        if (!(level instanceof ServerLevel server) || !(player instanceof ServerPlayer patron)
+                || !(level.getBlockEntity(pos) instanceof StatueOfWorshipBlockEntity statue)) return InteractionResult.FAIL;
+        Vec3 center = Vec3.atCenterOf(pos);
+        if (statue.offerStar(server, patron, held)) {
+            server.sendParticles(ParticleTypes.FLAME, center.x, center.y, center.z, 16, 0.5, 0.5, 0.5, 0.02);
+            server.playSound(null, pos, SoundEvents.ENDER_DRAGON_GROWL, SoundSource.BLOCKS, 1, 1);
+            return InteractionResult.CONSUME;
+        }
+        server.sendParticles(ParticleTypes.SMOKE, center.x, center.y, center.z, 16, 0.5, 0.5, 0.5, 0.02);
+        server.playSound(null, pos, SoundEvents.NOTE_BLOCK_SNARE.value(), SoundSource.BLOCKS, 1, 1);
+        return InteractionResult.FAIL;
     }
 
     @Override

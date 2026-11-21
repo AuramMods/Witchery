@@ -562,7 +562,14 @@
 - [x] Verify the three thresholds in the muted survival client. Five worshippers recharged the fixture infusion from 10 to 40. The larger groups granted both Worship tiers. A nine-stroke Expelliarmus disarmed two husks, left the farther husk armed, and spent four charges.
 - [x] Mine the placed statue with an iron pickaxe after restart. The recovered item kept the patron name and UUID. The Pentacle's recharge multiplier also survived the restart.
 - [x] Pass Java 17 data generation, JAR reobfuscation, and all 357 required Forge GameTests. New cases cover restored patron data, a worshipper save, breeding, ranked disarm, and the pentacle's two functions.
-- [ ] Restore Mog and Gulg, their Nether Star summons and their chance to appear during high-tier worship. Restore the original Hobgoblin spawn configuration.
+
+## Mog and Gulg (2026-11-20)
+
+- [x] Restore both gods, their combat and their patron statue summons. Five worshippers allow a bound patron to spend a Nether Star, and fifteen allow the configurable automatic summon. The muted survival client placed its previously bound statue, summoned both bosses at 400 health, and spent one star and five of its twenty worshippers. Repeating the offer with both bosses nearby preserved the remaining star.
+- [x] Restore the distance-based shield, Mog's bow, Gulg's melee launch, and the original reward drops and equipment. The packaged server recorded zero damage to Mog at two blocks from Gulg and two of ten magic damage at five blocks. The muted client rendered both boss bars and Mog's original model and bow.
+- [x] Restore the Hobgoblin spawn weight. It defaults to four, with one point less on plains and a minimum of one. Forests allow up to three Hobgoblins per group. Swamps and plains allow up to two.
+- [x] Verify the same two boss UUIDs, patron UUIDs, and bound statue after a dedicated restart. Java 17 data generation, JAR reobfuscation and all 361 required Forge GameTests passed.
+- [ ] Exercise the automatic summon in a live worship pulse and inspect configured spawn group weights in each biome.
 
 ## Werewolf Hunts, Howls and Taming (2026-11-20)
 

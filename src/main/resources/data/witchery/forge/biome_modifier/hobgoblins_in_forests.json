@@ -1,5 +1,5 @@
 {
-  "type": "forge:add_spawns",
+  "type": "witchery:hobgoblin_spawns",
   "biomes": "#minecraft:is_forest",
-  "spawners": {"type": "witchery:goblin", "weight": 4, "minCount": 1, "maxCount": 3}
+  "max_count": 3
 }

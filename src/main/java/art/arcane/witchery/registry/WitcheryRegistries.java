@@ -6,6 +6,7 @@ import art.arcane.witchery.data.PredictionLootModifier;
 import art.arcane.witchery.data.WolfBoneLootModifier;
 import art.arcane.witchery.entity.HobgoblinMiningLootModifier;
 import art.arcane.witchery.world.DreamCottonFeature;
+import art.arcane.witchery.world.HobgoblinSpawnModifier;
 import art.arcane.witchery.world.MirrorChunkGenerator;
 import art.arcane.witchery.world.SurfaceStructuresFeature;
 import art.arcane.witchery.world.TormentChunkGenerator;
@@ -15,9 +16,11 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraftforge.common.loot.IGlobalLootModifier;
+import net.minecraftforge.common.world.BiomeModifier;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
 public final class WitcheryRegistries {
     private static final DeferredRegister<Codec<? extends IGlobalLootModifier>> LOOT_MODIFIERS =
@@ -25,6 +28,10 @@ public final class WitcheryRegistries {
     private static final DeferredRegister<Feature<?>> FEATURES = DeferredRegister.create(Registries.FEATURE, Witchery.MODID);
     private static final DeferredRegister<Codec<? extends ChunkGenerator>> CHUNK_GENERATORS =
             DeferredRegister.create(Registries.CHUNK_GENERATOR, Witchery.MODID);
+    private static final DeferredRegister<Codec<? extends BiomeModifier>> BIOME_MODIFIERS =
+            DeferredRegister.create(ForgeRegistries.Keys.BIOME_MODIFIER_SERIALIZERS, Witchery.MODID);
+    public static final RegistryObject<Codec<HobgoblinSpawnModifier>> HOBGOBLIN_SPAWNS =
+            BIOME_MODIFIERS.register("hobgoblin_spawns", () -> HobgoblinSpawnModifier.CODEC);
 
     static {
         LOOT_MODIFIERS.register("grass_seeds", () -> GrassSeedLootModifier.CODEC);
@@ -55,5 +62,6 @@ public final class WitcheryRegistries {
         LOOT_MODIFIERS.register(eventBus);
         FEATURES.register(eventBus);
         CHUNK_GENERATORS.register(eventBus);
+        BIOME_MODIFIERS.register(eventBus);
     }
 }

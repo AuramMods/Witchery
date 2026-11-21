@@ -1,6 +1,8 @@
 package art.arcane.witchery.block.entity;
 
+import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.entity.Hobgoblin;
+import art.arcane.witchery.entity.HobgoblinGodEncounter;
 import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryEffects;
@@ -22,6 +24,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.UUID;
 
 public final class StatueOfWorshipBlockEntity extends BlockEntity {
@@ -39,15 +42,19 @@ public final class StatueOfWorshipBlockEntity extends BlockEntity {
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, StatueOfWorshipBlockEntity statue) {
         if (statue.owner.isEmpty() || !(level instanceof ServerLevel server) || level.getGameTime() % PULSE_TICKS != 0) return;
-        int worshippers = statue.updateWorshippers(server);
+        int worshippers = statue.updateWorshippers(statue.nearbyGoblins(server));
         var players = server.getServer().getPlayerList();
         ServerPlayer player = statue.ownerId != null ? players.getPlayer(statue.ownerId) : players.getPlayerByName(statue.owner);
         if (player != null) statue.bless(server, player, worshippers);
     }
 
-    private int updateWorshippers(ServerLevel level) {
+    private List<Hobgoblin> nearbyGoblins(ServerLevel level) {
+        return level.getEntitiesOfClass(Hobgoblin.class, new AABB(worldPosition).inflate(8), Hobgoblin::isAlive);
+    }
+
+    private int updateWorshippers(List<Hobgoblin> goblins) {
         int count = 0;
-        for (Hobgoblin goblin : level.getEntitiesOfClass(Hobgoblin.class, new AABB(worldPosition).inflate(8), Hobgoblin::isAlive)) {
+        for (Hobgoblin goblin : goblins) {
             if (goblin.isWorshipping()) count++;
             else goblin.offerWorship(worldPosition);
         }
@@ -65,6 +72,25 @@ public final class StatueOfWorshipBlockEntity extends BlockEntity {
         if (worshippers >= 10) {
             player.addEffect(new MobEffectInstance(WitcheryEffects.WORSHIP.get(), 1200, worshippers >= 15 ? 1 : 0, true, true));
         }
+        int chance = WitcheryServerConfig.HOBGOBLIN_GOD_SPAWN_CHANCE.get();
+        if (worshippers >= 15 && chance > 0 && level.getRandom().nextDouble() < chance / 10000.0) {
+            HobgoblinGodEncounter.summon(level, worldPosition, player, 64, 16);
+        }
+    }
+
+    public boolean offerStar(ServerLevel level, ServerPlayer player, ItemStack star) {
+        if (owner.isEmpty() || !(ownerId != null ? ownerId.equals(player.getUUID())
+                : owner.equals(player.getGameProfile().getName()))) return false;
+        var goblins = nearbyGoblins(level);
+        if (updateWorshippers(goblins) < 5 || !HobgoblinGodEncounter.summon(level, worldPosition, player, 16, 8)) return false;
+        if (!player.getAbilities().instabuild) {
+            star.shrink(1);
+            for (int i = 0; i < Math.min(goblins.size(), 5); i++) {
+                Hobgoblin goblin = goblins.get(i);
+                goblin.hurt(level.damageSources().magic(), goblin.getMaxHealth());
+            }
+        }
+        return true;
     }
 
     public static void bindItem(ItemStack item, ServerPlayer player) {
