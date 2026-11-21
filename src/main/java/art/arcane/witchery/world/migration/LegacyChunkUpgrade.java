@@ -1,5 +1,8 @@
 package art.arcane.witchery.world.migration;
 
+import art.arcane.witchery.block.AltarBlock;
+import art.arcane.witchery.block.DistilleryBlock;
+import art.arcane.witchery.block.WitchCropBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.block.WitchesOvenBlock;
 import com.mojang.datafixers.DataFixer;
@@ -13,10 +16,12 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.datafix.PackedBitStorage;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Half;
+import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,7 +38,9 @@ public final class LegacyChunkUpgrade {
     public static CompoundTag upgrade(DataFixTypes type, DataFixer fixer, CompoundTag original, int from, int to,
                                       LegacyWorldIds ids) {
         CompoundTag input = original.copy();
-        ids.upgradeItems(input.getCompound("Level"));
+        CompoundTag inputLevel = input.getCompound("Level");
+        ids.upgradeItems(inputLevel);
+        ids.upgradeTileInventories(inputLevel, fixer, from, to);
         CompoundTag updated = type.update(fixer, input, from, to);
 
         // At 1493 vanilla has flattened the block arrays, but still uses the original section Ys.
@@ -108,6 +115,7 @@ public final class LegacyChunkUpgrade {
     private static CompoundTag restoreState(ResourceLocation name, int metadata) {
         Block block = ForgeRegistries.BLOCKS.getValue(name);
         if (block == null) return null;
+        if (block instanceof WitchCropBlock crop) return NbtUtils.writeBlockState(crop.getStateForAge(Math.min(metadata, crop.getMaxAge())));
         BlockState state = block.defaultBlockState();
         int variant = metadata & 3;
         WitchWoodType wood = switch (variant) {
@@ -116,11 +124,17 @@ public final class LegacyChunkUpgrade {
             default -> WitchWoodType.ROWAN;
         };
         BlockState restored = switch (name.getPath()) {
-            case "witchesovenidle", "witchesovenburning" -> {
-                Direction facing = Direction.from3DDataValue(metadata);
-                yield state.setValue(WitchesOvenBlock.FACING, facing.getAxis().isHorizontal() ? facing : Direction.NORTH)
-                        .setValue(WitchesOvenBlock.LIT, name.getPath().equals("witchesovenburning"));
-            }
+            case "witchesovenidle", "witchesovenburning" -> state.setValue(WitchesOvenBlock.FACING, horizontalFacing(metadata))
+                    .setValue(WitchesOvenBlock.LIT, name.getPath().equals("witchesovenburning"));
+            case "distilleryidle", "distilleryburning" -> state.setValue(BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata))
+                    .setValue(DistilleryBlock.LIT, name.getPath().equals("distilleryburning"));
+            case "kettle", "spinningwheel", "fumefunnel", "filteredfumefunnel" -> state.setValue(
+                    BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata));
+            case "altar" -> state.setValue(AltarBlock.FORMED, metadata == 1);
+            case "poppetshelf", "bloodedwool", "pitdirt", "pitgrass", "mirrorwall", "shadedglass", "shadedglass_active",
+                    "tormentstone", "embermoss", "glintweed", "spanishmoss", "infinityegg", "icedoubleslab", "snowdoubleslab" -> state;
+            case "iceslab", "snowslab" -> state.setValue(SlabBlock.TYPE, (metadata & 8) == 0 ? SlabType.BOTTOM : SlabType.TOP);
+            case "icepressureplate", "snowpressureplate" -> state.setValue(BlockStateProperties.POWERED, metadata != 0);
             case "witchwood" -> state.setValue(WitchWoodType.PROPERTY, wood);
             case "witchlog" -> state.setValue(WitchWoodType.PROPERTY, wood).setValue(BlockStateProperties.AXIS,
                     switch (metadata & 12) {
@@ -132,7 +146,7 @@ public final class LegacyChunkUpgrade {
                     .setValue(BlockStateProperties.PERSISTENT, (metadata & 4) != 0);
             case "witchsapling" -> state.setValue(WitchWoodType.PROPERTY, wood)
                     .setValue(BlockStateProperties.STAGE, (metadata & 8) == 0 ? 0 : 1);
-            case "stairswoodrowan", "stairswoodalder", "stairswoodhawthorn" -> state.setValue(StairBlock.FACING,
+            case "stairswoodrowan", "stairswoodalder", "stairswoodhawthorn", "icestairs", "snowstairs" -> state.setValue(StairBlock.FACING,
                     switch (variant) {
                         case 0 -> Direction.EAST;
                         case 1 -> Direction.WEST;
@@ -142,5 +156,10 @@ public final class LegacyChunkUpgrade {
             default -> null;
         };
         return restored == null ? null : NbtUtils.writeBlockState(restored);
+    }
+
+    private static Direction horizontalFacing(int metadata) {
+        Direction facing = Direction.from3DDataValue(metadata);
+        return facing.getAxis().isHorizontal() ? facing : Direction.NORTH;
     }
 }

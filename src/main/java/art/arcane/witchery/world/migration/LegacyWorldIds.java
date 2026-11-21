@@ -2,11 +2,15 @@ package art.arcane.witchery.world.migration;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.item.WitcheryIngredient;
+import com.mojang.datafixers.DataFixer;
+import com.mojang.serialization.Dynamic;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,6 +30,7 @@ public final class LegacyWorldIds {
     private static final String ENTRIES = "ItemData";
     private final Map<Integer, ResourceLocation> blocks = new HashMap<>();
     private final Map<Integer, ResourceLocation> items = new HashMap<>();
+    private final Map<Integer, ResourceLocation> vanillaItems = new HashMap<>();
     private final Set<ResourceLocation> unmappedBlocks = ConcurrentHashMap.newKeySet();
     private final Set<ResourceLocation> unmappedItems = ConcurrentHashMap.newKeySet();
 
@@ -35,10 +40,14 @@ public final class LegacyWorldIds {
             String key = entry.getString("K");
             if (key.length() < 2 || !entry.contains("V", Tag.TAG_ANY_NUMERIC)) continue;
             ResourceLocation id = ResourceLocation.tryParse(key.substring(1));
-            if (id == null || !id.getNamespace().equals(Witchery.MODID)) continue;
+            if (id == null) continue;
             int number = entry.getInt("V");
-            if (key.charAt(0) == 1) blocks.put(number, id);
-            if (key.charAt(0) == 2) items.put(number, id);
+            if (id.getNamespace().equals(Witchery.MODID)) {
+                if (key.charAt(0) == 1) blocks.put(number, id);
+                if (key.charAt(0) == 2) items.put(number, id);
+            } else if (key.charAt(0) == 2 && id.getNamespace().equals(ResourceLocation.DEFAULT_NAMESPACE)) {
+                vanillaItems.put(number, id);
+            }
         }
     }
 
@@ -97,6 +106,37 @@ public final class LegacyWorldIds {
             if (compound.contains("Count", Tag.TAG_ANY_NUMERIC)) upgradeStack(compound);
         } else if (value instanceof ListTag list) {
             for (Tag entry : list) upgradeItems(entry);
+        }
+    }
+
+    void upgradeTileInventories(CompoundTag level, DataFixer fixer, int from, int to) {
+        for (Tag entry : level.getList("TileEntities", Tag.TAG_COMPOUND)) {
+            CompoundTag tile = (CompoundTag) entry;
+            var id = ResourceLocation.tryParse(tile.getString("id"));
+            if (id != null && id.getNamespace().equals(Witchery.MODID)) {
+                upgradeVanillaItems(tile, fixer, from, to);
+            }
+        }
+    }
+
+    private void upgradeVanillaItems(Tag value, DataFixer fixer, int from, int to) {
+        if (value instanceof CompoundTag compound) {
+            for (String key : compound.getAllKeys()) upgradeVanillaItems(compound.get(key), fixer, from, to);
+            if (!compound.contains("Count", Tag.TAG_ANY_NUMERIC)) return;
+            ResourceLocation id = compound.contains("id", Tag.TAG_ANY_NUMERIC)
+                    ? vanillaItems.get(compound.getInt("id") & 0xFFFF) : ResourceLocation.tryParse(compound.getString("id"));
+            if (id == null || !id.getNamespace().equals(ResourceLocation.DEFAULT_NAMESPACE)) return;
+
+            // Vanilla's chunk fixer cannot see inventories belonging to unrecognized block entity types.
+            var named = compound.copy();
+            named.putString("id", id.toString());
+            if (fixer.update(References.ITEM_STACK, new Dynamic<>(NbtOps.INSTANCE, named), from, to).getValue() instanceof CompoundTag fixed) {
+                // Item fixes may move damage or remove legacy fields. Keep the slot and any remaining custom data.
+                for (String key : Set.copyOf(compound.getAllKeys())) compound.remove(key);
+                compound.merge(fixed);
+            }
+        } else if (value instanceof ListTag list) {
+            for (Tag entry : list) upgradeVanillaItems(entry, fixer, from, to);
         }
     }
 

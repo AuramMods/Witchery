@@ -1149,7 +1149,9 @@
 - [x] Import a copy of the original Forge world through the packaged JAR. The importer captures 121 legacy block IDs and 217 legacy item IDs before Minecraft rewrites `level.dat`. It restores supported blocks in the flattened section palette and resolves Witchery stacks before vanilla converts inventories.
 - [x] Upgrade the 1,248-chunk fixture and verify the oven's facing, remaining fuel and inventory, wood species, log axis, leaf persistence, sapling stage, and stair facing and half. The original chest retained all three Witchery stacks and vanilla charcoal. A synthetic 1.7.10 player record exercised login conversion of Arthana wear, nested item tags, charcoal, and hawthorn planks in the Ender Chest.
 - [x] Restart the packaged server without the import flag and reconnect the muted client. Recheck the oven, plank blocks, chest, and player inventories. All 26 focused GameTests passed on fresh Forge with the importer inactive.
-- [ ] Expand migration to the other Witchery blocks and subtype data, entity and block-entity state, integrated single-player data, and numeric dimension folders. Add fixtures for each before calling the migration complete.
+- [x] Upgrade a second copy of the original Forge world with all eight crop ages, a formed altar, a kettle, a spinning wheel, a burning distillery, a poppet shelf, a filtered funnel, and cold blocks. All 22 block-state checks passed again on an ordinary dedicated restart. The kettle retained 750 mB of water, its color, and both inventory stacks. The poppet shelf retained its tagged Voodoo Poppet and red wool. Both workstations retained their progress and completed their original recipes when an altar supplied power after the restart.
+- [x] Open the legacy copy in a muted, isolated packaged client. A synthetic owner record in `level.dat` restored a worn Arthana, five tagged Soft Clay Jars, two red wool, and four Hawthorn Planks in the Ender Chest. The upgraded save retained all four stacks after Save and Quit. Java 17 data generation, JAR reobfuscation, and all 28 focused Forge GameTests passed.
+- [ ] Expand migration to the other Witchery blocks and subtype data, entity and block-entity state, and numeric dimension folders. Add fixtures before calling the migration complete.
 
 ### Importing a copy of a legacy world
 
@@ -1159,7 +1161,9 @@ Keep an untouched backup of the original. Place a copy in an installed Forge 47.
 java -Dwitchery.importLegacyWorld=true @user_jvm_args.txt @libraries/net/minecraftforge/forge/1.20.1-47.4.10/unix_args.txt --nogui --forceUpgrade
 ```
 
-The first boot records the old IDs in `witchery-legacy-ids.dat` inside the copy. Keep that file with the save so old dedicated player files can convert when their owners log in. Subsequent boots use the normal launch command. This partial importer covers Witch's Ovens, witchwood planks, logs, leaves, saplings, and stairs, along with stacks handled by the existing inventory loader. Unsupported legacy content can be lost during conversion of the copy.
+The first boot records the old IDs in `witchery-legacy-ids.dat` inside the copy. Keep that file with the save so old dedicated player files can convert when their owners log in. Subsequent boots use the normal launch command. To import a single-player copy, add `-Dwitchery.importLegacyWorld=true` to the Java arguments for its first launch.
+
+The importer covers Witch's Ovens, eight crop blocks, the altar and workstations tested above, witchwood planks, logs, leaves, saplings and stairs, ice and snow construction blocks, and stacks handled by the inventory loader. The imported poppet shelf keeps its inventory at its original location and uses the modern shelf's default orientation. Unsupported legacy content can be lost during conversion of the copy.
 
 ## Villager Courtship Regression (2026-11-21)
 
