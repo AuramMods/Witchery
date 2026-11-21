@@ -94,7 +94,8 @@ public final class LandscapeRites {
         public int interval() {
             return switch (action) {
                 case RAISE_VOLCANO -> 15;
-                case ICE_SHELL, RAISE_EARTH, RAISE_EARTH_MEDIUM, RAISE_EARTH_LARGE -> 5;
+                case ICE_SHELL, RAISE_EARTH, RAISE_EARTH_MEDIUM, RAISE_EARTH_LARGE, FERTILITY -> 5;
+                case CALL_BEASTS -> 60;
                 default -> 20;
             };
         }
@@ -106,6 +107,9 @@ public final class LandscapeRites {
                 case CLIMATE_CHANGE -> ClimateChange.CAST_STAGE;
                 case PART_EARTH -> EarthRites.FISSURE_PULSES;
                 case RAISE_EARTH, RAISE_EARTH_MEDIUM, RAISE_EARTH_LARGE -> EarthRites.RISE_PULSES;
+                case FERTILITY -> GrowthRites.fertilityRadius(coven) - 3;
+                case NATURES_POWER -> 150 + 5 * coven;
+                case CALL_BEASTS -> 250;
                 default -> 60 + 5 * coven;
             };
         }
@@ -143,7 +147,7 @@ public final class LandscapeRites {
                     return null;
                 }
             }
-            if (!action.shapesLandscape() || (action == ItemRiteRecipe.Action.FORESTATION) != (species != null)) return null;
+            if (!action.usesLandscapeUpkeep() || (action == ItemRiteRecipe.Action.FORESTATION) != (species != null)) return null;
             EarthRites.Fissure fissure = action == ItemRiteRecipe.Action.PART_EARTH
                     ? new EarthRites.Fissure(tag.getLong("FissureSeed"), tag.getInt("FissureHeading")) : null;
             var progress = new Progress(action, species, BlockPos.of(tag.getLong("Target")), tag.getInt("Stage"), fissure,
@@ -193,6 +197,11 @@ public final class LandscapeRites {
                 BlockPos center = progress.followsHeart() ? heart : progress.target();
                 terrainChanges.accept(() -> EarthRites.raise(level, center, progress.action().raisedEarthRadius(), stage, coven, caster));
             }
+            case FERTILITY -> GrowthRites.fertility(level, progress.target(), stage + 3, caster);
+            case NATURES_POWER -> {
+                if (stage < progress.lastStage(coven)) GrowthRites.naturesPower(level, progress.target(), coven);
+            }
+            case CALL_BEASTS -> CallOfTheBeasts.pulse(level, progress.target(), stage);
             default -> throw new IllegalStateException("Unexpected landscape rite " + progress.action());
         }
         return stage >= progress.lastStage(coven) ? null

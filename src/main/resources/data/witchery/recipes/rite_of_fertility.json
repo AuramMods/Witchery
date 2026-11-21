@@ -1,0 +1,14 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [
+    {"item": "minecraft:bone_meal"},
+    {"item": "witchery:hint_of_rebirth"},
+    {"item": "witchery:diamond_vapour"},
+    {"item": "witchery:quicklime"},
+    {"item": "witchery:gypsum"},
+    {"item": "witchery:mutandis"}
+  ],
+  "power": 3000,
+  "action": "fertility"
+}

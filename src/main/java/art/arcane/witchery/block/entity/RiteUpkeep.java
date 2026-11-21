@@ -36,6 +36,7 @@ interface RiteUpkeep {
         private final ResourceLocation rite;
         private final int coven;
         @Nullable private final UUID initiator;
+        private String initiatorName = "";
         @Nullable private LandscapeRites.Progress landscape;
         private int oreDepth;
         private int ticks;
@@ -68,6 +69,10 @@ interface RiteUpkeep {
 
         void restoreTicks(int savedTicks) {
             ticks = Mth.clamp(savedTicks, 0, interval() - 1);
+        }
+
+        void restoreInitiatorName(String name) {
+            initiatorName = name;
         }
 
         @Override
@@ -103,7 +108,9 @@ interface RiteUpkeep {
 
         @Nullable
         private ServerPlayer caster(ServerLevel level) {
-            return initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
+            var players = level.getServer().getPlayerList();
+            if (initiator != null) return players.getPlayer(initiator);
+            return initiatorName.isEmpty() ? null : players.getPlayerByName(initiatorName);
         }
 
         void save(CompoundTag tag) {
@@ -114,6 +121,7 @@ interface RiteUpkeep {
                 tag.putInt("CovenSummoned", coven);
             }
             if (initiator != null) tag.putUUID("Initiator", initiator);
+            if (!initiatorName.isEmpty()) tag.putString("InitiatorName", initiatorName);
             if (landscape != null) tag.put("Landscape", landscape.save());
             else if (oreDepth > 0) tag.putInt("OreDepth", oreDepth);
             else tag.putBoolean("Recharging", true);
@@ -129,6 +137,7 @@ interface RiteUpkeep {
             int depth = Mth.clamp(tag.getInt("OreDepth"), 0, RiteOfTransposition.oreDepthLimit(coven) - 1);
             if (landscape == null && depth == 0 && !tag.getBoolean("Recharging")) return null;
             var upkeep = new Timed(rite, coven, initiator, landscape, depth);
+            upkeep.restoreInitiatorName(tag.getString("InitiatorName"));
             upkeep.restoreTicks(tag.getInt("StepTicks"));
             return upkeep;
         }

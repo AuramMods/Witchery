@@ -231,6 +231,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         AltarBlockEntity altar = null;
         if (rite.power() > 0) {
             altar = protectionKind != null || action == ItemRiteRecipe.Action.BANISH_DEMON || newSummoning
+                    || action == ItemRiteRecipe.Action.FERTILITY || action == ItemRiteRecipe.Action.CALL_BEASTS
                     ? AltarPower.nearest(level, pos, ProtectionRites.ALTAR_RANGE) : AltarPower.nearest(level, pos);
         }
         boolean missingPower = rite.power() > 0 && (altar == null || altar.power() < rite.power());
@@ -425,7 +426,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (action == ItemRiteRecipe.Action.BANISH_DEMON) Banishment.perform(level, pos);
         if (protectionKind != null && !prepareProtection(level, rite, protectionKind, pos)) return;
         LandscapeRites.Progress landscape = null;
-        if (rite.action().shapesLandscape()) {
+        if (rite.action().usesLandscapeUpkeep()) {
             landscape = prepareLandscape(level, rite);
             if (landscape == null) return;
         }
@@ -568,6 +569,10 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         BlockPos heart = getBlockPos();
         if (rite.action() == ItemRiteRecipe.Action.ICE_SHELL && covenSize < 2) {
             abort(level, "message.witchery.rite.ice_shell_coven");
+            return null;
+        }
+        if (rite.action() == ItemRiteRecipe.Action.CALL_BEASTS && covenSize < 3) {
+            abort(level, "message.witchery.rite.call_beasts_coven");
             return null;
         }
         if (rite.action() == ItemRiteRecipe.Action.CLIMATE_CHANGE) {
@@ -819,9 +824,11 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         byte[] stages = tag.getByteArray("RitualStages");
         byte[] covens = tag.getByteArray("RitualCovens");
         ListTag locations = tag.getList("Locations", Tag.TAG_COMPOUND);
+        ListTag initiators = tag.getList("Initiators", Tag.TAG_STRING);
         for (int index = 0; index < Math.min(rites.length, stages.length); index++) {
             int rite = rites[index];
-            int stage = stages[index];
+            // These two rites have valid stages beyond the signed byte range.
+            int stage = rite == 43 || rite == 68 ? Byte.toUnsignedInt(stages[index]) : stages[index];
             int members = index < covens.length ? Mth.clamp(covens[index], 0, CovenWitch.MAX_MEMBERS) : 0;
             var kind = ProtectionRites.Kind.fromLegacy(rite);
             if (kind != null) {
@@ -845,10 +852,13 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 ItemRiteRecipe.Action action = switch (rite) {
                     case 19 -> ItemRiteRecipe.Action.PART_EARTH;
                     case 20 -> ItemRiteRecipe.Action.RAISE_EARTH;
+                    case 35, 36 -> ItemRiteRecipe.Action.FERTILITY;
+                    case 43 -> ItemRiteRecipe.Action.NATURES_POWER;
                     case 46 -> ItemRiteRecipe.Action.RAISE_EARTH_MEDIUM;
                     case 47 -> ItemRiteRecipe.Action.RAISE_EARTH_LARGE;
                     case 64 -> members >= 4 ? ItemRiteRecipe.Action.CLIMATE_CHANGE : null;
                     case 65 -> members >= 2 ? ItemRiteRecipe.Action.ICE_SHELL : null;
+                    case 68 -> members >= 3 ? ItemRiteRecipe.Action.CALL_BEASTS : null;
                     case 77 -> ItemRiteRecipe.Action.RAISE_VOLCANO;
                     default -> species == null ? null : ItemRiteRecipe.Action.FORESTATION;
                 };
@@ -868,9 +878,14 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                     case RAISE_EARTH -> "rite_of_moving_earth";
                     case RAISE_EARTH_MEDIUM -> "rite_of_moving_earth_medium";
                     case RAISE_EARTH_LARGE -> "rite_of_moving_earth_large";
+                    case FERTILITY -> rite == 35 ? "rite_of_fertility" : "rite_of_fertility_portable";
+                    case NATURES_POWER -> "rite_of_natures_power";
+                    case CALL_BEASTS -> "rite_of_calling_the_beasts";
                     default -> "forestation/" + species.name().toLowerCase(Locale.ROOT);
                 });
-                upkeep.add(RiteUpkeep.Timed.landscape(recipe, members, null, progress));
+                var timed = RiteUpkeep.Timed.landscape(recipe, members, null, progress);
+                if (action == ItemRiteRecipe.Action.FERTILITY) timed.restoreInitiatorName(initiators.getString(index));
+                upkeep.add(timed);
             }
         }
         for (var ongoing : upkeep) {

@@ -99,7 +99,10 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         BANISH_DEMON,
         SUMMON_WITHER,
         SUMMON_WITCH,
-        SUMMON_SPECTRAL_FAMILIAR;
+        SUMMON_SPECTRAL_FAMILIAR,
+        FERTILITY,
+        NATURES_POWER,
+        CALL_BEASTS;
 
         public boolean summonsCreature() {
             return switch (this) {
@@ -108,9 +111,9 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
             };
         }
 
-        public boolean shapesLandscape() {
+        public boolean usesLandscapeUpkeep() {
             return usesWaystoneTarget() || this == ICE_SHELL || this == CLIMATE_CHANGE || this == PART_EARTH
-                    || raisedEarthRadius() > 0;
+                    || raisedEarthRadius() > 0 || this == FERTILITY || this == NATURES_POWER || this == CALL_BEASTS;
         }
 
         public boolean usesWaystoneTarget() {
@@ -187,7 +190,8 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
     @Nullable
     public String startFailure(ServerLevel level) {
         if (level.dimension().equals(WitcheryDimensions.DREAM)) {
-            if (action.shapesLandscape()) return "message.witchery.rite.landscape_dream";
+            if (action == Action.CALL_BEASTS) return "message.witchery.rite.call_beasts_dream";
+            if (action.usesLandscapeUpkeep()) return "message.witchery.rite.landscape_dream";
             if (action == Action.TRANSPOSE_CREATURE || action == Action.TRANSPOSE_ORES) {
                 return "message.witchery.rite.transpose_dream";
             }
@@ -429,6 +433,9 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 case "raise_earth_large" -> Action.RAISE_EARTH_LARGE;
                 case "ice_shell" -> Action.ICE_SHELL;
                 case "climate_change" -> Action.CLIMATE_CHANGE;
+                case "fertility" -> Action.FERTILITY;
+                case "natures_power" -> Action.NATURES_POWER;
+                case "call_beasts" -> Action.CALL_BEASTS;
                 case "infuse_overworld" -> Action.INFUSE_OVERWORLD;
                 case "recharge_infusion" -> Action.RECHARGE_INFUSION;
                 case "infuse_infernal" -> Action.INFUSE_INFERNAL;

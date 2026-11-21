@@ -384,6 +384,17 @@
 - [x] In a muted survival client, perform all six rites with supplied offerings and prepared rings. A dedicated restart preserved both summoned Withers, the witch, and the familiar's pending paid search. The familiar kept its UUID and found the test deepslate Emerald Ore after the restart.
 - [x] Run Java 17 data generation, JAR reobfuscation, and 11 focused Forge GameTests on the final revision. The broader run passed 470 of 473 checks before the duplicate ore-message fix. The Accio check passed in the focused run once its fixture chunks were ticking. Wolfman migration and Hobgoblin hauling still failed in the broader run.
 
+## Fertility, Nature's Power and Calling the Beasts (2026-11-21)
+
+- [x] Restore both small white Rites of Fertility. Bone Meal, Hint of Rebirth, Diamond Vapour, Quicklime and Gypsum go into both. The powered rite adds Mutandis and draws 3,000 altar power. The portable rite adds Mutandis Extremis and discharges an Attuned Stone.
+- [x] Grow plants and cure zombie villagers in an expanding wave. Clear Nausea, Blindness and Poison in the wave and grant Regeneration II and Saturation when the caster has an active cat familiar. Preserve converted villagers' modern appearance, profession, trades and age through vanilla conversion.
+- [x] Restore the medium white Rite of Nature's Power using Brew of Sprouting, six distinct sapling types and a Charged Attuned Stone. Naturalize stone, sand, gravel and mycelium, and restore the original weighted plant pool. A block tag makes the replaceable terrain configurable through datapacks.
+- [x] Restore Calling the Beasts with the large Otherwhere ring, the original eight offerings including raw cod, 6,000 altar power, and at least three summoned coven witches. Sweep the original eight search regions, call at most two animals per pulse, and respect Ender Inhibition.
+- [x] Show the four recipes and their effects in Circle Magic. Resume saved casts and import legacy IDs 35, 36, 43 and 68, including active stages encoded as negative signed bytes and Fertility's initiating player name.
+- [x] Cast all four recipes in a muted survival client with supplied offerings. Both Fertility variants cured villagers. The powered one grew wheat, cleared the three ailments while keeping Weakness, and applied the cat familiar bonus. Nature's Power grew a prepared mycelium patch into grass without losing a stocked chest. Calling the Beasts moved two animals during its first pulse and left an inhibited pig in place.
+- [x] Restart the packaged dedicated server while Nature's Power and Calling the Beasts are active. Both advanced from their saved stages and the resumed Calling the Beasts summoned an ocelot from the next search region.
+- [x] Run Java 17 data generation, JAR reobfuscation, and the full 481-case Forge GameTest suite. All 481 passed. Eight cases cover the recipe codec, cure data, Forge event cancellation, cat bonuses, portable resumption, surface conversion, legacy stage import, and coven and octant behavior.
+
 ## Queued Circle Rites (2026-11-21)
 
 - [x] Match compatible recipes in their original registration order and reserve their dropped stacks and Grassper offerings during activation. Spend the offerings one rite at a time. A failed cast returns its staged offerings and advances the queue.

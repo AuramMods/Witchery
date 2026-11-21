@@ -109,6 +109,9 @@ public final class GuideBookPages {
         if (recipe.action().summonsCreature()) steps.add(text("summoning_clearance"));
         if (recipe.action() == ItemRiteRecipe.Action.BANISH_DEMON) steps.add(text("demon_banishment"));
         if (recipe.action() == ItemRiteRecipe.Action.SUMMON_SPECTRAL_FAMILIAR) steps.add(text("spectral_familiar_search"));
+        if (recipe.action() == ItemRiteRecipe.Action.FERTILITY) steps.add(text("fertility_effect"));
+        if (recipe.action() == ItemRiteRecipe.Action.NATURES_POWER) steps.add(text("natures_power_effect"));
+        if (recipe.action() == ItemRiteRecipe.Action.CALL_BEASTS) steps.add(text("call_beasts_effect"));
         if (recipe.action() == ItemRiteRecipe.Action.BIND_WAYSTONE) steps.add(text("bind_waystone"));
         if (recipe.action() == ItemRiteRecipe.Action.COPY_WAYSTONE) steps.add(text("copy_waystone"));
         if (recipe.action() == ItemRiteRecipe.Action.BIND_CIRCLE_TALISMAN) steps.add(text("bind_circle_talisman"));

@@ -1,0 +1,16 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "large", "glyph": "witchery:circleglyphotherwhere"}],
+  "sacrifices": [
+    {"item": "minecraft:milk_bucket"},
+    {"item": "minecraft:hay_block"},
+    {"item": "minecraft:apple"},
+    {"item": "minecraft:beef"},
+    {"item": "minecraft:cod"},
+    {"item": "minecraft:red_mushroom"},
+    {"item": "minecraft:carrot"},
+    {"item": "minecraft:wheat_seeds"}
+  ],
+  "power": 6000,
+  "action": "call_beasts"
+}
