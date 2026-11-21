@@ -12,6 +12,7 @@ import art.arcane.witchery.entity.WitchHunterPursuit;
 import art.arcane.witchery.entity.Wolfman;
 import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.infusion.InfusionEnergy;
+import art.arcane.witchery.item.CircleTalismanItem;
 import art.arcane.witchery.item.HunterClothingItem;
 import art.arcane.witchery.item.PoppetProtectionItem;
 import art.arcane.witchery.item.TaglockItem;
@@ -26,6 +27,7 @@ import art.arcane.witchery.prediction.Predictions;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
+import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.ritual.FetishBinding;
 import art.arcane.witchery.ritual.ClimateChange;
 import art.arcane.witchery.ritual.GlyphicTransformation;
@@ -233,6 +235,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         ServerPlayer vampireCureTarget = null;
         LivingEntity wolfRiteTarget = null;
         ServerPlayer corruptionCaster = null;
+        int talismanPattern = 0;
         int infusionType = switch (rite.action()) {
             case INFUSE_LIGHT -> 1;
             case INFUSE_OVERWORLD -> 2;
@@ -329,9 +332,14 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         } else if (rite.action() == ItemRiteRecipe.Action.ITEM || rite.action() == ItemRiteRecipe.Action.BIND_WAYSTONE
                 || rite.action() == ItemRiteRecipe.Action.BIND_CREATURE_WAYSTONE
                 || rite.action() == ItemRiteRecipe.Action.COPY_WAYSTONE
+                || rite.action() == ItemRiteRecipe.Action.BIND_CIRCLE_TALISMAN
                 || rite.action() == ItemRiteRecipe.Action.BIND_WORSHIP_STATUE) {
             ItemStack output = rite.result().copy();
-            if (rite.action() == ItemRiteRecipe.Action.BIND_WAYSTONE) {
+            if (rite.action() == ItemRiteRecipe.Action.BIND_CIRCLE_TALISMAN) {
+                output = new ItemStack(WitcheryItems.getRequired("circletalisman").get());
+                talismanPattern = CircleTalismanItem.capturePattern(level, pos);
+                CircleTalismanItem.setStoredPattern(output, talismanPattern);
+            } else if (rite.action() == ItemRiteRecipe.Action.BIND_WAYSTONE) {
                 output = new ItemStack(WitcheryIngredient.BOUND_WAYSTONE.item());
                 WaystoneItem.bindLocation(output, level, pos);
             } else if (rite.action() == ItemRiteRecipe.Action.COPY_WAYSTONE) {
@@ -456,6 +464,10 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             }
         }
         sacrificed.clear();
+        if (rite.action() == ItemRiteRecipe.Action.BIND_CIRCLE_TALISMAN) {
+            CircleTalismanItem.eraseCapturedGlyphs(level, pos);
+            if (talismanPattern != 0) level.removeBlock(pos, false);
+        }
         if (rite.action() == ItemRiteRecipe.Action.TRANSPOSE_ORES) {
             if (RiteOfTransposition.transposeOreLayer(level, pos, 1, covenSize)) {
                 upkeep.add(RiteUpkeep.Timed.transposeOres(rite.id(), covenSize, initiator, 1));
@@ -467,7 +479,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         } else if (rite.action() == ItemRiteRecipe.Action.RECHARGE_INFUSION) {
             upkeep.add(RiteUpkeep.Timed.recharge(rite.id(), covenSize, initiator));
         }
-        nextCast(level);
+        if (talismanPattern == 0) nextCast(level);
         level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
                 16, 0.4, 0.4, 0.4, 0.05);
         level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.9F, 1.35F);

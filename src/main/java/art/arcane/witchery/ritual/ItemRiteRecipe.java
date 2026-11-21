@@ -4,6 +4,7 @@ import art.arcane.witchery.block.RitualGlyphBlock;
 import art.arcane.witchery.block.entity.GrassperBlockEntity;
 import art.arcane.witchery.item.ArthanaItem;
 import art.arcane.witchery.item.BolineItem;
+import art.arcane.witchery.item.CircleTalismanItem;
 import art.arcane.witchery.item.SpectralStoneItem;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
@@ -89,7 +90,8 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         BARRIER,
         GREATER_BARRIER,
         PORTABLE_BARRIER,
-        COPY_WAYSTONE;
+        COPY_WAYSTONE,
+        BIND_CIRCLE_TALISMAN;
 
         public boolean shapesLandscape() {
             return usesWaystoneTarget() || this == ICE_SHELL || this == CLIMATE_CHANGE;
@@ -213,7 +215,10 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
 
     private List<Offering> validOfferings(ServerLevel level, BlockPos pos) {
         List<Offering> items = nearbyOfferings(level, pos);
-        if (action == Action.BIND_SPECTRAL_STONE) {
+        if (action == Action.BIND_CIRCLE_TALISMAN) {
+            items.removeIf(offering -> offering.stack().getItem() instanceof CircleTalismanItem
+                    && CircleTalismanItem.storedPattern(offering.stack()) != 0);
+        } else if (action == Action.BIND_SPECTRAL_STONE) {
             items.removeIf(offering -> offering.stack().getItem() instanceof SpectralStoneItem
                     && SpectralStoneItem.typeId(offering.stack()) != 0);
         } else if (action == Action.RAISE_VOLCANO) {
@@ -403,6 +408,7 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 case "call_familiar" -> Action.CALL_FAMILIAR;
                 case "bind_waystone" -> Action.BIND_WAYSTONE;
                 case "copy_waystone" -> Action.COPY_WAYSTONE;
+                case "bind_circle_talisman" -> Action.BIND_CIRCLE_TALISMAN;
                 case "bind_creature_waystone" -> Action.BIND_CREATURE_WAYSTONE;
                 case "travel_waystone" -> Action.TRAVEL_WAYSTONE;
                 case "cure_vampirism" -> Action.CURE_VAMPIRISM;

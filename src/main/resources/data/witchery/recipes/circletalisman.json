@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": ["NGN", "GDG", "NGN"],
+  "key": {
+    "N": {"item": "minecraft:gold_nugget"},
+    "G": {"item": "minecraft:gold_ingot"},
+    "D": {"item": "minecraft:diamond"}
+  },
+  "result": {"item": "witchery:circletalisman"}
+}

@@ -385,6 +385,15 @@
 - [x] Restart the dedicated server after staging two of five portable copy offerings. Verify two named copies with the original Nether coordinates and one discharged stone. Verify the powered copy draws 500 altar power, and cancellation after an Arthana returns refunds the Gypsum.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 414 required Forge GameTests. The five new cases cover portable binding, both copy recipes, reusable blade tags, legacy pending returns, and the Spectral Stone exception.
 
+## Circle Talisman (2026-11-21)
+
+- [x] Restore the original blank Circle Talisman recipe and both binding rites. Use four gold ingots, four gold nuggets, and a diamond. The powered rite uses Redstone and 1,000 altar power. The portable rite uses Glowstone Dust and a Charged Attuned Stone.
+- [x] Store each complete single-color small, medium, and large ring. Remove chalk at all three outlines and remove the Heart Glyph when a ring is stored. Preserve chalk outside the outlines. Import the legacy packed metadata and display the largest ring's icon plus every stored ring in the tooltip.
+- [x] Restore the bound chalk on a suitably supported surface or on an existing Heart Glyph. Return one blank talisman on success and keep the bound stack intact when a position is blocked or Forge cancels placement.
+- [x] In muted survival on a disposable dedicated world, craft the blank talisman and toss it into a prepared three-color circle. Restart with two of three portable offerings staged. Collect the bound talisman and discharged stone, then verify the inventory icon and all three tooltip lines.
+- [x] Block the destination with Obsidian and verify all glyph positions stay empty. Remove the obstruction and use the same bound talisman to place the Heart Glyph and all 84 chalk glyphs. Use the returned blank in the powered rite and verify the restored rings can be captured again.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 419 required Forge GameTests. The new cases cover crafting and legacy metadata, mixed rings, a resumed portable rite, stacked talisman reuse, and rollback when Forge cancels placement.
+
 ## Familiar Brews and Baba Yaga (2026-11-20)
 
 - [x] Restore the recipes and effects for Frog's Tongue, Cursed Leaping, Hitchcock, Bats and Wasting. The muted client pulled a cow over two blocks, gained roughly eleven blocks of height with Jump Boost IV, and sent four temporary owls at a cow with Hitchcock. Bats released ten marked bats and applied Slowness VI to a nearby chicken. Wasting cut food from twenty to ten, applied Hunger and Poison, and cleared a nearby poppy.

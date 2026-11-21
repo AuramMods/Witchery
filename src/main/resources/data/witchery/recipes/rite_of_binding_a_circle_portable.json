@@ -1,0 +1,10 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [],
+  "sacrifices": [
+    {"item": "witchery:circletalisman"},
+    {"item": "minecraft:glowstone_dust"},
+    {"item": "witchery:charged_attuned_stone"}
+  ],
+  "action": "bind_circle_talisman"
+}

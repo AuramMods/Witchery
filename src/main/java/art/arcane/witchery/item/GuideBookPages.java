@@ -106,6 +106,7 @@ public final class GuideBookPages {
         if (recipe.action().targetsStormWithWaystone()) steps.add(text("storm_waystone"));
         if (recipe.action() == ItemRiteRecipe.Action.BIND_WAYSTONE) steps.add(text("bind_waystone"));
         if (recipe.action() == ItemRiteRecipe.Action.COPY_WAYSTONE) steps.add(text("copy_waystone"));
+        if (recipe.action() == ItemRiteRecipe.Action.BIND_CIRCLE_TALISMAN) steps.add(text("bind_circle_talisman"));
         var protection = recipe.action().protection();
         if (protection != null) {
             steps.add(text("protection_effect." + protection.name().toLowerCase(Locale.ROOT)));

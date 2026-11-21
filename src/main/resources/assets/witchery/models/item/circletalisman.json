@@ -1,6 +1,62 @@
 {
-   "parent" : "minecraft:item/generated",
-   "textures" : {
-      "layer0" : "witchery:item/circletalisman"
-   }
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "witchery:item/circletalisman"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "witchery:circle_pattern": 1
+      },
+      "model": "witchery:item/circletalisman.1"
+    },
+    {
+      "predicate": {
+        "witchery:circle_pattern": 2
+      },
+      "model": "witchery:item/circletalisman.2"
+    },
+    {
+      "predicate": {
+        "witchery:circle_pattern": 3
+      },
+      "model": "witchery:item/circletalisman.3"
+    },
+    {
+      "predicate": {
+        "witchery:circle_pattern": 4
+      },
+      "model": "witchery:item/circletalisman.4"
+    },
+    {
+      "predicate": {
+        "witchery:circle_pattern": 5
+      },
+      "model": "witchery:item/circletalisman.5"
+    },
+    {
+      "predicate": {
+        "witchery:circle_pattern": 6
+      },
+      "model": "witchery:item/circletalisman.6"
+    },
+    {
+      "predicate": {
+        "witchery:circle_pattern": 7
+      },
+      "model": "witchery:item/circletalisman.7"
+    },
+    {
+      "predicate": {
+        "witchery:circle_pattern": 8
+      },
+      "model": "witchery:item/circletalisman.8"
+    },
+    {
+      "predicate": {
+        "witchery:circle_pattern": 9
+      },
+      "model": "witchery:item/circletalisman.9"
+    }
+  ]
 }

@@ -1,0 +1,10 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [],
+  "sacrifices": [
+    {"item": "witchery:circletalisman"},
+    {"item": "minecraft:redstone"}
+  ],
+  "power": 1000,
+  "action": "bind_circle_talisman"
+}

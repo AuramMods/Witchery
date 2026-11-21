@@ -4,6 +4,7 @@ import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.entity.BrewDroplet;
 import art.arcane.witchery.item.BrewFuelItem;
+import art.arcane.witchery.item.CircleTalismanItem;
 import art.arcane.witchery.item.SpectralStoneItem;
 import art.arcane.witchery.item.PlayerCompassItem;
 import art.arcane.witchery.client.screen.AltarScreen;
@@ -359,6 +360,9 @@ public final class WitcheryClient {
             ItemProperties.register(WitcheryItems.getRequired("spectralstone").get(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "spectral_type"),
                     (stack, level, entity, seed) -> SpectralStoneItem.typeId(stack));
+            ItemProperties.register(WitcheryItems.getRequired("circletalisman").get(),
+                    ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "circle_pattern"),
+                    (stack, level, entity, seed) -> CircleTalismanItem.model(stack));
             ItemProperties.register(WitcheryItems.getRequired("taglockkit").get(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "bound"),
                     (stack, level, entity, seed) -> TaglockItem.isBound(stack) ? 1 : 0);
