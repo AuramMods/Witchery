@@ -1,0 +1,11 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [
+    {"item": "witchery:waystone"},
+    {"item": "witchery:ender_dew"},
+    {"item": "witchery:wood_ash"},
+    {"item": "witchery:charged_attuned_stone"}
+  ],
+  "action": "bind_waystone"
+}

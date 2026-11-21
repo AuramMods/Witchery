@@ -21,6 +21,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public final class WaystoneItem extends Item {
+    private static final List<String> LOCATION_TAGS = List.of("PosX", "PosY", "PosZ", "PosD", "NameD", "Dimension");
+
     public record Location(ResourceKey<Level> dimension, BlockPos position) {}
 
     public WaystoneItem() {
@@ -53,18 +55,34 @@ public final class WaystoneItem extends Item {
         if (legacy != null) tag.putInt("PosD", legacy);
     }
 
+    public static boolean copyLocation(ItemStack source, ItemStack target) {
+        CompoundTag tag = source.getTag();
+        if (!hasPosition(tag) || !(tag.contains("Dimension", Tag.TAG_STRING) || tag.contains("PosD", Tag.TAG_ANY_NUMERIC))) {
+            return false;
+        }
+        CompoundTag destination = target.getOrCreateTag();
+        for (String key : LOCATION_TAGS) {
+            Tag value = tag.get(key);
+            if (value != null) destination.put(key, value.copy());
+        }
+        if (source.hasCustomHoverName()) target.setHoverName(source.getHoverName());
+        return true;
+    }
+
     @Nullable
     public static Location location(ItemStack stone) {
         CompoundTag tag = stone.getTag();
-        if (tag == null || !tag.contains("PosX", Tag.TAG_ANY_NUMERIC) || !tag.contains("PosY", Tag.TAG_ANY_NUMERIC)
-                || !tag.contains("PosZ", Tag.TAG_ANY_NUMERIC)) {
-            return null;
-        }
+        if (!hasPosition(tag)) return null;
         ResourceLocation id = tag.contains("Dimension", Tag.TAG_STRING) ? ResourceLocation.tryParse(tag.getString("Dimension")) : null;
         ResourceKey<Level> dimension = id != null ? ResourceKey.create(Registries.DIMENSION, id)
                 : tag.contains("PosD", Tag.TAG_ANY_NUMERIC) ? WitcheryDimensions.fromLegacyId(tag.getInt("PosD")) : null;
         return dimension == null ? null : new Location(dimension,
                 new BlockPos(tag.getInt("PosX"), tag.getInt("PosY"), tag.getInt("PosZ")));
+    }
+
+    private static boolean hasPosition(@Nullable CompoundTag tag) {
+        return tag != null && tag.contains("PosX", Tag.TAG_ANY_NUMERIC) && tag.contains("PosY", Tag.TAG_ANY_NUMERIC)
+                && tag.contains("PosZ", Tag.TAG_ANY_NUMERIC);
     }
 
     @Override

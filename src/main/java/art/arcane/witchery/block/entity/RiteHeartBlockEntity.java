@@ -87,7 +87,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     private final Deque<ResourceLocation> queuedRites = new ArrayDeque<>();
     private final List<RiteUpkeep> upkeep = new ArrayList<>();
 
-    private record Sacrifice(ItemStack stack, @Nullable BlockPos grassper) {
+    private record Sacrifice(ItemStack stack, BlockPos origin) {
     }
 
     private record SavedUpkeep(RiteUpkeep rite, int order) {}
@@ -96,8 +96,10 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     @Nullable
     private UUID initiator;
     private int stepTicks;
+    private int offeringStep;
     private int covenSize;
     private int covenSummoned;
+    private boolean legacyOfferingReturns;
     private boolean legacyWaystoneMatch;
     @Nullable private WeatherRites.Storm storm;
 
@@ -109,6 +111,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (!(level instanceof ServerLevel server)) {
             return;
         }
+        heart.restoreOfferingReturns(server);
         boolean powered = level.hasNeighborSignal(pos);
         if (powered != state.getValue(RiteHeartBlock.POWERED)) {
             level.setBlock(pos, state.setValue(RiteHeartBlock.POWERED, powered), Block.UPDATE_CLIENTS);
@@ -165,7 +168,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
 
     private void advance(ServerLevel level) {
         if (!(level.getRecipeManager().byKey(activeRite).orElse(null) instanceof ItemRiteRecipe rite)
-                || sacrificed.size() > rite.sacrifices().size()) {
+                || offeringStep > rite.sacrifices().size()) {
             abort(level, "message.witchery.rite.unknown");
             return;
         }
@@ -178,25 +181,30 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         BlockPos pos = getBlockPos();
         if (legacyWaystoneMatch) {
             legacyWaystoneMatch = false;
-            if (sacrificed.isEmpty() && rite.findSacrifices(level, pos, 0) == null
+            if (offeringStep == 0 && rite.findSacrifices(level, pos, 0) == null
                     && level.getRecipeManager().byKey(RiteActivation.TRAVEL_TO_CREATURE).orElse(null) instanceof ItemRiteRecipe creatureRite
                     && creatureRite.findSacrifices(level, pos, 0) != null) {
                 rite = creatureRite;
                 activeRite = creatureRite.id();
             }
         }
-        if (sacrificed.size() == rite.sacrifices().size()) {
+        if (offeringStep == rite.sacrifices().size()) {
             finish(level, rite);
             return;
         }
-        List<ItemRiteRecipe.Offering> remaining = rite.findSacrifices(level, pos, sacrificed.size());
+        List<ItemRiteRecipe.Offering> remaining = rite.findSacrifices(level, pos, offeringStep);
         if (remaining == null) {
             abort(level, "message.witchery.rite.missing_ingredient");
             return;
         }
         ItemRiteRecipe.Offering offering = remaining.get(0);
-        sacrificed.add(new Sacrifice(offering.stack().copyWithCount(1), offering.grassper()));
+        ItemStack stack = offering.stack().copyWithCount(1);
+        BlockPos origin = BlockPos.containing(offering.position());
+        ItemStack returned = rite.returnedOffering(stack);
+        if (returned.isEmpty()) sacrificed.add(new Sacrifice(stack, origin));
+        else if (!dropOffering(level, origin, returned)) return;
         offering.consume().run();
+        offeringStep++;
         var location = offering.position();
         level.sendParticles(ParticleTypes.INSTANT_EFFECT, location.x, location.y + 0.2, location.z,
                 8, 0.2, 0.22, 0.2, 0.02);
@@ -320,11 +328,17 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             wolfRiteTarget = target;
         } else if (rite.action() == ItemRiteRecipe.Action.ITEM || rite.action() == ItemRiteRecipe.Action.BIND_WAYSTONE
                 || rite.action() == ItemRiteRecipe.Action.BIND_CREATURE_WAYSTONE
+                || rite.action() == ItemRiteRecipe.Action.COPY_WAYSTONE
                 || rite.action() == ItemRiteRecipe.Action.BIND_WORSHIP_STATUE) {
             ItemStack output = rite.result().copy();
             if (rite.action() == ItemRiteRecipe.Action.BIND_WAYSTONE) {
                 output = new ItemStack(WitcheryIngredient.BOUND_WAYSTONE.item());
                 WaystoneItem.bindLocation(output, level, pos);
+            } else if (rite.action() == ItemRiteRecipe.Action.COPY_WAYSTONE) {
+                output = new ItemStack(WitcheryIngredient.BOUND_WAYSTONE.item(), 2);
+                for (Sacrifice sacrifice : sacrificed) {
+                    if (WaystoneItem.copyLocation(sacrifice.stack(), output)) break;
+                }
             } else if (rite.action() == ItemRiteRecipe.Action.BIND_CREATURE_WAYSTONE) {
                 LivingEntity target = WaystoneTravel.findBindingTarget(level, pos, false);
                 if (target == null) {
@@ -441,12 +455,6 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 if (recipient.isAlive()) InfusionEnergy.grant(recipient, infusionType, INFUSION_CAPACITY);
             }
         }
-        for (Sacrifice sacrifice : sacrificed) {
-            ItemStack offering = sacrifice.stack();
-            if (offering.is(WitcheryIngredient.NECROMANTIC_STONE.item()) && !rite.consumeNecromanticStone()) {
-                Block.popResource(level, pos, offering);
-            }
-        }
         sacrificed.clear();
         if (rite.action() == ItemRiteRecipe.Action.TRANSPOSE_ORES) {
             if (RiteOfTransposition.transposeOreLayer(level, pos, 1, covenSize)) {
@@ -488,7 +496,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         ItemRiteRecipe.Offering stone = rite.findLocationOffering(level, heart);
         if (stone == null) return heart;
         BlockPos target = WaystoneItem.location(stone.stack()).position();
-        sacrificed.add(new Sacrifice(stone.stack().copyWithCount(1), stone.grassper()));
+        sacrificed.add(new Sacrifice(stone.stack().copyWithCount(1), BlockPos.containing(stone.position())));
         stone.consume().run();
         return target;
     }
@@ -634,11 +642,29 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     }
 
     public void refundSacrifices(ServerLevel level) {
+        restoreOfferingReturns(level);
         for (Sacrifice sacrifice : sacrificed) {
-            BlockPos origin = sacrifice.grassper() == null ? getBlockPos() : sacrifice.grassper();
-            Block.popResource(level, origin, sacrifice.stack());
+            dropOffering(level, sacrifice.origin(), sacrifice.stack());
         }
         sacrificed.clear();
+    }
+
+    private void restoreOfferingReturns(ServerLevel level) {
+        if (!legacyOfferingReturns) return;
+        legacyOfferingReturns = false;
+        if (level.getRecipeManager().byKey(activeRite).orElse(null) instanceof ItemRiteRecipe rite) {
+            sacrificed.removeIf(sacrifice -> {
+                ItemStack returned = rite.returnedOffering(sacrifice.stack());
+                return !returned.isEmpty() && dropOffering(level, sacrifice.origin(), returned);
+            });
+        }
+        setChanged();
+    }
+
+    private static boolean dropOffering(ServerLevel level, BlockPos origin, ItemStack stack) {
+        var drop = new ItemEntity(level, origin.getX() + 0.5, origin.getY() + 0.5, origin.getZ() + 0.5, stack);
+        drop.setDefaultPickUpDelay();
+        return level.addFreshEntity(drop);
     }
 
     private void nextCast(ServerLevel level) {
@@ -649,6 +675,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             covenSummoned = 0;
         }
         stepTicks = 0;
+        offeringStep = 0;
+        legacyOfferingReturns = false;
         legacyWaystoneMatch = false;
         storm = null;
         updateActiveState(level);
@@ -683,7 +711,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             CompoundTag saved = (CompoundTag) entry;
             ItemStack stack = WitcheryIngredient.loadInventoryStack(saved);
             if (!stack.isEmpty()) {
-                BlockPos origin = saved.contains("GrassperPos", Tag.TAG_LONG) ? BlockPos.of(saved.getLong("GrassperPos")) : null;
+                BlockPos origin = saved.contains("OfferingPos", Tag.TAG_LONG) ? BlockPos.of(saved.getLong("OfferingPos"))
+                        : saved.contains("GrassperPos", Tag.TAG_LONG) ? BlockPos.of(saved.getLong("GrassperPos")) : getBlockPos();
                 sacrificed.add(new Sacrifice(stack, origin));
             }
         }
@@ -716,6 +745,9 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         storm = activeRite == null ? null : WeatherRites.Storm.load(tag.getCompound("Storm"));
         legacyWaystoneMatch = RiteActivation.TRAVEL_TO_LOCATION.equals(activeRite)
                 && (!tag.contains("QueuedRites", Tag.TAG_LIST) || tag.getBoolean("LegacyWaystoneMatch"));
+        boolean hasOfferingStep = tag.contains("OfferingStep", Tag.TAG_ANY_NUMERIC);
+        offeringStep = hasOfferingStep ? Math.max(0, tag.getInt("OfferingStep")) : sacrificed.size();
+        legacyOfferingReturns = !hasOfferingStep && activeRite != null && !sacrificed.isEmpty();
         stepTicks = Mth.clamp(tag.getInt("StepTicks"), 0, pulseInterval() - 1);
     }
 
@@ -790,6 +822,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (activeRite != null) {
             tag.putString("Rite", activeRite.toString());
             tag.putInt("StepTicks", stepTicks);
+            if (!legacyOfferingReturns) tag.putInt("OfferingStep", offeringStep);
             ListTag queued = new ListTag();
             for (var id : queuedRites) queued.add(StringTag.valueOf(id.toString()));
             tag.put("QueuedRites", queued);
@@ -826,7 +859,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         ListTag held = new ListTag();
         for (Sacrifice sacrifice : sacrificed) {
             CompoundTag saved = sacrifice.stack().save(new CompoundTag());
-            if (sacrifice.grassper() != null) saved.putLong("GrassperPos", sacrifice.grassper().asLong());
+            saved.putLong("OfferingPos", sacrifice.origin().asLong());
             held.add(saved);
         }
         tag.put("Sacrifices", held);

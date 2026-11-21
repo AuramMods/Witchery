@@ -104,6 +104,8 @@ public final class GuideBookPages {
         if (recipe.nightOnly()) steps.add(text("night_only"));
         if (recipe.dayOnly()) steps.add(text("day_only"));
         if (recipe.action().targetsStormWithWaystone()) steps.add(text("storm_waystone"));
+        if (recipe.action() == ItemRiteRecipe.Action.BIND_WAYSTONE) steps.add(text("bind_waystone"));
+        if (recipe.action() == ItemRiteRecipe.Action.COPY_WAYSTONE) steps.add(text("copy_waystone"));
         var protection = recipe.action().protection();
         if (protection != null) {
             steps.add(text("protection_effect." + protection.name().toLowerCase(Locale.ROOT)));

@@ -33,6 +33,8 @@ public final class RiteActivation {
             entry("infusion_of_the_light", 27), entry("infusion_of_the_overworld", 28),
             entry("infusion_of_otherwhere", 29), entry("infusion_of_the_infernal", 30),
             entry("rite_of_infusing_the_broom", 31), entry("rite_of_necromantic_stone", 32),
+            entry("rite_of_copying_a_waystone", 34), entry("rite_of_binding_a_waystone_portable", 41),
+            entry("rite_of_copying_a_waystone_portable", 42),
             entry("rite_of_the_mystic_branch", 50), entry("rite_of_binding_a_familiar", 54),
             entry("rite_of_calling_a_familiar", 55), entry("rite_of_corrupting_voodoo_protection", 56),
             entry("rite_of_the_crystal_ball", 57), entry("rite_of_the_seer_stone", 61),

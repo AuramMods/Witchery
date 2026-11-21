@@ -290,6 +290,7 @@
 - [x] Verify legacy location and creature tags, safe placement, Nether travel and Ender Inhibition. All 94 required Forge GameTests, data generation and JAR reobfuscation passed.
 - [x] Deliver a parcel or throw a brew with a tamed Owl. The muted player assigned a location stone, launched the Owl with an empty hand, and restarted the server while it was airborne. The Owl delivered the named paper and returned to sit near its launch point. A second route made it throw Ink at a bound pig. A route of more than 160 blocks delivered a second parcel outside the player's simulation distance. All 96 required GameTests passed.
 - [x] Bind or use dropped Waystones at the original Otherwhere glyph patterns. The muted client tossed ten into an eight-glyph ring and got eight bound stones and two unbound stones. A powered ring bound a named pig. Dropping the bound stack inside a twelve-glyph ring moved the client, loose paper and seven remaining stones to the exact saved point. All 99 required GameTests passed.
+- [x] Restore portable location binding and both Waystone copy recipes. Each copy produces two stones with the source location and custom name. Portable binding and copying use a Charged Attuned Stone in a small white ring. Powered copying uses Redstone and 500 altar power.
 - [ ] Restore the remaining Waystone uses in rites and equipment.
 
 ## Crystal Ball readings (2026-11-20)
@@ -374,7 +375,15 @@
 - [x] Use one muted survival click to queue Recharge, Protection and Portable Barrier. Restart after the feather was staged and verify all three start in order and run together. Recharge added ten charges while Protection repelled a pig. One click cleared upkeep and the portable roof expired.
 - [x] Verify whole offering reservations in the packaged build. One dropped Redstone stack and one matching filled Grassper queued Protection alone. Adding another dropped stack queued Imprisonment as well. Both wards began upkeep, and the muted client stopped them with one click.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 409 required Forge GameTests. The six new cases cover offering reservations, concurrent upkeep, cancellation, failure refunds, legacy upkeep saves, and both Waystone routes.
-- [ ] Restore the original point in the offering sequence at which charged stones and reusable rite tools return to the player.
+
+## Returned Offerings and Waystone Copies (2026-11-21)
+
+- [x] Drop the Arthana, Boline, and reusable Necromantic Stone at their source during their offering step. Preserve durability and item tags. Charged Attuned Stones return discharged. The Rite of the Spectral Stone still consumes its Necromantic Stone.
+- [x] Save the offering step separately from the items held for refunds. Resume earlier Forge port saves with their staged tools and preserve the Grassper return point. Canceling returns the offerings still held by the cast.
+- [x] Add the portable binding and copy recipes to Circle Magic with their original offerings, power, and output.
+- [x] In muted survival, activate portable binding and observe the discharged stone at its Grassper while the cast is still active. Verify that the resulting stone marks the Heart Glyph and that there is no altar in range.
+- [x] Restart the dedicated server after staging two of five portable copy offerings. Verify two named copies with the original Nether coordinates and one discharged stone. Verify the powered copy draws 500 altar power, and cancellation after an Arthana returns refunds the Gypsum.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 414 required Forge GameTests. The five new cases cover portable binding, both copy recipes, reusable blade tags, legacy pending returns, and the Spectral Stone exception.
 
 ## Familiar Brews and Baba Yaga (2026-11-20)
 

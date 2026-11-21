@@ -1,0 +1,12 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [
+    {"item": "witchery:bound_waystone"},
+    {"item": "witchery:waystone"},
+    {"item": "witchery:ender_dew"},
+    {"item": "minecraft:redstone"}
+  ],
+  "power": 500,
+  "action": "copy_waystone"
+}
