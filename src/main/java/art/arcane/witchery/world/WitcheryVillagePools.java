@@ -29,6 +29,7 @@ public final class WitcheryVillagePools {
     public static final ResourceLocation APOTHECARY = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "village/apothecary");
     public static final ResourceLocation WITCH_HUT = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "village/witch_hut");
     public static final ResourceLocation KEEP = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "village/keep");
+    public static final ResourceLocation WALL_ANCHOR = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "village/wall_anchor");
     public static final ResourceLocation WATCHTOWER = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "village/watchtower");
     private static final int MAX_POOL_ENTRY_WEIGHT = 150;
     private static final List<String> VILLAGE_STYLES = List.of("plains", "desert", "savanna", "snowy", "taiga");
@@ -43,6 +44,9 @@ public final class WitcheryVillagePools {
         if (WitcheryServerConfig.GENERATE_BOOK_SHOPS.get()) addVillagePiece(pools, processors, BOOKSHOP, 15);
         if (WitcheryServerConfig.GENERATE_APOTHECARIES.get()) addVillagePiece(pools, processors, APOTHECARY, 15);
         if (WitcheryServerConfig.GENERATE_WITCH_HUTS.get()) addVillagePiece(pools, processors, WITCH_HUT, 10);
+        if (WitcheryServerConfig.TOWN_WALL_MODE.get() > 0) {
+            addVillagePiece(pools, processors, WALL_ANCHOR, WitcheryServerConfig.TOWN_WALL_WEIGHT.get());
+        }
         if (WitcheryServerConfig.TOWN_KEEP_MODE.get() > 0) {
             addVillagePiece(pools, processors, KEEP, WitcheryServerConfig.TOWN_KEEP_WEIGHT.get(), 1, true);
         }
@@ -89,10 +93,13 @@ public final class WitcheryVillagePools {
     }
 
     public static Optional<ResourceLocation> limitedBuilding(StructurePoolElement element) {
+        return templateId(element).filter(id -> id.equals(BOOKSHOP) || id.equals(APOTHECARY) || id.equals(WITCH_HUT)
+                || id.equals(KEEP) || id.equals(WATCHTOWER) || id.equals(WALL_ANCHOR));
+    }
+
+    public static Optional<ResourceLocation> templateId(StructurePoolElement element) {
         return element instanceof SinglePoolElement single
                 ? ((SinglePoolElementAccessor) single).witchery$getTemplate().left()
-                        .filter(id -> id.equals(BOOKSHOP) || id.equals(APOTHECARY) || id.equals(WITCH_HUT)
-                                || id.equals(KEEP) || id.equals(WATCHTOWER))
                 : Optional.empty();
     }
 }

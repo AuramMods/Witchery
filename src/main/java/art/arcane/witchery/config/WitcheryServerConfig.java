@@ -40,6 +40,8 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.BooleanValue GENERATE_BOOK_SHOPS;
     public static final ForgeConfigSpec.BooleanValue GENERATE_APOTHECARIES;
     public static final ForgeConfigSpec.BooleanValue GENERATE_WITCH_HUTS;
+    public static final ForgeConfigSpec.IntValue TOWN_WALL_MODE;
+    public static final ForgeConfigSpec.IntValue TOWN_WALL_WEIGHT;
     public static final ForgeConfigSpec.IntValue TOWN_KEEP_MODE;
     public static final ForgeConfigSpec.IntValue TOWN_KEEP_WEIGHT;
     public static final ForgeConfigSpec.IntValue TOWN_GUARD_TOWER_CLUSTER_GROUPS;
@@ -133,6 +135,10 @@ public final class WitcheryServerConfig {
                 .worldRestart().define("generateApothecaries", true);
         GENERATE_WITCH_HUTS = builder.comment("Add coven witches' huts to newly generated villages.")
                 .worldRestart().define("generateWitchHuts", true);
+        TOWN_WALL_MODE = builder.comment("Wall eligibility per new village. 0 disables walls, 1 gives each village a chance, and 2 makes every village eligible.")
+                .worldRestart().defineInRange("townWallMode", 1, 0, 2);
+        TOWN_WALL_WEIGHT = builder.comment("Village house pool weight for the town wall.")
+                .worldRestart().defineInRange("townWallWeight", 100, 0, 1000);
         TOWN_KEEP_MODE = builder.comment("Keep eligibility per new village. 0 disables keeps, 1 gives each village a chance, and 2 makes every village eligible.")
                 .worldRestart().defineInRange("townKeepMode", 1, 0, 2);
         TOWN_KEEP_WEIGHT = builder.comment("Village house pool weight for the keep.")

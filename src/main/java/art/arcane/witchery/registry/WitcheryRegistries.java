@@ -13,11 +13,13 @@ import art.arcane.witchery.world.VillageApothecaryProcessor;
 import art.arcane.witchery.world.TormentChunkGenerator;
 import art.arcane.witchery.world.VillageBookshopProcessor;
 import art.arcane.witchery.world.VillageFoundation;
+import art.arcane.witchery.world.VillageWallPiece;
 import art.arcane.witchery.world.WickerManFeature;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.minecraftforge.common.loot.IGlobalLootModifier;
 import net.minecraftforge.common.world.BiomeModifier;
@@ -36,6 +38,8 @@ public final class WitcheryRegistries {
             DeferredRegister.create(ForgeRegistries.Keys.BIOME_MODIFIER_SERIALIZERS, Witchery.MODID);
     private static final DeferredRegister<StructureProcessorType<?>> STRUCTURE_PROCESSORS =
             DeferredRegister.create(Registries.STRUCTURE_PROCESSOR, Witchery.MODID);
+    private static final DeferredRegister<StructurePieceType> STRUCTURE_PIECES =
+            DeferredRegister.create(Registries.STRUCTURE_PIECE, Witchery.MODID);
     public static final RegistryObject<Codec<HobgoblinSpawnModifier>> HOBGOBLIN_SPAWNS =
             BIOME_MODIFIERS.register("hobgoblin_spawns", () -> HobgoblinSpawnModifier.CODEC);
     public static final RegistryObject<StructureProcessorType<VillageBookshopProcessor>> BOOKSHOP_PROCESSOR =
@@ -44,6 +48,8 @@ public final class WitcheryRegistries {
             STRUCTURE_PROCESSORS.register("village_apothecary", () -> () -> VillageApothecaryProcessor.CODEC);
     public static final RegistryObject<StructureProcessorType<VillageFoundation>> VILLAGE_FOUNDATION =
             STRUCTURE_PROCESSORS.register("village_foundation", () -> () -> VillageFoundation.CODEC);
+    public static final RegistryObject<StructurePieceType> VILLAGE_WALL =
+            STRUCTURE_PIECES.register("village_wall", () -> (StructurePieceType.ContextlessType) VillageWallPiece::new);
 
     static {
         LOOT_MODIFIERS.register("grass_seeds", () -> GrassSeedLootModifier.CODEC);
@@ -77,5 +83,6 @@ public final class WitcheryRegistries {
         CHUNK_GENERATORS.register(eventBus);
         BIOME_MODIFIERS.register(eventBus);
         STRUCTURE_PROCESSORS.register(eventBus);
+        STRUCTURE_PIECES.register(eventBus);
     }
 }

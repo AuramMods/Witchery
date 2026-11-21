@@ -35,6 +35,8 @@ abstract class VillageBuildingLimitMixin {
     @Unique
     private Boolean witchery$allowsKeep;
     @Unique
+    private Boolean witchery$allowsWall;
+    @Unique
     private final Map<StructurePoolElement, Integer> witchery$towerLimits = new IdentityHashMap<>();
 
     @ModifyArg(method = "tryPlacingChildren", at = @At(value = "INVOKE", target = "Ljava/util/List;addAll(Ljava/util/Collection;)Z"))
@@ -70,6 +72,13 @@ abstract class VillageBuildingLimitMixin {
                 witchery$allowsKeep = mode == 2 || mode == 1 && random.nextBoolean();
             }
             return witchery$allowsKeep;
+        }
+        if (id.equals(WitcheryVillagePools.WALL_ANCHOR)) {
+            if (witchery$allowsWall == null) {
+                int mode = WitcheryServerConfig.TOWN_WALL_MODE.get();
+                witchery$allowsWall = mode == 2 || mode == 1 && random.nextBoolean();
+            }
+            return witchery$allowsWall;
         }
         if (id.equals(WitcheryVillagePools.WATCHTOWER)) {
             // Each legacy weighted entry drew its own limit and stopped competing once it was full.

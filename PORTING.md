@@ -593,7 +593,18 @@
 - [x] Restart both servers and verify the two chest inventories, the player's saddle and helmet, and all 124 original guard UUIDs across the two worlds.
 - [x] Rejoin the restarted server with the final JAR and confirm the keep's remaining loot and the player's helmet. Generate a snowy and a desert village and verify the wall, roof, cap, and railing blocks in each of their four watchtowers.
 - [x] Pass Java 17 data generation, JAR reobfuscation, and all ten focused Forge GameTests in a fresh test world. The tests cover the ordinary and abandoned pools, independent groups, rotated ladders, the desert and snowy palettes, foundations, loot references, and armed guards.
-- [ ] Restore village-wide walls, gates, and their generation settings.
+
+## Village Walls and Gates (2026-11-21)
+
+- [x] Restore the weighted `townWallMode` and `townWallWeight` settings. The default gives each inhabited village a seeded zero-or-one limit at weight 100. Mode zero disables new wall plans. Mode two makes one wall eligible where the anchor fits.
+- [x] Enclose each selected village using the actual street connectors, the legacy 20-block side margins and seven-block end margins, and space for modern building footprints. Close short gaps, trace the exterior, and give open street ends three-wide gateways.
+- [x] Restore three-block-thick walls, stepped parapets, fenced gate lintels, and inverted stair trim, using the original stone, desert, and snowy palettes. Add a persistent armed guard for each 201 planned columns where the rampart supports it.
+- [x] Save the complete wall plan in the village start and place each section only in its generating chunk. The plan replaces the legacy temporary controller block. Terrain samples set the stepped crest and each chunk extends the footing to its actual terrain, preserving existing solid blocks.
+- [x] Verify that the default produces both walled and unwalled villages. Three of five inspected seed-1 starts received a plan. The disabled plains fixture generated with its ordinary Witchery buildings and zero walls.
+- [x] Save the plains fixture after 285 of its 526 wall columns generated. Restart and finish all 526 from the same plan. Confirm six gate lintels and the same ten armed guard UUIDs, including both wall sentries.
+- [x] Walk through a generated plains gate in both directions with the muted client in survival. Cross one gate each in the snowy and desert fixtures and inspect their material palettes. Existing solid terrain can cover an opening, as observed on a snowy shoreline.
+- [x] Pass Java 17 data generation, JAR reobfuscation, and all 14 focused Forge GameTests. The wall tests cover the ordinary and abandoned pools, plan round-trip, chunk clipping, protected solid blocks, guard equipment, gate clearance, and three material palettes.
+- [ ] Review the remaining legacy village biome settings and the vanilla church and blacksmith weighting overrides against 1.20.1 village generation.
 
 ## Witchery Guidebooks (2026-11-21)
 
