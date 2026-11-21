@@ -341,7 +341,7 @@
 - [x] Restore the Frozen Heart's Ice Shell and the Icy Needle's Cold in the Witch's Cauldron. Strength expands the shell or the water-freezing range. Direct hits with Ice Shell encase susceptible creatures. Glancing hits apply Chilled with a shorter duration.
 - [x] In a fresh disposable world, fill the cauldron through the muted survival client and throw in the supplied ingredients. Bottle Ice Shell after a dedicated restart, then verify the direct-hit shell and shorter glancing Chilled. Brew Cold and confirm connected water freezes to the expected boundary. The resulting blocks persist across another restart. The test used a prepared altar and targets.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 344 required Forge GameTests. New cases cover the original Chilled attribute and damage rules, migrated ingredients, glancing hits, the radius boundary, resistant entities, and preserving a container while clearing brew gas inside a shell.
-- [ ] Restore the remaining circle rites.
+- [x] Restore the original circle rite actions and map all 96 legacy registration IDs, including the Rite of Prior Incarnation.
 
 ## Sky’s Wrath and Total Eclipse (2026-11-21)
 
@@ -425,7 +425,15 @@
 - [x] Cast all four rites with the muted survival client on packaged Forge. Blight withered wheat and applied Nausea II. The cat-enhanced Blindness lasted five minutes for the cow on the perimeter and left the inner cow unaffected. Hell on Earth sacrificed its villager, charged the source altar, spawned creatures at the bound destination, and stopped when the destination altar was removed.
 - [x] Restart the dedicated server after the first lightning pulse of Rain of Toads. The cast resumed from stage one, started rain, and spawned poisonous temporary toads as it entered stage five upkeep.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 502 required Forge GameTests. The four new cases cover Blight terrain, Blindness boundaries and existing effects, toad lifespan and poison, and legacy stage migration.
-- [ ] Restore Prior Incarnation, the last unmapped legacy circle rite.
+
+## Rite of Prior Incarnation (2026-11-21)
+
+- [x] Restore the small Infernal ring with Necromantic Stone, Tongue of Dog, a bone, Spectral Dust, and a Charged Attuned Stone. Return the Necromantic Stone and discharge the Attuned Stone. Keep the Spirit World restriction.
+- [x] Record recoverable items when death drops expire while their owner is online. Allow any nearby owner within five blocks of the glyph to recover items from a death within 16 blocks and summon their named skeleton. Preserve enchantments, damage and stack counts.
+- [x] Preserve named legacy item records and location fields. New drops carry owner and death UUIDs to prevent an older drop from entering a later death's record. A partial pickup preserves recoverability for the remainder. Keep any output that Forge rejects in the saved record.
+- [x] In the muted survival client, recover a partially picked-up iron stack in two trips. Let the sword and emeralds expire, restart the headless server and recover both through the Heart Glyph. A cast outside the death radius left the record intact. An attempt with `keepInventory` enabled refunded staged offerings and left the record intact.
+- [x] Restore the two server options for death item recovery and grave mod precedence. With GraveStone Mod installed, the packaged dedicated server refunded the staged offering under the default setting and allowed the cast when grave mod precedence was disabled.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all five new Forge GameTests. The broad run passed 504 of 507. The three older Incendio rank, legacy Wolfman and portable barrier cases passed in isolated fixtures alongside the five new cases.
 
 ## Queued Circle Rites (2026-11-21)
 

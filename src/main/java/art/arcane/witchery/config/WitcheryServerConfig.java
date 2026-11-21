@@ -13,6 +13,8 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.IntValue COVEN_WITCH_SPAWN_WEIGHT;
     public static final ForgeConfigSpec.BooleanValue RESTRICT_POPPET_SHELVES;
     public static final ForgeConfigSpec.BooleanValue ALLOW_VAMPIRE_RITUAL;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_DEATH_ITEM_RECOVERY_RITE;
+    public static final ForgeConfigSpec.BooleanValue RESPECT_OTHER_DEATH_CHEST_MODS;
     public static final ForgeConfigSpec.BooleanValue ALLOW_VAMPIRE_QUESTS;
     public static final ForgeConfigSpec.IntValue VAMPIRE_DEATH_ITEM_KEEP_ALIVE_MINS;
     public static final ForgeConfigSpec.DoubleValue VAMPIRE_HUNTER_SPAWN_CHANCE;
@@ -60,6 +62,12 @@ public final class WitcheryServerConfig {
                 .comment("Limit Poppet Shelf protection to the Overworld, Nether, End, and Dream.")
                 .define("restrictPoppetShelvesToVanillaAndSpiritDimensions", true);
         ALLOW_VAMPIRE_RITUAL = builder.define("allowVampireRitual", true);
+        ALLOW_DEATH_ITEM_RECOVERY_RITE = builder
+                .comment("Allow Prior Incarnation to recover expired player death drops.")
+                .define("allowDeathItemRecoveryRite", true);
+        RESPECT_OTHER_DEATH_CHEST_MODS = builder
+                .comment("Yield death storage to Corail Tombstone, GraveStone Mod, Corpse, or You're in Grave Danger.")
+                .define("respectOtherDeathChestMods", true);
         ALLOW_VAMPIRE_QUESTS = builder.define("allowVampireQuests", true);
         VAMPIRE_DEATH_ITEM_KEEP_ALIVE_MINS = builder
                 .comment("Minutes before items dropped by a vampire player on death despawn.")

@@ -124,6 +124,7 @@ public final class GuideBookPages {
             steps.add(text("hell_on_earth_upkeep"));
         }
         if (recipe.action() == ItemRiteRecipe.Action.RAIN_TOADS) steps.add(text("toad_rain_effect"));
+        if (recipe.action() == ItemRiteRecipe.Action.PRIOR_INCARNATION) steps.add(text("prior_incarnation_effect"));
         if (recipe.action().isVolcano()) {
             steps.add(text("volcano_lava"));
             if (recipe.action().usesWaystoneTarget()) steps.add(text("volcano_waystone"));

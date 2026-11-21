@@ -42,7 +42,7 @@ public final class RiteActivation {
             entry("curse_of_blight", 37), entry("curse_of_blindness", 38), entry("rite_of_hell_on_earth", 39),
             entry("rite_of_witch_summoning", 40), entry("rite_of_binding_a_waystone_portable", 41),
             entry("rite_of_copying_a_waystone_portable", 42), entry("rite_of_natures_power", 43),
-            entry("rite_of_binding_a_circle_portable", 45),
+            entry("rite_of_prior_incarnation", 44), entry("rite_of_binding_a_circle_portable", 45),
             entry("rite_of_moving_earth_medium", 46), entry("rite_of_moving_earth_large", 47),
             entry("curse_of_misfortune", 48), entry("cure_of_misfortune", 49),
             entry("rite_of_the_mystic_branch", 50), entry("rite_of_cooking", 51),

@@ -117,7 +117,8 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         BLIGHT,
         AREA_BLINDNESS,
         HELL_ON_EARTH,
-        RAIN_TOADS;
+        RAIN_TOADS,
+        PRIOR_INCARNATION;
 
         @Nullable private final DirectedCurse directedCurse;
         private final boolean inflictsDirectedCurse;
@@ -244,6 +245,7 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         if (level.dimension().equals(WitcheryDimensions.DREAM)) {
             if (action.cooksFood()) return "message.witchery.rite.cooking_dream";
             if (action.directedCurse() != null) return "message.witchery.rite.directed_curse_dream";
+            if (action == Action.PRIOR_INCARNATION) return "message.witchery.rite.prior_incarnation_dream";
             if (action == Action.CALL_BEASTS) return "message.witchery.rite.call_beasts_dream";
             if (action.usesLandscapeUpkeep()) return "message.witchery.rite.landscape_dream";
             if (action == Action.TRANSPOSE_CREATURE || action == Action.TRANSPOSE_ORES) {
@@ -488,6 +490,7 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 case "area_blindness" -> Action.AREA_BLINDNESS;
                 case "hell_on_earth" -> Action.HELL_ON_EARTH;
                 case "rain_toads" -> Action.RAIN_TOADS;
+                case "prior_incarnation" -> Action.PRIOR_INCARNATION;
                 case "part_earth" -> Action.PART_EARTH;
                 case "raise_earth" -> Action.RAISE_EARTH;
                 case "raise_earth_medium" -> Action.RAISE_EARTH_MEDIUM;

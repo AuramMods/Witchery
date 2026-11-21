@@ -1,0 +1,12 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphinfernal"}],
+  "sacrifices": [
+    {"item": "witchery:necromantic_stone"},
+    {"item": "witchery:dog_tongue"},
+    {"item": "minecraft:bone"},
+    {"item": "witchery:spectral_dust"},
+    {"item": "witchery:charged_attuned_stone"}
+  ],
+  "action": "prior_incarnation"
+}

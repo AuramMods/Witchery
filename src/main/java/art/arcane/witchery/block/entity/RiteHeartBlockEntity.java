@@ -36,6 +36,7 @@ import art.arcane.witchery.ritual.Banishment;
 import art.arcane.witchery.ritual.GlyphicTransformation;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
 import art.arcane.witchery.ritual.LandscapeRites;
+import art.arcane.witchery.ritual.PriorIncarnation;
 import art.arcane.witchery.ritual.ProtectionRites;
 import art.arcane.witchery.ritual.RainOfToads;
 import art.arcane.witchery.ritual.RiteActivation;
@@ -419,6 +420,16 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         }
         if (action == ItemRiteRecipe.Action.RAIN_TOADS) {
             toadRainStage = 0;
+            return;
+        }
+        if (action == ItemRiteRecipe.Action.PRIOR_INCARNATION) {
+            if (!PriorIncarnation.isAllowed(level)) {
+                abort(level, "message.witchery.rite.prior_incarnation_disabled");
+                return;
+            }
+            PriorIncarnation.recover(level, pos);
+            sacrificed.clear();
+            nextCast(level);
             return;
         }
         if (rite.action() == ItemRiteRecipe.Action.ECLIPSE && !WeatherRites.eclipse(level)) {
