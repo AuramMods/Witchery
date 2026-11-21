@@ -94,7 +94,7 @@ public final class WaystoneTravel {
     }
 
     @Nullable
-    private static Vec3 findLanding(Entity actor, ServerLevel level, BlockPos center, int radius) {
+    static Vec3 findLanding(Entity actor, ServerLevel level, BlockPos center, int radius) {
         BlockPos preferred = center.offset(level.random.nextIntBetweenInclusive(-radius, radius), 0,
                 level.random.nextIntBetweenInclusive(-radius, radius));
         Vec3 arrival = landingInColumn(actor, level, preferred);
@@ -119,7 +119,7 @@ public final class WaystoneTravel {
         return null;
     }
 
-    private static boolean protectedWorld(ResourceKey<Level> dimension) {
+    static boolean protectedWorld(ResourceKey<Level> dimension) {
         return dimension.equals(WitcheryDimensions.DREAM) || dimension.equals(WitcheryDimensions.MIRROR);
     }
 

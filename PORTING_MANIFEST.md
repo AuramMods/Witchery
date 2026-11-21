@@ -437,9 +437,9 @@ The original `witchhat`, `witchrobe`, `necromancerrobe`, and `babashat` IDs equi
 | `NECROMANCERS_ROBES` | `witchery:necromancerrobe` |
 | `BITING_BELT` | `witchery:bitingbelt` (dyeable leggings, two charges in `WITCPotion` and `WITCPotion2`) |
 | `BARK_BELT` | `witchery:barkbelt` (dyeable leggings, renewable `WITCBarkPieces` ward) |
-| `ICY_SLIPPERS` | `witchery:iceslippers` |
-| `RUBY_SLIPPERS` | `witchery:rubyslippers` |
-| `SEEPING_SHOES` | `witchery:seepingshoes` |
+| `ICY_SLIPPERS` | `witchery:iceslippers` (boots that freeze water, solidify lava, and activate perpetual ice plates) |
+| `RUBY_SLIPPERS` | `witchery:rubyslippers` (boots that cast a return-home or Waystone chant using infusion charge) |
+| `SEEPING_SHOES` | `witchery:seepingshoes` (boots that turn Poison and Wither into nearby plant growth) |
 | `HUNTER_HAT` | `witchery:hunterhat` |
 | `HUNTER_COAT` | `witchery:huntercoat` |
 | `HUNTER_LEGS` | `witchery:hunterlegs` |

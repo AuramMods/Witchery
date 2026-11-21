@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "witchery:seepingshoes"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_witches_hand": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "witchery:witchhand"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_witches_hand",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "witchery:seepingshoes"
+    ]
+  },
+  "sends_telemetry_event": false
+}

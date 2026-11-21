@@ -32,6 +32,7 @@ import art.arcane.witchery.item.HunterClothingItem;
 import art.arcane.witchery.item.HuntsmanSpearItem;
 import art.arcane.witchery.item.ParasyticLouseItem;
 import art.arcane.witchery.item.BarkBeltItem;
+import art.arcane.witchery.item.WitchFootwear;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.item.WolfsbaneFlowerItem;
 import art.arcane.witchery.lycanthropy.Lycanthropy;
@@ -54,10 +55,14 @@ import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.ritual.DroppedWaystones;
 import art.arcane.witchery.world.DreamTravel;
 import art.arcane.witchery.world.MirrorTravel;
+import art.arcane.witchery.world.RubySlipperTravel;
 import art.arcane.witchery.world.ScryingView;
 import art.arcane.witchery.world.TormentTravel;
 import art.arcane.witchery.world.WitcheryDimensions;
 import art.arcane.witchery.world.WitcheryDimensionTravelHooks;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.network.chat.Component;
@@ -79,6 +84,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.ServerChatEvent;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.EntityEvent;
@@ -274,6 +280,7 @@ public final class WitcheryEventHooks {
                 serverPlayer.addEffect(new MobEffectInstance(MobEffects.WITHER, 100, 1));
             }
         }
+        WitchFootwear.tick(serverPlayer);
     }
 
     @SubscribeEvent
@@ -636,10 +643,28 @@ public final class WitcheryEventHooks {
     }
 
     @SubscribeEvent
-    public static void onMirrorEscapePhrase(ServerChatEvent event) {
-        if (MirrorTravel.queueEscapePhrase(event.getPlayer(), event.getRawText())) {
+    public static void onChantedPhrase(ServerChatEvent event) {
+        ServerPlayer player = event.getPlayer();
+        String message = event.getRawText();
+        if (RubySlipperTravel.matches(message)) player.server.execute(() -> RubySlipperTravel.chant(player, message));
+        if (MirrorTravel.queueEscapePhrase(player, message)) {
             event.setCanceled(true);
         }
+    }
+
+    @SubscribeEvent
+    public static void registerChant(RegisterCommandsEvent event) {
+        event.getDispatcher().register(Commands.literal("chant")
+                .executes(context -> chant(context.getSource(), ""))
+                .then(Commands.argument("phrase", StringArgumentType.greedyString())
+                        .executes(context -> chant(context.getSource(), StringArgumentType.getString(context, "phrase")))));
+    }
+
+    private static int chant(CommandSourceStack source, String message) {
+        var player = source.getPlayer();
+        if (player != null && (RubySlipperTravel.chant(player, message) || MirrorTravel.queueEscapePhrase(player, message))) return 1;
+        source.sendFailure(Component.translatable("message.witchery.chant.unknown"));
+        return 0;
     }
 
     @SubscribeEvent

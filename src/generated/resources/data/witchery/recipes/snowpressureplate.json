@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "S": {
+      "item": "minecraft:snow_block"
+    }
+  },
+  "pattern": [
+    "SS"
+  ],
+  "result": {
+    "item": "witchery:snowpressureplate"
+  },
+  "show_notification": true
+}

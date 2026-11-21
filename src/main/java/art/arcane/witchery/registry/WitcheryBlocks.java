@@ -2,6 +2,7 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.block.PerpetualIceBlock;
+import art.arcane.witchery.block.FrozenPressurePlateBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.block.GlowGlobeBlock;
 import art.arcane.witchery.block.WitchDoorBlock;
@@ -72,7 +73,6 @@ import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.GlassBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.LiquidBlock;
-import net.minecraft.world.level.block.PressurePlateBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
@@ -203,8 +203,8 @@ public final class WitcheryBlocks {
                     new FenceBlock(BlockBehaviour.Properties.copy(Blocks.OAK_FENCE));
             case "icefencegate" ->
                     new FenceGateBlock(BlockBehaviour.Properties.copy(Blocks.OAK_FENCE_GATE), WoodType.OAK);
-            case "icepressureplate", "snowpressureplate" ->
-                    new PressurePlateBlock(PressurePlateBlock.Sensitivity.EVERYTHING, BlockBehaviour.Properties.copy(Blocks.OAK_PRESSURE_PLATE), BlockSetType.OAK);
+            case "icepressureplate" -> new FrozenPressurePlateBlock(true);
+            case "snowpressureplate" -> new FrozenPressurePlateBlock(false);
             case "cwoodpressureplate" -> new CursedControls.Plate(CursedControls.Kind.WOODEN_PLATE);
             case "csnowpressureplate" -> new CursedControls.Plate(CursedControls.Kind.SNOW_PLATE);
             case "cstonepressureplate" -> new CursedControls.Plate(CursedControls.Kind.STONE_PLATE);

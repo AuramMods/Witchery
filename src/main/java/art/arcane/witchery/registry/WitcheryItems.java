@@ -401,6 +401,9 @@ public final class WitcheryItems {
             case "babashat" -> new WitchClothingItem(WitchClothingItem.Style.BABA_HAT);
             case "bitingbelt" -> new BitingBeltItem();
             case "barkbelt" -> new BarkBeltItem();
+            case "iceslippers" -> new WitchClothingItem.Dyeable(WitchClothingItem.Style.ICY_SLIPPERS);
+            case "seepingshoes" -> new WitchClothingItem.Dyeable(WitchClothingItem.Style.SEEPING_SHOES);
+            case "rubyslippers" -> new WitchClothingItem.Dyeable(WitchClothingItem.Style.RUBY_SLIPPERS);
             case "witchwoodslab", "witchwooddoubleslab", "iceslab", "icedoubleslab", "snowslab", "snowdoubleslab" ->
                     createBlockItem(path);
             default -> new Item(new Item.Properties());

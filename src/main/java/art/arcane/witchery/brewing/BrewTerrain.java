@@ -224,7 +224,7 @@ public final class BrewTerrain {
         return setBlock(owner, level, pos, state, face, true);
     }
 
-    static boolean setBlock(@Nullable Entity owner, ServerLevel level, BlockPos pos, BlockState state, Direction face) {
+    public static boolean setBlock(@Nullable Entity owner, ServerLevel level, BlockPos pos, BlockState state, Direction face) {
         return setBlock(owner, level, pos, state, face, false);
     }
 

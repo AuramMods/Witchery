@@ -27,7 +27,8 @@ public class WitchClothingItem extends ArmorItem {
     public enum Style {
         WITCH_HAT(Type.HELMET, 3), BABA_HAT(Type.HELMET, 3),
         WITCH_ROBE(Type.CHESTPLATE, 4), NECROMANCER_ROBE(Type.CHESTPLATE, 4),
-        BITING_BELT(Type.LEGGINGS, 4), BARK_BELT(Type.LEGGINGS, 4);
+        BITING_BELT(Type.LEGGINGS, 4), BARK_BELT(Type.LEGGINGS, 4),
+        ICY_SLIPPERS(Type.BOOTS, 3), SEEPING_SHOES(Type.BOOTS, 3), RUBY_SLIPPERS(Type.BOOTS, 3);
 
         private final Type type;
         private final int repairLeather;
@@ -100,8 +101,14 @@ public class WitchClothingItem extends ArmorItem {
 
         @Override
         public int getColor(ItemStack stack) {
+            if (style() == Style.RUBY_SLIPPERS) return 14483456;
             if (hasCustomColor(stack)) return DyeableLeatherItem.super.getColor(stack);
-            return style() == Style.BARK_BELT ? 6968628 : 2628115;
+            return switch (style()) {
+                case BARK_BELT -> 6968628;
+                case ICY_SLIPPERS -> 7842303;
+                case SEEPING_SHOES -> 2254387;
+                default -> 2628115;
+            };
         }
     }
 }

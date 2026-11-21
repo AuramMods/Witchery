@@ -125,20 +125,26 @@ import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcheryMenus;
 import art.arcane.witchery.world.WitcheryDimensions;
 import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.ChestRenderer;
 import net.minecraft.client.renderer.entity.CatRenderer;
+import net.minecraft.client.renderer.entity.ArmorStandRenderer;
 import net.minecraft.client.renderer.entity.BatRenderer;
+import net.minecraft.client.renderer.entity.HumanoidMobRenderer;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.VillagerRenderer;
 import net.minecraft.client.renderer.entity.ItemEntityRenderer;
 import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
@@ -252,13 +258,23 @@ public final class WitcheryClient {
     }
 
     @SubscribeEvent
-    public static void addPlayerLayers(EntityRenderersEvent.AddLayers event) {
+    public static void addLivingLayers(EntityRenderersEvent.AddLayers event) {
         for (String skin : event.getSkins()) {
             if (event.getPlayerSkin(skin) instanceof PlayerRenderer renderer) {
                 renderer.addLayer(new GrotesqueLayer(renderer, event.getContext().bakeLayer(GrotesqueLayer.LAYER)));
-                renderer.addLayer(new BarkBeltLayer<>(renderer, event.getContext().bakeLayer(BarkBeltLayer.LAYER)));
+                addBarkLayer(event, renderer);
             }
         }
+        for (var type : BuiltInRegistries.ENTITY_TYPE) {
+            var renderer = event.getEntityRenderer(type);
+            if (renderer instanceof HumanoidMobRenderer<?, ?> humanoid) addBarkLayer(event, humanoid);
+            if (renderer instanceof ArmorStandRenderer stand) addBarkLayer(event, stand);
+        }
+    }
+
+    private static <T extends LivingEntity, M extends HumanoidModel<T>> void addBarkLayer(
+            EntityRenderersEvent.AddLayers event, LivingEntityRenderer<T, M> renderer) {
+        renderer.addLayer(new BarkBeltLayer<>(renderer, event.getEntityModels().bakeLayer(BarkBeltLayer.LAYER)));
     }
 
     @SubscribeEvent

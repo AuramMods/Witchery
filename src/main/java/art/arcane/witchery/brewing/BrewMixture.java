@@ -48,13 +48,14 @@ public final class BrewMixture {
     }
 
     private enum Action {
-        EXTINGUISH, COLD, ICE_SHELL, HARM_DEMONS, REVEAL, MOVE_ANIMALS, CHANGING_SEASONS;
+        EXTINGUISH, COLD, ICE_SHELL, HARM_DEMONS, REVEAL, MOVE_ANIMALS, CHANGING_SEASONS, ICE_WORLD;
 
         String nameKey(boolean inverted) {
             return switch (this) {
                 case EXTINGUISH -> "brew.witchery.extinguish";
                 case COLD -> "brew.witchery.cold";
                 case ICE_SHELL -> "brew.witchery.ice_shell";
+                case ICE_WORLD -> "brew.witchery.ice_world";
                 case HARM_DEMONS -> "brew.witchery.harm_demons";
                 case REVEAL -> "brew.witchery.revealing";
                 case MOVE_ANIMALS -> inverted ? "brew.witchery.animal_repulsion" : "brew.witchery.animal_attraction";
@@ -256,6 +257,7 @@ public final class BrewMixture {
                 case EXTINGUISH -> BrewTerrainEffects.extinguish(level, pos, radius, ritual, application.strength, caster);
                 case COLD -> BrewColdEffects.freezeWater(level, pos, application.strength, caster);
                 case ICE_SHELL -> BrewColdEffects.shellOnImpact(level, pos, face, application.strength, caster);
+                case ICE_WORLD -> IceWorldBrew.freeze(level, pos, radius, caster);
                 case CHANGING_SEASONS -> BrewTerrainEffects.changeSeasons(level, pos, application.biome,
                         application.strength, ritual, coven, caster);
                 default -> { }
@@ -331,7 +333,7 @@ public final class BrewMixture {
             }
             case REVEAL -> BrewCreatureEffects.reveal(target);
             case MOVE_ANIMALS -> BrewCreatureEffects.moveAnimals(target, strength, application.inverted);
-            case CHANGING_SEASONS -> { }
+            case CHANGING_SEASONS, ICE_WORLD -> { }
         }
     }
 
@@ -492,6 +494,7 @@ public final class BrewMixture {
 
         entries.put(ResourceLocation.parse("witchery:icy_needle"), new Ingredient(200, null, 2, 10, 0, null, null, Action.COLD));
         entries.put(ResourceLocation.parse("witchery:frozen_heart"), new Ingredient(500, null, 5, 10, 0, null, null, Action.ICE_SHELL));
+        entries.put(ResourceLocation.withDefaultNamespace("ender_eye"), new Ingredient(2000, null, 5, 0, 0, null, null, Action.ICE_WORLD));
         entries.put(ResourceLocation.withDefaultNamespace("ice"), new Ingredient(500, null, 5, 3, 0, null, null, Action.HARM_DEMONS));
         entries.put(ResourceLocation.fromNamespaceAndPath("witchery", "odour_of_purity"),
                 new Ingredient(100, null, 4, 0, 0, null, null, Action.REVEAL));

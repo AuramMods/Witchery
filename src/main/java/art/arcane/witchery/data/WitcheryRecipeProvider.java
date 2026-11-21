@@ -236,6 +236,37 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .save(recipeOutput);
         SpecialRecipeBuilder.special(WitcheryRecipes.CHARGE_BITING_BELT.get())
                 .save(recipeOutput, "witchery:charge_biting_belt");
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, WitcheryItems.getRequired("iceslippers").get())
+                .define('L', impregnatedLeather)
+                .define('T', goldenThread)
+                .define('H', WitcheryIngredient.FROZEN_HEART.item())
+                .define('D', WitcheryIngredient.DIAMOND_VAPOUR.item())
+                .define('O', WitcheryIngredient.ODOUR_OF_PURITY.item())
+                .pattern("LTL").pattern("LHL").pattern("DOD")
+                .unlockedBy("has_frozen_heart", has(WitcheryIngredient.FROZEN_HEART.item()))
+                .save(recipeOutput);
+        Item seepingShoes = WitcheryItems.getRequired("seepingshoes").get();
+        Item witchesHand = WitcheryItems.getRequired("witchhand").get();
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, seepingShoes)
+                .define('L', impregnatedLeather)
+                .define('T', goldenThread)
+                .define('H', witchesHand)
+                .define('R', WitcheryIngredient.REDSTONE_SOUP.item())
+                .define('M', Items.MILK_BUCKET)
+                .pattern("LTL").pattern("HRH").pattern("MMM")
+                .unlockedBy("has_witches_hand", has(witchesHand))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, WitcheryItems.getRequired("rubyslippers").get())
+                .define('A', WitcheryIngredient.ATTUNED_STONE.item())
+                .define('B', WitcheryIngredient.INFERNAL_BLOOD.item())
+                .define('T', goldenThread)
+                .define('S', seepingShoes)
+                .pattern("ABA").pattern("TST").pattern("ABA")
+                .unlockedBy("has_seeping_shoes", has(seepingShoes))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, WitcheryBlocks.getRequired("snowpressureplate").get())
+                .define('S', Items.SNOW_BLOCK).pattern("SS")
+                .unlockedBy("has_snow_block", has(Items.SNOW_BLOCK)).save(recipeOutput);
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryItems.getRequired("vampirebook").get())
                 .define('W', Items.NETHER_WART)
                 .define('S', Items.NETHER_STAR)

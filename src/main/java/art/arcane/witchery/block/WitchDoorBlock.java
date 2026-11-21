@@ -24,7 +24,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraftforge.common.util.BlockSnapshot;
+import net.minecraftforge.event.ForgeEventFactory;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 public final class WitchDoorBlock extends DoorBlock {
     private final boolean alder;
@@ -41,6 +45,33 @@ public final class WitchDoorBlock extends DoorBlock {
 
     public static BlockPos lowerHalf(BlockPos pos, BlockState state) {
         return state.getValue(HALF) == DoubleBlockHalf.LOWER ? pos : pos.below();
+    }
+
+    public static boolean replacePair(ServerLevel level, BlockPos base, BlockState lower, BlockState upper,
+                                      @Nullable Entity caster, Direction face) {
+        base = base.immutable();
+        BlockPos top = base.above();
+        var bottomBefore = level.getBlockState(base);
+        var topBefore = level.getBlockState(top);
+        var snapshots = List.of(BlockSnapshot.create(level.dimension(), level, base),
+                BlockSnapshot.create(level.dimension(), level, top));
+
+        // Keep the two halves from updating each other before both writes and the placement event complete.
+        int isolated = Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS;
+        level.setBlock(base, lower, isolated);
+        level.setBlock(top, upper, isolated);
+        if (!level.getBlockState(base).equals(lower) || !level.getBlockState(top).equals(upper)
+                || caster != null && ForgeEventFactory.onMultiBlockPlace(caster, snapshots, face)) {
+            level.setBlock(base, bottomBefore, isolated);
+            level.setBlock(top, topBefore, isolated);
+            for (var snapshot : snapshots) snapshot.restore(true, false);
+            return false;
+        }
+        level.sendBlockUpdated(base, bottomBefore, lower, Block.UPDATE_CLIENTS);
+        level.sendBlockUpdated(top, topBefore, upper, Block.UPDATE_CLIENTS);
+        level.updateNeighborsAt(base, lower.getBlock());
+        level.updateNeighborsAt(top, upper.getBlock());
+        return true;
     }
 
     @Override

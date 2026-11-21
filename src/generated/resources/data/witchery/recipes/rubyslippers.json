@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "A": {
+      "item": "witchery:attuned_stone"
+    },
+    "B": {
+      "item": "witchery:infernal_blood"
+    },
+    "S": {
+      "item": "witchery:seepingshoes"
+    },
+    "T": {
+      "item": "witchery:golden_thread"
+    }
+  },
+  "pattern": [
+    "ABA",
+    "TST",
+    "ABA"
+  ],
+  "result": {
+    "item": "witchery:rubyslippers"
+  },
+  "show_notification": true
+}

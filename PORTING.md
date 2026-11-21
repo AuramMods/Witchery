@@ -433,7 +433,16 @@
 - [x] Charge the Biting Belt with up to two potions. The third charge displaces the older one, while empty first slots refill before rotating. The tooltip displays each effect, potency, and duration. Entity hits trigger the original carried-louse and belt phases and leave an effect stored while the wearer already has it.
 - [x] Recharge the Bark Belt on grass blocks and mycelium. Each worn garment in the witch clothing family supplies two slots. A non-wooden hit from an entity spends one or two charges to cancel the hit and scatters short-lived sticks. Display active bark on the player model and above the survival health and armor icons.
 - [x] Craft and equip both belts in a muted survival client. Verify that the equipped Biting Belt still has both doses after a dedicated restart and delivers Poison and Regeneration on the same hit. Verify the Bark Belt's HUD and worn bark, grass and mycelium recharge, and wooden versus stone sword damage. Four bark charges persisted across a second restart. Java 17 data generation, JAR reobfuscation and all 450 required Forge GameTests passed.
-- [ ] Recheck the Bark Belt's full eight-charge capacity and leg bark when witch footwear is restored. Verify additional worn models on armor stands and non-player mobs.
+- [x] Verify all eight charges and the complete worn bark with witch footwear, a witch hat, and Witch's Robes. Verify the bark and boots on an armor stand and a zombie in the muted client.
+
+## Witch Footwear and Ice World (2026-11-21)
+
+- [x] Restore the three original footwear recipes, worn models, default colors, dye behavior, and three-leather repair. Seeping Shoes return the three empty milk buckets. Saved footwear retains its original registry ID, dye, and wear.
+- [x] Freeze the four blocks under Icy Slippers, including flowing liquids. Water becomes ice and lava becomes obsidian. Only lava conversion can wear the slippers.
+- [x] Remove Poison and Wither with Seeping Shoes while grounded. A cure fertilizes the original seven-by-seven area across three elevations. The muted client cleared both effects and grew wheat on the outer diagonal.
+- [x] Restore Ruby Slipper travel through chat and `/chant`. The muted client returned to its bed, respected the cooldown, then consumed a dropped old-format Waystone. After restart, both cooldown timestamps and the remaining infusion charge persisted. A Nether Waystone used the cross-dimension cost.
+- [x] Restore the Ice World cauldron action and its terrain conversions, including the Icy Slipper pressure plate. With the shared Forge placement helper, both door halves update together.
+- [x] Verify Ice World from a heated cauldron through bottling and throwing in the muted survival client. The cast converted both door halves and left the chest intact. Icy Slippers powered the resulting pressure plate, which switched off when the wearer left. Data generation, JAR reobfuscation, the 450-test regression suite, and five targeted Forge GameTests passed.
 
 ## Coffin (2026-11-20)
 

@@ -46,7 +46,6 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
 
 public final class SymbolTerrain {
     private static final TagKey<Block> DEFODIO_BLOCKS = TagKey.create(Registries.BLOCK,
@@ -218,22 +217,7 @@ public final class SymbolTerrain {
         var upper = lower.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER);
         if (lower.equals(bottom) && upper.equals(top)) return;
 
-        var snapshots = List.of(BlockSnapshot.create(level.dimension(), level, base), BlockSnapshot.create(level.dimension(), level, above));
-        // Write both halves before checking the placement event. Adjacent blocks see the result only after it is accepted.
-        int isolated = Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS;
-        level.setBlock(base, lower, isolated);
-        level.setBlock(above, upper, isolated);
-        if (!level.getBlockState(base).equals(lower) || !level.getBlockState(above).equals(upper)
-                || ForgeEventFactory.onMultiBlockPlace(caster, snapshots, face)) {
-            level.setBlock(base, bottom, isolated);
-            level.setBlock(above, top, isolated);
-            for (var snapshot : snapshots) snapshot.restore(true, false);
-            return;
-        }
-        level.sendBlockUpdated(base, bottom, lower, Block.UPDATE_CLIENTS);
-        level.sendBlockUpdated(above, top, upper, Block.UPDATE_CLIENTS);
-        level.updateNeighborsAt(base, replacement);
-        level.updateNeighborsAt(above, replacement);
+        WitchDoorBlock.replacePair(level, base, lower, upper, caster, face);
     }
 
     private static int solidSides(ServerLevel level, BlockPos base, Direction side) {
