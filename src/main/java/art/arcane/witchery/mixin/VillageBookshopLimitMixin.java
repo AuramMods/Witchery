@@ -11,6 +11,8 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Mixin(targets = "net.minecraft.world.level.levelgen.structure.pools.JigsawPlacement$Placer")
 abstract class VillageBookshopLimitMixin {
@@ -19,10 +21,13 @@ abstract class VillageBookshopLimitMixin {
     private List<? super PoolElementStructurePiece> pieces;
 
     @ModifyArg(method = "tryPlacingChildren", at = @At(value = "INVOKE", target = "Ljava/util/List;addAll(Ljava/util/Collection;)Z"))
-    private Collection<StructurePoolElement> witchery$limitBookshops(Collection<StructurePoolElement> candidates) {
-        if (candidates.stream().noneMatch(WitcheryVillagePools::isBookshop)
-                || pieces.stream().noneMatch(piece -> piece instanceof PoolElementStructurePiece poolPiece
-                        && WitcheryVillagePools.isBookshop(poolPiece.getElement()))) return candidates;
-        return candidates.stream().filter(candidate -> !WitcheryVillagePools.isBookshop(candidate)).toList();
+    private Collection<StructurePoolElement> witchery$limitBuildings(Collection<StructurePoolElement> candidates) {
+        if (candidates.stream().noneMatch(candidate -> WitcheryVillagePools.limitedBuilding(candidate).isPresent())) return candidates;
+        var used = pieces.stream().filter(PoolElementStructurePiece.class::isInstance)
+                .map(PoolElementStructurePiece.class::cast)
+                .map(piece -> WitcheryVillagePools.limitedBuilding(piece.getElement()))
+                .flatMap(Optional::stream).collect(Collectors.toSet());
+        if (used.isEmpty()) return candidates;
+        return candidates.stream().filter(candidate -> WitcheryVillagePools.limitedBuilding(candidate).filter(used::contains).isEmpty()).toList();
     }
 }

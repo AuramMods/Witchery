@@ -115,6 +115,8 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_STATUE_GODDESS = Block.box(0.0D, 0.0D, 1.6D, 16.0D, 32.0D, 14.4D);
 
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, Witchery.MODID);
+    public static final RegistryObject<SlabBlock> APOTHECARY_SHELF = BLOCKS.register("apothecary_shelf",
+            () -> new SlabBlock(BlockBehaviour.Properties.copy(Blocks.BIRCH_SLAB)));
     public static final Map<String, RegistryObject<Block>> LEGACY_BLOCKS = new LinkedHashMap<>();
 
     static {

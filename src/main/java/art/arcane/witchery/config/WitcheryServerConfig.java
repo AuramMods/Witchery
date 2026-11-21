@@ -38,6 +38,7 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.BooleanValue GENERATE_SHACKS;
     public static final ForgeConfigSpec.BooleanValue GENERATE_HOBGOBLIN_HUTS;
     public static final ForgeConfigSpec.BooleanValue GENERATE_BOOK_SHOPS;
+    public static final ForgeConfigSpec.BooleanValue GENERATE_APOTHECARIES;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> TOWN_BOOKSHOP_ALLOWED_BOOKS;
     public static final ForgeConfigSpec.BooleanValue HOBGOBLIN_DESPAWN_BLOCK;
     public static final ForgeConfigSpec.IntValue HOBGOBLIN_SPAWN_WEIGHT;
@@ -121,6 +122,8 @@ public final class WitcheryServerConfig {
                 .worldRestart().define("generateHobgoblinHuts", true);
         GENERATE_BOOK_SHOPS = builder.comment("Add Witchery bookshops to newly generated villages.")
                 .worldRestart().define("generateBookShops", true);
+        GENERATE_APOTHECARIES = builder.comment("Add apothecaries to newly generated villages.")
+                .worldRestart().define("generateApothecaries", true);
         TOWN_BOOKSHOP_ALLOWED_BOOKS = builder.comment("Extra bookshop stock as item IDs or legacy item IDs followed by comma and metadata. Repeat entries for additional weight.")
                 .defineListAllowEmpty("townBookshopAllowedBooks", List.of("minecraft:book", "witchery:ingredient,46",
                         "witchery:ingredient,47", "witchery:ingredient,48", "witchery:ingredient,49",

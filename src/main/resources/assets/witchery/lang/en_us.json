@@ -1,4 +1,7 @@
 {
+   "entity.minecraft.villager.witchery.apothecary": "Apothecary",
+   "block.witchery.apothecary_shelf": "Apothecary Shelf",
+   "structure.witchery.apothecary": "Apothecary",
    "item.witchery.book_collecting_fumes": "Witchcraft: Collecting Fumes",
    "item.witchery.book_distilling": "Witchcraft: Distilling",
    "item.witchery.book_circle_magic": "Witchcraft: Circle Magic",

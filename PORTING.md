@@ -567,6 +567,14 @@
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 363 required Forge GameTests. The new cases cover the five pool weights, a rotated shop, configured stock, foundations, and supported frames.
 - [x] Restore the reading behavior and covers of existing bookshop guide stacks.
 
+## Village Apothecary (2026-11-21)
+
+- [x] Restore the original cobblestone and oak apothecary with its sign, birch furnishings, filled cauldron, and hidden chest. The chest draws two to five rolls from the original 16 weighted entries.
+- [x] Add the house at weight 15 to all five ordinary village styles. Limit each generated village to one apothecary and keep the bookshop's separate limit. `generateApothecaries` controls the house independently. The seed-1 village at `640 816` generated one of each, and disabling apothecaries left the bookshop in the village.
+- [x] Restore the resident's skin, all eight trades and the original limit of seven uses per offer. The birch shelf provides a dedicated modern workstation so the resident can claim a job site and restock using vanilla villager AI. Residents have all eight offers at spawn. Villagers who claim a spare shelf learn the offers through normal profession levels.
+- [x] Verify the generated merchant and chest in muted survival. The player bought 14 Dog Tongues in seven purchases and used an iron pickaxe to uncover and open the chest. The merchant restocked at its shelf. Java 17 data generation, JAR reobfuscation, and all four focused apothecary and bookshop GameTests passed.
+- [x] Restart the dedicated server and rejoin with the packaged client. Verify the same resident UUID, workstation, eight trades, restocked offer, chest inventory, and player purchase.
+
 ## Witchery Guidebooks (2026-11-21)
 
 - [x] Restore ten readable volumes and their original crafting combinations. Eight named item IDs import the original ingredient metadata. Tagged guide stacks from the earlier bookshop remain readable and show the right cover.

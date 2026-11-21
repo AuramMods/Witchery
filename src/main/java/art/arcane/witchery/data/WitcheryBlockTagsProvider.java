@@ -41,7 +41,7 @@ public class WitcheryBlockTagsProvider extends BlockTagsProvider {
         Block[] witchWoodStairs = {WitcheryBlocks.getRequired("stairswoodrowan").get(),
                 WitcheryBlocks.getRequired("stairswoodalder").get(), WitcheryBlocks.getRequired("stairswoodhawthorn").get()};
         tag(BlockTags.WOODEN_STAIRS).add(witchWoodStairs);
-        tag(BlockTags.MINEABLE_WITH_AXE).add(witchWoodStairs);
+        tag(BlockTags.MINEABLE_WITH_AXE).add(witchWoodStairs).add(WitcheryBlocks.APOTHECARY_SHELF.get());
         for (WitchCrop crop : WitchCrop.values()) {
             tag(BlockTags.CROPS).add(crop.block());
         }

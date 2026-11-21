@@ -128,6 +128,8 @@ import java.util.Map;
 
 public final class WitcheryItems {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, Witchery.MODID);
+    public static final RegistryObject<Item> APOTHECARY_SHELF = ITEMS.register("apothecary_shelf",
+            () -> new BlockItem(WitcheryBlocks.APOTHECARY_SHELF.get(), new Item.Properties()));
     public static final Map<String, RegistryObject<Item>> LEGACY_ITEMS = new LinkedHashMap<>();
     public static final Map<String, RegistryObject<Item>> LEGACY_BLOCK_ITEMS = new LinkedHashMap<>();
     public static final Map<String, RegistryObject<Item>> LEGACY_SPAWN_EGGS = new LinkedHashMap<>();

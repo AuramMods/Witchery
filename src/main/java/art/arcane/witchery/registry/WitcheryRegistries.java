@@ -9,6 +9,7 @@ import art.arcane.witchery.world.DreamCottonFeature;
 import art.arcane.witchery.world.HobgoblinSpawnModifier;
 import art.arcane.witchery.world.MirrorChunkGenerator;
 import art.arcane.witchery.world.SurfaceStructuresFeature;
+import art.arcane.witchery.world.VillageApothecaryProcessor;
 import art.arcane.witchery.world.TormentChunkGenerator;
 import art.arcane.witchery.world.VillageBookshopProcessor;
 import art.arcane.witchery.world.WickerManFeature;
@@ -38,6 +39,8 @@ public final class WitcheryRegistries {
             BIOME_MODIFIERS.register("hobgoblin_spawns", () -> HobgoblinSpawnModifier.CODEC);
     public static final RegistryObject<StructureProcessorType<VillageBookshopProcessor>> BOOKSHOP_PROCESSOR =
             STRUCTURE_PROCESSORS.register("village_bookshop", () -> () -> VillageBookshopProcessor.CODEC);
+    public static final RegistryObject<StructureProcessorType<VillageApothecaryProcessor>> APOTHECARY_PROCESSOR =
+            STRUCTURE_PROCESSORS.register("village_apothecary", () -> () -> VillageApothecaryProcessor.CODEC);
 
     static {
         LOOT_MODIFIERS.register("grass_seeds", () -> GrassSeedLootModifier.CODEC);
@@ -60,6 +63,7 @@ public final class WitcheryRegistries {
         WitcheryFluids.register(eventBus);
         WitcheryBlockEntities.register(eventBus);
         WitcheryEntities.register(eventBus);
+        WitcheryApothecary.register(eventBus);
         WitcheryMenus.register(eventBus);
         WitcheryEffects.register(eventBus);
         WitcheryCreativeTabs.register(eventBus);

@@ -50,6 +50,7 @@ import net.minecraft.world.level.storage.loot.providers.nbt.ContextNbtProvider;
 import net.minecraftforge.registries.RegistryObject;
 
 import java.util.Set;
+import java.util.stream.Stream;
 
 public class WitcheryBlockLoot extends BlockLootSubProvider {
     public WitcheryBlockLoot() {
@@ -58,6 +59,8 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
 
     @Override
     protected void generate() {
+        var apothecaryShelf = WitcheryBlocks.APOTHECARY_SHELF.get();
+        add(apothecaryShelf, createSlabItemTable(apothecaryShelf));
         for (RegistryObject<Block> entry : WitcheryBlocks.all()) {
             Block block = entry.get();
             if (block.getLootTable().equals(BuiltInLootTables.EMPTY)) {
@@ -257,8 +260,7 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
 
     @Override
     protected Iterable<Block> getKnownBlocks() {
-        return WitcheryBlocks.LEGACY_BLOCKS.values().stream()
-                .map(RegistryObject::get)
-                .toList();
+        return Stream.concat(Stream.of(WitcheryBlocks.APOTHECARY_SHELF.get()),
+                WitcheryBlocks.all().stream().map(RegistryObject::get)).toList();
     }
 }

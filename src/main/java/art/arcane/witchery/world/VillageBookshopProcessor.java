@@ -74,20 +74,7 @@ public final class VillageBookshopProcessor extends StructureProcessor {
             BlockPos pivot, List<StructureTemplate.StructureBlockInfo> raw,
             List<StructureTemplate.StructureBlockInfo> placed, StructurePlaceSettings settings) {
         if (raw.stream().noneMatch(block -> block.state().is(Blocks.CHEST))) return placed;
-        var blocks = new ArrayList<>(placed);
-        var bounds = settings.getBoundingBox();
-        for (int x = 1; x <= 6; x++) {
-            for (int z = 1; z <= 6; z++) {
-                var base = StructureTemplate.calculateRelativePosition(settings, new BlockPos(x, -1, z)).offset(origin);
-                if (bounds != null && !bounds.isInside(base)) continue;
-                for (BlockPos pos = base; pos.getY() > level.getMinBuildHeight() + 1; pos = pos.below()) {
-                    var floor = level.getBlockState(pos);
-                    if (!floor.isAir() && !floor.liquid()) break;
-                    blocks.add(new StructureTemplate.StructureBlockInfo(pos, Blocks.COBBLESTONE.defaultBlockState(), null));
-                }
-            }
-        }
-        return blocks;
+        return VillageFoundation.fill(level, origin, settings, placed, 1, 6, 1, 6);
     }
 
     private static List<WeightedEntry.Wrapper<ItemStack>> stock() {
