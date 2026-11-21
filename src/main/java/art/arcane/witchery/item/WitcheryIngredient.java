@@ -9,6 +9,8 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.Potions;
 
 public enum WitcheryIngredient {
     CANDELABRA(0, "candelabra"),
@@ -110,6 +112,7 @@ public enum WitcheryIngredient {
     INFUSED_BREW_BASE(121, "infused_brew_base"),
     BREW_OF_SOARING(122, "brew_of_soaring"),
     BREW_OF_THE_GRAVE(123, "brew_of_the_grave"),
+    BREW_OF_REVEALING(124, "brew_of_revealing"),
     CONGEALED_SPIRIT(126, "congealed_spirit"),
     GRAVEYARD_DUST(128, "graveyard_dust"),
     BINKY_HEAD(129, "binky_head"),
@@ -157,6 +160,10 @@ public enum WitcheryIngredient {
     /** Loads an inventory stack after upgrading the legacy Witchery subtype, when present. */
     public static ItemStack loadInventoryStack(CompoundTag stackTag) {
         ItemStack stack = ItemStack.of(stackTag);
+        if (stack.is(Items.POTION) && stackTag.getInt("Damage") == 8198
+                && (!stack.hasTag() || !stack.getTag().contains("Potion", Tag.TAG_STRING))) {
+            return PotionUtils.setPotion(stack, Potions.NIGHT_VISION);
+        }
         if (stackTag.contains("Damage", Tag.TAG_ANY_NUMERIC)) {
             if (stack.getItem() instanceof SpectralStoneItem && SpectralStoneItem.typeId(stack) == 0) {
                 SpectralStoneItem.applyLegacyContents(stack, stackTag.getInt("Damage"));

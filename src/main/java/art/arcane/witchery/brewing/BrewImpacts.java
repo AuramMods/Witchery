@@ -91,6 +91,16 @@ public final class BrewImpacts {
         }
     }
 
+    public static void splashRevealing(ThrownBrew brew, HitResult hit) {
+        if (!(brew.level() instanceof ServerLevel level)) return;
+        Vec3 impact = hit.getLocation();
+        double radius = enhanced(brew) ? 8 : 5;
+        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, new AABB(impact, impact).inflate(radius),
+                living -> living.isAlive() && living.distanceToSqr(impact) <= radius * radius)) {
+            BrewCreatureEffects.reveal(target);
+        }
+    }
+
     public static void depositSpirit(ThrownBrew brew, HitResult hit) {
         depositLiquid(brew, hit, "spiritflowing");
     }

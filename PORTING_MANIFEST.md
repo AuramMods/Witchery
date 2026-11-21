@@ -664,7 +664,7 @@ Variant 156 consumes one flower when the tester targets a living entity within t
 | 121 | `infusionBase` → `witchery:infused_brew_base` |
 | 122 | `brewSoaring` → `witchery:brew_of_soaring` |
 | 123 | `brewGrave` |
-| 124 | `brewRevealing` |
+| 124 | `brewRevealing` → `witchery:brew_of_revealing` (Kettle splash) |
 | 125 | `brewSubstitution` |
 | 126 | `brewCongealedSpirit` → `witchery:congealed_spirit` |
 | 127 | `bookBurning` |
@@ -705,7 +705,7 @@ Variant 156 consumes one flower when the tester targets a living entity within t
 | 162 | `stake` |
 | 163 | `warmBlood` |
 | 164 | `lilithsBlood` |
-| 165 | `heartofgold` → `witchery:heart_of_gold` (Fairest drop) |
+| 165 | `heartofgold` → `witchery:heart_of_gold` (Fairest drop and Animal Attraction or Repulsion brew action) |
 
 ## Poppet Variants (`Witchery.Items.POPPET`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/item/ItemPoppet.java`
@@ -1165,6 +1165,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 - A `witchery:taglockkit` costs 1,000 base power to cast a brew on the bound creature or player. The cauldron saves the ordered Taglock and warmup in `Ingredients`, `RitualTriggered`, and `RitualTicks`. Both `decursedirected` and `decurseteleport` keep their original block and block entity IDs and save `WITCPlacer` and `Killers`. The new horizontal block states use network protocol 54.
 - Legacy terrain brew subtypes 57, 58, 59, and 61 use named `brew_of_*` items. The Kettle recipes are under `data/witchery/recipes/kettle/` and their projectiles dispatch to `BrewTerrain`.
 - Kettle `bottling_familiar` accepts `cat`, `toad` and `owl`. Finished batches save `FinishedRecipe` alongside the result. The original 85, 86, 87, 97, 108 and 109 ingredient subtypes map to Frog's Tongue, Cursed Leaping, Hitchcock, Wasting, Bat Ball and Bats.
+- Revealing uses `witchery:kettle/brew_of_revealing` for the fixed splash. Named vanilla potion damage 8198 imports as regular Night Vision. Odour of Purity adds Revealing to cauldron mixtures. Heart of Gold adds Animal Attraction and Fermented Spider Eye inverts it to Animal Repulsion. The ordered `Items` list retains the action order and inversion.
 - Legacy infused brew subtype 123 maps to `witchery:brew_of_the_grave`. `InfusedBrews` uses the original type, start and Grave cooldown keys.
 
 ## Network Packets (`PacketPipeline`)

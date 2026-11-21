@@ -279,6 +279,7 @@ public final class WitcheryItems {
             case "brew_of_thorns" -> new ThrowableBrewItem(BrewTerrain::thorns);
             case "brew_of_sprouting" -> new ThrowableBrewItem(BrewTerrain::sprouting);
             case "brew_of_love" -> new ThrowableBrewItem(BrewImpacts::splashLove);
+            case "brew_of_revealing" -> new ThrowableBrewItem(BrewImpacts::splashRevealing);
             case "brew_of_raising" -> new ThrowableBrewItem(BrewImpacts::raiseDead);
             case "brew_of_frogs_tongue" -> new ThrowableBrewItem(BrewCreatureEffects::frogsTongue);
             case "brew_of_cursed_leaping" -> new ThrowableBrewItem(BrewCreatureEffects::cursedLeaping);

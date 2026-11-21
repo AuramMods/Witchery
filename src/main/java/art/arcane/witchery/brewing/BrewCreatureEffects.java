@@ -1,13 +1,18 @@
 package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.entity.SpectralUndead;
 import art.arcane.witchery.entity.ThrownBrew;
+import art.arcane.witchery.familiar.Familiar;
 import art.arcane.witchery.registry.WitcheryEntities;
+import art.arcane.witchery.world.MirrorDisguise;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
@@ -15,8 +20,11 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -27,6 +35,63 @@ public final class BrewCreatureEffects {
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "wasting_plants"));
 
     private BrewCreatureEffects() {}
+
+    static void reveal(LivingEntity target) {
+        target.removeEffect(MobEffects.INVISIBILITY);
+        if (target instanceof ServerPlayer player) {
+            player.setInvisible(false);
+            MirrorDisguise.reveal(player);
+        } else if (target instanceof SpectralUndead spirit) {
+            spirit.reveal();
+        }
+    }
+
+    static void moveAnimals(LivingEntity target, int strength, boolean repel) {
+        if (!(target.level() instanceof ServerLevel level)) return;
+        double radius = (strength + 1) * 16.0;
+        for (Animal animal : level.getEntitiesOfClass(Animal.class, target.getBoundingBox().inflate(radius),
+                candidate -> candidate != target && candidate.isAlive() && candidate.distanceToSqr(target) < radius * radius
+                        && !(candidate instanceof Familiar familiar && familiar.isFamiliar()))) {
+            if (animal instanceof TamableAnimal pet) changeOwnership(level, target, pet, repel);
+            if (repel) driveAway(level, target, animal);
+            else animal.getNavigation().moveTo(target, 1);
+        }
+    }
+
+    private static void changeOwnership(ServerLevel level, LivingEntity target, TamableAnimal pet, boolean repel) {
+        if (!repel && !pet.isTame()) {
+            pet.setOwnerUUID(target.getUUID());
+            pet.setTame(true);
+            pet.getNavigation().stop();
+            pet.setTarget(null);
+            pet.setHealth(20);
+            level.broadcastEntityEvent(pet, (byte) 7);
+        } else if (repel && pet.isTame() && !target.getUUID().equals(pet.getOwnerUUID())) {
+            pet.setOwnerUUID(null);
+            pet.setTame(false);
+            pet.setOrderedToSit(false);
+            pet.setInSittingPose(false);
+            pet.getNavigation().stop();
+            pet.setTarget(null);
+            level.broadcastEntityEvent(pet, (byte) 6);
+        }
+    }
+
+    private static void driveAway(ServerLevel level, LivingEntity target, Animal animal) {
+        int x = target.getBlockX() + (6 + level.random.nextInt(6)) * (level.random.nextBoolean() ? 1 : -1);
+        int z = target.getBlockZ() + (6 + level.random.nextInt(6)) * (level.random.nextBoolean() ? 1 : -1);
+        BlockPos column = new BlockPos(x, target.getBlockY(), z);
+        if (!level.hasChunkAt(column) || !level.getWorldBorder().isWithinBounds(column)) return;
+        BlockPos feet = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, column);
+        BlockPos ground = feet.below();
+        if (!level.isInWorldBounds(feet) || !level.getBlockState(ground).isFaceSturdy(level, ground, Direction.UP)
+                || !level.getFluidState(feet).isEmpty()) return;
+        Vec3 destination = Vec3.atBottomCenterOf(feet);
+        if (!animal.getNavigation().moveTo(destination.x, destination.y, destination.z, 1)
+                && level.noCollision(animal, animal.getBoundingBox().move(destination.subtract(animal.position())))) {
+            animal.teleportTo(destination.x, destination.y, destination.z);
+        }
+    }
 
     public static void frogsTongue(ThrownBrew brew, HitResult hit) {
         if (!(brew.level() instanceof ServerLevel level) || !(brew.getOwner() instanceof LivingEntity thrower)) return;

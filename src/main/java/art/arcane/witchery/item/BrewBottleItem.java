@@ -63,8 +63,7 @@ public final class BrewBottleItem extends Item {
         if (mixture == null) return super.getName(stack);
         List<Component> names = new ArrayList<>();
         for (var effect : mixture.effects()) names.add(effect.effect().getDisplayName());
-        if (mixture.extinguishes()) names.add(Component.translatable("brew.witchery.extinguish"));
-        if (mixture.harmsDemons()) names.add(Component.translatable("brew.witchery.harm_demons"));
+        mixture.actionNames().forEach(key -> names.add(Component.translatable(key)));
         Component effects = names.isEmpty() ? Component.translatable("item.witchery.brewbottle.water")
                 : ComponentUtils.formatList(names, Component.literal(", "));
         String key = "item.witchery.brewbottle." + switch (mixture.delivery()) {
@@ -91,8 +90,7 @@ public final class BrewBottleItem extends Item {
             }
             tooltip.add(text);
         }
-        if (mixture.extinguishes()) tooltip.add(Component.translatable("brew.witchery.extinguish"));
-        if (mixture.harmsDemons()) tooltip.add(Component.translatable("brew.witchery.harm_demons"));
+        mixture.actionNames().forEach(key -> tooltip.add(Component.translatable(key)));
     }
 
     @Override

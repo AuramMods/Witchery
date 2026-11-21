@@ -210,6 +210,10 @@ public final class SpectralUndead extends Monster {
         return entityData.get(OBSCURED);
     }
 
+    public void reveal() {
+        entityData.set(OBSCURED, false);
+    }
+
     public int throwAnimation() {
         return throwAnimation;
     }
