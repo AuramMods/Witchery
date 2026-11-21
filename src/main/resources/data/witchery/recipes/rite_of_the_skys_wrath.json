@@ -1,0 +1,10 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [
+    {"item": "minecraft:wooden_sword"},
+    {"item": "witchery:wood_ash"}
+  ],
+  "power": 1000,
+  "action": "call_storm"
+}

@@ -1,0 +1,10 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [
+    {"item": "minecraft:iron_axe"},
+    {"item": "witchery:quicklime"},
+    {"item": "witchery:charged_attuned_stone"}
+  ],
+  "action": "eclipse"
+}

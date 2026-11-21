@@ -102,6 +102,8 @@ public final class GuideBookPages {
         if (recipe.power() > 0) steps.add(text("power", recipe.power()));
         if (recipe.livingOffering() != null) steps.add(text("living_offering", recipe.livingOffering().getDescription()));
         if (recipe.nightOnly()) steps.add(text("night_only"));
+        if (recipe.dayOnly()) steps.add(text("day_only"));
+        if (recipe.action().targetsStormWithWaystone()) steps.add(text("storm_waystone"));
         if (recipe.consumeNecromanticStone()) steps.add(text("necromantic_stone"));
         if (!recipe.result().isEmpty()) steps.add(text("output", recipe.result().getCount(), recipe.result().getHoverName()));
         return new Page(recipeTitle(recipe.id()), steps, List.of(), recipe.rings(), null);

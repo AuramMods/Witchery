@@ -75,7 +75,11 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         RAISE_VOLCANO,
         ICE_SHELL,
         CLIMATE_CHANGE,
-        BIND_WORSHIP_STATUE;
+        BIND_WORSHIP_STATUE,
+        CALL_STORM,
+        CALL_GREATER_STORM,
+        CALL_PORTABLE_STORM,
+        ECLIPSE;
 
         public boolean shapesLandscape() {
             return usesWaystoneTarget() || this == ICE_SHELL || this == CLIMATE_CHANGE;
@@ -83,6 +87,14 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
 
         public boolean usesWaystoneTarget() {
             return this == FORESTATION || this == RAISE_VOLCANO;
+        }
+
+        public boolean targetsStormWithWaystone() {
+            return this == CALL_STORM || this == CALL_GREATER_STORM;
+        }
+
+        public boolean callsStorm() {
+            return targetsStormWithWaystone() || this == CALL_PORTABLE_STORM;
         }
     }
 
@@ -96,13 +108,20 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         return rings.stream().allMatch(ring -> ring.pattern.matches(level, pos, ring.glyph));
     }
 
+    public boolean dayOnly() {
+        return action == Action.ECLIPSE;
+    }
+
     @Nullable
     public String startFailure(ServerLevel level) {
-        if (action.shapesLandscape() && level.dimension().equals(WitcheryDimensions.DREAM)) {
-            return "message.witchery.rite.landscape_dream";
+        if (level.dimension().equals(WitcheryDimensions.DREAM)) {
+            if (action.shapesLandscape()) return "message.witchery.rite.landscape_dream";
+            if (action == Action.TRANSPOSE_CREATURE || action == Action.TRANSPOSE_ORES) {
+                return "message.witchery.rite.transpose_dream";
+            }
+            if (action.callsStorm() || dayOnly()) return "message.witchery.rite.weather_dream";
         }
-        if ((action == Action.TRANSPOSE_CREATURE || action == Action.TRANSPOSE_ORES)
-                && level.dimension().equals(WitcheryDimensions.DREAM)) return "message.witchery.rite.transpose_dream";
+        if (dayOnly() && !level.isDay()) return "message.witchery.rite.day_only";
         if (nightOnly && !level.isNight()) return "message.witchery.rite.night_only";
         if (action == Action.CURSE_WAKING_NIGHTMARE && !level.isThundering()) return "message.witchery.rite.storm_only";
         return null;
@@ -129,6 +148,8 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
             items.removeIf(offering -> offering.stack().is(Items.GOLDEN_SWORD) && offering.stack().isDamaged());
         } else if (action == Action.ICE_SHELL) {
             items.removeIf(offering -> offering.stack().is(Items.DIAMOND_SWORD) && offering.stack().isDamaged());
+        } else if (action.callsStorm() || action == Action.ECLIPSE) {
+            items.removeIf(offering -> offering.stack().isDamaged());
         }
         List<Ingredient> required = sacrifices.subList(first, sacrifices.size());
         int[] owners = new int[items.size()];
@@ -299,6 +320,10 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 case "bind_spectral_stone" -> Action.BIND_SPECTRAL_STONE;
                 case "bind_fetish" -> Action.BIND_FETISH;
                 case "bind_worship_statue" -> Action.BIND_WORSHIP_STATUE;
+                case "call_storm" -> Action.CALL_STORM;
+                case "call_greater_storm" -> Action.CALL_GREATER_STORM;
+                case "call_portable_storm" -> Action.CALL_PORTABLE_STORM;
+                case "eclipse" -> Action.ECLIPSE;
                 default -> throw new JsonSyntaxException("Unknown rite action for " + id);
             };
             ItemStack result = action == Action.ITEM

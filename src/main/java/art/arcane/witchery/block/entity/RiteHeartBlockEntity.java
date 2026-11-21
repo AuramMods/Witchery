@@ -33,6 +33,7 @@ import art.arcane.witchery.ritual.GlyphicTransformation;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
 import art.arcane.witchery.ritual.LandscapeRites;
 import art.arcane.witchery.ritual.RiteOfTransposition;
+import art.arcane.witchery.ritual.WeatherRites;
 import art.arcane.witchery.vampirism.Vampirism;
 import art.arcane.witchery.world.DreamTravel;
 import art.arcane.witchery.world.WaystoneTravel;
@@ -93,6 +94,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     private boolean recharging;
     private int oreDepth;
     @Nullable private LandscapeRites.Progress landscape;
+    @Nullable private WeatherRites.Storm storm;
 
     public RiteHeartBlockEntity(BlockPos pos, BlockState state) {
         super(WitcheryBlockEntities.CIRCLE.get(), pos, state);
@@ -111,16 +113,21 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         }
         heart.updateActiveState(server);
         if (heart.activeRite != null) {
-            int interval = heart.landscape != null ? heart.landscape.interval()
-                    : heart.oreDepth > 0 ? RiteOfTransposition.ORE_PULSE_TICKS : STEP_TICKS;
-            if (++heart.stepTicks >= interval) {
+            if (++heart.stepTicks >= heart.pulseInterval()) {
                 heart.stepTicks = 0;
                 if (heart.landscape != null) heart.advanceLandscape(server);
+                else if (heart.storm != null) heart.advanceStorm(server);
                 else if (heart.oreDepth > 0) heart.transposeOreLayer(server);
                 else heart.advance(server);
             }
             level.blockEntityChanged(pos);
         }
+    }
+
+    private int pulseInterval() {
+        if (landscape != null) return landscape.interval();
+        if (storm != null) return WeatherRites.STORM_INTERVAL;
+        return oreDepth > 0 ? RiteOfTransposition.ORE_PULSE_TICKS : STEP_TICKS;
     }
 
     public void toggle(ServerLevel level, @Nullable Player player) {
@@ -341,6 +348,14 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             abort(level, "message.witchery.rite.missing_power");
             return;
         }
+        if (rite.action().callsStorm()) {
+            prepareStorm(level, rite, pos);
+            return;
+        }
+        if (rite.action() == ItemRiteRecipe.Action.ECLIPSE && !WeatherRites.eclipse(level)) {
+            abort(level, "message.witchery.rite.eclipse_cooldown");
+            return;
+        }
         if (rite.action().shapesLandscape() && !prepareLandscape(level, rite)) return;
         if (rite.action() == ItemRiteRecipe.Action.BIND_SPECTRAL_STONE && !SpectralStoneItem.bindFromCircle(level, pos)) {
             abort(level, "message.witchery.rite.no_spectral_creature");
@@ -437,6 +452,29 @@ public final class RiteHeartBlockEntity extends BlockEntity {
 
     private void transposeOreLayer(ServerLevel level) {
         if (!RiteOfTransposition.transposeOreLayer(level, getBlockPos(), ++oreDepth, covenSize)) clear(level);
+    }
+
+    private void prepareStorm(ServerLevel level, ItemRiteRecipe rite, BlockPos heart) {
+        BlockPos target = heart;
+        ItemRiteRecipe.Offering stone = rite.action().targetsStormWithWaystone() ? rite.findLocationOffering(level, heart) : null;
+        if (stone != null) {
+            target = WaystoneItem.location(stone.stack()).position();
+            sacrificed.add(new Sacrifice(stone.stack().copyWithCount(1), stone.grassper()));
+            stone.consume().run();
+        }
+        if (!LandscapeRites.canReach(level, heart, target, covenSize)) {
+            abort(level, "message.witchery.rite.landscape_too_far");
+            return;
+        }
+        storm = new WeatherRites.Storm(target, rite.action() != ItemRiteRecipe.Action.CALL_STORM, 0);
+    }
+
+    private void advanceStorm(ServerLevel level) {
+        storm = storm.pulse(level);
+        if (storm == null) {
+            sacrificed.clear();
+            clear(level);
+        }
     }
 
     private boolean prepareLandscape(ServerLevel level, ItemRiteRecipe rite) {
@@ -620,6 +658,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         recharging = false;
         oreDepth = 0;
         landscape = null;
+        storm = null;
         updateActiveState(level);
         setChanged();
     }
@@ -641,7 +680,6 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         super.load(tag);
         activeRite = tag.contains("Rite", Tag.TAG_STRING) ? ResourceLocation.tryParse(tag.getString("Rite")) : null;
         initiator = tag.hasUUID("Initiator") ? tag.getUUID("Initiator") : null;
-        stepTicks = Mth.clamp(tag.getInt("StepTicks"), 0, STEP_TICKS - 1);
         covenSize = Mth.clamp(tag.getInt("CovenSize"), 0, CovenWitch.MAX_MEMBERS);
         covenSummoned = Mth.clamp(tag.getInt("CovenSummoned"), 0, covenSize);
         recharging = tag.getBoolean("Recharging");
@@ -657,8 +695,9 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         oreDepth = activeRite != null && !recharging
                 ? Mth.clamp(tag.getInt("OreDepth"), 0, RiteOfTransposition.oreDepthLimit(covenSize) - 1) : 0;
         landscape = activeRite == null ? null : LandscapeRites.Progress.load(tag.getCompound("Landscape"), covenSize);
-        if (landscape != null) stepTicks = Math.min(stepTicks, landscape.interval() - 1);
+        storm = activeRite == null ? null : WeatherRites.Storm.load(tag.getCompound("Storm"));
         if (activeRite == null) loadLegacyUpkeep(tag);
+        stepTicks = Mth.clamp(tag.getInt("StepTicks"), 0, pulseInterval() - 1);
     }
 
     private void loadLegacyUpkeep(CompoundTag tag) {
@@ -711,6 +750,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             tag.putInt("StepTicks", stepTicks);
             if (oreDepth > 0) tag.putInt("OreDepth", oreDepth);
             if (landscape != null) tag.put("Landscape", landscape.save());
+            if (storm != null) tag.put("Storm", storm.save());
             if (recharging) tag.putBoolean("Recharging", true);
             if (covenSize > 0) {
                 tag.putInt("CovenSize", covenSize);

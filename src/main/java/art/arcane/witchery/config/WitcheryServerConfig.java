@@ -27,6 +27,7 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.BooleanValue ALLOW_CHAT_MASQUERADING;
     public static final ForgeConfigSpec.BooleanValue ALLOW_NAMEPLATE_MASQUERADING;
     public static final ForgeConfigSpec.BooleanValue ALLOW_BIOME_MODIFICATION_RITUALS;
+    public static final ForgeConfigSpec.IntValue RITE_OF_ECLIPSE_COOLDOWN_SECONDS;
     public static final ForgeConfigSpec.BooleanValue GENERATE_WICKER_MEN;
     public static final ForgeConfigSpec.BooleanValue GENERATE_COVENS;
     public static final ForgeConfigSpec.BooleanValue GENERATE_SHACKS;
@@ -88,6 +89,9 @@ public final class WitcheryServerConfig {
         ALLOW_BIOME_MODIFICATION_RITUALS = builder
                 .comment("Allow the Rite of Climate Change to edit saved chunk biomes.")
                 .define("allowBiomeModificationRituals", true);
+        RITE_OF_ECLIPSE_COOLDOWN_SECONDS = builder
+                .comment("Seconds between eclipses in a dimension with more than one player. Zero allows consecutive casts.")
+                .defineInRange("riteOfEclipseCooldownInSecs", 0, 0, 3600);
         GENERATE_WICKER_MEN = builder
                 .comment("Generate Wicker Men in new chunks.")
                 .worldRestart().define("generateWickerMen", true);

@@ -342,6 +342,18 @@
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 344 required Forge GameTests. New cases cover the original Chilled attribute and damage rules, migrated ingredients, glancing hits, the radius boundary, resistant entities, and preserving a container while clearing brew gas inside a shell.
 - [ ] Restore the remaining circle rites.
 
+## Sky’s Wrath and Total Eclipse (2026-11-21)
+
+- [x] Restore all five recipes with small white chalk circles. A wooden sword and Wood Ash call the focused storm for 1,000 power. A stone sword and Wood Ash call the greater storm for 2,000 power. The portable greater storm uses an iron sword, Wood Ash, and a Charged Attuned Stone.
+- [x] Restore 30-tick lightning phases, the original focused and greater strike offsets, and the five- to fifteen-minute thunderstorm on the fourth phase. The powered variants accept a location-bound Waystone in the same dimension. The base range is 50 blocks, with 50 more per summoned coven member.
+- [x] Keep the storm's target, phase, partial phase time, and offerings in the Heart Glyph across restarts. Canceling an active storm returns its offerings. The legacy altar debit stays spent.
+- [x] A stone axe and Quicklime cast Total Eclipse for 3,000 power during the day. The portable rite uses an iron axe, Quicklime, and a Charged Attuned Stone. Both advance the current day to midnight. The configured cooldown applies when more than one player is present in the dimension and returns the offerings when it rejects a cast.
+- [x] Require unworn swords and axes and preserve the original Dream World restriction. Update Circle Magic with the five recipes, the daytime condition, and the optional Waystone.
+- [x] Use the five recipes through the Heart Glyph in the muted survival client. The focused lightning dealt damage, and both local storms saved rain and thunder. Save the Waystone-directed greater storm after its first remote strike, then restart the dedicated server and verify the same target and phase before the storm resumes.
+- [x] With two muted clients present, verify that both eclipse variants set midnight, the nighttime attempt leaves its offerings, and the configured cooldown returns the three portable offerings while the world stays at noon.
+- [x] Verify on the release JAR that activating a supplied white chalk circle in the Dream World leaves the storm offerings in place.
+- [x] Read the Altar costs, the Waystone option, and the daytime condition in the shipped Circle Magic book. Run Java 17 data generation, JAR reobfuscation, and all 397 required Forge GameTests.
+
 ## Familiar Brews and Baba Yaga (2026-11-20)
 
 - [x] Restore the recipes and effects for Frog's Tongue, Cursed Leaping, Hitchcock, Bats and Wasting. The muted client pulled a cow over two blocks, gained roughly eleven blocks of height with Jump Boost IV, and sent four temporary owls at a cow with Hitchcock. Bats released ten marked bats and applied Slowness VI to a nearby chicken. Wasting cut food from twenty to ten, applied Hunger and Poison, and cleared a nearby poppy.
