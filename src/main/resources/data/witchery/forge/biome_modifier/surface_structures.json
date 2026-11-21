@@ -1,6 +1,6 @@
 {
   "type": "forge:add_features",
   "biomes": "#witchery:surface_structure_candidates",
-  "features": "witchery:wicker_man",
+  "features": "witchery:surface_structures",
   "step": "top_layer_modification"
 }

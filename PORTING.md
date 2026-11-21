@@ -536,6 +536,15 @@
 - [x] Land a real sword hit on the packaged Huntsman and turn in the trial. The test arena used Strength and a stationary boss prepared at 12 health for the final strike. It dropped three Wither Skeleton Skulls, an enchanted book and Infernal Blood. The survival client returned to the altar, advanced to rank five and used a crouching Moon Charm to become a Wolfman with 40 maximum health.
 - [x] Restore the Huntsman's Spear and its 3D held model, knockback resistance, retaliating wolves and Nightmare vulnerability. Java 17 data generation, JAR reobfuscation and all 234 required Forge GameTests passed, including the legacy Moon Charm wear and wolf trial imports.
 
+## Coven Circles and Witches' Shacks (2026-11-20)
+
+- [x] Generate coven circles and witches' shacks on the shared regional grid with Wicker Men. Restore the generation toggles and dry-site checks, and keep the original chances to generate a persistent coven witch at either new site.
+- [x] Restore the coven ring, its desert variant, chiseled water basin, mineshaft loot dispenser, and two vanilla witch spawners. Restore the shack's furnishings and original eight weighted chest entries.
+- [x] In a fresh world, the muted survival client opened the naturally generated shack door, collected an iron pickaxe, and activated the circle's spawners. The fixtures teleported the client to the generated sites.
+- [x] Restart the dedicated server and verify the same coven witch UUID, the dispenser loot table, the shack door, and the opened chest.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 349 required Forge GameTests. The new cases cover the desert geometry and block entity data, a rotated shack and its loot, and fallback to another enabled type.
+- [ ] Restore the Hobgoblin Hut and its resident, then complete the shared surface structure rotation.
+
 ## Werewolf Hunts, Howls and Taming (2026-11-20)
 
 - [x] Restore the five remaining trials and original turn-ins at the Wolf Altar. GameTests used attributed kills, taming and the howl handler to validate all five ranks. In the muted survival client, a grounded kill earned zero progress and ten airborne kills advanced the player to rank six.

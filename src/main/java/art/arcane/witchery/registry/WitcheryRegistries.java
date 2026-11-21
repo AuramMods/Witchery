@@ -6,6 +6,7 @@ import art.arcane.witchery.data.PredictionLootModifier;
 import art.arcane.witchery.data.WolfBoneLootModifier;
 import art.arcane.witchery.world.DreamCottonFeature;
 import art.arcane.witchery.world.MirrorChunkGenerator;
+import art.arcane.witchery.world.SurfaceStructuresFeature;
 import art.arcane.witchery.world.TormentChunkGenerator;
 import art.arcane.witchery.world.WickerManFeature;
 import com.mojang.serialization.Codec;
@@ -30,6 +31,7 @@ public final class WitcheryRegistries {
         LOOT_MODIFIERS.register("wolf_bones", () -> WolfBoneLootModifier.CODEC);
         FEATURES.register("dream_cotton", DreamCottonFeature::new);
         FEATURES.register("wicker_man", WickerManFeature::new);
+        FEATURES.register("surface_structures", SurfaceStructuresFeature::new);
         CHUNK_GENERATORS.register("mirror", () -> MirrorChunkGenerator.CODEC);
         CHUNK_GENERATORS.register("torment", () -> TormentChunkGenerator.CODEC);
     }

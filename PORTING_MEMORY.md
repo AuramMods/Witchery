@@ -143,6 +143,15 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - With Twilight Forest 4.3.2508 installed in disposable Forge, the enabled profile generated a skeleton spawner at `152 0 -200` and the hay head above it. The disabled profile had no spawner at the same candidate. [Twilight Forest test release](https://www.curseforge.com/minecraft/mc-mods/the-twilight-forest/files/5468648)
 - Java 17 data generation, JAR reobfuscation, and all 346 required Forge GameTests passed. The older Poltergeist brazier case failed once and passed when rerun in its own test batch. The final packaged SHA-256 is `0eea5fa01af42b93c8215ba1d1977f833db5286f4406b67724c5174153ddd5b5`.
 
+### Coven Circles and Witches' Shacks (2026-11-20)
+
+- `witchery:surface_structures` now owns regional placement for Wicker Men, coven circles, and witches' shacks. The shared placement retains the seeded Wicker Man choice and tries the other enabled structures if its first supported choice cannot generate. The Hobgoblin Hut's fourth choice is pending. `generateCovens` and `generateShacks` control the new sites.
+- The coven circle has a stone or sandstone ring, cobwebs, a chiseled basin with water, two vanilla witch spawners, and a dispenser. The dispenser uses the modern Abandoned Mineshaft loot table, which replaces the old shared mineshaft corridor chest hook.
+- The shack has a spruce stair roof, connected glass panes, an oak door, and its original seating and table. The deferred chest loot retains its eight original weighted entries and one to three rolls. The circle and shack can place persistent resident coven witches with the original 90% and 75% chances.
+- In the packaged seed 1 world, the circle developed at `392 69 344` and the shack at `168 73 776`. The muted survival client collected an iron pickaxe from the shack chest. Its approach to the circle caused two vanilla witches to spawn with ambient mob spawning disabled. The separate resident was persistent.
+- A dedicated restart preserved the resident's UUID, the dispenser's deferred loot, the open shack door, and the looted chest. The witches killed the test player, and the drop containing the pickaxe persisted in the circle-area entity chunk.
+- Java 17 data generation, JAR reobfuscation and all 349 required Forge GameTests passed. Packaged SHA-256 is `6c9a42f4aa6e2fa507a636ccdb1a1d15a1f2589a3bd431f34140ae25964b4410`.
+
 ### Rite of Climate Change (2026-11-20)
 
 - Rite 64 is centered on the large white ring and requires four to six coven witches. Its radius is 16, 32, or 48 blocks. Four warmup pulses precede the consumption of nearby biome foci and Glowstone Dust. The latter selects a variant from ordered vanilla equivalents followed by tagged biomes. The five-stage upkeep persists and can resume from the legacy rite data.
