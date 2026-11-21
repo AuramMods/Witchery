@@ -2,6 +2,9 @@
   "values": [
     "witchery:witchlog",
     "witchery:witchwood",
-    "witchery:coffinblock"
+    "witchery:coffinblock",
+    "witchery:scarecrow",
+    "witchery:trent",
+    "witchery:witchsladder"
   ]
 }

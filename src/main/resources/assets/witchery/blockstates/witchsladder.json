@@ -1,7 +1,19 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/witchsladder"
-      }
-   }
+  "variants": {
+    "facing=north": {
+      "model": "witchery:block/witchsladder"
+    },
+    "facing=east": {
+      "model": "witchery:block/witchsladder",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "witchery:block/witchsladder",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "witchery:block/witchsladder",
+      "y": 270
+    }
+  }
 }

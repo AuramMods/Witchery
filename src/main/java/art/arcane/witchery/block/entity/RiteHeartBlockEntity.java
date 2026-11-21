@@ -25,6 +25,7 @@ import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryRecipes;
+import art.arcane.witchery.ritual.FetishBinding;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
 import art.arcane.witchery.ritual.RiteOfTransposition;
 import art.arcane.witchery.vampirism.Vampirism;
@@ -315,6 +316,14 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (rite.action() == ItemRiteRecipe.Action.BIND_SPECTRAL_STONE && !SpectralStoneItem.bindFromCircle(level, pos)) {
             abort(level, "message.witchery.rite.no_spectral_creature");
             return;
+        }
+        if (rite.action() == ItemRiteRecipe.Action.BIND_FETISH) {
+            ItemStack fetish = sacrificed.stream().map(Sacrifice::stack).filter(FetishBinding::isFetish)
+                    .findFirst().orElse(ItemStack.EMPTY);
+            if (!FetishBinding.bind(level, pos, fetish)) {
+                abort(level, "message.witchery.rite.no_fetish_spirits");
+                return;
+            }
         }
         if (familiarRite && !(rite.action() == ItemRiteRecipe.Action.BIND_FAMILIAR
                 ? FamiliarBinding.bindNear(level, pos) : FamiliarBinding.callNear(level, pos))) {

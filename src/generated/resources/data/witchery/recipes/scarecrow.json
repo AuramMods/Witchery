@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "item": "minecraft:jack_o_lantern"
+    },
+    "S": {
+      "tag": "forge:rods/wooden"
+    },
+    "T": {
+      "item": "witchery:tormented_twine"
+    },
+    "W": {
+      "item": "minecraft:white_wool"
+    }
+  },
+  "pattern": [
+    "WPW",
+    "STS",
+    "WSW"
+  ],
+  "result": {
+    "item": "witchery:scarecrow"
+  },
+  "show_notification": true
+}

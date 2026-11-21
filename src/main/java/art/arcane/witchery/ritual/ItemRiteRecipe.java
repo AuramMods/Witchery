@@ -64,7 +64,8 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         CURE_LYCANTHROPY,
         TRANSPOSE_CREATURE,
         TRANSPOSE_ORES,
-        BIND_SPECTRAL_STONE
+        BIND_SPECTRAL_STONE,
+        BIND_FETISH
     }
 
     public record Ring(RitualCircle pattern, Block glyph) {
@@ -248,6 +249,7 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 case "transpose_creature" -> Action.TRANSPOSE_CREATURE;
                 case "transpose_ores" -> Action.TRANSPOSE_ORES;
                 case "bind_spectral_stone" -> Action.BIND_SPECTRAL_STONE;
+                case "bind_fetish" -> Action.BIND_FETISH;
                 default -> throw new JsonSyntaxException("Unknown rite action for " + id);
             };
             ItemStack result = action == Action.ITEM

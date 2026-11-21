@@ -30,6 +30,7 @@ import art.arcane.witchery.item.HunterClothingItem.Piece;
 import art.arcane.witchery.item.HunterClothingItem.Upgrade;
 import art.arcane.witchery.item.DemonHeartItem;
 import art.arcane.witchery.item.DeathProtectionPoppetItem;
+import art.arcane.witchery.item.FetishItem;
 import art.arcane.witchery.item.DrinkableBrewItem;
 import art.arcane.witchery.item.DreamWeaveItem;
 import art.arcane.witchery.item.FilledChaliceItem;
@@ -393,6 +394,9 @@ public final class WitcheryItems {
             }
             case "wolfaltar" -> {
                 return new WolfAltarItem(block);
+            }
+            case "scarecrow", "trent", "witchsladder" -> {
+                return new FetishItem(block);
             }
             case "demonheart" -> {
                 return new DemonHeartItem(block, false);

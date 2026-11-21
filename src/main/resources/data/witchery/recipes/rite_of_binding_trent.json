@@ -1,0 +1,25 @@
+{
+  "type": "witchery:item_rite",
+  "action": "bind_fetish",
+  "circles": [
+    {
+      "size": "medium",
+      "glyph": "witchery:circleglyphritual"
+    }
+  ],
+  "sacrifices": [
+    {
+      "item": "witchery:trent"
+    },
+    {
+      "item": "witchery:attuned_stone"
+    },
+    {
+      "item": "witchery:necromantic_stone"
+    },
+    {
+      "item": "witchery:boline"
+    }
+  ],
+  "power": 6000
+}

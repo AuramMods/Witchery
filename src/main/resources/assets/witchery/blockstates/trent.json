@@ -1,7 +1,19 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/trent"
-      }
-   }
+  "variants": {
+    "facing=north": {
+      "model": "witchery:block/trent"
+    },
+    "facing=east": {
+      "model": "witchery:block/trent",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "witchery:block/trent",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "witchery:block/trent",
+      "y": 270
+    }
+  }
 }

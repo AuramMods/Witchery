@@ -1,0 +1,42 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "O": {
+      "item": "minecraft:oak_log"
+    },
+    "P": {
+      "item": "minecraft:jack_o_lantern"
+    },
+    "R": {
+      "type": "forge:difference",
+      "base": {
+        "item": "witchery:witchlog"
+      },
+      "subtracted": [
+        {
+          "type": "forge:partial_nbt",
+          "item": "witchery:witchlog",
+          "nbt": "{BlockStateTag:{wood_type:\"alder\"}}"
+        },
+        {
+          "type": "forge:partial_nbt",
+          "item": "witchery:witchlog",
+          "nbt": "{BlockStateTag:{wood_type:\"hawthorn\"}}"
+        }
+      ]
+    },
+    "T": {
+      "item": "witchery:tormented_twine"
+    }
+  },
+  "pattern": [
+    "OPO",
+    "TRT",
+    "O O"
+  ],
+  "result": {
+    "item": "witchery:trent"
+  },
+  "show_notification": true
+}

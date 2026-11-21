@@ -1,5 +1,8 @@
 package art.arcane.witchery.world;
 
+import art.arcane.witchery.block.entity.FetishBlockEntity;
+import art.arcane.witchery.ritual.FetishBinding;
+
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.DreamWeave;
@@ -93,6 +96,10 @@ public final class DreamTravel {
 
     public static void grantManifestation(ServerPlayer player, int seconds) {
         persistent(player).putInt(MANIFEST_DURATION, seconds);
+    }
+
+    public static void deferManifestationCountdown(ServerPlayer player) {
+        if (isGhost(player) && manifestSeconds(player) >= 5) persistent(player).putBoolean(MANIFEST_SKIP, true);
     }
 
     public static int manifestSeconds(ServerPlayer player) {
@@ -501,10 +508,7 @@ public final class DreamTravel {
     }
 
     private static boolean isBoundFetish(ItemStack stack) {
-        return stack.getTag() != null && stack.getTag().getInt("WITCSpiritEffect") > 0
-                && (stack.is(WitcheryBlocks.getRequired("scarecrow").get().asItem())
-                || stack.is(WitcheryBlocks.getRequired("trent").get().asItem())
-                || stack.is(WitcheryBlocks.getRequired("witchsladder").get().asItem()));
+        return FetishBinding.isFetish(stack) && FetishBlockEntity.itemEffect(stack) > 0;
     }
 
     private static void dropGhostInventory(ServerLevel level, Vec3 position, ListTag items) {

@@ -449,7 +449,7 @@
 - [x] Verify the optional silver-ingot recipe with a temporary `forge:ingots/silver` fixture. The recipe became available when the tag was supplied, and the client crafted six silver bolts with one tagged ingot and six wooden bolts. Java 17 data generation, JAR reobfuscation and all 213 required Forge GameTests passed.
 - [x] Power Anti-Magic Bolts with the full Witch Hunter set. In a two-client test, a shot drained the shooter's 20 infusion charge, took the target's charge from 20 to 10, and left Poison active after dispelling Resistance.
 - [x] Connect Silver Bolts and silvered armor to lycanthropy. The dedicated server recorded both the Silver Bolt selection against a Wolfman and the protection, durability and retaliatory damage from silvered armor.
-- [ ] Restore the spirit enhancement for ordinary death wards hit by powered bolts.
+- [x] A nearby Enhanced Poppets fetish allows a carried Death Protection Poppet to absorb a lethal powered anti-magic bolt. Shelf wards retain their ordinary restrictions.
 
 ## Witch Hunter Clothing (2026-11-20)
 
@@ -592,7 +592,7 @@
 - [x] Use the large Otherwhere circle and the five original offerings to extract ore from a 17-by-17 area. The rite scans 30 layers and adds five per coven member. Six members also enable gold. Both stone and deepslate ore variants drop their own blocks. The active layer survives a restart and can be restored from the legacy rite 7 save.
 - [x] Save the native ore rite after six layers. On restart, it finished thirty layers and left exactly two Iron Ore items and one Deepslate Iron Ore item. Gold, iron on layer 31, and iron outside the range all stayed in place.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 284 required Forge GameTests. Coverage includes Nether summoning, the Ender Inhibition threshold, refunds, both area and carried defenses, and the legacy six-member ore rite.
-- [ ] Restore the spirit-binding progression for new enhanced fetishes and finish the other spirit effects. The current enhancement can be used with migrated items and blocks.
+- [x] Restore the spirit-binding rites that make enhanced fetishes in survival.
 
 ## Dream Spirits and the Spectral Stone (2026-11-20)
 
@@ -615,7 +615,20 @@
 - [x] Verify binding, release and the Poltergeist's chest behavior. The muted client tossed the offerings, activated the rite, collected the resulting stone and preserved it on an early release. A full charge released an owned Poltergeist and emptied the stone. The summoned creature ejected a diamond from a test chest and the client collected it.
 - [x] Finish a Banshee batch in the muted client and verify the scream pose. The player lost two health in range. After equipping Earmuffs the player stayed at 18 health through the following scream pulses.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 294 required Forge GameTests. The four new cases cover powered and paused summons, redstone and flint ignition, water cleanup, original spectral offerings, legacy stone metadata and a reloaded rite that binds and releases three creatures.
-- [ ] Restore brazier ignition by the Mystic Branch's Incendio, the Revealing brew's spectral effects, and the rites and abilities for spirit-enchanted fetishes.
+- [ ] Restore brazier ignition by the Mystic Branch's Incendio and the Revealing brew's spectral effects.
+
+## Spirit-Bound Fetishes (2026-11-20)
+
+- [x] Restore the original Scarecrow, Trent Effigy and Witch's Ladder crafting patterns. The Scarecrow and Trent use a Jack o'Lantern and Tormented Twine. The Trent uses a Rowan Log. The Witch's Ladder uses feathers, string and Fanciful Thread.
+- [x] Bind the five ordinary spirit effects using rites 84–86, the medium white ring, a chosen fetish, Attuned Stone, Necromantic Stone, Boline and 6,000 altar power. The spirit combination chooses the first match in the original order and consumes only its required creatures. The rite returns the Necromantic Stone.
+- [x] Restore the six alarm modes and saved Taglock lists. The Boline advances the mode. A filled Taglock Kit toggles its subject and a water bucket clears the list. Groupable creatures retain stable type IDs with support for the legacy name-based groups. Dye and effect settings survive placement and harvesting.
+- [x] Apply Enhanced Poppets, Sentinel, Screamer, Twister and Ghost Walker. The Sentinel summons temporary Spectres, the Screamer outputs redstone, the Twister redirects nearby creatures and turns armed players, and the Ghost Walker defers a ghost's countdown. The Witch's Ladder Screamer is silent.
+- [x] Restore block and item models with placement facing, dyes and translucent Dream projections. Placing a fetish in Dream creates a non-colliding, read-only counterpart at the same position in the loaded Overworld if the position can receive it. The copy tracks changes to the Dream original.
+- [x] Craft and bind a Witch's Ladder as a Screamer with the muted survival client. The fixture supplied three Dream Spirits and two Banshees. The client configured the Screamer with a Boline, lit a lamp, and exempted itself with a Taglock. The exemption survived a dedicated restart. Washing the list returned an empty bucket and relit the lamp.
+- [x] Verify Ghost Walker with the muted client through the sleeping brew, Dream portal and Rite of Manifestation. The red projection held the 150-second timer for over 20 seconds in range. After the player moved out of range, the timer resumed and dropped to 140.
+- [x] Break the Dream original in survival. Its Overworld projection disappeared, and the client recovered the red Ghost Walker with its enchantment and alarm setting.
+- [x] Run Java 17 data generation, JAR reobfuscation and all 299 required Forge GameTests. New coverage includes resuming the binding rite, effect priority, migrated Taglock groups, the Sentinel's lifetime, Twister targeting and the carried ward against a powered bolt.
+- [ ] Restore the hidden Death combination and the Death encounter.
 
 ## Auram Pack Validation (2026-11-20)
 

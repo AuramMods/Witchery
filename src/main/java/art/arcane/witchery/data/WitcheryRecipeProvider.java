@@ -3,6 +3,7 @@ package art.arcane.witchery.data;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.WitchCrop;
+import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.item.HunterClothingItem;
 import art.arcane.witchery.item.HunterClothingItem.Piece;
 import art.arcane.witchery.item.HunterClothingItem.Upgrade;
@@ -32,6 +33,8 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraftforge.common.crafting.CompoundIngredient;
+import net.minecraftforge.common.crafting.DifferenceIngredient;
 import net.minecraftforge.common.crafting.PartialNBTIngredient;
 import net.minecraftforge.common.crafting.ConditionalRecipe;
 import net.minecraftforge.common.crafting.conditions.NotCondition;
@@ -68,6 +71,38 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .pattern(" S ")
                 .pattern("SSS")
                 .unlockedBy("has_necromantic_stone", has(WitcheryIngredient.NECROMANTIC_STONE.item()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, WitcheryBlocks.getRequired("scarecrow").get())
+                .define('W', Blocks.WHITE_WOOL)
+                .define('P', Blocks.JACK_O_LANTERN)
+                .define('S', WOODEN_RODS)
+                .define('T', WitcheryIngredient.TORMENTED_TWINE.item())
+                .pattern("WPW")
+                .pattern("STS")
+                .pattern("WSW")
+                .unlockedBy("has_tormented_twine", has(WitcheryIngredient.TORMENTED_TWINE.item()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, WitcheryBlocks.getRequired("witchsladder").get())
+                .define('F', Items.FEATHER)
+                .define('S', Items.STRING)
+                .define('T', WitcheryIngredient.FANCIFUL_THREAD.item())
+                .pattern("FSF")
+                .pattern("FTF")
+                .pattern("FSF")
+                .unlockedBy("has_fanciful_thread", has(WitcheryIngredient.FANCIFUL_THREAD.item()))
+                .save(recipeOutput);
+        Ingredient rowan = DifferenceIngredient.of(Ingredient.of(witchLog), CompoundIngredient.of(
+                PartialNBTIngredient.of(witchLog.asItem(), WitchWoodType.ALDER.stack(witchLog).getTag()),
+                PartialNBTIngredient.of(witchLog.asItem(), WitchWoodType.HAWTHORN.stack(witchLog).getTag())));
+        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, WitcheryBlocks.getRequired("trent").get())
+                .define('O', Blocks.OAK_LOG)
+                .define('P', Blocks.JACK_O_LANTERN)
+                .define('T', WitcheryIngredient.TORMENTED_TWINE.item())
+                .define('R', rowan)
+                .pattern("OPO")
+                .pattern("TRT")
+                .pattern("O O")
+                .unlockedBy("has_tormented_twine", has(WitcheryIngredient.TORMENTED_TWINE.item()))
                 .save(recipeOutput);
         ShapelessRecipeBuilder.shapeless(RecipeCategory.FOOD, WitcheryIngredient.WORMY_APPLE.item())
                 .requires(Items.APPLE)

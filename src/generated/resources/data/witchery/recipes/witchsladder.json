@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": {
+      "item": "minecraft:feather"
+    },
+    "S": {
+      "item": "minecraft:string"
+    },
+    "T": {
+      "item": "witchery:fanciful_thread"
+    }
+  },
+  "pattern": [
+    "FSF",
+    "FTF",
+    "FSF"
+  ],
+  "result": {
+    "item": "witchery:witchsladder"
+  },
+  "show_notification": true
+}

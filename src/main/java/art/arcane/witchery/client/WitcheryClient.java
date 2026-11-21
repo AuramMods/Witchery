@@ -34,6 +34,7 @@ import art.arcane.witchery.client.model.VampireClothingModel;
 import art.arcane.witchery.item.WitchClothingItem;
 import art.arcane.witchery.item.VampireClothingItem;
 import art.arcane.witchery.client.renderer.DreamCatcherRenderer;
+import art.arcane.witchery.client.renderer.FetishRenderer;
 import art.arcane.witchery.client.renderer.BabaYagaRenderer;
 import art.arcane.witchery.client.renderer.BroomRenderer;
 import art.arcane.witchery.client.renderer.DarkMarkRenderer;
@@ -175,6 +176,9 @@ public final class WitcheryClient {
         event.registerLayerDefinition(MirrorBlockRenderer.LAYER, MirrorBlockRenderer::layer);
         event.registerLayerDefinition(DemonHeartRenderer.LAYER, DemonHeartRenderer::layer);
         event.registerLayerDefinition(DreamCatcherRenderer.LAYER, DreamCatcherRenderer::layer);
+        event.registerLayerDefinition(FetishRenderer.SCARECROW, FetishRenderer::scarecrowLayer);
+        event.registerLayerDefinition(FetishRenderer.TRENT, FetishRenderer::trentLayer);
+        event.registerLayerDefinition(FetishRenderer.LADDER, FetishRenderer::ladderLayer);
         event.registerLayerDefinition(KettleRenderer.LAYER, KettleRenderer::layer);
         event.registerLayerDefinition(LeechChestRenderer.LAYER, LeechChestRenderer::layer);
         event.registerLayerDefinition(CoffinRenderer.LAYER, CoffinRenderer::layer);
@@ -259,6 +263,12 @@ public final class WitcheryClient {
         event.registerBlockEntityRenderer(WitcheryBlockEntities.GRASSPER.get(), GrassperRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.POPPET_SHELF.get(), PoppetShelfRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.DREAM_CATCHER.get(), DreamCatcherRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.fetish("scarecrow").get(),
+                context -> new FetishRenderer(context, FetishRenderer.SCARECROW));
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.fetish("trent").get(),
+                context -> new FetishRenderer(context, FetishRenderer.TRENT));
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.fetish("witchsladder").get(),
+                context -> new FetishRenderer(context, FetishRenderer.LADDER));
         event.registerBlockEntityRenderer(WitcheryBlockEntities.DEMON_HEART.get(), DemonHeartRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.MIRROR.get(), MirrorBlockRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.ROOM_MIRROR.get(), MirrorBlockRenderer::new);

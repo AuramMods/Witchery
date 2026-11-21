@@ -10,6 +10,8 @@ import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -43,7 +45,9 @@ public final class TaglockItem extends Item {
     private static final String CREATURE_NAME = "WITCDisplayName1";
     private static final String CREATURE_MOST = "WITCEntityIDm1";
     private static final String CREATURE_LEAST = "WITCEntityIDl1";
-    private static final List<String> SIGNATURE_KEYS = List.of(PLAYER_NAME, PLAYER_UUID, CREATURE_NAME, CREATURE_MOST, CREATURE_LEAST);
+    private static final String CREATURE_TYPE = "WITCCreatureType1";
+    private static final List<String> SIGNATURE_KEYS = List.of(PLAYER_NAME, PLAYER_UUID, CREATURE_NAME, CREATURE_MOST,
+            CREATURE_LEAST, CREATURE_TYPE);
 
     public TaglockItem() {
         super(new Properties().stacksTo(16));
@@ -111,6 +115,25 @@ public final class TaglockItem extends Item {
         Component description = name.isEmpty() ? Component.translatable("item.witchery.taglockkit.unbound")
                 : Component.translatable("item.witchery.taglockkit.bound", name);
         tooltip.add(description.copy().withStyle(ChatFormatting.GRAY));
+    }
+
+    public static String boundPlayerName(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        return tag == null ? "" : tag.getString(PLAYER_NAME);
+    }
+
+    @Nullable
+    public static UUID boundCreatureId(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        return tag != null && tag.contains(CREATURE_MOST, Tag.TAG_LONG) && tag.contains(CREATURE_LEAST, Tag.TAG_LONG)
+                ? new UUID(tag.getLong(CREATURE_MOST), tag.getLong(CREATURE_LEAST)) : null;
+    }
+
+    @Nullable
+    public static ResourceLocation boundCreatureType(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        String type = tag == null ? "" : tag.getString(CREATURE_TYPE);
+        return type.isEmpty() ? null : ResourceLocation.tryParse(type);
     }
 
     public static String boundName(ItemStack stack) {
@@ -256,6 +279,7 @@ public final class TaglockItem extends Item {
             tag.putLong(CREATURE_MOST, uuid.getMostSignificantBits());
             tag.putLong(CREATURE_LEAST, uuid.getLeastSignificantBits());
             tag.putString(CREATURE_NAME, mob.getDisplayName().getString());
+            if (!mob.hasCustomName()) tag.putString(CREATURE_TYPE, BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType()).toString());
             mob.setPersistenceRequired();
         }
     }
