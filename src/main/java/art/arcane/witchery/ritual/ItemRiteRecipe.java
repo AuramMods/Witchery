@@ -113,7 +113,11 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         CURE_OVERHEATING(DirectedCurse.OVERHEATING, false),
         RAISE_PORTABLE_VOLCANO,
         COOK_FOOD,
-        COOK_FOOD_PORTABLE;
+        COOK_FOOD_PORTABLE,
+        BLIGHT,
+        AREA_BLINDNESS,
+        HELL_ON_EARTH,
+        RAIN_TOADS;
 
         @Nullable private final DirectedCurse directedCurse;
         private final boolean inflictsDirectedCurse;
@@ -145,11 +149,16 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
 
         public boolean usesLandscapeUpkeep() {
             return usesWaystoneTarget() || this == RAISE_PORTABLE_VOLCANO || this == ICE_SHELL || this == CLIMATE_CHANGE || this == PART_EARTH
-                    || raisedEarthRadius() > 0 || this == FERTILITY || this == NATURES_POWER || this == CALL_BEASTS;
+                    || raisedEarthRadius() > 0 || this == FERTILITY || this == NATURES_POWER || this == CALL_BEASTS
+                    || expandsCurse() || this == RAIN_TOADS;
         }
 
         public boolean usesWaystoneTarget() {
-            return this == FORESTATION || this == RAISE_VOLCANO || this == RAISE_EARTH;
+            return this == FORESTATION || this == RAISE_VOLCANO || this == RAISE_EARTH || this == HELL_ON_EARTH;
+        }
+
+        public boolean expandsCurse() {
+            return this == BLIGHT || this == AREA_BLINDNESS || this == HELL_ON_EARTH;
         }
 
         public boolean isVolcano() {
@@ -229,6 +238,9 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
 
     @Nullable
     public String startFailure(ServerLevel level) {
+        if (action == Action.HELL_ON_EARTH && !level.dimension().equals(Level.OVERWORLD)) {
+            return "message.witchery.rite.hell_on_earth_overworld";
+        }
         if (level.dimension().equals(WitcheryDimensions.DREAM)) {
             if (action.cooksFood()) return "message.witchery.rite.cooking_dream";
             if (action.directedCurse() != null) return "message.witchery.rite.directed_curse_dream";
@@ -472,6 +484,10 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 case "raise_portable_volcano" -> Action.RAISE_PORTABLE_VOLCANO;
                 case "cook_food" -> Action.COOK_FOOD;
                 case "cook_food_portable" -> Action.COOK_FOOD_PORTABLE;
+                case "blight" -> Action.BLIGHT;
+                case "area_blindness" -> Action.AREA_BLINDNESS;
+                case "hell_on_earth" -> Action.HELL_ON_EARTH;
+                case "rain_toads" -> Action.RAIN_TOADS;
                 case "part_earth" -> Action.PART_EARTH;
                 case "raise_earth" -> Action.RAISE_EARTH;
                 case "raise_earth_medium" -> Action.RAISE_EARTH_MEDIUM;

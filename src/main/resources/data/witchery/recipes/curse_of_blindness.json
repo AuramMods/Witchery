@@ -1,0 +1,15 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphinfernal"}],
+  "sacrifices": [
+    {"item": "witchery:charged_attuned_stone"},
+    {"item": "witchery:redstone_soup"},
+    {"item": "witchery:reek_of_misfortune"},
+    {"item": "witchery:exhale_of_the_horned_one"},
+    {"item": "witchery:brew_of_ink"},
+    {"item": "minecraft:poisonous_potato"},
+    {"item": "minecraft:spider_eye"},
+    {"item": "minecraft:diamond"}
+  ],
+  "action": "area_blindness"
+}

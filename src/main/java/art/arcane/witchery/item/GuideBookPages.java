@@ -117,6 +117,13 @@ public final class GuideBookPages {
         if (recipe.action() == ItemRiteRecipe.Action.FERTILITY) steps.add(text("fertility_effect"));
         if (recipe.action() == ItemRiteRecipe.Action.NATURES_POWER) steps.add(text("natures_power_effect"));
         if (recipe.action() == ItemRiteRecipe.Action.CALL_BEASTS) steps.add(text("call_beasts_effect"));
+        if (recipe.action() == ItemRiteRecipe.Action.BLIGHT) steps.add(text("blight_effect"));
+        if (recipe.action() == ItemRiteRecipe.Action.AREA_BLINDNESS) steps.add(text("area_blindness_effect"));
+        if (recipe.action() == ItemRiteRecipe.Action.HELL_ON_EARTH) {
+            steps.add(text("hell_on_earth_effect"));
+            steps.add(text("hell_on_earth_upkeep"));
+        }
+        if (recipe.action() == ItemRiteRecipe.Action.RAIN_TOADS) steps.add(text("toad_rain_effect"));
         if (recipe.action().isVolcano()) {
             steps.add(text("volcano_lava"));
             if (recipe.action().usesWaystoneTarget()) steps.add(text("volcano_waystone"));

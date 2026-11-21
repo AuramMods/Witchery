@@ -1,0 +1,18 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [
+    {"size": "small", "glyph": "witchery:circleglyphinfernal"},
+    {"size": "medium", "glyph": "witchery:circleglyphotherwhere"},
+    {"size": "large", "glyph": "witchery:circleglyphinfernal"}
+  ],
+  "sacrifices": [
+    {"item": "witchery:redstone_soup"},
+    {"item": "witchery:demon_heart"},
+    {"item": "witchery:waystone"},
+    {"item": "minecraft:nether_star"}
+  ],
+  "power": 5000,
+  "living_offering": "minecraft:villager",
+  "night_only": true,
+  "action": "hell_on_earth"
+}

@@ -95,6 +95,8 @@ public final class LandscapeRites {
             return switch (action) {
                 case RAISE_VOLCANO, RAISE_PORTABLE_VOLCANO -> 15;
                 case ICE_SHELL, RAISE_EARTH, RAISE_EARTH_MEDIUM, RAISE_EARTH_LARGE, FERTILITY -> 5;
+                case BLIGHT, AREA_BLINDNESS, HELL_ON_EARTH -> 5;
+                case RAIN_TOADS -> 30;
                 case CALL_BEASTS -> 60;
                 default -> 20;
             };
@@ -110,6 +112,9 @@ public final class LandscapeRites {
                 case FERTILITY -> GrowthRites.fertilityRadius(coven) - 3;
                 case NATURES_POWER -> 150 + 5 * coven;
                 case CALL_BEASTS -> 250;
+                case BLIGHT, AREA_BLINDNESS -> AreaCurses.curseRadius(coven) - 3;
+                case HELL_ON_EARTH -> 251;
+                case RAIN_TOADS -> RainOfToads.LAST_STAGE;
                 default -> 60 + 5 * coven;
             };
         }
@@ -202,6 +207,10 @@ public final class LandscapeRites {
                 if (stage < progress.lastStage(coven)) GrowthRites.naturesPower(level, progress.target(), coven);
             }
             case CALL_BEASTS -> CallOfTheBeasts.pulse(level, progress.target(), stage);
+            case BLIGHT, AREA_BLINDNESS, HELL_ON_EARTH -> {
+                if (!AreaCurses.pulse(level, heart, progress.target(), stage, coven, progress.action(), caster)) return null;
+            }
+            case RAIN_TOADS -> RainOfToads.shower(level, progress.target());
             default -> throw new IllegalStateException("Unexpected landscape rite " + progress.action());
         }
         return stage >= progress.lastStage(coven) ? null

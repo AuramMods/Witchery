@@ -1,0 +1,13 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "medium", "glyph": "witchery:circleglyphinfernal"}],
+  "sacrifices": [
+    {"item": "witchery:charged_attuned_stone"},
+    {"item": "witchery:redstone_soup"},
+    {"item": "witchery:reek_of_misfortune"},
+    {"item": "witchery:toe_of_frog"},
+    {"item": "minecraft:water_bucket"},
+    {"item": "witchery:belladonna_flower"}
+  ],
+  "action": "rain_toads"
+}

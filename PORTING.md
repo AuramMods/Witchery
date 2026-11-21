@@ -416,6 +416,17 @@
 - [x] Save the portable volcano at stage ten and portable cooking after two offerings in the same packaged world. After the headless restart, verify a lava source at the summit, an open shaft, the four diamonds in the preserved chest, and the nearby bedrock. Portable cooking converts its stack of 64 Potatoes into 56 Baked Potatoes and eight Charcoal and leaves one discharged stone.
 - [x] Run Java 17 data generation, JAR reobfuscation and all nine new Forge GameTests. The cases cover both burn rates, spawn cancellation, recipe matching, dry refunds, reloads, and legacy volcano migration. The latest broad run passed 497 of 498. The older Death summoning case passed in a separate batch alongside the nine new cases and the legacy offering return check.
 
+## Area Curses and Rain of Toads (2026-11-21)
+
+- [x] Restore Blight and Blindness with their original Infernal rings, offerings, five-tick wave and coven-scaled radius. Blight causes Nausea II, withers crops, and can harm or transform animals and villagers. An active cat extends Blindness from two to five minutes. Voodoo Protection can stop the wave.
+- [x] Restore Hell on Earth at night in the Overworld. Charge 5,000 altar power after the villager offering. A location-bound Waystone redirects the netherrack wave and the Nether creature summons. The upkeep altar must be within 16 blocks of the target and pay 200 power every two seconds. The server can disable the fires from an active cat familiar.
+- [x] Restore Rain of Toads with a medium Infernal ring and at least one coven witch. A cast without a coven returns the other offerings and discharges the Attuned Stone. A successful cast begins with four lightning pulses, sets rain when the weather is clear, then showers short-lived poisonous toads.
+- [x] Save expanding stages, targets and eligible initiators. Migrate legacy rites 37–39 and 66, including unsigned stages for Hell on Earth and Rain of Toads. Keep the first four Rain of Toads phases and their staged offerings pending until the first shower.
+- [x] Cast all four rites with the muted survival client on packaged Forge. Blight withered wheat and applied Nausea II. The cat-enhanced Blindness lasted five minutes for the cow on the perimeter and left the inner cow unaffected. Hell on Earth sacrificed its villager, charged the source altar, spawned creatures at the bound destination, and stopped when the destination altar was removed.
+- [x] Restart the dedicated server after the first lightning pulse of Rain of Toads. The cast resumed from stage one, started rain, and spawned poisonous temporary toads as it entered stage five upkeep.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 502 required Forge GameTests. The four new cases cover Blight terrain, Blindness boundaries and existing effects, toad lifespan and poison, and legacy stage migration.
+- [ ] Restore Prior Incarnation, the last unmapped legacy circle rite.
+
 ## Queued Circle Rites (2026-11-21)
 
 - [x] Match compatible recipes in their original registration order and reserve their dropped stacks and Grassper offerings during activation. Spend the offerings one rite at a time. A failed cast returns its staged offerings and advances the queue.

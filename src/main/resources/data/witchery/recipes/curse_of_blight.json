@@ -1,0 +1,14 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "medium", "glyph": "witchery:circleglyphinfernal"}],
+  "sacrifices": [
+    {"item": "witchery:charged_attuned_stone"},
+    {"item": "witchery:redstone_soup"},
+    {"item": "witchery:reek_of_misfortune"},
+    {"item": "minecraft:fermented_spider_eye"},
+    {"item": "minecraft:glistering_melon_slice"},
+    {"item": "minecraft:rotten_flesh"},
+    {"item": "minecraft:diamond"}
+  ],
+  "action": "blight"
+}

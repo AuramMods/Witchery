@@ -7,7 +7,6 @@ import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -19,7 +18,6 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.ZombieVillager;
 import net.minecraft.world.item.BoneMealItem;
@@ -39,7 +37,6 @@ import org.jetbrains.annotations.Nullable;
 final class GrowthRites {
     private static final TagKey<Block> SOIL = TagKey.create(Registries.BLOCK,
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "natures_power_replaceable"));
-    private static final int[] SIGNS = {1, -1};
     private static final LandscapeRites.Species[] TREES = LandscapeRites.Species.values();
 
     private GrowthRites() {}
@@ -54,7 +51,7 @@ final class GrowthRites {
         boolean enhanced = grower != null && FamiliarBinding.hasCurseMastery(grower);
         Vec3 center = Vec3.atCenterOf(heart);
         for (ServerPlayer player : level.players()) {
-            if (!inWave(player, center, radius)) continue;
+            if (!ExpandingWave.contains(player, center, radius)) continue;
             player.removeEffect(MobEffects.CONFUSION);
             player.removeEffect(MobEffects.BLINDNESS);
             player.removeEffect(MobEffects.POISON);
@@ -65,46 +62,17 @@ final class GrowthRites {
         }
         AABB bounds = new AABB(heart).inflate(radius);
         for (ZombieVillager zombie : level.getEntitiesOfClass(ZombieVillager.class, bounds,
-                mob -> mob.isAlive() && inWave(mob, center, radius))) {
+                mob -> mob.isAlive() && ExpandingWave.contains(mob, center, radius))) {
             if (ForgeEventFactory.canLivingConvert(zombie, EntityType.VILLAGER, delay -> {}) && zombie.isAlive()) {
                 zombie.finishConversion(level);
             }
         }
 
-        int error = 1 - radius;
-        for (int x = radius, z = 0; x >= z; z++) {
-            for (int xSign : SIGNS) {
-                for (int zSign : SIGNS) {
-                    fertilizeColumn(level, heart.offset(xSign * x, 0, zSign * z), grower);
-                    fertilizeColumn(level, heart.offset(xSign * z, 0, zSign * x), grower);
-                }
+        ExpandingWave.visitSurface(level, heart, radius, false, pos -> {
+            if (grower != null && level.mayInteract(grower, pos)) {
+                BoneMealItem.applyBonemeal(new ItemStack(Items.BONE_MEAL), level, pos, grower);
             }
-            if (error < 0) error += 2 * (z + 1) + 1;
-            else error += 2 * (z - --x + 2);
-        }
-    }
-
-    private static boolean inWave(Entity entity, Vec3 center, int radius) {
-        double distance = entity.distanceToSqr(center);
-        return distance > (radius - 1) * (radius - 1) && distance <= radius * radius;
-    }
-
-    private static void fertilizeColumn(ServerLevel level, BlockPos column, @Nullable ServerPlayer caster) {
-        if (!level.hasChunkAt(column) || !level.getWorldBorder().isWithinBounds(column)) return;
-        for (int height = 0; height < 15; height++) {
-            if (fertilizeSurface(level, column.above(height), caster)) return;
-            if (height > 0 && fertilizeSurface(level, column.below(height), caster)) return;
-        }
-    }
-
-    private static boolean fertilizeSurface(ServerLevel level, BlockPos pos, @Nullable ServerPlayer caster) {
-        if (level.isEmptyBlock(pos) || !level.isEmptyBlock(pos.above())) return false;
-        level.sendParticles(ParticleTypes.EFFECT, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5,
-                16, 0.5, 0.5, 0.5, 0);
-        if (caster != null && level.mayInteract(caster, pos)) {
-            BoneMealItem.applyBonemeal(new ItemStack(Items.BONE_MEAL), level, pos, caster);
-        }
-        return true;
+        });
     }
 
     static void naturesPower(ServerLevel level, BlockPos heart, int coven) {

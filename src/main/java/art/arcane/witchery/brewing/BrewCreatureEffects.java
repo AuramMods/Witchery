@@ -194,7 +194,7 @@ public final class BrewCreatureEffects {
         BrewImpacts.recoverBrew(brew, level, hit);
     }
 
-    private static boolean infectVillager(ServerLevel level, Villager villager) {
+    public static boolean infectVillager(ServerLevel level, Villager villager) {
         if (!villager.isAlive() || !ForgeEventFactory.canLivingConvert(villager, EntityType.ZOMBIE_VILLAGER, ignored -> {})) {
             return false;
         }

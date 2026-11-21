@@ -52,6 +52,12 @@ public final class WitchToad extends WitchPet {
         moveControl = new SmoothSwimmingMoveControl(this, 80, 10, 0.25F, 1, true);
     }
 
+    public void prepareRainToad() {
+        timeToLive = 30;
+        poisonous = true;
+        setColor(random.nextInt(16));
+    }
+
     public static AttributeSupplier.Builder attributes() {
         return createMobAttributes().add(Attributes.MAX_HEALTH, 10).add(Attributes.MOVEMENT_SPEED, 0.2);
     }
