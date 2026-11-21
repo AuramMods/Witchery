@@ -1,0 +1,278 @@
+package art.arcane.witchery.brewing;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.BoneMealItem;
+import net.minecraft.world.item.ItemNameBlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.BonemealableBlock;
+import net.minecraft.world.level.block.BushBlock;
+import net.minecraft.world.level.block.VineBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.IPlantable;
+import net.minecraftforge.common.util.FakePlayerFactory;
+import org.apache.commons.lang3.mutable.MutableInt;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayDeque;
+import java.util.function.Consumer;
+
+final class BrewFarming {
+    private static final Block[] FLOWERS = {
+            Blocks.DANDELION, Blocks.POPPY, Blocks.BLUE_ORCHID, Blocks.ALLIUM, Blocks.AZURE_BLUET,
+            Blocks.RED_TULIP, Blocks.ORANGE_TULIP, Blocks.WHITE_TULIP, Blocks.PINK_TULIP, Blocks.OXEYE_DAISY
+    };
+
+    private BrewFarming() {
+    }
+
+    static void flowers(ServerLevel level, BlockPos center, int radius, int strength, @Nullable Player caster) {
+        Player actor = actor(level, caster);
+        int odds = Math.max(1, 8 - strength);
+        forEachColumn(level, center, radius + strength, column -> {
+            for (int dy = -1; dy <= 1; dy++) {
+                BlockPos pos = column.offset(0, dy, 0);
+                if (!level.getBlockState(pos).canBeReplaced() || !level.getFluidState(pos).isEmpty()
+                        || !Blocks.DANDELION.defaultBlockState().canSurvive(level, pos)
+                        || level.random.nextInt(odds) != 0) continue;
+                var flower = FLOWERS[level.random.nextInt(FLOWERS.length)].defaultBlockState();
+                if (flower.canSurvive(level, pos)) BrewTerrain.setBlock(actor, level, pos, flower, Direction.UP);
+            }
+        });
+    }
+
+    static void fertilize(ServerLevel level, BlockPos center, int radius, int strength, @Nullable Player caster) {
+        Player actor = actor(level, caster);
+        forEachColumn(level, center, radius + strength, column -> {
+            for (int dy = 1; dy >= -1; dy--) {
+                BlockPos pos = column.offset(0, dy, 0);
+                var state = level.getBlockState(pos);
+                if (!(state.getBlock() instanceof BonemealableBlock) && !(state.getBlock() instanceof IPlantable)) continue;
+                if (BrewTerrain.canChange(actor, level, pos, state)) {
+                    for (int attempt = 0; attempt <= strength; attempt++) {
+                        BoneMealItem.applyBonemeal(new ItemStack(Items.BONE_MEAL), level, pos, actor);
+                    }
+                }
+                return;
+            }
+        });
+    }
+
+    static void harvest(ServerLevel level, BlockPos center, int radius, int strength, @Nullable Player caster) {
+        Player actor = actor(level, caster);
+        var changed = new MutableInt();
+        ItemStack tool = lootTool(Math.max(strength - 1, 0));
+        forEachColumn(level, center, radius + strength, column -> {
+            for (int dy = -1; dy <= 1; dy++) {
+                BlockPos pos = column.offset(0, dy, 0);
+                var state = level.getBlockState(pos);
+                if (!(state.getBlock() instanceof BushBlock) || !remove(level, pos, state, actor)) continue;
+                if (level.random.nextInt(changed.incrementAndGet()) == 0) level.levelEvent(2001, pos, Block.getId(state));
+                for (ItemStack drop : Block.getDrops(state, level, pos, null, null, tool)) {
+                    if (drop.isEmpty()) continue;
+                    Vec3 location = Vec3.atCenterOf(pos);
+                    level.addFreshEntity(new ItemEntity(level, location.x, location.y, location.z, drop));
+                }
+            }
+        });
+    }
+
+    static void till(ServerLevel level, BlockPos center, int radius, int strength, @Nullable Player caster) {
+        Player actor = actor(level, caster);
+        var changed = new MutableInt();
+        forEachColumn(level, center, radius + strength, column -> {
+            for (int dy = -1; dy <= 1; dy++) {
+                BlockPos pos = column.offset(0, dy, 0);
+                var state = level.getBlockState(pos);
+                if (!canTill(state, strength) || !level.isEmptyBlock(pos.above())
+                        || !BrewTerrain.setBlock(actor, level, pos, Blocks.FARMLAND.defaultBlockState(), Direction.UP)) continue;
+                if (level.random.nextInt(changed.incrementAndGet()) == 0) {
+                    var sound = state.getSoundType(level, pos, actor);
+                    level.playSound(null, pos, sound.getStepSound(), SoundSource.BLOCKS,
+                            (sound.getVolume() + 1) / 2, sound.getPitch() * 0.8F);
+                }
+            }
+        });
+    }
+
+    private static boolean canTill(BlockState state, int strength) {
+        return state.is(Blocks.GRASS_BLOCK) || state.is(Blocks.DIRT) || state.is(Blocks.COARSE_DIRT) || state.is(Blocks.PODZOL)
+                || strength >= 1 && (state.is(Blocks.SAND) || state.is(Blocks.RED_SAND))
+                || strength >= 2 && state.is(Blocks.NETHERRACK)
+                || strength >= 3 && state.is(Blocks.SOUL_SAND);
+    }
+
+    static void plant(ServerLevel level, BlockPos center, int radius, int strength, @Nullable Player caster) {
+        int reach = radius + strength;
+        Vec3 origin = Vec3.atLowerCornerOf(center);
+        var seeds = new ArrayDeque<>(level.getEntitiesOfClass(ItemEntity.class, new AABB(origin, origin).inflate(reach),
+                seed -> seed.isAlive() && seed.distanceToSqr(origin) <= reach * reach && isPlantable(seed.getItem())));
+        if (seeds.isEmpty()) return;
+
+        Player actor = actor(level, caster);
+        forEachColumn(level, center, reach, column -> {
+            while (!seeds.isEmpty() && !seeds.getLast().isAlive()) seeds.removeLast();
+            ItemEntity seed = seeds.peekLast();
+            if (seed == null) return;
+            for (int dy = -2; dy <= 2; dy++) {
+                BlockPos soil = column.offset(0, dy, 0);
+                BlockPos site = soil.above();
+                if (!level.getBlockState(soil).blocksMotion() || !level.isEmptyBlock(site)
+                        || !level.isInWorldBounds(site) || !level.mayInteract(actor, soil) || !level.mayInteract(actor, site)) continue;
+                if (!plantSeed(level, soil, site, seed.getItem(), actor)) continue;
+                if (seed.getItem().getCount() == 1) {
+                    seed.discard();
+                    seeds.removeLast();
+                } else {
+                    seed.setItem(seed.getItem().copyWithCount(seed.getItem().getCount() - 1));
+                }
+                break;
+            }
+        });
+    }
+
+    private static boolean isPlantable(ItemStack stack) {
+        return stack.getItem() instanceof IPlantable
+                || stack.getItem() instanceof BlockItem item && item.getBlock() instanceof IPlantable;
+    }
+
+    private static boolean plantSeed(ServerLevel level, BlockPos soil, BlockPos site, ItemStack stack, Player actor) {
+        var seed = stack.copyWithCount(1);
+        var hit = new BlockHitResult(Vec3.atCenterOf(soil).add(0, 0.5, 0), Direction.UP, soil, false);
+        var context = new UseOnContext(level, actor, InteractionHand.MAIN_HAND, seed, hit);
+        // Vanilla carrots and potatoes fall back to eating if their block cannot be placed.
+        if (seed.isEdible() && seed.getItem().getClass() == ItemNameBlockItem.class) {
+            var state = ((BlockItem) seed.getItem()).getBlock().getStateForPlacement(new BlockPlaceContext(context));
+            if (state == null || !state.canSurvive(level, site)) return false;
+        }
+        return seed.useOn(context).consumesAction() && !level.isEmptyBlock(site);
+    }
+
+    static void prune(ServerLevel level, BlockPos center, int radius, int strength, @Nullable Player caster) {
+        Player actor = actor(level, caster);
+        int reach = Math.max(radius - 1, 0);
+        ItemStack tool = lootTool(strength);
+        forEachBlock(level, center, reach, reach * reach, pos -> {
+            var state = level.getBlockState(pos);
+            if (state.is(BlockTags.LEAVES) || state.canBeReplaced()
+                    && (state.getBlock() instanceof BushBlock || state.getBlock() instanceof VineBlock)) {
+                cut(level, pos, state, tool, actor);
+            }
+        });
+    }
+
+    static void fell(ServerLevel level, BlockPos center, int radius, int strength, @Nullable Player caster) {
+        Player actor = actor(level, caster);
+        int reach = Math.max(radius, 1);
+        ItemStack tool = lootTool(strength);
+        forEachBlock(level, center, reach, reach * reach, pos -> {
+            var state = level.getBlockState(pos);
+            if (state.is(BlockTags.LOGS)) cut(level, pos, state, tool, actor);
+        });
+    }
+
+    private static void cut(ServerLevel level, BlockPos pos, BlockState state, ItemStack tool, Player caster) {
+        if (!remove(level, pos, state, caster)) return;
+        for (ItemStack drop : Block.getDrops(state, level, pos, null, null, tool)) Block.popResource(level, pos, drop);
+    }
+
+    private static boolean remove(ServerLevel level, BlockPos pos, BlockState state, Player caster) {
+        return BrewTerrain.canChange(caster, level, pos, state) && level.removeBlock(pos, false);
+    }
+
+    private static Player actor(ServerLevel level, @Nullable Player caster) {
+        return caster != null ? caster : FakePlayerFactory.getMinecraft(level);
+    }
+
+    private static ItemStack lootTool(int fortune) {
+        if (fortune == 0) return ItemStack.EMPTY;
+        var tool = new ItemStack(Items.STICK);
+        tool.enchant(Enchantments.BLOCK_FORTUNE, fortune);
+        return tool;
+    }
+
+    static void pulverise(ServerLevel level, BlockPos center, int radius, @Nullable Player caster) {
+        Player actor = actor(level, caster);
+        int reach = Math.max(radius - 1, 1);
+        forEachBlock(level, center, reach, Math.max(0, reach * reach - 2), pos -> {
+            var state = level.getBlockState(pos);
+            Block replacement;
+            if (state.is(Blocks.STONE)) replacement = Blocks.COBBLESTONE;
+            else if (state.is(Blocks.COBBLESTONE)) replacement = Blocks.GRAVEL;
+            else if (state.is(Blocks.GRAVEL) || state.is(Blocks.SANDSTONE)
+                    || state.is(Blocks.CHISELED_SANDSTONE) || state.is(Blocks.CUT_SANDSTONE)) replacement = Blocks.SAND;
+            else if (state.is(Blocks.SAND) || state.is(Blocks.RED_SAND)) replacement = Blocks.AIR;
+            else return;
+            if (!BrewTerrain.setBlock(actor, level, pos, replacement.defaultBlockState(), Direction.UP)) return;
+            if (replacement == Blocks.AIR) {
+                level.addFreshEntity(new ItemEntity(level, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(Items.SAND)));
+            }
+            level.sendParticles(ParticleTypes.SMOKE, pos.getX(), pos.getY() + 1, pos.getZ(),
+                    16, 0.25, 0.25, 0.25, 0);
+        });
+        level.playSound(null, center, SoundEvents.GHAST_SHOOT, SoundSource.BLOCKS, 0.5F, 2);
+    }
+
+    private static void forEachColumn(ServerLevel level, BlockPos center, int radius, Consumer<BlockPos> action) {
+        if (radius == 1) {
+            visit(level, center, action);
+            return;
+        }
+        // Overlapping scanlines are intentional. The old circle could fertilize some columns more than once.
+        int reach = radius - 1;
+        int x = reach;
+        int z = 0;
+        int error = 1 - reach;
+        while (x >= z) {
+            scanRow(level, center, z, x, action);
+            scanRow(level, center, x, z, action);
+            scanRow(level, center, -z, x, action);
+            scanRow(level, center, -x, z, action);
+            z++;
+            if (error < 0) {
+                error += 2 * z + 1;
+            } else {
+                x--;
+                error += 2 * (z - x + 1);
+            }
+        }
+    }
+
+    private static void scanRow(ServerLevel level, BlockPos center, int z, int width, Consumer<BlockPos> action) {
+        for (int x = -width; x <= width; x++) visit(level, center.offset(x, 0, z), action);
+    }
+
+    private static void forEachBlock(ServerLevel level, BlockPos center, int reach, int limit, Consumer<BlockPos> action) {
+        for (int y = -reach; y <= reach; y++) {
+            for (int x = -reach; x <= reach; x++) {
+                for (int z = -reach; z <= reach; z++) {
+                    if (x * x + y * y + z * z <= limit) visit(level, center.offset(x, y, z), action);
+                }
+            }
+        }
+    }
+
+    private static void visit(ServerLevel level, BlockPos pos, Consumer<BlockPos> action) {
+        if (level.isInWorldBounds(pos) && level.getWorldBorder().isWithinBounds(pos) && level.hasChunkAt(pos)) {
+            action.accept(pos);
+        }
+    }
+}

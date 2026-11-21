@@ -982,6 +982,28 @@
 - [x] Run Java 17 data generation, JAR reobfuscation, and nine focused GameTests. They cover ordered ingredients, breeding, Fortune and Silk Touch, Volatility protection, and Resizing collision, persistence, combat, and boss behavior.
 - [ ] Resolve the five older rite failures found in the 575-case regression run. Both Wither summons, the focused barrier, corruption refunds, and the Witch's Ladder binding passed in focused reruns. All nine new cases passed in the broad run.
 
+## Cauldron Farming and Pulverisation (2026-11-21)
+
+| Ingredient | Brew | Base altar power | Capacity cost |
+| --- | --- | ---: | ---: |
+| Dandelion | Flowers | 200 | 1 |
+| Bone Meal | Fertilization | 250 | 1 |
+| Apple | Harvesting | 0 | 1 |
+| Dirt | Tilling | 0 | 1 |
+| Wheat Seeds | Planting | 0 | 1 |
+| Brown Mushroom | Pruning | 0 | 1 |
+| String | Felling | 0 | 1 |
+| Flint | Pulverisation | 250 | 1 |
+
+- [x] Restore the original circle scan order and vertical ranges for Flowers, Fertilization, Harvesting, Tilling, and Planting. Keep repeated center visits, upward or downward scan order, and the ten original flower variants.
+- [x] Use modern bone meal and block loot for farming. Tilling expands from dirt and grass to sand, netherrack, and soul sand at strengths one, two, and three. Planting draws from dropped seeds in range and consumes a seed after successful placement.
+- [x] Restore the Pruning and Felling spheres, separating leaves and replaceable plants from logs. Pulverisation converts eligible blocks one stage per cast and drops sand at the end of the chain.
+- [x] Restore named legacy Yellow Flower and Bone Meal ingredients. Flatten nonzero Dirt metadata without turning those variants into the brewing ingredient. Pass casts through the existing protection hooks with the caster or a Forge fake player.
+- [x] Brew all eight recipes in the muted background client. Flowers generated two blooms, Fertilization matured Wolfsbane, and Harvesting dropped wheat and mature Mandrake Root. Tilling converted all three strengthened soils, and Planting used four of six loose seeds. Pruning preserved an outer leaf and a nearby log. Felling dropped an original Hawthorn log and preserved the planks and leaves.
+- [x] Reopen the same dedicated world with the final JAR. Verify the saved terrain, crops, two flowers, and remaining two seeds. Trigger a Tilling ritual without a coven and confirm it changes sand and leaves netherrack. Throw Pulverisation on supported sand and verify the single loose item.
+- [x] Run Java 17 data generation and JAR reobfuscation. All 11 focused Forge GameTests passed, including the placement veto, Witchery seeds, named legacy ingredients, a real liquid tick, and the Pulverisation footprint.
+- [ ] Resolve the inconsistent Splitting Bolt result. The broad regression passed 585 of 586 cases, including all 11 new cases. The Splitting Bolt case passed on its own on the same revision.
+
 ## Brew of Erosion and Brew of Ice (2026-11-21)
 
 - [x] Restore the original six-ingredient Kettle recipes, three servings, Brew Mastery bottling bonus, and legacy metadata 62 and 76. Erosion needs no altar power. Ice waits for 1,000 power and debits the altar once per batch.

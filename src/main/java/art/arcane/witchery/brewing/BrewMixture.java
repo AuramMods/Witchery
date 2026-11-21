@@ -64,7 +64,8 @@ public final class BrewMixture {
         EXTINGUISH, COLD, ICE_SHELL, HARM_DEMONS, HARM_UNDEAD, HARM_INSECTS, HARM_WEREWOLVES,
         WEAKEN_VAMPIRES, REVEAL, MOVE_ANIMALS, CHANGING_SEASONS, ICE_WORLD, SNOW,
         REMOVE_DEBUFFS, REMOVE_BUFFS, WASTING, DRAIN_MAGIC, DURATION_BOOST, STEAL_BUFFS, SPREAD_DEBUFFS,
-        AIR_HIKE, FROG_TONGUE, KNOCKBACK, BAT_BURST, BODEGA, POISON_TOAD, RAISING;
+        AIR_HIKE, FROG_TONGUE, KNOCKBACK, BAT_BURST, BODEGA, POISON_TOAD, RAISING,
+        FLOWERS, FERTILIZATION, HARVESTING, TILLING, PLANTING, PRUNING, FELLING, PULVERISATION;
 
         String nameKey(boolean inverted) {
             return switch (this) {
@@ -95,13 +96,22 @@ public final class BrewMixture {
                 case BODEGA -> "brew.witchery.bodega";
                 case POISON_TOAD -> "brew.witchery.poison_toad";
                 case RAISING -> "brew.witchery.raising";
+                case FLOWERS -> "brew.witchery.flowers";
+                case FERTILIZATION -> "brew.witchery.fertilization";
+                case HARVESTING -> "brew.witchery.harvesting";
+                case TILLING -> "brew.witchery.tilling";
+                case PLANTING -> "brew.witchery.planting";
+                case PRUNING -> "brew.witchery.pruning";
+                case FELLING -> "brew.witchery.felling";
+                case PULVERISATION -> "brew.witchery.pulverisation";
             };
         }
 
         boolean affectsTerrain() {
             return switch (this) {
                 case EXTINGUISH, COLD, ICE_SHELL, ICE_WORLD, CHANGING_SEASONS, SNOW,
-                     BAT_BURST, FROG_TONGUE, POISON_TOAD, RAISING -> true;
+                     BAT_BURST, FROG_TONGUE, POISON_TOAD, RAISING,
+                     FLOWERS, FERTILIZATION, HARVESTING, TILLING, PLANTING, PRUNING, FELLING, PULVERISATION -> true;
                 default -> false;
             };
         }
@@ -252,6 +262,12 @@ public final class BrewMixture {
             case "minecraft:dye" -> "minecraft:" + BrewDye.byLegacyId(metadata).item();
             case "minecraft:double_plant" -> metadata == 0 ? "minecraft:sunflower" : null;
             case "minecraft:netherbrick" -> "minecraft:nether_brick";
+            case "minecraft:yellow_flower" -> metadata == 0 ? "minecraft:dandelion" : null;
+            case "minecraft:dirt" -> switch (metadata) {
+                case 1 -> "minecraft:coarse_dirt";
+                case 2 -> "minecraft:podzol";
+                default -> null;
+            };
             case "minecraft:red_flower" -> switch (metadata) {
                 case 0 -> "minecraft:poppy";
                 case 1 -> "minecraft:blue_orchid";
@@ -396,6 +412,14 @@ public final class BrewMixture {
                 case POISON_TOAD -> BrewCreatureEffects.poisonToad(level, Vec3.atCenterOf(pos).add(0, 2, 0), strength);
                 case RAISING -> BrewImpacts.raiseFromCauldron(level, pos, face, strength, ritual,
                         caster instanceof ServerPlayer player ? player : null);
+                case FLOWERS -> BrewFarming.flowers(level, pos, radius, strength, caster);
+                case FERTILIZATION -> BrewFarming.fertilize(level, pos, radius, strength, caster);
+                case HARVESTING -> BrewFarming.harvest(level, pos, radius, strength, caster);
+                case TILLING -> BrewFarming.till(level, pos, radius, strength, caster);
+                case PLANTING -> BrewFarming.plant(level, pos, radius, strength, caster);
+                case PRUNING -> BrewFarming.prune(level, pos, radius, strength, caster);
+                case FELLING -> BrewFarming.fell(level, pos, radius, strength, caster);
+                case PULVERISATION -> BrewFarming.pulverise(level, pos, radius, caster);
                 default -> { }
             }
         }
@@ -543,7 +567,8 @@ public final class BrewMixture {
             case BAT_BURST -> BrewCreatureEffects.batBurst(target, strength, strengthScale, glancing);
             case BODEGA -> BrewCreatureEffects.bodega(target, caster, strength, strengthScale, glancing);
             case POISON_TOAD -> BrewCreatureEffects.poisonToad(target, strength, strengthScale);
-            case CHANGING_SEASONS, ICE_WORLD, RAISING -> { }
+            case CHANGING_SEASONS, ICE_WORLD, RAISING,
+                 FLOWERS, FERTILIZATION, HARVESTING, TILLING, PLANTING, PRUNING, FELLING, PULVERISATION -> { }
         }
     }
 
@@ -571,7 +596,6 @@ public final class BrewMixture {
         if (ingredient != null) return ingredient.power;
         return switch (id.toString()) {
             case "minecraft:ender_pearl" -> 1000;
-            case "minecraft:dandelion" -> 200;
             case "minecraft:vine" -> 150;
             case "witchery:ent_branch" -> 350;
             case "witchery:refined_evil" -> 3000;
@@ -778,6 +802,14 @@ public final class BrewMixture {
         entries.put(ResourceLocation.withDefaultNamespace("stick"), new Ingredient(200, null, 2, 10, 0, null, null, Action.KNOCKBACK));
         entries.put(ResourceLocation.withDefaultNamespace("sunflower"), new Ingredient(500, null, 5, 10, 0, null, null, Action.POISON_TOAD));
         entries.put(ResourceLocation.withDefaultNamespace("bone"), new Ingredient(2000, null, 4, 10, 0, null, null, Action.RAISING));
+        entries.put(ResourceLocation.withDefaultNamespace("dandelion"), new Ingredient(200, null, 1, 10, 0, null, null, Action.FLOWERS));
+        entries.put(ResourceLocation.withDefaultNamespace("bone_meal"), new Ingredient(250, null, 1, 10, 0, null, null, Action.FERTILIZATION));
+        entries.put(ResourceLocation.withDefaultNamespace("apple"), new Ingredient(0, null, 1, 10, 0, null, null, Action.HARVESTING));
+        entries.put(ResourceLocation.withDefaultNamespace("dirt"), new Ingredient(0, null, 1, 10, 0, null, null, Action.TILLING));
+        entries.put(ResourceLocation.withDefaultNamespace("wheat_seeds"), new Ingredient(0, null, 1, 10, 0, null, null, Action.PLANTING));
+        entries.put(ResourceLocation.withDefaultNamespace("brown_mushroom"), new Ingredient(0, null, 1, 10, 0, null, null, Action.PRUNING));
+        entries.put(ResourceLocation.withDefaultNamespace("string"), new Ingredient(0, null, 1, 10, 0, null, null, Action.FELLING));
+        entries.put(ResourceLocation.withDefaultNamespace("flint"), new Ingredient(250, null, 1, 10, 0, null, null, Action.PULVERISATION));
         entries.put(ResourceLocation.fromNamespaceAndPath("witchery", "odour_of_purity"),
                 new Ingredient(100, null, 4, 0, 0, null, null, Action.REVEAL));
         entries.put(ResourceLocation.fromNamespaceAndPath("witchery", "heart_of_gold"),
