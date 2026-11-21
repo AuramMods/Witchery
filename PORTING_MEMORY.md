@@ -135,6 +135,14 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - In the muted client, craft a Frozen Heart from supplied ingredients, drop the offerings in a prepared ring, and activate it with the Seer Stone. The fixture supplied two coven records. Both witches appeared. A dedicated restart after the sword was consumed retained the rite and completed the eight-block shell. The source inside drained. A separate resumed pulse verified that the diamond in the chest at the shell edge survived.
 - Data generation, JAR reobfuscation and all 334 required Forge GameTests passed. Packaged SHA-256 is `7e6b1d713aee46994472cc3174dd6d0f833cb69f3c174e5f87917ae1ae9874c4`.
 
+### Naturally Generated Wicker Men (2026-11-20)
+
+- The original naturally generated effigy uses twenty vanilla hay bales with three axes, a grass and dirt foundation with poppies or a sand foundation with dead bushes, and a vanilla spawner below one foot. The default mob choices are Zombie, Zombie, and Skeleton. Modern namespaced IDs work alongside legacy vanilla names. An empty or missing choice falls back to Zombie.
+- The Forge feature uses the legacy salt and spacing, with one seeded candidate per `8 + worldGenFrequency` chunk region. It retains the Wicker Man's one-quarter share while the other three surface structures are pending. Generation and Twilight Forest access can be disabled in the server config. The active chunk generator supplies the sea level so lower custom terrain can receive the feature at its surface.
+- On packaged Forge in a fresh world with seed 1, the effigy at `456 77 24` generated a zombie spawner. The muted survival client was teleported nearby. With ambient spawning disabled, two zombies appeared and the spawner reset its delay. The same world's Dream chunk stayed empty. A headless restart retained the hay and zombie ID.
+- With Twilight Forest 4.3.2508 installed in disposable Forge, the enabled profile generated a skeleton spawner at `152 0 -200` and the hay head above it. The disabled profile had no spawner at the same candidate. [Twilight Forest test release](https://www.curseforge.com/minecraft/mc-mods/the-twilight-forest/files/5468648)
+- Java 17 data generation, JAR reobfuscation, and all 346 required Forge GameTests passed. The older Poltergeist brazier case failed once and passed when rerun in its own test batch. The final packaged SHA-256 is `0eea5fa01af42b93c8215ba1d1977f833db5286f4406b67724c5174153ddd5b5`.
+
 ### Rite of Climate Change (2026-11-20)
 
 - Rite 64 is centered on the large white ring and requires four to six coven witches. Its radius is 16, 32, or 48 blocks. Four warmup pulses precede the consumption of nearby biome foci and Glowstone Dust. The latter selects a variant from ordered vanilla equivalents followed by tagged biomes. The five-stage upkeep persists and can resume from the legacy rite data.

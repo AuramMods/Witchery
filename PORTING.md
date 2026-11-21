@@ -526,7 +526,10 @@
 
 - [x] Light the original Bloodied Wicker Man in either orientation with Flint and Steel. The specific blocks burn and summon one Horned Huntsman at the feet, with the original 150-tick entrance. The Wicker Bundle's texture follows its placement axis.
 - [x] Verify the real Flint and Steel interaction in the muted survival client with fire spread disabled. The Huntsman entered at partial health, retained its UUID across a dedicated restart, and reached 400 health.
-- [ ] Restore naturally generated Wicker Men and their spawners.
+- [x] Restore naturally generated Wicker Men with twenty oriented hay bales, the original grassy and desert foundations, and six plants. The spawner under one foot defaults to two zombie choices and one skeleton choice. Server settings control generation, regional spacing, Twilight Forest access, and the weighted mob list.
+- [x] Verify a naturally generated Overworld spawner with a muted survival client. Two zombies appeared with ambient mob spawning turned off. The hay and saved zombie configuration survived a dedicated restart, and the same seeded Dream candidate stayed empty.
+- [x] Verify optional Twilight Forest generation in fresh terrain. The seeded skeleton spawner formed at the local surface. The same candidate stayed empty with the option disabled.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 346 required Forge GameTests. New cases cover negative coordinates, custom spacing, desert foundations, hay axes, disabled generation, and configurable spawner mobs.
 
 - [x] Claim one Horn of the Hunt at rank four and hold it for two seconds to summon the Huntsman. The muted client picked up the altar's horn, kept it after an early release, and saw it break after a successful call. The boss appeared with its original model, texture and spear, and a boss bar tracked its entrance.
 - [x] Restart the dedicated server during the entrance. The same Huntsman reached 400 health after loading. GameTests verified the serialized entrance countdown, player-attributed defeat and altar turn-in, the 15-point raw damage cap, ranged arrows, and the skull, blood and enchanted book drops.

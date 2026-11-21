@@ -2,6 +2,8 @@ package art.arcane.witchery.config;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 
+import java.util.List;
+
 public final class WitcheryServerConfig {
     public static final ForgeConfigSpec SPEC;
     public static final ForgeConfigSpec.BooleanValue ALLOW_DEATHS_HOOD_TO_FREEZE_VICTIMS;
@@ -25,6 +27,10 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.BooleanValue ALLOW_CHAT_MASQUERADING;
     public static final ForgeConfigSpec.BooleanValue ALLOW_NAMEPLATE_MASQUERADING;
     public static final ForgeConfigSpec.BooleanValue ALLOW_BIOME_MODIFICATION_RITUALS;
+    public static final ForgeConfigSpec.BooleanValue GENERATE_WICKER_MEN;
+    public static final ForgeConfigSpec.IntValue WORLD_GEN_FREQUENCY;
+    public static final ForgeConfigSpec.BooleanValue WORLD_GEN_TWILIGHT_FOREST;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> STRAWMAN_SPAWNER_RULES;
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -74,6 +80,19 @@ public final class WitcheryServerConfig {
         ALLOW_BIOME_MODIFICATION_RITUALS = builder
                 .comment("Allow the Rite of Climate Change to edit saved chunk biomes.")
                 .define("allowBiomeModificationRituals", true);
+        GENERATE_WICKER_MEN = builder
+                .comment("Generate Wicker Men in new chunks.")
+                .worldRestart().define("generateWickerMen", true);
+        WORLD_GEN_FREQUENCY = builder
+                .comment("Witchery surface structures use regions this many chunks wide plus eight.")
+                .worldRestart().defineInRange("worldGenFrequency", 12, 1, 64);
+        WORLD_GEN_TWILIGHT_FOREST = builder
+                .comment("Allow Witchery surface structures in the Twilight Forest when installed.")
+                .worldRestart().define("worldGenInTwilightForest", true);
+        STRAWMAN_SPAWNER_RULES = builder
+                .comment("Entity IDs for new Wicker Man spawners. Repeat an entry to make it more likely.")
+                .worldRestart().defineListAllowEmpty("strawmanSpawnerRules",
+                        List.of("minecraft:zombie", "minecraft:zombie", "minecraft:skeleton"), entry -> entry instanceof String);
         SPEC = builder.build();
     }
 

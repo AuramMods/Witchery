@@ -1485,6 +1485,9 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
   - `WorldHandlerCoven`
   - `WorldHandlerShack`
   - `WorldHandlerClonedStructure(ComponentGoblinHut)`
+- `witchery:wicker_man` is a Forge placed feature with one candidate chunk in each region of `8 + worldGenFrequency` chunks. The default frequency is 12 and the salt is 10387312. Wicker Men occupy one quarter of seeded candidates, matching the share of the original four equally chosen surface structures. Surface placement evaluates the original biome exclusions with current tags.
+- The feature builds the legacy hay effigy, grass and poppies or sand and dead bushes, and a vanilla spawner under one foot. The active chunk generator supplies the sea level for foundation height. `strawmanSpawnerRules` accepts modern entity IDs and old vanilla names. Repeated entries retain their weight and missing choices fall back to zombies.
+- `generateWickerMen` and `worldGenInTwilightForest` default to true. Generation checks the actual dimension, including when a custom dimension reuses Overworld biomes. Twilight Forest biomes are included through its optional tag. [Twilight Forest 1.20.1 biome tag](https://github.com/TeamTwilight/twilightforest/blob/1bc3a4c21213bc443967e92125613cb9ef47891e/src/generated/resources/data/twilightforest/tags/worldgen/biome/in_twilight_forest.json)
 - Village handlers bootstrapped in `Witchery.preInit`:
   - `WorldHandlerVillageApothecary`
   - `WorldHandlerVillageWitchHut`
