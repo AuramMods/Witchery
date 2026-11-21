@@ -1238,11 +1238,13 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 - Ent Branch subtype 82 adds Sprouting for two levels and 350 power. Terrain casts grow oriented logs of the struck species with side twigs. Creature casts use the 15-second `witchery:potion.sprouting` effect and periodically grow and lift from beneath the target.
 - Oak, Spruce, Birch, Jungle, Acacia, Dark Oak, Rowan, Alder, and Hawthorn Saplings each add a separate tree-growth brew for two levels and 200 power. Forge configured features provide the modern tree forms and respect growth and placement events. Oak and Spruce change at effective strength two. Jungle changes at raw block strength three. Named legacy Sapling and Witchery Sapling stacks normalize their metadata to the modern item or `BlockStateTag.wood_type`.
 - Poisonous Potato and Nether Quartz add Blight and Raise Land for four levels and 2,000 power each. Blight uses the original single impact layer, withering and soil conversions, villager and cow conversions, and chance of magic damage to animals. Raise Land moves one column for an ordinary splash or creature cast and uses the original strict disk for a block-targeted ritual. It retains the vertical block states and rolls back movement on a Forge veto.
+- Ender Pearl adds Transpose for four levels and 1,000 power. Normal creature casts use three attempts to find footing around the impact. Taglock rituals use the first Waystone and fixed inhibition threshold three. Block rituals use the first and second Waystones in ingredient order, require the original 24-glyph Otherwhere circle at the first site, and move the original three-layer footprint.
+- Iron Ingot adds Transpose Ore for four levels and 2,000 power. Strength selects the original Iron, Gold, Lapis, and Emerald order, including each modern Deepslate form. A Waystone ritual expands the footprint with the coven and resumes the four-block descent using the saved cauldron pulse.
 - A `witchery:biomenote` adds Changing Seasons for eight effect levels and 5,000 base altar power. Its `WitcheryBiome` persists in the ordered `Items` list. The block-targeted action forces instant dispersal and supports a Tongue of Dog ritual at a Waystone. The biome writer updates and resends every intersecting quart column, and dry biomes clear snow layers within the original block footprint.
 
 ### Remaining cauldron actions
 
-- Terrain and world actions still include Transpose, Transpose Ore, Inferno, Hell Gate, and Blast. Some also have independent Kettle recipes or circle rites.
+- Terrain and world actions still include Inferno, Hell Gate, and Blast. Some also have independent Kettle recipes or circle rites.
 - Drain Magic's legacy Blood Magic and Thaumcraft hooks remain open for the optional integration pass.
 - The Resizing suffocation exception specific to Ars Magica 2 remains for the optional integration audit.
 

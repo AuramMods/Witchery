@@ -73,6 +73,7 @@ public final class BrewMixture {
         AIR_HIKE, FROG_TONGUE, KNOCKBACK, BAT_BURST, BODEGA, POISON_TOAD, RAISING,
         FLOWERS, FERTILIZATION, HARVESTING, TILLING, PLANTING, PRUNING, FELLING, PULVERISATION,
         DISSIPATE, TIDE_HOLD, LAVA_HOLD, LILIFY, EROSION, LEVELLING, WEBS, VINES, THORNS, SPROUTING, BLIGHT, RAISE_LAND,
+        TRANSPOSE, TRANSPOSE_ORE,
         TREE_OAK(BrewTrees.Species.OAK), TREE_SPRUCE(BrewTrees.Species.SPRUCE), TREE_BIRCH(BrewTrees.Species.BIRCH),
         TREE_JUNGLE(BrewTrees.Species.JUNGLE), TREE_ACACIA(BrewTrees.Species.ACACIA), TREE_DARK_OAK(BrewTrees.Species.DARK_OAK),
         TREE_ROWAN(BrewTrees.Species.ROWAN), TREE_ALDER(BrewTrees.Species.ALDER), TREE_HAWTHORN(BrewTrees.Species.HAWTHORN);
@@ -132,6 +133,8 @@ public final class BrewMixture {
                 case SPROUTING -> "brew.witchery.sprouting";
                 case BLIGHT -> "brew.witchery.blight";
                 case RAISE_LAND -> "brew.witchery.raiseland";
+                case TRANSPOSE -> "brew.witchery.transpose";
+                case TRANSPOSE_ORE -> "brew.witchery.transposeore";
                 case TREE_OAK, TREE_SPRUCE, TREE_BIRCH, TREE_JUNGLE, TREE_ACACIA, TREE_DARK_OAK,
                      TREE_ROWAN, TREE_ALDER, TREE_HAWTHORN -> tree.nameKey;
             };
@@ -143,7 +146,7 @@ public final class BrewMixture {
                      BAT_BURST, FROG_TONGUE, POISON_TOAD, RAISING,
                      FLOWERS, FERTILIZATION, HARVESTING, TILLING, PLANTING, PRUNING, FELLING, PULVERISATION,
                      DISSIPATE, TIDE_HOLD, LAVA_HOLD, LILIFY, EROSION, LEVELLING, WEBS, VINES, THORNS, SPROUTING,
-                     BLIGHT, RAISE_LAND -> true;
+                     BLIGHT, RAISE_LAND, TRANSPOSE_ORE -> true;
                 default -> tree != null;
             };
         }
@@ -209,8 +212,7 @@ public final class BrewMixture {
     private final Delivery delivery;
     private final int extent;
     private final int lifetime;
-    @Nullable
-    private final WaystoneItem.Location destination;
+    private final List<WaystoneItem.Location> destinations;
 
     private BrewMixture(Mixing mixing, int savedColor) {
         effects = List.copyOf(mixing.effects);
@@ -223,7 +225,7 @@ public final class BrewMixture {
         delivery = mixing.delivery;
         extent = mixing.extent;
         lifetime = mixing.lifetime;
-        destination = mixing.destination;
+        destinations = List.copyOf(mixing.destinations);
     }
 
     public static boolean canAdd(List<ItemStack> current, ItemStack offered) {
@@ -420,7 +422,14 @@ public final class BrewMixture {
                 && action.affectsBlocks && action.action.affectsTerrain());
     }
     @Nullable
-    public WaystoneItem.Location destination() { return destination; }
+    public WaystoneItem.Location destination() { return destinations.isEmpty() ? null : destinations.get(0); }
+
+    @Nullable
+    WaystoneItem.Location secondDestination() { return destinations.size() < 2 ? null : destinations.get(1); }
+
+    boolean hasTransposition() {
+        return effects.stream().anyMatch(effect -> effect instanceof ActionApplication action && action.action == Action.TRANSPOSE);
+    }
 
     public void applyToBlock(ServerLevel level, BlockPos pos, Direction face, int radius, boolean ritual, @Nullable Player caster) {
         applyToBlock(level, pos, face, radius, ritual, caster, Vec3.atLowerCornerOf(pos));
@@ -440,7 +449,12 @@ public final class BrewMixture {
     }
 
     void applyRitualToBlock(ServerLevel level, BlockPos pos, int coven) {
-        applyToBlock(level, pos, Direction.UP, splashRadius(), true, null, coven, Vec3.atLowerCornerOf(pos), false, true);
+        applyRitualToBlock(level, pos, coven, 1, null);
+    }
+
+    boolean applyRitualToBlock(ServerLevel level, BlockPos pos, int coven, int pulse, @Nullable BrewTransposition.Site destination) {
+        return applyToBlock(level, pos, Direction.UP, splashRadius(), true, null, coven, Vec3.atLowerCornerOf(pos),
+                false, true, pulse, destination);
     }
 
     void applyGasRitualToBlock(ServerLevel level, BlockPos pos, int coven) {
@@ -449,6 +463,13 @@ public final class BrewMixture {
 
     private void applyToBlock(ServerLevel level, BlockPos pos, Direction face, int radius, boolean ritual,
                               @Nullable Player caster, int coven, Vec3 impact, boolean liquid, boolean fullExposure) {
+        applyToBlock(level, pos, face, radius, ritual, caster, coven, impact, liquid, fullExposure, 1, null);
+    }
+
+    private boolean applyToBlock(ServerLevel level, BlockPos pos, Direction face, int radius, boolean ritual,
+                                 @Nullable Player caster, int coven, Vec3 impact, boolean liquid, boolean fullExposure,
+                                 int pulse, @Nullable BrewTransposition.Site destination) {
+        boolean ongoing = false;
         for (BrewEffect effect : effects) {
             if (!(effect instanceof ActionApplication application) || !application.affectsBlocks) continue;
             int strength = Math.max(0, application.blockStrength - (liquid ? 1 : 0));
@@ -488,12 +509,22 @@ public final class BrewMixture {
                 case SPROUTING -> BrewTerrain.sprout(level, pos, face, 8 + 2 * strength, new AABB(pos), caster);
                 case BLIGHT -> BrewLandscape.blight(level, pos, radius, caster);
                 case RAISE_LAND -> BrewLandscape.raise(level, pos, strength, ritual, caster);
+                case TRANSPOSE -> {
+                    if (pulse == 1 && destination != null) {
+                        BrewTransposition.moveTerrain(new BrewTransposition.Site(level, pos), destination);
+                    }
+                }
+                case TRANSPOSE_ORE -> {
+                    if (ritual && fullExposure) ongoing |= BrewTransposition.orePulse(level, pos, radius, strength, coven, pulse);
+                    else BrewTransposition.extractOre(level, pos, radius, radius + application.blockStrength, strength, caster);
+                }
                 case TREE_OAK, TREE_SPRUCE, TREE_BIRCH, TREE_JUNGLE, TREE_ACACIA, TREE_DARK_OAK,
                      TREE_ROWAN, TREE_ALDER, TREE_HAWTHORN -> BrewTrees.grow(level, pos, face, application.action.tree,
                         application.action == Action.TREE_JUNGLE ? application.blockStrength : strength, caster);
                 default -> { }
             }
         }
+        return ongoing;
     }
 
     public void apply(LivingEntity target, @Nullable Entity source, @Nullable LivingEntity caster,
@@ -520,8 +551,8 @@ public final class BrewMixture {
         apply(target, source, caster, scale, scale * 0.5, false, glancing, -1, false, impact);
     }
 
-    void applyTaglock(LivingEntity target, ServerPlayer caster, int coven) {
-        apply(target, caster, caster, 1, 1, false, false, coven, true, target.position());
+    void applyTaglock(LivingEntity target, ServerPlayer caster, int coven, @Nullable BrewTransposition.Site destination) {
+        apply(target, caster, caster, 1, 1, false, false, coven, true, target.position(), destination);
     }
 
     public void applyRitualExposure(LivingEntity target, @Nullable Entity source, int coven, Vec3 impact) {
@@ -531,6 +562,12 @@ public final class BrewMixture {
     private void apply(LivingEntity target, @Nullable Entity source, @Nullable LivingEntity caster,
                        double strengthScale, double durationScale, boolean blocksHarmfulEffects, boolean glancing,
                        int ritualCoven, boolean taglock, @Nullable Vec3 impact) {
+        apply(target, source, caster, strengthScale, durationScale, blocksHarmfulEffects, glancing, ritualCoven, taglock, impact, null);
+    }
+
+    private void apply(LivingEntity target, @Nullable Entity source, @Nullable LivingEntity caster,
+                       double strengthScale, double durationScale, boolean blocksHarmfulEffects, boolean glancing,
+                       int ritualCoven, boolean taglock, @Nullable Vec3 impact, @Nullable BrewTransposition.Site destination) {
         if (target.isDeadOrDying() || durationScale <= 0) return;
         int strengthLimit = ritualCoven < 0 ? Integer.MAX_VALUE : ritualStrengthLimit(ritualCoven);
         for (BrewEffect effect : effects) {
@@ -554,7 +591,7 @@ public final class BrewMixture {
             } else if (effect instanceof ActionApplication application) {
                 int strength = Math.min(application.strength, strengthLimit);
                 applyAction(application, target, source, caster, strengthScale, durationScale, glancing, strength,
-                        ritualCoven >= 0, taglock, impact);
+                        ritualCoven >= 0, taglock, impact, destination);
             }
         }
     }
@@ -565,7 +602,8 @@ public final class BrewMixture {
 
     private static void applyAction(ActionApplication application, LivingEntity target, @Nullable Entity source,
                                     @Nullable LivingEntity caster, double strengthScale, double durationScale,
-                                    boolean glancing, int strength, boolean ritual, boolean taglock, @Nullable Vec3 impact) {
+                                    boolean glancing, int strength, boolean ritual, boolean taglock, @Nullable Vec3 impact,
+                                    @Nullable BrewTransposition.Site destination) {
         switch (application.action) {
             case EXTINGUISH -> {
                 if (strength <= 1 && target.level().dimensionType().ultraWarm()) return;
@@ -670,7 +708,8 @@ public final class BrewMixture {
                             caster instanceof Player player ? player : null);
                 }
             }
-            case CHANGING_SEASONS, ICE_WORLD, RAISING, TIDE_HOLD, LAVA_HOLD, LEVELLING,
+            case TRANSPOSE -> BrewTransposition.transpose(target, strength, impact, destination);
+            case CHANGING_SEASONS, ICE_WORLD, RAISING, TIDE_HOLD, LAVA_HOLD, LEVELLING, TRANSPOSE_ORE,
                  FLOWERS, FERTILIZATION, HARVESTING, TILLING, PLANTING, PRUNING, FELLING, PULVERISATION,
                  TREE_OAK, TREE_SPRUCE, TREE_BIRCH, TREE_JUNGLE, TREE_ACACIA, TREE_DARK_OAK, TREE_ROWAN, TREE_ALDER, TREE_HAWTHORN -> { }
         }
@@ -702,7 +741,6 @@ public final class BrewMixture {
         Ingredient ingredient = INGREDIENTS.get(id);
         if (ingredient != null) return ingredient.power;
         return switch (id.toString()) {
-            case "minecraft:ender_pearl" -> 1000;
             case "minecraft:vine" -> 150;
             case "witchery:refined_evil" -> 3000;
             default -> 0;
@@ -756,8 +794,7 @@ public final class BrewMixture {
         private boolean raisedEffectCeiling;
         private boolean noBlockTarget;
         private boolean noEntityTarget;
-        @Nullable
-        private WaystoneItem.Location destination;
+        private final List<WaystoneItem.Location> destinations = new ArrayList<>(2);
 
         void add(ItemStack stack, ResourceLocation id, Ingredient ingredient) {
             power += ingredient.power;
@@ -768,7 +805,10 @@ public final class BrewMixture {
                 segment.clear();
             } else {
                 applyModifier(ingredient);
-                if (ingredient.modifier == Modifier.WAYSTONE && destination == null) destination = WaystoneItem.location(stack);
+                if (ingredient.modifier == Modifier.WAYSTONE && destinations.size() < 2) {
+                    var location = WaystoneItem.location(stack);
+                    if (location != null) destinations.add(location);
+                }
             }
             segment.add(id);
         }
@@ -933,6 +973,10 @@ public final class BrewMixture {
                 new Ingredient(2000, null, 4, 10, 0, null, null, Action.BLIGHT));
         entries.put(ResourceLocation.withDefaultNamespace("quartz"),
                 new Ingredient(2000, null, 4, 10, 0, null, null, Action.RAISE_LAND));
+        entries.put(ResourceLocation.withDefaultNamespace("ender_pearl"),
+                new Ingredient(1000, null, 4, 10, 0, null, null, Action.TRANSPOSE));
+        entries.put(ResourceLocation.withDefaultNamespace("iron_ingot"),
+                new Ingredient(2000, null, 4, 10, 0, null, null, Action.TRANSPOSE_ORE));
         entries.put(ResourceLocation.fromNamespaceAndPath("witchery", "odour_of_purity"),
                 new Ingredient(100, null, 4, 0, 0, null, null, Action.REVEAL));
         entries.put(ResourceLocation.fromNamespaceAndPath("witchery", "heart_of_gold"),

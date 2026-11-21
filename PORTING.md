@@ -1063,6 +1063,16 @@
 - [x] Restart the headless dedicated server with a Waystone-targeted Raise Land ritual saved in warmup. Rejoin the same world and verify the two splash results, the four-block ritual lift inside the radius, and the preserved outer edge and buried chest containing four diamonds.
 - [x] Run Java 17 data generation, JAR reobfuscation, and the 18 focused Forge GameTests for the new brews, tree brews, and area curses. An initial combined run failed the Sprouting side branch and Raise Land ritual creature lift. Both passed on rerun after moving the Sprouting fixture to a separate elevation.
 
+## Cauldron Transpose and Transpose Ore (2026-11-21)
+
+- [x] Restore Transpose from Ender Pearl for four effect levels and 1,000 altar power. Splash and drink casts use the original range and strength-based Ender Inhibition threshold. Taglock casts use the first Waystone within a medium Otherwhere circle and inhibition threshold three.
+- [x] Restore the two-Waystone terrain ritual. Add the first Waystone before the Ender Pearl and the second after it. Use the original three-layer asymmetric footprint and preserve block states, protected pairs, and overlapping source cells.
+- [x] Restore Transpose Ore from an Iron Ingot for four levels and 2,000 altar power. Return intact ores from the original scan box. Apply the four strength tiers, Forge protection, and the coven-based ritual pulse count and depth.
+- [x] Brew and cast the Pearl and Iron Ingot splashes in a muted survival client. The Pearl moved one pig while Ender Inhibition protected another. The ore cast extracted Deepslate Iron and Gold intact and left Lapis and a block beyond its depth.
+- [x] Move terrain between two ordered Waystones and verify the saved log axis, asymmetric footprint, and protected chest. Restart a six-coven Transpose Ore cast after its first pulse and verify that it extracts Deepslate Gold 59 blocks below the target before finishing.
+- [x] Pass Java 17 data generation, JAR reobfuscation, and 31 focused GameTests. The eight new cases cover Waystone order, terrain and entity casts, the cross-dimensional transfer, overlap, Forge vetoes, and ore selection and pulse depth.
+- [x] Run the 630-case regression suite. It passed 628 cases, including all eight new cases. The two older summoning and legacy curse failures passed in a targeted run. An older directed-ward refund test failed in that targeted run and passed in the broad run.
+
 ## Brew of Erosion and Brew of Ice (2026-11-21)
 
 - [x] Restore the original six-ingredient Kettle recipes, three servings, Brew Mastery bottling bonus, and legacy metadata 62 and 76. Erosion needs no altar power. Ice waits for 1,000 power and debits the altar once per batch.
