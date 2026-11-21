@@ -882,6 +882,16 @@
 - [x] Capture a pig's Taglock and drop it into a heated cauldron with Sinking IV and a duration modifier. With no coven, the cast applied Sinking II for nearly 36,003,600 ticks, with particles hidden. The bound pig retained that effect after a dedicated restart. The neighboring pig remained unaffected.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 17 focused GameTests. The broad suite passed 529 of 530. The powered Wither case passed in the 13-test summoning and brewing rerun.
 
+## Snow and Cauldron Targeting Modifiers (2026-11-21)
+
+- [x] Restore Snowball as a one-capacity, unpowered Brew of Snow. Block hits cover the original strength-scaled footprint and search up or down seven blocks. Entity hits apply a three-minute base Snow Trail that samples the target's footprint and uses the local biome temperature. A Snow Golem's trail can trigger its legacy burst and leave the ground intact.
+- [x] Restore the 50-power Brick and Nether Brick modifiers. Brick disables later creature effects and Nether Brick disables later block actions. Scope the modifiers to the ordered ingredients, including when the mixture reloads. Potion effects consume their boosts on creatures and retain block-action boosts until the next terrain action.
+- [x] Restore the 200-power Tropical Fish modifier to raise individual effect caps to their legacy limits. Nether Star still lifts the seven-boost batch limit. This restores the different strength limits for Healing and Harm Demons. Named legacy `minecraft:netherbrick` and raw fish metadata 2 migrate inside a saved mixture.
+- [x] Brew, bottle, and throw plain Snow and both targeting variants through the muted survival client. The plain splash covered terrain and gave a nearby pig Snow Trail. Nether Brick suppressed terrain coverage and let a pig leave snow after moving. Brick covered terrain and left its nearby pig unaffected. Healing started from one health in both trials and ended at nine without Tropical Fish and at 20 with it.
+- [x] Rejoin the packaged dedicated server after its restart. The plain and Brick snow coverage and the creature's trail remained. The checked terrain at the Nether Brick impact was still clear. All 23 focused GameTests passed, including the entity footprint, seven-block surface search, placement protection, Snow Golem burst, and both strength limits.
+- [x] Verify the hot-biome threshold. In the Desert fixture, Snow Trail withheld snow and a block impact still placed it. All seven Snow tests passed in this rerun.
+- [x] Run Java 17 data generation, JAR reobfuscation, and the full 536-case regression suite. All 536 required GameTests passed.
+
 ## Brew of Erosion and Brew of Ice (2026-11-21)
 
 - [x] Restore the original six-ingredient Kettle recipes, three servings, Brew Mastery bottling bonus, and legacy metadata 62 and 76. Erosion needs no altar power. Ice waits for 1,000 power and debits the altar once per batch.

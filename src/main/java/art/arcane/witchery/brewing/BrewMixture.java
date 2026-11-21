@@ -50,11 +50,12 @@ public final class BrewMixture {
     }
 
     private enum Modifier {
-        CAPACITY, STRENGTH, DURATION, INVERT, HIDE_PARTICLES, DRINK_SPEED, DELIVERY, EXTENT, LIFETIME, WAYSTONE, RITUAL
+        CAPACITY, STRENGTH, DURATION, INVERT, HIDE_PARTICLES, DRINK_SPEED, DELIVERY, EXTENT, LIFETIME, WAYSTONE, RITUAL,
+        NO_BLOCK_TARGET, NO_ENTITY_TARGET, RAISE_EFFECT_CEILING
     }
 
     private enum Action {
-        EXTINGUISH, COLD, ICE_SHELL, HARM_DEMONS, REVEAL, MOVE_ANIMALS, CHANGING_SEASONS, ICE_WORLD;
+        EXTINGUISH, COLD, ICE_SHELL, HARM_DEMONS, REVEAL, MOVE_ANIMALS, CHANGING_SEASONS, ICE_WORLD, SNOW;
 
         String nameKey(boolean inverted) {
             return switch (this) {
@@ -66,14 +67,18 @@ public final class BrewMixture {
                 case REVEAL -> "brew.witchery.revealing";
                 case MOVE_ANIMALS -> inverted ? "brew.witchery.animal_repulsion" : "brew.witchery.animal_attraction";
                 case CHANGING_SEASONS -> "brew.witchery.changing_seasons";
+                case SNOW -> "brew.witchery.snow";
             };
         }
     }
 
-    private sealed interface BrewEffect permits Application, ActionApplication {}
+    private sealed interface BrewEffect permits Application, ActionApplication {
+        boolean affectsEntities();
+    }
 
-    private record ActionApplication(Action action, int strength, boolean inverted, int durationMultiplier,
-                                     boolean showParticles, @Nullable ResourceLocation biome) implements BrewEffect {
+    private record ActionApplication(Action action, int strength, int blockStrength, boolean inverted, int durationMultiplier,
+                                     boolean showParticles, boolean affectsEntities, boolean affectsBlocks,
+                                     @Nullable ResourceLocation biome) implements BrewEffect {
         String nameKey() { return action.nameKey(inverted); }
     }
 
@@ -89,7 +94,7 @@ public final class BrewMixture {
     }
 
     public record Application(MobEffect effect, int ticks, int amplifier, boolean showParticles,
-                              boolean inverted, int taglockTicks) implements BrewEffect {
+                              boolean inverted, int taglockTicks, boolean affectsEntities) implements BrewEffect {
         public MobEffectInstance instance(int duration) {
             return instance(duration, amplifier, showParticles);
         }
@@ -193,6 +198,7 @@ public final class BrewMixture {
             };
             case "minecraft:web" -> "minecraft:cobweb";
             case "minecraft:reeds" -> "minecraft:sugar_cane";
+            case "minecraft:netherbrick" -> "minecraft:nether_brick";
             case "minecraft:golden_apple" -> metadata == 1 ? "minecraft:enchanted_golden_apple" : null;
             default -> null;
         };
@@ -291,14 +297,15 @@ public final class BrewMixture {
     private void applyToBlock(ServerLevel level, BlockPos pos, Direction face, int radius, boolean ritual,
                               @Nullable Player caster, int coven) {
         for (BrewEffect effect : effects) {
-            if (!(effect instanceof ActionApplication application)) continue;
+            if (!(effect instanceof ActionApplication application) || !application.affectsBlocks) continue;
+            int strength = ritual ? Math.min(application.blockStrength, ritualStrengthLimit(coven)) : application.blockStrength;
             switch (application.action) {
-                case EXTINGUISH -> BrewTerrainEffects.extinguish(level, pos, radius, ritual, application.strength, caster);
-                case COLD -> BrewColdEffects.freezeWater(level, pos, application.strength, caster);
-                case ICE_SHELL -> BrewColdEffects.shellOnImpact(level, pos, face, application.strength, caster);
+                case EXTINGUISH -> BrewTerrainEffects.extinguish(level, pos, radius, ritual, strength, caster);
+                case COLD -> BrewColdEffects.freezeWater(level, pos, strength, caster);
+                case ICE_SHELL -> BrewColdEffects.shellOnImpact(level, pos, face, strength, caster);
                 case ICE_WORLD -> IceWorldBrew.freeze(level, pos, radius, caster);
-                case CHANGING_SEASONS -> BrewTerrainEffects.changeSeasons(level, pos, application.biome,
-                        application.strength, ritual, coven, caster);
+                case CHANGING_SEASONS -> BrewTerrainEffects.changeSeasons(level, pos, application.biome, strength, ritual, caster);
+                case SNOW -> SnowTrailEffect.cover(level, pos, 2 + 2 * strength, caster);
                 default -> { }
             }
         }
@@ -326,8 +333,9 @@ public final class BrewMixture {
                        double strengthScale, double durationScale, boolean blocksHarmfulEffects, boolean glancing,
                        int taglockCoven) {
         if (target.isDeadOrDying() || durationScale <= 0) return;
-        int strengthLimit = taglockCoven < 0 ? Integer.MAX_VALUE : 1 + Math.min(taglockCoven, 6) / 2;
+        int strengthLimit = taglockCoven < 0 ? Integer.MAX_VALUE : ritualStrengthLimit(taglockCoven);
         for (BrewEffect effect : effects) {
+            if (!effect.affectsEntities()) continue;
             if (effect instanceof Application application) {
                 if (blocksHarmfulEffects && application.effect.getCategory() == MobEffectCategory.HARMFUL) continue;
                 if (application.effect == WitcheryEffects.DOUBLE_JUMP.get() && !application.inverted
@@ -345,6 +353,10 @@ public final class BrewMixture {
                 applyAction(application, target, source, caster, strengthScale, durationScale, blocksHarmfulEffects, glancing, strength);
             }
         }
+    }
+
+    private static int ritualStrengthLimit(int coven) {
+        return 1 + Math.min(coven, 6) / 2;
     }
 
     private static void applyAction(ActionApplication application, LivingEntity target, @Nullable Entity source,
@@ -383,6 +395,9 @@ public final class BrewMixture {
             }
             case REVEAL -> BrewCreatureEffects.reveal(target);
             case MOVE_ANIMALS -> BrewCreatureEffects.moveAnimals(target, strength, application.inverted);
+            case SNOW -> target.addEffect(new MobEffectInstance(WitcheryEffects.SNOW_TRAIL.get(),
+                    Mth.ceil(3600 * application.durationMultiplier * durationScale), strength,
+                    false, application.showParticles, true), source);
             case CHANGING_SEASONS, ICE_WORLD -> { }
         }
     }
@@ -419,6 +434,18 @@ public final class BrewMixture {
         return mixing;
     }
 
+    private static final class Strength {
+        private int current;
+        private int total;
+
+        void increase(int ceiling, boolean unlimitedBoosts) {
+            if (current < ceiling && (total < 7 || unlimitedBoosts)) {
+                current++;
+                total++;
+            }
+        }
+    }
+
     private static final class Mixing {
         private final List<BrewEffect> effects = new ArrayList<>();
         private final Set<ResourceLocation> segment = new HashSet<>();
@@ -431,13 +458,16 @@ public final class BrewMixture {
         private Delivery delivery = Delivery.DRINK;
         private int extent;
         private int lifetime;
-        private int strength;
+        private final Strength entityStrength = new Strength();
+        private final Strength blockStrength = new Strength();
         private int duration;
-        private int strengthBoosts;
         private int durationBoosts;
         private boolean inverted;
         private boolean hideParticles;
         private boolean unlimitedBoosts;
+        private boolean raisedEffectCeiling;
+        private boolean noBlockTarget;
+        private boolean noEntityTarget;
         @Nullable
         private WaystoneItem.Location destination;
 
@@ -460,16 +490,19 @@ public final class BrewMixture {
             used += ingredient.amount;
             if (ingredient.action != null) {
                 int actionStrength = ingredient.action == Action.HARM_DEMONS
-                        ? Math.min(strength, unlimitedBoosts ? 3 : 1) : strength;
+                        ? Math.min(entityStrength.current, raisedEffectCeiling ? 3 : 1) : entityStrength.current;
                 var biome = ingredient.action == Action.CHANGING_SEASONS ? BiomeNoteItem.biomeId(stack) : null;
-                effects.add(new ActionApplication(ingredient.action, actionStrength, inverted, duration + 1, !hideParticles, biome));
+                effects.add(new ActionApplication(ingredient.action, actionStrength, blockStrength.current, inverted,
+                        duration + 1, !hideParticles, !noEntityTarget, !noBlockTarget, biome));
+                blockStrength.current = 0;
             } else {
                 Potion effect = inverted ? ingredient.inverted : ingredient.normal;
+                int ceiling = raisedEffectCeiling ? 10 : ingredient.ceiling;
                 effects.add(new Application(effect.effect.get(), effect.duration * (duration + 1),
-                        Math.min(strength, ingredient.ceiling), !hideParticles, inverted,
-                        effect.curse ? effect.duration * TAGLOCK_DURATION_MULTIPLIER : 0));
+                        Math.min(entityStrength.current, ceiling), !hideParticles, inverted,
+                        effect.curse ? effect.duration * TAGLOCK_DURATION_MULTIPLIER : 0, !noEntityTarget));
             }
-            strength = 0;
+            entityStrength.current = 0;
             duration = 0;
             inverted = false;
             hideParticles = false;
@@ -482,10 +515,8 @@ public final class BrewMixture {
                     if (ingredient.ceiling == 10) unlimitedBoosts = true;
                 }
                 case STRENGTH -> {
-                    if (strength < ingredient.ceiling && (strengthBoosts < 7 || unlimitedBoosts)) {
-                        strength++;
-                        strengthBoosts++;
-                    }
+                    entityStrength.increase(ingredient.ceiling, unlimitedBoosts);
+                    blockStrength.increase(ingredient.ceiling, unlimitedBoosts);
                 }
                 case DURATION -> {
                     if (duration < ingredient.ceiling && (durationBoosts < 7 || unlimitedBoosts)) {
@@ -503,6 +534,9 @@ public final class BrewMixture {
                 case LIFETIME -> {
                     if (lifetime < ingredient.ceiling) lifetime++;
                 }
+                case NO_BLOCK_TARGET -> noBlockTarget = true;
+                case NO_ENTITY_TARGET -> noEntityTarget = true;
+                case RAISE_EFFECT_CEILING -> raisedEffectCeiling = true;
                 case WAYSTONE, RITUAL -> { }
             }
         }
@@ -542,7 +576,11 @@ public final class BrewMixture {
         modifier(entries, "witchery:bound_waystone", 100, Modifier.WAYSTONE, 0, 0, 0);
         modifier(entries, "witchery:dog_tongue", 250, Modifier.RITUAL, 0, 0, 0);
         modifier(entries, "witchery:taglockkit", 1000, Modifier.RITUAL, 0, 0, 0);
+        modifier(entries, "nether_brick", 50, Modifier.NO_BLOCK_TARGET, 0, 0, 0);
+        modifier(entries, "brick", 50, Modifier.NO_ENTITY_TARGET, 0, 0, 0);
+        modifier(entries, "tropical_fish", 200, Modifier.RAISE_EFFECT_CEILING, 0, 0, 0);
         entries.put(ResourceLocation.withDefaultNamespace("coal"), new Ingredient(0, null, 1, 10, 0, null, null, Action.EXTINGUISH));
+        entries.put(ResourceLocation.withDefaultNamespace("snowball"), new Ingredient(0, null, 1, 10, 0, null, null, Action.SNOW));
 
         entries.put(ResourceLocation.parse("witchery:icy_needle"), new Ingredient(200, null, 2, 10, 0, null, null, Action.COLD));
         entries.put(ResourceLocation.parse("witchery:frozen_heart"), new Ingredient(500, null, 5, 10, 0, null, null, Action.ICE_SHELL));

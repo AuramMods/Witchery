@@ -11,6 +11,7 @@ import art.arcane.witchery.brewing.IllFittingEffect;
 import art.arcane.witchery.brewing.LightAllergyEffect;
 import art.arcane.witchery.brewing.MovementBrewEffect;
 import art.arcane.witchery.brewing.ProjectileBrewEffect;
+import art.arcane.witchery.brewing.SnowTrailEffect;
 import art.arcane.witchery.brewing.WakingNightmareEffect;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -76,6 +77,8 @@ public final class WitcheryEffects {
             () -> new LightAllergyEffect(true, legacyColor("potion.allergysun")));
     public static final RegistryObject<MobEffect> DARKNESS_ALLERGY = MOB_EFFECTS.register("potion.allergydark",
             () -> new LightAllergyEffect(false, legacyColor("potion.allergydark")));
+    public static final RegistryObject<MobEffect> SNOW_TRAIL = MOB_EFFECTS.register("potion.snowtrail",
+            () -> new SnowTrailEffect(legacyColor("potion.snowtrail")));
     public static final RegistryObject<MobEffect> MORTAL_COIL = MOB_EFFECTS.register("potion.mortalcoil", MortalCoilEffect::new);
     public static final RegistryObject<MobEffect> QUEASY = MOB_EFFECTS.register("potion.queasy",
             () -> new MobEffect(MobEffectCategory.HARMFUL, 0x7C9348) {
@@ -119,6 +122,7 @@ public final class WitcheryEffects {
         LEGACY_EFFECTS.put("potion.attractprojectiles", ATTRACT_PROJECTILES);
         LEGACY_EFFECTS.put("potion.allergysun", SUN_ALLERGY);
         LEGACY_EFFECTS.put("potion.allergydark", DARKNESS_ALLERGY);
+        LEGACY_EFFECTS.put("potion.snowtrail", SNOW_TRAIL);
         LEGACY_EFFECTS.put("potion.queasy", QUEASY);
         for (String legacyName : LegacyRegistryData.EFFECTS) {
             registerLegacyEffect(legacyName);

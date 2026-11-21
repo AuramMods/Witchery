@@ -18,6 +18,7 @@
     {"type": "single", "resource": "witchery:block/embermoss", "sprite": "witchery:potion.overheating"},
     {"type": "single", "resource": "witchery:item/ingredient.mellifluoushunger", "sprite": "witchery:potion.wakingnightmare"},
     {"type": "single", "resource": "minecraft:item/salmon", "sprite": "witchery:potion.allergysun"},
-    {"type": "single", "resource": "minecraft:block/soul_sand", "sprite": "witchery:potion.allergydark"}
+    {"type": "single", "resource": "minecraft:block/soul_sand", "sprite": "witchery:potion.allergydark"},
+    {"type": "single", "resource": "minecraft:item/snowball", "sprite": "witchery:potion.snowtrail"}
   ]
 }

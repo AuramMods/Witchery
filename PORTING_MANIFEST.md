@@ -1216,7 +1216,14 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 - Protocol 85 uses legacy `clear_fall_damage` for the air-jump request and sends a clientbound approval after checking the player's active Double Jump effect and ground takeoff. Durations and amplifiers use the existing saved effect format and no new player NBT keys.
 - Drop of Luck subtype 39 adds `potion.brewingexpertise` or the inverted `potion.insane`. Disturbed Cotton subtype 99, Embermoss, and Mellifluous Hunger subtype 103 add `potion.sinking`, `potion.overheating`, and `potion.wakingnightmare`. A Taglock cast reconstructs the original long duration and hidden particles from the ordered recipe and applies its coven strength limit.
 - Soul Sand adds `potion.allergydark` and Salmon adds `potion.allergysun`. Named legacy `minecraft:fish` metadata 1 resolves to Salmon. `minecraft:golden_apple` metadata 1 resolves to the Enchanted Golden Apple and preserves the separate Health Boost recipe. The ordinary Golden Apple produces Absorption.
+- Snowball adds the terrain snow action and the entity effect `potion.snowtrail`. Brick stops later creature effects, Nether Brick stops later terrain actions, and Tropical Fish lifts the individual effect strength ceiling. The original ordered ingredient format carries these modifiers without extra NBT fields. Legacy `minecraft:netherbrick` and `minecraft:fish` metadata 2 load as the corresponding modern items.
 - A `witchery:biomenote` adds Changing Seasons for eight effect levels and 5,000 base altar power. Its `WitcheryBiome` persists in the ordered `Items` list. The block-targeted action forces instant dispersal and supports a Tongue of Dog ritual at a Waystone. The biome writer updates and resends every intersecting quart column, and dry biomes clear snow layers within the original block footprint.
+
+### Remaining cauldron actions
+
+- Terrain and world actions still in the legacy registry include Dissipate, Pruning, Pulverisation, Tide Hold, Lava Hold, Levelling, Webs, Vines, Thorns, the nine tree-growth variants, Transpose Ore, Inferno, Hell Gate, and Blast. The cauldron version of Erosion still needs its ordered ingredient action. The Kettle already has its fixed Brew of Erosion recipe.
+- Creature and movement actions still include Bat Burst, Bodega, Air Hike, Frog Tongue, Knockback, Poison Toad, Harm Undead, Harm Insects, Harm Werewolves, and Weaken Vampires. The original Silver Dust action also alters weather when used in a block-targeted ritual.
+- Effect manipulation still includes Purified Milk's debuff removal, Reek of Misfortune's buff removal, Wasting and Fullness, Drain Magic, Duration Boost, Steal Buffs, and Spread Debuffs. The wool color modifiers and dye effects also need their original recipes.
 
 ## Network Packets (`PacketPipeline`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/network/PacketPipeline.java`

@@ -285,6 +285,16 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - The survival client captured a real Taglock and used it on a full, heated Sinking cauldron. The fourth-level mixture applied Sinking II with particles hidden and 36,003,598 ticks at the first sample. With the same pig loaded after a dedicated restart it still had 36,001,916 ticks. A neighboring pig remained unaffected. The 17 focused tests passed, including legacy ingredient fixtures, helmet protection, and the taglock duration and coven limits.
 - The 530-case broad run passed 529. The Cooking Rite burn-roll fixture passed with its arena setup delay. The powered Wither case passed with all 13 cases in the focused summoning and brewing rerun.
 
+### Snow and Cauldron Targeting Modifiers (2026-11-21)
+
+- Snowball restores the zero-power, one-capacity action. `SnowTrailEffect` places snow around the creature's four footprint samples twice per second when the local temperature is below 1.6. It uses vanilla's altitude-adjusted temperature through the Forge access transformer. A burst from a Snow Golem damages nearby entities without breaking blocks and places the original snow covering.
+- Terrain impacts traverse `2 + 2 * strength` using the legacy circle routine, whose outermost offset is one less than its radius argument. They search seven blocks for a surface and support full blocks and leaves. Individual placements use Forge protection checks. Ritual terrain actions apply the existing coven strength limit.
+- Brick and Nether Brick persistently disable later creature effects or block actions. The ordered `Items` list preserves their position. Separate block and creature strength counters keep the original consumption rules when a potion appears before a terrain action. Tropical Fish lifts each effect's strength ceiling and Nether Star lifts the batch budget. The older named Nether Brick and fish subtype 2 resolve to their modern items.
+- Data generation and JAR reobfuscation passed on Java 17. Packaged SHA-256 is `76723fbb662255ce4068f58304e8ae86a4c27310bf666bd6883dfddd7408531c`. The survival client brewed the three snow variants and two healing recipes with supplied ingredients, then used each through the normal controls. It ran with master volume zero and OpenAL No Output.
+- A packaged dedicated restart preserved the plain and Brick terrain coverage and the snow trail of the moved pig. The original Nether Brick impact remained clear. The 23 focused GameTests passed with the creature-trail fixture in a Plains biome. They covered Snow Golem behavior and Forge placement protection.
+- The seven-case Snow rerun passed with a Desert fixture. The trail respected the temperature threshold and the terrain impact still covered the block.
+- All 536 required GameTests passed in the full regression run. The Brew Registry manifest lists the remaining cauldron actions by behavior.
+
 ### Cold and Ice Shell Cauldron Brews (2026-11-20)
 
 - Icy Needle contributes two effect levels and 200 power for Cold. Frozen Heart contributes five effect levels and 500 power for Ice Shell. Their original ingredient metadata resolves inside saved cauldrons and bottles. Both actions keep the brew's strength, duration, and hidden-particle modifiers.

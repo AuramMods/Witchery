@@ -47,13 +47,12 @@ final class BrewTerrainEffects {
     }
 
     static void changeSeasons(ServerLevel level, BlockPos center, ResourceLocation biomeId, int strength,
-                              boolean ritual, int coven, @Nullable Player caster) {
+                              boolean ritual, @Nullable Player caster) {
         var biome = level.registryAccess().registryOrThrow(Registries.BIOME)
                 .getHolder(ResourceKey.create(Registries.BIOME, biomeId)).orElse(null);
         if (biome == null || !level.getWorldBorder().isWithinBounds(center)) return;
 
-        int ritualStrength = Math.min(strength, 1 + Math.min(coven, 6) / 2);
-        int reach = ritual ? 15 + ritualStrength * 16 : strength;
+        int reach = ritual ? 15 + strength * 16 : strength;
         int[] rows = circleWidths(reach);
         BiomePainting.paint(level, center, rows, biome);
         if (biome.value().getModifiedClimateSettings().downfall() == 0) {
@@ -78,7 +77,7 @@ final class BrewTerrainEffects {
         }
     }
 
-    private static int[] circleWidths(int reach) {
+    static int[] circleWidths(int reach) {
         int[] rowWidth = new int[reach + 1];
         int circleX = reach;
         int circleZ = 0;
