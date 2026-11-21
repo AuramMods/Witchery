@@ -1,6 +1,7 @@
 package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.block.BrambleBlock;
+import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.entity.CreatureAlignment;
 import art.arcane.witchery.entity.Leonard;
 import art.arcane.witchery.item.WitcheryIngredient;
@@ -16,6 +17,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -81,7 +83,7 @@ public final class BrewMixture {
 
     private record Potion(Supplier<MobEffect> effect, int duration) {}
 
-    public record Application(MobEffect effect, int ticks, int amplifier, boolean showParticles) implements BrewEffect {
+    public record Application(MobEffect effect, int ticks, int amplifier, boolean showParticles, boolean inverted) implements BrewEffect {
         public MobEffectInstance instance(int duration) {
             return new MobEffectInstance(effect, duration, amplifier, false, showParticles, true);
         }
@@ -92,8 +94,9 @@ public final class BrewMixture {
     }
 
     private static Component brewName(MobEffect effect) {
-        return effect == WitcheryEffects.FEEL_NO_PAIN.get()
-                ? Component.translatable("brew.witchery.moonshine") : effect.getDisplayName();
+        if (effect == WitcheryEffects.FEEL_NO_PAIN.get()) return Component.translatable("brew.witchery.moonshine");
+        if (effect == WitcheryEffects.DOUBLE_JUMP.get()) return Component.translatable("brew.witchery.frogs_legs");
+        return effect.getDisplayName();
     }
 
     private final List<BrewEffect> effects;
@@ -164,20 +167,29 @@ public final class BrewMixture {
     }
 
     public static ItemStack loadIngredient(CompoundTag tag) {
-        if ("minecraft:skull".equals(tag.getString("id"))) {
-            String id = switch (tag.getInt("Damage")) {
+        int metadata = tag.getInt("Damage");
+        String id = switch (tag.getString("id")) {
+            case "minecraft:skull" -> switch (metadata) {
                 case 1 -> "minecraft:wither_skeleton_skull";
                 case 2 -> "minecraft:zombie_head";
                 default -> null;
             };
-            if (id != null) {
-                CompoundTag migrated = tag.copy();
-                migrated.putString("id", id);
-                migrated.remove("Damage");
-                return WitcheryIngredient.loadInventoryStack(migrated);
-            }
-        }
-        return WitcheryIngredient.loadInventoryStack(tag);
+            case "minecraft:fish" -> switch (metadata) {
+                case 0 -> "minecraft:cod";
+                case 1 -> "minecraft:salmon";
+                case 2 -> "minecraft:tropical_fish";
+                case 3 -> "minecraft:pufferfish";
+                default -> null;
+            };
+            case "minecraft:web" -> "minecraft:cobweb";
+            case "minecraft:reeds" -> "minecraft:sugar_cane";
+            default -> null;
+        };
+        if (id == null) return WitcheryIngredient.loadInventoryStack(tag);
+        CompoundTag migrated = tag.copy();
+        migrated.putString("id", id);
+        migrated.remove("Damage");
+        return WitcheryIngredient.loadInventoryStack(migrated);
     }
 
     public CompoundTag bottleTag(List<ItemStack> stacks) {
@@ -301,6 +313,8 @@ public final class BrewMixture {
         for (BrewEffect effect : effects) {
             if (effect instanceof Application application) {
                 if (blocksHarmfulEffects && application.effect.getCategory() == MobEffectCategory.HARMFUL) continue;
+                if (application.effect == WitcheryEffects.DOUBLE_JUMP.get() && !application.inverted
+                        && !(caster instanceof ServerPlayer player && FamiliarBinding.hasBrewMastery(player))) continue;
                 if (application.effect.isInstantenous()) {
                     application.effect.applyInstantenousEffect(source, caster, target, application.amplifier, strengthScale);
                 } else {
@@ -432,7 +446,7 @@ public final class BrewMixture {
             } else {
                 Potion effect = inverted ? ingredient.inverted : ingredient.normal;
                 effects.add(new Application(effect.effect.get(), effect.duration * (duration + 1),
-                        Math.min(strength, ingredient.ceiling), !hideParticles));
+                        Math.min(strength, ingredient.ceiling), !hideParticles, inverted));
             }
             strength = 0;
             duration = 0;
@@ -551,6 +565,12 @@ public final class BrewMixture {
         potion(entries, "witchery:foul_fume", 1000, 4, WitcheryEffects.STOUT_BELLY, 1800);
         potion(entries, "red_mushroom", 200, 2, WitcheryEffects.POISON_WEAPONS, 1800);
         potion(entries, "wheat", 0, 1, WitcheryEffects.FEEL_NO_PAIN, 1800);
+        potion(entries, "sugar_cane", 250, 2, WitcheryEffects.FLOATING, 1800);
+        potion(entries, "feather", 100, 2, WitcheryEffects.FEATHER_FALL, 1200);
+        potion(entries, "cod", 0, 1, WitcheryEffects.SWIMMING, 3600);
+        potion(entries, "witchery:toe_of_frog", 500, 4, WitcheryEffects.DOUBLE_JUMP, 7200);
+        potion(entries, "cobweb", 250, 2, 10,
+                new Potion(WitcheryEffects.REFLECT_PROJECTILES, 1800), new Potion(WitcheryEffects.ATTRACT_PROJECTILES, 900));
         return Map.copyOf(entries);
     }
 

@@ -842,6 +842,25 @@
 - [x] Fill, heat, brew, bottle and drink all six recipes in the muted survival client against a packaged dedicated server. The test supplied ingredients and altar power. Absorb Magic II reduced ten magic damage to six. Reflect Damage III returned three of eight melee damage. Repel Attacker moved a nearby pig, Poison Weapons IV added Wither, and Stout Belly II cleared nausea. Milk and a dedicated restart preserved both food effects. Moonshine still spent eight hunger and preserved health on a four-point Normal-difficulty hit after the restart.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 15 focused GameTests. The broad run passed 517 of 520. Powered Banishment and Spectral Familiar passed in isolation. The clear-weather cure's seeded fixture rolled the adverse result. A separate ritual test that allowed the original equal-strength cure odds passed alongside all seven combat brew cases.
 
+## Movement and Projectile Cauldron Brews (2026-11-21)
+
+| Ingredient | Brew | Base altar power | Capacity cost | Base duration |
+| --- | --- | ---: | ---: | ---: |
+| Sugar Cane | Floating | 250 | 2 | 90 s |
+| Feather | Feather Fall | 100 | 2 | 60 s |
+| Cod | Swimming | 0 | 1 | 180 s |
+| Toe of Frog | Frog's Legs | 500 | 4 | 360 s |
+| Cobweb | Reflect Projectiles | 250 | 2 | 90 s |
+| Cobweb with Fermented Spider Eye | Attract Projectiles | 250 | 2 | 45 s |
+
+- [x] Restore the six effects and their original IDs. Named saves decode `minecraft:reeds`, `minecraft:web` and raw fish metadata. Both projectile effects use the Cobweb recipe, and the inverted effect is harmful.
+- [x] Restore the Floating scan depth and Feather Fall thresholds and caps. Swimming boosts horizontal movement while pressing forward in water. Modern sprint swimming and Dolphin's Grace adjust the boost to retain the original maximum momentum over successive ticks.
+- [x] Keep the caster's active Toad requirement for ordinary Frog's Legs and the original inverted branch. Protocol 85 validates extra jumps after ground takeoff and preserves horizontal motion on the local client. Landing clears the available jumps.
+- [x] Redirect arrows and thrown projectiles on the dedicated server. Reflection ignores the drinker's own projectiles. Attraction preserves the original range, age thresholds, and aim height.
+- [x] Brew and drink all six variants from heated cauldrons with supplied ingredients in the muted survival client. Reflection stopped the incoming test arrow and Attraction pulled a passing arrow into the player. Floating rose nearly three blocks above the platform. Feather Fall reduced a 21-block drop to three points of damage.
+- [x] Bind a Toad through the normal familiar rite. A bottle consumed before binding gives no Double Jump. A level II bottle after binding adds airborne jumps. The active effect and familiar survived the dedicated restart, and a new takeoff could use the jumps again. After the restart, Swimming covered 15.8 blocks during the forward trial against 3.9 without it. The backward trial covered 3.8 blocks both times.
+- [x] Run Java 17 data generation, JAR reobfuscation, and 18 focused GameTests. The broad suite passed 524 of 525. The Cooking Rite burn-roll case passed with all 23 cases in the final focused rerun.
+
 ## Brew of Erosion and Brew of Ice (2026-11-21)
 
 - [x] Restore the original six-ingredient Kettle recipes, three servings, Brew Mastery bottling bonus, and legacy metadata 62 and 76. Erosion needs no altar power. Ice waits for 1,000 power and debits the altar once per batch.

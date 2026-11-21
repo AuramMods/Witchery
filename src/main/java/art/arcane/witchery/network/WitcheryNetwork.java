@@ -3,6 +3,7 @@ package art.arcane.witchery.network;
 import art.arcane.witchery.vampirism.BloodFeeding;
 import art.arcane.witchery.vampirism.VampireAbilities;
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.brewing.BrewAirJump;
 import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.item.VampireBookItem;
@@ -39,7 +40,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class WitcheryNetwork {
-    private static final String PROTOCOL_VERSION = "84";
+    private static final String PROTOCOL_VERSION = "85";
     private static final int MAX_USERNAME_LENGTH = 64;
     private static final int MAX_PLAYER_SKIN_LENGTH = 256;
     private static final int MAX_MARKUP_CHAPTER_LENGTH = 32;
@@ -118,7 +119,7 @@ public final class WitcheryNetwork {
                     context.get().setPacketHandled(true);
                 })
                 .add();
-        CHANNEL.messageBuilder(GuideBookOpenPacket.class, discriminator, NetworkDirection.PLAY_TO_CLIENT)
+        CHANNEL.messageBuilder(GuideBookOpenPacket.class, discriminator++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder((message, buffer) -> {
                     buffer.writeVarInt(message.slot());
                     buffer.writeEnum(message.volume());
@@ -128,6 +129,14 @@ public final class WitcheryNetwork {
                         buffer.readVarInt()))
                 .consumerMainThread((message, context) -> {
                     runClient(() -> art.arcane.witchery.client.GuideBookScreen.open(message.slot(), message.volume(), message.knownSpells()));
+                    context.get().setPacketHandled(true);
+                })
+                .add();
+        CHANNEL.messageBuilder(BrewJumpPacket.class, discriminator, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder((message, buffer) -> {})
+                .decoder(buffer -> new BrewJumpPacket())
+                .consumerMainThread((message, context) -> {
+                    runClient(() -> art.arcane.witchery.client.ClientBrewMovement.jump());
                     context.get().setPacketHandled(true);
                 })
                 .add();
@@ -291,7 +300,7 @@ public final class WitcheryNetwork {
                 data.getCreatureTypeOrdinal(), data.getHumanBlood(), data.getOtherPlayerSkin()));
     }
 
-    public static void sendClearFallDamageToServer() {
+    public static void requestBrewJump() {
         CHANNEL.sendToServer(ClearFallDamagePacket.placeholder());
     }
 
@@ -697,10 +706,9 @@ public final class WitcheryNetwork {
 
     private static void handleClearFallDamagePacket(ClearFallDamagePacket message, NetworkEvent.Context context) {
         ServerPlayer sender = senderOrWarn(context, "clear_fall_damage");
-        if (sender != null) {
-            sender.fallDistance = 0.0F;
+        if (sender != null && BrewAirJump.tryJump(sender)) {
+            CHANNEL.send(PacketDistributor.PLAYER.with(() -> sender), new BrewJumpPacket());
         }
-        Witchery.LOGGER.debug("Handled scaffold packet 'clear_fall_damage' direction={}", context.getDirection());
     }
 
     private static void handleSyncMarkupBookPacket(SyncMarkupBookPacket message, NetworkEvent.Context context) {
@@ -983,6 +991,8 @@ public final class WitcheryNetwork {
             return placeholder();
         }
     }
+
+    private record BrewJumpPacket() {}
 
     public record SyncEntitySizePacket(int entityId, float width, float height) {
         public static SyncEntitySizePacket placeholder() {

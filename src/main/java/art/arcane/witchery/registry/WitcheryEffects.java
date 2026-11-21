@@ -8,6 +8,8 @@ import art.arcane.witchery.brewing.MortalCoilEffect;
 import art.arcane.witchery.brewing.EnvironmentalCurseEffect;
 import art.arcane.witchery.brewing.FoodBrewEffect;
 import art.arcane.witchery.brewing.IllFittingEffect;
+import art.arcane.witchery.brewing.MovementBrewEffect;
+import art.arcane.witchery.brewing.ProjectileBrewEffect;
 import art.arcane.witchery.brewing.WakingNightmareEffect;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -61,6 +63,14 @@ public final class WitcheryEffects {
             () -> new FoodBrewEffect(FoodBrewEffect.Kind.STOUT_BELLY, legacyColor("potion.stoutbelly")));
     public static final RegistryObject<MobEffect> FEEL_NO_PAIN = MOB_EFFECTS.register("potion.feelnopain",
             () -> new FoodBrewEffect(FoodBrewEffect.Kind.MOONSHINE, legacyColor("potion.feelnopain")));
+    public static final RegistryObject<MobEffect> FLOATING = movementBrew("potion.floating", MovementBrewEffect.Kind.FLOATING);
+    public static final RegistryObject<MobEffect> FEATHER_FALL = movementBrew("potion.featherfall", MovementBrewEffect.Kind.FEATHER_FALL);
+    public static final RegistryObject<MobEffect> SWIMMING = movementBrew("potion.swimming", MovementBrewEffect.Kind.SWIMMING);
+    public static final RegistryObject<MobEffect> DOUBLE_JUMP = simpleEffect("potion.doublejump", MobEffectCategory.BENEFICIAL);
+    public static final RegistryObject<MobEffect> REFLECT_PROJECTILES = MOB_EFFECTS.register("potion.reflectprojectiles",
+            () -> new ProjectileBrewEffect(false, legacyColor("potion.reflectprojectiles")));
+    public static final RegistryObject<MobEffect> ATTRACT_PROJECTILES = MOB_EFFECTS.register("potion.attractprojectiles",
+            () -> new ProjectileBrewEffect(true, legacyColor("potion.attractprojectiles")));
     public static final RegistryObject<MobEffect> MORTAL_COIL = MOB_EFFECTS.register("potion.mortalcoil", MortalCoilEffect::new);
     public static final RegistryObject<MobEffect> QUEASY = MOB_EFFECTS.register("potion.queasy",
             () -> new MobEffect(MobEffectCategory.HARMFUL, 0x7C9348) {
@@ -96,6 +106,12 @@ public final class WitcheryEffects {
         LEGACY_EFFECTS.put("potion.poisonweapons", POISON_WEAPONS);
         LEGACY_EFFECTS.put("potion.stoutbelly", STOUT_BELLY);
         LEGACY_EFFECTS.put("potion.feelnopain", FEEL_NO_PAIN);
+        LEGACY_EFFECTS.put("potion.floating", FLOATING);
+        LEGACY_EFFECTS.put("potion.featherfall", FEATHER_FALL);
+        LEGACY_EFFECTS.put("potion.swimming", SWIMMING);
+        LEGACY_EFFECTS.put("potion.doublejump", DOUBLE_JUMP);
+        LEGACY_EFFECTS.put("potion.reflectprojectiles", REFLECT_PROJECTILES);
+        LEGACY_EFFECTS.put("potion.attractprojectiles", ATTRACT_PROJECTILES);
         LEGACY_EFFECTS.put("potion.queasy", QUEASY);
         for (String legacyName : LegacyRegistryData.EFFECTS) {
             registerLegacyEffect(legacyName);
@@ -123,6 +139,10 @@ public final class WitcheryEffects {
 
     private static int legacyColor(String path) {
         return (Witchery.MODID + ":" + path).hashCode() & 0xFFFFFF;
+    }
+
+    private static RegistryObject<MobEffect> movementBrew(String path, MovementBrewEffect.Kind kind) {
+        return MOB_EFFECTS.register(path, () -> new MovementBrewEffect(kind, legacyColor(path)));
     }
 
     private static void registerLegacyEffect(String legacyName) {

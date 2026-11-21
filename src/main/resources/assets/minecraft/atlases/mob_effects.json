@@ -5,6 +5,12 @@
     {"type": "single", "resource": "witchery:block/bramble_ender", "sprite": "witchery:potion.repellattacker"},
     {"type": "single", "resource": "minecraft:block/red_mushroom", "sprite": "witchery:potion.poisonweapons"},
     {"type": "single", "resource": "witchery:item/ingredient.foulfume", "sprite": "witchery:potion.stoutbelly"},
-    {"type": "single", "resource": "minecraft:item/wheat", "sprite": "witchery:potion.feelnopain"}
+    {"type": "single", "resource": "minecraft:item/wheat", "sprite": "witchery:potion.feelnopain"},
+    {"type": "single", "resource": "minecraft:item/sugar_cane", "sprite": "witchery:potion.floating"},
+    {"type": "single", "resource": "minecraft:item/feather", "sprite": "witchery:potion.featherfall"},
+    {"type": "single", "resource": "minecraft:item/cod", "sprite": "witchery:potion.swimming"},
+    {"type": "single", "resource": "witchery:item/ingredient.toeoffrog", "sprite": "witchery:potion.doublejump"},
+    {"type": "single", "resource": "minecraft:block/cobweb", "sprite": "witchery:potion.reflectprojectiles"},
+    {"type": "single", "resource": "minecraft:block/cobweb", "sprite": "witchery:potion.attractprojectiles"}
   ]
 }
