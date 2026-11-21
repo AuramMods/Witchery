@@ -1,0 +1,10 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [
+    {"item": "witchery:brew_of_sprouting"},
+    {"item": "minecraft:cactus"},
+    {"item": "minecraft:gunpowder"}
+  ],
+  "action": "raise_earth"
+}

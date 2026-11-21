@@ -355,6 +355,15 @@
 - [x] Verify on the release JAR that activating a supplied white chalk circle in the Dream World leaves the storm offerings in place.
 - [x] Read the Altar costs, the Waystone option, and the daytime condition in the shipped Circle Magic book. Run Java 17 data generation, JAR reobfuscation, and all 397 required Forge GameTests.
 
+## Rites of Broken Earth and Moving Earth (2026-11-21)
+
+- [x] Restore the Rite of Broken Earth. A Brew of Erosion in a small white circle sets the fissure's heading by where it lands. The rite cuts 55 overlapping sections, eight to twelve blocks deep. Three coven witches widen the fissure. Containers, unbreakable blocks, and blocks protected by Forge survive.
+- [x] Restore all three Rites of Moving Earth. Each uses a Brew of Sprouting and Cactus. Gunpowder, Redstone, and Glowstone Dust select the small, medium, and large rings. The small rite accepts a location-bound Waystone.
+- [x] Raise the original terrain and nearby entities one block per pulse for seven pulses. Preserve movable block states and block entity contents. Let the local cast follow its Heart Glyph and keep a Waystone cast at its original target. Include all four rites in Circle Magic.
+- [x] Preserve the fissure's heading and path, the moved glyph's upkeep, and the remaining terrain pulses. Migrate legacy rite IDs 19, 20, 46, and 47. Legacy Broken Earth casts resume northward because their saves omitted the path and the offering position.
+- [x] Cast in the muted survival client with supplied ingredients and prepared terrain. Restart the dedicated server at fissure stage nine and the first rise. The fissure kept the same seed and cut its expected course. The small column completed seven lifts and preserved both chalk and a chest with twelve diamonds. The medium and large rings lifted markers beyond the small ring's reach. A separate small ring lifted a barrel and its contents at the Bound Waystone.
+- [x] Run Java 17 data generation, JAR reobfuscation, and four focused Forge GameTests. The cases cover the original offerings and migrated stages, the resumed fissure, the lifted glyph and container, and a canceled placement at the bound target. The clean full suite passed 462 of 464 checks. The existing Accio and Colloportus/Alohomora checks that failed in the full suite both passed in smaller runs.
+
 ## Protection, Imprisonment and Barrier Rites (2026-11-21)
 
 - [x] Restore the original Feather and Redstone offerings for Protection and Slimeball and Redstone for Imprisonment. Both use a small white ring and 500 initial altar power, then draw 0.8 power per tick from a source within 16 blocks of the Heart Glyph.

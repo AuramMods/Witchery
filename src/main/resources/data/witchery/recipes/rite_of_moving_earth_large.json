@@ -1,0 +1,10 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "large", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [
+    {"item": "witchery:brew_of_sprouting"},
+    {"item": "minecraft:cactus"},
+    {"item": "minecraft:glowstone_dust"}
+  ],
+  "action": "raise_earth_large"
+}

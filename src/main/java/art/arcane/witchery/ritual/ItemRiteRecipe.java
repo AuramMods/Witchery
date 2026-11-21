@@ -91,14 +91,28 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         GREATER_BARRIER,
         PORTABLE_BARRIER,
         COPY_WAYSTONE,
-        BIND_CIRCLE_TALISMAN;
+        BIND_CIRCLE_TALISMAN,
+        PART_EARTH,
+        RAISE_EARTH,
+        RAISE_EARTH_MEDIUM,
+        RAISE_EARTH_LARGE;
 
         public boolean shapesLandscape() {
-            return usesWaystoneTarget() || this == ICE_SHELL || this == CLIMATE_CHANGE;
+            return usesWaystoneTarget() || this == ICE_SHELL || this == CLIMATE_CHANGE || this == PART_EARTH
+                    || raisedEarthRadius() > 0;
         }
 
         public boolean usesWaystoneTarget() {
-            return this == FORESTATION || this == RAISE_VOLCANO;
+            return this == FORESTATION || this == RAISE_VOLCANO || this == RAISE_EARTH;
+        }
+
+        public int raisedEarthRadius() {
+            return switch (this) {
+                case RAISE_EARTH -> 4;
+                case RAISE_EARTH_MEDIUM -> 6;
+                case RAISE_EARTH_LARGE -> 9;
+                default -> 0;
+            };
         }
 
         public boolean targetsStormWithWaystone() {
@@ -394,6 +408,10 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 case "glyphic_transformation" -> Action.GLYPHIC_TRANSFORMATION;
                 case "forestation" -> Action.FORESTATION;
                 case "raise_volcano" -> Action.RAISE_VOLCANO;
+                case "part_earth" -> Action.PART_EARTH;
+                case "raise_earth" -> Action.RAISE_EARTH;
+                case "raise_earth_medium" -> Action.RAISE_EARTH_MEDIUM;
+                case "raise_earth_large" -> Action.RAISE_EARTH_LARGE;
                 case "ice_shell" -> Action.ICE_SHELL;
                 case "climate_change" -> Action.CLIMATE_CHANGE;
                 case "infuse_overworld" -> Action.INFUSE_OVERWORLD;

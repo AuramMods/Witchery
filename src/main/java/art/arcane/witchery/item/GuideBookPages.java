@@ -104,6 +104,8 @@ public final class GuideBookPages {
         if (recipe.nightOnly()) steps.add(text("night_only"));
         if (recipe.dayOnly()) steps.add(text("day_only"));
         if (recipe.action().targetsStormWithWaystone()) steps.add(text("storm_waystone"));
+        if (recipe.action() == ItemRiteRecipe.Action.PART_EARTH) steps.add(text("broken_earth_heading"));
+        if (recipe.action() == ItemRiteRecipe.Action.RAISE_EARTH) steps.add(text("moving_earth_waystone"));
         if (recipe.action() == ItemRiteRecipe.Action.BIND_WAYSTONE) steps.add(text("bind_waystone"));
         if (recipe.action() == ItemRiteRecipe.Action.COPY_WAYSTONE) steps.add(text("copy_waystone"));
         if (recipe.action() == ItemRiteRecipe.Action.BIND_CIRCLE_TALISMAN) steps.add(text("bind_circle_talisman"));

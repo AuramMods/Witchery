@@ -30,6 +30,7 @@ import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.ritual.FetishBinding;
 import art.arcane.witchery.ritual.ClimateChange;
+import art.arcane.witchery.ritual.EarthRites;
 import art.arcane.witchery.ritual.GlyphicTransformation;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
 import art.arcane.witchery.ritual.LandscapeRites;
@@ -101,6 +102,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     private int offeringStep;
     private int covenSize;
     private int covenSummoned;
+    private final List<Runnable> terrainChanges = new ArrayList<>();
     private boolean legacyOfferingReturns;
     private boolean legacyWaystoneMatch;
     @Nullable private WeatherRites.Storm storm;
@@ -123,7 +125,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         }
         heart.updateActiveState(server);
         if (!heart.upkeep.isEmpty()) {
-            if (heart.upkeep.removeIf(rite -> !rite.tick(server, pos))) heart.updateActiveState(server);
+            if (heart.upkeep.removeIf(rite -> !rite.tick(server, pos, heart.terrainChanges::add))) heart.updateActiveState(server);
             level.blockEntityChanged(pos);
         }
         if (heart.activeRite != null) {
@@ -134,6 +136,9 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             }
             level.blockEntityChanged(pos);
         }
+        // Moving Earth can relocate this block entity. Finish bookkeeping before it copies the heart's state.
+        heart.terrainChanges.forEach(Runnable::run);
+        heart.terrainChanges.clear();
     }
 
     private int pulseInterval() {
@@ -474,7 +479,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             }
         } else if (landscape != null) {
             ServerPlayer caster = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
-            var progress = LandscapeRites.pulse(level, pos, landscape, covenSize, caster);
+            var progress = LandscapeRites.pulse(level, pos, landscape, covenSize, caster, terrainChanges::add);
             if (progress != null) upkeep.add(RiteUpkeep.Timed.landscape(rite.id(), covenSize, initiator, progress));
         } else if (rite.action() == ItemRiteRecipe.Action.RECHARGE_INFUSION) {
             upkeep.add(RiteUpkeep.Timed.recharge(rite.id(), covenSize, initiator));
@@ -486,7 +491,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     }
 
     private void prepareStorm(ServerLevel level, ItemRiteRecipe rite, BlockPos heart) {
-        BlockPos target = rite.action().targetsStormWithWaystone() ? takeWaystone(level, rite, heart) : heart;
+        BlockPos target = rite.action().targetsStormWithWaystone() ? takeWaystone(level, rite, heart) : null;
+        if (target == null) target = heart;
         if (!LandscapeRites.canReach(level, heart, target, covenSize)) {
             abort(level, "message.witchery.rite.landscape_too_far");
             return;
@@ -495,7 +501,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     }
 
     private boolean prepareProtection(ServerLevel level, ItemRiteRecipe rite, ProtectionRites.Kind kind, BlockPos heart) {
-        BlockPos target = kind.acceptsWaystone() ? takeWaystone(level, rite, heart) : heart;
+        BlockPos target = kind.acceptsWaystone() ? takeWaystone(level, rite, heart) : null;
+        if (target == null) target = heart;
         if (!LandscapeRites.canReach(level, heart, target, covenSize)) {
             abort(level, "message.witchery.rite.landscape_too_far");
             return false;
@@ -504,9 +511,10 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         return true;
     }
 
+    @Nullable
     private BlockPos takeWaystone(ServerLevel level, ItemRiteRecipe rite, BlockPos heart) {
         ItemRiteRecipe.Offering stone = rite.findLocationOffering(level, heart);
-        if (stone == null) return heart;
+        if (stone == null) return null;
         BlockPos target = WaystoneItem.location(stone.stack()).position();
         sacrificed.add(new Sacrifice(stone.stack().copyWithCount(1), BlockPos.containing(stone.position())));
         stone.consume().run();
@@ -535,7 +543,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 return null;
             }
         }
-        BlockPos target = rite.action().usesWaystoneTarget() ? takeWaystone(level, rite, heart) : heart;
+        BlockPos remote = rite.action().usesWaystoneTarget() ? takeWaystone(level, rite, heart) : null;
+        BlockPos target = remote == null ? heart : remote;
         if (!LandscapeRites.canReach(level, heart, target, covenSize)) {
             abort(level, "message.witchery.rite.landscape_too_far");
             return null;
@@ -553,9 +562,13 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 abort(level, "message.witchery.rite.missing_lava");
                 return null;
             }
-            LandscapeRites.startVolcano(level, target);
+            LandscapeRites.playRiteStart(level, target);
         }
-        return new LandscapeRites.Progress(rite.action(), species, target, 0);
+        BlockPos firstOffering = sacrificed.isEmpty() ? heart.north() : sacrificed.get(0).origin();
+        var fissure = rite.action() == ItemRiteRecipe.Action.PART_EARTH
+                ? EarthRites.Fissure.start(heart, firstOffering, level.random.nextLong()) : null;
+        return new LandscapeRites.Progress(rite.action(), species, target, 0, fissure,
+                remote == null && rite.action().raisedEarthRadius() > 0);
     }
 
     private static void finishVampireCure(ServerLevel level, BlockPos pos, ServerPlayer vampire) {
@@ -795,20 +808,32 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 upkeep.add(RiteUpkeep.Timed.transposeOres(RiteOfTransposition.ORE_RECIPE, members, null, stage));
             } else {
                 LandscapeRites.Species species = LandscapeRites.Species.forLegacyRite(rite);
-                if (species == null && rite != 77 && (rite != 65 || members < 2) && (rite != 64 || members < 4)) continue;
                 ItemRiteRecipe.Action action = switch (rite) {
-                    case 64 -> ItemRiteRecipe.Action.CLIMATE_CHANGE;
-                    case 65 -> ItemRiteRecipe.Action.ICE_SHELL;
+                    case 19 -> ItemRiteRecipe.Action.PART_EARTH;
+                    case 20 -> ItemRiteRecipe.Action.RAISE_EARTH;
+                    case 46 -> ItemRiteRecipe.Action.RAISE_EARTH_MEDIUM;
+                    case 47 -> ItemRiteRecipe.Action.RAISE_EARTH_LARGE;
+                    case 64 -> members >= 4 ? ItemRiteRecipe.Action.CLIMATE_CHANGE : null;
+                    case 65 -> members >= 2 ? ItemRiteRecipe.Action.ICE_SHELL : null;
                     case 77 -> ItemRiteRecipe.Action.RAISE_VOLCANO;
-                    default -> ItemRiteRecipe.Action.FORESTATION;
+                    default -> species == null ? null : ItemRiteRecipe.Action.FORESTATION;
                 };
-                BlockPos target = action.usesWaystoneTarget() ? readLegacyTarget(locations.getCompound(index)) : getBlockPos();
-                var progress = new LandscapeRites.Progress(action, species, target, stage);
+                if (action == null) continue;
+                BlockPos remote = action.usesWaystoneTarget() ? legacyTarget(locations.getCompound(index)) : null;
+                BlockPos target = remote == null ? getBlockPos() : remote;
+                // Legacy saves retained the stage but discarded the offering location and generated path.
+                var fissure = action == ItemRiteRecipe.Action.PART_EARTH ? new EarthRites.Fissure(target.asLong(), 0) : null;
+                var progress = new LandscapeRites.Progress(action, species, target, stage, fissure,
+                        remote == null && action.raisedEarthRadius() > 0);
                 if (stage >= progress.lastStage(members)) continue;
                 ResourceLocation recipe = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, switch (action) {
                     case CLIMATE_CHANGE -> "rite_of_climate_change";
                     case ICE_SHELL -> "rite_of_ice_shell";
                     case RAISE_VOLCANO -> "rite_of_raising_a_volcano";
+                    case PART_EARTH -> "rite_of_broken_earth";
+                    case RAISE_EARTH -> "rite_of_moving_earth";
+                    case RAISE_EARTH_MEDIUM -> "rite_of_moving_earth_medium";
+                    case RAISE_EARTH_LARGE -> "rite_of_moving_earth_large";
                     default -> "forestation/" + species.name().toLowerCase(Locale.ROOT);
                 });
                 upkeep.add(RiteUpkeep.Timed.landscape(recipe, members, null, progress));
@@ -823,9 +848,14 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     }
 
     private BlockPos readLegacyTarget(CompoundTag position) {
+        return Objects.requireNonNullElse(legacyTarget(position), getBlockPos());
+    }
+
+    @Nullable
+    private static BlockPos legacyTarget(CompoundTag position) {
         return position.contains("posX", Tag.TAG_ANY_NUMERIC) && position.contains("posY", Tag.TAG_ANY_NUMERIC)
                 && position.contains("posZ", Tag.TAG_ANY_NUMERIC)
-                ? new BlockPos(position.getInt("posX"), position.getInt("posY"), position.getInt("posZ")) : getBlockPos();
+                ? new BlockPos(position.getInt("posX"), position.getInt("posY"), position.getInt("posZ")) : null;
     }
 
     @Override

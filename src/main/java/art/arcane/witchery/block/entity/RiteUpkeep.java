@@ -20,13 +20,14 @@ import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
+import java.util.function.Consumer;
 
 interface RiteUpkeep {
-    boolean tick(ServerLevel level, BlockPos heart);
+    boolean tick(ServerLevel level, BlockPos heart, Consumer<Runnable> terrainChanges);
 
     record Ward(ProtectionRites.Upkeep progress) implements RiteUpkeep {
         @Override
-        public boolean tick(ServerLevel level, BlockPos heart) {
+        public boolean tick(ServerLevel level, BlockPos heart, Consumer<Runnable> terrainChanges) {
             return progress.tick(level, heart);
         }
     }
@@ -70,12 +71,12 @@ interface RiteUpkeep {
         }
 
         @Override
-        public boolean tick(ServerLevel level, BlockPos heart) {
+        public boolean tick(ServerLevel level, BlockPos heart, Consumer<Runnable> terrainChanges) {
             if (++ticks < interval()) return true;
             ticks = 0;
             if (landscape != null) {
                 if (!LandscapeRites.canReach(level, heart, landscape.target(), coven)) return false;
-                landscape = LandscapeRites.pulse(level, heart, landscape, coven, caster(level));
+                landscape = LandscapeRites.pulse(level, heart, landscape, coven, caster(level), terrainChanges);
                 return landscape != null;
             }
             if (oreDepth > 0) return RiteOfTransposition.transposeOreLayer(level, heart, ++oreDepth, coven);

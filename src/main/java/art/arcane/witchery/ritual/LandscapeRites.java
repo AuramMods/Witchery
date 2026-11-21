@@ -31,6 +31,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 public final class LandscapeRites {
     private static final int FOREST_RADIUS = 20;
@@ -88,11 +89,12 @@ public final class LandscapeRites {
         }
     }
 
-    public record Progress(ItemRiteRecipe.Action action, @Nullable Species species, BlockPos target, int stage) {
+    public record Progress(ItemRiteRecipe.Action action, @Nullable Species species, BlockPos target, int stage,
+                           @Nullable EarthRites.Fissure fissure, boolean followsHeart) {
         public int interval() {
             return switch (action) {
                 case RAISE_VOLCANO -> 15;
-                case ICE_SHELL -> 5;
+                case ICE_SHELL, RAISE_EARTH, RAISE_EARTH_MEDIUM, RAISE_EARTH_LARGE -> 5;
                 default -> 20;
             };
         }
@@ -102,6 +104,8 @@ public final class LandscapeRites {
                 case RAISE_VOLCANO -> 2 * volcanoHeight(coven);
                 case ICE_SHELL -> IceShell.radius(coven) - 4;
                 case CLIMATE_CHANGE -> ClimateChange.CAST_STAGE;
+                case PART_EARTH -> EarthRites.FISSURE_PULSES;
+                case RAISE_EARTH, RAISE_EARTH_MEDIUM, RAISE_EARTH_LARGE -> EarthRites.RISE_PULSES;
                 default -> 60 + 5 * coven;
             };
         }
@@ -112,6 +116,11 @@ public final class LandscapeRites {
             if (species != null) tag.putString("Species", species.name());
             tag.putLong("Target", target.asLong());
             tag.putInt("Stage", stage);
+            if (fissure != null) {
+                tag.putLong("FissureSeed", fissure.seed());
+                tag.putInt("FissureHeading", fissure.heading());
+            }
+            if (followsHeart) tag.putBoolean("FollowsHeart", true);
             return tag;
         }
 
@@ -135,7 +144,10 @@ public final class LandscapeRites {
                 }
             }
             if (!action.shapesLandscape() || (action == ItemRiteRecipe.Action.FORESTATION) != (species != null)) return null;
-            var progress = new Progress(action, species, BlockPos.of(tag.getLong("Target")), tag.getInt("Stage"));
+            EarthRites.Fissure fissure = action == ItemRiteRecipe.Action.PART_EARTH
+                    ? new EarthRites.Fissure(tag.getLong("FissureSeed"), tag.getInt("FissureHeading")) : null;
+            var progress = new Progress(action, species, BlockPos.of(tag.getLong("Target")), tag.getInt("Stage"), fissure,
+                    tag.getBoolean("FollowsHeart"));
             return progress.stage() > 0 && progress.stage() < progress.lastStage(coven) ? progress : null;
         }
     }
@@ -164,7 +176,8 @@ public final class LandscapeRites {
     }
 
     @Nullable
-    public static Progress pulse(ServerLevel level, BlockPos heart, Progress progress, int coven, @Nullable ServerPlayer caster) {
+    public static Progress pulse(ServerLevel level, BlockPos heart, Progress progress, int coven,
+                                 @Nullable ServerPlayer caster, Consumer<Runnable> terrainChanges) {
         int stage = progress.stage() + 1;
         switch (progress.action()) {
             case FORESTATION -> {
@@ -175,9 +188,15 @@ public final class LandscapeRites {
             case CLIMATE_CHANGE -> {
                 if (!ClimateChange.pulse(level, progress.target(), stage, coven, caster)) return null;
             }
+            case PART_EARTH -> progress.fissure().cut(level, progress.target(), stage, coven, caster);
+            case RAISE_EARTH, RAISE_EARTH_MEDIUM, RAISE_EARTH_LARGE -> {
+                BlockPos center = progress.followsHeart() ? heart : progress.target();
+                terrainChanges.accept(() -> EarthRites.raise(level, center, progress.action().raisedEarthRadius(), stage, coven, caster));
+            }
             default -> throw new IllegalStateException("Unexpected landscape rite " + progress.action());
         }
-        return stage >= progress.lastStage(coven) ? null : new Progress(progress.action(), progress.species(), progress.target(), stage);
+        return stage >= progress.lastStage(coven) ? null
+                : new Progress(progress.action(), progress.species(), progress.target(), stage, progress.fissure(), progress.followsHeart());
     }
 
     private static void forestPulse(ServerLevel level, BlockPos origin, Species species, int coven, @Nullable ServerPlayer caster) {
@@ -327,7 +346,7 @@ public final class LandscapeRites {
         return level.setBlockAndUpdate(pos, replacement);
     }
 
-    public static void startVolcano(ServerLevel level, BlockPos target) {
+    public static void playRiteStart(ServerLevel level, BlockPos target) {
         level.sendParticles(ParticleTypes.PORTAL, target.getX() + 0.5, target.getY() + 0.35, target.getZ() + 0.5,
                 16, 0.35, 0.4, 0.35, 0.08);
         level.playSound(null, target, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.8F, 1);
