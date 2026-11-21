@@ -115,9 +115,10 @@ public final class LoveEffect extends MobEffect {
             if (parent instanceof Villager && parent.getRandom().nextInt(35) == 0) {
                 level.broadcastEntityEvent(parent, (byte) 12);
             }
+            // A running goal can tick between the selector's eligibility checks.
             if (parent.distanceToSqr(mate) > 2.25) {
                 parent.getNavigation().moveTo(mate, speed);
-            } else if (remaining == 0) {
+            } else if (remaining == 0 && canCourt(parent) && canCourt(mate)) {
                 if (parent instanceof Zombie zombie && mate instanceof Zombie partner) {
                     BrewImpacts.breedZombies(level, zombie, partner, null);
                 } else if (parent instanceof Villager villager && mate instanceof Villager partner && isCourting(partner)) {

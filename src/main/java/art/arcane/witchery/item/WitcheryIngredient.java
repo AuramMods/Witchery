@@ -204,6 +204,9 @@ public enum WitcheryIngredient {
             return PotionUtils.setPotion(stack, Potions.NIGHT_VISION);
         }
         if (stackTag.contains("Damage", Tag.TAG_ANY_NUMERIC)) {
+            if (stack.getItem() instanceof WitchWoodBlockItem) {
+                WitchWoodBlockItem.importLegacyMetadata(stack, stackTag.getInt("Damage"));
+            }
             if (stack.getItem() instanceof StockadeBlock.Item
                     && (stack.getTagElement(BlockItem.BLOCK_STATE_TAG) == null
                     || !stack.getTagElement(BlockItem.BLOCK_STATE_TAG).contains(StockadeBlock.WOOD.getName(), Tag.TAG_STRING))) {

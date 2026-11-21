@@ -694,6 +694,7 @@
 - [x] Power Anti-Magic Bolts with the full Witch Hunter set. In a two-client test, a shot drained the shooter's 20 infusion charge, took the target's charge from 20 to 10, and left Poison active after dispelling Resistance.
 - [x] Connect Silver Bolts and silvered armor to lycanthropy. The dedicated server recorded both the Silver Bolt selection against a Wolfman and the protection, durability and retaliatory damage from silvered armor.
 - [x] A nearby Enhanced Poppets fetish allows a carried Death Protection Poppet to absorb a lethal powered anti-magic bolt. Shelf wards retain their ordinary restrictions.
+- [ ] Package the original crossbow click and wind-up recordings. The full Auram resource reload reported both Witchery files missing and the asset audit located them in the supplied 1.7.10 source.
 
 ## Witch Hunter Clothing (2026-11-20)
 
@@ -1083,7 +1084,31 @@
 - [x] Reopen the summoned Demon and verify its model in the background client. Boot the packaged JAR on headless Forge with the bundled Auram development mods. The copied world loaded the saved Demon, and a ritual-rain droplet produced three Inferno fires.
 - [x] Pass Java 17 data generation, JAR reobfuscation, and 24 focused GameTests. The nine new cases cover recipe costs, direct and glancing fire, legacy projectile saves, protection events, aura damage, the Infernal circle, explosion placement and probability, and ritual rain. The first Hell Gate fixture failed its spawn assertion. The rerun seeded a clear landing column and passed.
 - [x] Pass all 28 focused GameTests across the new fire brews, area rites, land brews and Transpose. The aura fixture used a sheltered, armor-valued pig to exercise the fire damage and ignition assertions in a controlled environment.
-- [ ] Resolve the broad regression failures. The 639-case run passed 637. The original aura fixture failed in the broad run and the revised fixture passed in the focused run. The pre-existing villager courtship case also failed in a separate nine-test rerun.
+- [x] Clear the two failures from the 639-case run. The sheltered aura check and villager courtship with the birth fix both passed in the next 640-case run.
+
+## Legacy Save Fixtures (2026-11-21)
+
+- [x] Generate an original Witchery 0.24.1 save on headless Forge 10.13.4.1614. Save an oven with clay jars, an alder plank block, and a vanilla chest holding numeric Witchery subtypes alongside vanilla charcoal. The per-world `FML.ItemData` table distinguishes block IDs with prefix `0x01` and item IDs with prefix `0x02`.
+- [x] Open a disposable copy directly on Forge 47.4.10. The vanilla upgrade produced light blue concrete for the old oven and air for Witchery planks. The chest retained vanilla charcoal and lost its three Witchery items. Vanilla birch planks outside the chest also survived.
+- [x] Import named legacy sapling, log, leaves, and plank variants through the shared Witchery inventory loader. Existing explicit wood state wins when both formats are present. The loader also retains stack count and unrelated tags.
+- [x] Resolve the real fixture's numeric items against its original per-world item table. Load those tags into a modern oven with the packaged JAR. The saved Soft Clay Jars, Death Protection Poppet, and alder plank stack kept their variants and counts through restart. The custom tag on the first jar stack also survived.
+- [x] Prove the chunk conversion approach on a test copy. A scratch script reapplied the original block and item data after the vanilla upgrade. The packaged server loaded the original south-facing oven and stack, alder plank block, and all four chest stacks at their original coordinates. All eight terrain and inventory checks passed before and after a restart.
+- [ ] Implement the reusable legacy save converter. The fixture script covered one section and two block IDs. General block palettes, vanilla inventories, entities, players, nested containers, and custom dimensions still need a supported conversion path.
+
+## Villager Courtship Regression (2026-11-21)
+
+- [x] Reproduce the duplicate birth with a diagnostic GameTest. The two independent goals finished one tick apart. The selector ticked the second goal after its partner had set both parents' cooldowns. The birth now checks both adults again before applying its effects.
+- [x] Pass all nine focused brew parity GameTests. On packaged headless Forge, two dosed villagers with claimed beds produced exactly one child. A separate pair with one dosed villager produced none. The counts persisted after a dedicated restart.
+- [x] Run the 640-case Forge regression with the courtship and inventory changes. The 638 passing cases included the fixed courtship, the new wood inventory check, and the revised Hellish Aura fixture. The witch summoning and portable eclipse cases failed during the run and passed in a 48-test rerun on the final source.
+
+## Auram Armor Compatibility (2026-11-21)
+
+- [x] Reproduce the Auram profile's startup redirect conflict between Witch Hunter armor and Apothic Attributes 1.3.7. Capture the armor reinforcement at the damage calculation and adjust its armor argument so the Apothic Attributes redirect can still apply piercing and shredding. The bonus retains its fractional armor points.
+- [x] Package with Java 17 and boot on dedicated Forge with Apothic Attributes 1.3.7 and Placebo 8.6.3. The silvered hunter coat reduced an attributed werewolf hit and retaliated against the attacker. At 60 Armor Pierce both coats took the same eight damage. The focused test used the dependency versions installed in the copied Auram profile.
+- [x] Verify the exact JAR on clean headless Forge as well. The silvered coat reduced the same hit and retaliated. All 48 focused Forge GameTests passed, including the hunter clothing and wolf combat checks. The packaged SHA-256 is `a8e178e4dd26ccead5e0c861a61f46879b312e8659f10ec596dd711cbf3bf397`.
+- [x] Verify the final JAR passes the previous startup redirect in the muted full Auram copy. With Evolved Mekanism 1.2.1-fix4, the client reached the render thread and mod construction. Evolved Mekanism still failed with the same null `QIODriveTier` as 1.2.1-fix3. [Evolved Mekanism 1.2.1-fix4 notes](https://www.curseforge.com/minecraft/mc-mods/evolved-mekanism/files/7599591)
+- [x] Verify the isolated copy with Evolved Mekanism 1.3.0-fix3 gets through the QIO tier initialization. Setup later failed because Evolved Mekanism and Mekanism Curios 1.2.1 both redirect the same packet handler. The next diagnostic launch disabled Mekanism Curios in the isolated copy and reached texture loading before Docker reported an out-of-memory kill at its 6 GiB limit. [Evolved Mekanism 1.3.0-fix3 notes](https://www.curseforge.com/minecraft/mc-mods/evolved-mekanism/files/9685752)
+- [ ] Verify title and fresh survival on the diagnostic pack copy. A 9 GiB retry initialized OpenAL on No Output and was killed as it created the 16,384 by 16,384 block atlas with four mip levels. The next isolated launch uses zero mip levels and a 10 GiB container limit.
 
 ## Brew of Erosion and Brew of Ice (2026-11-21)
 

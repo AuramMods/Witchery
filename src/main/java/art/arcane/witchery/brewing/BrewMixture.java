@@ -279,19 +279,6 @@ public final class BrewMixture {
 
     public static ItemStack loadIngredient(CompoundTag tag) {
         int metadata = tag.getInt("Damage");
-        if (tag.getString("id").equals("witchery:witchsapling") && tag.contains("Damage", Tag.TAG_ANY_NUMERIC)) {
-            ItemStack sapling = WitcheryIngredient.loadInventoryStack(tag);
-            CompoundTag state = sapling.getTagElement(BlockItem.BLOCK_STATE_TAG);
-            if (state == null || !state.contains(WitchWoodType.PROPERTY.getName(), Tag.TAG_STRING)) {
-                WitchWoodType[] woods = WitchWoodType.values();
-                int type = metadata & 3;
-                if (type < woods.length) {
-                    sapling.getOrCreateTagElement(BlockItem.BLOCK_STATE_TAG)
-                            .putString(WitchWoodType.PROPERTY.getName(), woods[type].getSerializedName());
-                }
-            }
-            return sapling;
-        }
         String id = switch (tag.getString("id")) {
             case "minecraft:skull" -> switch (metadata) {
                 case 0 -> "minecraft:skeleton_skull";
