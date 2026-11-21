@@ -1,0 +1,6 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [{"item": "minecraft:obsidian"}, {"item": "witchery:charged_attuned_stone"}],
+  "action": "portable_barrier"
+}

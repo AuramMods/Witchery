@@ -12,6 +12,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public final class BarrierBlockEntity extends BlockEntity {
@@ -25,12 +26,16 @@ public final class BarrierBlockEntity extends BlockEntity {
     }
 
     public void configure(@Nullable Player owner, boolean blocksPlayers, int duration) {
-        this.owner = owner == null ? null : owner.getUUID();
-        ownerName = owner == null ? "" : owner.getGameProfile().getName();
+        UUID nextOwner = owner == null ? null : owner.getUUID();
+        String nextName = owner == null ? "" : owner.getGameProfile().getName();
+        boolean collisionChanged = !Objects.equals(this.owner, nextOwner) || !ownerName.equals(nextName)
+                || this.blocksPlayers != blocksPlayers;
+        this.owner = nextOwner;
+        ownerName = nextName;
         this.blocksPlayers = blocksPlayers;
         remaining = duration;
         setChanged();
-        if (level != null) level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+        if (collisionChanged && level != null) level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
     }
 
     public boolean allows(Player player) {

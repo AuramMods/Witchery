@@ -1,0 +1,7 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "medium", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [{"item": "minecraft:obsidian"}, {"item": "minecraft:glowstone_dust"}],
+  "power": 1000,
+  "action": "greater_barrier"
+}

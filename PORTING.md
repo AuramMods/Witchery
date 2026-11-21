@@ -354,6 +354,18 @@
 - [x] Verify on the release JAR that activating a supplied white chalk circle in the Dream World leaves the storm offerings in place.
 - [x] Read the Altar costs, the Waystone option, and the daytime condition in the shipped Circle Magic book. Run Java 17 data generation, JAR reobfuscation, and all 397 required Forge GameTests.
 
+## Protection, Imprisonment and Barrier Rites (2026-11-21)
+
+- [x] Restore the original Feather and Redstone offerings for Protection and Slimeball and Redstone for Imprisonment. Both use a small white ring and 500 initial altar power, then draw 0.8 power per tick from a source within 16 blocks of the Heart Glyph.
+- [x] Restore the focused, greater, and portable barrier recipes. The powered versions accept a same-dimension Bound Waystone. The portable version uses a Charged Attuned Stone and runs for about a minute.
+- [x] Draw the original circular walls and horizontal caps with 30-tick barrier blocks. Survival players can pass through the focused wall, and it stops creatures. Greater and portable walls block both. All three preserve solid terrain and containers.
+- [x] Save the active wards and their target and timers. Import concurrent 1.7.10 protection wards from `Rituals`, `RitualStages`, `RitualCovens`, and `Locations`, including permanent wards saved at stage zero.
+- [x] Update Circle Magic with the ward behavior, upkeep rates, and optional Waystone. Preserve the Dream World restriction.
+- [x] Activate all five recipes in the muted survival client. Protection pushed a pig beyond four blocks, and Imprisonment turned another inward. The player crossed the focused wall and stopped at the Waystone-targeted greater wall.
+- [x] Save the greater and portable barriers together and restart the dedicated server. The portable shell expired while the remote shell stayed up. Removing the remote ward's altar cleared its heart and remaining barrier blocks. Circle Magic showed the greater barrier's two offerings, costs, and collision rules.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 403 required Forge GameTests. The six new cases exercise recipe sync, creature motion, power use, collision, caps, remote restart, portable expiry, and concurrent legacy wards.
+- [ ] Restore simultaneous recipe matching when a new cast has offerings for multiple rites. The current activation resolver starts one matching recipe.
+
 ## Familiar Brews and Baba Yaga (2026-11-20)
 
 - [x] Restore the recipes and effects for Frog's Tongue, Cursed Leaping, Hitchcock, Bats and Wasting. The muted client pulled a cow over two blocks, gained roughly eleven blocks of height with Jump Boost IV, and sent four temporary owls at a cow with Hitchcock. Bats released ten marked bats and applied Slowness VI to a nearby chicken. Wasting cut food from twenty to ten, applied Hunger and Poison, and cleared a nearby poppy.

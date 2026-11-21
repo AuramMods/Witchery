@@ -1,0 +1,7 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [{"item": "minecraft:slime_ball"}, {"item": "minecraft:redstone"}],
+  "power": 500,
+  "action": "imprisonment"
+}

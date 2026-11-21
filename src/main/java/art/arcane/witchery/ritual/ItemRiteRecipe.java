@@ -79,7 +79,12 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         CALL_STORM,
         CALL_GREATER_STORM,
         CALL_PORTABLE_STORM,
-        ECLIPSE;
+        ECLIPSE,
+        PROTECTION,
+        IMPRISONMENT,
+        BARRIER,
+        GREATER_BARRIER,
+        PORTABLE_BARRIER;
 
         public boolean shapesLandscape() {
             return usesWaystoneTarget() || this == ICE_SHELL || this == CLIMATE_CHANGE;
@@ -95,6 +100,18 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
 
         public boolean callsStorm() {
             return targetsStormWithWaystone() || this == CALL_PORTABLE_STORM;
+        }
+
+        @Nullable
+        public ProtectionRites.Kind protection() {
+            return switch (this) {
+                case PROTECTION -> ProtectionRites.Kind.PROTECTION;
+                case IMPRISONMENT -> ProtectionRites.Kind.IMPRISONMENT;
+                case BARRIER -> ProtectionRites.Kind.BARRIER;
+                case GREATER_BARRIER -> ProtectionRites.Kind.GREATER_BARRIER;
+                case PORTABLE_BARRIER -> ProtectionRites.Kind.PORTABLE_BARRIER;
+                default -> null;
+            };
         }
     }
 
@@ -120,6 +137,7 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 return "message.witchery.rite.transpose_dream";
             }
             if (action.callsStorm() || dayOnly()) return "message.witchery.rite.weather_dream";
+            if (action.protection() != null) return "message.witchery.rite.protection_dream";
         }
         if (dayOnly() && !level.isDay()) return "message.witchery.rite.day_only";
         if (nightOnly && !level.isNight()) return "message.witchery.rite.night_only";
@@ -324,6 +342,11 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 case "call_greater_storm" -> Action.CALL_GREATER_STORM;
                 case "call_portable_storm" -> Action.CALL_PORTABLE_STORM;
                 case "eclipse" -> Action.ECLIPSE;
+                case "protection" -> Action.PROTECTION;
+                case "imprisonment" -> Action.IMPRISONMENT;
+                case "barrier" -> Action.BARRIER;
+                case "greater_barrier" -> Action.GREATER_BARRIER;
+                case "portable_barrier" -> Action.PORTABLE_BARRIER;
                 default -> throw new JsonSyntaxException("Unknown rite action for " + id);
             };
             ItemStack result = action == Action.ITEM

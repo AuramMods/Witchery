@@ -2,6 +2,7 @@ package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.entity.Demon;
 import art.arcane.witchery.registry.WitcheryEffects;
+import art.arcane.witchery.ritual.ProtectionRites;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -38,9 +39,8 @@ public final class GrotesqueEffect extends MobEffect {
             Vec3 offset = mob.position().subtract(entity.position());
             double distanceSquared = offset.lengthSqr();
             if (distanceSquared < 1.0E-6 || distanceSquared >= RADIUS * RADIUS) continue;
-            double vertical = offset.y * 4.32 / (distanceSquared * distanceSquared);
-            mob.push(Math.signum(offset.x) * 0.22, vertical > 0.2 || vertical < -0.1 ? 0.12 : vertical,
-                    Math.signum(offset.z) * 0.22);
+            Vec3 push = ProtectionRites.repulsion(offset);
+            mob.push(push.x, push.y, push.z);
         }
     }
 
