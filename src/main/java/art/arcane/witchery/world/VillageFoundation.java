@@ -4,7 +4,9 @@ import art.arcane.witchery.registry.WitcheryRegistries;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
@@ -19,19 +21,22 @@ public final class VillageFoundation extends StructureProcessor {
             Codec.INT.fieldOf("min_x").forGetter(processor -> processor.minX),
             Codec.INT.fieldOf("max_x").forGetter(processor -> processor.maxX),
             Codec.INT.fieldOf("min_z").forGetter(processor -> processor.minZ),
-            Codec.INT.fieldOf("max_z").forGetter(processor -> processor.maxZ)
+            Codec.INT.fieldOf("max_z").forGetter(processor -> processor.maxZ),
+            BuiltInRegistries.BLOCK.byNameCodec().optionalFieldOf("block", Blocks.COBBLESTONE).forGetter(processor -> processor.block)
     ).apply(instance, VillageFoundation::new));
 
     private final int minX;
     private final int maxX;
     private final int minZ;
     private final int maxZ;
+    private final Block block;
 
-    private VillageFoundation(int minX, int maxX, int minZ, int maxZ) {
+    private VillageFoundation(int minX, int maxX, int minZ, int maxZ, Block block) {
         this.minX = minX;
         this.maxX = maxX;
         this.minZ = minZ;
         this.maxZ = maxZ;
+        this.block = block;
     }
 
     @Override
@@ -49,7 +54,7 @@ public final class VillageFoundation extends StructureProcessor {
                     if (bounds != null && !bounds.isInside(pos)) break;
                     var floor = level.getBlockState(pos);
                     if (!floor.isAir() && !floor.liquid()) break;
-                    blocks.add(new StructureTemplate.StructureBlockInfo(pos, Blocks.COBBLESTONE.defaultBlockState(), null));
+                    blocks.add(new StructureTemplate.StructureBlockInfo(pos, block.defaultBlockState(), null));
                 }
             }
         }

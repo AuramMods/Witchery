@@ -40,6 +40,12 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.BooleanValue GENERATE_BOOK_SHOPS;
     public static final ForgeConfigSpec.BooleanValue GENERATE_APOTHECARIES;
     public static final ForgeConfigSpec.BooleanValue GENERATE_WITCH_HUTS;
+    public static final ForgeConfigSpec.IntValue TOWN_KEEP_MODE;
+    public static final ForgeConfigSpec.IntValue TOWN_KEEP_WEIGHT;
+    public static final ForgeConfigSpec.IntValue TOWN_GUARD_TOWER_CLUSTER_GROUPS;
+    public static final ForgeConfigSpec.IntValue TOWN_GUARD_TOWER_CLUSTER_WEIGHT;
+    public static final ForgeConfigSpec.IntValue TOWN_GUARD_TOWER_CLUSTER_MIN;
+    public static final ForgeConfigSpec.IntValue TOWN_GUARD_TOWER_CLUSTER_MAX;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> TOWN_BOOKSHOP_ALLOWED_BOOKS;
     public static final ForgeConfigSpec.BooleanValue HOBGOBLIN_DESPAWN_BLOCK;
     public static final ForgeConfigSpec.IntValue HOBGOBLIN_SPAWN_WEIGHT;
@@ -127,6 +133,18 @@ public final class WitcheryServerConfig {
                 .worldRestart().define("generateApothecaries", true);
         GENERATE_WITCH_HUTS = builder.comment("Add coven witches' huts to newly generated villages.")
                 .worldRestart().define("generateWitchHuts", true);
+        TOWN_KEEP_MODE = builder.comment("Keep eligibility per new village. 0 disables keeps, 1 gives each village a chance, and 2 makes every village eligible.")
+                .worldRestart().defineInRange("townKeepMode", 1, 0, 2);
+        TOWN_KEEP_WEIGHT = builder.comment("Village house pool weight for the keep.")
+                .worldRestart().defineInRange("townKeepWeight", 100, 0, 1000);
+        TOWN_GUARD_TOWER_CLUSTER_GROUPS = builder.comment("Number of independently limited watchtower entries in each new village's house pool.")
+                .worldRestart().defineInRange("townGuardTowerClusterGroups", 4, 0, 1000);
+        TOWN_GUARD_TOWER_CLUSTER_WEIGHT = builder.comment("Village house pool weight per watchtower group.")
+                .worldRestart().defineInRange("townGuardTowerClusterWeight", 20, 0, 1000);
+        TOWN_GUARD_TOWER_CLUSTER_MIN = builder.comment("Lower bound of the placement limit drawn per watchtower group.")
+                .worldRestart().defineInRange("townGuardTowerClusterMin", 0, 0, Integer.MAX_VALUE - 1);
+        TOWN_GUARD_TOWER_CLUSTER_MAX = builder.comment("Upper bound of the placement limit drawn per watchtower group.")
+                .worldRestart().defineInRange("townGuardTowerClusterMax", 1, 0, Integer.MAX_VALUE - 1);
         TOWN_BOOKSHOP_ALLOWED_BOOKS = builder.comment("Extra bookshop stock as item IDs or legacy item IDs followed by comma and metadata. Repeat entries for additional weight.")
                 .defineListAllowEmpty("townBookshopAllowedBooks", List.of("minecraft:book", "witchery:ingredient,46",
                         "witchery:ingredient,47", "witchery:ingredient,48", "witchery:ingredient,49",

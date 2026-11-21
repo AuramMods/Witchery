@@ -583,6 +583,18 @@
 - [x] Open the hut door and walk inside in muted survival. Confirm the Rowan log, full cauldron and potted spruce, and speak to the naturally spawned resident. The witch introduced herself as Pixie Calamity and declined the player without a familiar.
 - [x] Restart and speak to the same resident UUID with a supplied active familiar. Accept her Zombie quest, recover the witch-bound trophy through normal combat and pickup, and give it back to recruit her. The test used supplied equipment and combat effects. The saved player coven contains Pixie Calamity with her original skin and offered quest.
 
+## Village Keeps and Watchtowers (2026-11-21)
+
+- [x] Restore the four-tower keep and the freestanding watchtower from the legacy layouts. Both connect to village roads and use the original desert and snowy building palettes. The keep preserves its courtyard and roof chest. The watchtower preserves its ladder shaft, chest alcove, and roof guard post.
+- [x] Give the keep its original default weight of 100 and its zero-or-one village limit. Restore the off, random eligibility, and always eligible modes. Register four separately weighted watchtower groups by default, each at weight 20 with a rolled limit of zero or one. These settings apply to newly generated villages.
+- [x] Restore the original weighted chest contents and their roll ranges. Spawn six persistent guards at the keep's courtyard and east rampart posts, the result of the legacy routine when all posts generated together. Spawn four persistent guards at the watchtower's lookout. The modern guard posts remain consistent across chunk generation orders.
+- [x] Generate nine fresh seed-1 villages on default settings. They contained one keep, sixteen watchtowers, and seventy armed guards. With both building types disabled, the matching plains village generated neither. With the keep always eligible and two watchtower groups set to two placements each, three villages generated four watchtowers apiece and one village had space for a keep.
+- [x] Walk into the keep from its road in muted survival. The test used teleport positioning to reach its roof chamber and loot a golden helmet. Climb a generated watchtower from the street and retrieve a saddle from its chest.
+- [x] Restart both servers and verify the two chest inventories, the player's saddle and helmet, and all 124 original guard UUIDs across the two worlds.
+- [x] Rejoin the restarted server with the final JAR and confirm the keep's remaining loot and the player's helmet. Generate a snowy and a desert village and verify the wall, roof, cap, and railing blocks in each of their four watchtowers.
+- [x] Pass Java 17 data generation, JAR reobfuscation, and all ten focused Forge GameTests in a fresh test world. The tests cover the ordinary and abandoned pools, independent groups, rotated ladders, the desert and snowy palettes, foundations, loot references, and armed guards.
+- [ ] Restore village-wide walls, gates, and their generation settings.
+
 ## Witchery Guidebooks (2026-11-21)
 
 - [x] Restore ten readable volumes and their original crafting combinations. Eight named item IDs import the original ingredient metadata. Tagged guide stacks from the earlier bookshop remain readable and show the right cover.

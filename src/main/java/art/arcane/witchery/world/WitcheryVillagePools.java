@@ -21,12 +21,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 @Mod.EventBusSubscriber(modid = Witchery.MODID)
 public final class WitcheryVillagePools {
     public static final ResourceLocation BOOKSHOP = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "village/bookshop");
     public static final ResourceLocation APOTHECARY = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "village/apothecary");
     public static final ResourceLocation WITCH_HUT = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "village/witch_hut");
+    public static final ResourceLocation KEEP = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "village/keep");
+    public static final ResourceLocation WATCHTOWER = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "village/watchtower");
+    private static final int MAX_POOL_ENTRY_WEIGHT = 150;
     private static final List<String> VILLAGE_STYLES = List.of("plains", "desert", "savanna", "snowy", "taiga");
 
     private WitcheryVillagePools() {}
@@ -39,26 +43,45 @@ public final class WitcheryVillagePools {
         if (WitcheryServerConfig.GENERATE_BOOK_SHOPS.get()) addVillagePiece(pools, processors, BOOKSHOP, 15);
         if (WitcheryServerConfig.GENERATE_APOTHECARIES.get()) addVillagePiece(pools, processors, APOTHECARY, 15);
         if (WitcheryServerConfig.GENERATE_WITCH_HUTS.get()) addVillagePiece(pools, processors, WITCH_HUT, 10);
+        if (WitcheryServerConfig.TOWN_KEEP_MODE.get() > 0) {
+            addVillagePiece(pools, processors, KEEP, WitcheryServerConfig.TOWN_KEEP_WEIGHT.get(), 1, true);
+        }
+        addVillagePiece(pools, processors, WATCHTOWER, WitcheryServerConfig.TOWN_GUARD_TOWER_CLUSTER_WEIGHT.get(),
+                WitcheryServerConfig.TOWN_GUARD_TOWER_CLUSTER_GROUPS.get(), true);
     }
 
     private static void addVillagePiece(Registry<StructureTemplatePool> pools, Registry<StructureProcessorList> processors,
             ResourceLocation template, int weight) {
-        var processorList = processors.getHolderOrThrow(ResourceKey.create(Registries.PROCESSOR_LIST, template));
-        StructurePoolElement element = StructurePoolElement.single(template.toString(), processorList)
-                .apply(StructureTemplatePool.Projection.RIGID);
+        addVillagePiece(pools, processors, template, weight, 1, false);
+    }
+
+    private static void addVillagePiece(Registry<StructureTemplatePool> pools, Registry<StructureProcessorList> processors,
+            ResourceLocation template, int weight, int groups, boolean usesDistrictPalette) {
+        if (weight == 0 || groups == 0) return;
         for (String style : VILLAGE_STYLES) {
             var poolId = ResourceLocation.withDefaultNamespace("village/" + style + "/houses");
-            pools.getOptional(poolId).ifPresent(pool -> addPiece(pool, template, element, weight));
+            var processorId = usesDistrictPalette && (style.equals("desert") || style.equals("snowy"))
+                    ? template.withSuffix("_" + style) : template;
+            var processorList = processors.getHolderOrThrow(ResourceKey.create(Registries.PROCESSOR_LIST, processorId));
+            var element = StructurePoolElement.single(template.toString(), processorList);
+            pools.getOptional(poolId).ifPresent(pool -> addPieces(pool, template, element, weight, groups));
         }
     }
 
-    private static void addPiece(StructureTemplatePool pool, ResourceLocation template, StructurePoolElement element, int weight) {
+    private static void addPieces(StructureTemplatePool pool, ResourceLocation template,
+            Function<StructureTemplatePool.Projection, ? extends StructurePoolElement> createElement,
+            int weight, int groups) {
         var access = (StructureTemplatePoolAccessor) pool;
         var entries = new ArrayList<>(access.witchery$getRawTemplates());
         if (entries.stream().anyMatch(entry -> limitedBuilding(entry.getFirst()).filter(template::equals).isPresent())) return;
-        entries.add(Pair.of(element, weight));
+        for (int group = 0; group < groups; group++) {
+            var element = createElement.apply(StructureTemplatePool.Projection.RIGID);
+            for (int remaining = weight; remaining > 0; remaining -= MAX_POOL_ENTRY_WEIGHT) {
+                entries.add(Pair.of(element, Math.min(remaining, MAX_POOL_ENTRY_WEIGHT)));
+            }
+            access.witchery$getTemplates().addAll(Collections.nCopies(weight, element));
+        }
         access.witchery$setRawTemplates(entries);
-        access.witchery$getTemplates().addAll(Collections.nCopies(weight, element));
     }
 
     public static boolean isBookshop(StructurePoolElement element) {
@@ -68,7 +91,8 @@ public final class WitcheryVillagePools {
     public static Optional<ResourceLocation> limitedBuilding(StructurePoolElement element) {
         return element instanceof SinglePoolElement single
                 ? ((SinglePoolElementAccessor) single).witchery$getTemplate().left()
-                        .filter(id -> id.equals(BOOKSHOP) || id.equals(APOTHECARY) || id.equals(WITCH_HUT))
+                        .filter(id -> id.equals(BOOKSHOP) || id.equals(APOTHECARY) || id.equals(WITCH_HUT)
+                                || id.equals(KEEP) || id.equals(WATCHTOWER))
                 : Optional.empty();
     }
 }
