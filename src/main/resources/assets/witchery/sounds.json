@@ -1,4 +1,7 @@
 {
+  "mob.leonard.say": {"sounds": ["witchery:mob/leonard/say1", "witchery:mob/leonard/say2", "witchery:mob/leonard/say3", "witchery:mob/leonard/say4", "witchery:mob/leonard/say5"]},
+  "mob.leonard.hit": {"sounds": ["witchery:mob/leonard/hit"]},
+  "mob.leonard.death": {"sounds": ["witchery:mob/leonard/death"]},
   "mob.spectre.spectre_say": {
     "subtitle": "subtitles.witchery.spectre_say",
     "sounds": [

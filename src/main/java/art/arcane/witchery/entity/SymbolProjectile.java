@@ -125,6 +125,9 @@ public final class SymbolProjectile extends ThrowableProjectile {
                     direct.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 600, 1));
                 }
             }
+            case EXPELLIARMUS -> {
+                if (direct != null && direct != getOwner()) disarm(direct);
+            }
             case FLIPENDO -> {
                 if (direct != null && direct != getOwner()) {
                     Vec3 motion = getDeltaMovement();
@@ -133,8 +136,20 @@ public final class SymbolProjectile extends ThrowableProjectile {
                 }
             }
             case ATTRAHO -> pullToCaster(level, location);
-            case CARNOSA_DIEM -> { }
+            case CARNOSA_DIEM, LEONARD_1, LEONARD_2, LEONARD_3, LEONARD_4 -> { }
         }
+    }
+
+    private static void disarm(LivingEntity target) {
+        var held = target.getMainHandItem();
+        if (held.isEmpty()) return;
+        if (target instanceof net.minecraft.world.entity.player.Player player) {
+            if (player.containerMenu != player.inventoryMenu || player.isCreative()) return;
+            if (player.drop(held, true, false) == null) return;
+        } else if (target.spawnAtLocation(held, 0.5F) == null) {
+            return;
+        }
+        target.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, net.minecraft.world.item.ItemStack.EMPTY);
     }
 
     private void pullToCaster(ServerLevel level, Vec3 location) {

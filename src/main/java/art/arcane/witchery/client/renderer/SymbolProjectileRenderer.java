@@ -41,7 +41,7 @@ public final class SymbolProjectileRenderer extends EntityRenderer<SymbolProject
         super.render(projectile, yaw, tick, pose, buffers, light);
     }
 
-    private static void vertex(VertexConsumer vertices, PoseStack.Pose pose, float x, float y, float u, float v, int color) {
+    static void vertex(VertexConsumer vertices, PoseStack.Pose pose, float x, float y, float u, float v, int color) {
         vertices.vertex(pose.pose(), x, y, 0).color(color >> 16 & 255, color >> 8 & 255, color & 255, 140)
                 .uv(u, v).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
                 .normal(pose.normal(), 0, 1, 0).endVertex();

@@ -1,6 +1,9 @@
 {
-   "parent" : "minecraft:item/generated",
-   "textures" : {
-      "layer0" : "witchery:item/taglockkit"
-   }
+  "parent": "minecraft:item/generated",
+  "textures": {"layer0": "witchery:item/leonardsurn0"},
+  "overrides": [
+    {"predicate": {"witchery:urn_tier": 1}, "model": "witchery:item/leonardsurn1"},
+    {"predicate": {"witchery:urn_tier": 2}, "model": "witchery:item/leonardsurn2"},
+    {"predicate": {"witchery:urn_tier": 3}, "model": "witchery:item/leonardsurn3"}
+  ]
 }

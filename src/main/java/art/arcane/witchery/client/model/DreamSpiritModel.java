@@ -1,7 +1,6 @@
 package art.arcane.witchery.client.model;
 
 import art.arcane.witchery.Witchery;
-import art.arcane.witchery.entity.DreamSpirit;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.HierarchicalModel;
@@ -12,15 +11,20 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Mob;
 
-public final class DreamSpiritModel extends HierarchicalModel<DreamSpirit> {
+import java.util.function.ToIntFunction;
+
+public final class DreamSpiritModel<T extends Mob> extends HierarchicalModel<T> {
     public static final ModelLayerLocation LAYER = new ModelLayerLocation(
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "spirit"), "main");
     private final ModelPart root;
+    private final ToIntFunction<T> colorOf;
     private int color;
 
-    public DreamSpiritModel(ModelPart root) {
+    public DreamSpiritModel(ModelPart root, ToIntFunction<T> colorOf) {
         this.root = root;
+        this.colorOf = colorOf;
     }
 
     public static LayerDefinition layer() {
@@ -40,8 +44,9 @@ public final class DreamSpiritModel extends HierarchicalModel<DreamSpirit> {
     }
 
     @Override
-    public void setupAnim(DreamSpirit spirit, float limbSwing, float distance, float age, float yaw, float pitch) {
-        color = spirit.color() == 0 ? 0xFFFFFF : spirit.color();
+    public void setupAnim(T spirit, float limbSwing, float distance, float age, float yaw, float pitch) {
+        int tint = colorOf.applyAsInt(spirit);
+        color = tint == 0 ? 0xFFFFFF : tint;
     }
 
     @Override

@@ -1,5 +1,7 @@
 package art.arcane.witchery.brewing;
 
+import art.arcane.witchery.entity.CreatureAlignment;
+import art.arcane.witchery.entity.Leonard;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.registry.WitcheryEffects;
@@ -42,9 +44,11 @@ public final class BrewMixture {
         CAPACITY, STRENGTH, DURATION, INVERT, HIDE_PARTICLES, DRINK_SPEED, DELIVERY, EXTENT, LIFETIME, WAYSTONE, RITUAL
     }
 
+    private enum Action { EXTINGUISH, HARM_DEMONS }
+
     private record Ingredient(int power, @Nullable Modifier modifier, int amount, int ceiling,
-                              int yieldModifier, @Nullable Potion normal, @Nullable Potion inverted, boolean extinguish) {
-        boolean isEffect() { return normal != null || extinguish; }
+                              int yieldModifier, @Nullable Potion normal, @Nullable Potion inverted, @Nullable Action action) {
+        boolean isEffect() { return normal != null || action != null; }
     }
 
     private record Potion(Supplier<MobEffect> effect, int duration) {}
@@ -66,6 +70,7 @@ public final class BrewMixture {
     private final int extent;
     private final int lifetime;
     private final List<Integer> extinguishStrengths;
+    private final List<Integer> harmDemonStrengths;
     @Nullable
     private final WaystoneItem.Location destination;
 
@@ -81,6 +86,7 @@ public final class BrewMixture {
         extent = mixing.extent;
         lifetime = mixing.lifetime;
         extinguishStrengths = List.copyOf(mixing.extinguishStrengths);
+        harmDemonStrengths = List.copyOf(mixing.harmDemonStrengths);
         destination = mixing.destination;
     }
 
@@ -146,7 +152,7 @@ public final class BrewMixture {
         tag.put(ITEMS, items);
         tag.putInt("Power", power);
         tag.putInt("Color", color);
-        tag.putInt("EffectCount", effects.size() + extinguishStrengths.size());
+        tag.putInt("EffectCount", effects.size() + extinguishStrengths.size() + harmDemonStrengths.size());
         tag.putInt("UsedCapacity", used);
         tag.putInt("RemainingCapacity", capacity - used);
         tag.putInt("BrewDrinkSpeed", drinkTicks);
@@ -167,7 +173,8 @@ public final class BrewMixture {
     public int lifetime() { return lifetime; }
     public int splashRadius() { return 3 + extent; }
     public boolean extinguishes() { return !extinguishStrengths.isEmpty(); }
-    public boolean hasEffects() { return !effects.isEmpty() || extinguishes(); }
+    public boolean harmsDemons() { return !harmDemonStrengths.isEmpty(); }
+    public boolean hasEffects() { return !effects.isEmpty() || extinguishes() || harmsDemons(); }
     @Nullable
     public WaystoneItem.Location destination() { return destination; }
 
@@ -200,6 +207,16 @@ public final class BrewMixture {
                         : target.damageSources().magic(), (strength + 1) * 4.0F);
             }
             target.clearFire();
+        }
+        if (!blocksHarmfulEffects) {
+            for (int strength : harmDemonStrengths) {
+                if (target instanceof Leonard leonard) {
+                    leonard.harmedByIce(caster, Mth.ceil((10 << strength) * strengthScale));
+                } else {
+                    int damage = (CreatureAlignment.demonic(target) ? 10 : 3) << strength;
+                    target.hurt(target.damageSources().indirectMagic(source, caster), Mth.ceil(damage * strengthScale));
+                }
+            }
         }
     }
 
@@ -236,6 +253,7 @@ public final class BrewMixture {
     private static final class Mixing {
         private final List<Application> effects = new ArrayList<>();
         private final List<Integer> extinguishStrengths = new ArrayList<>();
+        private final List<Integer> harmDemonStrengths = new ArrayList<>();
         private final Set<ResourceLocation> segment = new HashSet<>();
         private int capacity;
         private int used;
@@ -273,8 +291,10 @@ public final class BrewMixture {
         private void applyEffect(Ingredient ingredient) {
             if (used + ingredient.amount > capacity) return;
             used += ingredient.amount;
-            if (ingredient.extinguish) {
+            if (ingredient.action == Action.EXTINGUISH) {
                 extinguishStrengths.add(strength);
+            } else if (ingredient.action == Action.HARM_DEMONS) {
+                harmDemonStrengths.add(Math.min(strength, unlimitedBoosts ? 3 : 1));
             } else {
                 Potion effect = inverted ? ingredient.inverted : ingredient.normal;
                 effects.add(new Application(effect.effect.get(), effect.duration * (duration + 1),
@@ -352,7 +372,9 @@ public final class BrewMixture {
         modifier(entries, "witchery:bound_waystone", 100, Modifier.WAYSTONE, 0, 0, 0);
         modifier(entries, "witchery:dog_tongue", 250, Modifier.RITUAL, 0, 0, 0);
         modifier(entries, "witchery:taglockkit", 1000, Modifier.RITUAL, 0, 0, 0);
-        entries.put(ResourceLocation.withDefaultNamespace("coal"), new Ingredient(0, null, 1, 10, 0, null, null, true));
+        entries.put(ResourceLocation.withDefaultNamespace("coal"), new Ingredient(0, null, 1, 10, 0, null, null, Action.EXTINGUISH));
+
+        entries.put(ResourceLocation.withDefaultNamespace("ice"), new Ingredient(500, null, 5, 3, 0, null, null, Action.HARM_DEMONS));
 
         potion(entries, "witchery:wolfsbane_flower", 0, 1, WitcheryEffects.WOLFSBANE, 1200);
         potion(entries, "witchery:ender_dew", 200, 1, WitcheryEffects.ENDER_INHIBITION, 1800);
@@ -380,7 +402,7 @@ public final class BrewMixture {
 
     private static void modifier(Map<ResourceLocation, Ingredient> entries, String id, int power, Modifier modifier,
                                  int amount, int ceiling, int yieldModifier) {
-        entries.put(ResourceLocation.parse(id), new Ingredient(power, modifier, amount, ceiling, yieldModifier, null, null, false));
+        entries.put(ResourceLocation.parse(id), new Ingredient(power, modifier, amount, ceiling, yieldModifier, null, null, null));
     }
 
     private static void potion(Map<ResourceLocation, Ingredient> entries, String id, int power, int levels,
@@ -391,6 +413,6 @@ public final class BrewMixture {
 
     private static void potion(Map<ResourceLocation, Ingredient> entries, String id, int power, int levels,
                                int strengthCeiling, Potion normal, Potion inverted) {
-        entries.put(ResourceLocation.parse(id), new Ingredient(power, null, levels, strengthCeiling, 0, normal, inverted, false));
+        entries.put(ResourceLocation.parse(id), new Ingredient(power, null, levels, strengthCeiling, 0, normal, inverted, null));
     }
 }

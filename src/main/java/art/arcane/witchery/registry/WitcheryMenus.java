@@ -6,6 +6,7 @@ import art.arcane.witchery.menu.DistilleryMenu;
 import art.arcane.witchery.menu.LegacyPlaceholderMenu;
 import art.arcane.witchery.menu.SpinningWheelMenu;
 import art.arcane.witchery.menu.WitchesOvenMenu;
+import art.arcane.witchery.menu.LeonardsUrnMenu;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.common.extensions.IForgeMenuType;
@@ -29,6 +30,8 @@ public final class WitcheryMenus {
             () -> new MenuType<>(AltarMenu::new, FeatureFlags.DEFAULT_FLAGS));
     public static final RegistryObject<MenuType<DistilleryMenu>> DISTILLERY = MENU_TYPES.register("distillery",
             () -> new MenuType<>(DistilleryMenu::new, FeatureFlags.DEFAULT_FLAGS));
+    public static final RegistryObject<MenuType<LeonardsUrnMenu>> LEONARDS_URN = MENU_TYPES.register("leonards_urn",
+            () -> IForgeMenuType.create(LeonardsUrnMenu::new));
     public static final RegistryObject<MenuType<SpinningWheelMenu>> SPINNING_WHEEL = MENU_TYPES.register("spinning_wheel",
             () -> new MenuType<>(SpinningWheelMenu::new, FeatureFlags.DEFAULT_FLAGS));
 
@@ -97,6 +100,11 @@ public final class WitcheryMenus {
             return;
         }
 
+        if ("leonards_urn".equals(path)) {
+            LEGACY_MENUS.put(path, LEONARDS_URN);
+            LEGACY_MENUS_BY_GUI_ID.put(menuIntent.legacyGuiId(), LEONARDS_URN);
+            return;
+        }
         RegistryObject<MenuType<LegacyPlaceholderMenu>> menu = MENU_TYPES.register(path,
                 () -> IForgeMenuType.create((windowId, inventory, buffer) -> new LegacyPlaceholderMenu(windowId, inventory, path)));
 

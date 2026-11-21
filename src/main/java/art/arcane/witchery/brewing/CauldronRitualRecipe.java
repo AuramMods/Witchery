@@ -4,6 +4,9 @@ import art.arcane.witchery.registry.WitcheryRecipes;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.entity.EntityType;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
@@ -23,7 +26,8 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public record CauldronRitualRecipe(ResourceLocation id, List<Ingredient> ingredients, Ingredient trigger,
-                                  ItemStack result, int time, int power, boolean legacy, int priority) implements Recipe<Container> {
+                                  ItemStack result, int time, int power, boolean legacy, int priority,
+                                  @Nullable EntityType<?> summon) implements Recipe<Container> {
     public boolean acceptsIngredient(List<ItemStack> added, ItemStack offered) {
         if (legacy) {
             if (ingredients.stream().noneMatch(ingredient -> ingredient.test(offered))) return false;
@@ -144,8 +148,15 @@ public record CauldronRitualRecipe(ResourceLocation id, List<Ingredient> ingredi
             if (ingredients.size() > MAX_INGREDIENTS || time < 1 || power < 0) {
                 throw new JsonSyntaxException("Invalid cauldron ritual size, duration or power for " + id);
             }
+            EntityType<?> summon = null;
+            if (json.has("summon")) {
+                var entityId = ResourceLocation.parse(GsonHelper.getAsString(json, "summon"));
+                summon = BuiltInRegistries.ENTITY_TYPE.getOptional(entityId)
+                        .orElseThrow(() -> new JsonSyntaxException("Unknown summoned entity " + entityId + " for " + id));
+            }
+            ItemStack result = summon == null ? CraftingHelper.getItemStack(GsonHelper.getAsJsonObject(json, "result"), true) : ItemStack.EMPTY;
             return new CauldronRitualRecipe(id, List.copyOf(ingredients), Ingredient.fromJson(json.get("trigger"), false),
-                    CraftingHelper.getItemStack(GsonHelper.getAsJsonObject(json, "result"), true), time, power, legacy, priority);
+                    result, time, power, legacy, priority, summon);
         }
 
         @Override
@@ -158,8 +169,14 @@ public record CauldronRitualRecipe(ResourceLocation id, List<Ingredient> ingredi
             for (int i = 0; i < count; i++) {
                 ingredients.add(Ingredient.fromNetwork(buffer));
             }
-            return new CauldronRitualRecipe(id, List.copyOf(ingredients), Ingredient.fromNetwork(buffer),
-                    buffer.readItem(), buffer.readVarInt(), buffer.readVarInt(), buffer.readBoolean(), buffer.readVarInt());
+            Ingredient trigger = Ingredient.fromNetwork(buffer);
+            ItemStack result = buffer.readItem();
+            int time = buffer.readVarInt();
+            int power = buffer.readVarInt();
+            boolean legacy = buffer.readBoolean();
+            int priority = buffer.readVarInt();
+            EntityType<?> summon = buffer.readBoolean() ? buffer.readById(BuiltInRegistries.ENTITY_TYPE) : null;
+            return new CauldronRitualRecipe(id, List.copyOf(ingredients), trigger, result, time, power, legacy, priority, summon);
         }
 
         @Override
@@ -174,6 +191,8 @@ public record CauldronRitualRecipe(ResourceLocation id, List<Ingredient> ingredi
             buffer.writeVarInt(recipe.power);
             buffer.writeBoolean(recipe.legacy);
             buffer.writeVarInt(recipe.priority);
+            buffer.writeBoolean(recipe.summon != null);
+            if (recipe.summon != null) buffer.writeId(BuiltInRegistries.ENTITY_TYPE, recipe.summon);
         }
     }
 }

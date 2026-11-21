@@ -160,6 +160,7 @@ public enum WitcheryIngredient {
             if (stack.getItem() instanceof SpectralStoneItem && SpectralStoneItem.typeId(stack) == 0) {
                 SpectralStoneItem.applyLegacyContents(stack, stackTag.getInt("Damage"));
             }
+            if (stack.getItem() instanceof LeonardsUrnItem) LeonardsUrnItem.setTier(stack, stackTag.getInt("Damage"));
             if (stack.getItem() instanceof BrewFuelItem) BrewFuelItem.setTier(stack, stackTag.getInt("Damage"));
             if (stack.getItem() instanceof EndlessWaterBrewItem) {
                 stack.setDamageValue(Math.max(0, Math.min(stackTag.getInt("Damage"), stack.getMaxDamage() - 1)));

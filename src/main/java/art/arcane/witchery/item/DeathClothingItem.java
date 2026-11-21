@@ -59,7 +59,7 @@ public final class DeathClothingItem extends ArmorItem {
         if (getEquipmentSlot() == EquipmentSlot.FEET) {
             var motion = wearer.getDeltaMovement();
             if (motion.y < 0 && (wearer.isInWater() || wearer.isInLava())
-                    && !wearer.hasEffect(WitcheryEffects.all().get("potion.sinking").get())
+                    && !wearer.hasEffect(WitcheryEffects.SINKING.get())
                     && wearer.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getInt("witcherySinking") <= 0) {
                 wearer.setDeltaMovement(motion.add(0, 0.1, 0));
             }

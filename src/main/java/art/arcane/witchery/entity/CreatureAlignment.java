@@ -11,13 +11,13 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobType;
 
-final class CreatureAlignment {
+public final class CreatureAlignment {
     private static final TagKey<EntityType<?>> DEMONIC = TagKey.create(Registries.ENTITY_TYPE,
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "demonic"));
 
     private CreatureAlignment() {}
 
-    static boolean demonic(LivingEntity entity) {
+    public static boolean demonic(LivingEntity entity) {
         return entity.getType().is(DEMONIC);
     }
 

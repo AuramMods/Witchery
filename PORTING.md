@@ -554,8 +554,8 @@
 - [x] Attach the curse to one item from a stack. With an active cat familiar, the muted survival client recovered one stick with two charges from an offering of three. The remaining two sticks kept their ordinary stack.
 - [x] Verify that a right click in air applies Wolfsbane, an immediate second click preserves the remaining charge, and the next click after five seconds reapplies Wolfsbane and clears the curse while keeping the item. The successful cast used a dropped-item fixture for the tongue and stick stack.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 264 required Forge GameTests. Coverage includes the 250-power debit with two white circles, the named 1.7.10 active-brew save, a missing offering, stack splitting, cooldown, and both interaction paths.
-- [ ] Restore additional terrain actions and Leonard's encounter and summoning ritual.
-- [ ] Restore the hallucinations from the Insanity effect that can occur during a risky cast.
+- [ ] Restore additional terrain actions.
+- [x] Restore Leonard's encounter, summoning ritual and the Insanity hallucinations that can occur during a risky cast.
 
 ## Cauldron Dispersal and Waystone Targets (2026-11-20)
 
@@ -639,6 +639,16 @@
 - [x] On a muted survival client, toss the offerings and activate both versions of the hidden rite. The fixture gathered the offerings at the heart and supplied the spectral creatures. The first rite produced one 1,000-health Death. Death dodged a bow shot and kept its UUID and health across a dedicated restart. A survival sword hit finished the fight after fixture health reduction. The player collected a skull, five bones, a Piercing III book and Deathscowl.
 - [x] In the same client, deploy the scythe and hit two husks with one strike. Verify hunger drain, Slowness III from the cowl and the robe's fire protection. The second rite pulled the fully equipped player to the heart. A supplied Binky's Skull placed a tame mount, and the client saddled it and rode it.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 303 required Forge GameTests. The new tests cover a reloaded rite, the 15-damage cap, regeneration and reward drops, scythe damage and recovery, armor durability and fire protection, and Binky's saved state.
+
+## Leonard, Lost Souls and the Urn (2026-11-20)
+
+- [x] Summon Leonard from three buckets in a boiling Witch's Cauldron. Add Nether Wart, Tear of the Goddess, Diamond Vapour, a Diamond and a Nether Star, then throw in a Witch's Hat. The recipe uses 10,600 base power including its offerings and applies the existing circle discounts. A prepared pair of Infernal chalk rings powered the cast in the muted client.
+- [x] Restore the 150-tick entrance and 600-health boss, spell attacks, Mortal Coil, low-health growth, Lost Soul shield and original rewards. Lost Souls retain their fire, melee and magic vulnerabilities and their saved lifetimes. Leonard takes direct player damage and the special ice brew at low health. The encounter uses its original model, animation and sounds.
+- [x] Restore the Ice ingredient for Harm Demons. The muted client brewed it with the three capacity ingredients and Gunpowder, bottled it and hit Leonard through the Lost Soul shield. The test set Leonard's health to exercise each phase. The final splash dropped an enchanted book, a Demon Heart and Leonard's Urn.
+- [x] Restore the Sinking and Overheating curses and the Insanity apparitions. The three illusions follow their named victim, render only to that player and deal no damage. They retain the legacy victim name and illusion type fields.
+- [x] Restore the Urn's one-to-four-slot upgrades, saved contents, original menu and four Mystic Branch gestures. An upgrade carries over the stored potions from both urns. The four spells use the stored brew's capacity cost and launch it without consuming the stored bottle.
+- [x] Resume the active cauldron cast across a dedicated restart. The muted client saw the resulting full-health Leonard, verified five Lost Souls, collected the Urn and shift-clicked a splash brew into the original menu. After another restart, the first Mystic Branch gesture hit a Blaze for ten and spent ten charges from the supplied infusion. The stored bottle remained in the Urn.
+- [x] Run Java 17 data generation, JAR reobfuscation and all 307 required Forge GameTests. The new cases cover the original cauldron recipe, entrance immunity, Lost Soul weaknesses, shield-piercing ice, migrated Urn tiers, saved contents and the fourth gesture's charge cost.
 
 ## Auram Pack Validation (2026-11-20)
 

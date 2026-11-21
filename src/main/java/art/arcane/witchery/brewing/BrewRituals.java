@@ -2,6 +2,7 @@ package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.block.entity.AreaWardBlockEntity;
 import art.arcane.witchery.entity.CovenWitch;
+import art.arcane.witchery.entity.Leonard;
 import art.arcane.witchery.item.HunterClothingItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.VoodooPoppetItem;
@@ -33,9 +34,8 @@ public final class BrewRituals {
     private BrewRituals() {}
 
     public static boolean leonardNearby(ServerLevel level, BlockPos cauldron) {
-        var leonard = WitcheryEntities.all().get("leonard").get();
-        return !level.getEntitiesOfClass(LivingEntity.class, new AABB(cauldron).inflate(16),
-                entity -> entity.getType() == leonard && entity.isAlive() && entity.getHealth() > 1).isEmpty();
+        return !level.getEntitiesOfClass(Leonard.class, new AABB(cauldron).inflate(16),
+                entity -> entity.isAlive() && entity.getHealth() > 1).isEmpty();
     }
 
     public static Result pulse(ServerLevel source, BlockPos origin, BrewMixture mixture, CompoundTag brew,

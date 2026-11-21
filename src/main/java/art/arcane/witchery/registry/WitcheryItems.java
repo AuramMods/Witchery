@@ -32,6 +32,7 @@ import art.arcane.witchery.item.DemonHeartItem;
 import art.arcane.witchery.item.BinkyHeadItem;
 import art.arcane.witchery.item.DeathClothingItem;
 import art.arcane.witchery.item.DeathHandItem;
+import art.arcane.witchery.item.LeonardsUrnItem;
 import art.arcane.witchery.item.DeathProtectionPoppetItem;
 import art.arcane.witchery.item.FetishItem;
 import art.arcane.witchery.item.DrinkableBrewItem;
@@ -263,6 +264,7 @@ public final class WitcheryItems {
             case "deathsrobe" -> new DeathClothingItem(Type.CHESTPLATE);
             case "deathsfeet" -> new DeathClothingItem(Type.BOOTS);
             case "deathshand" -> new DeathHandItem();
+            case "leonardsurn" -> new LeonardsUrnItem();
             case "binky_head" -> new BinkyHeadItem();
             case "attuned_stone" -> new SpiritOfferingItem(DreamSpirit.Kind.GUIDE);
             case "subdued_spirit" -> new SpiritOfferingItem(DreamSpirit.Kind.SPIRIT);

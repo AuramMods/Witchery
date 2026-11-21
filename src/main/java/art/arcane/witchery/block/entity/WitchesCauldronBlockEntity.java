@@ -4,6 +4,9 @@ import art.arcane.witchery.block.WitchesCauldronBlock;
 import art.arcane.witchery.brewing.BrewBottling;
 import art.arcane.witchery.brewing.BrewMixture;
 import art.arcane.witchery.brewing.BrewRituals;
+import art.arcane.witchery.entity.Leonard;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
 import art.arcane.witchery.brewing.CauldronRitualRecipe;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WitcheryIngredient;
@@ -221,7 +224,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         if (roll < 0.5) return;
         MobEffectInstance penalty = roll < 0.75 ? new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 1200, 1)
                 : roll < 0.9 ? new MobEffectInstance(WitcheryEffects.PARALYSIS.get(), 400, 2)
-                : roll < 0.98 ? new MobEffectInstance(WitcheryEffects.all().get("potion.insane").get(), 3600, 2)
+                : roll < 0.98 ? new MobEffectInstance(WitcheryEffects.INSANITY.get(), 3600, 2)
                 : new MobEffectInstance(WitcheryEffects.PARALYSIS.get(), 200, 2);
         Vec3 center = Vec3.atCenterOf(pos);
         AABB area = new AABB(center.x - 16, pos.getY() - 2, center.z - 16, center.x + 16, pos.getY() + 4, center.z + 16);
@@ -444,20 +447,32 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
 
     private void completeRitual(ServerLevel server, BlockPos pos, CauldronRitualRecipe recipe,
                                 @Nullable AltarBlockEntity altar, int power) {
-        ItemEntity result = new ItemEntity(server, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
-                recipe.getResultItem(server.registryAccess()).copy(), 0, 0.2, 0);
-        result.setDefaultPickUpDelay();
-        if (!server.addFreshEntity(result)) {
-            return;
+        Entity result;
+        if (recipe.summon() != null) {
+            var summon = recipe.summon().create(server);
+            if (summon == null) return;
+            summon.setPos(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5);
+            if (server.getBlockCollisions(summon, summon.getBoundingBox()).iterator().hasNext()) return;
+            if (summon instanceof Mob mob) mob.setPersistenceRequired();
+            if (summon instanceof Leonard leonard) leonard.beginSummoning();
+            result = summon;
+        } else {
+            ItemEntity drop = new ItemEntity(server, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
+                    recipe.getResultItem(server.registryAccess()).copy(), 0, 0.2, 0);
+            drop.setDefaultPickUpDelay();
+            result = drop;
         }
+        if (!server.addFreshEntity(result)) return;
         if (altar != null && !altar.consumePower(power)) {
             result.discard();
             return;
         }
         clearMixture();
-        server.sendParticles(ParticleTypes.POOF, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5,
-                8, 0.25, 0.2, 0.25, 0.02);
-        server.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.7F, 1.3F);
+        boolean summoned = recipe.summon() != null;
+        server.sendParticles(summoned ? ParticleTypes.EXPLOSION : ParticleTypes.POOF,
+                pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 8, 0.25, 0.2, 0.25, 0.02);
+        server.playSound(null, pos, summoned ? SoundEvents.WITHER_SPAWN : SoundEvents.FIRE_EXTINGUISH,
+                SoundSource.BLOCKS, 0.7F, summoned ? 1 : 1.3F);
     }
 
     private void clearMixture() {

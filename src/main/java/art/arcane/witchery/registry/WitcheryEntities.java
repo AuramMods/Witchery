@@ -2,6 +2,9 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.entity.DeathBoss;
+import art.arcane.witchery.entity.Leonard;
+import art.arcane.witchery.entity.LostSoul;
+import art.arcane.witchery.entity.Illusion;
 import art.arcane.witchery.entity.DeathHorse;
 import art.arcane.witchery.entity.AttackBat;
 import art.arcane.witchery.entity.BabaYaga;
@@ -149,6 +152,15 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<WitcheryFollower>> FOLLOWER =
             ENTITY_TYPES.register("follower", () -> EntityType.Builder.of(WitcheryFollower::new, MobCategory.CREATURE)
                     .sized(0.6F, 1.8F).clientTrackingRange(8).build(Witchery.MODID + ":follower"));
+    public static final RegistryObject<EntityType<Illusion>> ILLUSION_CREEPER = illusion("illusioncreeper", Illusion.Kind.CREEPER, 0.6F, 1.7F);
+    public static final RegistryObject<EntityType<Illusion>> ILLUSION_SPIDER = illusion("illusionspider", Illusion.Kind.SPIDER, 1.4F, 0.9F);
+    public static final RegistryObject<EntityType<Illusion>> ILLUSION_ZOMBIE = illusion("illusionzombie", Illusion.Kind.ZOMBIE, 0.6F, 1.95F);
+    public static final RegistryObject<EntityType<Leonard>> LEONARD =
+            ENTITY_TYPES.register("leonard", () -> EntityType.Builder.of(Leonard::new, MobCategory.MONSTER)
+                    .sized(0.6F, 1.8F).fireImmune().clientTrackingRange(8).build(Witchery.MODID + ":leonard"));
+    public static final RegistryObject<EntityType<LostSoul>> LOST_SOUL =
+            ENTITY_TYPES.register("lostsoul", () -> EntityType.Builder.of(LostSoul::new, MobCategory.MONSTER)
+                    .sized(0.35F, 0.4F).clientTrackingRange(8).build(Witchery.MODID + ":lostsoul"));
     public static final RegistryObject<EntityType<DeathBoss>> DEATH =
             ENTITY_TYPES.register("death", () -> EntityType.Builder.of(DeathBoss::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.8F).fireImmune().clientTrackingRange(8).build(Witchery.MODID + ":death"));
@@ -181,6 +193,11 @@ public final class WitcheryEntities {
     static {
         LEGACY_ENTITIES.put("mandrake", MANDRAKE);
         LEGACY_ENTITIES.put("death", DEATH);
+        LEGACY_ENTITIES.put("leonard", LEONARD);
+        LEGACY_ENTITIES.put("lostsoul", LOST_SOUL);
+        LEGACY_ENTITIES.put("illusioncreeper", ILLUSION_CREEPER);
+        LEGACY_ENTITIES.put("illusionspider", ILLUSION_SPIDER);
+        LEGACY_ENTITIES.put("illusionzombie", ILLUSION_ZOMBIE);
         LEGACY_ENTITIES.put("deathhorse", DEATH_HORSE);
         LEGACY_ENTITIES.put("corpse", SLEEPING_BODY);
         LEGACY_ENTITIES.put("nightmare", NIGHTMARE);
@@ -233,6 +250,12 @@ public final class WitcheryEntities {
                 .sized(width, height).build(Witchery.MODID + ":" + path));
     }
 
+    private static RegistryObject<EntityType<Illusion>> illusion(String path, Illusion.Kind kind, float width, float height) {
+        return ENTITY_TYPES.register(path, () -> EntityType.Builder.<Illusion>of(
+                (type, level) -> new Illusion(type, level, kind), MobCategory.MONSTER)
+                .sized(width, height).build(Witchery.MODID + ":" + path));
+    }
+
     private static void registerLegacyEntity(String legacyName) {
         String path = RegistryNameUtil.normalizePath(legacyName);
         if (LEGACY_ENTITIES.containsKey(path) || path.equals("soulfire") || path.equals("spelleffect") || path.equals("broom")
@@ -251,6 +274,9 @@ public final class WitcheryEntities {
     private static void registerEntityAttributes(EntityAttributeCreationEvent event) {
         for (RegistryObject<? extends EntityType<? extends Mob>> entry : LEGACY_ENTITIES.values()) {
             var attributes = entry == MANDRAKE ? Mandrake.attributes()
+                    : entry == LEONARD ? Leonard.attributes()
+                    : entry == LOST_SOUL ? LostSoul.attributes()
+                    : entry == ILLUSION_CREEPER || entry == ILLUSION_SPIDER || entry == ILLUSION_ZOMBIE ? Illusion.attributes()
                     : entry == DEATH ? DeathBoss.attributes()
                     : entry == DEATH_HORSE ? DeathHorse.attributes()
                     : entry == SLEEPING_BODY ? SleepingBody.attributes()

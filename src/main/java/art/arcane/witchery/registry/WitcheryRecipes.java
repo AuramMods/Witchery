@@ -6,6 +6,7 @@ import art.arcane.witchery.brewing.KettleRecipe;
 import art.arcane.witchery.crafting.AssembleVampireBookRecipe;
 import art.arcane.witchery.crafting.BoundTaglockIngredient;
 import art.arcane.witchery.crafting.ClothingRepairRecipe;
+import art.arcane.witchery.crafting.UrnUpgradeRecipe;
 import art.arcane.witchery.crafting.HunterClothingUpgradeRecipe;
 import art.arcane.witchery.crafting.DistillingRecipe;
 import art.arcane.witchery.crafting.SpinningRecipe;
@@ -72,6 +73,8 @@ public final class WitcheryRecipes {
             });
     public static final RegistryObject<RecipeSerializer<ItemRiteRecipe>> ITEM_RITE_SERIALIZER =
             SERIALIZERS.register("item_rite", ItemRiteRecipe.Serializer::new);
+    public static final RegistryObject<RecipeSerializer<UrnUpgradeRecipe>> URN_UPGRADE =
+            SERIALIZERS.register("upgrade_leonards_urn", () -> new SimpleCraftingRecipeSerializer<>(UrnUpgradeRecipe::new));
     public static final RegistryObject<RecipeSerializer<ClothingRepairRecipe>> CLOTHING_REPAIR =
             SERIALIZERS.register("repair_witch_clothing", () -> new SimpleCraftingRecipeSerializer<>(ClothingRepairRecipe::new));
     public static final RegistryObject<RecipeSerializer<HunterClothingUpgradeRecipe>> HUNTER_CLOTHING_UPGRADE =

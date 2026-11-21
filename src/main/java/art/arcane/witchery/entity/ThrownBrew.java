@@ -31,6 +31,20 @@ public final class ThrownBrew extends ThrowableItemProjectile {
     }
 
     @Override
+    public void tick() {
+        super.tick();
+        if (isNoGravity() && level() instanceof ServerLevel level) {
+            if (tickCount > 200) discard();
+            else if (!isRemoved()) {
+                int color = BrewBottleItem.color(getItem());
+                var options = new net.minecraft.core.particles.DustParticleOptions(
+                        net.minecraft.world.phys.Vec3.fromRGB24(color).toVector3f(), 1);
+                level.sendParticles(options, getX(), getY(), getZ(), 4, 0.12, 0.12, 0.12, 0);
+            }
+        }
+    }
+
+    @Override
     protected Item getDefaultItem() {
         return WitcheryIngredient.BREW_OF_INK.item();
     }

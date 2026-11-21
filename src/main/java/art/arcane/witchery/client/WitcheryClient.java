@@ -9,6 +9,8 @@ import art.arcane.witchery.client.screen.DistilleryScreen;
 import art.arcane.witchery.client.screen.LegacyPlaceholderScreen;
 import art.arcane.witchery.client.screen.SpinningWheelScreen;
 import art.arcane.witchery.client.screen.WitchesOvenScreen;
+import art.arcane.witchery.client.screen.LeonardsUrnScreen;
+import art.arcane.witchery.item.LeonardsUrnItem;
 import art.arcane.witchery.menu.LegacyPlaceholderMenu;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.CritterSnareBlock;
@@ -25,6 +27,16 @@ import art.arcane.witchery.client.model.LordOfTormentModel;
 import art.arcane.witchery.client.model.NightmareModel;
 import art.arcane.witchery.client.model.DeathClothingModel;
 import art.arcane.witchery.client.model.DeathModel;
+import art.arcane.witchery.client.model.LeonardModel;
+import art.arcane.witchery.entity.DreamSpirit;
+import art.arcane.witchery.entity.LostSoul;
+import art.arcane.witchery.client.renderer.LeonardRenderer;
+import art.arcane.witchery.client.renderer.IllusionRenderer;
+import art.arcane.witchery.client.renderer.BrewProjectileRenderer;
+import net.minecraft.client.model.CreeperModel;
+import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.model.SpiderModel;
+import net.minecraft.client.model.geom.ModelLayers;
 import art.arcane.witchery.client.model.DreamSpiritModel;
 import art.arcane.witchery.client.model.SpectralUndeadModel;
 import art.arcane.witchery.client.model.WitchOwlModel;
@@ -166,6 +178,7 @@ public final class WitcheryClient {
         event.registerLayerDefinition(NightmareModel.LAYER, NightmareModel::layer);
         event.registerLayerDefinition(DreamSpiritModel.LAYER, DreamSpiritModel::layer);
         event.registerLayerDefinition(DeathModel.LAYER, DeathModel::layer);
+        event.registerLayerDefinition(LeonardModel.LAYER, LeonardModel::layer);
         event.registerLayerDefinition(DeathClothingModel.LAYER, DeathClothingModel::layer);
         event.registerLayerDefinition(DeathHandRenderer.LAYER, DeathHandRenderer::layer);
         event.registerLayerDefinition(SpectralUndeadModel.ROBED_LAYER, SpectralUndeadModel::robedLayer);
@@ -236,7 +249,15 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.SCRY_EYE.get(), NoopRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.MANDRAKE.get(), MandrakeRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.NIGHTMARE.get(), NightmareRenderer::new);
-        event.registerEntityRenderer(WitcheryEntities.SPIRIT.get(), DreamSpiritRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.SPIRIT.get(), context -> new DreamSpiritRenderer<>(context, DreamSpirit::color));
+        event.registerEntityRenderer(WitcheryEntities.LOST_SOUL.get(), context -> new DreamSpiritRenderer<>(context, LostSoul::color));
+        event.registerEntityRenderer(WitcheryEntities.LEONARD.get(), LeonardRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.ILLUSION_CREEPER.get(), context ->
+                new IllusionRenderer<>(context, new CreeperModel<>(context.bakeLayer(ModelLayers.CREEPER)), "creeper"));
+        event.registerEntityRenderer(WitcheryEntities.ILLUSION_SPIDER.get(), context ->
+                new IllusionRenderer<>(context, new SpiderModel<>(context.bakeLayer(ModelLayers.SPIDER)), "spider"));
+        event.registerEntityRenderer(WitcheryEntities.ILLUSION_ZOMBIE.get(), context ->
+                new IllusionRenderer<>(context, new HumanoidModel<>(context.bakeLayer(ModelLayers.ZOMBIE)), "zombie"));
         event.registerEntityRenderer(WitcheryEntities.SPECTRE.get(), context -> new SpectralUndeadRenderer(context, "spectre", false));
         event.registerEntityRenderer(WitcheryEntities.BANSHEE.get(), context -> new SpectralUndeadRenderer(context, "banshee", false));
         event.registerEntityRenderer(WitcheryEntities.POLTERGEIST.get(), context -> new SpectralUndeadRenderer(context, "poltergeist", true));
@@ -260,7 +281,7 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.COVEN_WITCH.get(), CovenWitchRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.REFLECTION.get(), ReflectionRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SLEEPING_BODY.get(), SleepingBodyRenderer::new);
-        event.registerEntityRenderer(WitcheryEntities.THROWN_BREW.get(), ThrownItemRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.THROWN_BREW.get(), BrewProjectileRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.GRENADE.get(), ThrownItemRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.KETTLE.get(), KettleRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.BREW_GAS.get(), BrewGasRenderer::new);
@@ -296,6 +317,10 @@ public final class WitcheryClient {
             MenuScreens.register(WitcheryMenus.ALTAR.get(), AltarScreen::new);
             MenuScreens.register(WitcheryMenus.DISTILLERY.get(), DistilleryScreen::new);
             MenuScreens.register(WitcheryMenus.SPINNING_WHEEL.get(), SpinningWheelScreen::new);
+            MenuScreens.register(WitcheryMenus.LEONARDS_URN.get(), LeonardsUrnScreen::new);
+            ItemProperties.register(WitcheryItems.getRequired("leonardsurn").get(),
+                    ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "urn_tier"),
+                    (stack, level, entity, seed) -> LeonardsUrnItem.tier(stack));
             for (RegistryObject<MenuType<LegacyPlaceholderMenu>> menuType : WitcheryMenus.placeholders().values()) {
                 MenuScreens.register(menuType.get(), LegacyPlaceholderScreen::new);
             }

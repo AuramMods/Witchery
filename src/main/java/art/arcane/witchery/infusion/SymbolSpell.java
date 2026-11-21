@@ -1,6 +1,9 @@
 package art.arcane.witchery.infusion;
 
 import art.arcane.witchery.entity.SymbolProjectile;
+import art.arcane.witchery.entity.ThrownBrew;
+import art.arcane.witchery.item.LeonardsUrnItem;
+import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryDamageTypes;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -20,6 +23,11 @@ public enum SymbolSpell {
     MORSMORDRE(41, SpellKnowledge.MORSMORDRE, 20, 0x000000, 3, 8, false, strokes("↑", "←", "→")),
     TORMENTUM(42, SpellKnowledge.TORMENTUM, 25, 0x222222, 4, 200, true, strokes("↓", "←", "→")),
     CONFUNDUS(8, null, 0, 16_771_328, 1.5F, 200, false, List.of()),
+    EXPELLIARMUS(15, null, 1, 16_747_778, 3, 200, false, List.of("↑↑↓", "↑↑↑↓↓")),
+    LEONARD_1(43, null, 5, 0, 0, 0, false, List.of("→↑←←↓")),
+    LEONARD_2(44, null, 5, 0, 0, 0, false, List.of("←↓→→↑")),
+    LEONARD_3(45, null, 5, 0, 0, 0, false, List.of("↓→↑↑←")),
+    LEONARD_4(46, null, 5, 0, 0, 0, false, List.of("↑←↓↓→")),
     FLIPENDO(17, null, 0, 16_775_577, 3, 200, false, List.of()),
     IMPEDIMENTA(19, null, 0, 6_191_615, 1.5F, 200, false, List.of()),
     ATTRAHO(47, null, 0, 5_322_534, 1, 200, false, List.of());
@@ -73,6 +81,10 @@ public enum SymbolSpell {
 
     public void cast(ServerLevel level, ServerPlayer player) {
         if (!InfusionEnergy.canSpend(player, 0)) return;
+        if (id >= LEONARD_1.id && id <= LEONARD_4.id) {
+            castUrn(level, player);
+            return;
+        }
         if (!player.getAbilities().instabuild && knowledge != null) {
             if (!knowledge.isKnown(player)) {
                 reject(player, "unknown_spell");
@@ -97,6 +109,30 @@ public enum SymbolSpell {
             level.playSound(null, player.blockPosition(), SoundEvents.GHAST_SHOOT, SoundSource.PLAYERS, 0.8F, 1);
         }
         InfusionEnergy.spend(player, cost);
+    }
+
+    private void castUrn(ServerLevel level, ServerPlayer player) {
+        var brew = LeonardsUrnItem.readSpell(player, id - LEONARD_1.id);
+        var mixture = LeonardsUrnItem.splash(brew);
+        int charge = cost;
+        if (mixture != null) {
+            int base = mixture.used();
+            var worship = player.getEffect(WitcheryEffects.all().get("potion.worship").get());
+            charge = Math.max(4, worship == null ? base * 2
+                    : worship.getAmplifier() == 0 ? base + (base + 1) / 2 : base);
+        }
+        if (!InfusionEnergy.canSpend(player, charge)) return;
+        if (mixture == null) {
+            player.playSound(SoundEvents.NOTE_BLOCK_SNARE.value(), 0.9F, 1);
+        } else {
+            var projectile = new ThrownBrew(player, level);
+            projectile.setItem(brew);
+            projectile.setNoGravity(true);
+            projectile.shootFromRotation(player, player.getXRot(), player.getYRot(), 0, 4, 1);
+            if (!level.addFreshEntity(projectile)) return;
+            level.playSound(null, player.blockPosition(), SoundEvents.GHAST_SHOOT, SoundSource.PLAYERS, 0.8F, 1);
+        }
+        InfusionEnergy.spend(player, charge);
     }
 
     public static void reject(ServerPlayer player, String reason, Object... arguments) {

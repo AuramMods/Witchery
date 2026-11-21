@@ -1,0 +1,14 @@
+{
+  "type": "witchery:cauldron_ritual",
+  "legacy": true,
+  "ingredients": [
+    {"item": "minecraft:nether_wart"},
+    {"item": "witchery:tear_of_the_goddess"},
+    {"item": "witchery:diamond_vapour"},
+    {"item": "minecraft:diamond"},
+    {"item": "minecraft:nether_star"}
+  ],
+  "trigger": {"item": "witchery:witchhat"},
+  "power": 10000,
+  "summon": "witchery:leonard"
+}

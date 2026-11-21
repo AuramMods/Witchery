@@ -422,7 +422,7 @@ The original `witchhat`, `witchrobe`, `necromancerrobe`, and `babashat` IDs equi
 | `BIOME_BOOK` | `witchery:bookbiomes2` |
 | `BIOME_NOTE` | `witchery:biomenote` |
 | `CAULDRON_BOOK` | `witchery:cauldronbook` |
-| `LEONARDS_URN` | `witchery:leonardsurn` |
+| `LEONARDS_URN` | `witchery:leonardsurn` (legacy tiers 0–3, stored splash brews and Mystic Branch slots) |
 | `PLAYER_COMPASS` | `witchery:playercompass` |
 | `MOON_CHARM` | `witchery:mooncharm` |
 | `HORN_OF_THE_HUNT` | `witchery:hornofthehunt` |
@@ -838,8 +838,8 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 130 | `ITEM_WAYSTONE` | `EntityItemWaystone` | `item` (legacy dropped Waystone, item subtype and age) |
 | 131 | `DROPLET` | `EntityDroplet` | `droplet` |
 | 132 | `SPLATTER` | `EntitySplatter` | `splatter` |
-| 133 | `LEONARD` | `EntityLeonard` | `leonard` |
-| 134 | `LOST_SOUL` | `EntityLostSoul` | `lostsoul` |
+| 133 | `LEONARD` | `EntityLeonard` | `leonard` (cauldron summon, spells, shield and Urn loot) |
+| 134 | `LOST_SOUL` | `EntityLostSoul` | `lostsoul` (three vulnerabilities, legacy color and expiry) |
 | 135 | `WOLFMAN` | `EntityWolfman` | `wolfman` |
 | 136 | `HELLHOUND` | `EntityHellhound` | `hellhound` |
 | 137 | `WERE_VILLAGER` | `EntityVillagerWere` | `werevillager` |
@@ -1306,7 +1306,7 @@ ID mapping used by scaffold:
 | 5 | `brew_bag` | `witchery:brew_bag` |
 | 6 | `biome_book` | `witchery:biome_book` |
 | 7 | `markup_book` | `witchery:markup_book` |
-| 8 | `leonards_urn` | `witchery:leonards_urn` |
+| 8 | `leonards_urn` | `witchery:leonards_urn` (original layout backed by item inventory) |
 
 Status:
 - The oven has a live menu and screen implementation. Graphical client validation is pending.

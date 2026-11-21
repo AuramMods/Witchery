@@ -4,6 +4,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.vampirism.ParalysisEffect;
 import art.arcane.witchery.brewing.GrotesqueEffect;
 import art.arcane.witchery.brewing.MortalCoilEffect;
+import art.arcane.witchery.brewing.EnvironmentalCurseEffect;
 import art.arcane.witchery.brewing.WakingNightmareEffect;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -38,6 +39,10 @@ public final class WitcheryEffects {
                     return java.util.List.of();
                 }
             });
+    public static final RegistryObject<MobEffect> SINKING = environmentalCurse("potion.sinking", EnvironmentalCurseEffect.Kind.SINKING);
+    public static final RegistryObject<MobEffect> OVERHEATING = environmentalCurse("potion.overheating", EnvironmentalCurseEffect.Kind.OVERHEATING);
+    public static final RegistryObject<MobEffect> INSANITY = environmentalCurse("potion.insane", EnvironmentalCurseEffect.Kind.INSANITY);
+    public static final RegistryObject<MobEffect> RESIZING = simpleEffect("potion.resizing", MobEffectCategory.NEUTRAL);
     public static final RegistryObject<MobEffect> MORTAL_COIL = MOB_EFFECTS.register("potion.mortalcoil", MortalCoilEffect::new);
     public static final RegistryObject<MobEffect> QUEASY = MOB_EFFECTS.register("potion.queasy",
             () -> new MobEffect(MobEffectCategory.HARMFUL, 0x7C9348) {
@@ -57,6 +62,10 @@ public final class WitcheryEffects {
         LEGACY_EFFECTS.put("potion.brewingexpertise", BREWING_EXPERTISE);
         LEGACY_EFFECTS.put("potion.gasmask", GAS_MASK);
         LEGACY_EFFECTS.put("potion.mortalcoil", MORTAL_COIL);
+        LEGACY_EFFECTS.put("potion.sinking", SINKING);
+        LEGACY_EFFECTS.put("potion.overheating", OVERHEATING);
+        LEGACY_EFFECTS.put("potion.insane", INSANITY);
+        LEGACY_EFFECTS.put("potion.resizing", RESIZING);
         LEGACY_EFFECTS.put("potion.queasy", QUEASY);
         for (String legacyName : LegacyRegistryData.EFFECTS) {
             registerLegacyEffect(legacyName);
@@ -72,6 +81,10 @@ public final class WitcheryEffects {
 
     public static Map<String, RegistryObject<MobEffect>> all() {
         return Collections.unmodifiableMap(LEGACY_EFFECTS);
+    }
+
+    private static RegistryObject<MobEffect> environmentalCurse(String path, EnvironmentalCurseEffect.Kind kind) {
+        return MOB_EFFECTS.register(path, () -> new EnvironmentalCurseEffect(kind));
     }
 
     private static RegistryObject<MobEffect> simpleEffect(String path, MobEffectCategory category) {
