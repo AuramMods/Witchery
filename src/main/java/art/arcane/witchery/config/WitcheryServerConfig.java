@@ -4,6 +4,7 @@ import net.minecraftforge.common.ForgeConfigSpec;
 
 public final class WitcheryServerConfig {
     public static final ForgeConfigSpec SPEC;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_DEATHS_HOOD_TO_FREEZE_VICTIMS;
     public static final ForgeConfigSpec.BooleanValue DOUBLE_FUME_FILTER_CHANCE;
     public static final ForgeConfigSpec.BooleanValue RESTRICT_TAGLOCK_COLLECTION_ON_NON_PVP_SERVERS;
     public static final ForgeConfigSpec.BooleanValue RESTRICT_TAGLOCK_COLLECTION_FOR_OPS;
@@ -55,6 +56,7 @@ public final class WitcheryServerConfig {
         DECURSE_TELEPORT_RADIUS = builder
                 .comment("Horizontal range of a Statue of Occluded Summons, in blocks.")
                 .defineInRange("decurseTeleportPullProtectRadius", 32, 0, 128);
+        ALLOW_DEATHS_HOOD_TO_FREEZE_VICTIMS = builder.define("allowDeathsHoodToFreezeVictims", true);
         SPEC = builder.build();
     }
 

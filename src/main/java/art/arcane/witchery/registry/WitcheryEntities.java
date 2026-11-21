@@ -1,6 +1,8 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.entity.DeathBoss;
+import art.arcane.witchery.entity.DeathHorse;
 import art.arcane.witchery.entity.AttackBat;
 import art.arcane.witchery.entity.BabaYaga;
 import art.arcane.witchery.entity.BrewDroplet;
@@ -147,6 +149,12 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<WitcheryFollower>> FOLLOWER =
             ENTITY_TYPES.register("follower", () -> EntityType.Builder.of(WitcheryFollower::new, MobCategory.CREATURE)
                     .sized(0.6F, 1.8F).clientTrackingRange(8).build(Witchery.MODID + ":follower"));
+    public static final RegistryObject<EntityType<DeathBoss>> DEATH =
+            ENTITY_TYPES.register("death", () -> EntityType.Builder.of(DeathBoss::new, MobCategory.MONSTER)
+                    .sized(0.6F, 1.8F).fireImmune().clientTrackingRange(8).build(Witchery.MODID + ":death"));
+    public static final RegistryObject<EntityType<DeathHorse>> DEATH_HORSE =
+            ENTITY_TYPES.register("deathhorse", () -> EntityType.Builder.<DeathHorse>of(DeathHorse::new, MobCategory.CREATURE)
+                    .sized(1.3965F, 1.6F).clientTrackingRange(8).build(Witchery.MODID + ":deathhorse"));
     public static final RegistryObject<EntityType<ScryEye>> SCRY_EYE =
             ENTITY_TYPES.register("eye", () -> EntityType.Builder.of(ScryEye::new, MobCategory.MISC)
                     .sized(0.01F, 0.01F).noSave().noSummon().clientTrackingRange(10).updateInterval(1)
@@ -172,6 +180,8 @@ public final class WitcheryEntities {
 
     static {
         LEGACY_ENTITIES.put("mandrake", MANDRAKE);
+        LEGACY_ENTITIES.put("death", DEATH);
+        LEGACY_ENTITIES.put("deathhorse", DEATH_HORSE);
         LEGACY_ENTITIES.put("corpse", SLEEPING_BODY);
         LEGACY_ENTITIES.put("nightmare", NIGHTMARE);
         LEGACY_ENTITIES.put("spirit", SPIRIT);
@@ -241,6 +251,8 @@ public final class WitcheryEntities {
     private static void registerEntityAttributes(EntityAttributeCreationEvent event) {
         for (RegistryObject<? extends EntityType<? extends Mob>> entry : LEGACY_ENTITIES.values()) {
             var attributes = entry == MANDRAKE ? Mandrake.attributes()
+                    : entry == DEATH ? DeathBoss.attributes()
+                    : entry == DEATH_HORSE ? DeathHorse.attributes()
                     : entry == SLEEPING_BODY ? SleepingBody.attributes()
                     : entry == NIGHTMARE ? Nightmare.attributes()
                     : entry == SPIRIT ? DreamSpirit.attributes()

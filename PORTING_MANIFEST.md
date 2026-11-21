@@ -130,7 +130,7 @@ Lifecycle stages:
   - Legacy renderer: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/client/renderer/RenderFetish.java`.
   - Legacy models: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/client/model/ModelFetishTrent.java`, `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/client/model/ModelFetishScarecrow.java`.
   - `FetishRenderer` uses the legacy `64x64` Trent and Scarecrow textures, and the crossed Witch's Ladder texture. It renders both the items and placed models, with facing, dye and spectral opacity.
-  - Rites 84–86 bind the five ordinary effects to the existing `scarecrow`, `trent` and `witchsladder` IDs. The legacy Death encounter remains open.
+  - Rites 84–86 bind the five ordinary effects to the existing `scarecrow`, `trent` and `witchsladder` IDs. The hidden sixth result summons Death or a player equipped with the three Death armor pieces and Death's Hand.
 - `witchery:brazier` keeps its original block and block entity IDs. Slots 0–2 hold the ingredients and slot 3 persists the ignition ash. The state exposes `lit` for client flames. The eight recipes live in `BrazierRecipe`.
 - `witchery:spectre`, `witchery:banshee` and `witchery:poltergeist` use distinct entity types backed by `SpectralUndead`. The Spectral Stone's legacy metadata maps to `SpectralContents`, with the original species values 1 through 3 and matching item overrides. `witchery:wormy_apple` and `witchery:graveyard_dust` map legacy ingredient values 91 and 128.
 - `witchery:icedoor`
@@ -669,7 +669,7 @@ Variant 156 consumes one flower when the tester targets a living entity within t
 | 126 | `brewCongealedSpirit` → `witchery:congealed_spirit` |
 | 127 | `bookBurning` |
 | 128 | `graveyardDust` |
-| 129 | `binkyhead` |
+| 129 | `binkyhead` → `witchery:binky_head` (places Binky) |
 | 130 | `nullcatalyst` |
 | 131 | `nullifiedleather` |
 | 132 | `boltStake` |
@@ -822,10 +822,10 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 114 | `POLTERGEIST` | `EntityPoltergeist` | `poltergeist` |
 | 115 | `BANSHEE` | `EntityBanshee` | `banshee` |
 | 116 | `SPIRIT` | `EntitySpirit` | `spirit` (Dream spawn, focus attraction, loot, structure guide) |
-| 117 | `DEATH` | `EntityDeath` | `death` |
+| 117 | `DEATH` | `EntityDeath` | `death` (hidden fetish rite, boss combat and reward drops) |
 | 118 | `CROSSBOW_BOLT` | `EntityBolt` | `bolt` |
 | 119 | `WITCH_HUNTER` | `EntityWitchHunter` | `witchhunter` |
-| 120 | `BINKY_HORSE` | `EntityDeathsHorse` | `deathhorse` |
+| 120 | `BINKY_HORSE` | `EntityDeathsHorse` | `deathhorse` (persistent tame mount, saddle and reusable skull) |
 | 121 | `LORD_OF_TORMENT` | `EntityLordOfTorment` | `lordoftorment` |
 | 122 | `SOULFIRE` | `EntitySoulfire` | `soulfire` |
 | 123 | `IMP` | `EntityImp` | `imp` (rite, ownership, gift progression, and power restored) |
@@ -1045,7 +1045,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 96 | 28 | `witchery.rite.summonreflection` |
 
 - Rites 6 and 7 are `witchery:rite_of_transposition_creature` and `witchery:rite_of_transposition_ores`. They use medium and large Otherwhere circles, respectively. The protocol 55 item-rite actions retain the required sacrifices and altar power. An active ore rite migrates legacy `Rituals`, `RitualStages` and `RitualCovens` and saves the completed layer as `OreDepth`.
-- The Scarecrow, Trent Effigy and Witch's Ladder retain their block entity IDs. The legacy `EffectTypeID` and item `WITCSpiritEffect` identify the active spirit enhancement. Effect 1 applies to carried Voodoo Protection against a forced summon and Death Protection against powered bolts within 16 blocks. Effects 2 through 5 drive Sentinel, Screamer, Twister and Ghost Walker using the alarm's Taglock list.
+- The Scarecrow, Trent Effigy and Witch's Ladder retain their block entity IDs. The legacy `EffectTypeID` and item `WITCSpiritEffect` identify the active spirit enhancement. Effect 1 applies to carried Voodoo Protection against a forced summon and Death Protection against powered bolts within 16 blocks. Effects 2 through 5 drive Sentinel, Screamer, Twister and Ghost Walker using the alarm's Taglock list. Effect 6 is the hidden Death encounter, checked last. It consumes five of each spectral undead species and creates no bound fetish.
 - Rite 82 uses `witchery:rite_of_necromancy_spectral_stone`. It consumes the Necromantic Stone and produces one blank `witchery:spectralstone`. Protocol 56 carries the explicit `consume_necromantic_stone` field and the Spirit's synchronized color.
 
 ## Prediction Registry (`PredictionManager`)

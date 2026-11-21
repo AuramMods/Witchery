@@ -112,6 +112,7 @@ public enum WitcheryIngredient {
     BREW_OF_THE_GRAVE(123, "brew_of_the_grave"),
     CONGEALED_SPIRIT(126, "congealed_spirit"),
     GRAVEYARD_DUST(128, "graveyard_dust"),
+    BINKY_HEAD(129, "binky_head"),
     NULL_CATALYST(130, "null_catalyst"),
     NULLIFIED_LEATHER(131, "nullified_leather"),
     STAKE_BOLT(132, "stake_bolt"),
@@ -177,7 +178,8 @@ public enum WitcheryIngredient {
             BrambleBlock.setWild(stack, stackTag.getInt("Damage") == 1);
             return stack;
         }
-        if ((stack.getItem() instanceof WitchClothingItem || stack.getItem() instanceof MoonCharmItem)
+        if ((stack.getItem() instanceof WitchClothingItem || stack.getItem() instanceof DeathClothingItem
+                || stack.getItem() instanceof MoonCharmItem)
                 && stackTag.contains("Damage", Tag.TAG_ANY_NUMERIC)) {
             stack.setDamageValue(Math.min(stackTag.getInt("Damage"), stack.getMaxDamage()));
             return stack;

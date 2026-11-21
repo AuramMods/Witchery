@@ -9,6 +9,7 @@ import art.arcane.witchery.brewing.WakingNightmareEffect;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.familiar.FamiliarBinding;
+import art.arcane.witchery.entity.DeathHorse;
 import art.arcane.witchery.entity.VillageGuard;
 import art.arcane.witchery.entity.VillageGuardRecruitment;
 import art.arcane.witchery.entity.WitcheryBolt;
@@ -18,6 +19,7 @@ import art.arcane.witchery.infusion.InfernalInfusion;
 import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.infusion.InfusedBrews;
 import art.arcane.witchery.infusion.OverworldInfusion;
+import art.arcane.witchery.item.DeathClothingItem;
 import art.arcane.witchery.item.DeathProtectionPoppetItem;
 import art.arcane.witchery.item.CaneSwordItem;
 import art.arcane.witchery.item.TaglockItem;
@@ -26,6 +28,7 @@ import art.arcane.witchery.item.VampiricPoppetItem;
 import art.arcane.witchery.item.GlassGobletItem;
 import art.arcane.witchery.item.HunterClothingItem;
 import art.arcane.witchery.item.HuntsmanSpearItem;
+import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.item.WolfsbaneFlowerItem;
 import art.arcane.witchery.lycanthropy.Lycanthropy;
 import art.arcane.witchery.lycanthropy.WerewolfVillagers;
@@ -61,8 +64,11 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
@@ -384,6 +390,18 @@ public final class WitcheryEventHooks {
     }
 
     @SubscribeEvent
+    public static void restoreLegacyBinkyDrop(LivingDropsEvent event) {
+        if (event.getEntity() instanceof AbstractHorse horse && !(horse instanceof DeathHorse)
+                && horse.getPersistentData().getBoolean("WITCIsBinky")) {
+            event.getDrops().clear();
+            var head = new ItemEntity(horse.level(), horse.getX(), horse.getY(), horse.getZ(),
+                    new ItemStack(WitcheryIngredient.BINKY_HEAD.item()));
+            head.setDefaultPickUpDelay();
+            event.getDrops().add(head);
+        }
+    }
+
+    @SubscribeEvent
     public static void showCaneReserve(ItemTooltipEvent event) {
         if (!(event.getItemStack().getItem() instanceof CaneSwordItem) || event.getEntity() == null) return;
         WitcheryPlayerDataProvider.get(event.getEntity()).ifPresent(data -> event.getToolTip().add(
@@ -405,6 +423,8 @@ public final class WitcheryEventHooks {
             event.getEntity().removeEffect(WitcheryEffects.PARALYSIS.get());
         }
         if (event.getEntity() instanceof ServerPlayer player) {
+            DeathClothingItem.protect(player, event);
+            if (event.isCanceled()) return;
             if (InfusionEnergy.type(player) == InfernalInfusion.ID) {
                 CreaturePower power = CreaturePower.forId(CreaturePower.activeId(player));
                 if (power != null) power.hurt(player, event);

@@ -1,6 +1,19 @@
 {
-   "parent" : "minecraft:item/generated",
-   "textures" : {
-      "layer0" : "witchery:item/deathshand"
-   }
+  "loader": "forge:separate_transforms",
+  "gui_light": "front",
+  "textures": {
+    "particle": "witchery:item/deathshand"
+  },
+  "base": {
+    "parent": "minecraft:item/generated",
+    "textures": {
+      "layer0": "witchery:item/deathshand"
+    }
+  },
+  "perspectives": {
+    "firstperson_righthand": {"parent": "witchery:item/deathshand_held"},
+    "firstperson_lefthand": {"parent": "witchery:item/deathshand_held"},
+    "thirdperson_righthand": {"parent": "witchery:item/deathshand_held"},
+    "thirdperson_lefthand": {"parent": "witchery:item/deathshand_held"}
+  }
 }

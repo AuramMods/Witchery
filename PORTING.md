@@ -628,7 +628,17 @@
 - [x] Verify Ghost Walker with the muted client through the sleeping brew, Dream portal and Rite of Manifestation. The red projection held the 150-second timer for over 20 seconds in range. After the player moved out of range, the timer resumed and dropped to 140.
 - [x] Break the Dream original in survival. Its Overworld projection disappeared, and the client recovered the red Ghost Walker with its enchantment and alarm setting.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 299 required Forge GameTests. New coverage includes resuming the binding rite, effect priority, migrated Taglock groups, the Sentinel's lifetime, Twister targeting and the carried ward against a powered bolt.
-- [ ] Restore the hidden Death combination and the Death encounter.
+- [x] Restore the hidden Death combination and the Death encounter.
+
+## Death and Binky (2026-11-20)
+
+- [x] Restore the hidden result of rites 84–86. After testing the five ordinary spirit effects in their original order, the rite accepts five Spectres, five Banshees and five Poltergeists for 6,000 power. It consumes those spirits and the fetish and returns the Necromantic Stone. A player in the same dimension wearing the three Death pieces and holding Death's Hand is summoned in place of the boss.
+- [x] Restore Death's model, boss bar, 1,000 health, gaze pursuit, projectile evasion, damage cap, regeneration, and scaled spectral touch. Use the modern Enderman's pursuit speed bonus with the legacy base speed of 0.3. Preserve the guaranteed skull, five bones, enchanted book and one reward roll. The separate 25% roll yields Death's Spare Sword.
+- [x] Restore Death's Hand, Deathscowl, Deathsrobe and Deathsfeet. The original three-piece set enables scythe deployment and caps incoming damage with the hand held. The deployed scythe drains hunger and recovers food and health from nearby hits. The cowl slows targets and grants night vision, the robe wards fire, and the boots lift the wearer in liquids. The equipment uses the original models and textures.
+- [x] Restore Binky's Skull and legacy ingredient subtype 129. It places a tame, persistent skeletal mount with speed 0.3. Binky can wear a saddle and drops its reusable skull on death. Legacy horses marked `WITCIsBinky` retain that drop.
+- [x] On a muted survival client, toss the offerings and activate both versions of the hidden rite. The fixture gathered the offerings at the heart and supplied the spectral creatures. The first rite produced one 1,000-health Death. Death dodged a bow shot and kept its UUID and health across a dedicated restart. A survival sword hit finished the fight after fixture health reduction. The player collected a skull, five bones, a Piercing III book and Deathscowl.
+- [x] In the same client, deploy the scythe and hit two husks with one strike. Verify hunger drain, Slowness III from the cowl and the robe's fire protection. The second rite pulled the fully equipped player to the heart. A supplied Binky's Skull placed a tame mount, and the client saddled it and rode it.
+- [x] Run Java 17 data generation, JAR reobfuscation and all 303 required Forge GameTests. The new tests cover a reloaded rite, the 15-damage cap, regeneration and reward drops, scythe damage and recovery, armor durability and fire protection, and Binky's saved state.
 
 ## Auram Pack Validation (2026-11-20)
 

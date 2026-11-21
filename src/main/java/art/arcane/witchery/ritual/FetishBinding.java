@@ -4,9 +4,12 @@ import art.arcane.witchery.block.FetishBlock;
 import art.arcane.witchery.block.entity.FetishEffect;
 import art.arcane.witchery.entity.DreamSpirit;
 import art.arcane.witchery.entity.SpectralUndead;
+import art.arcane.witchery.item.DeathClothingItem;
+import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -40,13 +43,9 @@ public final class FetishBinding {
         for (FetishEffect effect : FetishEffect.values()) {
             if (spirits.size() < effect.spirits || spectres.size() < effect.spectres || banshees.size() < effect.banshees
                     || poltergeists.size() < effect.poltergeists) continue;
-            ItemStack result = offering.copyWithCount(1);
-            result.getOrCreateTag().putInt("WITCSpiritEffect", effect.id);
-            var data = result.getTagElement("TileData");
-            if (data != null) data.putInt("EffectTypeID", effect.id);
-            var drop = new ItemEntity(level, center.x, center.y + 1.5, center.z, result, 0, 0.3, 0);
-            drop.setDefaultPickUpDelay();
-            if (!level.addFreshEntity(drop)) return false;
+            boolean delivered = effect == FetishEffect.DEATH
+                    ? callDeath(level, pos, center) : dropBoundFetish(level, center, offering, effect);
+            if (!delivered) return false;
 
             List<LivingEntity> selected = new ArrayList<>();
             selected.addAll(spirits.subList(0, effect.spirits));
@@ -61,5 +60,31 @@ public final class FetishBinding {
             return true;
         }
         return false;
+    }
+
+    private static boolean dropBoundFetish(ServerLevel level, Vec3 center, ItemStack offering, FetishEffect effect) {
+        ItemStack result = offering.copyWithCount(1);
+        result.getOrCreateTag().putInt("WITCSpiritEffect", effect.id);
+        var data = result.getTagElement("TileData");
+        if (data != null) data.putInt("EffectTypeID", effect.id);
+        var drop = new ItemEntity(level, center.x, center.y + 1.5, center.z, result, 0, 0.3, 0);
+        drop.setDefaultPickUpDelay();
+        return level.addFreshEntity(drop);
+    }
+
+    private static boolean callDeath(ServerLevel level, BlockPos pos, Vec3 center) {
+        ServerPlayer wearer = level.getPlayers(player -> player.isAlive() && !player.isSpectator()
+                && DeathClothingItem.armed(player)).stream().findFirst().orElse(null);
+        if (wearer != null) {
+            wearer.teleportTo(level, center.x, center.y + 0.1, center.z, wearer.getYRot(), wearer.getXRot());
+        } else {
+            var death = WitcheryEntities.DEATH.get().create(level);
+            if (death == null) return false;
+            death.moveTo(center.x, center.y + 0.1, center.z, 0, 0);
+            if (!level.addFreshEntity(death)) return false;
+        }
+        level.sendParticles(ParticleTypes.INSTANT_EFFECT, center.x, center.y + 1, center.z, 16, 0.5, 0.75, 0.5, 0);
+        level.playSound(null, pos, SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 1, 1);
+        return true;
     }
 }

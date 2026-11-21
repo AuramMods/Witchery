@@ -22,7 +22,8 @@ public enum FetishEffect {
     SENTINEL(2, "sentinel", 8, 600, 3, 3, 0, 0),
     SCREAMER(3, "screamer", 16, 0, 3, 0, 2, 0),
     TWISTER(4, "twister", 8, 10, 3, 0, 0, 2),
-    GHOST_WALKER(5, "ghost_walker", 8, 0, 3, 1, 1, 0);
+    GHOST_WALKER(5, "ghost_walker", 8, 0, 3, 1, 1, 0),
+    DEATH(6, "death", 0, 0, 0, 5, 5, 5);
 
     public final int id;
     public final String key;
@@ -54,7 +55,7 @@ public enum FetishEffect {
 
     void activate(ServerLevel level, BlockPos pos, boolean quiet, List<LivingEntity> intruders) {
         switch (this) {
-            case ENHANCED_POPPETS -> { }
+            case ENHANCED_POPPETS, DEATH -> { }
             case SENTINEL -> {
                 int count = intruders.size() == 1 ? 2 : 1;
                 for (LivingEntity intruder : intruders) {
