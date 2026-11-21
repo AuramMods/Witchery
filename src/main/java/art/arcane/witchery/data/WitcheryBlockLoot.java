@@ -10,6 +10,7 @@ import art.arcane.witchery.block.DreamWeave;
 import art.arcane.witchery.block.entity.LeechSamples;
 import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.block.WitchCropBlock;
+import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.block.WolfHeadBlock;
 import art.arcane.witchery.item.WitcheryIngredient;
@@ -79,6 +80,12 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                                 .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
                                         .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(BedBlock.PART, BedPart.FOOT)))))));
                 case "witchsapling", "witchlog", "witchwood" -> dropWitchWood(block);
+                case "wickerbundle" -> add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1)).add(LootItem.lootTableItem(block)
+                                .apply(CopyBlockState.copyState(block).copy(WickerBundleBlock.BUNDLE_TYPE)
+                                        .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block).setProperties(
+                                                StatePropertiesPredicate.Builder.properties()
+                                                        .hasProperty(WickerBundleBlock.BUNDLE_TYPE, WickerBundleBlock.Type.BLOODIED))))))));
                 case "crittersnare" -> dropCritterSnare(block);
                 case "wolftrap" -> add(block, LootTable.lootTable());
                 case "wolfhead" -> add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool()

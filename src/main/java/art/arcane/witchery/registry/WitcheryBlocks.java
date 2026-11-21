@@ -1,6 +1,7 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.block.PlantMineBlock;
+import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.BarrierBlock;
 import art.arcane.witchery.block.PoppetShelfBlock;
@@ -152,7 +153,7 @@ public final class WitcheryBlocks {
             case "witchwood" -> new LegacyWitchWoodVariantBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS));
             case "witchleaves" -> new WitchLeavesBlock(BlockBehaviour.Properties.copy(Blocks.OAK_LEAVES));
             case "witchsapling" -> new WitchSaplingBlock(BlockBehaviour.Properties.copy(Blocks.OAK_SAPLING));
-            case "wickerbundle" -> new LegacyWickerBundleBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS));
+            case "wickerbundle" -> new WickerBundleBlock();
             case "shadedglass" -> new LegacyShadedGlassBlock(false);
             case "shadedglass_active" -> new LegacyShadedGlassBlock(true);
             case "bloodrose" -> new BloodRoseBlock();
@@ -407,21 +408,6 @@ public final class WitcheryBlocks {
         }
     }
 
-    private static final class LegacyWickerBundleBlock extends Block {
-        private static final EnumProperty<LegacyWickerBundleType> BUNDLE_TYPE =
-                EnumProperty.create("bundle_type", LegacyWickerBundleType.class);
-
-        private LegacyWickerBundleBlock(BlockBehaviour.Properties properties) {
-            super(properties);
-            registerDefaultState(defaultBlockState().setValue(BUNDLE_TYPE, LegacyWickerBundleType.PLAIN));
-        }
-
-        @Override
-        protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-            builder.add(BUNDLE_TYPE);
-        }
-    }
-
     private static final class LegacyShadedGlassBlock extends Block {
         private static final EnumProperty<LegacyShadedGlassColor> COLOR =
                 EnumProperty.create("color", LegacyShadedGlassColor.class);
@@ -436,22 +422,6 @@ public final class WitcheryBlocks {
         @Override
         protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
             builder.add(COLOR);
-        }
-    }
-
-    private enum LegacyWickerBundleType implements StringRepresentable {
-        PLAIN("plain"),
-        BLOODIED("bloodied");
-
-        private final String serializedName;
-
-        LegacyWickerBundleType(String serializedName) {
-            this.serializedName = serializedName;
-        }
-
-        @Override
-        public String getSerializedName() {
-            return serializedName;
         }
     }
 

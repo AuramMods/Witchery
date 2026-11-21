@@ -1,0 +1,12 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "medium", "glyph": "witchery:circleglyphritual"}],
+  "sacrifices": [
+    {"type": "forge:partial_nbt","item": "witchery:witchsapling","nbt": {"BlockStateTag": {"wood_type": "alder"}}},
+    {"type": "forge:difference","base": {"item": "witchery:wickerbundle"},"subtracted": {"type": "forge:partial_nbt","item": "witchery:wickerbundle","nbt": {"BlockStateTag": {"bundle_type": "bloodied"}}}},
+    {"item": "witchery:brew_of_sprouting"},
+    {"item": "witchery:ent_branch"}
+  ],
+  "power": 4000,
+  "action": "forestation"
+}

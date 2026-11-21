@@ -4,6 +4,7 @@ import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.block.BrewDispersalBlock;
 import art.arcane.witchery.block.CursedControls;
 import art.arcane.witchery.block.PlantMineBlock;
+import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.item.BrewBottleItem;
@@ -36,6 +37,11 @@ public final class WitcheryCreativeTabs {
                             for (PlantMineBlock.Variant variant : PlantMineBlock.Variant.values()) {
                                 output.accept(variant.stack(mine));
                             }
+                        } else if (entry.get() instanceof WickerBundleBlock.Item wicker) {
+                            output.accept(wicker);
+                            var bloodied = new ItemStack(wicker);
+                            WickerBundleBlock.markBloodied(bloodied);
+                            output.accept(bloodied);
                         } else if (entry.get() instanceof BrambleBlock.Item bramble) {
                             output.accept(bramble);
                             var ender = new ItemStack(bramble);

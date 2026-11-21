@@ -1,6 +1,6 @@
 package art.arcane.witchery.block.entity;
 
-import art.arcane.witchery.ritual.GlyphicTransformation;
+import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.RiteHeartBlock;
 import art.arcane.witchery.brewing.WakingNightmareEffect;
 import art.arcane.witchery.config.WitcheryServerConfig;
@@ -28,7 +28,9 @@ import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryRecipes;
 import art.arcane.witchery.ritual.FetishBinding;
+import art.arcane.witchery.ritual.GlyphicTransformation;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
+import art.arcane.witchery.ritual.LandscapeRites;
 import art.arcane.witchery.ritual.RiteOfTransposition;
 import art.arcane.witchery.vampirism.Vampirism;
 import art.arcane.witchery.world.DreamTravel;
@@ -61,6 +63,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 
 public final class RiteHeartBlockEntity extends BlockEntity {
@@ -86,6 +90,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     private int covenSummoned;
     private boolean recharging;
     private int oreDepth;
+    @Nullable private LandscapeRites.Progress landscape;
 
     public RiteHeartBlockEntity(BlockPos pos, BlockState state) {
         super(WitcheryBlockEntities.CIRCLE.get(), pos, state);
@@ -104,10 +109,12 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         }
         heart.updateActiveState(server);
         if (heart.activeRite != null) {
-            int interval = heart.oreDepth > 0 ? RiteOfTransposition.ORE_PULSE_TICKS : STEP_TICKS;
+            int interval = heart.landscape != null ? heart.landscape.interval()
+                    : heart.oreDepth > 0 ? RiteOfTransposition.ORE_PULSE_TICKS : STEP_TICKS;
             if (++heart.stepTicks >= interval) {
                 heart.stepTicks = 0;
-                if (heart.oreDepth > 0) heart.transposeOreLayer(server);
+                if (heart.landscape != null) heart.advanceLandscape(server);
+                else if (heart.oreDepth > 0) heart.transposeOreLayer(server);
                 else heart.advance(server);
             }
             level.blockEntityChanged(pos);
@@ -321,6 +328,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             abort(level, "message.witchery.rite.missing_power");
             return;
         }
+        if (rite.action().shapesLandscape() && !prepareLandscape(level, rite)) return;
         if (rite.action() == ItemRiteRecipe.Action.BIND_SPECTRAL_STONE && !SpectralStoneItem.bindFromCircle(level, pos)) {
             abort(level, "message.witchery.rite.no_spectral_creature");
             return;
@@ -401,6 +409,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         sacrificed.clear();
         if (rite.action() == ItemRiteRecipe.Action.TRANSPOSE_ORES) {
             transposeOreLayer(level);
+        } else if (landscape != null) {
+            advanceLandscape(level);
         } else if (rite.action() == ItemRiteRecipe.Action.RECHARGE_INFUSION) {
             recharging = true;
             setChanged();
@@ -414,6 +424,49 @@ public final class RiteHeartBlockEntity extends BlockEntity {
 
     private void transposeOreLayer(ServerLevel level) {
         if (!RiteOfTransposition.transposeOreLayer(level, getBlockPos(), ++oreDepth, covenSize)) clear(level);
+    }
+
+    private boolean prepareLandscape(ServerLevel level, ItemRiteRecipe rite) {
+        BlockPos heart = getBlockPos();
+        BlockPos target = heart;
+        ItemRiteRecipe.Offering stone = rite.findLocationOffering(level, heart);
+        if (stone != null) {
+            target = WaystoneItem.location(stone.stack()).position();
+            sacrificed.add(new Sacrifice(stone.stack().copyWithCount(1), stone.grassper()));
+            stone.consume().run();
+        }
+        if (!LandscapeRites.canReach(level, heart, target, covenSize)) {
+            abort(level, "message.witchery.rite.landscape_too_far");
+            return false;
+        }
+        LandscapeRites.Species species = null;
+        if (rite.action() == ItemRiteRecipe.Action.FORESTATION) {
+            species = sacrificed.stream().map(offering -> LandscapeRites.Species.forStack(offering.stack()))
+                    .filter(Objects::nonNull).findFirst().orElse(null);
+            if (species == null) {
+                abort(level, "message.witchery.rite.missing_ingredient");
+                return false;
+            }
+        } else {
+            if (!LandscapeRites.hasLavaBelow(level, target)) {
+                abort(level, "message.witchery.rite.missing_lava");
+                return false;
+            }
+            LandscapeRites.startVolcano(level, target);
+        }
+        landscape = new LandscapeRites.Progress(species, target, 0);
+        return true;
+    }
+
+    private void advanceLandscape(ServerLevel level) {
+        BlockPos heart = getBlockPos();
+        if (!LandscapeRites.canReach(level, heart, landscape.target(), covenSize)) {
+            clear(level);
+            return;
+        }
+        ServerPlayer caster = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
+        landscape = LandscapeRites.pulse(level, heart, landscape, covenSize, caster);
+        if (landscape == null) clear(level);
     }
 
     private static void finishVampireCure(ServerLevel level, BlockPos pos, ServerPlayer vampire) {
@@ -542,6 +595,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         covenSummoned = 0;
         recharging = false;
         oreDepth = 0;
+        landscape = null;
         updateActiveState(level);
         setChanged();
     }
@@ -578,21 +632,39 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         }
         oreDepth = activeRite != null && !recharging
                 ? Mth.clamp(tag.getInt("OreDepth"), 0, RiteOfTransposition.oreDepthLimit(covenSize) - 1) : 0;
-        if (activeRite == null) loadLegacyOreRite(tag);
+        landscape = activeRite == null ? null : LandscapeRites.Progress.load(tag.getCompound("Landscape"), covenSize);
+        if (landscape != null) stepTicks = Math.min(stepTicks, landscape.interval() - 1);
+        if (activeRite == null) loadLegacyUpkeep(tag);
     }
 
-    private void loadLegacyOreRite(CompoundTag tag) {
+    private void loadLegacyUpkeep(CompoundTag tag) {
         byte[] rites = tag.getByteArray("Rituals");
         byte[] stages = tag.getByteArray("RitualStages");
         byte[] covens = tag.getByteArray("RitualCovens");
         for (int index = 0; index < Math.min(rites.length, stages.length); index++) {
-            if (rites[index] != 7 || stages[index] <= 0) continue;
+            int rite = rites[index];
+            int stage = stages[index];
+            if (stage <= 0) continue;
             int members = index < covens.length ? Mth.clamp(covens[index], 0, CovenWitch.MAX_MEMBERS) : 0;
-            if (stages[index] >= RiteOfTransposition.oreDepthLimit(members)) continue;
-            activeRite = RiteOfTransposition.ORE_RECIPE;
+            if (rite == 7) {
+                if (stage >= RiteOfTransposition.oreDepthLimit(members)) continue;
+                activeRite = RiteOfTransposition.ORE_RECIPE;
+                oreDepth = stage;
+            } else {
+                LandscapeRites.Species species = LandscapeRites.Species.forLegacyRite(rite);
+                if (species == null && rite != 77) continue;
+                var position = tag.getList("Locations", Tag.TAG_COMPOUND).getCompound(index);
+                BlockPos target = position.contains("posX", Tag.TAG_ANY_NUMERIC)
+                        && position.contains("posY", Tag.TAG_ANY_NUMERIC) && position.contains("posZ", Tag.TAG_ANY_NUMERIC)
+                        ? new BlockPos(position.getInt("posX"), position.getInt("posY"), position.getInt("posZ")) : getBlockPos();
+                var progress = new LandscapeRites.Progress(species, target, stage);
+                if (stage >= progress.lastStage(members)) continue;
+                activeRite = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, species == null ? "rite_of_raising_a_volcano"
+                        : "forestation/" + species.name().toLowerCase(Locale.ROOT));
+                landscape = progress;
+            }
             covenSize = members;
             covenSummoned = members;
-            oreDepth = stages[index];
             return;
         }
     }
@@ -604,6 +676,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             tag.putString("Rite", activeRite.toString());
             tag.putInt("StepTicks", stepTicks);
             if (oreDepth > 0) tag.putInt("OreDepth", oreDepth);
+            if (landscape != null) tag.put("Landscape", landscape.save());
             if (recharging) tag.putBoolean("Recharging", true);
             if (covenSize > 0) {
                 tag.putInt("CovenSize", covenSize);

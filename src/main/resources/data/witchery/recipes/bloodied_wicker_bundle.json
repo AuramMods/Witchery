@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["WBW", "WWW"],
+  "key": {
+    "W": {
+      "type": "forge:difference",
+      "base": {"item": "witchery:wickerbundle"},
+      "subtracted": {"type": "forge:partial_nbt", "item": "witchery:wickerbundle", "nbt": {"BlockStateTag": {"bundle_type": "bloodied"}}}
+    },
+    "B": {"item": "witchery:infernal_blood"}
+  },
+  "result": {"item": "witchery:wickerbundle", "count": 5, "nbt": {"BlockStateTag": {"bundle_type": "bloodied"}}}
+}

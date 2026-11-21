@@ -293,7 +293,13 @@
 - [x] In fresh survival on the packaged server, craft Dandelions of Webs, plant one, recover it with the Boline, and walk into a second armed plant to release cobwebs.
 - [x] Restore the Rite of Glyphic Transformation. Gypsum, an Arthana, and 1,000 power recolor the chosen ring while preserving its glyph patterns. One, two, or three unused chalk sticks of one color select the small, medium, or large ring. The rite consumes one stick.
 - [x] Save the active rite after its first offering. On restart, all 28 glyphs in the medium ring changed to Otherwhere Chalk and kept their patterns. The separate white glyph, the second chalk stick, and the armed Dandelion of Webs survived. Data generation, JAR reobfuscation, and all 323 required Forge GameTests passed.
-- [ ] Restore the Rites of Forestation and the other landscape-changing circle rites.
+- [x] Restore plain and Bloodied Wicker Bundle crafting, fire behavior, saved item variants, and drops that preserve the bloodied state.
+- [x] Restore the seven Rites of Forestation. The medium white ring uses one of the seven original saplings, plain Wicker Bundle, Brew of Sprouting, an Ent Branch, and 4,000 altar power. It plants and grows the chosen species with the original coven range and duration bonuses.
+- [x] Restore the Rite of Raising a Volcano. The small Infernal ring uses Cobblestone, Magma Cream, an unworn Golden Sword, and 2,000 altar power. A lava reservoir enables a staged cone and eruption. The rite preserves containers and unbreakable blocks.
+- [x] Restore optional same-dimension Waystone targeting for both rites. A valid bound stone is consumed on success. Targets begin within 50 blocks and each coven member adds another 50. Out-of-range and dry volcano attempts refund offerings after the altar charge.
+- [x] In the muted survival client, craft the Wicker Bundle from supplied saplings, bind a Waystone through a prepared Otherwhere glyph ring, and activate the Alder rite. After a dedicated restart at pulse 15, 53 alder trunks grew at ground level in the target area.
+- [x] Activate a separate Waystone-targeted volcano with a prepared lava reservoir. The dedicated server saved pulse four and resumed to a full cone with a persistent summit source and an open shaft. The remote Heart Glyph and an emerald in a chest inside the cone survived. Data generation, JAR reobfuscation, and all 328 required Forge GameTests passed.
+- [ ] Restore the remaining landscape-changing rites and the Bloodied Wicker Man's summons.
 
 ## Familiar Brews and Baba Yaga (2026-11-20)
 

@@ -3,6 +3,8 @@ package art.arcane.witchery.ritual;
 import art.arcane.witchery.block.RitualGlyphBlock;
 import art.arcane.witchery.block.entity.GrassperBlockEntity;
 import art.arcane.witchery.item.SpectralStoneItem;
+import art.arcane.witchery.item.WaystoneItem;
+import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryRecipes;
 import art.arcane.witchery.world.WitcheryDimensions;
 import com.google.gson.JsonArray;
@@ -20,6 +22,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -67,7 +70,13 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         BIND_SPECTRAL_STONE,
         BIND_FETISH,
         SUMMON_REFLECTION,
-        GLYPHIC_TRANSFORMATION
+        GLYPHIC_TRANSFORMATION,
+        FORESTATION,
+        RAISE_VOLCANO;
+
+        public boolean shapesLandscape() {
+            return this == FORESTATION || this == RAISE_VOLCANO;
+        }
     }
 
     public record Ring(RitualCircle pattern, Block glyph) {
@@ -82,6 +91,9 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
 
     @Nullable
     public String startFailure(ServerLevel level) {
+        if (action.shapesLandscape() && level.dimension().equals(WitcheryDimensions.DREAM)) {
+            return "message.witchery.rite.landscape_dream";
+        }
         if ((action == Action.TRANSPOSE_CREATURE || action == Action.TRANSPOSE_ORES)
                 && level.dimension().equals(WitcheryDimensions.DREAM)) return "message.witchery.rite.transpose_dream";
         if (nightOnly && !level.isNight()) return "message.witchery.rite.night_only";
@@ -102,6 +114,38 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
 
     @Nullable
     public List<Offering> findSacrifices(ServerLevel level, BlockPos pos, int first) {
+        List<Offering> items = nearbyOfferings(level, pos);
+        if (action == Action.BIND_SPECTRAL_STONE) {
+            items.removeIf(offering -> offering.stack().getItem() instanceof SpectralStoneItem
+                    && SpectralStoneItem.typeId(offering.stack()) != 0);
+        } else if (action == Action.RAISE_VOLCANO) {
+            items.removeIf(offering -> offering.stack().is(Items.GOLDEN_SWORD) && offering.stack().isDamaged());
+        }
+        List<Ingredient> required = sacrifices.subList(first, sacrifices.size());
+        int[] owners = new int[items.size()];
+        int[] assigned = new int[required.size()];
+        Arrays.fill(owners, -1);
+        for (int ingredient = 0; ingredient < required.size(); ingredient++) {
+            if (!assign(ingredient, required, items, owners, assigned, new boolean[items.size()])) {
+                return null;
+            }
+        }
+        return Arrays.stream(assigned).mapToObj(items::get).toList();
+    }
+
+    @Nullable
+    public Offering findLocationOffering(ServerLevel level, BlockPos pos) {
+        for (Offering offering : nearbyOfferings(level, pos)) {
+            if (offering.stack().is(WitcheryIngredient.BOUND_WAYSTONE.item())) {
+                var location = WaystoneItem.location(offering.stack());
+                if (location != null && location.dimension().equals(level.dimension())) return offering;
+                return null;
+            }
+        }
+        return null;
+    }
+
+    private List<Offering> nearbyOfferings(ServerLevel level, BlockPos pos) {
         int radius = rings.stream().mapToInt(ring -> ring.pattern.sacrificeRadius()).max().orElse(4);
         AABB area = new AABB(pos).inflate(radius, 0, radius);
         double x = pos.getX() + 0.5;
@@ -121,20 +165,7 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                         grassper.getBlockPos(), () -> grassper.removeItem(0, 1)));
             }
         }
-        if (action == Action.BIND_SPECTRAL_STONE) {
-            items.removeIf(offering -> offering.stack().getItem() instanceof SpectralStoneItem
-                    && SpectralStoneItem.typeId(offering.stack()) != 0);
-        }
-        List<Ingredient> required = sacrifices.subList(first, sacrifices.size());
-        int[] owners = new int[items.size()];
-        int[] assigned = new int[required.size()];
-        Arrays.fill(owners, -1);
-        for (int ingredient = 0; ingredient < required.size(); ingredient++) {
-            if (!assign(ingredient, required, items, owners, assigned, new boolean[items.size()])) {
-                return null;
-            }
-        }
-        return Arrays.stream(assigned).mapToObj(items::get).toList();
+        return items;
     }
 
     private static boolean assign(int ingredient, List<Ingredient> required, List<Offering> items,
@@ -234,6 +265,8 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                 case "summon_imp" -> Action.SUMMON_IMP;
                 case "summon_reflection" -> Action.SUMMON_REFLECTION;
                 case "glyphic_transformation" -> Action.GLYPHIC_TRANSFORMATION;
+                case "forestation" -> Action.FORESTATION;
+                case "raise_volcano" -> Action.RAISE_VOLCANO;
                 case "infuse_overworld" -> Action.INFUSE_OVERWORLD;
                 case "recharge_infusion" -> Action.RECHARGE_INFUSION;
                 case "infuse_infernal" -> Action.INFUSE_INFERNAL;

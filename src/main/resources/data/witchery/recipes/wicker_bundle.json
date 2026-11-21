@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["SSS", "SSS", "SSS"],
+  "key": {"S": [{"tag": "minecraft:saplings"}, {"item": "witchery:witchsapling"}]},
+  "result": {"item": "witchery:wickerbundle"}
+}

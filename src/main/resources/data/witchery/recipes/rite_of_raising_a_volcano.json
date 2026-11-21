@@ -1,0 +1,11 @@
+{
+  "type": "witchery:item_rite",
+  "circles": [{"size": "small", "glyph": "witchery:circleglyphinfernal"}],
+  "sacrifices": [
+    {"item": "minecraft:cobblestone"},
+    {"item": "minecraft:magma_cream"},
+    {"item": "minecraft:golden_sword"}
+  ],
+  "power": 2000,
+  "action": "raise_volcano"
+}
