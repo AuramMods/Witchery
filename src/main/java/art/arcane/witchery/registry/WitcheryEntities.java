@@ -23,6 +23,7 @@ import art.arcane.witchery.entity.LordOfTorment;
 import art.arcane.witchery.entity.Lilith;
 import art.arcane.witchery.entity.WitcheryFollower;
 import art.arcane.witchery.entity.Mandrake;
+import art.arcane.witchery.entity.MirrorFace;
 import art.arcane.witchery.entity.Nightmare;
 import art.arcane.witchery.entity.Reflection;
 import art.arcane.witchery.entity.ScryEye;
@@ -92,6 +93,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<Reflection>> REFLECTION =
             ENTITY_TYPES.register("reflection", () -> EntityType.Builder.of(Reflection::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.8F).fireImmune().clientTrackingRange(8).build(Witchery.MODID + ":reflection"));
+    public static final RegistryObject<EntityType<MirrorFace>> MIRROR_FACE =
+            ENTITY_TYPES.register("mirrorface", () -> EntityType.Builder.of(MirrorFace::new, MobCategory.MISC)
+                    .sized(0.5F, 0.5F).fireImmune().clientTrackingRange(8).build(Witchery.MODID + ":mirrorface"));
     public static final RegistryObject<EntityType<LordOfTorment>> LORD_OF_TORMENT =
             ENTITY_TYPES.register("lordoftorment", () -> EntityType.Builder.of(LordOfTorment::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.9F).fireImmune().clientTrackingRange(10).build(Witchery.MODID + ":lordoftorment"));
@@ -208,6 +212,7 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("poltergeist", POLTERGEIST);
         LEGACY_ENTITIES.put("ent", ENT);
         LEGACY_ENTITIES.put("reflection", REFLECTION);
+        LEGACY_ENTITIES.put("mirrorface", MIRROR_FACE);
         LEGACY_ENTITIES.put("lordoftorment", LORD_OF_TORMENT);
         LEGACY_ENTITIES.put("cat", WITCH_CAT);
         LEGACY_ENTITIES.put("owl", OWL);
@@ -288,6 +293,7 @@ public final class WitcheryEntities {
                     : entry == DEMON ? Demon.attributes()
                     : entry == ENT ? Ent.attributes()
                     : entry == REFLECTION ? Reflection.attributes()
+                    : entry == MIRROR_FACE ? Mob.createMobAttributes()
                     : entry == LORD_OF_TORMENT ? LordOfTorment.attributes()
                     : entry == COVEN_WITCH ? CovenWitch.attributes()
                     : entry == BABA_YAGA ? BabaYaga.attributes()

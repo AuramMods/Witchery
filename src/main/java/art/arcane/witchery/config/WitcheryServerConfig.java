@@ -21,6 +21,7 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.IntValue DECURSE_DIRECTED_RADIUS;
     public static final ForgeConfigSpec.IntValue DECURSE_TELEPORT_RADIUS;
     public static final ForgeConfigSpec.BooleanValue SHRINK_MIRROR_WORLD;
+    public static final ForgeConfigSpec.DoubleValue FAIREST_SPAWN_CHANCE;
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -62,6 +63,9 @@ public final class WitcheryServerConfig {
                 .comment("Generate eight chamber tiers in new Mirror chunks. Existing chambers and links are preserved.")
                 .worldRestart()
                 .define("shrinkMirrorWorld", false);
+        FAIREST_SPAWN_CHANCE = builder
+                .comment("Chance that a Mirror introduces a new Fairest during an eligible conversation.")
+                .defineInRange("newFairestOfThemAllSpawnChance", 0.01, 0.01, 1.0);
         SPEC = builder.build();
     }
 

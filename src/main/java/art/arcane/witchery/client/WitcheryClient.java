@@ -90,6 +90,7 @@ import art.arcane.witchery.client.renderer.SpectralUndeadRenderer;
 import art.arcane.witchery.client.renderer.PlacedItemRenderer;
 import art.arcane.witchery.client.renderer.PoppetShelfRenderer;
 import art.arcane.witchery.client.renderer.ReflectionRenderer;
+import art.arcane.witchery.client.renderer.MirrorFaceRenderer;
 import art.arcane.witchery.client.renderer.SleepingBodyRenderer;
 import art.arcane.witchery.client.renderer.SpinningWheelRenderer;
 import art.arcane.witchery.client.renderer.SymbolProjectileRenderer;
@@ -195,6 +196,7 @@ public final class WitcheryClient {
         event.registerLayerDefinition(GrotesqueLayer.LAYER, GrotesqueLayer::layer);
         event.registerLayerDefinition(GrassperRenderer.LAYER, GrassperRenderer::layer);
         event.registerLayerDefinition(MirrorBlockRenderer.LAYER, MirrorBlockRenderer::layer);
+        event.registerLayerDefinition(MirrorFaceRenderer.LAYER, MirrorFaceRenderer::layer);
         event.registerLayerDefinition(DemonHeartRenderer.LAYER, DemonHeartRenderer::layer);
         event.registerLayerDefinition(DreamCatcherRenderer.LAYER, DreamCatcherRenderer::layer);
         event.registerLayerDefinition(FetishRenderer.SCARECROW, FetishRenderer::scarecrowLayer);
@@ -280,6 +282,7 @@ public final class WitcheryClient {
         event.registerBlockEntityRenderer(WitcheryBlockEntities.CRYSTAL_BALL.get(), CrystalBallRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.COVEN_WITCH.get(), CovenWitchRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.REFLECTION.get(), ReflectionRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.MIRROR_FACE.get(), MirrorFaceRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SLEEPING_BODY.get(), SleepingBodyRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.THROWN_BREW.get(), BrewProjectileRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.GRENADE.get(), ThrownItemRenderer::new);

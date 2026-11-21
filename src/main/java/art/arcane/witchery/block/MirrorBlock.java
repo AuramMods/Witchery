@@ -1,12 +1,18 @@
 package art.arcane.witchery.block;
 
 import art.arcane.witchery.block.entity.MirrorBlockEntity;
+import art.arcane.witchery.entity.MirrorFace;
+import art.arcane.witchery.item.TaglockItem;
+import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.world.MirrorTravel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -29,6 +35,7 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
@@ -73,8 +80,21 @@ public final class MirrorBlock extends BaseEntityBlock {
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return !unbreakable || level.isClientSide() || state.getValue(HALF) != DoubleBlockHalf.UPPER ? null
-                : createTickerHelper(type, WitcheryBlockEntities.ROOM_MIRROR.get(), MirrorTravel::tickRoom);
+        if (level.isClientSide() || state.getValue(HALF) != DoubleBlockHalf.UPPER) return null;
+        return unbreakable ? createTickerHelper(type, WitcheryBlockEntities.ROOM_MIRROR.get(), MirrorTravel::tickRoom)
+                : createTickerHelper(type, WitcheryBlockEntities.MIRROR.get(), MirrorBlockEntity::tickMirror);
+    }
+
+    @Override
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+                                 BlockHitResult hit) {
+        ItemStack stack = player.getItemInHand(hand);
+        if (!unbreakable && !(stack.getItem() instanceof TaglockItem) && !stack.is(WitcheryIngredient.QUARTZ_SPHERE.item())
+                && level instanceof ServerLevel server && player instanceof ServerPlayer speaker) {
+            MirrorBlockEntity mirror = upperEntity(server, pos, state);
+            if (mirror != null) mirror.ask(server, speaker);
+        }
+        return InteractionResult.sidedSuccess(level.isClientSide());
     }
 
     public boolean placePair(Level level, BlockPos upper, Direction facing) {
@@ -156,7 +176,7 @@ public final class MirrorBlock extends BaseEntityBlock {
 
     @Override
     public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-        if (!(level instanceof ServerLevel server)
+        if (!(level instanceof ServerLevel server) || entity instanceof MirrorFace
                 || entity instanceof LivingEntity && entity.getDirection() != state.getValue(FACING).getOpposite()
                 || !panel(state.getValue(FACING), 5.12).bounds().move(pos).intersects(entity.getBoundingBox())) {
             return;

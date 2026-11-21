@@ -13,6 +13,8 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -21,12 +23,10 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
 import java.util.UUID;
 
 public final class MirrorBlockEntity extends BlockEntity {
-    private static final List<String> LEGACY_DETAILS = List.of("Favorite", "Fairest", "PlayersSeen", "LastFairestSpawnTime");
-    private final CompoundTag legacyDetails = new CompoundTag();
+    private final MirrorConversation conversation = new MirrorConversation();
     @Nullable private GlobalPos counterpart;
     @Nullable private UUID connectionId;
     private boolean connected;
@@ -62,6 +62,18 @@ public final class MirrorBlockEntity extends BlockEntity {
         return demonSlain;
     }
 
+    public void ask(ServerLevel level, ServerPlayer player) {
+        if (!demonSlain && !level.dimension().equals(WitcheryDimensions.MIRROR)
+                && conversation.ask(level, worldPosition, facing(), player)) setChanged();
+    }
+
+    public static void tickMirror(Level level, BlockPos pos, BlockState state, MirrorBlockEntity mirror) {
+        if (level instanceof ServerLevel server && !mirror.demonSlain && !server.dimension().equals(WitcheryDimensions.MIRROR)
+                && server.getGameTime() % 40 == 1 && mirror.conversation.rememberVisitors(server, pos, mirror.facing())) {
+            mirror.setChanged();
+        }
+    }
+
     public void bind(GlobalPos destination, UUID connection) {
         counterpart = destination;
         connectionId = connection;
@@ -95,6 +107,7 @@ public final class MirrorBlockEntity extends BlockEntity {
         ItemStack item = new ItemStack(WitcheryItems.getRequired("mirror").get());
         CompoundTag data = new CompoundTag();
         writeMirrorData(data);
+        conversation.save(data);
         item.setTag(data);
         return item;
     }
@@ -102,6 +115,7 @@ public final class MirrorBlockEntity extends BlockEntity {
     public void applyItem(ItemStack stack) {
         if (stack.hasTag()) {
             readMirrorData(stack.getTag());
+            conversation.load(stack.getTag());
             sync();
         }
     }
@@ -142,11 +156,6 @@ public final class MirrorBlockEntity extends BlockEntity {
         connectionId = root.hasUUID("Connection") ? root.getUUID("Connection") : null;
         connected = counterpart != null && (!root.contains("Connected") || root.getBoolean("Connected"));
         demonSlain = root.getBoolean("DemonSlain");
-        for (String field : LEGACY_DETAILS) {
-            Tag value = root.get(field);
-            if (value != null) legacyDetails.put(field, value.copy());
-            else legacyDetails.remove(field);
-        }
     }
 
     private void writeMirrorData(CompoundTag root) {
@@ -161,24 +170,27 @@ public final class MirrorBlockEntity extends BlockEntity {
         if (connectionId != null) root.putUUID("Connection", connectionId);
         root.putBoolean("DemonSlain", demonSlain);
         root.putBoolean("Connected", connected);
-        root.merge(legacyDetails.copy());
     }
 
     @Override
     public void load(CompoundTag root) {
         super.load(root);
         readMirrorData(root);
+        conversation.load(root);
     }
 
     @Override
     protected void saveAdditional(CompoundTag root) {
         super.saveAdditional(root);
         writeMirrorData(root);
+        conversation.save(root);
     }
 
     @Override
     public CompoundTag getUpdateTag() {
-        return saveWithoutMetadata();
+        CompoundTag update = new CompoundTag();
+        writeMirrorData(update);
+        return update;
     }
 
     @Override
