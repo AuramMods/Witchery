@@ -280,6 +280,8 @@ public final class BrewMixture {
     public static ItemStack loadIngredient(CompoundTag tag) {
         int metadata = tag.getInt("Damage");
         String id = switch (tag.getString("id")) {
+            case "minecraft:coal" -> metadata == 1 ? "minecraft:charcoal" : null;
+            case "minecraft:snow" -> tag.contains("Damage", Tag.TAG_ANY_NUMERIC) ? "minecraft:snow_block" : null;
             case "minecraft:skull" -> switch (metadata) {
                 case 0 -> "minecraft:skeleton_skull";
                 case 1 -> "minecraft:wither_skeleton_skull";

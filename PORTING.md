@@ -1361,7 +1361,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Drop Quicklime into a prepared Witch's Cauldron, including cold, dye-only, and active ritual batches. A nearby player within the dropped item's five-block search area is required. The blast spares the nearest player and the terrain. It consumes the whole reagent stack and empties the cauldron. Each recognized action adds half a point to the base power of one, up to ten.
 - [x] Keep Quicklime and the contents intact in plain water, unprepared Brew fluid, or a prepared brew with no nearby player. Restore the original whole-stack Gypsum purge for any filled cauldron.
 - [x] Pass Java 17 data generation, JAR reobfuscation, and all 47 required GameTests. Load an original Nether Wart and Sugar brew in a disposable clean Forge world. With no player present, retain the brew and four dropped Quicklime. Drop three Gypsum to remove all the brew and Gypsum. Verify the emptied tank and intact Quicklime again after restarting the headless server.
-- [ ] Verify conversion of an in-progress fixed recipe from an original Forge save. The original saves the trigger at the end of its ordered `Items` and marks the brew `RitualTriggered`. The modern fixed-recipe path saves a resolved `Ritual` ID, while the legacy loader currently recognizes only general brew ritual triggers.
+- [x] Restore and verify in-progress fixed recipes from an original Forge save. The Fixed Cauldron Recipes and Outputs section records the import and restart checks.
 
 ## Substitution and Solidifying Brews (2026-11-21)
 
@@ -1434,6 +1434,9 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Verify dropped-ingredient casts in the packaged muted client. The five-use Endless Water brew filled the Witch's Cauldron. Its water supplied the strongest fuel recipe. The Witch's Oven consumed that fuel, began a 50,000-tick burn, and finished the sapling. A Player Compass from the cauldron bound to a pig in the inventory crafting grid. Its needle changed by a half turn when the player turned around.
 - [x] Verify a dedicated restart with a long oven burn, the used water brew, and the bound compass. The oven kept its full-sized timer and resumed burning. The bottle retained its wear and the compass still tracked the tagged pig.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 273 required Forge GameTests. Coverage includes all recipe variants, ingredient power accounting, recipe precedence, saved cast resumption, named legacy item metadata, pouring and dispensing, compass binding, and pit collision.
+- [x] Resume original casts from the last `Items` entry in a `RitualTriggered` brew. Convert the saved ten-tick pulses to modern fixed recipe progress. Refill a partially drained cast from its matching legacy Brew Bucket and return the original trigger if its recipe is unavailable.
+- [x] Import five original casts into the packaged headless server, restart before completion, and confirm their final item counts and variants after a second restart. An ordinary brew stayed intact. Java 17 data generation, reobfuscation, and all 51 required GameTests passed.
+- [ ] Restore the original fixed recipe misfortune rolls on completion. General brew casts already use the shared mishap logic.
 
 ## Taglock Cauldron Casts and Protection Statues (2026-11-20)
 

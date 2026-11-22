@@ -515,6 +515,15 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - All 47 required GameTests passed, alongside Java 17 data generation and JAR reobfuscation. The new cases check blast reach, player exclusion, terrain protection, dye-only and plain liquids, saved tank state, and interruption of the original pork cooking ritual.
 - The packaged headless server used a disposable copy of the previously imported Nether Wart and Sugar brew. Four Quicklime rested in the vessel with its original 2,000 mB intact. Three dropped Gypsum cleared it and left all four Quicklime, which were also present after save and restart. The packaged SHA-256 is `54f937b9c00563b041eaf1f5ebb8350c3589059bb91f46b728a3f8461835f77a`.
 
+### Legacy Fixed Cauldron Casts (2026-11-22)
+
+- The first server tick with a full tank reads the original trigger after the ordered offerings and resolves the recipe with the same matching rules and priorities as an item dropped into a new cauldron. Saved fixed recipe pulses advance the normal timer by ten ticks each. Existing Taglock and Tongue of Dog casts keep their pulse units. A save made before resolution retains the pending trigger and its original timer.
+- A partially drained legacy cast waits for compatible brew. The original Brew Bucket tag can refill it or reconstruct the cast in an empty cauldron. If no installed recipe matches a saved trigger, the cauldron returns the saved stack and preserves the rest of the brew.
+- Original Forge saved five casts with numeric item entries. The packaged port reopened Mutandis, Brew Fuel tier one, cooked mutton, Golden Chalk, and five-use Endless Water, then retained them on an ordinary dedicated restart. The source set included Charcoal metadata one, Snow Block ID 80, and Witchery's raw mutton subtype 158.
+- Heat completed Mutandis and mutton. The other three stayed full until the fixture supplied a formed altar and seeded its power. All five produced the expected item, count, and variant. The original Nether Wart and Sugar control held its full volume and ordered ingredients.
+- A second dedicated restart preserved the five outputs and emptied tanks. Data generation, JAR reobfuscation, and all 51 required GameTests passed. The new cases check warmup conversion across save formats, tagged bucket refills and reassembly, general ritual loading, and a single trigger refund. The packaged SHA-256 is `205a40ded99272bb1c173c22bbde6e83580dffd944b171c312477568b91b4b92`.
+- A cauldron already rewritten by an earlier port build may have lost its original trigger flag. Recovery of that cast requires the original saved tile data.
+
 ### Void Bramble and the Statue of the Goddess (2026-11-21)
 
 - Both block recipes use the original ingredients and remain disabled by default. Enable them separately with `allowVoidBrambleRecipe` and `allowGoddessStatueRecipe` in the common config. The Void Bramble ingredient matches Ender Bramble's `BlockStateTag.wild=false` and rejects Wild Bramble.
