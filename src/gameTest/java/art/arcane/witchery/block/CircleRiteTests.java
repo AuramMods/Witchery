@@ -14,6 +14,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
@@ -53,6 +54,29 @@ public final class CircleRiteTests {
     // Each required offering, the optional Waystone, and the altar charge get a separate 20-tick step.
     private static final int TWO_OFFERING_CAST = 80;
     private static final int THREE_OFFERING_CAST = 100;
+
+    @GameTest(template = TEMPLATE, batch = "witchery_legacy_ice_shell", setupTicks = 5)
+    public static void legacyIceShellReachesRadiusSixteenAndPreservesSolidTerrain(GameTestHelper helper) {
+        ring(helper, RitualCircle.SMALL_RITE, "circleglyphritual");
+        helper.setBlock(CENTER.east(16), Blocks.AIR);
+        helper.setBlock(CENTER.west(16), Blocks.STONE);
+        helper.setBlock(CENTER.east(17), Blocks.AIR);
+
+        var legacy = new CompoundTag();
+        legacy.putByteArray("Rituals", new byte[]{65});
+        legacy.putByteArray("RitualStages", new byte[]{10});
+        legacy.putByteArray("RitualCovens", new byte[]{6});
+        heart(helper).load(legacy);
+
+        helper.runAfterDelay(20, () -> {
+            helper.assertBlockPresent(block("perpetualice"), CENTER.east(16));
+            helper.assertBlockPresent(Blocks.STONE, CENTER.west(16));
+            helper.assertBlockPresent(Blocks.AIR, CENTER.east(17));
+            helper.assertFalse(helper.getBlockState(CENTER).getValue(RiteHeartBlock.ACTIVE),
+                    "The migrated shell finishes at the six-member radius");
+            helper.succeed();
+        });
+    }
 
     @GameTest(template = TEMPLATE, batch = "witchery_summoned_witch", setupTicks = 5, timeoutTicks = 155)
     public static void witchSummoningReturnsTheSameDamagedArthana(GameTestHelper helper) {

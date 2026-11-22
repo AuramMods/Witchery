@@ -104,7 +104,8 @@ public final class VoodooPoppetItem extends BoundPoppetItem {
         if (!(level instanceof ServerLevel server) || !holder.isEyeInFluid(FluidTags.WATER) || holder.getAirSupply() > 0) return;
         LivingEntity target = TaglockItem.resolveTarget(server, stack);
         if (target == null || !target.isAlive() || warded(holder, target, stack)) return;
-        if (!target.canBreatheUnderwater() && !target.hasEffect(MobEffects.WATER_BREATHING)
+        if (holder instanceof ServerPlayer caster) WitchHunterPursuit.noticeBlackMagic(caster);
+        if (!HunterClothingItem.resistsMagic(target) && !target.canBreatheUnderwater() && !target.hasEffect(MobEffects.WATER_BREATHING)
                 && (!(target instanceof Player player) || !player.getAbilities().invulnerable)) {
             target.hurt(target.damageSources().drown(), 1);
             if (target.level() instanceof ServerLevel targetLevel) {
