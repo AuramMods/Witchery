@@ -1,6 +1,7 @@
 package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.entity.AltarBlockEntity;
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
@@ -8,8 +9,12 @@ import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -17,7 +22,10 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.block.entity.DispenserBlockEntity;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.fluids.FluidStack;
@@ -91,6 +99,171 @@ public final class CauldronBrewParityTests {
         helper.succeed();
     }
 
+    @GameTest(template = "qa_coven_arena", batch = "witchery_cauldron_dispenser", timeoutTicks = 245)
+    public static void dispenserBottlesOnlyBoilingPoweredCauldrons(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(5, 4, 5));
+        var dispenser = dispenser(helper, pos.north(), new ItemStack(Items.GLASS_BOTTLE, 2));
+        level.setBlockAndUpdate(pos.below(2), Blocks.NETHERRACK.defaultBlockState());
+        level.setBlockAndUpdate(pos.below(), Blocks.FIRE.defaultBlockState());
+        level.setBlockAndUpdate(pos, WitcheryBlocks.getRequired("cauldron").get().defaultBlockState());
+        var cauldron = (WitchesCauldronBlockEntity) level.getBlockEntity(pos);
+        var tank = cauldron.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
+        tank.fill(new FluidStack(Fluids.WATER, 3000), IFluidHandler.FluidAction.EXECUTE);
+
+        pulse(helper, dispenser, true);
+        helper.runAfterDelay(6, () -> {
+            helper.assertTrue(dispenser.getItem(0).getCount() == 2 && tank.getFluidInTank(0).getAmount() == 3000,
+                    "A cold adjacent cauldron holds the glass bottle and the water");
+            pulse(helper, dispenser, false);
+        });
+        helper.runAfterDelay(105, () -> {
+            drop(helper, pos, Items.NETHER_WART);
+            drop(helper, pos, WitcheryIngredient.WOLFSBANE.item());
+            drop(helper, pos, Items.GUNPOWDER);
+            pulse(helper, dispenser, true);
+        });
+        helper.runAfterDelay(111, () -> {
+            helper.assertTrue(dispenser.getItem(0).getCount() == 2 && tank.getFluidInTank(0).getAmount() == 3000,
+                    "A prepared cauldron without altar power keeps the brew and the glass bottle");
+            pulse(helper, dispenser, false);
+
+            var altarPos = pos.east(3);
+            var state = WitcheryBlocks.getRequired("altar").get().defaultBlockState();
+            for (var part : BlockPos.betweenClosed(altarPos, altarPos.east(2).south())) level.setBlockAndUpdate(part, state);
+            AltarBlockEntity.form(level, altarPos);
+            var egg = altarPos.south(3);
+            level.setBlockAndUpdate(egg.below(), Blocks.STONE.defaultBlockState());
+            level.setBlockAndUpdate(egg, Blocks.DRAGON_EGG.defaultBlockState());
+            var altar = (AltarBlockEntity) level.getBlockEntity(altarPos);
+            var saved = altar.saveWithFullMetadata();
+            saved.putInt("Capacity", 250);
+            saved.putFloat("Power", 150);
+            altar.load(saved);
+            var brew = tank.getFluidInTank(0).copy();
+            cauldron.load(cauldron.saveWithFullMetadata());
+            pulse(helper, dispenser, true);
+            helper.runAfterDelay(6, () -> {
+                var bottles = level.getEntitiesOfClass(ItemEntity.class, new AABB(pos.north()).inflate(4),
+                        item -> item.getItem().is(WitcheryItems.getRequired("brewbottle").get()));
+                helper.assertTrue(bottles.size() == 1 && bottles.get(0).getItem().getTag().equals(brew.getTag()),
+                        "The output is one ejected bottle with the saved brew's ordered ingredients, color and delivery");
+                helper.assertTrue(tank.getFluidInTank(0).isEmpty() && dispenser.getItem(0).is(Items.GLASS_BOTTLE)
+                                && dispenser.getItem(0).getCount() == 1,
+                        "The dispenser uses three buckets and one glass bottle");
+                helper.assertTrue(altar.power() >= 150, "The dispenser did not debit the altar's 150 stored power");
+                pulse(helper, dispenser, false);
+                brew.setAmount(2000);
+                tank.fill(brew, IFluidHandler.FluidAction.EXECUTE);
+            });
+        });
+        helper.runAfterDelay(225, () -> pulse(helper, dispenser, true));
+        helper.runAfterDelay(231, () -> {
+            helper.assertTrue(tank.getFluidInTank(0).isEmpty() && dispenser.getItem(0).is(Items.GLASS_BOTTLE),
+                    "A partial hot brew drains as in the original without using a bottle");
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "qa_coven_arena", timeoutTicks = 35)
+    public static void dispenserThrowsBrewsAndKeepsVanillaBottleBehavior(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var inkPos = helper.absolutePos(new BlockPos(3, 4, 3));
+        var splashPos = helper.absolutePos(new BlockPos(3, 4, 8));
+        var drinkPos = helper.absolutePos(new BlockPos(3, 4, 6));
+        var waterPos = helper.absolutePos(new BlockPos(8, 4, 6));
+        var bottle = WitcheryItems.getRequired("brewbottle").get();
+        var splash = new ItemStack(bottle);
+        splash.setTag(BrewMixture.ingredientTag(List.of(new ItemStack(Items.NETHER_WART), new ItemStack(Items.SPIDER_EYE),
+                new ItemStack(Items.GUNPOWDER)), 0x46a238));
+        var drink = new ItemStack(bottle);
+        drink.setTag(BrewMixture.ingredientTag(List.of(new ItemStack(Items.NETHER_WART), new ItemStack(Items.SUGAR)), 0xfbac81));
+        var inkDispenser = dispenser(helper, inkPos, new ItemStack(WitcheryIngredient.BREW_OF_INK.item()));
+        var splashDispenser = dispenser(helper, splashPos, splash);
+        pulse(helper, inkDispenser, true);
+        pulse(helper, splashDispenser, true);
+        pulse(helper, dispenser(helper, drinkPos, drink), true);
+        level.setBlockAndUpdate(waterPos.east(), Blocks.WATER.defaultBlockState());
+        var waterDispenser = dispenser(helper, waterPos, new ItemStack(Items.GLASS_BOTTLE));
+        pulse(helper, waterDispenser, true);
+
+        var inkTarget = helper.spawn(EntityType.PIG, new BlockPos(6, 4, 3));
+        var splashTarget = helper.spawn(EntityType.PIG, new BlockPos(6, 4, 8));
+        inkTarget.setNoAi(true);
+        splashTarget.setNoAi(true);
+        for (var wall : List.of(inkPos.east(4), splashPos.east(4))) {
+            level.setBlockAndUpdate(wall, Blocks.STONE.defaultBlockState());
+            level.setBlockAndUpdate(wall.above(), Blocks.STONE.defaultBlockState());
+        }
+        helper.succeedWhen(() -> {
+            helper.assertTrue(inkTarget.hasEffect(MobEffects.BLINDNESS) && splashTarget.hasEffect(MobEffects.POISON),
+                    "The two dispenser projectiles apply their brew effects at impact");
+            helper.assertTrue(inkDispenser.isEmpty() && splashDispenser.isEmpty(), "Each projectile uses one brew");
+            helper.assertTrue(waterDispenser.getItem(0).is(Items.POTION), "A dispenser still fills glass from vanilla water");
+            helper.assertTrue(level.getEntitiesOfClass(ItemEntity.class, new AABB(drinkPos).inflate(3),
+                    item -> ItemStack.isSameItemSameTags(item.getItem(), drink)).size() == 1,
+                    "Drinkable brews are ejected with their original recipe");
+        });
+    }
+
+    @GameTest(template = "qa_coven_arena", timeoutTicks = 135)
+    public static void dispenserBottlesFixedRitualWithItsSavedTrigger(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(5, 4, 5));
+        var dispenser = dispenser(helper, pos.north(), new ItemStack(Items.GLASS_BOTTLE));
+        level.setBlockAndUpdate(pos.below(2), Blocks.NETHERRACK.defaultBlockState());
+        level.setBlockAndUpdate(pos.below(), Blocks.FIRE.defaultBlockState());
+        level.setBlockAndUpdate(pos, WitcheryBlocks.getRequired("cauldron").get().defaultBlockState());
+        var cauldron = (WitchesCauldronBlockEntity) level.getBlockEntity(pos);
+        var tank = cauldron.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
+        tank.fill(new FluidStack(Fluids.WATER, 3000), IFluidHandler.FluidAction.EXECUTE);
+
+        helper.runAfterDelay(105, () -> {
+            drop(helper, pos, WitcheryIngredient.MANDRAKE_ROOT.item());
+            drop(helper, pos, WitcheryIngredient.EXHALE_OF_THE_HORNED_ONE.item());
+            drop(helper, pos, Items.WHEAT);
+            var egg = new ItemStack(Items.EGG).setHoverName(Component.literal("Test Offering"));
+            drop(helper, pos, egg);
+            var saved = cauldron.saveWithFullMetadata();
+            helper.assertTrue(saved.getString("Ritual").equals("witchery:mutandis"), "The egg begins the ordinary Mutandis cast");
+            cauldron.load(saved);
+            pulse(helper, dispenser, true);
+            helper.runAfterDelay(6, () -> {
+                var bottles = level.getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(4),
+                        item -> item.getItem().is(WitcheryItems.getRequired("brewbottle").get()));
+                helper.assertTrue(bottles.size() == 1 && dispenser.isEmpty() && tank.getFluidInTank(0).isEmpty(),
+                        "Dispensing intercepts the pending ritual and ejects one filled bottle");
+                var bottle = bottles.get(0).getItem();
+                var tag = bottle.getTag();
+                var offerings = tag.getList("Items", Tag.TAG_COMPOUND);
+                helper.assertTrue(tag.getString("FixedRitual").equals("witchery:mutandis") && tag.getBoolean("RitualTriggered")
+                                && offerings.size() == 4 && ItemStack.matches(ItemStack.of(offerings.getCompound(3)), egg),
+                        "The bottled cast preserves the original offerings, including the named trigger after loading");
+                var pig = helper.spawn(EntityType.PIG, new BlockPos(6, 4, 6));
+                var drink = bottle.copy();
+                drink.getOrCreateTag().remove("FixedRitual");
+                drink.getOrCreateTag().putString("BrewName", "Brew of Moonshine");
+                var empty = drink.finishUsingItem(level, pig);
+                helper.assertTrue(empty.is(Items.GLASS_BOTTLE) && pig.hasEffect(WitcheryEffects.FEEL_NO_PAIN.get()),
+                        "The bottled effect is usable even when the list contains a fixed-recipe offering in the original format");
+                helper.succeed();
+            });
+        });
+    }
+
+    private static DispenserBlockEntity dispenser(GameTestHelper helper, BlockPos pos, ItemStack input) {
+        var level = helper.getLevel();
+        level.setBlockAndUpdate(pos, Blocks.DISPENSER.defaultBlockState().setValue(DispenserBlock.FACING, Direction.EAST));
+        var dispenser = (DispenserBlockEntity) level.getBlockEntity(pos);
+        dispenser.setItem(0, input.copy());
+        return dispenser;
+    }
+
+    private static void pulse(GameTestHelper helper, DispenserBlockEntity dispenser, boolean powered) {
+        helper.getLevel().setBlockAndUpdate(dispenser.getBlockPos().above(),
+                (powered ? Blocks.REDSTONE_BLOCK : Blocks.AIR).defaultBlockState());
+    }
+
     private static void drink(LivingEntity target, List<ItemStack> recipe) {
         var bottle = new ItemStack(WitcheryItems.getRequired("brewbottle").get());
         bottle.setTag(BrewMixture.ingredientTag(recipe, 0x99afae));
@@ -98,10 +271,14 @@ public final class CauldronBrewParityTests {
     }
 
     private static void drop(GameTestHelper helper, BlockPos pos, Item item) {
+        drop(helper, pos, new ItemStack(item));
+    }
+
+    private static void drop(GameTestHelper helper, BlockPos pos, ItemStack stack) {
         var level = helper.getLevel();
         var center = Vec3.atCenterOf(pos);
-        var dropped = new ItemEntity(level, center.x, center.y, center.z, new ItemStack(item));
+        var dropped = new ItemEntity(level, center.x, center.y, center.z, stack.copy());
         level.getBlockState(pos).entityInside(level, pos, dropped);
-        helper.assertTrue(dropped.isRemoved(), "The boiling cauldron accepts " + item);
+        helper.assertTrue(dropped.isRemoved(), "The boiling cauldron accepts " + stack);
     }
 }

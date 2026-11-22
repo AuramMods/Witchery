@@ -1527,6 +1527,17 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Pass Java 17 data generation, JAR reobfuscation, and all 47 required GameTests. Load an original Nether Wart and Sugar brew in a disposable clean Forge world. With no player present, retain the brew and four dropped Quicklime. Drop three Gypsum to remove all the brew and Gypsum. Verify the emptied tank and intact Quicklime again after restarting the headless server.
 - [x] Restore and verify in-progress fixed recipes from an original Forge save. The Fixed Cauldron Recipes and Outputs section records the import and restart checks.
 
+## Brew Dispensers (2026-11-22)
+
+- [x] Restore the original glass-bottle search order around a dispenser. The first Witch's Cauldron below, above, north, south, east, or west is selected, skipping the outlet. With no match, the dispenser keeps its existing glass-bottle behavior, including collecting vanilla water and honey.
+- [x] Bottle a full three-bucket boiling mixture when its altar has enough available power. The dispenser preserves the recipe and color, ejects one brew, and leaves the altar charge untouched. A cold or unpowered brew stays in the cauldron. A hot powered partial batch drains without using a bottle, as in 1.7.10.
+- [x] Launch named throwable brews and splash-format cauldron brews as ownerless projectiles with the original speed and spread. Eject drinkable brews as items. Forge GameTests passed for redstone bottling, Brew of Ink, a mixed Poison splash, tagged drinkable output, and vanilla water.
+- [x] Dispense an active fixed ritual while it is boiling and powered. The original 1.7.10 server and the packaged 1.20.1 port both ejected a pending Mutandis batch and drained the cauldron. The bottle kept the ritual marker, Mandrake Root, Exhale of the Horned One, and Egg. The modern check reopened a saved active recipe before firing the dispenser. A separate packaged import retained the original bottle's ordered items and color from the 1.7.10 entity save.
+- [x] Save the offered trigger stack with the fixed cauldron recipe. The Forge test warmed a real cauldron, began a cast with a named Egg, saved and loaded the block entity, and verified the dispenser returned that exact Egg inside the bottle. A bottle with original-format tags kept the underlying Moonshine effect when consumed.
+- [x] Save an active Mutandis recipe on the preceding packaged port and reopen it with the updated JAR. The saved recipe ID provided the Egg trigger for the dispenser, and the output retained the two other offerings.
+- [x] Pass 110 checked-in Forge GameTests, 113 with Thaumaturge, Lithostitched, and Curios, Java 17 data generation, and JAR reobfuscation. Dedicated gameplay used the packaged JAR and real redstone pulses in headless test worlds.
+- The 663-case replay passed 659, including all three new dispenser tests. The desert coven layout, Wicker Man fallback, returned Arthana, and Hobgoblin courtship checks all passed in a subsequent four-case run on the same source.
+
 ## Substitution and Solidifying Brews (2026-11-21)
 
 - [x] Restore the original six Kettle batches, three servings, bottling bonus, and legacy metadata 116–120 and 125. The five Solidifying Brews cost 2,000 altar power each. Substitution needs no power. The Book of Brews and Infusions lists Substitution and the dirt recipe.

@@ -234,7 +234,7 @@ public final class BrewMixture {
     }
 
     public static boolean canAdd(List<ItemStack> current, ItemStack offered) {
-        Mixing mixing = mix(current);
+        Mixing mixing = mix(current, false);
         ResourceLocation id = id(offered);
         Ingredient ingredient = INGREDIENTS.get(id);
         return mixing != null && ingredient != null && ingredient.modifier != Modifier.RITUAL
@@ -265,7 +265,7 @@ public final class BrewMixture {
     @Nullable
     public static BrewMixture from(List<ItemStack> stacks, int savedColor) {
         if (stacks.isEmpty() && savedColor < 0) return null;
-        Mixing mixing = mix(stacks);
+        Mixing mixing = mix(stacks, false);
         return mixing != null ? new BrewMixture(mixing, savedColor) : null;
     }
 
@@ -276,7 +276,10 @@ public final class BrewMixture {
         for (Tag entry : tag.getList(ITEMS, Tag.TAG_COMPOUND)) {
             stacks.add(loadIngredient((CompoundTag) entry));
         }
-        BrewMixture mixture = from(stacks, tag.contains("Color", Tag.TAG_ANY_NUMERIC) ? tag.getInt("Color") & 0xFFFFFF : -1);
+        int color = tag.contains("Color", Tag.TAG_ANY_NUMERIC) ? tag.getInt("Color") & 0xFFFFFF : -1;
+        boolean fixedRitual = tag.contains("FixedRitual", Tag.TAG_STRING)
+                || tag.getBoolean("RitualTriggered") && tag.contains("BrewName", Tag.TAG_STRING);
+        BrewMixture mixture = fixedRitual ? new BrewMixture(mix(stacks, true), color) : from(stacks, color);
         return mixture != null && (!tag.getBoolean("Splash") || mixture.splash()) ? mixture : null;
     }
 
@@ -356,6 +359,19 @@ public final class BrewMixture {
         tag.putInt("RemainingCapacity", capacity - used);
         tag.putInt("BrewDrinkSpeed", drinkTicks);
         tag.putBoolean("Splash", splash());
+        return tag;
+    }
+
+    public static CompoundTag fixedRitualBottleTag(List<ItemStack> offerings, int color, ResourceLocation recipe, int power) {
+        if (color < 0) {
+            color = 17;
+            for (ItemStack offering : offerings) color = hashColor(color, id(offering));
+        }
+        BrewMixture mixture = new BrewMixture(mix(offerings, true), color & 0xFFFFFF);
+        CompoundTag tag = mixture.bottleTag(offerings);
+        tag.putString("FixedRitual", recipe.toString());
+        tag.putBoolean("RitualTriggered", true);
+        tag.putInt("Power", power);
         return tag;
     }
 
@@ -781,13 +797,16 @@ public final class BrewMixture {
     }
 
     @Nullable
-    private static Mixing mix(List<ItemStack> stacks) {
+    private static Mixing mix(List<ItemStack> stacks, boolean ignoreRecipeOfferings) {
         Mixing mixing = new Mixing();
         for (ItemStack stack : stacks) {
             ResourceLocation id = id(stack);
             Ingredient ingredient = INGREDIENTS.get(id);
-            if (ingredient == null || stack.isEmpty()) return null;
-            if (ingredient.action == Action.CHANGING_SEASONS && BiomeNoteItem.biomeId(stack) == null) return null;
+            if (ingredient == null || stack.isEmpty()
+                    || ingredient.action == Action.CHANGING_SEASONS && BiomeNoteItem.biomeId(stack) == null) {
+                if (ignoreRecipeOfferings) continue;
+                return null;
+            }
             mixing.add(stack, id, ingredient);
         }
         return mixing;
