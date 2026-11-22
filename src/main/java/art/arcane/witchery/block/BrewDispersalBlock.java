@@ -36,7 +36,8 @@ import java.util.Optional;
 
 public final class BrewDispersalBlock extends LiquidBlock implements EntityBlock {
     private static final int TICK_DELAY = 5;
-    private static final int MAX_LIQUID_LEVEL = 7;
+    // The original liquid used six quanta, with level zero reserved for the source.
+    private static final int MAX_LIQUID_LEVEL = 5;
     private static final int NO_DROP_FOUND = 1000;
     private static final Direction[] HORIZONTAL = {Direction.WEST, Direction.EAST, Direction.NORTH, Direction.SOUTH};
     private static final Direction[] GAS_DIRECTIONS = {

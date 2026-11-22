@@ -67,7 +67,8 @@ public final class LegacyChunkUpgrade {
     private static final Set<String> FETISHES = Set.of("scarecrow", "trent", "witchsladder");
     private static final Set<String> CURSED_CONTROLS = Set.of("clever", "cwoodendoor", "cwoodpressureplate", "cstonepressureplate",
             "csnowpressureplate", "cbuttonwood", "cbuttonstone");
-    private static final String CURSED_BLOCK_TICKS = "witchery:legacy_cursed_block_ticks";
+    private static final Set<String> BREW_DISPERSALS = Set.of("brewgas", "brewliquid");
+    private static final String LEGACY_BLOCK_TICKS = "witchery:legacy_block_ticks";
     private static final int LEGACY_LEVER_ID = 69;
     private static final int LEGACY_STONE_BUTTON_ID = 77;
     private static final Set<String> DOORS = Set.of("rowanwooddoor", "alderwooddoor", "icedoor", "cwoodendoor");
@@ -85,7 +86,7 @@ public final class LegacyChunkUpgrade {
         CompoundTag inputLevel = input.getCompound("Level");
         restoreLegacyTileTypes(inputLevel, ids);
         ids.upgradeChunkItems(inputLevel, fixer, from, to);
-        ListTag cursedTicks = extractCursedBlockTicks(inputLevel, ids);
+        ListTag savedTicks = restoreLegacyBlockTicks(inputLevel, ids);
         LegacyChunkEntities.prepare(inputLevel, ids, fixer, from);
         CompoundTag updated = type.update(fixer, input, from, to);
 
@@ -112,17 +113,17 @@ public final class LegacyChunkUpgrade {
             if (flattened != null) restoreSection(ids, section, flattened, states, legacyByHeight, postProcessing, openCoffins);
         });
         if (!postProcessing.isEmpty()) fixedLevel.put("PostProcessing", postProcessing);
-        if (!cursedTicks.isEmpty()) fixedLevel.put(CURSED_BLOCK_TICKS, cursedTicks);
+        if (!savedTicks.isEmpty()) fixedLevel.put(LEGACY_BLOCK_TICKS, savedTicks);
         return updated;
     }
 
     public static void finish(CompoundTag upgraded, ResourceKey<Level> dimension) {
         LegacyChunkEntities.restore(upgraded);
-        if (upgraded.get(CURSED_BLOCK_TICKS) instanceof ListTag cursedTicks) {
+        if (upgraded.get(LEGACY_BLOCK_TICKS) instanceof ListTag savedTicks) {
             var ticks = upgraded.getList("block_ticks", Tag.TAG_COMPOUND);
-            ticks.addAll(cursedTicks);
+            ticks.addAll(savedTicks);
             upgraded.put("block_ticks", ticks);
-            upgraded.remove(CURSED_BLOCK_TICKS);
+            upgraded.remove(LEGACY_BLOCK_TICKS);
         }
         if (dimension.equals(WitcheryDimensions.TORMENT) || dimension.equals(WitcheryDimensions.MIRROR)) {
             // Both old generators wrote the vanilla Nether biome. Restore their dedicated modern biomes.
@@ -149,7 +150,8 @@ public final class LegacyChunkUpgrade {
             Set<String> family = switch (tile.getString("id")) {
                 case "witchery:mirrorblock", "witchery:mirrorblock2" -> MIRRORS;
                 case "witchery:scarecrow", "witchery:trent", "witchery:witchsladder" -> FETISHES;
-                default -> isCursedControl(ResourceLocation.tryParse(tile.getString("id"))) ? CURSED_CONTROLS : Set.of();
+                case "witchery:brewgas", "witchery:brewliquid" -> BREW_DISPERSALS;
+                default -> belongsTo(ResourceLocation.tryParse(tile.getString("id")), CURSED_CONTROLS) ? CURSED_CONTROLS : Set.of();
             };
             if (family.isEmpty()) continue;
 
@@ -170,23 +172,47 @@ public final class LegacyChunkUpgrade {
         }
     }
 
-    private static boolean isCursedControl(@Nullable ResourceLocation id) {
-        return id != null && id.getNamespace().equals(Witchery.MODID) && CURSED_CONTROLS.contains(id.getPath());
+    private static boolean belongsTo(@Nullable ResourceLocation id, Set<String> paths) {
+        return id != null && id.getNamespace().equals(Witchery.MODID) && paths.contains(id.getPath());
     }
 
-    private static ListTag extractCursedBlockTicks(CompoundTag level, LegacyWorldIds ids) {
+    private static ListTag restoreLegacyBlockTicks(CompoundTag level, LegacyWorldIds ids) {
+        var dormantBrews = new HashMap<BlockPos, String>();
+        for (Tag entry : level.getList("TileEntities", Tag.TAG_COMPOUND)) {
+            var tile = (CompoundTag) entry;
+            var id = tile.getString("id");
+            if (belongsTo(ResourceLocation.tryParse(id), BREW_DISPERSALS)) {
+                dormantBrews.put(savedPosition(tile), id);
+            }
+        }
         var saved = new ListTag();
         // Vanilla's protochunk conversion retains tick locations and discards their block IDs, delays and priorities.
         level.getList("TileTicks", Tag.TAG_COMPOUND).removeIf(entry -> {
             var tick = (CompoundTag) entry;
             var name = tick.contains("i", Tag.TAG_ANY_NUMERIC) ? ids.block(tick.getInt("i"))
                     : ResourceLocation.tryParse(tick.getString("i"));
-            if (!isCursedControl(name)) return false;
+            if (!belongsTo(name, CURSED_CONTROLS) && !belongsTo(name, BREW_DISPERSALS)) return false;
             tick.putString("i", name.toString());
             saved.add(tick);
+            dormantBrews.remove(savedPosition(tick), name.toString());
             return true;
         });
+        // Legacy runoff could stop scheduling when its level stabilized. Restart the modern dispersal tick on load.
+        dormantBrews.forEach((pos, id) -> {
+            var tick = new CompoundTag();
+            tick.putString("i", id);
+            tick.putInt("x", pos.getX());
+            tick.putInt("y", pos.getY());
+            tick.putInt("z", pos.getZ());
+            tick.putInt("t", 5);
+            tick.putInt("p", 0);
+            saved.add(tick);
+        });
         return saved;
+    }
+
+    private static BlockPos savedPosition(CompoundTag tag) {
+        return new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
     }
 
     private static Set<Integer> openCoffins(CompoundTag level) {
@@ -315,7 +341,8 @@ public final class LegacyChunkUpgrade {
             case "distilleryidle", "distilleryburning" -> state.setValue(BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata))
                     .setValue(DistilleryBlock.LIT, name.getPath().equals("distilleryburning"));
             case "kettle", "spinningwheel", "fumefunnel", "filteredfumefunnel", "wolfaltar", "beartrap", "wolftrap",
-                    "garlicgarland", "dreamcatcher", "refillingchest" -> state.setValue(BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata));
+                    "garlicgarland", "dreamcatcher", "refillingchest", "decursedirected", "decurseteleport" ->
+                    state.setValue(BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata));
             case "grassper", "placeditem", "scarecrow", "trent", "witchsladder" -> state.setValue(
                     BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata & 7));
             case "altar" -> state.setValue(AltarBlock.FORMED, metadata == 1);
@@ -339,6 +366,7 @@ public final class LegacyChunkUpgrade {
             case "tormentportal" -> state.setValue(TormentPortalBlock.LEGACY_ORIENTATION, true);
             case "spiritportal" -> state.setValue(SpiritPortalBlock.LEGACY_ORIENTATION, true);
             case "spiritflowing", "hollowtears" -> restoreSpiritFluid(state, metadata, saved != 0);
+            case "brewgas", "brewliquid" -> state.setValue(LiquidBlock.LEVEL, metadata);
             case "mirrorblock", "mirrorblock2" -> state.setValue(MirrorBlock.FACING, switch (variant) {
                 case 0 -> Direction.NORTH;
                 case 1 -> Direction.SOUTH;
@@ -348,7 +376,7 @@ public final class LegacyChunkUpgrade {
             case "poppetshelf", "bloodedwool", "pitdirt", "pitgrass", "mirrorwall", "shadedglass", "shadedglass_active",
                     "tormentstone", "embermoss", "glintweed", "spanishmoss", "infinityegg", "icedoubleslab", "snowdoubleslab",
                     "cauldron", "brazier", "candelabra", "perpetualice", "icestockade", "icefence", "bloodcrucible", "silvervat",
-                    "force", "barrier" -> state;
+                    "force", "barrier", "slurp" -> state;
             case "iceslab", "snowslab" -> state.setValue(SlabBlock.TYPE, (metadata & 8) == 0 ? SlabType.BOTTOM : SlabType.TOP);
             case "witchwoodslab" -> state.setValue(WitchWoodType.PROPERTY, wood)
                     .setValue(SlabBlock.TYPE, (metadata & 8) == 0 ? SlabType.BOTTOM : SlabType.TOP);
