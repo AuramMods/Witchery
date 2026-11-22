@@ -1120,6 +1120,12 @@
 - [x] Keep the integration optional and use the Blood Magic 3.3.5-47 Soul Network and dagger event present in Auram. [Blood Magic 3.3.5-47](https://www.curseforge.com/minecraft/mc-mods/blood-magic/files/7253333)
 - [x] Pass 64 headless Forge GameTests with Blood Magic and Patchouli, and 62 on clean Forge. Run Java 17 data generation and reobfuscation. The same packaged JAR boots in a headless profile with each mod set.
 
+## Jade Tooltips (2026-11-22)
+
+- [x] Restore Waila's cover identities through Jade. Trapped plants show as poppies, dandelions, or dead bushes. Alder Doors show as oak doors, Rowan Doors keep their own item, and both pit blocks show as their vanilla soil counterparts.
+- [x] Show the three illusions as their respective vanilla mobs to the intended viewer. Present werevillagers as vanilla villagers and retain their profession, biome type, level and age for the tooltip.
+- [ ] Verify the overlay in a muted live client running Jade. [Jade 11.13.2](https://www.curseforge.com/minecraft/mc-mods/jade/files/6855440)
+
 ## Cauldron Wool and Dye Colors (2026-11-21)
 
 - [x] Accept all sixteen wools in heated cauldrons. Consume the wool and store its legacy RGB separately from the recipe. Later ingredients mix into that color and later wool replaces it. Reset the color when the cauldron is emptied or cleared with Gypsum.

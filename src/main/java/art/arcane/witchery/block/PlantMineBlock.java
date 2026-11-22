@@ -129,6 +129,14 @@ public final class PlantMineBlock extends Block {
             return name;
         }
 
+        public Block tooltipPlant() {
+            return switch (plant) {
+                case ROSE -> Blocks.POPPY;
+                case DANDELION -> Blocks.DANDELION;
+                case GRASS -> Blocks.DEAD_BUSH;
+            };
+        }
+
         public ItemStack stack(Item item) {
             ItemStack stack = new ItemStack(item);
             write(stack);

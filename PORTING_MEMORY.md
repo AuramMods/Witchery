@@ -577,6 +577,13 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - The optional Forge fixture posted lethal fall events after equipping each of the three registered Botania items through the real Curios inventory. All three permitted lethal damage. Cosmetic copies, carried copies, and the Ring of Thor kept the ordinary one-health recovery.
 - All 63 GameTests passed with Auram's Curios 5.14.1, Botania 450, and Patchouli 84.1. All 62 checked-in tests passed on clean Forge. Java 17 data generation, JAR reobfuscation, and the packaged headless boot in both profiles passed. The JAR SHA-256 is `77571e4ee87ac1943cf91a5119d0c686d2ff3bf40b12a5fbd39067514f106e65`.
 
+### Jade Tooltips (2026-11-22)
+
+- Jade uses the original cover blocks for all twelve plant mine variants, Alder Doors, Pit Dirt and Pit Grass. The cover retains shared state such as the door half, facing and open flag. Both Rowan Door halves resolve the Witchery item through Jade's normal lookup. Ordinary targets retain their original accessor.
+- The three illusions use a vanilla Creeper, Spider, or Zombie for the victim's tooltip. Bystanders get no illusion tooltip. Werevillagers use a vanilla Villager with their current profession, biome type, level and age. These are display-only entities. The cover retains the actual hit position and supplies its own data to Jade's providers.
+- Two disposable fixtures passed against the real Jade 11.13.2 builders and actual Forge entities and block states. Jade's client registration accepted the callback in a Java process without a window, and the reobfuscated JAR was discovered by Jade on the headless server. The isolated graphical runtime was unresponsive. The muted live overlay still needs a check. [Jade 11.13.2](https://www.curseforge.com/minecraft/mc-mods/jade/files/6855440)
+- The Jade rerun passed all 64 tests after one intermittent failure in the older nighttime village-shelter case. The clean Forge rerun passed all 62 tests after reclaiming space from disposable test worlds. Java 17 data generation, JAR reobfuscation and packaged headless boots with and without Jade passed. The JAR SHA-256 is `5e74fe40378668a5eb6a5a672a6fb9bf4d1a4a3963a5e1a2fcde51a2c46fce26`.
+
 ### Void Bramble and the Statue of the Goddess (2026-11-21)
 
 - Both block recipes use the original ingredients and remain disabled by default. Enable them separately with `allowVoidBrambleRecipe` and `allowGoddessStatueRecipe` in the common config. The Void Bramble ingredient matches Ender Bramble's `BlockStateTag.wild=false` and rejects Wild Bramble.
