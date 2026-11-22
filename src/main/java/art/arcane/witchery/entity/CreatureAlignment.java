@@ -11,6 +11,8 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobType;
+import net.minecraft.world.entity.animal.AbstractGolem;
+import net.minecraftforge.common.Tags;
 
 public final class CreatureAlignment {
     private static final TagKey<EntityType<?>> DEMONIC = TagKey.create(Registries.ENTITY_TYPE,
@@ -31,5 +33,11 @@ public final class CreatureAlignment {
 
     public static boolean werewolf(LivingEntity entity) {
         return Lycanthropy.isShifted(entity) || entity instanceof Reflection copy && copy.hasWolfmanModel();
+    }
+
+    public static boolean immuneToDisease(LivingEntity entity) {
+        return undead(entity) || demonic(entity) || Lycanthropy.isWerewolf(entity) || werewolf(entity)
+                || Vampirism.isBoss(entity) || entity.getType().is(Tags.EntityTypes.BOSSES)
+                || entity instanceof AbstractGolem || entity instanceof HobgoblinGod || entity instanceof Leonard;
     }
 }

@@ -2,10 +2,19 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron Disease and Dispersal Parity (2026-11-22)
+
+- The ordinary Rotten Flesh brew uses the disease fluid's immunity rules for undead, demons, werewolves including unshifted creatures, bosses and golems. It recognizes the Forge boss tag. The original inverted brew path bypasses that check.
+- All five dispersal ingredients replace the earlier dispersal and remove earlier Wheat from the cauldron. This removes Moonshine and restores the capacity it occupied. Wheat can still be added after a dispersal ingredient.
+- Both regression cases failed on the previous code and passed after the fixes. A native muted client in packaged survival threw both disease variants. Dropped ingredients also reproduced the Wheat replacement on the same server. A clean restart preserved both active disease effects and the cauldron's updated ingredient order. The packaged SHA-256 was `19da6d8ee25b11563af332f1b4ea45af5b41f83f03e64baf589853025585f38b`.
+- Java 17 data generation and JAR reobfuscation passed, along with all 104 checked-in Forge GameTests and 107 cases with Thaumaturge, Lithostitched, and Curios. The recovered aspect fixture now also verifies the six item mappings added after its original snapshot.
+- The 657-case recovered run passed the archived disease and Hobgoblin regressions after the disease test used an inverted brew on its husk and the hauling test used a protected tether and a clear elevated path. The broad run passed 656 cases. The gas case passed in the 110-case focused run with an explicitly empty elevated chamber. The updated replay fixtures are under `archive-updated` in the scratch directory named by `/tmp/witchery-cauldron-disease-current`.
+
 ## Muted Native Client Validation (2026-11-22)
 
 - The packaged Forge 47.4.10 client can use the installed macOS arm64 Forge libraries and assets with a private game directory. The temporary Java agent forces GLFW windows to stay hidden and unfocused and blocks window activation and fullscreen. Launch with `-XstartOnFirstThread`, turn off Forge's early window in the private profile, set `soundCategory_master:0.0`, and use `ALSOFT_DRIVERS=null`. The AppKit focus monitor reported no activation of the client PID.
 - The clean client connected to a packaged dedicated server and verified the atlas, vampire journal and all six Poppet Shelf Compass sprites. The diagnostic Auram client created and saved a fresh integrated survival world with Evolved Mekanism 1.3.0-fix3, Mekanism Curios disabled, shaders off, and a 12 GiB Java heap. Both used Witchery JAR SHA-256 `60defffd47effb722aa32495e26f62a916db39a15a5f351e73d77c33e8d5e9a5`.
+- The same hidden client setup verified 18 placed Witchwood slab variants, six corresponding held-item sprites, two Brew Bucket tints, and 32 Shaded Glass block and item variants on the cauldron parity JAR. Redstone switched the upper glass row, and the two bucket colors retained the same base model.
 - The local scratch pointer `/tmp/witchery-hidden-client-current` identifies the test workspace while it exists. It contains the `WindowGuard.java` and `FocusMonitor.swift` sources, private launch arguments, and the clean `visual-v2` and `auram-client/record` results. The instrumentation and game profiles are disposable test fixtures.
 
 ## Session Memory (2026-11-19)

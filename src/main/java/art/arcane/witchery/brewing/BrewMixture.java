@@ -38,6 +38,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -247,6 +248,8 @@ public final class BrewMixture {
         Ingredient ingredient = INGREDIENTS.get(id(offered));
         if (ingredient != null && ingredient.modifier == Modifier.DELIVERY) {
             current.removeIf(stack -> {
+                // The original dispersals replace any earlier Wheat (Moonshine) action as well.
+                if (stack.is(Items.WHEAT)) return true;
                 Ingredient previous = INGREDIENTS.get(id(stack));
                 return previous != null && previous.modifier == Modifier.DELIVERY;
             });
@@ -591,6 +594,8 @@ public final class BrewMixture {
                 }
                 if (application.effect == WitcheryEffects.DOUBLE_JUMP.get() && !application.inverted
                         && !(caster instanceof ServerPlayer player && FamiliarBinding.hasBrewMastery(player))) continue;
+                if (application.effect == WitcheryEffects.DISEASED.get() && !application.inverted
+                        && CreatureAlignment.immuneToDisease(target)) continue;
                 int amplifier = Math.min(application.amplifier, strengthLimit);
                 if (application.effect.isInstantenous()) {
                     application.effect.applyInstantenousEffect(source, caster, target, amplifier, strengthScale);

@@ -620,7 +620,7 @@
 - [x] Restore all sixteen recipes. Eight Stained Glass blocks of one color around Redstone Dust produce eight matching Shaded Glass blocks. Placement, pick-block, and Silk Touch keep the color. Ordinary mining shatters the glass.
 - [x] Restore the redstone change between clear and darkened glass. The clear pane transmits lamp light. The powered pane blocks light and emits none. Removing power restores the clear state in the same color.
 - [x] Import 32 placed panes and 32 stacks from an original Forge save, covering every color in both block states. Repeat the checks after a headless dedicated restart, then switch both rows with redstone. Data generation, JAR reobfuscation, and all 34 checked-in GameTests passed.
-- [ ] Verify the colored item and block models in a muted client. All 32 model and texture references resolved in the packaged JAR. Docker did not respond to the isolated client environment check.
+- [x] Verify all sixteen clear and sixteen darkened colors in a muted native Forge client. A dedicated-server test wall rendered both states. Redstone switched the upper row without changing its colors, and all 32 held item stacks resolved their corresponding colored sprites.
 
 ## Leaping Lily (2026-11-21)
 
@@ -1164,6 +1164,7 @@
 - [x] Restore Wasting's original food loss, Hunger, Wither and Poison, and Fullness's food and Regeneration. Drain Magic takes a fraction of maximum Witchery infusion charge. Duration Boost clears debuffs, adds up to three minutes to the remaining time of buffs, and adds Queasy. A repeat dose while Queasy can give Blindness or Nausea.
 - [x] Transfer buffs and debuffs within the original strength-scaled distances. Preserve the number, level and curability limits. Restore legacy skull metadata 0 and 4 inside saved mixtures.
 - [x] Restore the Diseased effect, legacy attack-damage modifier, overlay, fluid contact and configurable cell expiry. Keep the original difference between being dosed directly and touching the fluid.
+- [x] Apply the original creature immunity to the ordinary Rotten Flesh brew and share the check with disease fluid. The original Fermented Spider Eye path bypasses that check on the brew. A muted client on packaged Forge threw both versions. The ordinary splash infected the pig and spared the zombie, and the inverted splash infected the zombie. Both active effects persisted across a dedicated restart.
 - [x] Brew all nine variants in the muted survival client. Confirm the effects through the normal drink control. Walk through a disease cell, restart the dedicated server, and verify the saved effect. Purified Milk IV then removed the active disease, Weakness IV, and the observed cell. Drain Magic reduced the fixture's stored charge from 200 to 150.
 - [x] Verify the original disease overlay on a dedicated-server pig in the isolated client. The overlay appeared on application, disappeared when the effect cleared, and appeared on reentering tracking range with the effect already active.
 - [x] Run Java 17 data generation and JAR reobfuscation. All 553 regression cases passed before adding disease overlay synchronization. All 21 focused cases passed on the final revision.
@@ -1463,6 +1464,9 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Pass all 101 checked-in cases on clean Forge and all 105 with Thaumaturge, Lithostitched, and Curios after the hauling and manual Voodoo changes.
 - [x] Pass all 655 cases in the recovered suite after the chunk promotion fix. The first run reported failures in the insufficient-coven and blocked-Wither refund checks and ran out of disk space before completing. Both checks passed in the complete rerun after clearing disposable test worlds, along with the new chunk promotion regression. Eight focused runs of each rite passed again with the expected offerings and altar charges.
 
+- [x] Pass 104 checked-in GameTests on clean Forge and 107 with Thaumaturge, Lithostitched, and Curios after restoring the cauldron disease and Wheat rules. Both new regression cases failed on the preceding code. The packaged fixes also passed the muted client and dedicated restart checks.
+- [ ] Repeat the full recovered regression with the controlled gas fixture. The latest broad run passed 656 of 657. The old gas fixture found no neighboring cell at its fixed check. All 110 cases in the focused run passed after building an empty gas chamber above natural terrain. The broad run also passed the revised disease and Hobgoblin fixtures.
+
 ## Auram Armor Compatibility (2026-11-21)
 
 - [x] Reproduce the Auram profile's startup redirect conflict between Witch Hunter armor and Apothic Attributes 1.3.7. Capture the armor reinforcement at the damage calculation and adjust its armor argument so the Apothic Attributes redirect can still apply piercing and shredding. The bonus retains its fractional armor points.
@@ -1486,7 +1490,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Restore Rowan, Alder, and Hawthorn slabs and double slabs under their existing IDs. A placed slab carries its wood species, only matches the same species for merging, and drops two matching slabs at full height. The three species use their matching plank textures, names, sounds, and the original dry slab fire values. The legacy slab variants are available through creative items and imports.
 - [x] Import wood species and slab half from Forge 1.7.10 blocks and inventory metadata. Restore both halves of Rowan, Alder, and Perpetual Ice Doors by combining the lower and upper metadata, including across vertical chunk sections.
 - [x] Pass 13 packaged import checks and repeat them on an ordinary headless dedicated restart. Breaking a migrated Hawthorn double slab produced two Hawthorn slabs. Removing redstone closed both halves of the imported ice door spanning Y 15–16. Data generation, JAR reobfuscation, all 22 checked-in GameTests, and all 454 selected development checks passed.
-- [ ] Verify the slab models in a muted Forge client. The generated JAR resolves all 18 block variants and six item models to their respective wood assets. The Docker socket timed out during the isolated client launch.
+- [x] Verify the slab models in a muted native Forge client on the packaged dedicated server. Both block IDs rendered the bottom, top and double shapes for all three woods. All six held items resolved the matching Rowan, Alder or Hawthorn plank sprite.
 
 ## Brew of Erosion and Brew of Ice (2026-11-21)
 
@@ -1536,7 +1540,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Expose the same tagged fluid to Forge tanks. Simulation leaves both tanks as they were. Dormant mixtures can be split and combined. An active cast retains its reserved cauldron contents.
 - [x] Restore the Brew Bucket's layered item textures and tint from the mixture. The bucket carries a mixture between containers. The plain Brew fluid already placed in a world has the original short horizontal reach.
 - [x] Pass data generation, JAR reobfuscation, and all 41 required Forge GameTests. The new test heats and brews through the cauldron, fills a bucket, saves and loads the bucket and destination, and moves the same mixture through a Forge tank.
-- [ ] Verify the colored Brew Bucket in a muted client.
+- [x] Verify the colored Brew Bucket on the muted native Forge client. Red and blue saved mixture colors produced distinct overlay tints in the held model and hotbar on the packaged dedicated server.
 
 ## Gaseous and Liquid Brews (2026-11-20)
 
@@ -1569,6 +1573,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 ## Cauldron Dispersal and Waystone Targets (2026-11-20)
 
 - [x] Restore the gas wave and liquid rain. Gas expands from the target over successive pulses. The liquid rite spawns falling projectiles under the original entity ID, with the original Quartz Sphere sprite and saved brew color. Every pulse draws altar power.
+- [x] Make all five dispersal ingredients remove earlier Wheat from the batch, clearing its Moonshine effect and freeing its capacity. A later Wheat addition still works. All five transitions passed in the boiling cauldron GameTest. Dropped Gunpowder in packaged Forge removed the Wheat, kept Wolfsbane, and retained the new ingredient order after a dedicated restart.
 - [x] Restore instant block-targeted casts and coal's Extinguish effect. A cast puts out fire in an enlarged area. Ordinary thrown bottles use the smaller radius. A powered cast can still be bottled during warmup and keeps the legacy active marker.
 - [x] Restore the Bound Waystone's 100-power modifier and same-dimension distance limits. A cast without coven assistance reaches 32 blocks. Failed range checks return the tongue and preserve the base brew. Gas and instant casts use the bound coordinates. The legacy rain uses the bound dimension and the cauldron's horizontal coordinates.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 268 required Forge GameTests. Coverage includes the gas wave before and after reload, valid and distant waystones, liquid projectile saves and contact effects, and active-brew bottling.
