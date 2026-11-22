@@ -8,6 +8,7 @@ import art.arcane.witchery.block.CoffinBlock;
 import art.arcane.witchery.block.CursedControls;
 import art.arcane.witchery.block.DaylightCollectorBlock;
 import art.arcane.witchery.block.DistilleryBlock;
+import art.arcane.witchery.block.LeechChestBlock;
 import art.arcane.witchery.block.MirrorBlock;
 import art.arcane.witchery.block.RiteHeartBlock;
 import art.arcane.witchery.block.RitualGlyphBlock;
@@ -29,6 +30,7 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.ShortTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -75,7 +77,7 @@ public final class LegacyChunkUpgrade {
     private static final int LEGACY_SPIRIT_QUANTA = 5;
     private static final Set<String> SPIRIT_FLUIDS = Set.of("spiritflowing", "hollowtears");
     private static final Set<String> POST_PROCESSING_BLOCKS = Set.of("stockade", "icestockade", "icefence", "icefencegate", "coffinblock",
-            "tormentportal", "spiritportal", "spiritflowing", "hollowtears");
+            "tormentportal", "spiritportal", "spiritflowing", "hollowtears", "leechchest");
 
     private LegacyChunkUpgrade() {
     }
@@ -146,6 +148,9 @@ public final class LegacyChunkUpgrade {
             CompoundTag tile = (CompoundTag) entry;
             if (tile.getString("id").equals("witchery:wolftrap")) {
                 tile.putString("id", "witchery:beartrap");
+            }
+            if (tile.getString("id").equals("witchery:leechchest") && tile.contains("CustomName", Tag.TAG_STRING)) {
+                tile.putString("CustomName", Component.Serializer.toJson(Component.literal(tile.getString("CustomName"))));
             }
             Set<String> family = switch (tile.getString("id")) {
                 case "witchery:mirrorblock", "witchery:mirrorblock2" -> MIRRORS;
@@ -343,6 +348,11 @@ public final class LegacyChunkUpgrade {
             case "kettle", "spinningwheel", "fumefunnel", "filteredfumefunnel", "wolfaltar", "beartrap", "wolftrap",
                     "garlicgarland", "dreamcatcher", "refillingchest", "decursedirected", "decurseteleport" ->
                     state.setValue(BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata));
+            // Sprig mutation left the original chest at metadata zero, which its renderer drew facing south.
+            case "leechchest" -> state.setValue(LeechChestBlock.FACING,
+                            metadata == 0 ? Direction.SOUTH : horizontalFacing(metadata))
+                    .setValue(LeechChestBlock.LEGACY_PAIRING, true);
+            case "statueofworship" -> state.setValue(BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata & 7));
             case "grassper", "placeditem", "scarecrow", "trent", "witchsladder" -> state.setValue(
                     BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata & 7));
             case "altar" -> state.setValue(AltarBlock.FORMED, metadata == 1);
