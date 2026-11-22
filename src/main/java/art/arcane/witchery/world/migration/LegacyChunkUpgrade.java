@@ -41,6 +41,7 @@ public final class LegacyChunkUpgrade {
         CompoundTag inputLevel = input.getCompound("Level");
         ids.upgradeItems(inputLevel);
         ids.upgradeTileInventories(inputLevel, fixer, from, to);
+        LegacyChunkEntities.prepare(inputLevel, ids, fixer, from);
         CompoundTag updated = type.update(fixer, input, from, to);
 
         // At 1493 vanilla has flattened the block arrays, but still uses the original section Ys.
@@ -58,6 +59,10 @@ public final class LegacyChunkUpgrade {
             if (flattened != null) restoreSection(ids, section, flattened, states);
         }
         return updated;
+    }
+
+    public static void restoreEntities(CompoundTag upgraded) {
+        LegacyChunkEntities.restore(upgraded);
     }
 
     private static void restoreSection(LegacyWorldIds ids, CompoundTag old, CompoundTag section,

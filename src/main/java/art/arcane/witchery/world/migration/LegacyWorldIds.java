@@ -119,7 +119,7 @@ public final class LegacyWorldIds {
         }
     }
 
-    private void upgradeVanillaItems(Tag value, DataFixer fixer, int from, int to) {
+    void upgradeVanillaItems(Tag value, DataFixer fixer, int from, int to) {
         if (value instanceof CompoundTag compound) {
             for (String key : compound.getAllKeys()) upgradeVanillaItems(compound.get(key), fixer, from, to);
             if (!compound.contains("Count", Tag.TAG_ANY_NUMERIC)) return;
@@ -127,7 +127,7 @@ public final class LegacyWorldIds {
                     ? vanillaItems.get(compound.getInt("id") & 0xFFFF) : ResourceLocation.tryParse(compound.getString("id"));
             if (id == null || !id.getNamespace().equals(ResourceLocation.DEFAULT_NAMESPACE)) return;
 
-            // Vanilla's chunk fixer cannot see inventories belonging to unrecognized block entity types.
+            // Vanilla's chunk fixer cannot see containers outside its typed schema.
             var named = compound.copy();
             named.putString("id", id.toString());
             if (fixer.update(References.ITEM_STACK, new Dynamic<>(NbtOps.INSTANCE, named), from, to).getValue() instanceof CompoundTag fixed) {

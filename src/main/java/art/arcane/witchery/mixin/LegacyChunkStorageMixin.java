@@ -3,17 +3,25 @@ package art.arcane.witchery.mixin;
 import art.arcane.witchery.world.migration.LegacyChunkUpgrade;
 import art.arcane.witchery.world.migration.LegacyWorldIds;
 import com.mojang.datafixers.DataFixer;
+import com.mojang.serialization.Codec;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.datafix.DataFixTypes;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.storage.ChunkStorage;
+import net.minecraft.world.level.storage.DimensionDataStorage;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.nio.file.Path;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 @Mixin(ChunkStorage.class)
 abstract class LegacyChunkStorageMixin {
@@ -31,5 +39,12 @@ abstract class LegacyChunkStorageMixin {
             return LegacyChunkUpgrade.upgrade(type, fixer, chunk, from, to, witchery$legacyIds);
         }
         return type.update(fixer, chunk, from, to);
+    }
+
+    @Inject(method = "upgradeChunkTag", at = @At("RETURN"))
+    private void witchery$restoreLegacyEntities(ResourceKey<Level> dimension, Supplier<DimensionDataStorage> storage,
+            CompoundTag input, Optional<ResourceKey<Codec<? extends ChunkGenerator>>> generator,
+            CallbackInfoReturnable<CompoundTag> info) {
+        if (witchery$legacyIds != null) LegacyChunkUpgrade.restoreEntities(info.getReturnValue());
     }
 }
