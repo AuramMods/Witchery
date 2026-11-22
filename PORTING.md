@@ -404,7 +404,10 @@
 - [x] Restore the Brew of Raising and the Necromantic Stone's general undead commands. The muted client filled a heated kettle and brewed the original six ingredients with 500 altar power. A thrown portion raised two owned zombies, and the Necromantic Stone sent them to attack a husk. All 113 required GameTests, data generation and JAR reobfuscation passed.
 - [x] Restore Baba's Hat equipment and its charge-powered evasion. The muted client equipped the hat previously earned from Baba Yaga. A test hit from a zombie left health unchanged, reduced charge by five and moved the player to a nearby open block. Environmental fire did not consume any infusion charge.
 - [x] Restart the packaged server after these interactions. Both zombies kept their UUIDs and owner, the repaired robe kept its tags, and Baba's Hat and the remaining infusion charge stayed saved.
-- [ ] Connect the garments to the remaining advanced cauldron, player form and crossbow effects.
+- [x] Verify the advanced cauldron and combat hooks. With Brewing Expertise III, 60 bottling skill and an active Toad familiar, the Witch's Hat and either robe yield 15 portions. Baba's Hat and either robe yield 30. Wolf and Wolfman forms and powered anti-magic bolts bypass Baba's Hat evasion.
+- [x] Restore the legacy targeting order. Blinded mobs reject visible players during target selection. An invisible player must be the closest vulnerable player in the mob's search, which starts at 16 blocks and scales with armor and crouching. The robes retain their original Creeper and undead rules for visible wearers.
+- [x] Hide all nine witch clothing styles on invisible wearers. Preserve the original display exception on modern armor stands. An offscreen renderer check confirmed that the same cached model draws again when the wearer becomes visible.
+- [ ] Verify invisible clothing in a muted live client.
 
 ## Terrain Brews (2026-11-20)
 
@@ -787,6 +790,7 @@
 - [x] Verify the vampire's nightly hunt. The mob selected an occupied village, took five nonlethal bites and returned home. The hunted villager's blood went from 500 to 400.
 - [x] Preserve Witchery progress through player respawn. After a deliberate death in the headless server, the muted client respawned at rank ten with a cap of ten and 1,114 blood. Java 17 data generation, the reobfuscated JAR and all 167 required Forge GameTests passed.
 - [x] Restore guard conversion and the response to witnessed bites. See Village Guard Recruitment and Feeding below.
+- [x] Restore the rank-ten targeting rule. Zombies can target rank-nine vampires and leave visible rank-ten vampires alone. Other mobs retain their ordinary targeting rules. Forge GameTests exercised the actual target change for zombies, skeletons, and Creepers.
 
 ## Blood Crucible and Thunderstorm (2026-11-20)
 

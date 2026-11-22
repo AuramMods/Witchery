@@ -558,6 +558,12 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - The offering step records the target and the original item for refunds. A packaged headless server stopped after removing a named Waystone from a Grassper. Its next boot refunded the stone, Obsidian and Redstone at their offering positions when it could not find an altar. The powered GameTest kept the saved destination and ignored a stone added after loading.
 - Java 17 data generation, JAR reobfuscation, and all 60 required Forge GameTests passed. The packaged SHA-256 is `35aa712c97533c2ee11c5f018bc3ea28c797e7a48efe692d949eec4e8a8f70ab`.
 
+### Player Targeting and Invisible Clothing (2026-11-22)
+
+- The legacy target event distinguishes visible and invisible players. Blinded mobs reject visible players. A visible rank-ten vampire deters zombies, including their modern variants. Creepers and undead still respect their respective robes. Invisible targeting uses the closest vulnerable player within the legacy sixteen-block range, reduced by crouching and the amount of armor worn.
+- The new GameTests failed on the prior build and passed after the targeting change. They exercise the actual Forge target change, rank nine and rank ten, both robes, blindness, armor and crouching, a closer player and a closer invulnerable player. One existing cauldron misfortune check failed to find its Mutandis on an intermediate run and passed on the final run. All 62 required GameTests, Java 17 data generation, JAR reobfuscation, and the packaged headless server boot passed. The packaged SHA-256 is `a49d8eb08ced96437445929914293523d80a80a3eec0bb0d0534168d9e130af5`.
+- The Forge armor render path emitted zero vertices for all nine clothing styles on an invisible wearer. The same cached model resumed drawing when the wearer became visible. Modern armor stands retain the original display exception and draw the garments even while invisible. The isolated graphical runtime did not respond, so the muted live-client check remains open.
+
 ### Void Bramble and the Statue of the Goddess (2026-11-21)
 
 - Both block recipes use the original ingredients and remain disabled by default. Enable them separately with `allowVoidBrambleRecipe` and `allowGoddessStatueRecipe` in the common config. The Void Bramble ingredient matches Ender Bramble's `BlockStateTag.wild=false` and rejects Wild Bramble.

@@ -379,6 +379,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/WitcheryItems.java`
 
 The original `witchhat`, `witchrobe`, `necromancerrobe`, and `babashat` IDs equip the modeled clothing. The corresponding ingredient mapping uses `impregnated_leather` for 72 and `brew_of_raising` for 65. `necromantic_stone` issues commands to owned undead.
+Witch clothing models hide on invisible wearers and remain visible on armor stands. Vanilla armor visibility and crouching scale the legacy mob search for nearby invisible players. The existing `VampireLevel` data also controls whether zombies target a visible player at rank ten.
 
 | Field | Legacy Name |
 |---|---|

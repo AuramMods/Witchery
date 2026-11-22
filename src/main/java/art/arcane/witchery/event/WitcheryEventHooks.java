@@ -382,11 +382,25 @@ public final class WitcheryEventHooks {
 
     @SubscribeEvent
     public static void protectPlayerFromTargeting(LivingChangeTargetEvent event) {
-        if (event.getEntity() instanceof Mob mob && event.getNewTarget() instanceof ServerPlayer player
-                && (WitchClothingItem.deters(mob, player)
-                || InfernalInfusion.owns(mob, player) && mob.hasEffect(WitcheryEffects.ENSLAVED.get()))) {
+        if (!(event.getEntity() instanceof Mob mob) || !(event.getNewTarget() instanceof ServerPlayer player)) return;
+        if (InfernalInfusion.owns(mob, player) && mob.hasEffect(WitcheryEffects.ENSLAVED.get())) {
             event.setNewTarget(null);
+            return;
         }
+        boolean deterred = player.isInvisible()
+                ? !isClosestVulnerablePlayer(mob, player)
+                : mob.hasEffect(MobEffects.BLINDNESS) || WitchClothingItem.deters(mob, player)
+                    || mob instanceof Zombie && Vampirism.level(player) >= 10;
+        if (deterred) event.setNewTarget(null);
+    }
+
+    private static boolean isClosestVulnerablePlayer(Mob mob, ServerPlayer player) {
+        return mob.level().getNearestPlayer(mob.getX(), mob.getY(), mob.getZ(), 16, candidate -> {
+            if (!(candidate instanceof Player nearby) || !nearby.isAlive() || nearby.isSpectator()
+                    || nearby.getAbilities().invulnerable) return false;
+            double radius = 16 * nearby.getVisibilityPercent(null);
+            return nearby.distanceToSqr(mob) < radius * radius;
+        }) == player;
     }
 
     @SubscribeEvent
