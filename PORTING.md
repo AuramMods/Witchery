@@ -7,6 +7,13 @@
 - Check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before hunting for source details.
 - Run `./gradlew runData` before a separate `./gradlew jar` invocation when generated resources change. The data run can stage the previous resources before writing the new files. The `jar` invocation reprocesses them and reobfuscates without deploying into Auram.
 
+## Remaining Release Verification (2026-11-22)
+
+- [ ] Continue the same Auram survival save from the Brazier through spectral binding and the late-game branches. Verify naturally obtainable Witchery inputs and normal interactions, including the Imp and Torment chain, Mirror, the Death and Leonard encounters, and the vampire and werewolf trials. The individual milestones below record earlier isolated tests and the fixtures that supplied or accelerated parts of those routes.
+- [ ] Reconcile the original manifest against current runtime behavior. Update the older breadth-first checklist using the later milestone evidence, then resolve outstanding findings in recipe and rite entry points, client presentation, configuration, and optional integrations.
+- [ ] Close the save migration coverage listed under Legacy Save Fixtures. Check original IDs, metadata, and specialized state along with saves from earlier 1.20.1 builds. Record which data each supported upgrade path preserves.
+- [ ] Run the final data generation, reobfuscated build and regression replay. Exercise that exact JAR on clean Forge and the copied Auram profile, including multiplayer state across death, reconnects, dimension travel and dedicated restarts. Record the tested build and downloadable artifact.
+
 ## Witch's Oven Milestone (2026-11-19)
 
 - [x] Register all six slab item IDs as their corresponding block items while preserving the existing registry names. Single slabs use the modern double state when stacked. Legacy double blocks also drop two single slabs.
@@ -77,6 +84,8 @@
 - [x] Restore Waking Nightmare and its two rites. The muted player used a real taglock and brewed Grotesque in the medium Infernal ring. The rite refused to start under clear skies, then applied the persistent curse and spent 10,000 power during a thunderstorm.
 - [x] Verify the Waking Nightmare curse across death and a dedicated restart, reject an empty kit, and refund all five cure offerings for an offline target. In the muted client, the separate status effect spawned a Waking Nightmare. The rite's curse kept it pursuing the same player after the effect was cleared. The player used the small white ring and a second self taglock to remove the curse and Weakness, and the Nightmare despawned.
 - [x] Restore the Dream's pink daylight, green nightmare fog, red demonic fog, and starless sky. Two isolated muted clients on one dedicated server verified that another player's nightmare changes the entire dimension's atmosphere. The normal dreamer rejoined during a demonic nightmare and saw the red fog. When the other player woke, the atmosphere returned to pink.
+- [x] Restore the original Dreamweave sleep threshold separately from the vanilla sleep rule. It defaults to 100% and excludes spectators. Check that one sleeper out of two misses the default threshold, and that lowering it to 50% grants the movement weave at dawn to nearby mortals and at dusk to nearby vampires.
+- [x] Verify both wake transitions on packaged Forge with a muted survival client. The player used a bed at night and gained Speed at dawn. After drinking Lilith's blood, the player used a coffin in daylight and gained Speed at dusk. The client remained hidden and the focus monitor recorded no activation.
 - [ ] Complete the altar power, kettle, powered cauldron recipe, and chalk rite parity checks.
 
 ## Altar Core and Artifacts (2026-11-22)
@@ -1797,6 +1806,14 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Use the harvested Artichokes and the workshop's Purified Milk and Whiff of Magic to brew three Brews of Love and three Brews of Sleeping in the same Kettle. Bottle both batches through normal survival use. The test driver positioned ingredients from the player's inventory after its throws missed.
 - [x] Drink a Brew of Sleeping and enter a nightmare. Repeat the entry after a test teleport used the wrong dimension and woke the player. Harvest four naturally generated Somnian Cotton plants in the second nightmare. The player's save held all four Disturbed Cotton and two Icy Needles in Dream. The Overworld inventory kept the Witch's Hand, the Charged Attuned Stone, Soul of the World, and one Brew of Sleeping, and the sleeping body was present in the saved Overworld entity chunk.
 - [x] Restart the same dedicated Auram world while the player is still in the nightmare. Rejoin at the harvest site and use an Icy Needle to wake. Restore the Witch's Hand, the Charged Attuned Stone, Soul of the World, the last Brew of Sleeping, and all 196 infusion charges. Keep the four Disturbed Cotton in the Overworld and remove the sleeping body.
+
+## Auram Survival through the Spinning Wheel and Brazier (2026-11-22)
+
+- [x] Reopen the continuous Auram save after waking. Recover workshop fumes, make Quicklime from saved Wood Ash, distill two Gypsum, and fire fresh clay jars. Process eight stored Rowan saplings in the same Witch's Oven to obtain two Whiff of Magic. Craft two Attuned Stones using workshop fumes and supplied diamonds and lava.
+- [x] Use the wheel recipe that Auram actually loads. The pack replaces the `forge:rods/wooden` ingredient with `auram:bundled_sticks`. Craft the bundles, then craft and place the Spinning Wheel. Use the four Disturbed Cotton recovered from the nightmare, string and Reek of Misfortune to spin one Tormented Twine. Craft and place a Scarecrow using the spun twine.
+- [x] Craft Ritual Chalk with the Gypsum, Wood Ash and Tear of the Goddess. Draw the small white circle, offer an Attuned Stone, Wood Ash and the other rite ingredients, ignite the Heart Glyph at night, and collect the Necromantic Stone. The test driver repositioned offerings that missed the circle.
+- [x] Craft and place the Brazier using that stone and supplied iron and sticks. Add Gunpowder, Quicklime and Glowstone Dust by hand and light the Graveyard Mist recipe. The player used the saved workshop Glowstone and made fresh Quicklime from their Wood Ash. Shut down while the Brazier was lit. The saved world contained all three inputs, the Wood Ash ignition marker and 2,191 elapsed cook ticks.
+- [x] Load the same dedicated world on the updated packaged JAR. The first loaded Brazier reported the exact saved 2,191 ticks and retained all three inputs. It remained lit and reached 2,399 powered ticks before the next clean shutdown.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.

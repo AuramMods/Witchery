@@ -1,9 +1,11 @@
 package art.arcane.witchery.block;
 
 import art.arcane.witchery.block.entity.DreamCatcherBlockEntity;
+import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.item.DreamWeaveItem;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryBlocks;
+import art.arcane.witchery.vampirism.Vampirism;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -30,10 +32,14 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
+import java.util.Map;
+import java.util.WeakHashMap;
+
 public final class DreamCatcherBlock extends BaseEntityBlock {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final EnumProperty<DreamWeave> WEAVE = EnumProperty.create("weave", DreamWeave.class);
     private static final int SLEEP_RANGE = 5;
+    private static final Map<ServerLevel, Boolean> SLEEP_PHASES = new WeakHashMap<>();
     private static final VoxelShape NORTH = box(4, 0, 14.65, 12, 14, 16);
     private static final VoxelShape SOUTH = box(4, 0, 0, 12, 14, 1.35);
     private static final VoxelShape WEST = box(14.65, 0, 4, 16, 14, 12);
@@ -110,9 +116,28 @@ public final class DreamCatcherBlock extends BaseEntityBlock {
                 : createTickerHelper(type, WitcheryBlockEntities.DREAM_CATCHER.get(), DreamCatcherBlockEntity::applyLegacyState);
     }
 
-    public static void finishSleep(ServerLevel level) {
+    public static void tickSleep(ServerLevel level) {
+        boolean day = level.isDay();
+        Boolean sleepingDuringDay = SLEEP_PHASES.remove(level);
+        if (sleepingDuringDay != null && sleepingDuringDay != day) {
+            applySleepEffects(level, day);
+        }
+
+        int players = 0;
+        int sleepers = 0;
         for (ServerPlayer player : level.players()) {
             if (player.isSpectator()) continue;
+            ++players;
+            if (player.isSleeping()) ++sleepers;
+        }
+        if (sleepers > 0 && sleepers * 100 >= players * WitcheryServerConfig.PERCENTAGE_OF_PLAYERS_SLEEPING_FOR_BUFF.get()) {
+            SLEEP_PHASES.put(level, day);
+        }
+    }
+
+    private static void applySleepEffects(ServerLevel level, boolean day) {
+        for (ServerPlayer player : level.players()) {
+            if (player.isSpectator() || Vampirism.isVampire(player) == day) continue;
             BlockPos center = player.blockPosition();
             for (BlockPos pos : BlockPos.betweenClosed(center.offset(-SLEEP_RANGE, -SLEEP_RANGE, -SLEEP_RANGE),
                     center.offset(SLEEP_RANGE, SLEEP_RANGE, SLEEP_RANGE))) {

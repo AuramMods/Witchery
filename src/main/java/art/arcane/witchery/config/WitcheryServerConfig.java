@@ -23,6 +23,7 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.BooleanValue ALLOW_DEATH_ITEM_RECOVERY_RITE;
     public static final ForgeConfigSpec.BooleanValue RESPECT_OTHER_DEATH_CHEST_MODS;
     public static final ForgeConfigSpec.BooleanValue ALLOW_VAMPIRE_QUESTS;
+    public static final ForgeConfigSpec.IntValue PERCENTAGE_OF_PLAYERS_SLEEPING_FOR_BUFF;
     public static final ForgeConfigSpec.IntValue VAMPIRE_DEATH_ITEM_KEEP_ALIVE_MINS;
     public static final ForgeConfigSpec.DoubleValue VAMPIRE_HUNTER_SPAWN_CHANCE;
     public static final ForgeConfigSpec.BooleanValue ALLOW_VAMPIRE_WEREWOLF_HYBRIDS;
@@ -82,6 +83,9 @@ public final class WitcheryServerConfig {
                 .comment("One in this many scheduled ticks removes a disease fluid cell. Zero keeps the cells.")
                 .defineInRange("diseaseBlockRemovalChance", 10, 0, Integer.MAX_VALUE);
         ALLOW_VOLATILITY_POTION_BLOCK_DAMAGE = builder.define("allowVolatilityPotionBlockDamage", true);
+        PERCENTAGE_OF_PLAYERS_SLEEPING_FOR_BUFF = builder
+                .comment("Percentage of players who must be asleep before dawn or dusk for Dreamweaves to grant their effects.")
+                .defineInRange("percentageOfPlayersSleepingForBuff", 100, 1, 100);
         CREEPER_HEART_TERRAIN_DAMAGE = builder
                 .comment("Eating a Creeper Heart makes a strength-three blast that breaks blocks. False gives a strength-one blast without block damage.")
                 .define("creeperHeartsExplodeWithDamageWhenEaten", true);

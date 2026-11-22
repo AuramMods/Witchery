@@ -19,13 +19,17 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class SunGrenadeFuseTests {
-    @GameTest(template = "qa_coven_arena", timeoutTicks = 260)
+    @GameTest(template = "qa_coven_arena", batch = "witchery_sun_grenade", setupTicks = 5, timeoutTicks = 260)
     public static void sunGrenadeKeepsItsOriginalFuseAfterImpact(GameTestHelper helper) {
         var level = helper.getLevel();
         var relative = new BlockPos(4, 4, 4);
         helper.setBlock(relative.east(3), Blocks.STONE);
         helper.setBlock(relative.east(3).below(), Blocks.STONE);
-        helper.setBlock(relative.east(2).below(2), Blocks.STONE);
+        for (int x = 2; x <= 8; ++x) {
+            for (int z = 2; z <= 6; ++z) {
+                helper.setBlock(new BlockPos(x, 2, z), Blocks.STONE);
+            }
+        }
         var origin = Vec3.atCenterOf(helper.absolutePos(relative));
         var grenade = new GrenadeProjectile(WitcheryEntities.GRENADE.get(), level);
         grenade.setPos(origin);
@@ -43,7 +47,8 @@ public final class SunGrenadeFuseTests {
                     "The temporary light must disappear after the grenade bursts");
             var drops = level.getEntitiesOfClass(ItemEntity.class, new AABB(origin, origin).inflate(6),
                     drop -> drop.getItem().is(WitcheryIngredient.QUARTZ_SPHERE.item()));
-            helper.assertTrue(drops.size() == 1, "The burst must return one Quartz Sphere");
+            int amount = drops.stream().mapToInt(drop -> drop.getItem().getCount()).sum();
+            helper.assertTrue(amount == 1, "The burst must return one Quartz Sphere, found " + amount);
             helper.succeed();
         });
     }

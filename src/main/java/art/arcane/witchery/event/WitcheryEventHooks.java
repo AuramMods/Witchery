@@ -151,7 +151,6 @@ public final class WitcheryEventHooks {
     @SubscribeEvent
     public static void onSleepFinished(SleepFinishedTimeEvent event) {
         ServerLevel level = (ServerLevel) event.getLevel();
-        DreamCatcherBlock.finishSleep(level);
         if (level.players().stream().filter(player -> !player.isSpectator()).allMatch(player ->
                 player.isSleepingLongEnough() && Vampirism.level(player) > 0
                         && player.getSleepingPos().map(pos -> level.getBlockState(pos).getBlock() instanceof CoffinBlock).orElse(false))) {
@@ -326,6 +325,7 @@ public final class WitcheryEventHooks {
         if (event.phase == TickEvent.Phase.END && event.level instanceof ServerLevel level) {
             TormentTravel.tickEncounters(level);
             OverworldInfusion.tick(level);
+            DreamCatcherBlock.tickSleep(level);
         }
     }
 
