@@ -68,7 +68,7 @@ public final class LegacyChunkUpgrade {
         CompoundTag input = original.copy();
         CompoundTag inputLevel = input.getCompound("Level");
         ids.upgradeItems(inputLevel);
-        restoreSharedTileTypes(inputLevel, ids);
+        restoreLegacyTileTypes(inputLevel, ids);
         ids.upgradeTileInventories(inputLevel, fixer, from, to);
         LegacyChunkEntities.prepare(inputLevel, ids, fixer, from);
         CompoundTag updated = type.update(fixer, input, from, to);
@@ -113,10 +113,16 @@ public final class LegacyChunkUpgrade {
         }
     }
 
-    private static void restoreSharedTileTypes(CompoundTag level, LegacyWorldIds ids) {
+    private static void restoreLegacyTileTypes(CompoundTag level, LegacyWorldIds ids) {
         var sections = level.getList("Sections", Tag.TAG_COMPOUND);
-        for (Tag entry : level.getList("TileEntities", Tag.TAG_COMPOUND)) {
+        var tiles = level.getList("TileEntities", Tag.TAG_COMPOUND);
+        // The garland's original tile had no saved state. The port renders the block directly.
+        tiles.removeIf(entry -> ((CompoundTag) entry).getString("id").equals("witchery:garlicgarland"));
+        for (Tag entry : tiles) {
             CompoundTag tile = (CompoundTag) entry;
+            if (tile.getString("id").equals("witchery:wolftrap")) {
+                tile.putString("id", "witchery:beartrap");
+            }
             Set<String> family = switch (tile.getString("id")) {
                 case "witchery:mirrorblock", "witchery:mirrorblock2" -> MIRRORS;
                 case "witchery:scarecrow", "witchery:trent", "witchery:witchsladder" -> FETISHES;
@@ -258,7 +264,7 @@ public final class LegacyChunkUpgrade {
                     .setValue(WitchesOvenBlock.LIT, name.getPath().equals("witchesovenburning"));
             case "distilleryidle", "distilleryburning" -> state.setValue(BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata))
                     .setValue(DistilleryBlock.LIT, name.getPath().equals("distilleryburning"));
-            case "kettle", "spinningwheel", "fumefunnel", "filteredfumefunnel" -> state.setValue(
+            case "kettle", "spinningwheel", "fumefunnel", "filteredfumefunnel", "wolfaltar", "beartrap", "wolftrap", "garlicgarland" -> state.setValue(
                     BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata));
             case "grassper", "placeditem", "scarecrow", "trent", "witchsladder" -> state.setValue(
                     BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata & 7));

@@ -1,6 +1,7 @@
 package art.arcane.witchery.world.migration;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.capability.WitcheryCapabilities;
 import art.arcane.witchery.item.DoorKeyItem;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
@@ -123,6 +124,16 @@ public final class LegacyWorldIds {
     public void upgradePlayer(CompoundTag player) {
         dimensions.upgradePlayerLocation(player);
         upgradeItems(player);
+        if (player.contains("WitcheryExtendedPlayer", Tag.TAG_COMPOUND)) {
+            var capabilities = player.getCompound("ForgeCaps");
+            String playerDataId = WitcheryCapabilities.playerDataId().toString();
+            if (!capabilities.contains(playerDataId, Tag.TAG_COMPOUND)) {
+                var imported = new CompoundTag();
+                imported.put("WitcheryExtendedPlayer", player.getCompound("WitcheryExtendedPlayer").copy());
+                capabilities.put(playerDataId, imported);
+                player.put("ForgeCaps", capabilities);
+            }
+        }
     }
 
     public void upgradeItems(Tag value) {
