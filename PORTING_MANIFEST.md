@@ -264,7 +264,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | `SAPLING` | `witchery:witchsapling` |
 | `LOG` | `witchery:witchlog` |
 | `LEAVES` | `witchery:witchleaves` |
-| `VOID_BRAMBLE` | `witchery:voidbramble` |
+| `VOID_BRAMBLE` | `witchery:voidbramble` (owner in tile `WITCPlacer`, 32-block circle rite suppression) |
 | `BRAMBLE` | `witchery:bramble` |
 | `GLINT_WEED` | `witchery:glintweed` |
 | `SPANISH_MOSS` | `witchery:spanishmoss` |
@@ -295,7 +295,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | `ALLURING_SKULL` | `witchery:alluringskull` (mount in block metadata, active state in tile `SkullType`, floor rotation in `Rot`) |
 | `WICKER_BUNDLE` | `witchery:wickerbundle` |
 | `GLOW_GLOBE` | `witchery:glowglobe` |
-| `STATUE_GODDESS` | `witchery:statuegoddess` |
+| `STATUE_GODDESS` | `witchery:statuegoddess` (facing in metadata, owner in tile `WITCPlacer`) |
 | `STOCKADE` | `witchery:stockade` (wood subtypes 0–8, contact damage) |
 | `STOCKADE_ICE` | `witchery:icestockade` (Ice World conversion, contact damage) |
 | `PERPETUAL_ICE` | `witchery:perpetualice` |

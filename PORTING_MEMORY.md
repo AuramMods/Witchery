@@ -490,6 +490,15 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Original Forge regions supplied all 32 placed states and 32 numeric stacks. The raw upgraded regions matched every ID and color. The headless dedicated server loaded the same data again after restart, then powered the clear row and unpowered the darkened row without losing colors.
 - Java 17 data generation, JAR reobfuscation and all 34 checked-in GameTests passed. The JAR contains both item display variants for every color and all 16 recipes and unlock advancements. The isolated client environment did not respond, so its visual check remains open. The packaged JAR SHA-256 is `5f36007ec3cb687386e577fcf8060dbd338cba2aad36679910f7d3274eedbb23`.
 
+### Void Bramble and the Statue of the Goddess (2026-11-21)
+
+- Both block recipes use the original ingredients and remain disabled by default. Enable them separately with `allowVoidBrambleRecipe` and `allowGoddessStatueRecipe` in the common config. The Void Bramble ingredient matches Ender Bramble's `BlockStateTag.wild=false` and rejects Wild Bramble.
+- Void Bramble shares the Ender Bramble's scheduled contact teleport so movement processing finishes before the entity relocates. It also restores the original strict 32-block sphere for blocking new Heart Glyph casts. The port tracks brambles per loaded dimension. The same coordinates in another dimension do not suppress a rite there. An existing cast can still be cancelled.
+- The Goddess statue removes persistent Misfortune, Insanity, Sinking, Overheating and Waking Nightmare. It clears the five associated vanilla ailments and syncs the new Sinking strength to the player. Its original mesh and texture render for the block and the item. Both placed blocks save the original `WITCPlacer` name.
+- A genuine 1.7.10 fixture saved two bramble blocks and two Goddess statues in the Overworld. Raw region data and the headless restart agreed on all owners and statue facings. The brambles prevented a redstone cast and let the same talisman and Redstone Dust start a rite after removal. The pig that contacted the bramble was saved at `262.5, 4, -172.5` with full health. A dropped bottle remained by the plant.
+- An earlier packaged 1.20.1 build placed both placeholders without tile data. The final JAR created their block entities, left owner names blank, and saved their recovery flags across another restart. A GameTest verified the unowned statue remained recoverable after save and load.
+- Java 17 data generation, JAR reobfuscation and all 40 Forge GameTests passed. The packaged SHA-256 is `fba087d0f5272689e3e2ea2d20e789c2c0f6c5b2a0ec54502bf29d97403afe44`. Live client rendering remains unverified.
+
 ### Alluring Skull and Legacy Trophies (2026-11-21)
 
 - The Alluring Skull crafts from either vanilla skeleton skull, a Necromantic Stone, two Glowstone Dust, and a Voodoo Poppet. It emits light level seven, mounts on solid surfaces, and uses its inactive sprite in inventory. A Necromantic Stone activates it. A second use removes it and drops a fresh inactive skull without consuming the stone.

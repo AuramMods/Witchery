@@ -51,7 +51,10 @@ public final class BrambleBlock extends Block {
 
     @Override
     public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        if (state.getValue(WILD)) return;
+        if (!state.getValue(WILD)) teleportContacts(level, pos);
+    }
+
+    static void teleportContacts(ServerLevel level, BlockPos pos) {
         for (LivingEntity living : level.getEntitiesOfClass(LivingEntity.class, new AABB(pos), LivingEntity::isAlive)) {
             WitcheryTeleport.randomSurface(living, level, pos, 500);
         }

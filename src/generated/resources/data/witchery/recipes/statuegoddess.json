@@ -1,0 +1,42 @@
+{
+  "type": "forge:conditional",
+  "recipes": [
+    {
+      "conditions": [
+        {
+          "type": "witchery:protection_recipe_enabled",
+          "recipe": "statuegoddess"
+        }
+      ],
+      "recipe": {
+        "type": "minecraft:crafting_shaped",
+        "category": "misc",
+        "key": {
+          "#": {
+            "item": "minecraft:stone"
+          },
+          "H": [
+            {
+              "item": "witchery:demon_heart"
+            },
+            {
+              "item": "witchery:demonheart"
+            }
+          ],
+          "S": {
+            "item": "minecraft:nether_star"
+          }
+        },
+        "pattern": [
+          "S#S",
+          "SHS",
+          "###"
+        ],
+        "result": {
+          "item": "witchery:statuegoddess"
+        },
+        "show_notification": true
+      }
+    }
+  ]
+}

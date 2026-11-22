@@ -1,5 +1,7 @@
 package art.arcane.witchery.ritual;
 
+import art.arcane.witchery.block.entity.VoidBrambleBlockEntity;
+import art.arcane.witchery.world.WitcheryDimensions;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.registry.WitcheryRecipes;
 import net.minecraft.core.BlockPos;
@@ -79,6 +81,9 @@ public final class RiteActivation {
     public record Selection(List<ResourceLocation> rites, String failure) {}
 
     public static Selection select(ServerLevel level, BlockPos heart) {
+        if (level.dimension().equals(WitcheryDimensions.DREAM) || VoidBrambleBlockEntity.preventsRite(level, heart)) {
+            return new Selection(List.of(), "message.witchery.rite.null_field");
+        }
         var recipes = level.getRecipeManager().getAllRecipesFor(WitcheryRecipes.ITEM_RITE.get()).stream().sorted(ORDER).toList();
         var queue = new ArrayList<ResourceLocation>();
         Set<ItemRiteRecipe.OfferingSource> reserved = new HashSet<>();

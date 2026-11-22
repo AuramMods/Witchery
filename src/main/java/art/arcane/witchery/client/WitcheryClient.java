@@ -74,6 +74,7 @@ import art.arcane.witchery.client.renderer.CovenWitchRenderer;
 import art.arcane.witchery.client.renderer.HobgoblinRenderer;
 import art.arcane.witchery.client.renderer.HobgoblinGodRenderer;
 import art.arcane.witchery.client.renderer.StatueOfWorshipRenderer;
+import art.arcane.witchery.client.renderer.StatueGoddessRenderer;
 import art.arcane.witchery.client.renderer.CoffinRenderer;
 import art.arcane.witchery.client.renderer.CrystalBallRenderer;
 import art.arcane.witchery.client.renderer.DemonRenderer;
@@ -262,6 +263,7 @@ public final class WitcheryClient {
         event.registerLayerDefinition(WolfHeadRenderer.LAYER, WolfHeadRenderer::layer);
         event.registerLayerDefinition(WolfmanRenderer.LAYER, WolfmanRenderer::layer);
         event.registerLayerDefinition(WolfAltarRenderer.LAYER, WolfAltarRenderer::layer);
+        event.registerLayerDefinition(StatueGoddessRenderer.LAYER, StatueGoddessRenderer::layer);
         event.registerLayerDefinition(HuntingTrapRenderer.LAYER, HuntingTrapRenderer::layer);
         for (var style : VampireClothingItem.Style.values()) {
             event.registerLayerDefinition(VampireClothingModel.layerId(style), () -> VampireClothingModel.layer(style));
@@ -365,6 +367,7 @@ public final class WitcheryClient {
         event.registerBlockEntityRenderer(WitcheryBlockEntities.WOLF_HEAD.get(), WolfHeadRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.ALLURING_SKULL.get(), AlluringSkullRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.WOLF_ALTAR.get(), WolfAltarRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.STATUE_GODDESS.get(), StatueGoddessRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.WORSHIP_STATUE.get(), StatueOfWorshipRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.HUNTING_TRAP.get(), HuntingTrapRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.PLACED_ITEM.get(), PlacedItemRenderer::new);

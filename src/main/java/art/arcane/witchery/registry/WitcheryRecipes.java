@@ -4,6 +4,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.brewing.CauldronRitualRecipe;
 import art.arcane.witchery.brewing.KettleRecipe;
 import art.arcane.witchery.crafting.AllSaplingsSmeltCondition;
+import art.arcane.witchery.crafting.ProtectionRecipeCondition;
 import art.arcane.witchery.crafting.AssembleVampireBookRecipe;
 import art.arcane.witchery.crafting.BoundTaglockIngredient;
 import art.arcane.witchery.crafting.ClothingRepairRecipe;
@@ -152,6 +153,7 @@ public final class WitcheryRecipes {
         if (event.getRegistryKey().equals(Registries.RECIPE_SERIALIZER)) {
             CraftingHelper.register(BoundTaglockIngredient.ID, BoundTaglockIngredient.SERIALIZER);
             CraftingHelper.register(new AllSaplingsSmeltCondition.Serializer());
+            CraftingHelper.register(new ProtectionRecipeCondition.Serializer());
         }
     }
 }

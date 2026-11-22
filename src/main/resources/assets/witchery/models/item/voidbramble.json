@@ -1,3 +1,4 @@
 {
-   "parent" : "witchery:block/voidbramble"
+   "parent": "minecraft:item/generated",
+   "textures": {"layer0": "witchery:block/voidbramble"}
 }

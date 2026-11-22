@@ -2,11 +2,13 @@ package art.arcane.witchery.data;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.CritterSnareBlock;
+import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.block.ShadedGlassBlock;
 import art.arcane.witchery.block.StockadeBlock;
 import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.crafting.AllSaplingsSmeltCondition;
+import art.arcane.witchery.crafting.ProtectionRecipeCondition;
 import art.arcane.witchery.item.HunterClothingItem;
 import art.arcane.witchery.item.HunterClothingItem.Piece;
 import art.arcane.witchery.item.HunterClothingItem.Upgrade;
@@ -81,6 +83,7 @@ public class WitcheryRecipeProvider extends RecipeProvider {
         witchWoodStairs(recipeOutput, WitchWoodType.ROWAN, witchPlanks, rowanPlanks);
         witchWoodStairs(recipeOutput, WitchWoodType.ALDER, witchPlanks, alderPlanks);
         witchWoodStairs(recipeOutput, WitchWoodType.HAWTHORN, witchPlanks, hawthornPlanks);
+        protectionRecipes(recipeOutput);
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryIngredient.TREEFYD_SEEDS.item(), 2)
                 .define('X', WitcheryIngredient.MUTANDIS_EXTREMIS.item())
@@ -705,6 +708,38 @@ public class WitcheryRecipeProvider extends RecipeProvider {
         ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, WitcheryIngredient.SILVER_BOLT.item(), 3)
                 .define('S', silver).define('B', stake).pattern(" S ").pattern("BBB")
                 .unlockedBy("has_silver_dust", has(silver)).save(output);
+    }
+
+    private static void protectionRecipes(Consumer<FinishedRecipe> output) {
+        Item heart = WitcheryIngredient.DEMON_HEART.item();
+        Item legacyHeart = WitcheryItems.LEGACY_BLOCK_ITEMS.get("demonheart").get();
+        conditionalProtectionRecipe(output, ProtectionRecipeCondition.GODDESS_STATUE,
+                ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, WitcheryBlocks.getRequired("statuegoddess").get())
+                        .define('S', Items.NETHER_STAR)
+                        .define('#', Blocks.STONE)
+                        .define('H', Ingredient.of(heart, legacyHeart))
+                        .pattern("S#S").pattern("SHS").pattern("###")
+                        .unlockedBy("has_nether_star", has(Items.NETHER_STAR)));
+
+        ItemStack enderBramble = new ItemStack(WitcheryBlocks.getRequired("bramble").get());
+        BrambleBlock.setWild(enderBramble, false);
+        conditionalProtectionRecipe(output, ProtectionRecipeCondition.VOID_BRAMBLE,
+                ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, WitcheryBlocks.getRequired("voidbramble").get(), 4)
+                        .define('L', WitcheryIngredient.DROP_OF_LUCK.item())
+                        .define('M', WitcheryIngredient.MUTANDIS_EXTREMIS.item())
+                        .define('R', Items.NETHER_STAR)
+                        .define('#', PartialNBTIngredient.of(enderBramble.getItem(), enderBramble.getTag()))
+                        .pattern("LML").pattern("R#R").pattern("LML")
+                        .unlockedBy("has_nether_star", has(Items.NETHER_STAR)));
+    }
+
+    private static void conditionalProtectionRecipe(Consumer<FinishedRecipe> output, ProtectionRecipeCondition condition,
+                                                    ShapedRecipeBuilder recipe) {
+        ResourceLocation id = condition.recipeId();
+        ConditionalRecipe.builder().addCondition(condition)
+                .addRecipe(conditional -> recipe.save(conditional, id))
+                .generateAdvancement(ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "recipes/decorations/" + id.getPath()))
+                .build(output, id);
     }
 
     private static void woodAshRecipe(Consumer<FinishedRecipe> output) {

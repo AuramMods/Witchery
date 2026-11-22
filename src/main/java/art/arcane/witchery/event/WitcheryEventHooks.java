@@ -1,6 +1,7 @@
 package art.arcane.witchery.event;
 
 import art.arcane.witchery.block.AlluringSkullBlock;
+import art.arcane.witchery.block.OwnedColumnBlock;
 import art.arcane.witchery.brewing.BrewItemCurse;
 import art.arcane.witchery.brewing.ChilledEffect;
 import art.arcane.witchery.brewing.DeathBrewEffects;
@@ -9,6 +10,7 @@ import art.arcane.witchery.entity.Hobgoblin;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.CoffinBlock;
 import art.arcane.witchery.block.entity.AreaWardBlockEntity;
+import art.arcane.witchery.block.entity.PlacedOwnerBlockEntity;
 import art.arcane.witchery.brewing.GrotesqueEffect;
 import art.arcane.witchery.brewing.PlantBrewEffect;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
@@ -136,13 +138,14 @@ public final class WitcheryEventHooks {
     public static void onChunkLoad(ChunkEvent.Load event) {
         if (event.isNewChunk() || !(event.getLevel() instanceof ServerLevel)
                 || !(event.getChunk() instanceof LevelChunk chunk)) return;
-        // Earlier 1.20.1 saves have the skull block without a block entity.
-        chunk.findBlocks(state -> state.getBlock() instanceof AlluringSkullBlock, (pos, state) -> {
-            if (chunk.getBlockEntity(pos) == null
-                    && chunk.getBlockEntity(pos, LevelChunk.EntityCreationType.IMMEDIATE) != null) {
-                chunk.setUnsaved(true);
-            }
-        });
+        // Earlier 1.20.1 saves placed these blocks without block entities.
+        chunk.findBlocks(state -> state.getBlock() instanceof AlluringSkullBlock || state.getBlock() instanceof OwnedColumnBlock,
+                (pos, state) -> {
+                    if (chunk.getBlockEntity(pos) != null) return;
+                    var restored = chunk.getBlockEntity(pos, LevelChunk.EntityCreationType.IMMEDIATE);
+                    if (restored instanceof PlacedOwnerBlockEntity owned) owned.recoverableFromEarlierPort();
+                    if (restored != null) chunk.setUnsaved(true);
+                });
     }
 
     @SubscribeEvent

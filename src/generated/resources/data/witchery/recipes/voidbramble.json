@@ -1,0 +1,43 @@
+{
+  "type": "forge:conditional",
+  "recipes": [
+    {
+      "conditions": [
+        {
+          "type": "witchery:protection_recipe_enabled",
+          "recipe": "voidbramble"
+        }
+      ],
+      "recipe": {
+        "type": "minecraft:crafting_shaped",
+        "category": "misc",
+        "key": {
+          "#": {
+            "type": "forge:partial_nbt",
+            "item": "witchery:bramble",
+            "nbt": "{BlockStateTag:{wild:\"false\"}}"
+          },
+          "L": {
+            "item": "witchery:drop_of_luck"
+          },
+          "M": {
+            "item": "witchery:mutandis_extremis"
+          },
+          "R": {
+            "item": "minecraft:nether_star"
+          }
+        },
+        "pattern": [
+          "LML",
+          "R#R",
+          "LML"
+        ],
+        "result": {
+          "count": 4,
+          "item": "witchery:voidbramble"
+        },
+        "show_notification": true
+      }
+    }
+  ]
+}

@@ -25,6 +25,8 @@ import art.arcane.witchery.block.entity.KettleBlockEntity;
 import art.arcane.witchery.block.entity.LeechChestBlockEntity;
 import art.arcane.witchery.block.entity.MirrorBlockEntity;
 import art.arcane.witchery.block.entity.PlacedItemBlockEntity;
+import art.arcane.witchery.block.entity.PlacedOwnerBlockEntity;
+import art.arcane.witchery.block.entity.VoidBrambleBlockEntity;
 import art.arcane.witchery.block.entity.StatueOfWorshipBlockEntity;
 import art.arcane.witchery.block.entity.PoppetShelfBlockEntity;
 import art.arcane.witchery.block.entity.RefillingChestBlockEntity;
@@ -90,6 +92,12 @@ public final class WitcheryBlockEntities {
     public static final RegistryObject<BlockEntityType<AlluringSkullBlockEntity>> ALLURING_SKULL =
             BLOCK_ENTITIES.register("alluringskull", () -> BlockEntityType.Builder.of(AlluringSkullBlockEntity::new,
                     WitcheryBlocks.getRequired("alluringskull").get()).build(null));
+    public static final RegistryObject<BlockEntityType<VoidBrambleBlockEntity>> VOID_BRAMBLE =
+            BLOCK_ENTITIES.register("voidbramble", () -> BlockEntityType.Builder.of(VoidBrambleBlockEntity::new,
+                    WitcheryBlocks.getRequired("voidbramble").get()).build(null));
+    public static final RegistryObject<BlockEntityType<PlacedOwnerBlockEntity>> STATUE_GODDESS =
+            BLOCK_ENTITIES.register("statuegoddess", () -> BlockEntityType.Builder.of(WitcheryBlockEntities::createGoddess,
+                    WitcheryBlocks.getRequired("statuegoddess").get()).build(null));
     public static final RegistryObject<BlockEntityType<DreamCatcherBlockEntity>> DREAM_CATCHER =
             BLOCK_ENTITIES.register("dreamcatcher", () -> BlockEntityType.Builder.of(DreamCatcherBlockEntity::new,
                     WitcheryBlocks.getRequired("dreamcatcher").get()).build(null));
@@ -172,6 +180,8 @@ public final class WitcheryBlockEntities {
         LEGACY_BLOCK_ENTITIES.put("chalice", CHALICE);
         LEGACY_BLOCK_ENTITIES.put("crystalball", CRYSTAL_BALL);
         LEGACY_BLOCK_ENTITIES.put("alluringskull", ALLURING_SKULL);
+        LEGACY_BLOCK_ENTITIES.put("voidbramble", VOID_BRAMBLE);
+        LEGACY_BLOCK_ENTITIES.put("statuegoddess", STATUE_GODDESS);
         LEGACY_BLOCK_ENTITIES.put("dreamcatcher", DREAM_CATCHER);
         LEGACY_BLOCK_ENTITIES.put("grassper", GRASSPER);
         LEGACY_BLOCK_ENTITIES.put("demonheart", DEMON_HEART);
@@ -262,6 +272,10 @@ public final class WitcheryBlockEntities {
 
     private static MirrorBlockEntity createRoomMirror(BlockPos pos, BlockState state) {
         return new MirrorBlockEntity(ROOM_MIRROR.get(), pos, state);
+    }
+
+    private static PlacedOwnerBlockEntity createGoddess(BlockPos pos, BlockState state) {
+        return new PlacedOwnerBlockEntity(STATUE_GODDESS.get(), pos, state);
     }
 
     private static WitchesOvenBlockEntity createOven(BlockPos pos, BlockState state) {

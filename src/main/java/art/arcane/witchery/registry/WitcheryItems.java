@@ -1,5 +1,6 @@
 package art.arcane.witchery.registry;
 
+import art.arcane.witchery.item.StatueGoddessItem;
 import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.block.LeapingLilyBlock;
 import art.arcane.witchery.block.ShadedGlassBlock;
@@ -487,6 +488,9 @@ public final class WitcheryItems {
             }
             case "wolfaltar" -> {
                 return new WolfAltarItem(block);
+            }
+            case "statuegoddess" -> {
+                return new StatueGoddessItem(block);
             }
             case "statueofworship" -> {
                 return new StatueOfWorshipBlock.Item(block);

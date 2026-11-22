@@ -623,6 +623,14 @@
 - [x] Pass Java 17 data generation, reobfuscation, and all 37 required GameTests. The new test verifies both recipes, placement rotation, activation, zombie movement, the lack of a route for a pig, and recovery.
 - [ ] Verify both skull textures and mounting orientations in a muted client. The reobfuscated JAR includes both textures and the original inventory sprite. The isolated Linux environment did not respond.
 
+## Void Bramble and the Statue of the Goddess (2026-11-21)
+
+- [x] Restore both original crafting recipes. `allowVoidBrambleRecipe` and `allowGoddessStatueRecipe` in `witchery-common.toml` both default to false. Each option enables its own recipe. Four Void Brambles require Ender Bramble, two Nether Stars, two Mutandis Extremis, and four Drops of Luck. The statue requires stone, four Nether Stars, and a Demon Heart.
+- [x] Restore Void Bramble contact teleporting and its 32-block field. The field prevents new Heart Glyph casts in its own dimension and leaves the offerings alone. Dream also retains the original prohibition on starting circle rites. The owner can reclaim a bramble column.
+- [x] Restore the Goddess statue's five directed cures and the related vanilla effect removal. Any player can use the statue. The owner can reclaim it while crouching. A prior 1.20.1 placeholder without an owner remains recoverable with the same interaction.
+- [x] Pass Java 17 data generation, JAR reobfuscation, and all 40 Forge GameTests. In a packaged headless restart, the imported Void Bramble suppressed redstone activation. A pig touched the plant and saved at a different location while a dropped bottle stayed behind. Removing the plant let the same offerings start the rite.
+- [ ] Verify the foliage shape and Goddess statue model in a muted client. The reobfuscated JAR includes the original textures and the ported statue mesh.
+
 ## Coffin (2026-11-20)
 
 - [x] Craft the original placeable coffin from a bed, three planks and five logs. The muted survival client crafted the item and placed the head and foot together. Placement tests refused an obstructed or unsupported second half and retained the item.
@@ -1272,6 +1280,8 @@
 - [x] Import 34 plant and trap blocks from the original server, including all twelve Plant Mines, six snare states, both Brambles, four vine facings, four Witchery Lily Pad growth levels, Leaping Lilies, Somnian Cotton, brew webs and cactus, and Glow Globes. Preserve the exact delays and priorities of four saved Lily Pad updates.
 - [x] Reopen the plant and trap fixture on the packaged headless server and repeat all 34 block-state checks. A Leaping Lily gave a pig Speed I and Jump Boost V. An Ink Mine blinded another pig and was consumed. The imported Witchery Lily Pad spread once adjacent source water was available.
 - [x] Import ten original skulls, trophies, hearts and the Crystal Ball. Keep each skull's active state or beast type, floor rotation, wall mount, and all four Demon Heart facings. The same states, block entities and Crystal Ball reading time survived an ordinary headless restart.
+- [x] Import a Void Bramble column and two Statue of the Goddess blocks from the original server. Preserve all four original owner records and both statue orientations after a headless reload.
+- [x] Open an earlier 1.20.1 save containing both decorative placeholders and repeat the checks after a dedicated restart. The missing block entities were created without inventing owners, and both blocks retained their recovery flag.
 - [ ] Expand migration to other block and subtype data and specialized entity and block-entity fields. Add fixtures before calling the migration complete.
 
 ### Importing a copy of a legacy world

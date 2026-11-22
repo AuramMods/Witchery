@@ -1,41 +1,4 @@
 {
-  "parent": "minecraft:block/block",
-  "textures": {
-    "particle": "witchery:block/voidbramble",
-    "all": "witchery:block/voidbramble"
-  },
-  "elements": [
-    {
-      "from": [
-        0.8,
-        0.0,
-        0.8
-      ],
-      "to": [
-        15.2,
-        16.0,
-        15.2
-      ],
-      "faces": {
-        "down": {
-          "texture": "#all"
-        },
-        "up": {
-          "texture": "#all"
-        },
-        "north": {
-          "texture": "#all"
-        },
-        "south": {
-          "texture": "#all"
-        },
-        "west": {
-          "texture": "#all"
-        },
-        "east": {
-          "texture": "#all"
-        }
-      }
-    }
-  ]
+  "parent": "minecraft:block/crop",
+  "textures": {"crop": "witchery:block/voidbramble"}
 }

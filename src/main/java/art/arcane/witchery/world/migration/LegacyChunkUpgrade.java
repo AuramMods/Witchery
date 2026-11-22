@@ -362,7 +362,8 @@ public final class LegacyChunkUpgrade {
             case "distilleryidle", "distilleryburning" -> state.setValue(BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata))
                     .setValue(DistilleryBlock.LIT, name.getPath().equals("distilleryburning"));
             case "kettle", "spinningwheel", "fumefunnel", "filteredfumefunnel", "wolfaltar", "beartrap", "wolftrap",
-                    "garlicgarland", "dreamcatcher", "refillingchest", "decursedirected", "decurseteleport", "demonheart" ->
+                    "garlicgarland", "dreamcatcher", "refillingchest", "decursedirected", "decurseteleport", "demonheart",
+                    "statuegoddess" ->
                     state.setValue(BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata));
             // Sprig mutation left the original chest at metadata zero, which its renderer drew facing south.
             case "leechchest" -> state.setValue(LeechChestBlock.FACING,
@@ -417,7 +418,8 @@ public final class LegacyChunkUpgrade {
             case "poppetshelf", "bloodedwool", "pitdirt", "pitgrass", "mirrorwall",
                     "tormentstone", "embermoss", "glintweed", "spanishmoss", "infinityegg", "icedoubleslab", "snowdoubleslab",
                     "cauldron", "brazier", "candelabra", "perpetualice", "icestockade", "icefence", "bloodcrucible", "silvervat",
-                    "force", "barrier", "slurp", "somniancotton", "web", "cactus", "glowglobe", "leapinglily", "crystalball" -> state;
+                    "force", "barrier", "slurp", "somniancotton", "web", "cactus", "glowglobe", "leapinglily", "crystalball",
+                    "voidbramble" -> state;
             case "iceslab", "snowslab" -> state.setValue(SlabBlock.TYPE, (metadata & 8) == 0 ? SlabType.BOTTOM : SlabType.TOP);
             case "witchwoodslab" -> state.setValue(WitchWoodType.PROPERTY, wood)
                     .setValue(SlabBlock.TYPE, (metadata & 8) == 0 ? SlabType.BOTTOM : SlabType.TOP);

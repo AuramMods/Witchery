@@ -9,9 +9,11 @@ import art.arcane.witchery.item.HunterClothingItem;
 import art.arcane.witchery.item.VoodooPoppetItem;
 import art.arcane.witchery.world.DreamTravel;
 import art.arcane.witchery.world.WitcheryDimensions;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -47,6 +49,20 @@ public enum DirectedCurse {
 
     public String key() {
         return name().toLowerCase(Locale.ROOT);
+    }
+
+    public static boolean clearAtGoddess(Player player) {
+        boolean cured = false;
+        for (DirectedCurse curse : ALL) {
+            if (!curseData(player).contains(curse.tag)) continue;
+            curse.setStrength(player, 0);
+            player.displayClientMessage(Component.translatable("message.witchery.goddess." + curse.key())
+                    .withStyle(ChatFormatting.BLUE), false);
+            if (curse == SINKING && player instanceof ServerPlayer server) InfusionEnergy.sync(server);
+            cured = true;
+        }
+        if (cured) clearAilments(player);
+        return cured;
     }
 
     public int strength(LivingEntity target) {
