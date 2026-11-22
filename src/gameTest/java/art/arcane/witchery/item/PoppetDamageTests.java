@@ -1,0 +1,85 @@
+package art.arcane.witchery.item;
+
+import art.arcane.witchery.Witchery;
+import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.registry.WitcheryItems;
+import com.mojang.authlib.GameProfile;
+import net.minecraft.core.BlockPos;
+import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.gametest.GameTestHolder;
+import net.minecraftforge.gametest.PrefixGameTestTemplate;
+
+import java.util.UUID;
+
+@GameTestHolder(Witchery.MODID)
+@PrefixGameTestTemplate(false)
+public final class PoppetDamageTests {
+    @GameTest(template = "qa_coven_arena")
+    public static void vampiricPoppetTransfersUnattributedExplosionsOnlyForNonVampires(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var bearer = player(helper);
+        var recipient = helper.spawn(EntityType.PIG, new BlockPos(7, 3, 5));
+        var attacker = helper.spawn(EntityType.ZOMBIE, new BlockPos(9, 3, 5));
+        var poppet = equipPoppet(bearer, 0, "vampiric_poppet");
+        var signature = WitcheryItems.getRequired("taglockkit").get().getDefaultInstance();
+        TaglockItem.bindSignature(signature, recipient);
+        TaglockItem.copyBinding(signature, poppet, 2);
+        var data = WitcheryPlayerDataProvider.get(bearer).orElseThrow(IllegalStateException::new);
+
+        data.setVampireLevel(1);
+        var bite = new LivingHurtEvent(bearer, level.damageSources().mobAttack(attacker), 4);
+        helper.assertTrue(!MinecraftForge.EVENT_BUS.post(bite) && recipient.getHealth() == 10
+                        && poppet.getTag().getInt("WITCDamage") == 0,
+                "A vampire bearer should take the hit without using the Vampiric Poppet");
+
+        data.setVampireLevel(0);
+        var explosion = new LivingHurtEvent(bearer, level.damageSources().explosion(null, null), 4);
+        helper.assertTrue(MinecraftForge.EVENT_BUS.post(explosion) && recipient.getHealth() == 6
+                        && poppet.getTag().getInt("WITCDamage") == 66,
+                "An explosion without an attacker should transfer four damage and use sixty-six wear");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void lethalPoppetsRespectVampireFormAndPreserveTheStarvationException(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var bearer = player(helper);
+        var death = equipPoppet(bearer, 0, "death_protection_poppet");
+        var fire = equipPoppet(bearer, 1, "fire_protection_poppet");
+        var hunger = equipPoppet(bearer, 2, "hunger_protection_poppet");
+        var data = WitcheryPlayerDataProvider.get(bearer).orElseThrow(IllegalStateException::new);
+        bearer.setHealth(1);
+        data.setVampireLevel(1);
+        var flame = new LivingDamageEvent(bearer, level.damageSources().inFire(), 4);
+        helper.assertTrue(!MinecraftForge.EVENT_BUS.post(flame) && !death.isEmpty() && !fire.isEmpty(),
+                "Lethal fire must reach vampire mortality without spending an ordinary ward");
+        data.setVampireLevel(0);
+        data.setWerewolfLevel(1);
+        data.setCreatureTypeOrdinal(1);
+        var starvation = new LivingDamageEvent(bearer, level.damageSources().starve(), 1);
+        helper.assertTrue(MinecraftForge.EVENT_BUS.post(starvation) && hunger.isEmpty() && !death.isEmpty()
+                        && bearer.getHealth() == 10,
+                "A transformed werewolf can still use a Hunger Protection Poppet at low health");
+        helper.succeed();
+    }
+
+    private static FakePlayer player(GameTestHelper helper) {
+        var player = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "PoppetBearer"));
+        player.moveTo(helper.absoluteVec(new net.minecraft.world.phys.Vec3(4.5, 3, 5.5)));
+        return player;
+    }
+
+    private static ItemStack equipPoppet(FakePlayer player, int slot, String path) {
+        var stack = WitcheryItems.getRequired(path).get().getDefaultInstance();
+        TaglockItem.bindSignature(stack, player);
+        player.getInventory().setItem(slot, stack);
+        return stack;
+    }
+}

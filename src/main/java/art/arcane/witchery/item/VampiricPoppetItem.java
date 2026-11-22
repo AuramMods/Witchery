@@ -2,9 +2,11 @@ package art.arcane.witchery.item;
 
 import art.arcane.witchery.entity.WitchHunterPursuit;
 import art.arcane.witchery.registry.WitcheryItems;
+import art.arcane.witchery.vampirism.Vampirism;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
@@ -27,7 +29,9 @@ public final class VampiricPoppetItem extends BoundPoppetItem {
     }
 
     public static void transferDamage(ServerPlayer player, LivingHurtEvent event) {
-        if (event.getSource().getEntity() == null) return;
+        var source = event.getSource();
+        if (Vampirism.isVampire(player) || source.getEntity() == null && source.getDirectEntity() == null
+                && !source.is(DamageTypeTags.IS_EXPLOSION)) return;
         Set<UUID> chain = TRANSFERRING.get();
         if (!chain.add(player.getUUID())) return;
         try {

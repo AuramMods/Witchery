@@ -154,11 +154,12 @@ public final class CovenBehaviorTests {
                         "A second visit should reuse the same witch without resetting the timer");
             } finally {
                 config.set(enabled);
+                CovenWitch.dismissNearbyForRite(owner);
             }
         }).thenSucceed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(template = TEMPLATE, batch = "witchery_coven_rite")
     public static void replacesAnActiveVisitAtTheRiteAndRemovesADeadMember(GameTestHelper helper) {
         var level = helper.getLevel();
         FakePlayer owner = owner(helper);
@@ -171,7 +172,7 @@ public final class CovenBehaviorTests {
             helper.assertTrue(level.getBlockState(floor).isFaceSturdy(level, floor, Direction.UP),
                     "The ritual fixture should have a solid landing surface");
             helper.assertTrue(CovenWitch.recallMember(owner, 0), "The Seer Stone call should find a clear position");
-            CovenWitch visitor = witches(helper).get(0);
+            CovenWitch visitor = ritualMember(helper, owner);
             placeTalismanRite(helper);
             owner.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(WitcheryIngredient.SEER_STONE.item()));
             var state = level.getBlockState(center);
@@ -181,7 +182,7 @@ public final class CovenBehaviorTests {
                             && CovenWitch.covenSize(owner) == 1,
                     "Starting a real rite should dismiss the visit and retain the roster");
             helper.assertTrue(CovenWitch.summonToRite(owner, center, 0), "The witch should take the first ritual seat");
-            CovenWitch summoned = witches(helper).get(0);
+            CovenWitch summoned = ritualMember(helper, owner);
             var saved = summoned.saveWithoutId(new CompoundTag());
             helper.assertTrue(!summoned.getUUID().equals(visitor.getUUID()) && saved.getBoolean("Sitting") && !summoned.isNoAi()
                             && saved.getInt("SuicideIn") == 300 && summoned.blockPosition().equals(center.offset(-2, 0, -2)),
@@ -194,6 +195,7 @@ public final class CovenBehaviorTests {
             summoned.hurt(level.damageSources().genericKill(), 1000);
             helper.assertTrue(CovenWitch.covenSize(owner) == 0, "A real death should remove the member from the online owner's coven");
         } finally {
+            CovenWitch.dismissNearbyForRite(owner);
             level.removePlayerImmediately(owner, Entity.RemovalReason.DISCARDED);
         }
         helper.succeed();
@@ -248,5 +250,14 @@ public final class CovenBehaviorTests {
     private static List<CovenWitch> witches(GameTestHelper helper) {
         return helper.getLevel().getEntitiesOfClass(CovenWitch.class, new AABB(helper.absolutePos(CENTER)).inflate(8, 3, 4),
                 LivingEntity::isAlive);
+    }
+
+    private static CovenWitch ritualMember(GameTestHelper helper, FakePlayer owner) {
+        var members = helper.getLevel().getEntitiesOfClass(CovenWitch.class, owner.getBoundingBox().inflate(12), witch -> {
+            var saved = witch.saveWithoutId(new CompoundTag());
+            return witch.isAlive() && saved.hasUUID("Owner") && owner.getUUID().equals(saved.getUUID("Owner"));
+        });
+        helper.assertTrue(members.size() == 1, "The owner should have exactly one active witch near the rite");
+        return members.get(0);
     }
 }

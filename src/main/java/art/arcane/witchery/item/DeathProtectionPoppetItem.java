@@ -2,7 +2,9 @@ package art.arcane.witchery.item;
 
 import art.arcane.witchery.block.entity.FetishBlockEntity;
 import art.arcane.witchery.entity.WitcheryBolt;
+import art.arcane.witchery.lycanthropy.Lycanthropy;
 import art.arcane.witchery.registry.WitcheryItems;
+import art.arcane.witchery.vampirism.Vampirism;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
@@ -25,7 +27,7 @@ public final class DeathProtectionPoppetItem extends BoundPoppetItem {
                 || event.getSource().is(DamageTypeTags.BYPASSES_INVULNERABILITY)) return;
         DamageSource source = event.getSource();
         float remaining = player.getHealth() - event.getAmount();
-        if (remaining > 0) {
+        if (remaining > 0 || Lycanthropy.isShifted(player) || Vampirism.isVampire(player)) {
             if (remaining <= 2 && source.is(DamageTypes.STARVE)) {
                 protectWithEffect(player, event, "hunger_protection_poppet", MobEffects.SATURATION);
             }

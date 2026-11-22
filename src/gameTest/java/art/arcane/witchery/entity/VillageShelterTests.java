@@ -11,6 +11,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
@@ -26,6 +27,7 @@ public final class VillageShelterTests {
     private static final BlockPos APPROACH = new BlockPos(4, SHELTER_Y, 5);
     private static final BlockPos DOOR = new BlockPos(12, SHELTER_Y, 5);
     private static final BlockPos INSIDE = DOOR.east(2);
+    private static final BlockPos HOME = APPROACH.north(3);
 
     @GameTest(template = TEMPLATE, batch = "witchery_shelter_night", timeoutTicks = 920)
     public static void walksThroughAClosedDoorAtNight(GameTestHelper helper) {
@@ -34,8 +36,12 @@ public final class VillageShelterTests {
         assertVillageShelter(helper);
         var level = helper.getLevel();
         long oldTime = level.getDayTime();
+        Runnable restore = () -> {
+            removeHome(helper);
+            setTime(helper, oldTime);
+        };
         setTime(helper, 18_000);
-        helper.runAfterDelay(910, () -> setTime(helper, oldTime));
+        helper.runAfterDelay(910, restore);
         CovenWitch witch = helper.spawn(WitcheryEntities.COVEN_WITCH.get(), APPROACH);
         BlockPos destination = helper.absolutePos(INSIDE);
         helper.startSequence().thenWaitUntil(() -> {
@@ -49,13 +55,20 @@ public final class VillageShelterTests {
             helper.assertTrue(witch.distanceToSqr(Vec3.atBottomCenterOf(destination)) < 1.25
                             && !helper.getBlockState(DOOR).getValue(DoorBlock.OPEN),
                     "The witch should arrive under the roof and close the door");
-        }).thenExecute(() -> setTime(helper, oldTime)).thenSucceed();
+        }).thenExecute(restore).thenSucceed();
     }
 
     @GameTest(template = TEMPLATE)
     public static void seeksShelterInDaylightRainAndLeavesLeashedGoblinsToTheirWork(GameTestHelper helper) {
         buildBedlessShelter(helper);
         var level = helper.getLevel();
+        BlockPos approach = helper.absolutePos(APPROACH);
+        level.getServer().getCommands().performPrefixedCommand(level.getServer().createCommandSourceStack()
+                .withLevel(level).withSuppressedOutput(),
+                "fillbiome " + coordinates(approach.offset(-4, -4, -4)) + " "
+                        + coordinates(approach.offset(4, 4, 4)) + " minecraft:plains");
+        helper.assertTrue(level.getBiome(approach).value().getPrecipitationAt(approach) == Biome.Precipitation.RAIN,
+                "The daylight fixture should use a rainy biome");
         var goblin = helper.spawn(WitcheryEntities.GOBLIN.get(), APPROACH);
         goblin.setOnGround(true);
         var goal = new VillageShelterGoal(goblin, true);
@@ -65,6 +78,7 @@ public final class VillageShelterTests {
             setTime(helper, 6_000);
             level.setRainLevel(1);
             level.updateSkyBrightness();
+            helper.assertTrue(!level.isCloseToVillage(approach, 2), "No other fixture should establish a village here");
             helper.assertTrue(!canSeek(goblin, goal), "A lone covered door far from any village should not attract the goblin");
             claimHome(helper);
             assertVillageShelter(helper);
@@ -84,6 +98,7 @@ public final class VillageShelterTests {
             helper.assertTrue(!goal.canContinueToUse(), "A new lead should also stop an active shelter route");
             goal.stop();
         } finally {
+            removeHome(helper);
             level.setRainLevel(oldRain);
             setTime(helper, oldTime);
         }
@@ -93,8 +108,6 @@ public final class VillageShelterTests {
     @GameTest(template = TEMPLATE)
     public static void restrictsDoorNavigationOnlyWhileInsideDuringTheDay(GameTestHelper helper) {
         buildBedlessShelter(helper);
-        claimHome(helper);
-        assertVillageShelter(helper);
         var level = helper.getLevel();
         long oldTime = level.getDayTime();
         float oldRain = level.getRainLevel(1);
@@ -102,6 +115,8 @@ public final class VillageShelterTests {
         var goal = new RestrictVillageDoorGoal(witch);
         var evaluator = witch.getNavigation().getNodeEvaluator();
         try {
+            claimHome(helper);
+            assertVillageShelter(helper);
             level.setRainLevel(0);
             setTime(helper, 6_000);
             helper.assertTrue(goal.canUse() && evaluator.canOpenDoors() && evaluator.canPassDoors(),
@@ -114,6 +129,7 @@ public final class VillageShelterTests {
             goal.stop();
             helper.assertTrue(evaluator.canOpenDoors() && evaluator.canPassDoors(), "The next path may go through a door again");
         } finally {
+            removeHome(helper);
             level.setRainLevel(oldRain);
             setTime(helper, oldTime);
         }
@@ -145,11 +161,21 @@ public final class VillageShelterTests {
     private static void claimHome(GameTestHelper helper) {
         var level = helper.getLevel();
         var poi = level.getPoiManager();
-        BlockPos home = helper.absolutePos(APPROACH.north(3));
+        BlockPos home = helper.absolutePos(HOME);
         var type = level.registryAccess().registryOrThrow(Registries.POINT_OF_INTEREST_TYPE).getHolderOrThrow(PoiTypes.HOME);
         poi.add(home, type);
         helper.assertTrue(poi.take(holder -> holder.is(PoiTypes.HOME), (holder, pos) -> pos.equals(home), home, 1).isPresent(),
                 "An occupied home should establish the village next to the bedless shelter");
+    }
+
+    private static void removeHome(GameTestHelper helper) {
+        var poi = helper.getLevel().getPoiManager();
+        BlockPos home = helper.absolutePos(HOME);
+        if (poi.existsAtPosition(PoiTypes.HOME, home)) poi.remove(home);
+    }
+
+    private static String coordinates(BlockPos pos) {
+        return pos.getX() + " " + pos.getY() + " " + pos.getZ();
     }
 
     private static void assertVillageShelter(GameTestHelper helper) {

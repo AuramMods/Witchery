@@ -148,6 +148,7 @@
 - [x] On packaged Forge, generate the seed-1 plains village and position its resident outside the bedless Witch Hut at `615 64 823`. After restarting the dedicated server, the same witch opened and shut the oak door in both a clear night and daytime rain. A supplied Hobgoblin used the same door in clear daylight after the fixture changed the surrounding biome to desert.
 - [x] Pass Java 17 data generation, JAR reobfuscation, and all 16 checked-in Forge GameTests. The three shelter cases cover an outdoor witch opening and closing a door, village detection and rain with a Hobgoblin lead, and daytime restriction with nightfall release. The fixtures put the shelter above the test world's terrain to give the exposed side a clear sky.
 - [x] Pass all 448 selected checks in the broader development suite in a fresh world, including the existing coven, village, and Hobgoblin cases.
+- [x] Isolate the shelter fixtures. A failed run saved an adjacent case's occupied home two chunk sections from the daylight test. The fixtures remove their own home records after use and set the daylight approach to a rainy biome. The coven rite test now runs in a separate batch and checks the active witch by owner UUID.
 
 ## Imp Spell Contracts (2026-11-21)
 
@@ -281,7 +282,8 @@
 - [x] Transfer entity-caused injury through the Vampiric Poppet at 66 wear per use, cap each transfer to a creature at 15 damage, and clear its Taglock when that creature dies. Three zombie damage tests left the player at seven health and wore the poppet to 198. The surviving signature and wear persisted after restart. Cyclic bindings stop when a recipient repeats.
 - [x] Restore the Corrupting Voodoo Protection rite with five offerings, 7,000 altar power and 28 infernal glyphs. The muted client cast it with its familiar dismissed. The heart returned all five offerings and the Poppet Protection kept its original wear.
 - [x] Reflect corruption as lightning with 350 wear to Poppet Protection. An undefended cast consumes up to ten matching Voodoo Protection Poppets, including wards on shelves. All 77 Forge GameTests passed, including the full rite through heart activation, legacy metadata and both Taglock indices. Java 17 data generation and JAR reobfuscation succeeded.
-- [ ] Connect Witch Hunter equipment, the spirit poppet enhancement and other legacy damage exemptions when their owning systems are restored.
+- [x] Match the original damage exemptions. Vampires skip damage transfer and ordinary lethal poppet protection. Werewolves in wolf or wolfman form keep the low-health starvation exception for Hunger Protection. A Vampiric Poppet can transfer explosion damage even when it has no attacker. The existing Witch Hunter full-set exclusion and Enhanced Poppets checks apply to bound wards, and a powered Anti-Magic Bolt requires an enhanced carried Death Protection Poppet.
+- [x] Verify the reobfuscated JAR with a muted survival client on dedicated Forge. An unattributed explosion transferred four damage and added 66 wear. After restarting with the fixture player's vampire rank set to one, an attributed hit damaged the player and left the recipient and poppet wear unchanged. Lethal fire killed that player without consuming either Fire or Death Protection. Java 17 data generation and all 20 checked-in GameTests passed.
 
 ## Ent and Ent Branch (2026-11-20)
 

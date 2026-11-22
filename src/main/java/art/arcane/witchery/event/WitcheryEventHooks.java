@@ -535,12 +535,12 @@ public final class WitcheryEventHooks {
                 && ParasyticLouseItem.spendOnHit(player, event.getSource())) {
             event.setAmount(event.getAmount() + 1);
         }
+        DeathProtectionPoppetItem.protect(event);
+        if (event.isCanceled() || event.getAmount() <= 0) return;
         if (VampireMortality.preventLethalDamage(event.getEntity(), event.getSource(), event.getAmount())) {
             event.setCanceled(true);
             return;
         }
-        if (!Lycanthropy.isShifted(event.getEntity())) DeathProtectionPoppetItem.protect(event);
-        if (event.isCanceled() || event.getAmount() <= 0) return;
         var source = event.getSource();
         if (event.getEntity() instanceof Villager villager && villager.level() instanceof ServerLevel world
                 && source.getEntity() instanceof LivingEntity attacker && !source.is(WitcheryDamageTypes.VAMPIRE_BITE)) {
