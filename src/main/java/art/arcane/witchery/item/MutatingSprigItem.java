@@ -7,6 +7,7 @@ import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.block.entity.GrassperBlockEntity;
 import art.arcane.witchery.entity.Mandrake;
+import art.arcane.witchery.entity.WitchOwl;
 import art.arcane.witchery.entity.WitchPet;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
@@ -38,6 +39,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.CocoaBlock;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -81,6 +83,7 @@ public final class MutatingSprigItem extends Item {
         boolean snares = cobweb && sides(level, pos, WitcheryBlocks.getRequired("witchsapling").get(), true);
         CreatureMutation mutation = cobweb && !snares ? findCreatureMutation(level, pos) : null;
         MindrakeMutation mindrake = cobweb && !snares && mutation == null ? findMindrakeMutation(level, pos) : null;
+        MonkeyMutation monkey = cobweb && !snares && mutation == null && mindrake == null ? findMonkeyMutation(level, pos) : null;
         LouseMutation louse = findLouseMutation(level, pos, clicked);
         if (level instanceof ServerLevel server) {
             if (surface) {
@@ -114,6 +117,8 @@ public final class MutatingSprigItem extends Item {
                 if (!mutation.apply(server, pos)) return InteractionResult.PASS;
             } else if (mindrake != null) {
                 mindrake.apply(server, pos);
+            } else if (monkey != null) {
+                if (!monkey.apply(server, pos)) return InteractionResult.PASS;
             } else if (louse != null) {
                 if (!louse.apply(server, pos)) return InteractionResult.PASS;
             } else {
@@ -126,7 +131,7 @@ public final class MutatingSprigItem extends Item {
             return InteractionResult.CONSUME;
         }
         return surface || clay || plant != null || wormwood || grasspers || leech || roses || snares
-                || mutation != null || mindrake != null || louse != null
+                || mutation != null || mindrake != null || monkey != null || louse != null
                 ? InteractionResult.SUCCESS : InteractionResult.PASS;
     }
 
@@ -233,6 +238,44 @@ public final class MutatingSprigItem extends Item {
             mandrake.discard();
             replaceAround(level, center, WitchCrop.MINDRAKE.block());
             for (GrassperBlockEntity grassper : offerings) grassper.clearContent();
+        }
+    }
+
+    @Nullable
+    private static MonkeyMutation findMonkeyMutation(Level level, BlockPos center) {
+        for (Direction side : Direction.Plane.HORIZONTAL) {
+            BlockState state = level.getBlockState(center.relative(side));
+            if (!state.is(Blocks.COCOA) || state.getValue(CocoaBlock.AGE) != CocoaBlock.MAX_AGE) return null;
+        }
+        var offerings = diagonalGrasspers(level, center);
+        long mutandis = offerings.stream().filter(grassper -> WitcheryIngredient.MUTANDIS_EXTREMIS.matches(grassper.getItem(0))).count();
+        long stones = offerings.stream().filter(grassper -> WitcheryIngredient.CHARGED_ATTUNED_STONE.matches(grassper.getItem(0))).count();
+        long flowers = offerings.stream().filter(grassper -> grassper.getItem(0).is(Items.POPPY)).count();
+        if (mutandis != 2 || stones != 1 || flowers != 1) return null;
+
+        var area = catalystArea(center);
+        var owls = level.getEntitiesOfClass(WitchOwl.class, area, WitchOwl::isAlive);
+        var wolves = level.getEntitiesOfClass(Wolf.class, area, Wolf::isAlive);
+        return owls.isEmpty() || wolves.isEmpty() ? null : new MonkeyMutation(owls.get(0), wolves.get(0), offerings);
+    }
+
+    private record MonkeyMutation(WitchOwl owl, Wolf wolf, List<GrassperBlockEntity> offerings) {
+        boolean apply(ServerLevel level, BlockPos center) {
+            var monkey = WitcheryEntities.WINGED_MONKEY.get().create(level);
+            if (monkey == null) return false;
+            monkey.moveTo(center.getX() + 0.5, center.getY(), center.getZ() + 0.5, 0, 0);
+            monkey.setPersistenceRequired();
+            ForgeEventFactory.onFinalizeSpawn(monkey, level, level.getCurrentDifficultyAt(center), MobSpawnType.EVENT, null, null);
+            if (!level.addFreshEntity(monkey)) return false;
+
+            owl.playSound(SoundEvents.CREEPER_DEATH, 1, 1);
+            wolf.playSound(SoundEvents.GHAST_DEATH, 1, 1);
+            owl.discard();
+            wolf.discard();
+            level.removeBlock(center, false);
+            for (Direction side : Direction.Plane.HORIZONTAL) level.removeBlock(center.relative(side), false);
+            for (GrassperBlockEntity grassper : offerings) grassper.clearContent();
+            return true;
         }
     }
 

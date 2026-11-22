@@ -21,8 +21,6 @@ import net.minecraft.world.entity.projectile.ThrownPotion;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -115,21 +113,7 @@ final class OwlDeliveryGoal extends Goal {
                 }
             }
         }
-        flyToward(level, target);
-    }
-
-    private void flyToward(ServerLevel level, Vec3 target) {
-        if (owl.tickCount % 10 == 0) owl.getNavigation().moveTo(target.x, target.y, target.z, SPEED);
-        if (!owl.getNavigation().isDone()) return;
-        Vec3 direction = target.subtract(owl.position());
-        Vec3 ahead = owl.position().add(direction.normalize().scale(Math.min(direction.length(), 2)));
-        var hit = level.clip(new ClipContext(owl.getEyePosition(), ahead.add(0, owl.getEyeHeight(), 0),
-                ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, owl));
-        if (hit.getType() != HitResult.Type.MISS) {
-            owl.getMoveControl().setWantedPosition(owl.getX(), owl.getY() + 2, owl.getZ(), SPEED);
-        } else {
-            owl.getMoveControl().setWantedPosition(target.x, target.y, target.z, SPEED);
-        }
+        FlyingCompanionNavigation.flyToward(owl, level, target, SPEED);
     }
 
     private void holdChunk(ServerLevel level, ChunkPos chunk) {

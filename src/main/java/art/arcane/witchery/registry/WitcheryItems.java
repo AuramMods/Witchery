@@ -436,6 +436,7 @@ public final class WitcheryItems {
                     case "hellhound" -> new ForgeSpawnEggItem(entityType, 0xD86500, 0x5B1208, new Item.Properties());
                     case "hornedhuntsman" -> new ForgeSpawnEggItem(entityType, 11523, 4007964, new Item.Properties());
                     case "mindrake" -> new ForgeSpawnEggItem(entityType, 19463, 4200704, new Item.Properties());
+                    case "wingedmonkey" -> new ForgeSpawnEggItem(entityType, 6846848, 7574709, new Item.Properties());
                     case "wolfman" -> new ForgeSpawnEggItem(entityType, 0x2D2D2D, 0x606060, new Item.Properties());
                     case "werevillager" -> new ForgeSpawnEggItem(entityType, 0x563C33, 0xBD8B72, new Item.Properties());
                     case "spirit" -> new ForgeSpawnEggItem(entityType, 0xFFA530, 0xEECA00, new Item.Properties());

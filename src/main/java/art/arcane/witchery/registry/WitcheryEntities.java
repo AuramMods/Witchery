@@ -27,6 +27,7 @@ import art.arcane.witchery.entity.Lilith;
 import art.arcane.witchery.entity.WitcheryFollower;
 import art.arcane.witchery.entity.Mandrake;
 import art.arcane.witchery.entity.Mindrake;
+import art.arcane.witchery.entity.WingedMonkey;
 import art.arcane.witchery.entity.MirrorFace;
 import art.arcane.witchery.entity.Nightmare;
 import art.arcane.witchery.entity.ParasyticLouse;
@@ -126,6 +127,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<WitchOwl>> OWL =
             ENTITY_TYPES.register("owl", () -> EntityType.Builder.of(WitchOwl::new, MobCategory.CREATURE)
                     .sized(0.6F, 0.8F).clientTrackingRange(8).build(Witchery.MODID + ":owl"));
+    public static final RegistryObject<EntityType<WingedMonkey>> WINGED_MONKEY =
+            ENTITY_TYPES.register("wingedmonkey", () -> EntityType.Builder.of(WingedMonkey::new, MobCategory.CREATURE)
+                    .sized(0.6F, 0.8F).clientTrackingRange(8).build(Witchery.MODID + ":wingedmonkey"));
     public static final RegistryObject<EntityType<WitchToad>> TOAD =
             ENTITY_TYPES.register("toad", () -> EntityType.Builder.of(WitchToad::new, MobCategory.CREATURE)
                     .sized(0.8F, 0.8F).clientTrackingRange(8).build(Witchery.MODID + ":toad"));
@@ -241,6 +245,7 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("cat", WITCH_CAT);
         LEGACY_ENTITIES.put("familiar", SPECTRAL_FAMILIAR);
         LEGACY_ENTITIES.put("owl", OWL);
+        LEGACY_ENTITIES.put("wingedmonkey", WINGED_MONKEY);
         LEGACY_ENTITIES.put("toad", TOAD);
         LEGACY_ENTITIES.put("covenwitch", COVEN_WITCH);
         LEGACY_ENTITIES.put("goblin", GOBLIN);
@@ -350,6 +355,7 @@ public final class WitcheryEntities {
                     : entry == IMP ? Imp.attributes()
                     : entry == DARK_MARK ? DarkMark.attributes()
                     : entry == OWL ? WitchOwl.attributes()
+                    : entry == WINGED_MONKEY ? WingedMonkey.attributes()
                     : entry == TOAD ? WitchToad.attributes()
                     : entry == SPECTRAL_FAMILIAR ? SpectralFamiliar.attributes()
                     : entry == WITCH_CAT ? Cat.createAttributes() : Zombie.createAttributes();

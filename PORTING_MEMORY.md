@@ -1112,6 +1112,13 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - The muted client rejoined with the final reobfuscated JAR. Its owned Mindrake had the same owner and UUID. A normal attack on a nearby pig caused the Mindrake to burst, killing the pig and leaving a dandelion while preserving the adjacent glass. Java 17 data generation and reobfuscation succeeded. The packaged JAR SHA-256 is `a4271050666802e12def59b030c4aca5edb1055337d7b7e5eb690c253c10bbc8`.
 - All ten focused Forge GameTests passed. The mutation fixture waits for actual light before replacing crops. It covers a missing catalyst and the completed pattern. The other new tests cover simultaneous bulb stacks from two players and a wild drop, four hatches at expiry, contact damage, block safety, and the ordinary death loot.
 
+### Winged Monkey (2026-11-21)
+
+- The Sprig uses four mature Cocoa blocks in the cardinal positions. Each pod faces its supporting Jungle Log. Corner Grasspers hold a Poppy, a Charged Attuned Stone and two Mutandis Extremis. The nearby Owl and Wolf, the cobweb and the cocoa are consumed. The source water and cleared Grasspers remain.
+- The tamed `witchery:wingedmonkey` accepts beef or pork. An owner can dye it, toggle sitting, hand it a filled Taglock, or ride it to a bound Waystone. A seated monkey waits for the sit toggle before starting a Taglock route. It picks up the bound creature and returns to where it received the kit. The Waystone stays with the owner.
+- The muted packaged client exercised mutation, taming, dyeing, live Taglock capture and release, and an occupied Waystone ride. It also rejoined after a dedicated restart and the older active return leg released its original pig. An original Forge 1.7.10 entity fixture retained its owner, UUID, dye, sitting state and health through import.
+- Vanilla mob passengers can disable a mount's movement goals. The monkey keeps control of its route, and its sit goal respects a running delivery even while the owner is offline. The Taglock GameTest saves and reloads an assigned route before flight and completes both legs with an absent owner. All 13 focused Forge GameTests passed.
+
 ### Owl and Toad (2026-11-20)
 
 - Both mutations use a cobweb over a source of water, at least two matching caught critters on the cardinal positions, three Grasspers with Mutandis Extremis and one with a Charged Attuned Stone in the corners. The Owl consumes a nearby wolf and two or more unstocked bats. The Toad consumes a nearby ocelot and two or more tiny slimes. The muted player made both species this way after the test bats and slimes were captured by actual movement into the snares.

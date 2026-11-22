@@ -159,6 +159,18 @@
     "subtitle": "subtitles.witchery.owl.hurt",
     "sounds": ["witchery:mob/owl/owl_hurt1"]
   },
+  "mob.monkey.say": {
+    "subtitle": "subtitles.witchery.monkey.ambient",
+    "sounds": ["witchery:mob/monkey/say1", "witchery:mob/monkey/say2", "witchery:mob/monkey/say3"]
+  },
+  "mob.monkey.hit": {
+    "subtitle": "subtitles.witchery.monkey.hurt",
+    "sounds": ["witchery:mob/monkey/hit"]
+  },
+  "mob.monkey.death": {
+    "subtitle": "subtitles.witchery.monkey.death",
+    "sounds": ["witchery:mob/monkey/death"]
+  },
   "mob.toad.toad_croak": {
     "subtitle": "subtitles.witchery.toad.croak",
     "sounds": ["witchery:mob/toad/toad_croak1", "witchery:mob/toad/toad_croak2"]

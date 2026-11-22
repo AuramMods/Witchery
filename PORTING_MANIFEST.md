@@ -854,7 +854,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 140 | `GRENADE` | `EntityGrenade` | `grenade` (Sun and Duplicate Grenades, saved `Mode`, `Impacted`, and `Remaining`) |
 | 141 | `LILITH` | `EntityLilith` | `lilith` |
 | 142 | `FOLLOWER` | `EntityFollower` | `follower` (Elle, four named Fairest variants, and type-five duplicate with saved `Skin` and `TicksToLive`) |
-| 143 | `WINGED_MONKEY` | `EntityWingedMonkey` | `wingedmonkey` |
+| 143 | `WINGED_MONKEY` | `EntityWingedMonkey` | `wingedmonkey` (cocoa mutation, taming, Taglock pickup and Waystone transport) |
 | 144 | `ATTACK_BAT` | `EntityAttackBat` | `attackbat` |
 | 145 | `MIRROR_FACE` | `EntityMirrorFace` | `mirrorface` (inhabited Mirror conversation and saved lifetime) |
 | 146 | `REFLECTION` | `EntityReflection` | `reflection` (copies armor, weapons, effects, disguise, and Wolfman form) |
@@ -1169,6 +1169,8 @@ The Broom uses `BrushColor` on the vehicle and enchanted item. The vehicle reads
 Bound Waystones retain `PosX`, `PosY`, `PosZ`, `PosD` and `NameD`. New bindings add the namespaced `Dimension` field. Old Waystones resolve the three vanilla dimensions and Witchery's default legacy IDs `-37` for Dream, `-38` for Torment and `-39` for Mirror. Creature-Bound Waystones share the first Taglock signature fields.
 
 Owls retain `WITCWaypoint` and their launch coordinates in `HomeX`, `HomeY` and `HomeZ` while delivering. `ReturningFromDelivery` preserves the return leg on modern saves.
+
+The Winged Monkey retains `FeatherColor`, `SuicideIn`, `WITCWaypoint` and the three `Home` coordinates. `MonkeyFlightReturning` identifies the return leg in new saves. An older active Waystone flight stores its destination in the `Home` coordinates. The modern goal uses Forge's flying navigation and only loads routes within the monkey's dimension. The creature identified by a Taglock rides as a passenger without taking control of the monkey.
 
 ## Recipe System Registries
 

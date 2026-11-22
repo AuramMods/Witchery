@@ -267,7 +267,6 @@
 - [x] Restore bat, silverfish, tiny slime and tiny magma cube capture and sneak-release. Captured state and the bat shop stock flag carry through block item drops and legacy metadata. The packaged server captured a moving bat and kept its stocked state.
 - [x] Save a live Mystic Branch rite after the first Grassper offering. The packaged restart emptied the second Grassper and completed the rite. A separate Grassper still held one ingot and emitted comparator output 15. The client released the bat from the restored snare, and the bat kept its shop stock flag.
 - [x] Pass all 84 required Forge GameTests and package the reobfuscated JAR on Java 17.
-- [ ] Restore the remaining Sprig mutations, including Winged Monkey.
 
 ## Mindrake (2026-11-21)
 
@@ -277,6 +276,15 @@
 - [x] Verify the owned Mindrake's combat after a restart. The survival client attacked a nearby pig. The Mindrake followed the owner's attack, disappeared in the burst, and left a dandelion. The pig died and the adjacent glass stayed intact.
 - [x] Import a named, owned Mindrake from Forge 1.7.10. The packaged import retained its UUID, owner, health, and saved sitting flag after a modern restart.
 - [x] Pass ten focused Forge GameTests, including the incomplete mutation, separate bulb owners, the timed hatch, combat and loot, and the seven existing migration cases. Java 17 data generation and JAR reobfuscation passed.
+
+## Winged Monkey (2026-11-21)
+
+- [x] Restore the Mutating Sprig pattern. Four mature cocoa pods surround a cobweb over a source of water. The Grasspers take two Mutandis Extremis, a Charged Attuned Stone and a Poppy. A nearby Owl and Wolf are consumed. One untamed monkey appears, the water and empty holders stay, and the Sprig takes one wear.
+- [x] Restore the original model, tint, sounds, spawn egg, taming, owner interactions, breeding, and feather drops. A muted survival client performed the mutation, tamed the monkey with raw beef, and dyed it red. Its owner and color survived the packaged server restart.
+- [x] Verify both passenger flights on packaged Forge. The muted client took a Taglock from a pig and gave it to its seated monkey. The empty-hand command launched the monkey, which flew 15 blocks, picked up the pig and brought it back unharmed. A separate dedicated restart resumed an active flight with the same pig as passenger. The owner rode about 23 blocks to a fixed Waystone and landed at full health with the Waystone still in hand.
+- [x] Import an original Forge 1.7.10 Winged Monkey. The packaged server read the original entity UUID, owner UUID, color, sitting flag and 17 health.
+- [x] Pass all 13 focused Forge GameTests. They cover the incomplete cocoa pattern, Taglock transport with the owner absent from the world, the Waystone ride, and the earlier Mindrake and save-import checks.
+- [x] Run Java 17 data generation and JAR reobfuscation. The packaged JAR SHA-256 is `9eb50d689c9635cc83a9a96723ef0c18de01f48ff0cbedc09ab54308ca33d3d3`.
 
 ## Owl and Toad (2026-11-20)
 

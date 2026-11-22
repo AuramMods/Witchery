@@ -178,7 +178,7 @@ public final class TaglockItem extends Item {
         if (!(target instanceof Mob || target instanceof Player)
                 || target.getType() == WitcheryEntities.LEGACY_ENTITIES.get("treefyd").get()
                 || target.getType() == WitcheryEntities.LEGACY_ENTITIES.get("imp").get()
-                || target.getType() == WitcheryEntities.LEGACY_ENTITIES.get("wingedmonkey").get() && !collector.isShiftKeyDown()) {
+                || target.getType() == WitcheryEntities.WINGED_MONKEY.get() && !collector.isShiftKeyDown()) {
             return InteractionResult.PASS;
         }
         if (collector instanceof ServerPlayer player) {
