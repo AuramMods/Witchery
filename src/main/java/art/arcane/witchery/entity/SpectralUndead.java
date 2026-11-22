@@ -97,6 +97,8 @@ public final class SpectralUndead extends Monster {
     private int lifeTicks = -1;
     @Nullable
     private UUID sentinelTarget;
+    @Nullable
+    private NearestAttackableTargetGoal<?> sentinelTargeting;
     private int throwAnimation;
 
     public SpectralUndead(EntityType<? extends SpectralUndead> type, Level level, Kind kind) {
@@ -167,8 +169,17 @@ public final class SpectralUndead extends Monster {
         if (guard == null) return;
         guard.lifeTicks = 600;
         guard.sentinelTarget = intruder.getUUID();
-        guard.setTarget(intruder);
+        guard.followSentinelTarget(intruder);
         guard.playSound(WitcherySounds.SPECTRE_AMBIENT.get(), 1, 1);
+    }
+
+    private void followSentinelTarget(LivingEntity intruder) {
+        if (sentinelTargeting == null) {
+            // The original Sentinel gives creatures of the intruder's class priority over the usual player target.
+            sentinelTargeting = new NearestAttackableTargetGoal<>(this, intruder.getClass(), 0, true, false, null);
+            targetSelector.addGoal(2, sentinelTargeting);
+        }
+        setTarget(intruder);
     }
 
     private boolean trySpawnAt(ServerLevel level, BlockPos pos) {
@@ -268,8 +279,10 @@ public final class SpectralUndead extends Monster {
         super.aiStep();
         if (throwAnimation > 0) throwAnimation--;
         if (!(level() instanceof ServerLevel level) || !isAlive()) return;
-        if (getTarget() == null && sentinelTarget != null && level.getEntity(sentinelTarget) instanceof LivingEntity target
-                && target.isAlive()) setTarget(target);
+        if (sentinelTarget != null && (getTarget() == null || sentinelTargeting == null)
+                && level.getEntity(sentinelTarget) instanceof LivingEntity target && target.isAlive()) {
+            followSentinelTarget(target);
+        }
         if (temporary() && (--lifeTicks <= 0 || getTarget() == null || !getTarget().isAlive())) {
             level.sendParticles(ParticleTypes.POOF, getX(), getY(0.5), getZ(), 16, 0.4, 0.5, 0.4, 0.05);
             discard();
@@ -434,5 +447,9 @@ public final class SpectralUndead extends Monster {
         entityData.set(OBSCURED, tag.getBoolean("Obscured"));
         lifeTicks = tag.contains("SuicideIn", Tag.TAG_ANY_NUMERIC) ? tag.getInt("SuicideIn") : -1;
         sentinelTarget = tag.hasUUID("SentinelTarget") ? tag.getUUID("SentinelTarget") : null;
+        if (sentinelTargeting != null) {
+            targetSelector.removeGoal(sentinelTargeting);
+            sentinelTargeting = null;
+        }
     }
 }

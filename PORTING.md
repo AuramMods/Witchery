@@ -940,7 +940,7 @@
 - [x] Restore the Witch Hunter entity, crossbow attacks and original skins. A disliked rank-ten vampire drew two hunters from a village with a claimed bed and hostile gossip. The test server raised only the report probability for this check. Both hunters carried crossbows and shot Holy Bolts at the player. The server also confirmed that a hunter sheds Poison and limits an ordinary hit to nine damage. After a restart at the default report probability, both hunters retained their UUIDs, crossbows and player target.
 - [x] Restore black magic notices from Voodoo and Vampiric Poppets and the Curse of Waking Nightmare. The muted survival client collected a pig's Taglock, crafted and used a bound Voodoo Poppet, and the server saved a pursuit timestamp. GameTests confirmed that a notice waits at least 2,400 ticks and can spawn at most two hunters with the original target. Java 17 data generation, JAR reobfuscation and all 220 required Forge GameTests passed.
 - [x] Connect transformed werewolf targets and Silver Bolt selection. A packaged hunter selected a named Wolfman and fired bolts of type 4.
-- [ ] Wire the remaining black magic triggers as their rites are restored.
+- [ ] Restore the pursuit notice when a submerged player uses a bound Voodoo Poppet without air. The legacy inventory tick reported the player once it found a living target and passed the ward check. The manual poppet action, Vampiric Poppet damage transfer, directed and area curses, and Curse of the Wolf already call the notice in the port.
 
 ## Hellhounds and Wolf Trophies (2026-11-20)
 
@@ -1449,8 +1449,11 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 
 - [x] Resolve the nine failures in the 647-case Poppet Shelf Compass replay. The corrected tests preserve the original separate Waystone offering step and assert the resulting altar debit, refund, or remote action. Seated coven members retain AI, and a simulated drain of wool-colored brew carries its color and zero recipe ingredients. All nine passed in isolation and after moving into the checked-in suite.
 - [x] Reproduce the intermittent Witch summon failure in 48 isolated replays. In all seven reported failures, one witch appeared and the Arthana was returned. The fixture's Infinity Egg let the altar recover to 8,600 or 8,700 power before its fixed 8,500 cutoff. The checked-in case measures the 2,000-power debit across a single recharge interval and verifies the original worn Arthana. It passed 16 additional replays.
-- [ ] Resolve the three fetish failures from the 651-case replay. The Screamer alarm reset, Witch's Ladder binding, and Sentinel guard checks each passed in isolation during the follow-up. The full replay passed 647 cases, with these three failures and the older Witch summon power assertion.
+- [x] Replay the three intermittent fetish cases. The next 651-case run passed all three and exposed two older failures in the clear-weather cure and Spectral Familiar checks. The checked-in Screamer and binding tests now follow real alarm pulses and verify the returned offerings, preserved color, and exact altar debit.
 - [x] Pass all 94 checked-in GameTests on clean Forge and all 98 with Thaumaturge, Lithostitched, and Curios.
+- [x] Pass Java 17 data generation and JAR reobfuscation after the Sentinel fix. All 97 checked-in Forge GameTests passed, and all 101 passed with Thaumaturge, Lithostitched, and Curios. The Creeper Heart check waits until the explosion can query its target.
+- [x] Compare the archived banishment and Spectral Familiar rites immediately before and after their final step. The conversion spends exactly 2,000 power on each. One original banishment replay never activated and left the live demon, both offerings, and 10,000 altar power in place. Waiting five ticks after dropping its offerings resolved that case. The revised banishment and familiar fixtures passed all 31 focused replays.
+- [ ] Replay all 651 cases with the final Sentinel fixture. The last replay passed 649, including the corrected power and clear-weather cure assertions. The Sentinel reload fixture now keeps the pig eligible for attack while preventing damage and runs the game's entity tick after reload. All 24 focused replays passed with that fixture. The other failure was archived Hobgoblin hauling.
 
 ## Auram Armor Compatibility (2026-11-21)
 
@@ -1633,6 +1636,8 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Break the Dream original in survival. Its Overworld projection disappeared, and the client recovered the red Ghost Walker with its enchantment and alarm setting.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 299 required Forge GameTests. New coverage includes resuming the binding rite, effect priority, migrated Taglock groups, the Sentinel's lifetime, Twister targeting and the carried ward against a powered bolt.
 - [x] Restore the hidden Death combination and the Death encounter.
+- [x] Restore the original Sentinel's target priority. Its two temporary Spectres favor the intruder's creature class before their ordinary player search. A checked-in GameTest reproduced both guards switching from a pig to a player on the fetish's trusted list. It then verified the corrected pursuit, including reloading each guard and despawning when the target was removed.
+- [x] Boot the reobfuscated JAR on a disposable headless Forge 47.4.10 server. The same pig, both temporary Spectres, and the fetish's cooldown survived a full restart. With the trusted player back in range, both guards kept pursuing the pig. They expired after the fixture removed the player and pig. The tested JAR SHA-256 is `70c637d30253cdd86aed0bf793da04b88555b5bcf948ba681247efa82052cdfe`.
 
 ## Death and Binky (2026-11-20)
 
@@ -1661,6 +1666,8 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Generate a fresh dedicated world in the native, headless Auram copy. The server loaded 562 mods, including Evolved Mekanism 1.2.1-fix3 and Mekanism Curios 1.2.1. Forge rejected the client-only Draconic Evolution Render Patcher on the first attempt. Disable that JAR in the server copy and use hoppers to cook an Oak Sapling into Witchery Wood Ash.
 - [x] Repeat the hopper-fed cook on the final JAR and verify the Oven output and both Hopper block entities in the region file and again after a dedicated restart.
 - [ ] Reproduce the first Auram shutdown's inconsistent block-entity save. The initial region contained all three placed blocks, and its block-entity list omitted the Oven and both vanilla Hoppers. The second saved batch survived.
+- [ ] Diagnose a fresh Auram save that omits the Trent Effigy's block entity. Its normal placement hook loaded the item settings and summoned both guards. After `save-all flush` and a clean stop, the forced chunk contained the Trent block and its platform but had an empty block entity list. The entity region recorded the same pig, guards, and target UUID. The restart restored their pursuit and replaced the Trent's missing data with its default settings.
+- [x] Save the same Trent fixture in a control run with Smooth Chunk Save 4.1 disabled in the disposable Auram copy. The initial region wrote effect 2, alarm mode 2, and activation tick 40. The supported profile still needs a repeat of the save and restart check.
 - [ ] Verify the supported Auram profile in fresh survival and on a dedicated server.
 
 ## Current Snapshot (2026-02-09)

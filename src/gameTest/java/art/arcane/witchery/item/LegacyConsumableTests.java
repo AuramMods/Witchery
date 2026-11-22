@@ -79,7 +79,7 @@ public final class LegacyConsumableTests {
         }
     }
 
-    @GameTest(template = "qa_coven_arena", batch = "witchery_creeper_heart")
+    @GameTest(template = "qa_coven_arena", batch = "witchery_creeper_heart", setupTicks = 5)
     public static void creeperHeartBlastsWithBothTerrainSettings(GameTestHelper helper) {
         var player = player(helper);
         var level = helper.getLevel();
@@ -88,30 +88,34 @@ public final class LegacyConsumableTests {
         player.setPos(Vec3.atBottomCenterOf(center));
         var pig = EntityType.PIG.create(level);
         pig.setPos(Vec3.atBottomCenterOf(center.north()));
+        pig.setNoAi(true);
+        pig.setNoGravity(true);
         level.addFreshEntity(pig);
         var heart = WitcheryIngredient.CREEPER_HEART.item();
         var setting = WitcheryServerConfig.CREEPER_HEART_TERRAIN_DAMAGE;
-        boolean original = setting.get();
-        try {
-            setting.set(false);
-            level.setBlockAndUpdate(wool, Blocks.WHITE_WOOL.defaultBlockState());
-            var stack = new ItemStack(heart, 2);
-            helper.assertTrue(stack.getUseAnimation() == UseAnim.EAT && stack.getUseDuration() == 32,
-                    "The Creeper Heart can be eaten without missing hunger");
-            consume(helper, player, stack);
-            assertEffect(helper, player, MobEffects.FIRE_RESISTANCE, 20, 0);
-            helper.assertTrue(level.getBlockState(wool).is(Blocks.WHITE_WOOL) && pig.getHealth() < pig.getMaxHealth(),
-                    "The small blast hurts nearby creatures and preserves the marker");
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.getEntity(pig.getUUID()) == pig,
+                "The explosion can query the pig in the test chunk")).thenExecute(() -> {
+            boolean original = setting.get();
+            try {
+                setting.set(false);
+                level.setBlockAndUpdate(wool, Blocks.WHITE_WOOL.defaultBlockState());
+                var stack = new ItemStack(heart, 2);
+                helper.assertTrue(stack.getUseAnimation() == UseAnim.EAT && stack.getUseDuration() == 32,
+                        "The Creeper Heart can be eaten without missing hunger");
+                consume(helper, player, stack);
+                assertEffect(helper, player, MobEffects.FIRE_RESISTANCE, 20, 0);
+                helper.assertTrue(level.getBlockState(wool).is(Blocks.WHITE_WOOL) && pig.getHealth() < pig.getMaxHealth(),
+                        "The small blast hurts nearby creatures and preserves the marker");
 
-            setting.set(true);
-            consume(helper, player, stack);
-            helper.assertTrue(level.isEmptyBlock(wool) && stack.isEmpty(), "The large blast destroys the marker and spends one heart");
-            helper.succeed();
-        } finally {
-            setting.set(original);
-            player.discard();
-            pig.discard();
-        }
+                setting.set(true);
+                consume(helper, player, stack);
+                helper.assertTrue(level.isEmptyBlock(wool) && stack.isEmpty(), "The large blast destroys the marker and spends one heart");
+            } finally {
+                setting.set(original);
+                player.discard();
+                pig.discard();
+            }
+        }).thenSucceed();
     }
 
     @GameTest(template = "qa_coven_arena")
