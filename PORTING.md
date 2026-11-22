@@ -756,7 +756,7 @@
 - [x] Use the selected rite ID to save Circle Magic bookmarks on protocol 88. Earlier 1.20.1 numeric bookmarks resolve through the preceding alphabetic guide. Imported 1.7.10 subtype bookmarks resolve through the original index. Saved references to grouped rites open their shared chapter.
 - [x] Open both grouped Circle Magic chapters on a muted packaged Forge client. Verify earlier numeric and imported bookmarks, clear a saved chapter by returning to the cover after a dedicated restart, and save a biome in the atlas through the same packet.
 - [x] Pass Java 17 data generation, JAR reobfuscation, all 106 clean Forge GameTests, and all 109 with Thaumaturge, Lithostitched, and Curios.
-- [ ] Stabilize the 659-case regression run. The first run flagged the older Waystone copy fixture. A replay delayed activation until its offerings entered the level, passed the copy test, and passed 658 of 659 cases. The remaining failure was the Sentinel guard fixture, which passed in the clean suite and the first broad run.
+- [x] Replay the broader regression suite after correcting fixture timing and the Hobgoblin courtship crash. The earlier 659-case runs flagged Waystone copy and Sentinel. The final 660-case run passed with both fixture changes, an isolated charging rite, and the new courtship regression.
 
 ## Staff of Duplication (2026-11-22)
 
@@ -1021,6 +1021,8 @@
 - [x] Verify the three thresholds in the muted survival client. Five worshippers recharged the fixture infusion from 10 to 40. The larger groups granted both Worship tiers. A nine-stroke Expelliarmus disarmed two husks, left the farther husk armed, and spent four charges.
 - [x] Mine the placed statue with an iron pickaxe after restart. The recovered item kept the patron name and UUID. The Pentacle's recharge multiplier also survived the restart.
 - [x] Pass Java 17 data generation, JAR reobfuscation, and all 357 required Forge GameTests. New cases cover restored patron data, a worshipper save, breeding, ranked disarm, and the pentacle's two functions.
+- [x] Fix the server crash when either Hobgoblin's mating goal stops. Clear both partners using the shared pair captured before either goal is reset. A new Forge GameTest reproduces the crash on the preceding code and checks interruption, re-pairing, and stopping from either side on the fixed build.
+- [x] Observe a natural birth in a prepared village on packaged Forge 47.4.10. A villager claimed a bed and two adult Hobgoblins produced one child. Both adults entered cooldown. A dedicated restart retained the child UUID and both cooldowns.
 
 ## Mog and Gulg (2026-11-20)
 
@@ -1660,6 +1662,8 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Restore the hidden Death combination and the Death encounter.
 - [x] Restore the original Sentinel's target priority. Its two temporary Spectres favor the intruder's creature class before their ordinary player search. A checked-in GameTest reproduced both guards switching from a pig to a player on the fetish's trusted list. It then verified the corrected pursuit, including reloading each guard and despawning when the target was removed.
 - [x] Boot the reobfuscated JAR on a disposable headless Forge 47.4.10 server. The same pig, both temporary Spectres, and the fetish's cooldown survived a full restart. With the trusted player back in range, both guards kept pursuing the pig. They expired after the fixture removed the player and pig. The tested JAR SHA-256 is `70c637d30253cdd86aed0bf793da04b88555b5bcf948ba681247efa82052cdfe`.
+- [x] Match the original dye palette and separate render opacity for the Scarecrow fabric, Trent face, and Witch's Ladder. Compare ordinary and spectral forms of all three on the muted packaged client and verify the Trent face at all four facings.
+- [x] Wait for the Sentinel's scheduled activation in the GameTest, then exercise both guards' AI before and after reloading their saved data. Java 17 data generation, JAR reobfuscation, and all 107 checked-in Forge GameTests passed.
 
 ## Death and Binky (2026-11-20)
 
@@ -1928,9 +1932,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [ ] Run fresh client launch smoke and scan `run/logs/latest.log` for:
   - spawn egg model resolution errors (`*_spawn_egg` model lookups).
   - block-model missing texture warnings for the remapped set (`tormentstone`, `refillingchest`, `brewliquid`, `mirrorblock*`, `wolftrap`, `trent`, `scarecrow`).
-- [ ] Continue fetish model parity depth pass:
-  - evaluate whether `witchsladder` needs the same multi-part UV approach.
-  - add fidelity follow-up for fetish-specific rotations/tint behavior currently handled by legacy TESR (`RenderFetish`).
+- [x] Verify fetish rotation and tint against `RenderFetish`. The original Witch's Ladder uses crossed quads. Its projected form keeps the same opaque texture pixels as the ordinary block.
 - [ ] Run targeted multiplayer/client validation for expanded player sync payload snapshots (`login`, `clone`, `item_update`, `sync_markup_book`, `howl`).
   - completed crop-family stage model parity pass.
   - completed structural families (stairs/slabs/fence/fence-gate/pressure-plate/button) with 1.20.1 state models.

@@ -38,55 +38,57 @@ public final class PoppetDamageTests {
         caster.setYHeadRot(-90);
         caster.setXRot(0);
         var target = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(9, 3, 8));
-        try {
-            equipHunterOutfit(caster);
-            String trigger = "WITCHunterTrigger";
-            var poppet = equipPoppet(caster, 0, "voodoo_poppet");
-            TaglockItem.bindSignature(poppet, target);
-            caster.getRandom().setSeed(4097); // First roll reports the action, second roll resists it.
-            poppet.use(level, caster, InteractionHand.MAIN_HAND);
-            poppet.releaseUsing(level, caster, 20);
-            helper.assertTrue(target.getDeltaMovement().equals(Vec3.ZERO) && poppet.getTag().getInt("WITCDamage") == 0,
-                    "The caster's outfit must be able to stop a push without spending ten wear");
-            var notice = caster.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
-            helper.assertTrue(notice.getLong(trigger) > 0, "Resisted manual voodoo still draws pursuit");
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.getEntity(target.getUUID()) == target,
+                "The bound pig is available through the server entity lookup")).thenExecute(() -> {
+            try {
+                equipHunterOutfit(caster);
+                String trigger = "WITCHunterTrigger";
+                var poppet = equipPoppet(caster, 0, "voodoo_poppet");
+                TaglockItem.bindSignature(poppet, target);
+                caster.getRandom().setSeed(4097); // First roll reports the action, second roll resists it.
+                poppet.use(level, caster, InteractionHand.MAIN_HAND);
+                poppet.releaseUsing(level, caster, 20);
+                helper.assertTrue(target.getDeltaMovement().equals(Vec3.ZERO) && poppet.getTag().getInt("WITCDamage") == 0,
+                        "The caster's outfit must be able to stop a push without spending ten wear");
+                var notice = caster.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
+                helper.assertTrue(notice.getLong(trigger) > 0, "Resisted manual voodoo still draws pursuit");
 
-            for (var slot : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
-                caster.setItemSlot(slot, ItemStack.EMPTY);
+                for (var slot : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+                    caster.setItemSlot(slot, ItemStack.EMPTY);
+                }
+                equipHunterOutfit(target);
+                poppet.use(level, caster, InteractionHand.MAIN_HAND);
+                poppet.releaseUsing(level, caster, 20);
+                helper.assertTrue(target.getDeltaMovement().x > 2 && poppet.getTag().getInt("WITCDamage") == 10,
+                        "Only the caster's outfit can stop the manual push");
+
+                var lava = new BlockPos(7, 4, 5);
+                helper.setBlock(lava.below(), Blocks.STONE);
+                helper.setBlock(lava, Blocks.LAVA);
+                var aim = caster.pick(5, 1, true);
+                helper.assertTrue(aim instanceof BlockHitResult hit && hit.getBlockPos().equals(helper.absolutePos(lava)),
+                        "The caster's view intersects a lava source: " + aim.getType() + " " + aim.getLocation()
+                                + ", eye=" + caster.getEyePosition() + ", lava=" + helper.absolutePos(lava));
+                equipHunterOutfit(caster);
+                caster.getRandom().setSeed(noticeSeed());
+                poppet.use(level, caster, InteractionHand.MAIN_HAND);
+                poppet.releaseUsing(level, caster, 20);
+                helper.assertTrue(!target.isOnFire() && poppet.isEmpty(),
+                        "The caster's outfit can stop lava ignition, which still consumes the whole poppet (fire="
+                                + target.isOnFire() + ", count=" + poppet.getCount() + ")");
+
+                var freshPoppet = equipPoppet(caster, 0, "voodoo_poppet");
+                TaglockItem.bindSignature(freshPoppet, target);
+                caster.getRandom().setSeed(0);
+                freshPoppet.use(level, caster, InteractionHand.MAIN_HAND);
+                freshPoppet.releaseUsing(level, caster, 20);
+                helper.assertTrue(target.isOnFire() && freshPoppet.isEmpty(),
+                        "An ignition that passes the outfit roll sets fire to the target and consumes the poppet");
+            } finally {
+                caster.discard();
+                target.discard();
             }
-            equipHunterOutfit(target);
-            poppet.use(level, caster, InteractionHand.MAIN_HAND);
-            poppet.releaseUsing(level, caster, 20);
-            helper.assertTrue(target.getDeltaMovement().x > 2 && poppet.getTag().getInt("WITCDamage") == 10,
-                    "Only the caster's outfit can stop the manual push");
-
-            var lava = new BlockPos(7, 4, 5);
-            helper.setBlock(lava.below(), Blocks.STONE);
-            helper.setBlock(lava, Blocks.LAVA);
-            var aim = caster.pick(5, 1, true);
-            helper.assertTrue(aim instanceof BlockHitResult hit && hit.getBlockPos().equals(helper.absolutePos(lava)),
-                    "The caster's view intersects a lava source: " + aim.getType() + " " + aim.getLocation()
-                            + ", eye=" + caster.getEyePosition() + ", lava=" + helper.absolutePos(lava));
-            equipHunterOutfit(caster);
-            caster.getRandom().setSeed(noticeSeed());
-            poppet.use(level, caster, InteractionHand.MAIN_HAND);
-            poppet.releaseUsing(level, caster, 20);
-            helper.assertTrue(!target.isOnFire() && poppet.isEmpty(),
-                    "The caster's outfit can stop lava ignition, which still consumes the whole poppet (fire="
-                            + target.isOnFire() + ", count=" + poppet.getCount() + ")");
-
-            var freshPoppet = equipPoppet(caster, 0, "voodoo_poppet");
-            TaglockItem.bindSignature(freshPoppet, target);
-            caster.getRandom().setSeed(0);
-            freshPoppet.use(level, caster, InteractionHand.MAIN_HAND);
-            freshPoppet.releaseUsing(level, caster, 20);
-            helper.assertTrue(target.isOnFire() && freshPoppet.isEmpty(),
-                    "An ignition that passes the outfit roll sets fire to the target and consumes the poppet");
-            helper.succeed();
-        } finally {
-            caster.discard();
-            target.discard();
-        }
+        }).thenSucceed();
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_submerged_voodoo", setupTicks = 5)

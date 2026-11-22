@@ -84,9 +84,10 @@ final class HobgoblinMateGoal extends Goal {
 
     @Override
     public void stop() {
-        if (pair != null) {
-            pair.first.mateGoal().pair = null;
-            pair.second.mateGoal().pair = null;
+        Pair stoppedPair = pair;
+        if (stoppedPair != null) {
+            stoppedPair.first.mateGoal().pair = null;
+            stoppedPair.second.mateGoal().pair = null;
         }
         goblin.getNavigation().stop();
     }

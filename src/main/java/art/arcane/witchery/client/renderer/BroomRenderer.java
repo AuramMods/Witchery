@@ -1,6 +1,7 @@
 package art.arcane.witchery.client.renderer;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.client.model.LegacyDyeColors;
 import art.arcane.witchery.entity.WitchBroom;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -23,12 +24,6 @@ public final class BroomRenderer extends EntityRenderer<WitchBroom> {
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "broom"), "main");
     private static final ResourceLocation TEXTURE =
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "textures/entities/broom.png");
-    private static final float[][] BRISTLE_COLORS = {
-            {1, 1, 1}, {0.85F, 0.5F, 0.2F}, {0.7F, 0.3F, 0.85F}, {0.4F, 0.6F, 0.85F},
-            {0.9F, 0.9F, 0.2F}, {0.5F, 0.8F, 0.1F}, {0.95F, 0.5F, 0.65F}, {0.3F, 0.3F, 0.3F},
-            {0.6F, 0.6F, 0.6F}, {0.3F, 0.5F, 0.6F}, {0.5F, 0.25F, 0.7F}, {0.2F, 0.3F, 0.7F},
-            {0.4F, 0.3F, 0.2F}, {0.4F, 0.5F, 0.2F}, {0.6F, 0.2F, 0.2F}, {0.1F, 0.1F, 0.1F}
-    };
     private final ModelPart handle;
     private final ModelPart bristles;
 
@@ -77,7 +72,7 @@ public final class BroomRenderer extends EntityRenderer<WitchBroom> {
         poses.scale(-1, -1, 1);
         var consumer = buffers.getBuffer(RenderType.entityCutoutNoCull(TEXTURE));
         handle.render(poses, consumer, light, OverlayTexture.NO_OVERLAY);
-        float[] color = BRISTLE_COLORS[broom.brushColor() < 0 ? 12 : broom.brushColor()];
+        float[] color = LegacyDyeColors.components(broom.brushColor() < 0 ? 12 : broom.brushColor());
         bristles.render(poses, consumer, light, OverlayTexture.NO_OVERLAY, color[0], color[1], color[2], 1);
         poses.popPose();
         super.render(broom, yaw, partialTick, poses, buffers, light);

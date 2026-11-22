@@ -24,6 +24,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -33,15 +34,12 @@ import net.minecraft.world.level.block.RedstoneLampBlock;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
@@ -172,18 +170,21 @@ public final class FetishBehaviorTests {
         fetish.load(data);
         var pig = placeMob(helper, EntityType.PIG, CENTER.south(3));
         // Keep the intruder alive without making it ineligible for the target goal.
-        Consumer<LivingAttackEvent> protectPig = event -> {
-            if (event.getEntity() == pig) event.setCanceled(true);
-        };
-        MinecraftForge.EVENT_BUS.addListener(protectPig);
+        pig.getAttribute(Attributes.MAX_HEALTH).setBaseValue(1000);
+        pig.setHealth(pig.getMaxHealth());
         var guardArea = new AABB(center).inflate(8);
-        helper.runAfterDelay(35, () -> {
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(fetish.saveWithoutMetadata().getLong("LastActivation") > 0,
+                "The loaded fetish detects the intruding pig on its scheduled tick")).thenExecute(() -> {
             var guards = level.getEntitiesOfClass(SpectralUndead.class, guardArea);
             try {
-                helper.assertTrue(guards.size() == 2 && guards.stream().allMatch(guard -> guard.temporary() && guard.getTarget() == pig)
-                                && fetish.saveWithoutMetadata().getLong("LastActivation") > 0,
-                        "Both temporary guards stay on the pig while the trusted player is nearby. Targets "
-                                + guards.stream().map(SpectralUndead::getTarget).toList());
+                helper.assertTrue(guards.size() == 2 && guards.stream().allMatch(guard -> guard.temporary() && guard.getTarget() == pig),
+                        "The Sentinel summons exactly two temporary guards targeting the pig");
+                // The dedicated test server may load chunks before ticking their entities.
+                for (int tick = 0; tick < 12; tick++) {
+                    guards.forEach(level::tickNonPassenger);
+                    helper.assertTrue(guards.stream().allMatch(guard -> guard.isAlive() && guard.getTarget() == pig),
+                            "Both guards stay on the pig while the trusted player is nearby");
+                }
                 for (var guard : guards) {
                     var saved = guard.saveWithoutId(new CompoundTag());
                     helper.assertTrue(saved.getInt("SuicideIn") > 550 && saved.getUUID("SentinelTarget").equals(pig.getUUID()),
@@ -191,21 +192,18 @@ public final class FetishBehaviorTests {
                     guard.setTarget(null);
                     guard.load(saved);
                 }
-                // The GameTest server can load a chunk without ticking its entities.
                 for (int tick = 0; tick < 12; tick++) {
                     guards.forEach(level::tickNonPassenger);
                     helper.assertTrue(guards.stream().allMatch(guard -> guard.isAlive() && guard.getTarget() == pig),
                             "Reloaded guards restore the intruder and continue to ignore the trusted player");
                 }
             } finally {
-                MinecraftForge.EVENT_BUS.unregister(protectPig);
                 owner.discard();
                 pig.discard();
             }
             guards.forEach(level::tickNonPassenger);
             helper.assertTrue(guards.stream().allMatch(SpectralUndead::isRemoved), "The guards vanish with their target");
-            helper.succeed();
-        });
+        }).thenSucceed();
     }
 
     private static CompoundTag alarm(FetishEffect effect) {

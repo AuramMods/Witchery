@@ -197,35 +197,42 @@ public final class CircleRiteTests {
     @GameTest(template = TEMPLATE, batch = "witchery_ward_remote", setupTicks = 5)
     public static void greaterBarrierResumesAtItsWaystoneAndRetainsPublicCollision(GameTestHelper helper) {
         ring(helper, RitualCircle.MEDIUM_RITE, "circleglyphritual");
-        var altar = chargedAltar(helper, false);
         var level = helper.getLevel();
         var center = helper.absolutePos(CENTER);
         var target = center.east(43).above(6);
-        start(helper, new ItemStack(Items.OBSIDIAN), new ItemStack(Items.GLOWSTONE_DUST), bound(level, target));
-        var heart = heart(helper);
-        tick(level, center, heart, TWO_OFFERING_CAST);
-        var save = heart.saveWithoutMetadata();
-        var ward = save.getList("ProtectionRites", Tag.TAG_COMPOUND).getCompound(0);
-        helper.assertTrue(BlockPos.of(ward.getLong("Target")).equals(target) && ward.getString("Kind").equals("GREATER_BARRIER"),
-                "The same-dimension Waystone relocates a greater barrier");
-        heart.load(save);
-        tick(level, center, heart, 1);
-        var wall = target.west(6);
-        var state = level.getBlockState(wall);
-        var player = fake(level);
-        helper.assertTrue(state.is(block("barrier")) && level.getBlockState(target.above(6)).is(block("barrier"))
-                && level.getBlockState(target.below()).is(block("barrier")) && !level.getBlockState(center.above(6)).is(block("barrier")),
-                "The reloaded ward refreshes the entire remote shell around the original target");
-        helper.assertTrue(!state.getCollisionShape(level, wall, CollisionContext.of(player)).isEmpty()
-                && Math.abs(altar.power() - 8998.6F) < 0.01F,
-                "The remote ward spends 1.4 from the altar beside the heart and blocks survival players");
-        player.getAbilities().instabuild = true;
-        player.setGameMode(GameType.CREATIVE);
-        player.setShiftKeyDown(true);
-        helper.assertTrue(state.getCollisionShape(level, wall, CollisionContext.of(player)).isEmpty(),
-                "Creative crouching bypasses the wall");
-        helper.useBlock(CENTER);
-        helper.succeed();
+        var offerings = List.of(new ItemStack(Items.OBSIDIAN), new ItemStack(Items.GLOWSTONE_DUST), bound(level, target));
+        offer(helper, offerings.toArray(ItemStack[]::new));
+        helper.startSequence().thenWaitUntil(() -> {
+            var dropped = drops(helper);
+            helper.assertTrue(offerings.stream().allMatch(stack -> dropped.stream().anyMatch(item -> ItemStack.matches(item.getItem(), stack))),
+                    "The three offerings have entered the level before activation");
+        }).thenExecute(() -> {
+            var altar = chargedAltar(helper, false);
+            start(helper);
+            var heart = heart(helper);
+            tick(level, center, heart, TWO_OFFERING_CAST);
+            var save = heart.saveWithoutMetadata();
+            var ward = save.getList("ProtectionRites", Tag.TAG_COMPOUND).getCompound(0);
+            helper.assertTrue(BlockPos.of(ward.getLong("Target")).equals(target) && ward.getString("Kind").equals("GREATER_BARRIER"),
+                    "The same-dimension Waystone relocates a greater barrier");
+            heart.load(save);
+            tick(level, center, heart, 1);
+            var wall = target.west(6);
+            var state = level.getBlockState(wall);
+            var player = fake(level);
+            helper.assertTrue(state.is(block("barrier")) && level.getBlockState(target.above(6)).is(block("barrier"))
+                    && level.getBlockState(target.below()).is(block("barrier")) && !level.getBlockState(center.above(6)).is(block("barrier")),
+                    "The reloaded ward refreshes the entire remote shell around the original target");
+            helper.assertTrue(!state.getCollisionShape(level, wall, CollisionContext.of(player)).isEmpty()
+                    && Math.abs(altar.power() - 8998.6F) < 0.01F,
+                    "The remote ward spends 1.4 from the altar beside the heart and blocks survival players");
+            player.getAbilities().instabuild = true;
+            player.setGameMode(GameType.CREATIVE);
+            player.setShiftKeyDown(true);
+            helper.assertTrue(state.getCollisionShape(level, wall, CollisionContext.of(player)).isEmpty(),
+                    "Creative crouching bypasses the wall");
+            helper.useBlock(CENTER);
+        }).thenSucceed();
     }
 
     @GameTest(template = TEMPLATE, batch = "witchery_volcano_refund", setupTicks = 30, timeoutTicks = 130)

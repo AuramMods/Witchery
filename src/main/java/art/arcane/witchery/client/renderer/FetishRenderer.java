@@ -3,6 +3,7 @@ package art.arcane.witchery.client.renderer;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.FetishBlock;
 import art.arcane.witchery.block.entity.FetishBlockEntity;
+import art.arcane.witchery.client.model.LegacyDyeColors;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.geom.ModelLayerLocation;
@@ -18,7 +19,6 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.DyeColor;
 
 public final class FetishRenderer implements BlockEntityRenderer<FetishBlockEntity> {
     public static final ModelLayerLocation SCARECROW = layerId("scarecrow");
@@ -28,8 +28,10 @@ public final class FetishRenderer implements BlockEntityRenderer<FetishBlockEnti
     private final ResourceLocation texture;
     private final ModelPart plain;
     private final ModelPart dyed;
+    private final ModelLayerLocation layer;
 
     public FetishRenderer(BlockEntityRendererProvider.Context context, ModelLayerLocation layer) {
+        this.layer = layer;
         texture = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "textures/block/" + layer.getModel().getPath() + ".png");
         ModelPart model = context.bakeLayer(layer);
         plain = model.getChild("plain");
@@ -102,11 +104,12 @@ public final class FetishRenderer implements BlockEntityRenderer<FetishBlockEnti
         pose.translate(0.5, 1.5, 0.5);
         pose.mulPose(Axis.YP.rotationDegrees(180 - facing.toYRot()));
         pose.mulPose(Axis.ZP.rotationDegrees(180));
-        var vertices = buffers.getBuffer(spectral ? RenderType.entityTranslucent(texture) : RenderType.entityCutoutNoCull(texture));
-        float alpha = spectral ? 0.65F : 1;
-        float[] tint = DyeColor.byId(color).getTextureDiffuseColors();
-        plain.render(pose, vertices, light, overlay, 1, 1, 1, alpha);
-        dyed.render(pose, vertices, light, overlay, tint[0], tint[1], tint[2], alpha);
+        // The original ladder uses crossed quads instead of the translucent tile renderer.
+        boolean translucent = spectral && !LADDER.equals(layer);
+        var vertices = buffers.getBuffer(translucent ? RenderType.entityTranslucent(texture) : RenderType.entityCutoutNoCull(texture));
+        float[] tint = LegacyDyeColors.components(color);
+        plain.render(pose, vertices, light, overlay, 1, 1, 1, translucent ? 0.6F : 1);
+        dyed.render(pose, vertices, light, overlay, tint[0], tint[1], tint[2], translucent && SCARECROW.equals(layer) ? 0.7F : 1);
         pose.popPose();
     }
 }

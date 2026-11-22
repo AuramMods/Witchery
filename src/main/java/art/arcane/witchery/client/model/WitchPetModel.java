@@ -9,13 +9,6 @@ import net.minecraft.client.model.geom.ModelPart;
 import java.util.List;
 
 abstract class WitchPetModel<T extends WitchPet> extends AgeableListModel<T> {
-    private static final float[][] COLORS = {
-            {1, 1, 1}, {0.85F, 0.5F, 0.2F}, {0.7F, 0.3F, 0.85F}, {0.4F, 0.6F, 0.85F},
-            {0.9F, 0.9F, 0.2F}, {0.5F, 0.8F, 0.1F}, {0.95F, 0.5F, 0.65F}, {0.3F, 0.3F, 0.3F},
-            {0.6F, 0.6F, 0.6F}, {0.3F, 0.5F, 0.6F}, {0.5F, 0.25F, 0.7F}, {0.2F, 0.3F, 0.7F},
-            {0.4F, 0.3F, 0.2F}, {0.4F, 0.5F, 0.2F}, {0.6F, 0.2F, 0.2F}, {0.1F, 0.1F, 0.1F}
-    };
-
     protected final ModelPart head;
     private final List<ModelPart> headParts;
     private final List<ModelPart> bodyParts;
@@ -56,7 +49,7 @@ abstract class WitchPetModel<T extends WitchPet> extends AgeableListModel<T> {
     public void renderToBuffer(PoseStack pose, VertexConsumer vertices, int light, int overlay,
                                float red, float green, float blue, float alpha) {
         if (color != 0) {
-            float[] dye = COLORS[color];
+            float[] dye = LegacyDyeColors.components(color);
             red *= Math.min(1, dye[0] * tintScale + redBase);
             green *= Math.min(1, dye[1] * tintScale + greenBase);
             blue *= Math.min(1, dye[2] * tintScale + blueBase);
