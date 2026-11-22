@@ -141,8 +141,12 @@ public final class PlantMineBlock extends Block {
 
         public static void applyLegacyMetadata(ItemStack stack, int metadata) {
             if (metadata >= 0 && metadata < BY_METADATA.length && fromTag(stack).isEmpty()) {
-                BY_METADATA[metadata].write(stack);
+                fromLegacyMetadata(metadata).write(stack);
             }
+        }
+
+        public static Variant fromLegacyMetadata(int metadata) {
+            return metadata >= 0 && metadata < BY_METADATA.length ? BY_METADATA[metadata] : ROSE_WEBS;
         }
 
         private static Optional<Variant> fromTag(ItemStack stack) {

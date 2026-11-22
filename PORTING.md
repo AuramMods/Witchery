@@ -609,6 +609,12 @@
 - [x] Import 32 placed panes and 32 stacks from an original Forge save, covering every color in both block states. Repeat the checks after a headless dedicated restart, then switch both rows with redstone. Data generation, JAR reobfuscation, and all 34 checked-in GameTests passed.
 - [ ] Verify the colored item and block models in a muted client. All 32 model and texture references resolved in the packaged JAR. Docker did not respond to the isolated client environment check.
 
+## Leaping Lily (2026-11-21)
+
+- [x] Restore the original recipe. Five Lily Pads, two Glowstone Dust, one Potion of Swiftness, and Breath of the Goddess produce five Leaping Lilies. The regular potion is required.
+- [x] Place Leaping Lilies on solid ground and on source water. On contact they give Speed I and Jump Boost V for ten ticks and leave an active effect of either kind in place. The lily emits light level six.
+- [x] Run Java 17 data generation, reobfuscate the JAR, and pass all 36 checked-in GameTests. The snare test also placed a legacy stocked Bat Snare from a stack and released a bat with its original trade stock marker.
+
 ## Coffin (2026-11-20)
 
 - [x] Craft the original placeable coffin from a bed, three planks and five logs. The muted survival client crafted the item and placed the head and foot together. Placement tests refused an obstructed or unsupported second half and retained the item.
@@ -1255,6 +1261,8 @@
 - [x] Import six Leech Chest blocks and two worship statues from the original Forge server. Restore two double chests across chunk boundaries and the south-facing chest made by the original Sprig. Keep literal names, each half's inventory and samples, and patron bindings. Preserve the two saved Hobgoblins' UUIDs and the active worshipper's pose.
 - [x] Repeat the Leech Chest and worship statue checks after an ordinary dedicated restart. A hopper under one half pulled items from both inventories. Removing one half left the second half and its original sample intact. The bound statue produced its patron-bound drop and recruited the neighboring Hobgoblin.
 - [x] Import every Shaded Glass color from original blocks and item stacks in both redstone states. The packaged server kept all colors through restart, and subsequent power changes switched the blocks while keeping their color.
+- [x] Import 34 plant and trap blocks from the original server, including all twelve Plant Mines, six snare states, both Brambles, four vine facings, four Witchery Lily Pad growth levels, Leaping Lilies, Somnian Cotton, brew webs and cactus, and Glow Globes. Preserve the exact delays and priorities of four saved Lily Pad updates.
+- [x] Reopen the plant and trap fixture on the packaged headless server and repeat all 34 block-state checks. A Leaping Lily gave a pig Speed I and Jump Boost V. An Ink Mine blinded another pig and was consumed. The imported Witchery Lily Pad spread once adjacent source water was available.
 - [ ] Expand migration to other block and subtype data and specialized entity and block-entity fields. Add fixtures before calling the migration complete.
 
 ### Importing a copy of a legacy world

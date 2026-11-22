@@ -414,7 +414,7 @@
    "block.witchery.icestockade" : "Ice Stockade",
    "block.witchery.infinityegg" : "Infinityegg",
    "block.witchery.kettle" : "Kettle",
-   "block.witchery.leapinglily" : "Leapinglily",
+   "block.witchery.leapinglily" : "Leaping Lily",
    "block.witchery.leechchest" : "Leech Chest",
    "message.witchery.leechchest.self" : "You cannot take your own taglock from this chest.",
    "message.witchery.leechchest.absent" : "The following players are outside this world: %s.",

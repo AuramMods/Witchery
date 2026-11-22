@@ -3,13 +3,16 @@ package art.arcane.witchery.world.migration;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.AltarBlock;
 import art.arcane.witchery.block.BloodRoseBlock;
+import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.block.ChaliceBlock;
 import art.arcane.witchery.block.CoffinBlock;
+import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.CursedControls;
 import art.arcane.witchery.block.DaylightCollectorBlock;
 import art.arcane.witchery.block.DistilleryBlock;
 import art.arcane.witchery.block.LeechChestBlock;
 import art.arcane.witchery.block.MirrorBlock;
+import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.block.RiteHeartBlock;
 import art.arcane.witchery.block.RitualGlyphBlock;
 import art.arcane.witchery.block.ShadedGlassBlock;
@@ -18,6 +21,7 @@ import art.arcane.witchery.block.StockadeBlock;
 import art.arcane.witchery.block.TormentPortalBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.block.WitchCropBlock;
+import art.arcane.witchery.block.WitchLilyPadBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.block.WitchesOvenBlock;
 import art.arcane.witchery.world.WitcheryDimensions;
@@ -71,6 +75,7 @@ public final class LegacyChunkUpgrade {
     private static final Set<String> CURSED_CONTROLS = Set.of("clever", "cwoodendoor", "cwoodpressureplate", "cstonepressureplate",
             "csnowpressureplate", "cbuttonwood", "cbuttonstone");
     private static final Set<String> BREW_DISPERSALS = Set.of("brewgas", "brewliquid");
+    private static final ResourceLocation GROWING_LILY_PAD = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "lilypad");
     private static final String LEGACY_BLOCK_TICKS = "witchery:legacy_block_ticks";
     private static final int LEGACY_LEVER_ID = 69;
     private static final int LEGACY_STONE_BUTTON_ID = 77;
@@ -197,7 +202,7 @@ public final class LegacyChunkUpgrade {
             var tick = (CompoundTag) entry;
             var name = tick.contains("i", Tag.TAG_ANY_NUMERIC) ? ids.block(tick.getInt("i"))
                     : ResourceLocation.tryParse(tick.getString("i"));
-            if (!belongsTo(name, CURSED_CONTROLS) && !belongsTo(name, BREW_DISPERSALS)) return false;
+            if (!belongsTo(name, CURSED_CONTROLS) && !belongsTo(name, BREW_DISPERSALS) && !GROWING_LILY_PAD.equals(name)) return false;
             tick.putString("i", name.toString());
             saved.add(tick);
             dormantBrews.remove(savedPosition(tick), name.toString());
@@ -354,6 +359,15 @@ public final class LegacyChunkUpgrade {
                             metadata == 0 ? Direction.SOUTH : horizontalFacing(metadata))
                     .setValue(LeechChestBlock.LEGACY_PAIRING, true);
             case "statueofworship" -> state.setValue(BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata & 7));
+            case "vine" -> state.setValue(BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata));
+            case "bramble" -> state.setValue(BrambleBlock.WILD, metadata == 1);
+            case "plantmine" -> state.setValue(PlantMineBlock.VARIANT, PlantMineBlock.Variant.fromLegacyMetadata(metadata));
+            case "crittersnare" -> {
+                var critter = CritterSnareBlock.Critter.fromLegacyMetadata(metadata);
+                yield state.setValue(CritterSnareBlock.CRITTER, critter)
+                        .setValue(CritterSnareBlock.STOCKED, critter == CritterSnareBlock.Critter.BAT && (metadata & 8) != 0);
+            }
+            case "lilypad" -> state.setValue(WitchLilyPadBlock.GROWTH, (metadata >> 2) & 3);
             case "grassper", "placeditem", "scarecrow", "trent", "witchsladder" -> state.setValue(
                     BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata & 7));
             case "altar" -> state.setValue(AltarBlock.FORMED, metadata == 1);
@@ -389,7 +403,7 @@ public final class LegacyChunkUpgrade {
             case "poppetshelf", "bloodedwool", "pitdirt", "pitgrass", "mirrorwall",
                     "tormentstone", "embermoss", "glintweed", "spanishmoss", "infinityegg", "icedoubleslab", "snowdoubleslab",
                     "cauldron", "brazier", "candelabra", "perpetualice", "icestockade", "icefence", "bloodcrucible", "silvervat",
-                    "force", "barrier", "slurp" -> state;
+                    "force", "barrier", "slurp", "somniancotton", "web", "cactus", "glowglobe", "leapinglily" -> state;
             case "iceslab", "snowslab" -> state.setValue(SlabBlock.TYPE, (metadata & 8) == 0 ? SlabType.BOTTOM : SlabType.TOP);
             case "witchwoodslab" -> state.setValue(WitchWoodType.PROPERTY, wood)
                     .setValue(SlabBlock.TYPE, (metadata & 8) == 0 ? SlabType.BOTTOM : SlabType.TOP);

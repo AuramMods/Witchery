@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": {
+      "item": "minecraft:lily_pad"
+    },
+    "B": {
+      "item": "witchery:breath_of_the_goddess"
+    },
+    "G": {
+      "item": "minecraft:glowstone_dust"
+    },
+    "P": {
+      "type": "forge:partial_nbt",
+      "item": "minecraft:potion",
+      "nbt": "{Potion:\"minecraft:swiftness\"}"
+    }
+  },
+  "pattern": [
+    "#P#",
+    "G#G",
+    "#B#"
+  ],
+  "result": {
+    "count": 5,
+    "item": "witchery:leapinglily"
+  },
+  "show_notification": true
+}

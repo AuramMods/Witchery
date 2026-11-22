@@ -113,9 +113,7 @@ public final class CritterSnareBlock extends Block {
     }
 
     public static void applyLegacyMetadata(ItemStack stack, int damage) {
-        int index = damage & 7;
-        Critter[] critters = Critter.values();
-        if (index > 0 && index < critters.length) writeCritter(stack, critters[index], (damage & 8) != 0);
+        writeCritter(stack, Critter.fromLegacyMetadata(damage), (damage & 8) != 0);
     }
 
     public static Critter critterFromStack(ItemStack stack) {
@@ -127,7 +125,7 @@ public final class CritterSnareBlock extends Block {
         if (critter == Critter.EMPTY) return;
         CompoundTag state = stack.getOrCreateTagElement(BlockItem.BLOCK_STATE_TAG);
         state.putString(CRITTER.getName(), critter.getSerializedName());
-        state.putString(STOCKED.getName(), Boolean.toString(stocked));
+        state.putString(STOCKED.getName(), Boolean.toString(critter == Critter.BAT && stocked));
     }
 
     public enum Critter implements StringRepresentable {
@@ -136,6 +134,8 @@ public final class CritterSnareBlock extends Block {
         SILVERFISH("silverfish", EntityType.SILVERFISH, SoundEvents.SILVERFISH_AMBIENT),
         SLIME("slime", EntityType.SLIME, SoundEvents.SLIME_SQUISH_SMALL),
         MAGMA_CUBE("magmacube", EntityType.MAGMA_CUBE, SoundEvents.MAGMA_CUBE_SQUISH_SMALL);
+
+        private static final Critter[] BY_METADATA = values();
 
         private final String name;
         private final EntityType<? extends Mob> type;
@@ -150,6 +150,11 @@ public final class CritterSnareBlock extends Block {
         @Override
         public String getSerializedName() {
             return name;
+        }
+
+        public static Critter fromLegacyMetadata(int metadata) {
+            int index = metadata & 7;
+            return index < BY_METADATA.length ? BY_METADATA[index] : EMPTY;
         }
 
         private static Critter forEntity(Entity entity) {

@@ -1,6 +1,7 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.block.PlantMineBlock;
+import art.arcane.witchery.block.LeapingLilyBlock;
 import art.arcane.witchery.block.ShadedGlassBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.block.StatueOfWorshipBlock;
@@ -471,6 +472,9 @@ public final class WitcheryItems {
         switch (path) {
             case "lilypad" -> {
                 return new PlaceOnWaterBlockItem(block, new Item.Properties());
+            }
+            case "leapinglily" -> {
+                return new LeapingLilyBlock.Item(block);
             }
             case "stockade" -> {
                 return new StockadeBlock.Item(block);

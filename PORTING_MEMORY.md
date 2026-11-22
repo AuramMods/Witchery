@@ -490,6 +490,14 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Original Forge regions supplied all 32 placed states and 32 numeric stacks. The raw upgraded regions matched every ID and color. The headless dedicated server loaded the same data again after restart, then powered the clear row and unpowered the darkened row without losing colors.
 - Java 17 data generation, JAR reobfuscation and all 34 checked-in GameTests passed. The JAR contains both item display variants for every color and all 16 recipes and unlock advancements. The isolated client environment did not respond, so its visual check remains open. The packaged JAR SHA-256 is `5f36007ec3cb687386e577fcf8060dbd338cba2aad36679910f7d3274eedbb23`.
 
+### Legacy Plant and Trap Import (2026-11-21)
+
+- The original Forge fixture placed all twelve Plant Mine variants. It used real snare capture callbacks to record a bat, silverfish, tiny slime, tiny magma cube, and a bat with the Polynesia Charm trade stock marker. The empty snare, Ender and Wild Brambles, all four brew vine facings, and the four Witchery Lily Pad growth levels appeared at their original coordinates after import.
+- Witchery registered its cactus and growing lily pad under its own namespace. The importer retains those IDs and reads growth from the two high metadata bits. All four Lily Pad updates kept their delays and priorities through the vanilla chunk conversion.
+- The Leaping Lily recipe uses a normal Potion of Swiftness, five Lily Pads, two Glowstone Dust, and Breath of the Goddess to produce five lilies. The Forge GameTest crafted the lilies, placed them via solid surface and source water interactions, and measured Speed I, Jump Boost V, and light level six. An existing stronger jump boost was preserved.
+- The final packaged server loaded all 34 states after an ordinary dedicated restart. The Ink Mine discharged and applied Blindness, the Leaping Lily applied both movement effects, and the imported growing pad produced a second pad at growth two. The initial fixture's cactus fell when its unsupported sand fell. The repeated original-server fixture used stone to support the sand.
+- Java 17 data generation and JAR reobfuscation succeeded. All 36 required GameTests passed on retry after the existing coven lifetime check failed once. The packaged JAR SHA-256 is `d1007d9fb5264966d35f5f010c4a08d562dca77f9fc9967dc308e4233e3c15b9`.
+
 ### Legacy Ritual Workshop Import (2026-11-21)
 
 - Forge 10.13.4.1614 saved all three original fetish blocks under the `witchery:witchsladder` tile ID. Read the numeric block and its metadata at the tile's coordinates to recognize Scarecrow, Trent Effigy and Witch's Ladder. The real fixture retained all three tile types, directions, colors and effects, a trusted player, and the Ladder's spectral flag.

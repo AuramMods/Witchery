@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_breath_of_the_goddess": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "witchery:breath_of_the_goddess"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "witchery:leapinglily"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_breath_of_the_goddess",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "witchery:leapinglily"
+    ]
+  },
+  "sends_telemetry_event": false
+}

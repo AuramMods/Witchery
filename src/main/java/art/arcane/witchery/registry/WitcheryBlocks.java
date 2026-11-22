@@ -39,6 +39,7 @@ import art.arcane.witchery.block.GrassperBlock;
 import art.arcane.witchery.block.HuntingTrapBlock;
 import art.arcane.witchery.block.KettleBlock;
 import art.arcane.witchery.block.LeechChestBlock;
+import art.arcane.witchery.block.LeapingLilyBlock;
 import art.arcane.witchery.block.MirrorBlock;
 import art.arcane.witchery.block.RefillingChestBlock;
 import art.arcane.witchery.block.SlurpBlock;
@@ -107,7 +108,6 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_FULL_BLOCK = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 16.0D, 16.0D);
     private static final VoxelShape SHAPE_FLOWER_TALL = Block.box(0.8D, 0.0D, 0.8D, 15.2D, 16.0D, 15.2D);
     private static final VoxelShape SHAPE_FLOWER_LOW = Block.box(1.6D, 0.0D, 1.6D, 14.4D, 6.4D, 14.4D);
-    private static final VoxelShape SHAPE_PAD_FLAT = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 0.5D, 16.0D);
     private static final VoxelShape SHAPE_FUNNEL = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
     private static final VoxelShape SHAPE_SKULL = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 8.0D, 12.0D);
     private static final VoxelShape SHAPE_INFINITY_EGG = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
@@ -177,8 +177,7 @@ public final class WitcheryBlocks {
             case "somniancotton" -> new SomnianCottonBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION).randomTicks());
             case "embermoss" -> new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_LOW, false);
             case "lilypad" -> new WitchLilyPadBlock();
-            case "leapinglily" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.LILY_PAD), SHAPE_PAD_FLAT, false);
+            case "leapinglily" -> new LeapingLilyBlock();
             case "grassper" -> new GrassperBlock();
             case "icedoor" -> new PerpetualIceDoorBlock();
             case "rowanwooddoor" -> new WitchDoorBlock(false);

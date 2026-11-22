@@ -32,7 +32,10 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.ItemLike;
@@ -294,6 +297,13 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_snow", has(Items.SNOW)).save(recipeOutput);
         stockadeRecipes(recipeOutput);
         shadedGlassRecipes(recipeOutput);
+        Item breath = WitcheryIngredient.BREATH_OF_THE_GODDESS.item();
+        ItemStack swiftness = PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.SWIFTNESS);
+        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, WitcheryBlocks.getRequired("leapinglily").get(), 5)
+                .define('#', Items.LILY_PAD).define('P', PartialNBTIngredient.of(Items.POTION, swiftness.getTag()))
+                .define('G', Items.GLOWSTONE_DUST).define('B', breath)
+                .pattern("#P#").pattern("G#G").pattern("#B#")
+                .unlockedBy("has_breath_of_the_goddess", has(breath)).save(recipeOutput);
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryItems.getRequired("vampirebook").get())
                 .define('W', Items.NETHER_WART)
                 .define('S', Items.NETHER_STAR)
