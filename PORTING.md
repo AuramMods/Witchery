@@ -775,7 +775,7 @@
 - [x] Import an original Forge chest holding a two-item compass stack with legacy icon value 5 and a custom tag. Both compasses and the tag survived a headless restart. The display uses the current reading after migration. The original shelf gave the correct reading in every band on both launches, and removing it reset the next reading to zero.
 - [x] Reproduce the optional Waystone activation failure. One immediate replay had both offerings alive while the level entity lookup was still empty. All 40 replays with five setup ticks passed, and the two checked-in fixtures now assert activation before checking the offering steps.
 - [x] Run Java 17 data generation and reobfuscation. All 80 clean Forge GameTests and all 84 with Thaumaturge, Lithostitched, and Curios passed.
-- [ ] Verify the sprite transitions in a muted live Forge client. The isolated Xvfb client launch timed out before reaching the packaged server.
+- [x] Verify all six baked sprites in a muted native Forge client connected to a clean dedicated server. Moving away from a placed shelf displayed sprites 5 through 0 in order. Moving back restored sprite 5, and removing the shelf returned it to 0.
 
 ## Meaty Stew (2026-11-22)
 
@@ -801,7 +801,7 @@
 - [x] Return to the vampire journal's cover with the Cover button or Home. Save the full original `pageStack` for the current chapter and validate it against the restored torn pages.
 - [x] Use network protocol 87 to carry the atlas biome ID with the held-book bookmark. The client and dedicated server use matching Witchery builds.
 - [x] Pass all 73 clean Forge GameTests and all 77 with Thaumaturge, Lithostitched, and Curios. After a packaged headless restart, the atlas copied Snowy Beach despite a datapack moving it to a different section. The journal retained its fourteen saved pages through a torn-page upgrade and cleared the trail on return to the cover.
-- [ ] Verify the Families and Cover controls in a muted graphical client. The isolated Docker daemon timed out.
+- [x] Verify both controls in a muted native Forge client on a clean dedicated server. The atlas opened the Forests family and saved `minecraft:birch_forest` as the held item's bookmark. The vampire journal opened on Ritual II, returned to the cover on click, and saved an empty `pageStack` on close.
 
 ## Brew of the Changing Seasons (2026-11-21)
 
@@ -1471,7 +1471,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Verify the final JAR passes the previous startup redirect in the muted full Auram copy. With Evolved Mekanism 1.2.1-fix4, the client reached the render thread and mod construction. Evolved Mekanism still failed with the same null `QIODriveTier` as 1.2.1-fix3. [Evolved Mekanism 1.2.1-fix4 notes](https://www.curseforge.com/minecraft/mc-mods/evolved-mekanism/files/7599591)
 - [x] Verify the isolated copy with Evolved Mekanism 1.3.0-fix3 gets through the QIO tier initialization. Setup later failed because Evolved Mekanism and Mekanism Curios 1.2.1 both redirect the same packet handler. The next diagnostic launch disabled Mekanism Curios in the isolated copy and reached texture loading before Docker reported an out-of-memory kill at its 6 GiB limit. [Evolved Mekanism 1.3.0-fix3 notes](https://www.curseforge.com/minecraft/mc-mods/evolved-mekanism/files/9685752)
 - [x] Reach the 634-mod Auram title screen with the stairs and sounds JAR in the muted diagnostic copy. This run kept Evolved Mekanism 1.3.0-fix3, disabled Mekanism Curios and shaders, and used zero mip levels, a 6 GiB Java heap, and a 10 GiB container limit.
-- [ ] Verify fresh survival in Auram. The diagnostic client reached world creation and Docker killed it for exceeding the memory limit during datapack and recipe loading. The attempt produced no world save.
+- [x] Create a fresh integrated survival world in the diagnostic Auram copy using the packaged chunk promotion fix. The native client entered seed 1 through the normal Create New World screen with a 12 GiB Java heap and wrote `level.dat` and the region files on clean shutdown. The copy used Evolved Mekanism 1.3.0-fix3 with Mekanism Curios and shaders disabled. The client remained hidden and unfocused with master volume zero and OpenAL on No Output. macOS reported no activation for its process.
 
 ## Witchwood Stairs and Sound Parity (2026-11-21)
 
@@ -1686,7 +1686,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Repeat the same startup and later placements in a second fresh Auram world with ordinary launch arguments. The region after shutdown contained all 18 entries with the expected settings and inventories.
 - [x] Exercise the same late promotion in a Forge GameTest. It invokes the real promotion callback after placing and filling a chest and verifies that it returns the live chunk and serializes all ten redstone. Java 17 data generation, JAR reobfuscation, all 102 checked-in Forge GameTests, and all 106 cases with Thaumaturge, Lithostitched, and Curios passed. The packaged SHA-256 identified on both servers was `60defffd47effb722aa32495e26f62a916db39a15a5f351e73d77c33e8d5e9a5`.
 - [x] Reimport the original 1.7.10 Dream portal fixture on the patched JAR. Both frames crossed their original chunk boundaries and both contact effects worked. Twelve checks passed during import and eleven checks passed again on an ordinary restart, followed by the Regeneration II and Weakness II contact checks.
-- [ ] Verify the supported Auram profile in fresh survival and on a dedicated server.
+- [ ] Resolve the Auram client dependency conflicts and verify the same supported mod set in fresh survival and on a dedicated server with a connected client. The diagnostic client created and saved a fresh integrated world, and the headless Auram server passed the Oven and chunk persistence checks.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.

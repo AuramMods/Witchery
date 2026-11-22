@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Muted Native Client Validation (2026-11-22)
+
+- The packaged Forge 47.4.10 client can use the installed macOS arm64 Forge libraries and assets with a private game directory. The temporary Java agent forces GLFW windows to stay hidden and unfocused and blocks window activation and fullscreen. Launch with `-XstartOnFirstThread`, turn off Forge's early window in the private profile, set `soundCategory_master:0.0`, and use `ALSOFT_DRIVERS=null`. The AppKit focus monitor reported no activation of the client PID.
+- The clean client connected to a packaged dedicated server and verified the atlas, vampire journal and all six Poppet Shelf Compass sprites. The diagnostic Auram client created and saved a fresh integrated survival world with Evolved Mekanism 1.3.0-fix3, Mekanism Curios disabled, shaders off, and a 12 GiB Java heap. Both used Witchery JAR SHA-256 `60defffd47effb722aa32495e26f62a916db39a15a5f351e73d77c33e8d5e9a5`.
+- The local scratch pointer `/tmp/witchery-hidden-client-current` identifies the test workspace while it exists. It contains the `WindowGuard.java` and `FocusMonitor.swift` sources, private launch arguments, and the clean `visual-v2` and `auram-client/record` results. The instrumentation and game profiles are disposable test fixtures.
+
 ## Session Memory (2026-11-19)
 
 - The playable port starts with the Witch's Oven. The original recipes are in `old-1.7.10/com/emoniph/witchery/WitcheryRecipes.java` and the machine behavior is in `blocks/BlockWitchesOven.java`.
