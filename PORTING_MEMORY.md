@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Concurrent Chunk Palette Reads (2026-11-22)
+
+- Minecraft's lighting worker could read a new palette index before the corresponding entry became visible. `SimpleBitStoragePublicationMixin` publishes the updated storage word with a release write and reads it with acquire semantics. Both single-index writers use that ordering. The storage layout and saved block states stay compatible.
+- The original isolated probe repeated three times on the patched code. All 255,000 chunk sections and 6,884,129,970 concurrent reads completed with zero missing entries and zero invalid states. The checked-in regression uses both the section setter and the palette container's direct setter.
+- All 115 checked-in Forge GameTests passed. Java 17 data generation and JAR reobfuscation passed. The packaged refmap maps all three storage methods and the backing array to their production names.
+- Packaged SHA-256 `45ef1e4b8134525abe53a48853b5d6d68bda10123d5141993ea6a016aa842fe3` passed a clean Forge multiplayer and dedicated restart check. The isolated survival client joined the headless world while hidden and unfocused with master volume zero and OpenAL No Output. Light-emitting blocks were replaced across three chunk columns. The restarted server retained the final blocks, torch, and the chest's three Wood Ash. The macOS monitor recorded no activation for the client PID. `/tmp/witchery-palette-publication-current` identifies the private profiles and logs.
+
 ## Hobgoblin Deposit Waypoints (2026-11-22)
 
 - The original `EntityAIDropOffBlocks` deposits within 2.5 blocks of the container center. Forge 1.20.1 ground navigation can finish within its path waypoint tolerance before the Goblin actually enters that radius. At a nearby endpoint that leads into deposit range, the hauling goal continues the final approach through ordinary move control. The step is bounded by distance and time.

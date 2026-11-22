@@ -1499,6 +1499,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Pass all 664 cases in the recovered suite with the mixed-brew duration fix. The broad run also passed all four cases that needed focused reruns on the dispenser milestone.
 - [ ] Complete the 666-case replay on the original-color build. It passed 652 cases before a chunk-lighting exception stalled the suite. The Ennervate and Erosion focused replays passed. The Hobgoblin hauling failure also reproduced on the preceding packaged build.
 - [x] Complete all 667 GameTest assertions on the waypoint build. The archived hauling case and the new boundary case passed. The disposable test world reported chunk-store `No space left on device` errors during the run. An isolated probe independently reproduced the earlier missing palette entry in all three runs, so the lighting issue remains open.
+- [x] Publish chunk palette indices with release writes and acquire reads. The original three stress runs completed 6,884,129,970 reads without a missing or invalid state. The checked-in regression exercises both write paths. All 115 checked-in Forge GameTests passed with Java 17 data generation and JAR reobfuscation.
 
 ## Auram Armor Compatibility (2026-11-21)
 
