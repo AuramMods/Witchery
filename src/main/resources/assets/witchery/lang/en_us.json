@@ -1211,6 +1211,8 @@
    "item.witchery.sleeping_apple" : "Apple",
    "death.attack.witchery.spectral_touch" : "%1$s was drained by %2$s",
    "item.witchery.creeper_heart" : "Creeper Heart",
+   "item.witchery.warm_blood" : "Warm Blood",
+   "item.witchery.liliths_blood" : "Lilith's Blood",
    "item.witchery.anointing_paste" : "Anointing Paste",
    "item.witchery.mutandis" : "Mutandis",
    "item.witchery.mutandis_extremis" : "Mutandis Extremis",

@@ -176,6 +176,8 @@ public enum WitcheryIngredient {
     SILVER_DUST(157, "silver_dust"),
     TORN_VAMPIRE_PAGE(160, "torn_vampire_page"),
     DARK_CLOTH(161, "dark_cloth"),
+    WARM_BLOOD(163, "warm_blood"),
+    LILITHS_BLOOD(164, "liliths_blood"),
     HEART_OF_GOLD(165, "heart_of_gold");
 
     private static final String LEGACY_ID = "witchery:ingredient";

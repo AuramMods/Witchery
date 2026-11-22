@@ -41,6 +41,7 @@ import art.arcane.witchery.item.ArthanaItem;
 import art.arcane.witchery.item.BolineItem;
 import art.arcane.witchery.item.BrewBagItem;
 import art.arcane.witchery.item.AntidoteItem;
+import art.arcane.witchery.item.ArtichokeItem;
 import art.arcane.witchery.item.BrewBottleItem;
 import art.arcane.witchery.item.DoorKeyItem;
 import art.arcane.witchery.item.BroomItem;
@@ -97,6 +98,7 @@ import art.arcane.witchery.item.BiomeNoteItem;
 import art.arcane.witchery.item.WitchHandItem;
 import art.arcane.witchery.item.WitchWoodBlockItem;
 import art.arcane.witchery.item.WitchSeedsItem;
+import art.arcane.witchery.vampirism.Vampirism;
 import art.arcane.witchery.world.DreamTravel;
 import art.arcane.witchery.infusion.InfusedBrews;
 import art.arcane.witchery.infusion.SpellKnowledge;
@@ -111,6 +113,7 @@ import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.item.ArmorItem.Type;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.PlaceOnWaterBlockItem;
+import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.PickaxeItem;
 import net.minecraft.world.item.Tiers;
@@ -371,9 +374,9 @@ public final class WitcheryItems {
             case "poppet_protection" -> new PoppetProtectionItem();
             case "poppet" -> new Item(new Item.Properties().stacksTo(1));
             case "odd_porkchop_raw" -> new Item(new Item.Properties().food(new FoodProperties.Builder()
-                    .nutrition(3).saturationMod(0.3F).alwaysEat().build()));
+                    .nutrition(3).saturationMod(0.3F).build()));
             case "odd_porkchop_cooked" -> new Item(new Item.Properties().food(new FoodProperties.Builder()
-                    .nutrition(8).saturationMod(0.8F).alwaysEat().build()));
+                    .nutrition(8).saturationMod(0.8F).build()));
             case "brew.fuel" -> new BrewFuelItem();
             case "brew.water" -> new EndlessWaterBrewItem();
             case "playercompass" -> new PlayerCompassItem();
@@ -392,6 +395,8 @@ public final class WitcheryItems {
             case "mystic_unguent" -> new DrinkableBrewItem(() -> MobEffects.WEAKNESS, 1200, 1);
             case "seer_stone" -> new SeerStoneItem();
             case "purified_milk" -> new DrinkableBrewItem(DrinkableBrewItem::purifyMilk);
+            case "warm_blood" -> new DrinkableBrewItem(Rarity.UNCOMMON, Vampirism::drinkWarmBlood);
+            case "liliths_blood" -> new DrinkableBrewItem(Rarity.RARE, Vampirism::drinkLilithsBlood);
             case "icy_needle" -> new IcyNeedleItem();
             case "frozen_heart" -> DrinkableBrewItem.frozenHeart();
             case "dreamweave_of_fleet_feet" -> dreamWeave(DreamWeave.MOVEMENT);
@@ -411,10 +416,8 @@ public final class WitcheryItems {
             case "chalkheart" -> new RitualChalkItem("circle");
             case "rowan_berries" -> new Item(new Item.Properties()
                     .food(new FoodProperties.Builder().nutrition(1).saturationMod(6.0F).build()));
-            case "globe_artichoke" -> new Item(new Item.Properties()
-                    .food(new FoodProperties.Builder().nutrition(20).saturationMod(0F).build()));
-            case "creeper_heart" -> new Item(new Item.Properties().food(new FoodProperties.Builder()
-                    .alwaysEat().effect(() -> new MobEffectInstance(MobEffects.CONFUSION, 20), 1.0F).build()));
+            case "globe_artichoke" -> new ArtichokeItem();
+            case "creeper_heart" -> DrinkableBrewItem.creeperHeart();
             case "earmuffs" -> new ArmorItem(ArmorMaterials.LEATHER, ArmorItem.Type.HELMET, new Item.Properties());
             case "witchhat" -> new WitchClothingItem.Dyeable(WitchClothingItem.Style.WITCH_HAT);
             case "witchrobe" -> new WitchClothingItem.Dyeable(WitchClothingItem.Style.WITCH_ROBE);

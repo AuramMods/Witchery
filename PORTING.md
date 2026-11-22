@@ -1165,6 +1165,15 @@
 - [x] Restore the Sleeping Apple's optional Thaumaturge aspects. Its base entry grants Cognitio II, Desiderium I, and Herba I.
 - [ ] Resolve the intermittent Waystone refund check with Thaumaturge, Lithostitched, and Curios loaded. The two Sleeping Apple runs failed that check and passed all other cases. It passed in clean Forge and in subsequent runs with the optional mods.
 
+## Food, Hearts, and Blood Drinks (2026-11-22)
+
+- [x] A Globe Artichoke fills the food bar without adding saturation. It gives Hunger III for three seconds per food point actually restored. The raw and cooked odd pork cuts require missing hunger and restore their original three and eight food points.
+- [x] Eating a Creeper Heart gives one second of Fire Resistance. The world server setting `creeperHeartsExplodeWithDamageWhenEaten` defaults to a strength-three blast with terrain damage. Setting it to false gives a strength-one blast that leaves terrain intact. A Frozen Heart gives the same brief resistance and clears the saved Imp effects.
+- [x] Restore Warm Blood and Lilith's Blood from original ingredient damage 163 and 164. They use the original item art and appear in the creative tab and migrated inventories. Warm Blood gives humans six seconds of Hunger and adds up to 500 blood for vampires. Lilith's Blood grants one vampire rank below ten and adds up to 2,000 blood at rank ten.
+- [x] Verify the reobfuscated JAR on headless Forge. A dedicated restart retained Hunger III, both migrated drink stacks, and 625 vampire blood. The saved player drank the remaining Warm Blood to advance to rank two, and changing the server config preserved the wool marker.
+- [x] Pass all 70 clean GameTests. All 74 tests passed in two reruns with Thaumaturge, Lithostitched, and Curios. The first two optional runs failed the earlier Waystone refund check, and all four new consumable cases passed.
+- [x] Exercise the packaged consumables on a fresh world in the copied Auram dedicated profile. The saved player advanced to rank two with 750 blood after reopening the world. Read the saved player data and the intact wool marker directly after the console request timed out.
+
 ## Cauldron Wool and Dye Colors (2026-11-21)
 
 - [x] Accept all sixteen wools in heated cauldrons. Consume the wool and store its legacy RGB separately from the recipe. Later ingredients mix into that color and later wool replaces it. Reset the color when the cauldron is emptied or cleared with Gypsum.

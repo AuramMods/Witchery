@@ -616,17 +616,17 @@ Variant 156 consumes one flower when the tester targets a living entity within t
 | 65 | `brewRaising` |
 | 66 | `spectralDust` |
 | 67 | `enderDew` |
-| 69 | `artichoke` |
+| 69 | `artichoke` maps to `witchery:globe_artichoke`. Eating applies Hunger III based on food restored. |
 | 70 | `seedsTreefyd` → `witchery:treefyd_seeds` |
 | 71 | `brewGrotesque` |
 | 72 | `impregnatedLeather` |
 | 73 | `fumeFilter` |
-| 74 | `creeperHeart` |
+| 74 | `creeperHeart` maps to `witchery:creeper_heart`. Eating gives brief Fire Resistance and a configurable blast. |
 | 75 | `brewLove` |
 | 76 | `brewIce` |
 | 77 | `brewDepths` |
 | 78 | `icyNeedle` |
-| 79 | `frozenHeart` |
+| 79 | `frozenHeart` maps to `witchery:frozen_heart`. Eating gives brief Fire Resistance and clears the three Imp effects. |
 | 80 | `infernalBlood` |
 | 81 | `bookHerbology` → `witchery:book_herbology` |
 | 82 | `entbranch` |
@@ -710,8 +710,8 @@ Variant 156 consumes one flower when the tester targets a living entity within t
 | 160 | `vbookPage` |
 | 161 | `darkCloth` |
 | 162 | `stake` |
-| 163 | `warmBlood` |
-| 164 | `lilithsBlood` |
+| 163 | `warmBlood` maps to `witchery:warm_blood`. Humans get Hunger, and vampires replenish blood. |
+| 164 | `lilithsBlood` maps to `witchery:liliths_blood`. The drink grants a rank or replenishes blood at rank ten. |
 | 165 | `heartofgold` → `witchery:heart_of_gold` (Fairest drop and Animal Attraction or Repulsion brew action) |
 
 ## Poppet Variants (`Witchery.Items.POPPET`)

@@ -71,13 +71,17 @@ public final class Vampirism {
     public static void turn(ServerPlayer player) {
         WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
             if (data.getVampireLevel() != 0) return;
-            data.setVampireLevel(1);
-            data.setBloodPower(125);
-            data.setHumanBlood(0);
+            initializeVampire(data);
             sync(player, data);
             player.serverLevel().sendParticles(ParticleTypes.SMOKE, player.getX(), player.getY() + 0.9, player.getZ(),
                     16, 0.5, 0.7, 0.5, 0.04);
         });
+    }
+
+    private static void initializeVampire(WitcheryPlayerData data) {
+        data.setVampireLevel(1);
+        data.setBloodPower(125);
+        data.setHumanBlood(0);
     }
 
     public static void drainHumanBlood(ServerPlayer player) {
@@ -253,9 +257,27 @@ public final class Vampirism {
     }
 
     private static void advance(ServerPlayer player, WitcheryPlayerData data) {
-        data.setVampireLevel(data.getVampireLevel() + 1);
+        if (data.getVampireLevel() == 0) initializeVampire(data);
+        else data.setVampireLevel(data.getVampireLevel() + 1);
         player.displayClientMessage(Component.translatable("message.witchery.vampire.rank", data.getVampireLevel()), false);
         player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1, 1);
+    }
+
+    public static void drinkWarmBlood(LivingEntity drinker) {
+        if (!(drinker instanceof ServerPlayer player)) return;
+        WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
+            if (data.getVampireLevel() == 0) player.addEffect(new MobEffectInstance(MobEffects.HUNGER, 120));
+            else feed(player, data, 500, data.getMaxBloodPower(), -1, null);
+        });
+    }
+
+    public static void drinkLilithsBlood(LivingEntity drinker) {
+        if (!(drinker instanceof ServerPlayer player)) return;
+        WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
+            if (data.getVampireLevel() == 10) data.setBloodPower(data.getBloodPower() + 2000);
+            else advance(player, data);
+            sync(player, data);
+        });
     }
 
     public static void drinkGoblet(ServerPlayer player) {
