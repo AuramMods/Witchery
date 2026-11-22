@@ -1356,6 +1356,13 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] In the muted survival client, bottle the original batch, load the Brew Bag and cast onto a librarian and regular stone bricks. Throw Quicklime at a slime and recover a separate throw from the ground. Restart the dedicated server and verify the infested bricks, last bag serving and Zombie Villager. Start vanilla curing with a golden apple and verify the restored profession and trade after shortening the test timer.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 436 required Forge GameTests.
 
+## Cauldron Quicklime and Gypsum (2026-11-22)
+
+- [x] Drop Quicklime into a prepared Witch's Cauldron, including cold, dye-only, and active ritual batches. A nearby player within the dropped item's five-block search area is required. The blast spares the nearest player and the terrain. It consumes the whole reagent stack and empties the cauldron. Each recognized action adds half a point to the base power of one, up to ten.
+- [x] Keep Quicklime and the contents intact in plain water, unprepared Brew fluid, or a prepared brew with no nearby player. Restore the original whole-stack Gypsum purge for any filled cauldron.
+- [x] Pass Java 17 data generation, JAR reobfuscation, and all 47 required GameTests. Load an original Nether Wart and Sugar brew in a disposable clean Forge world. With no player present, retain the brew and four dropped Quicklime. Drop three Gypsum to remove all the brew and Gypsum. Verify the emptied tank and intact Quicklime again after restarting the headless server.
+- [ ] Verify conversion of an in-progress fixed recipe from an original Forge save. The original saves the trigger at the end of its ordered `Items` and marks the brew `RitualTriggered`. The modern fixed-recipe path saves a resolved `Ritual` ID, while the legacy loader currently recognizes only general brew ritual triggers.
+
 ## Substitution and Solidifying Brews (2026-11-21)
 
 - [x] Restore the original six Kettle batches, three servings, bottling bonus, and legacy metadata 116–120 and 125. The five Solidifying Brews cost 2,000 altar power each. Substitution needs no power. The Book of Brews and Infusions lists Substitution and the dirt recipe.

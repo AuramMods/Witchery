@@ -97,16 +97,8 @@ public final class WitchesCauldronBlock extends BaseEntityBlock {
         }
         double x = item.getX() - pos.getX();
         double z = item.getZ() - pos.getZ();
-        if (x >= 0.125 && x <= 0.875 && z >= 0.125 && z <= 0.875
-                && item.getY() < pos.getY() + 1 && cauldron.addIngredient(item.getItem())) {
-            var remainder = item.getItem().getCraftingRemainingItem();
-            item.getItem().shrink(1);
-            if (item.getItem().isEmpty()) {
-                item.discard();
-            }
-            if (!remainder.isEmpty()) {
-                popResource(level, pos.above(), remainder);
-            }
+        if (x >= 0.125 && x <= 0.875 && z >= 0.125 && z <= 0.875 && item.getY() < pos.getY() + 1) {
+            cauldron.acceptDroppedItem(item);
         }
     }
 

@@ -746,6 +746,10 @@ public final class BrewMixture {
         return BuiltInRegistries.ITEM.getKey(stack.getItem());
     }
 
+    public static boolean hasAction(ItemStack stack) {
+        return INGREDIENTS.containsKey(id(stack));
+    }
+
     public static int woolColor(ItemStack stack) {
         Ingredient ingredient = INGREDIENTS.get(id(stack));
         return ingredient != null && ingredient.modifier == Modifier.SET_COLOR ? ingredient.amount : -1;

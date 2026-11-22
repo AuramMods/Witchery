@@ -84,12 +84,14 @@ public final class AlluringSkullTests {
         };
         Vec3 undeadStart = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(3, 2, 3)));
         undead.setPos(undeadStart);
+        undead.setPersistenceRequired();
         undead.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.CARVED_PUMPKIN));
         level.addFreshEntity(undead);
         var pig = new Pig(EntityType.PIG, level) {
             @Override protected void registerGoals() {}
         };
         pig.setPos(Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(3, 2, 4))));
+        pig.setPersistenceRequired();
         level.addFreshEntity(pig);
 
         helper.runAfterDelay(115, () -> {

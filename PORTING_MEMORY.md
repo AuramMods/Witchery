@@ -507,6 +507,14 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - The packaged headless server reopened the same chest, cauldron, and six fluid cells. A pig entered the imported Disease fluid and received the Diseased effect. The fixture turned off Disease decay to hold the cells for this check.
 - Java 17 data generation and the reobfuscated JAR succeeded. All 41 required GameTests passed, including the bucket interaction, cold refill, simulated transfer, ordered merge, and save of the Swiftness brew. The final JAR SHA-256 is `be01cfd05575f79863752cd8c24928d4ec43c451328da612e8a64c36c66f447f`. The Brew Bucket texture remains to be checked live.
 
+### Cauldron Quicklime and Gypsum (2026-11-22)
+
+- The normal item drop into the Witch's Cauldron now checks Quicklime and Gypsum before heat and ritual restrictions. Gypsum removes the whole dropped stack and clears the tank. Quicklime requires a prepared brew and a player within the item's original five-block expanded bounding box. Its block-safe explosion starts one and a half blocks above the cauldron's base and excludes the nearest player from damage and knockback.
+- Brew effects, modifiers, and fixed ritual offerings add half a point each to the power of one, with a maximum of ten. The active fixed recipe ID accounts for its offered trigger. Dye alone leaves a power-one brew. Quicklime stays intact in an empty or plain cauldron, and in a prepared brew with no nearby player.
+- An intermittent Alluring Skull GameTest failure showed that the zombie disappeared before its first tick. A distant player from another GameTest can trigger vanilla distance despawning. The test marks its manually created mobs persistent, matching the normal GameTest spawn helper while retaining their disabled AI goals and normal navigation.
+- All 47 required GameTests passed, alongside Java 17 data generation and JAR reobfuscation. The new cases check blast reach, player exclusion, terrain protection, dye-only and plain liquids, saved tank state, and interruption of the original pork cooking ritual.
+- The packaged headless server used a disposable copy of the previously imported Nether Wart and Sugar brew. Four Quicklime rested in the vessel with its original 2,000 mB intact. Three dropped Gypsum cleared it and left all four Quicklime, which were also present after save and restart. The packaged SHA-256 is `54f937b9c00563b041eaf1f5ebb8350c3589059bb91f46b728a3f8461835f77a`.
+
 ### Void Bramble and the Statue of the Goddess (2026-11-21)
 
 - Both block recipes use the original ingredients and remain disabled by default. Enable them separately with `allowVoidBrambleRecipe` and `allowGoddessStatueRecipe` in the common config. The Void Bramble ingredient matches Ender Bramble's `BlockStateTag.wild=false` and rejects Wild Bramble.

@@ -41,6 +41,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.level.Level;
@@ -355,18 +356,52 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         }
     }
 
-    public boolean addIngredient(ItemStack offered) {
-        if (!(level instanceof ServerLevel server) || offered.isEmpty() || tank.isEmpty()) {
-            return false;
-        }
-        if (offered.is(WitcheryIngredient.GYPSUM.item())) {
+    public void acceptDroppedItem(ItemEntity item) {
+        ItemStack offered = item.getItem();
+        if (!(level instanceof ServerLevel server) || offered.isEmpty() || tank.isEmpty()) return;
+
+        if (WitcheryIngredient.GYPSUM.matches(offered)) {
+            item.discard();
             clearMixture();
-            BlockPos pos = getBlockPos();
-            server.sendParticles(ParticleTypes.SMOKE, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5,
-                    8, 0.22, 0.16, 0.22, 0.03);
-            server.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.7F, 1.3F);
-            return true;
+            reagentSmoke(server);
+            server.playSound(null, worldPosition, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1.0F, 2.0F);
+        } else if (WitcheryIngredient.QUICKLIME.matches(offered)) {
+            detonate(server, item);
+        } else if (addIngredient(server, offered)) {
+            ItemStack remainder = offered.getCraftingRemainingItem();
+            offered.shrink(1);
+            if (offered.isEmpty()) item.discard();
+            if (!remainder.isEmpty()) Block.popResource(server, worldPosition.above(), remainder);
         }
+    }
+
+    private void detonate(ServerLevel server, ItemEntity item) {
+        if (ingredients.isEmpty() && brewColor < 0 && ritual == null) return;
+        Player nearest = server.getEntitiesOfClass(Player.class, item.getBoundingBox().inflate(5),
+                        player -> player.isAlive() && !player.isSpectator()).stream()
+                .min(Comparator.comparingDouble(item::distanceToSqr)).orElse(null);
+        if (nearest == null) return;
+
+        var recipes = server.getRecipeManager().getAllRecipesFor(WitcheryRecipes.CAULDRON_RITUAL.get());
+        long actions = ingredients.stream().filter(stack -> BrewMixture.hasAction(stack)
+                || recipes.stream().anyMatch(recipe -> recipe.trigger().test(stack)
+                        || recipe.ingredients().stream().anyMatch(ingredient -> ingredient.test(stack)))).count();
+        // Fixed recipes store their trigger as a recipe ID. Other rituals keep it in the ingredient list.
+        if (ritual != null) actions++;
+        float power = Math.min(1.0F + 0.5F * actions, 10.0F);
+        item.discard();
+        clearMixture();
+        Vec3 center = Vec3.atCenterOf(worldPosition).add(0, 1, 0);
+        server.explode(nearest, center.x, center.y, center.z, power, Level.ExplosionInteraction.NONE);
+        reagentSmoke(server);
+    }
+
+    private void reagentSmoke(ServerLevel server) {
+        server.sendParticles(ParticleTypes.SMOKE, worldPosition.getX() + 0.5, worldPosition.getY() + 0.6,
+                worldPosition.getZ() + 0.5, 8, 0.22, 0.16, 0.22, 0.03);
+    }
+
+    private boolean addIngredient(ServerLevel server, ItemStack offered) {
         if (!isBoiling() || casting()) {
             return false;
         }
