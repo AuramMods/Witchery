@@ -1419,6 +1419,8 @@
 
 ## Legacy Save Fixtures (2026-11-21)
 
+- [x] Preserve Glistering Melon in old brew data and retain the original instant effects. A Forge 1.7.10 fixture produced Healing and Harming mixtures. Both cauldrons and both chest bottles kept their ordered ingredients and exact colors after import and dedicated restart.
+- [x] Drink both original bottles after reopening the imported save. The survival client's health rose from 12 to 16, then fell to 10. Both bottles returned empty glass.
 - [x] Generate an original Witchery 0.24.1 save on headless Forge 10.13.4.1614. Save an oven with clay jars, an alder plank block, and a vanilla chest holding numeric Witchery subtypes alongside vanilla charcoal. The per-world `FML.ItemData` table distinguishes block IDs with prefix `0x01` and item IDs with prefix `0x02`.
 - [x] Open a disposable copy directly on Forge 47.4.10. The vanilla upgrade produced light blue concrete for the old oven and air for Witchery planks. The chest retained vanilla charcoal and lost its three Witchery items. Vanilla birch planks outside the chest also survived.
 - [x] Import named legacy sapling, log, leaves, and plank variants through the shared Witchery inventory loader. Existing explicit wood state wins when both formats are present. The loader also retains stack count and unrelated tags.
@@ -1503,6 +1505,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Complete all 667 GameTest assertions on the waypoint build. The archived hauling case and the new boundary case passed. The disposable test world reported chunk-store `No space left on device` errors during the run. An isolated probe independently reproduced the earlier missing palette entry in all three runs, so the lighting issue remains open.
 - [x] Publish chunk palette indices with release writes and acquire reads. The original three stress runs completed 6,884,129,970 reads without a missing or invalid state. The checked-in regression exercises both write paths. All 115 checked-in Forge GameTests passed with Java 17 data generation and JAR reobfuscation.
 - [x] Finish the 668-case replay after the palette fix without a palette exception or chunk-store I/O error. The run passed 667 cases. The liquid-brew radius case failed in the broad run and passed in the isolated four-case replay. All 118 optional-integration cases passed with Thaumaturge, Lithostitched, and Curios.
+- [x] Finish the 669-case funnel replay. The liquid-brew radius case passed. The item-curse case failed its power assertion after comparing the post-cast balance to capacity. The run passed 668 cases and reported no palette exception or chunk-store I/O error.
 
 ## Auram Armor Compatibility (2026-11-21)
 

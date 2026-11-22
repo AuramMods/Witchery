@@ -14,6 +14,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -32,6 +33,40 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class LegacyCauldronRitualTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_legacy_healing")
+    public static void originalMelonBrewsRetainTheirInstantEffects(GameTestHelper helper) {
+        var wart = oldItem("minecraft:nether_wart", 0, 1);
+        var melon = oldItem("minecraft:speckled_melon", 0, 1);
+        var original = originalRitual(3000, 0, true, wart, melon);
+        var originalBrew = original.getCompound("Tag");
+        originalBrew.remove("RitualTriggered");
+        var cauldron = placeCauldron(helper, helper.absolutePos(new BlockPos(6, 4, 5)), original);
+        cauldron.load(cauldron.saveWithFullMetadata());
+        var saved = cauldron.saveWithFullMetadata();
+        var ingredients = saved.getList("Ingredients", Tag.TAG_COMPOUND);
+        helper.assertTrue(ingredients.size() == 2 && ingredients.getCompound(0).getString("id").equals("minecraft:nether_wart")
+                        && ingredients.getCompound(1).getString("id").equals("minecraft:glistering_melon_slice")
+                        && saved.getInt("Color") == originalBrew.getInt("Color") && tank(cauldron).getFluidInTank(0).getAmount() == 3000,
+                "The original cauldron should retain its ordered healing brew, amount and color through a save round trip");
+
+        var bottle = new ItemStack(WitcheryItems.getRequired("brewbottle").get());
+        bottle.setTag(originalBrew.copy());
+        var healed = helper.spawn(EntityType.PIG, new BlockPos(4, 3, 5));
+        healed.setHealth(4.0F);
+        helper.assertTrue(bottle.finishUsingItem(helper.getLevel(), healed).is(Items.GLASS_BOTTLE) && healed.getHealth() == 8.0F,
+                "A saved healing bottle should heal by four points and return glass");
+
+        var inverted = originalRitual(3000, 0, true, wart, oldItem("minecraft:fermented_spider_eye", 0, 1), melon)
+                .getCompound("Tag");
+        inverted.remove("RitualTriggered");
+        var second = new ItemStack(WitcheryItems.getRequired("brewbottle").get());
+        second.setTag(inverted);
+        var hurt = helper.spawn(EntityType.PIG, new BlockPos(8, 3, 5));
+        helper.assertTrue(second.finishUsingItem(helper.getLevel(), hurt).is(Items.GLASS_BOTTLE) && hurt.getHealth() == 4.0F,
+                "The original inverted bottle should deal six points of instant damage");
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void resumesOriginalMutandisWarmupAcrossBothSaveFormats(GameTestHelper helper) {
         BlockPos relative = new BlockPos(6, 4, 5);

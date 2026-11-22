@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Legacy Healing and Harming Brews (2026-11-22)
+
+- The 184-key original brew registry audit exposed a missing mapping for `minecraft:speckled_melon`. The shared brew loader now reads it as `minecraft:glistering_melon_slice`, so named 1.7.10 mixtures keep their effect and cauldrons keep the ingredient when saved.
+- The Forge audit of the patched loader resolved all 184 original item and metadata keys to nonempty modern stacks, including the fixed-ritual offerings.
+- The regression failed before the mapping and passed after it. It covers the named cauldron's ordered ingredients, tank amount and color after a save round trip, four points of Healing, six points of inverted Harming, and the returned glass bottles. Java 17 data generation, JAR reobfuscation, and all 117 checked-in GameTests passed.
+- A Forge 1.7.10 server made both mixtures using Witchery 0.24.1's registered actions. The 1.20.1 packaged importer retained the two full cauldrons and chest bottles, including their ordered ingredients and colors `-812596878` and `-654829330`. Both cauldrons and bottles were checked again on an ordinary dedicated restart.
+- The isolated survival client took both imported bottles from the original chest and drank them. Its health went from 12 to 16 and then to 10. Both bottles returned glass, and the server saved the emptied chest. The client was hidden and muted on OpenAL No Output, and the focus monitor recorded no activation. The tested JAR SHA-256 is `35dd667edd89fce78a50149502e86e087c75ea586f39f56994d7747514b8d32d`. `/tmp/witchery-legacy-healing-current` identifies the original and packaged profiles and logs.
+
 ## Fume Funnel Oven Access (2026-11-22)
 
 - Both funnel blocks open the adjacent Witch's Oven using the original priority. The positive side on the perpendicular axis comes first, then the opposite side, then the oven below. The oven's own facing does not affect menu access. The existing cook time and fume chance rules still require aligned funnels.

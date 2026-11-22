@@ -308,6 +308,7 @@ public final class BrewMixture {
             case "minecraft:dye" -> "minecraft:" + BrewDye.byLegacyId(metadata).item();
             case "minecraft:double_plant" -> metadata == 0 ? "minecraft:sunflower" : null;
             case "minecraft:netherbrick" -> "minecraft:nether_brick";
+            case "minecraft:speckled_melon" -> "minecraft:glistering_melon_slice";
             case "minecraft:yellow_flower" -> metadata == 0 ? "minecraft:dandelion" : null;
             case "minecraft:waterlily" -> "minecraft:lily_pad";
             case "minecraft:sapling" -> switch (metadata & 7) {
