@@ -1529,6 +1529,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Stabilize Eclipse, the enhanced Worship gesture, and Animal Repulsion. The corrected fixtures passed in the full replay and went into the 125-test checked-in suite.
 - [x] Replay all 673 GameTests with the corrected Raising and large-circle chalk fixtures. All 673 required cases passed and Gradle completed successfully. The fixtures observe the raised entities after tracking and wait for all five chalk offerings before activating the ritual. The rotation probes charge the resolved altar core.
 - [x] Replay 678 cases after the Dream Spirit setting and earlier Sun Grenade fix. The run passed 676 cases. Its archived grenade fixture still expected the port's old 1,200-tick countdown. The archived Spectral Familiar left the ore search range before finding the test vein. Adjust the grenade assertion and keep the ore within reach throughout the Familiar's chamber. Both checks and all 130 checked-in cases passed in the 132-case rerun.
+- [x] Replay the full suite with both corrected fixtures on Java 17. All 678 required GameTests passed, including the 130 checked-in cases. Gradle completed successfully.
 
 ## Auram Armor Compatibility (2026-11-21)
 
@@ -1827,6 +1828,10 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Collect the other three naturally spawned Spirits on a prepared grass platform in a fresh ocean area of the same Dream save. The muted survival client defeated all five with a Stone Sword and took their drops. It used the carried Icy Needle to return to the workshop with five Subdued Spirits, twelve Disturbed Cotton, the Witch's Hand and 196 infusion charges. Recraft the Boline and recover the two Oil of Vitriol and two fired jars in this branch of the save.
 - [x] Reopen the resulting save in the ordinary copied Auram profile after removing the diagnostic mod. Rejoin in the Overworld and verify all five Subdued Spirits in the player's inventory. The checked-in Forge GameTest suite passed all 130 cases.
 - [x] Use the Spinning Wheel's stored Reek of Misfortune, one supplied String, and four of the harvested cotton to make one Tormented Twine. The player took the Twine and recovered the eight remaining cotton from the wheel.
+- [x] Prepare the next Dream trip in the same workshop. The player parked the five Subdued Spirits, crafted and fired eight more Clay Jars, and cooked supplied Oak Saplings for four Exhale of the Horned One. They planted the saved seeds and harvested six Mandrake Roots, two Globe Artichokes, and four Icy Needles. The fixture prepared soil and source water.
+- [x] Brew six Mutandis using a grown Mandrake Root, a recovered fume, and a supplied egg. The fixture positioned missed drops from the player's inventory over the cauldron. The second application turned a poppy into an Alder sapling, which the player grew with bone meal in the same garden.
+- [x] Harvest three Alder saplings from the grown canopy with a supplied Fortune III hoe. After a fall during the test, the player save retained all three Alder saplings, the other Dream ingredients, and 191 Overworld infusion charges. The workshop chest retained all five Subdued Spirits before the dedicated server flushed and stopped.
+- [ ] Reproduce the Auram client crash after the test player's fall and death. The Thaumaturge 1.1.3 hover handler tried to read its missing local-player state capability before the player could respawn. Compare the same death and respawn in Auram with and without Witchery to establish what needs fixing.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.
