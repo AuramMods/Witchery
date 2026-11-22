@@ -1528,6 +1528,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Reproduce the archived Wicker Effigy query failure. Two of 48 ignitions joined a Huntsman with 100 health and 150 ticks while the nearby entity query still returned zero. The checked-in cases observe the Forge join and wait for the exact UUID to become queryable. Both axes, the original click rules, and the six legacy block states passed among all 122 checked-in GameTests.
 - [x] Stabilize Eclipse, the enhanced Worship gesture, and Animal Repulsion. The corrected fixtures passed in the full replay and went into the 125-test checked-in suite.
 - [x] Replay all 673 GameTests with the corrected Raising and large-circle chalk fixtures. All 673 required cases passed and Gradle completed successfully. The fixtures observe the raised entities after tracking and wait for all five chalk offerings before activating the ritual. The rotation probes charge the resolved altar core.
+- [x] Replay 678 cases after the Dream Spirit setting and earlier Sun Grenade fix. The run passed 676 cases. Its archived grenade fixture still expected the port's old 1,200-tick countdown. The archived Spectral Familiar left the ore search range before finding the test vein. Adjust the grenade assertion and keep the ore within reach throughout the Familiar's chamber. Both checks and all 130 checked-in cases passed in the 132-case rerun.
 
 ## Auram Armor Compatibility (2026-11-21)
 
@@ -1689,6 +1690,8 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 ## Dream Spirits and the Spectral Stone (2026-11-20)
 
 - [x] Restore the flying Dream Spirit, its original model and translucent effects, Focused Will attraction, and groups of two to five natural spawns. A defeated Spirit yields a glinting Subdued Spirit that carries through waking. Using the item on a block releases a Spirit again.
+- [x] Restore the original Spirit spawn weight as `spiritSpawnWeight` in the Forge server config. It defaults to one and accepts one through 1,000. Check the registered biome entry and verify that Forge builds the same two-to-five group with the configured weight.
+- [x] Test a reobfuscated Forge server with spawn weight 37 and a prepared Dream grass platform. A muted survival client entered with a Brew of Sleeping, found a naturally spawned Spirit, defeated it with a Stone Sword, and picked up one Subdued Spirit. After restarting in the same Dream, an Icy Needle returned the player to the Overworld with the drop.
 - [x] Restore the structure guide. Drop an Attuned Stone or Subdued Spirit in a tiny white chalk ring to send a short-lived Spirit toward the nearest village or Nether fortress. The reusable Subdued Village Spirit retains its separate item ID and returns its token on expiry. Both guide variants save their remaining lifetime and destination.
 - [x] Verify a client toss of two Attuned Stones. The guide flew toward the village found by the server, erased the ring and left one Attuned Stone. It disappeared after ten seconds.
 - [x] Brew Congealed Spirit from five separate Subdued Spirits and one Brew of Hollow Tears for 2,000 altar power. The muted survival client brought four hunted Spirits through an Icy Needle wake. The test added a fifth Spirit to the kettle fixture, and the client bottled the finished brew. Drinking it gives 30 seconds of Night Vision II.
@@ -1814,6 +1817,13 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Craft Ritual Chalk with the Gypsum, Wood Ash and Tear of the Goddess. Draw the small white circle, offer an Attuned Stone, Wood Ash and the other rite ingredients, ignite the Heart Glyph at night, and collect the Necromantic Stone. The test driver repositioned offerings that missed the circle.
 - [x] Craft and place the Brazier using that stone and supplied iron and sticks. Add Gunpowder, Quicklime and Glowstone Dust by hand and light the Graveyard Mist recipe. The player used the saved workshop Glowstone and made fresh Quicklime from their Wood Ash. Shut down while the Brazier was lit. The saved world contained all three inputs, the Wood Ash ignition marker and 2,191 elapsed cook ticks.
 - [x] Load the same dedicated world on the updated packaged JAR. The first loaded Brazier reported the exact saved 2,191 ticks and retained all three inputs. It remained lit and reached 2,399 powered ticks before the next clean shutdown.
+
+## Auram Survival toward the Spectral Stone (2026-11-22)
+
+- [x] Rejoin the same packaged Auram save and drink its stored Brew of Sleeping. In the nightmare, harvest twelve naturally generated cotton plants for the three Tormented Twine in the Dreamweave recipe. The test driver positioned the player at the plants and used Peaceful difficulty for ingredient gathering.
+- [x] Reopen that active Dream session on the packaged Spirit spawn-weight build, with the same JAR on client and server. Use the carried Icy Needle and return to the workshop with all twelve cotton, the Witch's Hand and all 196 infusion charges.
+- [x] Craft a Boline using the original vertical recipe and an Emerald recovered from the workshop chest. Take two saved Oil of Vitriol from the Distillery and two fired clay jars from the Witch's Oven. Save those supplies for the Flowing Spirit distillation and Necromancy rite.
+- [ ] Collect the five naturally spawned Spirits in Auram. The sampled areas produced none at weights one or 37, including the prepared grass platform after clearing the copied Dream's live Terramity fairies. The clean Forge test observed a natural spawn with the same JAR at weight 37.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.

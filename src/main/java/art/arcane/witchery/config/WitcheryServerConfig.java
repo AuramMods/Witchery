@@ -69,6 +69,7 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> TOWN_BOOKSHOP_ALLOWED_BOOKS;
     public static final ForgeConfigSpec.BooleanValue HOBGOBLIN_DESPAWN_BLOCK;
     public static final ForgeConfigSpec.IntValue HOBGOBLIN_SPAWN_WEIGHT;
+    public static final ForgeConfigSpec.IntValue SPIRIT_SPAWN_WEIGHT;
     public static final ForgeConfigSpec.IntValue HOBGOBLIN_GOD_SPAWN_CHANCE;
     public static final ForgeConfigSpec.IntValue WORLD_GEN_FREQUENCY;
     public static final ForgeConfigSpec.BooleanValue WORLD_GEN_TWILIGHT_FOREST;
@@ -207,6 +208,8 @@ public final class WitcheryServerConfig {
         HOBGOBLIN_DESPAWN_BLOCK = builder.define("hobgoblinDespawnBlock", true);
         HOBGOBLIN_SPAWN_WEIGHT = builder.comment("Wild hobgoblin spawn weight in forests and swamps. Plains use one less, with a minimum of one.")
                 .worldRestart().defineInRange("hobgoblinSpawnWeight", 4, 1, Integer.MAX_VALUE);
+        SPIRIT_SPAWN_WEIGHT = builder.comment("Relative natural spawn weight for Spirits in the Dream.")
+                .worldRestart().defineInRange("spiritSpawnWeight", 1, 1, 1000);
         HOBGOBLIN_GOD_SPAWN_CHANCE = builder.comment("Chance out of 10,000 for a statue with fifteen worshippers to summon Mog and Gulg each pulse.")
                 .defineInRange("hobgoblinGodSpawnChance", 10, 0, 100);
         WORLD_GEN_FREQUENCY = builder

@@ -7,6 +7,7 @@ import art.arcane.witchery.data.SmeltingTouchLootModifier;
 import art.arcane.witchery.data.WolfBoneLootModifier;
 import art.arcane.witchery.entity.HobgoblinMiningLootModifier;
 import art.arcane.witchery.world.DreamCottonFeature;
+import art.arcane.witchery.world.DreamSpiritSpawnModifier;
 import art.arcane.witchery.world.HobgoblinSpawnModifier;
 import art.arcane.witchery.world.MirrorChunkGenerator;
 import art.arcane.witchery.world.SurfaceStructuresFeature;
@@ -47,6 +48,8 @@ public final class WitcheryRegistries {
             DeferredRegister.create(Registries.STRUCTURE_PIECE, Witchery.MODID);
     public static final RegistryObject<Codec<HobgoblinSpawnModifier>> HOBGOBLIN_SPAWNS =
             BIOME_MODIFIERS.register("hobgoblin_spawns", () -> HobgoblinSpawnModifier.CODEC);
+    public static final RegistryObject<Codec<DreamSpiritSpawnModifier>> DREAM_SPIRIT_SPAWNS =
+            BIOME_MODIFIERS.register("dream_spirit_spawns", () -> DreamSpiritSpawnModifier.CODEC);
     public static final RegistryObject<Codec<VillageBiomeModifier>> VILLAGE_BIOMES =
             STRUCTURE_MODIFIERS.register("village_biomes", () -> VillageBiomeModifier.CODEC);
     public static final RegistryObject<StructureProcessorType<VillageBookshopProcessor>> BOOKSHOP_PROCESSOR =
