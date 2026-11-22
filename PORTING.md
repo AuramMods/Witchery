@@ -127,7 +127,7 @@
 - [x] Restore the Imp's other signed spell contracts. The recipes and effects are tracked under Imp Spell Contracts below.
 - [x] Restore legacy potion bottling skill and include it in Seer Stone readings. Filling a two-level brew advanced the muted client's skill to one and the stone reported that value. GameTests verify the first yield threshold, power accounting, and the saved capability.
 - [x] Restore the coven witch's additional combat, visits and ritual behaviors. See Coven Witch Combat and Visits below.
-- [ ] Restore Coven Witches seeking shelter near villages at night or in rain using modern village navigation.
+- [x] Restore village shelter seeking and daytime door restrictions for Coven Witches and Hobgoblins.
 
 ## Coven Witch Combat and Visits (2026-11-21)
 
@@ -140,6 +140,14 @@
 - [x] Import an original Forge 1.7.10 Coven Witch with an owner, seated state, active quest, and finite summon timer. The packaged server preserved both UUIDs, the skin, the quest recipient and remaining count, and the active timer. The next ordinary restart retained the state and continued the countdown.
 - [x] Run Java 17 data generation, JAR reobfuscation, and the 13 checked-in Forge GameTests. Five new tests cover defensive drinking, saving a drink, legacy splash effects, visits and settings, and the ritual and death transitions.
 - [x] Pass all 445 required checks in the selected broader development suite in a fresh world, including recruitment, existing Seer Stone calls and coven-powered rites.
+
+## Village Shelter (2026-11-21)
+
+- [x] Restore the one-in-fifty shelter check at night, in rain, and in biomes where rain cannot fall. Locate a village through its occupied points of interest. Compare cover on both sides of nearby loaded wooden doors and use ground navigation to reach the covered side. This also works for village buildings without beds.
+- [x] Restore daytime doorway restrictions. A witch or goblin just inside a village door temporarily disables door opening and passage in its pathfinder. Reaching the other side, nightfall, or removal of the door restores normal door navigation. The shelter goal lets a leashed Hobgoblin keep following its lead.
+- [x] On packaged Forge, generate the seed-1 plains village and position its resident outside the bedless Witch Hut at `615 64 823`. After restarting the dedicated server, the same witch opened and shut the oak door in both a clear night and daytime rain. A supplied Hobgoblin used the same door in clear daylight after the fixture changed the surrounding biome to desert.
+- [x] Pass Java 17 data generation, JAR reobfuscation, and all 16 checked-in Forge GameTests. The three shelter cases cover an outdoor witch opening and closing a door, village detection and rain with a Hobgoblin lead, and daytime restriction with nightfall release. The fixtures put the shelter above the test world's terrain to give the exposed side a clear sky.
+- [x] Pass all 448 selected checks in the broader development suite in a fresh world, including the existing coven, village, and Hobgoblin cases.
 
 ## Imp Spell Contracts (2026-11-21)
 

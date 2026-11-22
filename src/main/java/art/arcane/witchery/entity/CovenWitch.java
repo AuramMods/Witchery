@@ -123,10 +123,12 @@ public final class CovenWitch extends PathfinderMob implements RangedAttackMob {
         goalSelector.addGoal(1, new RitualSeatGoal());
         goalSelector.addGoal(2, new RangedAttackGoal(this, 1.0, 60, 10.0F));
         goalSelector.addGoal(3, new OpenDoorGoal(this, true));
-        goalSelector.addGoal(4, new MoveTowardsRestrictionGoal(this, 0.6));
-        goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 1.0));
-        goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 8.0F));
-        goalSelector.addGoal(7, new RandomLookAroundGoal(this));
+        goalSelector.addGoal(4, new VillageShelterGoal(this, false));
+        goalSelector.addGoal(4, new RestrictVillageDoorGoal(this));
+        goalSelector.addGoal(5, new MoveTowardsRestrictionGoal(this, 0.6));
+        goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 1.0));
+        goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 8.0F));
+        goalSelector.addGoal(8, new RandomLookAroundGoal(this));
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
         targetSelector.addGoal(2, new DefendCovenOwnerGoal());
     }

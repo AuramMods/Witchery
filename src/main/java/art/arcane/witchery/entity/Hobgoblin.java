@@ -156,6 +156,8 @@ public final class Hobgoblin extends AbstractVillager {
         goalSelector.addGoal(3, new AvoidEntityGoal<>(this, VillageGuard.class, 12, 0.8, 0.8,
                 guard -> !isLeashed() && hasRaidingParty()));
         goalSelector.addGoal(4, new MeleeAttackGoal(this, 1, true));
+        goalSelector.addGoal(5, new VillageShelterGoal(this, true));
+        goalSelector.addGoal(5, new RestrictVillageDoorGoal(this));
         goalSelector.addGoal(6, new OpenDoorGoal(this, true));
         mating = new HobgoblinMateGoal(this);
         goalSelector.addGoal(7, mating);
