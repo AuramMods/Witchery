@@ -458,6 +458,13 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - The muted single-player client imported a separate untouched copy, restored the corresponding owner at the same Dream coordinates, and saved the bed and all four bound destinations in data version 3465. Both client tests used an isolated Xvfb display and OpenAL's No Output device.
 - Java 17 data generation, JAR reobfuscation, and all seven focused migration GameTests passed. The packaged JAR SHA-256 is `bb2e1cfd1588d176fe3f731a59778386e09583c42dcce9c45eadf7bc7c8b1ac5`.
 
+### Original Torment Maze Import (2026-11-21)
+
+- A fixture initialized dimension `-38` on Forge 10.13.4.1614 and let the original generator populate chunk `(0,0)`. Its region files had 82,151 Force blocks, 24,285 Torment Stone, 18 Refilling Chests, and 12 portal blocks. Every one of those 106,466 blocks matched at its original coordinates after import. All six floors had a walkable route from `(8,8)` to the exit at `(8,68)`. The original ceiling also passed all 25 checks that select the existing maze coordinates for travel.
+- The old exit used its neighbors to choose a plane. The importer queues a one-time orientation update after adjacent chunks load. All generated exits kept their X axis. A free-standing test portal at X -224 chose Z across the chunk boundary and retained the resolved axis after an ordinary restart.
+- Two original chest records were populated with known test data. The first retained four Red Wool, three tagged Silver Dust, and its loaded tick counter. The empty second chest resumed at 71,900 ticks and generated loot at 72,000. The following restart retained the exact four generated loot stacks. A separately saved Barrier kept its owner, player collision flag, and remaining lifetime. The fixture shortened its timer to three ticks and confirmed that it expired.
+- The packaged server passed 38 import checks and repeated the 37 state and data checks on restart. Java 17 data generation, JAR reobfuscation, all 27 checked-in GameTests, and all three focused portal and Torment boss tests passed. The packaged JAR SHA-256 is `6c2e5da5c53a151cbd01feb62540aa4e935741d388905f3ecb8cb6d5db9df20d`.
+
 ### Legacy Dream Sessions and Catchers (2026-11-21)
 
 - Legacy Dream sessions write to `ForgeData.PlayerPersisted.WITCSpiritWorld`. The original body coordinates, hunger and health keys already match `DreamTravel`. Parked items sit outside the vanilla player fixer schema. Both player loading paths now apply the item fixer to those lists after resolving Witchery stacks. Login also restores ghost appearance and nightmare level from the saved session.

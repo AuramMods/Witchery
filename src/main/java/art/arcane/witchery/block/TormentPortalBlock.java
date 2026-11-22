@@ -12,29 +12,32 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public final class TormentPortalBlock extends Block {
+    public static final BooleanProperty LEGACY_ORIENTATION = BooleanProperty.create("legacy_orientation");
     private static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.HORIZONTAL_AXIS;
     private static final VoxelShape PORTAL_X = box(0, 0, 6, 16, 16, 10);
     private static final VoxelShape PORTAL_Z = box(6, 0, 0, 10, 16, 16);
 
     public TormentPortalBlock() {
         super(Properties.copy(Blocks.NETHER_PORTAL).strength(-1, 9_999).noLootTable().lightLevel(state -> 11));
-        registerDefaultState(defaultBlockState().setValue(AXIS, Direction.Axis.X));
+        registerDefaultState(defaultBlockState().setValue(AXIS, Direction.Axis.X).setValue(LEGACY_ORIENTATION, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(AXIS);
+        builder.add(AXIS, LEGACY_ORIENTATION);
     }
 
     @Override
@@ -46,6 +49,15 @@ public final class TormentPortalBlock extends Block {
     public BlockState rotate(BlockState state, Rotation rotation) {
         Direction normal = state.getValue(AXIS) == Direction.Axis.X ? Direction.EAST : Direction.SOUTH;
         return state.setValue(AXIS, rotation.rotate(normal).getAxis());
+    }
+
+    @Override
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighbor, LevelAccessor level,
+                                  BlockPos pos, BlockPos neighborPos) {
+        if (!state.getValue(LEGACY_ORIENTATION)) return state;
+        // The old portal chose its axis from the two neighboring blocks, even across chunk boundaries.
+        Direction.Axis axis = level.isEmptyBlock(pos.west()) && level.isEmptyBlock(pos.east()) ? Direction.Axis.Z : Direction.Axis.X;
+        return state.setValue(AXIS, axis).setValue(LEGACY_ORIENTATION, false);
     }
 
     @Override

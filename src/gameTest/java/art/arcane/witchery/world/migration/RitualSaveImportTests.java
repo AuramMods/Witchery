@@ -2,6 +2,7 @@ package art.arcane.witchery.world.migration;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.CoffinBlock;
+import art.arcane.witchery.block.TormentPortalBlock;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -17,7 +18,9 @@ import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.datafix.PackedBitStorage;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.BedPart;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.chunk.storage.ChunkStorage;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -211,6 +214,29 @@ public final class RitualSaveImportTests {
         level.setBlock(headPos, restoredHead.setValue(CoffinBlock.OCCUPIED, false), Block.UPDATE_ALL);
         helper.assertTrue(!level.getBlockState(footPos).getValue(CoffinBlock.OCCUPIED),
                 "Waking must clear both halves of the reconstructed coffin");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void importedTormentPortalResolvesOrientationOnce(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(3, 2, 3));
+        var portal = WitcheryBlocks.getRequired("tormentportal").get().defaultBlockState()
+                .setValue(TormentPortalBlock.LEGACY_ORIENTATION, true);
+        level.setBlockAndUpdate(pos.west(), Blocks.AIR.defaultBlockState());
+        level.setBlockAndUpdate(pos.east(), Blocks.AIR.defaultBlockState());
+
+        var open = Block.updateFromNeighbourShapes(portal, level, pos);
+        helper.assertTrue(open.getValue(BlockStateProperties.HORIZONTAL_AXIS) == Direction.Axis.Z
+                        && !open.getValue(TormentPortalBlock.LEGACY_ORIENTATION),
+                "An imported portal with both sides clear faces along Z and consumes its orientation marker");
+        level.setBlockAndUpdate(pos.west(), Blocks.STONE.defaultBlockState());
+        var framed = Block.updateFromNeighbourShapes(portal, level, pos);
+        helper.assertTrue(framed.getValue(BlockStateProperties.HORIZONTAL_AXIS) == Direction.Axis.X
+                        && !framed.getValue(TormentPortalBlock.LEGACY_ORIENTATION),
+                "A framed imported portal takes the original maze axis");
+        helper.assertTrue(Block.updateFromNeighbourShapes(open, level, pos).equals(open),
+                "The resolved modern portal keeps its explicit axis when neighboring blocks change");
         helper.succeed();
     }
 

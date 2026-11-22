@@ -10,6 +10,7 @@ import art.arcane.witchery.block.MirrorBlock;
 import art.arcane.witchery.block.RiteHeartBlock;
 import art.arcane.witchery.block.RitualGlyphBlock;
 import art.arcane.witchery.block.StockadeBlock;
+import art.arcane.witchery.block.TormentPortalBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.block.WitchCropBlock;
 import art.arcane.witchery.block.WitchWoodType;
@@ -58,7 +59,8 @@ public final class LegacyChunkUpgrade {
     private static final Set<String> MIRRORS = Set.of("mirrorblock", "mirrorblock2");
     private static final Set<String> FETISHES = Set.of("scarecrow", "trent", "witchsladder");
     private static final Set<String> DOORS = Set.of("rowanwooddoor", "alderwooddoor", "icedoor");
-    private static final Set<String> CONNECTED_BLOCKS = Set.of("stockade", "icestockade", "icefence", "icefencegate", "coffinblock");
+    private static final Set<String> CONNECTED_BLOCKS = Set.of("stockade", "icestockade", "icefence", "icefencegate", "coffinblock",
+            "tormentportal");
 
     private LegacyChunkUpgrade() {
     }
@@ -265,7 +267,7 @@ public final class LegacyChunkUpgrade {
             case "distilleryidle", "distilleryburning" -> state.setValue(BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata))
                     .setValue(DistilleryBlock.LIT, name.getPath().equals("distilleryburning"));
             case "kettle", "spinningwheel", "fumefunnel", "filteredfumefunnel", "wolfaltar", "beartrap", "wolftrap",
-                    "garlicgarland", "dreamcatcher" -> state.setValue(BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata));
+                    "garlicgarland", "dreamcatcher", "refillingchest" -> state.setValue(BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata));
             case "grassper", "placeditem", "scarecrow", "trent", "witchsladder" -> state.setValue(
                     BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata & 7));
             case "altar" -> state.setValue(AltarBlock.FORMED, metadata == 1);
@@ -286,6 +288,7 @@ public final class LegacyChunkUpgrade {
             case "icefencegate" -> state.setValue(FenceGateBlock.FACING, Direction.from2DDataValue(variant))
                     .setValue(FenceGateBlock.OPEN, (metadata & 4) != 0)
                     .setValue(FenceGateBlock.POWERED, (metadata & 8) != 0);
+            case "tormentportal" -> state.setValue(TormentPortalBlock.LEGACY_ORIENTATION, true);
             case "mirrorblock", "mirrorblock2" -> state.setValue(MirrorBlock.FACING, switch (variant) {
                 case 0 -> Direction.NORTH;
                 case 1 -> Direction.SOUTH;
@@ -294,7 +297,8 @@ public final class LegacyChunkUpgrade {
             }).setValue(MirrorBlock.HALF, (metadata & 4) == 0 ? DoubleBlockHalf.LOWER : DoubleBlockHalf.UPPER);
             case "poppetshelf", "bloodedwool", "pitdirt", "pitgrass", "mirrorwall", "shadedglass", "shadedglass_active",
                     "tormentstone", "embermoss", "glintweed", "spanishmoss", "infinityegg", "icedoubleslab", "snowdoubleslab",
-                    "cauldron", "brazier", "candelabra", "perpetualice", "icestockade", "icefence", "bloodcrucible", "silvervat" -> state;
+                    "cauldron", "brazier", "candelabra", "perpetualice", "icestockade", "icefence", "bloodcrucible", "silvervat",
+                    "force", "barrier" -> state;
             case "iceslab", "snowslab" -> state.setValue(SlabBlock.TYPE, (metadata & 8) == 0 ? SlabType.BOTTOM : SlabType.TOP);
             case "witchwoodslab" -> state.setValue(WitchWoodType.PROPERTY, wood)
                     .setValue(SlabBlock.TYPE, (metadata & 8) == 0 ? SlabType.BOTTOM : SlabType.TOP);
