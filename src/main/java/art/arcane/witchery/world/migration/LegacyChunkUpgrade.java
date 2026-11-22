@@ -1,8 +1,12 @@
 package art.arcane.witchery.world.migration;
 
 import art.arcane.witchery.block.AltarBlock;
+import art.arcane.witchery.block.ChaliceBlock;
 import art.arcane.witchery.block.DistilleryBlock;
 import art.arcane.witchery.block.MirrorBlock;
+import art.arcane.witchery.block.RiteHeartBlock;
+import art.arcane.witchery.block.RitualGlyphBlock;
+import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.block.WitchCropBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.block.WitchesOvenBlock;
@@ -34,9 +38,12 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public final class LegacyChunkUpgrade {
     private static final int SECTION_SIZE = 16 * 16 * 16;
+    private static final Set<String> MIRRORS = Set.of("mirrorblock", "mirrorblock2");
+    private static final Set<String> FETISHES = Set.of("scarecrow", "trent", "witchsladder");
 
     private LegacyChunkUpgrade() {
     }
@@ -46,7 +53,7 @@ public final class LegacyChunkUpgrade {
         CompoundTag input = original.copy();
         CompoundTag inputLevel = input.getCompound("Level");
         ids.upgradeItems(inputLevel);
-        restoreMirrorEntityTypes(inputLevel, ids);
+        restoreSharedTileTypes(inputLevel, ids);
         ids.upgradeTileInventories(inputLevel, fixer, from, to);
         LegacyChunkEntities.prepare(inputLevel, ids, fixer, from);
         CompoundTag updated = type.update(fixer, input, from, to);
@@ -82,14 +89,18 @@ public final class LegacyChunkUpgrade {
         }
     }
 
-    private static void restoreMirrorEntityTypes(CompoundTag level, LegacyWorldIds ids) {
+    private static void restoreSharedTileTypes(CompoundTag level, LegacyWorldIds ids) {
         var sections = level.getList("Sections", Tag.TAG_COMPOUND);
         for (Tag entry : level.getList("TileEntities", Tag.TAG_COMPOUND)) {
             CompoundTag tile = (CompoundTag) entry;
-            String id = tile.getString("id");
-            if (!id.equals("witchery:mirrorblock") && !id.equals("witchery:mirrorblock2")) continue;
+            Set<String> family = switch (tile.getString("id")) {
+                case "witchery:mirrorblock", "witchery:mirrorblock2" -> MIRRORS;
+                case "witchery:scarecrow", "witchery:trent", "witchery:witchsladder" -> FETISHES;
+                default -> Set.of();
+            };
+            if (family.isEmpty()) continue;
 
-            // Both legacy mirror blocks use the same tile class and can share the same saved tile ID.
+            // Legacy mirrors and fetishes each used one tile class for several different blocks.
             int y = tile.getInt("y");
             int index = (y & 15) * 256 + (tile.getInt("z") & 15) * 16 + (tile.getInt("x") & 15);
             for (Tag value : sections) {
@@ -98,7 +109,7 @@ public final class LegacyChunkUpgrade {
                 byte[] blocks = section.getByteArray("Blocks");
                 if (blocks.length != SECTION_SIZE) break;
                 var block = ids.block(blockNumber(blocks, section.getByteArray("Add"), index));
-                if (block != null && (block.getPath().equals("mirrorblock") || block.getPath().equals("mirrorblock2"))) {
+                if (block != null && family.contains(block.getPath())) {
                     tile.putString("id", block.toString());
                 }
                 break;
@@ -180,7 +191,15 @@ public final class LegacyChunkUpgrade {
                     .setValue(DistilleryBlock.LIT, name.getPath().equals("distilleryburning"));
             case "kettle", "spinningwheel", "fumefunnel", "filteredfumefunnel" -> state.setValue(
                     BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata));
+            case "grassper", "placeditem", "scarecrow", "trent", "witchsladder" -> state.setValue(
+                    BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata & 7));
             case "altar" -> state.setValue(AltarBlock.FORMED, metadata == 1);
+            case "chalice" -> state.setValue(ChaliceBlock.FILLED, metadata == 1);
+            case "circle" -> state.setValue(RiteHeartBlock.ACTIVE, metadata == 1);
+            case "circleglyphritual", "circleglyphotherwhere", "circleglyphinfernal" -> state.setValue(
+                    RitualGlyphBlock.PATTERN, Math.min(metadata, RitualGlyphBlock.PATTERN_COUNT - 1));
+            case "wickerbundle" -> state.setValue(WickerBundleBlock.BUNDLE_TYPE,
+                    (metadata & 1) == 0 ? WickerBundleBlock.Type.PLAIN : WickerBundleBlock.Type.BLOODIED);
             case "mirrorblock", "mirrorblock2" -> state.setValue(MirrorBlock.FACING, switch (variant) {
                 case 0 -> Direction.NORTH;
                 case 1 -> Direction.SOUTH;
@@ -188,7 +207,8 @@ public final class LegacyChunkUpgrade {
                 default -> Direction.EAST;
             }).setValue(MirrorBlock.HALF, (metadata & 4) == 0 ? DoubleBlockHalf.LOWER : DoubleBlockHalf.UPPER);
             case "poppetshelf", "bloodedwool", "pitdirt", "pitgrass", "mirrorwall", "shadedglass", "shadedglass_active",
-                    "tormentstone", "embermoss", "glintweed", "spanishmoss", "infinityegg", "icedoubleslab", "snowdoubleslab" -> state;
+                    "tormentstone", "embermoss", "glintweed", "spanishmoss", "infinityegg", "icedoubleslab", "snowdoubleslab",
+                    "cauldron", "brazier", "candelabra", "perpetualice" -> state;
             case "iceslab", "snowslab" -> state.setValue(SlabBlock.TYPE, (metadata & 8) == 0 ? SlabType.BOTTOM : SlabType.TOP);
             case "icepressureplate", "snowpressureplate" -> state.setValue(BlockStateProperties.POWERED, metadata != 0);
             case "witchwood" -> state.setValue(WitchWoodType.PROPERTY, wood);

@@ -179,8 +179,9 @@ public final class LegacyWorldIds {
             if (unmappedItems.add(name)) Witchery.LOGGER.warn("Legacy item {} has no Witchery world import mapping yet", name);
             return;
         }
-        if (stack.isDamageableItem() && stack.getDamageValue() == 0 && !named.getCompound("tag").contains("Damage", Tag.TAG_ANY_NUMERIC)) {
-            int damage = named.getInt("Damage");
+        // ItemStack.of can insert a modern Damage field into the decoded copy.
+        if (stack.isDamageableItem() && stack.getDamageValue() == 0 && !compound.getCompound("tag").contains("Damage", Tag.TAG_ANY_NUMERIC)) {
+            int damage = compound.getInt("Damage");
             if (damage > 0) stack.setDamageValue(Math.min(damage, stack.getMaxDamage()));
         }
         if (stack.getTag() != null) {
