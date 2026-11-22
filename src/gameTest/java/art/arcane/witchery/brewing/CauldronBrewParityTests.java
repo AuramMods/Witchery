@@ -4,12 +4,14 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.AltarBlockEntity;
 import art.arcane.witchery.block.entity.SlurpBlockEntity;
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
+import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryItems;
+import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
@@ -29,17 +31,56 @@ import net.minecraft.world.level.block.entity.DispenserBlockEntity;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.util.List;
+import java.util.UUID;
+import java.util.function.Consumer;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class CauldronBrewParityTests {
+    @GameTest(template = "qa_coven_arena")
+    public static void terrainBrewHonorsConfigurableBlockBreakVeto(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var target = helper.absolutePos(new BlockPos(4, 4, 4));
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "BrewTerrainTester"));
+        var config = WitcheryServerConfig.ALLOW_INTER_MOD_BLOCK_BREAK_EVENTS;
+        boolean previous = config.get();
+        Consumer<BlockEvent.BreakEvent> protection = event -> {
+            if (event.getLevel() == level && event.getPlayer() == player && event.getPos().equals(target)) {
+                event.setCanceled(true);
+            }
+        };
+        MinecraftForge.EVENT_BUS.addListener(protection);
+        try {
+            var air = Blocks.AIR.defaultBlockState();
+            level.setBlockAndUpdate(target, Blocks.STONE.defaultBlockState());
+            config.set(config.getDefault());
+            helper.assertTrue(!BrewTerrain.setBlock(player, level, target, air, Direction.UP)
+                            && level.getBlockState(target).is(Blocks.STONE),
+                    "Terrain brews respect the block break veto by default");
+
+            config.set(false);
+            helper.assertTrue(BrewTerrain.setBlock(player, level, target, air, Direction.UP) && level.isEmptyBlock(target),
+                    "Disabling the event allows the brew to remove the stone");
+            level.setBlockAndUpdate(target, Blocks.BEDROCK.defaultBlockState());
+            helper.assertTrue(!BrewTerrain.setBlock(player, level, target, air, Direction.UP),
+                    "Bedrock stays protected with the event disabled");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(protection);
+            config.set(previous);
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena", timeoutTicks = 140)
     public static void dispersalIngredientsRemoveEarlierWheat(GameTestHelper helper) {
         var level = helper.getLevel();

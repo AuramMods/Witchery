@@ -3,6 +3,7 @@ package art.arcane.witchery.brewing;
 import art.arcane.witchery.block.BrewDispersalBlock;
 import art.arcane.witchery.block.WitchLilyPadBlock;
 import art.arcane.witchery.block.entity.SlurpBlockEntity;
+import art.arcane.witchery.event.WitcheryBlockBreak;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.world.BiomePainting;
 import net.minecraft.core.BlockPos;
@@ -20,9 +21,7 @@ import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.storage.ServerLevelData;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayerFactory;
-import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.fluids.IFluidBlock;
 import org.jetbrains.annotations.Nullable;
 
@@ -60,8 +59,7 @@ final class BrewTerrainEffects {
                     cursor.set(center.getX() + x, y, center.getZ() + z);
                     if (!level.getWorldBorder().isWithinBounds(cursor)) continue;
                     var state = level.getBlockState(cursor);
-                    if (state.is(Blocks.FIRE) && !MinecraftForge.EVENT_BUS.post(
-                            new BlockEvent.BreakEvent(level, cursor.immutable(), state, actor))) {
+                    if (state.is(Blocks.FIRE) && !WitcheryBlockBreak.isCanceled(level, cursor, state, actor)) {
                         level.removeBlock(cursor, false);
                         level.playSound(null, cursor, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1, 2);
                     }

@@ -3,6 +3,7 @@ package art.arcane.witchery.brewing;
 import art.arcane.witchery.block.BrewDispersalBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.entity.ThrownBrew;
+import art.arcane.witchery.event.WitcheryBlockBreak;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.world.WitcheryTeleport;
 import net.minecraft.core.BlockPos;
@@ -26,11 +27,9 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.event.level.BlockEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -380,6 +379,6 @@ public final class BrewTerrain {
         if (!level.isInWorldBounds(pos) || !level.getWorldBorder().isWithinBounds(pos)
                 || old.getDestroySpeed(level, pos) < 0) return false;
         return !(owner instanceof Player player) || level.mayInteract(player, pos)
-                && (old.isAir() || !MinecraftForge.EVENT_BUS.post(new BlockEvent.BreakEvent(level, pos, old, player)));
+                && (old.isAir() || !WitcheryBlockBreak.isCanceled(level, pos, old, player));
     }
 }

@@ -6,6 +6,7 @@ import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.block.WitchDoorBlock;
 import art.arcane.witchery.block.WitchesCauldronBlock;
 import art.arcane.witchery.block.entity.BrazierBlockEntity;
+import art.arcane.witchery.event.WitcheryBlockBreak;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -37,11 +38,9 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import org.jetbrains.annotations.Nullable;
@@ -274,7 +273,7 @@ public final class SymbolTerrain {
     private static boolean canModify(ServerLevel level, @Nullable Entity caster, BlockPos pos, BlockState state) {
         return level.isInWorldBounds(pos) && level.getWorldBorder().isWithinBounds(pos) && state.getDestroySpeed(level, pos) >= 0
                 && (!(caster instanceof Player player) || level.mayInteract(player, pos)
-                && (state.isAir() || !MinecraftForge.EVENT_BUS.post(new BlockEvent.BreakEvent(level, pos, state, player))));
+                && (state.isAir() || !WitcheryBlockBreak.isCanceled(level, pos, state, player)));
     }
 
     private static void place(ServerLevel level, @Nullable Entity caster, BlockPos pos, BlockState state, Direction face) {

@@ -2,6 +2,7 @@ package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.config.WitcheryServerConfig;
+import art.arcane.witchery.event.WitcheryBlockBreak;
 import art.arcane.witchery.registry.WitcheryEffects;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
@@ -13,9 +14,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -73,6 +72,6 @@ public final class VolatilityEffect extends MobEffect {
         var state = level.getBlockState(pos);
         return state.getDestroySpeed(level, pos) >= 0 && (!(victim instanceof Player player)
                 || level.mayInteract(player, pos)
-                && !MinecraftForge.EVENT_BUS.post(new BlockEvent.BreakEvent(level, pos, state, player)));
+                && !WitcheryBlockBreak.isCanceled(level, pos, state, player));
     }
 }

@@ -1,5 +1,6 @@
 package art.arcane.witchery.infusion;
 
+import art.arcane.witchery.event.WitcheryBlockBreak;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -9,10 +10,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.event.level.BlockEvent;
 
 public enum ImpContractEffects {
     FIERY_TOUCH("witchery.imp.firetouch"),
@@ -86,7 +85,7 @@ public enum ImpContractEffects {
                 if (player.distanceToSqr(pos.getX(), pos.getY(), pos.getZ()) > 9 || !level.isLoaded(pos)) continue;
                 var state = level.getBlockState(pos);
                 if (!state.is(Blocks.WATER) || !level.isEmptyBlock(pos.above()) || !level.mayInteract(player, pos)
-                        || MinecraftForge.EVENT_BUS.post(new BlockEvent.BreakEvent(level, pos, state, player))) continue;
+                        || WitcheryBlockBreak.isCanceled(level, pos, state, player)) continue;
                 if (level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState())) {
                     evaporated = true;
                     level.sendParticles(ParticleTypes.POOF, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5,

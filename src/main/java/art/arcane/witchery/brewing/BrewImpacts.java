@@ -1,6 +1,7 @@
 package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.entity.ThrownBrew;
+import art.arcane.witchery.event.WitcheryBlockBreak;
 import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.infusion.InfernalInfusion;
 import art.arcane.witchery.registry.WitcheryBlocks;
@@ -38,7 +39,6 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.living.BabyEntitySpawnEvent;
-import net.minecraftforge.event.level.BlockEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -241,7 +241,7 @@ public final class BrewImpacts {
         if (state.isAir()) return true;
         if (state.hasBlockEntity() || state.getDestroySpeed(level, pos) < 0) return false;
         return owner == null || level.mayInteract(owner, pos)
-                && !MinecraftForge.EVENT_BUS.post(new BlockEvent.BreakEvent(level, pos, state, owner));
+                && !WitcheryBlockBreak.isCanceled(level, pos, state, owner);
     }
 
     private static void depositLiquid(ThrownBrew brew, HitResult hit, String block) {

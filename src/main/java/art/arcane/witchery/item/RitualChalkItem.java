@@ -1,6 +1,7 @@
 package art.arcane.witchery.item;
 
 import art.arcane.witchery.block.RitualGlyphBlock;
+import art.arcane.witchery.event.WitcheryBlockBreak;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.core.BlockPos;
@@ -17,10 +18,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.event.level.BlockEvent;
 import org.jetbrains.annotations.Nullable;
 
 public final class RitualChalkItem extends Item {
@@ -80,7 +79,7 @@ public final class RitualChalkItem extends Item {
             if (state != previous) {
                 if (cast && player != null && (!server.mayInteract(player, target)
                         || !server.getWorldBorder().isWithinBounds(target)
-                        || !previous.isAir() && MinecraftForge.EVENT_BUS.post(new BlockEvent.BreakEvent(server, target, previous, player))
+                        || !previous.isAir() && WitcheryBlockBreak.isCanceled(server, target, previous, player)
                         || ForgeEventFactory.onBlockPlace(player, BlockSnapshot.create(server.dimension(), server, target), face))) {
                     return InteractionResult.FAIL;
                 }

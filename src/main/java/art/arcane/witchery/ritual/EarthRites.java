@@ -1,6 +1,7 @@
 package art.arcane.witchery.ritual;
 
 import art.arcane.witchery.block.entity.FetishBlockEntity;
+import art.arcane.witchery.event.WitcheryBlockBreak;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -13,11 +14,9 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.event.level.BlockEvent;
 import org.jetbrains.annotations.Nullable;
 
 public final class EarthRites {
@@ -135,7 +134,7 @@ public final class EarthRites {
     }
 
     private static boolean permitsBreak(ServerLevel level, BlockPos pos, BlockState state, ServerPlayer actor) {
-        return level.mayInteract(actor, pos) && !MinecraftForge.EVENT_BUS.post(new BlockEvent.BreakEvent(level, pos, state, actor));
+        return level.mayInteract(actor, pos) && !WitcheryBlockBreak.isCanceled(level, pos, state, actor);
     }
 
     private static void liftEntities(ServerLevel level, BlockPos center, int radius, int airSpace) {

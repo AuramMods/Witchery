@@ -429,6 +429,7 @@
 
 ## Terrain Brews (2026-11-20)
 
+- [x] Restore `allowInterModBlockBreakEvents`, enabled by default. Terrain brews, spells, and rites consult Forge block-break listeners. Disabling the setting skips those Witchery-initiated break events. A regression verifies that a terrain brew respects a canceled event by default, removes the same stone with the setting off, and still preserves bedrock.
 - [x] Restore kettle recipes and projectile impacts for Vines, Webs, Thorns and Sprouting. The muted survival client crafted the Web ingredient, filled the heated kettle, bottled Brew of Webs and threw it onto the floor. It also threw supplied portions of the other three. Vines attached on the wall face, Thorns produced three cactus segments, and Sprouting produced a horizontal birch branch.
 - [x] Verify the active Toad bonus, the three distinct Sprouting saplings, and Baba Yaga's Webs and Thorns projectiles. All 118 required GameTests, data generation and JAR reobfuscation passed.
 - [x] Restart the packaged server after the terrain changed. The webs, vines, cactus, birch branch, two owned Zombie Villagers, and two unbottled Kettle servings persisted.

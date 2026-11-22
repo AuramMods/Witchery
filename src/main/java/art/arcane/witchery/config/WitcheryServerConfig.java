@@ -39,6 +39,7 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.BooleanValue ALLOW_NAMEPLATE_MASQUERADING;
     public static final ForgeConfigSpec.BooleanValue ALLOW_BIOME_MODIFICATION_RITUALS;
     public static final ForgeConfigSpec.BooleanValue ALLOW_HELL_ON_EARTH_FIRES;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_INTER_MOD_BLOCK_BREAK_EVENTS;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> MUTANDIS_ADDITIONAL_BLOCKS;
     public static final ForgeConfigSpec.BooleanValue SAVE_DUP_STAFF_TEMPLATE;
     public static final ForgeConfigSpec.IntValue RITE_OF_ECLIPSE_COOLDOWN_SECONDS;
@@ -87,6 +88,9 @@ public final class WitcheryServerConfig {
                 .comment("One in this many scheduled ticks removes a disease fluid cell. Zero keeps the cells.")
                 .defineInRange("diseaseBlockRemovalChance", 10, 0, Integer.MAX_VALUE);
         ALLOW_VOLATILITY_POTION_BLOCK_DAMAGE = builder.define("allowVolatilityPotionBlockDamage", true);
+        ALLOW_INTER_MOD_BLOCK_BREAK_EVENTS = builder
+                .comment("Let other mods veto Witchery terrain changes through Forge block break events.")
+                .define("allowInterModBlockBreakEvents", true);
         PERCENTAGE_OF_PLAYERS_SLEEPING_FOR_BUFF = builder
                 .comment("Percentage of players who must be asleep before dawn or dusk for Dreamweaves to grant their effects.")
                 .defineInRange("percentageOfPlayersSleepingForBuff", 100, 1, 100);

@@ -1507,6 +1507,8 @@ Status:
 - Entity IDs 135 and 137 map to `witchery:wolfman` and `witchery:werevillager`. `Infectious` remains a legacy save field. `FormerVillager` stores the modern villager snapshot and reads the old numeric `FormerProfession` when available. `WITCWereVillagerUUID` preserves the pre-curse Taglock identity through each form and cure. Protocol 47 includes the creatures and their sounds.
 
 ## 1.20.1 Event Hook Scaffold (current)
+
+- `allowInterModBlockBreakEvents` defaults to true. Forge block-break cancellation is honored when Witchery terrain effects, spells, or rites would remove or replace blocks. The toggle applies to events posted by Witchery's scripted changes.
 Implementation anchor:
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/event/WitcheryEventHooks.java`
 

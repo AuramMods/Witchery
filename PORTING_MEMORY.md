@@ -2,6 +2,10 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Inter-Mod Block Break Events and Banshee Ingredients (2026-11-22)
+
+- `allowInterModBlockBreakEvents` restores the legacy server setting with its enabled default. Witchery's synthetic Forge break events for brews, spells and rites use the setting. The terrain brew regression observes a canceled event, disables the setting to remove the protected stone, and verifies that the same brew still preserves bedrock. Java 17 data generation, JAR reobfuscation and all 137 checked-in GameTests passed. The reobfuscated JAR SHA-256 is `a095c50f61824408c9eb62dfb7c96ae43360dd96722fdb239ba93ab0cacc1d1e`.
+
 ## Ars Magica Legacy and Cotton for Wormwood (2026-11-22)
 
 - Drain Magic, the Hand Bow discharge and powered Anti-Magic Bolts use the optional Ars Magica Legacy API to drain mana from living targets. The original debit is a fraction of maximum mana with a minimum of one and a zero floor. The original in-wall exemption for small Resizing and wolf and bat forms is gated on the optional mod. The inspected Ars Magica Legacy 1.5.0 package contains no identified counterparts for the original Reconstructor and Soulbound hooks.
