@@ -21,6 +21,7 @@ import art.arcane.witchery.infusion.CreaturePower;
 import art.arcane.witchery.infusion.InfernalInfusion;
 import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.infusion.InfusedBrews;
+import art.arcane.witchery.infusion.ImpContractEffects;
 import art.arcane.witchery.infusion.OverworldInfusion;
 import art.arcane.witchery.item.DeathClothingItem;
 import art.arcane.witchery.item.DeathProtectionPoppetItem;
@@ -85,6 +86,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
@@ -268,6 +270,7 @@ public final class WitcheryEventHooks {
         }
         ScryingView.tick(serverPlayer);
         InfusedBrews.tick(serverPlayer);
+        ImpContractEffects.tick(serverPlayer);
         Vampirism.tick(serverPlayer);
         Lycanthropy.tick(serverPlayer);
         HunterClothingItem.tick(serverPlayer);
@@ -402,6 +405,7 @@ public final class WitcheryEventHooks {
         FamiliarBinding.handleDeath(event);
         if (event.isCanceled()) return;
         DeathBrewEffects.onDeath(event.getEntity());
+        if (event.getEntity() instanceof ServerPlayer player) ImpContractEffects.clear(player);
         if (event.getSource().getEntity() instanceof ServerPlayer killer) {
             if (event.getEntity() instanceof ServerPlayer victim && killer != victim) AreaWardBlockEntity.recordKiller(killer);
             Vampirism.onKilled(event.getEntity(), killer, event.getSource());
@@ -563,7 +567,7 @@ public final class WitcheryEventHooks {
                 return;
             }
         }
-        if (event.getEntity() instanceof ServerPlayer player && event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND
+        if (event.getEntity() instanceof ServerPlayer player && event.getHand() == InteractionHand.MAIN_HAND
                 && event.getTarget() instanceof net.minecraft.world.entity.animal.Wolf wolf && WolfTrials.tame(player, wolf)) {
             event.setCancellationResult(InteractionResult.CONSUME);
             event.setCanceled(true);
@@ -622,6 +626,17 @@ public final class WitcheryEventHooks {
         if ((event instanceof PlayerInteractEvent.RightClickBlock || event instanceof PlayerInteractEvent.RightClickItem)
                 && event.getEntity() instanceof ServerPlayer player && !player.isSpectator()) {
             BrewItemCurse.trigger(player, event.getItemStack());
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onFieryTouch(PlayerInteractEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player) || player.isSpectator()) return;
+        if (event instanceof PlayerInteractEvent.RightClickBlock && event.getHand() == InteractionHand.MAIN_HAND) {
+            ImpContractEffects.touch(player, event.getPos(), event.getFace(), false);
+        } else if (event instanceof PlayerInteractEvent.LeftClickBlock click
+                && click.getAction() == PlayerInteractEvent.LeftClickBlock.Action.START) {
+            ImpContractEffects.touch(player, event.getPos(), event.getFace(), true);
         }
     }
 

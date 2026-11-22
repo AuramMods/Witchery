@@ -1,5 +1,6 @@
 package art.arcane.witchery.entity;
 
+import art.arcane.witchery.item.ImpSpellContractItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcherySounds;
@@ -163,7 +164,7 @@ public final class Imp extends TamableAnimal {
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack offered = player.getItemInHand(hand);
-        if (!isTame() && !offered.is(WitcheryIngredient.CONTRACT_OF_OWNERSHIP.item())) return InteractionResult.PASS;
+        if (!isTame() && !WitcheryIngredient.CONTRACT_OF_OWNERSHIP.matches(offered)) return InteractionResult.PASS;
         if (player instanceof ServerPlayer server) {
             if (!isTame()) signContract(server, offered);
             else if (!offered.isEmpty()) offerGift(server, offered);
@@ -193,6 +194,7 @@ public final class Imp extends TamableAnimal {
 
     private void offerGift(ServerPlayer player, ItemStack item) {
         long now = level().getGameTime();
+        var spell = TaglockItem.isBound(item) ? ImpSpellContractItem.spellFor(item) : null;
         if (item.is(WitcheryIngredient.DEMON_HEART.item())) {
             consume(player, item);
             setPoweredUntil(now + POWER_DURATION);
@@ -201,6 +203,8 @@ public final class Imp extends TamableAnimal {
             consume(player, item);
             setPoweredUntil(0);
             say(player, "power_lost");
+        } else if (spell != null) {
+            castContract(player, item, spell, now);
         } else {
             Integer value = SHINY_GIFTS.get(item.getItem());
             if (value == null || item.isDamaged()) {
@@ -209,13 +213,38 @@ public final class Imp extends TamableAnimal {
             }
             consume(player, item);
             affection = (int) Math.min(Integer.MAX_VALUE, (long) affection + value);
-            boolean ready = now > lastGiftTime + GIFT_COOLDOWN || player.getAbilities().instabuild;
+            boolean ready = giftReady(player, now);
             if (affection >= 20 && ready && random.nextInt(Math.max(1, 30 - affection)) == 0) {
                 reciprocate(player, now);
             } else {
                 say(player, ready ? "likes" : "wait");
             }
         }
+    }
+
+    private void castContract(ServerPlayer player, ItemStack stack, ImpSpellContractItem.Spell spell, long now) {
+        if (isPowered()) {
+            say(player, "spell_powered");
+        } else if (affection < 20) {
+            say(player, "spell_disliked");
+        } else if (!giftReady(player, now)) {
+            say(player, "spell_wait");
+        } else {
+            var target = TaglockItem.isBoundTo(stack, player) ? player : TaglockItem.resolveTarget(player.serverLevel(), stack);
+            if (target == null || !target.isAlive()) {
+                say(player, "spell_missing_target", TaglockItem.boundName(stack));
+            } else if (!spell.activate(target)) {
+                say(player, "spell_failed");
+            } else {
+                lastGiftTime = now;
+                consume(player, stack);
+                say(player, "spell_cast", target.getDisplayName());
+            }
+        }
+    }
+
+    private boolean giftReady(ServerPlayer player, long now) {
+        return now > lastGiftTime + GIFT_COOLDOWN || player.getAbilities().instabuild;
     }
 
     private void reciprocate(ServerPlayer player, long now) {

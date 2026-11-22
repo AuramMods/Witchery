@@ -60,6 +60,7 @@ import art.arcane.witchery.item.FilledChaliceItem;
 import art.arcane.witchery.item.GlassGobletItem;
 import art.arcane.witchery.item.BoneNeedleItem;
 import art.arcane.witchery.item.IcyNeedleItem;
+import art.arcane.witchery.item.ImpSpellContractItem;
 import art.arcane.witchery.item.LeechChestItem;
 import art.arcane.witchery.item.MirrorItem;
 import art.arcane.witchery.item.MoonCharmItem;
@@ -347,6 +348,11 @@ public final class WitcheryItems {
             case "brew_of_soul_torment" -> new DrinkableBrewItem(SpellKnowledge.TORMENTUM::learn);
             case "contract_of_ownership" -> new OwnershipContractItem();
             case "contract_of_torment" -> new TormentContractItem();
+            case "contract_living_flame" -> new ImpSpellContractItem(ImpSpellContractItem.Spell.LIVING_FLAME);
+            case "contract_fiery_tolerance" -> new ImpSpellContractItem(ImpSpellContractItem.Spell.FIERY_TOLERANCE);
+            case "contract_evaporation" -> new ImpSpellContractItem(ImpSpellContractItem.Spell.EVAPORATION);
+            case "contract_fiery_touch" -> new ImpSpellContractItem(ImpSpellContractItem.Spell.FIERY_TOUCH);
+            case "contract_melting_touch" -> new ImpSpellContractItem(ImpSpellContractItem.Spell.MELTING_TOUCH);
             case "fire_protection_poppet", "earth_protection_poppet", "water_protection_poppet",
                     "hunger_protection_poppet", "tool_protection_poppet", "armor_protection_poppet" -> new BoundPoppetItem();
             case "death_protection_poppet" -> new DeathProtectionPoppetItem();

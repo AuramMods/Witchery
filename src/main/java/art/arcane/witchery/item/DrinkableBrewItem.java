@@ -1,5 +1,6 @@
 package art.arcane.witchery.item;
 
+import art.arcane.witchery.infusion.ImpContractEffects;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
@@ -79,13 +80,7 @@ public final class DrinkableBrewItem extends Item {
 
     public static DrinkableBrewItem frozenHeart() {
         return new DrinkableBrewItem(new Properties().rarity(Rarity.UNCOMMON), UseAnim.EAT, drinker -> {
-            if (!(drinker instanceof Player player)) return;
-            var persisted = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
-            var effects = persisted.getCompound("witchery.effects");
-            effects.remove("witchery.imp.firetouch");
-            effects.remove("witchery.imp.evaporation");
-            effects.remove("witchery.im.meltingtouch");
-            if (effects.isEmpty()) persisted.remove("witchery.effects");
+            if (drinker instanceof ServerPlayer player) ImpContractEffects.clear(player);
         });
     }
 }

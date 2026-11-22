@@ -688,11 +688,11 @@ Variant 156 consumes one flower when the tester targets a living entity within t
 | 139 | `brewSoulTorment` |
 | 140 | `contract` → `witchery:contract_of_ownership` |
 | 141 | `contractTorment` → `witchery:contract_of_torment` |
-| 142 | `contractBlaze` |
-| 143 | `contractResistFire` |
-| 144 | `contractEvaporate` |
-| 145 | `contractFieryTouch` |
-| 146 | `contractSmelting` |
+| 142 | `contractBlaze` → `witchery:contract_living_flame` |
+| 143 | `contractResistFire` → `witchery:contract_fiery_tolerance` |
+| 144 | `contractEvaporate` → `witchery:contract_evaporation` |
+| 145 | `contractFieryTouch` → `witchery:contract_fiery_touch` |
+| 146 | `contractSmelting` → `witchery:contract_melting_touch` |
 | 147 | `waystoneCreatureBound` → `witchery:creature_bound_waystone` |
 | 148 | `kobolditedust` → `witchery:koboldite_dust` |
 | 149 | `kobolditenugget` → `witchery:koboldite_nugget` |
@@ -834,7 +834,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 120 | `BINKY_HORSE` | `EntityDeathsHorse` | `deathhorse` (persistent tame mount, saddle and reusable skull) |
 | 121 | `LORD_OF_TORMENT` | `EntityLordOfTorment` | `lordoftorment` |
 | 122 | `SOULFIRE` | `EntitySoulfire` | `soulfire` |
-| 123 | `IMP` | `EntityImp` | `imp` (rite, ownership, gift progression, and power restored) |
+| 123 | `IMP` | `EntityImp` | `imp` (rite, ownership, gift progression, power, and five signed spell contracts restored) |
 | 124 | `DARK_MARK` | `EntityDarkMark` | `darkmark` |
 | 125 | `MINDRAKE` | `EntityMindrake` | `mindrake` (Sprig mutation, three-second bulbs, owner-directed attacks and bursts) |
 | 126 | `GOBLIN` | `EntityGoblin` | `goblin` |

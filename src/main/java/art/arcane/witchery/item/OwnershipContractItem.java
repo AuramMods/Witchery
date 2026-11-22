@@ -17,6 +17,10 @@ public final class OwnershipContractItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flags) {
+        appendSignature(stack, tooltip);
+    }
+
+    static void appendSignature(ItemStack stack, List<Component> tooltip) {
         String name = TaglockItem.boundName(stack);
         Component description = name.isEmpty() ? Component.translatable("item.witchery.contract_of_ownership.unsigned")
                 : Component.translatable("item.witchery.contract_of_ownership.signed", name);

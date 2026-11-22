@@ -1,10 +1,12 @@
 package art.arcane.witchery.crafting;
 
+import art.arcane.witchery.item.ImpSpellContractItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcheryRecipes;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.Item;
@@ -15,11 +17,13 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public final class TaglockBindingRecipe extends CustomRecipe {
     public enum Binding {
         OWNERSHIP(WitcheryIngredient.CONTRACT_OF_OWNERSHIP::item, () -> WitcheryRecipes.SIGN_OWNERSHIP_CONTRACT.get()),
+        IMP_SPELL(stack -> ImpSpellContractItem.spellFor(stack) != null, () -> WitcheryRecipes.SIGN_IMP_SPELL_CONTRACT.get()),
         EARTH_POPPET(() -> WitcheryItems.getRequired("earth_protection_poppet").get(), () -> WitcheryRecipes.BIND_EARTH_POPPET.get()),
         WATER_POPPET(() -> WitcheryItems.getRequired("water_protection_poppet").get(), () -> WitcheryRecipes.BIND_WATER_POPPET.get()),
         FIRE_POPPET(() -> WitcheryItems.getRequired("fire_protection_poppet").get(), () -> WitcheryRecipes.BIND_FIRE_POPPET.get()),
@@ -33,11 +37,15 @@ public final class TaglockBindingRecipe extends CustomRecipe {
         POPPET_PROTECTION(() -> WitcheryItems.getRequired("poppet_protection").get(), () -> WitcheryRecipes.BIND_POPPET_PROTECTION.get()),
         PLAYER_COMPASS(() -> WitcheryItems.getRequired("playercompass").get(), () -> WitcheryRecipes.BIND_PLAYER_COMPASS.get());
 
-        private final Supplier<Item> item;
+        private final Predicate<ItemStack> accepts;
         private final Supplier<RecipeSerializer<?>> serializer;
 
         Binding(Supplier<Item> item, Supplier<RecipeSerializer<?>> serializer) {
-            this.item = item;
+            this(stack -> stack.is(item.get()), serializer);
+        }
+
+        Binding(Predicate<ItemStack> accepts, Supplier<RecipeSerializer<?>> serializer) {
+            this.accepts = accepts;
             this.serializer = serializer;
         }
     }
@@ -59,6 +67,9 @@ public final class TaglockBindingRecipe extends CustomRecipe {
         Inputs inputs = inputs(grid);
         if (inputs == null) return ItemStack.EMPTY;
         ItemStack signed = inputs.bindable.copyWithCount(1);
+        if (binding == Binding.IMP_SPELL && !(signed.getItem() instanceof ImpSpellContractItem)) {
+            signed = WitcheryIngredient.loadInventoryStack(signed.save(new CompoundTag()));
+        }
         TaglockItem.copyBinding(inputs.taglock, signed);
         if (!inputs.secondTaglock.isEmpty()) TaglockItem.copyBinding(inputs.secondTaglock, signed, 2);
         return signed;
@@ -66,7 +77,6 @@ public final class TaglockBindingRecipe extends CustomRecipe {
 
     @Nullable
     private Inputs inputs(CraftingContainer grid) {
-        Item target = binding.item.get();
         ItemStack bindable = ItemStack.EMPTY;
         ItemStack taglock = ItemStack.EMPTY;
         ItemStack secondTaglock = ItemStack.EMPTY;
@@ -74,7 +84,7 @@ public final class TaglockBindingRecipe extends CustomRecipe {
         for (int slot = 0; slot < grid.getContainerSize(); slot++) {
             ItemStack stack = grid.getItem(slot);
             if (stack.isEmpty()) continue;
-            if (stack.is(target) && bindable.isEmpty()) {
+            if (bindable.isEmpty() && binding.accepts.test(stack)) {
                 bindable = stack;
             } else if (stack.getItem() instanceof TaglockItem && TaglockItem.isBound(stack)) {
                 if (taglock.isEmpty()) taglock = stack;

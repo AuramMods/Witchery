@@ -3,6 +3,7 @@ package art.arcane.witchery.registry;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.data.GrassSeedLootModifier;
 import art.arcane.witchery.data.PredictionLootModifier;
+import art.arcane.witchery.data.SmeltingTouchLootModifier;
 import art.arcane.witchery.data.WolfBoneLootModifier;
 import art.arcane.witchery.entity.HobgoblinMiningLootModifier;
 import art.arcane.witchery.world.DreamCottonFeature;
@@ -62,6 +63,7 @@ public final class WitcheryRegistries {
         LOOT_MODIFIERS.register("mining_predictions", () -> PredictionLootModifier.CODEC);
         LOOT_MODIFIERS.register("wolf_bones", () -> WolfBoneLootModifier.CODEC);
         LOOT_MODIFIERS.register("hobgoblin_mining", () -> HobgoblinMiningLootModifier.CODEC);
+        LOOT_MODIFIERS.register("smelting_touch", () -> SmeltingTouchLootModifier.CODEC);
         FEATURES.register("dream_cotton", DreamCottonFeature::new);
         FEATURES.register("wicker_man", WickerManFeature::new);
         FEATURES.register("surface_structures", SurfaceStructuresFeature::new);

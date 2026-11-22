@@ -124,9 +124,20 @@
 - [ ] Restore owl and toad familiars, their specialized abilities, and the cat's curse bonuses.
 - [x] Restore the medium Infernal Imp rite and ownership contract. The muted survival client verified the refund when activating without the Seer Stone and summoned a 50-health Imp with the stone. It signed the contract with its own Taglock Kit, verified the refusal at six levels, paid 25 levels, and bound Zul.
 - [x] Restore the Imp's gift progression, cooldown and original Soul Brew knowledge. The muted client verified the cooldown, advanced the fixture clock for subsequent gifts, and received Hunger, Fear, Anguish and the Contract of Torment. The three brews added their spell knowledge. All 38 required Forge GameTests passed, including signed ownership, saved gift progress and power, and the full contract channel.
-- [ ] Restore the Imp's other signed spell contracts.
+- [x] Restore the Imp's other signed spell contracts. The recipes and effects are tracked under Imp Spell Contracts below.
 - [x] Restore legacy potion bottling skill and include it in Seer Stone readings. Filling a two-level brew advanced the muted client's skill to one and the stone reported that value. GameTests verify the first yield threshold, power accounting, and the saved capability.
 - [ ] Restore the coven witch's additional combat and ritual behaviors.
+
+## Imp Spell Contracts (2026-11-21)
+
+- [x] Craft Living Flame from an Ownership Contract, a Blaze Rod and Hint of Rebirth. Fiery Tolerance adds Blaze Powder to an Ownership Contract. Evaporation uses Magma Cream and a Blaze Rod, Fiery Touch uses Embermoss and a Blaze Rod, and Melting Touch uses a Lava Bucket that returns its empty bucket. Sign each at a crafting grid with a filled Taglock Kit.
+- [x] Give the signed contract to a tamed, unpowered Imp with at least 20 affection. Successful casting consumes one contract in survival and starts the same three-minute cooldown as a gift exchange. Failed casts preserve the contract and cooldown. The Imp resolves the Taglock to its online player or loaded creature.
+- [x] Summon one Blaze near the subject with 50 maximum health and seven attack damage. Fiery Tolerance grants 15 minutes of Fire Resistance. The three ten-minute player effects retain the original saved keys. Evaporation dries nearby exposed water from the top down, Fiery Touch can ignite eligible block faces on interaction, and Melting Touch replaces smeltable block drops using furnace recipes with the original one-in-four bonus.
+- [x] On a muted Forge survival client, collect a Taglock from a pig, craft and sign Fiery Tolerance, and present it to an Imp with supplied affection. Verify the pig's Fire Resistance and the refusal to cast a second contract during the shared cooldown. Advance the fixture timer and verify the Blaze's attributes, a real mined Iron Ingot, and fire at the clicked stone face.
+- [x] Rejoin after a packaged dedicated-server restart with all three active player effects. Evaporation drained the exposed source and left the covered source in place. Eating a Frozen Heart removed the three saved counters.
+- [x] Import a chest saved by Forge 1.7.10 containing the five original numeric contracts. Each became its modern item and retained its name-only Taglock and extra tag. All five remained present after starting the imported world without the import flag.
+- [x] Run Java 17 data generation and JAR reobfuscation. All eight checked-in Forge GameTests passed, including the four new cases for recipes and subtypes, casting and cooldown, Living Flame, and the three player effects.
+- [x] Pass all 440 checks in the selected broader development suite in a fresh world, including the earlier Imp gifts, ownership and Torment contract.
 
 ## Overworld Infusion and Death Protection Poppet (2026-11-19)
 

@@ -33,6 +33,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.crafting.CompoundIngredient;
@@ -397,6 +398,15 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .pattern("PPS")
                 .unlockedBy("has_odd_porkchop", has(WitcheryIngredient.ODD_PORKCHOP_RAW.item()))
                 .save(recipeOutput);
+        impContract(recipeOutput, WitcheryIngredient.CONTRACT_LIVING_FLAME, Items.BLAZE_ROD,
+                WitcheryIngredient.HINT_OF_REBIRTH.item());
+        impContract(recipeOutput, WitcheryIngredient.CONTRACT_FIERY_TOLERANCE, Items.BLAZE_POWDER);
+        impContract(recipeOutput, WitcheryIngredient.CONTRACT_EVAPORATION, Items.MAGMA_CREAM, Items.BLAZE_ROD);
+        impContract(recipeOutput, WitcheryIngredient.CONTRACT_FIERY_TOUCH,
+                WitcheryBlocks.getRequired("embermoss").get(), Items.BLAZE_ROD);
+        impContract(recipeOutput, WitcheryIngredient.CONTRACT_MELTING_TOUCH, Items.LAVA_BUCKET);
+        SpecialRecipeBuilder.special(WitcheryRecipes.SIGN_IMP_SPELL_CONTRACT.get())
+                .save(recipeOutput, "witchery:sign_imp_spell_contract");
         Item poppet = WitcheryItems.getRequired("poppet").get();
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, poppet)
                 .define('W', Blocks.WHITE_WOOL)
@@ -564,6 +574,13 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .requires(WitcheryIngredient.CLAY_JAR.item(), 3)
                 .unlockedBy("has_odour_of_purity", has(WitcheryIngredient.ODOUR_OF_PURITY.item()))
                 .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "purified_milk_from_cake"));
+    }
+
+    private static void impContract(Consumer<FinishedRecipe> output, WitcheryIngredient contract, ItemLike... ingredients) {
+        Item ownership = WitcheryIngredient.CONTRACT_OF_OWNERSHIP.item();
+        var recipe = ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, contract.item()).requires(ownership);
+        for (ItemLike ingredient : ingredients) recipe.requires(ingredient);
+        recipe.unlockedBy("has_ownership_contract", has(ownership)).save(output);
     }
 
     private static void stockadeRecipes(Consumer<FinishedRecipe> output) {

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "witchery:contract_of_ownership"
+    },
+    {
+      "item": "minecraft:blaze_rod"
+    },
+    {
+      "item": "witchery:hint_of_rebirth"
+    }
+  ],
+  "result": {
+    "item": "witchery:contract_living_flame"
+  }
+}
