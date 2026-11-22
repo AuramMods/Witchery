@@ -1,6 +1,8 @@
 package art.arcane.witchery.world.migration;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.item.DoorKeyItem;
+import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.serialization.Dynamic;
@@ -28,14 +30,17 @@ public final class LegacyWorldIds {
     private static final String IMPORT_PROPERTY = "witchery.importLegacyWorld";
     private static final String REGISTRY_FILE = "witchery-legacy-ids.dat";
     private static final String ENTRIES = "ItemData";
+    private static final String DIMENSIONS = "Dimensions";
     private final Map<Integer, ResourceLocation> blocks = new HashMap<>();
     private final Map<Integer, ResourceLocation> items = new HashMap<>();
     private final Map<Integer, ResourceLocation> vanillaItems = new HashMap<>();
     private final Set<ResourceLocation> unmappedBlocks = ConcurrentHashMap.newKeySet();
     private final Set<ResourceLocation> unmappedItems = ConcurrentHashMap.newKeySet();
+    private final LegacyWorldDimensions dimensions;
 
-    private LegacyWorldIds(ListTag entries) {
-        for (Tag tag : entries) {
+    private LegacyWorldIds(CompoundTag snapshot) {
+        dimensions = new LegacyWorldDimensions(snapshot.getCompound(DIMENSIONS));
+        for (Tag tag : snapshot.getList(ENTRIES, Tag.TAG_COMPOUND)) {
             CompoundTag entry = (CompoundTag) tag;
             String key = entry.getString("K");
             if (key.length() < 2 || !entry.contains("V", Tag.TAG_ANY_NUMERIC)) continue;
@@ -55,23 +60,38 @@ public final class LegacyWorldIds {
     public static void prepare(Path world) {
         Path registry = world.resolve(REGISTRY_FILE);
         Path level = world.resolve("level.dat");
-        if (!Boolean.getBoolean(IMPORT_PROPERTY) || Files.exists(registry) || !Files.isRegularFile(level)) return;
+        if (!Boolean.getBoolean(IMPORT_PROPERTY)) return;
         try {
-            ListTag entries = NbtIo.readCompressed(level.toFile()).getCompound("FML").getList(ENTRIES, Tag.TAG_COMPOUND);
-            LegacyWorldIds ids = new LegacyWorldIds(entries);
-            if (ids.blocks.isEmpty() && ids.items.isEmpty()) return;
-            CompoundTag snapshot = new CompoundTag();
-            snapshot.put(ENTRIES, entries);
-            Path temporary = Files.createTempFile(world, "witchery-legacy-ids-", ".tmp");
-            try {
-                NbtIo.writeCompressed(snapshot, temporary.toFile());
-                Files.move(temporary, registry, StandardCopyOption.ATOMIC_MOVE);
-            } finally {
-                Files.deleteIfExists(temporary);
+            boolean existing = Files.isRegularFile(registry);
+            CompoundTag snapshot;
+            if (existing) {
+                snapshot = NbtIo.readCompressed(registry.toFile());
+            } else {
+                if (!Files.isRegularFile(level)) return;
+                snapshot = new CompoundTag();
+                snapshot.put(ENTRIES, NbtIo.readCompressed(level.toFile()).getCompound("FML").getList(ENTRIES, Tag.TAG_COMPOUND));
             }
-            Witchery.LOGGER.info("Captured {} Witchery block IDs and {} item IDs for {}", ids.blocks.size(), ids.items.size(), world);
+            boolean captureDimensions = !snapshot.contains(DIMENSIONS, Tag.TAG_COMPOUND);
+            if (captureDimensions) snapshot.put(DIMENSIONS, LegacyWorldDimensions.capture());
+            LegacyWorldIds ids = new LegacyWorldIds(snapshot);
+            if (ids.blocks.isEmpty() && ids.items.isEmpty()) return;
+            if (captureDimensions) {
+                saveSnapshot(world, registry, snapshot);
+                Witchery.LOGGER.info("Captured {} Witchery block IDs and {} item IDs for {}", ids.blocks.size(), ids.items.size(), world);
+            }
+            ids.dimensions.relocate(world);
         } catch (IOException e) {
-            throw new UncheckedIOException("Could not capture legacy Witchery registry from " + level, e);
+            throw new UncheckedIOException("Could not prepare legacy Witchery save at " + world, e);
+        }
+    }
+
+    private static void saveSnapshot(Path world, Path registry, CompoundTag snapshot) throws IOException {
+        Path temporary = Files.createTempFile(world, "witchery-legacy-ids-", ".tmp");
+        try {
+            NbtIo.writeCompressed(snapshot, temporary.toFile());
+            Files.move(temporary, registry, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+        } finally {
+            Files.deleteIfExists(temporary);
         }
     }
 
@@ -81,7 +101,7 @@ public final class LegacyWorldIds {
             Path registry = path.resolve(REGISTRY_FILE);
             try {
                 if (Files.isRegularFile(registry)) {
-                    return new LegacyWorldIds(NbtIo.readCompressed(registry.toFile()).getList(ENTRIES, Tag.TAG_COMPOUND));
+                    return new LegacyWorldIds(NbtIo.readCompressed(registry.toFile()));
                 }
             } catch (IOException e) {
                 throw new UncheckedIOException("Could not read legacy Witchery registry from " + registry, e);
@@ -100,6 +120,11 @@ public final class LegacyWorldIds {
         if (unmappedBlocks.add(id)) Witchery.LOGGER.warn("Legacy block {} has no Witchery world import mapping yet", id);
     }
 
+    public void upgradePlayer(CompoundTag player) {
+        dimensions.upgradePlayerLocation(player);
+        upgradeItems(player);
+    }
+
     public void upgradeItems(Tag value) {
         if (value instanceof CompoundTag compound) {
             for (String key : compound.getAllKeys()) upgradeItems(compound.get(key));
@@ -114,6 +139,9 @@ public final class LegacyWorldIds {
             CompoundTag tile = (CompoundTag) entry;
             var id = ResourceLocation.tryParse(tile.getString("id"));
             if (id != null && id.getNamespace().equals(Witchery.MODID)) {
+                if (id.getPath().equals("mirrorblock2") && tile.contains("DimCoords", Tag.TAG_COMPOUND)) {
+                    dimensions.upgradeReference(tile.getCompound("DimCoords"), "Dimension", "DimensionId");
+                }
                 upgradeVanillaItems(tile, fixer, from, to);
             }
         }
@@ -154,6 +182,17 @@ public final class LegacyWorldIds {
         if (stack.isDamageableItem() && stack.getDamageValue() == 0 && !named.getCompound("tag").contains("Damage", Tag.TAG_ANY_NUMERIC)) {
             int damage = named.getInt("Damage");
             if (damage > 0) stack.setDamageValue(Math.min(damage, stack.getMaxDamage()));
+        }
+        if (stack.getTag() != null) {
+            CompoundTag tag = stack.getTag();
+            if (stack.getItem() instanceof WaystoneItem) {
+                dimensions.upgradeReference(tag, "PosD", "Dimension");
+            } else if (stack.getItem() instanceof DoorKeyItem) {
+                dimensions.upgradeReference(tag, "doorD", "doorDimension");
+                for (Tag key : tag.getList("doorKeys", Tag.TAG_COMPOUND)) {
+                    dimensions.upgradeReference((CompoundTag) key, "doorD", "doorDimension");
+                }
+            }
         }
         compound.remove("Damage");
         compound.remove("tag");

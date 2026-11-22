@@ -26,7 +26,7 @@ abstract class LegacyPlayerDataMixin {
     @Redirect(method = "load", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/util/datafix/DataFixTypes;updateToCurrentVersion(Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/nbt/CompoundTag;I)Lnet/minecraft/nbt/CompoundTag;"))
     private CompoundTag witchery$upgradeLegacyPlayer(DataFixTypes type, DataFixer fixer, CompoundTag player, int from) {
-        if (witchery$legacyIds != null && from < 100) witchery$legacyIds.upgradeItems(player);
+        if (witchery$legacyIds != null && from < 100) witchery$legacyIds.upgradePlayer(player);
         return type.updateToCurrentVersion(fixer, player, from);
     }
 }

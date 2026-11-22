@@ -2,24 +2,30 @@ package art.arcane.witchery.world.migration;
 
 import art.arcane.witchery.block.AltarBlock;
 import art.arcane.witchery.block.DistilleryBlock;
+import art.arcane.witchery.block.MirrorBlock;
 import art.arcane.witchery.block.WitchCropBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.block.WitchesOvenBlock;
+import art.arcane.witchery.world.WitcheryDimensions;
 import com.mojang.datafixers.DataFixer;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.datafix.PackedBitStorage;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -40,6 +46,7 @@ public final class LegacyChunkUpgrade {
         CompoundTag input = original.copy();
         CompoundTag inputLevel = input.getCompound("Level");
         ids.upgradeItems(inputLevel);
+        restoreMirrorEntityTypes(inputLevel, ids);
         ids.upgradeTileInventories(inputLevel, fixer, from, to);
         LegacyChunkEntities.prepare(inputLevel, ids, fixer, from);
         CompoundTag updated = type.update(fixer, input, from, to);
@@ -61,8 +68,42 @@ public final class LegacyChunkUpgrade {
         return updated;
     }
 
-    public static void restoreEntities(CompoundTag upgraded) {
+    public static void finish(CompoundTag upgraded, ResourceKey<Level> dimension) {
         LegacyChunkEntities.restore(upgraded);
+        if (dimension.equals(WitcheryDimensions.TORMENT) || dimension.equals(WitcheryDimensions.MIRROR)) {
+            // Both old generators wrote the vanilla Nether biome. Restore their dedicated modern biomes.
+            var biome = new CompoundTag();
+            var palette = new ListTag();
+            palette.add(StringTag.valueOf(dimension.location().toString()));
+            biome.put("palette", palette);
+            for (Tag entry : upgraded.getList("sections", Tag.TAG_COMPOUND)) {
+                ((CompoundTag) entry).put("biomes", biome.copy());
+            }
+        }
+    }
+
+    private static void restoreMirrorEntityTypes(CompoundTag level, LegacyWorldIds ids) {
+        var sections = level.getList("Sections", Tag.TAG_COMPOUND);
+        for (Tag entry : level.getList("TileEntities", Tag.TAG_COMPOUND)) {
+            CompoundTag tile = (CompoundTag) entry;
+            String id = tile.getString("id");
+            if (!id.equals("witchery:mirrorblock") && !id.equals("witchery:mirrorblock2")) continue;
+
+            // Both legacy mirror blocks use the same tile class and can share the same saved tile ID.
+            int y = tile.getInt("y");
+            int index = (y & 15) * 256 + (tile.getInt("z") & 15) * 16 + (tile.getInt("x") & 15);
+            for (Tag value : sections) {
+                CompoundTag section = (CompoundTag) value;
+                if (section.getInt("Y") != (y >> 4)) continue;
+                byte[] blocks = section.getByteArray("Blocks");
+                if (blocks.length != SECTION_SIZE) break;
+                var block = ids.block(blockNumber(blocks, section.getByteArray("Add"), index));
+                if (block != null && (block.getPath().equals("mirrorblock") || block.getPath().equals("mirrorblock2"))) {
+                    tile.putString("id", block.toString());
+                }
+                break;
+            }
+        }
     }
 
     private static void restoreSection(LegacyWorldIds ids, CompoundTag old, CompoundTag section,
@@ -80,7 +121,7 @@ public final class LegacyChunkUpgrade {
                 ? new PackedBitStorage(oldBits, SECTION_SIZE) : new PackedBitStorage(oldBits, SECTION_SIZE, entries);
         boolean changed = false;
         for (int i = 0; i < SECTION_SIZE; i++) {
-            int number = (blocks[i] & 0xFF) | (nibble(highBits, i) << 8);
+            int number = blockNumber(blocks, highBits, i);
             ResourceLocation name = ids.block(number);
             if (name == null) continue;
             int meta = nibble(metadata, i);
@@ -111,6 +152,10 @@ public final class LegacyChunkUpgrade {
         }
     }
 
+    private static int blockNumber(byte[] blocks, byte[] highBits, int index) {
+        return (blocks[index] & 0xFF) | (nibble(highBits, index) << 8);
+    }
+
     private static int nibble(byte[] bytes, int index) {
         int offset = index >> 1;
         return offset < bytes.length ? bytes[offset] >> ((index & 1) << 2) & 15 : 0;
@@ -136,6 +181,12 @@ public final class LegacyChunkUpgrade {
             case "kettle", "spinningwheel", "fumefunnel", "filteredfumefunnel" -> state.setValue(
                     BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata));
             case "altar" -> state.setValue(AltarBlock.FORMED, metadata == 1);
+            case "mirrorblock", "mirrorblock2" -> state.setValue(MirrorBlock.FACING, switch (variant) {
+                case 0 -> Direction.NORTH;
+                case 1 -> Direction.SOUTH;
+                case 2 -> Direction.WEST;
+                default -> Direction.EAST;
+            }).setValue(MirrorBlock.HALF, (metadata & 4) == 0 ? DoubleBlockHalf.LOWER : DoubleBlockHalf.UPPER);
             case "poppetshelf", "bloodedwool", "pitdirt", "pitgrass", "mirrorwall", "shadedglass", "shadedglass_active",
                     "tormentstone", "embermoss", "glintweed", "spanishmoss", "infinityegg", "icedoubleslab", "snowdoubleslab" -> state;
             case "iceslab", "snowslab" -> state.setValue(SlabBlock.TYPE, (metadata & 8) == 0 ? SlabType.BOTTOM : SlabType.TOP);

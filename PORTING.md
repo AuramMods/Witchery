@@ -1154,7 +1154,11 @@
 - [x] Import saved entities from a Witchery 0.24.1 server. The packaged server loaded the same nine UUIDs and names, with the Owl, Toad, and Cat still owned and sitting. The Broom retained its dye and kept the vanilla Pig as a passenger. Binky kept its owner and saddle. The Coven Witch kept its accepted quest, and its damaged sword and boots returned to their original slots. The Hobgoblin retained its profession and the partially used Emerald trade for a Charged Attuned Stone.
 - [x] Repeat the nine entity checks after a normal dedicated restart. Run Java 17 data generation and JAR reobfuscation. All five focused save migration GameTests passed, covering the earlier fixtures, the ownership and trade conversions, mixed passengers, and the original equipment order.
 - [ ] Stabilize the broader regression tests. The latest 31-case run passed 26 and flagged Reflection loot, Sprouting, tree placement, giant tree trunks, and the powered bolt effect. All five migration cases passed.
-- [ ] Expand migration to other block and subtype data, specialized entity and block-entity fields, and numeric dimension folders. Add fixtures before calling the migration complete.
+- [x] Load actual legacy regions for Dream, Torment, and Mirror at the default IDs and at custom IDs `-47`, `-48`, and `64`. Check the original block coordinates, all three witchwood species, and the modern fixed biomes in Torment and Mirror. Keep both directory trees when a legacy Mirror and a modern Mirror occupy the same destination.
+- [x] Recover both halves and original directions of linked mirrors. The legacy Forge server saved both variants as `witchery:mirrorblock2`, so the importer reads each tile's block to determine the modern type. Reciprocal coordinates and the defeated Reflection flag survive. A muted client walked through the saved Overworld mirror into its original room, then back through the same exit after the normal cooldown.
+- [x] Restart the default and custom dedicated imports with ordinary launch arguments and repeat the terrain, biome, and mirror checks. A first-time login using a synthetic Forge 1.7.10 player record with the original `Spawns` layout returned to the custom Dream coordinates and restored the Dream bed, bound Waystone, Door Key, and both key ring destinations. Java 17 data generation, JAR reobfuscation, and all seven focused migration GameTests passed.
+- [x] Open a fresh copy of the custom world in the muted single-player client. The original owner record loaded in Dream and kept the same bed and bound items in `level.dat` after Save and Quit.
+- [ ] Expand migration to other block and subtype data and specialized entity and block-entity fields. Add fixtures before calling the migration complete.
 
 ### Importing a copy of a legacy world
 
@@ -1166,7 +1170,9 @@ java -Dwitchery.importLegacyWorld=true @user_jvm_args.txt @libraries/net/minecra
 
 The first boot records the old IDs in `witchery-legacy-ids.dat` inside the copy. Keep that file with the save so old dedicated player files can convert when their owners log in. Subsequent boots use the normal launch command. To import a single-player copy, add `-Dwitchery.importLegacyWorld=true` to the Java arguments for its first launch.
 
-The importer covers Witch's Ovens, eight crop blocks, the altar and workstations tested above, witchwood planks, logs, leaves, saplings and stairs, ice and snow construction blocks, and stacks handled by the inventory loader. The imported poppet shelf keeps its inventory at its original location and uses the modern shelf's default orientation. Unsupported legacy content can be lost during conversion of the copy.
+Dream, Torment, and Mirror use the old default IDs `-37`, `-38`, and `-39`. If the original world used custom numbers, add `-Dwitchery.legacyConfig=/path/to/the/original/witchery.cfg` on the first import. The importer moves the selected numeric folders into Minecraft's namespaced dimension storage and records the mapping for later logins. When a destination already exists, it logs the two paths and keeps both directories. Minecraft 1.20.1 stores one respawn point. The import uses the old bed in the player's saved dimension when available and falls back to the original Overworld bed.
+
+The importer covers Witch's Ovens, eight crop blocks, the altar and workstations tested above, witchwood planks, logs, leaves, saplings and stairs, ice and snow construction blocks, linked mirrors, and stacks handled by the inventory loader. The imported poppet shelf keeps its inventory at its original location and uses the modern shelf's default orientation. Unsupported legacy content can be lost during conversion of the copy.
 
 ## Villager Courtship Regression (2026-11-21)
 
