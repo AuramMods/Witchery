@@ -645,7 +645,7 @@ Variant 156 consumes one flower when the tester targets a living entity within t
 | 95 | `brewSleep` |
 | 96 | `brewFlowingSpirit` |
 | 97 | `brewWasting` |
-| 98 | `sleepingApple` |
+| 98 | `sleepingApple` maps to `witchery:sleeping_apple`. Eating it starts an ordinary nightmare in the Dream. |
 | 99 | `disturbedCotton` |
 | 100 | `fancifulThread` |
 | 101 | `tormentedTwine` |

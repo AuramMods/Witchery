@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "witchery:wormy_apple"
+    },
+    "G": {
+      "item": "witchery:mutandis"
+    },
+    "M": {
+      "item": "witchery:reek_of_misfortune"
+    },
+    "S": {
+      "item": "witchery:brew_of_sleeping"
+    }
+  },
+  "pattern": [
+    " G ",
+    "MAM",
+    "GSG"
+  ],
+  "result": {
+    "item": "witchery:sleeping_apple"
+  },
+  "show_notification": true
+}

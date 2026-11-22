@@ -155,6 +155,16 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .requires(Items.SUGAR)
                 .unlockedBy("has_apple", has(Items.APPLE))
                 .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.FOOD, WitcheryIngredient.SLEEPING_APPLE.item())
+                .define('G', WitcheryIngredient.MUTANDIS.item())
+                .define('M', WitcheryIngredient.REEK_OF_MISFORTUNE.item())
+                .define('A', WitcheryIngredient.WORMY_APPLE.item())
+                .define('S', WitcheryIngredient.BREW_OF_SLEEPING.item())
+                .pattern(" G ")
+                .pattern("MAM")
+                .pattern("GSG")
+                .unlockedBy("has_brew_of_sleeping", has(WitcheryIngredient.BREW_OF_SLEEPING.item()))
+                .save(recipeOutput);
         ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, WitcheryIngredient.GRAVEYARD_DUST.item())
                 .requires(WitcheryIngredient.SPECTRAL_DUST.item())
                 .requires(Items.BONE_MEAL)

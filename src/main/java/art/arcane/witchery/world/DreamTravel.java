@@ -68,14 +68,26 @@ public final class DreamTravel {
     private static final String MANIFEST_REENTRY = "WITCManifestReentryTick";
     private static final String LAST_NIGHTMARE_KILL = "LastNightmareKillTime";
     private static final int TRANSITION_USE_COOLDOWN = 20;
+    // A pending Brew of Sleeping was saved as boolean true in earlier versions of the port.
+    private static final byte BREW_SLEEP = 1;
+    private static final byte FORCED_NIGHTMARE = 2;
 
     private DreamTravel() {
     }
 
     public static void requestSleep(LivingEntity drinker) {
-        if (drinker instanceof ServerPlayer player && player.level().dimension().equals(Level.OVERWORLD)
+        requestSleep(drinker, BREW_SLEEP);
+    }
+
+    public static void requestNightmare(LivingEntity eater) {
+        requestSleep(eater, FORCED_NIGHTMARE);
+    }
+
+    private static void requestSleep(LivingEntity sleeper, byte request) {
+        if (sleeper instanceof ServerPlayer player && player.level().dimension().equals(Level.OVERWORLD)
                 && !isSpiritWalking(player) && !isGhost(player)) {
-            player.getPersistentData().putBoolean(REQUEST_SLEEP, true);
+            CompoundTag data = player.getPersistentData();
+            if (data.getByte(REQUEST_SLEEP) < request) data.putByte(REQUEST_SLEEP, request);
         }
     }
 
@@ -272,17 +284,18 @@ public final class DreamTravel {
                 return true;
             }
         }
-        if (data.getBoolean(REQUEST_SLEEP)) {
+        byte sleepRequest = data.getByte(REQUEST_SLEEP);
+        if (sleepRequest != 0) {
             data.remove(REQUEST_SLEEP);
             if (player.level().dimension().equals(Level.OVERWORLD) && !walking && !isGhost(player)) {
-                sleep(player);
+                sleep(player, sleepRequest == FORCED_NIGHTMARE);
             }
             return true;
         }
         return false;
     }
 
-    private static void sleep(ServerPlayer player) {
+    private static void sleep(ServerPlayer player, boolean forceNightmare) {
         ServerLevel overworld = player.serverLevel();
         ServerLevel dream = player.server.getLevel(WitcheryDimensions.DREAM);
         if (dream == null) {
@@ -309,9 +322,13 @@ public final class DreamTravel {
         CompoundTag hunger = new CompoundTag();
         player.getFoodData().addAdditionalSaveData(hunger);
         float health = Math.max(1, player.getHealth());
-        DreamAmbience ambience = DreamAmbience.around(overworld, anchor);
-        boolean nightmare = player.getRandom().nextDouble() < ambience.nightmareChance();
-        boolean demonic = nightmare && player.getRandom().nextDouble() < ambience.demonicChance();
+        boolean nightmare = true;
+        boolean demonic = false;
+        if (!forceNightmare) {
+            DreamAmbience ambience = DreamAmbience.around(overworld, anchor);
+            nightmare = player.getRandom().nextDouble() < ambience.nightmareChance();
+            demonic = nightmare && player.getRandom().nextDouble() < ambience.demonicChance();
+        }
 
         move(player, dream, arrival, yaw, pitch);
         if (player.serverLevel() != dream) {

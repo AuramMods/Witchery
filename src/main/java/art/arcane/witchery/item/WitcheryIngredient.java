@@ -114,6 +114,7 @@ public enum WitcheryIngredient {
     BREW_OF_SLEEPING(95, "brew_of_sleeping"),
     BREW_OF_FLOWING_SPIRIT(96, "brew_of_flowing_spirit"),
     BREW_OF_WASTING(97, "brew_of_wasting"),
+    SLEEPING_APPLE(98, "sleeping_apple"),
     DISTURBED_COTTON(99, "disturbed_cotton"),
     FANCIFUL_THREAD(100, "fanciful_thread"),
     TORMENTED_TWINE(101, "tormented_twine"),

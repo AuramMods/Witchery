@@ -77,6 +77,7 @@ import art.arcane.witchery.item.MysticBranchItem;
 import art.arcane.witchery.item.NecromanticStoneItem;
 import art.arcane.witchery.item.RitualChalkItem;
 import art.arcane.witchery.item.SeerStoneItem;
+import art.arcane.witchery.item.SleepingAppleItem;
 import art.arcane.witchery.item.GrenadeItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.MutatingSprigItem;
@@ -317,6 +318,7 @@ public final class WitcheryItems {
             case "subdued_village_spirit" -> new SpiritOfferingItem(DreamSpirit.Kind.VILLAGE);
             case "wormy_apple" -> new Item(new Item.Properties().food(new FoodProperties.Builder().alwaysEat()
                     .effect(() -> new MobEffectInstance(MobEffects.POISON, 60), 1).build()));
+            case "sleeping_apple" -> new SleepingAppleItem();
             case "congealed_spirit" -> new DrinkableBrewItem(() -> MobEffects.NIGHT_VISION, 600, 1);
             case "brew_of_ink" -> new ThrowableBrewItem(BrewImpacts::splashInk);
             case "brew_of_vines" -> new ThrowableBrewItem(BrewTerrain::vines);

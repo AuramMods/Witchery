@@ -1208,6 +1208,7 @@
    "item.witchery.spectral_dust" : "Spectral Dust",
    "item.witchery.graveyard_dust" : "Graveyard Dust",
    "item.witchery.wormy_apple" : "Wormy Apple",
+   "item.witchery.sleeping_apple" : "Apple",
    "death.attack.witchery.spectral_touch" : "%1$s was drained by %2$s",
    "item.witchery.creeper_heart" : "Creeper Heart",
    "item.witchery.anointing_paste" : "Anointing Paste",

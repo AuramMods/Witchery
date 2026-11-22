@@ -1210,6 +1210,11 @@
       {"aspect": "thaumaturge:sensus", "amount": 2},
       {"aspect": "thaumaturge:vitreus", "amount": 3}
     ],
+    "witchery:sleeping_apple": [
+      {"aspect": "thaumaturge:cognitio", "amount": 2},
+      {"aspect": "thaumaturge:desiderium", "amount": 1},
+      {"aspect": "thaumaturge:herba", "amount": 1}
+    ],
     "witchery:snowbell": [
       {"aspect": "thaumaturge:gelum", "amount": 2},
       {"aspect": "thaumaturge:herba", "amount": 3}
