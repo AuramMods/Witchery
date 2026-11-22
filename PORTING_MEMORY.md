@@ -2,6 +2,17 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Mixed Creature and Terrain Brews (2026-11-22)
+
+- The original block and entity dispatchers independently accumulate and reset their duration modifiers. In a mixture with Redstone, Wolfsbane, Sand and Cobblestone, the Redstone doubles the Wolfsbane duration and the ten-second Tide Hold. Lava Hold uses ten seconds after Tide Hold spends the terrain modifier.
+- The new thrown-brew case failed on the old mixer at the Tide Hold assertion. The corrected mixer passed all 111 checked-in Forge GameTests. Java 17 data generation and JAR reobfuscation passed. The scratch pointer `/tmp/witchery-mixed-brew-current` identifies the logs, private server and packaged JAR.
+- All 114 required GameTests also passed with Thaumaturge, Lithostitched, and Curios. The first run used the old 286-entry aspect fixture. The updated fixture verified all 292 current mappings.
+- The recovered suite passed all 664 GameTests in one run. It included the new thrown-brew test and all four cases that needed focused reruns on the dispenser milestone.
+- The packaged SHA-256 is `38ee4bdd584e18e53594165be303a49944b3af59171d1141ddf5e178bc7442c7`. An ordinary dedicated restart kept all seven dropped ingredients in order. A redstone pulse bottled the saved mixture. The test spawned a projectile with that bottle as its item, then measured Wolfsbane at 738 ticks and the pending water and lava holds at 397 and 197 ticks. The next restart restored the same holds at 394 and 194 ticks, and the two fluids returned in order.
+- All 96 `RiteRegistry.addRecipe` IDs from the old source map to existing `witchery:item_rite` recipes. The Circle Magic guide's existing GameTest confirms the runtime recipe count and its 88 visible entries.
+- The next brew parity gap is color generation. In 1.7.10 the brew key hashes the base item's unlocalized name and uses the same hash for its metadata variants. The modern mixer hashes each recipe's registry ID instead. The original and modern Mutandis fixture bottles used the same three ingredients in the same order and yielded RGB `#67224C` and `#BAD1A6`, respectively. The captured outputs are in `original-region.log` and `packaged-fixed.log` under `/tmp/witchery-brew-dispenser-current`. Verify imported explicit colors separately when restoring the original calculation.
+- The headless 1.7.10 server exported its 184 registered brew keys, covering 88 base items, to `legacy/brew-color-keys.tsv` under `/tmp/witchery-mixed-brew-current`. The exported hashes reproduce the original Mutandis `Color` integer `694624844`. The original mixing calculation truncates to a signed 32-bit integer, with RGB taken from its low 24 bits for rendering.
+
 ## Cauldron Disease and Dispersal Parity (2026-11-22)
 
 - The ordinary Rotten Flesh brew uses the disease fluid's immunity rules for undead, demons, werewolves including unshifted creatures, bosses and golems. It recognizes the Forge boss tag. The original inverted brew path bypasses that check.

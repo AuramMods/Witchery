@@ -162,7 +162,7 @@ public final class BrewMixture {
     }
 
     private record ActionApplication(Action action, int strength, int blockStrength, boolean inverted, int durationMultiplier,
-                                     boolean showParticles, boolean affectsEntities, boolean affectsBlocks,
+                                     int blockDurationMultiplier, boolean showParticles, boolean affectsEntities, boolean affectsBlocks,
                                      @Nullable ResourceLocation biome) implements BrewEffect {
         String nameKey() { return action.nameKey(inverted); }
     }
@@ -524,7 +524,7 @@ public final class BrewMixture {
                 case PULVERISATION -> BrewFarming.pulverise(level, pos, radius, caster);
                 case DISSIPATE -> BrewTerrainEffects.dissipate(level, pos, radius, strength, caster);
                 case TIDE_HOLD, LAVA_HOLD -> BrewTerrainEffects.holdFluid(level, pos, radius,
-                        200 * application.durationMultiplier, application.action == Action.TIDE_HOLD ? Blocks.WATER : Blocks.LAVA, caster);
+                        200 * application.blockDurationMultiplier, application.action == Action.TIDE_HOLD ? Blocks.WATER : Blocks.LAVA, caster);
                 case LILIFY -> BrewTerrainEffects.lilify(level, pos, face, strength, caster);
                 case EROSION -> BrewErosion.erodeFromCauldron(level, pos, radius, caster);
                 case LEVELLING -> BrewLevelling.levelTerrain(level, pos, radius, strength, ritual, caster);
@@ -812,7 +812,7 @@ public final class BrewMixture {
         return mixing;
     }
 
-    private static final class Strength {
+    private static final class EffectBoost {
         private int current;
         private int total;
 
@@ -836,10 +836,10 @@ public final class BrewMixture {
         private Delivery delivery = Delivery.DRINK;
         private int extent;
         private int lifetime;
-        private final Strength entityStrength = new Strength();
-        private final Strength blockStrength = new Strength();
-        private int duration;
-        private int durationBoosts;
+        private final EffectBoost entityStrength = new EffectBoost();
+        private final EffectBoost blockStrength = new EffectBoost();
+        private final EffectBoost entityDuration = new EffectBoost();
+        private final EffectBoost blockDuration = new EffectBoost();
         private boolean inverted;
         private boolean hideParticles;
         private boolean unlimitedBoosts;
@@ -876,8 +876,10 @@ public final class BrewMixture {
                 };
                 var biome = ingredient.action == Action.CHANGING_SEASONS ? BiomeNoteItem.biomeId(stack) : null;
                 effects.add(new ActionApplication(ingredient.action, actionStrength, blockStrength.current, inverted,
-                        duration + 1, !hideParticles, !noEntityTarget, !noBlockTarget, biome));
+                        entityDuration.current + 1, blockDuration.current + 1, !hideParticles, !noEntityTarget, !noBlockTarget, biome));
+                // Creature-only potion effects do not spend the modifiers for the terrain impact.
                 blockStrength.current = 0;
+                blockDuration.current = 0;
             } else {
                 Potion effect = inverted ? ingredient.inverted : ingredient.normal;
                 if (effect.dye != null) {
@@ -885,13 +887,13 @@ public final class BrewMixture {
                             true, false, 0, !noEntityTarget));
                 } else {
                     int ceiling = raisedEffectCeiling ? 10 : ingredient.ceiling;
-                    effects.add(new Application(effect.effect.get(), effect.duration * (duration + 1),
+                    effects.add(new Application(effect.effect.get(), effect.duration * (entityDuration.current + 1),
                             Math.min(entityStrength.current, ceiling), !hideParticles, inverted,
                             effect.curse ? effect.duration * TAGLOCK_DURATION_MULTIPLIER : 0, !noEntityTarget));
                 }
             }
             entityStrength.current = 0;
-            duration = 0;
+            entityDuration.current = 0;
             inverted = false;
             hideParticles = false;
         }
@@ -907,10 +909,8 @@ public final class BrewMixture {
                     blockStrength.increase(ingredient.ceiling, unlimitedBoosts);
                 }
                 case DURATION -> {
-                    if (duration < ingredient.ceiling && (durationBoosts < 7 || unlimitedBoosts)) {
-                        duration++;
-                        durationBoosts++;
-                    }
+                    entityDuration.increase(ingredient.ceiling, unlimitedBoosts);
+                    blockDuration.increase(ingredient.ceiling, unlimitedBoosts);
                 }
                 case INVERT -> inverted = true;
                 case HIDE_PARTICLES -> hideParticles = true;

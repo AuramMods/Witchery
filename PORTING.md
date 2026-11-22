@@ -1332,6 +1332,14 @@
 - [x] Run Java 17 data generation, JAR reobfuscation, and all seven focused Forge GameTests. Test the packaged JAR with Mekanism 10.4.16.80 on a headless Forge server. Base Dissipate left Steam intact, and a strengthened brew cleared it while leaving ordinary water.
 - [ ] Resolve the inconsistent broad regression results. The 593-case run passed 587, including all seven new cases. Five of its failed checks passed in the targeted 18-case rerun. The Spectral Familiar ore-search test ran in a different namespace and was omitted from that rerun.
 
+### Mixed Creature and Terrain Brews (2026-11-22)
+
+- [x] Keep the original independent redstone duration boosts for creature and terrain effects. Wolfsbane uses the boost for the nearby creature. Tide Hold also uses it for the water. Tide Hold then clears the terrain boost, so the following Lava Hold uses its ten-second base.
+- [x] Reproduce the missing Tide Hold boost with a real thrown brew on the previous mixer. The corrected mixer passed the new case and all 111 checked-in Forge GameTests. Java 17 data generation and JAR reobfuscation passed.
+- [x] Brew the seven ingredients by dropping them into a boiling cauldron on the packaged headless server. Restart before bottling and keep their order. A redstone pulse bottled the mixture, and the projectile applied Wolfsbane to a pig while holding water and lava for 400 and 200 ticks. The next restart kept the two pending holds, then restored the lava while the water was still held.
+- [x] Match all 96 original circle rite registrations to their current recipe IDs and confirm each resource uses the modern item rite serializer. The existing game test also verifies that the game loads all 96 and displays the original 88 guide entries.
+- [ ] Restore newly mixed colors using the original brew ingredient hashes. A headless Forge 1.7.10 capture exported all 184 registered brew keys. The legacy and modern Mutandis mixtures use the same ordered ingredients and have different RGB values.
+
 ## Cauldron Erosion and Levelling (2026-11-21)
 
 - [x] Restore the two-capacity, 200-power Oil of Vitriol and Netherrack effects. Oil of Vitriol comes from the Foul Fume and Quicklime distillery batch. The original ingredient subtype 30 imports into ordered cauldron recipes and bottled mixtures.
@@ -1477,6 +1485,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Pass 104 checked-in GameTests on clean Forge and 107 with Thaumaturge, Lithostitched, and Curios after restoring the cauldron disease and Wheat rules. Both new regression cases failed on the preceding code. The packaged fixes also passed the muted client and dedicated restart checks.
 - [x] Pass all 657 recovered cases after preparing the gas chamber above natural terrain. The earlier run passed 656 and found no neighboring cell at the gas fixture's fixed sampling tick. The controlled chamber passed in both the 110-case focused run and the full replay, alongside the revised disease and Hobgoblin fixtures.
 - [x] Pass all 658 recovered cases on the restored Infusions guide build. Both archived potion cases now resolve the splash form through the recipe manager and verify the matching result and power cost. The Spectral Familiar fixture keeps the search inside a prepared chamber with one ore vein.
+- [x] Pass all 664 cases in the recovered suite with the mixed-brew duration fix. The broad run also passed all four cases that needed focused reruns on the dispenser milestone.
 
 ## Auram Armor Compatibility (2026-11-21)
 

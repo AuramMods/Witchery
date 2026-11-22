@@ -2,7 +2,9 @@ package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.AltarBlockEntity;
+import art.arcane.witchery.block.entity.SlurpBlockEntity;
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
+import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEffects;
@@ -97,6 +99,42 @@ public final class CauldronBrewParityTests {
                 new ItemStack(Items.FERMENTED_SPIDER_EYE), new ItemStack(Items.ROTTEN_FLESH)));
         helper.assertTrue(golem.hasEffect(disease), "Inverting the recipe bypasses the brew's creature immunity check");
         helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void mixedSplashKeepsSeparateTerrainDuration(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var impact = helper.absolutePos(new BlockPos(5, 4, 5));
+        var water = impact.west(2);
+        var lava = impact.east(2);
+        level.setBlockAndUpdate(impact, Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(water, Blocks.WATER.defaultBlockState());
+        level.setBlockAndUpdate(lava, Blocks.LAVA.defaultBlockState());
+        var pig = helper.spawn(EntityType.PIG, new BlockPos(5, 5, 6));
+        pig.setNoAi(true);
+        pig.setNoGravity(true);
+
+        var recipe = List.of(new ItemStack(Items.NETHER_WART), new ItemStack(WitcheryIngredient.DIAMOND_VAPOUR.item()),
+                new ItemStack(Items.GUNPOWDER), new ItemStack(Items.REDSTONE),
+                new ItemStack(WitcheryIngredient.WOLFSBANE.item()), new ItemStack(Items.SAND),
+                new ItemStack(Items.COBBLESTONE));
+        var bottle = new ItemStack(WitcheryItems.getRequired("brewbottle").get());
+        bottle.setTag(BrewMixture.ingredientTag(recipe, 0x99afae));
+        var projectile = new ThrownBrew(WitcheryEntities.THROWN_BREW.get(), level);
+        var start = Vec3.atCenterOf(impact.above(2));
+        projectile.setPos(start.x, start.y, start.z);
+        projectile.setDeltaMovement(0, -1, 0);
+        projectile.setItem(bottle);
+        level.addFreshEntity(projectile);
+
+        helper.succeedWhen(() -> {
+            var wolfsbane = pig.getEffect(WitcheryEffects.WOLFSBANE.get());
+            helper.assertTrue(wolfsbane != null && wolfsbane.getDuration() > 600,
+                    "The creature effect receives the redstone boost");
+            helper.assertTrue(holdTicks(helper, water) > 395, "Tide Hold receives its own redstone boost");
+            int lavaTicks = holdTicks(helper, lava);
+            helper.assertTrue(lavaTicks > 195 && lavaTicks <= 200, "Tide Hold then clears the boost for Lava Hold");
+        });
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_cauldron_dispenser", timeoutTicks = 245)
@@ -268,6 +306,12 @@ public final class CauldronBrewParityTests {
         var bottle = new ItemStack(WitcheryItems.getRequired("brewbottle").get());
         bottle.setTag(BrewMixture.ingredientTag(recipe, 0x99afae));
         bottle.finishUsingItem(target.level(), target);
+    }
+
+    private static int holdTicks(GameTestHelper helper, BlockPos pos) {
+        var hold = helper.getLevel().getBlockEntity(pos);
+        helper.assertTrue(hold instanceof SlurpBlockEntity, "Expected a fluid hold at " + pos);
+        return hold.saveWithoutMetadata().getInt("RemainingTicks");
     }
 
     private static void drop(GameTestHelper helper, BlockPos pos, Item item) {
