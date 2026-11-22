@@ -118,22 +118,31 @@ public final class BrewTerrain {
             return;
         }
         Direction side = block.getDirection();
-        boolean enhanced = BrewImpacts.enhanced(brew);
+        int ledgeWidth = BrewImpacts.enhanced(brew) ? 2 : 1;
         BlockPos impact = block.getBlockPos();
+        growVines(brew, level, impact, side, Direction.DOWN, ledgeWidth);
+        growVines(brew, level, impact.above(), side, Direction.UP, ledgeWidth);
+    }
+
+    private static void growVines(ThrownBrew brew, ServerLevel level, BlockPos support, Direction side,
+                                  Direction vertical, int ledgeWidth) {
+        boolean descending = vertical == Direction.DOWN;
+        Direction across = descending ? side : side.getOpposite();
+        int remaining = descending ? 1 : ledgeWidth;
         var face = VineBlock.getPropertyForFace(side.getOpposite());
-        for (Direction vertical : List.of(Direction.DOWN, Direction.UP)) {
-            BlockPos support = vertical == Direction.DOWN ? impact : impact.above();
-            while (level.isInWorldBounds(support)) {
-                if (!level.getBlockState(support).isFaceSturdy(level, support, side) && enhanced) {
-                    BlockPos step = support.relative(vertical == Direction.UP ? side.getOpposite() : side);
-                    if (level.getBlockState(step).isFaceSturdy(level, step, side)) support = step;
-                }
-                if (!level.getBlockState(support).isFaceSturdy(level, support, side)) break;
-                BlockPos target = support.relative(side);
-                BlockState existing = level.getBlockState(target);
-                BlockState vine = existing.is(Blocks.VINE) ? existing : Blocks.VINE.defaultBlockState();
+        while (level.isInWorldBounds(support)) {
+            BlockPos target = support.relative(side);
+            BlockState existing = level.getBlockState(target);
+            BlockState vine = existing.is(Blocks.VINE) ? existing : Blocks.VINE.defaultBlockState();
+            if (!level.getBlockState(support).isFaceSturdy(level, support, side)
+                    || descending && !canReplaceForPlacement(existing, vine)) {
+                if (remaining == 0) break;
+                support = support.relative(across);
+                remaining--;
+            } else {
                 if (!place(brew.getOwner(), level, target, vine.setValue(face, true), side)) break;
                 support = support.relative(vertical);
+                remaining = ledgeWidth;
             }
         }
     }
@@ -246,9 +255,11 @@ public final class BrewTerrain {
     }
 
     private static boolean place(@Nullable Entity owner, ServerLevel level, BlockPos pos, BlockState state, Direction face) {
-        BlockState previous = level.getBlockState(pos);
-        boolean replaceable = !previous.blocksMotion() || state.is(Blocks.VINE) && previous.is(BlockTags.LEAVES);
-        return replaceable && replace(owner, level, pos, state, face);
+        return canReplaceForPlacement(level.getBlockState(pos), state) && replace(owner, level, pos, state, face);
+    }
+
+    private static boolean canReplaceForPlacement(BlockState previous, BlockState state) {
+        return !previous.blocksMotion() || state.is(Blocks.VINE) && previous.is(BlockTags.LEAVES);
     }
 
     private static boolean replace(@Nullable Entity owner, ServerLevel level, BlockPos pos, BlockState state, Direction face) {

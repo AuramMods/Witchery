@@ -1154,6 +1154,14 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Manual Kettle bottling uses the Toad's original five-percent Brew Mastery roll and the recipe's `bottling_bonus`. Ink, Love, Sleeping, Grotesque and Depths each allow one bonus bottle. A seeded Forge GameTest verified the extra Ink bottle, one batch serving consumed, and ordinary yields for other familiar types, a dismissed Toad, Redstone Soup, and extraction without a player. Protocol 17 carries the extra recipe field.
 - All 89 required Forge GameTests, data generation and reobfuscation passed. The temporary GameTest world used a fixed seed, with the Overworld magnet's test ore above natural veins so real terrain would not change the test's charge bill.
 
+### Toad Brew Mastery (2026-11-21)
+
+- The original four callers control manual Kettle yield, expert Cauldron yields, ordinary Frog's Legs, and fixed brew projectile impacts. The port also preserves inverted Frog's Legs without the familiar check. The original projectile dispatcher leaves Frog's Tongue and Cursed Leaping at their ordinary radii even with a Toad.
+- Brew of Vines walks outward when descending and inward when ascending. Each step can span one block by default or two with an active Toad. The initial downward impact search moves at most one block outward. The vines keep their attachment direction and use the usual Forge placement checks.
+- The muted client on packaged Forge verified both ledge widths through ordinary throws. It cast familiar binding with the supplied Toad and ingredients between throws. The dedicated restart retained the original comparison wall, both wider vine segments, and the summoned Toad in the player's data and world.
+- The new in-repo tests cover changing the familiar's summon state after launching a projectile, two-block ledges above and below an impact, and fifteen or thirty Cauldron servings with the Toad. Dismissing it restores ten servings at that skill and Expertise tier. All 18 checked-in GameTests, data generation and JAR reobfuscation passed.
+- The larger development suite passed 449 of 450 cases, including both new Toad tests. The older item curse casting test timed out waiting for the cast to finish and passed in a targeted rerun. In that rerun, the daylight shelter test found a village before its own home was claimed. The shelter fixtures need to isolate their occupied points of interest across cases.
+
 ### Flying broom and Soaring (2026-11-20)
 
 - The recipe uses the legacy three Hawthorn saplings and two sticks. Flying Ointment uses Redstone Soup, a long Swiftness potion, Diamond, Feather, Wool of Bat and Belladonna Flower. The Kettle uses 3,000 altar power. Infusion uses the Broom and Ointment, small and medium white circles, night and another 3,000 power. The muted survival client crafted and used both offerings. Daylight preserved them. The midnight cast returned the Enchanted Broom.
