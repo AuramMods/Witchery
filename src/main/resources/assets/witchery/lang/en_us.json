@@ -867,6 +867,8 @@
    "item.witchery.seedsbelladonna" : "Belladonna Seeds",
    "item.witchery.seedsmandrake" : "Mandrake Seeds",
    "item.witchery.seedsmindrake" : "Mindrake Bulb",
+   "entity.witchery.mindrake" : "Mindrake",
+   "item.witchery.mindrake_spawn_egg" : "Mindrake Spawn Egg",
    "item.witchery.seedssnowbell" : "Snowbell Seeds",
    "item.witchery.seedswolfsbane" : "Wolfsbane Seeds",
    "item.witchery.seedswormwood" : "Wormwood Seeds",

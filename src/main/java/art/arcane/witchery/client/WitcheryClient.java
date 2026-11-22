@@ -24,6 +24,7 @@ import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.block.StockadeBlock;
 import art.arcane.witchery.client.model.BabaYagaModel;
 import art.arcane.witchery.client.model.MandrakeModel;
+import art.arcane.witchery.client.model.MindrakeModel;
 import art.arcane.witchery.client.model.DarkMarkModel;
 import art.arcane.witchery.client.model.DemonModel;
 import art.arcane.witchery.client.model.EntModel;
@@ -98,6 +99,7 @@ import art.arcane.witchery.client.renderer.LeechChestRenderer;
 import art.arcane.witchery.client.renderer.LilithRenderer;
 import art.arcane.witchery.client.renderer.LordOfTormentRenderer;
 import art.arcane.witchery.client.renderer.MandrakeRenderer;
+import art.arcane.witchery.client.renderer.MindrakeRenderer;
 import art.arcane.witchery.client.renderer.MirrorBlockRenderer;
 import art.arcane.witchery.client.renderer.NightmareRenderer;
 import art.arcane.witchery.client.renderer.DeathHandRenderer;
@@ -203,6 +205,7 @@ public final class WitcheryClient {
         }
         event.registerLayerDefinition(BabaYagaModel.LAYER, BabaYagaModel::layer);
         event.registerLayerDefinition(MandrakeModel.LAYER, MandrakeModel::layer);
+        event.registerLayerDefinition(MindrakeModel.LAYER, MindrakeModel::layer);
         event.registerLayerDefinition(NightmareModel.LAYER, NightmareModel::layer);
         event.registerLayerDefinition(DreamSpiritModel.LAYER, DreamSpiritModel::layer);
         event.registerLayerDefinition(DeathModel.LAYER, DeathModel::layer);
@@ -302,6 +305,7 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.ATTACK_BAT.get(), BatRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SCRY_EYE.get(), NoopRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.MANDRAKE.get(), MandrakeRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.MINDRAKE.get(), MindrakeRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.NIGHTMARE.get(), NightmareRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SPIRIT.get(), context -> new DreamSpiritRenderer<>(context, DreamSpirit::color));
         event.registerEntityRenderer(WitcheryEntities.LOST_SOUL.get(), context -> new DreamSpiritRenderer<>(context, LostSoul::color));

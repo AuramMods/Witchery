@@ -267,7 +267,16 @@
 - [x] Restore bat, silverfish, tiny slime and tiny magma cube capture and sneak-release. Captured state and the bat shop stock flag carry through block item drops and legacy metadata. The packaged server captured a moving bat and kept its stocked state.
 - [x] Save a live Mystic Branch rite after the first Grassper offering. The packaged restart emptied the second Grassper and completed the rite. A separate Grassper still held one ingot and emitted comparator output 15. The client released the bat from the restored snare, and the bat kept its shop stock flag.
 - [x] Pass all 84 required Forge GameTests and package the reobfuscated JAR on Java 17.
-- [ ] Restore the remaining Sprig mutations, including Mindrake and Winged Monkey.
+- [ ] Restore the remaining Sprig mutations, including Winged Monkey.
+
+## Mindrake (2026-11-21)
+
+- [x] Use the original Mutating Sprig pattern to produce four young Mindrakes. The cobweb sits over source water with mature Mandrakes on the four sides. The corner Grasspers hold two Mutandis Extremis, Focused Will and a Charged Attuned Stone. A living Creeper and Mandrake in the center are consumed. The water and emptied Grasspers stay in place and the Sprig takes one wear.
+- [x] Restore Mindrake Bulbs. A loose bulb hatches after 60 ticks. Uncollected harvest drops hatch wild. A bulb thrown by a player hatches with that player's UUID. Loose stacks from different players keep their separate ownership. One creature hatches per bulb.
+- [x] Restore the original `witchery:mindrake` creature, model, rocking walk, sounds, and spawn egg. The muted client used the Sprig, fertilized and harvested the new crops, observed a wild hatch, and picked up a second bulb and threw it to hatch an owned Mindrake. The owned Mindrake retained its UUID and owner after a restart.
+- [x] Verify the owned Mindrake's combat after a restart. The survival client attacked a nearby pig. The Mindrake followed the owner's attack, disappeared in the burst, and left a dandelion. The pig died and the adjacent glass stayed intact.
+- [x] Import a named, owned Mindrake from Forge 1.7.10. The packaged import retained its UUID, owner, health, and saved sitting flag after a modern restart.
+- [x] Pass ten focused Forge GameTests, including the incomplete mutation, separate bulb owners, the timed hatch, combat and loot, and the seven existing migration cases. Java 17 data generation and JAR reobfuscation passed.
 
 ## Owl and Toad (2026-11-20)
 

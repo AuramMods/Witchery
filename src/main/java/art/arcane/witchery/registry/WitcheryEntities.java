@@ -26,6 +26,7 @@ import art.arcane.witchery.entity.LordOfTorment;
 import art.arcane.witchery.entity.Lilith;
 import art.arcane.witchery.entity.WitcheryFollower;
 import art.arcane.witchery.entity.Mandrake;
+import art.arcane.witchery.entity.Mindrake;
 import art.arcane.witchery.entity.MirrorFace;
 import art.arcane.witchery.entity.Nightmare;
 import art.arcane.witchery.entity.ParasyticLouse;
@@ -74,6 +75,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<Mandrake>> MANDRAKE =
             ENTITY_TYPES.register("mandrake", () -> EntityType.Builder.of(Mandrake::new, MobCategory.MONSTER)
                     .sized(0.6F, 0.9F).build(Witchery.MODID + ":mandrake"));
+    public static final RegistryObject<EntityType<Mindrake>> MINDRAKE =
+            ENTITY_TYPES.register("mindrake", () -> EntityType.Builder.of(Mindrake::new, MobCategory.CREATURE)
+                    .sized(0.6F, 0.8F).build(Witchery.MODID + ":mindrake"));
     public static final RegistryObject<EntityType<ParasyticLouse>> LOUSE =
             ENTITY_TYPES.register("louse", () -> EntityType.Builder.of(ParasyticLouse::new, MobCategory.MONSTER)
                     .sized(0.3F, 0.7F).build(Witchery.MODID + ":louse"));
@@ -215,6 +219,7 @@ public final class WitcheryEntities {
 
     static {
         LEGACY_ENTITIES.put("mandrake", MANDRAKE);
+        LEGACY_ENTITIES.put("mindrake", MINDRAKE);
         LEGACY_ENTITIES.put("death", DEATH);
         LEGACY_ENTITIES.put("leonard", LEONARD);
         LEGACY_ENTITIES.put("lostsoul", LOST_SOUL);
@@ -309,6 +314,7 @@ public final class WitcheryEntities {
     private static void registerEntityAttributes(EntityAttributeCreationEvent event) {
         for (RegistryObject<? extends EntityType<? extends Mob>> entry : LEGACY_ENTITIES.values()) {
             var attributes = entry == MANDRAKE ? Mandrake.attributes()
+                    : entry == MINDRAKE ? Mindrake.attributes()
                     : entry == LOUSE ? ParasyticLouse.attributes()
                     : entry == LEONARD ? Leonard.attributes()
                     : entry == LOST_SOUL ? LostSoul.attributes()

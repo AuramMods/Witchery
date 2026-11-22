@@ -836,7 +836,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 122 | `SOULFIRE` | `EntitySoulfire` | `soulfire` |
 | 123 | `IMP` | `EntityImp` | `imp` (rite, ownership, gift progression, and power restored) |
 | 124 | `DARK_MARK` | `EntityDarkMark` | `darkmark` |
-| 125 | `MINDRAKE` | `EntityMindrake` | `mindrake` |
+| 125 | `MINDRAKE` | `EntityMindrake` | `mindrake` (Sprig mutation, three-second bulbs, owner-directed attacks and bursts) |
 | 126 | `GOBLIN` | `EntityGoblin` | `goblin` |
 | 127 | `GOBLIN_MOG` | `EntityGoblinMog` | `goblinmog` (ranged patron boss, `Invul` and `WitcheryTarget` saved) |
 | 128 | `GOBLIN_GULG` | `EntityGoblinGulg` | `goblingulg` (melee patron boss, `Invul` and `WitcheryTarget` saved) |

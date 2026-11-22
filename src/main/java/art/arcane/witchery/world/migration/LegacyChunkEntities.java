@@ -41,7 +41,7 @@ final class LegacyChunkEntities {
         // Vanilla's old entity schema needs a known type to fix the entity tree and its typed fields.
         // Keep the Witchery type in the remainder, which survives both passes of the chunk fixer.
         String schemaType = switch (name.getPath()) {
-            case "owl", "toad", "covenwitch" -> "Wolf";
+            case "owl", "toad", "covenwitch", "mindrake" -> "Wolf";
             case "cat" -> "Ozelot";
             case "deathhorse" -> "EntityHorse";
             case "item" -> "Item";

@@ -3,8 +3,10 @@ package art.arcane.witchery.item;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.block.CritterSnareBlock;
+import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.block.entity.GrassperBlockEntity;
+import art.arcane.witchery.entity.Mandrake;
 import art.arcane.witchery.entity.WitchPet;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
@@ -25,6 +27,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.animal.Ocelot;
 import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -77,6 +80,7 @@ public final class MutatingSprigItem extends Item {
         boolean cobweb = water && clicked.is(Blocks.COBWEB);
         boolean snares = cobweb && sides(level, pos, WitcheryBlocks.getRequired("witchsapling").get(), true);
         CreatureMutation mutation = cobweb && !snares ? findCreatureMutation(level, pos) : null;
+        MindrakeMutation mindrake = cobweb && !snares && mutation == null ? findMindrakeMutation(level, pos) : null;
         LouseMutation louse = findLouseMutation(level, pos, clicked);
         if (level instanceof ServerLevel server) {
             if (surface) {
@@ -108,6 +112,8 @@ public final class MutatingSprigItem extends Item {
                 replaceAround(server, pos, WitcheryBlocks.getRequired("crittersnare").get());
             } else if (mutation != null) {
                 if (!mutation.apply(server, pos)) return InteractionResult.PASS;
+            } else if (mindrake != null) {
+                mindrake.apply(server, pos);
             } else if (louse != null) {
                 if (!louse.apply(server, pos)) return InteractionResult.PASS;
             } else {
@@ -119,7 +125,8 @@ public final class MutatingSprigItem extends Item {
             server.playSound(null, pos, SoundEvents.SLIME_SQUISH, SoundSource.BLOCKS, 1, 1);
             return InteractionResult.CONSUME;
         }
-        return surface || clay || plant != null || wormwood || grasspers || leech || roses || snares || mutation != null || louse != null
+        return surface || clay || plant != null || wormwood || grasspers || leech || roses || snares
+                || mutation != null || mindrake != null || louse != null
                 ? InteractionResult.SUCCESS : InteractionResult.PASS;
     }
 
@@ -197,6 +204,36 @@ public final class MutatingSprigItem extends Item {
             }
         }
         return offerings;
+    }
+
+    @Nullable
+    private static MindrakeMutation findMindrakeMutation(Level level, BlockPos center) {
+        var mandrake = WitchCrop.MANDRAKE;
+        for (Direction side : Direction.Plane.HORIZONTAL) {
+            BlockState state = level.getBlockState(center.relative(side));
+            if (!state.is(mandrake.block()) || state.getValue(CropBlock.AGE) != mandrake.maxAge()) return null;
+        }
+        var offerings = diagonalGrasspers(level, center);
+        long mutandis = offerings.stream().filter(grassper -> WitcheryIngredient.MUTANDIS_EXTREMIS.matches(grassper.getItem(0))).count();
+        long stones = offerings.stream().filter(grassper -> WitcheryIngredient.CHARGED_ATTUNED_STONE.matches(grassper.getItem(0))).count();
+        long will = offerings.stream().filter(grassper -> WitcheryIngredient.FOCUSED_WILL.matches(grassper.getItem(0))).count();
+        if (mutandis != 2 || stones != 1 || will != 1) return null;
+
+        var area = catalystArea(center);
+        var creepers = level.getEntitiesOfClass(Creeper.class, area, Creeper::isAlive);
+        var mandrakes = level.getEntitiesOfClass(Mandrake.class, area, Mandrake::isAlive);
+        return creepers.isEmpty() || mandrakes.isEmpty() ? null : new MindrakeMutation(creepers.get(0), mandrakes.get(0), offerings);
+    }
+
+    private record MindrakeMutation(Creeper creeper, Mandrake mandrake, List<GrassperBlockEntity> offerings) {
+        void apply(ServerLevel level, BlockPos center) {
+            creeper.playSound(SoundEvents.CREEPER_DEATH, 1, 1);
+            mandrake.playSound(SoundEvents.GHAST_DEATH, 1, 1);
+            creeper.discard();
+            mandrake.discard();
+            replaceAround(level, center, WitchCrop.MINDRAKE.block());
+            for (GrassperBlockEntity grassper : offerings) grassper.clearContent();
+        }
     }
 
     @Nullable
