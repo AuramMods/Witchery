@@ -606,6 +606,14 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Thaumaturge originally applied its generic leaves tag after Witchery's explicit entry. Declaring optional Forge load order makes base tags load first. The final runtime check compared every base item and entity entry, checked Condensed Fear through the live item index, and verified the existing vanilla apple and cow entries.
 - An incremental Java compile dropped the production Mixin reference map. Main Java compilation now processes the full source set when it runs and declares the generated reference and remapping files as outputs. Removing the generated reference map staged for the JAR and running `jar` rebuilt the identical map and included it in the reobfuscated artifact. The same JAR booted headlessly with Thaumaturge and on clean Forge. The SHA-256 is `ec0f3b364899e4acc4905dc97b9e9639a0c56510c06309473ec8d5a62f840eae`.
 
+### Thaumaturge Dream and Torment Exclusions (2026-11-22)
+
+- The original integration registers both dimensions at Thaumcraft blacklist level zero. Thaumaturge's biome modifiers reach Dream through its shared Overworld biomes. Suppress Thaumaturge features and structure starts during generation in the two actual dimensions. Its biome map still works in the Overworld.
+- Skip initial aura generation in both dimensions. Filter Thaumaturge from Forge's natural spawn candidates and cancel the mod's automatic mob generation. The dedicated fixture verified the eight ordinary plains entries and that the spawn hook allows command-spawn requests in all three tested dimensions.
+- On packaged seed 1, inspect a four-by-four chunk sample and 25 mound candidates. The old Dream sample held 481 ore blocks and four mounds. The new sample held zero of either. The Overworld kept 482 ore blocks and four mounds, with 190 base aura and its original Thaumaturge spawn entry. New Dream and Torment samples both had zero base aura. The previous build produced 190 in Dream and 289 in Torment.
+- Reopen the previous port's saved world with the new JAR. Dream retained all 481 ore blocks and four mounds, and both dimensions kept the aura that was already saved. Natural spawn filtering applied to that upgraded world.
+- Java 17 data generation and JAR reobfuscation succeeded. All 64 clean GameTests and all 67 with Thaumaturge, Lithostitched, and Curios passed. The packaged JAR booted headlessly in both profiles and returned the same world-generation results after reopening the fresh patched save. Its SHA-256 is `8643ac59754c2eb1856c42e4e615359ee4a717e293159edd56aedccb0920797b`.
+
 ### Sleeping Apple (2026-11-22)
 
 - Original ingredient damage 98 migrates to `witchery:sleeping_apple` and keeps the stack count and unrelated tags. Keep the original `Apple` display name and the supplied sprite. The shaped recipe uses a Wormy Apple, three Mutandis, two Reek of Misfortune, and a Brew of Sleeping.

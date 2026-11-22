@@ -1146,7 +1146,8 @@
 - [x] Verify Thaumaturge's harvesting utility recognizes the final growth stage of all eight Witchery crops and can recover their seeds and planting faces. Artichoke uses its source-water support.
 - [x] Load and verify 286 base item and 31 entity aspect entries. Load Witchery's optional data after Thaumaturge's defaults, so Witchery's explicit leaves and logs retain their assigned values. Thaumaturge's original apple and cow entries still load.
 - [x] Pass 65 headless GameTests with Thaumaturge, Lithostitched, and Curios, and 62 on clean Forge. Run data generation and JAR reobfuscation. Track the generated Mixin mappings in Gradle so a missing reference map is regenerated when packaging. Boot the reobfuscated JAR on both headless profiles.
-- [ ] Restore the old Dream and Torment exclusions for Thaumaturge world generation and spawning.
+- [x] Restore the Dream and Torment exclusions. Skip Thaumaturge's placed features, structure starts, initial aura, and natural mobs in those dimensions. Keep the Overworld's generation and ordinary spawn lists.
+- [x] Compare fresh packaged Forge worlds on seed 1. Dream goes from 481 Thaumaturge ore blocks in 16 chunks and four mounds among 25 candidate starts to zero. Initial aura drops to zero in both dimensions. The Overworld keeps its 482 ore blocks and four mounds. Restart the patched world and check the same samples. Reopen a world created by the previous port and verify its saved ore, mounds, and aura survive the upgrade.
 - [ ] Restore stack-specific aspects for Witchwood saplings, Wicker Bundles, plant mines, Brambles, empty Circle Talismans, and the Antidote.
 
 ## Sleeping Apple (2026-11-22)
@@ -1155,7 +1156,7 @@
 - [x] Allow eating at full hunger. Eating the apple in the Overworld starts an ordinary nightmare without consulting the room's Dream Catchers or other sleep modifiers. The sleeping body and parked inventory include the post-meal health, hunger, and remaining stack.
 - [x] Pass all 64 checked-in GameTests, Java 17 data generation, and JAR reobfuscation. On a headless packaged server, a dedicated fixture ate the apple and saved its player in the Dream. After a full restart it woke with an Icy Needle, recovered the remaining apple, food level, and tagged damaged sword, and removed the original sleeping body.
 - [x] Restore the Sleeping Apple's optional Thaumaturge aspects. Its base entry grants Cognitio II, Desiderium I, and Herba I.
-- [ ] Diagnose the existing Waystone refund check with Thaumaturge, Lithostitched, and Curios loaded. Each run passed 66 of 67 checks, including both new apple checks and the complete aspect map check. The Waystone check passed in clean Forge.
+- [ ] Resolve the intermittent Waystone refund check with Thaumaturge, Lithostitched, and Curios loaded. The two Sleeping Apple runs failed that check and passed all other cases. It passed in clean Forge and in subsequent runs with the optional mods.
 
 ## Cauldron Wool and Dye Colors (2026-11-21)
 

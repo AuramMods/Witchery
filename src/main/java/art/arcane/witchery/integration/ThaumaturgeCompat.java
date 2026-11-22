@@ -1,17 +1,30 @@
 package art.arcane.witchery.integration;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.world.WitcheryDimensions;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraftforge.event.entity.living.MobSpawnEvent;
+import net.minecraftforge.event.level.LevelEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.ForgeRegistries;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.List;
 
+@Mod.EventBusSubscriber(modid = Witchery.MODID)
 public final class ThaumaturgeCompat {
     private static final String MOD_ID = "thaumaturge";
     private static final ResourceKey<Registry<Object>> ASPECTS =
@@ -21,6 +34,36 @@ public final class ThaumaturgeCompat {
 
     public static void drain(ServerPlayer player, float fraction) {
         if (ModList.get().isLoaded(MOD_ID)) Wands.drain(player, fraction);
+    }
+
+    public static boolean excludesGeneration(LevelAccessor level) {
+        if (!(level instanceof ServerLevelAccessor server)) return false;
+        var dimension = server.getLevel().dimension();
+        return WitcheryDimensions.DREAM.equals(dimension) || WitcheryDimensions.TORMENT.equals(dimension);
+    }
+
+    public static boolean isThaumaturgeContent(@Nullable ResourceLocation id) {
+        return id != null && MOD_ID.equals(id.getNamespace());
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void filterNaturalSpawns(LevelEvent.PotentialSpawns event) {
+        if (!excludesGeneration(event.getLevel())) return;
+        for (var entry : List.copyOf(event.getSpawnerDataList())) {
+            if (isThaumaturgeContent(ForgeRegistries.ENTITY_TYPES.getKey(entry.type))) {
+                event.removeSpawnerData(entry);
+            }
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void filterGeneratedMobs(MobSpawnEvent.FinalizeSpawn event) {
+        var reason = event.getSpawnType();
+        if ((reason == MobSpawnType.NATURAL || reason == MobSpawnType.CHUNK_GENERATION || reason == MobSpawnType.STRUCTURE)
+                && excludesGeneration(event.getLevel())
+                && isThaumaturgeContent(ForgeRegistries.ENTITY_TYPES.getKey(event.getEntity().getType()))) {
+            event.setSpawnCancelled(true);
+        }
     }
 
     private record WandApi(Class<?> itemType, Method getVis, Method storeVis, Method consumptionModifier) {
