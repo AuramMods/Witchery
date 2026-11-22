@@ -40,6 +40,7 @@ import art.arcane.witchery.block.DiseaseBlock;
 import art.arcane.witchery.block.DistilleryBlock;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.FetishBlock;
+import art.arcane.witchery.block.FumeFunnelBlock;
 import art.arcane.witchery.block.GrassperBlock;
 import art.arcane.witchery.block.HuntingTrapBlock;
 import art.arcane.witchery.block.KettleBlock;
@@ -77,14 +78,12 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.GlassBlock;
-import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SlabBlock;
@@ -111,7 +110,6 @@ import java.util.Map;
 
 public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_FULL_BLOCK = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 16.0D, 16.0D);
-    private static final VoxelShape SHAPE_FUNNEL = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
     private static final VoxelShape SHAPE_INFINITY_EGG = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
 
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, Witchery.MODID);
@@ -196,7 +194,7 @@ public final class WitcheryBlocks {
                             .noOcclusion()
                             .lightLevel(state -> state.getValue(WitchesOvenBlock.LIT) ? 13 : 0));
             case "fumefunnel", "filteredfumefunnel" ->
-                    new LegacyHorizontalFacingBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion(), SHAPE_FUNNEL, true);
+                    new FumeFunnelBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion());
             case "coffinblock" -> new CoffinBlock();
             case "statueofworship" -> new StatueOfWorshipBlock();
             case "refillingchest" -> new RefillingChestBlock();
@@ -329,50 +327,6 @@ public final class WitcheryBlocks {
         @Override
         public VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
             return Shapes.empty();
-        }
-    }
-
-    private static final class LegacyHorizontalFacingBlock extends HorizontalDirectionalBlock {
-        private final VoxelShape shape;
-        private final boolean hasCollision;
-
-        private LegacyHorizontalFacingBlock(BlockBehaviour.Properties properties) {
-            this(properties, null, true);
-        }
-
-        private LegacyHorizontalFacingBlock(BlockBehaviour.Properties properties, VoxelShape shape, boolean hasCollision) {
-            super(properties);
-            this.shape = shape;
-            this.hasCollision = hasCollision;
-            registerDefaultState(defaultBlockState().setValue(FACING, Direction.NORTH));
-        }
-
-        @Override
-        public BlockState getStateForPlacement(BlockPlaceContext context) {
-            return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
-        }
-
-        @Override
-        public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-            return shape == null ? super.getShape(state, level, pos, context) : shape;
-        }
-
-        @Override
-        public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-            if (shape == null) {
-                return super.getCollisionShape(state, level, pos, context);
-            }
-            return hasCollision ? shape : Shapes.empty();
-        }
-
-        @Override
-        public VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
-            return shape == null ? super.getOcclusionShape(state, level, pos) : Shapes.empty();
-        }
-
-        @Override
-        protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-            builder.add(FACING);
         }
     }
 

@@ -2,12 +2,21 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Fume Funnel Oven Access (2026-11-22)
+
+- Both funnel blocks open the adjacent Witch's Oven using the original priority. The positive side on the perpendicular axis comes first, then the opposite side, then the oven below. The oven's own facing does not affect menu access. The existing cook time and fume chance rules still require aligned funnels.
+- The new GameTest failed on the preceding code and passed on the fix. It checks both funnel variants, both oven IDs, all four orientations, and a funnel whose only neighboring oven lies outside the search axis. All 116 checked-in GameTests, Java 17 data generation, and JAR reobfuscation passed.
+- An original Forge 1.7.10 workshop imported on the packaged JAR. The east-facing Filtered Fume Funnel and burning Distillery remained at their original coordinates on import and after an ordinary headless restart.
+- Packaged SHA-256 `63177cd90ada728f2975b0c2cfd81ab8ed247546b53c664087ae5f1f06543c01` passed both clean multiplayer launches. The survival client placed the two funnel items, opened the three ovens through each funnel, and shift-clicked eight Wood Ash from the prepared ovens. Rejoining after restart preserved that inventory and reopened the two ovens underneath the funnels. Both client runs stayed hidden and muted on OpenAL No Output, with no activation of either process.
+- The headless Auram copy reopened its saved workshop and retained its Oven inventory, Altar power, and the Sea Lantern and chest placed during the prior palette test. It saved the newly placed Filtered Fume Funnel and stopped normally. `/tmp/witchery-fume-funnel-current` identifies the private profiles and logs.
+
 ## Concurrent Chunk Palette Reads (2026-11-22)
 
 - Minecraft's lighting worker could read a new palette index before the corresponding entry became visible. `SimpleBitStoragePublicationMixin` publishes the updated storage word with a release write and reads it with acquire semantics. Both single-index writers use that ordering. The storage layout and saved block states stay compatible.
 - The original isolated probe repeated three times on the patched code. All 255,000 chunk sections and 6,884,129,970 concurrent reads completed with zero missing entries and zero invalid states. The checked-in regression uses both the section setter and the palette container's direct setter.
 - All 115 checked-in Forge GameTests passed. Java 17 data generation and JAR reobfuscation passed. The packaged refmap maps all three storage methods and the backing array to their production names.
 - Packaged SHA-256 `45ef1e4b8134525abe53a48853b5d6d68bda10123d5141993ea6a016aa842fe3` passed a clean Forge multiplayer and dedicated restart check. The isolated survival client joined the headless world while hidden and unfocused with master volume zero and OpenAL No Output. Light-emitting blocks were replaced across three chunk columns. The restarted server retained the final blocks, torch, and the chest's three Wood Ash. The macOS monitor recorded no activation for the client PID. `/tmp/witchery-palette-publication-current` identifies the private profiles and logs.
+- The 668-case replay completed with 667 passes and no palette exception or chunk-store I/O error. The liquid-brew radius assertion failed in that run and passed during a focused four-case replay. Thaumaturge, Lithostitched, and Curios passed all 118 cases. The packaged Auram smoke test saved its original Oven and Altar and a new light-emitting block and chest before stopping normally. Its first reopen reached the dedicated server but the local RCON test connection timed out before reading the saved blocks.
 
 ## Hobgoblin Deposit Waypoints (2026-11-22)
 

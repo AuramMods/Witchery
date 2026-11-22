@@ -15,6 +15,8 @@
 - [x] Register oven-related ingredient variants with explicit legacy metadata mappings. Generate and package nine recipes, including the original oven and clay jar patterns and sapling-to-ash smelting.
 - [x] Verify soft-jar firing, vanilla and Witchery sapling ash, and witch-log charcoal in hopper-fed vanilla furnaces on a headless dedicated server. All four runtime checks passed.
 - [x] Wire the oven block entity, inventory, fuel, funnel timing, fume rolls, and menu. Both old block IDs preserve facing and use the modern `lit` state for rendering.
+- [x] Restore direct access from both Fume Funnel variants. North- and south-facing funnels try east, west, then below. East- and west-facing funnels try south, north, then below. The regression exercises both oven IDs and all four orientations.
+- [x] Place both funnels through their items in a muted packaged client. Open all three neighboring ovens in order, shift-click Wood Ash out of the first, and verify that an oven only on the facing axis remains closed. After an ordinary dedicated restart, both funnels reopened their saved ovens and the player kept the eight collected Wood Ash.
 - [x] Verify server-side oven behavior across a restart. An active batch resumed from 100 ticks of progress at shutdown and completed after reopening the same world. Hopper-fed tests exercised all seven fume outputs and verified that acacia ash leaves the jar intact.
 - [x] Verify oven inventory conversion using legacy stacks after their item IDs have been resolved to namespaced strings. Known ingredient damage values map to modern IDs and preserve unrelated tags. Unconverted metadata survives another save.
 - [x] Verify oak fume and ash from the reobfuscated JAR on installed Forge 47.4.10. The headless test passed with Witchery alone and with the bundled Auram development mods. CoFH Core logged a client-mixin warning in the latter profile.
@@ -1500,6 +1502,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [ ] Complete the 666-case replay on the original-color build. It passed 652 cases before a chunk-lighting exception stalled the suite. The Ennervate and Erosion focused replays passed. The Hobgoblin hauling failure also reproduced on the preceding packaged build.
 - [x] Complete all 667 GameTest assertions on the waypoint build. The archived hauling case and the new boundary case passed. The disposable test world reported chunk-store `No space left on device` errors during the run. An isolated probe independently reproduced the earlier missing palette entry in all three runs, so the lighting issue remains open.
 - [x] Publish chunk palette indices with release writes and acquire reads. The original three stress runs completed 6,884,129,970 reads without a missing or invalid state. The checked-in regression exercises both write paths. All 115 checked-in Forge GameTests passed with Java 17 data generation and JAR reobfuscation.
+- [x] Finish the 668-case replay after the palette fix without a palette exception or chunk-store I/O error. The run passed 667 cases. The liquid-brew radius case failed in the broad run and passed in the isolated four-case replay. All 118 optional-integration cases passed with Thaumaturge, Lithostitched, and Curios.
 
 ## Auram Armor Compatibility (2026-11-21)
 
