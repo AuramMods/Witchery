@@ -56,6 +56,45 @@ public final class CircleRiteTests {
     private static final int TWO_OFFERING_CAST = 80;
     private static final int THREE_OFFERING_CAST = 100;
 
+    @GameTest(template = TEMPLATE, batch = "witchery_weather_rite_eclipse")
+    public static void portableEclipseFiresOnlyInDaylight(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.SMALL_RITE, "circleglyphritual");
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var heart = heart(helper);
+        waitForOfferings(helper, new ItemStack(Items.IRON_AXE), new ItemStack(WitcheryIngredient.QUICKLIME.item()),
+                new ItemStack(WitcheryIngredient.CHARGED_ATTUNED_STONE.item())).thenExecute(() -> {
+            long originalTime = level.getDayTime();
+            float originalRain = level.getRainLevel(1);
+            float originalThunder = level.getThunderLevel(1);
+            try {
+                level.setRainLevel(0);
+                level.setThunderLevel(0);
+                level.setDayTime(66_000);
+                level.updateSkyBrightness();
+                helper.useBlock(CENTER);
+                helper.assertTrue(!helper.getBlockState(CENTER).getValue(RiteHeartBlock.ACTIVE) && drops(helper).size() == 3,
+                        "At night the heart remains idle and all three offerings remain available");
+
+                level.setDayTime(54_000);
+                level.updateSkyBrightness();
+                helper.useBlock(CENTER);
+                tick(level, center, heart, TWO_OFFERING_CAST);
+                var returned = drops(helper);
+                helper.assertTrue(level.getDayTime() == 66_000 && !helper.getBlockState(CENTER).getValue(RiteHeartBlock.ACTIVE)
+                                && returned.size() == 1 && returned.get(0).getItem().is(WitcheryIngredient.ATTUNED_STONE.item()),
+                        "The rite reaches midnight on the same day and returns the discharged stone");
+            } finally {
+                level.setDayTime(originalTime);
+                level.setRainLevel(originalRain);
+                level.setThunderLevel(originalThunder);
+                level.updateSkyBrightness();
+                drops(helper).forEach(ItemEntity::discard);
+            }
+        }).thenSucceed();
+    }
+
     @GameTest(template = TEMPLATE, batch = "witchery_legacy_ice_shell", setupTicks = 5)
     public static void legacyIceShellReachesRadiusSixteenAndPreservesSolidTerrain(GameTestHelper helper) {
         ring(helper, RitualCircle.SMALL_RITE, "circleglyphritual");

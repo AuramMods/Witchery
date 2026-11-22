@@ -635,7 +635,7 @@
 - [x] Restore Glint Weed and Ember Moss. Both spread on the original soils and sand with a local cap of five. Glint Weed emits light level 14 and can attach below a solid block. Ember Moss emits light level six, ignites creatures for three seconds, and requires shears.
 - [x] Restore Spanish Moss attachment on walls and ceilings. Its strands grow like vines, require shears, and stay non-climbable. Mutandis can attach a new strand to a nearby support. Older decorative plants can acquire an attachment when they find support.
 - [x] Verify light, spreading and harvest, physical Ember Moss contact, and Spanish Moss placement and downward growth on a headless Forge GameTest server. Data generation, reobfuscation, and all 44 required GameTests passed.
-- [ ] Verify the biome tint and five attachment models in a muted client.
+- [x] Verify the five Spanish Moss attachment models and biome tint in a muted client. The four wall attachments and ceiling attachment each loaded the expected pair of baked faces. Swamp and badlands positions produced distinct foliage colors.
 
 ## Alluring Skull (2026-11-21)
 
@@ -643,7 +643,7 @@
 - [x] Use the Necromantic Stone to activate the skull and use it a second time to recover the skull. An active skull calls undead one quadrant at a time, with its own texture and the original activation and recovery sounds.
 - [x] Recover the block entity for the decorative Alluring Skull from an earlier Forge 1.20.1 save. The packaged server restored it in place as an inactive floor skull.
 - [x] Pass Java 17 data generation, reobfuscation, and all 37 required GameTests. The new test verifies both recipes, placement rotation, activation, zombie movement, the lack of a route for a pig, and recovery.
-- [ ] Verify both skull textures and mounting orientations in a muted client. The reobfuscated JAR includes both textures and the original inventory sprite. The isolated Linux environment did not respond.
+- [x] Verify both skull textures and mounting orientations in a muted client. A north wall mount showed the inactive teeth and the active gold teeth. Rotated floor mounts used the same skull renderer and sat on their supports.
 
 ## Void Bramble and the Statue of the Goddess (2026-11-21)
 
@@ -651,7 +651,7 @@
 - [x] Restore Void Bramble contact teleporting and its 32-block field. The field prevents new Heart Glyph casts in its own dimension and leaves the offerings alone. Dream also retains the original prohibition on starting circle rites. The owner can reclaim a bramble column.
 - [x] Restore the Goddess statue's five directed cures and the related vanilla effect removal. Any player can use the statue. The owner can reclaim it while crouching. A prior 1.20.1 placeholder without an owner remains recoverable with the same interaction.
 - [x] Pass Java 17 data generation, JAR reobfuscation, and all 40 Forge GameTests. In a packaged headless restart, the imported Void Bramble suppressed redstone activation. A pig touched the plant and saved at a different location while a dropped bottle stayed behind. Removing the plant let the same offerings start the rite.
-- [ ] Verify the foliage shape and Goddess statue model in a muted client. The reobfuscated JAR includes the original textures and the ported statue mesh.
+- [x] Verify a two-block Void Bramble column and the north-facing Goddess statue in the muted client. The packaged game rendered the foliage and the complete stone model.
 
 ## Coffin (2026-11-20)
 
@@ -1200,7 +1200,7 @@
 
 - [x] Restore Waila's cover identities through Jade. Trapped plants show as poppies, dandelions, or dead bushes. Alder Doors show as oak doors, Rowan Doors keep their own item, and both pit blocks show as their vanilla soil counterparts.
 - [x] Show the three illusions as their respective vanilla mobs to the intended viewer. Present werevillagers as vanilla villagers and retain their profession, biome type, level and age for the tooltip.
-- [ ] Verify the overlay in a muted live client running Jade. [Jade 11.13.2](https://www.curseforge.com/minecraft/mc-mods/jade/files/6855440)
+- [x] Verify Jade 11.13.2 in a muted, hidden survival client connected to a dedicated server. The overlay showed all twelve plant-mine covers, both halves of both doors, both pit covers, and all three illusion identities. A different victim name suppressed each illusion's tooltip. The werevillager appeared as a journeyman librarian. [Jade 11.13.2](https://www.curseforge.com/minecraft/mc-mods/jade/files/6855440)
 
 ## Industrial Foregoing Automation (2026-11-22)
 
@@ -1513,7 +1513,8 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Finish the 669-case funnel replay. The liquid-brew radius case passed. The item-curse case failed its power assertion after comparing the post-cast balance to capacity. The run passed 668 cases and reported no palette exception or chunk-store I/O error.
 - [x] Reproduce delayed offering visibility in five of 48 Focused Barrier and Moving Earth placements. The ring already matched, and activation succeeded after the world exposed the items. Both checked-in cases now wait on that same entity query.
 - [x] Reproduce the archived Wicker Effigy query failure. Two of 48 ignitions joined a Huntsman with 100 health and 150 ticks while the nearby entity query still returned zero. The checked-in cases observe the Forge join and wait for the exact UUID to become queryable. Both axes, the original click rules, and the six legacy block states passed among all 122 checked-in GameTests.
-- [ ] Stabilize the remaining archived tests after the 673-case Wicker replay passed 670. Eclipse, the enhanced Worship gesture, and Animal Repulsion passed together in isolation. The 48-case follow-up passed after giving the gesture its own player and waiting for the eclipse offerings and target pets to become visible. The broad replay still needs the corrected fixtures.
+- [x] Stabilize Eclipse, the enhanced Worship gesture, and Animal Repulsion. The corrected fixtures passed in the full replay and went into the 125-test checked-in suite.
+- [ ] Repeat the 673-case replay with the corrected Raising and large-circle chalk fixtures. Its latest run passed 671. All sixteen follow-up checks passed by observing the raised entities after tracking, waiting for the chalk offerings, and charging the resolved altar core in all four rotations.
 
 ## Auram Armor Compatibility (2026-11-21)
 
@@ -1660,7 +1661,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Save a second cast three pulses into warmup. The dedicated server resumed and completed it after restart. The enabled directed statue seven blocks below the pig kept its facing, owner and killer list. The cast used the brew and applied no Wolfsbane.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 278 required Forge GameTests. Coverage includes range failure, blank kits, named legacy cast resumption, loaded statue behavior, player killer records and the poppet's wear.
 - [x] Restore the original wolf and mandrake models for placed statues and items. Preserve the four facings, original atlas textures, stone particles, and legacy collision box. Import and restart with all eight combinations of statue and facing, retaining their original owners and killer lists.
-- [ ] Verify both statues in a muted client. Direct checks of the client render code validated the meshes, UV coordinates, four directions, and inventory slot fit without opening a window. The isolated graphical runtime timed out.
+- [x] Verify both placed statues in a muted client. The packaged game rendered the wolf for Broken Curses and the stationary Mandrake for Occluded Summons. The preceding mesh checks covered their four directions and inventory transforms.
 
 ## Rites of Transposition (2026-11-20)
 
