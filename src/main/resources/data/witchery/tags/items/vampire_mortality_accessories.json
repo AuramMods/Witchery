@@ -1,0 +1,7 @@
+{
+  "values": [
+    {"id": "botania:lava_pendant", "required": false},
+    {"id": "botania:super_lava_pendant", "required": false},
+    {"id": "botania:odin_ring", "required": false}
+  ]
+}

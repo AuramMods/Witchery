@@ -571,6 +571,12 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Using Blood Magic's actual Sacrificial Dagger filled its altar and moved a vampire's blood power from 250 to 50 with health still at 20. Another use left the altar and player unchanged. A regular player continued to pay with health. The hook spends blood only if the event still allows the altar to fill.
 - All 64 GameTests passed in the disposable Blood Magic and Patchouli profile, including two integration fixtures. All 62 checked-in cases passed on clean Forge. Java 17 data generation, JAR reobfuscation, and both packaged headless boots passed. The JAR SHA-256 is `23976ec7cf72f802ed915a564ff241badc5412f312769a0cb44511968efa9be5`.
 
+### Curios and Vampire Mortality (2026-11-22)
+
+- The legacy Baubles rule allows otherwise lethal regular damage while a vampire wears one of Botania's original fire-protective accessories. Modern Curios checks the functional slots for the `witchery:vampire_mortality_accessories` tag. The tag includes Pyroclast Pendant, Crimson Pendant, and Ring of Odin with optional entries. Botania removed the Ring of the Aesir. [Botania changelog](https://botaniamod.net/changelog.html)
+- The optional Forge fixture posted lethal fall events after equipping each of the three registered Botania items through the real Curios inventory. All three permitted lethal damage. Cosmetic copies, carried copies, and the Ring of Thor kept the ordinary one-health recovery.
+- All 63 GameTests passed with Auram's Curios 5.14.1, Botania 450, and Patchouli 84.1. All 62 checked-in tests passed on clean Forge. Java 17 data generation, JAR reobfuscation, and the packaged headless boot in both profiles passed. The JAR SHA-256 is `77571e4ee87ac1943cf91a5119d0c686d2ff3bf40b12a5fbd39067514f106e65`.
+
 ### Void Bramble and the Statue of the Goddess (2026-11-21)
 
 - Both block recipes use the original ingredients and remain disabled by default. Enable them separately with `allowVoidBrambleRecipe` and `allowGoddessStatueRecipe` in the common config. The Void Bramble ingredient matches Ender Bramble's `BlockStateTag.wild=false` and rejects Wild Bramble.

@@ -829,7 +829,7 @@
 - [x] Restore lethal fire and the clothing's flame protection. GameTests checked that two light garments save one hit in four and four garments save three hits in four. Fire Resistance stayed active while the burning player took damage in the packaged server. A lethal fire hit killed the unarmored player, who respawned at rank ten with 404 blood.
 - [x] Verify dedicated-server persistence of vampire death drops and sunlight mortality. The same dropped sword kept its 14,400-tick lifespan after a restart. Rejoining at rank ten with zero blood and stepping into noon sunlight killed the player with the sunlight death message. Java 17 data generation, JAR reobfuscation and all 190 required Forge GameTests passed.
 - [x] Restore the shifted werewolf and Wolfman death exceptions and Silver Sword and Silver Bolt lethality against vampire hybrids. On the packaged server, a 12-point hit attributed to an ordinary villager left a vampire at one health. The same hit attributed to a Wolfman killed it. GameTests also verified player attacks before and after shifting and both silver weapons against pure vampires and hybrids in human form.
-- [ ] Review the old accessory-mod exceptions with their modern integrations.
+- [x] Restore the Baubles mortality exception through Curios. Botania's Pyroclast Pendant, Crimson Pendant, and Ring of Odin allow otherwise lethal ordinary damage to kill a vampire when worn in a functional slot. The Forge fixture checked all three accessories, inventory and cosmetic copies, and the Ring of Thor. Botania removed the legacy Ring of the Aesir. [Botania changelog](https://botaniamod.net/changelog.html)
 
 ## Cane Sword (2026-11-20)
 

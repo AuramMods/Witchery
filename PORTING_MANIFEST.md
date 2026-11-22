@@ -1559,9 +1559,9 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 - `ModHookThaumcraft4`
 - `ModHookTinkersConstruct`
 - `ModHookTreecapitator`
-- `ModHookWaila`
+- `ModHookWaila` disguises trapped plants, Alder and Rowan Doors, both pit blocks, the three illusions, and werevillagers. These tooltip rules remain open for Jade.
 - `ModHookMorph`
-- `ModHookBaubles`
+- `ModHookBaubles` uses the optional Curios inventory on Forge 1.20.1. The `witchery:vampire_mortality_accessories` item tag contains the three surviving Botania accessories. Botania removed the Ring of the Aesir. [Botania changelog](https://botaniamod.net/changelog.html)
 
 ## Worldgen Registry Touchpoints
 - World generator root: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/worldgen/WitcheryWorldGenerator.java`
