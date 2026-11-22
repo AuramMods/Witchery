@@ -440,6 +440,20 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .pattern("SBS")
                 .unlockedBy("has_critter_snare", has(critterSnare))
                 .save(recipeOutput);
+        Item rawStew = WitcheryItems.getRequired("stewraw").get();
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.FOOD, rawStew)
+                .requires(GARLIC_CROPS)
+                .requires(Ingredient.of(Items.BEEF, Items.CHICKEN, Items.PORKCHOP, Items.COD, Items.MUTTON))
+                .requires(Items.POTATO)
+                .requires(Items.CARROT)
+                .requires(Items.BOWL)
+                .requires(Items.BROWN_MUSHROOM)
+                .unlockedBy("has_garlic", has(GARLIC_CROPS))
+                .save(recipeOutput);
+        SimpleCookingRecipeBuilder.smelting(Ingredient.of(rawStew), RecipeCategory.FOOD,
+                WitcheryItems.getRequired("stew").get(), 1.0F, 200)
+                .unlockedBy("has_raw_meaty_stew", has(rawStew))
+                .save(recipeOutput);
         ShapelessRecipeBuilder.shapeless(RecipeCategory.FOOD, WitcheryIngredient.ODD_PORKCHOP_RAW.item())
                 .requires(WitcheryIngredient.MUTANDIS.item())
                 .requires(Items.ROTTEN_FLESH)

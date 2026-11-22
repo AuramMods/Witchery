@@ -4,17 +4,30 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.infusion.ImpContractEffects;
+import art.arcane.witchery.registry.WitcheryItems;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.TagParser;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.TransientCraftingContainer;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
@@ -148,6 +161,98 @@ public final class LegacyConsumableTests {
             consume(helper, player, lilith);
             helper.assertTrue(data.getVampireLevel() == 10 && data.getBloodPower() == 2100 && lilith.isEmpty(),
                     "At rank ten the last dose restores 2,000 blood");
+            helper.succeed();
+        } finally {
+            player.discard();
+        }
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void meatyStewUsesOriginalIngredientsAndFurnaceRecipe(GameTestHelper helper) throws Exception {
+        var level = helper.getLevel();
+        var raw = WitcheryItems.getRequired("stewraw").get();
+        var cooked = WitcheryItems.getRequired("stew").get();
+        var grid = new TransientCraftingContainer(new AbstractContainerMenu(MenuType.CRAFTING, 0) {
+            @Override
+            public ItemStack quickMoveStack(Player player, int slot) {
+                return ItemStack.EMPTY;
+            }
+
+            @Override
+            public boolean stillValid(Player player) {
+                return true;
+            }
+        }, 3, 3);
+        grid.setItem(0, new ItemStack(WitcheryItems.getRequired("garlic").get()));
+        grid.setItem(1, new ItemStack(Items.BROWN_MUSHROOM));
+        grid.setItem(3, new ItemStack(Items.CARROT));
+        grid.setItem(5, new ItemStack(Items.POTATO));
+        grid.setItem(7, new ItemStack(Items.BOWL));
+        var recipe = (CraftingRecipe) level.getRecipeManager()
+                .byKey(ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "stewraw")).orElseThrow();
+        for (Item meat : new Item[]{Items.BEEF, Items.CHICKEN, Items.PORKCHOP, Items.COD, Items.MUTTON}) {
+            grid.setItem(8, new ItemStack(meat));
+            helper.assertTrue(recipe.matches(grid, level), "The original recipe accepts " + meat);
+        }
+        grid.setItem(8, new ItemStack(Items.SALMON));
+        helper.assertFalse(recipe.matches(grid, level), "The original recipe uses cod");
+        grid.setItem(8, new ItemStack(Items.COOKED_BEEF));
+        helper.assertFalse(recipe.matches(grid, level), "The meat must be uncooked");
+        grid.setItem(8, new ItemStack(Items.BEEF));
+        var mixture = recipe.assemble(grid, level.registryAccess());
+        helper.assertTrue(mixture.is(raw) && mixture.getCount() == 1 && mixture.getMaxStackSize() == 64,
+                "Crafting yields one stackable raw stew");
+
+        var input = new SimpleContainer(mixture);
+        var smelt = level.getRecipeManager().getRecipeFor(RecipeType.SMELTING, input, level).orElseThrow();
+        helper.assertTrue(smelt.assemble(input, level.registryAccess()).is(cooked)
+                && smelt.getExperience() == 1 && smelt.getCookingTime() == 200,
+                "A standard furnace cycle yields Meaty Stew and one experience point");
+
+        var imported = WitcheryIngredient.loadInventoryStack(TagParser.parseTag(
+                "{id:\"witchery:stew\",Damage:0s,Count:6b,tag:{Keepsake:1b}}"));
+        helper.assertTrue(imported.is(cooked) && imported.getCount() == 6 && imported.getTag().getBoolean("Keepsake"),
+                "Existing stacks retain their item ID, count, and custom data");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void meatyStewRestoresFoodAndReturnsEachBowl(GameTestHelper helper) {
+        var player = player(helper);
+        var raw = WitcheryItems.getRequired("stewraw").get();
+        var cooked = WitcheryItems.getRequired("stew").get();
+        player.setPos(Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(6, 4, 6))));
+        try {
+            var food = player.getFoodData();
+            food.setFoodLevel(0);
+            food.setSaturation(0);
+            var rawStack = new ItemStack(raw, 2);
+            consume(helper, player, rawStack);
+            helper.assertTrue(food.getFoodLevel() == 1 && Mth.equal(food.getSaturationLevel(), 0.2F),
+                    "Raw stew restores one food point and 0.2 saturation");
+            helper.assertTrue(player.getMainHandItem().is(raw) && rawStack.getCount() == 1
+                            && player.getInventory().countItem(Items.BOWL) == 1,
+                    "Eating from a stack saves the other serving and returns a bowl");
+            consume(helper, player, rawStack);
+            helper.assertTrue(player.getMainHandItem().is(Items.BOWL) && player.getInventory().countItem(Items.BOWL) == 2,
+                    "The last serving leaves its bowl in hand");
+
+            food.setFoodLevel(0);
+            food.setSaturation(0);
+            var inventory = player.getInventory();
+            for (int slot = 0; slot < inventory.items.size(); slot++) {
+                inventory.setItem(slot, new ItemStack(Items.COBBLESTONE, 64));
+            }
+            var cookedStack = new ItemStack(cooked, 2);
+            consume(helper, player, cookedStack);
+            helper.assertTrue(food.getFoodLevel() == 12 && food.getSaturationLevel() == 12,
+                    "Cooked stew restores twelve food points and saturates to the food level");
+            var dropped = helper.getLevel().getEntitiesOfClass(ItemEntity.class, player.getBoundingBox().inflate(3),
+                    item -> item.getItem().is(Items.BOWL));
+            helper.assertTrue(player.getMainHandItem().is(cooked) && cookedStack.getCount() == 1
+                            && dropped.size() == 1 && dropped.get(0).getItem().getCount() == 1,
+                    "A full inventory drops exactly one bowl and keeps the remaining stew");
+            dropped.get(0).discard();
             helper.succeed();
         } finally {
             player.discard();

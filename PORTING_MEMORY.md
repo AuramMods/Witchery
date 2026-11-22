@@ -621,6 +621,17 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Keep Universal Antidote at `witchery:potion`. Two regular drinkable Poison potions and a Null Catalyst yield two doses. A stack holds up to four. The modern bottle uses the vanilla layers and the original green tint. A 32-tick drink removes Poison and Wither and returns one glass bottle. The legacy subtype-zero fixture kept its existing ID, count and tag.
 - Java 17 data generation, JAR reobfuscation, all 66 clean Forge GameTests and all 70 optional tests passed. Boot the packaged JAR headlessly with Witchery alone and with Thaumaturge, Lithostitched, and Curios. The packaged fixture returned the same sapling, Wicker Bundle, mine, Bramble, talisman, and Antidote aspects after datapack reload and a restart. The recipe was present on both launches. The JAR SHA-256 is `fb24b11c1487a972452d0850ac7db3c7304e4eb6625d449100acd4a7c8706741`.
 
+### Meaty Stew (2026-11-22)
+
+- The original `witchery:stewraw` and `witchery:stew` IDs are both stackable foods. The raw recipe uses the shared Forge garlic crop tag. Cod is the original metadata-zero raw fish and vanilla mutton is the existing replacement for legacy ingredient 158.
+- Both foods give the bowl back in survival. A single serving leaves its bowl in hand. Eating from a stack returns the bowl through the player inventory, including a drop when full. Modern creative consumption keeps the stew stack.
+- The packaged headless furnace passed a hopper-fed restart test. An original Forge chest imported three raw and eleven cooked servings with both keepsake tags and retained them on the next boot.
+- Java 17 data generation and JAR reobfuscation succeeded. The tested JAR SHA-256 is `91f3c9b269383b399d45286b99bdb4ff64a0bea45f0a8d0d90783438a63a9a37`.
+
+### Coven Rite Test Setup (2026-11-22)
+
+- The Seer Stone recall returned true and the event for the correct owner fired, but the newly forced GameTest chunks could hide the live witch from level entity queries during that callback. Nine of 56 cases reproduced this with the chunk already reporting `ENTITY_TICKING`. Give the fixture five setup ticks to finish registering the entity sections. All 56 trials passed with the delay. Failure messages identify recall or the first ritual seat.
+
 ### Water and Lava Diviners (2026-11-22)
 
 - Both original IDs now hold uncommon damageable rods. The water recipe uses four standard Water Bottles, four sticks and Tear of the Goddess. The lava recipe upgrades any Water Diviner with three Blaze Rods.

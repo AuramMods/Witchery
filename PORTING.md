@@ -750,6 +750,14 @@
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 366 required Forge GameTests. The new cases cover the original recipes, legacy metadata and bookmarks, active guide content, and atlas copying.
 - [x] Use the resulting Biome Note in the Brew of the Changing Seasons.
 
+## Meaty Stew (2026-11-22)
+
+- [x] Craft Raw Meaty Stew from garlic, a potato, a carrot, a bowl, a brown mushroom, and one of the five original meats. Raw beef, chicken, pork, and cod retain their vanilla equivalents. Vanilla mutton replaces the original Witchery mutton subtype. Cooked meat and salmon fail the recipe.
+- [x] Cook Raw Meaty Stew in a furnace for 200 ticks and one experience point. The packaged Forge server saved a hopper-fed batch at 10 of 200 ticks. The first sample after restart showed 18 ticks, and both finished servings reached the output hopper.
+- [x] Restore the 64-item stacks, original names and sprites, and the original food and saturation values. The two Forge GameTests verify the recipes, one food point and 0.2 saturation for raw stew, twelve food points and a 1.0 saturation multiplier for cooked stew, and returning one bowl per serving. A full inventory drops the bowl and keeps the remaining servings.
+- [x] Import an original Forge 1.7.10 chest containing three raw and eleven cooked servings. Both IDs, stack counts, and custom item tags survived import and a normal restart. Data generation and the reobfuscated JAR succeeded with Java 17.
+- [x] Pass all 78 clean Forge GameTests and all 82 with Thaumaturge, Lithostitched, and Curios. Verify the settled Coven Witch fixture across 56 additional replays.
+
 ## Water and Lava Diviners (2026-11-22)
 
 - [x] Craft the Water Diviner with four sticks, four Water Bottles, and Tear of the Goddess in the original pattern. Craft the Lava Diviner with three Blaze Rods and either a fresh or worn Water Diviner. Restore the original names and use the existing original item sprites.
@@ -757,7 +765,7 @@
 - [x] Pass the three diviner Forge GameTests. They cover the recipes, imported and modern wear, main-hand and offhand use, the wrong fluid, flowing water, bedrock and breaking a worn rod.
 - [x] Save an original Forge 1.7.10 chest containing both diviners. The importer resolved the save's numeric item IDs and moved the original wear of 17 and 42 into modern item data. Both custom tags and wear values remained after a normal restart of the reobfuscated Forge 47.4.10 JAR.
 - [x] Regenerate recipes and reobfuscate the JAR using Java 17. The tested JAR has SHA-256 `725af9d326d6d85d4579693dbfa75a3a23314206020b104291a85d120285d6f0`.
-- [ ] Diagnose the Coven Witch visit replacement failure in the checked-in suite. The final run passed 75 of 76 cases. The test reported that the owner did not have exactly one active Witch near the rite.
+- [x] Diagnose the Coven Witch visit replacement failure in the checked-in suite. Nine of 56 immediate replays observed the correctly owned witch join the level before the test's entity lookup could see it. Give the forced test chunks five setup ticks. All 56 replays then passed with the same gameplay assertions.
 
 ## Atlas and Journal Navigation (2026-11-22)
 

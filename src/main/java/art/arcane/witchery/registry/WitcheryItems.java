@@ -70,6 +70,7 @@ import art.arcane.witchery.item.BoneNeedleItem;
 import art.arcane.witchery.item.IcyNeedleItem;
 import art.arcane.witchery.item.ImpSpellContractItem;
 import art.arcane.witchery.item.LeechChestItem;
+import art.arcane.witchery.item.MeatyStewItem;
 import art.arcane.witchery.item.MirrorItem;
 import art.arcane.witchery.item.MoonCharmItem;
 import art.arcane.witchery.item.WolfAltarItem;
@@ -234,6 +235,8 @@ public final class WitcheryItems {
                 .craftRemainder(Items.BUCKET)
                 .stacksTo(1);
         return switch (path) {
+            case "stewraw" -> new MeatyStewItem(1, 0.1F);
+            case "stew" -> new MeatyStewItem(12, 1.0F);
             case "divinerwater" -> new DivinerItem(Blocks.WATER);
             case "divinerlava" -> new DivinerItem(Blocks.LAVA);
             case "bucketspirit" -> new BucketItem(WitcheryFluids.getRequiredSource("fluidspirit"), bucketProperties);
