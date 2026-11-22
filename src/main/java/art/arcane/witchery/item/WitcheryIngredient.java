@@ -334,6 +334,9 @@ public enum WitcheryIngredient {
                 convertedTag.remove(LEGACY_DAMAGE_TAG);
                 if (!convertedTag.isEmpty()) converted.setTag(convertedTag);
             }
+            if (hasLegacyDamage && GuideBookItem.volume(converted) == GuideBookItem.Volume.CIRCLES) {
+                CircleBookIndex.importLegacyBookmark(converted);
+            }
             return converted;
         }
 

@@ -1,9 +1,12 @@
 package art.arcane.witchery.item;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.network.WitcheryNetwork.ItemUpdatePacket;
+import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcheryRecipes;
+import art.arcane.witchery.ritual.ItemRiteRecipe;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTest;
@@ -28,15 +31,84 @@ import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class BookNavigationTests {
+    @GameTest(template = "qa_coven_arena")
+    public static void circleGuideUsesTheOriginalIndexAndGroupedRites(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var recipes = level.getRecipeManager().getAllRecipesFor(WitcheryRecipes.ITEM_RITE.get()).stream()
+                .sorted(Comparator.comparing(ItemRiteRecipe::id)).toList();
+        var pages = GuideBookPages.entries(GuideBookItem.Volume.CIRCLES, level, 0);
+        helper.assertTrue(pages.size() == 89, "The Circle Magic guide has its introduction and 88 original rite pages");
+        var first = ResourceLocation.parse("witchery:rite_of_binding_a_circle");
+        var binding = ResourceLocation.parse("witchery:rite_of_binding_scarecrow");
+        var forestation = ResourceLocation.parse("witchery:forestation/oak");
+        helper.assertTrue(first.equals(pages.get(1).entryId()) && binding.equals(pages.get(7).entryId())
+                        && forestation.equals(pages.get(45).entryId()) && recipes.size() == 96,
+                "The book follows the original index and keeps all 96 castable rites");
+        var sapling = WitcheryBlocks.getRequired("witchsapling").get();
+        var trees = List.of(new ItemStack(Blocks.OAK_SAPLING), new ItemStack(Blocks.SPRUCE_SAPLING),
+                new ItemStack(Blocks.BIRCH_SAPLING), new ItemStack(Blocks.JUNGLE_SAPLING),
+                WitchWoodType.ROWAN.stack(sapling), WitchWoodType.ALDER.stack(sapling), WitchWoodType.HAWTHORN.stack(sapling));
+        var forestationLine = ingredientLine(pages.get(45), 0);
+        helper.assertTrue(trees.stream().allMatch(tree -> forestationLine.contains(tree.getHoverName().getString())),
+                "The Forestation chapter lists all seven usable saplings");
+        var bindingLine = ingredientLine(pages.get(7), 0);
+        helper.assertTrue(List.of("scarecrow", "trent", "witchsladder").stream().allMatch(id -> bindingLine
+                        .contains(new ItemStack(WitcheryBlocks.getRequired(id).get()).getHoverName().getString())),
+                "The Binding chapter lists all three unbound fetishes");
+
+        var book = new ItemStack(WitcheryItems.getRequired("book_circle_magic").get());
+        for (int i = 0; i < recipes.size(); i++) {
+            if (recipes.get(i).id().equals(ResourceLocation.parse("witchery:forestation/alder"))) {
+                GuideBookItem.setBookmark(book, i + 1);
+            }
+        }
+        helper.assertTrue(CircleBookIndex.bookmark(book, level, pages) == 45,
+                "A bookmark from the earlier alphabetic guide follows its rite to the grouped chapter");
+        var legacy = new CompoundTag();
+        legacy.putString("id", "witchery:ingredient");
+        legacy.putByte("Count", (byte) 1);
+        legacy.putShort("Damage", (short) 48);
+        var legacyBookmark = new CompoundTag();
+        legacyBookmark.putInt("CurrentPage", 1);
+        legacy.put("tag", legacyBookmark);
+        var imported = WitcheryIngredient.loadInventoryStack(legacy);
+        helper.assertTrue(GuideBookItem.volume(imported) == GuideBookItem.Volume.CIRCLES
+                        && CircleBookIndex.bookmark(imported, level, pages) == 1,
+                "A 1.7.10 subtype bookmark keeps the original Binding a Circle chapter");
+
+        var transmitted = new ItemUpdatePacket(0, GuideBookItem.Volume.CIRCLES, 2, binding);
+        var buffer = new FriendlyByteBuf(Unpooled.buffer());
+        try {
+            ItemUpdatePacket.encode(transmitted, buffer);
+            var received = ItemUpdatePacket.decode(buffer);
+            helper.assertTrue(received.equals(transmitted)
+                            && CircleBookIndex.saveSelection(book, pages, received.pageIndex(), received.entryId()) == 7,
+                    "The server resolves the selected rite ID when a client page hint is stale");
+        } finally {
+            buffer.release();
+        }
+        var reordered = new ArrayList<>(pages);
+        Collections.swap(reordered, 7, 9);
+        helper.assertTrue(CircleBookIndex.bookmark(book, level, reordered) == 9
+                        && CircleBookIndex.saveSelection(book, pages, 3, ResourceLocation.parse("witchery:missing_rite")) == -1
+                        && CircleBookIndex.bookmark(book, level, pages) == 7,
+                "A saved rite follows the visible chapter and an invalid request cannot replace it");
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void infusionGuideShowsBothOriginalPotionRecipes(GameTestHelper helper) {
         var pages = GuideBookPages.entries(GuideBookItem.Volume.INFUSIONS, helper.getLevel(), 0);
@@ -50,8 +122,8 @@ public final class BookNavigationTests {
                     "Each infusion has exactly one visible recipe page");
         }
 
-        var speed = potionIngredientLine(otherwhere);
-        var damage = potionIngredientLine(animus);
+        var speed = ingredientLine(otherwhere, 1);
+        var damage = ingredientLine(animus, 1);
         var splashName = PotionUtils.setPotion(new ItemStack(Items.SPLASH_POTION), Potions.LONG_SWIFTNESS).getHoverName();
         helper.assertTrue(speed.contains("8:00") && !speed.contains(splashName.getString())
                         && damage.contains(Component.translatable("potion.potency.1").getString()),
@@ -66,8 +138,8 @@ public final class BookNavigationTests {
         helper.succeed();
     }
 
-    private static String potionIngredientLine(GuideBookPages.Page page) {
-        var ingredient = (TranslatableContents) page.text().get(1).getContents();
+    private static String ingredientLine(GuideBookPages.Page page, int index) {
+        var ingredient = (TranslatableContents) page.text().get(index).getContents();
         return ((Component) ingredient.getArgs()[0]).getString();
     }
 
@@ -136,7 +208,7 @@ public final class BookNavigationTests {
         } finally {
             buffer.release();
         }
-        int resolved = BiomeBookIndex.saveSelection(book, access, packet.pageIndex(), packet.biomeId());
+        int resolved = BiomeBookIndex.saveSelection(book, access, packet.pageIndex(), packet.entryId());
         helper.assertTrue(resolved > 0 && GuideBookItem.bookmark(book) == resolved
                         && snowyBeach.equals(BiomeBookIndex.selectedBiome(book, access)),
                 "The selected biome is restored at its current page");

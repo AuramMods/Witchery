@@ -49,6 +49,8 @@
    "guide.witchery.copy_waystone": "Makes two Waystones with the original destination and custom name.",
    "guide.witchery.bind_circle_talisman": "Stores complete chalk rings in a blank Circle Talisman. Use the bound talisman on solid ground to place the rings again.",
    "guide.witchery.recipe.rite_of_binding_a_circle": "Rite of Binding a Circle",
+   "guide.witchery.recipe.rite_of_binding_scarecrow": "Rite of Binding",
+   "guide.witchery.recipe.forestation.oak": "Rite of Forestation",
    "guide.witchery.recipe.rite_of_binding_a_circle_portable": "Rite of Binding a Circle (Portable)",
    "guide.witchery.recipe.rite_of_binding_a_waystone_portable": "Rite of Binding a Waystone (Portable)",
    "guide.witchery.recipe.rite_of_copying_a_waystone": "Rite of Copying a Waystone",

@@ -2,6 +2,7 @@ package art.arcane.witchery.client;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.item.BiomeBookIndex;
+import art.arcane.witchery.item.CircleBookIndex;
 import art.arcane.witchery.item.GuideBookItem;
 import art.arcane.witchery.item.GuideBookPages;
 import art.arcane.witchery.network.WitcheryNetwork;
@@ -55,9 +56,9 @@ public final class GuideBookScreen extends Screen {
         pages = atlas != null && !atlas.pages().isEmpty()
                 ? atlas.pages().stream().map(GuideBookPages::atlas).toList()
                 : GuideBookPages.entries(volume, level, knownSpells);
-        page = atlas != null
-                ? BiomeBookIndex.bookmark(stack, atlas.pages())
-                : Mth.clamp(GuideBookItem.bookmark(stack), 0, pages.size() - 1);
+        if (atlas != null) page = BiomeBookIndex.bookmark(stack, atlas.pages());
+        else if (volume == GuideBookItem.Volume.CIRCLES) page = CircleBookIndex.bookmark(stack, level, pages);
+        else page = Mth.clamp(GuideBookItem.bookmark(stack), 0, pages.size() - 1);
     }
 
     public static void open(int slot, GuideBookItem.Volume volume, int knownSpells) {
@@ -266,7 +267,7 @@ public final class GuideBookScreen extends Screen {
     @Override
     public void removed() {
         if (minecraft.getConnection() == null || atlas != null && atlas.pages().isEmpty()) return;
-        WitcheryNetwork.sendGuideBookmark(slot, volume, page, atlas == null ? null : atlas.pages().get(page).id());
+        WitcheryNetwork.sendGuideBookmark(slot, volume, page, atlas == null ? pages.get(page).entryId() : atlas.pages().get(page).id());
     }
 
     @Override

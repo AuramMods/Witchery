@@ -15,6 +15,7 @@ import art.arcane.witchery.ritual.ItemRiteRecipe;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectUtil;
@@ -44,7 +45,12 @@ public final class GuideBookPages {
             "garlic:garlic_stage_5", "alder:sapling_alder", "hawthorn:sapling_hawthorn", "rowan:sapling_rowan");
 
     public record Page(Component title, List<Component> text, List<ItemStack> icons, List<ItemRiteRecipe.Ring> circles,
-                       @Nullable ResourceLocation picture) {
+                       @Nullable ResourceLocation picture, @Nullable ResourceLocation entryId) {
+        public Page(Component title, List<Component> text, List<ItemStack> icons, List<ItemRiteRecipe.Ring> circles,
+                    @Nullable ResourceLocation picture) {
+            this(title, text, icons, circles, picture, null);
+        }
+
         public Page(Component title, List<Component> text) {
             this(title, text, List.of(), List.of(), null);
         }
@@ -62,8 +68,7 @@ public final class GuideBookPages {
             }
             case DISTILLING -> level.getRecipeManager().getAllRecipesFor(WitcheryRecipes.DISTILLING.get()).stream()
                     .sorted(Comparator.comparing(DistillingRecipe::id)).map(GuideBookPages::distilling).forEachOrdered(pages::add);
-            case CIRCLES -> level.getRecipeManager().getAllRecipesFor(WitcheryRecipes.ITEM_RITE.get()).stream()
-                    .sorted(Comparator.comparing(ItemRiteRecipe::id)).map(GuideBookPages::rite).forEachOrdered(pages::add);
+            case CIRCLES -> CircleBookIndex.chapters(level).stream().map(GuideBookPages::rite).forEachOrdered(pages::add);
             case INFUSIONS -> level.getRecipeManager().getAllRecipesFor(WitcheryRecipes.KETTLE.get()).stream()
                     .filter(recipe -> !hiddenKettle(recipe.id()))
                     // Existing books store page numbers, so the two restored pages follow the existing recipes.
@@ -112,8 +117,13 @@ public final class GuideBookPages {
         return new Page(outputs.get(0).getHoverName(), steps, outputs, List.of(), null);
     }
 
-    private static Page rite(ItemRiteRecipe recipe) {
+    private static Page rite(CircleBookIndex.Chapter chapter) {
+        var recipe = chapter.recipe();
         var steps = new ArrayList<>(inputs(recipe.sacrifices()));
+        if (!steps.isEmpty() && chapter.firstOfferings().size() > 1) {
+            var choices = chapter.firstOfferings().stream().map(GuideBookPages::ingredientName).toList();
+            steps.set(0, text("ingredient", ComponentUtils.formatList(choices, Component.literal(" / "))));
+        }
         if (recipe.power() > 0) steps.add(text("power", recipe.power()));
         if (recipe.livingOffering() != null) steps.add(text("living_offering", recipe.livingOffering().getDescription()));
         if (recipe.nightOnly()) steps.add(text("night_only"));
@@ -159,7 +169,7 @@ public final class GuideBookPages {
         }
         if (recipe.consumeNecromanticStone()) steps.add(text("necromantic_stone"));
         if (!recipe.result().isEmpty()) steps.add(text("output", recipe.result().getCount(), recipe.result().getHoverName()));
-        return new Page(recipeTitle(recipe.id()), steps, List.of(), recipe.rings(), null);
+        return new Page(recipeTitle(chapter.id()), steps, List.of(), recipe.rings(), null, chapter.id());
     }
 
     private static boolean hiddenKettle(ResourceLocation id) {

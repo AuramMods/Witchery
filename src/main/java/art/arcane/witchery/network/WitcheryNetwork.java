@@ -10,6 +10,7 @@ import art.arcane.witchery.item.VampireBookItem;
 import art.arcane.witchery.item.GuideBookItem;
 import art.arcane.witchery.item.GuideBookPages;
 import art.arcane.witchery.item.BiomeBookIndex;
+import art.arcane.witchery.item.CircleBookIndex;
 import art.arcane.witchery.infusion.SpellKnowledge;
 import art.arcane.witchery.lycanthropy.WolfTrials;
 import art.arcane.witchery.registry.LegacyRegistryData;
@@ -40,7 +41,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class WitcheryNetwork {
-    private static final String PROTOCOL_VERSION = "87";
+    private static final String PROTOCOL_VERSION = "88";
     private static final int MAX_USERNAME_LENGTH = 64;
     private static final int MAX_PLAYER_SKIN_LENGTH = 256;
     private static final int MAX_MARKUP_CHAPTER_LENGTH = 32;
@@ -200,8 +201,8 @@ public final class WitcheryNetwork {
     }
 
     public static void sendGuideBookmark(int slotIndex, GuideBookItem.Volume volume, int pageIndex,
-                                         @Nullable ResourceLocation biomeId) {
-        CHANNEL.sendToServer(new ItemUpdatePacket(slotIndex, volume, pageIndex, biomeId));
+                                         @Nullable ResourceLocation entryId) {
+        CHANNEL.sendToServer(new ItemUpdatePacket(slotIndex, volume, pageIndex, entryId));
     }
 
     public static void openGuideBook(ServerPlayer reader, int slot, GuideBookItem.Volume volume) {
@@ -611,12 +612,17 @@ public final class WitcheryNetwork {
             int page = message.pageIndex();
             if (volume != message.volume() || page < 0) return;
             if (volume == GuideBookItem.Volume.ATLAS) {
-                page = BiomeBookIndex.saveSelection(stack, sender.level().registryAccess(), page, message.biomeId());
+                page = BiomeBookIndex.saveSelection(stack, sender.level().registryAccess(), page, message.entryId());
                 if (page < 0) return;
             } else {
                 var pages = GuideBookPages.entries(volume, sender.level(), SpellKnowledge.knownMask(sender));
-                if (message.biomeId() != null || page >= pages.size()) return;
-                GuideBookItem.setBookmark(stack, page);
+                if (volume == GuideBookItem.Volume.CIRCLES) {
+                    page = CircleBookIndex.saveSelection(stack, pages, page, message.entryId());
+                    if (page < 0) return;
+                } else {
+                    if (message.entryId() != null || page >= pages.size()) return;
+                    GuideBookItem.setBookmark(stack, page);
+                }
             }
             sender.getInventory().setChanged();
             sender.containerMenu.broadcastChanges();
@@ -848,7 +854,7 @@ public final class WitcheryNetwork {
     private record GuideBookOpenPacket(int slot, GuideBookItem.Volume volume, int knownSpells) {}
 
     public record ItemUpdatePacket(int slotIndex, GuideBookItem.Volume volume, int pageIndex,
-                                   @Nullable ResourceLocation biomeId) {
+                                   @Nullable ResourceLocation entryId) {
         public static ItemUpdatePacket placeholder() {
             return new ItemUpdatePacket(0, GuideBookItem.Volume.FUMES, 0, null);
         }
@@ -857,7 +863,7 @@ public final class WitcheryNetwork {
             buffer.writeVarInt(message.slotIndex());
             buffer.writeEnum(message.volume());
             buffer.writeVarInt(message.pageIndex());
-            buffer.writeNullable(message.biomeId(), FriendlyByteBuf::writeResourceLocation);
+            buffer.writeNullable(message.entryId(), FriendlyByteBuf::writeResourceLocation);
         }
 
         public static ItemUpdatePacket decode(FriendlyByteBuf buffer) {

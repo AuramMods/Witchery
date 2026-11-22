@@ -752,6 +752,11 @@
 - [x] Restore the Brews & Infusions pages for Infernal Animus and Spirit of Otherwhere. The entries specify Harming II and eight-minute Swiftness and follow the existing pages to preserve numeric bookmarks. Both splash-potion alternatives still brew and follow the original book visibility rules.
 - [x] Open the existing Soul of the World bookmark and both restored pages in a muted native Forge client. On the packaged dedicated server, drop the supplied ingredients into four heated Kettles and verify two servings per batch with both potion forms. Restart the server and verify the four recipe IDs and outputs again.
 - [x] Brew both splash variants on the preceding packaged JAR and upgrade a disposable copy of the save. The new JAR read the original finished recipe IDs and retained both ready two-serving stacks.
+- [x] Restore the original Circle Magic index with 88 visible rites plus the introduction. Forestation lists all seven valid saplings, and Binding lists the Scarecrow, Trent Effigy, and Witch's Ladder. All 96 recipes still load for casting.
+- [x] Use the selected rite ID to save Circle Magic bookmarks on protocol 88. Earlier 1.20.1 numeric bookmarks resolve through the preceding alphabetic guide. Imported 1.7.10 subtype bookmarks resolve through the original index. Saved references to grouped rites open their shared chapter.
+- [x] Open both grouped Circle Magic chapters on a muted packaged Forge client. Verify earlier numeric and imported bookmarks, clear a saved chapter by returning to the cover after a dedicated restart, and save a biome in the atlas through the same packet.
+- [x] Pass Java 17 data generation, JAR reobfuscation, all 106 clean Forge GameTests, and all 109 with Thaumaturge, Lithostitched, and Curios.
+- [ ] Stabilize the 659-case regression run. The first run flagged the older Waystone copy fixture. A replay delayed activation until its offerings entered the level, passed the copy test, and passed 658 of 659 cases. The remaining failure was the Sentinel guard fixture, which passed in the clean suite and the first broad run.
 
 ## Staff of Duplication (2026-11-22)
 

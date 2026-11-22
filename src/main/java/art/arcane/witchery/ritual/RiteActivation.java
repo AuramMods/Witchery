@@ -7,6 +7,7 @@ import art.arcane.witchery.registry.WitcheryRecipes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -71,12 +72,23 @@ public final class RiteActivation {
             entry("curse_of_the_wolf", 92), entry("cure_lycanthropy", 93), entry("remove_vampirism", 94),
             entry("rite_of_the_mirror", 95), entry("rite_of_summoning_a_reflection", 96));
 
-    private static final Comparator<ItemRiteRecipe> ORDER = Comparator.comparingInt((ItemRiteRecipe rite) ->
-            rite.id().getNamespace().equals(Witchery.MODID)
-                    ? LEGACY_ORDER.getOrDefault(rite.id().getPath(), Integer.MAX_VALUE) : Integer.MAX_VALUE)
+    private static final Comparator<ItemRiteRecipe> ORDER = Comparator.comparingInt((ItemRiteRecipe rite) -> legacyId(rite.id()))
             .thenComparing(ItemRiteRecipe::id);
 
     private RiteActivation() {}
+
+    public static int legacyId(ResourceLocation recipe) {
+        return recipe.getNamespace().equals(Witchery.MODID)
+                ? LEGACY_ORDER.getOrDefault(recipe.getPath(), Integer.MAX_VALUE) : Integer.MAX_VALUE;
+    }
+
+    @Nullable
+    public static ResourceLocation legacyRecipeId(int legacyId) {
+        for (var entry : LEGACY_ORDER.entrySet()) {
+            if (entry.getValue() == legacyId) return id(entry.getKey());
+        }
+        return null;
+    }
 
     public record Selection(List<ResourceLocation> rites, String failure) {}
 
