@@ -17,6 +17,7 @@ import java.util.Map;
 
 public final class AltarNature {
     private static final int RADIUS = 14;
+    private static final int MUSHROOM_BLOCK_LIMIT = 20;
     private static Map<Block, Source> sources;
 
     private AltarNature() {
@@ -51,6 +52,12 @@ public final class AltarNature {
                 }
             }
         }
+        // Flattening merged the two original stem variants into a single block.
+        // Stems use the slots left by the identifiable brown and red blocks.
+        int unusedMushroomSlots = 2 * MUSHROOM_BLOCK_LIMIT
+                - counts.getOrDefault(sources.get(Blocks.BROWN_MUSHROOM_BLOCK), 0)
+                - counts.getOrDefault(sources.get(Blocks.RED_MUSHROOM_BLOCK), 0);
+        counts.computeIfPresent(sources.get(Blocks.MUSHROOM_STEM), (source, count) -> Math.min(count, unusedMushroomSlots));
         return counts.entrySet().stream().mapToInt(entry -> entry.getKey().power() * entry.getValue()).sum();
     }
 
@@ -80,8 +87,9 @@ public final class AltarNature {
         Map<Block, Source> values = new HashMap<>();
         add(values, 4, 20, Blocks.OAK_SAPLING, Blocks.SPRUCE_SAPLING, Blocks.BIRCH_SAPLING,
                 Blocks.JUNGLE_SAPLING, Blocks.ACACIA_SAPLING, Blocks.DARK_OAK_SAPLING);
-        add(values, 2, 50, Blocks.OAK_LOG, Blocks.SPRUCE_LOG, Blocks.BIRCH_LOG, Blocks.JUNGLE_LOG);
-        add(values, 2, 50, Blocks.ACACIA_LOG, Blocks.DARK_OAK_LOG);
+        add(values, 2, 50, Blocks.OAK_LOG, Blocks.SPRUCE_LOG, Blocks.BIRCH_LOG, Blocks.JUNGLE_LOG,
+                Blocks.OAK_WOOD, Blocks.SPRUCE_WOOD, Blocks.BIRCH_WOOD, Blocks.JUNGLE_WOOD);
+        add(values, 2, 50, Blocks.ACACIA_LOG, Blocks.DARK_OAK_LOG, Blocks.ACACIA_WOOD, Blocks.DARK_OAK_WOOD);
         add(values, 3, 100, Blocks.OAK_LEAVES, Blocks.SPRUCE_LEAVES, Blocks.BIRCH_LEAVES, Blocks.JUNGLE_LEAVES);
         add(values, 3, 100, Blocks.ACACIA_LEAVES, Blocks.DARK_OAK_LEAVES);
 
@@ -98,10 +106,11 @@ public final class AltarNature {
         add(values, 3, 20, Blocks.BROWN_MUSHROOM);
         add(values, 3, 50, Blocks.CACTUS);
         add(values, 3, 50, Blocks.SUGAR_CANE);
-        add(values, 4, 20, Blocks.PUMPKIN);
+        add(values, 4, 20, Blocks.PUMPKIN, Blocks.CARVED_PUMPKIN);
         add(values, 3, 20, Blocks.PUMPKIN_STEM, Blocks.ATTACHED_PUMPKIN_STEM);
-        add(values, 3, 20, Blocks.BROWN_MUSHROOM_BLOCK);
-        add(values, 3, 20, Blocks.RED_MUSHROOM_BLOCK);
+        add(values, 3, MUSHROOM_BLOCK_LIMIT, Blocks.BROWN_MUSHROOM_BLOCK);
+        add(values, 3, MUSHROOM_BLOCK_LIMIT, Blocks.RED_MUSHROOM_BLOCK);
+        add(values, 3, 2 * MUSHROOM_BLOCK_LIMIT, Blocks.MUSHROOM_STEM);
         add(values, 4, 20, Blocks.MELON);
         add(values, 3, 20, Blocks.MELON_STEM, Blocks.ATTACHED_MELON_STEM);
         add(values, 2, 50, Blocks.VINE);
@@ -110,6 +119,9 @@ public final class AltarNature {
         add(values, 3, 20, Blocks.COCOA);
         add(values, 4, 20, Blocks.CARROTS);
         add(values, 4, 20, Blocks.POTATOES);
+        // These legacy plants were outside the original flower and crop classes.
+        add(values, 0, 0, Blocks.SUNFLOWER, Blocks.LILAC, Blocks.ROSE_BUSH, Blocks.PEONY,
+                Blocks.TALL_GRASS, Blocks.LARGE_FERN, Blocks.NETHER_WART);
 
         addWitchery(values, 40, 2, "demonheart");
         addWitchery(values, 4, 20, "belladonna", "mandrake", "artichoke", "snowbell", "embermoss", "witchsapling");

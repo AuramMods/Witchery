@@ -81,7 +81,8 @@
 - [x] Use the sixth placed altar block as the core. Save the original `CoreX`, `CoreY`, and `CoreZ` coordinates on every member. Preserve the saved core on import and use the previous port's coordinate order when an existing modern altar has no saved links.
 - [x] Keep the Mystic Branch's enhancement level on the core, and retain the Pentacle recharge and Arthana range bonuses. Breaking an altar member clears the loaded members' links and charge. Rebuilding chooses a new core.
 - [x] Import a charged original altar across a chunk boundary and run a Golden Chalk cast exactly 32 blocks from its saved core after restart. Removing Arthana leaves the next cast waiting. A second restart preserves the broken altar's empty charge. Data generation, JAR reobfuscation, and all 56 required GameTests passed.
-- [ ] Verify the original altar power contribution caps when several modern blocks represent metadata variants of one legacy block.
+- [x] Verify shared altar capacity caps for legacy wood, soil, and plant variants. Bark-only wood shares its original log limit, carved pumpkins share the pumpkin limit, and flattened mushroom stems count toward the unused red and brown mushroom slots. Original tall flowers and Nether Wart stay outside the scan's eligible crop and flower groups.
+- [x] Match the original Forge server's measured 904 and 280 capacity in the imported wood and garden fixtures. Force a fresh scan on the packaged server. Removing the saplings reduces the first capacity to 824. Replacing the giant mushroom blocks with 26 stems sets the second to 238. Both values survived another headless restart.
 
 ## Mirror Milestone (2026-11-19)
 

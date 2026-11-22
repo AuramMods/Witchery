@@ -539,6 +539,13 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - The packaged headless server restarted with the same linked altar. A cauldron 32 blocks from the core brewed Golden Chalk from real dropped ingredients. Removing Arthana left the next batch waiting outside the 16-block range. Removing the Branch cleared its enhancement. Breaking an altar member cleared the remaining links and power, and a second restart preserved that state and the waiting brew.
 - Data generation, JAR reobfuscation, and all 56 required GameTests passed. The new cases cover saved charge and range, normal block and artifact placement, immediate disbanding, and formation with a new core. The packaged SHA-256 is `5484f54efadeb3f721f594c0a6b9a3c437fb337233da1c404ec8347f6b265915`.
 
+### Altar Nature Capacity (2026-11-22)
+
+- The original Forge registry confirmed one vanilla sapling cap, two log caps, and two leaf caps. Bark-only modern wood is part of the matching old log group. Whole and carved pumpkins share a single cap. The original double plants and Nether Wart are outside the old flower and crop classes.
+- The original brown and red giant mushroom blocks each count up to 20 at three capacity per block. Minecraft 1.20.1 merges their stems into `minecraft:mushroom_stem`. Recognizable red and brown blocks count first. Stems fill the remaining slots under the combined limit of 40. New tree forms such as stripped wood continue using the modern log tag rule.
+- Native Witchery 0.24.1 measured 904 capacity in a mixed sapling, log, bark, and leaf fixture and 280 in a dirt, pumpkin, and mushroom fixture. The packaged server imported the bark blocks, carved pumpkins, and both sets of stems, recomputed the exact capacities, and kept them after restart. Removing 24 saplings reduced the first to 824. Removing the mushrooms reduced the second to 160, and adding 26 stems raised it to 238. Both changes persisted through the next headless restart.
+- Java 17 data generation, JAR reobfuscation, and all 58 required GameTests passed. The new isolated scans check shared and separate wood caps, new tagged logs, the two mushroom allowances, and the original garden block eligibility. The packaged SHA-256 is `c2d73dd9e6fbad41605c0b58c5cc928e040af95f53a47cf480d1809c993a8561`.
+
 ### Void Bramble and the Statue of the Goddess (2026-11-21)
 
 - Both block recipes use the original ingredients and remain disabled by default. Enable them separately with `allowVoidBrambleRecipe` and `allowGoddessStatueRecipe` in the common config. The Void Bramble ingredient matches Ender Bramble's `BlockStateTag.wild=false` and rejects Wild Bramble.
