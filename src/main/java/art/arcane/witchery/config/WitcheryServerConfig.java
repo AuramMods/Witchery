@@ -23,6 +23,7 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.BooleanValue ALLOW_DEATH_ITEM_RECOVERY_RITE;
     public static final ForgeConfigSpec.BooleanValue RESPECT_OTHER_DEATH_CHEST_MODS;
     public static final ForgeConfigSpec.BooleanValue ALLOW_VAMPIRE_QUESTS;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_STAKING_VAMPIRES;
     public static final ForgeConfigSpec.IntValue PERCENTAGE_OF_PLAYERS_SLEEPING_FOR_BUFF;
     public static final ForgeConfigSpec.IntValue VAMPIRE_DEATH_ITEM_KEEP_ALIVE_MINS;
     public static final ForgeConfigSpec.DoubleValue VAMPIRE_HUNTER_SPAWN_CHANCE;
@@ -113,6 +114,7 @@ public final class WitcheryServerConfig {
                 .comment("Yield death storage to Corail Tombstone, GraveStone Mod, Corpse, or You're in Grave Danger.")
                 .define("respectOtherDeathChestMods", true);
         ALLOW_VAMPIRE_QUESTS = builder.define("allowVampireQuests", true);
+        ALLOW_STAKING_VAMPIRES = builder.define("allowStakingVampires", true);
         VAMPIRE_DEATH_ITEM_KEEP_ALIVE_MINS = builder
                 .comment("Minutes before items dropped by a vampire player on death despawn.")
                 .defineInRange("vampireDeathItemKeepAliveMins", 12, 5, 30);

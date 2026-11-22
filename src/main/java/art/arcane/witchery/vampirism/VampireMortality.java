@@ -1,18 +1,39 @@
 package art.arcane.witchery.vampirism;
 
 import art.arcane.witchery.integration.CuriosCompat;
+import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.item.VampireClothingItem;
+import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.lycanthropy.Lycanthropy;
 import art.arcane.witchery.registry.WitcheryDamageTypes;
+import art.arcane.witchery.registry.WitcherySounds;
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 
 public final class VampireMortality {
     private VampireMortality() {}
+
+    public static boolean stake(ServerPlayer attacker, ServerPlayer victim, ItemStack stack) {
+        if (!WitcheryIngredient.WOODEN_STAKE.matches(stack) || !WitcheryServerConfig.ALLOW_STAKING_VAMPIRES.get()
+                || !victim.isSleeping() || !Vampirism.isVampire(victim)) return false;
+
+        var level = victim.serverLevel();
+        level.sendParticles(DustParticleOptions.REDSTONE, victim.getX(), victim.getY(), victim.getZ(),
+                16, victim.getBbWidth() / 2, victim.getBbHeight() / 2, victim.getBbWidth() / 2, 0.05);
+        level.playSound(null, victim.blockPosition(), WitcherySounds.BLOOD_DRINK.get(), SoundSource.PLAYERS, 1, 1);
+        if (!victim.getAbilities().instabuild) {
+            WitcheryDamageTypes.killDirectly(victim, attacker, WitcheryDamageTypes.sunlight(level));
+        }
+        if (!attacker.getAbilities().instabuild) stack.shrink(1);
+        return true;
+    }
 
     public static boolean preventLethalDamage(LivingEntity victim, DamageSource source, float damage) {
         // Roll flame protection only at death, after totems and poppets have had their chance.

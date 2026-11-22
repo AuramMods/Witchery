@@ -203,13 +203,7 @@ public final class SymbolProjectile extends ThrowableProjectile {
     private static void instantDeath(LivingEntity target, LivingEntity caster) {
         DamageSource kind = target instanceof Player && Vampirism.isVampire(target)
                 ? WitcheryDamageTypes.sunlight(target.level()) : target.damageSources().genericKill();
-        DamageSource source = new DamageSource(kind.typeHolder(), caster);
-        if (target.isSleeping()) target.stopSleeping();
-        target.setLastHurtByMob(caster);
-        if (caster instanceof Player player) target.setLastHurtByPlayer(player);
-        target.getCombatTracker().recordDamage(source, target.getHealth());
-        target.setHealth(0);
-        target.die(source);
+        WitcheryDamageTypes.killDirectly(target, caster, kind);
     }
 
     private void retrieveItems(ServerLevel level, Vec3 impact) {

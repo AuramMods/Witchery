@@ -382,6 +382,10 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_dark_cloth", has(WitcheryIngredient.DARK_CLOTH.item()))
                 .save(recipeOutput);
         handBowRecipes(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, WitcheryIngredient.WOODEN_STAKE.item())
+                .define('G', GARLIC_CROPS).define('S', Items.STICK)
+                .pattern("GGG").pattern("GSG").pattern("GGG")
+                .unlockedBy("has_garlic", has(GARLIC_CROPS)).save(recipeOutput);
         hunterClothingRecipes(recipeOutput);
         ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, WitcheryBlocks.getRequired("garlicgarland").get())
                 .define('G', GARLIC_CROPS).define('S', Items.STRING)

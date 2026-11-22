@@ -715,7 +715,7 @@ Variant 156 consumes one flower when the tester targets a living entity within t
 | 159 | `muttoncooked` |
 | 160 | `vbookPage` |
 | 161 | `darkCloth` |
-| 162 | `stake` |
+| 162 | `stake` (`witchery:stake`, eight garlic and a stick, `allowStakingVampires`) |
 | 163 | `warmBlood` maps to `witchery:warm_blood`. Humans get Hunger, and vampires replenish blood. |
 | 164 | `lilithsBlood` maps to `witchery:liliths_blood`. The drink grants a rank or replenishes blood at rank ten. |
 | 165 | `heartofgold` → `witchery:heart_of_gold` (Fairest drop and Animal Attraction or Repulsion brew action) |
@@ -1564,7 +1564,7 @@ Status:
 
 ## Mod Hook Integrations (`modHooks.register`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/Witchery.java`
-- `ModHookArsMagica2`
+- `ModHookArsMagica2` drained a fraction of maximum mana and protected poppets and chalk from its Reconstructor. Auram ships Ars Magica Legacy 1.5.0, which exposes `ArsMagicaAPI.getManaHelper()`. The mana debit still needs wiring through Witchery's magic drain. Audit whether the original repair and Soulbound hooks have equivalents in that build.
 - `ModHookBloodMagic`
 - `ModHookForestry` had empty initialization and magic-drain methods in 0.24.1.
 - `ModHookMineFactoryReloaded` maps to Industrial Foregoing. The Sower preserves the three saved sapling variants. Forge's crop and bonemeal interfaces and the log and leaf tags cover the eight crops and three trees. The Crusher, Imprisonment Tool, and Duplicator use their respective entity type tags for the 29, 25, and 30 original exclusions. Witchery makes the Crusher apply its full exclusion tag before selecting a target. [Industrial Foregoing 3.5.21](https://www.curseforge.com/minecraft/mc-mods/industrial-foregoing/files/7068937)

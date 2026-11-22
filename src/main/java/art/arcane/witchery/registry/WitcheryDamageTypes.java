@@ -7,6 +7,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,6 +45,16 @@ public final class WitcheryDamageTypes {
 
     public static DamageSource sunlight(Level level) {
         return new DamageSource(level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(SUNLIGHT));
+    }
+
+    public static void killDirectly(LivingEntity target, LivingEntity attacker, DamageSource kind) {
+        DamageSource source = new DamageSource(kind.typeHolder(), attacker);
+        if (target.isSleeping()) target.stopSleeping();
+        target.setLastHurtByMob(attacker);
+        if (attacker instanceof Player player) target.setLastHurtByPlayer(player);
+        target.getCombatTracker().recordDamage(source, target.getHealth());
+        target.setHealth(0);
+        target.die(source);
     }
 
     public static DamageSource vampireBite(Entity attacker) {

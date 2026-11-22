@@ -637,6 +637,12 @@ public final class WitcheryEventHooks {
             }
         }
         var held = event.getItemStack();
+        if (event.getEntity() instanceof ServerPlayer attacker && event.getTarget() instanceof ServerPlayer victim
+                && VampireMortality.stake(attacker, victim, held)) {
+            event.setCancellationResult(InteractionResult.CONSUME);
+            event.setCanceled(true);
+            return;
+        }
         if (held.getItem() instanceof GlassGobletItem && GlassGobletItem.filled(held)
                 && event.getTarget() instanceof Mob target && (target instanceof Villager || target instanceof VillageGuard)) {
             if (event.getEntity() instanceof ServerPlayer player) GlassGobletItem.offerToResident(player, target, held);
