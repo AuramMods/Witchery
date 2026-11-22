@@ -6,7 +6,6 @@ import art.arcane.witchery.item.ArthanaItem;
 import art.arcane.witchery.item.BolineItem;
 import art.arcane.witchery.item.CircleTalismanItem;
 import art.arcane.witchery.item.SpectralStoneItem;
-import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryRecipes;
 import art.arcane.witchery.world.WitcheryDimensions;
@@ -348,11 +347,9 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
     }
 
     @Nullable
-    public Offering findLocationOffering(ServerLevel level, BlockPos pos) {
+    public Offering findOptionalWaystone(ServerLevel level, BlockPos pos) {
         for (Offering offering : nearbyOfferings(level, pos)) {
-            if (!offering.stack().is(WitcheryIngredient.BOUND_WAYSTONE.item())) continue;
-            var location = WaystoneItem.location(offering.stack());
-            return location != null && location.dimension().equals(level.dimension()) ? offering : null;
+            if (offering.stack().is(WitcheryIngredient.BOUND_WAYSTONE.item())) return offering;
         }
         return null;
     }

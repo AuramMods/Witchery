@@ -552,6 +552,12 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - A direct run of the client renderer's model and pose code captured 288 wolf vertices and 192 mandrake vertices. It verified the original heights, all four directions, valid atlas coordinates, and inventory slot fit. The reobfuscated JAR includes both original texture files byte for byte. The graphical runtime did not respond, so a muted live-client check remains open.
 - A Witchery 0.24.1 server saved all eight variants with different owners and killer names. The packaged Forge 1.20.1 server kept each facing and both name fields through import and restart. Java 17 data generation, JAR reobfuscation, and all 58 required GameTests passed. The packaged SHA-256 is `56dd7c6bca884f2d62a3ecc8214251d1816ddb21b552ab336a87492823b6e966`.
 
+### Optional Waystone Offerings (2026-11-22)
+
+- All 14 legacy rite entries with an optional Bound Waystone map to modern recipes that consume it before altar power. The rite prefers a loose item over a Grassper, keeps invalid stones in place, and falls back to the Heart Glyph when no binding is accepted. Hell on Earth sacrifices its villager first.
+- The offering step records the target and the original item for refunds. A packaged headless server stopped after removing a named Waystone from a Grassper. Its next boot refunded the stone, Obsidian and Redstone at their offering positions when it could not find an altar. The powered GameTest kept the saved destination and ignored a stone added after loading.
+- Java 17 data generation, JAR reobfuscation, and all 60 required Forge GameTests passed. The packaged SHA-256 is `35aa712c97533c2ee11c5f018bc3ea28c797e7a48efe692d949eec4e8a8f70ab`.
+
 ### Void Bramble and the Statue of the Goddess (2026-11-21)
 
 - Both block recipes use the original ingredients and remain disabled by default. Enable them separately with `allowVoidBrambleRecipe` and `allowGoddessStatueRecipe` in the common config. The Void Bramble ingredient matches Ender Bramble's `BlockStateTag.wild=false` and rejects Wild Bramble.

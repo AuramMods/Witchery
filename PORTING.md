@@ -379,7 +379,9 @@
 - [x] Deliver a parcel or throw a brew with a tamed Owl. The muted player assigned a location stone, launched the Owl with an empty hand, and restarted the server while it was airborne. The Owl delivered the named paper and returned to sit near its launch point. A second route made it throw Ink at a bound pig. A route of more than 160 blocks delivered a second parcel outside the player's simulation distance. All 96 required GameTests passed.
 - [x] Bind or use dropped Waystones at the original Otherwhere glyph patterns. The muted client tossed ten into an eight-glyph ring and got eight bound stones and two unbound stones. A powered ring bound a named pig. Dropping the bound stack inside a twelve-glyph ring moved the client, loose paper and seven remaining stones to the exact saved point. All 99 required GameTests passed.
 - [x] Restore portable location binding and both Waystone copy recipes. Each copy produces two stones with the source location and custom name. Portable binding and copying use a Charged Attuned Stone in a small white ring. Powered copying uses Redstone and 500 altar power.
-- [ ] Restore the remaining Waystone uses in rites and equipment.
+- [x] Match all 14 optional Waystone recipe entries to their original rite IDs. Barriers, storms, Moving Earth, Hell on Earth, Forestation, and the Volcano rite take the stone in a separate step before checking altar power. A stone bound to another dimension stays where it was offered and the rite uses its local target.
+- [x] Save the chosen target and offering between the optional step and the altar charge. Headless Forge resumed the packaged Barrier rite after shutdown and returned the original named stone and both required ingredients when there was no altar. A powered GameTest used the saved destination and left a later Waystone untouched.
+- [x] Cross-check the other legacy uses against the existing dropped circles, Crystal Ball, cauldron targeting, Owl delivery, Winged Monkey transport, and Ruby Slipper travel. The legacy Thaumcraft aspects remain part of the optional integration review.
 
 ## Crystal Ball readings (2026-11-20)
 

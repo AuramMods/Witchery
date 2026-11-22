@@ -112,6 +112,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     private final List<Runnable> terrainChanges = new ArrayList<>();
     private boolean legacyOfferingReturns;
     private boolean legacyWaystoneMatch;
+    @Nullable private BlockPos waystoneTarget;
     @Nullable private WeatherRites.Storm storm;
     private int toadRainStage = -1;
 
@@ -184,8 +185,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     }
 
     private void advance(ServerLevel level) {
-        if (!(level.getRecipeManager().byKey(activeRite).orElse(null) instanceof ItemRiteRecipe rite)
-                || offeringStep > rite.sacrifices().size()) {
+        if (!(level.getRecipeManager().byKey(activeRite).orElse(null) instanceof ItemRiteRecipe rite)) {
             abort(level, "message.witchery.rite.unknown");
             return;
         }
@@ -205,8 +205,12 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 activeRite = creatureRite.id();
             }
         }
-        if (offeringStep == rite.sacrifices().size()) {
-            finish(level, rite);
+        int required = rite.sacrifices().size();
+        boolean optionalWaystone = rite.action().acceptsOptionalWaystone();
+        if (offeringStep >= required) {
+            if (offeringStep == required && optionalWaystone) offerWaystone(level, rite, pos);
+            else if (offeringStep == required + (optionalWaystone ? 1 : 0)) finish(level, rite);
+            else abort(level, "message.witchery.rite.unknown");
             return;
         }
         List<ItemRiteRecipe.Offering> remaining = rite.findSacrifices(level, pos, offeringStep);
@@ -232,7 +236,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         var action = rite.action();
         var protectionKind = action.protection();
         boolean hellOnEarth = action == ItemRiteRecipe.Action.HELL_ON_EARTH;
-        boolean sacrificesFirst = action == ItemRiteRecipe.Action.SUMMON_WITHER || hellOnEarth;
+        boolean sacrificesFirst = action == ItemRiteRecipe.Action.SUMMON_WITHER;
         boolean newSummoning = action == ItemRiteRecipe.Action.SUMMON_WITHER
                 || action == ItemRiteRecipe.Action.SUMMON_WITCH || action == ItemRiteRecipe.Action.SUMMON_SPECTRAL_FAMILIAR;
         AltarBlockEntity altar = null;
@@ -247,17 +251,15 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             abort(level, "message.witchery.rite.missing_power");
             return;
         }
-        Mob living = rite.findLivingOffering(level, pos);
-        if (rite.livingOffering() != null && living == null) {
+        Mob living = hellOnEarth ? null : rite.findLivingOffering(level, pos);
+        if (!hellOnEarth && rite.livingOffering() != null && living == null) {
             abort(level, "message.witchery.rite.missing_living_offering");
             return;
         }
-        BlockPos hellTarget = null;
         if (sacrificesFirst) {
-            // These rites sacrifice the villager before charging the altar.
+            // The Wither rite sacrifices the villager before charging the altar.
             if (living != null) sacrificeLiving(level, living);
             living = null;
-            if (hellOnEarth) hellTarget = takeWaystone(level, rite, pos);
             if (missingPower) {
                 abort(level, "message.witchery.rite.missing_power");
                 return;
@@ -442,10 +444,10 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             abort(level, "message.witchery.rite.no_food_to_cook");
             return;
         }
-        if (protectionKind != null && !prepareProtection(level, rite, protectionKind, pos)) return;
+        if (protectionKind != null && !prepareProtection(level, protectionKind, pos)) return;
         LandscapeRites.Progress landscape = null;
         if (rite.action().usesLandscapeUpkeep()) {
-            landscape = prepareLandscape(level, rite, hellTarget);
+            landscape = prepareLandscape(level, rite);
             if (landscape == null) return;
         }
         if (rite.action() == ItemRiteRecipe.Action.BIND_SPECTRAL_STONE && !SpectralStoneItem.bindFromCircle(level, pos)) {
@@ -542,8 +544,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     }
 
     private void prepareStorm(ServerLevel level, ItemRiteRecipe rite, BlockPos heart) {
-        BlockPos target = rite.action().targetsStormWithWaystone() ? takeWaystone(level, rite, heart) : null;
-        if (target == null) target = heart;
+        BlockPos target = waystoneTarget == null ? heart : waystoneTarget;
         if (!LandscapeRites.canReach(level, heart, target, covenSize)) {
             abort(level, "message.witchery.rite.landscape_too_far");
             return;
@@ -551,9 +552,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         storm = new WeatherRites.Storm(target, rite.action() != ItemRiteRecipe.Action.CALL_STORM, 0);
     }
 
-    private boolean prepareProtection(ServerLevel level, ItemRiteRecipe rite, ProtectionRites.Kind kind, BlockPos heart) {
-        BlockPos target = kind.acceptsWaystone() ? takeWaystone(level, rite, heart) : null;
-        if (target == null) target = heart;
+    private boolean prepareProtection(ServerLevel level, ProtectionRites.Kind kind, BlockPos heart) {
+        BlockPos target = waystoneTarget == null ? heart : waystoneTarget;
         if (!LandscapeRites.canReach(level, heart, target, covenSize)) {
             abort(level, "message.witchery.rite.landscape_too_far");
             return false;
@@ -562,14 +562,29 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         return true;
     }
 
-    @Nullable
-    private BlockPos takeWaystone(ServerLevel level, ItemRiteRecipe rite, BlockPos heart) {
-        ItemRiteRecipe.Offering stone = rite.findLocationOffering(level, heart);
-        if (stone == null) return null;
-        BlockPos target = WaystoneItem.location(stone.stack()).position();
+    private void offerWaystone(ServerLevel level, ItemRiteRecipe rite, BlockPos heart) {
+        if (rite.action() == ItemRiteRecipe.Action.HELL_ON_EARTH && rite.livingOffering() != null) {
+            Mob living = rite.findLivingOffering(level, heart);
+            if (living == null) {
+                abort(level, "message.witchery.rite.missing_living_offering");
+                return;
+            }
+            sacrificeLiving(level, living);
+        }
+        offeringStep++;
+        ItemRiteRecipe.Offering stone = rite.findOptionalWaystone(level, heart);
+        if (stone == null) return;
+        var location = WaystoneItem.location(stone.stack());
+        var origin = stone.position();
+        if (location == null || !location.dimension().equals(level.dimension())) {
+            level.sendParticles(ParticleTypes.SMOKE, origin.x, origin.y + 0.2, origin.z, 8, 0.2, 0.22, 0.2, 0.02);
+            level.playSound(null, BlockPos.containing(origin), SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.BLOCKS, 1, 1);
+            return;
+        }
+        waystoneTarget = location.position();
         sacrificed.add(new Sacrifice(stone.stack().copyWithCount(1), BlockPos.containing(stone.position())));
         stone.consume().run();
-        return target;
+        level.sendParticles(ParticleTypes.INSTANT_EFFECT, origin.x, origin.y + 0.2, origin.z, 8, 0.2, 0.22, 0.2, 0.02);
     }
 
     private void advanceStorm(ServerLevel level) {
@@ -598,7 +613,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     }
 
     @Nullable
-    private LandscapeRites.Progress prepareLandscape(ServerLevel level, ItemRiteRecipe rite, @Nullable BlockPos hellTarget) {
+    private LandscapeRites.Progress prepareLandscape(ServerLevel level, ItemRiteRecipe rite) {
         BlockPos heart = getBlockPos();
         if (rite.action() == ItemRiteRecipe.Action.ICE_SHELL && covenSize < 2) {
             abort(level, "message.witchery.rite.ice_shell_coven");
@@ -615,9 +630,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 return null;
             }
         }
-        BlockPos remote = rite.action() == ItemRiteRecipe.Action.HELL_ON_EARTH ? hellTarget
-                : rite.action().usesWaystoneTarget() ? takeWaystone(level, rite, heart) : null;
-        BlockPos target = remote == null ? heart : remote;
+        BlockPos target = waystoneTarget == null ? heart : waystoneTarget;
         if (!LandscapeRites.canReach(level, heart, target, covenSize)) {
             abort(level, "message.witchery.rite.landscape_too_far");
             return null;
@@ -641,7 +654,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         var fissure = rite.action() == ItemRiteRecipe.Action.PART_EARTH
                 ? EarthRites.Fissure.start(heart, firstOffering, level.random.nextLong()) : null;
         return new LandscapeRites.Progress(rite.action(), species, target, 0, fissure,
-                remote == null && rite.action().raisedEarthRadius() > 0);
+                waystoneTarget == null && rite.action().raisedEarthRadius() > 0);
     }
 
     private static void finishVampireCure(ServerLevel level, BlockPos pos, ServerPlayer vampire) {
@@ -776,6 +789,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         offeringStep = 0;
         legacyOfferingReturns = false;
         legacyWaystoneMatch = false;
+        waystoneTarget = null;
         storm = null;
         toadRainStage = -1;
         updateActiveState(level);
@@ -841,6 +855,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         for (var ongoing : savedUpkeep) upkeep.add(ongoing.rite());
         if (activeRite == null && upkeep.isEmpty()) loadLegacyUpkeep(tag);
         if (activeRite == null) activeRite = queuedRites.pollFirst();
+        waystoneTarget = activeRite != null && tag.contains("WaystoneTarget", Tag.TAG_LONG)
+                ? BlockPos.of(tag.getLong("WaystoneTarget")) : null;
         storm = activeRite == null ? null : WeatherRites.Storm.load(tag.getCompound("Storm"));
         toadRainStage = activeRite != null && tag.contains("ToadRainStage", Tag.TAG_ANY_NUMERIC)
                 ? Mth.clamp(tag.getInt("ToadRainStage"), 0, RainOfToads.LAST_LIGHTNING_STAGE) : -1;
@@ -967,6 +983,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             for (var id : queuedRites) queued.add(StringTag.valueOf(id.toString()));
             tag.put("QueuedRites", queued);
             if (legacyWaystoneMatch) tag.putBoolean("LegacyWaystoneMatch", true);
+            if (waystoneTarget != null) tag.putLong("WaystoneTarget", waystoneTarget.asLong());
             if (storm != null) tag.put("Storm", storm.save());
             if (toadRainStage >= 0) tag.putInt("ToadRainStage", toadRainStage);
             if (covenSize > 0) {
