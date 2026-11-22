@@ -455,6 +455,12 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - The muted single-player client imported a separate untouched copy, restored the corresponding owner at the same Dream coordinates, and saved the bed and all four bound destinations in data version 3465. Both client tests used an isolated Xvfb display and OpenAL's No Output device.
 - Java 17 data generation, JAR reobfuscation, and all seven focused migration GameTests passed. The packaged JAR SHA-256 is `bb2e1cfd1588d176fe3f731a59778386e09583c42dcce9c45eadf7bc7c8b1ac5`.
 
+### Legacy Dream Sessions and Catchers (2026-11-21)
+
+- Legacy Dream sessions write to `ForgeData.PlayerPersisted.WITCSpiritWorld`. The original body coordinates, hunger and health keys already match `DreamTravel`. Parked items sit outside the vanilla player fixer schema. Both player loading paths now apply the item fixer to those lists after resolving Witchery stacks. Login also restores ghost appearance and nightmare level from the saved session.
+- A synthetic manifested 1.7.10 record loaded through actual Forge player storage with two Icy Needles. The first restored its Dream inventory, including four Blue Wool and two Subdued Spirits. The next modern save and reload kept the parked Overworld inventory. The second needle restored the body position, a Diamond Sword with 17 wear and a custom tag, three Red Wool, health 14, and food 11. The rare Spirits carried back, the Blue Wool stayed in the Dream inventory, and the sleeping body was removed.
+- An original Forge region restored Dream Catchers on all four facings, all five weaves, and a sleeping body with its name, owner and health. All 12 packaged checks passed on import and ordinary restart. Removing the wall dropped one Dreamweave of Nightmares. Java 17 data generation, JAR reobfuscation, all 25 checked-in GameTests, and ten focused Dream tests passed. The packaged JAR SHA-256 is `55841c217fc322225f8491a1a7b498940ee0bdcdcb42ec6a608bd0899dc8892b`.
+
 ### Legacy Ritual Workshop Import (2026-11-21)
 
 - Forge 10.13.4.1614 saved all three original fetish blocks under the `witchery:witchsladder` tile ID. Read the numeric block and its metadata at the tile's coordinates to recognize Scarecrow, Trent Effigy and Witch's Ladder. The real fixture retained all three tile types, directions, colors and effects, a trusted player, and the Ladder's spectral flag.

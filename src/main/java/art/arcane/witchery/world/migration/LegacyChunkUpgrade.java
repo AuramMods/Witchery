@@ -264,8 +264,8 @@ public final class LegacyChunkUpgrade {
                     .setValue(WitchesOvenBlock.LIT, name.getPath().equals("witchesovenburning"));
             case "distilleryidle", "distilleryburning" -> state.setValue(BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata))
                     .setValue(DistilleryBlock.LIT, name.getPath().equals("distilleryburning"));
-            case "kettle", "spinningwheel", "fumefunnel", "filteredfumefunnel", "wolfaltar", "beartrap", "wolftrap", "garlicgarland" -> state.setValue(
-                    BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata));
+            case "kettle", "spinningwheel", "fumefunnel", "filteredfumefunnel", "wolfaltar", "beartrap", "wolftrap",
+                    "garlicgarland", "dreamcatcher" -> state.setValue(BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata));
             case "grassper", "placeditem", "scarecrow", "trent", "witchsladder" -> state.setValue(
                     BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata & 7));
             case "altar" -> state.setValue(AltarBlock.FORMED, metadata == 1);

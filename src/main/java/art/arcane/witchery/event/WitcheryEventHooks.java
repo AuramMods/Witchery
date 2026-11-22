@@ -177,6 +177,7 @@ public final class WitcheryEventHooks {
             VampireFlight.restore(serverPlayer);
             Lycanthropy.restore(serverPlayer);
             WitcheryPlayerDataProvider.get(serverPlayer).ifPresent(data -> {
+                DreamTravel.restoreStyle(serverPlayer, data);
                 if (data.getOtherPlayerSkin().isEmpty()) {
                     data.applyPlayerStyle(
                             serverPlayer.getGameProfile().getName(),

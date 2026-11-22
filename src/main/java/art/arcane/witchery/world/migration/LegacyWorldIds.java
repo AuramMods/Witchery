@@ -7,6 +7,7 @@ import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.serialization.Dynamic;
+import net.minecraft.SharedConstants;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
@@ -14,6 +15,7 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.datafix.fixes.References;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -121,9 +123,12 @@ public final class LegacyWorldIds {
         if (unmappedBlocks.add(id)) Witchery.LOGGER.warn("Legacy block {} has no Witchery world import mapping yet", id);
     }
 
-    public void upgradePlayer(CompoundTag player) {
+    public void upgradePlayer(CompoundTag player, DataFixer fixer, int from) {
         dimensions.upgradePlayerLocation(player);
         upgradeItems(player);
+        var persisted = player.getCompound("ForgeData").getCompound(Player.PERSISTED_NBT_TAG);
+        upgradeVanillaItems(persisted.getCompound("WITCSpiritWorld"), fixer, from,
+                SharedConstants.getCurrentVersion().getDataVersion().getVersion());
         if (player.contains("WitcheryExtendedPlayer", Tag.TAG_COMPOUND)) {
             var capabilities = player.getCompound("ForgeCaps");
             String playerDataId = WitcheryCapabilities.playerDataId().toString();

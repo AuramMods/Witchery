@@ -3,6 +3,7 @@ package art.arcane.witchery.world;
 import art.arcane.witchery.block.entity.FetishBlockEntity;
 import art.arcane.witchery.ritual.FetishBinding;
 
+import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.DreamWeave;
@@ -230,6 +231,12 @@ public final class DreamTravel {
 
     public static boolean isGhost(ServerPlayer player) {
         return player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getBoolean(MANIFESTED);
+    }
+
+    public static void restoreStyle(ServerPlayer player, WitcheryPlayerData data) {
+        if (!isSpiritWalking(player)) return;
+        CompoundTag session = persistent(player).getCompound(SPIRIT_WORLD);
+        applyStyle(data, nightmareLevel(session), isGhost(player));
     }
 
     public static boolean processRequests(ServerPlayer player) {
@@ -644,8 +651,7 @@ public final class DreamTravel {
 
     private static void syncStyle(ServerPlayer player, int nightmare, boolean ghost) {
         WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
-            data.applyPlayerStyle(data.getOtherPlayerSkin(), data.getGrotesqueTicks(), nightmare, ghost,
-                    data.getCreatureTypeOrdinal(), data.getHumanBlood());
+            applyStyle(data, nightmare, ghost);
             data.bumpSyncRevision();
             WitcheryNetwork.sendPartialExtendedPlayerSync(player, data);
             for (ServerPlayer viewer : player.serverLevel().players()) {
@@ -654,5 +660,10 @@ public final class DreamTravel {
                         nightmare, ghost, data.getCreatureTypeOrdinal(), data.getHumanBlood(), data.getOtherPlayerSkin());
             }
         });
+    }
+
+    private static void applyStyle(WitcheryPlayerData data, int nightmare, boolean ghost) {
+        data.applyPlayerStyle(data.getOtherPlayerSkin(), data.getGrotesqueTicks(), nightmare, ghost,
+                data.getCreatureTypeOrdinal(), data.getHumanBlood());
     }
 }
