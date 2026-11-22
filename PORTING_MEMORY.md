@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Saved Thrown Brews (2026-11-22)
+
+- The original `witchery.brew` stored its projectile subtype in `damageValue`. The original `witchery.brew2` stored its bottle in `Brew` and its flight mode in `Spell`. Both now import as the active `witchery:thrown_brew` entity. A named owner survives a save while unavailable and becomes the projectile's UUID owner when found in the same level.
+- The new GameTest failed at the entity type assertion on the preceding build. It passed after conversion, including the ordinary bottle's exact velocity and the named owner's save and reload. All 119 checked-in Forge GameTests passed, along with Java 17 data generation and JAR reobfuscation.
+- The packaged importer upgraded an original Forge save containing a fixed Ink brew, a custom Wolfsbane splash, and a Wolfsbane spell. The ordinary headless restart kept all three original entity UUIDs, both gravity modes, and both custom bottles' ingredient order and color `-2143757735`. The private fixture repositioned the projectiles to test impact. Both custom throws applied Wolfsbane, the Ink applied Blindness, and all three entities disappeared. The packaged SHA-256 is `26139a82872d45d7ad18a090ad9876b0048e6240d6795938ba4fc102de92b6d8`. `/tmp/witchery-projectile-import-current` identifies the original and packaged profiles and logs.
+- The frozen 671-case replay on the preceding brew rain build passed 670 cases. The archived Wicker Effigy test failed its immediate Huntsman entrance assertion. The earlier item-curse candidate passed and recorded a 250-power debit without a recharge pulse. The frozen replay log is under `/tmp/witchery-rite-activation-current`.
+
 ## Heart Glyph Offering Visibility and Saved Brew Rain (2026-11-22)
 
 - In 48 isolated placements, five Focused Barrier or Moving Earth rings matched while the entity query returned zero freshly added offerings. The original activation succeeded when the items became visible one to ten ticks later. Both checked-in fixtures now wait for the real dropped stacks. The Moving Earth assertions run relative to activation, so the wait preserves their original stage timings.

@@ -812,7 +812,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 |---:|---|---|---|
 | 92 | `DEMON` | `EntityDemon` | `demon` |
 | 93 | `BROOM` | `EntityBroom` | `broom` (rideable vehicle, hue, damage and recovery) |
-| 94 | `BREW` | `EntityWitchProjectile` | `brew` |
+| 94 | `BREW` | `EntityWitchProjectile` | `brew` → `witchery:thrown_brew` (fixed brew or projectile selected by `damageValue`) |
 | 95 | `SPECTRAL_FAMILIAR` | `EntityFamiliar` | `familiar` (tamed spectral pig, ore search, `ItemToFind`, `Searches`) |
 | 96 | `MANDRAKE` | `EntityMandrake` | `mandrake` |
 | 97 | `TREEFYD` | `EntityTreefyd` | `treefyd` (planted guardian, Taglock training, Boline patrol, heart upgrades) |
@@ -847,7 +847,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 126 | `GOBLIN` | `EntityGoblin` | `goblin` |
 | 127 | `GOBLIN_MOG` | `EntityGoblinMog` | `goblinmog` (ranged patron boss, `Invul` and `WitcheryTarget` saved) |
 | 128 | `GOBLIN_GULG` | `EntityGoblinGulg` | `goblingulg` (melee patron boss, `Invul` and `WitcheryTarget` saved) |
-| 129 | `BREW2` | `EntityBrew` | `brew2` |
+| 129 | `BREW2` | `EntityBrew` | `brew2` → `witchery:thrown_brew` (saved `Brew` stack and `Spell` flight mode) |
 | 130 | `ITEM_WAYSTONE` | `EntityItemWaystone` | `item` (legacy dropped Waystone, item subtype and age) |
 | 131 | `DROPLET` | `EntityDroplet` | `droplet` |
 | 132 | `SPLATTER` | `EntitySplatter` | `splatter` |
@@ -1223,6 +1223,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 - Tongue of Dog adds 250 base power and starts the item curse with a full triggered brew. The cauldron retains `RitualTriggered` and `RitualTicks` during the warmup. A charged item stores its ordered recipe and remaining charges under the original `WITCCurse` keys `Curse`, `Count` and `Delay`. A named 1.7.10 cauldron's root `FluidName`, `Amount`, `TicksHeated` and nested fluid `Tag` map to the 1.20.1 tank and ingredient data.
 - Tongue of Dog also casts instant, gas and liquid dispersals. A Bound Waystone adds 100 base power and supplies the first destination. Coal adds the one-level Extinguish action. Brew rain spawns `witchery:droplet` with saved `Brew` data. The 1.20.1 port keeps the earlier projectile spawn-egg item ID for save compatibility.
 - The legacy chunk importer converts numeric vanilla item IDs inside a falling droplet's `Brew.Items` list. The original entity type, ingredient order, and tint survive the normal save upgrade.
+- Both original thrown brew types import as `witchery:thrown_brew`. Fixed projectiles resolve their original ingredient subtype. Custom projectiles keep the ordered bottle ingredients and color, and spells retain their gravity-free flight. A saved thrower's name stays with the projectile until that player is available in the same level, then saves as an owner UUID.
 - The 26 built-in fixed recipes use `witchery:cauldron_ritual`. The legacy rules retain subset matching, firing priority, and ingredient power. Active fixed casts save their trigger stack in `RitualTrigger`. A dispenser can withdraw a boiling and powered legacy cast with the trigger at the end of `Items`, keeping `RitualTriggered` and the recipe ID in `FixedRitual`. The bottle applies the valid brew effects in order. Brew Fuel retains the original item ID and maps metadata 0–3 to `FuelTier`. Endless Water retains its item ID and maps named legacy top-level `Damage` to modern durability. The Player Compass keeps the original Taglock keys and the supplied 33-frame sprite set.
 - A `witchery:taglockkit` costs 1,000 base power to cast a brew on the bound creature or player. The cauldron saves the ordered Taglock and warmup in `Ingredients`, `RitualTriggered`, and `RitualTicks`. Both `decursedirected` and `decurseteleport` keep their original block and block entity IDs and save `WITCPlacer` and `Killers`. The new horizontal block states use network protocol 54.
 - The Statue of Broken Curses renders the original wolf model, and the Statue of Occluded Summons uses the stationary Mandrake model. Each uses its original statue atlas, with placed rotation from the saved facing and separate item display transforms.

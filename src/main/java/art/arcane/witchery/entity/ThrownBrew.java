@@ -8,10 +8,12 @@ import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -24,14 +26,44 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 public final class ThrownBrew extends ThrowableItemProjectile {
+    private String legacyOwnerName = "";
+
     public ThrownBrew(EntityType<? extends ThrownBrew> type, Level level) {
         super(type, level);
     }
 
     public ThrownBrew(LivingEntity thrower, Level level) {
         super(WitcheryEntities.THROWN_BREW.get(), thrower, level);
+    }
+
+    @Nullable
+    @Override
+    public Entity getOwner() {
+        var owner = super.getOwner();
+        if (owner != null || legacyOwnerName.isEmpty() || !(level() instanceof ServerLevel server)) return owner;
+        for (var player : server.players()) {
+            if (player.getGameProfile().getName().equals(legacyOwnerName)) {
+                setOwner(player);
+                legacyOwnerName = "";
+                return player;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        if (!legacyOwnerName.isEmpty()) tag.putString("ownerName", legacyOwnerName);
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        legacyOwnerName = tag.hasUUID("Owner") ? "" : tag.getString("ownerName");
     }
 
     public static boolean throwBottle(ServerLevel level, Player player, ItemStack stack, float speed) {
