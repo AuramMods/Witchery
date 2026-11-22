@@ -23,7 +23,7 @@ public final class RitualSaveImportTests {
     private record LegacyBlock(String name, int metadata, String property, String expected) {}
 
     @GameTest(template = "qa_coven_arena")
-    public static void restoresRitualWorkshopStatesAndSharedFetishTiles(GameTestHelper helper) throws Exception {
+    public static void restoresWorkshopAndConstructionStates(GameTestHelper helper) throws Exception {
         var blocks = List.of(new LegacyBlock("grassper", 12, "facing", "west"),
                 new LegacyBlock("circleglyphritual", 11, "pattern", "11"),
                 new LegacyBlock("circleglyphotherwhere", 3, "pattern", "3"),
@@ -33,7 +33,9 @@ public final class RitualSaveImportTests {
                 new LegacyBlock("trent", 3, "facing", "south"),
                 new LegacyBlock("witchsladder", 12, "facing", "west"),
                 new LegacyBlock("wickerbundle", 1, "bundle_type", "bloodied"),
-                new LegacyBlock("chalice", 1, "filled", "true"));
+                new LegacyBlock("chalice", 1, "filled", "true"),
+                new LegacyBlock("witchwoodslab", 10, "wood_type", "hawthorn"),
+                new LegacyBlock("witchwooddoubleslab", 1, "type", "double"));
         var entries = new ListTag();
         byte[] lowIds = new byte[4096];
         byte[] highIds = new byte[2048];
@@ -50,6 +52,15 @@ public final class RitualSaveImportTests {
             highIds[i >> 1] |= (byte) ((id >> 8) << shift);
             metadata[i >> 1] |= (byte) (block.metadata() << shift);
         }
+        int iceDoorId = 450;
+        var doorEntry = new CompoundTag();
+        doorEntry.putString("K", "\u0001witchery:icedoor");
+        doorEntry.putInt("V", iceDoorId);
+        entries.add(doorEntry);
+        int lowerIndex = 15 * 256;
+        lowIds[lowerIndex] = (byte) iceDoorId;
+        highIds[lowerIndex >> 1] = (byte) (iceDoorId >> 8);
+        metadata[lowerIndex >> 1] = 7;
         var section = new CompoundTag();
         section.putByte("Y", (byte) 0);
         section.putByteArray("Blocks", lowIds);
@@ -57,6 +68,18 @@ public final class RitualSaveImportTests {
         section.putByteArray("Data", metadata);
         var sections = new ListTag();
         sections.add(section);
+        var upperSection = new CompoundTag();
+        upperSection.putByte("Y", (byte) 1);
+        var upperIds = new byte[4096];
+        var upperHighIds = new byte[2048];
+        var upperMetadata = new byte[2048];
+        upperIds[0] = (byte) iceDoorId;
+        upperHighIds[0] = (byte) (iceDoorId >> 8);
+        upperMetadata[0] = 11;
+        upperSection.putByteArray("Blocks", upperIds);
+        upperSection.putByteArray("Add", upperHighIds);
+        upperSection.putByteArray("Data", upperMetadata);
+        sections.add(upperSection);
         var level = TagParser.parseTag("""
                 {TerrainPopulated:1b,TileEntities:[
                   {id:"witchery:witchsladder",x:5,y:0,z:0,EffectTypeID:1,BlockColor:11b},
@@ -100,6 +123,15 @@ public final class RitualSaveImportTests {
                                 && state.getCompound("Properties").getString(block.property()).equals(block.expected()),
                         "Expected " + block.name() + " with " + block.property() + "=" + block.expected() + ", found " + state);
             }
+            helper.assertTrue(palette.getCompound(states.get(10)).getCompound("Properties").getString("type").equals("top"),
+                    "The Hawthorn slab must keep the high metadata bit for its top half");
+            var lowerDoor = palette.getCompound(states.get(lowerIndex));
+            var flatUpper = fixed.getList("Sections", Tag.TAG_COMPOUND).getCompound(1);
+            var upperPalette = flatUpper.getList("Palette", Tag.TAG_COMPOUND);
+            var upperStates = new PackedBitStorage(Math.max(4, Mth.ceillog2(upperPalette.size())), 4096,
+                    flatUpper.getLongArray("BlockStates"));
+            assertDoor(helper, lowerDoor, "lower");
+            assertDoor(helper, upperPalette.getCompound(upperStates.get(0)), "upper");
             var tiles = fixed.getList("TileEntities", Tag.TAG_COMPOUND);
             helper.assertTrue(tiles.getCompound(0).getString("id").equals("witchery:scarecrow")
                             && tiles.getCompound(0).getByte("BlockColor") == 11
@@ -113,5 +145,13 @@ public final class RitualSaveImportTests {
             Files.deleteIfExists(root);
         }
         helper.succeed();
+    }
+
+    private static void assertDoor(GameTestHelper helper, CompoundTag state, String half) {
+        var properties = state.getCompound("Properties");
+        helper.assertTrue(state.getString("Name").equals("witchery:icedoor") && properties.getString("half").equals(half)
+                        && properties.getString("facing").equals("north") && properties.getString("hinge").equals("right")
+                        && properties.getString("open").equals("true") && properties.getString("powered").equals("true"),
+                "Both door halves should combine the original metadata across sections. Found " + state);
     }
 }

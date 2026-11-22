@@ -1,3 +1,17 @@
 {
-  "parent": "witchery:block/witchwooddoubleslab"
+  "parent": "witchery:block/witchwood_rowan",
+  "overrides": [
+    {
+      "predicate": {
+        "witchery:wood_type": 1
+      },
+      "model": "witchery:item/witchwooddoubleslab_alder"
+    },
+    {
+      "predicate": {
+        "witchery:wood_type": 2
+      },
+      "model": "witchery:item/witchwooddoubleslab_hawthorn"
+    }
+  ]
 }

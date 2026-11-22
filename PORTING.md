@@ -1274,6 +1274,13 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Verify the sounds through normal actions on a muted survival client. Fill the cauldron with three buckets and add lime wool to see the bubbling subtitle. Mount and walk through a bridge between two opposed mirrors and see the ripples subtitle at the other end.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 26 focused Forge GameTests. The final JAR audit resolved all 82 recording references across 58 sound definitions and verified the four restored OGG files against their source bytes.
 
+## Witchwood Slabs and Door Save Import (2026-11-21)
+
+- [x] Restore Rowan, Alder, and Hawthorn slabs and double slabs under their existing IDs. A placed slab carries its wood species, only matches the same species for merging, and drops two matching slabs at full height. The three species use their matching plank textures, names, sounds, and the original dry slab fire values. The legacy slab variants are available through creative items and imports.
+- [x] Import wood species and slab half from Forge 1.7.10 blocks and inventory metadata. Restore both halves of Rowan, Alder, and Perpetual Ice Doors by combining the lower and upper metadata, including across vertical chunk sections.
+- [x] Pass 13 packaged import checks and repeat them on an ordinary headless dedicated restart. Breaking a migrated Hawthorn double slab produced two Hawthorn slabs. Removing redstone closed both halves of the imported ice door spanning Y 15–16. Data generation, JAR reobfuscation, all 22 checked-in GameTests, and all 454 selected development checks passed.
+- [ ] Verify the slab models in a muted Forge client. The generated JAR resolves all 18 block variants and six item models to their respective wood assets. The Docker socket timed out during the isolated client launch.
+
 ## Brew of Erosion and Brew of Ice (2026-11-21)
 
 - [x] Restore the original six-ingredient Kettle recipes, three servings, Brew Mastery bottling bonus, and legacy metadata 62 and 76. Erosion needs no altar power. Ice waits for 1,000 power and debits the altar once per batch.

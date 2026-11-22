@@ -405,7 +405,7 @@ public final class WitcheryClient {
             for (RegistryObject<MenuType<LegacyPlaceholderMenu>> menuType : WitcheryMenus.placeholders().values()) {
                 MenuScreens.register(menuType.get(), LegacyPlaceholderScreen::new);
             }
-            for (String name : new String[]{"witchsapling", "witchleaves", "witchlog", "witchwood"}) {
+            for (String name : new String[]{"witchsapling", "witchleaves", "witchlog", "witchwood", "witchwoodslab", "witchwooddoubleslab"}) {
                 ItemProperties.register(WitcheryBlocks.getRequired(name).get().asItem(), WOOD_TYPE_MODEL,
                         (stack, level, entity, seed) -> WitchWoodType.fromStack(stack).ordinal());
             }

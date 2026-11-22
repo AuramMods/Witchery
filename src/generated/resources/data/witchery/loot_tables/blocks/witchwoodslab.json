@@ -8,6 +8,25 @@
           "type": "minecraft:item",
           "functions": [
             {
+              "block": "witchery:witchwoodslab",
+              "conditions": [
+                {
+                  "condition": "minecraft:inverted",
+                  "term": {
+                    "block": "witchery:witchwoodslab",
+                    "condition": "minecraft:block_state_property",
+                    "properties": {
+                      "wood_type": "rowan"
+                    }
+                  }
+                }
+              ],
+              "function": "minecraft:copy_state",
+              "properties": [
+                "wood_type"
+              ]
+            },
+            {
               "add": false,
               "conditions": [
                 {

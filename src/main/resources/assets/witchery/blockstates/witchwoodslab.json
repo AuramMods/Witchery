@@ -1,7 +1,31 @@
 {
   "variants": {
-    "type=bottom": { "model": "witchery:block/witchwoodslab" },
-    "type=double": { "model": "witchery:block/witchwooddoubleslab" },
-    "type=top": { "model": "witchery:block/witchwoodslab_top" }
+    "type=bottom,wood_type=rowan": {
+      "model": "witchery:block/witchwoodslab"
+    },
+    "type=double,wood_type=rowan": {
+      "model": "witchery:block/witchwood_rowan"
+    },
+    "type=top,wood_type=rowan": {
+      "model": "witchery:block/witchwoodslab_top"
+    },
+    "type=bottom,wood_type=alder": {
+      "model": "witchery:block/witchwoodslab_alder"
+    },
+    "type=double,wood_type=alder": {
+      "model": "witchery:block/witchwood_alder"
+    },
+    "type=top,wood_type=alder": {
+      "model": "witchery:block/witchwoodslab_alder_top"
+    },
+    "type=bottom,wood_type=hawthorn": {
+      "model": "witchery:block/witchwoodslab_hawthorn"
+    },
+    "type=double,wood_type=hawthorn": {
+      "model": "witchery:block/witchwood_hawthorn"
+    },
+    "type=top,wood_type=hawthorn": {
+      "model": "witchery:block/witchwoodslab_hawthorn_top"
+    }
   }
 }

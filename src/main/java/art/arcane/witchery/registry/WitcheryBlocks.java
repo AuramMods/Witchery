@@ -58,6 +58,7 @@ import art.arcane.witchery.block.WitchLilyPadBlock;
 import art.arcane.witchery.block.WitchSaplingBlock;
 import art.arcane.witchery.block.WitchWoodStairBlock;
 import art.arcane.witchery.block.WitchWoodType;
+import art.arcane.witchery.block.WitchWoodSlabBlock;
 import art.arcane.witchery.block.WitchesCauldronBlock;
 import art.arcane.witchery.block.WitchesOvenBlock;
 import art.arcane.witchery.block.WolfHeadBlock;
@@ -209,7 +210,7 @@ public final class WitcheryBlocks {
                     BlockBehaviour.Properties.copy(Blocks.STONE_STAIRS).noOcclusion().friction(0.98F).strength(2, 5));
             case "snowstairs" -> new StairBlock(Blocks.SNOW_BLOCK.defaultBlockState(),
                     BlockBehaviour.Properties.copy(Blocks.SNOW_BLOCK));
-            case "witchwoodslab" -> new SlabBlock(BlockBehaviour.Properties.copy(Blocks.STONE_SLAB));
+            case "witchwoodslab", "witchwooddoubleslab" -> new WitchWoodSlabBlock(path.equals("witchwooddoubleslab"));
             case "iceslab" -> new SlabBlock(BlockBehaviour.Properties.copy(Blocks.STONE_SLAB).noOcclusion().strength(2, 5));
             case "snowslab" -> new SlabBlock(BlockBehaviour.Properties.copy(Blocks.SNOW_BLOCK));
             case "icedoubleslab" -> new Block(BlockBehaviour.Properties.copy(Blocks.ICE).strength(2, 5));

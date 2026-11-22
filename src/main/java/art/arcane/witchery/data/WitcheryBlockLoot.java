@@ -30,6 +30,7 @@ import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -71,7 +72,7 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                 continue;
             }
             switch (entry.getId().getPath()) {
-                case "witchwooddoubleslab" -> dropDoubleSlab(block, "witchwoodslab");
+                case "witchwoodslab", "witchwooddoubleslab" -> dropWitchWoodSlab(block);
                 case "icedoubleslab" -> dropDoubleSlab(block, "iceslab");
                 case "snowdoubleslab" -> dropDoubleSlab(block, "snowslab");
                 case "witchesovenburning" -> dropOther(block, WitcheryBlocks.getRequired("witchesovenidle").get());
@@ -256,6 +257,15 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                 .setRolls(ConstantValue.exactly(1))
                 .add(applyExplosionDecay(slab, LootItem.lootTableItem(slab)
                         .apply(SetItemCountFunction.setCount(ConstantValue.exactly(2)))))));
+    }
+
+    private void dropWitchWoodSlab(Block block) {
+        var slab = WitcheryBlocks.getRequired("witchwoodslab").get();
+        var doubled = LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
+                .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(SlabBlock.TYPE, SlabType.DOUBLE));
+        add(block, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1))
+                .add(applyExplosionDecay(block, LootItem.lootTableItem(slab).apply(copyWoodType(block))
+                        .apply(SetItemCountFunction.setCount(ConstantValue.exactly(2)).when(doubled))))));
     }
 
     @Override

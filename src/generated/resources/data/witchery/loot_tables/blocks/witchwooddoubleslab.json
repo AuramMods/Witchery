@@ -8,7 +8,35 @@
           "type": "minecraft:item",
           "functions": [
             {
+              "block": "witchery:witchwooddoubleslab",
+              "conditions": [
+                {
+                  "condition": "minecraft:inverted",
+                  "term": {
+                    "block": "witchery:witchwooddoubleslab",
+                    "condition": "minecraft:block_state_property",
+                    "properties": {
+                      "wood_type": "rowan"
+                    }
+                  }
+                }
+              ],
+              "function": "minecraft:copy_state",
+              "properties": [
+                "wood_type"
+              ]
+            },
+            {
               "add": false,
+              "conditions": [
+                {
+                  "block": "witchery:witchwooddoubleslab",
+                  "condition": "minecraft:block_state_property",
+                  "properties": {
+                    "type": "double"
+                  }
+                }
+              ],
               "count": 2.0,
               "function": "minecraft:set_count"
             },

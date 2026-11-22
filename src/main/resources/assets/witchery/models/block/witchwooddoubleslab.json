@@ -1,6 +1,3 @@
 {
-   "parent" : "minecraft:block/cube_all",
-   "textures" : {
-      "all" : "witchery:block/witchwooddoubleslab"
-   }
+  "parent": "witchery:block/witchwood_rowan"
 }

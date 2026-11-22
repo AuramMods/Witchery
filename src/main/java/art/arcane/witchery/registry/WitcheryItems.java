@@ -501,7 +501,7 @@ public final class WitcheryItems {
             case "leechchest" -> {
                 return new LeechChestItem(block);
             }
-            case "witchsapling", "witchleaves", "witchlog", "witchwood" -> {
+            case "witchsapling", "witchleaves", "witchlog", "witchwood", "witchwoodslab", "witchwooddoubleslab" -> {
                 return new WitchWoodBlockItem(block, new Item.Properties());
             }
         }
