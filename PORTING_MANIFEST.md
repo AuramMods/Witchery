@@ -616,7 +616,7 @@ Variant 156 consumes one flower when the tester targets a living entity within t
 | 66 | `spectralDust` |
 | 67 | `enderDew` |
 | 69 | `artichoke` |
-| 70 | `seedsTreefyd` |
+| 70 | `seedsTreefyd` → `witchery:treefyd_seeds` |
 | 71 | `brewGrotesque` |
 | 72 | `impregnatedLeather` |
 | 73 | `fumeFilter` |
@@ -808,7 +808,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 94 | `BREW` | `EntityWitchProjectile` | `brew` |
 | 95 | `SPECTRAL_FAMILIAR` | `EntityFamiliar` | `familiar` (tamed spectral pig, ore search, `ItemToFind`, `Searches`) |
 | 96 | `MANDRAKE` | `EntityMandrake` | `mandrake` |
-| 97 | `TREEFYD` | `EntityTreefyd` | `treefyd` |
+| 97 | `TREEFYD` | `EntityTreefyd` | `treefyd` (planted guardian, Taglock training, Boline patrol, heart upgrades) |
 | 98 | `HUNTSMAN` | `EntityHornedHuntsman` | `hornedHuntsman` → `witchery:hornedhuntsman` (Horn of the Hunt, entrance, boss combat and rank-five trial) |
 | 99 | `SPELL` | `EntitySpellEffect` | `spellEffect` → `witchery:spelleffect` |
 | 100 | `ENT` | `EntityEnt` | `ent` (Witchwood harvest awakening, legacy `Owner` field retained) |
@@ -1171,6 +1171,8 @@ Bound Waystones retain `PosX`, `PosY`, `PosZ`, `PosD` and `NameD`. New bindings 
 Owls retain `WITCWaypoint` and their launch coordinates in `HomeX`, `HomeY` and `HomeZ` while delivering. `ReturningFromDelivery` preserves the return leg on modern saves.
 
 The Winged Monkey retains `FeatherColor`, `SuicideIn`, `WITCWaypoint` and the three `Home` coordinates. `MonkeyFlightReturning` identifies the return leg in new saves. An older active Waystone flight stores its destination in the `Home` coordinates. The modern goal uses Forge's flying navigation and only loads routes within the monkey's dimension. The creature identified by a Taglock rides as a passenger without taking control of the monkey.
+
+Treefyd keeps `Owner`, `SentinalPlant`, `KnownPlayers`, `KnownCreatureTypes`, and `KnownCreatures`. New bindings also save player UUIDs and the namespaced keys of groupable animal species. Legacy individual permissions use the original `CreatureMost` and `CreatureLeast` fields. Planting creates short grass and an owned Treefyd in one interaction. A Forge cancellation keeps the original block and seed.
 
 ## Recipe System Registries
 

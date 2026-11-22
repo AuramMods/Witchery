@@ -59,7 +59,11 @@ public final class GuideBookPages {
             case INFUSIONS -> level.getRecipeManager().getAllRecipesFor(WitcheryRecipes.KETTLE.get()).stream()
                     .filter(recipe -> !hiddenKettle(recipe.id())).sorted(Comparator.comparing(KettleRecipe::id))
                     .map(GuideBookPages::kettle).forEachOrdered(pages::add);
-            case HERBOLOGY -> PLANTS.forEach(plant -> pages.add(plant(plant)));
+            case HERBOLOGY -> {
+                PLANTS.forEach(plant -> pages.add(plant(plant)));
+                pages.add(new Page(text("plant.treefyd.title"), List.of(text("plant.treefyd")),
+                        List.of(new ItemStack(WitcheryIngredient.TREEFYD_SEEDS.item())), List.of(), null));
+            }
             case BIOMES -> climate(level, pages);
             case ATLAS -> BiomeBookIndex.pages(level.registryAccess()).stream().map(GuideBookPages::atlas).forEachOrdered(pages::add);
             case SYMBOLOGY -> Arrays.stream(SymbolSpell.values()).filter(spell -> spell.visibleInGuide(knownSpells))

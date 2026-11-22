@@ -123,6 +123,12 @@ public final class TaglockItem extends Item {
     }
 
     @Nullable
+    public static UUID boundPlayerId(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        return tag != null && tag.hasUUID(PLAYER_UUID) ? tag.getUUID(PLAYER_UUID) : null;
+    }
+
+    @Nullable
     public static UUID boundCreatureId(ItemStack stack) {
         CompoundTag tag = stack.getTag();
         return tag != null && tag.contains(CREATURE_MOST, Tag.TAG_LONG) && tag.contains(CREATURE_LEAST, Tag.TAG_LONG)
@@ -176,7 +182,7 @@ public final class TaglockItem extends Item {
 
     public InteractionResult collectFromEntity(Player collector, InteractionHand hand, LivingEntity target) {
         if (!(target instanceof Mob || target instanceof Player)
-                || target.getType() == WitcheryEntities.LEGACY_ENTITIES.get("treefyd").get()
+                || target.getType() == WitcheryEntities.TREEFYD.get()
                 || target.getType() == WitcheryEntities.LEGACY_ENTITIES.get("imp").get()
                 || target.getType() == WitcheryEntities.WINGED_MONKEY.get() && !collector.isShiftKeyDown()) {
             return InteractionResult.PASS;

@@ -6,11 +6,13 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
@@ -115,8 +117,17 @@ public final class GuideBookItem extends Item {
 
         @Override
         public Component getName(ItemStack stack) {
+            if (WitcheryIngredient.TREEFYD_SEEDS.matches(stack)) return WitcheryIngredient.TREEFYD_SEEDS.item().getName(stack);
             Volume volume = volume(stack);
             return volume == null ? super.getName(stack) : volume.title();
+        }
+
+        @Override
+        public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
+            if (WitcheryIngredient.TREEFYD_SEEDS.matches(stack)) {
+                return WitcheryIngredient.TREEFYD_SEEDS.item().onItemUseFirst(stack, context);
+            }
+            return super.onItemUseFirst(stack, context);
         }
 
         @Override

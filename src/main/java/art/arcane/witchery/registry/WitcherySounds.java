@@ -66,6 +66,7 @@ public final class WitcherySounds {
     public static final RegistryObject<SoundEvent> MONKEY_AMBIENT = sound("mob.monkey.say");
     public static final RegistryObject<SoundEvent> MONKEY_HIT = sound("mob.monkey.hit");
     public static final RegistryObject<SoundEvent> MONKEY_DEATH = sound("mob.monkey.death");
+    public static final RegistryObject<SoundEvent> TREEFYD_AMBIENT = sound("mob.treefyd.treefyd_say");
     public static final RegistryObject<SoundEvent> TOAD_CROAK = sound("mob.toad.toad_croak");
     public static final RegistryObject<SoundEvent> TOAD_HURT = sound("mob.toad.toad_hurt");
 

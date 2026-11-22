@@ -285,6 +285,16 @@
 - [x] Import an original Forge 1.7.10 Winged Monkey. The packaged server read the original entity UUID, owner UUID, color, sitting flag and 17 health.
 - [x] Pass all 13 focused Forge GameTests. They cover the incomplete cocoa pattern, Taglock transport with the owner absent from the world, the Waystone ride, and the earlier Mindrake and save-import checks.
 - [x] Run Java 17 data generation and JAR reobfuscation. The packaged JAR SHA-256 is `9eb50d689c9635cc83a9a96723ef0c18de01f48ff0cbedc09ab54308ca33d3d3`.
+- [ ] Resolve an intermittent failure from the next combined run. The monkey accepted the Taglock and hovered near its departure point without reaching the pig. The live flat-world flight and an earlier combined run passed.
+
+## Treefyd (2026-11-21)
+
+- [x] Restore the two-seed recipe with four Mutandis Extremis, Reek of Misfortune, Embermoss, a Globe Artichoke, Mandrake Root, and Tear of the Goddess. The muted client put supplied ingredients in the survival crafting table, took both seeds, and planted one on a grass block. It grew an owned 50-health Treefyd and left short grass.
+- [x] Restore the original model, four-legged gait, voice, spawn egg, and drops. Boline use toggles idle patrol. Creeper and Demon Hearts heal and raise maximum health and attack damage to 100 and four, or 150 and five. The muted client applied both upgrades and kept its Boline undamaged.
+- [x] Teach a guardian with Taglocks for players, species, and individual creatures. The muted client took a pig's Taglock and used the second seed to grow a Treefyd with the same training. Both UUIDs and the parent’s heart upgrade and guard mode survived a dedicated restart. The trained guardian attacked a husk while sparing the pig. Sneak-use with another Taglock removed the parent's pig entry and left the clone's entry intact.
+- [x] Import an original Forge 1.7.10 Treefyd and a chest containing two seeds with legacy damage 70. The entity UUID, owner name, guard mode, three allowlists, 92 health and four-point attack survived import. The chest contained two modern seeds, and the importer-free restart kept both the guardian and the stack.
+- [x] Pass all 13 focused Forge GameTests on the final source. The Treefyd cases include the exact recipe, Forge placement cancellation, planting older port stacks, wild persistence, cloning and forgetting, both upgrades, and the player hit's 100 ticks of Blindness. Java 17 data generation and JAR reobfuscation passed. The packaged JAR SHA-256 is `41c122f6d3b847d433e30de69da20abca8ea2479d61659b105cf927ff3148d62`.
+- [ ] Restore the Polynesia Charm trade route, including the rare Treefyd Seed offers and saved stock.
 
 ## Owl and Toad (2026-11-20)
 

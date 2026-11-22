@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "witchery:reek_of_misfortune"
+    },
+    "B": {
+      "item": "witchery:tear_of_the_goddess"
+    },
+    "C": {
+      "item": "witchery:embermoss"
+    },
+    "D": {
+      "item": "witchery:mandrake_root"
+    },
+    "X": {
+      "item": "witchery:mutandis_extremis"
+    },
+    "Y": {
+      "item": "witchery:globe_artichoke"
+    }
+  },
+  "pattern": [
+    "XAX",
+    "CYD",
+    "XBX"
+  ],
+  "result": {
+    "count": 2,
+    "item": "witchery:treefyd_seeds"
+  },
+  "show_notification": true
+}

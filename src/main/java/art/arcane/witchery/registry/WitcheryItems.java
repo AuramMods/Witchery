@@ -13,6 +13,7 @@ import art.arcane.witchery.item.BrewFuelItem;
 import art.arcane.witchery.item.EndlessWaterBrewItem;
 import art.arcane.witchery.item.PlayerCompassItem;
 import art.arcane.witchery.item.ParasyticLouseItem;
+import art.arcane.witchery.item.TreefydSeedsItem;
 import art.arcane.witchery.block.StockadeBlock;
 import art.arcane.witchery.item.BarkBeltItem;
 import art.arcane.witchery.item.BitingBeltItem;
@@ -290,6 +291,7 @@ public final class WitcheryItems {
             case "arthana" -> new ArthanaItem();
             case "mysticbranch" -> new MysticBranchItem();
             case "mutator" -> new MutatingSprigItem();
+            case "treefyd_seeds" -> new TreefydSeedsItem();
             case "broom" -> new BroomItem(false);
             case "enchanted_broom" -> new BroomItem(true);
             case "waystone", "bound_waystone", "creature_bound_waystone" -> new WaystoneItem();
@@ -437,6 +439,7 @@ public final class WitcheryItems {
                     case "hornedhuntsman" -> new ForgeSpawnEggItem(entityType, 11523, 4007964, new Item.Properties());
                     case "mindrake" -> new ForgeSpawnEggItem(entityType, 19463, 4200704, new Item.Properties());
                     case "wingedmonkey" -> new ForgeSpawnEggItem(entityType, 6846848, 7574709, new Item.Properties());
+                    case "treefyd" -> new ForgeSpawnEggItem(entityType, 5781801, 11217964, new Item.Properties());
                     case "wolfman" -> new ForgeSpawnEggItem(entityType, 0x2D2D2D, 0x606060, new Item.Properties());
                     case "werevillager" -> new ForgeSpawnEggItem(entityType, 0x563C33, 0xBD8B72, new Item.Properties());
                     case "spirit" -> new ForgeSpawnEggItem(entityType, 0xFFA530, 0xEECA00, new Item.Properties());

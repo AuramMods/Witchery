@@ -85,6 +85,7 @@ public enum WitcheryIngredient {
     SPECTRAL_DUST(66, "spectral_dust"),
     ENDER_DEW(67, "ender_dew"),
     GLOBE_ARTICHOKE(69, "globe_artichoke"),
+    TREEFYD_SEEDS(70, "treefyd_seeds"),
     BREW_OF_GROTESQUE(71, "brew_of_grotesque"),
     IMPREGNATED_LEATHER(72, "impregnated_leather"),
     FUME_FILTER(73, "fume_filter"),

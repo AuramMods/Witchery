@@ -171,6 +171,10 @@
     "subtitle": "subtitles.witchery.monkey.death",
     "sounds": ["witchery:mob/monkey/death"]
   },
+  "mob.treefyd.treefyd_say": {
+    "subtitle": "subtitles.witchery.treefyd.ambient",
+    "sounds": ["witchery:mob/treefyd/treefyd_say"]
+  },
   "mob.toad.toad_croak": {
     "subtitle": "subtitles.witchery.toad.croak",
     "sounds": ["witchery:mob/toad/toad_croak1", "witchery:mob/toad/toad_croak2"]

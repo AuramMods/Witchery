@@ -76,6 +76,19 @@ public class WitcheryRecipeProvider extends RecipeProvider {
         witchWoodStairs(recipeOutput, WitchWoodType.ALDER, witchPlanks, alderPlanks);
         witchWoodStairs(recipeOutput, WitchWoodType.HAWTHORN, witchPlanks, hawthornPlanks);
 
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryIngredient.TREEFYD_SEEDS.item(), 2)
+                .define('X', WitcheryIngredient.MUTANDIS_EXTREMIS.item())
+                .define('A', WitcheryIngredient.REEK_OF_MISFORTUNE.item())
+                .define('C', WitcheryBlocks.getRequired("embermoss").get())
+                .define('Y', WitcheryIngredient.GLOBE_ARTICHOKE.item())
+                .define('D', WitcheryIngredient.MANDRAKE_ROOT.item())
+                .define('B', WitcheryIngredient.TEAR_OF_THE_GODDESS.item())
+                .pattern("XAX")
+                .pattern("CYD")
+                .pattern("XBX")
+                .unlockedBy("has_mutandis_extremis", has(WitcheryIngredient.MUTANDIS_EXTREMIS.item()))
+                .save(recipeOutput);
+
         ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, WitcheryBlocks.getRequired("brazier").get())
                 .define('I', Items.IRON_INGOT)
                 .define('N', WitcheryIngredient.NECROMANTIC_STONE.item())
