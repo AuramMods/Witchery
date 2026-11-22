@@ -70,6 +70,7 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> TOWN_BOOKSHOP_ALLOWED_BOOKS;
     public static final ForgeConfigSpec.BooleanValue HOBGOBLIN_DESPAWN_BLOCK;
     public static final ForgeConfigSpec.IntValue HOBGOBLIN_SPAWN_WEIGHT;
+    public static final ForgeConfigSpec.IntValue HELLHOUND_SPAWN_WEIGHT;
     public static final ForgeConfigSpec.IntValue SPIRIT_SPAWN_WEIGHT;
     public static final ForgeConfigSpec.IntValue HOBGOBLIN_GOD_SPAWN_CHANCE;
     public static final ForgeConfigSpec.IntValue WORLD_GEN_FREQUENCY;
@@ -210,6 +211,8 @@ public final class WitcheryServerConfig {
         HOBGOBLIN_DESPAWN_BLOCK = builder.define("hobgoblinDespawnBlock", true);
         HOBGOBLIN_SPAWN_WEIGHT = builder.comment("Wild hobgoblin spawn weight in forests and swamps. Plains use one less, with a minimum of one.")
                 .worldRestart().defineInRange("hobgoblinSpawnWeight", 4, 1, Integer.MAX_VALUE);
+        HELLHOUND_SPAWN_WEIGHT = builder.comment("Relative natural spawn weight for Hellhounds in the Nether.")
+                .worldRestart().defineInRange("hellhoundSpawnWeight", 25, 1, Integer.MAX_VALUE);
         SPIRIT_SPAWN_WEIGHT = builder.comment("Relative natural spawn weight for Spirits in the Dream.")
                 .worldRestart().defineInRange("spiritSpawnWeight", 1, 1, 1000);
         HOBGOBLIN_GOD_SPAWN_CHANCE = builder.comment("Chance out of 10,000 for a statue with fifteen worshippers to summon Mog and Gulg each pulse.")

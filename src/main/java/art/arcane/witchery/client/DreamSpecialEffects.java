@@ -1,5 +1,6 @@
 package art.arcane.witchery.client;
 
+import art.arcane.witchery.world.DreamAtmosphere;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.vertex.BufferBuilder;
@@ -14,18 +15,13 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
-
-import java.lang.ref.WeakReference;
 
 public final class DreamSpecialEffects extends DimensionSpecialEffects {
     private static final Vec3 DREAM_FOG = new Vec3(0.8, 0.2, 0.6);
@@ -33,28 +29,20 @@ public final class DreamSpecialEffects extends DimensionSpecialEffects {
     private static final Vec3 DEMONIC_FOG = new Vec3(0.06, 0, 0);
     private static final ResourceLocation SUN = ResourceLocation.withDefaultNamespace("textures/environment/sun.png");
     private static final ResourceLocation MOON = ResourceLocation.withDefaultNamespace("textures/environment/moon_phases.png");
-    private WeakReference<ClientLevel> observedLevel = new WeakReference<>(null);
-    private int nightmareLevel;
-
     public DreamSpecialEffects() {
         super(0, true, SkyType.NONE, false, false);
     }
 
     public static void updateClientMode(int nightmareLevel) {
         ClientLevel level = Minecraft.getInstance().level;
-        if (level != null && level.effects() instanceof DreamSpecialEffects effects) {
-            if (effects.observedLevel.get() != level) effects.observedLevel = new WeakReference<>(level);
-            effects.nightmareLevel = Mth.clamp(nightmareLevel, 0, 2);
+        if (level != null && level.effects() instanceof DreamSpecialEffects) {
+            DreamAtmosphere.updateClient(level, nightmareLevel);
         }
-    }
-
-    private int mode(ClientLevel level) {
-        return observedLevel.get() == level ? nightmareLevel : 0;
     }
 
     @Override
     public Vec3 getBrightnessDependentFogColor(Vec3 naturalFog, float brightness) {
-        return switch (mode(Minecraft.getInstance().level)) {
+        return switch (DreamAtmosphere.mode(Minecraft.getInstance().level)) {
             case 2 -> DEMONIC_FOG;
             case 1 -> NIGHTMARE_FOG;
             default -> DREAM_FOG;
@@ -73,17 +61,6 @@ public final class DreamSpecialEffects extends DimensionSpecialEffects {
     }
 
     @Override
-    public void adjustLightmapColors(ClientLevel level, float partialTick, float skyDarken, float blockLightRedFlicker,
-                                     float skyLight, int blockLightLevel, int skyLightLevel, Vector3f colors) {
-        if (mode(level) == 0) {
-            float daylight = LightTexture.getBrightness(level.dimensionType(), skyLightLevel)
-                    * (1 - level.getRainLevel(partialTick) * 0.3F);
-            float illumination = Math.max(0, daylight - skyLight);
-            colors.add(illumination, illumination, illumination);
-        }
-    }
-
-    @Override
     public boolean renderSky(ClientLevel level, int ticks, float partialTick, PoseStack pose, Camera camera,
                              Matrix4f projection, boolean foggy, Runnable setupFog) {
         setupFog.run();
@@ -94,7 +71,7 @@ public final class DreamSpecialEffects extends DimensionSpecialEffects {
             return true;
         }
 
-        boolean moon = mode(level) > 0;
+        boolean moon = DreamAtmosphere.mode(level) > 0;
         int phase = level.getMoonPhase();
         float minU = moon ? phase % 4 / 4F : 0;
         float minV = moon ? phase / 4 / 2F : 0;

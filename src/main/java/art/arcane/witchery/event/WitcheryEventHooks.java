@@ -61,6 +61,7 @@ import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.ritual.DroppedWaystones;
 import art.arcane.witchery.ritual.DirectedCurse;
+import art.arcane.witchery.world.DreamAtmosphere;
 import art.arcane.witchery.world.DreamTravel;
 import art.arcane.witchery.world.MirrorTravel;
 import art.arcane.witchery.world.RubySlipperTravel;
@@ -410,7 +411,7 @@ public final class WitcheryEventHooks {
                 || level.players().isEmpty()) {
             return;
         }
-        int mode = DreamTravel.isDemonicNightmare(level) ? 2 : DreamTravel.isNightmare(level) ? 1 : 0;
+        int mode = DreamAtmosphere.mode(level);
         for (ServerPlayer player : level.players()) {
             WitcheryNetwork.sendDreamAtmosphere(player, mode);
         }
