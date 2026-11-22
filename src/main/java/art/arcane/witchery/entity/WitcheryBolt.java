@@ -7,7 +7,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -94,7 +93,7 @@ public final class WitcheryBolt extends AbstractArrow {
                 if (effect.getEffect() != MobEffects.POISON && effect.getEffect() != MobEffects.WITHER
                         && effect.getEffect() != MobEffects.CONFUSION) target.removeEffect(effect.getEffect());
             }
-            if (target instanceof ServerPlayer player) InfusionEnergy.drain(player, 0.5F);
+            InfusionEnergy.drain(target, 0.5F);
         }
         super.onHitEntity(hit);
     }

@@ -697,9 +697,7 @@ public final class BrewMixture {
             case REMOVE_BUFFS -> BrewStatusActions.removeBuffs(target, strength);
             case WASTING -> BrewStatusActions.wasting(target, source, strength,
                     application.durationMultiplier * durationScale, application.inverted);
-            case DRAIN_MAGIC -> {
-                if (target instanceof ServerPlayer player) InfusionEnergy.drain(player, (float) (0.25 * (1 + strength) * strengthScale));
-            }
+            case DRAIN_MAGIC -> InfusionEnergy.drain(target, (float) (0.25 * (1 + strength) * strengthScale));
             case DURATION_BOOST -> BrewStatusActions.extendBuffs(target, strength, strengthScale);
             case STEAL_BUFFS -> BrewStatusActions.stealBuffs(target, strength, strengthScale);
             case SPREAD_DEBUFFS -> BrewStatusActions.spreadDebuffs(target, strength, strengthScale);

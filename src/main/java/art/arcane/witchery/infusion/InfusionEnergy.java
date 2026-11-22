@@ -1,5 +1,6 @@
 package art.arcane.witchery.infusion;
 
+import art.arcane.witchery.integration.ArsMagicaCompat;
 import art.arcane.witchery.integration.BloodMagicCompat;
 import art.arcane.witchery.integration.ThaumaturgeCompat;
 import art.arcane.witchery.network.WitcheryNetwork;
@@ -8,8 +9,10 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 
 public final class InfusionEnergy {
@@ -46,7 +49,13 @@ public final class InfusionEnergy {
         return true;
     }
 
-    public static void drain(ServerPlayer player, float fraction) {
+    public static void drain(LivingEntity entity, float fraction) {
+        if (!(entity.level() instanceof ServerLevel)) return;
+        if (entity instanceof ServerPlayer player) drainPlayer(player, fraction);
+        ArsMagicaCompat.drain(entity, fraction);
+    }
+
+    private static void drainPlayer(ServerPlayer player, float fraction) {
         CompoundTag infusion = data(player);
         int current = infusion.getInt(CHARGE);
         int capacity = infusion.getInt(CAPACITY);

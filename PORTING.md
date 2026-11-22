@@ -1209,6 +1209,7 @@
 - [x] Run Java 17 data generation and JAR reobfuscation. All 553 regression cases passed before adding disease overlay synchronization. All 21 focused cases passed on the final revision.
 - [x] Restore Drain Magic's optional Blood Magic hook. It uses the original Life Essence tiers even on a player without a Witchery infusion.
 - [x] Restore the legacy carried-wand drain through Thaumaturge for Drain Magic and powered Anti-Magic Bolts.
+- [x] Restore Ars Magica mana drain and the in-wall damage exception for small Resizing, wolf and bat forms. On packaged Forge with Ars Magica Legacy 1.5.0, a survival player lost one mana at the minimum debit, then lost 100 mana per powered bolt from a 200-mana reserve. In-wall damage was blocked with small Resizing and applied at ordinary and larger sizes.
 
 ## Blood Magic Compatibility (2026-11-22)
 
@@ -1854,6 +1855,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Distil one Flowing Spirit with saved Oil of Vitriol and two fired jars. Collect Focused Will, Condensed Fear and eight Hollow Tears through the saved Distillery's menu. Take the five previously hunted Spirits from the workshop chest and brew them with one Hollow Tears in the powered Kettle. Bottle the resulting Congealed Spirit. The fixture positioned missed input drops. The ordinary dedicated shutdown saved the two remaining Flowing Spirit, both distillates, seven Hollow Tears and Congealed Spirit.
 - [x] Hunt naturally spawned skeletons and zombies with the saved Arthana in the copied Auram Overworld. The test prepared a dark room, applied temporary protective effects and equipped the saved Arthana with Looting III and Sharpness V. The survival player picked up two Spectral Dust during the hunt.
 - [x] Craft another Attuned Stone and complete the night-only Rite of the Necromantic Stone with one of the hunted dust and a supplied Iron Sword. Use the result with the second hunted dust, the saved Congealed Spirit and Condensed Fear, and the stored Boline to complete the Rite of Necromancy. The player collected a blank Spectral Stone. The fixture positioned some offerings, including the hunted Rotten Flesh from Big Inventory overflow.
+- [x] Rejoin with the blank stone and brew a new Sleeping batch after the last stored dose caused a nightmare. Grow and harvest Snowbells for Icy Needles and use previously saved Purified Milk and Brew of Love. Return to normal Dream beside the Nightmare weave, harvest four naturally generated Wispy Cotton, and wake with both the cotton and the blank stone. The copied save is ready for the Wormwood and Brazier inputs.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.

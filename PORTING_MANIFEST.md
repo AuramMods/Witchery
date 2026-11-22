@@ -1284,7 +1284,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 ### Optional legacy brew integrations
 
 - Drain Magic and powered Anti-Magic Bolts debit the optional Blood Magic Soul Network using the original Life Essence tiers. Thaumaturge wands use the original whole-Vis debit loop and the current wand's consumption modifier.
-- The Resizing suffocation exception specific to Ars Magica 2 remains for the optional integration audit.
+- With Ars Magica Legacy installed, both attacks drain a fraction of the target's maximum mana, with the original minimum debit of one. The original in-wall damage exception applies to small Resizing players and players in wolf or bat form when their feet are in a block that does not render as solid.
 
 ## Network Packets (`PacketPipeline`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/network/PacketPipeline.java`
@@ -1568,7 +1568,7 @@ Status:
 
 ## Mod Hook Integrations (`modHooks.register`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/Witchery.java`
-- `ModHookArsMagica2` drained a fraction of maximum mana and protected poppets and chalk from its Reconstructor. Auram ships Ars Magica Legacy 1.5.0, which exposes `ArsMagicaAPI.getManaHelper()`. The mana debit still needs wiring through Witchery's magic drain. Audit whether the original repair and Soulbound hooks have equivalents in that build.
+- `ModHookArsMagica2` maps its mana debit and suffocation exception to Ars Magica Legacy 1.5.0, the build in Auram. The modern API provides mana access for living entities. The inspected 1.5.0 build contains no identified equivalents for the Reconstructor or its Soulbound enchantment hook.
 - `ModHookBloodMagic`
 - `ModHookForestry` had empty initialization and magic-drain methods in 0.24.1.
 - `ModHookMineFactoryReloaded` maps to Industrial Foregoing. The Sower preserves the three saved sapling variants. Forge's crop and bonemeal interfaces and the log and leaf tags cover the eight crops and three trees. The Crusher, Imprisonment Tool, and Duplicator use their respective entity type tags for the 29, 25, and 30 original exclusions. Witchery makes the Crusher apply its full exclusion tag before selecting a target. [Industrial Foregoing 3.5.21](https://www.curseforge.com/minecraft/mc-mods/industrial-foregoing/files/7068937)
