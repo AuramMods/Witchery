@@ -1794,6 +1794,9 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 
 - [x] Resume the same player with 196 Overworld infusion charge. Plant two Globe Artichokes on source water and grow Snowbells on farmland using the supplies in the private test world. Harvest both Artichokes and three Icy Needles from eight mature Snowbells through the survival client.
 - [x] Fire fresh clay jars, collect another Whiff of Magic from the existing Witch's Oven, and take the saved Odour of Purity from the workshop's chest. Craft three Purified Milk with a supplied milk bucket and retain two Whiff of Magic for the two Kettle batches.
+- [x] Use the harvested Artichokes and the workshop's Purified Milk and Whiff of Magic to brew three Brews of Love and three Brews of Sleeping in the same Kettle. Bottle both batches through normal survival use. The test driver positioned ingredients from the player's inventory after its throws missed.
+- [x] Drink a Brew of Sleeping and enter a nightmare. Repeat the entry after a test teleport used the wrong dimension and woke the player. Harvest four naturally generated Somnian Cotton plants in the second nightmare. The player's save held all four Disturbed Cotton and two Icy Needles in Dream. The Overworld inventory kept the Witch's Hand, the Charged Attuned Stone, Soul of the World, and one Brew of Sleeping, and the sleeping body was present in the saved Overworld entity chunk.
+- [x] Restart the same dedicated Auram world while the player is still in the nightmare. Rejoin at the harvest site and use an Icy Needle to wake. Restore the Witch's Hand, the Charged Attuned Stone, Soul of the World, the last Brew of Sleeping, and all 196 infusion charges. Keep the four Disturbed Cotton in the Overworld and remove the sleeping body.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.

@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Continuous Auram Survival through Dream (2026-11-22)
+
+- The same survival player grew Globe Artichoke on source water and harvested three Icy Needles from eight Snowbells. They fired new jars, recovered a Whiff of Magic from the workshop's Oven, and used saved Odour of Purity for three Purified Milk. The existing Kettle yielded three Brews of Love and three Brews of Sleeping. The test driver positioned dropped ingredients from the player's inventory after its throws missed.
+- An ordinary Brew of Sleeping entered a nightmare. A cross-dimension test teleport woke the player on the first attempt. A second brewed serving restored entry through normal use. Four naturally generated Somnian Cotton plants yielded four Disturbed Cotton in survival. The dedicated save recorded the sleeping body's UUID at the workshop, the separate inventories, and 196 Overworld infusion charges.
+- The ordinary dedicated restart put the same player back at the Dream harvest site. Using an Icy Needle returned the player to the workshop with all four cotton, the Witch's Hand, the Charged Attuned Stone, Soul of the World, one spare Brew of Sleeping, and the same 196 charges. The workshop chunk had loaded and the sleeping body was gone. The post-wake save confirmed the restored items and the missing body.
+- The copied Auram pack used the same kettle-fix JAR on both sides, SHA-256 `fe79639970078746a328e9e5471f4bcb28a990e83031c2d3be102af8e1fe5910`. A Temurin 17.0.18 client crashed during Extended Crafting's JEI category registration. The retry used Corretto 17.0.21.1 with class data sharing disabled. Both launches used zero master volume, OpenAL No Output, and a hidden window. The focus monitor recorded no test client activation. `/tmp/witchery-auram-dream-current` identifies the logs and the copied Auram world remains under `/tmp/witchery-auram-multiplayer-current`.
+
 ## Sun Grenade Fuse and Legacy Light (2026-11-22)
 
 - The original Forge dispenser launched a Sun Grenade and a named Duplicate Grenade. The saved Sun Grenade had `Impacted: 1b`, `inGround: 0b`, and one saved light. The first ordinary restart advanced the world by 321 ticks. The Quartz Sphere it dropped was 122 ticks old, and the light was gone. The port now keeps a 200-tick fuse across flight and impact and preserves the exact countdown in earlier 1.20.1 saves.
