@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/vine",
+  "textures": {
+    "particle": "witchery:block/spanishmoss",
+    "vine": "witchery:block/spanishmoss"
+  }
+}

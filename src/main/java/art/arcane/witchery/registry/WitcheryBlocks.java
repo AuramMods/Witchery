@@ -13,6 +13,8 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.BarrierBlock;
 import art.arcane.witchery.block.PoppetShelfBlock;
 import art.arcane.witchery.block.AltarBlock;
+import art.arcane.witchery.block.SpanishMossBlock;
+import art.arcane.witchery.block.SpreadingHerbBlock;
 import art.arcane.witchery.block.StatueGoddessBlock;
 import art.arcane.witchery.block.VoidBrambleBlock;
 import art.arcane.witchery.block.AlluringSkullBlock;
@@ -109,8 +111,6 @@ import java.util.Map;
 
 public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_FULL_BLOCK = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 16.0D, 16.0D);
-    private static final VoxelShape SHAPE_FLOWER_TALL = Block.box(0.8D, 0.0D, 0.8D, 15.2D, 16.0D, 15.2D);
-    private static final VoxelShape SHAPE_FLOWER_LOW = Block.box(1.6D, 0.0D, 1.6D, 14.4D, 6.4D, 14.4D);
     private static final VoxelShape SHAPE_FUNNEL = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
     private static final VoxelShape SHAPE_INFINITY_EGG = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
 
@@ -168,14 +168,14 @@ public final class WitcheryBlocks {
             case "bloodrose" -> new BloodRoseBlock();
             case "bloodedwool" -> new Block(BlockBehaviour.Properties.copy(Blocks.RED_WOOL));
             case "plantmine" -> new PlantMineBlock();
-            case "glintweed", "spanishmoss" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_TALL, false);
+            case "glintweed" -> new SpreadingHerbBlock.GlintWeed();
+            case "spanishmoss" -> new SpanishMossBlock();
             case "vine" -> new BrewPlantBlocks.Vine();
             case "web" -> new BrewPlantBlocks.Web();
             case "bramble" -> new BrambleBlock();
             case "crittersnare" -> new CritterSnareBlock();
             case "somniancotton" -> new SomnianCottonBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION).randomTicks());
-            case "embermoss" -> new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DANDELION), SHAPE_FLOWER_LOW, false);
+            case "embermoss" -> new SpreadingHerbBlock.EmberMoss();
             case "lilypad" -> new WitchLilyPadBlock();
             case "leapinglily" -> new LeapingLilyBlock();
             case "grassper" -> new GrassperBlock();

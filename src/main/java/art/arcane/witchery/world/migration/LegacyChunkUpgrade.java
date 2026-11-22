@@ -18,6 +18,7 @@ import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.block.RiteHeartBlock;
 import art.arcane.witchery.block.RitualGlyphBlock;
 import art.arcane.witchery.block.ShadedGlassBlock;
+import art.arcane.witchery.block.SpanishMossBlock;
 import art.arcane.witchery.block.SpiritPortalBlock;
 import art.arcane.witchery.block.StockadeBlock;
 import art.arcane.witchery.block.TormentPortalBlock;
@@ -386,6 +387,7 @@ public final class LegacyChunkUpgrade {
         Block block = ForgeRegistries.BLOCKS.getValue(name);
         if (block == null) return null;
         if (block instanceof WitchCropBlock crop) return NbtUtils.writeBlockState(crop.getStateForAge(Math.min(metadata, crop.getMaxAge())));
+        if (block instanceof SpanishMossBlock moss) return NbtUtils.writeBlockState(moss.stateFromLegacy(metadata));
         if (block instanceof CursedControls.Lever) return restoreMountedControl(name, LEGACY_LEVER_ID, metadata);
         if (block instanceof CursedControls.Button) return restoreMountedControl(name, LEGACY_STONE_BUTTON_ID, metadata);
         BlockState state = block.defaultBlockState();
@@ -456,7 +458,7 @@ public final class LegacyChunkUpgrade {
                 default -> Direction.EAST;
             }).setValue(MirrorBlock.HALF, (metadata & 4) == 0 ? DoubleBlockHalf.LOWER : DoubleBlockHalf.UPPER);
             case "poppetshelf", "bloodedwool", "pitdirt", "pitgrass", "mirrorwall",
-                    "tormentstone", "embermoss", "glintweed", "spanishmoss", "infinityegg", "icedoubleslab", "snowdoubleslab",
+                    "tormentstone", "embermoss", "glintweed", "infinityegg", "icedoubleslab", "snowdoubleslab",
                     "cauldron", "brazier", "candelabra", "perpetualice", "icestockade", "icefence", "bloodcrucible", "silvervat",
                     "force", "barrier", "slurp", "somniancotton", "web", "cactus", "glowglobe", "leapinglily", "crystalball",
                     "voidbramble" -> state;

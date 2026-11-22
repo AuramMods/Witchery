@@ -266,11 +266,11 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | `LEAVES` | `witchery:witchleaves` |
 | `VOID_BRAMBLE` | `witchery:voidbramble` (owner in tile `WITCPlacer`, 32-block circle rite suppression) |
 | `BRAMBLE` | `witchery:bramble` |
-| `GLINT_WEED` | `witchery:glintweed` |
-| `SPANISH_MOSS` | `witchery:spanishmoss` |
+| `GLINT_WEED` | `witchery:glintweed` (light 14, local spreading limit) |
+| `SPANISH_MOSS` | `witchery:spanishmoss` (wall bits south 1, west 2, north 4, east 8, ceiling 0) |
 | `LEAPING_LILY` | `witchery:leapinglily` |
 | `TRAPPED_PLANT` | `witchery:plantmine` (twelve crafting, placed, and Boline-recoverable variants) |
-| `EMBER_MOSS` | `witchery:embermoss` |
+| `EMBER_MOSS` | `witchery:embermoss` (light six, contact ignition, shear harvest) |
 | `CRITTER_SNARE` | `witchery:crittersnare` |
 | `GRASSPER` | `witchery:grassper` |
 | `BLOOD_ROSE` | `witchery:bloodrose` |

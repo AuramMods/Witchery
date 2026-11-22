@@ -110,6 +110,7 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                                                 StatePropertiesPredicate.Builder.properties()
                                                         .hasProperty(WickerBundleBlock.BUNDLE_TYPE, WickerBundleBlock.Type.BLOODIED))))))));
                 case "crittersnare" -> dropCritterSnare(block);
+                case "embermoss", "spanishmoss" -> add(block, createShearsOnlyDrop(block));
                 case "wolftrap" -> add(block, LootTable.lootTable());
                 case "wolfhead" -> add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool()
                         .setRolls(ConstantValue.exactly(1)).add(AlternativesEntry.alternatives(

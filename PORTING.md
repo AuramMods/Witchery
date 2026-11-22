@@ -615,6 +615,13 @@
 - [x] Place Leaping Lilies on solid ground and on source water. On contact they give Speed I and Jump Boost V for ten ticks and leave an active effect of either kind in place. The lily emits light level six.
 - [x] Run Java 17 data generation, reobfuscate the JAR, and pass all 36 checked-in GameTests. The snare test also placed a legacy stocked Bat Snare from a stack and released a bat with its original trade stock marker.
 
+## Spreading Herbs and Spanish Moss (2026-11-22)
+
+- [x] Restore Glint Weed and Ember Moss. Both spread on the original soils and sand with a local cap of five. Glint Weed emits light level 14 and can attach below a solid block. Ember Moss emits light level six, ignites creatures for three seconds, and requires shears.
+- [x] Restore Spanish Moss attachment on walls and ceilings. Its strands grow like vines, require shears, and stay non-climbable. Mutandis can attach a new strand to a nearby support. Older decorative plants can acquire an attachment when they find support.
+- [x] Verify light, spreading and harvest, physical Ember Moss contact, and Spanish Moss placement and downward growth on a headless Forge GameTest server. Data generation, reobfuscation, and all 44 required GameTests passed.
+- [ ] Verify the biome tint and five attachment models in a muted client.
+
 ## Alluring Skull (2026-11-21)
 
 - [x] Restore the recipe with a Necromantic Stone, two Glowstone Dust, a Skeleton or Wither Skeleton Skull, and a Voodoo Poppet. The finished skull stacks to one and can mount on a floor or wall.
@@ -1284,6 +1291,7 @@
 - [x] Open an earlier 1.20.1 save containing both decorative placeholders and repeat the checks after a dedicated restart. The missing block entities were created without inventing owners, and both blocks retained their recovery flag.
 - [x] Import a Brew Bucket and the remaining two buckets in an original Witch's Cauldron. Preserve the color and order of Nether Wart and Sugar. Match six standing, spreading, and falling Brew and Disease fluid cells, ten pending flow updates, and two pending decay updates from the original regions.
 - [x] Repeat the brew and fluid checks after a headless restart of the reobfuscated JAR. The imported Disease fluid applied its status effect on contact. Decay was disabled in the disposable profile for the restart check.
+- [x] Import seven Spanish Moss strands and three spreading herbs from an original Forge save. All wall, corner, hanging, and ceiling states matched after a dedicated restart. An Ember Moss set a pig on fire, the two mosses dropped with shears, and removing the south support removed both strands in that column.
 - [ ] Expand migration to other block and subtype data and specialized entity and block-entity fields. Add fixtures before calling the migration complete.
 
 ### Importing a copy of a legacy world

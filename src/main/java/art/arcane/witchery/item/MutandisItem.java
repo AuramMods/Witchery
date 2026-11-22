@@ -1,6 +1,7 @@
 package art.arcane.witchery.item;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.SpanishMossBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.world.WitcheryDimensions;
@@ -123,9 +124,10 @@ public final class MutandisItem extends Item {
                     candidates.add(Blocks.NETHER_WART.defaultBlockState().setValue(NetherWartBlock.AGE, 3));
                 }
             }
-            if (candidates.isEmpty() || !server.setBlockAndUpdate(pos, candidates.get(server.random.nextInt(candidates.size())))) {
-                return InteractionResult.FAIL;
-            }
+            if (candidates.isEmpty()) return InteractionResult.FAIL;
+            BlockState replacement = candidates.get(server.random.nextInt(candidates.size()));
+            if (replacement.getBlock() instanceof SpanishMossBlock moss) replacement = moss.mutatedState(server, pos);
+            if (!server.setBlockAndUpdate(pos, replacement)) return InteractionResult.FAIL;
             finishMutation(context, server, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);

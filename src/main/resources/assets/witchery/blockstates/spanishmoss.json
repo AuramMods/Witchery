@@ -1,7 +1,13 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/spanishmoss"
-      }
-   }
+  "multipart": [
+    {"when": {"north": "true"}, "apply": {"model": "witchery:block/spanishmoss_hanging"}},
+    {"when": {"east": "true"}, "apply": {"model": "witchery:block/spanishmoss_hanging", "y": 90, "uvlock": true}},
+    {"when": {"south": "true"}, "apply": {"model": "witchery:block/spanishmoss_hanging", "y": 180, "uvlock": true}},
+    {"when": {"west": "true"}, "apply": {"model": "witchery:block/spanishmoss_hanging", "y": 270, "uvlock": true}},
+    {"when": {"up": "true"}, "apply": {"model": "witchery:block/spanishmoss_hanging", "x": 270, "uvlock": true}},
+    {
+      "when": {"north": "false", "east": "false", "south": "false", "west": "false", "up": "false"},
+      "apply": {"model": "witchery:block/spanishmoss"}
+    }
+  ]
 }
