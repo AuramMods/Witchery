@@ -1,6 +1,7 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.item.BrewBucketItem;
+import art.arcane.witchery.item.DivinerItem;
 import art.arcane.witchery.item.StatueGoddessItem;
 import art.arcane.witchery.item.AreaWardItem;
 import art.arcane.witchery.block.PlantMineBlock;
@@ -233,6 +234,8 @@ public final class WitcheryItems {
                 .craftRemainder(Items.BUCKET)
                 .stacksTo(1);
         return switch (path) {
+            case "divinerwater" -> new DivinerItem(Blocks.WATER);
+            case "divinerlava" -> new DivinerItem(Blocks.LAVA);
             case "bucketspirit" -> new BucketItem(WitcheryFluids.getRequiredSource("fluidspirit"), bucketProperties);
             case "buckethollowtears" -> new BucketItem(WitcheryFluids.getRequiredSource("hollowtears"), bucketProperties);
             case "bucketbrew" -> new BrewBucketItem();

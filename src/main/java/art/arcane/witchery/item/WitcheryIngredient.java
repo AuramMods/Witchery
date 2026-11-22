@@ -208,12 +208,15 @@ public enum WitcheryIngredient {
 
     /** Loads an inventory stack after upgrading the legacy Witchery subtype, when present. */
     public static ItemStack loadInventoryStack(CompoundTag stackTag) {
+        boolean hasLegacyDamage = stackTag.contains("Damage", Tag.TAG_ANY_NUMERIC);
+        // Deserializing a damageable item can initialize its nested Damage field.
+        boolean hasModernDamage = hasLegacyDamage && stackTag.getCompound("tag").contains("Damage", Tag.TAG_ANY_NUMERIC);
         ItemStack stack = ItemStack.of(stackTag);
         if (stack.is(Items.POTION) && stackTag.getInt("Damage") == 8198
                 && (!stack.hasTag() || !stack.getTag().contains("Potion", Tag.TAG_STRING))) {
             return PotionUtils.setPotion(stack, Potions.NIGHT_VISION);
         }
-        if (stackTag.contains("Damage", Tag.TAG_ANY_NUMERIC)) {
+        if (hasLegacyDamage) {
             if (stack.getItem() instanceof WitchWoodBlockItem) {
                 WitchWoodBlockItem.importLegacyMetadata(stack, stackTag.getInt("Damage"));
             }
@@ -240,6 +243,9 @@ public enum WitcheryIngredient {
             }
             if (stack.getItem() instanceof EndlessWaterBrewItem) {
                 stack.setDamageValue(Math.max(0, Math.min(stackTag.getInt("Damage"), stack.getMaxDamage() - 1)));
+            }
+            if (stack.getItem() instanceof DivinerItem && !hasModernDamage) {
+                stack.setDamageValue(Math.max(0, Math.min(stackTag.getInt("Damage"), stack.getMaxDamage())));
             }
         }
         if (!stack.isEmpty() && "witchery:wolfhead".equals(stackTag.getString("id")) && stackTag.getInt("Damage") == 1) {

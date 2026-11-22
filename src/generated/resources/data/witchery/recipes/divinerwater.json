@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "T": {
+      "item": "witchery:tear_of_the_goddess"
+    },
+    "W": {
+      "type": "forge:partial_nbt",
+      "item": "minecraft:potion",
+      "nbt": "{Potion:\"minecraft:water\"}"
+    }
+  },
+  "pattern": [
+    "WSW",
+    "WSW",
+    "STS"
+  ],
+  "result": {
+    "item": "witchery:divinerwater"
+  },
+  "show_notification": true
+}

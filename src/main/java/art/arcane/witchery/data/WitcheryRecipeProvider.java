@@ -171,6 +171,25 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .requires(PartialNBTIngredient.of(Items.POTION, poisonPotion.getTag()), 2)
                 .unlockedBy("has_null_catalyst", has(WitcheryIngredient.NULL_CATALYST.item()))
                 .save(recipeOutput);
+        var waterDiviner = WitcheryItems.getRequired("divinerwater").get();
+        var waterBottle = PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER);
+        ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, waterDiviner)
+                .define('S', Items.STICK)
+                .define('W', PartialNBTIngredient.of(Items.POTION, waterBottle.getTag()))
+                .define('T', WitcheryIngredient.TEAR_OF_THE_GODDESS.item())
+                .pattern("WSW")
+                .pattern("WSW")
+                .pattern("STS")
+                .unlockedBy("has_tear_of_the_goddess", has(WitcheryIngredient.TEAR_OF_THE_GODDESS.item()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, WitcheryItems.getRequired("divinerlava").get())
+                .define('B', Items.BLAZE_ROD)
+                .define('W', waterDiviner)
+                .pattern(" B ")
+                .pattern(" W ")
+                .pattern("B B")
+                .unlockedBy("has_water_diviner", has(waterDiviner))
+                .save(recipeOutput);
         ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, WitcheryIngredient.GRAVEYARD_DUST.item())
                 .requires(WitcheryIngredient.SPECTRAL_DUST.item())
                 .requires(Items.BONE_MEAL)

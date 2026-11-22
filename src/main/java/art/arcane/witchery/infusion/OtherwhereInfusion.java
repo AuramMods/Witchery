@@ -158,7 +158,7 @@ public final class OtherwhereInfusion {
         };
     }
 
-    static HitResult rayTrace(ServerPlayer player, double distance) {
+    public static HitResult rayTrace(ServerPlayer player, double distance) {
         return rayTrace(player, distance, target -> true);
     }
 

@@ -621,6 +621,12 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Keep Universal Antidote at `witchery:potion`. Two regular drinkable Poison potions and a Null Catalyst yield two doses. A stack holds up to four. The modern bottle uses the vanilla layers and the original green tint. A 32-tick drink removes Poison and Wither and returns one glass bottle. The legacy subtype-zero fixture kept its existing ID, count and tag.
 - Java 17 data generation, JAR reobfuscation, all 66 clean Forge GameTests and all 70 optional tests passed. Boot the packaged JAR headlessly with Witchery alone and with Thaumaturge, Lithostitched, and Curios. The packaged fixture returned the same sapling, Wicker Bundle, mine, Bramble, talisman, and Antidote aspects after datapack reload and a restart. The recipe was present on both launches. The JAR SHA-256 is `fb24b11c1487a972452d0850ac7db3c7304e4eb6625d449100acd4a7c8706741`.
 
+### Water and Lava Diviners (2026-11-22)
+
+- Both original IDs now hold uncommon damageable rods. The water recipe uses four standard Water Bottles, four sticks and Tear of the Goddess. The lava recipe upgrades any Water Diviner with three Blaze Rods.
+- The scan reuses the Otherwhere six-block ray trace and samples from the targeted top face down at one block per held tick. In 1.20.1, a source state in the corresponding vanilla fluid block represents the legacy stationary liquid. The original lower boundary of Y 1 follows the dimension's minimum Y plus one. Bedrock also stops the search.
+- The shared stack loader reads original top-level wear before vanilla initializes the modern nested Damage field. Existing modern wear takes precedence. The original Forge chest fixture used numeric IDs 4118 and 4119 in that save and preserved wear values 17 and 42 and both custom tags through import and a normal dedicated restart.
+
 ### Atlas and Journal Navigation (2026-11-22)
 
 - The 14 atlas biome families follow the order in the original `ItemBook.BIOME_TYPES`. The modern index records each nonempty family's first page and adds a final Other biomes entry when available. Contents can switch between family shortcuts and individual biome pages.

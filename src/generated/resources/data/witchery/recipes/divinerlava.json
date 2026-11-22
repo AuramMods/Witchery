@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "B": {
+      "item": "minecraft:blaze_rod"
+    },
+    "W": {
+      "item": "witchery:divinerwater"
+    }
+  },
+  "pattern": [
+    " B ",
+    " W ",
+    "B B"
+  ],
+  "result": {
+    "item": "witchery:divinerlava"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "witchery:divinerlava"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_water_diviner": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "witchery:divinerwater"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_water_diviner",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "witchery:divinerlava"
+    ]
+  },
+  "sends_telemetry_event": false
+}

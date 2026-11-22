@@ -750,6 +750,15 @@
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 366 required Forge GameTests. The new cases cover the original recipes, legacy metadata and bookmarks, active guide content, and atlas copying.
 - [x] Use the resulting Biome Note in the Brew of the Changing Seasons.
 
+## Water and Lava Diviners (2026-11-22)
+
+- [x] Craft the Water Diviner with four sticks, four Water Bottles, and Tear of the Goddess in the original pattern. Craft the Lava Diviner with three Blaze Rods and either a fresh or worn Water Diviner. Restore the original names and use the existing original item sprites.
+- [x] Hold use and aim within six blocks of a top face. The rod examines one block per tick straight down for its own fluid. Finding a source plays the orb sound and enchanted-hit particles. Reaching bedrock or one block above the dimension floor plays the snare and smoke. Each completed scan adds one wear and the diviner breaks once wear exceeds 50, as in 1.7.10. Invalid aim stops the scan without wear.
+- [x] Pass the three diviner Forge GameTests. They cover the recipes, imported and modern wear, main-hand and offhand use, the wrong fluid, flowing water, bedrock and breaking a worn rod.
+- [x] Save an original Forge 1.7.10 chest containing both diviners. The importer resolved the save's numeric item IDs and moved the original wear of 17 and 42 into modern item data. Both custom tags and wear values remained after a normal restart of the reobfuscated Forge 47.4.10 JAR.
+- [x] Regenerate recipes and reobfuscate the JAR using Java 17. The tested JAR has SHA-256 `725af9d326d6d85d4579693dbfa75a3a23314206020b104291a85d120285d6f0`.
+- [ ] Diagnose the Coven Witch visit replacement failure in the checked-in suite. The final run passed 75 of 76 cases. The test reported that the owner did not have exactly one active Witch near the rite.
+
 ## Atlas and Journal Navigation (2026-11-22)
 
 - [x] Restore the atlas's biome-family shortcuts in the Contents view. The sections follow the original beach-to-magical order and use the live registry tags. The Biomes view lists individual pages.
@@ -1398,6 +1407,8 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Reproduce the duplicate birth with a diagnostic GameTest. The two independent goals finished one tick apart. The selector ticked the second goal after its partner had set both parents' cooldowns. The birth now checks both adults again before applying its effects.
 - [x] Pass all nine focused brew parity GameTests. On packaged headless Forge, two dosed villagers with claimed beds produced exactly one child. A separate pair with one dosed villager produced none. The counts persisted after a dedicated restart.
 - [x] Run the 640-case Forge regression with the courtship and inventory changes. The 638 passing cases included the fixed courtship, the new wood inventory check, and the revised Hellish Aura fixture. The witch summoning and portable eclipse cases failed during the run and passed in a 48-test rerun on the final source.
+- [ ] Resolve the failures from the recovered development suite. The first replay used only the default template namespace and passed 507 of 515 cases. A replay with all 25 template namespaces passed 627 of 643 cases on the diviner milestone before its final durability correction. The failing cases exercise banishment, witch summoning, storms, barriers, curse removal, coven reuse, settlement counting, wool-colored brew transfer, remote eruption, rite movement, Spectral Familiar ore search, and two legacy cauldron resumes.
+- [x] Rerun the two older cauldron fixtures with their initial assertion updated to check the saved pending legacy state. Both fixtures passed the existing assertions after the server resolved the pending cast, spending power and refunding the original Tongue of Dog or bound Taglock Kit.
 
 ## Auram Armor Compatibility (2026-11-21)
 
