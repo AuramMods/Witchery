@@ -46,11 +46,11 @@ public final class MandrakeModel extends HierarchicalModel<Mandrake> {
     }
 
     private static CubeListBuilder arm(float x) {
-        return CubeListBuilder.create().mirror().texOffs(37, 0).addBox(x, 0, -0.5F, 1, 3, 1);
+        return CubeListBuilder.create().texOffs(37, 0).addBox(x, 0, -0.5F, 1, 3, 1);
     }
 
     private static CubeListBuilder leg() {
-        return CubeListBuilder.create().mirror().texOffs(27, 18).addBox(-1, 0, -1, 2, 3, 2);
+        return CubeListBuilder.create().texOffs(27, 18).addBox(-1, 0, -1, 2, 3, 2);
     }
 
     @Override

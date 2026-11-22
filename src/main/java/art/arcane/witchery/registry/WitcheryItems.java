@@ -2,6 +2,7 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.item.BrewBucketItem;
 import art.arcane.witchery.item.StatueGoddessItem;
+import art.arcane.witchery.item.AreaWardItem;
 import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.block.LeapingLilyBlock;
 import art.arcane.witchery.block.ShadedGlassBlock;
@@ -492,6 +493,9 @@ public final class WitcheryItems {
             }
             case "statuegoddess" -> {
                 return new StatueGoddessItem(block);
+            }
+            case "decursedirected", "decurseteleport" -> {
+                return new AreaWardItem(block);
             }
             case "statueofworship" -> {
                 return new StatueOfWorshipBlock.Item(block);

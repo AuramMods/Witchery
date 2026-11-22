@@ -546,6 +546,12 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Native Witchery 0.24.1 measured 904 capacity in a mixed sapling, log, bark, and leaf fixture and 280 in a dirt, pumpkin, and mushroom fixture. The packaged server imported the bark blocks, carved pumpkins, and both sets of stems, recomputed the exact capacities, and kept them after restart. Removing 24 saplings reduced the first to 824. Removing the mushrooms reduced the second to 160, and adding 26 stems raised it to 238. Both changes persisted through the next headless restart.
 - Java 17 data generation, JAR reobfuscation, and all 58 required GameTests passed. The new isolated scans check shared and separate wood caps, new tagged logs, the two mushroom allowances, and the original garden block eligibility. The packaged SHA-256 is `c2d73dd9e6fbad41605c0b58c5cc928e040af95f53a47cf480d1809c993a8561`.
 
+### Protection Statue Models (2026-11-22)
+
+- The Statue of Broken Curses uses the original wolf cuboids and stone atlas. The Statue of Occluded Summons shares the Mandrake mesh with its original resting pose, flat foliage, and statue atlas. The Mandrake limbs use the original unmirrored UV orientation. The placed renderer retains the original half scale, foot heights, and yaw for all four facings. The items use the same models with inventory display transforms for Minecraft 1.20.1.
+- A direct run of the client renderer's model and pose code captured 288 wolf vertices and 192 mandrake vertices. It verified the original heights, all four directions, valid atlas coordinates, and inventory slot fit. The reobfuscated JAR includes both original texture files byte for byte. The graphical runtime did not respond, so a muted live-client check remains open.
+- A Witchery 0.24.1 server saved all eight variants with different owners and killer names. The packaged Forge 1.20.1 server kept each facing and both name fields through import and restart. Java 17 data generation, JAR reobfuscation, and all 58 required GameTests passed. The packaged SHA-256 is `56dd7c6bca884f2d62a3ecc8214251d1816ddb21b552ab336a87492823b6e966`.
+
 ### Void Bramble and the Statue of the Goddess (2026-11-21)
 
 - Both block recipes use the original ingredients and remain disabled by default. Enable them separately with `allowVoidBrambleRecipe` and `allowGoddessStatueRecipe` in the common config. The Void Bramble ingredient matches Ender Bramble's `BlockStateTag.wild=false` and rejects Wild Bramble.

@@ -75,6 +75,8 @@ import art.arcane.witchery.client.renderer.HobgoblinRenderer;
 import art.arcane.witchery.client.renderer.HobgoblinGodRenderer;
 import art.arcane.witchery.client.renderer.StatueOfWorshipRenderer;
 import art.arcane.witchery.client.renderer.StatueGoddessRenderer;
+import art.arcane.witchery.client.renderer.AreaWardRenderer;
+import art.arcane.witchery.block.entity.AreaWardBlockEntity;
 import art.arcane.witchery.client.renderer.CoffinRenderer;
 import art.arcane.witchery.client.renderer.CrystalBallRenderer;
 import art.arcane.witchery.client.renderer.DemonRenderer;
@@ -264,6 +266,7 @@ public final class WitcheryClient {
         event.registerLayerDefinition(WolfmanRenderer.LAYER, WolfmanRenderer::layer);
         event.registerLayerDefinition(WolfAltarRenderer.LAYER, WolfAltarRenderer::layer);
         event.registerLayerDefinition(StatueGoddessRenderer.LAYER, StatueGoddessRenderer::layer);
+        event.registerLayerDefinition(AreaWardRenderer.WOLF_LAYER, AreaWardRenderer::wolfLayer);
         event.registerLayerDefinition(HuntingTrapRenderer.LAYER, HuntingTrapRenderer::layer);
         for (var style : VampireClothingItem.Style.values()) {
             event.registerLayerDefinition(VampireClothingModel.layerId(style), () -> VampireClothingModel.layer(style));
@@ -368,6 +371,10 @@ public final class WitcheryClient {
         event.registerBlockEntityRenderer(WitcheryBlockEntities.ALLURING_SKULL.get(), AlluringSkullRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.WOLF_ALTAR.get(), WolfAltarRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.STATUE_GODDESS.get(), StatueGoddessRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.DECURSE_DIRECTED.get(),
+                context -> new AreaWardRenderer(context, AreaWardBlockEntity.Kind.DIRECTED));
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.DECURSE_TELEPORT.get(),
+                context -> new AreaWardRenderer(context, AreaWardBlockEntity.Kind.TELEPORT));
         event.registerBlockEntityRenderer(WitcheryBlockEntities.WORSHIP_STATUE.get(), StatueOfWorshipRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.HUNTING_TRAP.get(), HuntingTrapRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.PLACED_ITEM.get(), PlacedItemRenderer::new);
@@ -462,7 +469,7 @@ public final class WitcheryClient {
                     "spanishmoss", "vine", "web", "witchsapling", "lilypad", "leapinglily",
                     "rowanwooddoor", "alderwooddoor", "cwoodendoor", "icedoor",
                     "beartrap", "wolftrap", "demonheart", "wolfhead", "alluringskull", "chalice", "candelabra",
-                    "brazier", "crystalball", "decurseteleport", "decursedirected", "scarecrow", "trent", "witchsladder",
+                    "brazier", "crystalball", "scarecrow", "trent", "witchsladder",
                     "placeditem", "glowglobe", "infinityegg", "garlicgarland", "poppetshelf", "dreamcatcher",
                     "daylightcollector", "bloodcrucible", "silvervat", "cauldron", "cactus",
                     "circle", "circleglyphritual", "circleglyphotherwhere", "circleglyphinfernal",

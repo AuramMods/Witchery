@@ -1454,7 +1454,8 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Capture a pig's taglock in the muted background survival client and use the bound item in a dropped-ingredient cast. The server applied Wolfsbane to the pig after it moved during warmup and left the neighboring pig unaffected.
 - [x] Save a second cast three pulses into warmup. The dedicated server resumed and completed it after restart. The enabled directed statue seven blocks below the pig kept its facing, owner and killer list. The cast used the brew and applied no Wolfsbane.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 278 required Forge GameTests. Coverage includes range failure, blank kits, named legacy cast resumption, loaded statue behavior, player killer records and the poppet's wear.
-- [ ] Restore the wolf and mandrake statue geometry.
+- [x] Restore the original wolf and mandrake models for placed statues and items. Preserve the four facings, original atlas textures, stone particles, and legacy collision box. Import and restart with all eight combinations of statue and facing, retaining their original owners and killer lists.
+- [ ] Verify both statues in a muted client. Direct checks of the client render code validated the meshes, UV coordinates, four directions, and inventory slot fit without opening a window. The isolated graphical runtime timed out.
 
 ## Rites of Transposition (2026-11-20)
 
