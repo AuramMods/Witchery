@@ -591,6 +591,14 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Five disposable GameTests exercised the real Sower, Fertilizer, Gatherer, Crusher, and capture and duplication paths. All 67 cases passed in the final run with Titanium 3.8.32 and Patchouli 84.1. The earlier evaporation and Grassper refund failures passed on rerun. All 62 checked-in cases passed on clean Forge.
 - Java 17 data generation and reobfuscation passed. The packaged headless server consumed a Hawthorn sapling stack and placed Hawthorn, then the powered Crusher collected pork from the pig beside a protected 20-health vampire. A dedicated restart preserved the block state, machine output, and vampire health. Clean Forge booted the same JAR. The SHA-256 is `f8177ac19ac924b810a252a6d16379da0bebfab5a14cf9e5af5f7af330865e54`.
 
+### Enhanced Falling Trees and Mystcraft (2026-11-22)
+
+- Enhanced Falling Trees uses the common log and leaf tags. Its default matcher compares block identity, so Witchery keeps the wood state in the trunk search, the first canopy seed and the remaining leaf search. The survival break event and delivered drops preserved Rowan, Alder, and Hawthorn. The felling mod can still harvest the adjacent oak on its own.
+- TreeCapitator's original default invokes the log's drop handler before removing each log. Enhanced Falling Trees removes the collected blocks directly. Witchery rolls for Ents just before each Witchery log is removed. A seeded server test used the normal axe event and found one Ent at its predicted clearing. [TreeCapitator 1.7.10 source](https://github.com/bspkrs/Treecapitator/blob/1.7.10/src/main/java/bspkrs/treecapitator/Treecapitator.java)
+- Mystcraft 2 Legacy creates automatic sea symbols from the source fluids on each datapack reload. The filter matches the five Witchery fluid IDs from the original integration. It runs before Mystcraft constructs their symbols, preserving the default sea grammar for the remaining fluids.
+- All 66 required Forge GameTests passed with Enhanced Falling Trees 0.6.0, Architectury 9.2.14, Cloth Config 11.1.136, and Mystcraft 2 Legacy 0.8.0. All 62 checked-in cases passed on clean Forge. The reobfuscated JAR booted under both mod sets. The baseline Mystcraft run generated nine fluid sea symbols. The packaged fix generated four on both startup and datapack reload. The Java 17 build SHA-256 is `4d9454af8be03b41e80ee5abf39854635ec1d0e5d54fca8687cbc88e7fb6aaeb`.
+- The isolated graphical environment's Docker daemon timed out. This milestone used headless servers for all game runs.
+
 ### Void Bramble and the Statue of the Goddess (2026-11-21)
 
 - Both block recipes use the original ingredients and remain disabled by default. Enable them separately with `allowVoidBrambleRecipe` and `allowGoddessStatueRecipe` in the common config. The Void Bramble ingredient matches Ender Bramble's `BlockStateTag.wild=false` and rejects Wild Bramble.

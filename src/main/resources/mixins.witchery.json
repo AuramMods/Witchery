@@ -4,7 +4,7 @@
   "package": "art.arcane.witchery.mixin",
   "compatibilityLevel": "JAVA_17",
   "refmap": "witchery.refmap.json",
-  "mixins": ["ScryingChunkMapMixin", "ScryingEntityTrackingMixin", "HunterArmorProtectionMixin", "HunterArmorWearMixin", "PriorIncarnationPickupMixin", "MindrakeBulbMergeMixin", "KeepInventoryBrewMixin", "MirrorChatMixin", "StructureTemplatePoolAccessor", "SinglePoolElementAccessor", "VillageBuildingLimitMixin", "VillageClusterElementMixin", "VillageWallMixin", "MobGoalSelectorAccessor", "BrewFortuneLootMixin", "ResizingLivingEntityMixin", "LegacyLevelStorageMixin", "LegacyPrimaryLevelDataAccessor", "LegacyChunkStorageMixin", "LegacyPlayerDataMixin", "AnimalTradeSoundMixin", "IndustrialMobCrusherMixin", "IndustrialPlantSowerMixin"],
+  "mixins": ["ScryingChunkMapMixin", "ScryingEntityTrackingMixin", "HunterArmorProtectionMixin", "HunterArmorWearMixin", "PriorIncarnationPickupMixin", "MindrakeBulbMergeMixin", "KeepInventoryBrewMixin", "MirrorChatMixin", "StructureTemplatePoolAccessor", "SinglePoolElementAccessor", "VillageBuildingLimitMixin", "VillageClusterElementMixin", "VillageWallMixin", "MobGoalSelectorAccessor", "BrewFortuneLootMixin", "ResizingLivingEntityMixin", "LegacyLevelStorageMixin", "LegacyPrimaryLevelDataAccessor", "LegacyChunkStorageMixin", "LegacyPlayerDataMixin", "AnimalTradeSoundMixin", "IndustrialMobCrusherMixin", "IndustrialPlantSowerMixin", "EnhancedFallingTreesMixin", "EnhancedFallingTreesHarvestMixin", "MystcraftFluidSymbolsMixin"],
   "client": ["ScryingWorldRendererMixin", "MirrorSkinMixin", "BrewColorRenderMixin", "BrewColorInventoryMixin", "BrewSizeRenderMixin"],
   "injectors": {
     "defaultRequire": 1

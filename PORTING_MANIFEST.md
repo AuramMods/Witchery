@@ -1555,10 +1555,10 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 - `ModHookBloodMagic`
 - `ModHookForestry`
 - `ModHookMineFactoryReloaded` maps to Industrial Foregoing. The Sower preserves the three saved sapling variants. Forge's crop and bonemeal interfaces and the log and leaf tags cover the eight crops and three trees. The Crusher, Imprisonment Tool, and Duplicator use their respective entity type tags for the 29, 25, and 30 original exclusions. Witchery makes the Crusher apply its full exclusion tag before selecting a target. [Industrial Foregoing 3.5.21](https://www.curseforge.com/minecraft/mc-mods/industrial-foregoing/files/7068937)
-- `ModHookMystCraft`
+- `ModHookMystCraft` excludes Flowing Spirit, Hollow Tears, Brew, liquid brew and brew gas from automatic sea symbols in Auram's Mystcraft 2 Legacy 0.8.0. Mystcraft still reads server-authored symbol definitions and registers the other fluids.
 - `ModHookThaumcraft4`
 - `ModHookTinkersConstruct`
-- `ModHookTreecapitator`
+- `ModHookTreecapitator` maps to the optional Enhanced Falling Trees 0.6.0. Log and leaf tags expose the three species to the felling mod. Witchery's wood state distinguishes adjacent species, and harvesting each log can still awaken an Ent. [Enhanced Falling Trees 0.6.0](https://www.curseforge.com/minecraft/mc-mods/enhanced-falling-trees/files/5899084)
 - `ModHookWaila` maps to the optional Jade plugin on Forge 1.20.1. It presents the original cover identities for trapped plants, Alder Doors, both pit blocks, the three illusions, and werevillagers. Rowan Doors use Jade's normal item lookup.
 - `ModHookMorph`
 - `ModHookBaubles` uses the optional Curios inventory on Forge 1.20.1. The `witchery:vampire_mortality_accessories` item tag contains the three surviving Botania accessories. Botania removed the Ring of the Aesir. [Botania changelog](https://botaniamod.net/changelog.html)

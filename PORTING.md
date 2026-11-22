@@ -1133,6 +1133,13 @@
 - [x] Exercise the actual machines with all eight crops, including Artichoke on source water. The Fertilizer advances the crops and grows all three trees. The Gatherer leaves immature crops standing, collects mature ones, and collects logs and leaves without losing the log species.
 - [x] Pass 67 headless GameTests with Industrial Foregoing 3.5.21, Titanium 3.8.32, and Patchouli 84.1, and 62 on clean Forge. Run Java 17 data generation and JAR reobfuscation. Verify that the packaged Sower plants Hawthorn and the Crusher collects pork while a vampire beside the pig keeps full health. The sapling, output, and vampire survived a dedicated restart. The packaged JAR also booted on clean Forge.
 
+## Enhanced Falling Trees and Mystcraft (2026-11-22)
+
+- [x] Restore TreeCapitator's species boundaries with Enhanced Falling Trees 0.6.0. Chop each Witchery species with a survival axe beside a different Witchery species. The falling trunk keeps horizontal branches, matching leaves, and the original wood state on log drops. The neighboring tree stays standing. A separate oak test still felled its vanilla tree beside Witchwood. [Enhanced Falling Trees 0.6.0](https://www.curseforge.com/minecraft/mc-mods/enhanced-falling-trees/files/5899084)
+- [x] Keep the Ent awakening roll on harvested Witchery logs. A seeded survival axe test awakened an Ent at the expected clearing through the actual felling event.
+- [x] Exclude the original five Witchery fluids from Mystcraft 2 Legacy 0.8.0's generated sea symbols. The live registry retained water, lava, and Disease. The previous packaged build generated nine fluid symbols. The updated JAR generated four at startup and again after a datapack reload.
+- [x] Pass all 66 GameTests with both integrations and all 62 on clean Forge. Java 17 data generation and reobfuscation passed. The reobfuscated JAR booted headlessly in both profiles.
+
 ## Cauldron Wool and Dye Colors (2026-11-21)
 
 - [x] Accept all sixteen wools in heated cauldrons. Consume the wool and store its legacy RGB separately from the recipe. Later ingredients mix into that color and later wool replaces it. Reset the color when the cauldron is emptied or cleared with Gypsum.
