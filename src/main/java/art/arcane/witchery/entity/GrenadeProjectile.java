@@ -31,12 +31,12 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
 public final class GrenadeProjectile extends ThrowableItemProjectile {
-    private static final int FLIGHT_TICKS = 200;
-    private static final int LANDED_TICKS = 1200;
+    private static final int FUSE_TICKS = 200;
+    private static final int MAX_SAVED_FUSE_TICKS = 1200;
     private static final EntityDataAccessor<Boolean> IMPACTED = SynchedEntityData.defineId(GrenadeProjectile.class,
             EntityDataSerializers.BOOLEAN);
     private static final DustParticleOptions SUNLIGHT = new DustParticleOptions(new Vector3f(1F, 0.92F, 0.14F), 0.8F);
-    private int remainingTicks = FLIGHT_TICKS;
+    private int remainingTicks = FUSE_TICKS;
 
     public GrenadeProjectile(EntityType<? extends GrenadeProjectile> type, Level level) {
         super(type, level);
@@ -111,7 +111,6 @@ public final class GrenadeProjectile extends ThrowableItemProjectile {
             setDeltaMovement(Vec3.ZERO);
             setNoGravity(true);
             entityData.set(IMPACTED, true);
-            remainingTicks = LANDED_TICKS;
             hasImpulse = true;
         }
     }
@@ -165,9 +164,10 @@ public final class GrenadeProjectile extends ThrowableItemProjectile {
         }
         boolean impacted = tag.getBoolean("Impacted");
         entityData.set(IMPACTED, impacted);
-        int limit = impacted ? LANDED_TICKS : FLIGHT_TICKS;
+        // Earlier 1.20.1 builds wrote an extended fuse for landed grenades.
+        int limit = impacted ? MAX_SAVED_FUSE_TICKS : FUSE_TICKS;
         remainingTicks = tag.contains("Remaining", Tag.TAG_ANY_NUMERIC)
-                ? Math.max(1, Math.min(limit, tag.getInt("Remaining"))) : limit;
+                ? Math.max(1, Math.min(limit, tag.getInt("Remaining"))) : FUSE_TICKS;
         if (impacted) {
             setNoGravity(true);
             setDeltaMovement(Vec3.ZERO);

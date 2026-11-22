@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Sun Grenade Fuse and Legacy Light (2026-11-22)
+
+- The original Forge dispenser launched a Sun Grenade and a named Duplicate Grenade. The saved Sun Grenade had `Impacted: 1b`, `inGround: 0b`, and one saved light. The first ordinary restart advanced the world by 321 ticks. The Quartz Sphere it dropped was 122 ticks old, and the light was gone. The port now keeps a 200-tick fuse across flight and impact and preserves the exact countdown in earlier 1.20.1 saves.
+- The importer converts original sunlight to temporary light and queues its cleanup. A saved village wall marker discarded its wall plan when the original server stopped. The importer clears the marker and its empty block entity. All 128 checked-in GameTests passed, including the actual flight and impact, earlier saved countdown, and original duplicate's named skin.
+- The reobfuscated JAR imported the two original UUIDs and the named duplicate's skin. The Sun Grenade was landed with 196 ticks left on the first query, and its original light was temporary. The grenade returned one Quartz Sphere and the light expired. The empty wall marker and expired light stayed gone across a second boot with ordinary arguments. Java 17 data generation and JAR reobfuscation passed. The JAR SHA-256 is `ebd4cbd2a00fcfb85a324b618336cbd69b52f261388a574fcfe75f414d774c34`. `/tmp/witchery-auram-dream-current` identifies the original snapshot, imported world, and logs.
+
 ## Kettle Rim Intake (2026-11-22)
 
 - The original headless Forge world saved a Poppy inside the filled kettle after a drop at its east rim. The previous packaged port left the Poppy alive at X 110.81, resting on the rim at Y 205.375. The normal block collision callback now handles ingredients over the full kettle block. The packaged clean Forge server took the same Poppy and left the Golden Carrot beside the block on the ground.

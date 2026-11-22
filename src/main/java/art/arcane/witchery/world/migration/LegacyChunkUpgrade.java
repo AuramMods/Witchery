@@ -21,6 +21,7 @@ import art.arcane.witchery.block.ShadedGlassBlock;
 import art.arcane.witchery.block.SpanishMossBlock;
 import art.arcane.witchery.block.SpiritPortalBlock;
 import art.arcane.witchery.block.StockadeBlock;
+import art.arcane.witchery.block.SunlightBlock;
 import art.arcane.witchery.block.TormentPortalBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.block.WitchCropBlock;
@@ -46,6 +47,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.datafix.PackedBitStorage;
 import net.minecraft.util.datafix.fixes.BlockStateData;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -65,7 +67,9 @@ import net.minecraft.world.level.chunk.ProtoChunk;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -123,10 +127,15 @@ public final class LegacyChunkUpgrade {
         }
         Map<Integer, Integer> tileStates = savedBlockStates(legacyLevel);
         Map<Integer, Optional<CompoundTag>> states = new HashMap<>();
+        List<BlockPos> sunlight = new ArrayList<>();
         legacyByHeight.forEach((height, section) -> {
             CompoundTag flattened = byHeight.get(height);
-            if (flattened != null) restoreSection(ids, section, flattened, states, legacyByHeight, postProcessing, tileStates);
+            if (flattened != null) restoreSection(ids, section, flattened, states, legacyByHeight, postProcessing, tileStates, sunlight);
         });
+        var chunk = new ChunkPos(legacyLevel.getInt("xPos"), legacyLevel.getInt("zPos"));
+        for (BlockPos relative : sunlight) {
+            savedTicks.add(blockTick(Witchery.MODID + ":light", chunk.getBlockAt(relative.getX(), relative.getY(), relative.getZ()), 10));
+        }
         if (!postProcessing.isEmpty()) fixedLevel.put("PostProcessing", postProcessing);
         if (!savedTicks.isEmpty()) fixedLevel.put(LEGACY_BLOCK_TICKS, savedTicks);
         if (!fluidTicks.isEmpty()) fixedLevel.put(LEGACY_FLUID_TICKS, fluidTicks);
@@ -161,8 +170,11 @@ public final class LegacyChunkUpgrade {
     private static void restoreLegacyTileTypes(CompoundTag level, LegacyWorldIds ids) {
         var sections = level.getList("Sections", Tag.TAG_COMPOUND);
         var tiles = level.getList("TileEntities", Tag.TAG_COMPOUND);
-        // The garland's original tile had no saved state. The port renders the block directly.
-        tiles.removeIf(entry -> ((CompoundTag) entry).getString("id").equals("witchery:garlicgarland"));
+        // Garlands render without tiles. The original pending wall plans only held their bounds in memory.
+        tiles.removeIf(entry -> switch (((CompoundTag) entry).getString("id")) {
+            case "witchery:garlicgarland", "witchery:wallgen" -> true;
+            default -> false;
+        });
         for (Tag entry : tiles) {
             CompoundTag tile = (CompoundTag) entry;
             if (tile.getString("id").equals("witchery:wolftrap")) {
@@ -237,17 +249,19 @@ public final class LegacyChunkUpgrade {
             return true;
         });
         // Legacy runoff could stop scheduling when its level stabilized. Restart the modern dispersal tick on load.
-        dormantBrews.forEach((pos, id) -> {
-            var tick = new CompoundTag();
-            tick.putString("i", id);
-            tick.putInt("x", pos.getX());
-            tick.putInt("y", pos.getY());
-            tick.putInt("z", pos.getZ());
-            tick.putInt("t", 5);
-            tick.putInt("p", 0);
-            saved.add(tick);
-        });
+        dormantBrews.forEach((pos, id) -> saved.add(blockTick(id, pos, 5)));
         return saved;
+    }
+
+    private static CompoundTag blockTick(String id, BlockPos pos, int delay) {
+        var tick = new CompoundTag();
+        tick.putString("i", id);
+        tick.putInt("x", pos.getX());
+        tick.putInt("y", pos.getY());
+        tick.putInt("z", pos.getZ());
+        tick.putInt("t", delay);
+        tick.putInt("p", 0);
+        return tick;
     }
 
     private static int fluidMetadata(ListTag sections, BlockPos pos, LegacyWorldIds ids, ResourceLocation name) {
@@ -288,7 +302,7 @@ public final class LegacyChunkUpgrade {
 
     private static void restoreSection(LegacyWorldIds ids, CompoundTag old, CompoundTag section,
                                        Map<Integer, Optional<CompoundTag>> states, Map<Integer, CompoundTag> legacyByHeight,
-                                       ListTag postProcessing, Map<Integer, Integer> tileStates) {
+                                       ListTag postProcessing, Map<Integer, Integer> tileStates, List<BlockPos> sunlight) {
         byte[] blocks = old.getByteArray("Blocks");
         if (blocks.length != SECTION_SIZE) return;
         byte[] highBits = old.getByteArray("Add");
@@ -338,6 +352,7 @@ public final class LegacyChunkUpgrade {
             }
             packed.set(i, index);
             if (POST_PROCESSING_BLOCKS.contains(path)) queueShapeUpdate(postProcessing, sectionY, i);
+            if (path.equals("light")) sunlight.add(new BlockPos(i & 15, (sectionY << 4) + (i >> 8), (i >> 4) & 15));
             changed = true;
         }
         if (changed) {
@@ -450,6 +465,8 @@ public final class LegacyChunkUpgrade {
             case "spiritflowing", "hollowtears", "brew", "disease" ->
                     restoreClassicFluid(state, metadata, FLUID_QUANTA.get(name.getPath()), saved != 0);
             case "brewgas", "brewliquid" -> state.setValue(LiquidBlock.LEVEL, metadata);
+            case "light" -> state.setValue(SunlightBlock.TEMPORARY, true);
+            case "wallgen" -> Blocks.AIR.defaultBlockState();
             case "shadedglass", "shadedglass_active" -> state.setValue(ShadedGlassBlock.COLOR,
                     ShadedGlassBlock.Color.fromLegacyMetadata(metadata));
             case "mirrorblock", "mirrorblock2" -> state.setValue(MirrorBlock.FACING, switch (variant) {
