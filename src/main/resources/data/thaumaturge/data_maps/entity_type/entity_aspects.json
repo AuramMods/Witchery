@@ -1,0 +1,203 @@
+{
+  "values": {
+    "witchery:babayaga": [
+      {"aspect": "thaumaturge:cognitio", "amount": 4},
+      {"aspect": "thaumaturge:humanus", "amount": 2},
+      {"aspect": "thaumaturge:motus", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 6},
+      {"aspect": "thaumaturge:spiritus", "amount": 8}
+    ],
+    "witchery:banshee": [
+      {"aspect": "thaumaturge:exanimis", "amount": 1},
+      {"aspect": "thaumaturge:mortuus", "amount": 2},
+      {"aspect": "thaumaturge:sensus", "amount": 2}
+    ],
+    "witchery:cat": [
+      {"aspect": "thaumaturge:bestia", "amount": 1},
+      {"aspect": "thaumaturge:cognitio", "amount": 1},
+      {"aspect": "thaumaturge:motus", "amount": 2},
+      {"aspect": "thaumaturge:sensus", "amount": 2}
+    ],
+    "witchery:corpse": [
+      {"aspect": "thaumaturge:cognitio", "amount": 2},
+      {"aspect": "thaumaturge:humanus", "amount": 2},
+      {"aspect": "thaumaturge:spiritus", "amount": 1}
+    ],
+    "witchery:covenwitch": [
+      {"aspect": "thaumaturge:cognitio", "amount": 2},
+      {"aspect": "thaumaturge:humanus", "amount": 2},
+      {"aspect": "thaumaturge:motus", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 3},
+      {"aspect": "thaumaturge:spiritus", "amount": 1}
+    ],
+    "witchery:death": [
+      {"aspect": "thaumaturge:mortuus", "amount": 8},
+      {"aspect": "thaumaturge:spiritus", "amount": 8}
+    ],
+    "witchery:demon": [
+      {"aspect": "thaumaturge:bestia", "amount": 2},
+      {"aspect": "thaumaturge:desiderium", "amount": 8},
+      {"aspect": "thaumaturge:ignis", "amount": 4},
+      {"aspect": "thaumaturge:mortuus", "amount": 5},
+      {"aspect": "thaumaturge:motus", "amount": 2},
+      {"aspect": "thaumaturge:perditio", "amount": 1},
+      {"aspect": "thaumaturge:praecantatio", "amount": 6},
+      {"aspect": "thaumaturge:sensus", "amount": 2},
+      {"aspect": "thaumaturge:vacuos", "amount": 2}
+    ],
+    "witchery:ent": [
+      {"aspect": "thaumaturge:cognitio", "amount": 2},
+      {"aspect": "thaumaturge:herba", "amount": 10},
+      {"aspect": "thaumaturge:motus", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2}
+    ],
+    "witchery:familiar": [
+      {"aspect": "thaumaturge:aer", "amount": 5},
+      {"aspect": "thaumaturge:bestia", "amount": 1},
+      {"aspect": "thaumaturge:motus", "amount": 1},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:spiritus", "amount": 6},
+      {"aspect": "thaumaturge:vacuos", "amount": 2}
+    ],
+    "witchery:goblin": [
+      {"aspect": "thaumaturge:cognitio", "amount": 1},
+      {"aspect": "thaumaturge:humanus", "amount": 1},
+      {"aspect": "thaumaturge:motus", "amount": 2},
+      {"aspect": "thaumaturge:sensus", "amount": 2}
+    ],
+    "witchery:goblingulg": [
+      {"aspect": "thaumaturge:cognitio", "amount": 1},
+      {"aspect": "thaumaturge:humanus", "amount": 2},
+      {"aspect": "thaumaturge:motus", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 3},
+      {"aspect": "thaumaturge:praemunio", "amount": 2},
+      {"aspect": "thaumaturge:sensus", "amount": 2}
+    ],
+    "witchery:goblinmog": [
+      {"aspect": "thaumaturge:cognitio", "amount": 1},
+      {"aspect": "thaumaturge:humanus", "amount": 2},
+      {"aspect": "thaumaturge:motus", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 3},
+      {"aspect": "thaumaturge:praemunio", "amount": 2},
+      {"aspect": "thaumaturge:sensus", "amount": 2}
+    ],
+    "witchery:hornedhuntsman": [
+      {"aspect": "thaumaturge:bestia", "amount": 8},
+      {"aspect": "thaumaturge:cognitio", "amount": 4},
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:motus", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 4},
+      {"aspect": "thaumaturge:spiritus", "amount": 4},
+      {"aspect": "thaumaturge:terra", "amount": 2}
+    ],
+    "witchery:illusioncreeper": [
+      {"aspect": "thaumaturge:aer", "amount": 2},
+      {"aspect": "thaumaturge:motus", "amount": 2},
+      {"aspect": "thaumaturge:sensus", "amount": 1}
+    ],
+    "witchery:illusionspider": [
+      {"aspect": "thaumaturge:aer", "amount": 2},
+      {"aspect": "thaumaturge:motus", "amount": 2},
+      {"aspect": "thaumaturge:sensus", "amount": 1}
+    ],
+    "witchery:illusionzombie": [
+      {"aspect": "thaumaturge:aer", "amount": 2},
+      {"aspect": "thaumaturge:motus", "amount": 2},
+      {"aspect": "thaumaturge:sensus", "amount": 1}
+    ],
+    "witchery:imp": [
+      {"aspect": "thaumaturge:bestia", "amount": 2},
+      {"aspect": "thaumaturge:desiderium", "amount": 6},
+      {"aspect": "thaumaturge:ignis", "amount": 3},
+      {"aspect": "thaumaturge:motus", "amount": 2},
+      {"aspect": "thaumaturge:perditio", "amount": 1},
+      {"aspect": "thaumaturge:praecantatio", "amount": 7},
+      {"aspect": "thaumaturge:sensus", "amount": 2},
+      {"aspect": "thaumaturge:vacuos", "amount": 2}
+    ],
+    "witchery:leonard": [
+      {"aspect": "thaumaturge:cognitio", "amount": 1},
+      {"aspect": "thaumaturge:humanus", "amount": 2},
+      {"aspect": "thaumaturge:motus", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 8},
+      {"aspect": "thaumaturge:sensus", "amount": 2}
+    ],
+    "witchery:lordoftorment": [
+      {"aspect": "thaumaturge:bestia", "amount": 2},
+      {"aspect": "thaumaturge:ignis", "amount": 5},
+      {"aspect": "thaumaturge:mortuus", "amount": 2},
+      {"aspect": "thaumaturge:motus", "amount": 3},
+      {"aspect": "thaumaturge:perditio", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 8},
+      {"aspect": "thaumaturge:sensus", "amount": 2},
+      {"aspect": "thaumaturge:vacuos", "amount": 2},
+      {"aspect": "thaumaturge:vinculum", "amount": 2}
+    ],
+    "witchery:lostsoul": [
+      {"aspect": "thaumaturge:aer", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 3}
+    ],
+    "witchery:louse": [
+      {"aspect": "thaumaturge:bestia", "amount": 1},
+      {"aspect": "thaumaturge:motus", "amount": 1},
+      {"aspect": "thaumaturge:permutatio", "amount": 1}
+    ],
+    "witchery:mandrake": [
+      {"aspect": "thaumaturge:aer", "amount": 2},
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:humanus", "amount": 1},
+      {"aspect": "thaumaturge:motus", "amount": 1},
+      {"aspect": "thaumaturge:sensus", "amount": 2}
+    ],
+    "witchery:mindrake": [
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:humanus", "amount": 1},
+      {"aspect": "thaumaturge:ignis", "amount": 1},
+      {"aspect": "thaumaturge:motus", "amount": 1},
+      {"aspect": "thaumaturge:sensus", "amount": 1}
+    ],
+    "witchery:nightmare": [
+      {"aspect": "thaumaturge:desiderium", "amount": 4},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:spiritus", "amount": 2},
+      {"aspect": "thaumaturge:vacuos", "amount": 3}
+    ],
+    "witchery:owl": [
+      {"aspect": "thaumaturge:bestia", "amount": 1},
+      {"aspect": "thaumaturge:cognitio", "amount": 1},
+      {"aspect": "thaumaturge:motus", "amount": 2},
+      {"aspect": "thaumaturge:volatus", "amount": 2}
+    ],
+    "witchery:poltergeist": [
+      {"aspect": "thaumaturge:exanimis", "amount": 1},
+      {"aspect": "thaumaturge:mortuus", "amount": 2},
+      {"aspect": "thaumaturge:motus", "amount": 2}
+    ],
+    "witchery:spectre": [
+      {"aspect": "thaumaturge:exanimis", "amount": 1},
+      {"aspect": "thaumaturge:mortuus", "amount": 2}
+    ],
+    "witchery:spirit": [
+      {"aspect": "thaumaturge:aer", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 3}
+    ],
+    "witchery:toad": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:bestia", "amount": 1},
+      {"aspect": "thaumaturge:motus", "amount": 2},
+      {"aspect": "thaumaturge:victus", "amount": 1}
+    ],
+    "witchery:treefyd": [
+      {"aspect": "thaumaturge:cognitio", "amount": 2},
+      {"aspect": "thaumaturge:herba", "amount": 4},
+      {"aspect": "thaumaturge:motus", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2}
+    ],
+    "witchery:witchhunter": [
+      {"aspect": "thaumaturge:cognitio", "amount": 2},
+      {"aspect": "thaumaturge:humanus", "amount": 2},
+      {"aspect": "thaumaturge:motus", "amount": 2},
+      {"aspect": "thaumaturge:spiritus", "amount": 1}
+    ]
+  }
+}

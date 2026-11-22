@@ -1,0 +1,1462 @@
+{
+  "values": {
+    "witchery:alderwooddoor": [
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:machina", "amount": 2},
+      {"aspect": "thaumaturge:motus", "amount": 1},
+      {"aspect": "thaumaturge:vinculum", "amount": 1}
+    ],
+    "witchery:alluringskull": [
+      {"aspect": "thaumaturge:desiderium", "amount": 4},
+      {"aspect": "thaumaturge:exanimis", "amount": 6},
+      {"aspect": "thaumaturge:mortuus", "amount": 4},
+      {"aspect": "thaumaturge:spiritus", "amount": 4}
+    ],
+    "witchery:altar": [
+      {"aspect": "thaumaturge:machina", "amount": 3},
+      {"aspect": "thaumaturge:potentia", "amount": 3},
+      {"aspect": "thaumaturge:praecantatio", "amount": 3},
+      {"aspect": "thaumaturge:terra", "amount": 4}
+    ],
+    "witchery:anointing_paste": [
+      {"aspect": "thaumaturge:herba", "amount": 1},
+      {"aspect": "thaumaturge:permutatio", "amount": 1}
+    ],
+    "witchery:anti_magic_bolt": [
+      {"aspect": "thaumaturge:aversio", "amount": 1},
+      {"aspect": "thaumaturge:mortuus", "amount": 1},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:vacuos", "amount": 2}
+    ],
+    "witchery:armor_protection_poppet": [
+      {"aspect": "thaumaturge:fabrico", "amount": 5},
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:praemunio", "amount": 2},
+      {"aspect": "thaumaturge:spiritus", "amount": 1}
+    ],
+    "witchery:arthana": [
+      {"aspect": "thaumaturge:aversio", "amount": 1},
+      {"aspect": "thaumaturge:desiderium", "amount": 6},
+      {"aspect": "thaumaturge:metallum", "amount": 2},
+      {"aspect": "thaumaturge:vitreus", "amount": 2}
+    ],
+    "witchery:artichoke": [
+      {"aspect": "thaumaturge:aqua", "amount": 2},
+      {"aspect": "thaumaturge:herba", "amount": 3}
+    ],
+    "witchery:attuned_stone": [
+      {"aspect": "thaumaturge:desiderium", "amount": 4},
+      {"aspect": "thaumaturge:potentia", "amount": 4},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:vitreus", "amount": 4}
+    ],
+    "witchery:babashat": [
+      {"aspect": "thaumaturge:alienis", "amount": 3},
+      {"aspect": "thaumaturge:bestia", "amount": 2},
+      {"aspect": "thaumaturge:fabrico", "amount": 4},
+      {"aspect": "thaumaturge:praecantatio", "amount": 5},
+      {"aspect": "thaumaturge:praemunio", "amount": 5}
+    ],
+    "witchery:barkbelt": [
+      {"aspect": "thaumaturge:bestia", "amount": 2},
+      {"aspect": "thaumaturge:fabrico", "amount": 3},
+      {"aspect": "thaumaturge:herba", "amount": 4},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:praemunio", "amount": 6}
+    ],
+    "witchery:barrier": [
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:praemunio", "amount": 3}
+    ],
+    "witchery:bat_ball": [
+      {"aspect": "thaumaturge:bestia", "amount": 1},
+      {"aspect": "thaumaturge:motus", "amount": 1}
+    ],
+    "witchery:bat_wool": [
+      {"aspect": "thaumaturge:bestia", "amount": 1},
+      {"aspect": "thaumaturge:volatus", "amount": 1}
+    ],
+    "witchery:belladonna": [
+      {"aspect": "thaumaturge:herba", "amount": 3},
+      {"aspect": "thaumaturge:mortuus", "amount": 4},
+      {"aspect": "thaumaturge:vitium", "amount": 4}
+    ],
+    "witchery:belladonna_flower": [
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:mortuus", "amount": 4},
+      {"aspect": "thaumaturge:vitium", "amount": 4}
+    ],
+    "witchery:binky_head": [
+      {"aspect": "thaumaturge:bestia", "amount": 2},
+      {"aspect": "thaumaturge:mortuus", "amount": 3},
+      {"aspect": "thaumaturge:permutatio", "amount": 2}
+    ],
+    "witchery:biomenote": [
+      {"aspect": "thaumaturge:cognitio", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:bitingbelt": [
+      {"aspect": "thaumaturge:bestia", "amount": 2},
+      {"aspect": "thaumaturge:desiderium", "amount": 2},
+      {"aspect": "thaumaturge:fabrico", "amount": 3},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1},
+      {"aspect": "thaumaturge:praemunio", "amount": 4}
+    ],
+    "witchery:bloodrose": [
+      {"aspect": "thaumaturge:desiderium", "amount": 1},
+      {"aspect": "thaumaturge:herba", "amount": 1},
+      {"aspect": "thaumaturge:machina", "amount": 1}
+    ],
+    "witchery:boline": [
+      {"aspect": "thaumaturge:aversio", "amount": 1},
+      {"aspect": "thaumaturge:metallum", "amount": 1},
+      {"aspect": "thaumaturge:vitreus", "amount": 1}
+    ],
+    "witchery:bone_needle": [
+      {"aspect": "thaumaturge:aversio", "amount": 1},
+      {"aspect": "thaumaturge:bestia", "amount": 1},
+      {"aspect": "thaumaturge:mortuus", "amount": 1}
+    ],
+    "witchery:book_brews_and_infusions": [
+      {"aspect": "thaumaturge:cognitio", "amount": 5},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:book_circle_magic": [
+      {"aspect": "thaumaturge:cognitio", "amount": 5},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:book_collecting_fumes": [
+      {"aspect": "thaumaturge:cognitio", "amount": 5},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:book_conjuration_and_fetishes": [
+      {"aspect": "thaumaturge:cognitio", "amount": 4},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:book_distilling": [
+      {"aspect": "thaumaturge:cognitio", "amount": 5},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:book_herbology": [
+      {"aspect": "thaumaturge:cognitio", "amount": 5},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:book_of_biomes": [
+      {"aspect": "thaumaturge:cognitio", "amount": 4},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:book_symbology": [
+      {"aspect": "thaumaturge:cognitio", "amount": 4},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:bookbiomes2": [
+      {"aspect": "thaumaturge:cognitio", "amount": 5},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:bound_waystone": [
+      {"aspect": "thaumaturge:alienis", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:terra", "amount": 1}
+    ],
+    "witchery:brazier": [
+      {"aspect": "thaumaturge:ignis", "amount": 2},
+      {"aspect": "thaumaturge:machina", "amount": 2},
+      {"aspect": "thaumaturge:metallum", "amount": 2}
+    ],
+    "witchery:breath_of_the_goddess": [
+      {"aspect": "thaumaturge:aer", "amount": 3},
+      {"aspect": "thaumaturge:ordo", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 1}
+    ],
+    "witchery:brew.fuel": [
+      {"aspect": "thaumaturge:aqua", "amount": 2},
+      {"aspect": "thaumaturge:potentia", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:brew.water": [
+      {"aspect": "thaumaturge:aqua", "amount": 8},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:brew_of_bats": [
+      {"aspect": "thaumaturge:aqua", "amount": 2},
+      {"aspect": "thaumaturge:bestia", "amount": 1},
+      {"aspect": "thaumaturge:motus", "amount": 1},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:brew_of_cursed_leaping": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:motus", "amount": 2},
+      {"aspect": "thaumaturge:perditio", "amount": 1}
+    ],
+    "witchery:brew_of_erosion": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:instrumentum", "amount": 4},
+      {"aspect": "thaumaturge:perditio", "amount": 5}
+    ],
+    "witchery:brew_of_flowing_spirit": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:perditio", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 2}
+    ],
+    "witchery:brew_of_frogs_tongue": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:motus", "amount": 2},
+      {"aspect": "thaumaturge:perditio", "amount": 1}
+    ],
+    "witchery:brew_of_grotesque": [
+      {"aspect": "thaumaturge:aqua", "amount": 2},
+      {"aspect": "thaumaturge:permutatio", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1},
+      {"aspect": "thaumaturge:sensus", "amount": 2}
+    ],
+    "witchery:brew_of_hitchcock": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:bestia", "amount": 2},
+      {"aspect": "thaumaturge:perditio", "amount": 1}
+    ],
+    "witchery:brew_of_hollow_tears": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:perditio", "amount": 1},
+      {"aspect": "thaumaturge:vacuos", "amount": 2}
+    ],
+    "witchery:brew_of_ice": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:gelum", "amount": 2},
+      {"aspect": "thaumaturge:perditio", "amount": 1}
+    ],
+    "witchery:brew_of_infection": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:perditio", "amount": 1},
+      {"aspect": "thaumaturge:vitium", "amount": 2}
+    ],
+    "witchery:brew_of_ink": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:perditio", "amount": 1},
+      {"aspect": "thaumaturge:tenebrae", "amount": 2}
+    ],
+    "witchery:brew_of_love": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:perditio", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 1},
+      {"aspect": "thaumaturge:victus", "amount": 2}
+    ],
+    "witchery:brew_of_raising": [
+      {"aspect": "thaumaturge:aqua", "amount": 2},
+      {"aspect": "thaumaturge:exanimis", "amount": 2},
+      {"aspect": "thaumaturge:perditio", "amount": 1}
+    ],
+    "witchery:brew_of_revealing": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:perditio", "amount": 1},
+      {"aspect": "thaumaturge:sensus", "amount": 2}
+    ],
+    "witchery:brew_of_sleeping": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:cognitio", "amount": 2},
+      {"aspect": "thaumaturge:perditio", "amount": 1}
+    ],
+    "witchery:brew_of_soaring": [
+      {"aspect": "thaumaturge:aer", "amount": 3},
+      {"aspect": "thaumaturge:aqua", "amount": 1}
+    ],
+    "witchery:brew_of_solid_dirt": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:perditio", "amount": 1},
+      {"aspect": "thaumaturge:permutatio", "amount": 1},
+      {"aspect": "thaumaturge:terra", "amount": 1}
+    ],
+    "witchery:brew_of_solid_erosion": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:perditio", "amount": 3},
+      {"aspect": "thaumaturge:permutatio", "amount": 1}
+    ],
+    "witchery:brew_of_solid_rock": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:perditio", "amount": 1},
+      {"aspect": "thaumaturge:permutatio", "amount": 1},
+      {"aspect": "thaumaturge:terra", "amount": 1}
+    ],
+    "witchery:brew_of_solid_sand": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:perditio", "amount": 1},
+      {"aspect": "thaumaturge:permutatio", "amount": 1},
+      {"aspect": "thaumaturge:terra", "amount": 1}
+    ],
+    "witchery:brew_of_solid_sandstone": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:perditio", "amount": 1},
+      {"aspect": "thaumaturge:permutatio", "amount": 1},
+      {"aspect": "thaumaturge:terra", "amount": 1}
+    ],
+    "witchery:brew_of_soul_anguish": [
+      {"aspect": "thaumaturge:cognitio", "amount": 2},
+      {"aspect": "thaumaturge:spiritus", "amount": 2}
+    ],
+    "witchery:brew_of_soul_fear": [
+      {"aspect": "thaumaturge:sensus", "amount": 2},
+      {"aspect": "thaumaturge:spiritus", "amount": 2}
+    ],
+    "witchery:brew_of_soul_hunger": [
+      {"aspect": "thaumaturge:desiderium", "amount": 2},
+      {"aspect": "thaumaturge:spiritus", "amount": 2}
+    ],
+    "witchery:brew_of_soul_torment": [
+      {"aspect": "thaumaturge:spiritus", "amount": 2},
+      {"aspect": "thaumaturge:vinculum", "amount": 2}
+    ],
+    "witchery:brew_of_sprouting": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:herba", "amount": 4},
+      {"aspect": "thaumaturge:perditio", "amount": 1}
+    ],
+    "witchery:brew_of_substitution": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:perditio", "amount": 1},
+      {"aspect": "thaumaturge:permutatio", "amount": 3}
+    ],
+    "witchery:brew_of_the_grave": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:exanimis", "amount": 3}
+    ],
+    "witchery:brew_of_thorns": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:aversio", "amount": 1},
+      {"aspect": "thaumaturge:herba", "amount": 1},
+      {"aspect": "thaumaturge:perditio", "amount": 2}
+    ],
+    "witchery:brew_of_vines": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:perditio", "amount": 1}
+    ],
+    "witchery:brew_of_wasting": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:desiderium", "amount": 2},
+      {"aspect": "thaumaturge:perditio", "amount": 1}
+    ],
+    "witchery:brew_of_webs": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:fabrico", "amount": 1},
+      {"aspect": "thaumaturge:perditio", "amount": 1},
+      {"aspect": "thaumaturge:vinculum", "amount": 2}
+    ],
+    "witchery:brewbag": [
+      {"aspect": "thaumaturge:bestia", "amount": 2},
+      {"aspect": "thaumaturge:fabrico", "amount": 2},
+      {"aspect": "thaumaturge:machina", "amount": 1},
+      {"aspect": "thaumaturge:vacuos", "amount": 2}
+    ],
+    "witchery:brewbottle": [
+      {"aspect": "thaumaturge:aqua", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 3}
+    ],
+    "witchery:broom": [
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:instrumentum", "amount": 1}
+    ],
+    "witchery:buckethollowtears": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:metallum", "amount": 1},
+      {"aspect": "thaumaturge:vacuos", "amount": 2}
+    ],
+    "witchery:bucketspirit": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:metallum", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 2}
+    ],
+    "witchery:cactus": [
+      {"aspect": "thaumaturge:herba", "amount": 1},
+      {"aspect": "thaumaturge:vinculum", "amount": 1}
+    ],
+    "witchery:candelabra": [
+      {"aspect": "thaumaturge:desiderium", "amount": 6},
+      {"aspect": "thaumaturge:lux", "amount": 4},
+      {"aspect": "thaumaturge:metallum", "amount": 6},
+      {"aspect": "thaumaturge:potentia", "amount": 4},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:vitreus", "amount": 4}
+    ],
+    "witchery:cauldron": [
+      {"aspect": "thaumaturge:aqua", "amount": 4},
+      {"aspect": "thaumaturge:desiderium", "amount": 4},
+      {"aspect": "thaumaturge:fabrico", "amount": 8},
+      {"aspect": "thaumaturge:metallum", "amount": 6},
+      {"aspect": "thaumaturge:potentia", "amount": 4},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:vitreus", "amount": 4}
+    ],
+    "witchery:cauldronbook": [
+      {"aspect": "thaumaturge:cognitio", "amount": 5},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:chalice": [
+      {"aspect": "thaumaturge:desiderium", "amount": 6},
+      {"aspect": "thaumaturge:metallum", "amount": 6},
+      {"aspect": "thaumaturge:potentia", "amount": 4},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:vacuos", "amount": 2},
+      {"aspect": "thaumaturge:vitreus", "amount": 4}
+    ],
+    "witchery:chalkheart": [
+      {"aspect": "thaumaturge:instrumentum", "amount": 1},
+      {"aspect": "thaumaturge:ordo", "amount": 1},
+      {"aspect": "thaumaturge:praecantatio", "amount": 3}
+    ],
+    "witchery:chalkinfernal": [
+      {"aspect": "thaumaturge:bestia", "amount": 1},
+      {"aspect": "thaumaturge:ignis", "amount": 4},
+      {"aspect": "thaumaturge:instrumentum", "amount": 1},
+      {"aspect": "thaumaturge:perditio", "amount": 1},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:chalkotherwhere": [
+      {"aspect": "thaumaturge:alienis", "amount": 4},
+      {"aspect": "thaumaturge:instrumentum", "amount": 1},
+      {"aspect": "thaumaturge:motus", "amount": 4},
+      {"aspect": "thaumaturge:ordo", "amount": 1},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:chalkritual": [
+      {"aspect": "thaumaturge:instrumentum", "amount": 1},
+      {"aspect": "thaumaturge:ordo", "amount": 1},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:charged_attuned_stone": [
+      {"aspect": "thaumaturge:desiderium", "amount": 4},
+      {"aspect": "thaumaturge:potentia", "amount": 6},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:vitreus", "amount": 4}
+    ],
+    "witchery:charm_of_disrupted_dreams": [
+      {"aspect": "thaumaturge:fabrico", "amount": 1},
+      {"aspect": "thaumaturge:perditio", "amount": 1}
+    ],
+    "witchery:circle": [
+      {"aspect": "thaumaturge:machina", "amount": 1},
+      {"aspect": "thaumaturge:ordo", "amount": 1},
+      {"aspect": "thaumaturge:praecantatio", "amount": 3}
+    ],
+    "witchery:circleglyphinfernal": [
+      {"aspect": "thaumaturge:bestia", "amount": 1},
+      {"aspect": "thaumaturge:ignis", "amount": 4},
+      {"aspect": "thaumaturge:machina", "amount": 1},
+      {"aspect": "thaumaturge:perditio", "amount": 1},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:circleglyphotherwhere": [
+      {"aspect": "thaumaturge:alienis", "amount": 4},
+      {"aspect": "thaumaturge:machina", "amount": 1},
+      {"aspect": "thaumaturge:motus", "amount": 4},
+      {"aspect": "thaumaturge:ordo", "amount": 1},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:circleglyphritual": [
+      {"aspect": "thaumaturge:machina", "amount": 1},
+      {"aspect": "thaumaturge:ordo", "amount": 1},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:clay_jar": [
+      {"aspect": "thaumaturge:ignis", "amount": 1},
+      {"aspect": "thaumaturge:terra", "amount": 1},
+      {"aspect": "thaumaturge:vacuos", "amount": 1}
+    ],
+    "witchery:condensed_fear": [
+      {"aspect": "thaumaturge:mortuus", "amount": 2}
+    ],
+    "witchery:congealed_spirit": [
+      {"aspect": "thaumaturge:spiritus", "amount": 6}
+    ],
+    "witchery:contract_evaporation": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:ignis", "amount": 1},
+      {"aspect": "thaumaturge:permutatio", "amount": 2}
+    ],
+    "witchery:contract_fiery_tolerance": [
+      {"aspect": "thaumaturge:ignis", "amount": 1},
+      {"aspect": "thaumaturge:permutatio", "amount": 2},
+      {"aspect": "thaumaturge:praemunio", "amount": 1}
+    ],
+    "witchery:contract_fiery_touch": [
+      {"aspect": "thaumaturge:ignis", "amount": 1},
+      {"aspect": "thaumaturge:machina", "amount": 1},
+      {"aspect": "thaumaturge:permutatio", "amount": 2}
+    ],
+    "witchery:contract_living_flame": [
+      {"aspect": "thaumaturge:bestia", "amount": 1},
+      {"aspect": "thaumaturge:ignis", "amount": 1},
+      {"aspect": "thaumaturge:permutatio", "amount": 2}
+    ],
+    "witchery:contract_melting_touch": [
+      {"aspect": "thaumaturge:ignis", "amount": 1},
+      {"aspect": "thaumaturge:instrumentum", "amount": 1},
+      {"aspect": "thaumaturge:permutatio", "amount": 2}
+    ],
+    "witchery:contract_of_ownership": [
+      {"aspect": "thaumaturge:permutatio", "amount": 2},
+      {"aspect": "thaumaturge:spiritus", "amount": 2}
+    ],
+    "witchery:contract_of_torment": [
+      {"aspect": "thaumaturge:permutatio", "amount": 2},
+      {"aspect": "thaumaturge:vinculum", "amount": 3}
+    ],
+    "witchery:creature_bound_waystone": [
+      {"aspect": "thaumaturge:alienis", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:terra", "amount": 1}
+    ],
+    "witchery:creeper_heart": [
+      {"aspect": "thaumaturge:bestia", "amount": 6},
+      {"aspect": "thaumaturge:ignis", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 4}
+    ],
+    "witchery:crittersnare": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:herba", "amount": 1},
+      {"aspect": "thaumaturge:vinculum", "amount": 2}
+    ],
+    "witchery:crystalball": [
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:sensus", "amount": 4},
+      {"aspect": "thaumaturge:vitreus", "amount": 2}
+    ],
+    "witchery:death_protection_poppet": [
+      {"aspect": "thaumaturge:fabrico", "amount": 4},
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:mortuus", "amount": 1},
+      {"aspect": "thaumaturge:praemunio", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 1},
+      {"aspect": "thaumaturge:victus", "amount": 1}
+    ],
+    "witchery:deathscowl": [
+      {"aspect": "thaumaturge:fabrico", "amount": 1},
+      {"aspect": "thaumaturge:mortuus", "amount": 4},
+      {"aspect": "thaumaturge:praemunio", "amount": 2},
+      {"aspect": "thaumaturge:vinculum", "amount": 2}
+    ],
+    "witchery:deathsfeet": [
+      {"aspect": "thaumaturge:aqua", "amount": 2},
+      {"aspect": "thaumaturge:fabrico", "amount": 1},
+      {"aspect": "thaumaturge:mortuus", "amount": 4},
+      {"aspect": "thaumaturge:praemunio", "amount": 2}
+    ],
+    "witchery:deathshand": [
+      {"aspect": "thaumaturge:aversio", "amount": 3},
+      {"aspect": "thaumaturge:mortuus", "amount": 4},
+      {"aspect": "thaumaturge:spiritus", "amount": 3}
+    ],
+    "witchery:deathsrobe": [
+      {"aspect": "thaumaturge:fabrico", "amount": 1},
+      {"aspect": "thaumaturge:ignis", "amount": 2},
+      {"aspect": "thaumaturge:mortuus", "amount": 4},
+      {"aspect": "thaumaturge:praemunio", "amount": 2}
+    ],
+    "witchery:demon_heart": [
+      {"aspect": "thaumaturge:bestia", "amount": 2},
+      {"aspect": "thaumaturge:ignis", "amount": 4},
+      {"aspect": "thaumaturge:spiritus", "amount": 4},
+      {"aspect": "thaumaturge:vacuos", "amount": 2}
+    ],
+    "witchery:demonheart": [
+      {"aspect": "thaumaturge:bestia", "amount": 2},
+      {"aspect": "thaumaturge:ignis", "amount": 4},
+      {"aspect": "thaumaturge:spiritus", "amount": 4},
+      {"aspect": "thaumaturge:vacuos", "amount": 2}
+    ],
+    "witchery:devilstonguecharm": [
+      {"aspect": "thaumaturge:bestia", "amount": 5},
+      {"aspect": "thaumaturge:cognitio", "amount": 4},
+      {"aspect": "thaumaturge:ignis", "amount": 6},
+      {"aspect": "thaumaturge:sensus", "amount": 3},
+      {"aspect": "thaumaturge:spiritus", "amount": 4}
+    ],
+    "witchery:diamond_vapour": [
+      {"aspect": "thaumaturge:aer", "amount": 3},
+      {"aspect": "thaumaturge:vitreus", "amount": 1}
+    ],
+    "witchery:distilleryburning": [
+      {"aspect": "thaumaturge:aer", "amount": 2},
+      {"aspect": "thaumaturge:aqua", "amount": 2},
+      {"aspect": "thaumaturge:desiderium", "amount": 4},
+      {"aspect": "thaumaturge:ignis", "amount": 2},
+      {"aspect": "thaumaturge:machina", "amount": 3},
+      {"aspect": "thaumaturge:metallum", "amount": 8},
+      {"aspect": "thaumaturge:potentia", "amount": 4},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:vitreus", "amount": 4}
+    ],
+    "witchery:distilleryidle": [
+      {"aspect": "thaumaturge:aer", "amount": 2},
+      {"aspect": "thaumaturge:aqua", "amount": 2},
+      {"aspect": "thaumaturge:desiderium", "amount": 4},
+      {"aspect": "thaumaturge:ignis", "amount": 2},
+      {"aspect": "thaumaturge:machina", "amount": 3},
+      {"aspect": "thaumaturge:metallum", "amount": 8},
+      {"aspect": "thaumaturge:potentia", "amount": 4},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:vitreus", "amount": 4}
+    ],
+    "witchery:disturbed_cotton": [
+      {"aspect": "thaumaturge:herba", "amount": 1},
+      {"aspect": "thaumaturge:tenebrae", "amount": 1}
+    ],
+    "witchery:divinerlava": [
+      {"aspect": "thaumaturge:ignis", "amount": 2},
+      {"aspect": "thaumaturge:instrumentum", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1},
+      {"aspect": "thaumaturge:sensus", "amount": 2},
+      {"aspect": "thaumaturge:terra", "amount": 2}
+    ],
+    "witchery:divinerwater": [
+      {"aspect": "thaumaturge:aqua", "amount": 4},
+      {"aspect": "thaumaturge:instrumentum", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1},
+      {"aspect": "thaumaturge:sensus", "amount": 2}
+    ],
+    "witchery:dog_tongue": [
+      {"aspect": "thaumaturge:bestia", "amount": 2}
+    ],
+    "witchery:door_key": [
+      {"aspect": "thaumaturge:instrumentum", "amount": 1},
+      {"aspect": "thaumaturge:machina", "amount": 1}
+    ],
+    "witchery:door_keyring": [
+      {"aspect": "thaumaturge:instrumentum", "amount": 1},
+      {"aspect": "thaumaturge:machina", "amount": 1}
+    ],
+    "witchery:dreamcatcher": [
+      {"aspect": "thaumaturge:aer", "amount": 1},
+      {"aspect": "thaumaturge:potentia", "amount": 2},
+      {"aspect": "thaumaturge:sensus", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 2},
+      {"aspect": "thaumaturge:tenebrae", "amount": 1}
+    ],
+    "witchery:dreamweave_of_fasting": [
+      {"aspect": "thaumaturge:aer", "amount": 1},
+      {"aspect": "thaumaturge:desiderium", "amount": 2},
+      {"aspect": "thaumaturge:sensus", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 2},
+      {"aspect": "thaumaturge:tenebrae", "amount": 1}
+    ],
+    "witchery:dreamweave_of_fleet_feet": [
+      {"aspect": "thaumaturge:aer", "amount": 1},
+      {"aspect": "thaumaturge:motus", "amount": 2},
+      {"aspect": "thaumaturge:sensus", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 2},
+      {"aspect": "thaumaturge:tenebrae", "amount": 1}
+    ],
+    "witchery:dreamweave_of_intensity": [
+      {"aspect": "thaumaturge:aer", "amount": 1},
+      {"aspect": "thaumaturge:cognitio", "amount": 1},
+      {"aspect": "thaumaturge:sensus", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 2},
+      {"aspect": "thaumaturge:tenebrae", "amount": 1}
+    ],
+    "witchery:dreamweave_of_nightmares": [
+      {"aspect": "thaumaturge:aer", "amount": 1},
+      {"aspect": "thaumaturge:permutatio", "amount": 1},
+      {"aspect": "thaumaturge:sensus", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 2},
+      {"aspect": "thaumaturge:tenebrae", "amount": 4}
+    ],
+    "witchery:dreamweave_of_the_iron_arm": [
+      {"aspect": "thaumaturge:aer", "amount": 1},
+      {"aspect": "thaumaturge:potentia", "amount": 2},
+      {"aspect": "thaumaturge:sensus", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 2},
+      {"aspect": "thaumaturge:tenebrae", "amount": 1}
+    ],
+    "witchery:drop_of_luck": [
+      {"aspect": "thaumaturge:aqua", "amount": 2},
+      {"aspect": "thaumaturge:ordo", "amount": 1},
+      {"aspect": "thaumaturge:perditio", "amount": 1},
+      {"aspect": "thaumaturge:vacuos", "amount": 1}
+    ],
+    "witchery:earmuffs": [
+      {"aspect": "thaumaturge:bestia", "amount": 1},
+      {"aspect": "thaumaturge:fabrico", "amount": 1},
+      {"aspect": "thaumaturge:praemunio", "amount": 1},
+      {"aspect": "thaumaturge:sensus", "amount": 1}
+    ],
+    "witchery:earth_protection_poppet": [
+      {"aspect": "thaumaturge:fabrico", "amount": 4},
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:praemunio", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 1},
+      {"aspect": "thaumaturge:terra", "amount": 1},
+      {"aspect": "thaumaturge:volatus", "amount": 1}
+    ],
+    "witchery:embermoss": [
+      {"aspect": "thaumaturge:herba", "amount": 1},
+      {"aspect": "thaumaturge:ignis", "amount": 2}
+    ],
+    "witchery:enchanted_broom": [
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:instrumentum", "amount": 1},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:volatus", "amount": 2}
+    ],
+    "witchery:ender_dew": [
+      {"aspect": "thaumaturge:alienis", "amount": 2},
+      {"aspect": "thaumaturge:aqua", "amount": 2}
+    ],
+    "witchery:ent_branch": [
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:exhale_of_the_horned_one": [
+      {"aspect": "thaumaturge:aer", "amount": 3},
+      {"aspect": "thaumaturge:exanimis", "amount": 1},
+      {"aspect": "thaumaturge:ignis", "amount": 1}
+    ],
+    "witchery:fanciful_thread": [
+      {"aspect": "thaumaturge:fabrico", "amount": 1},
+      {"aspect": "thaumaturge:lux", "amount": 1}
+    ],
+    "witchery:filled_chalice": [
+      {"aspect": "thaumaturge:aqua", "amount": 2},
+      {"aspect": "thaumaturge:desiderium", "amount": 6},
+      {"aspect": "thaumaturge:metallum", "amount": 6},
+      {"aspect": "thaumaturge:potentia", "amount": 6},
+      {"aspect": "thaumaturge:praecantatio", "amount": 4},
+      {"aspect": "thaumaturge:vacuos", "amount": 2},
+      {"aspect": "thaumaturge:vitreus", "amount": 4}
+    ],
+    "witchery:filteredfumefunnel": [
+      {"aspect": "thaumaturge:desiderium", "amount": 4},
+      {"aspect": "thaumaturge:ignis", "amount": 4},
+      {"aspect": "thaumaturge:lux", "amount": 5},
+      {"aspect": "thaumaturge:metallum", "amount": 24},
+      {"aspect": "thaumaturge:ordo", "amount": 8},
+      {"aspect": "thaumaturge:potentia", "amount": 6},
+      {"aspect": "thaumaturge:praecantatio", "amount": 10},
+      {"aspect": "thaumaturge:sensus", "amount": 3},
+      {"aspect": "thaumaturge:vacuos", "amount": 4},
+      {"aspect": "thaumaturge:vitreus", "amount": 10}
+    ],
+    "witchery:fire_protection_poppet": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:fabrico", "amount": 4},
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:ignis", "amount": 1},
+      {"aspect": "thaumaturge:praemunio", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 1}
+    ],
+    "witchery:flying_ointment": [
+      {"aspect": "thaumaturge:aqua", "amount": 2},
+      {"aspect": "thaumaturge:potentia", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:volatus", "amount": 2}
+    ],
+    "witchery:focused_will": [
+      {"aspect": "thaumaturge:spiritus", "amount": 2}
+    ],
+    "witchery:foul_fume": [
+      {"aspect": "thaumaturge:aer", "amount": 3},
+      {"aspect": "thaumaturge:terra", "amount": 1}
+    ],
+    "witchery:frozen_heart": [
+      {"aspect": "thaumaturge:bestia", "amount": 6},
+      {"aspect": "thaumaturge:gelum", "amount": 4},
+      {"aspect": "thaumaturge:ignis", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 4}
+    ],
+    "witchery:fume_filter": [
+      {"aspect": "thaumaturge:desiderium", "amount": 4},
+      {"aspect": "thaumaturge:metallum", "amount": 4},
+      {"aspect": "thaumaturge:ordo", "amount": 4},
+      {"aspect": "thaumaturge:potentia", "amount": 6},
+      {"aspect": "thaumaturge:praecantatio", "amount": 10},
+      {"aspect": "thaumaturge:vitreus", "amount": 10}
+    ],
+    "witchery:fumefunnel": [
+      {"aspect": "thaumaturge:ignis", "amount": 4},
+      {"aspect": "thaumaturge:lux", "amount": 5},
+      {"aspect": "thaumaturge:metallum", "amount": 20},
+      {"aspect": "thaumaturge:ordo", "amount": 4},
+      {"aspect": "thaumaturge:sensus", "amount": 3},
+      {"aspect": "thaumaturge:vacuos", "amount": 4}
+    ],
+    "witchery:ghost_of_the_light": [
+      {"aspect": "thaumaturge:aqua", "amount": 2},
+      {"aspect": "thaumaturge:lux", "amount": 15},
+      {"aspect": "thaumaturge:potentia", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 6},
+      {"aspect": "thaumaturge:praemunio", "amount": 5}
+    ],
+    "witchery:glintweed": [
+      {"aspect": "thaumaturge:herba", "amount": 1},
+      {"aspect": "thaumaturge:ignis", "amount": 1}
+    ],
+    "witchery:globe_artichoke": [
+      {"aspect": "thaumaturge:aqua", "amount": 2},
+      {"aspect": "thaumaturge:herba", "amount": 2}
+    ],
+    "witchery:glowglobe": [
+      {"aspect": "thaumaturge:ignis", "amount": 1}
+    ],
+    "witchery:golden_thread": [
+      {"aspect": "thaumaturge:metallum", "amount": 1}
+    ],
+    "witchery:grassper": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:herba", "amount": 1},
+      {"aspect": "thaumaturge:vacuos", "amount": 1}
+    ],
+    "witchery:graveyard_dust": [
+      {"aspect": "thaumaturge:exanimis", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 2}
+    ],
+    "witchery:gurdleofgulg": [
+      {"aspect": "thaumaturge:aversio", "amount": 4},
+      {"aspect": "thaumaturge:bestia", "amount": 2},
+      {"aspect": "thaumaturge:fabrico", "amount": 3},
+      {"aspect": "thaumaturge:praecantatio", "amount": 3},
+      {"aspect": "thaumaturge:praemunio", "amount": 1}
+    ],
+    "witchery:gypsum": [
+      {"aspect": "thaumaturge:terra", "amount": 1}
+    ],
+    "witchery:handbow": [
+      {"aspect": "thaumaturge:aversio", "amount": 2},
+      {"aspect": "thaumaturge:machina", "amount": 2},
+      {"aspect": "thaumaturge:motus", "amount": 1}
+    ],
+    "witchery:happenstance_oil": [
+      {"aspect": "thaumaturge:aqua", "amount": 2},
+      {"aspect": "thaumaturge:potentia", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:sensus", "amount": 2}
+    ],
+    "witchery:hint_of_rebirth": [
+      {"aspect": "thaumaturge:aer", "amount": 3},
+      {"aspect": "thaumaturge:permutatio", "amount": 1},
+      {"aspect": "thaumaturge:victus", "amount": 1}
+    ],
+    "witchery:hollowtears": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:vacuos", "amount": 2}
+    ],
+    "witchery:holy_bolt": [
+      {"aspect": "thaumaturge:aversio", "amount": 1},
+      {"aspect": "thaumaturge:mortuus", "amount": 2}
+    ],
+    "witchery:hunger_protection_poppet": [
+      {"aspect": "thaumaturge:desiderium", "amount": 1},
+      {"aspect": "thaumaturge:fabrico", "amount": 4},
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:praemunio", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 1},
+      {"aspect": "thaumaturge:victus", "amount": 1}
+    ],
+    "witchery:hunterboots": [
+      {"aspect": "thaumaturge:fabrico", "amount": 1},
+      {"aspect": "thaumaturge:praemunio", "amount": 1},
+      {"aspect": "thaumaturge:vacuos", "amount": 1}
+    ],
+    "witchery:huntercoat": [
+      {"aspect": "thaumaturge:fabrico", "amount": 1},
+      {"aspect": "thaumaturge:praemunio", "amount": 1},
+      {"aspect": "thaumaturge:vacuos", "amount": 1}
+    ],
+    "witchery:hunterhat": [
+      {"aspect": "thaumaturge:fabrico", "amount": 1},
+      {"aspect": "thaumaturge:praemunio", "amount": 1},
+      {"aspect": "thaumaturge:vacuos", "amount": 1}
+    ],
+    "witchery:hunterlegs": [
+      {"aspect": "thaumaturge:fabrico", "amount": 1},
+      {"aspect": "thaumaturge:praemunio", "amount": 1},
+      {"aspect": "thaumaturge:vacuos", "amount": 1}
+    ],
+    "witchery:huntsmanspear": [
+      {"aspect": "thaumaturge:aversio", "amount": 2},
+      {"aspect": "thaumaturge:herba", "amount": 3},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2}
+    ],
+    "witchery:icedoor": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:gelum", "amount": 1},
+      {"aspect": "thaumaturge:machina", "amount": 1}
+    ],
+    "witchery:icedoubleslab": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:gelum", "amount": 1}
+    ],
+    "witchery:icefence": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:gelum", "amount": 1}
+    ],
+    "witchery:icefencegate": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:gelum", "amount": 1},
+      {"aspect": "thaumaturge:machina", "amount": 1}
+    ],
+    "witchery:icepressureplate": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:gelum", "amount": 1},
+      {"aspect": "thaumaturge:machina", "amount": 1}
+    ],
+    "witchery:iceslab": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:gelum", "amount": 1}
+    ],
+    "witchery:iceslippers": [
+      {"aspect": "thaumaturge:bestia", "amount": 2},
+      {"aspect": "thaumaturge:fabrico", "amount": 2},
+      {"aspect": "thaumaturge:gelum", "amount": 4},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:praemunio", "amount": 3}
+    ],
+    "witchery:icestairs": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:gelum", "amount": 1}
+    ],
+    "witchery:icestockade": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:gelum", "amount": 1},
+      {"aspect": "thaumaturge:praemunio", "amount": 1}
+    ],
+    "witchery:icy_needle": [
+      {"aspect": "thaumaturge:gelum", "amount": 4},
+      {"aspect": "thaumaturge:herba", "amount": 1}
+    ],
+    "witchery:impregnated_leather": [
+      {"aspect": "thaumaturge:bestia", "amount": 1},
+      {"aspect": "thaumaturge:fabrico", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1},
+      {"aspect": "thaumaturge:praemunio", "amount": 1}
+    ],
+    "witchery:infernal_animus": [
+      {"aspect": "thaumaturge:aqua", "amount": 2},
+      {"aspect": "thaumaturge:bestia", "amount": 5},
+      {"aspect": "thaumaturge:desiderium", "amount": 5},
+      {"aspect": "thaumaturge:exanimis", "amount": 5},
+      {"aspect": "thaumaturge:mortuus", "amount": 5},
+      {"aspect": "thaumaturge:potentia", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2}
+    ],
+    "witchery:infernal_blood": [
+      {"aspect": "thaumaturge:bestia", "amount": 1},
+      {"aspect": "thaumaturge:ignis", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 1}
+    ],
+    "witchery:infused_brew_base": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:ordo", "amount": 3}
+    ],
+    "witchery:kettle": [
+      {"aspect": "thaumaturge:aqua", "amount": 4},
+      {"aspect": "thaumaturge:desiderium", "amount": 4},
+      {"aspect": "thaumaturge:fabrico", "amount": 8},
+      {"aspect": "thaumaturge:metallum", "amount": 6},
+      {"aspect": "thaumaturge:potentia", "amount": 4},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:vitreus", "amount": 4}
+    ],
+    "witchery:koboldite_dust": [
+      {"aspect": "thaumaturge:metallum", "amount": 1}
+    ],
+    "witchery:koboldite_ingot": [
+      {"aspect": "thaumaturge:metallum", "amount": 3}
+    ],
+    "witchery:koboldite_nugget": [
+      {"aspect": "thaumaturge:metallum", "amount": 2}
+    ],
+    "witchery:koboldite_pentacle": [
+      {"aspect": "thaumaturge:metallum", "amount": 4},
+      {"aspect": "thaumaturge:praecantatio", "amount": 3}
+    ],
+    "witchery:kobolditepickaxe": [
+      {"aspect": "thaumaturge:instrumentum", "amount": 1},
+      {"aspect": "thaumaturge:metallum", "amount": 3},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:leapinglily": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:motus", "amount": 3},
+      {"aspect": "thaumaturge:volatus", "amount": 3}
+    ],
+    "witchery:leechchest": [
+      {"aspect": "thaumaturge:desiderium", "amount": 1},
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:vacuos", "amount": 3}
+    ],
+    "witchery:lilypad": [
+      {"aspect": "thaumaturge:herba", "amount": 1}
+    ],
+    "witchery:louse": [
+      {"aspect": "thaumaturge:bestia", "amount": 1},
+      {"aspect": "thaumaturge:motus", "amount": 1},
+      {"aspect": "thaumaturge:permutatio", "amount": 1}
+    ],
+    "witchery:mandrake": [
+      {"aspect": "thaumaturge:herba", "amount": 3},
+      {"aspect": "thaumaturge:humanus", "amount": 1}
+    ],
+    "witchery:mandrake_root": [
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:humanus", "amount": 1},
+      {"aspect": "thaumaturge:terra", "amount": 1}
+    ],
+    "witchery:mellifluous_hunger": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:desiderium", "amount": 4}
+    ],
+    "witchery:mindrake": [
+      {"aspect": "thaumaturge:herba", "amount": 3},
+      {"aspect": "thaumaturge:humanus", "amount": 1}
+    ],
+    "witchery:mutandis": [
+      {"aspect": "thaumaturge:herba", "amount": 1},
+      {"aspect": "thaumaturge:permutatio", "amount": 4}
+    ],
+    "witchery:mutandis_extremis": [
+      {"aspect": "thaumaturge:herba", "amount": 1},
+      {"aspect": "thaumaturge:permutatio", "amount": 8},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:mutator": [
+      {"aspect": "thaumaturge:herba", "amount": 1},
+      {"aspect": "thaumaturge:instrumentum", "amount": 2},
+      {"aspect": "thaumaturge:permutatio", "amount": 8},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:mystic_unguent": [
+      {"aspect": "thaumaturge:aqua", "amount": 2},
+      {"aspect": "thaumaturge:perditio", "amount": 10},
+      {"aspect": "thaumaturge:potentia", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2}
+    ],
+    "witchery:mysticbranch": [
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:instrumentum", "amount": 1},
+      {"aspect": "thaumaturge:perditio", "amount": 10},
+      {"aspect": "thaumaturge:praecantatio", "amount": 3}
+    ],
+    "witchery:necromancerrobe": [
+      {"aspect": "thaumaturge:bestia", "amount": 4},
+      {"aspect": "thaumaturge:exanimis", "amount": 2},
+      {"aspect": "thaumaturge:fabrico", "amount": 6},
+      {"aspect": "thaumaturge:praecantatio", "amount": 3},
+      {"aspect": "thaumaturge:praemunio", "amount": 5}
+    ],
+    "witchery:necromantic_stone": [
+      {"aspect": "thaumaturge:desiderium", "amount": 4},
+      {"aspect": "thaumaturge:exanimis", "amount": 5},
+      {"aspect": "thaumaturge:potentia", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 5},
+      {"aspect": "thaumaturge:vitreus", "amount": 4}
+    ],
+    "witchery:null_catalyst": [
+      {"aspect": "thaumaturge:perditio", "amount": 1},
+      {"aspect": "thaumaturge:vacuos", "amount": 2}
+    ],
+    "witchery:nullified_leather": [
+      {"aspect": "thaumaturge:fabrico", "amount": 1},
+      {"aspect": "thaumaturge:vacuos", "amount": 2}
+    ],
+    "witchery:odd_porkchop_cooked": [
+      {"aspect": "thaumaturge:desiderium", "amount": 2},
+      {"aspect": "thaumaturge:humanus", "amount": 1},
+      {"aspect": "thaumaturge:ignis", "amount": 1}
+    ],
+    "witchery:odd_porkchop_raw": [
+      {"aspect": "thaumaturge:desiderium", "amount": 2},
+      {"aspect": "thaumaturge:humanus", "amount": 1}
+    ],
+    "witchery:odour_of_purity": [
+      {"aspect": "thaumaturge:aer", "amount": 3},
+      {"aspect": "thaumaturge:ordo", "amount": 1}
+    ],
+    "witchery:oil_of_vitriol": [
+      {"aspect": "thaumaturge:aqua", "amount": 2},
+      {"aspect": "thaumaturge:perditio", "amount": 4}
+    ],
+    "witchery:owlets_wing": [
+      {"aspect": "thaumaturge:aer", "amount": 1},
+      {"aspect": "thaumaturge:bestia", "amount": 1}
+    ],
+    "witchery:perpetualice": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:gelum", "amount": 1}
+    ],
+    "witchery:pitdirt": [
+      {"aspect": "thaumaturge:praecantatio", "amount": 1},
+      {"aspect": "thaumaturge:terra", "amount": 1},
+      {"aspect": "thaumaturge:vinculum", "amount": 2}
+    ],
+    "witchery:pitgrass": [
+      {"aspect": "thaumaturge:praecantatio", "amount": 1},
+      {"aspect": "thaumaturge:terra", "amount": 1},
+      {"aspect": "thaumaturge:vinculum", "amount": 2}
+    ],
+    "witchery:playercompass": [
+      {"aspect": "thaumaturge:humanus", "amount": 1},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:sensus", "amount": 2}
+    ],
+    "witchery:polynesiacharm": [
+      {"aspect": "thaumaturge:bestia", "amount": 2},
+      {"aspect": "thaumaturge:cognitio", "amount": 2},
+      {"aspect": "thaumaturge:sensus", "amount": 2}
+    ],
+    "witchery:poppet": [
+      {"aspect": "thaumaturge:fabrico", "amount": 4},
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:spiritus", "amount": 1}
+    ],
+    "witchery:poppetshelf": [
+      {"aspect": "thaumaturge:desiderium", "amount": 6},
+      {"aspect": "thaumaturge:potentia", "amount": 4},
+      {"aspect": "thaumaturge:praecantatio", "amount": 4},
+      {"aspect": "thaumaturge:spiritus", "amount": 4},
+      {"aspect": "thaumaturge:vitreus", "amount": 6}
+    ],
+    "witchery:purified_milk": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:victus", "amount": 1}
+    ],
+    "witchery:quartz_sphere": [
+      {"aspect": "thaumaturge:terra", "amount": 1},
+      {"aspect": "thaumaturge:vitreus", "amount": 1}
+    ],
+    "witchery:quicklime": [
+      {"aspect": "thaumaturge:aversio", "amount": 1},
+      {"aspect": "thaumaturge:perditio", "amount": 1}
+    ],
+    "witchery:quiverofmog": [
+      {"aspect": "thaumaturge:bestia", "amount": 2},
+      {"aspect": "thaumaturge:fabrico", "amount": 3},
+      {"aspect": "thaumaturge:machina", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 3},
+      {"aspect": "thaumaturge:praemunio", "amount": 1}
+    ],
+    "witchery:redstone_soup": [
+      {"aspect": "thaumaturge:aqua", "amount": 2},
+      {"aspect": "thaumaturge:potentia", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2}
+    ],
+    "witchery:reek_of_misfortune": [
+      {"aspect": "thaumaturge:aer", "amount": 3},
+      {"aspect": "thaumaturge:perditio", "amount": 1}
+    ],
+    "witchery:refined_evil": [
+      {"aspect": "thaumaturge:aqua", "amount": 2},
+      {"aspect": "thaumaturge:cognitio", "amount": 2},
+      {"aspect": "thaumaturge:perditio", "amount": 2}
+    ],
+    "witchery:rock": [
+      {"aspect": "thaumaturge:terra", "amount": 2}
+    ],
+    "witchery:rowan_berries": [
+      {"aspect": "thaumaturge:desiderium", "amount": 1},
+      {"aspect": "thaumaturge:herba", "amount": 1}
+    ],
+    "witchery:rowanwooddoor": [
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:machina", "amount": 2},
+      {"aspect": "thaumaturge:motus", "amount": 1}
+    ],
+    "witchery:rubyslippers": [
+      {"aspect": "thaumaturge:alienis", "amount": 3},
+      {"aspect": "thaumaturge:bestia", "amount": 2},
+      {"aspect": "thaumaturge:fabrico", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:praemunio", "amount": 3}
+    ],
+    "witchery:scarecrow": [
+      {"aspect": "thaumaturge:fabrico", "amount": 2},
+      {"aspect": "thaumaturge:machina", "amount": 2},
+      {"aspect": "thaumaturge:vinculum", "amount": 1}
+    ],
+    "witchery:seedsartichoke": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:herba", "amount": 1}
+    ],
+    "witchery:seedsbelladonna": [
+      {"aspect": "thaumaturge:herba", "amount": 1},
+      {"aspect": "thaumaturge:vitium", "amount": 1}
+    ],
+    "witchery:seedsmandrake": [
+      {"aspect": "thaumaturge:herba", "amount": 1},
+      {"aspect": "thaumaturge:terra", "amount": 1}
+    ],
+    "witchery:seedsmindrake": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:permutatio", "amount": 1}
+    ],
+    "witchery:seedssnowbell": [
+      {"aspect": "thaumaturge:gelum", "amount": 1},
+      {"aspect": "thaumaturge:herba", "amount": 1}
+    ],
+    "witchery:seedswormwood": [
+      {"aspect": "thaumaturge:herba", "amount": 1}
+    ],
+    "witchery:seepingshoes": [
+      {"aspect": "thaumaturge:bestia", "amount": 2},
+      {"aspect": "thaumaturge:fabrico", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:praemunio", "amount": 3},
+      {"aspect": "thaumaturge:vitium", "amount": 2}
+    ],
+    "witchery:seer_stone": [
+      {"aspect": "thaumaturge:sensus", "amount": 3},
+      {"aspect": "thaumaturge:terra", "amount": 1},
+      {"aspect": "thaumaturge:vitreus", "amount": 1}
+    ],
+    "witchery:shelfcompass": [
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:sensus", "amount": 2},
+      {"aspect": "thaumaturge:vitreus", "amount": 3}
+    ],
+    "witchery:snowbell": [
+      {"aspect": "thaumaturge:gelum", "amount": 2},
+      {"aspect": "thaumaturge:herba", "amount": 3}
+    ],
+    "witchery:snowdoubleslab": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:gelum", "amount": 1}
+    ],
+    "witchery:snowpressureplate": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:gelum", "amount": 1},
+      {"aspect": "thaumaturge:machina", "amount": 1}
+    ],
+    "witchery:snowslab": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:gelum", "amount": 1}
+    ],
+    "witchery:snowstairs": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:gelum", "amount": 1}
+    ],
+    "witchery:soft_clay_jar": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:terra", "amount": 1},
+      {"aspect": "thaumaturge:vacuos", "amount": 1}
+    ],
+    "witchery:somniancotton": [
+      {"aspect": "thaumaturge:herba", "amount": 1},
+      {"aspect": "thaumaturge:lux", "amount": 1}
+    ],
+    "witchery:soul_of_the_world": [
+      {"aspect": "thaumaturge:aqua", "amount": 2},
+      {"aspect": "thaumaturge:metallum", "amount": 10},
+      {"aspect": "thaumaturge:potentia", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:terra", "amount": 10}
+    ],
+    "witchery:spanishmoss": [
+      {"aspect": "thaumaturge:herba", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 1}
+    ],
+    "witchery:spectral_dust": [
+      {"aspect": "thaumaturge:exanimis", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 2}
+    ],
+    "witchery:spectralstone": [
+      {"aspect": "thaumaturge:vinculum", "amount": 4},
+      {"aspect": "thaumaturge:vitreus", "amount": 3}
+    ],
+    "witchery:spinningwheel": [
+      {"aspect": "thaumaturge:fabrico", "amount": 3},
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:machina", "amount": 3}
+    ],
+    "witchery:spirit_of_otherwhere": [
+      {"aspect": "thaumaturge:alienis", "amount": 20},
+      {"aspect": "thaumaturge:aqua", "amount": 2},
+      {"aspect": "thaumaturge:potentia", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2}
+    ],
+    "witchery:spiritflowing": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 2}
+    ],
+    "witchery:splitting_bolt": [
+      {"aspect": "thaumaturge:aversio", "amount": 1},
+      {"aspect": "thaumaturge:herba", "amount": 1},
+      {"aspect": "thaumaturge:perditio", "amount": 1}
+    ],
+    "witchery:stairswoodalder": [
+      {"aspect": "thaumaturge:herba", "amount": 1}
+    ],
+    "witchery:stairswoodhawthorn": [
+      {"aspect": "thaumaturge:herba", "amount": 1}
+    ],
+    "witchery:stairswoodrowan": [
+      {"aspect": "thaumaturge:herba", "amount": 1}
+    ],
+    "witchery:stake_bolt": [
+      {"aspect": "thaumaturge:aversio", "amount": 1},
+      {"aspect": "thaumaturge:herba", "amount": 1}
+    ],
+    "witchery:statuegoddess": [
+      {"aspect": "thaumaturge:praecantatio", "amount": 10},
+      {"aspect": "thaumaturge:terra", "amount": 10},
+      {"aspect": "thaumaturge:victus", "amount": 4}
+    ],
+    "witchery:statueofworship": [
+      {"aspect": "thaumaturge:cognitio", "amount": 3},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2},
+      {"aspect": "thaumaturge:spiritus", "amount": 2},
+      {"aspect": "thaumaturge:terra", "amount": 3}
+    ],
+    "witchery:stockade": [
+      {"aspect": "thaumaturge:herba", "amount": 2}
+    ],
+    "witchery:subdued_spirit": [
+      {"aspect": "thaumaturge:spiritus", "amount": 2}
+    ],
+    "witchery:taglockkit": [
+      {"aspect": "thaumaturge:bestia", "amount": 1},
+      {"aspect": "thaumaturge:humanus", "amount": 1},
+      {"aspect": "thaumaturge:instrumentum", "amount": 1},
+      {"aspect": "thaumaturge:ordo", "amount": 1},
+      {"aspect": "thaumaturge:victus", "amount": 1}
+    ],
+    "witchery:tear_of_the_goddess": [
+      {"aspect": "thaumaturge:aqua", "amount": 2},
+      {"aspect": "thaumaturge:ordo", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 2}
+    ],
+    "witchery:thrown_web": [
+      {"aspect": "thaumaturge:fabrico", "amount": 2},
+      {"aspect": "thaumaturge:vinculum", "amount": 4}
+    ],
+    "witchery:toe_of_frog": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:bestia", "amount": 1}
+    ],
+    "witchery:tool_protection_poppet": [
+      {"aspect": "thaumaturge:fabrico", "amount": 5},
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:instrumentum", "amount": 1},
+      {"aspect": "thaumaturge:praemunio", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 1}
+    ],
+    "witchery:tormented_twine": [
+      {"aspect": "thaumaturge:fabrico", "amount": 1},
+      {"aspect": "thaumaturge:tenebrae", "amount": 1}
+    ],
+    "witchery:treefyd_seeds": [
+      {"aspect": "thaumaturge:herba", "amount": 4},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:trent": [
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:machina", "amount": 2},
+      {"aspect": "thaumaturge:vinculum", "amount": 1}
+    ],
+    "witchery:vampiric_poppet": [
+      {"aspect": "thaumaturge:fabrico", "amount": 4},
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:mortuus", "amount": 1},
+      {"aspect": "thaumaturge:permutatio", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 1},
+      {"aspect": "thaumaturge:victus", "amount": 1}
+    ],
+    "witchery:vine": [
+      {"aspect": "thaumaturge:herba", "amount": 1}
+    ],
+    "witchery:voidbramble": [
+      {"aspect": "thaumaturge:alienis", "amount": 3},
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:herba", "amount": 1},
+      {"aspect": "thaumaturge:ordo", "amount": 4},
+      {"aspect": "thaumaturge:praecantatio", "amount": 4},
+      {"aspect": "thaumaturge:praemunio", "amount": 4}
+    ],
+    "witchery:voodoo_poppet": [
+      {"aspect": "thaumaturge:fabrico", "amount": 4},
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:motus", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 4}
+    ],
+    "witchery:voodoo_protection_poppet": [
+      {"aspect": "thaumaturge:fabrico", "amount": 4},
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:praemunio", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 3}
+    ],
+    "witchery:water_protection_poppet": [
+      {"aspect": "thaumaturge:aer", "amount": 1},
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:fabrico", "amount": 4},
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:praemunio", "amount": 1},
+      {"aspect": "thaumaturge:spiritus", "amount": 1}
+    ],
+    "witchery:waystone": [
+      {"aspect": "thaumaturge:terra", "amount": 1}
+    ],
+    "witchery:web": [
+      {"aspect": "thaumaturge:vinculum", "amount": 2}
+    ],
+    "witchery:whiff_of_magic": [
+      {"aspect": "thaumaturge:aer", "amount": 3},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:witchesovenburning": [
+      {"aspect": "thaumaturge:aer", "amount": 2},
+      {"aspect": "thaumaturge:ignis", "amount": 3},
+      {"aspect": "thaumaturge:machina", "amount": 3},
+      {"aspect": "thaumaturge:metallum", "amount": 14}
+    ],
+    "witchery:witchesovenidle": [
+      {"aspect": "thaumaturge:aer", "amount": 2},
+      {"aspect": "thaumaturge:ignis", "amount": 1},
+      {"aspect": "thaumaturge:machina", "amount": 3},
+      {"aspect": "thaumaturge:metallum", "amount": 14}
+    ],
+    "witchery:witchhand": [
+      {"aspect": "thaumaturge:bestia", "amount": 1},
+      {"aspect": "thaumaturge:instrumentum", "amount": 1},
+      {"aspect": "thaumaturge:praecantatio", "amount": 2}
+    ],
+    "witchery:witchhat": [
+      {"aspect": "thaumaturge:bestia", "amount": 5},
+      {"aspect": "thaumaturge:fabrico", "amount": 6},
+      {"aspect": "thaumaturge:praecantatio", "amount": 5},
+      {"aspect": "thaumaturge:praemunio", "amount": 5}
+    ],
+    "witchery:witchleaves": [
+      {"aspect": "thaumaturge:herba", "amount": 1}
+    ],
+    "witchery:witchlog": [
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
+    ],
+    "witchery:witchrobe": [
+      {"aspect": "thaumaturge:bestia", "amount": 4},
+      {"aspect": "thaumaturge:fabrico", "amount": 6},
+      {"aspect": "thaumaturge:praecantatio", "amount": 4},
+      {"aspect": "thaumaturge:praemunio", "amount": 5}
+    ],
+    "witchery:witchsladder": [
+      {"aspect": "thaumaturge:aer", "amount": 1},
+      {"aspect": "thaumaturge:machina", "amount": 2},
+      {"aspect": "thaumaturge:vinculum", "amount": 1}
+    ],
+    "witchery:witchwood": [
+      {"aspect": "thaumaturge:herba", "amount": 1}
+    ],
+    "witchery:wood_ash": [
+      {"aspect": "thaumaturge:herba", "amount": 1},
+      {"aspect": "thaumaturge:ignis", "amount": 1}
+    ],
+    "witchery:wormwood": [
+      {"aspect": "thaumaturge:exanimis", "amount": 2},
+      {"aspect": "thaumaturge:herba", "amount": 1}
+    ],
+    "witchery:wormwood_leaf": [
+      {"aspect": "thaumaturge:exanimis", "amount": 2},
+      {"aspect": "thaumaturge:herba", "amount": 1}
+    ],
+    "witchery:wormy_apple": [
+      {"aspect": "thaumaturge:herba", "amount": 1},
+      {"aspect": "thaumaturge:vitium", "amount": 1}
+    ]
+  }
+}

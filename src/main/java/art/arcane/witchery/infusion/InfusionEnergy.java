@@ -1,6 +1,7 @@
 package art.arcane.witchery.infusion;
 
 import art.arcane.witchery.integration.BloodMagicCompat;
+import art.arcane.witchery.integration.ThaumaturgeCompat;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.ritual.DirectedCurse;
 import net.minecraft.ChatFormatting;
@@ -54,6 +55,7 @@ public final class InfusionEnergy {
             sync(player, infusion);
         }
         BloodMagicCompat.drain(player, fraction);
+        ThaumaturgeCompat.drain(player, fraction);
     }
 
     public static boolean spend(ServerPlayer player, int cost) {

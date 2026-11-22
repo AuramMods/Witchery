@@ -1111,7 +1111,7 @@
 - [x] Verify the original disease overlay on a dedicated-server pig in the isolated client. The overlay appeared on application, disappeared when the effect cleared, and appeared on reentering tracking range with the effect already active.
 - [x] Run Java 17 data generation and JAR reobfuscation. All 553 regression cases passed before adding disease overlay synchronization. All 21 focused cases passed on the final revision.
 - [x] Restore Drain Magic's optional Blood Magic hook. It uses the original Life Essence tiers even on a player without a Witchery infusion.
-- [ ] Resolve the legacy Thaumcraft Drain Magic hook during the optional mod compatibility pass.
+- [x] Restore the legacy carried-wand drain through Thaumaturge for Drain Magic and powered Anti-Magic Bolts.
 
 ## Blood Magic Compatibility (2026-11-22)
 
@@ -1139,6 +1139,15 @@
 - [x] Keep the Ent awakening roll on harvested Witchery logs. A seeded survival axe test awakened an Ent at the expected clearing through the actual felling event.
 - [x] Exclude the original five Witchery fluids from Mystcraft 2 Legacy 0.8.0's generated sea symbols. The live registry retained water, lava, and Disease. The previous packaged build generated nine fluid symbols. The updated JAR generated four at startup and again after a datapack reload.
 - [x] Pass all 66 GameTests with both integrations and all 62 on clean Forge. Java 17 data generation and reobfuscation passed. The reobfuscated JAR booted headlessly in both profiles.
+
+## Thaumaturge Wands and Aspects (2026-11-22)
+
+- [x] Apply Drain Magic and powered Anti-Magic Bolt costs to wand Vis in Auram's Thaumaturge 1.1.3. Start with the wand in the highest inventory slot and drain each aspect independently in whole, cost-adjusted debits. The legacy countdown permits 38 debits for a direct brew, 76 for a powered impact, and 1,001 for the shooter.
+- [x] Verify Thaumaturge's harvesting utility recognizes the final growth stage of all eight Witchery crops and can recover their seeds and planting faces. Artichoke uses its source-water support.
+- [x] Load and verify 286 base item and 31 entity aspect entries. Load Witchery's optional data after Thaumaturge's defaults, so Witchery's explicit leaves and logs retain their assigned values. Thaumaturge's original apple and cow entries still load.
+- [x] Pass 65 headless GameTests with Thaumaturge, Lithostitched, and Curios, and 62 on clean Forge. Run data generation and JAR reobfuscation. Track the generated Mixin mappings in Gradle so a missing reference map is regenerated when packaging. Boot the reobfuscated JAR on both headless profiles.
+- [ ] Restore the old Dream and Torment exclusions for Thaumaturge world generation and spawning.
+- [ ] Restore stack-specific aspects for Witchwood saplings, Wicker Bundles, plant mines, Brambles, empty Circle Talismans, and the Antidote. Restore the Sleeping Apple and its aspect entry.
 
 ## Cauldron Wool and Dye Colors (2026-11-21)
 

@@ -20,6 +20,15 @@ mixin {
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
+tasks.named("compileJava", JavaCompile).configure { compileTask ->
+    // The Mixin processor needs the full source set to regenerate its mappings.
+    options.incremental = false
+    outputs.files(providers.provider {
+        [compileTask.ext.refMapFile, compileTask.ext.outTsrgFile,
+         new File(compileTask.temporaryDir, compileTask.ext.refMap)]
+    })
+}
+
 sourceSets {
     gameTest {
         compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
