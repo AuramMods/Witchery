@@ -750,6 +750,15 @@
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 366 required Forge GameTests. The new cases cover the original recipes, legacy metadata and bookmarks, active guide content, and atlas copying.
 - [x] Use the resulting Biome Note in the Brew of the Changing Seasons.
 
+## Staff of Duplication (2026-11-22)
+
+- [x] Restore the epic creative-tab staff at `witchery:dupstaff`. Two block clicks capture the strict interior of the marked cuboid, including air. Clicking a block with a captured build places it directly above the click. Ordinary clicks cycle the original four rotations. Sneak-placement resets to the original orientation. Sneak-use in open air clears the capture.
+- [x] Capture modern block states in a compact palette with consecutive runs. Placement copies block states and starts copied containers empty. Respect the vanilla item-tag size limit when saving a new capture.
+- [x] Place original `SavedSchematic` block-name and metadata lists. Use the vanilla data fixer and Witchery's legacy block-state mappings. Reconstruct doors from their paired entries and skip unavailable block IDs.
+- [x] Restore the optional `saveDupStaffTemplate` server setting. The two original export names carry the modern SNBT capture and a list of relative coordinates and block states.
+- [x] Verify both capture formats on the packaged Forge server. The original 1.7.10 staff captured twelve cells and saved them in a chest. The imported staff placed the expected wool, logs, stairs, and door. After a restart, both the original and modern captures placed again, the old staff advanced to the next rotation, and both export files matched the new capture.
+- [x] Pass Java 17 data generation, JAR reobfuscation, all 84 clean Forge GameTests, and all 88 with Thaumaturge, Lithostitched, and Curios.
+
 ## Creative Bat/Wolf Token (2026-11-22)
 
 - [x] Restore the original `witchery:wolftoken`, epic rarity, single-item stack, sprite, name, and tooltips. The Witchery creative tab supplies the token. An existing token follows the original item-use behavior when carried into survival.

@@ -64,6 +64,7 @@ import art.arcane.witchery.item.LeonardsUrnItem;
 import art.arcane.witchery.item.DeathProtectionPoppetItem;
 import art.arcane.witchery.item.FetishItem;
 import art.arcane.witchery.item.DrinkableBrewItem;
+import art.arcane.witchery.item.DuplicationStaffItem;
 import art.arcane.witchery.item.DreamWeaveItem;
 import art.arcane.witchery.item.FilledChaliceItem;
 import art.arcane.witchery.item.GlassGobletItem;
@@ -254,6 +255,7 @@ public final class WitcheryItems {
             case "coffin" -> createBlockItem("coffinblock");
             case "mooncharm" -> new MoonCharmItem();
             case "wolftoken" -> new WolfTokenItem();
+            case "dupstaff" -> new DuplicationStaffItem();
             case "wolfsbane_flower" -> new WolfsbaneFlowerItem();
             case "hornofthehunt" -> new HornOfTheHuntItem();
             case "huntsmanspear" -> new HuntsmanSpearItem();

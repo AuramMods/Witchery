@@ -621,6 +621,13 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Keep Universal Antidote at `witchery:potion`. Two regular drinkable Poison potions and a Null Catalyst yield two doses. A stack holds up to four. The modern bottle uses the vanilla layers and the original green tint. A 32-tick drink removes Poison and Wither and returns one glass bottle. The legacy subtype-zero fixture kept its existing ID, count and tag.
 - Java 17 data generation, JAR reobfuscation, all 66 clean Forge GameTests and all 70 optional tests passed. Boot the packaged JAR headlessly with Witchery alone and with Thaumaturge, Lithostitched, and Curios. The packaged fixture returned the same sapling, Wicker Bundle, mine, Bramble, talisman, and Antidote aspects after datapack reload and a restart. The recipe was present on both launches. The JAR SHA-256 is `fb24b11c1487a972452d0850ac7db3c7304e4eb6625d449100acd4a7c8706741`.
 
+### Staff of Duplication (2026-11-22)
+
+- The original corner fields are `Marker.posX`, `posY`, and `posZ`. Captures store their extent under `SavedSchematic.xMax`, `yMax`, and `zMax`. A normal paste advances `Rotation` in the order 90, 180, 270, zero. The original 90-degree coordinate transform is Minecraft's counterclockwise turn. Item placement uses the same origin for every orientation.
+- Current captures store complete block states as a palette and runs in the original X, Z, Y order. Captures fit the vanilla two-megabyte network NBT quota. Placed containers use their default block entity inventory.
+- Old captures keep their original tag and named metadata list. Vanilla entries use the block flattening table and current block-state data fixes. Witchery entries use the shared migration code. Old stair, pillar, and door families rotate through their modern states. Current captures use each block's native rotation.
+- The actual Forge 1.7.10 fixture assigned the staff numeric ID 4128. The original item made the twelve-cell capture with its debug export enabled. The reobfuscated 1.20.1 build placed it, made a modern capture, and reopened both on a normal dedicated restart. The modern optional export writes `schematic.txt` as SNBT and `schematic2.txt` as a block listing. The tested JAR SHA-256 is `1e1e8f9bea067325b6f401572418dbcd626fa0837666aa9caa710a8d0509f467`.
+
 ### Creative Bat/Wolf Token (2026-11-22)
 
 - The token checks sneaking on the last tick of a one-second bow draw. The original tool can reach vampire rank ten ahead of the journal. Rank one sets 125 blood power and zero human blood. Wrapping sets blood power to zero, restores 50 human blood, clears the ultimate, and leaves Bat form. The token retains the saved Vampire Vision preference. The normal cure clears that preference.

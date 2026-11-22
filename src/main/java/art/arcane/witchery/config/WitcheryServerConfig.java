@@ -37,6 +37,7 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.BooleanValue ALLOW_NAMEPLATE_MASQUERADING;
     public static final ForgeConfigSpec.BooleanValue ALLOW_BIOME_MODIFICATION_RITUALS;
     public static final ForgeConfigSpec.BooleanValue ALLOW_HELL_ON_EARTH_FIRES;
+    public static final ForgeConfigSpec.BooleanValue SAVE_DUP_STAFF_TEMPLATE;
     public static final ForgeConfigSpec.IntValue RITE_OF_ECLIPSE_COOLDOWN_SECONDS;
     public static final ForgeConfigSpec.BooleanValue GENERATE_WICKER_MEN;
     public static final ForgeConfigSpec.BooleanValue GENERATE_COVENS;
@@ -139,6 +140,9 @@ public final class WitcheryServerConfig {
         ALLOW_HELL_ON_EARTH_FIRES = builder
                 .comment("Allow an active cat familiar to make the Hell on Earth rite ignite plants.")
                 .define("allowHellOnEarthFires", true);
+        SAVE_DUP_STAFF_TEMPLATE = builder
+                .comment("Export Staff of Duplication captures as schematic.txt and schematic2.txt in the server config directory.")
+                .define("saveDupStaffTemplate", false);
         RITE_OF_ECLIPSE_COOLDOWN_SECONDS = builder
                 .comment("Seconds between eclipses in a dimension with more than one player. Zero allows consecutive casts.")
                 .defineInRange("riteOfEclipseCooldownInSecs", 0, 0, 3600);

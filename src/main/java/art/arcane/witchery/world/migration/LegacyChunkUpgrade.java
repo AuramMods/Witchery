@@ -383,7 +383,7 @@ public final class LegacyChunkUpgrade {
     }
 
     @Nullable
-    private static CompoundTag restoreState(ResourceLocation name, int metadata, int saved) {
+    static CompoundTag restoreState(ResourceLocation name, int metadata, int saved) {
         Block block = ForgeRegistries.BLOCKS.getValue(name);
         if (block == null) return null;
         if (block instanceof WitchCropBlock crop) return NbtUtils.writeBlockState(crop.getStateForAge(Math.min(metadata, crop.getMaxAge())));
@@ -513,7 +513,7 @@ public final class LegacyChunkUpgrade {
         return state.setValue(LiquidBlock.LEVEL, level);
     }
 
-    private static BlockState restoreDoor(BlockState state, int metadata, int mate) {
+    static BlockState restoreDoor(BlockState state, int metadata, int mate) {
         boolean isUpper = (metadata & 8) != 0;
         int lower = isUpper ? mate : metadata;
         int upper = isUpper ? metadata : mate;

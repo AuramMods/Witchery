@@ -110,6 +110,7 @@ Lifecycle stages:
 - The original `witchery:stewraw` and `witchery:stew` retain their IDs, count, and item tags. The original raw mutton ingredient (158) already maps to `minecraft:mutton`, which fits the raw stew recipe.
 - The Poppet Shelf Compass retains `witchery:shelfcompass`. An original stack's old metadata recorded the displayed icon. Its count and custom tags survive import, and the six modern models select their icon from the current world.
 - The Creative Bat/Wolf Token retains `witchery:wolftoken`. A stack imported from an original numeric ID was used through both rank cycles, retained its custom tag, and survived a packaged dedicated restart with both ranks saved.
+- The Staff of Duplication retains `witchery:dupstaff`, the original marker coordinates, rotation, and nested schematic. A real twelve-cell capture survived numeric ID import into a chest and placed after an ordinary dedicated restart. Modern captures hold a palette of block states in the same coordinate order as the original list.
 
 ## Spawn Egg Model Coverage (2026-02-09)
 - Runtime spawn egg item registration source:
