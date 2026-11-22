@@ -165,6 +165,12 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .pattern("GSG")
                 .unlockedBy("has_brew_of_sleeping", has(WitcheryIngredient.BREW_OF_SLEEPING.item()))
                 .save(recipeOutput);
+        var poisonPotion = PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.POISON);
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.BREWING, WitcheryItems.getRequired("potion").get(), 2)
+                .requires(WitcheryIngredient.NULL_CATALYST.item())
+                .requires(PartialNBTIngredient.of(Items.POTION, poisonPotion.getTag()), 2)
+                .unlockedBy("has_null_catalyst", has(WitcheryIngredient.NULL_CATALYST.item()))
+                .save(recipeOutput);
         ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, WitcheryIngredient.GRAVEYARD_DUST.item())
                 .requires(WitcheryIngredient.SPECTRAL_DUST.item())
                 .requires(Items.BONE_MEAL)

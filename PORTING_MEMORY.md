@@ -614,6 +614,13 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Reopen the previous port's saved world with the new JAR. Dream retained all 481 ore blocks and four mounds, and both dimensions kept the aura that was already saved. Natural spawn filtering applied to that upgraded world.
 - Java 17 data generation and JAR reobfuscation succeeded. All 64 clean GameTests and all 67 with Thaumaturge, Lithostitched, and Curios passed. The packaged JAR booted headlessly in both profiles and returned the same world-generation results after reopening the fresh patched save. Its SHA-256 is `8643ac59754c2eb1856c42e4e615359ee4a717e293159edd56aedccb0920797b`.
 
+### Thaumaturge Stack Aspects and Universal Antidote (2026-11-22)
+
+- Load base aspects for Rowan saplings, ordinary Wicker Bundles, web plant mines, Wild Brambles, and the Antidote via Thaumaturge's data map. The base map contains 292 Witchery item entries. The live stack lookup reads Witchery's existing variant fields for the wood species, plant-mine effect, bloodied bundle, Ender Bramble, and empty Circle Talisman entries. Charged talismans keep Thaumaturge's usual inferred aspects. Unrelated stack tags do not affect the match.
+- Restore the original Bloodied Wicker Bundle type when loading legacy damage 1, 5, and 9. Those metadata values share the type bit and differ by the placed bundle's orientation.
+- Keep Universal Antidote at `witchery:potion`. Two regular drinkable Poison potions and a Null Catalyst yield two doses. A stack holds up to four. The modern bottle uses the vanilla layers and the original green tint. A 32-tick drink removes Poison and Wither and returns one glass bottle. The legacy subtype-zero fixture kept its existing ID, count and tag.
+- Java 17 data generation, JAR reobfuscation, all 66 clean Forge GameTests and all 70 optional tests passed. Boot the packaged JAR headlessly with Witchery alone and with Thaumaturge, Lithostitched, and Curios. The packaged fixture returned the same sapling, Wicker Bundle, mine, Bramble, talisman, and Antidote aspects after datapack reload and a restart. The recipe was present on both launches. The JAR SHA-256 is `fb24b11c1487a972452d0850ac7db3c7304e4eb6625d449100acd4a7c8706741`.
+
 ### Sleeping Apple (2026-11-22)
 
 - Original ingredient damage 98 migrates to `witchery:sleeping_apple` and keeps the stack count and unrelated tags. Keep the original `Apple` display name and the supplied sprite. The shaped recipe uses a Wormy Apple, three Mutandis, two Reek of Misfortune, and a Brew of Sleeping.

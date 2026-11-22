@@ -158,6 +158,11 @@
       {"aspect": "thaumaturge:praecantatio", "amount": 2},
       {"aspect": "thaumaturge:terra", "amount": 1}
     ],
+    "witchery:bramble": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:aversio", "amount": 1},
+      {"aspect": "thaumaturge:herba", "amount": 1}
+    ],
     "witchery:brazier": [
       {"aspect": "thaumaturge:ignis", "amount": 2},
       {"aspect": "thaumaturge:machina", "amount": 2},
@@ -1091,6 +1096,14 @@
       {"aspect": "thaumaturge:terra", "amount": 1},
       {"aspect": "thaumaturge:vinculum", "amount": 2}
     ],
+    "witchery:plantmine": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:fabrico", "amount": 1},
+      {"aspect": "thaumaturge:machina", "amount": 1},
+      {"aspect": "thaumaturge:perditio", "amount": 1},
+      {"aspect": "thaumaturge:sensus", "amount": 1},
+      {"aspect": "thaumaturge:vinculum", "amount": 2}
+    ],
     "witchery:playercompass": [
       {"aspect": "thaumaturge:humanus", "amount": 1},
       {"aspect": "thaumaturge:praecantatio", "amount": 2},
@@ -1112,6 +1125,10 @@
       {"aspect": "thaumaturge:praecantatio", "amount": 4},
       {"aspect": "thaumaturge:spiritus", "amount": 4},
       {"aspect": "thaumaturge:vitreus", "amount": 6}
+    ],
+    "witchery:potion": [
+      {"aspect": "thaumaturge:aqua", "amount": 1},
+      {"aspect": "thaumaturge:victus", "amount": 2}
     ],
     "witchery:purified_milk": [
       {"aspect": "thaumaturge:aqua", "amount": 1},
@@ -1403,6 +1420,9 @@
       {"aspect": "thaumaturge:aer", "amount": 3},
       {"aspect": "thaumaturge:praecantatio", "amount": 1}
     ],
+    "witchery:wickerbundle": [
+      {"aspect": "thaumaturge:herba", "amount": 2}
+    ],
     "witchery:witchesovenburning": [
       {"aspect": "thaumaturge:aer", "amount": 2},
       {"aspect": "thaumaturge:ignis", "amount": 3},
@@ -1438,6 +1458,10 @@
       {"aspect": "thaumaturge:fabrico", "amount": 6},
       {"aspect": "thaumaturge:praecantatio", "amount": 4},
       {"aspect": "thaumaturge:praemunio", "amount": 5}
+    ],
+    "witchery:witchsapling": [
+      {"aspect": "thaumaturge:herba", "amount": 2},
+      {"aspect": "thaumaturge:praecantatio", "amount": 1}
     ],
     "witchery:witchsladder": [
       {"aspect": "thaumaturge:aer", "amount": 1},

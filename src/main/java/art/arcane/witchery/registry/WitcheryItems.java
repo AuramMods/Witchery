@@ -40,6 +40,7 @@ import art.arcane.witchery.item.BoundPoppetItem;
 import art.arcane.witchery.item.ArthanaItem;
 import art.arcane.witchery.item.BolineItem;
 import art.arcane.witchery.item.BrewBagItem;
+import art.arcane.witchery.item.AntidoteItem;
 import art.arcane.witchery.item.BrewBottleItem;
 import art.arcane.witchery.item.DoorKeyItem;
 import art.arcane.witchery.item.BroomItem;
@@ -233,6 +234,7 @@ public final class WitcheryItems {
             case "buckethollowtears" -> new BucketItem(WitcheryFluids.getRequiredSource("hollowtears"), bucketProperties);
             case "bucketbrew" -> new BrewBucketItem();
             case "brewbottle" -> new BrewBottleItem();
+            case "potion" -> new AntidoteItem();
             case "louse" -> new ParasyticLouseItem();
             case "rowanwooddoor", "alderwooddoor", "icedoor" -> createBlockItem(path);
             case "door_key", "door_keyring" -> new DoorKeyItem();

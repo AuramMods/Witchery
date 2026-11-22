@@ -27,7 +27,7 @@ import java.util.List;
 @Mod.EventBusSubscriber(modid = Witchery.MODID)
 public final class ThaumaturgeCompat {
     private static final String MOD_ID = "thaumaturge";
-    private static final ResourceKey<Registry<Object>> ASPECTS =
+    static final ResourceKey<Registry<Object>> ASPECTS =
             ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(MOD_ID, "aspect"));
 
     private ThaumaturgeCompat() {}

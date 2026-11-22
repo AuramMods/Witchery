@@ -386,7 +386,7 @@ Witch clothing models hide on invisible wearers and remain visible on armor stan
 | `GENERIC` | `witchery:ingredient` |
 | `TAGLOCK_KIT` | `witchery:taglockkit` |
 | `POPPET` | `witchery:poppet` |
-| `POTIONS` | `witchery:potion` |
+| `POTIONS` | `witchery:potion` (Universal Antidote, subtype zero, removes Poison and Wither) |
 | `SLAB_SINGLE` | `witchery:witchwoodslab` |
 | `SLAB_DOUBLE` | `witchery:witchwooddoubleslab` |
 | `PERPERTUAL_ICE_SLAB_SINGLE` | `witchery:iceslab` |
@@ -1556,7 +1556,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 - `ModHookForestry`
 - `ModHookMineFactoryReloaded` maps to Industrial Foregoing. The Sower preserves the three saved sapling variants. Forge's crop and bonemeal interfaces and the log and leaf tags cover the eight crops and three trees. The Crusher, Imprisonment Tool, and Duplicator use their respective entity type tags for the 29, 25, and 30 original exclusions. Witchery makes the Crusher apply its full exclusion tag before selecting a target. [Industrial Foregoing 3.5.21](https://www.curseforge.com/minecraft/mc-mods/industrial-foregoing/files/7068937)
 - `ModHookMystCraft` excludes Flowing Spirit, Hollow Tears, Brew, liquid brew and brew gas from automatic sea symbols in Auram's Mystcraft 2 Legacy 0.8.0. Mystcraft still reads server-authored symbol definitions and registers the other fluids.
-- `ModHookThaumcraft4` maps to Thaumaturge 1.1.3 in Auram. The integration drains carried wands and supplies the base item and entity aspects through Thaumaturge's data maps. The modern Harvest Seal recognizes Witchery crops through `CropBlock.isMaxAge`. Dream and Torment preserve the original dimension exclusions for features, structure starts, initial aura, and natural spawning. Stack-specific aspect assignments remain open.
+- `ModHookThaumcraft4` maps to Thaumaturge 1.1.3 in Auram. The integration drains carried wands and supplies the base item and entity aspects through Thaumaturge's data maps. The modern Harvest Seal recognizes Witchery crops through `CropBlock.isMaxAge`. Dream and Torment preserve the original dimension exclusions for features, structure starts, initial aura, and natural spawning. Thaumaturge's item aspect lookup reads the current stack variant for saplings, Wicker Bundles, mines, Brambles, and Circle Talismans.
 - `ModHookTinkersConstruct`
 - `ModHookTreecapitator` maps to the optional Enhanced Falling Trees 0.6.0. Log and leaf tags expose the three species to the felling mod. Witchery's wood state distinguishes adjacent species, and harvesting each log can still awaken an Ent. [Enhanced Falling Trees 0.6.0](https://www.curseforge.com/minecraft/mc-mods/enhanced-falling-trees/files/5899084)
 - `ModHookWaila` maps to the optional Jade plugin on Forge 1.20.1. It presents the original cover identities for trapped plants, Alder Doors, both pit blocks, the three illusions, and werevillagers. Rowan Doors use Jade's normal item lookup.

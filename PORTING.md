@@ -1148,7 +1148,14 @@
 - [x] Pass 65 headless GameTests with Thaumaturge, Lithostitched, and Curios, and 62 on clean Forge. Run data generation and JAR reobfuscation. Track the generated Mixin mappings in Gradle so a missing reference map is regenerated when packaging. Boot the reobfuscated JAR on both headless profiles.
 - [x] Restore the Dream and Torment exclusions. Skip Thaumaturge's placed features, structure starts, initial aura, and natural mobs in those dimensions. Keep the Overworld's generation and ordinary spawn lists.
 - [x] Compare fresh packaged Forge worlds on seed 1. Dream goes from 481 Thaumaturge ore blocks in 16 chunks and four mounds among 25 candidate starts to zero. Initial aura drops to zero in both dimensions. The Overworld keeps its 482 ore blocks and four mounds. Restart the patched world and check the same samples. Reopen a world created by the previous port and verify its saved ore, mounds, and aura survive the upgrade.
-- [ ] Restore stack-specific aspects for Witchwood saplings, Wicker Bundles, plant mines, Brambles, empty Circle Talismans, and the Antidote.
+- [x] Restore the aspect differences for all three Witchwood saplings, both Wicker Bundles, all twelve plant mines, both Brambles, and the empty Circle Talisman. Keep the charged talisman's inferred aspects. Give the Antidote Aqua I and Victus II.
+
+## Universal Antidote (2026-11-22)
+
+- [x] Craft two Antidotes from a Null Catalyst and two standard drinkable Poison potions. Reject extended, strong, and splash Poison. Keep the original `witchery:potion` item ID, four-item stack limit, and green liquid tint with the modern potion bottle textures.
+- [x] Remove Poison and Wither after 32 ticks of drinking. Keep other effects. Return a glass bottle to the inventory when more doses remain and replace the held stack with a bottle after its final dose.
+- [x] Verify crafting, both bottle paths, and a saved original Antidote stack through Forge GameTests.
+- [x] Pass all 66 headless tests on clean Forge and all 70 with Thaumaturge, Lithostitched, and Curios. Boot the packaged JAR in both profiles and verify the aspect and recipe checks after a datapack reload and dedicated restart.
 
 ## Sleeping Apple (2026-11-22)
 

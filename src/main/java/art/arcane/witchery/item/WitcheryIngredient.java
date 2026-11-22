@@ -253,7 +253,7 @@ public enum WitcheryIngredient {
             PlantMineBlock.Variant.applyLegacyMetadata(stack, stackTag.getInt("Damage"));
             return stack;
         }
-        if (stack.getItem() instanceof WickerBundleBlock.Item && stackTag.getInt("Damage") == 1) {
+        if (stack.getItem() instanceof WickerBundleBlock.Item && (stackTag.getInt("Damage") & 1) != 0) {
             WickerBundleBlock.markBloodied(stack);
             return stack;
         }
