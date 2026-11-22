@@ -483,6 +483,16 @@ public class WitcheryRecipeProvider extends RecipeProvider {
         SpecialRecipeBuilder.special(WitcheryRecipes.SIGN_IMP_SPELL_CONTRACT.get())
                 .save(recipeOutput, "witchery:sign_imp_spell_contract");
         Item poppet = WitcheryItems.getRequired("poppet").get();
+        ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, WitcheryItems.getRequired("shelfcompass").get())
+                .define('G', Items.GOLD_INGOT)
+                .define('D', Items.DIAMOND)
+                .define('C', Items.CLOCK)
+                .define('N', WitcheryIngredient.NULL_CATALYST.item())
+                .pattern("GDG")
+                .pattern("DCD")
+                .pattern("GNG")
+                .unlockedBy("has_null_catalyst", has(WitcheryIngredient.NULL_CATALYST.item()))
+                .save(recipeOutput);
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, poppet)
                 .define('W', Blocks.WHITE_WOOL)
                 .define('M', WitcheryBlocks.getRequired("spanishmoss").get())

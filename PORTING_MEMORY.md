@@ -621,6 +621,14 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Keep Universal Antidote at `witchery:potion`. Two regular drinkable Poison potions and a Null Catalyst yield two doses. A stack holds up to four. The modern bottle uses the vanilla layers and the original green tint. A 32-tick drink removes Poison and Wither and returns one glass bottle. The legacy subtype-zero fixture kept its existing ID, count and tag.
 - Java 17 data generation, JAR reobfuscation, all 66 clean Forge GameTests and all 70 optional tests passed. Boot the packaged JAR headlessly with Witchery alone and with Thaumaturge, Lithostitched, and Curios. The packaged fixture returned the same sapling, Wicker Bundle, mine, Bramble, talisman, and Antidote aspects after datapack reload and a restart. The recipe was present on both launches. The JAR SHA-256 is `fb24b11c1487a972452d0850ac7db3c7304e4eb6625d449100acd4a7c8706741`.
 
+### Poppet Shelf Compass (2026-11-22)
+
+- Original recipe uses four gold ingots, three diamonds, a clock, and a Null Catalyst. The six sprites match the shipped 1.7.10 assets byte for byte. The item retains its stack limit of 64.
+- Compass proximity uses horizontal distance to the nearest shelf in the client's loaded chunks. The render predicate caches one reading per holder for at most twenty ticks and clears readings when the client world changes. A dropped compass renders the base sprite. Reading the compass loads no chunks and stores no signal in the stack.
+- The original save fixture used numeric item ID 4126 with metadata 5 and a custom tag. Packaged Forge kept the two compasses and their tag and recovered the original shelf. Probe readings matched all distance bands after both import and ordinary restart. At first, a newly forced chunk may still be absent from the loaded-chunk query. The packaged probe sampled through that transition and confirmed the shelf and its block entity.
+- The reobfuscated JAR used for that check has SHA-256 `937dd2b529b90e5a6ad5b43c8358d506bd9c9da7053b3d13e137edf362d958a6`.
+- The isolated client launch used Xvfb, zero master volume, and OpenAL's null driver. Docker did not complete the launch within 75 seconds, so the live sprite check stays open.
+
 ### Meaty Stew (2026-11-22)
 
 - The original `witchery:stewraw` and `witchery:stew` IDs are both stackable foods. The raw recipe uses the shared Forge garlic crop tag. Cod is the original metadata-zero raw fish and vanilla mutton is the existing replacement for legacy ingredient 158.

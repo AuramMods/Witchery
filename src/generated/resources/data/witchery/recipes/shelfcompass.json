@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": {
+      "item": "minecraft:clock"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "N": {
+      "item": "witchery:null_catalyst"
+    }
+  },
+  "pattern": [
+    "GDG",
+    "DCD",
+    "GNG"
+  ],
+  "result": {
+    "item": "witchery:shelfcompass"
+  },
+  "show_notification": true
+}

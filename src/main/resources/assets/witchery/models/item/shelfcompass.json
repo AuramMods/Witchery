@@ -1,6 +1,13 @@
 {
-   "parent" : "minecraft:item/generated",
-   "textures" : {
-      "layer0" : "witchery:item/taglockkit"
-   }
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "witchery:item/shelfcompass_0"
+  },
+  "overrides": [
+    { "predicate": { "witchery:shelf_proximity": 1 }, "model": "witchery:item/shelfcompass_1" },
+    { "predicate": { "witchery:shelf_proximity": 2 }, "model": "witchery:item/shelfcompass_2" },
+    { "predicate": { "witchery:shelf_proximity": 3 }, "model": "witchery:item/shelfcompass_3" },
+    { "predicate": { "witchery:shelf_proximity": 4 }, "model": "witchery:item/shelfcompass_4" },
+    { "predicate": { "witchery:shelf_proximity": 5 }, "model": "witchery:item/shelfcompass_5" }
+  ]
 }

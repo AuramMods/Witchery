@@ -18,6 +18,7 @@ import art.arcane.witchery.item.SpectralStoneItem;
 import art.arcane.witchery.item.BrewFuelItem;
 import art.arcane.witchery.item.EndlessWaterBrewItem;
 import art.arcane.witchery.item.PlayerCompassItem;
+import art.arcane.witchery.item.PoppetShelfCompassItem;
 import art.arcane.witchery.item.ParasyticLouseItem;
 import art.arcane.witchery.item.TreefydSeedsItem;
 import art.arcane.witchery.item.PolynesiaCharmItem;
@@ -386,6 +387,7 @@ public final class WitcheryItems {
             case "brew.fuel" -> new BrewFuelItem();
             case "brew.water" -> new EndlessWaterBrewItem();
             case "playercompass" -> new PlayerCompassItem();
+            case "shelfcompass" -> new PoppetShelfCompassItem();
             case "redstone_soup" -> new DrinkableBrewItem(() -> MobEffects.HEALTH_BOOST, 2400, 1);
             case "flying_ointment" -> new DrinkableBrewItem(() -> MobEffects.POISON, 1200, 2);
             case "infused_brew_base" -> new DrinkableBrewItem(() -> MobEffects.WITHER, 200, 3);

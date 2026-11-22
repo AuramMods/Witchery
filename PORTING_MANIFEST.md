@@ -108,6 +108,7 @@ Lifecycle stages:
 - The three witchwood stair IDs use their corresponding plank textures and original four-stair recipes. Recipes read the plank stack's wood state and require all six inputs to match. Hawthorn stairs retain the original lower fire spread and ignition values.
 - The Water and Lava Diviners retain `witchery:divinerwater` and `witchery:divinerlava`. Their legacy top-level item damage converts to modern durability. The wear values and unrelated stack data were verified with numeric IDs from an original Forge save and again after a normal dedicated restart.
 - The original `witchery:stewraw` and `witchery:stew` retain their IDs, count, and item tags. The original raw mutton ingredient (158) already maps to `minecraft:mutton`, which fits the raw stew recipe.
+- The Poppet Shelf Compass retains `witchery:shelfcompass`. An original stack's old metadata recorded the displayed icon. Its count and custom tags survive import, and the six modern models select their icon from the current world.
 
 ## Spawn Egg Model Coverage (2026-02-09)
 - Runtime spawn egg item registration source:

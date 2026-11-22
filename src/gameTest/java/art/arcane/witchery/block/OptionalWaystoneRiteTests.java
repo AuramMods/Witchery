@@ -30,7 +30,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 public final class OptionalWaystoneRiteTests {
     private static final BlockPos HEART = new BlockPos(7, 4, 7);
 
-    @GameTest(template = "qa_coven_arena", batch = "witchery_waystone_refund", timeoutTicks = 110)
+    @GameTest(template = "qa_coven_arena", batch = "witchery_waystone_refund", timeoutTicks = 110, setupTicks = 5)
     public static void refundsSavedGrassperOfferingWhenTheAltarCannotPay(GameTestHelper helper) {
         var level = helper.getLevel();
         BlockPos origin = helper.absolutePos(HEART.north(2));
@@ -60,7 +60,7 @@ public final class OptionalWaystoneRiteTests {
         });
     }
 
-    @GameTest(template = "qa_coven_arena", batch = "witchery_waystone_target", timeoutTicks = 110)
+    @GameTest(template = "qa_coven_arena", batch = "witchery_waystone_target", timeoutTicks = 110, setupTicks = 5)
     public static void usesSavedTargetWithoutTakingASecondWaystone(GameTestHelper helper) {
         var level = helper.getLevel();
         BlockPos target = helper.absolutePos(HEART.west(6).above(4));
@@ -101,7 +101,9 @@ public final class OptionalWaystoneRiteTests {
         var pos = helper.absolutePos(HEART);
         var hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
         level.getBlockState(pos).use(level, helper.makeMockSurvivalPlayer(), InteractionHand.MAIN_HAND, hit);
-        return (RiteHeartBlockEntity) level.getBlockEntity(pos);
+        var heart = (RiteHeartBlockEntity) level.getBlockEntity(pos);
+        helper.assertTrue(heart.getBlockState().getValue(RiteHeartBlock.ACTIVE), "The Heart Glyph starts the Focused Barrier rite");
+        return heart;
     }
 
     private static ItemEntity drop(GameTestHelper helper, ItemStack stack) {

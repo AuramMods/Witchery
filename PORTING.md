@@ -750,6 +750,16 @@
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 366 required Forge GameTests. The new cases cover the original recipes, legacy metadata and bookmarks, active guide content, and atlas copying.
 - [x] Use the resulting Biome Note in the Brew of the Changing Seasons.
 
+## Poppet Shelf Compass (2026-11-22)
+
+- [x] Craft the original `witchery:shelfcompass` with gold, diamonds, a clock, and a Null Catalyst. Restore the original name and all six item sprites.
+- [x] Read the nearest loaded Poppet Shelf in the holder's current world. The five signal bands end strictly before 8, 16, 32, 64, and 128 horizontal blocks. The model uses the zero-signal sprite without a holder. The client refreshes its reading once per second while rendering the compass.
+- [x] Verify the recipe, exact boundaries, nearest of two shelves, removal, and absent chunks in Forge GameTests. Inspect the packaged JAR for all six original sprites and the complete model override chain.
+- [x] Import an original Forge chest holding a two-item compass stack with legacy icon value 5 and a custom tag. Both compasses and the tag survived a headless restart. The display uses the current reading after migration. The original shelf gave the correct reading in every band on both launches, and removing it reset the next reading to zero.
+- [x] Reproduce the optional Waystone activation failure. One immediate replay had both offerings alive while the level entity lookup was still empty. All 40 replays with five setup ticks passed, and the two checked-in fixtures now assert activation before checking the offering steps.
+- [x] Run Java 17 data generation and reobfuscation. All 80 clean Forge GameTests and all 84 with Thaumaturge, Lithostitched, and Curios passed.
+- [ ] Verify the sprite transitions in a muted live Forge client. The isolated Xvfb client launch timed out before reaching the packaged server.
+
 ## Meaty Stew (2026-11-22)
 
 - [x] Craft Raw Meaty Stew from garlic, a potato, a carrot, a bowl, a brown mushroom, and one of the five original meats. Raw beef, chicken, pork, and cod retain their vanilla equivalents. Vanilla mutton replaces the original Witchery mutton subtype. Cooked meat and salmon fail the recipe.
@@ -1189,7 +1199,7 @@
 - [x] Allow eating at full hunger. Eating the apple in the Overworld starts an ordinary nightmare without consulting the room's Dream Catchers or other sleep modifiers. The sleeping body and parked inventory include the post-meal health, hunger, and remaining stack.
 - [x] Pass all 64 checked-in GameTests, Java 17 data generation, and JAR reobfuscation. On a headless packaged server, a dedicated fixture ate the apple and saved its player in the Dream. After a full restart it woke with an Icy Needle, recovered the remaining apple, food level, and tagged damaged sword, and removed the original sleeping body.
 - [x] Restore the Sleeping Apple's optional Thaumaturge aspects. Its base entry grants Cognitio II, Desiderium I, and Herba I.
-- [ ] Resolve the intermittent Waystone refund check with Thaumaturge, Lithostitched, and Curios loaded. The two Sleeping Apple runs failed that check and passed all other cases. It passed in clean Forge and in subsequent runs with the optional mods.
+- [x] Resolve the intermittent Waystone refund check seen in the Sleeping Apple runs. The later replay reproduced the failed activation before the level could query the dropped offerings. Both checked-in Waystone fixtures passed with five setup ticks in clean Forge and with Thaumaturge, Lithostitched, and Curios.
 
 ## Food, Hearts, and Blood Drinks (2026-11-22)
 
@@ -1417,6 +1427,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Run the 640-case Forge regression with the courtship and inventory changes. The 638 passing cases included the fixed courtship, the new wood inventory check, and the revised Hellish Aura fixture. The witch summoning and portable eclipse cases failed during the run and passed in a 48-test rerun on the final source.
 - [ ] Resolve the failures from the recovered development suite. The first replay used only the default template namespace and passed 507 of 515 cases. A replay with all 25 template namespaces passed 627 of 643 cases on the diviner milestone before its final durability correction. The failing cases exercise banishment, witch summoning, storms, barriers, curse removal, coven reuse, settlement counting, wool-colored brew transfer, remote eruption, rite movement, Spectral Familiar ore search, and two legacy cauldron resumes.
 - [x] Rerun the two older cauldron fixtures with their initial assertion updated to check the saved pending legacy state. Both fixtures passed the existing assertions after the server resolved the pending cast, spending power and refunding the original Tongue of Dog or bound Taglock Kit.
+- [ ] Resolve the nine remaining failures in the Poppet Shelf Compass replay, which passed 638 of 647 cases. The two updated cauldron fixtures also passed in this replay. The failures cover greater storms, focused and greater barriers, coven member reuse, wool-colored brew transfer, remote column placement, rite movement, and two remote eruptions.
 
 ## Auram Armor Compatibility (2026-11-21)
 
