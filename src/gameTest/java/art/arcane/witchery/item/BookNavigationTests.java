@@ -3,6 +3,7 @@ package art.arcane.witchery.item;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.network.WitcheryNetwork.ItemUpdatePacket;
 import art.arcane.witchery.registry.WitcheryItems;
+import art.arcane.witchery.registry.WitcheryRecipes;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTest;
@@ -12,14 +13,20 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BiomeTags;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.gametest.GameTestHolder;
@@ -30,6 +37,55 @@ import java.util.List;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class BookNavigationTests {
+    @GameTest(template = "qa_coven_arena")
+    public static void infusionGuideShowsBothOriginalPotionRecipes(GameTestHelper helper) {
+        var pages = GuideBookPages.entries(GuideBookItem.Volume.INFUSIONS, helper.getLevel(), 0);
+        var animus = pages.get(pages.size() - 2);
+        var otherwhere = pages.get(pages.size() - 1);
+        helper.assertTrue(animus.icons().stream().anyMatch(WitcheryIngredient.INFERNAL_ANIMUS::matches)
+                        && otherwhere.icons().stream().anyMatch(WitcheryIngredient.SPIRIT_OF_OTHERWHERE::matches),
+                "The two restored recipes follow the existing pages so saved page numbers stay stable");
+        for (var infusion : List.of(WitcheryIngredient.INFERNAL_ANIMUS, WitcheryIngredient.SPIRIT_OF_OTHERWHERE)) {
+            helper.assertTrue(pages.stream().filter(page -> page.icons().stream().anyMatch(infusion::matches)).count() == 1,
+                    "Each infusion has exactly one visible recipe page");
+        }
+
+        var speed = potionIngredientLine(otherwhere);
+        var damage = potionIngredientLine(animus);
+        var splashName = PotionUtils.setPotion(new ItemStack(Items.SPLASH_POTION), Potions.LONG_SWIFTNESS).getHoverName();
+        helper.assertTrue(speed.contains("8:00") && !speed.contains(splashName.getString())
+                        && damage.contains(Component.translatable("potion.potency.1").getString()),
+                "The guide specifies the eight-minute Swiftness potion and the Harming II potion");
+
+        kettleMatchesEachPotionForm(helper, "infernal_animus", Potions.STRONG_HARMING,
+                new ItemStack(WitcheryItems.getRequired("voodoo_poppet").get()), new ItemStack(WitcheryIngredient.DEMON_HEART.item()),
+                new ItemStack(WitcheryIngredient.REFINED_EVIL.item()), new ItemStack(Items.BLAZE_ROD));
+        kettleMatchesEachPotionForm(helper, "spirit_of_otherwhere", Potions.LONG_SWIFTNESS,
+                new ItemStack(Items.ENDER_EYE), new ItemStack(Items.ENDER_EYE),
+                new ItemStack(WitcheryIngredient.DROP_OF_LUCK.item()), new ItemStack(WitcheryIngredient.BAT_WOOL.item()));
+        helper.succeed();
+    }
+
+    private static String potionIngredientLine(GuideBookPages.Page page) {
+        var ingredient = (TranslatableContents) page.text().get(1).getContents();
+        return ((Component) ingredient.getArgs()[0]).getString();
+    }
+
+    private static void kettleMatchesEachPotionForm(GameTestHelper helper, String name, Potion potion,
+                                                  ItemStack third, ItemStack fourth, ItemStack fifth, ItemStack sixth) {
+        var level = helper.getLevel();
+        var kettle = new SimpleContainer(new ItemStack(WitcheryIngredient.REDSTONE_SOUP.item()),
+                PotionUtils.setPotion(new ItemStack(Items.POTION), potion), third, fourth, fifth, sixth);
+        var manager = level.getRecipeManager();
+        var regular = manager.getRecipeFor(WitcheryRecipes.KETTLE.get(), kettle, level).orElseThrow();
+        kettle.setItem(1, PotionUtils.setPotion(new ItemStack(Items.SPLASH_POTION), potion));
+        var splash = manager.getRecipeFor(WitcheryRecipes.KETTLE.get(), kettle, level).orElseThrow();
+        helper.assertTrue(regular.id().equals(ResourceLocation.parse("witchery:kettle/" + name))
+                        && splash.id().equals(ResourceLocation.parse("witchery:kettle/" + name + "_from_splash"))
+                        && ItemStack.matches(regular.result(), splash.result()) && regular.power() == 4000 && splash.power() == 4000,
+                "Both potion forms brew the same infusion at the original altar cost");
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void atlasShortcutsFollowTheLegacyFamilyOrder(GameTestHelper helper) {
         var access = helper.getLevel().registryAccess();

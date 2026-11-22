@@ -1193,7 +1193,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 The `witchery:wood_ash` smelting recipe uses `minecraft:saplings` when `addSmeltingForAllSaplingsToWoodAsh` is true in `config/witchery-common.toml`. The false branch accepts the original six vanilla species and Rowan. Both the vanilla furnace and Witch's Oven load the selected recipe through Forge. The oven saves pending experience under `RecipesUsed` and pays it out when a player takes the main result.
 
 - `RecipeSorter.register`: 7 custom recipes
-- `KettleRecipes.instance().addRecipe`: 39
+- `KettleRecipes.instance().addRecipe`: 39. The port has 39 Kettle recipe IDs. The original Spirit of Otherwhere and Infernal Animus IDs accept their regular potions and appear in Brews & Infusions. The two separate splash-potion IDs follow the original hidden-page rule and brew the same outputs.
 - `DistilleryRecipes.instance().addRecipe`: 9
 - `SpinningRecipes.instance().addRecipe`: 4
 

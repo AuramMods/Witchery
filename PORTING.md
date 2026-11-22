@@ -749,6 +749,9 @@
 - [x] Copy Snowy Beach from the shop's atlas using the inventory crafting grid. Restart the dedicated server and verify the note, atlas selection, learned chapter, and legacy book bookmark.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 366 required Forge GameTests. The new cases cover the original recipes, legacy metadata and bookmarks, active guide content, and atlas copying.
 - [x] Use the resulting Biome Note in the Brew of the Changing Seasons.
+- [x] Restore the Brews & Infusions pages for Infernal Animus and Spirit of Otherwhere. The entries specify Harming II and eight-minute Swiftness and follow the existing pages to preserve numeric bookmarks. Both splash-potion alternatives still brew and follow the original book visibility rules.
+- [x] Open the existing Soul of the World bookmark and both restored pages in a muted native Forge client. On the packaged dedicated server, drop the supplied ingredients into four heated Kettles and verify two servings per batch with both potion forms. Restart the server and verify the four recipe IDs and outputs again.
+- [x] Brew both splash variants on the preceding packaged JAR and upgrade a disposable copy of the save. The new JAR read the original finished recipe IDs and retained both ready two-serving stacks.
 
 ## Staff of Duplication (2026-11-22)
 
@@ -1465,7 +1468,8 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Pass all 655 cases in the recovered suite after the chunk promotion fix. The first run reported failures in the insufficient-coven and blocked-Wither refund checks and ran out of disk space before completing. Both checks passed in the complete rerun after clearing disposable test worlds, along with the new chunk promotion regression. Eight focused runs of each rite passed again with the expected offerings and altar charges.
 
 - [x] Pass 104 checked-in GameTests on clean Forge and 107 with Thaumaturge, Lithostitched, and Curios after restoring the cauldron disease and Wheat rules. Both new regression cases failed on the preceding code. The packaged fixes also passed the muted client and dedicated restart checks.
-- [ ] Repeat the full recovered regression with the controlled gas fixture. The latest broad run passed 656 of 657. The old gas fixture found no neighboring cell at its fixed check. All 110 cases in the focused run passed after building an empty gas chamber above natural terrain. The broad run also passed the revised disease and Hobgoblin fixtures.
+- [x] Pass all 657 recovered cases after preparing the gas chamber above natural terrain. The earlier run passed 656 and found no neighboring cell at the gas fixture's fixed sampling tick. The controlled chamber passed in both the 110-case focused run and the full replay, alongside the revised disease and Hobgoblin fixtures.
+- [x] Pass all 658 recovered cases on the restored Infusions guide build. Both archived potion cases now resolve the splash form through the recipe manager and verify the matching result and power cost. The Spectral Familiar fixture keeps the search inside a prepared chamber with one ore vein.
 
 ## Auram Armor Compatibility (2026-11-21)
 

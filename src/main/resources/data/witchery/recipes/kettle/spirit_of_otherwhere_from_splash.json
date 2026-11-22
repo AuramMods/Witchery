@@ -1,0 +1,14 @@
+{
+  "type": "witchery:kettle",
+  "ingredients": [
+    {"item": "witchery:redstone_soup"},
+    {"type": "forge:nbt", "item": "minecraft:splash_potion", "nbt": {"Potion": "minecraft:long_swiftness"}},
+    {"item": "minecraft:ender_eye"},
+    {"item": "minecraft:ender_eye"},
+    {"item": "witchery:drop_of_luck"},
+    {"item": "witchery:bat_wool"}
+  ],
+  "result": {"item": "witchery:spirit_of_otherwhere", "count": 2},
+  "color": -7128833,
+  "power": 4000
+}

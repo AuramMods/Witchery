@@ -15,8 +15,12 @@ import art.arcane.witchery.ritual.ItemRiteRecipe;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffectUtil;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.PotionItem;
+import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
@@ -26,9 +30,13 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public final class GuideBookPages {
     private static final String KEY = "guide.witchery.";
+    private static final Set<ResourceLocation> RESTORED_KETTLE_PAGES = Set.of(
+            ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "kettle/infernal_animus"),
+            ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "kettle/spirit_of_otherwhere"));
     private static final List<String> PLANTS = List.of("belladonna:belladonna_stage_4", "embermoss", "glintweed",
             "mandrake:mandrake_stage_4", "snowbell:snowbell_stage_4", "spanishmoss", "wild_bramble:bramble_wild",
             "ender_bramble:bramble_ender", "voidbramble", "artichoke:artichoke_stage_4", "grassper:grasspericon",
@@ -57,7 +65,10 @@ public final class GuideBookPages {
             case CIRCLES -> level.getRecipeManager().getAllRecipesFor(WitcheryRecipes.ITEM_RITE.get()).stream()
                     .sorted(Comparator.comparing(ItemRiteRecipe::id)).map(GuideBookPages::rite).forEachOrdered(pages::add);
             case INFUSIONS -> level.getRecipeManager().getAllRecipesFor(WitcheryRecipes.KETTLE.get()).stream()
-                    .filter(recipe -> !hiddenKettle(recipe.id())).sorted(Comparator.comparing(KettleRecipe::id))
+                    .filter(recipe -> !hiddenKettle(recipe.id()))
+                    // Existing books store page numbers, so the two restored pages follow the existing recipes.
+                    .sorted(Comparator.comparing((KettleRecipe recipe) -> RESTORED_KETTLE_PAGES.contains(recipe.id()))
+                            .thenComparing(KettleRecipe::id))
                     .map(GuideBookPages::kettle).forEachOrdered(pages::add);
             case HERBOLOGY -> {
                 PLANTS.forEach(plant -> pages.add(plant(plant)));
@@ -153,7 +164,7 @@ public final class GuideBookPages {
 
     private static boolean hiddenKettle(ResourceLocation id) {
         return id.getNamespace().equals(Witchery.MODID)
-                && List.of("kettle/spirit_of_otherwhere", "kettle/infernal_animus",
+                && List.of("kettle/spirit_of_otherwhere_from_splash", "kettle/infernal_animus_from_splash",
                 "kettle/brew_of_solid_rock", "kettle/brew_of_solid_sand", "kettle/brew_of_solid_sandstone",
                 "kettle/brew_of_solid_erosion").contains(id.getPath());
     }
@@ -253,9 +264,25 @@ public final class GuideBookPages {
     private static Component ingredientName(Ingredient ingredient) {
         var choices = ingredient.getItems();
         if (choices.length == 0) return text("missing_ingredient");
-        var name = choices[0].getHoverName().copy();
-        for (int i = 1; i < Math.min(3, choices.length); i++) name.append(" / ").append(choices[i].getHoverName());
+        var name = ingredientStackName(choices[0]);
+        for (int i = 1; i < Math.min(3, choices.length); i++) name.append(" / ").append(ingredientStackName(choices[i]));
         if (choices.length > 3) name.append(" …");
+        return name;
+    }
+
+    private static MutableComponent ingredientStackName(ItemStack stack) {
+        var name = stack.getHoverName().copy();
+        if (!(stack.getItem() instanceof PotionItem)) return name;
+        var effects = PotionUtils.getMobEffects(stack);
+        if (effects.isEmpty()) return name;
+
+        var effect = effects.get(0);
+        if (effect.getAmplifier() > 0) {
+            name.append(" ").append(Component.translatable("potion.potency." + effect.getAmplifier()));
+        }
+        if (effect.getDuration() > 20) {
+            name.append(" (").append(MobEffectUtil.formatDuration(effect, 1)).append(")");
+        }
         return name;
     }
 
