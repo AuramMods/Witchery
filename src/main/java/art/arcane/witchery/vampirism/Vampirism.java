@@ -94,14 +94,34 @@ public final class Vampirism {
     public static void cure(ServerPlayer player) {
         WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
             if (data.getVampireLevel() == 0) return;
-            data.setVampireLevel(0);
-            data.setBloodPower(0);
-            data.setHumanBlood(50);
             data.setVampireVision(false);
-            data.setVampireUltimate(VampireUltimate.NONE, 0);
-            VampireFlight.leave(player, data);
+            restoreHuman(player, data);
             sync(player, data);
         });
+    }
+
+    public static int cycleRank(ServerPlayer player) {
+        return WitcheryPlayerDataProvider.get(player).map(data -> {
+            int rank = (data.getVampireLevel() + 1) % 11;
+            if (rank == 0) {
+                restoreHuman(player, data);
+            } else if (rank == 1) {
+                initializeVampire(data);
+            } else {
+                data.setVampireLevel(rank);
+                data.setHumanBlood(0);
+            }
+            sync(player, data);
+            return rank;
+        }).orElse(0);
+    }
+
+    private static void restoreHuman(ServerPlayer player, WitcheryPlayerData data) {
+        data.setVampireLevel(0);
+        data.setBloodPower(0);
+        data.setHumanBlood(50);
+        data.setVampireUltimate(VampireUltimate.NONE, 0);
+        VampireFlight.leave(player, data);
     }
 
     public static boolean drawBlood(ServerPlayer player, int amount) {

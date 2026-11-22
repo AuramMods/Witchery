@@ -109,6 +109,7 @@ Lifecycle stages:
 - The Water and Lava Diviners retain `witchery:divinerwater` and `witchery:divinerlava`. Their legacy top-level item damage converts to modern durability. The wear values and unrelated stack data were verified with numeric IDs from an original Forge save and again after a normal dedicated restart.
 - The original `witchery:stewraw` and `witchery:stew` retain their IDs, count, and item tags. The original raw mutton ingredient (158) already maps to `minecraft:mutton`, which fits the raw stew recipe.
 - The Poppet Shelf Compass retains `witchery:shelfcompass`. An original stack's old metadata recorded the displayed icon. Its count and custom tags survive import, and the six modern models select their icon from the current world.
+- The Creative Bat/Wolf Token retains `witchery:wolftoken`. A stack imported from an original numeric ID was used through both rank cycles, retained its custom tag, and survived a packaged dedicated restart with both ranks saved.
 
 ## Spawn Egg Model Coverage (2026-02-09)
 - Runtime spawn egg item registration source:

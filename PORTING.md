@@ -750,6 +750,14 @@
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 366 required Forge GameTests. The new cases cover the original recipes, legacy metadata and bookmarks, active guide content, and atlas copying.
 - [x] Use the resulting Biome Note in the Brew of the Changing Seasons.
 
+## Creative Bat/Wolf Token (2026-11-22)
+
+- [x] Restore the original `witchery:wolftoken`, epic rarity, single-item stack, sprite, name, and tooltips. The Witchery creative tab supplies the token. An existing token follows the original item-use behavior when carried into survival.
+- [x] Hold use for twenty ticks. Standing cycles werewolf rank and sneaking cycles vampire rank. The server reads the pose on the final tick, sends the original rank message and fizz feedback, and cycles either rank from zero through ten and back to zero.
+- [x] Verify both full cycles through the server's item-use path, including release before the final tick, normal and offhand use, both form resets, rank trial cleanup, the vampire journal cap bypass, and the original blood values when turning or returning to human form.
+- [x] Import the original token and its custom tag from a Forge 1.7.10 chest. The packaged server used that token to save rank ten for both species and active Bat form. After a restart, both ranks, the token and its tag, and 75 blood power loaded from the player file. The next two completed uses reset both ranks and returned the player to human form with 50 human blood.
+- [x] Run Java 17 data generation and JAR reobfuscation. All 82 clean Forge GameTests and all 86 with Thaumaturge, Lithostitched, and Curios passed.
+
 ## Poppet Shelf Compass (2026-11-22)
 
 - [x] Craft the original `witchery:shelfcompass` with gold, diamonds, a clock, and a Null Catalyst. Restore the original name and all six item sprites.

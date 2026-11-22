@@ -621,6 +621,12 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Keep Universal Antidote at `witchery:potion`. Two regular drinkable Poison potions and a Null Catalyst yield two doses. A stack holds up to four. The modern bottle uses the vanilla layers and the original green tint. A 32-tick drink removes Poison and Wither and returns one glass bottle. The legacy subtype-zero fixture kept its existing ID, count and tag.
 - Java 17 data generation, JAR reobfuscation, all 66 clean Forge GameTests and all 70 optional tests passed. Boot the packaged JAR headlessly with Witchery alone and with Thaumaturge, Lithostitched, and Curios. The packaged fixture returned the same sapling, Wicker Bundle, mine, Bramble, talisman, and Antidote aspects after datapack reload and a restart. The recipe was present on both launches. The JAR SHA-256 is `fb24b11c1487a972452d0850ac7db3c7304e4eb6625d449100acd4a7c8706741`.
 
+### Creative Bat/Wolf Token (2026-11-22)
+
+- The token checks sneaking on the last tick of a one-second bow draw. The original tool can reach vampire rank ten ahead of the journal. Rank one sets 125 blood power and zero human blood. Wrapping sets blood power to zero, restores 50 human blood, clears the ultimate, and leaves Bat form. The token retains the saved Vampire Vision preference. The normal cure clears that preference.
+- Rank changes reset the relevant trial counters and visited areas through the existing player data. Returning to werewolf rank zero also clears either wolf form. The vampire test uses a regular item slot during token use because the legacy selected power intercepts right-click on the first hotbar slot.
+- The actual 1.7.10 fixture registered the token at numeric ID 4139. Its custom tag and count survived the packaged import, full rank cycles, and an ordinary dedicated restart. The reobfuscated JAR SHA-256 is `42a3a7870a3dfbd23ad755dd4328b3a69964c84589aa8574d2c69cde05802f65`.
+
 ### Poppet Shelf Compass (2026-11-22)
 
 - Original recipe uses four gold ingots, three diamonds, a clock, and a Null Catalyst. The six sprites match the shipped 1.7.10 assets byte for byte. The item retains its stack limit of 64.

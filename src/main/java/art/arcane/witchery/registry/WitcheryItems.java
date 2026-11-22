@@ -75,6 +75,7 @@ import art.arcane.witchery.item.MeatyStewItem;
 import art.arcane.witchery.item.MirrorItem;
 import art.arcane.witchery.item.MoonCharmItem;
 import art.arcane.witchery.item.WolfAltarItem;
+import art.arcane.witchery.item.WolfTokenItem;
 import art.arcane.witchery.item.WolfsbaneFlowerItem;
 import art.arcane.witchery.item.OwnershipContractItem;
 import art.arcane.witchery.item.MutandisItem;
@@ -252,6 +253,7 @@ public final class WitcheryItems {
             case "taglockkit" -> new TaglockItem();
             case "coffin" -> createBlockItem("coffinblock");
             case "mooncharm" -> new MoonCharmItem();
+            case "wolftoken" -> new WolfTokenItem();
             case "wolfsbane_flower" -> new WolfsbaneFlowerItem();
             case "hornofthehunt" -> new HornOfTheHuntItem();
             case "huntsmanspear" -> new HuntsmanSpearItem();
