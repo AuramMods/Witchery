@@ -430,7 +430,8 @@ public final class LegacyChunkUpgrade {
             case "circleglyphritual", "circleglyphotherwhere", "circleglyphinfernal" -> state.setValue(
                     RitualGlyphBlock.PATTERN, Math.min(metadata, RitualGlyphBlock.PATTERN_COUNT - 1));
             case "wickerbundle" -> state.setValue(WickerBundleBlock.BUNDLE_TYPE,
-                    (metadata & 1) == 0 ? WickerBundleBlock.Type.PLAIN : WickerBundleBlock.Type.BLOODIED);
+                    (metadata & 1) == 0 ? WickerBundleBlock.Type.PLAIN : WickerBundleBlock.Type.BLOODIED)
+                    .setValue(BlockStateProperties.AXIS, pillarAxis(metadata));
             case "rowanwooddoor", "alderwooddoor", "icedoor", "cwoodendoor" -> restoreDoor(state, metadata, saved);
             case "coffinblock" -> state.setValue(CoffinBlock.FACING, Direction.from2DDataValue(variant))
                     .setValue(CoffinBlock.PART, (metadata & 8) == 0 ? BedPart.FOOT : BedPart.HEAD)
@@ -471,11 +472,7 @@ public final class LegacyChunkUpgrade {
                     state.setValue(BlockStateProperties.POWERED, metadata == 1);
             case "witchwood" -> state.setValue(WitchWoodType.PROPERTY, wood);
             case "witchlog" -> state.setValue(WitchWoodType.PROPERTY, wood).setValue(BlockStateProperties.AXIS,
-                    switch (metadata & 12) {
-                        case 4 -> Direction.Axis.X;
-                        case 8 -> Direction.Axis.Z;
-                        default -> Direction.Axis.Y;
-                    });
+                    pillarAxis(metadata));
             case "witchleaves" -> state.setValue(WitchWoodType.PROPERTY, wood)
                     .setValue(BlockStateProperties.PERSISTENT, (metadata & 4) != 0);
             case "witchsapling" -> state.setValue(WitchWoodType.PROPERTY, wood)
@@ -527,5 +524,13 @@ public final class LegacyChunkUpgrade {
     private static Direction horizontalFacing(int metadata) {
         Direction facing = Direction.from3DDataValue(metadata);
         return facing.getAxis().isHorizontal() ? facing : Direction.NORTH;
+    }
+
+    private static Direction.Axis pillarAxis(int metadata) {
+        return switch (metadata & 12) {
+            case 4 -> Direction.Axis.X;
+            case 8 -> Direction.Axis.Z;
+            default -> Direction.Axis.Y;
+        };
     }
 }

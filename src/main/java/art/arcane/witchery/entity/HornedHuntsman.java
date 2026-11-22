@@ -96,7 +96,7 @@ public final class HornedHuntsman extends Monster implements RangedAttackMob {
             if (!world.getBlockState(floor).isFaceSturdy(world, floor, Direction.UP)) continue;
             huntsman.moveTo(at.getX() + 0.5, at.getY() + 0.05, at.getZ() + 0.5, 0, 0);
             if (!world.noCollision(huntsman) || world.containsAnyLiquid(huntsman.getBoundingBox())) continue;
-            huntsman.beginEntrance();
+            huntsman.beginEntrance(true);
             if (!world.addFreshEntity(huntsman)) return false;
             world.sendParticles(ParticleTypes.POOF, huntsman.getX(), huntsman.getY(0.5), huntsman.getZ(),
                     16, 0.5, 1, 0.5, 0.05);
@@ -117,13 +117,13 @@ public final class HornedHuntsman extends Monster implements RangedAttackMob {
         huntsman.moveTo(x, y, z, yaw, 0);
         huntsman.setYHeadRot(yaw);
         huntsman.setYBodyRot(yaw);
-        huntsman.beginEntrance();
+        huntsman.beginEntrance(false);
         return level.addFreshEntity(huntsman);
     }
 
-    private void beginEntrance() {
+    private void beginEntrance(boolean explosive) {
         entranceTicks = ENTRANCE_TICKS;
-        explosiveEntrance = true;
+        explosiveEntrance = explosive;
         setHealth(getMaxHealth() / 4);
         setNoAi(true);
     }

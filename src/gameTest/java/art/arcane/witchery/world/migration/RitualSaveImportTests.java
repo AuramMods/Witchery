@@ -13,6 +13,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.datafix.PackedBitStorage;
@@ -33,6 +34,23 @@ import java.util.Optional;
 @PrefixGameTestTemplate(false)
 public final class RitualSaveImportTests {
     private record LegacyBlock(String name, int metadata, String property, String expected) {}
+
+    @GameTest(template = "qa_coven_arena")
+    public static void wickerBundlesKeepAxisAndType(GameTestHelper helper) {
+        var wicker = new ResourceLocation(Witchery.MODID, "wickerbundle");
+        var axes = List.of("y", "x", "z");
+        for (int axis = 0; axis < axes.size(); axis++) {
+            for (int type = 0; type <= 1; type++) {
+                int metadata = axis * 4 + type;
+                var state = LegacyChunkUpgrade.restoreState(wicker, metadata, 0);
+                var expectedType = type == 0 ? "plain" : "bloodied";
+                helper.assertTrue(state != null && state.getCompound("Properties").getString("axis").equals(axes.get(axis))
+                                && state.getCompound("Properties").getString("bundle_type").equals(expectedType),
+                        "Legacy Wicker metadata " + metadata + " should retain its axis and " + expectedType + " type");
+            }
+        }
+        helper.succeed();
+    }
 
     @GameTest(template = "qa_coven_arena")
     public static void restoresWorkshopAndConstructionStates(GameTestHelper helper) throws Exception {

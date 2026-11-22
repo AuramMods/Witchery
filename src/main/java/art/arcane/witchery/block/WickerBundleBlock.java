@@ -33,6 +33,7 @@ public final class WickerBundleBlock extends RotatedPillarBlock {
     private static final String[] BURN_ROWS = {
             "..##..", "..##..", "..##..", "..##..", ".#..#.", "......", "..##.."
     };
+    private static final int[] BURN_ORDER = {6, 3, 2, 1, 0, 4};
 
     public WickerBundleBlock() {
         super(Properties.copy(Blocks.OAK_PLANKS).strength(0.5F).sound(SoundType.GRASS));
@@ -67,24 +68,24 @@ public final class WickerBundleBlock extends RotatedPillarBlock {
                                  InteractionHand hand, BlockHitResult hit) {
         if (!player.getItemInHand(hand).is(Items.FLINT_AND_STEEL)) return InteractionResult.PASS;
         if (level instanceof ServerLevel server) return igniteEffigy(server, pos, player.getYRot());
-        return findEffigy(level, pos) == null ? InteractionResult.PASS : InteractionResult.SUCCESS;
+        return locateBase(level, pos) == null ? InteractionResult.PASS : InteractionResult.SUCCESS;
     }
 
     public static InteractionResult igniteEffigy(ServerLevel level, BlockPos pos, float yaw) {
-        Effigy effigy = findEffigy(level, pos);
+        Effigy effigy = locateBase(level, pos);
         if (effigy == null) return InteractionResult.PASS;
+        // An aligned group still handles the original click when the rest of the figure is incomplete.
+        if (!matches(level, effigy.base(), effigy.direction())) return InteractionResult.CONSUME;
         double x = effigy.base().getX() + (effigy.direction() == Direction.EAST ? 1 : 0.5);
         double z = effigy.base().getZ() + (effigy.direction() == Direction.SOUTH ? 1 : 0.5);
         if (!HornedHuntsman.summonFromWicker(level, x, effigy.base().getY() + 0.1, z, yaw + 180)) {
             return InteractionResult.FAIL;
         }
-        for (int y = 0; y < BURN_ROWS.length; y++) {
+        for (int y : BURN_ORDER) {
             for (int i = 0; i < BURN_ROWS[y].length(); i++) {
                 if (BURN_ROWS[y].charAt(i) != '#') continue;
                 BlockPos burn = effigy.base().above(y).relative(effigy.direction(), i - 2);
-                if (bloodiedAt(level, burn) || level.isEmptyBlock(burn)) {
-                    level.setBlockAndUpdate(burn, BaseFireBlock.getState(level, burn));
-                }
+                level.setBlockAndUpdate(burn, BaseFireBlock.getState(level, burn));
             }
         }
         level.sendParticles(ParticleTypes.POOF, x, effigy.base().getY() + 1.5, z, 120, 0.5, 1.25, 0.5, 0.05);
@@ -94,17 +95,25 @@ public final class WickerBundleBlock extends RotatedPillarBlock {
     private record Effigy(BlockPos base, Direction direction) {}
 
     @Nullable
-    private static Effigy findEffigy(BlockGetter level, BlockPos clicked) {
-        for (Direction direction : new Direction[]{Direction.EAST, Direction.SOUTH}) {
-            for (int row = 0; row < MAN_ROWS.length - 1; row++) {
-                for (int column = 1; column <= 4; column++) {
-                    if (MAN_ROWS[row].charAt(column) == '.') continue;
-                    BlockPos base = clicked.below(row).relative(direction, 2 - column);
-                    if (matches(level, base, direction)) return new Effigy(base, direction);
-                }
-            }
-        }
-        return null;
+    private static Effigy locateBase(BlockGetter level, BlockPos clicked) {
+        boolean west = wickerAt(level, clicked.west());
+        boolean east = wickerAt(level, clicked.east());
+        boolean north = wickerAt(level, clicked.north());
+        boolean south = wickerAt(level, clicked.south());
+        boolean alongX = west || east;
+        if (alongX == (north || south)) return null;
+
+        Direction forwards = alongX ? Direction.EAST : Direction.SOUTH;
+        Direction backwards = forwards.getOpposite();
+        boolean negative = alongX ? west : north;
+        boolean positive = alongX ? east : south;
+        BlockPos base = clicked;
+        if (!negative) base = base.relative(forwards);
+        else if (!positive) base = base.relative(backwards);
+
+        while (wickerAt(level, base.below())) base = base.below();
+        while (wickerAt(level, base.relative(backwards))) base = base.relative(backwards);
+        return new Effigy(base, forwards);
     }
 
     private static boolean matches(BlockGetter level, BlockPos base, Direction direction) {
@@ -121,6 +130,10 @@ public final class WickerBundleBlock extends RotatedPillarBlock {
     private static boolean bloodiedAt(BlockGetter level, BlockPos pos) {
         BlockState state = level.getBlockState(pos);
         return state.getBlock() instanceof WickerBundleBlock && state.getValue(BUNDLE_TYPE) == Type.BLOODIED;
+    }
+
+    private static boolean wickerAt(BlockGetter level, BlockPos pos) {
+        return level.getBlockState(pos).getBlock() instanceof WickerBundleBlock;
     }
 
     public static void markBloodied(ItemStack stack) {
