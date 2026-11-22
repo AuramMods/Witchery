@@ -1162,6 +1162,10 @@ The Vampiric Poppet keeps both legacy Taglock indices. The first tracks the prot
 
 `witchery:grassper` reads its single legacy `Items` entry at `Slot:0b`. The rite heart retains legacy `Sacrifices` item entries and writes `GrassperPos` for offerings it takes from a Grassper. Critter Snare item damage 1 through 4 becomes the `critter` block state. The older bat subtype 9 also sets `stocked`, which restores `WitcheryShopStock` when that bat is released.
 
+Both charm IDs use the same 50-durability item for animal shops. Stock is stored on the mob at `ForgeData.WitcheryShopStock.Recipes`. The importer normalizes numeric Witchery and vanilla item stacks in the original `buy`, `buyB` and `sell` fields and preserves `uses` and `maxUses`. An existing empty compound marks a spent shop. Modern horse variants use the original Horse pool, and Cats use the Ocelot pool. Mooshrooms use the Cow pool's wheat currency, matching the original branch order.
+
+One customer can access an animal's stock at a time. The modern menu closes if the creature disappears or the customer moves more than eight blocks away. Its shift-click path uses the animal's own voice because the menu wraps an ordinary mob. Demon bargains retain their separate merchant and Devil's Tongue discount.
+
 The Owl reads `FeatherColor` and the Toad reads `SkinColor`. Both retain `Familiar` and `SuicideIn` and use vanilla tamed ownership. The Toad also reads `Poisonous`. The Owl keeps its carried item in its main hand equipment.
 
 The Broom uses `BrushColor` on the vehicle and enchanted item. The vehicle reads legacy plain-text `CustomName` and saves the modern component name. An older port's `witchery:broom_spawn_egg` can place the vehicle. The Infused Brew of Soaring uses `WITCInfusedBrewType:1` and `WITCInfusedBrewStart` in the player record.

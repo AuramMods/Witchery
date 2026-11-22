@@ -26,6 +26,7 @@ import art.arcane.witchery.item.DeathClothingItem;
 import art.arcane.witchery.item.DeathProtectionPoppetItem;
 import art.arcane.witchery.item.CaneSwordItem;
 import art.arcane.witchery.item.TaglockItem;
+import art.arcane.witchery.item.PolynesiaCharmItem;
 import art.arcane.witchery.item.SpiritOfferingItem;
 import art.arcane.witchery.item.VampiricPoppetItem;
 import art.arcane.witchery.item.GlassGobletItem;
@@ -553,6 +554,14 @@ public final class WitcheryEventHooks {
             event.setCanceled(true);
             event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide));
             return;
+        }
+        if (event.getItemStack().getItem() instanceof PolynesiaCharmItem charm && event.getTarget() instanceof Mob animal) {
+            InteractionResult result = charm.greet(event.getEntity(), event.getHand(), animal);
+            if (result.consumesAction()) {
+                event.setCancellationResult(result);
+                event.setCanceled(true);
+                return;
+            }
         }
         if (event.getEntity() instanceof ServerPlayer player && event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND
                 && event.getTarget() instanceof net.minecraft.world.entity.animal.Wolf wolf && WolfTrials.tame(player, wolf)) {

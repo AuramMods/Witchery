@@ -1,6 +1,7 @@
 package art.arcane.witchery.world.migration;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.entity.AnimalMerchant;
 import com.mojang.datafixers.DataFixer;
 import net.minecraft.SharedConstants;
 import net.minecraft.nbt.CompoundTag;
@@ -26,6 +27,11 @@ final class LegacyChunkEntities {
     private static void prepareEntity(CompoundTag entity, LegacyWorldIds ids, DataFixer fixer, int from) {
         if (entity.contains("Riding", Tag.TAG_COMPOUND)) {
             prepareEntity(entity.getCompound("Riding"), ids, fixer, from);
+        }
+        var forgeData = entity.getCompound("ForgeData");
+        if (forgeData.contains(AnimalMerchant.STOCK_TAG, Tag.TAG_COMPOUND)) {
+            ids.upgradeVanillaItems(forgeData.getCompound(AnimalMerchant.STOCK_TAG), fixer, from,
+                    SharedConstants.getCurrentVersion().getDataVersion().getVersion());
         }
 
         String oldType = entity.getString("id");

@@ -294,7 +294,17 @@
 - [x] Teach a guardian with Taglocks for players, species, and individual creatures. The muted client took a pig's Taglock and used the second seed to grow a Treefyd with the same training. Both UUIDs and the parent’s heart upgrade and guard mode survived a dedicated restart. The trained guardian attacked a husk while sparing the pig. Sneak-use with another Taglock removed the parent's pig entry and left the clone's entry intact.
 - [x] Import an original Forge 1.7.10 Treefyd and a chest containing two seeds with legacy damage 70. The entity UUID, owner name, guard mode, three allowlists, 92 health and four-point attack survived import. The chest contained two modern seeds, and the importer-free restart kept both the guardian and the stack.
 - [x] Pass all 13 focused Forge GameTests on the final source. The Treefyd cases include the exact recipe, Forge placement cancellation, planting older port stacks, wild persistence, cloning and forgetting, both upgrades, and the player hit's 100 ticks of Blindness. Java 17 data generation and JAR reobfuscation passed. The packaged JAR SHA-256 is `41c122f6d3b847d433e30de69da20abca8ea2479d61659b105cf927ff3148d62`.
-- [ ] Restore the Polynesia Charm trade route, including the rare Treefyd Seed offers and saved stock.
+- [x] Restore the Polynesia Charm trade route for rare Treefyd Seed offers. See the next milestone for stock generation, purchasing and migration checks.
+
+## Polynesia Charm and Animal Shops (2026-11-21)
+
+- [x] Restore 50-use charms, ordinary animal and spider shops, and the clothing requirements for creepers and undead. The muted survival client crafted the Polynesia Charm from supplied ingredients and opened a pig's newly generated stock. Witch's Robes opened a creeper shop and Necromancer's Robes opened a husk shop. Both refusals preserved the charm.
+- [x] Restore the original species currencies, rare seed candidates, offer selection, and limited stock. Two muted clients competed for the same prepared Treefyd Seed offer. The second client spent no durability while the first was shopping. A shift-click purchase used four carrots and granted one seed. The second client reopened the shop after the first left, spending one point of Devil's Tongue durability.
+- [x] Restart the packaged server with one seed purchase remaining. The returning buyer took the second seed with a normal click and reopened the exhausted shop. The attempted third purchase left the buyer with four carrots and two seeds. The previously generated pig offer and empty bat shop also survived.
+- [x] Preserve the Devil's Tongue demon bargain. The second client bought a supplied Demon Heart offer for four gold ingots instead of its nine-ingot base price. Opening the shop kept the charm's durability and buying the heart spent five points.
+- [x] Keep a spent bat's shop empty. The packaged client opened the empty menu. A focused GameTest caught and released a bat with used stock and confirmed that the snare kept the empty-stock marker.
+- [x] Import a Forge 1.7.10 pig with saved shop offers. Its used Treefyd Seed trade retained one of two uses, and raw fish metadata 1 became Salmon in the second offer. The separately imported bat retained its empty shop. Both survived an importer-free restart.
+- [x] Pass all 13 focused Forge GameTests for eligibility, quantities, prices, rare offers, limited stock, the snare, and the existing Treefyd and import checks. Java 17 data generation and JAR reobfuscation passed. The packaged JAR SHA-256 is `b5f62084c3d34f7a8e1451d135e6bee0a65ef95b7b8e3915b63c77d52c5b7869`.
 
 ## Owl and Toad (2026-11-20)
 
@@ -346,7 +356,7 @@
 - [x] Restore the Brew of Raising and the Necromantic Stone's general undead commands. The muted client filled a heated kettle and brewed the original six ingredients with 500 altar power. A thrown portion raised two owned zombies, and the Necromantic Stone sent them to attack a husk. All 113 required GameTests, data generation and JAR reobfuscation passed.
 - [x] Restore Baba's Hat equipment and its charge-powered evasion. The muted client equipped the hat previously earned from Baba Yaga. A test hit from a zombie left health unchanged, reduced charge by five and moved the player to a nearby open block. Environmental fire did not consume any infusion charge.
 - [x] Restart the packaged server after these interactions. Both zombies kept their UUIDs and owner, the repaired robe kept its tags, and Baba's Hat and the remaining infusion charge stayed saved.
-- [ ] Connect the garments to the advanced cauldron, Polynesia trades, and the later player forms and crossbow effects.
+- [ ] Connect the garments to the remaining advanced cauldron, player form and crossbow effects.
 
 ## Terrain Brews (2026-11-20)
 

@@ -1,5 +1,6 @@
 package art.arcane.witchery.block;
 
+import art.arcane.witchery.entity.AnimalMerchant;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -36,7 +37,6 @@ public final class CritterSnareBlock extends Block {
     public static final EnumProperty<Critter> CRITTER = EnumProperty.create("critter", Critter.class);
     public static final BooleanProperty STOCKED = BooleanProperty.create("stocked");
     private static final VoxelShape SHAPE = box(0.8, 0, 0.8, 15.2, 16, 15.2);
-    private static final String SHOP_STOCK = "WitcheryShopStock";
 
     public CritterSnareBlock() {
         super(Properties.copy(Blocks.DANDELION).noCollission());
@@ -70,7 +70,7 @@ public final class CritterSnareBlock extends Block {
         if (!(level instanceof ServerLevel server) || !entity.isAlive() || state.getValue(CRITTER) != Critter.EMPTY) return;
         Critter critter = Critter.forEntity(entity);
         if (critter == Critter.EMPTY) return;
-        boolean stocked = critter == Critter.BAT && entity.getPersistentData().contains(SHOP_STOCK);
+        boolean stocked = critter == Critter.BAT && entity.getPersistentData().contains(AnimalMerchant.STOCK_TAG);
         if (server.setBlockAndUpdate(pos, state.setValue(CRITTER, critter).setValue(STOCKED, stocked))) entity.discard();
     }
 
@@ -83,7 +83,7 @@ public final class CritterSnareBlock extends Block {
             if (mob == null) return InteractionResult.FAIL;
             if (mob instanceof Slime slime) slime.setSize(1, true);
             if (state.getValue(STOCKED) && critter == Critter.BAT) {
-                mob.getPersistentData().put(SHOP_STOCK, new CompoundTag());
+                mob.getPersistentData().put(AnimalMerchant.STOCK_TAG, new CompoundTag());
             }
             if (critter == Critter.BAT) {
                 mob.moveTo(pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5, 0, 0);
