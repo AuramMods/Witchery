@@ -1110,7 +1110,15 @@
 - [x] Brew all nine variants in the muted survival client. Confirm the effects through the normal drink control. Walk through a disease cell, restart the dedicated server, and verify the saved effect. Purified Milk IV then removed the active disease, Weakness IV, and the observed cell. Drain Magic reduced the fixture's stored charge from 200 to 150.
 - [x] Verify the original disease overlay on a dedicated-server pig in the isolated client. The overlay appeared on application, disappeared when the effect cleared, and appeared on reentering tracking range with the effect already active.
 - [x] Run Java 17 data generation and JAR reobfuscation. All 553 regression cases passed before adding disease overlay synchronization. All 21 focused cases passed on the final revision.
-- [ ] Resolve the legacy Drain Magic integrations during the optional mod compatibility pass.
+- [x] Restore Drain Magic's optional Blood Magic hook. It uses the original Life Essence tiers even on a player without a Witchery infusion.
+- [ ] Resolve the legacy Thaumcraft Drain Magic hook during the optional mod compatibility pass.
+
+## Blood Magic Compatibility (2026-11-22)
+
+- [x] Restore the Life Essence debit from a powered Anti-Magic Bolt on both the shooter and the target. Carnosa Diem grants 100 Life Essence per full point of its health cost.
+- [x] Restore Sacrificial Dagger use for vampires. Each point of the dagger's health cost draws 100 blood power. An adequately fed vampire fills the altar and keeps their health. An insufficient reserve leaves both health and the altar unchanged.
+- [x] Keep the integration optional and use the Blood Magic 3.3.5-47 Soul Network and dagger event present in Auram. [Blood Magic 3.3.5-47](https://www.curseforge.com/minecraft/mc-mods/blood-magic/files/7253333)
+- [x] Pass 64 headless Forge GameTests with Blood Magic and Patchouli, and 62 on clean Forge. Run Java 17 data generation and reobfuscation. The same packaged JAR boots in a headless profile with each mod set.
 
 ## Cauldron Wool and Dye Colors (2026-11-21)
 

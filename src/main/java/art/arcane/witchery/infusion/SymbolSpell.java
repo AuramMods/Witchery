@@ -2,6 +2,7 @@ package art.arcane.witchery.infusion;
 
 import art.arcane.witchery.entity.SymbolProjectile;
 import art.arcane.witchery.entity.ThrownBrew;
+import art.arcane.witchery.integration.BloodMagicCompat;
 import art.arcane.witchery.item.LeonardsUrnItem;
 import art.arcane.witchery.item.RitualChalkItem;
 import art.arcane.witchery.registry.WitcheryDamageTypes;
@@ -159,8 +160,10 @@ public enum SymbolSpell {
 
         switch (this) {
             case CARNOSA_DIEM -> {
-                player.hurt(WitcheryDamageTypes.demonic(level, player, null), player.getMaxHealth() * 0.1F);
+                float health = player.getMaxHealth() * 0.1F;
+                player.hurt(WitcheryDamageTypes.demonic(level, player, null), health);
                 InfusionEnergy.recharge(player, 10);
+                BloodMagicCompat.boost(player, health);
                 level.sendParticles(DustParticleOptions.REDSTONE, player.getX(), player.getY(0.5), player.getZ(),
                         16, 0.5, 1, 0.5, 0);
                 level.playSound(null, player.blockPosition(), SoundEvents.ENDER_DRAGON_GROWL, SoundSource.PLAYERS, 0.7F, 1);

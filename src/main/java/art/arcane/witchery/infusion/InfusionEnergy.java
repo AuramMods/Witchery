@@ -1,5 +1,6 @@
 package art.arcane.witchery.infusion;
 
+import art.arcane.witchery.integration.BloodMagicCompat;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.ritual.DirectedCurse;
 import net.minecraft.ChatFormatting;
@@ -48,9 +49,11 @@ public final class InfusionEnergy {
         CompoundTag infusion = data(player);
         int current = infusion.getInt(CHARGE);
         int capacity = infusion.getInt(CAPACITY);
-        if (current <= 0 || capacity <= 0) return;
-        infusion.putInt(CHARGE, Math.max(0, current - Math.max(1, (int) (capacity * fraction))));
-        sync(player, infusion);
+        if (current > 0 && capacity > 0) {
+            infusion.putInt(CHARGE, Math.max(0, current - Math.max(1, (int) (capacity * fraction))));
+            sync(player, infusion);
+        }
+        BloodMagicCompat.drain(player, fraction);
     }
 
     public static boolean spend(ServerPlayer player, int cost) {

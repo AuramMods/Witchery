@@ -1268,7 +1268,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 
 ### Optional legacy brew integrations
 
-- Drain Magic's legacy Blood Magic and Thaumcraft hooks remain open for the optional integration pass.
+- Drain Magic and powered Anti-Magic Bolts debit the optional Blood Magic Soul Network using the original Life Essence tiers. The Thaumcraft hook remains open for the optional integration pass.
 - The Resizing suffocation exception specific to Ars Magica 2 remains for the optional integration audit.
 
 ## Network Packets (`PacketPipeline`)

@@ -4,6 +4,7 @@ import art.arcane.witchery.block.entity.PoppetShelfBlockEntity;
 import art.arcane.witchery.config.WitcheryClientConfig;
 import art.arcane.witchery.config.WitcheryCommonConfig;
 import art.arcane.witchery.config.WitcheryServerConfig;
+import art.arcane.witchery.integration.BloodMagicCompat;
 import art.arcane.witchery.item.EndlessWaterBrewItem;
 import art.arcane.witchery.item.GrenadeItem;
 import art.arcane.witchery.network.WitcheryNetwork;
@@ -37,6 +38,7 @@ public class Witchery {
             ForgeChunkManager.setForcedChunkLoadingCallback(MODID, PoppetShelfBlockEntity::restoreTickets);
             GrenadeItem.registerDispenser();
             EndlessWaterBrewItem.registerDispenser();
+            BloodMagicCompat.register();
         });
     }
 }
