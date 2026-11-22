@@ -18,24 +18,26 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public final class SpiritPortalBlock extends Block {
     public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.HORIZONTAL_AXIS;
+    public static final BooleanProperty LEGACY_ORIENTATION = BooleanProperty.create("legacy_orientation");
     private static final VoxelShape PORTAL_X = box(0, 0, 6, 16, 16, 10);
     private static final VoxelShape PORTAL_Z = box(6, 0, 0, 10, 16, 16);
     private static final int SPAN = 2;
 
     public SpiritPortalBlock(Properties properties) {
         super(properties);
-        registerDefaultState(defaultBlockState().setValue(AXIS, Direction.Axis.X));
+        registerDefaultState(defaultBlockState().setValue(AXIS, Direction.Axis.X).setValue(LEGACY_ORIENTATION, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(AXIS);
+        builder.add(AXIS, LEGACY_ORIENTATION);
     }
 
     @Override
@@ -78,20 +80,30 @@ public final class SpiritPortalBlock extends Block {
     @Override
     public BlockState updateShape(BlockState state, Direction direction, BlockState neighbor, LevelAccessor level,
                                   BlockPos pos, BlockPos neighborPos) {
+        if (state.getValue(LEGACY_ORIENTATION)) {
+            for (Direction horizontal : new Direction[]{Direction.EAST, Direction.SOUTH}) {
+                if (hasFrame(level, pos, horizontal)) {
+                    return state.setValue(AXIS, horizontal.getAxis()).setValue(LEGACY_ORIENTATION, false);
+                }
+            }
+            return Blocks.AIR.defaultBlockState();
+        }
         Direction.Axis axis = state.getValue(AXIS);
         if (direction.getAxis() != axis && direction.getAxis() != Direction.Axis.Y) {
             return state;
         }
-        Direction horizontal = horizontal(axis);
+        return hasFrame(level, pos, horizontal(axis)) ? state : Blocks.AIR.defaultBlockState();
+    }
+
+    private boolean hasFrame(BlockGetter level, BlockPos pos, Direction horizontal) {
         for (int shift = 0; shift < SPAN; shift++) {
             for (int depth = 0; depth < SPAN; depth++) {
                 BlockPos bottom = pos.relative(horizontal, -shift).below(depth);
-                if (matchesFrame(level, bottom, horizontal, interior -> interior.equals(state))) {
-                    return state;
-                }
+                if (matchesFrame(level, bottom, horizontal, interior -> interior.is(this)
+                        && (interior.getValue(LEGACY_ORIENTATION) || interior.getValue(AXIS) == horizontal.getAxis()))) return true;
             }
         }
-        return Blocks.AIR.defaultBlockState();
+        return false;
     }
 
     private static boolean matchesFrame(BlockGetter level, BlockPos bottom, Direction horizontal,

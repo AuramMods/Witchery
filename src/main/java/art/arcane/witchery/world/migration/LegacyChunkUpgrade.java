@@ -9,6 +9,7 @@ import art.arcane.witchery.block.DistilleryBlock;
 import art.arcane.witchery.block.MirrorBlock;
 import art.arcane.witchery.block.RiteHeartBlock;
 import art.arcane.witchery.block.RitualGlyphBlock;
+import art.arcane.witchery.block.SpiritPortalBlock;
 import art.arcane.witchery.block.StockadeBlock;
 import art.arcane.witchery.block.TormentPortalBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
@@ -32,8 +33,10 @@ import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.datafix.PackedBitStorage;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.FenceGateBlock;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -59,8 +62,10 @@ public final class LegacyChunkUpgrade {
     private static final Set<String> MIRRORS = Set.of("mirrorblock", "mirrorblock2");
     private static final Set<String> FETISHES = Set.of("scarecrow", "trent", "witchsladder");
     private static final Set<String> DOORS = Set.of("rowanwooddoor", "alderwooddoor", "icedoor");
-    private static final Set<String> CONNECTED_BLOCKS = Set.of("stockade", "icestockade", "icefence", "icefencegate", "coffinblock",
-            "tormentportal");
+    private static final int LEGACY_SPIRIT_QUANTA = 5;
+    private static final Set<String> SPIRIT_FLUIDS = Set.of("spiritflowing", "hollowtears");
+    private static final Set<String> POST_PROCESSING_BLOCKS = Set.of("stockade", "icestockade", "icefence", "icefencegate", "coffinblock",
+            "tormentportal", "spiritportal", "spiritflowing", "hollowtears");
 
     private LegacyChunkUpgrade() {
     }
@@ -185,6 +190,9 @@ public final class LegacyChunkUpgrade {
             int saved;
             if (DOORS.contains(path)) {
                 saved = doorMateMetadata(legacyByHeight, sectionY, i, number, meta);
+            } else if (SPIRIT_FLUIDS.contains(path) && meta > 0 && meta < LEGACY_SPIRIT_QUANTA) {
+                int above = blockMetadata(legacyByHeight, sectionY, i + 256, number);
+                saved = above >= 0 && above < LEGACY_SPIRIT_QUANTA ? 1 : 0;
             } else {
                 // The lid must already be open when chunk post-processing loads the block entity.
                 saved = path.equals("coffinblock") && openCoffins.contains((sectionY << 12) | i) ? 1 : 0;
@@ -207,7 +215,7 @@ public final class LegacyChunkUpgrade {
                 }
             }
             packed.set(i, index);
-            if (CONNECTED_BLOCKS.contains(path)) queueShapeUpdate(postProcessing, sectionY, i);
+            if (POST_PROCESSING_BLOCKS.contains(path)) queueShapeUpdate(postProcessing, sectionY, i);
             changed = true;
         }
         if (changed) {
@@ -236,17 +244,20 @@ public final class LegacyChunkUpgrade {
 
     private static int doorMateMetadata(Map<Integer, CompoundTag> sections, int height, int index, int id, int meta) {
         boolean upper = (meta & 8) != 0;
-        int across = index + (upper ? -256 : 256);
-        CompoundTag section = sections.get(height + Math.floorDiv(across, SECTION_SIZE));
+        int otherMeta = blockMetadata(sections, height, index + (upper ? -256 : 256), id);
+        return otherMeta >= 0 && ((otherMeta ^ meta) & 8) != 0 ? otherMeta : 0;
+    }
+
+    private static int blockMetadata(Map<Integer, CompoundTag> sections, int height, int index, int id) {
+        CompoundTag section = sections.get(height + Math.floorDiv(index, SECTION_SIZE));
         if (section != null) {
-            int otherIndex = Math.floorMod(across, SECTION_SIZE);
+            int otherIndex = Math.floorMod(index, SECTION_SIZE);
             byte[] blocks = section.getByteArray("Blocks");
             if (blocks.length == SECTION_SIZE && blockNumber(blocks, section.getByteArray("Add"), otherIndex) == id) {
-                int otherMeta = nibble(section.getByteArray("Data"), otherIndex);
-                if (((otherMeta ^ meta) & 8) != 0) return otherMeta;
+                return nibble(section.getByteArray("Data"), otherIndex);
             }
         }
-        return 0;
+        return -1;
     }
 
     @Nullable
@@ -289,6 +300,8 @@ public final class LegacyChunkUpgrade {
                     .setValue(FenceGateBlock.OPEN, (metadata & 4) != 0)
                     .setValue(FenceGateBlock.POWERED, (metadata & 8) != 0);
             case "tormentportal" -> state.setValue(TormentPortalBlock.LEGACY_ORIENTATION, true);
+            case "spiritportal" -> state.setValue(SpiritPortalBlock.LEGACY_ORIENTATION, true);
+            case "spiritflowing", "hollowtears" -> restoreSpiritFluid(state, metadata, saved != 0);
             case "mirrorblock", "mirrorblock2" -> state.setValue(MirrorBlock.FACING, switch (variant) {
                 case 0 -> Direction.NORTH;
                 case 1 -> Direction.SOUTH;
@@ -325,6 +338,12 @@ public final class LegacyChunkUpgrade {
             default -> null;
         };
         return restored == null ? null : NbtUtils.writeBlockState(restored);
+    }
+
+    private static BlockState restoreSpiritFluid(BlockState state, int metadata, boolean falling) {
+        if (metadata >= LEGACY_SPIRIT_QUANTA) return Blocks.AIR.defaultBlockState();
+        int level = falling ? 8 : Math.round(metadata * (8.0F / LEGACY_SPIRIT_QUANTA));
+        return state.setValue(LiquidBlock.LEVEL, level);
     }
 
     private static BlockState restoreDoor(BlockState state, int metadata, int mate) {
