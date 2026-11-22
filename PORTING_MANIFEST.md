@@ -499,6 +499,8 @@ This is one registered item (`witchery:ingredient`) with many metadata subtypes.
 
 The first migrated subtypes have individual item IDs. Preserve `witchery:ingredient` for existing unconverted stacks. The mapping below is for the Witchery portion of a legacy stack upgrade.
 
+The `mutandisAdditionalBlocks` server setting ports `MutandisAdditionalBlocks`. It defaults to Glintweed and Fern, the flattened equivalent of `tallgrass,2`. Each entry can be both an input and an outcome for ordinary Mutandis and Extremis. Repeated entries add weight. The setting accepts modern IDs and states and uses the legacy block-state converter for old IDs and metadata. The base plants remain data driven through the Mutandis block tags.
+
 | Legacy metadata | 1.20.1 item ID |
 |---:|---|
 | 0 | `witchery:candelabra` |

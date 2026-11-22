@@ -3,8 +3,13 @@ package art.arcane.witchery.item;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.SpanishMossBlock;
 import art.arcane.witchery.block.WitchWoodType;
+import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.world.WitcheryDimensions;
+import art.arcane.witchery.world.migration.LegacySchematicBlocks;
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -93,10 +98,10 @@ public final class MutandisItem extends Item {
         BlockPos pos = context.getClickedPos();
         Block sapling = WitcheryBlocks.getRequired("witchsapling").get();
         boolean dream = level.dimension().equals(WitcheryDimensions.DREAM);
-        if (!potted && !existing.is(PLANTS) && !existing.is(sapling)
-                && !(extremis && existing.is(EXTREMIS_PLANTS)) && !(dream && existing.is(Blocks.NETHER_WART))) {
-            return InteractionResult.PASS;
-        }
+        List<BlockState> extras = potted ? List.of() : additionalBlocks();
+        boolean basePlant = existing.is(PLANTS) || existing.is(sapling)
+                || (extremis && existing.is(EXTREMIS_PLANTS)) || (dream && existing.is(Blocks.NETHER_WART));
+        if (!potted && !basePlant && !extras.remove(existing)) return InteractionResult.PASS;
 
         if (level instanceof ServerLevel server) {
             List<BlockState> candidates = new ArrayList<>();
@@ -118,6 +123,7 @@ public final class MutandisItem extends Item {
                         candidates.add(sapling.defaultBlockState().setValue(WitchWoodType.PROPERTY, wood));
                     }
                 }
+                candidates.addAll(extras);
                 if (extremis) {
                     addExtremisPlants(existing, candidates);
                 } else if (dream && !existing.is(Blocks.NETHER_WART)) {
@@ -127,10 +133,40 @@ public final class MutandisItem extends Item {
             if (candidates.isEmpty()) return InteractionResult.FAIL;
             BlockState replacement = candidates.get(server.random.nextInt(candidates.size()));
             if (replacement.getBlock() instanceof SpanishMossBlock moss) replacement = moss.mutatedState(server, pos);
-            if (!server.setBlockAndUpdate(pos, replacement)) return InteractionResult.FAIL;
+            if (replacement != existing && !server.setBlockAndUpdate(pos, replacement)) return InteractionResult.FAIL;
             finishMutation(context, server, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    private static List<BlockState> additionalBlocks() {
+        List<BlockState> extras = new ArrayList<>();
+        for (String entry : WitcheryServerConfig.MUTANDIS_ADDITIONAL_BLOCKS.get()) {
+            BlockState state = readExtraBlock(entry.strip());
+            if (state != null) extras.add(state);
+        }
+        return extras;
+    }
+
+    @Nullable
+    private static BlockState readExtraBlock(String entry) {
+        int separator = entry.lastIndexOf(',');
+        if (separator >= 0 && !entry.contains("[")) {
+            try {
+                int metadata = Integer.parseInt(entry.substring(separator + 1).strip());
+                return metadata >= 0 && metadata <= 15
+                        ? LegacySchematicBlocks.read(entry.substring(0, separator).strip(), metadata, 0) : null;
+            } catch (NumberFormatException ignored) {
+                return null;
+            }
+        }
+        try {
+            var reader = new StringReader(entry);
+            var block = BlockStateParser.parseForBlock(BuiltInRegistries.BLOCK.asLookup(), reader, false);
+            return reader.canRead() ? null : block.blockState();
+        } catch (CommandSyntaxException ignored) {
+            return LegacySchematicBlocks.read(entry, 0, 0);
+        }
     }
 
     private static void addExtremisPlants(BlockState existing, List<BlockState> candidates) {

@@ -39,6 +39,7 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.BooleanValue ALLOW_NAMEPLATE_MASQUERADING;
     public static final ForgeConfigSpec.BooleanValue ALLOW_BIOME_MODIFICATION_RITUALS;
     public static final ForgeConfigSpec.BooleanValue ALLOW_HELL_ON_EARTH_FIRES;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> MUTANDIS_ADDITIONAL_BLOCKS;
     public static final ForgeConfigSpec.BooleanValue SAVE_DUP_STAFF_TEMPLATE;
     public static final ForgeConfigSpec.IntValue RITE_OF_ECLIPSE_COOLDOWN_SECONDS;
     public static final ForgeConfigSpec.BooleanValue GENERATE_WICKER_MEN;
@@ -148,6 +149,11 @@ public final class WitcheryServerConfig {
         ALLOW_HELL_ON_EARTH_FIRES = builder
                 .comment("Allow an active cat familiar to make the Hell on Earth rite ignite plants.")
                 .define("allowHellOnEarthFires", true);
+        MUTANDIS_ADDITIONAL_BLOCKS = builder
+                .comment("Additional Mutandis inputs and outcomes. Use block IDs, block states, or legacy IDs followed by comma and metadata.",
+                        "Repeat an entry to increase its chance. An empty list keeps only the base outcomes.")
+                .defineListAllowEmpty("mutandisAdditionalBlocks", List.of("witchery:glintweed", "minecraft:fern"),
+                        entry -> entry instanceof String);
         SAVE_DUP_STAFF_TEMPLATE = builder
                 .comment("Export Staff of Duplication captures as schematic.txt and schematic2.txt in the server config directory.")
                 .define("saveDupStaffTemplate", false);
