@@ -105,7 +105,8 @@
 - [x] Restore Reflection's copied Mystic Branch spells, Witch Hunter crossbow ammunition, and the Attraho projectile. It mirrors its opponent's hotbar, armor, active effects, disguise, and Wolfman appearance. Restore the original Reflection sounds and the fallback skin.
 - [x] Restore the Rite of Summoning a Reflection. Use the large Infernal circle, a Mirror, Ender Dew, Blaze Powder, and a Quartz Sphere for 5,000 altar power. The muted survival client tossed the original offerings and activated the Heart Glyph. The dedicated server saved the first consumed offering and resumed the same ritual after restart, yielding one 100-health Reflection in the Overworld.
 - [x] In the muted client, hold a Witch Hunter crossbow in wolf form and observe the Reflection fire Silver Bolts. Switch to a Mystic Branch and observe Attraho, Ignianima, and Expelliarmus. Use the Moon Charm to shift into Wolfman form and see the Reflection adopt the wolf model and unequip its weapon. Java 17 data generation, JAR reobfuscation, and all 318 required Forge GameTests passed.
-- [ ] Finish the related poppet behavior and verify external account skin resolution for a disguise whose subject is offline.
+- [x] Use the inhabited Mirror to wear an offline account's disguise. Two private clients with empty skin caches downloaded the signed profile texture. The observer saw the same alias and skin after an ordinary dedicated restart.
+- [x] Verify that Fire Protection Poppets use the disguised player's actual identity. A lethal fire hit spent the poppet bound to the wearer and preserved the one bound to the offline disguise subject. The observer still saw the disguise.
 
 ## Torment Milestone (2026-11-19)
 
@@ -409,7 +410,7 @@
 - [x] Verify the advanced cauldron and combat hooks. With Brewing Expertise III, 60 bottling skill and an active Toad familiar, the Witch's Hat and either robe yield 15 portions. Baba's Hat and either robe yield 30. Wolf and Wolfman forms and powered anti-magic bolts bypass Baba's Hat evasion.
 - [x] Restore the legacy targeting order. Blinded mobs reject visible players during target selection. An invisible player must be the closest vulnerable player in the mob's search, which starts at 16 blocks and scales with armor and crouching. The robes retain their original Creeper and undead rules for visible wearers.
 - [x] Hide all nine witch clothing styles on invisible wearers. Preserve the original display exception on modern armor stands. An offscreen renderer check confirmed that the same cached model draws again when the wearer becomes visible.
-- [ ] Verify invisible clothing in a muted live client.
+- [x] Verify all nine clothing styles with a second muted client watching a survival player. The garments rendered before and after the Invisibility effect and were hidden while it was active. An invisible armor stand continued to display the garments.
 
 ## Terrain Brews (2026-11-20)
 
@@ -1514,7 +1515,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Reproduce delayed offering visibility in five of 48 Focused Barrier and Moving Earth placements. The ring already matched, and activation succeeded after the world exposed the items. Both checked-in cases now wait on that same entity query.
 - [x] Reproduce the archived Wicker Effigy query failure. Two of 48 ignitions joined a Huntsman with 100 health and 150 ticks while the nearby entity query still returned zero. The checked-in cases observe the Forge join and wait for the exact UUID to become queryable. Both axes, the original click rules, and the six legacy block states passed among all 122 checked-in GameTests.
 - [x] Stabilize Eclipse, the enhanced Worship gesture, and Animal Repulsion. The corrected fixtures passed in the full replay and went into the 125-test checked-in suite.
-- [ ] Repeat the 673-case replay with the corrected Raising and large-circle chalk fixtures. Its latest run passed 671. All sixteen follow-up checks passed by observing the raised entities after tracking, waiting for the chalk offerings, and charging the resolved altar core in all four rotations.
+- [x] Replay all 673 GameTests with the corrected Raising and large-circle chalk fixtures. All 673 required cases passed and Gradle completed successfully. The fixtures observe the raised entities after tracking and wait for all five chalk offerings before activating the ritual. The rotation probes charge the resolved altar core.
 
 ## Auram Armor Compatibility (2026-11-21)
 
