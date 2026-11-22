@@ -1,6 +1,7 @@
 package art.arcane.witchery.world.migration;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.AlluringSkullBlock;
 import art.arcane.witchery.block.AltarBlock;
 import art.arcane.witchery.block.BloodRoseBlock;
 import art.arcane.witchery.block.BrambleBlock;
@@ -12,6 +13,7 @@ import art.arcane.witchery.block.DaylightCollectorBlock;
 import art.arcane.witchery.block.DistilleryBlock;
 import art.arcane.witchery.block.LeechChestBlock;
 import art.arcane.witchery.block.MirrorBlock;
+import art.arcane.witchery.block.MountedSkullBlock;
 import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.block.RiteHeartBlock;
 import art.arcane.witchery.block.RitualGlyphBlock;
@@ -24,6 +26,7 @@ import art.arcane.witchery.block.WitchCropBlock;
 import art.arcane.witchery.block.WitchLilyPadBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.block.WitchesOvenBlock;
+import art.arcane.witchery.block.WolfHeadBlock;
 import art.arcane.witchery.world.WitcheryDimensions;
 import com.mojang.datafixers.DataFixer;
 import net.minecraft.core.BlockPos;
@@ -62,7 +65,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -79,6 +81,8 @@ public final class LegacyChunkUpgrade {
     private static final String LEGACY_BLOCK_TICKS = "witchery:legacy_block_ticks";
     private static final int LEGACY_LEVER_ID = 69;
     private static final int LEGACY_STONE_BUTTON_ID = 77;
+    private static final int SKULL_TYPE_BIT = 16;
+    private static final Set<String> SKULLS = Set.of("wolfhead", "alluringskull");
     private static final Set<String> DOORS = Set.of("rowanwooddoor", "alderwooddoor", "icedoor", "cwoodendoor");
     private static final int LEGACY_SPIRIT_QUANTA = 5;
     private static final Set<String> SPIRIT_FLUIDS = Set.of("spiritflowing", "hollowtears");
@@ -114,11 +118,11 @@ public final class LegacyChunkUpgrade {
             CompoundTag section = (CompoundTag) value;
             legacyByHeight.put(section.getInt("Y"), section);
         }
-        Set<Integer> openCoffins = openCoffins(legacyLevel);
+        Map<Integer, Integer> tileStates = savedBlockStates(legacyLevel);
         Map<Integer, Optional<CompoundTag>> states = new HashMap<>();
         legacyByHeight.forEach((height, section) -> {
             CompoundTag flattened = byHeight.get(height);
-            if (flattened != null) restoreSection(ids, section, flattened, states, legacyByHeight, postProcessing, openCoffins);
+            if (flattened != null) restoreSection(ids, section, flattened, states, legacyByHeight, postProcessing, tileStates);
         });
         if (!postProcessing.isEmpty()) fixedLevel.put("PostProcessing", postProcessing);
         if (!savedTicks.isEmpty()) fixedLevel.put(LEGACY_BLOCK_TICKS, savedTicks);
@@ -226,20 +230,26 @@ public final class LegacyChunkUpgrade {
         return new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
     }
 
-    private static Set<Integer> openCoffins(CompoundTag level) {
-        Set<Integer> opened = new HashSet<>();
+    private static Map<Integer, Integer> savedBlockStates(CompoundTag level) {
+        Map<Integer, Integer> states = new HashMap<>();
         for (Tag value : level.getList("TileEntities", Tag.TAG_COMPOUND)) {
             CompoundTag tile = (CompoundTag) value;
-            if (tile.getString("id").equals("witchery:coffinblock") && tile.getBoolean("Opened")) {
-                opened.add((tile.getInt("y") << 8) | ((tile.getInt("z") & 15) << 4) | (tile.getInt("x") & 15));
+            int index = (tile.getInt("y") << 8) | ((tile.getInt("z") & 15) << 4) | (tile.getInt("x") & 15);
+            ResourceLocation id = ResourceLocation.tryParse(tile.getString("id"));
+            if (belongsTo(id, SKULLS)) {
+                int skullType = tile.getInt("SkullType") == 1 ? SKULL_TYPE_BIT : 0;
+                states.put(index, skullType | (tile.getInt("Rot") & 15));
+            } else if (tile.getString("id").equals("witchery:coffinblock") && tile.getBoolean("Opened")) {
+                // The lid must already be open when chunk post-processing loads the block entity.
+                states.put(index, 1);
             }
         }
-        return opened;
+        return states;
     }
 
     private static void restoreSection(LegacyWorldIds ids, CompoundTag old, CompoundTag section,
                                        Map<Integer, Optional<CompoundTag>> states, Map<Integer, CompoundTag> legacyByHeight,
-                                       ListTag postProcessing, Set<Integer> openCoffins) {
+                                       ListTag postProcessing, Map<Integer, Integer> tileStates) {
         byte[] blocks = old.getByteArray("Blocks");
         if (blocks.length != SECTION_SIZE) return;
         byte[] highBits = old.getByteArray("Add");
@@ -266,10 +276,10 @@ public final class LegacyChunkUpgrade {
                 int above = blockMetadata(legacyByHeight, sectionY, i + 256, number);
                 saved = above >= 0 && above < LEGACY_SPIRIT_QUANTA ? 1 : 0;
             } else {
-                // The lid must already be open when chunk post-processing loads the block entity.
-                saved = path.equals("coffinblock") && openCoffins.contains((sectionY << 12) | i) ? 1 : 0;
+                saved = path.equals("coffinblock") || SKULLS.contains(path)
+                        ? tileStates.getOrDefault((sectionY << 12) | i, 0) : 0;
             }
-            Optional<CompoundTag> state = states.computeIfAbsent((number << 8) | (meta << 4) | saved,
+            Optional<CompoundTag> state = states.computeIfAbsent((number << 9) | (meta << 5) | saved,
                     ignored -> Optional.ofNullable(restoreState(name, meta, saved)));
             if (state.isEmpty()) {
                 ids.reportUnmappedBlock(name);
@@ -352,7 +362,7 @@ public final class LegacyChunkUpgrade {
             case "distilleryidle", "distilleryburning" -> state.setValue(BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata))
                     .setValue(DistilleryBlock.LIT, name.getPath().equals("distilleryburning"));
             case "kettle", "spinningwheel", "fumefunnel", "filteredfumefunnel", "wolfaltar", "beartrap", "wolftrap",
-                    "garlicgarland", "dreamcatcher", "refillingchest", "decursedirected", "decurseteleport" ->
+                    "garlicgarland", "dreamcatcher", "refillingchest", "decursedirected", "decurseteleport", "demonheart" ->
                     state.setValue(BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata));
             // Sprig mutation left the original chest at metadata zero, which its renderer drew facing south.
             case "leechchest" -> state.setValue(LeechChestBlock.FACING,
@@ -384,6 +394,10 @@ public final class LegacyChunkUpgrade {
                     .setValue(CoffinBlock.PART, (metadata & 8) == 0 ? BedPart.FOOT : BedPart.HEAD)
                     .setValue(CoffinBlock.OCCUPIED, (metadata & 4) != 0)
                     .setValue(CoffinBlock.OPEN, saved != 0);
+            case "wolfhead" -> restoreMountedSkull(state, metadata, saved)
+                    .setValue(WolfHeadBlock.HELLHOUND, (saved & SKULL_TYPE_BIT) != 0);
+            case "alluringskull" -> restoreMountedSkull(state, metadata, saved)
+                    .setValue(AlluringSkullBlock.ACTIVE, (saved & SKULL_TYPE_BIT) != 0);
             case "stockade" -> state.setValue(StockadeBlock.WOOD, StockadeBlock.Wood.fromLegacyMetadata(metadata));
             case "icefencegate" -> state.setValue(FenceGateBlock.FACING, Direction.from2DDataValue(variant))
                     .setValue(FenceGateBlock.OPEN, (metadata & 4) != 0)
@@ -403,7 +417,7 @@ public final class LegacyChunkUpgrade {
             case "poppetshelf", "bloodedwool", "pitdirt", "pitgrass", "mirrorwall",
                     "tormentstone", "embermoss", "glintweed", "spanishmoss", "infinityegg", "icedoubleslab", "snowdoubleslab",
                     "cauldron", "brazier", "candelabra", "perpetualice", "icestockade", "icefence", "bloodcrucible", "silvervat",
-                    "force", "barrier", "slurp", "somniancotton", "web", "cactus", "glowglobe", "leapinglily" -> state;
+                    "force", "barrier", "slurp", "somniancotton", "web", "cactus", "glowglobe", "leapinglily", "crystalball" -> state;
             case "iceslab", "snowslab" -> state.setValue(SlabBlock.TYPE, (metadata & 8) == 0 ? SlabType.BOTTOM : SlabType.TOP);
             case "witchwoodslab" -> state.setValue(WitchWoodType.PROPERTY, wood)
                     .setValue(SlabBlock.TYPE, (metadata & 8) == 0 ? SlabType.BOTTOM : SlabType.TOP);
@@ -440,6 +454,13 @@ public final class LegacyChunkUpgrade {
         var restored = vanilla.copy();
         restored.putString("Name", name.toString());
         return restored;
+    }
+
+    private static BlockState restoreMountedSkull(BlockState state, int metadata, int saved) {
+        int side = metadata & 7;
+        Direction facing = side >= 2 && side <= 5 ? Direction.from3DDataValue(side) : Direction.UP;
+        return state.setValue(MountedSkullBlock.FACING, facing)
+                .setValue(MountedSkullBlock.ROTATION, facing == Direction.UP ? saved & 15 : 0);
     }
 
     private static BlockState restoreSpiritFluid(BlockState state, int metadata, boolean falling) {

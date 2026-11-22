@@ -6,6 +6,7 @@ import art.arcane.witchery.block.CursedControls;
 import art.arcane.witchery.block.entity.CursedControlBlockEntity;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.AltarBlockEntity;
+import art.arcane.witchery.block.entity.AlluringSkullBlockEntity;
 import art.arcane.witchery.block.entity.AreaWardBlockEntity;
 import art.arcane.witchery.block.entity.BarrierBlockEntity;
 import art.arcane.witchery.block.entity.BloodRoseBlockEntity;
@@ -86,6 +87,9 @@ public final class WitcheryBlockEntities {
     public static final RegistryObject<BlockEntityType<CrystalBallBlockEntity>> CRYSTAL_BALL =
             BLOCK_ENTITIES.register("crystalball", () -> BlockEntityType.Builder.of(CrystalBallBlockEntity::new,
                     WitcheryBlocks.getRequired("crystalball").get()).build(null));
+    public static final RegistryObject<BlockEntityType<AlluringSkullBlockEntity>> ALLURING_SKULL =
+            BLOCK_ENTITIES.register("alluringskull", () -> BlockEntityType.Builder.of(AlluringSkullBlockEntity::new,
+                    WitcheryBlocks.getRequired("alluringskull").get()).build(null));
     public static final RegistryObject<BlockEntityType<DreamCatcherBlockEntity>> DREAM_CATCHER =
             BLOCK_ENTITIES.register("dreamcatcher", () -> BlockEntityType.Builder.of(DreamCatcherBlockEntity::new,
                     WitcheryBlocks.getRequired("dreamcatcher").get()).build(null));
@@ -167,6 +171,7 @@ public final class WitcheryBlockEntities {
         LEGACY_BLOCK_ENTITIES.put("wolfaltar", WOLF_ALTAR);
         LEGACY_BLOCK_ENTITIES.put("chalice", CHALICE);
         LEGACY_BLOCK_ENTITIES.put("crystalball", CRYSTAL_BALL);
+        LEGACY_BLOCK_ENTITIES.put("alluringskull", ALLURING_SKULL);
         LEGACY_BLOCK_ENTITIES.put("dreamcatcher", DREAM_CATCHER);
         LEGACY_BLOCK_ENTITIES.put("grassper", GRASSPER);
         LEGACY_BLOCK_ENTITIES.put("demonheart", DEMON_HEART);

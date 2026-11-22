@@ -1,0 +1,32 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": {
+      "item": "minecraft:glowstone_dust"
+    },
+    "N": {
+      "item": "witchery:necromantic_stone"
+    },
+    "P": {
+      "item": "witchery:voodoo_poppet"
+    },
+    "S": [
+      {
+        "item": "minecraft:skeleton_skull"
+      },
+      {
+        "item": "minecraft:wither_skeleton_skull"
+      }
+    ]
+  },
+  "pattern": [
+    " N ",
+    "GSG",
+    " P "
+  ],
+  "result": {
+    "item": "witchery:alluringskull"
+  },
+  "show_notification": true
+}

@@ -104,6 +104,16 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .pattern("SSS")
                 .unlockedBy("has_necromantic_stone", has(WitcheryIngredient.NECROMANTIC_STONE.item()))
                 .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, WitcheryBlocks.getRequired("alluringskull").get())
+                .define('N', WitcheryIngredient.NECROMANTIC_STONE.item())
+                .define('G', Items.GLOWSTONE_DUST)
+                .define('S', Ingredient.of(Items.SKELETON_SKULL, Items.WITHER_SKELETON_SKULL))
+                .define('P', WitcheryItems.getRequired("voodoo_poppet").get())
+                .pattern(" N ")
+                .pattern("GSG")
+                .pattern(" P ")
+                .unlockedBy("has_necromantic_stone", has(WitcheryIngredient.NECROMANTIC_STONE.item()))
+                .save(recipeOutput);
         ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, WitcheryBlocks.getRequired("scarecrow").get())
                 .define('W', Blocks.WHITE_WOOL)
                 .define('P', Blocks.JACK_O_LANTERN)

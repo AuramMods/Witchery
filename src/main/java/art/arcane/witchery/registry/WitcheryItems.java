@@ -470,6 +470,9 @@ public final class WitcheryItems {
     private static BlockItem createBlockItem(String path) {
         Block block = WitcheryBlocks.getRequired(path).get();
         switch (path) {
+            case "alluringskull" -> {
+                return new BlockItem(block, new Item.Properties().stacksTo(1));
+            }
             case "lilypad" -> {
                 return new PlaceOnWaterBlockItem(block, new Item.Properties());
             }

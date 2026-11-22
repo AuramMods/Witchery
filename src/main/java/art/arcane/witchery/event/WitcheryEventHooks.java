@@ -1,5 +1,6 @@
 package art.arcane.witchery.event;
 
+import art.arcane.witchery.block.AlluringSkullBlock;
 import art.arcane.witchery.brewing.BrewItemCurse;
 import art.arcane.witchery.brewing.ChilledEffect;
 import art.arcane.witchery.brewing.DeathBrewEffects;
@@ -85,6 +86,7 @@ import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -116,6 +118,7 @@ import net.minecraftforge.event.entity.player.SleepingTimeCheckEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.level.SleepFinishedTimeEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -127,6 +130,19 @@ import net.minecraftforge.event.TickEvent;
 @Mod.EventBusSubscriber(modid = Witchery.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class WitcheryEventHooks {
     private WitcheryEventHooks() {
+    }
+
+    @SubscribeEvent
+    public static void onChunkLoad(ChunkEvent.Load event) {
+        if (event.isNewChunk() || !(event.getLevel() instanceof ServerLevel)
+                || !(event.getChunk() instanceof LevelChunk chunk)) return;
+        // Earlier 1.20.1 saves have the skull block without a block entity.
+        chunk.findBlocks(state -> state.getBlock() instanceof AlluringSkullBlock, (pos, state) -> {
+            if (chunk.getBlockEntity(pos) == null
+                    && chunk.getBlockEntity(pos, LevelChunk.EntityCreationType.IMMEDIATE) != null) {
+                chunk.setUnsaved(true);
+            }
+        });
     }
 
     @SubscribeEvent

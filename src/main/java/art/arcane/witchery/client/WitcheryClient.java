@@ -91,6 +91,7 @@ import art.arcane.witchery.client.renderer.WitcheryBoltRenderer;
 import art.arcane.witchery.client.renderer.WitchHunterRenderer;
 import art.arcane.witchery.client.renderer.HellhoundRenderer;
 import art.arcane.witchery.client.renderer.HornedHuntsmanRenderer;
+import art.arcane.witchery.client.renderer.AlluringSkullRenderer;
 import art.arcane.witchery.client.renderer.WolfHeadRenderer;
 import art.arcane.witchery.client.renderer.WolfmanRenderer;
 import art.arcane.witchery.client.renderer.WolfAltarRenderer;
@@ -362,6 +363,7 @@ public final class WitcheryClient {
         event.registerBlockEntityRenderer(WitcheryBlockEntities.BREW_LIQUID.get(), BrewGasRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.SPINNING_WHEEL.get(), SpinningWheelRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.WOLF_HEAD.get(), WolfHeadRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.ALLURING_SKULL.get(), AlluringSkullRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.WOLF_ALTAR.get(), WolfAltarRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.WORSHIP_STATUE.get(), StatueOfWorshipRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.HUNTING_TRAP.get(), HuntingTrapRenderer::new);

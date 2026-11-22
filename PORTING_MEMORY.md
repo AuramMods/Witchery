@@ -490,6 +490,14 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Original Forge regions supplied all 32 placed states and 32 numeric stacks. The raw upgraded regions matched every ID and color. The headless dedicated server loaded the same data again after restart, then powered the clear row and unpowered the darkened row without losing colors.
 - Java 17 data generation, JAR reobfuscation and all 34 checked-in GameTests passed. The JAR contains both item display variants for every color and all 16 recipes and unlock advancements. The isolated client environment did not respond, so its visual check remains open. The packaged JAR SHA-256 is `5f36007ec3cb687386e577fcf8060dbd338cba2aad36679910f7d3274eedbb23`.
 
+### Alluring Skull and Legacy Trophies (2026-11-21)
+
+- The Alluring Skull crafts from either vanilla skeleton skull, a Necromantic Stone, two Glowstone Dust, and a Voodoo Poppet. It emits light level seven, mounts on solid surfaces, and uses its inactive sprite in inventory. A Necromantic Stone activates it. A second use removes it and drops a fresh inactive skull without consuming the stone.
+- Active skulls call undead on a rotating five-second schedule in eight areas up to 64 blocks horizontally and ten vertically. The modern navigation first uses its normal follow range, then attempts the original ten-block fallback.
+- The original fixture saved three Alluring Skulls, a Wolf Head, a Hellhound Head, four Demon Hearts, and a Crystal Ball. The two skull types derive their mount direction from the original block and their floor rotation and variant from the tile's `Rot` and `SkullType` bytes. All ten packaged checks passed again on a normal restart. The Crystal Ball kept its original `LastUsedTime` value, 2639.
+- A save made with the older 1.20.1 JAR held only the placeholder block. On the new JAR its chunk created and saved an inactive skull block entity. Both original textures are in the reobfuscated JAR. A live client check remains open because the isolated environment did not respond.
+- Java 17 data generation, JAR reobfuscation, and all 37 required GameTests passed. The skull test crafted both recipes, activated and recovered the crafted skull, and used a zombie with ordinary navigation and its unrelated AI goals disabled to confirm movement toward the skull. The packaged SHA-256 is `f2b684f120534283c9e32560b77124d3a4bf931a62bcb370a075473b002dd4fa`.
+
 ### Legacy Plant and Trap Import (2026-11-21)
 
 - The original Forge fixture placed all twelve Plant Mine variants. It used real snare capture callbacks to record a bat, silverfish, tiny slime, tiny magma cube, and a bat with the Polynesia Charm trade stock marker. The empty snare, Ender and Wild Brambles, all four brew vine facings, and the four Witchery Lily Pad growth levels appeared at their original coordinates after import.

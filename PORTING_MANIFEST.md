@@ -292,7 +292,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | `CHALICE` | `witchery:chalice` |
 | `CANDELABRA` | `witchery:candelabra` |
 | `PLACED_ITEMSTACK` | `witchery:placeditem` |
-| `ALLURING_SKULL` | `witchery:alluringskull` |
+| `ALLURING_SKULL` | `witchery:alluringskull` (mount in block metadata, active state in tile `SkullType`, floor rotation in `Rot`) |
 | `WICKER_BUNDLE` | `witchery:wickerbundle` |
 | `GLOW_GLOBE` | `witchery:glowglobe` |
 | `STATUE_GODDESS` | `witchery:statuegoddess` |

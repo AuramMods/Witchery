@@ -615,6 +615,14 @@
 - [x] Place Leaping Lilies on solid ground and on source water. On contact they give Speed I and Jump Boost V for ten ticks and leave an active effect of either kind in place. The lily emits light level six.
 - [x] Run Java 17 data generation, reobfuscate the JAR, and pass all 36 checked-in GameTests. The snare test also placed a legacy stocked Bat Snare from a stack and released a bat with its original trade stock marker.
 
+## Alluring Skull (2026-11-21)
+
+- [x] Restore the recipe with a Necromantic Stone, two Glowstone Dust, a Skeleton or Wither Skeleton Skull, and a Voodoo Poppet. The finished skull stacks to one and can mount on a floor or wall.
+- [x] Use the Necromantic Stone to activate the skull and use it a second time to recover the skull. An active skull calls undead one quadrant at a time, with its own texture and the original activation and recovery sounds.
+- [x] Recover the block entity for the decorative Alluring Skull from an earlier Forge 1.20.1 save. The packaged server restored it in place as an inactive floor skull.
+- [x] Pass Java 17 data generation, reobfuscation, and all 37 required GameTests. The new test verifies both recipes, placement rotation, activation, zombie movement, the lack of a route for a pig, and recovery.
+- [ ] Verify both skull textures and mounting orientations in a muted client. The reobfuscated JAR includes both textures and the original inventory sprite. The isolated Linux environment did not respond.
+
 ## Coffin (2026-11-20)
 
 - [x] Craft the original placeable coffin from a bed, three planks and five logs. The muted survival client crafted the item and placed the head and foot together. Placement tests refused an obstructed or unsupported second half and retained the item.
@@ -1263,6 +1271,7 @@
 - [x] Import every Shaded Glass color from original blocks and item stacks in both redstone states. The packaged server kept all colors through restart, and subsequent power changes switched the blocks while keeping their color.
 - [x] Import 34 plant and trap blocks from the original server, including all twelve Plant Mines, six snare states, both Brambles, four vine facings, four Witchery Lily Pad growth levels, Leaping Lilies, Somnian Cotton, brew webs and cactus, and Glow Globes. Preserve the exact delays and priorities of four saved Lily Pad updates.
 - [x] Reopen the plant and trap fixture on the packaged headless server and repeat all 34 block-state checks. A Leaping Lily gave a pig Speed I and Jump Boost V. An Ink Mine blinded another pig and was consumed. The imported Witchery Lily Pad spread once adjacent source water was available.
+- [x] Import ten original skulls, trophies, hearts and the Crystal Ball. Keep each skull's active state or beast type, floor rotation, wall mount, and all four Demon Heart facings. The same states, block entities and Crystal Ball reading time survived an ordinary headless restart.
 - [ ] Expand migration to other block and subtype data and specialized entity and block-entity fields. Add fixtures before calling the migration complete.
 
 ### Importing a copy of a legacy world
@@ -1277,7 +1286,7 @@ The first boot records the old IDs in `witchery-legacy-ids.dat` inside the copy.
 
 Add `-Dwitchery.legacyConfig=/path/to/the/original/witchery.cfg` on the first import if the original world used custom dimension or potion IDs. The importer stores the assignments for later logins and converts numeric effect records to registry names on players and saved creatures. Dream, Torment, and Mirror default to the old IDs `-37`, `-38`, and `-39`. The importer moves those numeric folders into Minecraft's namespaced storage. When a destination already exists, it logs the two paths and keeps both directories. Minecraft 1.20.1 stores one respawn point. The import uses the old bed in the player's saved dimension when available and falls back to the original Overworld bed.
 
-The importer covers Witch's Ovens, eight crop blocks, the altar and workstations tested above, chalk and Heart Glyphs, fetishes, witchwood planks, logs, leaves, saplings, stairs and slabs, Rowan and Alder Doors, Stockades, ice and snow construction blocks, linked mirrors, coffins, hunting traps, Dream Catchers, Spirit Portals and Dream fluids, parked Dream and Overworld inventories, the original Torment maze, cursed redstone controls, active gas and liquid brews, Tide Hold and Lava Hold, ward and worship statues, Leech Chests, and temporary barriers. The imported poppet shelf keeps its inventory at its original location and uses the modern shelf's default orientation. Unsupported legacy content can be lost during conversion of the copy.
+The importer covers Witch's Ovens, eight crop blocks, the altar and workstations tested above, chalk and Heart Glyphs, fetishes, witchwood planks, logs, leaves, saplings, stairs and slabs, Rowan and Alder Doors, Stockades, ice and snow construction blocks, linked mirrors, coffins, hunting traps, Dream Catchers, Spirit Portals and Dream fluids, parked Dream and Overworld inventories, the original Torment maze, cursed redstone controls, active gas and liquid brews, Tide Hold and Lava Hold, ward and worship statues, Leech Chests, temporary barriers, the plants and traps listed above, mounted skulls, Demon Hearts, and Crystal Balls. The imported poppet shelf keeps its inventory at its original location and uses the modern shelf's default orientation. Unsupported legacy content can be lost during conversion of the copy.
 
 ## Villager Courtship Regression (2026-11-21)
 

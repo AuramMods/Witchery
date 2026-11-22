@@ -13,6 +13,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.BarrierBlock;
 import art.arcane.witchery.block.PoppetShelfBlock;
 import art.arcane.witchery.block.AltarBlock;
+import art.arcane.witchery.block.AlluringSkullBlock;
 import art.arcane.witchery.block.AreaWardBlock;
 import art.arcane.witchery.block.CandelabraBlock;
 import art.arcane.witchery.block.ChaliceBlock;
@@ -109,7 +110,6 @@ public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_FLOWER_TALL = Block.box(0.8D, 0.0D, 0.8D, 15.2D, 16.0D, 15.2D);
     private static final VoxelShape SHAPE_FLOWER_LOW = Block.box(1.6D, 0.0D, 1.6D, 14.4D, 6.4D, 14.4D);
     private static final VoxelShape SHAPE_FUNNEL = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
-    private static final VoxelShape SHAPE_SKULL = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 8.0D, 12.0D);
     private static final VoxelShape SHAPE_INFINITY_EGG = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
     private static final VoxelShape SHAPE_VOID_BRAMBLE = Block.box(0.8D, 0.0D, 0.8D, 15.2D, 16.0D, 15.2D);
     private static final VoxelShape SHAPE_STATUE_GODDESS = Block.box(0.0D, 0.0D, 1.6D, 16.0D, 32.0D, 14.4D);
@@ -233,8 +233,7 @@ public final class WitcheryBlocks {
                     new DemonHeartBlock(BlockBehaviour.Properties.copy(Blocks.STONE).strength(1).noOcclusion()
                             .sound(SoundType.NETHERRACK).lightLevel(state -> 3));
             case "wolfhead" -> new WolfHeadBlock();
-            case "alluringskull" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.SKELETON_SKULL), SHAPE_SKULL, true);
+            case "alluringskull" -> new AlluringSkullBlock();
             case "chalice" ->
                     new ChaliceBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BARS).noOcclusion().strength(3.0F));
             case "candelabra" ->
