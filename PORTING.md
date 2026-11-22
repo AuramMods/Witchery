@@ -1235,6 +1235,7 @@
 - [x] Open a fresh copy of the custom world in the muted single-player client. The original owner record loaded in Dream and kept the same bed and bound items in `level.dat` after Save and Quit.
 - [x] Import Witch's Cauldrons, Braziers, Grasspers, all three chalk colors and patterns, Heart Glyphs, the three fetishes, Wicker Bundles, Perpetual Ice, Candelabras, placed items, and filled Chalices. All legacy fetishes in the fixture saved as `witchery:witchsladder`. The original block at each tile's coordinates determines its modern tile type, including for the two mirror variants.
 - [x] Verify 25 checks on the packaged workshop import and again on an ordinary dedicated restart. The Cauldron kept its three buckets, ordered ingredients, heat and color. The Brazier and Portable Barrier advanced from their saved state. The placed Arthana kept 14 wear and an unrelated tag. The fixture used an original Forge save with supplied directional metadata and a saved Portable Barrier record, placed apart from the workshop heat sources. Data generation, JAR reobfuscation and all 21 checked-in GameTests passed.
+- [x] Import Coffins, Daylight Collectors, Blood Crucibles, Silver Vats, and Blood Roses. In the original Forge fixture, the open occupied coffin spans two chunks and the other coffin is closed. Preserve both halves, the three charging stages, stored blood, tagged Silver Dust, and the rose's saved sample. Repeat all 17 packaged checks after a normal dedicated restart. Breaking the imported head removes both halves and drops one Coffin.
 - [ ] Expand migration to other block and subtype data and specialized entity and block-entity fields. Add fixtures before calling the migration complete.
 
 ### Importing a copy of a legacy world
@@ -1249,7 +1250,7 @@ The first boot records the old IDs in `witchery-legacy-ids.dat` inside the copy.
 
 Dream, Torment, and Mirror use the old default IDs `-37`, `-38`, and `-39`. If the original world used custom numbers, add `-Dwitchery.legacyConfig=/path/to/the/original/witchery.cfg` on the first import. The importer moves the selected numeric folders into Minecraft's namespaced dimension storage and records the mapping for later logins. When a destination already exists, it logs the two paths and keeps both directories. Minecraft 1.20.1 stores one respawn point. The import uses the old bed in the player's saved dimension when available and falls back to the original Overworld bed.
 
-The importer covers Witch's Ovens, eight crop blocks, the altar and workstations tested above, chalk and Heart Glyphs, fetishes, witchwood planks, logs, leaves, saplings, stairs and slabs, Rowan and Alder Doors, Stockades, ice and snow construction blocks, linked mirrors, and stacks handled by the inventory loader. The imported poppet shelf keeps its inventory at its original location and uses the modern shelf's default orientation. Unsupported legacy content can be lost during conversion of the copy.
+The importer covers Witch's Ovens, eight crop blocks, the altar and workstations tested above, chalk and Heart Glyphs, fetishes, witchwood planks, logs, leaves, saplings, stairs and slabs, Rowan and Alder Doors, Stockades, ice and snow construction blocks, linked mirrors, coffins, and stacks handled by the inventory loader. The imported poppet shelf keeps its inventory at its original location and uses the modern shelf's default orientation. Unsupported legacy content can be lost during conversion of the copy.
 
 ## Villager Courtship Regression (2026-11-21)
 
@@ -1442,6 +1443,9 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 
 - [x] Reproduce the Evolved Mekanism 1.2.1-fix3 startup crash in the matched Auram profile before adding Witchery. Both pack runs reported the null `QIODriveTier` during Evolved Mekanism construction.
 - [x] Verify the packaged stairs and sounds milestone at the title screen in the muted diagnostic copy under the settings above.
+- [x] Generate a fresh dedicated world in the native, headless Auram copy. The server loaded 562 mods, including Evolved Mekanism 1.2.1-fix3 and Mekanism Curios 1.2.1. Forge rejected the client-only Draconic Evolution Render Patcher on the first attempt. Disable that JAR in the server copy and use hoppers to cook an Oak Sapling into Witchery Wood Ash.
+- [x] Repeat the hopper-fed cook on the final JAR and verify the Oven output and both Hopper block entities in the region file and again after a dedicated restart.
+- [ ] Reproduce the first Auram shutdown's inconsistent block-entity save. The initial region contained all three placed blocks, and its block-entity list omitted the Oven and both vanilla Hoppers. The second saved batch survived.
 - [ ] Verify the supported Auram profile in fresh survival and on a dedicated server.
 
 ## Current Snapshot (2026-02-09)

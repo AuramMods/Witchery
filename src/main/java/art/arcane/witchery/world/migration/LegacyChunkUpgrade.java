@@ -1,7 +1,10 @@
 package art.arcane.witchery.world.migration;
 
 import art.arcane.witchery.block.AltarBlock;
+import art.arcane.witchery.block.BloodRoseBlock;
 import art.arcane.witchery.block.ChaliceBlock;
+import art.arcane.witchery.block.CoffinBlock;
+import art.arcane.witchery.block.DaylightCollectorBlock;
 import art.arcane.witchery.block.DistilleryBlock;
 import art.arcane.witchery.block.MirrorBlock;
 import art.arcane.witchery.block.RiteHeartBlock;
@@ -33,6 +36,7 @@ import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
@@ -43,6 +47,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -53,7 +58,7 @@ public final class LegacyChunkUpgrade {
     private static final Set<String> MIRRORS = Set.of("mirrorblock", "mirrorblock2");
     private static final Set<String> FETISHES = Set.of("scarecrow", "trent", "witchsladder");
     private static final Set<String> DOORS = Set.of("rowanwooddoor", "alderwooddoor", "icedoor");
-    private static final Set<String> CONNECTED_BLOCKS = Set.of("stockade", "icestockade", "icefence", "icefencegate");
+    private static final Set<String> CONNECTED_BLOCKS = Set.of("stockade", "icestockade", "icefence", "icefencegate", "coffinblock");
 
     private LegacyChunkUpgrade() {
     }
@@ -69,7 +74,8 @@ public final class LegacyChunkUpgrade {
         CompoundTag updated = type.update(fixer, input, from, to);
 
         // At 1493 vanilla has flattened the block arrays, but still uses the original section Ys.
-        ListTag legacy = original.getCompound("Level").getList("Sections", Tag.TAG_COMPOUND);
+        CompoundTag legacyLevel = original.getCompound("Level");
+        ListTag legacy = legacyLevel.getList("Sections", Tag.TAG_COMPOUND);
         CompoundTag fixedLevel = updated.getCompound("Level");
         ListTag sections = fixedLevel.getList("Sections", Tag.TAG_COMPOUND);
         ListTag postProcessing = fixedLevel.getList("PostProcessing", Tag.TAG_LIST);
@@ -83,10 +89,11 @@ public final class LegacyChunkUpgrade {
             CompoundTag section = (CompoundTag) value;
             legacyByHeight.put(section.getInt("Y"), section);
         }
+        Set<Integer> openCoffins = openCoffins(legacyLevel);
         Map<Integer, Optional<CompoundTag>> states = new HashMap<>();
         legacyByHeight.forEach((height, section) -> {
             CompoundTag flattened = byHeight.get(height);
-            if (flattened != null) restoreSection(ids, section, flattened, states, legacyByHeight, postProcessing);
+            if (flattened != null) restoreSection(ids, section, flattened, states, legacyByHeight, postProcessing, openCoffins);
         });
         if (!postProcessing.isEmpty()) fixedLevel.put("PostProcessing", postProcessing);
         return updated;
@@ -134,9 +141,20 @@ public final class LegacyChunkUpgrade {
         }
     }
 
+    private static Set<Integer> openCoffins(CompoundTag level) {
+        Set<Integer> opened = new HashSet<>();
+        for (Tag value : level.getList("TileEntities", Tag.TAG_COMPOUND)) {
+            CompoundTag tile = (CompoundTag) value;
+            if (tile.getString("id").equals("witchery:coffinblock") && tile.getBoolean("Opened")) {
+                opened.add((tile.getInt("y") << 8) | ((tile.getInt("z") & 15) << 4) | (tile.getInt("x") & 15));
+            }
+        }
+        return opened;
+    }
+
     private static void restoreSection(LegacyWorldIds ids, CompoundTag old, CompoundTag section,
                                        Map<Integer, Optional<CompoundTag>> states, Map<Integer, CompoundTag> legacyByHeight,
-                                       ListTag postProcessing) {
+                                       ListTag postProcessing, Set<Integer> openCoffins) {
         byte[] blocks = old.getByteArray("Blocks");
         if (blocks.length != SECTION_SIZE) return;
         byte[] highBits = old.getByteArray("Add");
@@ -155,9 +173,16 @@ public final class LegacyChunkUpgrade {
             ResourceLocation name = ids.block(number);
             if (name == null) continue;
             int meta = nibble(metadata, i);
-            int mate = DOORS.contains(name.getPath()) ? doorMateMetadata(legacyByHeight, sectionY, i, number, meta) : 0;
-            Optional<CompoundTag> state = states.computeIfAbsent((number << 8) | (meta << 4) | mate,
-                    ignored -> Optional.ofNullable(restoreState(name, meta, mate)));
+            String path = name.getPath();
+            int saved;
+            if (DOORS.contains(path)) {
+                saved = doorMateMetadata(legacyByHeight, sectionY, i, number, meta);
+            } else {
+                // The lid must already be open when chunk post-processing loads the block entity.
+                saved = path.equals("coffinblock") && openCoffins.contains((sectionY << 12) | i) ? 1 : 0;
+            }
+            Optional<CompoundTag> state = states.computeIfAbsent((number << 8) | (meta << 4) | saved,
+                    ignored -> Optional.ofNullable(restoreState(name, meta, saved)));
             if (state.isEmpty()) {
                 ids.reportUnmappedBlock(name);
                 continue;
@@ -174,7 +199,7 @@ public final class LegacyChunkUpgrade {
                 }
             }
             packed.set(i, index);
-            if (CONNECTED_BLOCKS.contains(name.getPath())) queueShapeUpdate(postProcessing, sectionY, i);
+            if (CONNECTED_BLOCKS.contains(path)) queueShapeUpdate(postProcessing, sectionY, i);
             changed = true;
         }
         if (changed) {
@@ -217,7 +242,7 @@ public final class LegacyChunkUpgrade {
     }
 
     @Nullable
-    private static CompoundTag restoreState(ResourceLocation name, int metadata, int mate) {
+    private static CompoundTag restoreState(ResourceLocation name, int metadata, int saved) {
         Block block = ForgeRegistries.BLOCKS.getValue(name);
         if (block == null) return null;
         if (block instanceof WitchCropBlock crop) return NbtUtils.writeBlockState(crop.getStateForAge(Math.min(metadata, crop.getMaxAge())));
@@ -239,12 +264,18 @@ public final class LegacyChunkUpgrade {
                     BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata & 7));
             case "altar" -> state.setValue(AltarBlock.FORMED, metadata == 1);
             case "chalice" -> state.setValue(ChaliceBlock.FILLED, metadata == 1);
+            case "bloodrose" -> state.setValue(BloodRoseBlock.FULL, metadata == 1);
+            case "daylightcollector" -> state.setValue(DaylightCollectorBlock.CHARGE, metadata);
             case "circle" -> state.setValue(RiteHeartBlock.ACTIVE, metadata == 1);
             case "circleglyphritual", "circleglyphotherwhere", "circleglyphinfernal" -> state.setValue(
                     RitualGlyphBlock.PATTERN, Math.min(metadata, RitualGlyphBlock.PATTERN_COUNT - 1));
             case "wickerbundle" -> state.setValue(WickerBundleBlock.BUNDLE_TYPE,
                     (metadata & 1) == 0 ? WickerBundleBlock.Type.PLAIN : WickerBundleBlock.Type.BLOODIED);
-            case "rowanwooddoor", "alderwooddoor", "icedoor" -> restoreDoor(state, metadata, mate);
+            case "rowanwooddoor", "alderwooddoor", "icedoor" -> restoreDoor(state, metadata, saved);
+            case "coffinblock" -> state.setValue(CoffinBlock.FACING, Direction.from2DDataValue(variant))
+                    .setValue(CoffinBlock.PART, (metadata & 8) == 0 ? BedPart.FOOT : BedPart.HEAD)
+                    .setValue(CoffinBlock.OCCUPIED, (metadata & 4) != 0)
+                    .setValue(CoffinBlock.OPEN, saved != 0);
             case "stockade" -> state.setValue(StockadeBlock.WOOD, StockadeBlock.Wood.fromLegacyMetadata(metadata));
             case "icefencegate" -> state.setValue(FenceGateBlock.FACING, Direction.from2DDataValue(variant))
                     .setValue(FenceGateBlock.OPEN, (metadata & 4) != 0)
@@ -257,7 +288,7 @@ public final class LegacyChunkUpgrade {
             }).setValue(MirrorBlock.HALF, (metadata & 4) == 0 ? DoubleBlockHalf.LOWER : DoubleBlockHalf.UPPER);
             case "poppetshelf", "bloodedwool", "pitdirt", "pitgrass", "mirrorwall", "shadedglass", "shadedglass_active",
                     "tormentstone", "embermoss", "glintweed", "spanishmoss", "infinityegg", "icedoubleslab", "snowdoubleslab",
-                    "cauldron", "brazier", "candelabra", "perpetualice", "icestockade", "icefence" -> state;
+                    "cauldron", "brazier", "candelabra", "perpetualice", "icestockade", "icefence", "bloodcrucible", "silvervat" -> state;
             case "iceslab", "snowslab" -> state.setValue(SlabBlock.TYPE, (metadata & 8) == 0 ? SlabType.BOTTOM : SlabType.TOP);
             case "witchwoodslab" -> state.setValue(WitchWoodType.PROPERTY, wood)
                     .setValue(SlabBlock.TYPE, (metadata & 8) == 0 ? SlabType.BOTTOM : SlabType.TOP);

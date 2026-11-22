@@ -97,7 +97,10 @@ public final class CoffinBlock extends BedBlock {
     public BlockState updateShape(BlockState state, Direction direction, BlockState neighbor, LevelAccessor level,
                                   BlockPos pos, BlockPos neighborPos) {
         if (direction == getConnectedDirection(state)) {
-            if (matches(state, neighbor)) return state.setValue(PAIRED, true).setValue(OCCUPIED, neighbor.getValue(OCCUPIED));
+            if (matches(state, neighbor)) {
+                BlockState head = state.getValue(PART) == BedPart.HEAD ? state : neighbor;
+                return state.setValue(PAIRED, true).setValue(OCCUPIED, head.getValue(OCCUPIED));
+            }
             // Older 1.20.1 versions placed a single decorative block under this ID.
             return state.getValue(PAIRED) ? Blocks.AIR.defaultBlockState() : state;
         }

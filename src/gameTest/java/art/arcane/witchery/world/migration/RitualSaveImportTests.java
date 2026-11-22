@@ -1,6 +1,10 @@
 package art.arcane.witchery.world.migration;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.CoffinBlock;
+import art.arcane.witchery.registry.WitcheryBlocks;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -12,6 +16,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.datafix.PackedBitStorage;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.chunk.storage.ChunkStorage;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -64,6 +70,14 @@ public final class RitualSaveImportTests {
         doorEntry.putString("K", "\u0001witchery:icedoor");
         doorEntry.putInt("V", iceDoorId);
         entries.add(doorEntry);
+        int coffinId = 451;
+        var coffinEntry = new CompoundTag();
+        coffinEntry.putString("K", "\u0001witchery:coffinblock");
+        coffinEntry.putInt("V", coffinId);
+        entries.add(coffinEntry);
+        lowIds[16] = lowIds[17] = (byte) coffinId;
+        highIds[8] = (byte) ((coffinId >> 8) * 0x11);
+        metadata[8] = 0x33;
         int lowerIndex = 15 * 256;
         lowIds[lowerIndex] = (byte) iceDoorId;
         highIds[lowerIndex >> 1] = (byte) (iceDoorId >> 8);
@@ -96,7 +110,9 @@ public final class RitualSaveImportTests {
                 {TerrainPopulated:1b,TileEntities:[
                   {id:"witchery:witchsladder",x:5,y:0,z:0,EffectTypeID:1,BlockColor:11b},
                   {id:"witchery:witchsladder",x:6,y:0,z:0,EffectTypeID:2,BlockColor:14b},
-                  {id:"witchery:witchsladder",x:7,y:0,z:0,EffectTypeID:3,Spectral:1b}]}
+                  {id:"witchery:witchsladder",x:7,y:0,z:0,EffectTypeID:3,Spectral:1b},
+                  {id:"witchery:coffinblock",x:0,y:0,z:1,Opened:1b},
+                  {id:"witchery:coffinblock",x:1,y:0,z:1,Opened:0b}]}
                 """);
         level.put("Sections", sections);
         var original = new CompoundTag();
@@ -151,10 +167,14 @@ public final class RitualSaveImportTests {
                             && openGate.getString("facing").equals("north") && openGate.getString("open").equals("true")
                             && openGate.getString("powered").equals("false"),
                     "Keep the ice gate's facing, open bit and powered bit independently");
+            var openCoffin = palette.getCompound(states.get(16)).getCompound("Properties");
+            var closedCoffin = palette.getCompound(states.get(17)).getCompound("Properties");
+            helper.assertTrue(openCoffin.getString("open").equals("true") && closedCoffin.getString("open").equals("false"),
+                    "Coffins with matching block metadata retain their distinct lid states");
             ChunkStorage.injectDatafixingContext(intermediate, Level.OVERWORLD, Optional.empty());
             var upgraded = DataFixTypes.CHUNK.updateToCurrentVersion(fixer, intermediate, 1493);
             var queued = upgraded.getList("PostProcessing", Tag.TAG_LIST);
-            helper.assertTrue(queued.getList(4).equals(TagParser.parseTag("{Offsets:[12s,13s,14s,15s]}").getList("Offsets", Tag.TAG_SHORT))
+            helper.assertTrue(queued.getList(4).equals(TagParser.parseTag("{Offsets:[12s,13s,14s,15s,256s,257s]}").getList("Offsets", Tag.TAG_SHORT))
                             && queued.getList(5).equals(TagParser.parseTag("{Offsets:[1299s]}").getList("Offsets", Tag.TAG_SHORT)),
                     "Queue shape updates in the correct sections and axes after the Overworld height expansion");
             var tiles = fixed.getList("TileEntities", Tag.TAG_COMPOUND);
@@ -169,6 +189,28 @@ public final class RitualSaveImportTests {
             Files.deleteIfExists(snapshot);
             Files.deleteIfExists(root);
         }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void importedCoffinKeepsHeadOccupancy(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var footPos = helper.absolutePos(new BlockPos(3, 1, 3));
+        var headPos = footPos.east();
+        var foot = WitcheryBlocks.getRequired("coffinblock").get().defaultBlockState()
+                .setValue(CoffinBlock.FACING, Direction.EAST);
+        var head = foot.setValue(CoffinBlock.PART, BedPart.HEAD).setValue(CoffinBlock.OCCUPIED, true);
+        level.setBlock(footPos, foot, Block.UPDATE_KNOWN_SHAPE);
+        level.setBlock(headPos, head, Block.UPDATE_KNOWN_SHAPE);
+
+        var restoredHead = Block.updateFromNeighbourShapes(head, level, headPos);
+        var restoredFoot = Block.updateFromNeighbourShapes(foot, level, footPos);
+        helper.assertTrue(restoredHead.getValue(CoffinBlock.OCCUPIED) && restoredFoot.getValue(CoffinBlock.OCCUPIED),
+                "Post-processing must keep the original head's occupied flag and copy it to the foot");
+        level.setBlock(footPos, restoredFoot, Block.UPDATE_KNOWN_SHAPE);
+        level.setBlock(headPos, restoredHead.setValue(CoffinBlock.OCCUPIED, false), Block.UPDATE_ALL);
+        helper.assertTrue(!level.getBlockState(footPos).getValue(CoffinBlock.OCCUPIED),
+                "Waking must clear both halves of the reconstructed coffin");
         helper.succeed();
     }
 
