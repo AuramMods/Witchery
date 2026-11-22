@@ -2,6 +2,19 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Hobgoblin Deposit Waypoints (2026-11-22)
+
+- The original `EntityAIDropOffBlocks` deposits within 2.5 blocks of the container center. Forge 1.20.1 ground navigation can finish within its path waypoint tolerance before the Goblin actually enters that radius. At a nearby endpoint that leads into deposit range, the hauling goal continues the final approach through ordinary move control. The step is bounded by distance and time.
+- The new checked-in test begins at the reproduced fractional position just outside the deposit radius. It failed on the previous source and passed alongside the covered barrel test after the fix. All 114 checked-in Forge GameTests passed on a rerun, along with Java 17 data generation and JAR reobfuscation.
+- All 117 GameTests passed with Thaumaturge, Lithostitched, and Curios. The paired packaged runs also stopped cleanly after flushing the upgraded save and its restart.
+- All 667 recovered GameTest assertions passed, including the archived mining-to-chest route and the waypoint regression. The broad replay logged 54 chunk-store I/O errors from `No space left on device` in its disposable world. The packaged upgrade and restart used a separate world and had no such write errors.
+- The packaged SHA-256 is `24eb9f4ee62f41e11684a4db97929c21609195cdb24b3909a3051385821d5e97`. The new JAR opened a copy of the stalled save from `ab15a0e`'s baseline investigation. The Goblin took the final step, kept its lead, and placed one Raw Iron into the chest. The saved UUID, fence coordinates and chest contents survived another headless restart. `/tmp/witchery-haul-waypoint-current` identifies the private profiles, world and logs.
+
+### Chunk Palette Investigation
+
+- The broad replay on the original-color build was waiting for a forced GameTest chunk after its lighting worker threw `MissingPaletteEntryException` in `LinearPalette.valueFor`. The isolated Forge 47.4.10 probe used one writer and four readers on ordinary Minecraft `LevelChunkSection` instances. It reproduced the same exception in all three samples, with 62,321, 66,342, and 45,761 missing-entry reads per 85,000 sections.
+- The exact 1.20.1 bytecode takes a volatile palette-container snapshot and copies resize data before publishing it. Entries added afterward and their ordinary bit-storage indices are written separately with plain accesses. This is consistent with the probe and the earlier light-worker stack. The reproduction source, Gradle invocation, and three recorded samples are under `.repro/chunk-palette-publication` in the current scratch directory. [Mojang palette issue](https://bugs.mojang.com/browse/MC-162080)
+
 ## Original Ingredient Colors (2026-11-22)
 
 - The cauldron's signed `Color` advances on each accepted ingredient using the original base item translation keys. Metadata variants retain a shared hash. Wool sets its original RGB, and an ingredient removed by another ingredient keeps its prior contribution. Prep and trigger colors survive the fixed-recipe bottling path.

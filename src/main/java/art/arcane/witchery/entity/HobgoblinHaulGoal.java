@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -22,6 +23,8 @@ import java.util.EnumSet;
 final class HobgoblinHaulGoal extends Goal {
     private static final int SEARCH_RANGE = 24;
     private static final double DROP_RANGE_SQUARED = 6.25;
+    private static final double APPROACH_RANGE_SQUARED = 1.5;
+    private static final int APPROACH_TICKS = 20;
     private static final double SPEED = 0.6;
 
     private final Hobgoblin goblin;
@@ -29,6 +32,7 @@ final class HobgoblinHaulGoal extends Goal {
     private BlockEntity destination;
     private Path path;
     private long nextSearch;
+    private int approachTicks;
 
     HobgoblinHaulGoal(Hobgoblin goblin) {
         this.goblin = goblin;
@@ -91,6 +95,7 @@ final class HobgoblinHaulGoal extends Goal {
     @Override
     public void start() {
         goblin.setHauling(true);
+        approachTicks = APPROACH_TICKS;
         if (path != null) goblin.getNavigation().moveTo(path, SPEED);
     }
 
@@ -130,7 +135,16 @@ final class HobgoblinHaulGoal extends Goal {
         if (droppedItem != null) return held.isEmpty() && droppedItem.isAlive()
                 && (goblin.distanceToSqr(droppedItem) <= 2.25 || !goblin.getNavigation().isDone());
         return destination != null && !destination.isRemoved() && !held.isEmpty() && !(held.getItem() instanceof DiggerItem)
-                && (inDropRange(destination) || !goblin.getNavigation().isDone());
+                && (inDropRange(destination) || !goblin.getNavigation().isDone() || approachWaypoint(destination) != null);
+    }
+
+    @Nullable
+    private Vec3 approachWaypoint(BlockEntity storage) {
+        if (approachTicks <= 0 || path == null || path.getNodeCount() == 0) return null;
+        Vec3 waypoint = path.getEntityPosAtNode(goblin, path.getNodeCount() - 1);
+        // Ground navigation can finish inside its waypoint tolerance while the goblin is still outside deposit range.
+        return goblin.distanceToSqr(waypoint) <= APPROACH_RANGE_SQUARED
+                && waypoint.distanceToSqr(Vec3.atCenterOf(storage.getBlockPos())) <= DROP_RANGE_SQUARED ? waypoint : null;
     }
 
     @Override
@@ -140,10 +154,18 @@ final class HobgoblinHaulGoal extends Goal {
             goblin.setGuaranteedDrop(EquipmentSlot.MAINHAND);
             droppedItem.discard();
             droppedItem = null;
-        } else if (destination instanceof Container storage && inDropRange(destination)) {
-            ItemStack remaining = HopperBlockEntity.addItem(null, storage, goblin.getMainHandItem().copy(), null);
-            goblin.setItemInHand(InteractionHand.MAIN_HAND, remaining);
-            destination = null;
+        } else if (destination instanceof Container storage) {
+            if (inDropRange(destination)) {
+                ItemStack remaining = HopperBlockEntity.addItem(null, storage, goblin.getMainHandItem().copy(), null);
+                goblin.setItemInHand(InteractionHand.MAIN_HAND, remaining);
+                destination = null;
+            } else if (goblin.getNavigation().isDone()) {
+                Vec3 waypoint = approachWaypoint(destination);
+                if (waypoint != null) {
+                    goblin.getMoveControl().setWantedPosition(waypoint.x, waypoint.y, waypoint.z, SPEED);
+                    approachTicks--;
+                }
+            }
         }
     }
 

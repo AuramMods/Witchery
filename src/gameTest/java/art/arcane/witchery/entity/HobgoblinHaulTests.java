@@ -18,6 +18,34 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class HobgoblinHaulTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_storage_waypoint", timeoutTicks = 180)
+    public static void walksPastWaypointToleranceToDepositOre(GameTestHelper helper) {
+        var storage = new BlockPos(3, 280, 7);
+        var start = storage.offset(1, 0, -2);
+        for (var pos : BlockPos.betweenClosed(storage.offset(-1, -1, -4), storage.offset(3, -1, 0))) {
+            helper.setBlock(pos, Blocks.BEDROCK);
+        }
+        helper.setBlock(storage, Blocks.BARREL);
+        var barrel = (BarrelBlockEntity) helper.getBlockEntity(storage);
+        var goblin = helper.spawn(WitcheryEntities.GOBLIN.get(), start);
+        var holder = helper.spawn(EntityType.ARMOR_STAND, storage.offset(3, 0, -1));
+        var waypoint = helper.absolutePos(start);
+        goblin.setPos(waypoint.getX() + 0.797834041, waypoint.getY(), waypoint.getZ() + 0.373567435);
+        goblin.setLeashedTo(holder, false);
+        goblin.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.RAW_IRON));
+        var storageCenter = Vec3.atCenterOf(barrel.getBlockPos());
+        helper.assertTrue(Vec3.atBottomCenterOf(waypoint).distanceToSqr(storageCenter) < 6.25
+                        && goblin.distanceToSqr(storageCenter) > 6.25,
+                "The node is inside the deposit radius while the goblin is outside it");
+
+        helper.succeedWhen(() -> {
+            helper.assertTrue(barrel.countItem(Items.RAW_IRON) == 1 && goblin.getMainHandItem().isEmpty(),
+                    "The goblin walks into range and unloads even when navigation is already at the waypoint");
+            helper.assertTrue(goblin.distanceToSqr(storageCenter) <= 6.25 && goblin.getLeashHolder() == holder,
+                    "The goblin deposited within 2.5 blocks and kept its lead");
+        });
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_covered_storage", setupTicks = 5, timeoutTicks = 180)
     public static void haulsToAContainerFromItsWalkableSide(GameTestHelper helper) {
         BlockPos start = new BlockPos(4, 280, 5);

@@ -1011,6 +1011,10 @@
 - [x] Restart again and verify the same resident UUID, profession, three refining use counts, six stored Raw Iron, and the generated hut door. Java 17 data generation, JAR reobfuscation, and all 353 required Forge GameTests passed.
 - [x] Route a leashed Hobgoblin to a walkable position within the original 2.5-block deposit range. Modern ground navigation can redirect the position of a solid container upward through its column. The covered-storage GameTest places a barrel five blocks from the goblin and verifies that it approaches from the side, deposits all three Raw Iron and keeps its lead.
 - [x] Verify the covered barrel and manual Voodoo release on the reobfuscated Forge 47.4.10 JAR. On the preceding JAR the same goblin kept all three ore, the protected push moved the target, and ignition set it on fire. On the new JAR the goblin deposited all three ore and kept its lead, and `save-all flush` and a dedicated restart preserved the full barrel. The hunter outfit blocked both actions, the pursuit notice was recorded, and the lava action consumed the poppet. Java 17 data generation, JAR reobfuscation and all 101 checked-in Forge GameTests passed. The tested JAR SHA-256 is `cf9f2765535ce7dc4c3621a54d260525c5614cfac9bfdb44a88c3b63c7f6f2d3`.
+- [x] Finish the last step when navigation marks a waypoint reached near the edge of the deposit radius. The regression fixture starts at the reproduced fractional position, with the waypoint center inside the legacy 2.5-block radius. The corrected Goblin walks far enough to deposit one Raw Iron and stays leashed. The previous build failed the new fixture.
+- [x] Reopen a copy of the preceding packaged server's stalled save with the fixed JAR. The existing Goblin delivered its ore to the chest and remained tied to the same fence. An ordinary dedicated restart kept its UUID, attachment and exactly one stored Raw Iron.
+- [x] Pass Java 17 data generation, JAR reobfuscation, and all 114 checked-in Forge GameTests. The first run passed the hauling regression and reproduced a sporadic Coven Witch door-test failure. The full rerun passed both.
+- [x] Pass all 117 GameTests with Thaumaturge, Lithostitched, and Curios loaded.
 
 ## Hobgoblin Worship and Breeding (2026-11-20)
 
@@ -1494,6 +1498,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Pass all 658 recovered cases on the restored Infusions guide build. Both archived potion cases now resolve the splash form through the recipe manager and verify the matching result and power cost. The Spectral Familiar fixture keeps the search inside a prepared chamber with one ore vein.
 - [x] Pass all 664 cases in the recovered suite with the mixed-brew duration fix. The broad run also passed all four cases that needed focused reruns on the dispenser milestone.
 - [ ] Complete the 666-case replay on the original-color build. It passed 652 cases before a chunk-lighting exception stalled the suite. The Ennervate and Erosion focused replays passed. The Hobgoblin hauling failure also reproduced on the preceding packaged build.
+- [x] Complete all 667 GameTest assertions on the waypoint build. The archived hauling case and the new boundary case passed. The disposable test world reported chunk-store `No space left on device` errors during the run. An isolated probe independently reproduced the earlier missing palette entry in all three runs, so the lighting issue remains open.
 
 ## Auram Armor Compatibility (2026-11-21)
 
