@@ -3,6 +3,7 @@ package art.arcane.witchery.entity;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.RiteHeartBlock;
 import art.arcane.witchery.config.WitcheryServerConfig;
+import art.arcane.witchery.item.SeerStoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
@@ -14,6 +15,7 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffect;
@@ -31,6 +33,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -202,6 +205,52 @@ public final class CovenBehaviorTests {
         helper.succeed();
     }
 
+    @GameTest(template = TEMPLATE, batch = "witchery_seer_stone_reuse", setupTicks = 5, timeoutTicks = 100)
+    public static void callsOneCovenMemberPerSecondAndReusesThemAtARite(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var owner = owner(helper);
+        BlockPos center = owner.blockPosition();
+        for (BlockPos floor : BlockPos.betweenClosed(center.offset(-3, -1, -3), center.offset(3, -1, 3))) {
+            level.setBlockAndUpdate(floor, Blocks.STONE.defaultBlockState());
+        }
+        var members = owner.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getList("WITCCoven", Tag.TAG_COMPOUND);
+        var second = new CompoundTag();
+        second.putString("WitchName", "Isobel Sterling");
+        second.putInt("Skin", 1);
+        members.add(second);
+
+        var stone = (SeerStoneItem) WitcheryIngredient.SEER_STONE.item();
+        var stack = new ItemStack(stone);
+        stone.onUseTick(level, owner, stack, 1181);
+        helper.assertTrue(ownedWitches(helper, owner).isEmpty(), "Nineteen ticks do not call a member");
+        stone.onUseTick(level, owner, stack, 1180);
+        var first = ritualMember(helper, owner, "One second of use");
+        helper.assertTrue(first.getName().getString().equals(MEMBER) && first.skin() == 3 && !first.isNoAi(),
+                "The Seer Stone calls the first saved member with their original skin and AI");
+        stone.onUseTick(level, owner, stack, 1160);
+        var both = ownedWitches(helper, owner);
+        helper.assertTrue(both.size() == 2 && !both.get(0).blockPosition().equals(both.get(1).blockPosition()),
+                "Two seconds call both members into separate positions");
+        var other = both.stream().filter(witch -> witch.getName().getString().equals("Isobel Sterling"))
+                .findFirst().orElseThrow();
+
+        helper.assertTrue(CovenWitch.summonToRite(owner, center, 0) && CovenWitch.summonToRite(owner, center, 1)
+                        && first.blockPosition().equals(center.offset(-2, 0, -2))
+                        && other.blockPosition().equals(center.offset(2, 0, -2))
+                        && ownedWitches(helper, owner).size() == 2 && !first.isNoAi() && !other.isNoAi(),
+                "The rite seats the existing members and keeps their AI running");
+        for (var witch : both) {
+            var saved = witch.saveWithoutId(new CompoundTag());
+            helper.assertTrue(saved.getBoolean("Sitting") && saved.getInt("SuicideIn") == 300
+                            && saved.getUUID("Owner").equals(owner.getUUID()),
+                    "The rite saves each member's seat, owner and fifteen-second lifetime");
+            saved.putInt("SuicideIn", 3);
+            witch.load(saved);
+        }
+        helper.succeedWhen(() -> helper.assertTrue(first.isRemoved() && other.isRemoved() && CovenWitch.covenSize(owner) == 2,
+                "Both members leave when their time expires and stay in the coven"));
+    }
+
     private static void assertThrownEffect(GameTestHelper helper, CovenWitch witch, LivingEntity target,
                                            MobEffect effect, int duration) {
         witch.performRangedAttack(target, 1);
@@ -254,11 +303,15 @@ public final class CovenBehaviorTests {
     }
 
     private static CovenWitch ritualMember(GameTestHelper helper, FakePlayer owner, String stage) {
-        var members = helper.getLevel().getEntitiesOfClass(CovenWitch.class, owner.getBoundingBox().inflate(12), witch -> {
+        var members = ownedWitches(helper, owner);
+        helper.assertTrue(members.size() == 1, stage + " should leave one active witch near the rite, found " + members.size());
+        return members.get(0);
+    }
+
+    private static List<CovenWitch> ownedWitches(GameTestHelper helper, FakePlayer owner) {
+        return helper.getLevel().getEntitiesOfClass(CovenWitch.class, owner.getBoundingBox().inflate(12), witch -> {
             var saved = witch.saveWithoutId(new CompoundTag());
             return witch.isAlive() && saved.hasUUID("Owner") && owner.getUUID().equals(saved.getUUID("Owner"));
         });
-        helper.assertTrue(members.size() == 1, stage + " should leave one active witch near the rite, found " + members.size());
-        return members.get(0);
     }
 }

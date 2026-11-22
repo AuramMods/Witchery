@@ -3,14 +3,16 @@ package art.arcane.witchery.brewing;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.WitchesCauldronBlock;
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
+import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryFluids;
 import art.arcane.witchery.registry.WitcheryItems;
-import art.arcane.witchery.registry.WitcheryBlocks;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffects;
@@ -19,6 +21,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
@@ -75,7 +78,7 @@ public final class BrewBucketTests {
             helper.assertTrue(bucket.is(WitcheryItems.getRequired("bucketbrew").get()) && originalTag.equals(bucket.getTag())
                             && sourceTank.getFluidInTank(0).getAmount() == 2000,
                     "An empty bucket collects exactly 1,000 mB with its brew tag");
-            bucket = ItemStack.of(bucket.save(new net.minecraft.nbt.CompoundTag()));
+            bucket = ItemStack.of(bucket.save(new CompoundTag()));
             player.setItemInHand(InteractionHand.MAIN_HAND, bucket);
             use(helper, player, destination);
             helper.assertTrue(player.getMainHandItem().is(Items.BUCKET), "Pouring the saved bucket returns the empty bucket");
@@ -112,6 +115,56 @@ public final class BrewBucketTests {
                     "An identical mixture can be combined again");
             helper.succeed();
         });
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void woolColorsTheStoredBrewWithoutAddingAnIngredient(GameTestHelper helper) {
+        int blue = 2247599;
+        int yellow = 15197994;
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(4, 4, 4));
+        level.setBlockAndUpdate(pos, WitcheryBlocks.getRequired("cauldron").get().defaultBlockState());
+        var bowl = (WitchesCauldronBlockEntity) level.getBlockEntity(pos);
+        var water = bowl.saveWithoutMetadata();
+        water.put("Tank", new FluidStack(Fluids.WATER, 3000).writeToNBT(new CompoundTag()));
+        water.putInt("HeatTicks", 100);
+        bowl.load(water);
+
+        offer(helper, bowl, new ItemStack(Items.BLUE_WOOL));
+        offer(helper, bowl, new ItemStack(Items.BLUE_WOOL));
+        var save = bowl.saveWithoutMetadata();
+        helper.assertTrue(save.getInt("Color") == blue && save.getList("Ingredients", Tag.TAG_COMPOUND).isEmpty()
+                        && bowl.getUpdateTag().getInt("Color") == blue,
+                "Repeated wool is consumed and saves the original blue without entering the recipe");
+        var tank = bowl.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
+        var sampled = tank.drain(1000, IFluidHandler.FluidAction.SIMULATE);
+        var payload = sampled.getTag();
+        helper.assertTrue(sampled.getFluid() == WitcheryFluids.getRequiredSource("brew").get() && sampled.getAmount() == 1000
+                        && payload != null && payload.getInt("Color") == blue
+                        && payload.getList("Items", Tag.TAG_COMPOUND).isEmpty() && tank.getFluidInTank(0).getAmount() == 3000,
+                "Simulated transfer exposes the saved color and leaves all 3,000 mB in the cauldron");
+
+        var mandrake = new ItemStack(WitcheryIngredient.MANDRAKE_ROOT.item());
+        offer(helper, bowl, mandrake);
+        helper.assertTrue(bowl.getUpdateTag().getInt("Color") == BrewMixture.blendColor(blue, mandrake),
+                "Later recipe ingredients update the active brew color");
+        offer(helper, bowl, new ItemStack(Items.RED_DYE));
+        offer(helper, bowl, new ItemStack(Items.YELLOW_WOOL));
+        save = bowl.saveWithoutMetadata();
+        bowl.load(save);
+        helper.assertTrue(bowl.getUpdateTag().getInt("Color") == yellow && save.getList("Ingredients", Tag.TAG_COMPOUND).size() == 2,
+                "The last wool sets the visible color and reloading preserves the two actual ingredients");
+        offer(helper, bowl, new ItemStack(WitcheryIngredient.GYPSUM.item()));
+        helper.assertTrue(bowl.getUpdateTag().getInt("Color") == -1 && !bowl.saveWithoutMetadata().contains("Color"),
+                "Clearing the pot resets the saved color");
+        helper.succeed();
+    }
+
+    private static void offer(GameTestHelper helper, WitchesCauldronBlockEntity bowl, ItemStack stack) {
+        var pos = bowl.getBlockPos();
+        var dropped = new ItemEntity(helper.getLevel(), pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, stack.copy());
+        bowl.acceptDroppedItem(dropped);
+        helper.assertTrue(dropped.isRemoved(), "The cauldron accepts " + stack.getHoverName().getString());
     }
 
     private static void use(GameTestHelper helper, Player player, BlockPos cauldron) {
