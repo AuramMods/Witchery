@@ -285,7 +285,9 @@
 - [x] Import an original Forge 1.7.10 Winged Monkey. The packaged server read the original entity UUID, owner UUID, color, sitting flag and 17 health.
 - [x] Pass all 13 focused Forge GameTests. They cover the incomplete cocoa pattern, Taglock transport with the owner absent from the world, the Waystone ride, and the earlier Mindrake and save-import checks.
 - [x] Run Java 17 data generation and JAR reobfuscation. The packaged JAR SHA-256 is `9eb50d689c9635cc83a9a96723ef0c18de01f48ff0cbedc09ab54308ca33d3d3`.
-- [ ] Resolve an intermittent failure from the next combined run. The monkey accepted the Taglock and hovered near its departure point without reaching the pig. The live flat-world flight and an earlier combined run passed.
+- [x] Resolve the intermittent GameTest stall. The shared test save retained three other monkeys and three pigs near the launch point. In two fresh saves, the same route reached x44.5 by tick 100 from x35.5 and completed the return. All 18 focused tests passed in each run, including both Winged Monkey flights and the two Owl deliveries.
+- [x] Run the checked-in flight tests with `./gradlew runGameTestServer`. Each launch creates its own world under `build/run-gametest`. The four cases cover the monkey's saved Taglock route and Waystone ride, the Owl's older Waystone and parcel return, and the Owl's Ink attack on a bound pig.
+- [x] Pass all 432 required checks in a fresh world with the broader development GameTest suite. This run includes the main Witchery namespace and the separate Winged Monkey, Owl delivery, Mindrake, Treefyd, Polynesia Charm and Workroom import suites.
 
 ## Treefyd (2026-11-21)
 
