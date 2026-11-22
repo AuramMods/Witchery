@@ -1,9 +1,11 @@
 package art.arcane.witchery.world.migration;
 
+import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.AltarBlock;
 import art.arcane.witchery.block.BloodRoseBlock;
 import art.arcane.witchery.block.ChaliceBlock;
 import art.arcane.witchery.block.CoffinBlock;
+import art.arcane.witchery.block.CursedControls;
 import art.arcane.witchery.block.DaylightCollectorBlock;
 import art.arcane.witchery.block.DistilleryBlock;
 import art.arcane.witchery.block.MirrorBlock;
@@ -22,6 +24,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.ShortTag;
 import net.minecraft.nbt.StringTag;
@@ -31,6 +34,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.datafix.PackedBitStorage;
+import net.minecraft.util.datafix.fixes.BlockStateData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -61,7 +65,12 @@ public final class LegacyChunkUpgrade {
     private static final int LEGACY_SECTIONS = 16;
     private static final Set<String> MIRRORS = Set.of("mirrorblock", "mirrorblock2");
     private static final Set<String> FETISHES = Set.of("scarecrow", "trent", "witchsladder");
-    private static final Set<String> DOORS = Set.of("rowanwooddoor", "alderwooddoor", "icedoor");
+    private static final Set<String> CURSED_CONTROLS = Set.of("clever", "cwoodendoor", "cwoodpressureplate", "cstonepressureplate",
+            "csnowpressureplate", "cbuttonwood", "cbuttonstone");
+    private static final String CURSED_BLOCK_TICKS = "witchery:legacy_cursed_block_ticks";
+    private static final int LEGACY_LEVER_ID = 69;
+    private static final int LEGACY_STONE_BUTTON_ID = 77;
+    private static final Set<String> DOORS = Set.of("rowanwooddoor", "alderwooddoor", "icedoor", "cwoodendoor");
     private static final int LEGACY_SPIRIT_QUANTA = 5;
     private static final Set<String> SPIRIT_FLUIDS = Set.of("spiritflowing", "hollowtears");
     private static final Set<String> POST_PROCESSING_BLOCKS = Set.of("stockade", "icestockade", "icefence", "icefencegate", "coffinblock",
@@ -74,9 +83,9 @@ public final class LegacyChunkUpgrade {
                                       LegacyWorldIds ids) {
         CompoundTag input = original.copy();
         CompoundTag inputLevel = input.getCompound("Level");
-        ids.upgradeItems(inputLevel);
         restoreLegacyTileTypes(inputLevel, ids);
-        ids.upgradeTileInventories(inputLevel, fixer, from, to);
+        ids.upgradeChunkItems(inputLevel, fixer, from, to);
+        ListTag cursedTicks = extractCursedBlockTicks(inputLevel, ids);
         LegacyChunkEntities.prepare(inputLevel, ids, fixer, from);
         CompoundTag updated = type.update(fixer, input, from, to);
 
@@ -103,11 +112,18 @@ public final class LegacyChunkUpgrade {
             if (flattened != null) restoreSection(ids, section, flattened, states, legacyByHeight, postProcessing, openCoffins);
         });
         if (!postProcessing.isEmpty()) fixedLevel.put("PostProcessing", postProcessing);
+        if (!cursedTicks.isEmpty()) fixedLevel.put(CURSED_BLOCK_TICKS, cursedTicks);
         return updated;
     }
 
     public static void finish(CompoundTag upgraded, ResourceKey<Level> dimension) {
         LegacyChunkEntities.restore(upgraded);
+        if (upgraded.get(CURSED_BLOCK_TICKS) instanceof ListTag cursedTicks) {
+            var ticks = upgraded.getList("block_ticks", Tag.TAG_COMPOUND);
+            ticks.addAll(cursedTicks);
+            upgraded.put("block_ticks", ticks);
+            upgraded.remove(CURSED_BLOCK_TICKS);
+        }
         if (dimension.equals(WitcheryDimensions.TORMENT) || dimension.equals(WitcheryDimensions.MIRROR)) {
             // Both old generators wrote the vanilla Nether biome. Restore their dedicated modern biomes.
             var biome = new CompoundTag();
@@ -133,11 +149,11 @@ public final class LegacyChunkUpgrade {
             Set<String> family = switch (tile.getString("id")) {
                 case "witchery:mirrorblock", "witchery:mirrorblock2" -> MIRRORS;
                 case "witchery:scarecrow", "witchery:trent", "witchery:witchsladder" -> FETISHES;
-                default -> Set.of();
+                default -> isCursedControl(ResourceLocation.tryParse(tile.getString("id"))) ? CURSED_CONTROLS : Set.of();
             };
             if (family.isEmpty()) continue;
 
-            // Legacy mirrors and fetishes each used one tile class for several different blocks.
+            // Each family registered one tile class for several different blocks.
             int y = tile.getInt("y");
             int index = (y & 15) * 256 + (tile.getInt("z") & 15) * 16 + (tile.getInt("x") & 15);
             for (Tag value : sections) {
@@ -152,6 +168,25 @@ public final class LegacyChunkUpgrade {
                 break;
             }
         }
+    }
+
+    private static boolean isCursedControl(@Nullable ResourceLocation id) {
+        return id != null && id.getNamespace().equals(Witchery.MODID) && CURSED_CONTROLS.contains(id.getPath());
+    }
+
+    private static ListTag extractCursedBlockTicks(CompoundTag level, LegacyWorldIds ids) {
+        var saved = new ListTag();
+        // Vanilla's protochunk conversion retains tick locations and discards their block IDs, delays and priorities.
+        level.getList("TileTicks", Tag.TAG_COMPOUND).removeIf(entry -> {
+            var tick = (CompoundTag) entry;
+            var name = tick.contains("i", Tag.TAG_ANY_NUMERIC) ? ids.block(tick.getInt("i"))
+                    : ResourceLocation.tryParse(tick.getString("i"));
+            if (!isCursedControl(name)) return false;
+            tick.putString("i", name.toString());
+            saved.add(tick);
+            return true;
+        });
+        return saved;
     }
 
     private static Set<Integer> openCoffins(CompoundTag level) {
@@ -265,6 +300,8 @@ public final class LegacyChunkUpgrade {
         Block block = ForgeRegistries.BLOCKS.getValue(name);
         if (block == null) return null;
         if (block instanceof WitchCropBlock crop) return NbtUtils.writeBlockState(crop.getStateForAge(Math.min(metadata, crop.getMaxAge())));
+        if (block instanceof CursedControls.Lever) return restoreMountedControl(name, LEGACY_LEVER_ID, metadata);
+        if (block instanceof CursedControls.Button) return restoreMountedControl(name, LEGACY_STONE_BUTTON_ID, metadata);
         BlockState state = block.defaultBlockState();
         int variant = metadata & 3;
         WitchWoodType wood = switch (variant) {
@@ -290,7 +327,7 @@ public final class LegacyChunkUpgrade {
                     RitualGlyphBlock.PATTERN, Math.min(metadata, RitualGlyphBlock.PATTERN_COUNT - 1));
             case "wickerbundle" -> state.setValue(WickerBundleBlock.BUNDLE_TYPE,
                     (metadata & 1) == 0 ? WickerBundleBlock.Type.PLAIN : WickerBundleBlock.Type.BLOODIED);
-            case "rowanwooddoor", "alderwooddoor", "icedoor" -> restoreDoor(state, metadata, saved);
+            case "rowanwooddoor", "alderwooddoor", "icedoor", "cwoodendoor" -> restoreDoor(state, metadata, saved);
             case "coffinblock" -> state.setValue(CoffinBlock.FACING, Direction.from2DDataValue(variant))
                     .setValue(CoffinBlock.PART, (metadata & 8) == 0 ? BedPart.FOOT : BedPart.HEAD)
                     .setValue(CoffinBlock.OCCUPIED, (metadata & 4) != 0)
@@ -317,6 +354,8 @@ public final class LegacyChunkUpgrade {
                     .setValue(SlabBlock.TYPE, (metadata & 8) == 0 ? SlabType.BOTTOM : SlabType.TOP);
             case "witchwooddoubleslab" -> state.setValue(WitchWoodType.PROPERTY, wood);
             case "icepressureplate", "snowpressureplate" -> state.setValue(BlockStateProperties.POWERED, metadata != 0);
+            case "cwoodpressureplate", "cstonepressureplate", "csnowpressureplate" ->
+                    state.setValue(BlockStateProperties.POWERED, metadata == 1);
             case "witchwood" -> state.setValue(WitchWoodType.PROPERTY, wood);
             case "witchlog" -> state.setValue(WitchWoodType.PROPERTY, wood).setValue(BlockStateProperties.AXIS,
                     switch (metadata & 12) {
@@ -338,6 +377,14 @@ public final class LegacyChunkUpgrade {
             default -> null;
         };
         return restored == null ? null : NbtUtils.writeBlockState(restored);
+    }
+
+    private static CompoundTag restoreMountedControl(ResourceLocation name, int vanillaId, int metadata) {
+        // The cursed blocks copied the original lever and button placement metadata.
+        var vanilla = (CompoundTag) BlockStateData.getTag((vanillaId << 4) | metadata).convert(NbtOps.INSTANCE).getValue();
+        var restored = vanilla.copy();
+        restored.putString("Name", name.toString());
+        return restored;
     }
 
     private static BlockState restoreSpiritFluid(BlockState state, int metadata, boolean falling) {

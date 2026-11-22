@@ -177,15 +177,22 @@ public final class LegacyWorldIds {
         }
     }
 
-    void upgradeTileInventories(CompoundTag level, DataFixer fixer, int from, int to) {
+    void upgradeChunkItems(CompoundTag level, DataFixer fixer, int from, int to) {
+        for (String key : level.getAllKeys()) {
+            if (!key.equals("TileEntities")) upgradeItems(level.get(key));
+        }
         for (Tag entry : level.getList("TileEntities", Tag.TAG_COMPOUND)) {
             CompoundTag tile = (CompoundTag) entry;
             var id = ResourceLocation.tryParse(tile.getString("id"));
-            if (id != null && id.getNamespace().equals(Witchery.MODID)) {
-                if (id.getPath().equals("mirrorblock2") && tile.contains("DimCoords", Tag.TAG_COMPOUND)) {
-                    dimensions.upgradeReference(tile.getCompound("DimCoords"), "Dimension", "DimensionId");
-                }
-                upgradeVanillaItems(tile, fixer, from, to);
+            boolean witcheryTile = id != null && id.getNamespace().equals(Witchery.MODID);
+            if (witcheryTile && id.getPath().equals("mirrorblock2") && tile.contains("DimCoords", Tag.TAG_COMPOUND)) {
+                dimensions.upgradeReference(tile.getCompound("DimCoords"), "Dimension", "DimensionId");
+            }
+            // A cursed control has an item-like ID and its own integer Count at the tile root.
+            for (String key : tile.getAllKeys()) {
+                Tag value = tile.get(key);
+                upgradeItems(value);
+                if (witcheryTile) upgradeVanillaItems(value, fixer, from, to);
             }
         }
     }
