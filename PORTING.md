@@ -599,6 +599,7 @@
 - [x] Connect Perpetual Ice Fences and gates. Restore hand opening and redstone for Perpetual Ice Doors, one door item per harvest, and legacy ingredient subtype 152. Restore Ice Stair slipperiness and the Snow Slab and Snow Stair recipes.
 - [x] Restore the original vanilla ice and snow textures for the related fences, gates, stairs, slabs, and pressure plates.
 - [x] In the muted survival client, craft, place, mine, and replace Alder Stockades. Verify three contact damage for each material, freeze the fence run with Ice World, and open, power, harvest, and replace the ice door. A dedicated restart preserved the Alder item tags, stacked ice posts, fence-to-gate connection, and both door halves. The rebuilt JAR rendered the restored ice and snow textures. Java 17 data generation, JAR reobfuscation, 450 regression GameTests, and ten targeted Forge GameTests passed.
+- [x] Import all nine placed Stockade variants, Ice Stockades, Perpetual Ice Fences, and Perpetual Ice Fence Gates from an original Forge world. Recover connections across chunk boundaries, flat tops under stacked posts, and the saved gate direction and redstone state. All 21 packaged checks passed during import and again on ordinary dedicated restart. Removing the adjacent wall, fence, upper stockade, or redstone source updated each block's state.
 
 ## Coffin (2026-11-20)
 
@@ -1248,7 +1249,7 @@ The first boot records the old IDs in `witchery-legacy-ids.dat` inside the copy.
 
 Dream, Torment, and Mirror use the old default IDs `-37`, `-38`, and `-39`. If the original world used custom numbers, add `-Dwitchery.legacyConfig=/path/to/the/original/witchery.cfg` on the first import. The importer moves the selected numeric folders into Minecraft's namespaced dimension storage and records the mapping for later logins. When a destination already exists, it logs the two paths and keeps both directories. Minecraft 1.20.1 stores one respawn point. The import uses the old bed in the player's saved dimension when available and falls back to the original Overworld bed.
 
-The importer covers Witch's Ovens, eight crop blocks, the altar and workstations tested above, chalk and Heart Glyphs, fetishes, witchwood planks, logs, leaves, saplings and stairs, ice and snow construction blocks, linked mirrors, and stacks handled by the inventory loader. The imported poppet shelf keeps its inventory at its original location and uses the modern shelf's default orientation. Unsupported legacy content can be lost during conversion of the copy.
+The importer covers Witch's Ovens, eight crop blocks, the altar and workstations tested above, chalk and Heart Glyphs, fetishes, witchwood planks, logs, leaves, saplings, stairs and slabs, Rowan and Alder Doors, Stockades, ice and snow construction blocks, linked mirrors, and stacks handled by the inventory loader. The imported poppet shelf keeps its inventory at its original location and uses the modern shelf's default orientation. Unsupported legacy content can be lost during conversion of the copy.
 
 ## Villager Courtship Regression (2026-11-21)
 

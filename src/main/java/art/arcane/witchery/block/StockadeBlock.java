@@ -95,7 +95,11 @@ public class StockadeBlock extends FenceBlock {
         }
 
         public static void importLegacyMetadata(ItemStack stack, int metadata) {
-            if (metadata >= 0 && metadata < BY_META.length) BY_META[metadata].write(stack);
+            fromLegacyMetadata(metadata).write(stack);
+        }
+
+        public static Wood fromLegacyMetadata(int metadata) {
+            return metadata >= 0 && metadata < BY_META.length ? BY_META[metadata] : OAK;
         }
     }
 

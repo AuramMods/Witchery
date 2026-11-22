@@ -6,16 +6,19 @@ import art.arcane.witchery.block.DistilleryBlock;
 import art.arcane.witchery.block.MirrorBlock;
 import art.arcane.witchery.block.RiteHeartBlock;
 import art.arcane.witchery.block.RitualGlyphBlock;
+import art.arcane.witchery.block.StockadeBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.block.WitchCropBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.block.WitchesOvenBlock;
 import art.arcane.witchery.world.WitcheryDimensions;
 import com.mojang.datafixers.DataFixer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.ShortTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
@@ -26,6 +29,7 @@ import net.minecraft.util.datafix.PackedBitStorage;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -34,6 +38,7 @@ import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.properties.SlabType;
+import net.minecraft.world.level.chunk.ProtoChunk;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,9 +49,11 @@ import java.util.Set;
 
 public final class LegacyChunkUpgrade {
     private static final int SECTION_SIZE = 16 * 16 * 16;
+    private static final int LEGACY_SECTIONS = 16;
     private static final Set<String> MIRRORS = Set.of("mirrorblock", "mirrorblock2");
     private static final Set<String> FETISHES = Set.of("scarecrow", "trent", "witchsladder");
     private static final Set<String> DOORS = Set.of("rowanwooddoor", "alderwooddoor", "icedoor");
+    private static final Set<String> CONNECTED_BLOCKS = Set.of("stockade", "icestockade", "icefence", "icefencegate");
 
     private LegacyChunkUpgrade() {
     }
@@ -63,7 +70,9 @@ public final class LegacyChunkUpgrade {
 
         // At 1493 vanilla has flattened the block arrays, but still uses the original section Ys.
         ListTag legacy = original.getCompound("Level").getList("Sections", Tag.TAG_COMPOUND);
-        ListTag sections = updated.getCompound("Level").getList("Sections", Tag.TAG_COMPOUND);
+        CompoundTag fixedLevel = updated.getCompound("Level");
+        ListTag sections = fixedLevel.getList("Sections", Tag.TAG_COMPOUND);
+        ListTag postProcessing = fixedLevel.getList("PostProcessing", Tag.TAG_LIST);
         Map<Integer, CompoundTag> byHeight = new HashMap<>();
         for (Tag value : sections) {
             CompoundTag section = (CompoundTag) value;
@@ -77,8 +86,9 @@ public final class LegacyChunkUpgrade {
         Map<Integer, Optional<CompoundTag>> states = new HashMap<>();
         legacyByHeight.forEach((height, section) -> {
             CompoundTag flattened = byHeight.get(height);
-            if (flattened != null) restoreSection(ids, section, flattened, states, legacyByHeight);
+            if (flattened != null) restoreSection(ids, section, flattened, states, legacyByHeight, postProcessing);
         });
+        if (!postProcessing.isEmpty()) fixedLevel.put("PostProcessing", postProcessing);
         return updated;
     }
 
@@ -125,7 +135,8 @@ public final class LegacyChunkUpgrade {
     }
 
     private static void restoreSection(LegacyWorldIds ids, CompoundTag old, CompoundTag section,
-                                       Map<Integer, Optional<CompoundTag>> states, Map<Integer, CompoundTag> legacyByHeight) {
+                                       Map<Integer, Optional<CompoundTag>> states, Map<Integer, CompoundTag> legacyByHeight,
+                                       ListTag postProcessing) {
         byte[] blocks = old.getByteArray("Blocks");
         if (blocks.length != SECTION_SIZE) return;
         byte[] highBits = old.getByteArray("Add");
@@ -138,12 +149,13 @@ public final class LegacyChunkUpgrade {
         PackedBitStorage packed = entries.length == 0 && palette.size() == 1
                 ? new PackedBitStorage(oldBits, SECTION_SIZE) : new PackedBitStorage(oldBits, SECTION_SIZE, entries);
         boolean changed = false;
+        int sectionY = old.getInt("Y");
         for (int i = 0; i < SECTION_SIZE; i++) {
             int number = blockNumber(blocks, highBits, i);
             ResourceLocation name = ids.block(number);
             if (name == null) continue;
             int meta = nibble(metadata, i);
-            int mate = DOORS.contains(name.getPath()) ? doorMateMetadata(legacyByHeight, old.getInt("Y"), i, number, meta) : 0;
+            int mate = DOORS.contains(name.getPath()) ? doorMateMetadata(legacyByHeight, sectionY, i, number, meta) : 0;
             Optional<CompoundTag> state = states.computeIfAbsent((number << 8) | (meta << 4) | mate,
                     ignored -> Optional.ofNullable(restoreState(name, meta, mate)));
             if (state.isEmpty()) {
@@ -162,6 +174,7 @@ public final class LegacyChunkUpgrade {
                 }
             }
             packed.set(i, index);
+            if (CONNECTED_BLOCKS.contains(name.getPath())) queueShapeUpdate(postProcessing, sectionY, i);
             changed = true;
         }
         if (changed) {
@@ -169,6 +182,14 @@ public final class LegacyChunkUpgrade {
             section.remove("BlockLight");
             section.remove("SkyLight");
         }
+    }
+
+    private static void queueShapeUpdate(ListTag postProcessing, int sectionY, int index) {
+        if (sectionY < 0 || sectionY >= LEGACY_SECTIONS) return;
+        // Vanilla pads this list for the larger height and updates shapes after neighboring chunks are loaded.
+        while (postProcessing.size() < LEGACY_SECTIONS) postProcessing.add(new ListTag());
+        BlockPos local = new BlockPos(index & 15, (index >> 8) & 15, (index >> 4) & 15);
+        postProcessing.getList(sectionY).add(ShortTag.valueOf(ProtoChunk.packOffsetCoordinates(local)));
     }
 
     private static int blockNumber(byte[] blocks, byte[] highBits, int index) {
@@ -224,6 +245,10 @@ public final class LegacyChunkUpgrade {
             case "wickerbundle" -> state.setValue(WickerBundleBlock.BUNDLE_TYPE,
                     (metadata & 1) == 0 ? WickerBundleBlock.Type.PLAIN : WickerBundleBlock.Type.BLOODIED);
             case "rowanwooddoor", "alderwooddoor", "icedoor" -> restoreDoor(state, metadata, mate);
+            case "stockade" -> state.setValue(StockadeBlock.WOOD, StockadeBlock.Wood.fromLegacyMetadata(metadata));
+            case "icefencegate" -> state.setValue(FenceGateBlock.FACING, Direction.from2DDataValue(variant))
+                    .setValue(FenceGateBlock.OPEN, (metadata & 4) != 0)
+                    .setValue(FenceGateBlock.POWERED, (metadata & 8) != 0);
             case "mirrorblock", "mirrorblock2" -> state.setValue(MirrorBlock.FACING, switch (variant) {
                 case 0 -> Direction.NORTH;
                 case 1 -> Direction.SOUTH;
@@ -232,7 +257,7 @@ public final class LegacyChunkUpgrade {
             }).setValue(MirrorBlock.HALF, (metadata & 4) == 0 ? DoubleBlockHalf.LOWER : DoubleBlockHalf.UPPER);
             case "poppetshelf", "bloodedwool", "pitdirt", "pitgrass", "mirrorwall", "shadedglass", "shadedglass_active",
                     "tormentstone", "embermoss", "glintweed", "spanishmoss", "infinityegg", "icedoubleslab", "snowdoubleslab",
-                    "cauldron", "brazier", "candelabra", "perpetualice" -> state;
+                    "cauldron", "brazier", "candelabra", "perpetualice", "icestockade", "icefence" -> state;
             case "iceslab", "snowslab" -> state.setValue(SlabBlock.TYPE, (metadata & 8) == 0 ? SlabType.BOTTOM : SlabType.TOP);
             case "witchwoodslab" -> state.setValue(WitchWoodType.PROPERTY, wood)
                     .setValue(SlabBlock.TYPE, (metadata & 8) == 0 ? SlabType.BOTTOM : SlabType.TOP);
