@@ -520,6 +520,7 @@ public final class WitcheryClient {
     @SubscribeEvent
     public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
         event.register((stack, tint) -> tint == 0 ? BrewBottleItem.color(stack) : -1, WitcheryItems.getRequired("brewbottle").get());
+        event.register((stack, tint) -> tint == 0 ? BrewBottleItem.color(stack) : -1, WitcheryItems.getRequired("bucketbrew").get());
         event.register((stack, tint) -> tint == 0 ? BrewBagItem.color(stack) : -1, WitcheryItems.getRequired("brewbag").get());
         event.register((stack, tint) -> tint == 0 ? BrewFuelItem.color(stack) : -1, WitcheryItems.getRequired("brew.fuel").get());
         event.register((stack, tint) -> tint == 0 ? 0x0000FF : -1, WitcheryItems.getRequired("brew.water").get());

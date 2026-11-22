@@ -79,13 +79,14 @@ public final class LegacyChunkUpgrade {
     private static final Set<String> BREW_DISPERSALS = Set.of("brewgas", "brewliquid");
     private static final ResourceLocation GROWING_LILY_PAD = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "lilypad");
     private static final String LEGACY_BLOCK_TICKS = "witchery:legacy_block_ticks";
+    private static final String LEGACY_FLUID_TICKS = "witchery:legacy_fluid_ticks";
     private static final int LEGACY_LEVER_ID = 69;
     private static final int LEGACY_STONE_BUTTON_ID = 77;
     private static final int SKULL_TYPE_BIT = 16;
     private static final Set<String> SKULLS = Set.of("wolfhead", "alluringskull");
     private static final Set<String> DOORS = Set.of("rowanwooddoor", "alderwooddoor", "icedoor", "cwoodendoor");
-    private static final int LEGACY_SPIRIT_QUANTA = 5;
-    private static final Set<String> SPIRIT_FLUIDS = Set.of("spiritflowing", "hollowtears");
+    private static final Map<String, Integer> FLUID_QUANTA = Map.of("spiritflowing", 5, "hollowtears", 5, "brew", 2, "disease", 1);
+    private static final Set<String> CLASSIC_FLUID_TICKS = Set.of("brew", "disease");
     private static final Set<String> POST_PROCESSING_BLOCKS = Set.of("stockade", "icestockade", "icefence", "icefencegate", "coffinblock",
             "tormentportal", "spiritportal", "spiritflowing", "hollowtears", "leechchest");
 
@@ -98,7 +99,8 @@ public final class LegacyChunkUpgrade {
         CompoundTag inputLevel = input.getCompound("Level");
         restoreLegacyTileTypes(inputLevel, ids);
         ids.upgradeChunkItems(inputLevel, fixer, from, to);
-        ListTag savedTicks = restoreLegacyBlockTicks(inputLevel, ids);
+        ListTag fluidTicks = new ListTag();
+        ListTag savedTicks = restoreLegacyTicks(inputLevel, ids, fluidTicks);
         LegacyChunkEntities.prepare(inputLevel, ids, fixer, from);
         CompoundTag updated = type.update(fixer, input, from, to);
 
@@ -126,17 +128,14 @@ public final class LegacyChunkUpgrade {
         });
         if (!postProcessing.isEmpty()) fixedLevel.put("PostProcessing", postProcessing);
         if (!savedTicks.isEmpty()) fixedLevel.put(LEGACY_BLOCK_TICKS, savedTicks);
+        if (!fluidTicks.isEmpty()) fixedLevel.put(LEGACY_FLUID_TICKS, fluidTicks);
         return updated;
     }
 
     public static void finish(CompoundTag upgraded, ResourceKey<Level> dimension) {
         LegacyChunkEntities.restore(upgraded);
-        if (upgraded.get(LEGACY_BLOCK_TICKS) instanceof ListTag savedTicks) {
-            var ticks = upgraded.getList("block_ticks", Tag.TAG_COMPOUND);
-            ticks.addAll(savedTicks);
-            upgraded.put("block_ticks", ticks);
-            upgraded.remove(LEGACY_BLOCK_TICKS);
-        }
+        restoreTicks(upgraded, LEGACY_BLOCK_TICKS, "block_ticks");
+        restoreTicks(upgraded, LEGACY_FLUID_TICKS, "fluid_ticks");
         if (dimension.equals(WitcheryDimensions.TORMENT) || dimension.equals(WitcheryDimensions.MIRROR)) {
             // Both old generators wrote the vanilla Nether biome. Restore their dedicated modern biomes.
             var biome = new CompoundTag();
@@ -146,6 +145,15 @@ public final class LegacyChunkUpgrade {
             for (Tag entry : upgraded.getList("sections", Tag.TAG_COMPOUND)) {
                 ((CompoundTag) entry).put("biomes", biome.copy());
             }
+        }
+    }
+
+    private static void restoreTicks(CompoundTag upgraded, String savedKey, String currentKey) {
+        if (upgraded.get(savedKey) instanceof ListTag savedTicks) {
+            var ticks = upgraded.getList(currentKey, Tag.TAG_COMPOUND);
+            ticks.addAll(savedTicks);
+            upgraded.put(currentKey, ticks);
+            upgraded.remove(savedKey);
         }
     }
 
@@ -191,7 +199,7 @@ public final class LegacyChunkUpgrade {
         return id != null && id.getNamespace().equals(Witchery.MODID) && paths.contains(id.getPath());
     }
 
-    private static ListTag restoreLegacyBlockTicks(CompoundTag level, LegacyWorldIds ids) {
+    private static ListTag restoreLegacyTicks(CompoundTag level, LegacyWorldIds ids, ListTag fluidTicks) {
         var dormantBrews = new HashMap<BlockPos, String>();
         for (Tag entry : level.getList("TileEntities", Tag.TAG_COMPOUND)) {
             var tile = (CompoundTag) entry;
@@ -206,6 +214,21 @@ public final class LegacyChunkUpgrade {
             var tick = (CompoundTag) entry;
             var name = tick.contains("i", Tag.TAG_ANY_NUMERIC) ? ids.block(tick.getInt("i"))
                     : ResourceLocation.tryParse(tick.getString("i"));
+            if (belongsTo(name, CLASSIC_FLUID_TICKS)) {
+                int meta = fluidMetadata(level.getList("Sections", Tag.TAG_COMPOUND), savedPosition(tick), ids, name);
+                boolean disease = name.getPath().equals("disease");
+                if (meta >= 0 && (meta < FLUID_QUANTA.get(name.getPath()) || disease && meta == 1)) {
+                    String fluidPath = disease ? "fluiddisease" : "brew";
+                    var fluidTick = tick.copy();
+                    fluidTick.putString("i", Witchery.MODID + ":" + (meta == 0 ? "" : "flowing_") + fluidPath);
+                    fluidTicks.add(fluidTick);
+                    if (disease) {
+                        tick.putString("i", name.toString());
+                        saved.add(tick);
+                    }
+                }
+                return true;
+            }
             if (!belongsTo(name, CURSED_CONTROLS) && !belongsTo(name, BREW_DISPERSALS) && !GROWING_LILY_PAD.equals(name)) return false;
             tick.putString("i", name.toString());
             saved.add(tick);
@@ -224,6 +247,21 @@ public final class LegacyChunkUpgrade {
             saved.add(tick);
         });
         return saved;
+    }
+
+    private static int fluidMetadata(ListTag sections, BlockPos pos, LegacyWorldIds ids, ResourceLocation name) {
+        for (Tag value : sections) {
+            CompoundTag section = (CompoundTag) value;
+            if (section.getInt("Y") != pos.getY() >> 4) continue;
+            int index = ((pos.getY() & 15) << 8) | ((pos.getZ() & 15) << 4) | (pos.getX() & 15);
+            byte[] blocks = section.getByteArray("Blocks");
+            if (blocks.length == SECTION_SIZE
+                    && name.equals(ids.block(blockNumber(blocks, section.getByteArray("Add"), index)))) {
+                return nibble(section.getByteArray("Data"), index);
+            }
+            break;
+        }
+        return -1;
     }
 
     private static BlockPos savedPosition(CompoundTag tag) {
@@ -272,9 +310,10 @@ public final class LegacyChunkUpgrade {
             int saved;
             if (DOORS.contains(path)) {
                 saved = doorMateMetadata(legacyByHeight, sectionY, i, number, meta);
-            } else if (SPIRIT_FLUIDS.contains(path) && meta > 0 && meta < LEGACY_SPIRIT_QUANTA) {
+            } else if (meta > 0 && FLUID_QUANTA.containsKey(path)) {
+                int quanta = FLUID_QUANTA.get(path);
                 int above = blockMetadata(legacyByHeight, sectionY, i + 256, number);
-                saved = above >= 0 && above < LEGACY_SPIRIT_QUANTA ? 1 : 0;
+                saved = above >= 0 && above < quanta ? 1 : 0;
             } else {
                 saved = path.equals("coffinblock") || SKULLS.contains(path)
                         ? tileStates.getOrDefault((sectionY << 12) | i, 0) : 0;
@@ -405,7 +444,8 @@ public final class LegacyChunkUpgrade {
                     .setValue(FenceGateBlock.POWERED, (metadata & 8) != 0);
             case "tormentportal" -> state.setValue(TormentPortalBlock.LEGACY_ORIENTATION, true);
             case "spiritportal" -> state.setValue(SpiritPortalBlock.LEGACY_ORIENTATION, true);
-            case "spiritflowing", "hollowtears" -> restoreSpiritFluid(state, metadata, saved != 0);
+            case "spiritflowing", "hollowtears", "brew", "disease" ->
+                    restoreClassicFluid(state, metadata, FLUID_QUANTA.get(name.getPath()), saved != 0);
             case "brewgas", "brewliquid" -> state.setValue(LiquidBlock.LEVEL, metadata);
             case "shadedglass", "shadedglass_active" -> state.setValue(ShadedGlassBlock.COLOR,
                     ShadedGlassBlock.Color.fromLegacyMetadata(metadata));
@@ -465,9 +505,9 @@ public final class LegacyChunkUpgrade {
                 .setValue(MountedSkullBlock.ROTATION, facing == Direction.UP ? saved & 15 : 0);
     }
 
-    private static BlockState restoreSpiritFluid(BlockState state, int metadata, boolean falling) {
-        if (metadata >= LEGACY_SPIRIT_QUANTA) return Blocks.AIR.defaultBlockState();
-        int level = falling ? 8 : Math.round(metadata * (8.0F / LEGACY_SPIRIT_QUANTA));
+    private static BlockState restoreClassicFluid(BlockState state, int metadata, int quanta, boolean falling) {
+        if (metadata >= quanta && (quanta != 1 || metadata != 1)) return Blocks.AIR.defaultBlockState();
+        int level = metadata != 0 && (quanta == 1 || falling) ? 8 : Math.round(metadata * (8.0F / quanta));
         return state.setValue(LiquidBlock.LEVEL, level);
     }
 

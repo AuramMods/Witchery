@@ -334,13 +334,18 @@ public final class BrewMixture {
         return WitcheryIngredient.loadInventoryStack(migrated);
     }
 
-    public CompoundTag bottleTag(List<ItemStack> stacks) {
+    public static CompoundTag ingredientTag(List<ItemStack> stacks, int color) {
         CompoundTag tag = new CompoundTag();
         ListTag items = new ListTag();
         for (ItemStack stack : stacks) items.add(stack.save(new CompoundTag()));
         tag.put(ITEMS, items);
+        if (color >= 0) tag.putInt("Color", color);
+        return tag;
+    }
+
+    public CompoundTag bottleTag(List<ItemStack> stacks) {
+        CompoundTag tag = ingredientTag(stacks, color);
         tag.putInt("Power", power);
-        tag.putInt("Color", color);
         tag.putInt("EffectCount", effects.size());
         tag.putInt("UsedCapacity", used);
         tag.putInt("RemainingCapacity", capacity - used);

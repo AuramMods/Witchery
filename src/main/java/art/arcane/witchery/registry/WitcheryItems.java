@@ -1,5 +1,6 @@
 package art.arcane.witchery.registry;
 
+import art.arcane.witchery.item.BrewBucketItem;
 import art.arcane.witchery.item.StatueGoddessItem;
 import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.block.LeapingLilyBlock;
@@ -228,7 +229,7 @@ public final class WitcheryItems {
         return switch (path) {
             case "bucketspirit" -> new BucketItem(WitcheryFluids.getRequiredSource("fluidspirit"), bucketProperties);
             case "buckethollowtears" -> new BucketItem(WitcheryFluids.getRequiredSource("hollowtears"), bucketProperties);
-            case "bucketbrew" -> new BucketItem(WitcheryFluids.getRequiredSource("brew"), bucketProperties);
+            case "bucketbrew" -> new BrewBucketItem();
             case "brewbottle" -> new BrewBottleItem();
             case "louse" -> new ParasyticLouseItem();
             case "rowanwooddoor", "alderwooddoor", "icedoor" -> createBlockItem(path);

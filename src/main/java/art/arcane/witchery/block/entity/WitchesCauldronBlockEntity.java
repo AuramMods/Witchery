@@ -17,6 +17,7 @@ import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryItems;
+import art.arcane.witchery.registry.WitcheryFluids;
 import art.arcane.witchery.registry.WitcheryRecipes;
 import art.arcane.witchery.ritual.RitualCircle;
 import net.minecraft.core.BlockPos;
@@ -81,42 +82,99 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
     private int clientBrewColor = -1;
     private boolean clientRitual;
 
-    private final FluidTank tank = new FluidTank(CAPACITY, resource -> resource.getFluid() == Fluids.WATER) {
+    private final CauldronTank tank = new CauldronTank();
+    private LazyOptional<IFluidHandler> fluidHandler = LazyOptional.of(() -> tank);
+
+    private record TransportedBrew(List<ItemStack> ingredients, int color, @Nullable BrewMixture mixture) {
+        @Nullable
+        static TransportedBrew from(FluidStack resource) {
+            CompoundTag tag = resource.getTag();
+            if (tag == null) return new TransportedBrew(List.of(), -1, null);
+            List<ItemStack> inputs = new ArrayList<>();
+            for (Tag entry : tag.getList("Items", Tag.TAG_COMPOUND)) {
+                ItemStack item = BrewMixture.loadIngredient((CompoundTag) entry);
+                if (item.isEmpty()) return null;
+                inputs.add(item);
+            }
+            int color = tag.contains("Color", Tag.TAG_ANY_NUMERIC) ? tag.getInt("Color") & 0xFFFFFF : -1;
+            return new TransportedBrew(inputs, color, BrewMixture.from(inputs, color));
+        }
+
+        int visibleColor() {
+            return mixture == null ? color : mixture.color();
+        }
+    }
+
+    private final class CauldronTank extends FluidTank {
+        private CauldronTank() {
+            super(CAPACITY, resource -> resource.getFluid() == Fluids.WATER
+                    || resource.getFluid() == WitcheryFluids.getRequiredSource("brew").get());
+        }
+
+        @Override
+        public FluidStack getFluidInTank(int slot) {
+            if (slot != 0 || isEmpty()) return FluidStack.EMPTY;
+            var brew = WitcheryFluids.getRequiredSource("brew").get();
+            if (mixture != null) return new FluidStack(brew, getFluidAmount(), mixture.bottleTag(ingredients));
+            if (!ingredients.isEmpty() || brewColor >= 0) {
+                return new FluidStack(brew, getFluidAmount(), BrewMixture.ingredientTag(ingredients, brewColor));
+            }
+            return getFluid().copy();
+        }
+
         @Override
         public int fill(FluidStack resource, FluidAction action) {
-            return hasOnlyWater() ? super.fill(resource, action) : 0;
+            if (casting() || resource.isEmpty() || !isFluidValid(resource) || getSpace() == 0) return 0;
+            var current = getFluidInTank(0);
+            if (!current.isEmpty() && current.getFluid() != resource.getFluid()) return 0;
+            TransportedBrew brew = null;
+            if (resource.getFluid() != Fluids.WATER) {
+                brew = TransportedBrew.from(resource);
+                if (brew == null || !isEmpty() && !matchesBrew(brew)) return 0;
+            }
+            int filled = Math.min(getSpace(), resource.getAmount());
+            if (action.execute()) {
+                if (isEmpty() && brew != null) {
+                    ingredients.addAll(brew.ingredients());
+                    brewColor = brew.color();
+                    mixture = brew.mixture();
+                }
+                setFluid(new FluidStack(resource.getFluid(), getFluidAmount() + filled));
+                publishTankContents();
+            }
+            return filled;
         }
 
         @Override
         public FluidStack drain(FluidStack resource, FluidAction action) {
-            return hasOnlyWater() ? super.drain(resource, action) : FluidStack.EMPTY;
+            return !resource.isEmpty() && getFluidInTank(0).isFluidEqual(resource)
+                    ? drain(resource.getAmount(), action) : FluidStack.EMPTY;
         }
 
         @Override
         public FluidStack drain(int amount, FluidAction action) {
-            return hasOnlyWater() ? super.drain(amount, action) : FluidStack.EMPTY;
-        }
-
-        @Override
-        protected void onContentsChanged() {
-            if (isEmpty()) {
-                ingredients.clear();
-                mixture = null;
-                brewColor = -1;
-                ritual = null;
-                brewRitual = false;
-                heatTicks = 0;
-                ritualTicks = 0;
+            if (casting() || amount <= 0 || isEmpty()) return FluidStack.EMPTY;
+            FluidStack drained = getFluidInTank(0);
+            drained.setAmount(Math.min(amount, getFluidAmount()));
+            if (action.execute()) {
+                int remaining = getFluidAmount() - drained.getAmount();
+                if (remaining == 0) clearMixture();
+                else {
+                    setFluid(new FluidStack(getFluid().getFluid(), remaining));
+                    publishTankContents();
+                }
             }
-            updateState();
-            refreshComparator();
-            setChanged();
+            return drained;
         }
-    };
-    private LazyOptional<IFluidHandler> fluidHandler = LazyOptional.of(() -> tank);
+    }
 
-    private boolean hasOnlyWater() {
-        return ingredients.isEmpty() && brewColor == -1 && !casting();
+    private boolean matchesBrew(TransportedBrew incoming) {
+        int visibleColor = mixture == null ? brewColor : mixture.color();
+        if (visibleColor != incoming.visibleColor() || ingredients.size() != incoming.ingredients().size()) return false;
+        for (int index = 0; index < ingredients.size(); index++) {
+            if (!ItemStack.matches(ingredients.get(index), incoming.ingredients().get(index))) return false;
+        }
+        return true;
     }
 
     public WitchesCauldronBlockEntity(BlockPos pos, BlockState state) {
@@ -390,10 +448,8 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         if (remaining == 0) {
             clearMixture();
         } else {
-            tank.setFluid(new FluidStack(Fluids.WATER, remaining));
-            updateState();
-            refreshComparator();
-            setChanged();
+            tank.setFluid(new FluidStack(tank.getFluid().getFluid(), remaining));
+            publishTankContents();
         }
         server.playSound(null, worldPosition, SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1, 1);
         return true;
@@ -503,8 +559,16 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         ritualTicks = 0;
         heatTicks = 0;
         tank.setFluid(FluidStack.EMPTY);
+        publishTankContents();
+    }
+
+    private void publishTankContents() {
         updateState();
         refreshComparator();
+        if (level instanceof ServerLevel server && !isRemoved()) {
+            BlockState state = getBlockState();
+            server.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_CLIENTS);
+        }
         setChanged();
     }
 
@@ -536,7 +600,8 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         CompoundTag originalBrew = "witchery:brew".equals(legacyFluid) ? tag.getCompound("Tag") : new CompoundTag();
         if (!tag.contains("Tank", Tag.TAG_COMPOUND) && ("witchery:brew".equals(legacyFluid) || "water".equals(legacyFluid))) {
             int amount = Mth.clamp(tag.getInt("Amount"), 0, CAPACITY);
-            tank.setFluid(amount > 0 ? new FluidStack(Fluids.WATER, amount) : FluidStack.EMPTY);
+            var fluid = "witchery:brew".equals(legacyFluid) ? WitcheryFluids.getRequiredSource("brew").get() : Fluids.WATER;
+            tank.setFluid(amount > 0 ? new FluidStack(fluid, amount) : FluidStack.EMPTY);
         } else {
             tank.readFromNBT(tag.getCompound("Tank"));
         }

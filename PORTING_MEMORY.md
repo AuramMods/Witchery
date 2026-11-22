@@ -490,6 +490,15 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Original Forge regions supplied all 32 placed states and 32 numeric stacks. The raw upgraded regions matched every ID and color. The headless dedicated server loaded the same data again after restart, then powered the clear row and unpowered the darkened row without losing colors.
 - Java 17 data generation, JAR reobfuscation and all 34 checked-in GameTests passed. The JAR contains both item display variants for every color and all 16 recipes and unlock advancements. The isolated client environment did not respond, so its visual check remains open. The packaged JAR SHA-256 is `5f36007ec3cb687386e577fcf8060dbd338cba2aad36679910f7d3274eedbb23`.
 
+### Brew Buckets and Stored Fluids (2026-11-22)
+
+- An empty bucket uses Forge's fluid interaction path to collect 1,000 mB of a cauldron brew. The registered Brew fluid type makes the filled item with a copy of the mixture tag. The filled bucket exposes the same ordered inputs and color to a cauldron or Forge fluid handler and returns an empty bucket when emptied.
+- The cauldron exposes the effective brew separately from its saved liquid volume. A fill can resume or combine matching ordered ingredients and matching visible color. It keeps the legacy base color on a restored brew and rejects unrelated fluids and reordered ingredients. A simulated transfer changes neither tank.
+- Original Forge assembled the Nether Wart and Sugar brew, drained one bucket through the registered fluid container, and saved the two remaining buckets in the cauldron. The packaged port loaded the chest item and the cauldron with the original color and order. It also recovered six source, nearby, and falling Brew and Disease cells.
+- Classic Brew used two quanta and a seven-tick interval. Disease had one quantum and fifteen ticks. The importer translates the original pending updates into Forge source or flowing fluid ticks. Disease additionally gets a block tick because modern flow and random decay run separately. The raw regions matched ten flow updates and two decay updates.
+- The packaged headless server reopened the same chest, cauldron, and six fluid cells. A pig entered the imported Disease fluid and received the Diseased effect. The fixture turned off Disease decay to hold the cells for this check.
+- Java 17 data generation and the reobfuscated JAR succeeded. All 41 required GameTests passed, including the bucket interaction, cold refill, simulated transfer, ordered merge, and save of the Swiftness brew. The final JAR SHA-256 is `be01cfd05575f79863752cd8c24928d4ec43c451328da612e8a64c36c66f447f`. The Brew Bucket texture remains to be checked live.
+
 ### Void Bramble and the Statue of the Goddess (2026-11-21)
 
 - Both block recipes use the original ingredients and remain disabled by default. Enable them separately with `allowVoidBrambleRecipe` and `allowGoddessStatueRecipe` in the common config. The Void Bramble ingredient matches Ender Bramble's `BlockStateTag.wild=false` and rejects Wild Bramble.

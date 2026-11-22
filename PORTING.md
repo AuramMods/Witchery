@@ -973,7 +973,7 @@
 - [x] Verify powered brewing and splash throws. The live cauldron kept the unpowered mixture and bottle. A nearby altar let the client bottle the inverted sugar brew. A real Wolfsbane splash applied the effect to a directly hit pig and a nearby pig for different durations. The pig outside the radius received no effect.
 - [x] Verify two effects in the same brew and their status icons. Glowstone strengthened Wolfsbane while Ender Inhibition remained at its base strength. An Ender Pearl thrown under Ender Inhibition consumed the pearl and left the player in place. In the control throw, clearing the effect restored teleportation. The player's bottling skill survived the restart.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 253 required Forge GameTests. The tests cover solo and mixed brews, the first bottling threshold, named legacy ingredient metadata, splash scaling, Ender Inhibition and the fixed Mutandis recipe.
-- [ ] Port the remaining brew actions and effects, including brew fluid containers, additional modifiers and castable cauldron rituals.
+- [ ] Finish the remaining brew actions, modifiers, and castable cauldron rituals.
 
 ## Death and Armor Cauldron Brews (2026-11-21)
 
@@ -1282,6 +1282,8 @@
 - [x] Import ten original skulls, trophies, hearts and the Crystal Ball. Keep each skull's active state or beast type, floor rotation, wall mount, and all four Demon Heart facings. The same states, block entities and Crystal Ball reading time survived an ordinary headless restart.
 - [x] Import a Void Bramble column and two Statue of the Goddess blocks from the original server. Preserve all four original owner records and both statue orientations after a headless reload.
 - [x] Open an earlier 1.20.1 save containing both decorative placeholders and repeat the checks after a dedicated restart. The missing block entities were created without inventing owners, and both blocks retained their recovery flag.
+- [x] Import a Brew Bucket and the remaining two buckets in an original Witch's Cauldron. Preserve the color and order of Nether Wart and Sugar. Match six standing, spreading, and falling Brew and Disease fluid cells, ten pending flow updates, and two pending decay updates from the original regions.
+- [x] Repeat the brew and fluid checks after a headless restart of the reobfuscated JAR. The imported Disease fluid applied its status effect on contact. Decay was disabled in the disposable profile for the restart check.
 - [ ] Expand migration to other block and subtype data and specialized entity and block-entity fields. Add fixtures before calling the migration complete.
 
 ### Importing a copy of a legacy world
@@ -1363,6 +1365,14 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Restart the dedicated server. Use an up gesture to blind a husk and a right gesture to poison a pig. Verify that each throw spends one serving from its selected slot and that the remaining Ink can be shift-clicked back into the player inventory.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 424 required Forge GameTests. The new cases cover crafting and dyeing, legacy names and contents, slot locking, all eight gestures, both launch paths, and cancellation.
 - [ ] Verify storage and casting for the remaining legacy throwable brews as their items and effects are ported.
+
+## Brew Buckets and Stored Fluids (2026-11-22)
+
+- [x] Fill a Brew Bucket from the Witch's Cauldron and pour its 1,000 mB into another cauldron. Preserve ingredient order, dye color, and the brew's effects. This transfer works with a cold cauldron. Ordinary water and a different ordered mixture cannot merge with the brew.
+- [x] Expose the same tagged fluid to Forge tanks. Simulation leaves both tanks as they were. Dormant mixtures can be split and combined. An active cast retains its reserved cauldron contents.
+- [x] Restore the Brew Bucket's layered item textures and tint from the mixture. The bucket carries a mixture between containers. The plain Brew fluid already placed in a world has the original short horizontal reach.
+- [x] Pass data generation, JAR reobfuscation, and all 41 required Forge GameTests. The new test heats and brews through the cauldron, fills a bucket, saves and loads the bucket and destination, and moves the same mixture through a Forge tank.
+- [ ] Verify the colored Brew Bucket in a muted client.
 
 ## Gaseous and Liquid Brews (2026-11-20)
 

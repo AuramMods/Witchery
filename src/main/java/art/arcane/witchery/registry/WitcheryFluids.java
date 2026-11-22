@@ -3,16 +3,22 @@ package art.arcane.witchery.registry;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.DiseaseBlock;
 import art.arcane.witchery.block.entity.BrewFluidBlockEntity;
+import art.arcane.witchery.item.BrewBucketItem;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.BucketItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FlowingFluid;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.registries.DeferredRegister;
@@ -110,8 +116,14 @@ public final class WitcheryFluids {
         ResourceLocation still = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "block/" + config.stillTexture());
         ResourceLocation flow = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "block/" + config.flowingTexture());
         boolean dispersal = path.equals("brewgas") || path.equals("brewliquid");
+        boolean brew = path.equals("brew");
         RegistryObject<FluidType> fluidType = FLUID_TYPES.register(path,
                 () -> new FluidType(fluidProperties) {
+                    @Override
+                    public ItemStack getBucket(FluidStack stack) {
+                        return brew ? BrewBucketItem.filled(stack) : super.getBucket(stack);
+                    }
+
                     @Override
                     public void initializeClient(Consumer<IClientFluidTypeExtensions> consumer) {
                         consumer.accept(new IClientFluidTypeExtensions() {
@@ -132,6 +144,12 @@ public final class WitcheryFluids {
                                 }
                                 return getTintColor();
                             }
+
+                            @Override
+                            public int getTintColor(FluidStack stack) {
+                                var tag = stack.getTag();
+                                return brew && tag != null && tag.contains("Color") ? 0xFF000000 | tag.getInt("Color") : getTintColor();
+                            }
                         });
                     }
                 });
@@ -144,11 +162,25 @@ public final class WitcheryFluids {
                     public void tick(Level level, BlockPos pos, FluidState state) {
                         // The block owns spreading and preserves the mixture on every new cell.
                     }
+                } : brew ? new ForgeFlowingFluid.Source(properties[0]) {
+                    @Override
+                    protected boolean canSpreadTo(BlockGetter level, BlockPos pos, BlockState state, Direction direction,
+                                                  BlockPos target, BlockState targetState, FluidState existing, Fluid incoming) {
+                        return acceptsBrew(existing, incoming)
+                                && super.canSpreadTo(level, pos, state, direction, target, targetState, existing, incoming);
+                    }
                 } : new ForgeFlowingFluid.Source(properties[0]));
         RegistryObject<FlowingFluid> flowing = FLUIDS.register("flowing_" + path, () -> dispersal
                 ? new ForgeFlowingFluid.Flowing(properties[0]) {
                     @Override
                     public void tick(Level level, BlockPos pos, FluidState state) {}
+                } : brew ? new ForgeFlowingFluid.Flowing(properties[0]) {
+                    @Override
+                    protected boolean canSpreadTo(BlockGetter level, BlockPos pos, BlockState state, Direction direction,
+                                                  BlockPos target, BlockState targetState, FluidState existing, Fluid incoming) {
+                        return acceptsBrew(existing, incoming)
+                                && super.canSpreadTo(level, pos, state, direction, target, targetState, existing, incoming);
+                    }
                 } : new ForgeFlowingFluid.Flowing(properties[0]));
 
         properties[0] = new ForgeFlowingFluid.Properties(fluidType, source, flowing)
@@ -156,15 +188,21 @@ public final class WitcheryFluids {
                 .levelDecreasePerBlock(1);
         if (path.equals("fluiddisease")) {
             properties[0].levelDecreasePerBlock(8).tickRate(DiseaseBlock.TICK_INTERVAL);
+        } else if (brew) {
+            properties[0].levelDecreasePerBlock(4).tickRate(config.viscosity() / 200);
         }
 
         if (config.blockPath() != null) {
             properties[0].block(() -> (LiquidBlock) WitcheryBlocks.getRequired(config.blockPath()).get());
         }
         if (config.bucketPath() != null) {
-            properties[0].bucket(() -> (BucketItem) WitcheryItems.getRequired(config.bucketPath()).get());
+            properties[0].bucket(() -> WitcheryItems.getRequired(config.bucketPath()).get());
         }
 
         LEGACY_FLUIDS.put(path, new LegacyFluid(fluidType, source, flowing, config.blockPath(), config.bucketPath()));
+    }
+
+    private static boolean acceptsBrew(FluidState existing, Fluid incoming) {
+        return existing.isEmpty() || existing.getType().isSame(incoming);
     }
 }
