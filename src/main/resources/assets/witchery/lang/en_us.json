@@ -856,7 +856,6 @@
    "spell.witchery.carnosadiem" : "Carnosa Diem",
    "spell.witchery.morsmordre" : "Morsmordre",
    "spell.witchery.tormentum" : "Tormentum",
-   "message.witchery.mystic_branch.prepared" : "Prepared %s.",
    "message.witchery.mystic_branch.unknown_symbol" : "You drew an unknown symbol.",
    "message.witchery.mystic_branch.unknown_spell" : "You have yet to learn this spell.",
    "message.witchery.mystic_branch.infernal_required" : "You need the Infernal Infusion to cast unforgivable spells.",

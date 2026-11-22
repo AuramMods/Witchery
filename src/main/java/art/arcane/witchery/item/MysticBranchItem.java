@@ -3,7 +3,7 @@ package art.arcane.witchery.item;
 import art.arcane.witchery.block.PlacedItemBlock;
 import art.arcane.witchery.infusion.SymbolSpell;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -52,18 +52,16 @@ public final class MysticBranchItem extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
-        if (player instanceof ServerPlayer) {
-            CompoundTag drawing = new CompoundTag();
-            updateAngles(player, drawing);
-            player.getPersistentData().put(DRAWING, drawing);
-        }
+        CompoundTag drawing = new CompoundTag();
+        updateAngles(player, drawing);
+        player.getPersistentData().put(DRAWING, drawing);
         player.startUsingItem(hand);
         return InteractionResultHolder.consume(player.getItemInHand(hand));
     }
 
     @Override
     public void onUseTick(Level level, LivingEntity living, ItemStack stack, int remaining) {
-        if (living instanceof ServerPlayer player) {
+        if (living instanceof Player player && player.getPersistentData().contains(DRAWING, Tag.TAG_COMPOUND)) {
             recordStroke(player, player.getPersistentData().getCompound(DRAWING));
         }
     }
@@ -81,7 +79,16 @@ public final class MysticBranchItem extends Item {
         else SymbolSpell.reject(player, "unknown_symbol");
     }
 
-    private static void recordStroke(ServerPlayer player, CompoundTag drawing) {
+    @Override
+    public void onStopUsing(ItemStack stack, LivingEntity living, int remaining) {
+        if (living instanceof Player player) player.getPersistentData().remove(DRAWING);
+    }
+
+    public static String strokes(Player player) {
+        return player.getPersistentData().getCompound(DRAWING).getString("Strokes");
+    }
+
+    private static void recordStroke(Player player, CompoundTag drawing) {
         String strokes = drawing.getString("Strokes");
         if (drawing.contains("Prepared") || strokes.length() >= MAX_STROKES) return;
         float pitch = drawing.getFloat("Pitch") - player.getXRot();
@@ -99,8 +106,9 @@ public final class MysticBranchItem extends Item {
         SymbolSpell spell = SymbolSpell.match(strokes);
         if (spell != null) {
             drawing.putInt("Prepared", spell.id());
-            player.level().playSound(null, player.blockPosition(), SoundEvents.NOTE_BLOCK_HARP.value(), SoundSource.PLAYERS, 1, 1);
-            player.displayClientMessage(Component.translatable("message.witchery.mystic_branch.prepared", spell.displayName()), true);
+            if (player instanceof ServerPlayer server) {
+                server.level().playSound(null, player.blockPosition(), SoundEvents.NOTE_BLOCK_HARP.value(), SoundSource.PLAYERS, 1, 1);
+            }
         }
     }
 

@@ -187,6 +187,7 @@ public final class WitcheryClient {
         event.registerAboveAll("infusion_charge", ClientInfusion::render);
         event.registerAboveAll("vampire_blood", ClientVampirism::render);
         event.registerAboveAll("brew_bag", BrewBagOverlay::render);
+        event.registerAboveAll("mystic_branch", MysticBranchOverlay::render);
         event.registerAboveAll("bark_belt", BarkBeltOverlay::render);
     }
 
