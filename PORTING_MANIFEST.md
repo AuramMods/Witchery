@@ -1595,6 +1595,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 
 ## Tile Entity Registration Surfaces
 - Auto-registration path: `BlockBaseContainer.func_149663_c` -> `GameRegistry.registerTileEntity(clazzTile, blockName)`.
+- The altar keeps the original `CoreX`, `CoreY`, and `CoreZ` links and the core's power and `EnhancementLevel`. A Mystic Branch mounted on any member adds one enhancement. The original source exposes that value without using it to alter spells. Existing modern altars without core links still resolve to their previously selected coordinate.
 - Manual registration found:
   - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/blocks/BlockRefillingChest.java`
 

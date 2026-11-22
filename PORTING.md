@@ -74,7 +74,14 @@
 - [x] Restore Waking Nightmare and its two rites. The muted player used a real taglock and brewed Grotesque in the medium Infernal ring. The rite refused to start under clear skies, then applied the persistent curse and spent 10,000 power during a thunderstorm.
 - [x] Verify the Waking Nightmare curse across death and a dedicated restart, reject an empty kit, and refund all five cure offerings for an offline target. In the muted client, the separate status effect spawned a Waking Nightmare. The rite's curse kept it pursuing the same player after the effect was cleared. The player used the small white ring and a second self taglock to remove the curse and Weakness, and the Nightmare despawned.
 - [x] Restore the Dream's pink daylight, green nightmare fog, red demonic fog, and starless sky. Two isolated muted clients on one dedicated server verified that another player's nightmare changes the entire dimension's atmosphere. The normal dreamer rejoined during a demonic nightmare and saw the red fog. When the other player woke, the atmosphere returned to pink.
-- [ ] Finish the remaining altar artifacts, kettle recipes, the other powered cauldron recipes, and the remaining chalk rites.
+- [ ] Complete the altar power, kettle, powered cauldron recipe, and chalk rite parity checks.
+
+## Altar Core and Artifacts (2026-11-22)
+
+- [x] Use the sixth placed altar block as the core. Save the original `CoreX`, `CoreY`, and `CoreZ` coordinates on every member. Preserve the saved core on import and use the previous port's coordinate order when an existing modern altar has no saved links.
+- [x] Keep the Mystic Branch's enhancement level on the core, and retain the Pentacle recharge and Arthana range bonuses. Breaking an altar member clears the loaded members' links and charge. Rebuilding chooses a new core.
+- [x] Import a charged original altar across a chunk boundary and run a Golden Chalk cast exactly 32 blocks from its saved core after restart. Removing Arthana leaves the next cast waiting. A second restart preserves the broken altar's empty charge. Data generation, JAR reobfuscation, and all 56 required GameTests passed.
+- [ ] Verify the original altar power contribution caps when several modern blocks represent metadata variants of one legacy block.
 
 ## Mirror Milestone (2026-11-19)
 
