@@ -337,8 +337,8 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
             target.addEffect(new MobEffectInstance(penalty));
         }
         if (roll >= 0.98) {
-            int bolts = 2 + random.nextInt(3);
-            for (int index = 0; index < bolts; index++) {
+            // The original rolls the loop bound again after each strike.
+            for (int index = 0; index < 2 + random.nextInt(3); index++) {
                 var lightning = EntityType.LIGHTNING_BOLT.create(server);
                 if (lightning != null) {
                     int x = random.nextInt(7);
@@ -360,8 +360,9 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         AltarBlockEntity altar = null;
         int power = 0;
         int batchPower = recipe.batchPower(ingredients);
-        if (batchPower > 0) {
-            power = (int) Math.floor(batchPower * CastCircles.around(level, pos).powerScale());
+        CastCircles circles = batchPower > 0 ? CastCircles.around(level, pos) : null;
+        if (circles != null) {
+            power = (int) Math.floor(batchPower * circles.powerScale());
             altar = AltarPower.nearest(level, pos);
             if (altar == null || altar.power() < power) {
                 ritualTicks = 0;
@@ -372,7 +373,11 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
             ritualTicks++;
         }
         if (ritualTicks == recipe.time()) {
-            completeRitual(level, pos, recipe, altar, power);
+            int risk = recipe.legacy() && circles != null
+                    ? circles.risk() + (BrewRituals.leonardNearby(level, pos) ? 1 : 0) : 0;
+            if (completeRitual(level, pos, recipe, altar, power)) {
+                mishap(level, pos, risk, batchPower);
+            }
         }
     }
 
@@ -597,14 +602,14 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         return Mth.clamp(Mth.ceil(tank.getFluidAmount() / (float) BUCKET), 0, 3);
     }
 
-    private void completeRitual(ServerLevel server, BlockPos pos, CauldronRitualRecipe recipe,
-                                @Nullable AltarBlockEntity altar, int power) {
+    private boolean completeRitual(ServerLevel server, BlockPos pos, CauldronRitualRecipe recipe,
+                                   @Nullable AltarBlockEntity altar, int power) {
         Entity result;
         if (recipe.summon() != null) {
             var summon = recipe.summon().create(server);
-            if (summon == null) return;
+            if (summon == null) return false;
             summon.setPos(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5);
-            if (server.getBlockCollisions(summon, summon.getBoundingBox()).iterator().hasNext()) return;
+            if (server.getBlockCollisions(summon, summon.getBoundingBox()).iterator().hasNext()) return false;
             if (summon instanceof Mob mob) mob.setPersistenceRequired();
             if (summon instanceof Leonard leonard) leonard.beginSummoning();
             result = summon;
@@ -614,10 +619,10 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
             drop.setDefaultPickUpDelay();
             result = drop;
         }
-        if (!server.addFreshEntity(result)) return;
+        if (!server.addFreshEntity(result)) return false;
         if (altar != null && !altar.consumePower(power)) {
             result.discard();
-            return;
+            return false;
         }
         clearMixture();
         boolean summoned = recipe.summon() != null;
@@ -625,6 +630,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
                 pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 8, 0.25, 0.2, 0.25, 0.02);
         server.playSound(null, pos, summoned ? SoundEvents.WITHER_SPAWN : SoundEvents.FIRE_EXTINGUISH,
                 SoundSource.BLOCKS, 0.7F, summoned ? 1 : 1.3F);
+        return true;
     }
 
     private void clearMixture() {

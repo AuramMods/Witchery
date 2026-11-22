@@ -1436,7 +1436,8 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 273 required Forge GameTests. Coverage includes all recipe variants, ingredient power accounting, recipe precedence, saved cast resumption, named legacy item metadata, pouring and dispensing, compass binding, and pit collision.
 - [x] Resume original casts from the last `Items` entry in a `RitualTriggered` brew. Convert the saved ten-tick pulses to modern fixed recipe progress. Refill a partially drained cast from its matching legacy Brew Bucket and return the original trigger if its recipe is unavailable.
 - [x] Import five original casts into the packaged headless server, restart before completion, and confirm their final item counts and variants after a second restart. An ordinary brew stayed intact. Java 17 data generation, reobfuscation, and all 51 required GameTests passed.
-- [ ] Restore the original fixed recipe misfortune rolls on completion. General brew casts already use the shared mishap logic.
+- [x] Restore misfortune after a successful powered fixed recipe. White chalk removes the base risk, Infernal chalk adds risk, and a nearby living Leonard with more than one health adds risk before the result appears. Unpowered and zero-cost recipes skip the roll.
+- [x] Reproduce the original offset lightning strikes with a seeded roll. The packaged headless server completed Golden Chalk through real item drops in white and Infernal circles. The Infernal cast's Slowness II survived a restart. Data generation, reobfuscation, and all 54 required GameTests passed.
 
 ## Taglock Cauldron Casts and Protection Statues (2026-11-20)
 

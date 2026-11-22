@@ -39,7 +39,7 @@ public final class BrewRituals {
     private BrewRituals() {}
 
     public static boolean leonardNearby(ServerLevel level, BlockPos cauldron) {
-        return !level.getEntitiesOfClass(Leonard.class, new AABB(cauldron).inflate(16),
+        return !level.getEntitiesOfClass(Leonard.class, AABB.ofSize(Vec3.atLowerCornerOf(cauldron), 32, 32, 32),
                 entity -> entity.isAlive() && entity.getHealth() > 1).isEmpty();
     }
 
