@@ -171,6 +171,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             queuedRites.addAll(selection.rites());
             initiator = player == null ? null : player.getUUID();
             covenSize = callCoven && player instanceof ServerPlayer serverPlayer ? CovenWitch.covenSize(serverPlayer) : 0;
+            if (covenSize > 0 && player instanceof ServerPlayer serverPlayer) CovenWitch.dismissNearbyForRite(serverPlayer);
             covenSummoned = 0;
             nextCast(level);
             level.playSound(null, pos, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);

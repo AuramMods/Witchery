@@ -3,6 +3,7 @@ package art.arcane.witchery.event;
 import art.arcane.witchery.brewing.BrewItemCurse;
 import art.arcane.witchery.brewing.ChilledEffect;
 import art.arcane.witchery.brewing.DeathBrewEffects;
+import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.entity.Hobgoblin;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.CoffinBlock;
@@ -283,6 +284,7 @@ public final class WitcheryEventHooks {
         DreamTravel.spawnNightmare(serverPlayer);
         DirectedCurse.tick(serverPlayer);
         Predictions.tick(serverPlayer);
+        CovenWitch.tickVisits(serverPlayer);
 
         if (serverPlayer.level().getGameTime() % 20 == 0 && serverPlayer.hasEffect(WitcheryEffects.DEPTHS.get())) {
             if (serverPlayer.isEyeInFluid(FluidTags.WATER)) {

@@ -821,7 +821,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 107 | `LOUSE` | `EntityParasyticLouse` | `louse` (original arthropod model and mutation, saved `BitePotionEffect`) |
 | 108 | `EYE` | `EntityEye` | `eye` |
 | 109 | `BABA_YAGA` | `EntityBabaYaga` | `babayaga` |
-| 110 | `COVEN_WITCH` | `EntityCovenWitch` | `covenwitch` (spawn, appearance, recruitment, quests and membership restored) |
+| 110 | `COVEN_WITCH` | `EntityCovenWitch` | `covenwitch` (spawn, appearance, recruitment, quests, defensive potions, visits, ritual seats, and member death) |
 | 111 | `PLAYER_CORPSE` | `EntityCorpse` | `corpse` |
 | 112 | `NIGHTMARE` | `EntityNightmare` | `nightmare` |
 | 113 | `SPECTRE` | `EntitySpectre` | `spectre` |

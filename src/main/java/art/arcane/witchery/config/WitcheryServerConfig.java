@@ -16,6 +16,7 @@ public final class WitcheryServerConfig {
     public static final ForgeConfigSpec.BooleanValue RESTRICT_TAGLOCK_COLLECTION_ON_NON_PVP_SERVERS;
     public static final ForgeConfigSpec.BooleanValue RESTRICT_TAGLOCK_COLLECTION_FOR_OPS;
     public static final ForgeConfigSpec.IntValue COVEN_WITCH_SPAWN_WEIGHT;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_COVEN_WITCH_VISITS;
     public static final ForgeConfigSpec.BooleanValue RESTRICT_POPPET_SHELVES;
     public static final ForgeConfigSpec.BooleanValue ALLOW_VAMPIRE_RITUAL;
     public static final ForgeConfigSpec.BooleanValue ALLOW_DEATH_ITEM_RECOVERY_RITE;
@@ -88,6 +89,9 @@ public final class WitcheryServerConfig {
         COVEN_WITCH_SPAWN_WEIGHT = builder
                 .comment("One in this many otherwise suitable spawn attempts produces a coven witch.")
                 .defineInRange("covenWitchSpawnWeight", 2, 1, Integer.MAX_VALUE);
+        ALLOW_COVEN_WITCH_VISITS = builder
+                .comment("Allow coven witches to visit players near their respawn beds.")
+                .define("allowCovenWitchVisits", true);
         RESTRICT_POPPET_SHELVES = builder
                 .comment("Limit Poppet Shelf protection to the Overworld, Nether, End, and Dream.")
                 .define("restrictPoppetShelvesToVanillaAndSpiritDimensions", true);

@@ -30,6 +30,7 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -38,10 +39,13 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.MoveTowardsRestrictionGoal;
 import net.minecraft.world.entity.ai.goal.OpenDoorGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
@@ -61,10 +65,12 @@ import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.EnumSet;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -73,6 +79,9 @@ public final class CovenWitch extends PathfinderMob implements RangedAttackMob {
     public static final int MAX_MEMBERS = 6;
     private static final int[][] RITE_POSITIONS = {{-2, -2}, {2, -2}, {-2, 2}, {2, 2}, {0, 3}, {0, -3}};
     private static final float[] RITE_FACING = {-45, 45, -135, 135, 180, 0};
+    private static final AttributeModifier DRINKING_SPEED = new AttributeModifier(
+            UUID.fromString("da2e2747-8768-4f9a-9135-258e93b077a4"), "Drinking speed penalty",
+            -0.25, AttributeModifier.Operation.ADDITION);
     private static final String COVEN = "WITCCoven";
     private static final String QUEST_HOLDER_LEAST = "WITCQuestOwnerIDLeast";
     private static final String QUEST_HOLDER_MOST = "WITCQuestOwnerIDMost";
@@ -87,6 +96,8 @@ public final class CovenWitch extends PathfinderMob implements RangedAttackMob {
     private int remaining;
     @Nullable private UUID covenOwner;
     private int summonTicks = -1;
+    private int drinkTicks;
+    private boolean seatedForRite;
 
     public CovenWitch(EntityType<? extends CovenWitch> type, Level level) {
         super(type, level);
@@ -109,11 +120,13 @@ public final class CovenWitch extends PathfinderMob implements RangedAttackMob {
     @Override
     protected void registerGoals() {
         goalSelector.addGoal(1, new FloatGoal(this));
+        goalSelector.addGoal(1, new RitualSeatGoal());
         goalSelector.addGoal(2, new RangedAttackGoal(this, 1.0, 60, 10.0F));
         goalSelector.addGoal(3, new OpenDoorGoal(this, true));
-        goalSelector.addGoal(4, new WaterAvoidingRandomStrollGoal(this, 1.0));
-        goalSelector.addGoal(5, new LookAtPlayerGoal(this, Player.class, 8.0F));
-        goalSelector.addGoal(6, new RandomLookAroundGoal(this));
+        goalSelector.addGoal(4, new MoveTowardsRestrictionGoal(this, 0.6));
+        goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 1.0));
+        goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 8.0F));
+        goalSelector.addGoal(7, new RandomLookAroundGoal(this));
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
         targetSelector.addGoal(2, new DefendCovenOwnerGoal());
     }
@@ -267,6 +280,45 @@ public final class CovenWitch extends PathfinderMob implements RangedAttackMob {
         return player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getList(COVEN, Tag.TAG_COMPOUND);
     }
 
+    private static List<CovenWitch> nearbyMembers(ServerPlayer owner) {
+        return owner.serverLevel().getEntitiesOfClass(CovenWitch.class, owner.getBoundingBox().inflate(64, 16, 64),
+                witch -> witch.isAlive() && owner.getUUID().equals(witch.covenOwner));
+    }
+
+    public static void tickVisits(ServerPlayer owner) {
+        ServerLevel level = owner.serverLevel();
+        if (level.getGameTime() % 100 != 0 || !WitcheryServerConfig.ALLOW_COVEN_WITCH_VISITS.get()
+                || !owner.isAlive() || owner.isSpectator()) return;
+        BlockPos bed = owner.getRespawnPosition();
+        if (bed == null || !level.dimension().equals(owner.getRespawnDimension())
+                || owner.distanceToSqr(Vec3.atLowerCornerOf(bed)) >= 256 || covenSize(owner) == 0
+                || owner.getRandom().nextInt(20) != 0) return;
+        visit(owner);
+    }
+
+    private static void visit(ServerPlayer owner) {
+        var nearby = nearbyMembers(owner);
+        boolean spawning = nearby.isEmpty();
+        CovenWitch witch = spawning ? createMember(owner, members(owner).getCompound(owner.getRandom().nextInt(covenSize(owner))))
+                : nearby.get(owner.getRandom().nextInt(nearby.size()));
+        if (witch == null) return;
+        if (spawning) witch.summonTicks = 1_800;
+        BlockPos center = owner.blockPosition();
+        for (BlockPos pos : BlockPos.betweenClosed(center.offset(-2, 0, -2), center.offset(2, 0, 2))) {
+            if (Math.abs(pos.getX() - center.getX()) != 2 && Math.abs(pos.getZ() - center.getZ()) != 2) continue;
+            BlockPos floor = pos.below();
+            if (owner.level().getBlockState(floor).isFaceSturdy(owner.level(), floor, Direction.UP)
+                    && placeMember(witch, pos, spawning ? 0 : witch.getYRot(), spawning, false)) return;
+        }
+    }
+
+    public static void dismissNearbyForRite(ServerPlayer player) {
+        for (CovenWitch witch : nearbyMembers(player)) {
+            witch.portalEffect(player.serverLevel());
+            witch.discard();
+        }
+    }
+
     public static boolean recallMember(ServerPlayer player, int index) {
         ServerLevel level = player.serverLevel();
         BlockPos center = player.blockPosition();
@@ -296,38 +348,45 @@ public final class CovenWitch extends PathfinderMob implements RangedAttackMob {
         CompoundTag entry = coven.getCompound(index);
         String name = entry.getString("WitchName");
         if (name.isEmpty()) return false;
-        ServerLevel level = player.serverLevel();
-        AABB area = player.getBoundingBox().inflate(64, 16, 64);
-        CovenWitch witch = level.getEntitiesOfClass(CovenWitch.class, area, candidate ->
-                candidate.isAlive() && player.getUUID().equals(candidate.covenOwner)
-                        && candidate.getName().getString().equalsIgnoreCase(name)).stream().findFirst().orElse(null);
+        CovenWitch witch = nearbyMembers(player).stream().filter(candidate -> candidate.getName().getString().equalsIgnoreCase(name))
+                .findFirst().orElse(null);
         boolean spawning = witch == null;
-        if (spawning) {
-            witch = WitcheryEntities.COVEN_WITCH.get().create(level);
-            if (witch == null) return false;
-            witch.covenOwner = player.getUUID();
-            witch.setCustomName(Component.literal(name));
-            witch.entityData.set(SKIN, Mth.clamp(entry.getInt("Skin"), 0, 4));
-            int quest = Mth.clamp(entry.getInt("Quest"), 0, Quest.values().length - 1);
-            witch.quest = Quest.values()[quest];
-            witch.setPersistenceRequired();
-        }
+        if (spawning) witch = createMember(player, entry);
+        if (witch == null || !placeMember(witch, pos, facing, spawning, stationary)) return false;
+        witch.setTarget(null);
+        witch.seatedForRite = stationary;
+        if (cauldron == null) witch.clearRestriction();
+        else witch.restrictTo(cauldron, 3);
+        witch.summonTicks = duration;
+        return true;
+    }
 
+    @Nullable
+    private static CovenWitch createMember(ServerPlayer player, CompoundTag entry) {
+        String name = entry.getString("WitchName");
+        if (name.isEmpty()) return null;
+        CovenWitch witch = WitcheryEntities.COVEN_WITCH.get().create(player.serverLevel());
+        if (witch == null) return null;
+        witch.covenOwner = player.getUUID();
+        witch.setCustomName(Component.literal(name));
+        witch.entityData.set(SKIN, Mth.clamp(entry.getInt("Skin"), 0, 4));
+        int quest = Mth.clamp(entry.getInt("Quest"), 0, Quest.values().length - 1);
+        witch.quest = Quest.values()[quest];
+        witch.setPersistenceRequired();
+        return witch;
+    }
+
+    private static boolean placeMember(CovenWitch witch, BlockPos pos, float facing, boolean spawning, boolean stationary) {
+        ServerLevel level = (ServerLevel) witch.level();
         Vec3 destination = Vec3.atBottomCenterOf(pos);
         AABB bounds = witch.getBoundingBox().move(destination.subtract(witch.position()));
         if (level.getBlockCollisions(witch, bounds).iterator().hasNext()) return false;
-        UUID memberId = witch.getUUID();
         if (!stationary && !level.getEntitiesOfClass(CovenWitch.class, bounds,
-                candidate -> candidate.isAlive() && !memberId.equals(candidate.getUUID())).isEmpty()) return false;
+                candidate -> candidate.isAlive() && candidate != witch).isEmpty()) return false;
         witch.moveTo(destination.x, destination.y, destination.z, facing, 0);
         witch.setYBodyRot(facing);
         witch.setYHeadRot(facing);
         witch.getNavigation().stop();
-        witch.setTarget(null);
-        witch.setNoAi(stationary);
-        if (cauldron == null) witch.clearRestriction();
-        else witch.restrictTo(cauldron, 3);
-        witch.summonTicks = duration;
         if (spawning && !level.addFreshEntity(witch)) return false;
         witch.portalEffect(level);
         return true;
@@ -348,6 +407,21 @@ public final class CovenWitch extends PathfinderMob implements RangedAttackMob {
     private void portalEffect(ServerLevel level) {
         level.sendParticles(ParticleTypes.PORTAL, getX(), getY() + 1, getZ(), 16, 0.35, 0.75, 0.35, 0.25);
         playSound(SoundEvents.ENDERMAN_TELEPORT);
+    }
+
+    @Override
+    public void die(DamageSource damage) {
+        boolean previouslyDead = dead;
+        super.die(damage);
+        if (previouslyDead || !dead || !(level() instanceof ServerLevel level) || covenOwner == null
+                || !(level.getPlayerByUUID(covenOwner) instanceof ServerPlayer owner)) return;
+        ListTag coven = members(owner);
+        for (int i = 0; i < coven.size(); i++) {
+            if (getName().getString().equalsIgnoreCase(coven.getCompound(i).getString("WitchName"))) {
+                coven.remove(i);
+                return;
+            }
+        }
     }
 
     private void say(ServerPlayer player, String key, Object... args) {
@@ -378,26 +452,86 @@ public final class CovenWitch extends PathfinderMob implements RangedAttackMob {
 
     @Override
     public void performRangedAttack(LivingEntity target, float distanceFactor) {
+        if (drinkTicks > 0 || level().isClientSide) return;
         Vec3 position = target.position().add(target.getDeltaMovement());
         double x = position.x - getX();
         double y = target.getEyeY() - 1.1 - getY();
         double z = position.z - getZ();
         double distance = Math.sqrt(x * x + z * z);
-        Potion effect = Potions.HARMING;
+        MobEffectInstance effect = new MobEffectInstance(MobEffects.HARM, 1);
         if (distance >= 8 && !target.hasEffect(MobEffects.MOVEMENT_SLOWDOWN)) {
-            effect = Potions.SLOWNESS;
+            effect = new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 1_351);
         } else if (target.getHealth() >= 8 && !target.hasEffect(MobEffects.POISON)) {
-            effect = Potions.POISON;
+            effect = new MobEffectInstance(MobEffects.POISON, 676);
         } else if (distance <= 3 && !target.hasEffect(MobEffects.WEAKNESS) && random.nextFloat() < 0.25F) {
-            effect = Potions.WEAKNESS;
+            effect = new MobEffectInstance(MobEffects.WEAKNESS, 1_351);
         }
 
         ThrownPotion potion = new ThrownPotion(level(), this);
-        potion.setItem(PotionUtils.setPotion(new ItemStack(Items.SPLASH_POTION), effect));
+        potion.setItem(PotionUtils.setCustomEffects(new ItemStack(Items.SPLASH_POTION), List.of(effect)));
         potion.setXRot(potion.getXRot() + 20);
         potion.shoot(x, y + distance * 0.2, z, 0.75F, 8.0F);
         playSound(SoundEvents.WITCH_THROW);
         level().addFreshEntity(potion);
+    }
+
+    @Override
+    public void aiStep() {
+        if (level() instanceof ServerLevel level && isAlive() && !isNoAi()) {
+            if (drinkTicks > 0) {
+                if (--drinkTicks == 0) finishPotion();
+            } else {
+                Potion potion = defensivePotion();
+                if (potion != null) {
+                    ItemStack stack = PotionUtils.setPotion(new ItemStack(Items.POTION), potion);
+                    setItemSlot(EquipmentSlot.MAINHAND, stack);
+                    setDrinkTicks(stack.getUseDuration());
+                    playSound(SoundEvents.WITCH_DRINK, 1, 0.8F + random.nextFloat() * 0.4F);
+                }
+            }
+            if (random.nextFloat() < 0.00075F) level.broadcastEntityEvent(this, (byte) 15);
+        }
+        super.aiStep();
+    }
+
+    @Nullable
+    private Potion defensivePotion() {
+        if (random.nextFloat() < 0.15F && isOnFire() && !hasEffect(MobEffects.FIRE_RESISTANCE)) return Potions.FIRE_RESISTANCE;
+        if (random.nextFloat() < 0.05F && getHealth() < getMaxHealth()) return Potions.HEALING;
+        LivingEntity target = getTarget();
+        if (target != null && !hasEffect(MobEffects.MOVEMENT_SPEED) && target.distanceToSqr(this) > 121
+                && (random.nextFloat() < 0.25F || random.nextFloat() < 0.25F)) return Potions.SWIFTNESS;
+        return null;
+    }
+
+    private void finishPotion() {
+        ItemStack consumed = getMainHandItem();
+        setDrinkTicks(0);
+        if (!consumed.is(Items.POTION)) return;
+        setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+        for (MobEffectInstance effect : PotionUtils.getMobEffects(consumed)) {
+            addEffect(new MobEffectInstance(effect));
+        }
+    }
+
+    private void setDrinkTicks(int ticks) {
+        drinkTicks = ticks;
+        var speed = getAttribute(Attributes.MOVEMENT_SPEED);
+        speed.removeModifier(DRINKING_SPEED);
+        if (ticks > 0) speed.addTransientModifier(DRINKING_SPEED);
+    }
+
+    @Override
+    public void handleEntityEvent(byte event) {
+        if (event != 15) {
+            super.handleEntityEvent(event);
+            return;
+        }
+        int count = random.nextInt(35) + 10;
+        for (int i = 0; i < count; i++) {
+            level().addParticle(ParticleTypes.WITCH, getX() + random.nextGaussian() * 0.13,
+                    getBoundingBox().maxY + 0.5 + random.nextGaussian() * 0.13, getZ() + random.nextGaussian() * 0.13, 0, 0, 0);
+        }
     }
 
     @Override
@@ -412,7 +546,9 @@ public final class CovenWitch extends PathfinderMob implements RangedAttackMob {
         if (covenOwner != null) {
             tag.putUUID("Owner", covenOwner);
             tag.putInt("SuicideIn", summonTicks);
+            tag.putBoolean("Sitting", seatedForRite);
         }
+        if (drinkTicks > 0) tag.putInt("DrinkTicks", drinkTicks);
     }
 
     @Override
@@ -423,6 +559,11 @@ public final class CovenWitch extends PathfinderMob implements RangedAttackMob {
         offeredToId = tag.hasUUID("QuestPlayer") ? tag.getUUID("QuestPlayer") : null;
         covenOwner = tag.hasUUID("Owner") ? tag.getUUID("Owner") : null;
         summonTicks = tag.contains("SuicideIn", Tag.TAG_ANY_NUMERIC) ? tag.getInt("SuicideIn") : -1;
+        boolean oldRiteSeat = covenOwner != null && !tag.contains("Sitting", Tag.TAG_ANY_NUMERIC) && summonTicks >= 0 && isNoAi();
+        seatedForRite = tag.getBoolean("Sitting") || oldRiteSeat;
+        if (oldRiteSeat) setNoAi(false);
+        ItemStack hand = getMainHandItem();
+        setDrinkTicks(hand.is(Items.POTION) ? Mth.clamp(tag.getInt("DrinkTicks"), 0, hand.getUseDuration()) : 0);
         int questType = tag.getInt("QuestType");
         if (questType < 0 || questType >= Quest.values().length) {
             clearOffer();
@@ -431,6 +572,29 @@ public final class CovenWitch extends PathfinderMob implements RangedAttackMob {
             remaining = tag.getInt("QuestItemsNeeded");
             accepted = tag.getBoolean("QuestAccepted");
             if (remaining <= 0 || remaining > quest.count) clearOffer();
+        }
+    }
+
+    private final class RitualSeatGoal extends Goal {
+        private RitualSeatGoal() {
+            setFlags(EnumSet.of(Flag.JUMP, Flag.MOVE));
+        }
+
+        @Override
+        public boolean canUse() {
+            if (!seatedForRite || !onGround() || isInWaterOrBubble()) return false;
+            Player owner = covenOwner == null ? null : level().getPlayerByUUID(covenOwner);
+            return owner == null || distanceToSqr(owner) >= 144 || owner.getLastHurtByMob() == null;
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            return seatedForRite;
+        }
+
+        @Override
+        public void start() {
+            getNavigation().stop();
         }
     }
 
