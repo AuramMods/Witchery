@@ -1126,6 +1126,13 @@
 - [x] Show the three illusions as their respective vanilla mobs to the intended viewer. Present werevillagers as vanilla villagers and retain their profession, biome type, level and age for the tooltip.
 - [ ] Verify the overlay in a muted live client running Jade. [Jade 11.13.2](https://www.curseforge.com/minecraft/mc-mods/jade/files/6855440)
 
+## Industrial Foregoing Automation (2026-11-22)
+
+- [x] Restore MineFactory Reloaded's three mob exclusion lists through the Mob Crusher, Mob Imprisonment Tool, and Mob Duplicator. Keep the original differences. A vampire can be captured and released, while the Crusher skips it and the Duplicator rejects it. The capture tool refuses a Demon.
+- [x] Preserve Rowan, Alder, and Hawthorn when the Plant Sower consumes a sapling. The Sower uses the existing wood state attached to the selected inventory stack.
+- [x] Exercise the actual machines with all eight crops, including Artichoke on source water. The Fertilizer advances the crops and grows all three trees. The Gatherer leaves immature crops standing, collects mature ones, and collects logs and leaves without losing the log species.
+- [x] Pass 67 headless GameTests with Industrial Foregoing 3.5.21, Titanium 3.8.32, and Patchouli 84.1, and 62 on clean Forge. Run Java 17 data generation and JAR reobfuscation. Verify that the packaged Sower plants Hawthorn and the Crusher collects pork while a vampire beside the pig keeps full health. The sapling, output, and vampire survived a dedicated restart. The packaged JAR also booted on clean Forge.
+
 ## Cauldron Wool and Dye Colors (2026-11-21)
 
 - [x] Accept all sixteen wools in heated cauldrons. Consume the wool and store its legacy RGB separately from the recipe. Later ingredients mix into that color and later wool replaces it. Reset the color when the cauldron is emptied or cleared with Gypsum.

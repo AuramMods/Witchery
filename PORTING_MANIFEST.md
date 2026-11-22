@@ -1554,7 +1554,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 - `ModHookArsMagica2`
 - `ModHookBloodMagic`
 - `ModHookForestry`
-- `ModHookMineFactoryReloaded`
+- `ModHookMineFactoryReloaded` maps to Industrial Foregoing. The Sower preserves the three saved sapling variants. Forge's crop and bonemeal interfaces and the log and leaf tags cover the eight crops and three trees. The Crusher, Imprisonment Tool, and Duplicator use their respective entity type tags for the 29, 25, and 30 original exclusions. Witchery makes the Crusher apply its full exclusion tag before selecting a target. [Industrial Foregoing 3.5.21](https://www.curseforge.com/minecraft/mc-mods/industrial-foregoing/files/7068937)
 - `ModHookMystCraft`
 - `ModHookThaumcraft4`
 - `ModHookTinkersConstruct`
