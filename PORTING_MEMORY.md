@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Heart Glyph Offering Visibility and Saved Brew Rain (2026-11-22)
+
+- In 48 isolated placements, five Focused Barrier or Moving Earth rings matched while the entity query returned zero freshly added offerings. The original activation succeeded when the items became visible one to ten ticks later. Both checked-in fixtures now wait for the real dropped stacks. The Moving Earth assertions run relative to activation, so the wait preserves their original stage timings.
+- The original Forge 1.7.10 server saved a falling `witchery.droplet` with vanilla item numbers inside its custom `Brew.Items` list. The first GameTest run failed to retain those ingredients after chunk conversion. The importer now sends the saved `Brew` compound through the existing vanilla-stack conversion before the Witchery entity is restored.
+- The packaged importer loaded the original droplet with Nether Wart, Glistering Melon, color `-812596878`, and its original UUID. The headless fixture suspended it for an ordinary dedicated restart, then released it over a pig. It healed the pig from four to eight and disappeared. The packaged SHA-256 is `04d2ed5565185c4162517f82a36dcc3afa26d4aa39504b5ab2211535cb144410`. `/tmp/witchery-rite-activation-current` identifies the probe and both profiles.
+- The cauldron lightning fixture also waits for the pig, the six Mutandis drops, and the four seeded lightning entities to be visible. It still checks the instant potion duration on the cast tick. All 118 checked-in GameTests passed, along with Java 17 data generation and JAR reobfuscation.
+- The 670-case replay was interrupted after a concurrent compile replaced files in its live class directory. The next replay uses copies of the compiled mod classes and processed resources so later builds cannot affect its runtime.
+
 ## Legacy Healing and Harming Brews (2026-11-22)
 
 - The 184-key original brew registry audit exposed a missing mapping for `minecraft:speckled_melon`. The shared brew loader now reads it as `minecraft:glistering_melon_slice`, so named 1.7.10 mixtures keep their effect and cauldrons keep the ingredient when saved.
@@ -9,6 +17,7 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - The regression failed before the mapping and passed after it. It covers the named cauldron's ordered ingredients, tank amount and color after a save round trip, four points of Healing, six points of inverted Harming, and the returned glass bottles. Java 17 data generation, JAR reobfuscation, and all 117 checked-in GameTests passed.
 - A Forge 1.7.10 server made both mixtures using Witchery 0.24.1's registered actions. The 1.20.1 packaged importer retained the two full cauldrons and chest bottles, including their ordered ingredients and colors `-812596878` and `-654829330`. Both cauldrons and bottles were checked again on an ordinary dedicated restart.
 - The isolated survival client took both imported bottles from the original chest and drank them. Its health went from 12 to 16 and then to 10. Both bottles returned glass, and the server saved the emptied chest. The client was hidden and muted on OpenAL No Output, and the focus monitor recorded no activation. The tested JAR SHA-256 is `35dd667edd89fce78a50149502e86e087c75ea586f39f56994d7747514b8d32d`. `/tmp/witchery-legacy-healing-current` identifies the original and packaged profiles and logs.
+- The retried headless Auram launch recovered the saved Oven and Filtered Fume Funnel. It read a named Healing mixture as Glistering Melon with the original color and saved it before a normal shutdown.
 
 ## Fume Funnel Oven Access (2026-11-22)
 

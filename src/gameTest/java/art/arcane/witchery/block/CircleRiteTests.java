@@ -14,6 +14,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.gametest.framework.GameTestSequence;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
@@ -160,7 +161,6 @@ public final class CircleRiteTests {
     @GameTest(template = TEMPLATE, batch = "witchery_ward_barrier", setupTicks = 5)
     public static void focusedBarrierUsesTheCylinderAndLetsOnlyPlayersPass(GameTestHelper helper) {
         ring(helper, RitualCircle.SMALL_RITE, "circleglyphritual");
-        var altar = chargedAltar(helper, false);
         var level = helper.getLevel();
         var center = helper.absolutePos(CENTER);
         var heart = heart(helper);
@@ -168,30 +168,32 @@ public final class CircleRiteTests {
         var roof = center.above(5);
         var occupied = wall.above(2);
         level.setBlockAndUpdate(occupied, Blocks.CHEST.defaultBlockState());
-        start(helper, new ItemStack(Items.OBSIDIAN), new ItemStack(Items.REDSTONE));
-        tick(level, center, heart, TWO_OFFERING_CAST + 1);
-        var barrier = block("barrier");
-        helper.assertTrue(level.getBlockState(wall).is(barrier) && level.getBlockState(roof).is(barrier)
-                && level.getBlockState(wall.below()).is(barrier), "The focused barrier draws walls, roof and floor");
-        helper.assertTrue(level.getBlockState(occupied).is(Blocks.CHEST) && level.getBlockState(center).is(block("circle")),
-                "The cylinder preserves the container and heart");
-        var player = fake(level);
-        var cow = helper.spawn(EntityType.COW, CENTER.east(2));
-        var state = level.getBlockState(wall);
-        helper.assertTrue(state.getCollisionShape(level, wall, CollisionContext.of(player)).isEmpty()
-                && !state.getCollisionShape(level, wall, CollisionContext.of(cow)).isEmpty(),
-                "The actual barrier collision lets a survival player pass while blocking the cow");
-        var wallEntity = (BarrierBlockEntity) level.getBlockEntity(wall);
-        helper.assertTrue(wallEntity.saveWithoutMetadata().getInt("remainingTicks") == 30
-                && Math.abs(altar.power() - 9498.8F) < 0.01F, "The first lease is thirty ticks and upkeep spends 1.2");
-        helper.useBlock(CENTER);
-        helper.assertTrue(!level.getBlockState(center).getValue(RiteHeartBlock.ACTIVE)
-                && heart.saveWithoutMetadata().getList("ProtectionRites", Tag.TAG_COMPOUND).isEmpty(),
-                "Manual cancellation clears the heart without returning completed offerings");
-        for (int tick = 0; tick < 30; tick++) BarrierBlockEntity.tick(level, wall, state, wallEntity);
-        helper.assertTrue(level.isEmptyBlock(wall), "The last leased barrier expires after thirty ticks");
-        cow.discard();
-        helper.succeed();
+        waitForOfferings(helper, new ItemStack(Items.OBSIDIAN), new ItemStack(Items.REDSTONE)).thenExecute(() -> {
+            var altar = chargedAltar(helper, false);
+            start(helper);
+            tick(level, center, heart, TWO_OFFERING_CAST + 1);
+            var barrier = block("barrier");
+            helper.assertTrue(level.getBlockState(wall).is(barrier) && level.getBlockState(roof).is(barrier)
+                    && level.getBlockState(wall.below()).is(barrier), "The focused barrier draws walls, roof and floor");
+            helper.assertTrue(level.getBlockState(occupied).is(Blocks.CHEST) && level.getBlockState(center).is(block("circle")),
+                    "The cylinder preserves the container and heart");
+            var player = fake(level);
+            var cow = helper.spawn(EntityType.COW, CENTER.east(2));
+            var state = level.getBlockState(wall);
+            helper.assertTrue(state.getCollisionShape(level, wall, CollisionContext.of(player)).isEmpty()
+                    && !state.getCollisionShape(level, wall, CollisionContext.of(cow)).isEmpty(),
+                    "The actual barrier collision lets a survival player pass while blocking the cow");
+            var wallEntity = (BarrierBlockEntity) level.getBlockEntity(wall);
+            helper.assertTrue(wallEntity.saveWithoutMetadata().getInt("remainingTicks") == 30
+                    && Math.abs(altar.power() - 9498.8F) < 0.01F, "The first lease is thirty ticks and upkeep spends 1.2");
+            helper.useBlock(CENTER);
+            helper.assertTrue(!level.getBlockState(center).getValue(RiteHeartBlock.ACTIVE)
+                    && heart.saveWithoutMetadata().getList("ProtectionRites", Tag.TAG_COMPOUND).isEmpty(),
+                    "Manual cancellation clears the heart without returning completed offerings");
+            for (int tick = 0; tick < 30; tick++) BarrierBlockEntity.tick(level, wall, state, wallEntity);
+            helper.assertTrue(level.isEmptyBlock(wall), "The last leased barrier expires after thirty ticks");
+            cow.discard();
+        }).thenSucceed();
     }
 
     @GameTest(template = TEMPLATE, batch = "witchery_ward_remote", setupTicks = 5)
@@ -200,13 +202,7 @@ public final class CircleRiteTests {
         var level = helper.getLevel();
         var center = helper.absolutePos(CENTER);
         var target = center.east(43).above(6);
-        var offerings = List.of(new ItemStack(Items.OBSIDIAN), new ItemStack(Items.GLOWSTONE_DUST), bound(level, target));
-        offer(helper, offerings.toArray(ItemStack[]::new));
-        helper.startSequence().thenWaitUntil(() -> {
-            var dropped = drops(helper);
-            helper.assertTrue(offerings.stream().allMatch(stack -> dropped.stream().anyMatch(item -> ItemStack.matches(item.getItem(), stack))),
-                    "The three offerings have entered the level before activation");
-        }).thenExecute(() -> {
+        waitForOfferings(helper, new ItemStack(Items.OBSIDIAN), new ItemStack(Items.GLOWSTONE_DUST), bound(level, target)).thenExecute(() -> {
             var altar = chargedAltar(helper, false);
             start(helper);
             var heart = heart(helper);
@@ -311,9 +307,8 @@ public final class CircleRiteTests {
         pig.setNoAi(true);
         pig.setPos(Vec3.atBottomCenterOf(helper.absolutePos(CENTER.west(2))));
         helper.getLevel().addFreshEntity(pig);
-        raiseOfferings(helper);
-        start(helper);
-        helper.runAfterDelay(THREE_OFFERING_CAST + 12, () -> {
+        var cast = waitForOfferings(helper, movingEarthOfferings()).thenExecute(() -> start(helper));
+        cast.thenIdle(THREE_OFFERING_CAST + 12).thenExecute(() -> {
             for (int rise = 1; rise < 7; rise++) {
                 if (helper.getBlockEntity(CENTER.above(rise)) instanceof RiteHeartBlockEntity moved) {
                     var saved = moved.saveWithoutMetadata();
@@ -324,8 +319,7 @@ public final class CircleRiteTests {
                 }
             }
             helper.fail("The active heart did not move");
-        });
-        helper.runAfterDelay(THREE_OFFERING_CAST + 46, () -> {
+        }).thenIdle(34).thenExecute(() -> {
             helper.assertBlockPresent(Blocks.AIR, CENTER);
             helper.assertBlockPresent(block("circle"), CENTER.above(7));
             helper.assertBlockPresent(block("circleglyphritual"), CENTER.north(3).above(7));
@@ -342,8 +336,7 @@ public final class CircleRiteTests {
             helper.assertTrue(helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(helper.absolutePos(CENTER)).inflate(12)).isEmpty(),
                     "Raising a container must not duplicate its inventory or refund the rite");
             pig.discard();
-            helper.succeed();
-        });
+        }).thenSucceed();
     }
 
     @GameTest(template = TEMPLATE, batch = "witchery_earth_remote", setupTicks = 5, timeoutTicks = 168)
@@ -358,7 +351,7 @@ public final class CircleRiteTests {
         Consumer<BlockEvent.EntityPlaceEvent> cancel = event -> {
             if (event.getPos().equals(protectedDestination) && event.getPlacedBlock().is(Blocks.EMERALD_BLOCK)) event.setCanceled(true);
         };
-        raiseOfferings(helper);
+        offer(helper, movingEarthOfferings());
         offer(helper, bound(helper, target));
         helper.runAfterDelay(5, () -> {
             start(helper);
@@ -412,9 +405,20 @@ public final class CircleRiteTests {
         helper.assertTrue(helper.getBlockState(CENTER).getValue(RiteHeartBlock.ACTIVE), "The Heart Glyph starts the rite");
     }
 
-    private static void raiseOfferings(GameTestHelper helper) {
-        offer(helper, new ItemStack(WitcheryIngredient.BREW_OF_SPROUTING.item()),
-                new ItemStack(Items.CACTUS), new ItemStack(Items.GUNPOWDER));
+    private static GameTestSequence waitForOfferings(GameTestHelper helper, ItemStack... offerings) {
+        offer(helper, offerings);
+        return helper.startSequence().thenWaitUntil(() -> {
+            var dropped = drops(helper);
+            for (var offering : offerings) {
+                helper.assertTrue(dropped.stream().anyMatch(item -> ItemStack.matches(item.getItem(), offering)),
+                        "The dropped offering is visible before using the Heart Glyph: " + offering);
+            }
+        });
+    }
+
+    private static ItemStack[] movingEarthOfferings() {
+        return new ItemStack[]{new ItemStack(WitcheryIngredient.BREW_OF_SPROUTING.item()),
+                new ItemStack(Items.CACTUS), new ItemStack(Items.GUNPOWDER)};
     }
 
     private static void offer(GameTestHelper helper, ItemStack... items) {

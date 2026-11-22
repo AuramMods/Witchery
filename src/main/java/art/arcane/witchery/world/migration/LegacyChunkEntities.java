@@ -29,20 +29,20 @@ final class LegacyChunkEntities {
         if (entity.contains("Riding", Tag.TAG_COMPOUND)) {
             prepareEntity(entity.getCompound("Riding"), ids, fixer, from);
         }
+        int targetVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
         var forgeData = entity.getCompound("ForgeData");
         if (forgeData.contains(AnimalMerchant.STOCK_TAG, Tag.TAG_COMPOUND)) {
-            ids.upgradeVanillaItems(forgeData.getCompound(AnimalMerchant.STOCK_TAG), fixer, from,
-                    SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+            ids.upgradeVanillaItems(forgeData.getCompound(AnimalMerchant.STOCK_TAG), fixer, from, targetVersion);
         }
 
         String oldType = entity.getString("id");
         if (!oldType.startsWith(LEGACY_PREFIX) && !oldType.startsWith(NAMESPACE)) return;
         ResourceLocation name = ResourceLocation.tryParse(NAMESPACE + oldType.substring(NAMESPACE.length()).toLowerCase(Locale.ROOT));
         if (name == null || !ForgeRegistries.ENTITY_TYPES.containsKey(name)) return;
-        if (name.getPath().equals("goblin") && entity.contains("Offers", Tag.TAG_COMPOUND)) {
-            // Keep the Goblin's profession and trade list. The vanilla Witch schema does not type its offers.
-            ids.upgradeVanillaItems(entity.getCompound("Offers"), fixer, from,
-                    SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+        // The vanilla Witch schema does not visit Goblin trade stacks or a falling brew's ingredients.
+        switch (name.getPath()) {
+            case "goblin" -> ids.upgradeVanillaItems(entity.getCompound("Offers"), fixer, from, targetVersion);
+            case "droplet" -> ids.upgradeVanillaItems(entity.getCompound("Brew"), fixer, from, targetVersion);
         }
 
         // Vanilla's old entity schema needs a known type to fix the entity tree and its typed fields.

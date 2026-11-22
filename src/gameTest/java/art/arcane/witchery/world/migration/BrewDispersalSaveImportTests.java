@@ -4,8 +4,10 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.BrewDispersalBlock;
 import art.arcane.witchery.block.entity.BrewFluidBlockEntity;
 import art.arcane.witchery.brewing.BrewMixture;
+import art.arcane.witchery.entity.BrewDroplet;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
+import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
@@ -17,12 +19,14 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.datafix.DataFixTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.chunk.storage.ChunkStorage;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -33,6 +37,53 @@ import java.util.Optional;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class BrewDispersalSaveImportTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_legacy_brew_rain")
+    public static void importedRainDropletKeepsItsNumericBrewPayload(GameTestHelper helper) throws Exception {
+        var registry = TagParser.parseTag("{ItemData:[{V:372},{V:382}]}");
+        var entries = registry.getList("ItemData", Tag.TAG_COMPOUND);
+        entries.getCompound(0).putString("K", "\u0002minecraft:nether_wart");
+        entries.getCompound(1).putString("K", "\u0002minecraft:speckled_melon");
+        var original = TagParser.parseTag("""
+                {Level:{xPos:0,zPos:0,TerrainPopulated:1b,Entities:[
+                  {id:"witchery.droplet",Pos:[4d,110d,4d],Motion:[0d,-0.3d,0d],Rotation:[0f,0f],
+                   Brew:{Color:-812596878,Items:[{id:372s,Count:1b,Damage:0s},{id:382s,Count:1b,Damage:0s}]}}]}}
+                """);
+        var root = Files.createTempDirectory("witchery-legacy-brew-rain");
+        var snapshot = root.resolve("witchery-legacy-ids.dat");
+        CompoundTag saved;
+        try {
+            NbtIo.writeCompressed(registry, snapshot.toFile());
+            var fixer = helper.getLevel().getServer().getFixerUpper();
+            var intermediate = LegacyChunkUpgrade.upgrade(DataFixTypes.CHUNK, fixer, original, -1, 1493,
+                    LegacyWorldIds.find(root));
+            ChunkStorage.injectDatafixingContext(intermediate, Level.OVERWORLD, Optional.empty());
+            var imported = DataFixTypes.CHUNK.updateToCurrentVersion(fixer, intermediate, 1493);
+            LegacyChunkUpgrade.finish(imported, Level.OVERWORLD);
+            saved = imported.getList("entities", Tag.TAG_COMPOUND).getCompound(0);
+        } finally {
+            Files.deleteIfExists(snapshot);
+            Files.deleteIfExists(root);
+        }
+
+        var items = saved.getCompound("Brew").getList("Items", Tag.TAG_COMPOUND);
+        helper.assertTrue(saved.getString("id").equals("witchery:droplet")
+                        && items.getCompound(0).getString("id").equals("minecraft:nether_wart")
+                        && items.getCompound(1).getString("id").equals("minecraft:glistering_melon_slice"),
+                "The imported falling brew should retain its type and both ordered ingredients");
+        var pig = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(4, 3, 4));
+        pig.setHealth(4.0F);
+        var drop = WitcheryEntities.BREW_DROPLET.get().create(helper.getLevel());
+        drop.load(saved);
+        helper.assertTrue(saved.getCompound("Brew").getInt("Color") == -812596878
+                        && drop.getItem().getTag().getInt(BrewDroplet.TINT_KEY) == (-812596878 & 0xFFFFFF),
+                "The falling brew should retain its saved color");
+        drop.setPos(pig.getX(), pig.getEyeY() + 2.5, pig.getZ());
+        drop.setDeltaMovement(new Vec3(0, -0.3, 0));
+        helper.assertTrue(helper.getLevel().addFreshEntity(drop), "The imported droplet should join the level");
+        helper.succeedWhen(() -> helper.assertTrue(!drop.isAlive() && pig.getHealth() == 8.0F,
+                "The imported droplet should heal on impact"));
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void importedDispersalsResumeWithTheirOwnTicks(GameTestHelper helper) throws Exception {
         var registry = TagParser.parseTag("{ItemData:[{V:442},{V:443}]}");

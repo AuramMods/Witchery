@@ -88,31 +88,35 @@ public final class CauldronMisfortuneTests {
         var level = helper.getLevel();
         BlockPos pos = placeCauldron(helper);
         var altar = placeAltar(helper);
-        var pig = helper.spawn(EntityType.PIG, CAULDRON.south());
+        var pig = helper.spawnWithNoFreeWill(EntityType.PIG, CAULDRON.south());
         var affectedArea = new AABB(pos).inflate(5);
 
-        prepareGoldenChalk(helper, pos);
-        finishCast(helper, pos, altar, 0, 5189);
-        helper.assertTrue(cauldron(helper, pos).saveWithFullMetadata().getInt("RitualTicks") == 0
-                        && pig.getActiveEffects().isEmpty() && level.getEntitiesOfClass(LightningBolt.class, affectedArea).isEmpty(),
-                "An unpowered cast keeps its brew without a lightning or potion penalty");
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
+                !level.getEntitiesOfClass(pig.getClass(), affectedArea, candidate -> candidate == pig).isEmpty(),
+                "The target pig is visible to the cauldron")).thenExecute(() -> {
+            prepareGoldenChalk(helper, pos);
+            finishCast(helper, pos, altar, 0, 5189);
+            helper.assertTrue(cauldron(helper, pos).saveWithFullMetadata().getInt("RitualTicks") == 0
+                            && pig.getActiveEffects().isEmpty() && level.getEntitiesOfClass(LightningBolt.class, affectedArea).isEmpty(),
+                    "An unpowered cast keeps its brew without a lightning or potion penalty");
 
-        prepareCast(helper, pos, "mutandis", WitcheryIngredient.MANDRAKE_ROOT.item().getDefaultInstance(),
-                WitcheryIngredient.EXHALE_OF_THE_HORNED_ONE.item().getDefaultInstance());
-        finishCast(helper, pos, altar, 0, 5189);
-        helper.assertItemEntityCountIs(WitcheryIngredient.MUTANDIS.item(), CAULDRON.above(), 2, 6);
-        helper.assertTrue(pig.getActiveEffects().isEmpty() && level.getEntitiesOfClass(LightningBolt.class, affectedArea).isEmpty(),
-                "Completing a free recipe skips misfortune even with no chalk circles");
-
-        prepareGoldenChalk(helper, pos);
-        finishCast(helper, pos, altar, 4000, 5189);
-        assertEffect(helper, pig, WitcheryEffects.PARALYSIS.get(), 200, 2);
-        var bolts = level.getEntitiesOfClass(LightningBolt.class, affectedArea);
-        var actual = bolts.stream().map(Entity::blockPosition).collect(Collectors.toSet());
-        var expected = Set.of(pos.offset(-2, 0, -2), pos.offset(-4, 0, -3), pos.offset(-1, 0, 3), pos.offset(-1, 0, -3));
-        helper.assertTrue(bolts.size() == 4 && actual.equals(expected), "The original roll sequence produces four offset lightning bolts");
-        bolts.forEach(Entity::discard);
-        helper.succeed();
+            prepareCast(helper, pos, "mutandis", WitcheryIngredient.MANDRAKE_ROOT.item().getDefaultInstance(),
+                    WitcheryIngredient.EXHALE_OF_THE_HORNED_ONE.item().getDefaultInstance());
+            finishCast(helper, pos, altar, 0, 5189);
+        }).thenWaitUntil(() -> helper.assertItemEntityCountIs(WitcheryIngredient.MUTANDIS.item(), CAULDRON.above(), 2, 6))
+                .thenExecute(() -> {
+                    helper.assertTrue(pig.getActiveEffects().isEmpty() && level.getEntitiesOfClass(LightningBolt.class, affectedArea).isEmpty(),
+                            "Completing a free recipe skips misfortune even with no chalk circles");
+                    prepareGoldenChalk(helper, pos);
+                    finishCast(helper, pos, altar, 4000, 5189);
+                    assertEffect(helper, pig, WitcheryEffects.PARALYSIS.get(), 200, 2);
+                }).thenWaitUntil(() -> {
+                    var bolts = level.getEntitiesOfClass(LightningBolt.class, affectedArea);
+                    var actual = bolts.stream().map(Entity::blockPosition).collect(Collectors.toSet());
+                    var expected = Set.of(pos.offset(-2, 0, -2), pos.offset(-4, 0, -3), pos.offset(-1, 0, 3), pos.offset(-1, 0, -3));
+                    helper.assertTrue(bolts.size() == 4 && actual.equals(expected), "The original roll sequence produces four offset lightning bolts");
+                    bolts.forEach(Entity::discard);
+                }).thenSucceed();
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_cauldron_summon_risk")
