@@ -21,6 +21,7 @@ import java.util.EnumSet;
 
 final class HobgoblinHaulGoal extends Goal {
     private static final int SEARCH_RANGE = 24;
+    private static final double DROP_RANGE_SQUARED = 6.25;
     private static final double SPEED = 0.6;
 
     private final Hobgoblin goblin;
@@ -54,8 +55,8 @@ final class HobgoblinHaulGoal extends Goal {
             nextSearch = level.getGameTime() + 60;
             for (BlockEntity storage : nearbyStorage(level)) {
                 if (!hasSpace((Container) storage, held)) continue;
-                if (goblin.distanceToSqr(Vec3.atCenterOf(storage.getBlockPos())) <= 6.25
-                        || choosePath(navigation.createPath(storage.getBlockPos(), 1))) {
+                var pos = storage.getBlockPos();
+                if (inDropRange(storage) || choosePath(pathToDropRange(navigation, pos))) {
                     destination = storage;
                     return true;
                 }
@@ -66,6 +67,19 @@ final class HobgoblinHaulGoal extends Goal {
 
     private boolean canHaul() {
         return goblin.isLeashed() && !goblin.isBaby() && !goblin.isTrading();
+    }
+
+    private boolean inDropRange(BlockEntity storage) {
+        return goblin.distanceToSqr(Vec3.atCenterOf(storage.getBlockPos())) <= DROP_RANGE_SQUARED;
+    }
+
+    private static Path pathToDropRange(PathNavigation navigation, BlockPos storage) {
+        Vec3 center = Vec3.atCenterOf(storage);
+        // Ground navigation can redirect a solid container's position to the top of its column.
+        var positions = BlockPos.betweenClosedStream(storage.offset(-2, -2, -2), storage.offset(2, 2, 2))
+                .filter(pos -> Vec3.atBottomCenterOf(pos).distanceToSqr(center) < DROP_RANGE_SQUARED)
+                .map(BlockPos::immutable);
+        return navigation.createPath(positions, 0);
     }
 
     private boolean choosePath(Path candidate) {
@@ -116,7 +130,7 @@ final class HobgoblinHaulGoal extends Goal {
         if (droppedItem != null) return held.isEmpty() && droppedItem.isAlive()
                 && (goblin.distanceToSqr(droppedItem) <= 2.25 || !goblin.getNavigation().isDone());
         return destination != null && !destination.isRemoved() && !held.isEmpty() && !(held.getItem() instanceof DiggerItem)
-                && (goblin.distanceToSqr(Vec3.atCenterOf(destination.getBlockPos())) <= 6.25 || !goblin.getNavigation().isDone());
+                && (inDropRange(destination) || !goblin.getNavigation().isDone());
     }
 
     @Override
@@ -126,8 +140,7 @@ final class HobgoblinHaulGoal extends Goal {
             goblin.setGuaranteedDrop(EquipmentSlot.MAINHAND);
             droppedItem.discard();
             droppedItem = null;
-        } else if (destination instanceof Container storage
-                && goblin.distanceToSqr(Vec3.atCenterOf(destination.getBlockPos())) <= 6.25) {
+        } else if (destination instanceof Container storage && inDropRange(destination)) {
             ItemStack remaining = HopperBlockEntity.addItem(null, storage, goblin.getMainHandItem().copy(), null);
             goblin.setItemInHand(InteractionHand.MAIN_HAND, remaining);
             destination = null;

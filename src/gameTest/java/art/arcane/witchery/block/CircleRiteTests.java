@@ -352,17 +352,20 @@ public final class CircleRiteTests {
             if (event.getPos().equals(protectedDestination) && event.getPlacedBlock().is(Blocks.EMERALD_BLOCK)) event.setCanceled(true);
         };
         raiseOfferings(helper);
-        start(helper, bound(helper, target));
-        MinecraftForge.EVENT_BUS.addListener(cancel);
-        helper.runAfterDelay(THREE_OFFERING_CAST + 49, () -> {
-            MinecraftForge.EVENT_BUS.unregister(cancel);
-            helper.assertBlockPresent(block("circle"), CENTER);
-            helper.assertBlockPresent(Blocks.EMERALD_BLOCK, target);
-            helper.assertBlockPresent(Blocks.AIR, target.above());
-            helper.assertBlockPresent(Blocks.GOLD_BLOCK, target.west().above(6));
-            helper.assertTrue(helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(helper.absolutePos(CENTER)).inflate(5)).isEmpty(),
-                    "The remote cast must spend the bound stone");
-            helper.succeed();
+        offer(helper, bound(helper, target));
+        helper.runAfterDelay(5, () -> {
+            start(helper);
+            MinecraftForge.EVENT_BUS.addListener(cancel);
+            helper.runAfterDelay(THREE_OFFERING_CAST + 49, () -> {
+                MinecraftForge.EVENT_BUS.unregister(cancel);
+                helper.assertBlockPresent(block("circle"), CENTER);
+                helper.assertBlockPresent(Blocks.EMERALD_BLOCK, target);
+                helper.assertBlockPresent(Blocks.AIR, target.above());
+                helper.assertBlockPresent(Blocks.GOLD_BLOCK, target.west().above(6));
+                helper.assertTrue(helper.getLevel().getEntitiesOfClass(ItemEntity.class,
+                        new AABB(helper.absolutePos(CENTER)).inflate(5)).isEmpty(), "The remote cast must spend the bound stone");
+                helper.succeed();
+            });
         });
     }
 

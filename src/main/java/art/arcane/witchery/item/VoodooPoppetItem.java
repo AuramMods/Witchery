@@ -62,11 +62,11 @@ public final class VoodooPoppetItem extends BoundPoppetItem {
         HitResult aim = caster.pick(5, 1, true);
         if (aim instanceof BlockHitResult hit && aim.getType() == HitResult.Type.BLOCK
                 && server.getFluidState(hit.getBlockPos()).is(FluidTags.LAVA)) {
-            if (!warded(caster, target, stack)) target.setSecondsOnFire(10);
+            if (!warded(caster, target, stack) && !HunterClothingItem.resistsMagic(caster)) target.setSecondsOnFire(10);
             wear(stack, USE_LIMIT);
             caster.playSound(SoundEvents.FIRE_EXTINGUISH, 0.4F, 2.0F);
         } else if (!caster.isShiftKeyDown()) {
-            if (warded(caster, target, stack)) return;
+            if (warded(caster, target, stack) || HunterClothingItem.resistsMagic(caster)) return;
             Vec3 look = caster.getLookAngle();
             int strength = (USE_TICKS - remaining) / 20;
             target.setDeltaMovement(look.multiply(0.9, 0.3, 0.9).scale(strength));
