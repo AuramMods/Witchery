@@ -2,6 +2,11 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Kettle Rim Intake (2026-11-22)
+
+- The original headless Forge world saved a Poppy inside the filled kettle after a drop at its east rim. The previous packaged port left the Poppy alive at X 110.81, resting on the rim at Y 205.375. The normal block collision callback now handles ingredients over the full kettle block. The packaged clean Forge server took the same Poppy and left the Golden Carrot beside the block on the ground.
+- Java 17 data generation, JAR reobfuscation, and all 126 checked-in Forge GameTests passed. The new GameTest exercises the falling entities through real ticks. The packaged SHA-256 is `fe79639970078746a328e9e5471f4bcb28a990e83031c2d3be102af8e1fe5910`. `/tmp/witchery-auram-dream-current` identifies the original world, clean Forge fixture, and logs.
+
 ## Offline Mirror Skin and Invisible Clothing (2026-11-22)
 
 - A survival player used a saved Taglock for `Notch` on an inhabited Mirror. The name was absent from both clients' player list. Both private skin caches began empty and saved a PNG byte-for-byte matching Mojang's signed profile texture. The observer's tracked player used that exact skin and the default arm model.

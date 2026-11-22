@@ -51,6 +51,7 @@
 - [x] Restore the Drop of Luck cauldron ritual and the first three kettle recipes. Brew of Ink splashes blindness and clears nearby mobs' targets. Brew of the Depths supplies air underwater for five minutes and inflicts Wither II out of water. Redstone Soup consumes 1,000 altar power and grants Health Boost II for two minutes.
 - [x] Run 18 packaged headless kettle checks on Forge. Test either ingredient order, mismatched and cold batches, hopper input, the one-time altar charge, normalized legacy inventory and fluid data, and restart with partial and finished brews.
 - [x] Run all nine disposable Forge GameTests. The three kettle tests cover manual and automated bottling, fill and drain, Ink projectile impact and splash distances, and the two drinkable effects.
+- [x] Match the original Kettle's intake at its rim. Witchery 0.24.1 saved a Poppy dropped 0.81 blocks from the block's west edge, while the previous port left it on the rim. The fixed build takes that ingredient through normal item contact and leaves a Golden Carrot outside the block on the ground. The packaged clean Forge check and all 126 checked-in GameTests passed.
 - [x] In the muted multiplayer client, craft and place the kettle from supplied materials, light the fire, fill the kettle, throw the six Ink ingredients, and bottle all three portions by hand. Throw Ink at a husk and verify the splash on a second husk. Drink a supplied Brew of the Depths to verify Wither II on land and sustained air underwater.
 - [x] Restore the Candelabra, Chalice, and Filled Chalice recipes, supplied models and textures, drops, and original altar bonuses. The Candelabra adds two to the recharge multiplier. The empty and filled chalices add one and two to the capacity multiplier, respectively.
 - [x] Pass 12 packaged artifact checks and all 11 disposable Forge GameTests. Verify block and item conversion fixtures, single drops when a chalice loses its support, and filled state and altar bonuses across restart.
@@ -1786,6 +1787,11 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Offer one Soul of the World and activate the hand-drawn charging site's two white rings. The Overworld rite consumed the bound Death Protection Poppet, granted infusion ID 2 and 200 charge, and left one serving in the player's inventory.
 - [x] Kill a fixture witch with the crafted Arthana and collect its Witch's Hand. An attack against a stationary armed zombie spent two charge. With its AI enabled and movement speed set to zero, the zombie moved from Z 107.5 to Z 108.7 on the second attack. The total remaining charge was 196.
 - [x] Save and stop the dedicated server, reopen the same world, and reconnect in Survival. The saved data and live player both had infusion ID 2, 196 charge, the Witch's Hand, the Charged Attuned Stone, and one Soul of the World. The consumed Death Protection Poppet stayed gone. The client ran hidden at master volume zero with OpenAL No Output. The focus monitor recorded no activation of the client process.
+
+## Auram Survival from Alchemy to Dream (2026-11-22)
+
+- [x] Resume the same player with 196 Overworld infusion charge. Plant two Globe Artichokes on source water and grow Snowbells on farmland using the supplies in the private test world. Harvest both Artichokes and three Icy Needles from eight mature Snowbells through the survival client.
+- [x] Fire fresh clay jars, collect another Whiff of Magic from the existing Witch's Oven, and take the saved Odour of Purity from the workshop's chest. Craft three Purified Milk with a supplied milk bucket and retain two Whiff of Magic for the two Kettle batches.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.

@@ -123,11 +123,6 @@ public final class KettleBlock extends BaseEntityBlock {
                 || !(level.getBlockEntity(pos) instanceof KettleBlockEntity kettle)) {
             return;
         }
-        double x = item.getX() - pos.getX();
-        double z = item.getZ() - pos.getZ();
-        if (x < 0.25 || x > 0.75 || z < 0.25 || z > 0.75 || item.getY() > pos.getY() + 0.625) {
-            return;
-        }
         ItemStack remainder = kettle.addDroppedStack(item.getItem());
         if (remainder.isEmpty()) {
             item.discard();
