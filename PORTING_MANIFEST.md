@@ -1211,7 +1211,7 @@ The `witchery:wood_ash` smelting recipe uses `minecraft:saplings` when `addSmelt
 ## Brew Registry
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/brewing/WitcheryBrewRegistry.java`
 
-- `WitcheryBrewRegistry.INSTANCE` has `158` `register(...)` entries.
+- Forge 1.7.10 reports 184 registered brew keys across 88 base items. Newly mixed brews use the captured base item translation keys, including one shared hash across each legacy metadata family. Modern Dead Bush also represents the original Tall Grass metadata-zero variant and uses the original Dead Bush hash. An explicit saved color survives import with all 32 bits, and rendering takes its low 24 bits.
 - `witchery:brewbottle` uses an ordered `Items` list for drinkable and instant splash effects. Ingredient stacks inside `Items` support the named legacy `witchery:ingredient` plus `Damage` format. The `Splash` flag can be derived from known dispersal ingredients when absent. Native numeric 1.7.10 item IDs still require the save conversion workflow.
 - `witchery:brewbag` preserves `WITCColor` and eight numbered slots in `Inventory.Items`. Sneak-use opens `witchery:brew_bag`. Normal use shows the eight-direction selector. The server derives selection from player rotation and throws the matching brew on release. The menu and dye recipe use protocol 75.
 - `PotionBottling` retains the original player-data key. Successful player bottling can grant skill according to the batch's used capacity and charges the closest altar once per portion. The Seer Stone reports the skill.

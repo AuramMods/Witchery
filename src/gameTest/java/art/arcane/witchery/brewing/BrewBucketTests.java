@@ -160,6 +160,62 @@ public final class BrewBucketTests {
         helper.succeed();
     }
 
+    @GameTest(template = "qa_coven_arena")
+    public static void legacyColorSurvivesFixedRecipeAndBottling(GameTestHelper helper) {
+        var bowl = hotCauldron(helper, new BlockPos(4, 4, 4));
+        offer(helper, bowl, new ItemStack(WitcheryIngredient.MANDRAKE_ROOT.item()));
+        offer(helper, bowl, new ItemStack(WitcheryIngredient.EXHALE_OF_THE_HORNED_ONE.item()));
+        var save = bowl.saveWithoutMetadata();
+        helper.assertTrue(save.getInt("Color") == -1870303639 && bowl.getUpdateTag().getInt("Color") == 0x856E69,
+                "The two legacy ingredient subtypes use the same hash and retain a signed color in the save");
+        bowl.load(save);
+        offer(helper, bowl, new ItemStack(Items.EGG));
+        var bottled = bowl.dispenseBottle().getTag();
+        helper.assertTrue(bottled != null && bottled.getInt("Color") == 694624844
+                        && bottled.getString("FixedRitual").equals("witchery:mutandis"),
+                "Bottling the active Mutandis ritual preserves the original color of all three ingredients");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void dispersalKeepsColorHistoryThroughFluidTransfer(GameTestHelper helper) {
+        var bowl = hotCauldron(helper, new BlockPos(4, 4, 4));
+        offer(helper, bowl, new ItemStack(WitcheryIngredient.MANDRAKE_ROOT.item()));
+        offer(helper, bowl, new ItemStack(Items.WHEAT));
+        var source = bowl.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
+        var moved = source.drain(3000, IFluidHandler.FluidAction.EXECUTE);
+        helper.assertTrue(moved.getTag() != null && moved.getTag().getInt("Color") == -1781812758,
+                "Transferring a mixed brew preserves its original signed color");
+
+        var target = hotCauldron(helper, new BlockPos(7, 4, 4));
+        var tank = target.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
+        tank.drain(3000, IFluidHandler.FluidAction.EXECUTE);
+        helper.assertTrue(tank.fill(moved, IFluidHandler.FluidAction.EXECUTE) == 3000, "The receiving cauldron accepts the brew");
+        var heated = target.saveWithoutMetadata();
+        heated.putInt("HeatTicks", 100);
+        target.load(heated);
+        offer(helper, target, new ItemStack(Items.GUNPOWDER));
+
+        var bottle = target.dispenseBottle().getTag();
+        helper.assertTrue(bottle != null && bottle.getInt("Color") == 62622027
+                        && bottle.getList("Items", Tag.TAG_COMPOUND).size() == 2
+                        && bottle.getInt("UsedCapacity") == 0 && bottle.getBoolean("Splash"),
+                "Gunpowder removes Wheat's effect and still blends against the color Wheat already produced");
+        helper.succeed();
+    }
+
+    private static WitchesCauldronBlockEntity hotCauldron(GameTestHelper helper, BlockPos position) {
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(position);
+        level.setBlockAndUpdate(pos, WitcheryBlocks.getRequired("cauldron").get().defaultBlockState());
+        var bowl = (WitchesCauldronBlockEntity) level.getBlockEntity(pos);
+        var save = bowl.saveWithoutMetadata();
+        save.put("Tank", new FluidStack(Fluids.WATER, 3000).writeToNBT(new CompoundTag()));
+        save.putInt("HeatTicks", 100);
+        bowl.load(save);
+        return bowl;
+    }
+
     private static void offer(GameTestHelper helper, WitchesCauldronBlockEntity bowl, ItemStack stack) {
         var pos = bowl.getBlockPos();
         var dropped = new ItemEntity(helper.getLevel(), pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, stack.copy());

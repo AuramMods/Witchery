@@ -43,7 +43,7 @@ public final class BrewDroplet extends ThrowableProjectile implements ItemSuppli
         this.brew = brew.copy();
         mixture = BrewMixture.from(brew);
         if (mixture != null) {
-            entityData.set(COLOR, brew.contains("Color", Tag.TAG_ANY_NUMERIC) ? brew.getInt("Color") : mixture.color());
+            entityData.set(COLOR, mixture.color());
         }
     }
 

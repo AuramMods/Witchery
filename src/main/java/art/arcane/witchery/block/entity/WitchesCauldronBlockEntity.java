@@ -2,6 +2,7 @@ package art.arcane.witchery.block.entity;
 
 import art.arcane.witchery.block.WitchesCauldronBlock;
 import art.arcane.witchery.brewing.BrewBottling;
+import art.arcane.witchery.brewing.BrewColor;
 import art.arcane.witchery.brewing.BrewMixture;
 import art.arcane.witchery.brewing.BrewRituals;
 import art.arcane.witchery.entity.Leonard;
@@ -76,7 +77,8 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
     private ItemStack ritualTrigger = ItemStack.EMPTY;
     @Nullable
     private BrewMixture mixture;
-    private int brewColor = -1;
+    @Nullable
+    private Integer brewColor;
     private int heatTicks;
     private int ritualTicks;
     private boolean brewRitual;
@@ -88,24 +90,26 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
     private final CauldronTank tank = new CauldronTank();
     private LazyOptional<IFluidHandler> fluidHandler = LazyOptional.of(() -> tank);
 
-    private record TransportedBrew(List<ItemStack> ingredients, int color, @Nullable BrewMixture mixture, boolean ritualTriggered) {
+    private record TransportedBrew(List<ItemStack> ingredients, @Nullable Integer color, @Nullable BrewMixture mixture,
+                                   boolean ritualTriggered) {
         @Nullable
         static TransportedBrew from(FluidStack resource) {
             CompoundTag tag = resource.getTag();
-            if (tag == null) return new TransportedBrew(List.of(), -1, null, false);
+            if (tag == null) return new TransportedBrew(List.of(), null, null, false);
             List<ItemStack> inputs = new ArrayList<>();
             for (Tag entry : tag.getList("Items", Tag.TAG_COMPOUND)) {
                 ItemStack item = BrewMixture.loadIngredient((CompoundTag) entry);
                 if (item.isEmpty()) return null;
                 inputs.add(item);
             }
-            int color = tag.contains("Color", Tag.TAG_ANY_NUMERIC) ? tag.getInt("Color") & 0xFFFFFF : -1;
+            Integer color = BrewColor.saved(tag);
+            if (color == null && !inputs.isEmpty()) color = BrewColor.fromIngredients(inputs);
             return new TransportedBrew(inputs, color, BrewMixture.from(inputs, color),
                     !inputs.isEmpty() && tag.getBoolean("RitualTriggered"));
         }
 
         int visibleColor() {
-            return mixture == null ? color : mixture.color();
+            return color == null ? -1 : color & 0xFFFFFF;
         }
     }
 
@@ -120,7 +124,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
             if (slot != 0 || isEmpty()) return FluidStack.EMPTY;
             var brew = WitcheryFluids.getRequiredSource("brew").get();
             if (mixture != null) return new FluidStack(brew, getFluidAmount(), mixture.bottleTag(ingredients));
-            if (!ingredients.isEmpty() || brewColor >= 0) {
+            if (!ingredients.isEmpty() || brewColor != null) {
                 return new FluidStack(brew, getFluidAmount(), BrewMixture.ingredientTag(ingredients, brewColor));
             }
             return getFluid().copy();
@@ -176,8 +180,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
     }
 
     private boolean matchesBrew(TransportedBrew incoming) {
-        int visibleColor = mixture == null ? brewColor : mixture.color();
-        if (visibleColor != incoming.visibleColor() || ingredients.size() != incoming.ingredients().size()) return false;
+        if (visibleBrewColor() != incoming.visibleColor() || ingredients.size() != incoming.ingredients().size()) return false;
         for (int index = 0; index < ingredients.size(); index++) {
             if (!ItemStack.matches(ingredients.get(index), incoming.ingredients().get(index))) return false;
         }
@@ -421,7 +424,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
     }
 
     private void detonate(ServerLevel server, ItemEntity item) {
-        if (ingredients.isEmpty() && brewColor < 0 && ritual == null) return;
+        if (ingredients.isEmpty() && brewColor == null && ritual == null) return;
         Player nearest = server.getEntitiesOfClass(Player.class, item.getBoundingBox().inflate(5),
                         player -> player.isAlive() && !player.isSpectator()).stream()
                 .min(Comparator.comparingDouble(item::distanceToSqr)).orElse(null);
@@ -508,7 +511,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
     }
 
     private void onIngredientAdded(ServerLevel server, ItemStack offered) {
-        if (brewColor >= 0) brewColor = BrewMixture.blendColor(brewColor, offered);
+        brewColor = BrewColor.append(brewColor == null ? 0 : brewColor, offered);
         onIngredientAdded(server);
     }
 
@@ -620,10 +623,14 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         return clientRitual;
     }
 
+    private int visibleBrewColor() {
+        return brewColor == null ? -1 : brewColor & 0xFFFFFF;
+    }
+
     @Override
     public CompoundTag getUpdateTag() {
         CompoundTag tag = new CompoundTag();
-        tag.putInt("Color", mixture != null ? mixture.color() : brewColor);
+        tag.putInt("Color", visibleBrewColor());
         tag.putBoolean("RitualTriggered", brewRitual);
         return tag;
     }
@@ -690,7 +697,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
     private void clearMixture() {
         ingredients.clear();
         mixture = null;
-        brewColor = -1;
+        brewColor = null;
         ritual = null;
         ritualTrigger = ItemStack.EMPTY;
         brewRitual = false;
@@ -755,14 +762,21 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
                 loadedTrigger = index == stored.size() - 1;
             }
         }
-        CompoundTag colorSource = tag.contains("Color", Tag.TAG_ANY_NUMERIC) ? tag : originalBrew;
-        brewColor = !tank.isEmpty() && colorSource.contains("Color", Tag.TAG_ANY_NUMERIC)
-                ? colorSource.getInt("Color") & 0xFFFFFF : -1;
-        mixture = BrewMixture.from(ingredients, brewColor);
         heatTicks = Mth.clamp(tag.contains("HeatTicks", Tag.TAG_ANY_NUMERIC)
                 ? tag.getInt("HeatTicks") : tag.getInt("TicksHeated"), 0, BOIL_TICKS);
         ritual = tag.contains("Ritual", Tag.TAG_STRING) ? ResourceLocation.tryParse(tag.getString("Ritual")) : null;
         ritualTrigger = ritual == null ? ItemStack.EMPTY : BrewMixture.loadIngredient(tag.getCompound("RitualTrigger"));
+        brewColor = null;
+        if (!tank.isEmpty()) {
+            brewColor = BrewColor.saved(tag);
+            if (brewColor == null) brewColor = BrewColor.saved(originalBrew);
+            if (brewColor == null) brewColor = BrewColor.saved(tank.getFluid().getTag());
+            if (brewColor == null && (!ingredients.isEmpty() || !ritualTrigger.isEmpty())) {
+                brewColor = BrewColor.fromIngredients(ingredients);
+                if (!ritualTrigger.isEmpty()) brewColor = BrewColor.append(brewColor, ritualTrigger);
+            }
+        }
+        mixture = BrewMixture.from(ingredients, brewColor);
         legacyRitualPending = ritual == null && !tank.isEmpty() && loadedTrigger
                 && (tag.getBoolean("LegacyRitualPending") || originalBrew.getBoolean("RitualTriggered"));
         brewRitual = ritual == null && !legacyRitualPending && tag.getBoolean("RitualTriggered") && canCastWith(lastIngredient());
@@ -778,7 +792,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
             stored.add(stack.save(new CompoundTag()));
         }
         tag.put("Ingredients", stored);
-        if (brewColor >= 0) tag.putInt("Color", brewColor);
+        if (brewColor != null) tag.putInt("Color", brewColor);
         tag.putInt("HeatTicks", heatTicks);
         if (ritual != null) {
             tag.putString("Ritual", ritual.toString());

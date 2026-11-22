@@ -219,14 +219,14 @@ public final class BrewMixture {
     private final int lifetime;
     private final List<WaystoneItem.Location> destinations;
 
-    private BrewMixture(Mixing mixing, int savedColor) {
+    private BrewMixture(Mixing mixing, int storedColor) {
         effects = List.copyOf(mixing.effects);
         capacity = mixing.capacity;
         used = mixing.used;
         power = mixing.power;
         drinkTicks = Math.max(2, mixing.drinkTicks);
         yieldModifier = mixing.yieldModifier;
-        color = (savedColor >= 0 ? savedColor : mixing.color) & 0xFFFFFF;
+        color = storedColor;
         delivery = mixing.delivery;
         extent = mixing.extent;
         lifetime = mixing.lifetime;
@@ -259,14 +259,14 @@ public final class BrewMixture {
 
     @Nullable
     public static BrewMixture from(List<ItemStack> stacks) {
-        return from(stacks, -1);
+        return from(stacks, null);
     }
 
     @Nullable
-    public static BrewMixture from(List<ItemStack> stacks, int savedColor) {
-        if (stacks.isEmpty() && savedColor < 0) return null;
+    public static BrewMixture from(List<ItemStack> stacks, @Nullable Integer savedColor) {
+        if (stacks.isEmpty() && savedColor == null) return null;
         Mixing mixing = mix(stacks, false);
-        return mixing != null ? new BrewMixture(mixing, savedColor) : null;
+        return mixing != null ? new BrewMixture(mixing, savedColor != null ? savedColor : BrewColor.fromIngredients(stacks)) : null;
     }
 
     @Nullable
@@ -276,10 +276,10 @@ public final class BrewMixture {
         for (Tag entry : tag.getList(ITEMS, Tag.TAG_COMPOUND)) {
             stacks.add(loadIngredient((CompoundTag) entry));
         }
-        int color = tag.contains("Color", Tag.TAG_ANY_NUMERIC) ? tag.getInt("Color") & 0xFFFFFF : -1;
+        Integer color = BrewColor.saved(tag);
         boolean fixedRitual = tag.contains("FixedRitual", Tag.TAG_STRING)
                 || tag.getBoolean("RitualTriggered") && tag.contains("BrewName", Tag.TAG_STRING);
-        BrewMixture mixture = fixedRitual ? new BrewMixture(mix(stacks, true), color) : from(stacks, color);
+        BrewMixture mixture = fixedRitual ? fixedMixture(stacks, color) : from(stacks, color);
         return mixture != null && (!tag.getBoolean("Splash") || mixture.splash()) ? mixture : null;
     }
 
@@ -342,12 +342,12 @@ public final class BrewMixture {
         return WitcheryIngredient.loadInventoryStack(migrated);
     }
 
-    public static CompoundTag ingredientTag(List<ItemStack> stacks, int color) {
+    public static CompoundTag ingredientTag(List<ItemStack> stacks, @Nullable Integer color) {
         CompoundTag tag = new CompoundTag();
         ListTag items = new ListTag();
         for (ItemStack stack : stacks) items.add(stack.save(new CompoundTag()));
         tag.put(ITEMS, items);
-        if (color >= 0) tag.putInt("Color", color);
+        if (color != null) tag.putInt("Color", color);
         return tag;
     }
 
@@ -362,17 +362,16 @@ public final class BrewMixture {
         return tag;
     }
 
-    public static CompoundTag fixedRitualBottleTag(List<ItemStack> offerings, int color, ResourceLocation recipe, int power) {
-        if (color < 0) {
-            color = 17;
-            for (ItemStack offering : offerings) color = hashColor(color, id(offering));
-        }
-        BrewMixture mixture = new BrewMixture(mix(offerings, true), color & 0xFFFFFF);
-        CompoundTag tag = mixture.bottleTag(offerings);
+    public static CompoundTag fixedRitualBottleTag(List<ItemStack> offerings, @Nullable Integer color, ResourceLocation recipe, int power) {
+        CompoundTag tag = fixedMixture(offerings, color).bottleTag(offerings);
         tag.putString("FixedRitual", recipe.toString());
         tag.putBoolean("RitualTriggered", true);
         tag.putInt("Power", power);
         return tag;
+    }
+
+    private static BrewMixture fixedMixture(List<ItemStack> offerings, @Nullable Integer color) {
+        return new BrewMixture(mix(offerings, true), color != null ? color : BrewColor.fromIngredients(offerings));
     }
 
     public List<Application> effects() {
@@ -418,7 +417,7 @@ public final class BrewMixture {
     public int capacity() { return capacity; }
     public int drinkTicks() { return drinkTicks; }
     public int yieldModifier() { return yieldModifier; }
-    public int color() { return color; }
+    public int color() { return color & 0xFFFFFF; }
     public boolean splash() { return delivery != Delivery.DRINK; }
     public Delivery delivery() { return delivery; }
     public Delivery impactDelivery() {
@@ -779,11 +778,7 @@ public final class BrewMixture {
     }
 
     public static int blendColor(int color, ItemStack stack) {
-        return hashColor(color, id(stack)) & 0xFFFFFF;
-    }
-
-    private static int hashColor(int color, ResourceLocation ingredient) {
-        return (color == 0 ? 17 : color) * 37 + ingredient.hashCode();
+        return BrewColor.append(color, stack) & 0xFFFFFF;
     }
 
     static int ingredientPower(ItemStack stack) {
@@ -832,7 +827,6 @@ public final class BrewMixture {
         private int power;
         private int drinkTicks = 32;
         private int yieldModifier;
-        private int color = 17;
         private Delivery delivery = Delivery.DRINK;
         private int extent;
         private int lifetime;
@@ -851,7 +845,6 @@ public final class BrewMixture {
         void add(ItemStack stack, ResourceLocation id, Ingredient ingredient) {
             power += ingredient.power;
             yieldModifier += ingredient.yieldModifier;
-            color = hashColor(color, id);
             if (ingredient.isEffect()) {
                 applyEffect(stack, ingredient);
                 segment.clear();
@@ -925,8 +918,7 @@ public final class BrewMixture {
                 case NO_BLOCK_TARGET -> noBlockTarget = true;
                 case NO_ENTITY_TARGET -> noEntityTarget = true;
                 case RAISE_EFFECT_CEILING -> raisedEffectCeiling = true;
-                case SET_COLOR -> color = ingredient.amount;
-                case WAYSTONE, RITUAL -> { }
+                case SET_COLOR, WAYSTONE, RITUAL -> { }
             }
         }
     }

@@ -1252,6 +1252,14 @@
 - [x] Capture a pig's Taglock through the normal interaction and cast Orange Dye. The bound pig received the original 90-second effect and its neighbor stayed unchanged. After the dedicated restart, the client rendered the pig's saved orange tint and bottled the red wool-only batch that remained in the other cauldron.
 - [x] Run Java 17 data generation and JAR reobfuscation. All 558 dedicated-server regression cases passed before the client render hook was revised. The final revision passed all 21 focused GameTests and the muted packaged client checks.
 
+### Original Ingredient Colors (2026-11-22)
+
+- [x] Restore the original color calculation using the 184 brew keys captured from Forge 1.7.10. Modern variants such as fish, dyes, skulls, saplings, and split Witchery ingredients use the original base item's hash.
+- [x] Keep the whole signed `Color` value in cauldron saves, bottled brews, and fluid transfers. Send RGB to the renderer. Apply every accepted ingredient to the current color, including the trigger of a fixed ritual and ingredients that later lose their effect. Wool still replaces the color.
+- [x] Reproduce both color regressions before the fix. All 113 checked-in GameTests passed after the fix, and all 116 passed with Thaumaturge, Lithostitched, and Curios. Java 17 data generation and JAR reobfuscation passed.
+- [x] Save a brewing Mutandis mixture and a cauldron loaded with the original signed sugar-brew tag, then reopen the world in a hidden muted client. Both cauldrons rendered their restored tints. The headless server accepted the final Egg and the dispenser ejected a Mutandis bottle whose `Color` was exactly `694624844` (`#67224C`).
+- [x] Restart with the ejected bottle on the ground and pick it up in Survival. The inventory kept the original color, all three ordered ingredients, and the fixed recipe ID. The client used OpenAL No Output and master volume zero. The macOS monitor recorded no client activation.
+
 ## Cauldron Movement and Creature Summons (2026-11-21)
 
 | Ingredient | Brew | Base altar power | Capacity cost |
@@ -1338,7 +1346,6 @@
 - [x] Reproduce the missing Tide Hold boost with a real thrown brew on the previous mixer. The corrected mixer passed the new case and all 111 checked-in Forge GameTests. Java 17 data generation and JAR reobfuscation passed.
 - [x] Brew the seven ingredients by dropping them into a boiling cauldron on the packaged headless server. Restart before bottling and keep their order. A redstone pulse bottled the mixture, and the projectile applied Wolfsbane to a pig while holding water and lava for 400 and 200 ticks. The next restart kept the two pending holds, then restored the lava while the water was still held.
 - [x] Match all 96 original circle rite registrations to their current recipe IDs and confirm each resource uses the modern item rite serializer. The existing game test also verifies that the game loads all 96 and displays the original 88 guide entries.
-- [ ] Restore newly mixed colors using the original brew ingredient hashes. A headless Forge 1.7.10 capture exported all 184 registered brew keys. The legacy and modern Mutandis mixtures use the same ordered ingredients and have different RGB values.
 
 ## Cauldron Erosion and Levelling (2026-11-21)
 
@@ -1486,6 +1493,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Pass all 657 recovered cases after preparing the gas chamber above natural terrain. The earlier run passed 656 and found no neighboring cell at the gas fixture's fixed sampling tick. The controlled chamber passed in both the 110-case focused run and the full replay, alongside the revised disease and Hobgoblin fixtures.
 - [x] Pass all 658 recovered cases on the restored Infusions guide build. Both archived potion cases now resolve the splash form through the recipe manager and verify the matching result and power cost. The Spectral Familiar fixture keeps the search inside a prepared chamber with one ore vein.
 - [x] Pass all 664 cases in the recovered suite with the mixed-brew duration fix. The broad run also passed all four cases that needed focused reruns on the dispenser milestone.
+- [ ] Complete the 666-case replay on the original-color build. It passed 652 cases before a chunk-lighting exception stalled the suite. The Ennervate and Erosion focused replays passed. The Hobgoblin hauling failure also reproduced on the preceding packaged build.
 
 ## Auram Armor Compatibility (2026-11-21)
 
