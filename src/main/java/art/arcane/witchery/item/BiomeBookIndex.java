@@ -25,22 +25,35 @@ public final class BiomeBookIndex {
             Tags.Biomes.IS_MAGICAL);
 
     public record Entry(ResourceLocation id, Biome biome) {}
+    public record Section(String name, int firstPage) {}
+    public record Index(List<Entry> pages, List<Section> sections) {}
 
     private BiomeBookIndex() {}
 
     public static List<Entry> pages(RegistryAccess access) {
+        return index(access).pages();
+    }
+
+    public static Index index(RegistryAccess access) {
         var registry = access.registryOrThrow(Registries.BIOME);
         List<Entry> pages = new ArrayList<>();
+        List<Section> sections = new ArrayList<>();
         for (TagKey<Biome> section : SECTIONS) {
+            int firstPage = pages.size();
             registry.getTag(section).ifPresent(biomes -> biomes.stream()
                     .filter(BiomeBookIndex::eligible).map(BiomeBookIndex::entry)
                     .sorted(Comparator.comparing(Entry::id)).forEachOrdered(pages::add));
+            if (pages.size() > firstPage) {
+                sections.add(new Section(section.location().getPath().substring(3), firstPage));
+            }
         }
         var listed = new HashSet<ResourceLocation>();
         pages.forEach(page -> listed.add(page.id));
+        int firstUnlisted = pages.size();
         registry.holders().filter(BiomeBookIndex::eligible).map(BiomeBookIndex::entry)
                 .filter(page -> !listed.contains(page.id)).sorted(Comparator.comparing(Entry::id)).forEachOrdered(pages::add);
-        return List.copyOf(pages);
+        if (pages.size() > firstUnlisted) sections.add(new Section("other", firstUnlisted));
+        return new Index(List.copyOf(pages), List.copyOf(sections));
     }
 
     private static boolean eligible(Holder<Biome> biome) {
@@ -57,14 +70,31 @@ public final class BiomeBookIndex {
         if (id == null && book.hasTag() && book.getTag().contains(GuideBookItem.CURRENT_PAGE, Tag.TAG_ANY_NUMERIC)) {
             id = LegacyBiomeAtlas.biomeAt(book.getTag().getInt(GuideBookItem.CURRENT_PAGE));
         }
-        if (pages.isEmpty() || id == null || pages.get(page).id.equals(id)) return page;
+        int resolved = pageFor(pages, page, id);
+        return resolved < 0 ? page : resolved;
+    }
+
+    private static int pageFor(List<Entry> pages, int hint, @Nullable ResourceLocation id) {
+        if (id == null) return -1;
+        if (hint >= 0 && hint < pages.size() && pages.get(hint).id.equals(id)) return hint;
         for (int i = 0; i < pages.size(); i++) if (pages.get(i).id.equals(id)) return i;
+        return -1;
+    }
+
+    public static int saveSelection(ItemStack book, RegistryAccess access, int pageHint, @Nullable ResourceLocation id) {
+        int page = pageFor(pages(access), pageHint, id);
+        if (page >= 0) {
+            book.getOrCreateTag().putString(BiomeNoteItem.BIOME, id.toString());
+            GuideBookItem.setBookmark(book, page);
+        }
         return page;
     }
 
     @Nullable
     public static ResourceLocation selectedBiome(ItemStack book, RegistryAccess access) {
         List<Entry> pages = pages(access);
+        var saved = BiomeNoteItem.biomeId(book);
+        if (saved != null) return pageFor(pages, GuideBookItem.bookmark(book), saved) >= 0 ? saved : null;
         return pages.isEmpty() ? null : pages.get(bookmark(book, pages)).id;
     }
 }

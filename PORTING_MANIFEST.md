@@ -1306,7 +1306,7 @@ Implementation anchors:
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/client/event/WitcheryClientCameraHooks.java`
 
 Current scaffold behavior:
-- Uses one `SimpleChannel` (`witchery:main`) with protocol version `"40"`. The extended player payload carries vampire rank, blood power, blood reserve, quest progress, vision, ultimate choice and charges, the transient selected power and the saved creature form. `VampireQuestChunks` preserves the original packed `Location` values and records a modern dimension ID. Player style sync updates the other clients that track a transformed player. Vampire packet intents 15 through 17 select or activate a power and query or display a nearby target's blood. Markup book intent 12 saves an unlocked chapter from the held journal and raises the reader's saved cap. The infusion status includes the active infused brew and remaining duration, and the Kettle recipe codec carries the optional bottling familiar.
+- Uses one `SimpleChannel` (`witchery:main`) with protocol version `"87"`. The extended player payload carries vampire rank, blood power, blood reserve, quest progress, vision, ultimate choice and charges, the transient selected power and the saved creature form. `VampireQuestChunks` preserves the original packed `Location` values and records a modern dimension ID. Player style sync updates the other clients that track a transformed player. Vampire packet intents 15 through 17 select or activate a power and query or display a nearby target's blood. Markup book intent 12 saves the trail through the held journal's unlocked chapter and raises the reader's saved cap. The infusion status includes the active infused brew and remaining duration, and the Kettle recipe codec carries the optional bottling familiar.
 - Crystal Ball viewing sends the existing `cam_pos` message for the transient `witchery:eye` or the living subject of a Taglock Kit. Server chunk and entity tracking follow the viewed entity, and the client centers terrain rendering on it. The observing player stays beside the Crystal Ball.
 - The Mystic Branch recognizes gestures from server-side player rotations. Protocol 12 retires the prepared-spell packet while recording the old intent in `LegacyRegistryData.PACKETS`.
 - Validates packet receive direction against legacy flow metadata and logs mismatches.
@@ -1316,7 +1316,7 @@ Current scaffold behavior:
   - `extended_player_sync` -> `(UUID playerId, boolean initialized, int syncRevision, CompoundTag playerData)`
   - `partial_extended_player_sync` -> `(UUID playerId, int syncRevision, CompoundTag playerData)`
 - Adds codec-backed payload + handler scaffolding for additional interaction packets:
-  - `item_update` -> `(int slotIndex, int damageValue, int pageIndex)` (serverbound, aligned to legacy packet shape)
+  - `item_update` -> `(int slotIndex, Volume volume, int pageIndex, ResourceLocation biomeId)` (serverbound, biome ID present for the atlas)
   - `sync_entity_size` -> `(int entityId, float scale)` (clientbound, protocol 86)
   - `set_client_player_facing` -> `(float yaw, float pitch)` (clientbound)
   - `cam_pos` -> `(boolean active, boolean updatePosition, int entityId)` (clientbound; aligned with legacy packet shape)
@@ -1341,8 +1341,8 @@ Current scaffold behavior:
   - `WitcheryClientCameraHooks` now consumes staged camera state each client tick and applies scaffold camera-entity override/reset behavior (`setCameraEntity(target)` while active, fallback to local player when inactive/invalid target).
 - Adds first functional serverbound behavior hooks:
   - `clear_fall_damage` now clears sender fall distance.
-  - `item_update` now mutates inventory stack NBT `CurrentPage` with legacy slot/damage validation.
-  - `sync_markup_book` saves the unlocked chapter to the held journal's `pageStack` and syncs the learned rank cap.
+  - `item_update` validates the held slot and guide volume. Atlas requests resolve the supplied biome ID against the server's current list and save both `CurrentPage` and `WitcheryBiome`. Network protocol 87 carries the atlas ID.
+  - `sync_markup_book` saves the full original `pageStack` trail through the requested unlocked chapter and syncs the learned rank cap.
   - `item_update` and `howl` still stage data into `WitcheryPlayerData`, bump sync revision, and emit `player_sync` with serialized capability snapshot payload.
   - `howl` also mirrors minimal state into sender persistent tags.
 
@@ -1386,7 +1386,7 @@ Sources:
 | 7 | `null` | `GuiScreenMarkupBook` |
 | 8 | `ContainerLeonardsUrn` | `ItemLeonardsUrnGUI` |
 
-### 1.20.1 GUI/Menu Scaffold (current)
+### 1.20.1 Forge Menus and Book Screens
 Implementation anchors:
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/LegacyRegistryData.java`
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryMenus.java`
@@ -1397,7 +1397,7 @@ Implementation anchors:
 Current scaffold behavior:
 - menu metadata now tracks both legacy GUI ID and normalized menu key (`LegacyMenuIntent`).
 - every legacy GUI entry (`0..8`) registers a dedicated menu type keyed to its legacy menu name.
-- The altar, oven, distillery, spinning wheel, Brew Bag, and Leonard's Urn have working Forge menus and screens. Guide volumes open the guide screen from the held item through the guide book packet.
+- The altar, oven, distillery, spinning wheel, Brew Bag, and Leonard's Urn have working Forge menus and screens. Guide volumes and the atlas open the guide screen through the held book packet. Atlas Contents includes the original family order. The held vampire journal opens its reader with sequential navigation and a return to the cover.
 
 ID mapping used by scaffold:
 | Legacy GUI ID | Key | Menu Type ID |

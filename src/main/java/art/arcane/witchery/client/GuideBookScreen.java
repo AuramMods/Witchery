@@ -35,22 +35,28 @@ public final class GuideBookScreen extends Screen {
     private final int slot;
     private final GuideBookItem.Volume volume;
     private final List<GuideBookPages.Page> pages;
+    private final BiomeBookIndex.Index atlas;
     private int page;
     private int scroll;
     private int maxScroll;
     private int contentsStart;
     private boolean contents;
+    private boolean families;
     private PageButton previous;
     private PageButton next;
     private Button contentsButton;
+    private Button familiesButton;
 
     private GuideBookScreen(int slot, GuideBookItem.Volume volume, ItemStack stack, Level level, int knownSpells) {
         super(stack.getHoverName());
         this.slot = slot;
         this.volume = volume;
-        pages = GuideBookPages.entries(volume, level, knownSpells);
-        page = volume == GuideBookItem.Volume.ATLAS
-                ? BiomeBookIndex.bookmark(stack, BiomeBookIndex.pages(level.registryAccess()))
+        atlas = volume == GuideBookItem.Volume.ATLAS ? BiomeBookIndex.index(level.registryAccess()) : null;
+        pages = atlas != null && !atlas.pages().isEmpty()
+                ? atlas.pages().stream().map(GuideBookPages::atlas).toList()
+                : GuideBookPages.entries(volume, level, knownSpells);
+        page = atlas != null
+                ? BiomeBookIndex.bookmark(stack, atlas.pages())
                 : Mth.clamp(GuideBookItem.bookmark(stack), 0, pages.size() - 1);
     }
 
@@ -67,6 +73,10 @@ public final class GuideBookScreen extends Screen {
         next = addRenderableWidget(new PageButton(left() + 124, top() + 154, true, button -> turn(page + 1), true));
         contentsButton = addRenderableWidget(Button.builder(Component.translatable("guide.witchery.contents"), button -> toggleContents())
                 .bounds(left() + 64, top() + 153, 57, 16).build());
+        if (atlas != null && !atlas.sections().isEmpty()) {
+            familiesButton = addRenderableWidget(Button.builder(Component.translatable("guide.witchery.atlas.families"),
+                            button -> toggleFamilies()).bounds(left() + 95, top() + 153, 56, 16).build());
+        }
         updateButtons();
     }
 
@@ -77,19 +87,48 @@ public final class GuideBookScreen extends Screen {
         previous.visible = !contents && page > 0;
         next.visible = !contents && page + 1 < pages.size();
         contentsButton.setMessage(Component.translatable(contents ? "guide.witchery.return" : "guide.witchery.contents"));
+        if (familiesButton != null) {
+            familiesButton.visible = contents;
+            contentsButton.setX(left() + (contents ? 36 : 64));
+            familiesButton.setMessage(Component.translatable(families ? "guide.witchery.atlas.biomes" : "guide.witchery.atlas.families"));
+        }
     }
 
     private void turn(int index) {
         page = Mth.clamp(index, 0, pages.size() - 1);
         contents = false;
         scroll = 0;
+        maxScroll = 0;
         updateButtons();
     }
 
     private void toggleContents() {
         contents = !contents;
-        contentsStart = Mth.clamp(page, 0, Math.max(0, pages.size() - CONTENTS_ROWS));
+        positionContents();
         updateButtons();
+    }
+
+    private void toggleFamilies() {
+        families = !families;
+        positionContents();
+        updateButtons();
+    }
+
+    private void positionContents() {
+        contentsStart = Mth.clamp(currentContentsEntry(), 0, Math.max(0, contentsSize() - CONTENTS_ROWS));
+    }
+
+    private int contentsSize() {
+        return families ? atlas.sections().size() : pages.size();
+    }
+
+    private int currentContentsEntry() {
+        if (!families) return page;
+        var sections = atlas.sections();
+        for (int i = sections.size() - 1; i > 0; i--) {
+            if (sections.get(i).firstPage() <= page) return i;
+        }
+        return 0;
     }
 
     @Override
@@ -114,7 +153,7 @@ public final class GuideBookScreen extends Screen {
     @Override
     public boolean mouseScrolled(double x, double y, double amount) {
         int direction = (int) Math.signum(amount);
-        if (contents) contentsStart = Mth.clamp(contentsStart - direction * 3, 0, Math.max(0, pages.size() - CONTENTS_ROWS));
+        if (contents) contentsStart = Mth.clamp(contentsStart - direction * 3, 0, Math.max(0, contentsSize() - CONTENTS_ROWS));
         else scroll = Mth.clamp(scroll - direction * 18, 0, maxScroll);
         return true;
     }
@@ -123,8 +162,9 @@ public final class GuideBookScreen extends Screen {
     public boolean mouseClicked(double x, double y, int button) {
         int row = (int) (y - (top() + 42)) / 13;
         if (contents && button == 0 && x >= left() + 35 && x <= left() + 150
-                && y >= top() + 42 && row < CONTENTS_ROWS && contentsStart + row < pages.size()) {
-            turn(contentsStart + row);
+                && y >= top() + 42 && row < CONTENTS_ROWS && contentsStart + row < contentsSize()) {
+            int index = contentsStart + row;
+            turn(families ? atlas.sections().get(index).firstPage() : index);
             return true;
         }
         return super.mouseClicked(x, y, button);
@@ -142,18 +182,21 @@ public final class GuideBookScreen extends Screen {
     }
 
     private void renderContents(GuiGraphics graphics, int left, int top, int mouseX, int mouseY) {
-        var title = Component.translatable("guide.witchery.contents");
+        var title = Component.translatable(families ? "guide.witchery.atlas.families" : "guide.witchery.contents");
         graphics.drawString(font, title, left + 92 - font.width(title) / 2, top + 25, 0x713426, false);
         Component tooltip = null;
-        for (int row = 0; row < CONTENTS_ROWS && contentsStart + row < pages.size(); row++) {
+        int selected = currentContentsEntry();
+        for (int row = 0; row < CONTENTS_ROWS && contentsStart + row < contentsSize(); row++) {
             int index = contentsStart + row;
             int y = top + 42 + row * 13;
             boolean hover = mouseX >= left + 35 && mouseX <= left + 150 && mouseY >= y && mouseY < y + 13;
-            int color = hover || index == page ? 0x8C2618 : INK;
-            String name = (index + 1) + "  " + pages.get(index).title().getString();
+            int color = hover || index == selected ? 0x8C2618 : INK;
+            Component entry = families ? Component.translatable("guide.witchery.atlas.family." + atlas.sections().get(index).name())
+                    : pages.get(index).title();
+            String name = families ? entry.getString() : (index + 1) + "  " + entry.getString();
             if (font.width(name) > BODY_WIDTH) {
                 name = font.plainSubstrByWidth(name, BODY_WIDTH - font.width("…")) + "…";
-                if (hover) tooltip = pages.get(index).title();
+                if (hover) tooltip = entry;
             }
             graphics.drawString(font, name, left + 36, y, color, false);
         }
@@ -222,7 +265,8 @@ public final class GuideBookScreen extends Screen {
 
     @Override
     public void removed() {
-        if (minecraft.getConnection() != null) WitcheryNetwork.sendGuideBookmark(slot, volume, page);
+        if (minecraft.getConnection() == null || atlas != null && atlas.pages().isEmpty()) return;
+        WitcheryNetwork.sendGuideBookmark(slot, volume, page, atlas == null ? null : atlas.pages().get(page).id());
     }
 
     @Override

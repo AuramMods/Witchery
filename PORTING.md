@@ -750,6 +750,15 @@
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 366 required Forge GameTests. The new cases cover the original recipes, legacy metadata and bookmarks, active guide content, and atlas copying.
 - [x] Use the resulting Biome Note in the Brew of the Changing Seasons.
 
+## Atlas and Journal Navigation (2026-11-22)
+
+- [x] Restore the atlas's biome-family shortcuts in the Contents view. The sections follow the original beach-to-magical order and use the live registry tags. The Biomes view lists individual pages.
+- [x] Save the displayed biome's registry ID and resolve its current page on the server. Keep the matching page when a biome belongs to multiple sections. Paper copies the saved biome after a tag reorder, and an absent biome ID prevents copying a different page.
+- [x] Return to the vampire journal's cover with the Cover button or Home. Save the full original `pageStack` for the current chapter and validate it against the restored torn pages.
+- [x] Use network protocol 87 to carry the atlas biome ID with the held-book bookmark. The client and dedicated server use matching Witchery builds.
+- [x] Pass all 73 clean Forge GameTests and all 77 with Thaumaturge, Lithostitched, and Curios. After a packaged headless restart, the atlas copied Snowy Beach despite a datapack moving it to a different section. The journal retained its fourteen saved pages through a torn-page upgrade and cleared the trail on return to the cover.
+- [ ] Verify the Families and Cover controls in a muted graphical client. The isolated Docker daemon timed out.
+
 ## Brew of the Changing Seasons (2026-11-21)
 
 - [x] Accept a signed Biome Note for eight effect levels and 5,000 base altar power. A throw or a ritual cast with Tongue of Dog resolves instantly, including when the mix contains Wool of Bat. A Waystone can send the rite to its bound location. Strength modifiers increase the area, with the ritual boost limited by nearby coven size.
@@ -1787,7 +1796,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
     - `cam_pos` now routes through client packet handlers using `WitcheryClientCameraState` plus `WitcheryClientCameraHooks` (client tick camera-entity override scaffold) instead of temporary player persistent-tag staging.
 - [~] GUI/menu stubs for all legacy GUI IDs.
   - menu intents now preserve legacy GUI ID mapping (`0..8`) plus key name in `LegacyRegistryData`.
-  - The Altar, Witch's Oven, Distillery and Spinning Wheel use dedicated menus. The five remaining registry entries use `LegacyPlaceholderMenu` and `LegacyPlaceholderScreen`.
+  - The Altar, Witch's Oven, Distillery, Spinning Wheel, Brew Bag, and Leonard's Urn use dedicated menus. The guidebooks, atlas, and vampire journal open client screens through their held items.
 - [~] Dimension/key migration for Dream/Torment/Mirror.
   - resource keys are scaffolded (`Level`, `LevelStem`, `DimensionType`) for `dream`, `torment`, and `mirror`.
   - datapack `dimension_type` + `dimension` JSON scaffolding is now present for all three dimensions.

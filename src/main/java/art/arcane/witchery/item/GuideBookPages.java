@@ -192,7 +192,7 @@ public final class GuideBookPages {
         }
     }
 
-    private static Page atlas(BiomeBookIndex.Entry entry) {
+    public static Page atlas(BiomeBookIndex.Entry entry) {
         var climate = entry.biome().getModifiedClimateSettings();
         var precipitation = entry.biome().getPrecipitationAt(BlockPos.ZERO);
         return new Page(biomeName(entry.id()), List.of(

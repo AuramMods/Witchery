@@ -5,12 +5,14 @@ import art.arcane.witchery.item.VampireBookItem;
 import art.arcane.witchery.network.WitcheryNetwork;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.PageButton;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_HOME;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_PAGE_DOWN;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_PAGE_UP;
@@ -27,6 +29,7 @@ public final class VampireBookScreen extends Screen {
     private int page;
     private PageButton previous;
     private PageButton next;
+    private Button cover;
 
     private VampireBookScreen(ItemStack stack, int inventorySlot) {
         super(stack.getHoverName());
@@ -47,23 +50,31 @@ public final class VampireBookScreen extends Screen {
     protected void init() {
         int left = (width - 192) / 2;
         int top = top();
-        previous = addRenderableWidget(new PageButton(left + 39, top + 151, false, button -> turn(-1), true));
-        next = addRenderableWidget(new PageButton(left + 126, top + 151, true, button -> turn(1), true));
-        turn(0);
+        previous = addRenderableWidget(new PageButton(left + 39, top + 151, false, button -> turn(page - 1), true));
+        next = addRenderableWidget(new PageButton(left + 126, top + 151, true, button -> turn(page + 1), true));
+        cover = addRenderableWidget(Button.builder(Component.translatable(TEXT + "cover"), button -> turn(0))
+                .bounds(left + 65, top + 150, 57, 16).build());
+        turn(page);
     }
 
     private int top() {
         return Math.max(2, (height - 192) / 2);
     }
 
-    private void turn(int direction) {
-        page = Math.max(0, Math.min(page + direction, pageCount - 1));
+    private void turn(int index) {
+        page = Math.max(0, Math.min(index, pageCount - 1));
         previous.visible = page > 0;
         next.visible = page < pageCount - 1;
+        cover.visible = page > 0;
     }
 
     @Override
     public boolean keyPressed(int key, int scancode, int modifiers) {
+        if (key == GLFW_KEY_HOME && cover.visible) {
+            cover.onPress();
+            cover.playDownSound(minecraft.getSoundManager());
+            return true;
+        }
         if ((key == GLFW_KEY_PAGE_UP || key == GLFW_KEY_LEFT) && previous.visible) {
             previous.onPress();
             previous.playDownSound(minecraft.getSoundManager());

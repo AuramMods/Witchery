@@ -67,16 +67,19 @@ public final class VampireBookItem extends Item {
     public static int bookmark(ItemStack stack) {
         if (!stack.hasTag()) return 0;
         ListTag path = stack.getTag().getList(PAGE_STACK, Tag.TAG_STRING);
-        if (path.isEmpty()) return 0;
-        int chapter = CHAPTERS.indexOf(path.getString(path.size() - 1));
-        return Mth.clamp(chapter, 0, chapterCount(stack) - 1);
+        int unlocked = chapterCount(stack);
+        for (int i = path.size() - 1; i >= 0; i--) {
+            int chapter = CHAPTERS.indexOf(path.getString(i));
+            if (chapter >= 0 && chapter < unlocked) return chapter;
+        }
+        return 0;
     }
 
     public static boolean setBookmark(ItemStack stack, String chapter) {
         int index = CHAPTERS.indexOf(chapter);
         if (index < 0 || index >= chapterCount(stack)) return false;
         ListTag path = new ListTag();
-        if (index != 0) path.add(StringTag.valueOf(chapter));
+        for (String visited : CHAPTERS.subList(1, index + 1)) path.add(StringTag.valueOf(visited));
         stack.getOrCreateTag().put(PAGE_STACK, path);
         return true;
     }

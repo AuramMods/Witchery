@@ -10,7 +10,6 @@ import art.arcane.witchery.item.VampireBookItem;
 import art.arcane.witchery.item.GuideBookItem;
 import art.arcane.witchery.item.GuideBookPages;
 import art.arcane.witchery.item.BiomeBookIndex;
-import art.arcane.witchery.item.BiomeNoteItem;
 import art.arcane.witchery.infusion.SpellKnowledge;
 import art.arcane.witchery.lycanthropy.WolfTrials;
 import art.arcane.witchery.registry.LegacyRegistryData;
@@ -26,6 +25,7 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 import net.minecraftforge.fml.DistExecutor;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -40,7 +40,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class WitcheryNetwork {
-    private static final String PROTOCOL_VERSION = "86";
+    private static final String PROTOCOL_VERSION = "87";
     private static final int MAX_USERNAME_LENGTH = 64;
     private static final int MAX_PLAYER_SKIN_LENGTH = 256;
     private static final int MAX_MARKUP_CHAPTER_LENGTH = 32;
@@ -199,8 +199,9 @@ public final class WitcheryNetwork {
         );
     }
 
-    public static void sendGuideBookmark(int slotIndex, GuideBookItem.Volume volume, int pageIndex) {
-        CHANNEL.sendToServer(new ItemUpdatePacket(slotIndex, volume, pageIndex));
+    public static void sendGuideBookmark(int slotIndex, GuideBookItem.Volume volume, int pageIndex,
+                                         @Nullable ResourceLocation biomeId) {
+        CHANNEL.sendToServer(new ItemUpdatePacket(slotIndex, volume, pageIndex, biomeId));
     }
 
     public static void openGuideBook(ServerPlayer reader, int slot, GuideBookItem.Volume volume) {
@@ -607,19 +608,19 @@ public final class WitcheryNetwork {
             if (sender.isSpectator() || slot != sender.getInventory().selected && slot != sender.getInventory().getContainerSize() - 1) return;
             ItemStack stack = sender.getInventory().getItem(slot);
             var volume = GuideBookItem.volume(stack);
-            if (volume != message.volume() || message.pageIndex() < 0) return;
+            int page = message.pageIndex();
+            if (volume != message.volume() || page < 0) return;
             if (volume == GuideBookItem.Volume.ATLAS) {
-                var biomes = BiomeBookIndex.pages(sender.level().registryAccess());
-                if (message.pageIndex() >= biomes.size()) return;
-                stack.getOrCreateTag().putString(BiomeNoteItem.BIOME, biomes.get(message.pageIndex()).id().toString());
+                page = BiomeBookIndex.saveSelection(stack, sender.level().registryAccess(), page, message.biomeId());
+                if (page < 0) return;
             } else {
                 var pages = GuideBookPages.entries(volume, sender.level(), SpellKnowledge.knownMask(sender));
-                if (message.pageIndex() >= pages.size()) return;
+                if (message.biomeId() != null || page >= pages.size()) return;
+                GuideBookItem.setBookmark(stack, page);
             }
-            GuideBookItem.setBookmark(stack, message.pageIndex());
             sender.getInventory().setChanged();
             sender.containerMenu.broadcastChanges();
-            data.applyItemUpdate(slot, stack.getDamageValue(), message.pageIndex());
+            data.applyItemUpdate(slot, stack.getDamageValue(), page);
             data.bumpSyncRevision();
             sendPlayerSync(sender, data);
         });
@@ -846,19 +847,22 @@ public final class WitcheryNetwork {
 
     private record GuideBookOpenPacket(int slot, GuideBookItem.Volume volume, int knownSpells) {}
 
-    public record ItemUpdatePacket(int slotIndex, GuideBookItem.Volume volume, int pageIndex) {
+    public record ItemUpdatePacket(int slotIndex, GuideBookItem.Volume volume, int pageIndex,
+                                   @Nullable ResourceLocation biomeId) {
         public static ItemUpdatePacket placeholder() {
-            return new ItemUpdatePacket(0, GuideBookItem.Volume.FUMES, 0);
+            return new ItemUpdatePacket(0, GuideBookItem.Volume.FUMES, 0, null);
         }
 
         public static void encode(ItemUpdatePacket message, FriendlyByteBuf buffer) {
             buffer.writeVarInt(message.slotIndex());
             buffer.writeEnum(message.volume());
             buffer.writeVarInt(message.pageIndex());
+            buffer.writeNullable(message.biomeId(), FriendlyByteBuf::writeResourceLocation);
         }
 
         public static ItemUpdatePacket decode(FriendlyByteBuf buffer) {
-            return new ItemUpdatePacket(buffer.readVarInt(), buffer.readEnum(GuideBookItem.Volume.class), buffer.readVarInt());
+            return new ItemUpdatePacket(buffer.readVarInt(), buffer.readEnum(GuideBookItem.Volume.class),
+                    buffer.readVarInt(), buffer.readNullable(FriendlyByteBuf::readResourceLocation));
         }
     }
 
