@@ -171,6 +171,7 @@ public final class WitcheryEventHooks {
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
             if (serverPlayer.level().dimension().equals(Level.NETHER)) Predictions.onNetherVisit(serverPlayer);
+            DeathBrewEffects.restorePendingInventory(serverPlayer);
             DeathBrewEffects.restoreEffects(serverPlayer);
             GrotesqueEffect.restoreLegacyBrew(serverPlayer);
             InfusionEnergy.sync(serverPlayer);
@@ -199,7 +200,10 @@ public final class WitcheryEventHooks {
     @SubscribeEvent
     public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
-            if (!event.isEndConquered()) DeathBrewEffects.restoreEffects(serverPlayer);
+            if (!event.isEndConquered()) {
+                DeathBrewEffects.restorePendingInventory(serverPlayer);
+                DeathBrewEffects.restoreEffects(serverPlayer);
+            }
             InfusionEnergy.sync(serverPlayer);
             VampireFlight.restore(serverPlayer);
             Lycanthropy.restore(serverPlayer);

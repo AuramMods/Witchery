@@ -27,6 +27,7 @@ import org.jetbrains.annotations.Nullable;
 
 public final class DeathBrewEffects {
     private static final String RETAINED_INVENTORY = "WITCKeepInventory";
+    private static final String LEGACY_RETAINED_INVENTORY = "WITCLegacyRetainedInventory";
     private static final String EFFECTS_ON_RESPAWN = "WITCPoSpawn";
     private static final int FIRST_LEGACY_WITCHERY_EFFECT = 32;
 
@@ -47,6 +48,22 @@ public final class DeathBrewEffects {
         if (data.getBoolean(RETAINED_INVENTORY)) {
             respawned.getInventory().replaceWith(original.getInventory());
             data.remove(RETAINED_INVENTORY);
+        }
+    }
+
+    public static void storeLegacyInventory(CompoundTag persisted, ListTag inventory) {
+        if (!persisted.contains(LEGACY_RETAINED_INVENTORY, Tag.TAG_LIST)) {
+            persisted.put(LEGACY_RETAINED_INVENTORY, inventory.copy());
+        }
+    }
+
+    public static void restorePendingInventory(ServerPlayer player) {
+        if (!player.isAlive()) return;
+        CompoundTag persisted = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
+        if (persisted.contains(LEGACY_RETAINED_INVENTORY, Tag.TAG_LIST)) {
+            player.getInventory().load(persisted.getList(LEGACY_RETAINED_INVENTORY, Tag.TAG_COMPOUND));
+            persisted.remove(LEGACY_RETAINED_INVENTORY);
+            player.inventoryMenu.broadcastChanges();
         }
     }
 

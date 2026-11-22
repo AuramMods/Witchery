@@ -15,12 +15,12 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 final class LegacyWorldDimensions {
-    private static final String CONFIG_PROPERTY = "witchery.legacyConfig";
     private static final Pattern CONFIG_ID = Pattern.compile("\\s*I:(Dream|Torment|Mirror)DimensionID\\s*=\\s*(-?\\d+)\\s*");
     private final Map<Integer, ResourceKey<Level>> dimensions = new LinkedHashMap<>();
 
@@ -34,11 +34,9 @@ final class LegacyWorldDimensions {
         }
     }
 
-    static CompoundTag capture() throws IOException {
+    static CompoundTag capture(List<String> config) {
         CompoundTag saved = new CompoundTag();
-        String config = System.getProperty(CONFIG_PROPERTY);
-        if (config == null) return saved;
-        for (String line : Files.readAllLines(Path.of(config))) {
+        for (String line : config) {
             var entry = CONFIG_ID.matcher(line);
             if (entry.matches()) saved.putInt(entry.group(1).toLowerCase(Locale.ROOT), Integer.parseInt(entry.group(2)));
         }

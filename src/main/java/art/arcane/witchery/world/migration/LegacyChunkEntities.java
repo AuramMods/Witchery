@@ -25,6 +25,7 @@ final class LegacyChunkEntities {
     }
 
     private static void prepareEntity(CompoundTag entity, LegacyWorldIds ids, DataFixer fixer, int from) {
+        ids.upgradeEntityEffects(entity);
         if (entity.contains("Riding", Tag.TAG_COMPOUND)) {
             prepareEntity(entity.getCompound("Riding"), ids, fixer, from);
         }

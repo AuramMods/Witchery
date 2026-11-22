@@ -1,6 +1,7 @@
 package art.arcane.witchery.world.migration;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.brewing.DeathBrewEffects;
 import art.arcane.witchery.capability.WitcheryCapabilities;
 import art.arcane.witchery.item.DoorKeyItem;
 import art.arcane.witchery.item.WaystoneItem;
@@ -25,24 +26,29 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class LegacyWorldIds {
     private static final String IMPORT_PROPERTY = "witchery.importLegacyWorld";
+    private static final String CONFIG_PROPERTY = "witchery.legacyConfig";
     private static final String REGISTRY_FILE = "witchery-legacy-ids.dat";
     private static final String ENTRIES = "ItemData";
     private static final String DIMENSIONS = "Dimensions";
+    private static final String POTIONS = "Potions";
     private final Map<Integer, ResourceLocation> blocks = new HashMap<>();
     private final Map<Integer, ResourceLocation> items = new HashMap<>();
     private final Map<Integer, ResourceLocation> vanillaItems = new HashMap<>();
     private final Set<ResourceLocation> unmappedBlocks = ConcurrentHashMap.newKeySet();
     private final Set<ResourceLocation> unmappedItems = ConcurrentHashMap.newKeySet();
     private final LegacyWorldDimensions dimensions;
+    private final LegacyWorldEffects effects;
 
     private LegacyWorldIds(CompoundTag snapshot) {
         dimensions = new LegacyWorldDimensions(snapshot.getCompound(DIMENSIONS));
+        effects = new LegacyWorldEffects(snapshot.getCompound(POTIONS));
         for (Tag tag : snapshot.getList(ENTRIES, Tag.TAG_COMPOUND)) {
             CompoundTag entry = (CompoundTag) tag;
             String key = entry.getString("K");
@@ -75,10 +81,16 @@ public final class LegacyWorldIds {
                 snapshot.put(ENTRIES, NbtIo.readCompressed(level.toFile()).getCompound("FML").getList(ENTRIES, Tag.TAG_COMPOUND));
             }
             boolean captureDimensions = !snapshot.contains(DIMENSIONS, Tag.TAG_COMPOUND);
-            if (captureDimensions) snapshot.put(DIMENSIONS, LegacyWorldDimensions.capture());
+            boolean capturePotions = !snapshot.contains(POTIONS, Tag.TAG_COMPOUND);
+            if (captureDimensions || capturePotions) {
+                String configPath = System.getProperty(CONFIG_PROPERTY);
+                List<String> config = configPath == null ? List.of() : Files.readAllLines(Path.of(configPath));
+                if (captureDimensions) snapshot.put(DIMENSIONS, LegacyWorldDimensions.capture(config));
+                if (capturePotions) snapshot.put(POTIONS, LegacyWorldEffects.capture(config));
+            }
             LegacyWorldIds ids = new LegacyWorldIds(snapshot);
             if (ids.blocks.isEmpty() && ids.items.isEmpty()) return;
-            if (captureDimensions) {
+            if (captureDimensions || capturePotions) {
                 saveSnapshot(world, registry, snapshot);
                 Witchery.LOGGER.info("Captured {} Witchery block IDs and {} item IDs for {}", ids.blocks.size(), ids.items.size(), world);
             }
@@ -126,19 +138,34 @@ public final class LegacyWorldIds {
     public void upgradePlayer(CompoundTag player, DataFixer fixer, int from) {
         dimensions.upgradePlayerLocation(player);
         upgradeItems(player);
-        var persisted = player.getCompound("ForgeData").getCompound(Player.PERSISTED_NBT_TAG);
-        upgradeVanillaItems(persisted.getCompound("WITCSpiritWorld"), fixer, from,
-                SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+        var forgeData = player.getCompound("ForgeData");
+        var persisted = forgeData.getCompound(Player.PERSISTED_NBT_TAG);
+        int to = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+        upgradeEntityEffects(player);
+        effects.upgrade(persisted.getList("WITCPoSpawn", Tag.TAG_COMPOUND));
+        upgradeVanillaItems(persisted.getCompound("WITCSpiritWorld"), fixer, from, to);
         if (player.contains("WitcheryExtendedPlayer", Tag.TAG_COMPOUND)) {
+            var legacy = player.getCompound("WitcheryExtendedPlayer");
+            if (legacy.getBoolean("CanRestoreInventory") && legacy.contains("CachedInventory2", Tag.TAG_LIST)) {
+                var inventory = legacy.getList("CachedInventory2", Tag.TAG_COMPOUND);
+                upgradeVanillaItems(inventory, fixer, from, to);
+                DeathBrewEffects.storeLegacyInventory(persisted, inventory);
+                forgeData.put(Player.PERSISTED_NBT_TAG, persisted);
+                player.put("ForgeData", forgeData);
+            }
             var capabilities = player.getCompound("ForgeCaps");
             String playerDataId = WitcheryCapabilities.playerDataId().toString();
             if (!capabilities.contains(playerDataId, Tag.TAG_COMPOUND)) {
                 var imported = new CompoundTag();
-                imported.put("WitcheryExtendedPlayer", player.getCompound("WitcheryExtendedPlayer").copy());
+                imported.put("WitcheryExtendedPlayer", legacy.copy());
                 capabilities.put(playerDataId, imported);
                 player.put("ForgeCaps", capabilities);
             }
         }
+    }
+
+    void upgradeEntityEffects(CompoundTag entity) {
+        effects.upgrade(entity.getList("ActiveEffects", Tag.TAG_COMPOUND));
     }
 
     public void upgradeItems(Tag value) {
