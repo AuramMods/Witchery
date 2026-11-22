@@ -1,3 +1,95 @@
 {
-  "parent": "witchery:block/shadedglass_active_white"
+  "parent": "witchery:block/shadedglass_active_white",
+  "overrides": [
+    {
+      "predicate": {
+        "witchery:glass_color": 1
+      },
+      "model": "witchery:block/shadedglass_active_orange"
+    },
+    {
+      "predicate": {
+        "witchery:glass_color": 2
+      },
+      "model": "witchery:block/shadedglass_active_magenta"
+    },
+    {
+      "predicate": {
+        "witchery:glass_color": 3
+      },
+      "model": "witchery:block/shadedglass_active_light_blue"
+    },
+    {
+      "predicate": {
+        "witchery:glass_color": 4
+      },
+      "model": "witchery:block/shadedglass_active_yellow"
+    },
+    {
+      "predicate": {
+        "witchery:glass_color": 5
+      },
+      "model": "witchery:block/shadedglass_active_lime"
+    },
+    {
+      "predicate": {
+        "witchery:glass_color": 6
+      },
+      "model": "witchery:block/shadedglass_active_pink"
+    },
+    {
+      "predicate": {
+        "witchery:glass_color": 7
+      },
+      "model": "witchery:block/shadedglass_active_gray"
+    },
+    {
+      "predicate": {
+        "witchery:glass_color": 8
+      },
+      "model": "witchery:block/shadedglass_active_silver"
+    },
+    {
+      "predicate": {
+        "witchery:glass_color": 9
+      },
+      "model": "witchery:block/shadedglass_active_cyan"
+    },
+    {
+      "predicate": {
+        "witchery:glass_color": 10
+      },
+      "model": "witchery:block/shadedglass_active_purple"
+    },
+    {
+      "predicate": {
+        "witchery:glass_color": 11
+      },
+      "model": "witchery:block/shadedglass_active_blue"
+    },
+    {
+      "predicate": {
+        "witchery:glass_color": 12
+      },
+      "model": "witchery:block/shadedglass_active_brown"
+    },
+    {
+      "predicate": {
+        "witchery:glass_color": 13
+      },
+      "model": "witchery:block/shadedglass_active_green"
+    },
+    {
+      "predicate": {
+        "witchery:glass_color": 14
+      },
+      "model": "witchery:block/shadedglass_active_red"
+    },
+    {
+      "predicate": {
+        "witchery:glass_color": 15
+      },
+      "model": "witchery:block/shadedglass_active_black"
+    }
+  ]
 }

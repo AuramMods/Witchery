@@ -12,6 +12,7 @@ import art.arcane.witchery.block.LeechChestBlock;
 import art.arcane.witchery.block.MirrorBlock;
 import art.arcane.witchery.block.RiteHeartBlock;
 import art.arcane.witchery.block.RitualGlyphBlock;
+import art.arcane.witchery.block.ShadedGlassBlock;
 import art.arcane.witchery.block.SpiritPortalBlock;
 import art.arcane.witchery.block.StockadeBlock;
 import art.arcane.witchery.block.TormentPortalBlock;
@@ -377,13 +378,15 @@ public final class LegacyChunkUpgrade {
             case "spiritportal" -> state.setValue(SpiritPortalBlock.LEGACY_ORIENTATION, true);
             case "spiritflowing", "hollowtears" -> restoreSpiritFluid(state, metadata, saved != 0);
             case "brewgas", "brewliquid" -> state.setValue(LiquidBlock.LEVEL, metadata);
+            case "shadedglass", "shadedglass_active" -> state.setValue(ShadedGlassBlock.COLOR,
+                    ShadedGlassBlock.Color.fromLegacyMetadata(metadata));
             case "mirrorblock", "mirrorblock2" -> state.setValue(MirrorBlock.FACING, switch (variant) {
                 case 0 -> Direction.NORTH;
                 case 1 -> Direction.SOUTH;
                 case 2 -> Direction.WEST;
                 default -> Direction.EAST;
             }).setValue(MirrorBlock.HALF, (metadata & 4) == 0 ? DoubleBlockHalf.LOWER : DoubleBlockHalf.UPPER);
-            case "poppetshelf", "bloodedwool", "pitdirt", "pitgrass", "mirrorwall", "shadedglass", "shadedglass_active",
+            case "poppetshelf", "bloodedwool", "pitdirt", "pitgrass", "mirrorwall",
                     "tormentstone", "embermoss", "glintweed", "spanishmoss", "infinityegg", "icedoubleslab", "snowdoubleslab",
                     "cauldron", "brazier", "candelabra", "perpetualice", "icestockade", "icefence", "bloodcrucible", "silvervat",
                     "force", "barrier", "slurp" -> state;

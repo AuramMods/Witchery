@@ -1,6 +1,7 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.block.PlantMineBlock;
+import art.arcane.witchery.block.ShadedGlassBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.block.StatueOfWorshipBlock;
 import art.arcane.witchery.item.KobolditePentacleItem;
@@ -494,6 +495,9 @@ public final class WitcheryItems {
             }
             case "plantmine" -> {
                 return new PlantMineBlock.Item(block);
+            }
+            case "shadedglass", "shadedglass_active" -> {
+                return new ShadedGlassBlock.Item(block);
             }
             case "wickerbundle" -> {
                 return new WickerBundleBlock.Item(block);

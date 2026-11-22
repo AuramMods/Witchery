@@ -3,6 +3,7 @@ package art.arcane.witchery.item;
 import art.arcane.witchery.block.StockadeBlock;
 import net.minecraft.world.item.BlockItem;
 import art.arcane.witchery.block.PlantMineBlock;
+import art.arcane.witchery.block.ShadedGlassBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.BrambleBlock;
@@ -212,6 +213,9 @@ public enum WitcheryIngredient {
         if (stackTag.contains("Damage", Tag.TAG_ANY_NUMERIC)) {
             if (stack.getItem() instanceof WitchWoodBlockItem) {
                 WitchWoodBlockItem.importLegacyMetadata(stack, stackTag.getInt("Damage"));
+            }
+            if (stack.getItem() instanceof ShadedGlassBlock.Item) {
+                ShadedGlassBlock.Color.importLegacyMetadata(stack, stackTag.getInt("Damage"));
             }
             if (stack.getItem() instanceof StockadeBlock.Item
                     && (stack.getTagElement(BlockItem.BLOCK_STATE_TAG) == null

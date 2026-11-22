@@ -27,6 +27,7 @@ import art.arcane.witchery.block.BloodRoseBlock;
 import art.arcane.witchery.block.BloodCrucibleBlock;
 import art.arcane.witchery.block.GarlicGarlandBlock;
 import art.arcane.witchery.block.SilverVatBlock;
+import art.arcane.witchery.block.ShadedGlassBlock;
 import art.arcane.witchery.block.CrystalBallBlock;
 import art.arcane.witchery.block.DaylightCollectorBlock;
 import art.arcane.witchery.block.DemonHeartBlock;
@@ -68,7 +69,6 @@ import art.arcane.witchery.entity.Ent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -88,7 +88,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -164,8 +163,8 @@ public final class WitcheryBlocks {
             case "witchsapling" -> new WitchSaplingBlock(BlockBehaviour.Properties.copy(Blocks.OAK_SAPLING));
             case "wickerbundle" -> new WickerBundleBlock();
             case "perpetualice" -> new PerpetualIceBlock();
-            case "shadedglass" -> new LegacyShadedGlassBlock(false);
-            case "shadedglass_active" -> new LegacyShadedGlassBlock(true);
+            case "shadedglass" -> new ShadedGlassBlock(false);
+            case "shadedglass_active" -> new ShadedGlassBlock(true);
             case "bloodrose" -> new BloodRoseBlock();
             case "bloodedwool" -> new Block(BlockBehaviour.Properties.copy(Blocks.RED_WOOL));
             case "plantmine" -> new PlantMineBlock();
@@ -423,50 +422,4 @@ public final class WitcheryBlocks {
         }
     }
 
-    private static final class LegacyShadedGlassBlock extends Block {
-        private static final EnumProperty<LegacyShadedGlassColor> COLOR =
-                EnumProperty.create("color", LegacyShadedGlassColor.class);
-
-        private LegacyShadedGlassBlock(boolean active) {
-            super(BlockBehaviour.Properties.copy(Blocks.GLASS)
-                    .lightLevel(state -> active ? 15 : 0)
-                    .noOcclusion());
-            registerDefaultState(defaultBlockState().setValue(COLOR, LegacyShadedGlassColor.WHITE));
-        }
-
-        @Override
-        protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-            builder.add(COLOR);
-        }
-    }
-
-    private enum LegacyShadedGlassColor implements StringRepresentable {
-        WHITE("white"),
-        ORANGE("orange"),
-        MAGENTA("magenta"),
-        LIGHT_BLUE("light_blue"),
-        YELLOW("yellow"),
-        LIME("lime"),
-        PINK("pink"),
-        GRAY("gray"),
-        SILVER("silver"),
-        CYAN("cyan"),
-        PURPLE("purple"),
-        BLUE("blue"),
-        BROWN("brown"),
-        GREEN("green"),
-        RED("red"),
-        BLACK("black");
-
-        private final String serializedName;
-
-        LegacyShadedGlassColor(String serializedName) {
-            this.serializedName = serializedName;
-        }
-
-        @Override
-        public String getSerializedName() {
-            return serializedName;
-        }
-    }
 }

@@ -1,6 +1,7 @@
 package art.arcane.witchery.client;
 
 import art.arcane.witchery.block.PlantMineBlock;
+import art.arcane.witchery.block.ShadedGlassBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.entity.BrewDroplet;
 import art.arcane.witchery.item.BrewFuelItem;
@@ -444,6 +445,11 @@ public final class WitcheryClient {
             ItemProperties.register(WitcheryBlocks.getRequired("wickerbundle").get().asItem(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "bloodied"),
                     (stack, level, entity, seed) -> WickerBundleBlock.isBloodied(stack) ? 1 : 0);
+            for (String name : new String[]{"shadedglass", "shadedglass_active"}) {
+                ItemProperties.register(WitcheryBlocks.getRequired(name).get().asItem(),
+                        ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "glass_color"),
+                        (stack, level, entity, seed) -> ShadedGlassBlock.Color.fromStack(stack).ordinal());
+            }
 
             for (String name : new String[]{
                     "belladonna", "mandrake", "artichoke", "snowbell", "wormwood", "mindrake", "wolfsbane", "garlicplant",

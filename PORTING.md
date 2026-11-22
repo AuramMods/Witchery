@@ -602,6 +602,13 @@
 - [x] In the muted survival client, craft, place, mine, and replace Alder Stockades. Verify three contact damage for each material, freeze the fence run with Ice World, and open, power, harvest, and replace the ice door. A dedicated restart preserved the Alder item tags, stacked ice posts, fence-to-gate connection, and both door halves. The rebuilt JAR rendered the restored ice and snow textures. Java 17 data generation, JAR reobfuscation, 450 regression GameTests, and ten targeted Forge GameTests passed.
 - [x] Import all nine placed Stockade variants, Ice Stockades, Perpetual Ice Fences, and Perpetual Ice Fence Gates from an original Forge world. Recover connections across chunk boundaries, flat tops under stacked posts, and the saved gate direction and redstone state. All 21 packaged checks passed during import and again on ordinary dedicated restart. Removing the adjacent wall, fence, upper stockade, or redstone source updated each block's state.
 
+## Shaded Glass (2026-11-21)
+
+- [x] Restore all sixteen recipes. Eight Stained Glass blocks of one color around Redstone Dust produce eight matching Shaded Glass blocks. Placement, pick-block, and Silk Touch keep the color. Ordinary mining shatters the glass.
+- [x] Restore the redstone change between clear and darkened glass. The clear pane transmits lamp light. The powered pane blocks light and emits none. Removing power restores the clear state in the same color.
+- [x] Import 32 placed panes and 32 stacks from an original Forge save, covering every color in both block states. Repeat the checks after a headless dedicated restart, then switch both rows with redstone. Data generation, JAR reobfuscation, and all 34 checked-in GameTests passed.
+- [ ] Verify the colored item and block models in a muted client. All 32 model and texture references resolved in the packaged JAR. Docker did not respond to the isolated client environment check.
+
 ## Coffin (2026-11-20)
 
 - [x] Craft the original placeable coffin from a bed, three planks and five logs. The muted survival client crafted the item and placed the head and foot together. Placement tests refused an obstructed or unsupported second half and retained the item.
@@ -1247,6 +1254,7 @@
 - [x] Recover active gas and liquid brews, Tide Hold, Lava Hold, the Statue of Broken Curses, and the Statue of Occluded Summons. Compare 11 dispersal cells with the original Forge regions, including levels, ordered ingredients and scheduled ticks. After a dedicated restart, both brews applied Poison, runoff receded when its source was removed, and both holds restored their fluids. Both ward statues retained their directions, owner and exclusions.
 - [x] Import six Leech Chest blocks and two worship statues from the original Forge server. Restore two double chests across chunk boundaries and the south-facing chest made by the original Sprig. Keep literal names, each half's inventory and samples, and patron bindings. Preserve the two saved Hobgoblins' UUIDs and the active worshipper's pose.
 - [x] Repeat the Leech Chest and worship statue checks after an ordinary dedicated restart. A hopper under one half pulled items from both inventories. Removing one half left the second half and its original sample intact. The bound statue produced its patron-bound drop and recruited the neighboring Hobgoblin.
+- [x] Import every Shaded Glass color from original blocks and item stacks in both redstone states. The packaged server kept all colors through restart, and subsequent power changes switched the blocks while keeping their color.
 - [ ] Expand migration to other block and subtype data and specialized entity and block-entity fields. Add fixtures before calling the migration complete.
 
 ### Importing a copy of a legacy world

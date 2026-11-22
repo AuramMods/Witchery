@@ -2,6 +2,7 @@ package art.arcane.witchery.data;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.CritterSnareBlock;
+import art.arcane.witchery.block.ShadedGlassBlock;
 import art.arcane.witchery.block.StockadeBlock;
 import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.block.WitchWoodType;
@@ -16,6 +17,7 @@ import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcheryRecipes;
 import com.google.gson.JsonObject;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeCategory;
@@ -291,6 +293,7 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .define('S', Items.SNOW).pattern("SSS").pattern("SSS")
                 .unlockedBy("has_snow", has(Items.SNOW)).save(recipeOutput);
         stockadeRecipes(recipeOutput);
+        shadedGlassRecipes(recipeOutput);
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryItems.getRequired("vampirebook").get())
                 .define('W', Items.NETHER_WART)
                 .define('S', Items.NETHER_STAR)
@@ -599,18 +602,30 @@ public class WitcheryRecipeProvider extends RecipeProvider {
             }
             ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, stockade, 9)
                     .define('L', logs).define('E', exhale).pattern(" L ").pattern("LEL").pattern("LLL")
-                    .unlockedBy("has_exhale", has(exhale)).save(recipe -> output.accept(new StockadeRecipe(recipe, wood)),
+                    .unlockedBy("has_exhale", has(exhale)).save(recipe -> output.accept(wood == StockadeBlock.Wood.OAK ? recipe
+                                    : new BlockStateRecipe(recipe, StockadeBlock.WOOD.getName(), wood.getSerializedName())),
                             "witchery:stockade/" + wood.getSerializedName());
         }
     }
 
-    private record StockadeRecipe(FinishedRecipe recipe, StockadeBlock.Wood wood) implements FinishedRecipe {
+    private static void shadedGlassRecipes(Consumer<FinishedRecipe> output) {
+        Block shadedGlass = WitcheryBlocks.getRequired("shadedglass").get();
+        for (var color : ShadedGlassBlock.Color.values()) {
+            Item stainedGlass = BuiltInRegistries.ITEM.get(ResourceLocation.withDefaultNamespace(color.dye().getName() + "_stained_glass"));
+            ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, shadedGlass, 8).group("witchery:shaded_glass")
+                    .define('G', stainedGlass).define('R', Items.REDSTONE).pattern("GGG").pattern("GRG").pattern("GGG")
+                    .unlockedBy("has_stained_glass", has(stainedGlass)).save(recipe -> output.accept(color == ShadedGlassBlock.Color.WHITE
+                                    ? recipe : new BlockStateRecipe(recipe, ShadedGlassBlock.COLOR.getName(), color.getSerializedName())),
+                            "witchery:shaded_glass/" + color.getSerializedName());
+        }
+    }
+
+    private record BlockStateRecipe(FinishedRecipe recipe, String property, String value) implements FinishedRecipe {
         @Override
         public void serializeRecipeData(JsonObject json) {
             recipe.serializeRecipeData(json);
-            if (wood == StockadeBlock.Wood.OAK) return;
             var state = new JsonObject();
-            state.addProperty(StockadeBlock.WOOD.getName(), wood.getSerializedName());
+            state.addProperty(property, value);
             var nbt = new JsonObject();
             nbt.add(BlockItem.BLOCK_STATE_TAG, state);
             json.getAsJsonObject("result").add("nbt", nbt);

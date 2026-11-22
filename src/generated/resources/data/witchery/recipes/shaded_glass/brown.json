@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "group": "witchery:shaded_glass",
+  "key": {
+    "G": {
+      "item": "minecraft:brown_stained_glass"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    "GGG",
+    "GRG",
+    "GGG"
+  ],
+  "result": {
+    "count": 8,
+    "item": "witchery:shadedglass",
+    "nbt": {
+      "BlockStateTag": {
+        "color": "brown"
+      }
+    }
+  },
+  "show_notification": true
+}
