@@ -114,14 +114,12 @@ Lifecycle stages:
 - The Creative Bat/Wolf Token retains `witchery:wolftoken`. A stack imported from an original numeric ID was used through both rank cycles, retained its custom tag, and survived a packaged dedicated restart with both ranks saved.
 - The Staff of Duplication retains `witchery:dupstaff`, the original marker coordinates, rotation, and nested schematic. A real twelve-cell capture survived numeric ID import into a chest and placed after an ordinary dedicated restart. Modern captures hold a palette of block states in the same coordinate order as the original list.
 
-## Spawn Egg Model Coverage (2026-02-09)
+## Spawn Egg Model Coverage (2026-11-23)
 - Runtime spawn egg item registration source:
   - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryItems.java` (`registerLegacySpawnEgg` from `WitcheryEntities.all()`).
 - Asset model source:
   - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/assets/witchery/models/item/*_spawn_egg.json`.
-- Coverage rule:
-  - exactly one model file per normalized legacy entity path from `LegacyRegistryData.ENTITIES` (`55` total).
-  - parent model for each file is `minecraft:item/template_spawn_egg`.
+- The packaged Forge JAR has one `minecraft:item/template_spawn_egg` model for each of the 55 legacy entity paths. This includes the 32 original eggs and the item IDs retained for older port saves.
 
 ## Block Model Parity Anchors (current focus)
 - `witchery:wolfaltar`
@@ -778,7 +776,7 @@ Implementation anchors:
 | `brewliquid` | `witchery:brewliquid`, `witchery:flowing_brewliquid` | `witchery:brewliquid` (`BrewDispersalBlock`) | _(none)_ |
 | `fluiddisease` | `witchery:fluiddisease`, `witchery:flowing_fluiddisease` | `witchery:disease` (`LiquidBlock`) | _(none)_ |
 
-## 1.20.1 Data Generation Scaffolding (current)
+## 1.20.1 Data Generation
 Implementation anchors:
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/data/WitcheryDataGenerators.java`
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/data/WitcheryBlockTagsProvider.java`
@@ -786,27 +784,20 @@ Implementation anchors:
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/data/WitcheryBlockLoot.java`
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/data/WitcheryRecipeProvider.java`
 
-Current provider coverage:
-- `GatherDataEvent` registration: server-side data providers only (breadth scaffold).
-- Tags: writes `witchery:legacy_blocks` containing all entries in `WitcheryBlocks.LEGACY_BLOCKS`.
-- Loot: generates self-drop loot tables for blocks that currently resolve to an item (`block.asItem() != AIR`).
-- Recipes: stub provider currently emits no recipes (planned depth-phase migration).
+`GatherDataEvent` registers client models for the stockades and server providers for block tags, recipes, and loot. Generated recipes cover Witchwood variants, the progression machines, poppets, and other legacy crafting entries. The packaged 1.20.1 JAR contains 403 recipe JSON files and 92 block loot tables from the generated and handwritten resources together.
 
-## 1.20.1 Spawn Egg Scaffolding (current)
+## 1.20.1 Spawn Eggs
 Implementation anchor:
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryItems.java`
 
-Behavior:
-- generates one placeholder `ForgeSpawnEggItem` per legacy entity placeholder entry in `LegacyRegistryData.ENTITIES` (`55` total).
-- registry name pattern: `<normalized_entity_name>_spawn_egg`.
-- spawn eggs are included in the creative-tab aggregation (`WitcheryItems.allForCreativeTab`).
+The 32 original eggs use their original colors and `<normalized_entity_name>_spawn_egg` IDs. They appear in the Witchery creative tab and resolve the legacy numeric spawn egg metadata during world import. The older port's extra egg IDs stay in the Forge item registry for saves and are omitted from the Witchery tab.
 
 Examples:
 | Legacy Entity ID | Spawn Egg Item ID |
 |---|---|
 | `demon` | `witchery:demon_spawn_egg` |
 | `hornedHuntsman` | `witchery:hornedhuntsman_spawn_egg` |
-| `illusionZombie` | `witchery:illusionzombie_spawn_egg` |
+| `reflection` | `witchery:reflection_spawn_egg` |
 | `wingedmonkey` | `witchery:wingedmonkey_spawn_egg` |
 
 ## Entity Registry (`WitcheryEntities`)
