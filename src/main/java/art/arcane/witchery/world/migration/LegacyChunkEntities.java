@@ -2,9 +2,7 @@ package art.arcane.witchery.world.migration;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.entity.AnimalMerchant;
-import art.arcane.witchery.item.BrewBottleItem;
-import art.arcane.witchery.item.ThrowableBrewItem;
-import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.registry.WitcheryEntities;
 import com.mojang.datafixers.DataFixer;
 import net.minecraft.SharedConstants;
@@ -73,25 +71,11 @@ final class LegacyChunkEntities {
 
     private static ResourceLocation prepareBrewProjectile(CompoundTag entity, ResourceLocation legacyType,
                                                           LegacyWorldIds ids, DataFixer fixer, int from, int to) {
-        ItemStack stack;
-        if (legacyType.getPath().equals("brew")) {
-            if (!entity.contains("damageValue", Tag.TAG_ANY_NUMERIC)) return legacyType;
-            var ingredient = new CompoundTag();
-            ingredient.putString("id", "witchery:ingredient");
-            ingredient.putByte("Count", (byte) 1);
-            ingredient.putInt("Damage", entity.getInt("damageValue"));
-            stack = WitcheryIngredient.loadInventoryStack(ingredient);
-            if (!(stack.getItem() instanceof ThrowableBrewItem) && !stack.is(WitcheryIngredient.QUICKLIME.item())
-                    && !stack.is(WitcheryIngredient.ROCK.item()) && !stack.is(WitcheryIngredient.WEB.item())) {
-                return legacyType;
-            }
-        } else {
-            var brew = entity.getCompound("Brew");
-            ids.upgradeVanillaItems(brew, fixer, from, to);
-            stack = ItemStack.of(brew);
-            if (!(stack.getItem() instanceof BrewBottleItem)) return legacyType;
-            if (entity.getBoolean("Spell")) entity.putBoolean("NoGravity", true);
-        }
+        boolean fixedRecipe = legacyType.getPath().equals("brew");
+        if (!fixedRecipe) ids.upgradeVanillaItems(entity.getCompound("Brew"), fixer, from, to);
+        ItemStack stack = ThrownBrew.readLegacyPayload(entity, fixedRecipe);
+        if (stack.isEmpty()) return legacyType;
+        if (!fixedRecipe && entity.getBoolean("Spell")) entity.putBoolean("NoGravity", true);
         entity.put("Item", stack.save(new CompoundTag()));
         entity.remove("Brew");
         entity.remove("Spell");

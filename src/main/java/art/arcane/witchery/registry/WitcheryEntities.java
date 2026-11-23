@@ -206,9 +206,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<Imp>> IMP =
             ENTITY_TYPES.register("imp", () -> EntityType.Builder.of(Imp::new, MobCategory.MONSTER)
                     .sized(0.4F, 1.3F).fireImmune().build(Witchery.MODID + ":imp"));
-    public static final RegistryObject<EntityType<ThrownBrew>> THROWN_BREW =
-            ENTITY_TYPES.register("thrown_brew", () -> EntityType.Builder.<ThrownBrew>of(ThrownBrew::new, MobCategory.MISC)
-                    .sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(3).build(Witchery.MODID + ":thrown_brew"));
+    public static final RegistryObject<EntityType<ThrownBrew>> THROWN_BREW = thrownBrew("thrown_brew");
+    public static final RegistryObject<EntityType<ThrownBrew>> LEGACY_FIXED_BREW = thrownBrew("brew");
+    public static final RegistryObject<EntityType<ThrownBrew>> LEGACY_CUSTOM_BREW = thrownBrew("brew2");
     public static final RegistryObject<EntityType<BrewDroplet>> BREW_DROPLET =
             ENTITY_TYPES.register("droplet", () -> EntityType.Builder.of(BrewDroplet::new, MobCategory.MISC)
                     .sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(3).build(Witchery.MODID + ":droplet"));
@@ -270,9 +270,6 @@ public final class WitcheryEntities {
         LEGACY_ENTITIES.put("imp", IMP);
         LEGACY_ENTITIES.put("darkmark", DARK_MARK);
         LEGACY_ENTITIES.put("louse", LOUSE);
-        for (String legacyName : LegacyRegistryData.ENTITIES) {
-            registerLegacyEntity(legacyName);
-        }
     }
 
     private WitcheryEntities() {
@@ -305,20 +302,9 @@ public final class WitcheryEntities {
                 .sized(0.8F, 1.8F).fireImmune().clientTrackingRange(8).build(Witchery.MODID + ":" + path));
     }
 
-    private static void registerLegacyEntity(String legacyName) {
-        String path = RegistryNameUtil.normalizePath(legacyName);
-        if (LEGACY_ENTITIES.containsKey(path) || path.equals("soulfire") || path.equals("spelleffect") || path.equals("broom")
-                || path.equals("item") || path.equals("eye") || path.equals("grenade") || path.equals("bolt")
-                || path.equals("droplet") || path.equals("splatter")) {
-            return;
-        }
-
-        RegistryObject<EntityType<Zombie>> entityType = ENTITY_TYPES.register(path,
-                () -> EntityType.Builder.<Zombie>of((entityTypeFactory, level) -> new Zombie(entityTypeFactory, level), MobCategory.MONSTER)
-                        .sized(0.6F, 1.95F)
-                        .build(Witchery.MODID + ":" + path));
-
-        LEGACY_ENTITIES.put(path, entityType);
+    private static RegistryObject<EntityType<ThrownBrew>> thrownBrew(String path) {
+        return ENTITY_TYPES.register(path, () -> EntityType.Builder.<ThrownBrew>of(ThrownBrew::new, MobCategory.MISC)
+                .sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(3).build(Witchery.MODID + ":" + path));
     }
 
     private static void registerEntityAttributes(EntityAttributeCreationEvent event) {

@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -20,6 +21,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
@@ -64,6 +66,27 @@ public final class ThrownBrew extends ThrowableItemProjectile {
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         legacyOwnerName = tag.hasUUID("Owner") ? "" : tag.getString("ownerName");
+        boolean fixedRecipe = getType() == WitcheryEntities.LEGACY_FIXED_BREW.get();
+        if ((fixedRecipe || getType() == WitcheryEntities.LEGACY_CUSTOM_BREW.get()) && getItem().isEmpty()) {
+            setItem(readLegacyPayload(tag, fixedRecipe));
+            if (!fixedRecipe && tag.getBoolean("Spell")) setNoGravity(true);
+        }
+    }
+
+    public static ItemStack readLegacyPayload(CompoundTag tag, boolean fixedRecipe) {
+        if (!fixedRecipe) {
+            ItemStack bottle = ItemStack.of(tag.getCompound("Brew"));
+            return bottle.getItem() instanceof BrewBottleItem ? bottle : ItemStack.EMPTY;
+        }
+        if (!tag.contains("damageValue", Tag.TAG_ANY_NUMERIC)) return ItemStack.EMPTY;
+        var ingredient = new CompoundTag();
+        ingredient.putString("id", "witchery:ingredient");
+        ingredient.putByte("Count", (byte) 1);
+        ingredient.putInt("Damage", tag.getInt("damageValue"));
+        ItemStack stack = WitcheryIngredient.loadInventoryStack(ingredient);
+        return stack.getItem() instanceof ThrowableBrewItem || stack.is(WitcheryIngredient.QUICKLIME.item())
+                || stack.is(WitcheryIngredient.ROCK.item()) || stack.is(WitcheryIngredient.WEB.item())
+                ? stack : ItemStack.EMPTY;
     }
 
     public static boolean throwBottle(ServerLevel level, Player player, ItemStack stack, float speed) {
@@ -80,6 +103,10 @@ public final class ThrownBrew extends ThrowableItemProjectile {
 
     @Override
     public void tick() {
+        if (getItem().isEmpty()) {
+            if (!level().isClientSide) discard();
+            return;
+        }
         super.tick();
         if (isNoGravity() && level() instanceof ServerLevel level) {
             if (tickCount > 200) discard();
@@ -94,7 +121,7 @@ public final class ThrownBrew extends ThrowableItemProjectile {
 
     @Override
     protected Item getDefaultItem() {
-        return WitcheryIngredient.BREW_OF_INK.item();
+        return getType() == WitcheryEntities.THROWN_BREW.get() ? WitcheryIngredient.BREW_OF_INK.item() : Items.AIR;
     }
 
     @Override

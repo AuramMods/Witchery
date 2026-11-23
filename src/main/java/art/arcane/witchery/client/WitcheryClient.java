@@ -363,6 +363,8 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.MIRROR_FACE.get(), MirrorFaceRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SLEEPING_BODY.get(), SleepingBodyRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.THROWN_BREW.get(), BrewProjectileRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.LEGACY_FIXED_BREW.get(), BrewProjectileRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.LEGACY_CUSTOM_BREW.get(), BrewProjectileRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.GRENADE.get(), ThrownItemRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.KETTLE.get(), KettleRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.BREW_GAS.get(), BrewGasRenderer::new);

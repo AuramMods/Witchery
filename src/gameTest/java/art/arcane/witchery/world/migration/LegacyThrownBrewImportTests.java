@@ -99,4 +99,34 @@ public final class LegacyThrownBrewImportTests {
         }
         helper.succeed();
     }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_legacy_thrown_brews")
+    public static void earlierPortBrewIdsLoadAsProjectiles(GameTestHelper helper) throws Exception {
+        var level = helper.getLevel();
+        var fixed = WitcheryEntities.LEGACY_FIXED_BREW.get().create(level);
+        fixed.load(TagParser.parseTag("{damageValue:60,Motion:[0.25d,-0.5d,0.5d]}"));
+        var fixedReloaded = WitcheryEntities.LEGACY_FIXED_BREW.get().create(level);
+        fixedReloaded.load(fixed.saveWithoutId(new CompoundTag()));
+        helper.assertTrue(fixedReloaded.getItem().is(WitcheryIngredient.BREW_OF_INK.item())
+                        && fixedReloaded.getDeltaMovement().equals(new Vec3(0.25, -0.5, 0.5))
+                        && !fixedReloaded.isNoGravity(),
+                "The original fixed recipe ID should keep its Ink and flight after a reload");
+
+        var spell = WitcheryEntities.LEGACY_CUSTOM_BREW.get().create(level);
+        spell.load(TagParser.parseTag("""
+                {Spell:1b,ownerName:"LegacyBrewer",Brew:{id:"witchery:brewbottle",Count:1b,tag:{Color:1193046}}}
+                """));
+        var spellReloaded = WitcheryEntities.LEGACY_CUSTOM_BREW.get().create(level);
+        spellReloaded.load(spell.saveWithoutId(new CompoundTag()));
+        helper.assertTrue(spellReloaded.getItem().is(WitcheryItems.getRequired("brewbottle").get())
+                        && spellReloaded.getItem().getTag().getInt("Color") == 1193046 && spellReloaded.isNoGravity()
+                        && spellReloaded.saveWithoutId(new CompoundTag()).getString("ownerName").equals("LegacyBrewer"),
+                "The custom projectile should keep its saved bottle, color, flight mode and thrower");
+
+        var empty = WitcheryEntities.LEGACY_FIXED_BREW.get().create(level);
+        empty.load(TagParser.parseTag("{Health:20.0f,IsBaby:1b,PersistenceRequired:1b}"));
+        empty.tick();
+        helper.assertTrue(empty.isRemoved(), "A previous port's payload-free placeholder must expire without an impact");
+        helper.succeed();
+    }
 }

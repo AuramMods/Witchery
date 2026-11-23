@@ -180,6 +180,8 @@ public final class WitcheryItems {
                 "bolt_spawn_egg", "droplet_spawn_egg", "splatter_spawn_egg")) {
             LEGACY_SPAWN_EGGS.put(name, ITEMS.register(name, () -> new Item(new Item.Properties())));
         }
+        ITEMS.register("brew_spawn_egg", () -> new Item(new Item.Properties()));
+        ITEMS.register("brew2_spawn_egg", () -> new Item(new Item.Properties()));
         ITEMS.register("broom_spawn_egg", () -> new BroomItem(true));
         ITEMS.register("item_spawn_egg", () -> new Item(new Item.Properties()));
         ITEMS.register("eye_spawn_egg", () -> new Item(new Item.Properties()));
