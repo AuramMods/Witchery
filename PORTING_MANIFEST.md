@@ -869,6 +869,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 146 | `REFLECTION` | `EntityReflection` | `reflection` (copies armor, weapons, effects, disguise, and Wolfman form) |
 
 - Legacy Demon bargain stacks and Wolfman trade stacks are upgraded before the chunk's entity data is loaded. The Demon keeps both buy slots and the original offer limits. A Wolfman with saved trades gains the minimum modern villager experience so the restored villager keeps its profession and offers without a job site. Legacy Imps use the tameable entity schema so their owner UUID, sitting state, and home remain available after import.
+- An infected villager saved in human form uses the villager schema to upgrade its profession and trade stacks. Existing experience is preserved. A legacy novice with saved offers keeps its profession through its first job site check, the full-moon cycle, and a cure.
 
 ## Potions / Effects (`WitcheryPotions`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/brewing/potions/WitcheryPotions.java`

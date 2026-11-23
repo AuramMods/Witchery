@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Infected Villager Import and Seer Stone Preparation (2026-11-22)
+
+- An infected librarian saved in human form by Forge 1.7.10 lost its profession and trade stock when the importer used the vanilla witch schema. The import now uses the villager schema and preserves experience. It gives an original novice with saved offers the minimum experience needed to retain its profession without a job site.
+- The packaged import retained UUID `2d7108c2-feaf-4e7a-8d2f-a43af6c31e67`, infection, a two-currency Sharpness III trade, and a marked Demon Heart result. After an ordinary restart, the full moon transformed the villager and dawn restored both active trades under its original identity. Java 17 data generation, JAR reobfuscation and all 139 GameTests passed. The GameTest also checks curing the restored villager. The packaged JAR SHA-256 was `41b2b46395cc502ac776306aa9030cc4e046f5d41b1ec65e87867c99277f06a1`. The original region, import and restart logs are under `/tmp/witchery-flowing-spirit-current`.
+- The copied Auram player prepared two Tears of the Goddess, a Quartz Sphere, and Mutandis Extremis. The workshop table caught fire and the cauldron went missing during the next batch. The fixture moved the table, temporarily stopped fire spread and mob griefing, and renewed the player's protective effects after an ordinary fire-death respawn. The player used saved seeds to make Anointing Paste and converted a replacement cauldron. The remaining brewing route starts with Drop of Luck for Redstone Soup and Happenstance Oil.
+
 ## Auram Respawn and Legacy Bargains (2026-11-22)
 
 - The copied Auram client and server used the same Witchery JAR, SHA-256 `65f004acda10ce5ee17f0b7a9ae6bf4d6211311256da76400d352b3e47734cb4`, with a temporary Forge capability trace. The client reached the death screen from the saved record and after a controlled live death. Both normal Respawn clicks returned the player to 20 health with the Spectral Stone, Boline, and Witch's Hand still in inventory. The client used zero master volume and OpenAL No Output. The focus monitor recorded no activation. The exact run is `auram-capability-exact-respawn.log` under `/tmp/witchery-flowing-spirit-current`.

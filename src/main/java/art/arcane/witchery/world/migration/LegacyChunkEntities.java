@@ -59,6 +59,7 @@ final class LegacyChunkEntities {
             case "owl", "toad", "covenwitch", "mindrake", "wingedmonkey", "imp" -> "Wolf";
             case "cat" -> "Ozelot";
             case "deathhorse" -> "EntityHorse";
+            case "werevillager" -> "Villager";
             case "item" -> "Item";
             default -> "Witch";
         };
@@ -106,6 +107,10 @@ final class LegacyChunkEntities {
             restoreEquipmentSlots(entity);
             if (type.equals(NAMESPACE + "cat") && !entity.contains("variant")) {
                 entity.putString("variant", "minecraft:tabby");
+            } else if (type.equals(NAMESPACE + "werevillager") && entity.getInt("Xp") == 0
+                    && !entity.getCompound("Offers").getList("Recipes", Tag.TAG_COMPOUND).isEmpty()) {
+                // Legacy villagers kept their profession even without a modern job site.
+                entity.putInt("Xp", 1);
             }
         }
         for (Tag tag : entity.getList("Passengers", Tag.TAG_COMPOUND)) restoreEntity((CompoundTag) tag);
