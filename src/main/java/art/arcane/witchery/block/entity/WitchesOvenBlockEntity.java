@@ -59,6 +59,7 @@ public final class WitchesOvenBlockEntity extends BaseContainerBlockEntity imple
     public static final int COOK_PROGRESS = 1;
     public static final int PROGRESS_COUNT = 2;
     public static final int PROGRESS_SCALE = 1000;
+    public static final double BASE_FUME_CHANCE = 0.3;
 
     private static final int COOK_TICKS = 180;
     private static final int TICKS_PER_FUNNEL = 20;
@@ -137,7 +138,7 @@ public final class WitchesOvenBlockEntity extends BaseContainerBlockEntity imple
                 if (recipe.getExperience() > 0) {
                     oven.recipesUsed.merge(recipe.getId(), 1, Integer::sum);
                 }
-                oven.collectFume(level, input, 0.3 + left + right);
+                oven.collectFume(level, input, BASE_FUME_CHANCE + left + right);
                 input.shrink(1);
                 oven.cookTime = 0;
                 inventoryChanged = true;
@@ -164,7 +165,7 @@ public final class WitchesOvenBlockEntity extends BaseContainerBlockEntity imple
                 .orElse(false);
     }
 
-    private static boolean isOvenResult(ItemStack result) {
+    public static boolean isOvenResult(ItemStack result) {
         return result.is(Items.CHARCOAL) || result.is(Items.COAL)
                 || result.isEdible() || result.is(WitcheryIngredient.WOOD_ASH.item());
     }
@@ -214,7 +215,7 @@ public final class WitchesOvenBlockEntity extends BaseContainerBlockEntity imple
     }
 
     @Nullable
-    private static WitcheryIngredient fumeFor(ItemStack input) {
+    public static WitcheryIngredient fumeFor(ItemStack input) {
         if (input.is(Items.OAK_SAPLING)) {
             return WitcheryIngredient.EXHALE_OF_THE_HORNED_ONE;
         }

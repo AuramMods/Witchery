@@ -58,6 +58,10 @@ public final class FamiliarBinding {
             this.names = names;
         }
 
+        public EntityType<? extends TamableAnimal> entityType() {
+            return entity.get();
+        }
+
         @Nullable
         private static Type forId(int id) {
             return switch (id) {
@@ -161,7 +165,7 @@ public final class FamiliarBinding {
             if (existing != null) {
                 called |= bringTo(owner, existing);
             } else if (!record.getBoolean("FamiliarSummoned")) {
-                TamableAnimal familiar = type.entity.get().create(level);
+                TamableAnimal familiar = type.entityType().create(level);
                 if (!(familiar instanceof Familiar marked)) continue;
                 familiar.moveTo(center.x, center.y, center.z, 0, 0);
                 if (!level.noCollision(familiar)) continue;
