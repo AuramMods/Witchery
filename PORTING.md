@@ -1889,6 +1889,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Distil a new Tear of the Goddess from Oven fume, recover stored Gypsum and Hollow Tears, and craft fresh Ritual Chalk. Draw the medium white ring. Consume a Demon from the earlier summons with the saved Hollow Tears, supplied gold and glass, then mount the resulting Mirror. The fixture positioned the Demon and missed offerings.
 - [x] Enter the new linked chamber, respawn after a combat death, and reenter. Win the 100-health Reflection fight with Arthana hits and collect its Demon Heart. Return through the linked exit and verify the defeated state on both frames. The fixture positioned the player and applied instant healing during the later fight. The returned player had two Demon Hearts including the Torment reward.
 - [x] Restart the copied Auram dedicated server with the brew projectile build. Both frames still carry the same connection UUID, reciprocal dimension and coordinate records, and the defeated flag. The server resolved all 55 original entity IDs.
+- [x] Rejoin that server in the muted client with the same JAR. Enter the saved chamber, verify the reciprocal link and defeated flags without a second Reflection, and return through the same frame with both Demon Hearts.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.
