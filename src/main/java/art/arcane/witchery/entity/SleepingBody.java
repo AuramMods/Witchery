@@ -22,7 +22,8 @@ import java.util.UUID;
 public final class SleepingBody extends PathfinderMob {
     private static final EntityDataAccessor<Optional<UUID>> OWNER_UUID =
             SynchedEntityData.defineId(SleepingBody.class, EntityDataSerializers.OPTIONAL_UUID);
-    private String ownerName = "";
+    private static final EntityDataAccessor<String> OWNER_NAME =
+            SynchedEntityData.defineId(SleepingBody.class, EntityDataSerializers.STRING);
 
     public SleepingBody(EntityType<? extends SleepingBody> type, Level level) {
         super(type, level);
@@ -39,12 +40,17 @@ public final class SleepingBody extends PathfinderMob {
     protected void defineSynchedData() {
         super.defineSynchedData();
         entityData.define(OWNER_UUID, Optional.empty());
+        entityData.define(OWNER_NAME, "");
     }
 
     public void attachOwner(ServerPlayer owner) {
-        ownerName = owner.getGameProfile().getName();
+        entityData.set(OWNER_NAME, owner.getGameProfile().getName());
         entityData.set(OWNER_UUID, Optional.of(owner.getUUID()));
         setCustomName(owner.getName());
+    }
+
+    public String ownerName() {
+        return entityData.get(OWNER_NAME);
     }
 
     public Optional<UUID> ownerId() {
@@ -52,7 +58,8 @@ public final class SleepingBody extends PathfinderMob {
     }
 
     public boolean belongsTo(ServerPlayer player) {
-        return ownerId().map(id -> id.equals(player.getUUID())).orElseGet(() -> ownerName.equalsIgnoreCase(player.getGameProfile().getName()));
+        return ownerId().map(id -> id.equals(player.getUUID()))
+                .orElseGet(() -> ownerName().equalsIgnoreCase(player.getGameProfile().getName()));
     }
 
     @Nullable
@@ -61,7 +68,7 @@ public final class SleepingBody extends PathfinderMob {
             return null;
         }
         var players = server.getServer().getPlayerList();
-        return ownerId().map(players::getPlayer).orElseGet(() -> players.getPlayerByName(ownerName));
+        return ownerId().map(players::getPlayer).orElseGet(() -> players.getPlayerByName(ownerName()));
     }
 
     @Override
@@ -98,14 +105,14 @@ public final class SleepingBody extends PathfinderMob {
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
-        tag.putString("Owner", ownerName);
+        tag.putString("Owner", ownerName());
         ownerId().ifPresent(id -> tag.putUUID("OwnerUuid", id));
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        ownerName = tag.getString("Owner");
+        entityData.set(OWNER_NAME, tag.getString("Owner"));
         entityData.set(OWNER_UUID, tag.hasUUID("OwnerUuid") ? Optional.of(tag.getUUID("OwnerUuid")) : Optional.empty());
         setNoAi(true);
         setNoGravity(true);

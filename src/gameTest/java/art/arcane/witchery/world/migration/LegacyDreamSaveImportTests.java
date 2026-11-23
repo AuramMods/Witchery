@@ -42,6 +42,11 @@ public final class LegacyDreamSaveImportTests {
         var body = WitcheryEntities.SLEEPING_BODY.get().create(overworld);
         helper.assertTrue(body != null, "Expected a sleeping body");
         body.load(TagParser.parseTag("{Owner:\"LegacyDreamer\",Health:14f}"));
+        var trackedBody = WitcheryEntities.SLEEPING_BODY.get().create(overworld);
+        helper.assertTrue(trackedBody != null, "Expected a client-tracked body");
+        trackedBody.getEntityData().assignValues(body.getEntityData().getNonDefaultValues());
+        helper.assertTrue("LegacyDreamer".equals(trackedBody.ownerName()) && trackedBody.ownerId().isEmpty(),
+                "Legacy owner name must reach tracking clients without inventing an owner UUID");
         body.setPos(anchor.getX() + 0.5, anchor.getY(), anchor.getZ() + 0.5);
         overworld.addFreshEntity(body);
 

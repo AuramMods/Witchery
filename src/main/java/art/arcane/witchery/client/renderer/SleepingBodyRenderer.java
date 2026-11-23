@@ -1,5 +1,6 @@
 package art.arcane.witchery.client.renderer;
 
+import art.arcane.witchery.client.ClientPlayerAppearance;
 import art.arcane.witchery.entity.SleepingBody;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -29,9 +30,11 @@ public final class SleepingBodyRenderer extends MobRenderer<SleepingBody, Player
 
     @Override
     public ResourceLocation getTextureLocation(SleepingBody body) {
-        UUID owner = body.ownerId().orElseGet(body::getUUID);
         ClientPacketListener connection = Minecraft.getInstance().getConnection();
-        PlayerInfo info = connection == null ? null : connection.getPlayerInfo(owner);
-        return info == null ? DefaultPlayerSkin.getDefaultSkin(owner) : info.getSkinLocation();
+        PlayerInfo owner = connection == null ? null : body.ownerId().map(connection::getPlayerInfo).orElse(null);
+        if (owner != null) return owner.getSkinLocation();
+        if (!body.ownerName().isEmpty()) return ClientPlayerAppearance.of(body.ownerName()).texture();
+        UUID fallback = body.ownerId().orElseGet(body::getUUID);
+        return DefaultPlayerSkin.getDefaultSkin(fallback);
     }
 }
