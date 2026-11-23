@@ -969,6 +969,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 ## Ritual Registry (`RiteRegistry`)
 
 The modern `witchery:item_rite` recipe type covers item-output rites at the Heart Glyph. Legacy rite 3, the Rite of Charging, is implemented as `witchery:rite_of_charging`. It validates the original 16- and 28-glyph white rings, consumes its five offerings in steps, and draws 2,000 power from the nearest altar.
+All 96 IDs registered by Witchery 0.24.1 appear in the modern rite order and resolve to `witchery:item_rite` JSON in the packaged JAR. The progression and regression sections of `PORTING.md` record the runtime checks.
 Rite IDs 10, 11, 14, 15, 20, 39, and 70 through 77 accept an optional Bound Waystone before the altar charge. The active Heart Glyph saves the consumed stack and its destination under `Sacrifices` and `WaystoneTarget`.
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/WitcheryRecipes.java`
 
