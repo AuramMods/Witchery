@@ -52,6 +52,9 @@ final class LegacyChunkEntities {
             case "brew", "brew2" -> name = prepareBrewProjectile(entity, name, ids, fixer, from, targetVersion);
         }
         if (!ForgeRegistries.ENTITY_TYPES.containsKey(name)) return;
+        if (name.getPath().equals("bolt") && entity.contains("inTile", Tag.TAG_BYTE)) {
+            entity.putInt("inTile", Byte.toUnsignedInt(entity.getByte("inTile")));
+        }
 
         // Vanilla's old entity schema needs a known type to fix the entity tree and its typed fields.
         // Keep the Witchery type in the remainder, which survives both passes of the chunk fixer.
@@ -60,6 +63,7 @@ final class LegacyChunkEntities {
             case "cat" -> "Ozelot";
             case "deathhorse" -> "EntityHorse";
             case "werevillager" -> "Villager";
+            case "bolt" -> "Arrow";
             case "item" -> "Item";
             default -> "Witch";
         };

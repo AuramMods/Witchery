@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Natural Coven Recruitment and Legacy Bolts (2026-11-22)
+
+- The copied Auram player completed two Distillery batches for Refined Evil, charged an Attuned Stone in the small and medium white rings, then cast another large Infernal Demon rite. The merchant charged thirty supplied Gold Ingots for a Demon Heart. The player accepted Cathy Grimsby's quest with an ordinary interaction and delivered the heart with a second interaction. The fixture briefly slowed her so the background client could complete the dialogue. The save now contains the coven roster entry, the signed Imp contract and the Imp rite's Refined Evil and Infernal Blood. The original Overworld infusion is still active with 186 charge. The client remained muted and its focus monitor recorded no activation.
+- In an original Forge 1.7.10 Witchery save, a Holy Bolt and a vanilla arrow were embedded in two stone brick variants. The previous packaged import dropped the bolt's attachment state. The importer now uses the vanilla arrow schema to flatten the block and metadata while retaining the Witchery entity ID. It treats the original block byte as unsigned. A packaged headless import and normal dedicated restart retained the bolt's UUID, mossy stone brick state, Holy type, damage and pickup mode. The neighboring arrow kept its cracked stone brick state. The fixture and logs are under `/tmp/witchery-flowing-spirit-current`.
+- Java 17 data generation, JAR reobfuscation and all 140 checked-in GameTests passed. A prior run intermittently failed the cauldron misfortune assertion, which passed on the same code in the completed rerun. The exact tested migration JAR SHA-256 was `cf54e13e0005ff94edd17e38234c237fb9c4132b4f182ac7bf2b99276c8fe8af`.
+
 ## Infected Villager Import and Seer Stone Preparation (2026-11-22)
 
 - An infected librarian saved in human form by Forge 1.7.10 lost its profession and trade stock when the importer used the vanilla witch schema. The import now uses the villager schema and preserves experience. It gives an original novice with saved offers the minimum experience needed to retain its profession without a job site.
