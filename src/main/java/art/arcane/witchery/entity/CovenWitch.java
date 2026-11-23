@@ -327,7 +327,12 @@ public final class CovenWitch extends PathfinderMob implements RangedAttackMob {
         BlockPos cauldron = BlockPos.findClosestMatch(center, 9, 9,
                 pos -> pos.distSqr(center) <= 81 && level.hasChunkAt(pos)
                         && level.getBlockState(pos).getBlock() instanceof WitchesCauldronBlock).orElse(null);
-        BlockPos anchor = cauldron == null ? center : cauldron;
+        if (cauldron != null && recallMemberNear(player, index, cauldron, cauldron)) return true;
+        return recallMemberNear(player, index, center, null);
+    }
+
+    private static boolean recallMemberNear(ServerPlayer player, int index, BlockPos anchor, @Nullable BlockPos cauldron) {
+        ServerLevel level = player.serverLevel();
         for (BlockPos candidate : BlockPos.spiralAround(anchor, 3, Direction.EAST, Direction.SOUTH)) {
             if (candidate.distManhattan(anchor) < 2) continue;
             BlockPos floor = candidate.below();

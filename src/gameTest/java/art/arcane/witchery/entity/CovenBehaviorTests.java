@@ -41,6 +41,7 @@ import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -205,14 +206,18 @@ public final class CovenBehaviorTests {
         helper.succeed();
     }
 
-    @GameTest(template = TEMPLATE, batch = "witchery_seer_stone_reuse", setupTicks = 5, timeoutTicks = 100)
+    @GameTest(template = TEMPLATE, batch = "witchery_seer_stone_reuse", timeoutTicks = 160)
     public static void callsOneCovenMemberPerSecondAndReusesThemAtARite(GameTestHelper helper) {
         var level = helper.getLevel();
         var owner = owner(helper);
-        BlockPos center = owner.blockPosition();
+        BlockPos center = owner.blockPosition().atY(192);
+        owner.setPos(Vec3.atBottomCenterOf(center));
         for (BlockPos floor : BlockPos.betweenClosed(center.offset(-3, -1, -3), center.offset(3, -1, 3))) {
             level.setBlockAndUpdate(floor, Blocks.STONE.defaultBlockState());
         }
+        BlockPos pedestal = center.above(4);
+        level.setBlockAndUpdate(pedestal, Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(pedestal.above(), WitcheryBlocks.getRequired("cauldron").get().defaultBlockState());
         var members = owner.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getList("WITCCoven", Tag.TAG_COMPOUND);
         var second = new CompoundTag();
         second.putString("WitchName", "Isobel Sterling");
@@ -221,34 +226,45 @@ public final class CovenBehaviorTests {
 
         var stone = (SeerStoneItem) WitcheryIngredient.SEER_STONE.item();
         var stack = new ItemStack(stone);
-        stone.onUseTick(level, owner, stack, 1181);
-        helper.assertTrue(ownedWitches(helper, owner).isEmpty(), "Nineteen ticks do not call a member");
-        stone.onUseTick(level, owner, stack, 1180);
-        var first = ritualMember(helper, owner, "One second of use");
-        helper.assertTrue(first.getName().getString().equals(MEMBER) && first.skin() == 3 && !first.isNoAi(),
-                "The Seer Stone calls the first saved member with their original skin and AI");
-        stone.onUseTick(level, owner, stack, 1160);
-        var both = ownedWitches(helper, owner);
-        helper.assertTrue(both.size() == 2 && !both.get(0).blockPosition().equals(both.get(1).blockPosition()),
-                "Two seconds call both members into separate positions");
-        var other = both.stream().filter(witch -> witch.getName().getString().equals("Isobel Sterling"))
-                .findFirst().orElseThrow();
-
-        helper.assertTrue(CovenWitch.summonToRite(owner, center, 0) && CovenWitch.summonToRite(owner, center, 1)
-                        && first.blockPosition().equals(center.offset(-2, 0, -2))
-                        && other.blockPosition().equals(center.offset(2, 0, -2))
-                        && ownedWitches(helper, owner).size() == 2 && !first.isNoAi() && !other.isNoAi(),
-                "The rite seats the existing members and keeps their AI running");
-        for (var witch : both) {
-            var saved = witch.saveWithoutId(new CompoundTag());
-            helper.assertTrue(saved.getBoolean("Sitting") && saved.getInt("SuicideIn") == 300
-                            && saved.getUUID("Owner").equals(owner.getUUID()),
-                    "The rite saves each member's seat, owner and fifteen-second lifetime");
-            saved.putInt("SuicideIn", 3);
-            witch.load(saved);
-        }
-        helper.succeedWhen(() -> helper.assertTrue(first.isRemoved() && other.isRemoved() && CovenWitch.covenSize(owner) == 2,
-                "Both members leave when their time expires and stay in the coven"));
+        var called = new ArrayList<CovenWitch>();
+        var corners = List.of(center.offset(-3, 0, -3), center.offset(-3, 0, 3),
+                center.offset(3, 0, -3), center.offset(3, 0, 3));
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(corners.stream().allMatch(level::isPositionEntityTicking),
+                "The summoning platform is ticking")).thenExecute(() -> {
+            stone.onUseTick(level, owner, stack, 1181);
+            helper.assertTrue(ownedWitches(helper, owner).isEmpty(), "Nineteen ticks do not call a member");
+            stone.onUseTick(level, owner, stack, 1180);
+        }).thenWaitUntil(() -> {
+            var first = ritualMember(helper, owner, "One second of use");
+            helper.assertTrue(first.getName().getString().equals(MEMBER) && first.skin() == 3 && !first.isNoAi(),
+                    "The Seer Stone calls the first saved member with their original skin and AI");
+            called.add(first);
+        }).thenExecute(() -> stone.onUseTick(level, owner, stack, 1160)).thenWaitUntil(() -> {
+            var both = ownedWitches(helper, owner);
+            helper.assertTrue(both.size() == 2 && both.contains(called.get(0))
+                            && !both.get(0).blockPosition().equals(both.get(1).blockPosition()),
+                    "Two seconds call both members into separate positions");
+            var other = both.stream().filter(witch -> witch.getName().getString().equals("Isobel Sterling"))
+                    .findFirst().orElseThrow();
+            called.add(other);
+        }).thenExecute(() -> {
+            var first = called.get(0);
+            var other = called.get(1);
+            helper.assertTrue(CovenWitch.summonToRite(owner, center, 0) && CovenWitch.summonToRite(owner, center, 1)
+                            && first.blockPosition().equals(center.offset(-2, 0, -2))
+                            && other.blockPosition().equals(center.offset(2, 0, -2))
+                            && ownedWitches(helper, owner).size() == 2 && !first.isNoAi() && !other.isNoAi(),
+                    "The rite seats the existing members and keeps their AI running");
+            for (var witch : called) {
+                var saved = witch.saveWithoutId(new CompoundTag());
+                helper.assertTrue(saved.getBoolean("Sitting") && saved.getInt("SuicideIn") == 300
+                                && saved.getUUID("Owner").equals(owner.getUUID()),
+                        "The rite saves each member's seat, owner and fifteen-second lifetime");
+                saved.putInt("SuicideIn", 3);
+                witch.load(saved);
+            }
+        }).thenWaitUntil(() -> helper.assertTrue(called.stream().allMatch(CovenWitch::isRemoved) && CovenWitch.covenSize(owner) == 2,
+                "Both members leave when their time expires and stay in the coven")).thenSucceed();
     }
 
     private static void assertThrownEffect(GameTestHelper helper, CovenWitch witch, LivingEntity target,
