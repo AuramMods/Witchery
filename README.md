@@ -50,6 +50,12 @@ Validation rule:
 - Use `./gradlew compileJava` as the routine check.
 - Do not rely on `runClient` for routine scaffolding validation.
 
+### Local builds and testing
+
+Run all Witchery builds and tests locally with Java 17 and the Gradle wrapper. Keep this repository free of GitHub Actions workflows.
+
+Use `./gradlew jar` to package the reobfuscated mod and `./gradlew runGameTestServer` for headless Forge tests. When generated resources change, run `./gradlew runData` separately before packaging.
+
 ## How To Check Progress
 
 ### 1) Check phase checklist
