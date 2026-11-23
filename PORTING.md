@@ -19,6 +19,7 @@
 - [x] Restore the JEI layouts for dynamic crafting recipes. Verify paired examples for taglocks, journal pages, Urn upgrades, potion charging, clothing repairs, Brew Bag dyes, Biome Notes and keyrings in a muted packaged client.
 - [x] Restore Mystic Branch glyph selection and 3D item glint. Verify the original defaults and client overrides on packaged Forge.
 - [x] Replay the checked-in and recovered GameTests after the Refilling Chest import fix. All 697 cases passed. The Lumos and Nox check waits for the light and torch chunks to tick before casting. The Witch's Ladder check waits for all the summoned entities to be tracked before activating the Heart Glyph.
+- [x] Repeat all 697 cases on the Sun Grenade release candidate. The checked-in Death regression measures healing on the boss's entity ticks. The recovered blocked Wither check waits for all three items and the living offering to be tracked, then verifies the aborted rite, altar debit, and refund. The Coven Witch night door check also passed.
 - [x] Restore the original German, Spanish, Russian, and Simplified Chinese translations for current blocks, items, entities, spells, and gameplay messages. The packaged Forge client loaded all four languages and checked item names, the Witch's Oven title, the Horned Huntsman, a formatted countdown, and English fallback for an untranslated guide entry. See the Phase 2 checklist for coverage.
 - [x] Run Java 17 data generation and the 150 checked-in Forge GameTests after restoring the original locale resources. Both tasks passed.
 - [ ] Close the save migration coverage listed under Legacy Save Fixtures. Check original IDs, metadata, and specialized state along with saves from earlier 1.20.1 builds. Record which data each supported upgrade path preserves.
@@ -1947,7 +1948,8 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Distil the five Refined Evil for the Poltergeists and the two remaining Condensed Fear and Focused Will pairs. Use the saved Diamond Vapour to start the original Ghast Tear recipe, then use its Foul Fume byproducts for more Oil of Vitriol. The fixture supplied diamonds, ghast tears, clay and coal. The muted client respawned through the normal screen and recovered the completed Oil before finishing the last two Flowing Spirits.
 - [x] Grow and harvest more Wormwood from saved seeds. The survival player collected 15 leaves before the final seven Brazier batches. The fixture supplied prepared farmland and moved the player to leaves that fell out of reach.
 - [x] Summon all five Banshees and all five Poltergeists and keep them together with the five earlier Spectres. The fixture positioned the new mobs in the prepared enclosure. The dedicated server confirmed five of each kind within five blocks of the ritual enclosure and saved each UUID.
-- [ ] Prepare the Necromantic Stone and Witch's Ladder, then cast the hidden Death rite using the assembled spirits.
+- [x] Craft two Attuned Stones using saved Whiff of Magic, then cast the Necromantic Stone rite with the small white circle and all six original offerings. The fixture supplied an iron sword and rotten flesh, repositioned scattered offerings, and moved the resulting stone into a hopper after the collection attempt led into the spirit enclosure. The survival client respawned, picked up the reward from the hopper menu, and saved the stone with the spare Attuned Stone.
+- [ ] Craft the Witch's Ladder and cast the hidden Death rite using the assembled spirits.
 
 ## JEI Machine Recipe Views (2026-11-22)
 
