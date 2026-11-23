@@ -1906,6 +1906,12 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Defeat the same Leonard after ordinary respawn. Brew and bottle a stronger Ice-based Harm Demons gas with saved Wool of Bat and supplied vanilla reagents. Melee reopened the weakness window and the thrown bottle created a gas cloud on the arena floor. Contact took Leonard from about 220 health to zero. The fixture repositioned Leonard into the gas, moved obstructing Souls and missed offerings, and supplied temporary player protection. The survival player collected Leonard's Urn, the Demon Heart and the enchanted book, opened the Urn and saved.
 - [x] Restart the copied Auram server and rejoin with the identical JAR on both sides. The player retained the Urn, three Demon Hearts and the enchanted book. Leonard stayed gone, and the muted background client opened the same Urn again.
 
+## Auram Survival toward Death (2026-11-22)
+
+- [x] Renew the Dream supplies in the continuous Auram save. Grow Snowbells and harvest six Icy Needles. Grow two Globe Artichokes in source water, craft and fire Clay Jars, and cook stored Rowan saplings for Whiff of Magic. Craft Purified Milk with saved Odour of Purity, then use the powered Kettle to bottle Brew of Love and three Sleeping brews. The fixture supplied ordinary materials, prepared the soil and positioned missed offerings.
+- [x] Enter Dream with the new Sleeping brew and wake from the first nightmare with an earned Icy Needle. The second bottle led to a normal Dream. The muted survival client broke eight cotton plants in saved Dream terrain, then used another earned needle to carry all eight Wispy Cotton back to the Overworld.
+- [x] Use the recovered Mutating Sprig and all eight cotton plants for two Wormwood mutations. Serene Seasons stopped the first wheat growing in late winter. After the fixture moved the copied world to mid-summer, the survival player grew both wheat plants, made both mutations, then harvested four Wormwood Seeds and one Wormwood leaf. The mature harvest used the saved Fortune III hoe.
+
 ## JEI Machine Recipe Views (2026-11-22)
 
 - [x] Register the Oven, Distillery, Kettle, Cauldron and Spinning Wheel as distinct JEI categories with their machine blocks as catalysts. Read the recipes from the client's synchronized Forge recipe manager. The isolated JEI 15.20.0.129 client displayed 23 Oven, 9 Distillery, 39 Kettle, 27 Cauldron and 4 Spinning Wheel entries on a Forge server with Witchery.
