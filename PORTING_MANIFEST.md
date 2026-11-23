@@ -499,7 +499,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 
 This is one registered item (`witchery:ingredient`) with many metadata subtypes.
 
-The first migrated subtypes have individual item IDs. Preserve `witchery:ingredient` for existing unconverted stacks. The mapping below is for the Witchery portion of a legacy stack upgrade.
+All 163 registered subtypes resolve during a legacy stack upgrade. The port assigns 161 individual Witchery item IDs and uses vanilla raw or cooked mutton for the other two. The `witchery:ingredient` registration preserves existing unconverted stacks.
 
 The `mutandisAdditionalBlocks` server setting ports `MutandisAdditionalBlocks`. It defaults to Glintweed and Fern, the flattened equivalent of `tallgrass,2`. Each entry can be both an input and an outcome for ordinary Mutandis and Extremis. Repeated entries add weight. The setting accepts modern IDs and states and uses the legacy block-state converter for old IDs and metadata. The base plants remain data driven through the Mutandis block tags.
 
@@ -715,8 +715,8 @@ Variant 156 consumes one flower when the tester targets a living entity within t
 | 155 | `boltSilver` |
 | 156 | `wolfsbane` |
 | 157 | `silverdust` → `witchery:silver_dust` |
-| 158 | `muttonraw` |
-| 159 | `muttoncooked` |
+| 158 | `muttonraw` → `minecraft:mutton` |
+| 159 | `muttoncooked` → `minecraft:cooked_mutton` |
 | 160 | `vbookPage` |
 | 161 | `darkCloth` |
 | 162 | `stake` (`witchery:stake`, eight garlic and a stick, `allowStakingVampires`) |
