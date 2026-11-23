@@ -73,8 +73,8 @@ public final class WitcheryNetwork {
         }
         registered = true;
 
-        int discriminator = 0;
-        discriminator = registerNoPayloadPacket(discriminator, "brew_prepared", BrewPreparedPacket.class, BrewPreparedPacket::new);
+        // Keep discriminator 0 reserved for the retired Brew Bag gesture packet.
+        int discriminator = 1;
         discriminator = registerParticlesPacket(discriminator);
         discriminator = registerCamPosPacket(discriminator);
         discriminator = registerItemUpdatePacket(discriminator);
@@ -529,20 +529,6 @@ public final class WitcheryNetwork {
                 () -> new ExtendedVillagerSyncPacket(0, -1));
     }
 
-    private static <T> int registerNoPayloadPacket(int discriminator, String key, Class<T> packetType, Supplier<T> factory) {
-        return registerPacketWithCodec(
-                discriminator,
-                key,
-                packetType,
-                (message, buffer) -> {
-                },
-                buffer -> factory.get(),
-                (message, context) -> {
-                },
-                factory
-        );
-    }
-
     private static <T> int registerPacketWithCodec(
             int discriminator,
             String key,
@@ -787,9 +773,6 @@ public final class WitcheryNetwork {
     }
 
     private record PacketBinding(LegacyRegistryData.LegacyPacketIntent intent, Supplier<Object> factory) {
-    }
-
-    public record BrewPreparedPacket() {
     }
 
     public record ParticlesPacket(

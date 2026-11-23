@@ -1333,6 +1333,7 @@ Implementation anchors:
 - The sleeping body sends its saved owner name alongside an optional owner UUID. This lets tracking clients render bodies imported from 1.7.10, where the save used the owner name alone. The renderer uses the connected owner's UUID when available and uses the shared profile lookup for a named owner.
 - Crystal Ball viewing sends the existing `cam_pos` message for the transient `witchery:eye` or the living subject of a Taglock Kit. Server chunk and entity tracking follow the viewed entity, and the client centers terrain rendering on it. The observing player stays beside the Crystal Ball.
 - The Mystic Branch recognizes gestures from server-side player rotations. Protocol 12 retires the prepared-spell packet while recording the old intent in `LegacyRegistryData.PACKETS`. The client previews the shared stroke rules from local rotations and displays the recognized spell. `branchGlyphSet` selects the original texture bank with value 1 and defaults to bank 0. Cancelling the use clears the drawing.
+- The Brew Bag selects the occupied gesture slot from server-side player rotations and casts it on release. Its original `brew_prepared` intent stays in the migration catalog, and discriminator zero stays reserved so the active protocol 91 message IDs remain stable.
 - The `render3dGlintEffect` client option applies to the held Mystic Branch, Huntsman Spear, and enchanted Cane Sword models. It defaults to true and preserves the inventory icons' standard foil. The Huntsman and goblin model glint use their existing independent setting.
 - Validates packet receive direction against legacy flow metadata and logs mismatches.
 - Represents all legacy packet intents in `LegacyRegistryData.PACKETS` as migration metadata.
@@ -1364,12 +1365,12 @@ Implementation anchors:
   - `sync_entity_size` restores the active Resizing scale on the client. The client uses its local pose and creature form to compute physical dimensions from that scale.
   - `cam_pos` now dispatches to client packet bridge with legacy semantics (`active`, `updatePosition`, `entityId`) and stages camera-active/target data in `WitcheryClientCameraState`.
   - `WitcheryClientCameraHooks` now consumes staged camera state each client tick and applies scaffold camera-entity override/reset behavior (`setCameraEntity(target)` while active, fallback to local player when inactive/invalid target).
-- Adds first functional serverbound behavior hooks:
-  - `clear_fall_damage` now clears sender fall distance.
+- Serverbound gameplay handlers:
+  - `clear_fall_damage` requests an airborne jump. The server validates the active Double Jump effect and remaining jumps from a ground takeoff before approving the motion.
   - `item_update` validates the held slot and guide volume. Atlas requests resolve the supplied biome ID against the server's current list and save both `CurrentPage` and `WitcheryBiome`. Network protocol 87 carries the atlas ID.
   - `sync_markup_book` saves the full original `pageStack` trail through the requested unlocked chapter and syncs the learned rank cap.
-  - `item_update` and `howl` still stage data into `WitcheryPlayerData`, bump sync revision, and emit `player_sync` with serialized capability snapshot payload.
-  - `howl` also mirrors minimal state into sender persistent tags.
+  - `item_update` records the accepted page in `WitcheryPlayerData` and sends the updated revision.
+  - `howl` checks the player's pose, form, rank and trial status. Successful howls count a new nighttime trial chunk, paralyze nearby targets, or summon a pack according to the original rules.
 
 Intent mapping used by scaffold:
 | Legacy ID | Intent Key | Flow |

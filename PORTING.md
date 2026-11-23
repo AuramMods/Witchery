@@ -1653,7 +1653,8 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] In muted survival, craft and dye the bag, shift-click two Brews of Ink into it, and place a Cauldron poison in the third slot. Verify that a vanilla splash potion stays in the player's inventory.
 - [x] Restart the dedicated server. Use an up gesture to blind a husk and a right gesture to poison a pig. Verify that each throw spends one serving from its selected slot and that the remaining Ink can be shift-clicked back into the player inventory.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 424 required Forge GameTests. The new cases cover crafting and dyeing, legacy names and contents, slot locking, all eight gestures, both launch paths, and cancellation.
-- [ ] Verify storage and casting for the remaining legacy throwable brews as their items and effects are ported.
+- [x] Compare Brew Bag eligibility with the original Ingredient catalog. All 24 fixed throwable brews shift-click into the bag, survive an item save and reload, and produce the matching projectile while spending exactly one serving. Drinkable and other Ingredient subtypes stay out.
+- [x] Retire the unused Brew Bag preparation message. An earlier packaged protocol 91 build and the new JAR joined each other in both client and server roles. In each direction, the muted survival client used an up gesture to blind a husk and spent one of its two Brews of Ink. Java 17 data generation, JAR reobfuscation, and all 152 checked-in GameTests passed.
 
 ## Brew Buckets and Stored Fluids (2026-11-22)
 
@@ -1944,7 +1945,9 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Distil three of the six new Flowing Spirits with Oil of Vitriol made from saved Wood Ash and Foul Fume. The survival player collected three Condensed Fear and three Focused Will from the Distillery. The fixture supplied clay and coal for fresh jars and used a chest to free inventory space.
 - [x] Light three Banshee batches using those reagents and saved Wormwood and Graveyard Dust. The fixture moved the spawned mobs to the prepared enclosure and verified three distinct UUIDs within reach of the Heart Glyph. The dedicated server flushed after each summon.
 - [x] Distil the five Refined Evil for the Poltergeists and the two remaining Condensed Fear and Focused Will pairs. Use the saved Diamond Vapour to start the original Ghast Tear recipe, then use its Foul Fume byproducts for more Oil of Vitriol. The fixture supplied diamonds, ghast tears, clay and coal. The muted client respawned through the normal screen and recovered the completed Oil before finishing the last two Flowing Spirits.
-- [ ] Grow more Wormwood and retain the final two Banshees and five Poltergeists together with the five Spectres. The earlier Poltergeist was absent when the workshop was checked after the pause. The player has the two remaining Graveyard Dust and all the spirit distillates for the seven Brazier batches.
+- [x] Grow and harvest more Wormwood from saved seeds. The survival player collected 15 leaves before the final seven Brazier batches. The fixture supplied prepared farmland and moved the player to leaves that fell out of reach.
+- [x] Summon all five Banshees and all five Poltergeists and keep them together with the five earlier Spectres. The fixture positioned the new mobs in the prepared enclosure. The dedicated server confirmed five of each kind within five blocks of the ritual enclosure and saved each UUID.
+- [ ] Prepare the Necromantic Stone and Witch's Ladder, then cast the hidden Death rite using the assembled spirits.
 
 ## JEI Machine Recipe Views (2026-11-22)
 
