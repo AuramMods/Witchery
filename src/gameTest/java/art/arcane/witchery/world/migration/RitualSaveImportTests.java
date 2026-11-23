@@ -69,6 +69,12 @@ public final class RitualSaveImportTests {
                 new LegacyBlock("stockade", 8, "wood_type", "dark_oak"),
                 new LegacyBlock("icestockade", 0, "covered", "false"),
                 new LegacyBlock("icefence", 0, "west", "false"),
+                new LegacyBlock("witchleaves", 2, "distance", "1"),
+                new LegacyBlock("stairswoodrowan", 0, "facing", "east"),
+                new LegacyBlock("stairswoodalder", 1, "facing", "west"),
+                new LegacyBlock("stairswoodhawthorn", 2, "facing", "south"),
+                new LegacyBlock("icestairs", 3, "facing", "north"),
+                new LegacyBlock("snowstairs", 4, "half", "top"),
                 new LegacyBlock("icefencegate", 13, "facing", "west"));
         var entries = new ListTag();
         byte[] lowIds = new byte[4096];
@@ -96,9 +102,9 @@ public final class RitualSaveImportTests {
         coffinEntry.putString("K", "\u0001witchery:coffinblock");
         coffinEntry.putInt("V", coffinId);
         entries.add(coffinEntry);
-        lowIds[16] = lowIds[17] = (byte) coffinId;
-        highIds[8] = (byte) ((coffinId >> 8) * 0x11);
-        metadata[8] = 0x33;
+        lowIds[22] = lowIds[23] = (byte) coffinId;
+        highIds[11] = (byte) ((coffinId >> 8) * 0x11);
+        metadata[11] = 0x33;
         int lowerIndex = 15 * 256;
         lowIds[lowerIndex] = (byte) iceDoorId;
         highIds[lowerIndex >> 1] = (byte) (iceDoorId >> 8);
@@ -132,8 +138,8 @@ public final class RitualSaveImportTests {
                   {id:"witchery:witchsladder",x:5,y:0,z:0,EffectTypeID:1,BlockColor:11b},
                   {id:"witchery:witchsladder",x:6,y:0,z:0,EffectTypeID:2,BlockColor:14b},
                   {id:"witchery:witchsladder",x:7,y:0,z:0,EffectTypeID:3,Spectral:1b},
-                  {id:"witchery:coffinblock",x:0,y:0,z:1,Opened:1b},
-                  {id:"witchery:coffinblock",x:1,y:0,z:1,Opened:0b}]}
+                  {id:"witchery:coffinblock",x:6,y:0,z:1,Opened:1b},
+                  {id:"witchery:coffinblock",x:7,y:0,z:1,Opened:0b}]}
                 """);
         level.put("Sections", sections);
         var original = new CompoundTag();
@@ -182,20 +188,21 @@ public final class RitualSaveImportTests {
                     flatUpper.getLongArray("BlockStates"));
             assertDoor(helper, lowerDoor, "lower");
             assertDoor(helper, upperPalette.getCompound(upperStates.get(0)), "upper");
-            var poweredGate = palette.getCompound(states.get(15)).getCompound("Properties");
+            int gateIndex = blocks.size() - 1;
+            var poweredGate = palette.getCompound(states.get(gateIndex)).getCompound("Properties");
             var openGate = upperPalette.getCompound(upperStates.get(upperGateIndex)).getCompound("Properties");
             helper.assertTrue(poweredGate.getString("open").equals("true") && poweredGate.getString("powered").equals("true")
                             && openGate.getString("facing").equals("north") && openGate.getString("open").equals("true")
                             && openGate.getString("powered").equals("false"),
                     "Keep the ice gate's facing, open bit and powered bit independently");
-            var openCoffin = palette.getCompound(states.get(16)).getCompound("Properties");
-            var closedCoffin = palette.getCompound(states.get(17)).getCompound("Properties");
+            var openCoffin = palette.getCompound(states.get(22)).getCompound("Properties");
+            var closedCoffin = palette.getCompound(states.get(23)).getCompound("Properties");
             helper.assertTrue(openCoffin.getString("open").equals("true") && closedCoffin.getString("open").equals("false"),
                     "Coffins with matching block metadata retain their distinct lid states");
             ChunkStorage.injectDatafixingContext(intermediate, Level.OVERWORLD, Optional.empty());
             var upgraded = DataFixTypes.CHUNK.updateToCurrentVersion(fixer, intermediate, 1493);
             var queued = upgraded.getList("PostProcessing", Tag.TAG_LIST);
-            helper.assertTrue(queued.getList(4).equals(TagParser.parseTag("{Offsets:[12s,13s,14s,15s,256s,257s]}").getList("Offsets", Tag.TAG_SHORT))
+            helper.assertTrue(queued.getList(4).equals(TagParser.parseTag("{Offsets:[12s,13s,14s,15s,256s,257s,258s,259s,260s,261s,262s,263s]}").getList("Offsets", Tag.TAG_SHORT))
                             && queued.getList(5).equals(TagParser.parseTag("{Offsets:[1299s]}").getList("Offsets", Tag.TAG_SHORT)),
                     "Queue shape updates in the correct sections and axes after the Overworld height expansion");
             var tiles = fixed.getList("TileEntities", Tag.TAG_COMPOUND);

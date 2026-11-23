@@ -94,7 +94,8 @@ public final class LegacyChunkUpgrade {
     private static final Map<String, Integer> FLUID_QUANTA = Map.of("spiritflowing", 5, "hollowtears", 5, "brew", 2, "disease", 1);
     private static final Set<String> CLASSIC_FLUID_TICKS = Set.of("brew", "disease");
     private static final Set<String> POST_PROCESSING_BLOCKS = Set.of("stockade", "icestockade", "icefence", "icefencegate", "coffinblock",
-            "tormentportal", "spiritportal", "spiritflowing", "hollowtears", "leechchest", "pitdirt", "pitgrass");
+            "tormentportal", "spiritportal", "spiritflowing", "hollowtears", "leechchest", "pitdirt", "pitgrass", "witchleaves",
+            "stairswoodrowan", "stairswoodalder", "stairswoodhawthorn", "icestairs", "snowstairs");
 
     private LegacyChunkUpgrade() {
     }
@@ -493,6 +494,8 @@ public final class LegacyChunkUpgrade {
             case "witchlog" -> state.setValue(WitchWoodType.PROPERTY, wood).setValue(BlockStateProperties.AXIS,
                     pillarAxis(metadata));
             case "witchleaves" -> state.setValue(WitchWoodType.PROPERTY, wood)
+                    // Start supported while scheduled neighbor updates rebuild the distance outward from logs.
+                    .setValue(BlockStateProperties.DISTANCE, 1)
                     .setValue(BlockStateProperties.PERSISTENT, (metadata & 4) != 0);
             case "witchsapling" -> state.setValue(WitchWoodType.PROPERTY, wood)
                     .setValue(BlockStateProperties.STAGE, (metadata & 8) == 0 ? 0 : 1);

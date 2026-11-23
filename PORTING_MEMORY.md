@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Legacy Stair Corners, Witchery Leaves, and Auram Player Recovery (2026-11-23)
+
+- The original Forge 1.7.10 fixture saved all five stair materials and Alder and Hawthorn leaf chains. The reobfuscated build `d199322aa523dc9e8c206db23932acef1c1830cbbf97b2a660c896c489897160` restored corner and leaf distance data across horizontal chunk boundaries and a vertical section boundary. The persistent Hawthorn leaves kept their saved bit. Those checks passed again on a normal dedicated restart. See `leaf-stair-save-qa` under `/tmp/witchery-flowing-spirit-current`.
+- The previous build restored straight stairs and left both supported chains at distance seven. The new build passed all 148 checked-in Forge GameTests. In the imported world with an actual player present, the matching reobfuscated JARs verified decay of unsupported leaves and of the Alder chain after its log was removed. The Hawthorn chain and the persistent leaf stayed in place. The isolated client used No Output, zero master volume, and zero focus activations. See `leaf-stair-gametest-final.log` and `leaf-stair-client-qa`.
+- The copied Auram server first accepted a new player record at world spawn after the watchdog. The interrupted player save still existed under its temporary filename. The fixture verified its exact progression items, backed up all versions, and restored it while the copied player was offline. A normal reconnect loaded the returned position and earlier inventories. See `auram-death-trek-watchdog-player-recovery.log` under the same scratch pointer.
+
 ## Pit Dirt Save Import and Auram's Trek Merchant (2026-11-23)
 
 - The original Forge 1.7.10 fixture wrote Pit Dirt metadata `0, 1, 2, 2, 2`, a snowy Pit Grass block, and two stacks in a vanilla chest. The packaged importer kept the Podzol variant and its marker and resolved the placed covers. The old block number and chest item number were both 230 in this particular save. See `pitdirt-save-qa` under `/tmp/witchery-flowing-spirit-current`.
