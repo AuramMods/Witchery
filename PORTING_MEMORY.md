@@ -12,6 +12,16 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - The player hunted naturally spawned bats in the saved Dream caves with the Arthana, collected two Wool of Bat, and returned to the workshop. The fixture positioned the player during the chase, temporarily enabled natural spawning, and restored the previous spawning rule. The Witch's Oven produced ten Exhale of the Horned One from supplied Oak Saplings. See `auram-death-flowing-natural-bats.log` and `auram-death-flowing-oak-collect.log`.
 - The player harvested two Spanish Moss strands and two Glint Weed from spread of plants acquired by Mutandis. The fixture supplied dirt and a wall, used random tick speed 64 during propagation, and restored it to 3. Two runs of the six-offering recipe yielded three Flowing Spirit bottles each. The first fixture sampled the inputs after the Kettle had already replaced them with a completed batch, which stayed ready for bottling. The muted player bottled both batches by use, woke with an earned Icy Needle, and saved six Flowing Spirits in the Overworld. See `auram-death-flowing-kettle-stock.log`, `auram-death-flowing-six-bottles-resumed.log`, and `auram-death-flowing-return.log`.
 
+## Three Banshees for Death in Auram (2026-11-23)
+
+- The player distilled three saved Flowing Spirits into three Condensed Fear, three Focused Will, and Hollow Tears. The fixture supplied clay and coal for new jars. A full inventory interrupted collection on the third batch. Moving excess stock to the workshop chest completed the pickup and left the Distillery empty. See `auram-death-flowing-first-three-distillations.log` and `auram-death-flowing-third-collect.log` under `/tmp/witchery-flowing-spirit-current`.
+- The player used saved Wormwood, Condensed Fear, and Graveyard Dust to light three Banshee batches in the powered Brazier. The fixture moved each resulting Banshee into the enclosure at the Heart Glyph and saved each UUID. All three were present at the final flush. Two Graveyard Dust, three Focused Will, and four Wormwood leaves remained. See `auram-death-banshee-enclosure.log` and `auram-death-contained-banshee.json`.
+
+## Ingredient and Poppet Subtype Import (2026-11-23)
+
+- The original Forge 1.7.10 server wrote 16 fixture chests with all 163 registered Ingredient subtypes and all 12 Poppet subtypes. Every entry had its own marker and a count of one, two, or three. The saved regions verified the numeric registry IDs and metadata before import.
+- The packaged JAR `08f44ce48d7d153277eda9e7925fde561c4a7532f6142243e2b5ab3e8bbf5519` imported and reopened all 175 stacks with their mapped item IDs, slots, counts, and markers. Raw and cooked mutton were restored as the corresponding vanilla food items. Both verified boots used Java 17 and headless Forge 47.4.10. See `legacy-all-ingredient-subtypes` under `/tmp/witchery-flowing-spirit-current`.
+
 ## Sleeping Body Owner Appearance (2026-11-23)
 
 - An original Forge 1.7.10 region saved the sleeping body with only an owner name. The earlier renderer used a UUID lookup, so the imported owner could not select the skin. The body now syncs both identity fields independently. It uses the connected owner's UUID when available and the shared name lookup for a named owner. Protocol 91 covers the additional tracked field.
