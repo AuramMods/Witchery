@@ -96,7 +96,7 @@ public final class FetishBehaviorTests {
                 .thenExecute(pig::discard).thenSucceed();
     }
 
-    @GameTest(template = TEMPLATE, batch = "witchery_bind_witchs_ladder", setupTicks = 5, timeoutTicks = 155)
+    @GameTest(template = TEMPLATE, batch = "witchery_bind_witchs_ladder", setupTicks = 5, timeoutTicks = 240)
     public static void witchsLadderBindsBansheesThroughTheMediumRite(GameTestHelper helper) {
         floor(helper);
         var level = helper.getLevel();
@@ -121,9 +121,11 @@ public final class FetishBehaviorTests {
         boline.setDamageValue(9);
         offer(helper, offering, new ItemStack(WitcheryIngredient.ATTUNED_STONE.item()), stone, boline);
 
-        helper.runAfterDelay(5, () -> {
-            helper.assertTrue(needed.stream().allMatch(mob -> level.getEntity(mob.getUUID()) == mob),
-                    "All five spirits are queryable before activating the rite");
+        // The structure can be ready before the server starts tracking entities in its chunks.
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
+                needed.stream().allMatch(mob -> level.getEntity(mob.getUUID()) == mob)
+                        && level.getEntity(unrelated.getUUID()) == unrelated,
+                "All spirits are tracked before activating the rite")).thenExecute(() -> {
             helper.useBlock(CENTER);
             helper.assertTrue(helper.getBlockState(CENTER).getValue(RiteHeartBlock.ACTIVE), "The medium circle starts the binding rite");
             var heart = (RiteHeartBlockEntity) helper.getBlockEntity(CENTER);
