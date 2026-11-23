@@ -48,7 +48,7 @@ Validation rule:
 
 ### Local builds and testing
 
-Run all Witchery builds and tests locally with Java 17 and the Gradle wrapper. Keep this repository free of GitHub Actions workflows.
+**Local only.** Build, test, and package Witchery on the local machine with Java 17 and the Gradle wrapper. Do not add or trigger GitHub Actions workflows for this mod.
 
 Use `./gradlew jar` to package the reobfuscated mod and `./gradlew runGameTestServer` for headless Forge tests. When generated resources change, run `./gradlew runData` separately before packaging.
 
