@@ -9,7 +9,8 @@
 
 ## Remaining Release Verification (2026-11-22)
 
-- [ ] Continue the same Auram survival save from the Brazier through spectral binding and the late-game branches. Verify naturally obtainable Witchery inputs and normal interactions, including the Imp and Torment chain, Mirror, the Death and Leonard encounters, and the vampire and werewolf trials. The individual milestones below record earlier isolated tests and the fixtures that supplied or accelerated parts of those routes.
+- [x] Continue the same Auram survival save through the Brazier, spectral binding, and release of an owned Banshee.
+- [ ] Continue that save through the late-game branches. Verify naturally obtainable Witchery inputs and normal interactions, including the Imp and Torment chain, Mirror, the Death and Leonard encounters, and the vampire and werewolf trials. The individual milestones below record earlier isolated tests and the fixtures that supplied or accelerated parts of those routes.
 - [ ] Reconcile the original manifest against current runtime behavior. Update the older breadth-first checklist using the later milestone evidence, then resolve outstanding findings in recipe and rite entry points, client presentation, configuration, and optional integrations.
 - [x] Restore Mystic Branch glyph selection and 3D item glint. Verify the original defaults and client overrides on packaged Forge.
 - [ ] Close the save migration coverage listed under Legacy Save Fixtures. Check original IDs, metadata, and specialized state along with saves from earlier 1.20.1 builds. Record which data each supported upgrade path preserves.
@@ -1861,6 +1862,8 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Craft and fire two Clay Jars and distil another saved Flowing Spirit with the last Oil of Vitriol. Collect Condensed Fear, Focused Will, and eight Hollow Tears through the Distillery menu. Brew six Mutandis from the stored Mandrake and Oak fume and use one dose with Nether Wart to make Mutandis Extremis. The fixture supplied the clay and an egg and positioned missed cauldron offerings.
 - [x] Awaken an Ent by harvesting grown Rowan. After a dedicated restart, defeat the same Ent with the saved axe and collect its branch. Brew the Mutating Sprig, grow wheat and plant the four saved Wispy Cotton, then mutate and harvest Wormwood. The copied fixture used the wheat's summer growing season and temporarily excluded it from both automatic harvest hooks to confirm the conflict.
 - [x] Preserve complete Wormwood mutations with Right Click Harvest and Quark installed. The packaged Forge control mutated mature wheat with the sprig, consumed all four cotton plants and spent one use. Ordinary harvesting still worked on an incomplete pattern with the sprig and a complete pattern with an empty hand.
+- [x] Hunt naturally spawned undead for two Spectral Dust and craft Graveyard Dust in the normal grid. The hunt used supplied enchantments and a replacement Arthana crafted after the earlier blade broke. Draw the 28-glyph white ring and use the saved workshop Brazier to burn the Wormwood, Condensed Fear and Graveyard Dust.
+- [x] Move the summoned Banshee to the prepared circle, complete the binding rite, and collect the stone with one Banshee stored. Hold and release the stone using the normal item control. The flushed save retains the owned Banshee, the empty Spectral Stone and the returned Boline. The fixture positioned the entity and missed offerings.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.
