@@ -3,10 +3,14 @@ package art.arcane.witchery.ritual;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.RiteHeartBlock;
 import art.arcane.witchery.block.RitualGlyphBlock;
+import art.arcane.witchery.config.ConfiguredBlockState;
+import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.registry.WitcheryBlocks;
+import art.arcane.witchery.world.migration.LegacySchematicBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -33,6 +37,10 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.event.ForgeEventFactory;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Predicate;
 
 final class GrowthRites {
     private static final TagKey<Block> SOIL = TagKey.create(Registries.BLOCK,
@@ -87,11 +95,41 @@ final class GrowthRites {
 
         // The midpoint circle of radius three has rows with half-widths 1, 2, 3, 3, 3, 2, 1.
         ServerPlayer grower = FakePlayerFactory.getMinecraft(level);
+        var replaceableSoil = replaceableSoil();
         for (int z = -3; z <= 3; z++) {
             int halfWidth = Math.min(3, 4 - Math.abs(z));
             int left = -halfWidth + (random.nextInt(5) == 0 ? 1 : 0);
             int right = halfWidth - (random.nextInt(5) == 0 ? 1 : 0);
-            for (int x = left; x <= right; x++) naturalize(level, surface.offset(x, 0, z), grower);
+            for (int x = left; x <= right; x++) naturalize(level, surface.offset(x, 0, z), grower, replaceableSoil);
+        }
+    }
+
+    static Predicate<BlockState> replaceableSoil() {
+        Set<Block> configuredBlocks = new HashSet<>();
+        Set<BlockState> configuredStates = new HashSet<>();
+        for (String value : WitcheryServerConfig.NATURES_POWER_REPLACEABLE_BLOCKS.get()) {
+            String entry = value.strip();
+            int separator = entry.lastIndexOf(',');
+            if (separator >= 0 && !entry.contains("[") && entry.substring(separator + 1).strip().equals("32767")) {
+                addLegacySoils(configuredBlocks, entry.substring(0, separator).strip());
+            } else if (entry.contains("[") || separator >= 0) {
+                BlockState state = ConfiguredBlockState.parse(entry);
+                if (state != null) configuredStates.add(state);
+            } else {
+                ResourceLocation blockId = ResourceLocation.tryParse(entry);
+                if (blockId != null) {
+                    if (BuiltInRegistries.BLOCK.containsKey(blockId)) configuredBlocks.add(BuiltInRegistries.BLOCK.get(blockId));
+                    else addLegacySoils(configuredBlocks, entry);
+                }
+            }
+        }
+        return soil -> soil.is(SOIL) || configuredBlocks.contains(soil.getBlock()) || configuredStates.contains(soil);
+    }
+
+    private static void addLegacySoils(Set<Block> soils, String blockId) {
+        for (int metadata = 0; metadata < 16; metadata++) {
+            BlockState state = LegacySchematicBlocks.read(blockId, metadata, 0);
+            if (state != null && !state.isAir()) soils.add(state.getBlock());
         }
     }
 
@@ -109,7 +147,8 @@ final class GrowthRites {
         return null;
     }
 
-    private static void naturalize(ServerLevel level, BlockPos ground, ServerPlayer grower) {
+    private static void naturalize(ServerLevel level, BlockPos ground, ServerPlayer grower,
+                                   Predicate<BlockState> replaceableSoil) {
         if (!level.hasChunkAt(ground) || !level.getWorldBorder().isWithinBounds(ground)) return;
         BlockPos top = ground.above();
         BlockState cover = level.getBlockState(top);
@@ -119,7 +158,7 @@ final class GrowthRites {
         boolean vinesOrChalk = cover.getBlock() instanceof VineBlock || cover.getBlock() instanceof RitualGlyphBlock
                 || cover.getBlock() instanceof RiteHeartBlock
                 || cover.is(Blocks.GRASS) || cover.is(Blocks.FERN) || cover.is(Blocks.TALL_GRASS) || cover.is(Blocks.LARGE_FERN);
-        if (soil.is(SOIL) && random.nextInt(8) != 0) {
+        if (replaceableSoil.test(soil) && random.nextInt(8) != 0) {
             BlockState replacement = !vinesOrChalk && random.nextDouble() <= (adjacentWater(level, ground) ? 0.7 : 0.02)
                     ? Blocks.WATER.defaultBlockState() : Blocks.GRASS_BLOCK.defaultBlockState();
             LandscapeRites.replace(level, ground, replacement, grower);

@@ -3,13 +3,10 @@ package art.arcane.witchery.item;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.SpanishMossBlock;
 import art.arcane.witchery.block.WitchWoodType;
+import art.arcane.witchery.config.ConfiguredBlockState;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.world.WitcheryDimensions;
-import art.arcane.witchery.world.migration.LegacySchematicBlocks;
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -142,31 +139,10 @@ public final class MutandisItem extends Item {
     private static List<BlockState> additionalBlocks() {
         List<BlockState> extras = new ArrayList<>();
         for (String entry : WitcheryServerConfig.MUTANDIS_ADDITIONAL_BLOCKS.get()) {
-            BlockState state = readExtraBlock(entry.strip());
+            BlockState state = ConfiguredBlockState.parse(entry);
             if (state != null) extras.add(state);
         }
         return extras;
-    }
-
-    @Nullable
-    private static BlockState readExtraBlock(String entry) {
-        int separator = entry.lastIndexOf(',');
-        if (separator >= 0 && !entry.contains("[")) {
-            try {
-                int metadata = Integer.parseInt(entry.substring(separator + 1).strip());
-                return metadata >= 0 && metadata <= 15
-                        ? LegacySchematicBlocks.read(entry.substring(0, separator).strip(), metadata, 0) : null;
-            } catch (NumberFormatException ignored) {
-                return null;
-            }
-        }
-        try {
-            var reader = new StringReader(entry);
-            var block = BlockStateParser.parseForBlock(BuiltInRegistries.BLOCK.asLookup(), reader, false);
-            return reader.canRead() ? null : block.blockState();
-        } catch (CommandSyntaxException ignored) {
-            return LegacySchematicBlocks.read(entry, 0, 0);
-        }
     }
 
     private static void addExtremisPlants(BlockState existing, List<BlockState> candidates) {
