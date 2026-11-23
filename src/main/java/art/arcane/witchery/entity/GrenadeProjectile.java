@@ -21,6 +21,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobType;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -28,6 +29,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.Shapes;
 import org.joml.Vector3f;
 
 public final class GrenadeProjectile extends ThrowableItemProjectile {
@@ -122,13 +124,28 @@ public final class GrenadeProjectile extends ThrowableItemProjectile {
     }
 
     private void finish(ServerLevel level) {
-        spawnAtLocation(new ItemStack(WitcheryIngredient.QUARTZ_SPHERE.item()), 0.5F);
+        returnQuartzSphere(level);
         if (GrenadeItem.isDuplicate(getItem())) {
             WitcheryFollower.spawnDuplicate(level, position(), GrenadeItem.ownerName(getItem()));
         } else {
             burstSunlight(level);
         }
         discard();
+    }
+
+    private void returnQuartzSphere(ServerLevel level) {
+        var sphere = new ItemEntity(level, getX(), getY() + 0.5, getZ(), new ItemStack(WitcheryIngredient.QUARTZ_SPHERE.item()));
+        var bounds = sphere.getBoundingBox();
+        if (level.getBlockCollisions(sphere, bounds).iterator().hasNext()) {
+            // A landed grenade can hug a wall or ceiling closely enough to bury the returned item.
+            level.findFreePosition(sphere, Shapes.create(bounds.inflate(1)), position(),
+                            bounds.getXsize() + 0.02, bounds.getYsize() + 0.02, bounds.getZsize() + 0.02)
+                    .ifPresent(center -> sphere.setPos(center.x, center.y - bounds.getYsize() / 2, center.z));
+        }
+        sphere.setDefaultPickUpDelay();
+        var captured = captureDrops();
+        if (captured != null) captured.add(sphere);
+        else level.addFreshEntity(sphere);
     }
 
     private void burstSunlight(ServerLevel level) {

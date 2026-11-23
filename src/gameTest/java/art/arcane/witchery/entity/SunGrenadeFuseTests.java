@@ -13,8 +13,13 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
+
+import java.util.ArrayList;
+import java.util.function.Consumer;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
@@ -35,17 +40,34 @@ public final class SunGrenadeFuseTests {
         grenade.setPos(origin);
         grenade.setDeltaMovement(0.65, 0, 0);
         level.addFreshEntity(grenade);
-
+        var dropArea = new AABB(origin, origin).inflate(6);
+        var dropPositions = new ArrayList<Vec3>();
+        var obstructedPositions = new ArrayList<Vec3>();
+        Consumer<EntityJoinLevelEvent> inspectDrop = event -> {
+            if (event.getLevel() == level && event.getEntity() instanceof ItemEntity drop
+                    && dropArea.contains(drop.position()) && drop.getItem().is(WitcheryIngredient.QUARTZ_SPHERE.item())) {
+                dropPositions.add(drop.position());
+                if (level.getBlockCollisions(drop, drop.getBoundingBox()).iterator().hasNext()) {
+                    obstructedPositions.add(drop.position());
+                }
+            }
+        };
         helper.runAfterDelay(22, () -> {
             helper.assertTrue(grenade.hasImpacted(), "The grenade must hit the stone wall and remain in the world");
-            helper.assertTrue(grenade.saveWithoutId(new CompoundTag()).getInt("Remaining") < 190,
+            var saved = grenade.saveWithoutId(new CompoundTag());
+            helper.assertTrue(saved.getInt("Remaining") < 190,
                     "Landing must keep the remaining part of the original 200-tick fuse");
+            grenade.load(saved);
+            MinecraftForge.EVENT_BUS.addListener(inspectDrop);
         });
         helper.runAfterDelay(220, () -> {
+            MinecraftForge.EVENT_BUS.unregister(inspectDrop);
             helper.assertTrue(grenade.isRemoved(), "The sun grenade must spend its fuse about ten seconds after launch");
+            helper.assertTrue(dropPositions.size() == 1 && obstructedPositions.isEmpty(),
+                    "The sphere should spawn outside the wall. Drops " + dropPositions + ", obstructed " + obstructedPositions);
             helper.assertTrue(!level.getBlockState(grenade.lightPosition()).is(WitcheryBlocks.getRequired("light").get()),
                     "The temporary light must disappear after the grenade bursts");
-            var drops = level.getEntitiesOfClass(ItemEntity.class, new AABB(origin, origin).inflate(6),
+            var drops = level.getEntitiesOfClass(ItemEntity.class, dropArea,
                     drop -> drop.getItem().is(WitcheryIngredient.QUARTZ_SPHERE.item()));
             int amount = drops.stream().mapToInt(drop -> drop.getItem().getCount()).sum();
             helper.assertTrue(amount == 1, "The burst must return one Quartz Sphere, found " + amount);
