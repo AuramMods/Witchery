@@ -2,10 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Original Spawn Egg Save Import (2026-11-22)
+
+- The legacy importer uses the same 32 standalone Witchery 0.24.1 spawn egg assignments as the creative inventory. It reads numeric or named vanilla Spawn Egg stacks before vanilla's data fixer. Standalone assignments are captured from the original Forge mod list. For mixed profiles, an optional properties file supplies verified original assignments and persists in the world's import snapshot.
+- The packaged Forge import and ordinary restart preserved all three Witchery egg types, the vanilla Zombie egg, their original slots, counts and custom markers. A dispenser spawned a Demon from the imported stack. The same region with a mixed Forge mod list also passed on first boot and restart with an explicit mapping. All 145 GameTests, data generation and JAR reobfuscation passed. JAR SHA-256 is `58ffb25f026f55e4cd4b3411799341cd02a51af1443ccfa53880040559216d5d`. The runtime logs are in `legacy-eggs-exact-fixed` and `legacy-eggs-exact-mixed` under `/tmp/witchery-flowing-spirit-current`.
+
 ## Creative Spawn Egg Parity (2026-11-22)
 
 - The Witchery tab now uses its original Enchanted Broom icon and offers all 32 original eggs. Both tint values match the original entity registration. The extra egg IDs retained for older saves are omitted from the tab. All 143 GameTests, Java 17 data generation and reobfuscation passed. The clean packaged server dispensed the Demon egg and retained Binky egg and saved the old Brew and Bolt egg IDs in a chest. JAR SHA-256 is `d9ce0bd84bead739bb2804095609d1579cd02cbef4d08cc3af81cc8fd05f8a1c`. See `creative-inventory-full.log` and `creative-eggs-packaged/verify.log` under `/tmp/witchery-flowing-spirit-current`.
-- The remaining creative item review includes the four original Urn tiers, four Spectral Stone variants, filled Circle Talismans, bound fetish variants and the original ingredient visibility rules. The original Forge fixture dispensed a Demon, Leonard and Reflection from vanilla spawn egg metadata 6396, 6418 and 6427. Loading the same region through the current packaged importer changed the three saved Witchery eggs into Wither, Pig and Wither eggs. The vanilla Zombie egg kept its type. The fixture's Forge mod list contains MCP, FML, Forge and Witchery 0.24.1. See `legacy-eggs-original` and `legacy-eggs-baseline/verify.log` under the scratch pointer.
+- The remaining creative item review includes the four original Urn tiers, four Spectral Stone variants, filled Circle Talismans, bound fetish variants and the original ingredient visibility rules. The original Forge fixture dispensed a Demon, Leonard and Reflection from vanilla spawn egg metadata 6396, 6418 and 6427. The pre-fix importer changed those same three saved Witchery eggs into Wither, Pig and Wither eggs. See `legacy-eggs-original` and `legacy-eggs-baseline/verify.log` under the scratch pointer.
 
 ## Leonard Loot and Original Save Import (2026-11-22)
 

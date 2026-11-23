@@ -34,13 +34,17 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class LegacyWorldIds {
     private static final String IMPORT_PROPERTY = "witchery.importLegacyWorld";
     private static final String CONFIG_PROPERTY = "witchery.legacyConfig";
+    private static final String EGG_IDS_PROPERTY = "witchery.legacyEggIds";
     private static final String REGISTRY_FILE = "witchery-legacy-ids.dat";
     private static final String ENTRIES = "ItemData";
     private static final String DIMENSIONS = "Dimensions";
     private static final String POTIONS = "Potions";
+    private static final String SPAWN_EGGS = "SpawnEggs";
+    private static final ResourceLocation VANILLA_SPAWN_EGG = new ResourceLocation("minecraft", "spawn_egg");
     private final Map<Integer, ResourceLocation> blocks = new HashMap<>();
     private final Map<Integer, ResourceLocation> items = new HashMap<>();
     private final Map<Integer, ResourceLocation> vanillaItems = new HashMap<>();
+    private final Map<Integer, ResourceLocation> spawnEggs = new HashMap<>();
     private final Set<ResourceLocation> unmappedBlocks = ConcurrentHashMap.newKeySet();
     private final Set<ResourceLocation> unmappedItems = ConcurrentHashMap.newKeySet();
     private final LegacyWorldDimensions dimensions;
@@ -49,6 +53,10 @@ public final class LegacyWorldIds {
     private LegacyWorldIds(CompoundTag snapshot) {
         dimensions = new LegacyWorldDimensions(snapshot.getCompound(DIMENSIONS));
         effects = new LegacyWorldEffects(snapshot.getCompound(POTIONS));
+        var eggs = snapshot.getCompound(SPAWN_EGGS);
+        for (String metadata : eggs.getAllKeys()) {
+            spawnEggs.put(Integer.parseInt(metadata), new ResourceLocation(Witchery.MODID, eggs.getString(metadata) + "_spawn_egg"));
+        }
         for (Tag tag : snapshot.getList(ENTRIES, Tag.TAG_COMPOUND)) {
             CompoundTag entry = (CompoundTag) tag;
             String key = entry.getString("K");
@@ -72,13 +80,15 @@ public final class LegacyWorldIds {
         if (!Boolean.getBoolean(IMPORT_PROPERTY)) return;
         try {
             boolean existing = Files.isRegularFile(registry);
+            CompoundTag forge = new CompoundTag();
             CompoundTag snapshot;
             if (existing) {
                 snapshot = NbtIo.readCompressed(registry.toFile());
             } else {
                 if (!Files.isRegularFile(level)) return;
                 snapshot = new CompoundTag();
-                snapshot.put(ENTRIES, NbtIo.readCompressed(level.toFile()).getCompound("FML").getList(ENTRIES, Tag.TAG_COMPOUND));
+                forge = NbtIo.readCompressed(level.toFile()).getCompound("FML");
+                snapshot.put(ENTRIES, forge.getList(ENTRIES, Tag.TAG_COMPOUND));
             }
             boolean captureDimensions = !snapshot.contains(DIMENSIONS, Tag.TAG_COMPOUND);
             boolean capturePotions = !snapshot.contains(POTIONS, Tag.TAG_COMPOUND);
@@ -88,9 +98,14 @@ public final class LegacyWorldIds {
                 if (captureDimensions) snapshot.put(DIMENSIONS, LegacyWorldDimensions.capture(config));
                 if (capturePotions) snapshot.put(POTIONS, LegacyWorldEffects.capture(config));
             }
+            String eggMapping = System.getProperty(EGG_IDS_PROPERTY);
+            boolean captureEggs = eggMapping != null || !existing;
+            if (captureEggs) {
+                snapshot.put(SPAWN_EGGS, LegacySpawnEggs.capture(forge, eggMapping == null ? null : Path.of(eggMapping)));
+            }
             LegacyWorldIds ids = new LegacyWorldIds(snapshot);
             if (ids.blocks.isEmpty() && ids.items.isEmpty()) return;
-            if (captureDimensions || capturePotions) {
+            if (captureDimensions || capturePotions || captureEggs) {
                 saveSnapshot(world, registry, snapshot);
                 Witchery.LOGGER.info("Captured {} Witchery block IDs and {} item IDs for {}", ids.blocks.size(), ids.items.size(), world);
             }
@@ -219,8 +234,15 @@ public final class LegacyWorldIds {
     }
 
     private void upgradeStack(CompoundTag compound) {
-        ResourceLocation name = compound.contains("id", Tag.TAG_ANY_NUMERIC)
-                ? items.get(compound.getInt("id") & 0xFFFF) : ResourceLocation.tryParse(compound.getString("id"));
+        ResourceLocation name;
+        if (compound.contains("id", Tag.TAG_ANY_NUMERIC)) {
+            int id = compound.getInt("id") & 0xFFFF;
+            name = items.get(id);
+            if (name == null && VANILLA_SPAWN_EGG.equals(vanillaItems.get(id))) name = VANILLA_SPAWN_EGG;
+        } else {
+            name = ResourceLocation.tryParse(compound.getString("id"));
+        }
+        if (VANILLA_SPAWN_EGG.equals(name)) name = spawnEggs.get(compound.getInt("Damage") & 0xFFFF);
         if (name == null || !name.getNamespace().equals(Witchery.MODID) || compound.getByte("Count") <= 0) return;
         CompoundTag named = compound.copy();
         named.putString("id", name.toString());
