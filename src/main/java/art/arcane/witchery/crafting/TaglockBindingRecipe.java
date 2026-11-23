@@ -17,13 +17,16 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public final class TaglockBindingRecipe extends CustomRecipe {
     public enum Binding {
         OWNERSHIP(WitcheryIngredient.CONTRACT_OF_OWNERSHIP::item, () -> WitcheryRecipes.SIGN_OWNERSHIP_CONTRACT.get()),
-        IMP_SPELL(stack -> ImpSpellContractItem.spellFor(stack) != null, () -> WitcheryRecipes.SIGN_IMP_SPELL_CONTRACT.get()),
+        IMP_SPELL(() -> Arrays.stream(ImpSpellContractItem.Spell.values()).map(ImpSpellContractItem.Spell::item).toList(),
+                stack -> ImpSpellContractItem.spellFor(stack) != null, () -> WitcheryRecipes.SIGN_IMP_SPELL_CONTRACT.get()),
         EARTH_POPPET(() -> WitcheryItems.getRequired("earth_protection_poppet").get(), () -> WitcheryRecipes.BIND_EARTH_POPPET.get()),
         WATER_POPPET(() -> WitcheryItems.getRequired("water_protection_poppet").get(), () -> WitcheryRecipes.BIND_WATER_POPPET.get()),
         FIRE_POPPET(() -> WitcheryItems.getRequired("fire_protection_poppet").get(), () -> WitcheryRecipes.BIND_FIRE_POPPET.get()),
@@ -37,16 +40,22 @@ public final class TaglockBindingRecipe extends CustomRecipe {
         POPPET_PROTECTION(() -> WitcheryItems.getRequired("poppet_protection").get(), () -> WitcheryRecipes.BIND_POPPET_PROTECTION.get()),
         PLAYER_COMPASS(() -> WitcheryItems.getRequired("playercompass").get(), () -> WitcheryRecipes.BIND_PLAYER_COMPASS.get());
 
+        private final Supplier<List<Item>> items;
         private final Predicate<ItemStack> accepts;
         private final Supplier<RecipeSerializer<?>> serializer;
 
         Binding(Supplier<Item> item, Supplier<RecipeSerializer<?>> serializer) {
-            this(stack -> stack.is(item.get()), serializer);
+            this(() -> List.of(item.get()), stack -> stack.is(item.get()), serializer);
         }
 
-        Binding(Predicate<ItemStack> accepts, Supplier<RecipeSerializer<?>> serializer) {
+        Binding(Supplier<List<Item>> items, Predicate<ItemStack> accepts, Supplier<RecipeSerializer<?>> serializer) {
+            this.items = items;
             this.accepts = accepts;
             this.serializer = serializer;
+        }
+
+        public List<Item> items() {
+            return items.get();
         }
     }
 
@@ -55,6 +64,14 @@ public final class TaglockBindingRecipe extends CustomRecipe {
     public TaglockBindingRecipe(ResourceLocation id, CraftingBookCategory category, Binding binding) {
         super(id, category);
         this.binding = binding;
+    }
+
+    public Binding binding() {
+        return binding;
+    }
+
+    public boolean needsSecondTaglock() {
+        return binding == Binding.VAMPIRIC_POPPET;
     }
 
     @Override
@@ -80,7 +97,7 @@ public final class TaglockBindingRecipe extends CustomRecipe {
         ItemStack bindable = ItemStack.EMPTY;
         ItemStack taglock = ItemStack.EMPTY;
         ItemStack secondTaglock = ItemStack.EMPTY;
-        boolean needsSecond = binding == Binding.VAMPIRIC_POPPET;
+        boolean needsSecond = needsSecondTaglock();
         for (int slot = 0; slot < grid.getContainerSize(); slot++) {
             ItemStack stack = grid.getItem(slot);
             if (stack.isEmpty()) continue;
@@ -100,7 +117,7 @@ public final class TaglockBindingRecipe extends CustomRecipe {
 
     @Override
     public boolean canCraftInDimensions(int width, int height) {
-        return width * height >= (binding == Binding.VAMPIRIC_POPPET ? 3 : 2);
+        return width * height >= (needsSecondTaglock() ? 3 : 2);
     }
 
     @Override

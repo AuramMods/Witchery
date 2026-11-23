@@ -275,19 +275,27 @@ public final class TaglockItem extends Item {
     }
 
     public static void bindSignature(ItemStack stack, LivingEntity target) {
-        CompoundTag tag = stack.getOrCreateTag();
-        clearBinding(stack, 1);
         if (target instanceof ServerPlayer player) {
-            tag.putString(PLAYER_NAME, player.getGameProfile().getName());
-            tag.putUUID(PLAYER_UUID, player.getUUID());
+            bindPlayer(stack, player.getGameProfile().getName(), player.getUUID());
         } else if (target instanceof Mob mob) {
+            CompoundTag tag = stack.getOrCreateTag();
+            clearBinding(stack, 1);
             UUID uuid = WerewolfVillagers.originalIdentity(mob);
             tag.putLong(CREATURE_MOST, uuid.getMostSignificantBits());
             tag.putLong(CREATURE_LEAST, uuid.getLeastSignificantBits());
             tag.putString(CREATURE_NAME, mob.getDisplayName().getString());
             if (!mob.hasCustomName()) tag.putString(CREATURE_TYPE, BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType()).toString());
             mob.setPersistenceRequired();
+        } else {
+            clearBinding(stack, 1);
         }
+    }
+
+    public static void bindPlayer(ItemStack stack, String name, UUID id) {
+        CompoundTag tag = stack.getOrCreateTag();
+        clearBinding(stack, 1);
+        tag.putString(PLAYER_NAME, name);
+        tag.putUUID(PLAYER_UUID, id);
     }
 
     private static void failureSound(ServerPlayer player) {

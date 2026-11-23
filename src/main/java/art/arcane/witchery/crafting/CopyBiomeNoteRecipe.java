@@ -30,7 +30,10 @@ public final class CopyBiomeNoteRecipe extends CustomRecipe {
     public ItemStack assemble(CraftingContainer grid, RegistryAccess registries) {
         var atlas = findAtlas(grid);
         var biome = atlas.isEmpty() ? null : BiomeBookIndex.selectedBiome(atlas, registries);
-        if (biome == null) return ItemStack.EMPTY;
+        return biome == null ? ItemStack.EMPTY : noteForBiome(biome);
+    }
+
+    public static ItemStack noteForBiome(ResourceLocation biome) {
         var note = new ItemStack(WitcheryItems.getRequired("biomenote").get());
         note.getOrCreateTag().putString(BiomeNoteItem.BIOME, biome.toString());
         return note;

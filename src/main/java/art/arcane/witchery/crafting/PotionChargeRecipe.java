@@ -7,6 +7,7 @@ import art.arcane.witchery.registry.WitcheryRecipes;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
@@ -20,6 +21,10 @@ public final class PotionChargeRecipe extends CustomRecipe {
     public PotionChargeRecipe(ResourceLocation id, CraftingBookCategory category, boolean belt) {
         super(id, category);
         this.belt = belt;
+    }
+
+    public Item chargeableItem() {
+        return WitcheryItems.getRequired(belt ? "bitingbelt" : "louse").get();
     }
 
     @Override
@@ -49,7 +54,7 @@ public final class PotionChargeRecipe extends CustomRecipe {
 
     @Nullable
     private Ingredients ingredients(CraftingContainer grid) {
-        var chargeable = WitcheryItems.getRequired(belt ? "bitingbelt" : "louse").get();
+        var chargeable = chargeableItem();
         ItemStack item = ItemStack.EMPTY;
         LousePotion potion = null;
         for (ItemStack stack : grid.getItems()) {

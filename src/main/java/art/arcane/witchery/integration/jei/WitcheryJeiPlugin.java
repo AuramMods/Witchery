@@ -13,6 +13,7 @@ import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import mezz.jei.api.registration.ISubtypeRegistration;
+import mezz.jei.api.registration.IVanillaCategoryExtensionRegistration;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.Component;
@@ -55,6 +56,12 @@ public final class WitcheryJeiPlugin implements IModPlugin {
             registration.registerSubtypeInterpreter(WitcheryBlocks.getRequired(block).get().asItem(),
                     (stack, context) -> WitchWoodType.fromStack(stack).getSerializedName());
         }
+        DynamicCraftingLayout.registerSubtypes(registration);
+    }
+
+    @Override
+    public void registerVanillaCategoryExtensions(IVanillaCategoryExtensionRegistration registration) {
+        DynamicCraftingLayout.register(registration.getCraftingCategory());
     }
 
     @Override

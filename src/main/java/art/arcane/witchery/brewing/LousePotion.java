@@ -94,6 +94,10 @@ public enum LousePotion {
         return id;
     }
 
+    public ItemStack bottle() {
+        return PotionUtils.setPotion(new ItemStack(Items.POTION), potion);
+    }
+
     public MobEffectInstance effect() {
         return new MobEffectInstance(potion.getEffects().get(0).getEffect(), duration, amplifier);
     }

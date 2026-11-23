@@ -123,29 +123,31 @@ public final class CircleRiteTests {
         floor(helper);
         ring(helper, RitualCircle.SMALL_RITE, "circleglyphinfernal");
         var altar = chargedAltar(helper, true);
-        var charge = altar.saveWithoutMetadata();
-        charge.putFloat("Power", 5000);
-        altar.load(charge);
         var arthana = new ItemStack(WitcheryItems.getRequired("arthana").get());
         arthana.setDamageValue(13);
-        start(helper, new ItemStack(WitcheryIngredient.DIAMOND_VAPOUR.item()),
+        waitForOfferings(helper, new ItemStack(WitcheryIngredient.DIAMOND_VAPOUR.item()),
                 new ItemStack(WitcheryIngredient.EXHALE_OF_THE_HORNED_ONE.item()), new ItemStack(Items.MAGMA_CREAM),
-                new ItemStack(Items.FERMENTED_SPIDER_EYE), arthana);
-        helper.runAfterDelay(110, () -> {
-            float beforeCharge = altar.power();
-            int recharge = 10 * altar.rechargeMultiplier();
-            // One altar recharge occurs in the twenty ticks that bracket the closing rite step.
-            helper.runAfterDelay(20, () -> {
-                var witches = helper.getLevel().getEntitiesOfClass(Witch.class, new AABB(helper.absolutePos(CENTER)).inflate(8));
-                helper.assertTrue(witches.size() == 1, "The small Infernal circle summons exactly one witch");
-                helper.assertTrue(altar.power() == beforeCharge - 2000 + recharge, "The summoning spends exactly 2,000 power");
-                var returned = drops(helper);
-                helper.assertTrue(returned.size() == 1 && ItemStack.matches(returned.get(0).getItem(), arthana),
-                        "The summoning returns the original damaged Arthana, found "
-                                + returned.stream().map(drop -> drop.getItem().serializeNBT()).toList());
-                witches.forEach(Entity::discard);
-                returned.forEach(ItemEntity::discard);
-                helper.succeed();
+                new ItemStack(Items.FERMENTED_SPIDER_EYE), arthana).thenExecute(() -> {
+            var charge = altar.saveWithoutMetadata();
+            charge.putFloat("Power", 5000);
+            altar.load(charge);
+            start(helper);
+            helper.runAfterDelay(110, () -> {
+                float beforeCharge = altar.power();
+                int recharge = 10 * altar.rechargeMultiplier();
+                // One altar recharge occurs in the twenty ticks that bracket the closing rite step.
+                helper.runAfterDelay(20, () -> {
+                    var witches = helper.getLevel().getEntitiesOfClass(Witch.class, new AABB(helper.absolutePos(CENTER)).inflate(8));
+                    helper.assertTrue(witches.size() == 1, "The small Infernal circle summons exactly one witch");
+                    helper.assertTrue(altar.power() == beforeCharge - 2000 + recharge, "The summoning spends exactly 2,000 power");
+                    var returned = drops(helper);
+                    helper.assertTrue(returned.size() == 1 && ItemStack.matches(returned.get(0).getItem(), arthana),
+                            "The summoning returns the original damaged Arthana, found "
+                                    + returned.stream().map(drop -> drop.getItem().serializeNBT()).toList());
+                    witches.forEach(Entity::discard);
+                    returned.forEach(ItemEntity::discard);
+                    helper.succeed();
+                });
             });
         });
     }

@@ -12,6 +12,8 @@
    "jei.witchery.summons": "Summons %s.",
    "jei.witchery.jar": "Consumed if the oven collects a fume.",
    "jei.witchery.fume_chance": "%s%% fume chance without funnels.",
+   "jei.witchery.taglock_sample_first": "Example Target",
+   "jei.witchery.taglock_sample_second": "Second Example Target",
    "item.witchery.book_collecting_fumes": "Witchcraft: Collecting Fumes",
    "item.witchery.book_distilling": "Witchcraft: Distilling",
    "item.witchery.book_circle_magic": "Witchcraft: Circle Magic",

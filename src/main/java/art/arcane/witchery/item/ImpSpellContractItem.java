@@ -56,6 +56,10 @@ public final class ImpSpellContractItem extends Item {
             this.ingredient = ingredient;
         }
 
+        public Item item() {
+            return ingredient.item();
+        }
+
         public boolean activate(LivingEntity target) {
             return switch (this) {
                 case LIVING_FLAME -> target.level() instanceof ServerLevel level && summonBlaze(level, target.blockPosition());
