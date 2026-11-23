@@ -150,6 +150,43 @@ public final class WitcheryItems {
     public static final Map<String, RegistryObject<Item>> LEGACY_ITEMS = new LinkedHashMap<>();
     public static final Map<String, RegistryObject<Item>> LEGACY_BLOCK_ITEMS = new LinkedHashMap<>();
     public static final Map<String, RegistryObject<Item>> LEGACY_SPAWN_EGGS = new LinkedHashMap<>();
+    private static final EggColors COMPATIBILITY_EGG_COLORS = new EggColors(0x6E5A4E, 0xA4A29D);
+    private static final Map<String, EggColors> ORIGINAL_EGG_COLORS = Map.ofEntries(
+            Map.entry("demon", new EggColors(9502720, 11430927)),
+            Map.entry("mandrake", new EggColors(128271104, 311408)),
+            Map.entry("treefyd", new EggColors(5781801, 11217964)),
+            Map.entry("hornedhuntsman", new EggColors(11523, 4007964)),
+            Map.entry("ent", new EggColors(5338965, 5724240)),
+            Map.entry("owl", new EggColors(14869218, 6049609)),
+            Map.entry("toad", new EggColors(5780254, 3090974)),
+            Map.entry("babayaga", new EggColors(7232598, 3881787)),
+            Map.entry("covenwitch", new EggColors(1118481, 11523)),
+            Map.entry("nightmare", new EggColors(983101, 0)),
+            Map.entry("spectre", new EggColors(1052688, 16299031)),
+            Map.entry("poltergeist", new EggColors(12844917, 12844917)),
+            Map.entry("banshee", new EggColors(13683116, 10136945)),
+            Map.entry("spirit", new EggColors(16753968, 15649280)),
+            Map.entry("death", new EggColors(0, 0)),
+            Map.entry("witchhunter", new EggColors(7893099, 2300953)),
+            Map.entry("lordoftorment", new EggColors(9502720, 3346705)),
+            Map.entry("imp", new EggColors(5776143, 16738816)),
+            Map.entry("mindrake", new EggColors(19463, 4200704)),
+            Map.entry("goblin", new EggColors(10752, 15616)),
+            Map.entry("goblinmog", new EggColors(10752, 15616)),
+            Map.entry("goblingulg", new EggColors(10752, 15616)),
+            Map.entry("leonard", new EggColors(12152634, 2818048)),
+            Map.entry("lostsoul", new EggColors(12152634, 2818116)),
+            Map.entry("wolfman", new EggColors(2960685, 6316128)),
+            Map.entry("hellhound", new EggColors(14181632, 5968392)),
+            Map.entry("werevillager", new EggColors(5651507, 12422002)),
+            Map.entry("villageguard", new EggColors(2236962, 5322800)),
+            Map.entry("vampire", new EggColors(5322800, 13369344)),
+            Map.entry("lilith", new EggColors(0, 2818048)),
+            Map.entry("wingedmonkey", new EggColors(6846848, 7574709)),
+            Map.entry("reflection", new EggColors(5596842, 6715391))
+    );
+
+    private record EggColors(int shell, int spots) {}
 
     static {
         for (String legacyName : LegacyRegistryData.ITEMS) {
@@ -212,9 +249,13 @@ public final class WitcheryItems {
     }
 
     public static Collection<RegistryObject<Item>> allForCreativeTab() {
-        List<RegistryObject<Item>> combined = new ArrayList<>(LEGACY_ITEMS.size() + LEGACY_BLOCK_ITEMS.size() + LEGACY_SPAWN_EGGS.size());
+        List<RegistryObject<Item>> combined = new ArrayList<>(LEGACY_ITEMS.size() + LEGACY_BLOCK_ITEMS.size() + ORIGINAL_EGG_COLORS.size());
         combined.addAll(LEGACY_ITEMS.values());
-        combined.addAll(LEGACY_SPAWN_EGGS.values());
+        for (String entity : WitcheryEntities.all().keySet()) {
+            if (ORIGINAL_EGG_COLORS.containsKey(entity)) {
+                combined.add(LEGACY_SPAWN_EGGS.get(entity + "_spawn_egg"));
+            }
+        }
         combined.addAll(LEGACY_BLOCK_ITEMS.values());
         return Collections.unmodifiableList(combined);
     }
@@ -463,20 +504,9 @@ public final class WitcheryItems {
             throw new IllegalStateException("Missing legacy entity placeholder for path: " + path);
         }
 
+        EggColors colors = ORIGINAL_EGG_COLORS.getOrDefault(path, COMPATIBILITY_EGG_COLORS);
         RegistryObject<Item> egg = ITEMS.register(eggPath,
-                () -> switch (path) {
-                    case "covenwitch" -> new ForgeSpawnEggItem(entityType, 0x111111, 0x002D03, new Item.Properties());
-                    case "witchhunter" -> new ForgeSpawnEggItem(entityType, 0x78706B, 0x231C19, new Item.Properties());
-                    case "hellhound" -> new ForgeSpawnEggItem(entityType, 0xD86500, 0x5B1208, new Item.Properties());
-                    case "hornedhuntsman" -> new ForgeSpawnEggItem(entityType, 11523, 4007964, new Item.Properties());
-                    case "mindrake" -> new ForgeSpawnEggItem(entityType, 19463, 4200704, new Item.Properties());
-                    case "wingedmonkey" -> new ForgeSpawnEggItem(entityType, 6846848, 7574709, new Item.Properties());
-                    case "treefyd" -> new ForgeSpawnEggItem(entityType, 5781801, 11217964, new Item.Properties());
-                    case "wolfman" -> new ForgeSpawnEggItem(entityType, 0x2D2D2D, 0x606060, new Item.Properties());
-                    case "werevillager" -> new ForgeSpawnEggItem(entityType, 0x563C33, 0xBD8B72, new Item.Properties());
-                    case "spirit" -> new ForgeSpawnEggItem(entityType, 0xFFA530, 0xEECA00, new Item.Properties());
-                    default -> new ForgeSpawnEggItem(entityType, 0x6E5A4E, 0xA4A29D, new Item.Properties());
-                });
+                () -> new ForgeSpawnEggItem(entityType, colors.shell(), colors.spots(), new Item.Properties()));
         LEGACY_SPAWN_EGGS.put(eggPath, egg);
     }
 

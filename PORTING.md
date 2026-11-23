@@ -2060,6 +2060,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 ### Phase 1 - Forge Registrations
 - [x] Register blocks, items, fluids, fluid types, block entities, menus, effects and the creative tab through Forge.
 - [x] Register the 55 original entity IDs with gameplay entities and save-compatible IDs. The old fixed and custom brew IDs load through the real projectile class.
+- [x] Restore the Enchanted Broom tab icon and the 32 original spawn eggs with their original tints. Keep older port egg IDs registered for saves and omit them from the Witchery tab. On packaged clean Forge, dispensers spawned a Demon and Binky from their existing item IDs, and a chest retained the Brew and Bolt egg IDs. Java 17 data generation, JAR reobfuscation and all 143 GameTests passed.
 - [ ] Review the retained compatibility registrations and player-visible creative items against the original inventory.
 
 ### Phase 2 - Data and Assets

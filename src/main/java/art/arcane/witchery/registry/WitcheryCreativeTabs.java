@@ -11,6 +11,7 @@ import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.item.BrewBottleItem;
+import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.item.WitchWoodBlockItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -27,10 +28,7 @@ public final class WitcheryCreativeTabs {
     public static final RegistryObject<CreativeModeTab> WITCHERY_TAB = CREATIVE_MODE_TABS.register("witchery_tab",
             () -> CreativeModeTab.builder()
                     .title(Component.literal("Witchery"))
-                    .icon(() -> {
-                        RegistryObject<net.minecraft.world.item.Item> iconItem = WitcheryItems.LEGACY_ITEMS.values().iterator().next();
-                        return new ItemStack(iconItem.get());
-                    })
+                    .icon(() -> new ItemStack(WitcheryIngredient.ENCHANTED_BROOM.item()))
                     .displayItems((parameters, output) -> WitcheryItems.allForCreativeTab().forEach(entry -> {
                         if (entry.get() instanceof WitchWoodBlockItem wood) {
                             for (WitchWoodType type : WitchWoodType.values()) {

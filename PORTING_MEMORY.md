@@ -2,6 +2,11 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Creative Spawn Egg Parity (2026-11-22)
+
+- The Witchery tab now uses its original Enchanted Broom icon and offers all 32 original eggs. Both tint values match the original entity registration. The extra egg IDs retained for older saves are omitted from the tab. All 143 GameTests, Java 17 data generation and reobfuscation passed. The clean packaged server dispensed the Demon egg and retained Binky egg and saved the old Brew and Bolt egg IDs in a chest. JAR SHA-256 is `d9ce0bd84bead739bb2804095609d1579cd02cbef4d08cc3af81cc8fd05f8a1c`. See `creative-inventory-full.log` and `creative-eggs-packaged/verify.log` under `/tmp/witchery-flowing-spirit-current`.
+- The remaining creative item review includes the four original Urn tiers, four Spectral Stone variants, filled Circle Talismans, bound fetish variants and the original ingredient visibility rules. The 1.7.10 spawn eggs used vanilla numeric item subtypes assigned at runtime. Their migration is outside the tested egg coverage.
+
 ## Leonard Loot and Original Save Import (2026-11-22)
 
 - In the copied Auram survival save, the player defeated the same summoned Leonard after respawning and brewing stronger Harm Demons gas. The throw landed on the floor and created a gas cell at `(111, 202, 92)`. Contact took Leonard from about 220 health to zero. The fixture positioned Leonard in the gas, moved Souls and missed offerings, and supplied vanilla reagents, an enchanted sword and temporary protection. The player collected the dropped Urn, Demon Heart and enchanted book, opened the Urn menu and flushed the save. The native client remained muted and unfocused. See `auram-leonard-gas-cast.log` and `auram-leonard-gas-loot.log` under `/tmp/witchery-flowing-spirit-current`.
