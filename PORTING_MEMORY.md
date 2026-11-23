@@ -2,6 +2,11 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Refilling Chest Save Import (2026-11-23)
+
+- The original Forge 1.7.10 server saved a pair across a chunk boundary and a separate single Refilling Chest. The previous packaged importer tried to parse literal names as JSON and discarded the affected block entities. The corrected reobfuscated JAR `fa1f42beed195cc67214dfe45a7a307dd937d3b9718c938eb18411993168e463` restored all three names, the original contents, and refill timers at 33,000, 34,000 and 35,000 ticks. The restored pair and single stayed intact on an ordinary dedicated restart. See `refilling-chest-save-qa` under `/tmp/witchery-flowing-spirit-current`.
+- A background client and dedicated server ran the same packaged JAR. The double chest showed both inventories, and the survival player shift-clicked two bread from the east half. The west half's two apples stayed put. The client used master volume zero, OpenAL No Output, and never activated its window. See `refilling-chest-client-qa/verify-transfer.log` and the screenshot recorded by that run.
+
 ## First Three Brazier Summons for Death in Auram (2026-11-23)
 
 - The restored Auram survival player bought thirteen Spectral Dust and three Wool of Bat from the generated Trek Apothecary. The fixture supplied emeralds, advanced the clock for the merchant's workday restock, and positioned the player to recover a dropped stack of seven. The player returned to the workshop with fourteen dust and five wool. Both sides still use the packaged Trek village JAR and the client recorded zero master volume and no focus activation. See `auram-death-trek-watchdog-player-recovery.log` and `auram-death-first-graveyard-brazier.log` under `/tmp/witchery-flowing-spirit-current`.

@@ -11,7 +11,7 @@ import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.CursedControls;
 import art.arcane.witchery.block.DaylightCollectorBlock;
 import art.arcane.witchery.block.DistilleryBlock;
-import art.arcane.witchery.block.LeechChestBlock;
+import art.arcane.witchery.block.LegacyPairingChestBlock;
 import art.arcane.witchery.block.MirrorBlock;
 import art.arcane.witchery.block.MountedSkullBlock;
 import art.arcane.witchery.block.PitDirtBlock;
@@ -94,7 +94,7 @@ public final class LegacyChunkUpgrade {
     private static final Map<String, Integer> FLUID_QUANTA = Map.of("spiritflowing", 5, "hollowtears", 5, "brew", 2, "disease", 1);
     private static final Set<String> CLASSIC_FLUID_TICKS = Set.of("brew", "disease");
     private static final Set<String> POST_PROCESSING_BLOCKS = Set.of("stockade", "icestockade", "icefence", "icefencegate", "coffinblock",
-            "tormentportal", "spiritportal", "spiritflowing", "hollowtears", "leechchest", "pitdirt", "pitgrass", "witchleaves",
+            "tormentportal", "spiritportal", "spiritflowing", "hollowtears", "leechchest", "refillingchest", "pitdirt", "pitgrass", "witchleaves",
             "stairswoodrowan", "stairswoodalder", "stairswoodhawthorn", "icestairs", "snowstairs");
 
     private LegacyChunkUpgrade() {
@@ -182,7 +182,9 @@ public final class LegacyChunkUpgrade {
             if (tile.getString("id").equals("witchery:wolftrap")) {
                 tile.putString("id", "witchery:beartrap");
             }
-            if (tile.getString("id").equals("witchery:leechchest") && tile.contains("CustomName", Tag.TAG_STRING)) {
+            String tileId = tile.getString("id");
+            if ((tileId.equals("witchery:leechchest") || tileId.equals("witchery:refillingchest"))
+                    && tile.contains("CustomName", Tag.TAG_STRING)) {
                 tile.putString("CustomName", Component.Serializer.toJson(Component.literal(tile.getString("CustomName"))));
             }
             Set<String> family = switch (tile.getString("id")) {
@@ -420,13 +422,13 @@ public final class LegacyChunkUpgrade {
             case "distilleryidle", "distilleryburning" -> state.setValue(BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata))
                     .setValue(DistilleryBlock.LIT, name.getPath().equals("distilleryburning"));
             case "kettle", "spinningwheel", "fumefunnel", "filteredfumefunnel", "wolfaltar", "beartrap", "wolftrap",
-                    "garlicgarland", "dreamcatcher", "refillingchest", "decursedirected", "decurseteleport", "demonheart",
+                    "garlicgarland", "dreamcatcher", "decursedirected", "decurseteleport", "demonheart",
                     "statuegoddess" ->
                     state.setValue(BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata));
-            // Sprig mutation left the original chest at metadata zero, which its renderer drew facing south.
-            case "leechchest" -> state.setValue(LeechChestBlock.FACING,
+            // Both original chest renderers drew default metadata zero facing south.
+            case "leechchest", "refillingchest" -> state.setValue(LegacyPairingChestBlock.FACING,
                             metadata == 0 ? Direction.SOUTH : horizontalFacing(metadata))
-                    .setValue(LeechChestBlock.LEGACY_PAIRING, true);
+                    .setValue(LegacyPairingChestBlock.LEGACY_PAIRING, true);
             case "statueofworship" -> state.setValue(BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata & 7));
             case "vine" -> state.setValue(BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata));
             case "bramble" -> state.setValue(BrambleBlock.WILD, metadata == 1);
