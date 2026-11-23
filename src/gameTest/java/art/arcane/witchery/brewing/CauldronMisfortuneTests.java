@@ -31,6 +31,7 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -44,43 +45,49 @@ public final class CauldronMisfortuneTests {
         var level = helper.getLevel();
         BlockPos pos = placeCauldron(helper);
         var altar = placeAltar(helper);
-        var pig = helper.spawn(EntityType.PIG, CAULDRON.south());
-        var farPig = helper.spawn(EntityType.PIG, CAULDRON.east(17));
-        var highPig = helper.spawn(EntityType.PIG, CAULDRON.above(5));
-        var zombie = helper.spawn(EntityType.ZOMBIE, CAULDRON.north());
+        helper.setBlock(CAULDRON.above(4), Blocks.GLASS);
+        var pig = helper.spawnWithNoFreeWill(EntityType.PIG, CAULDRON.south());
+        var farPig = helper.spawnWithNoFreeWill(EntityType.PIG, CAULDRON.east(17));
+        var highPig = helper.spawnWithNoFreeWill(EntityType.PIG, CAULDRON.above(5));
+        var zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, CAULDRON.north());
+        var leonard = helper.spawnWithNoFreeWill(WitcheryEntities.LEONARD.get(), CAULDRON.south(3));
 
-        prepareGoldenChalk(helper, pos);
-        finishCast(helper, pos, altar, 4000, 512);
-        assertEffect(helper, pig, MobEffects.MOVEMENT_SLOWDOWN, 1200, 1);
-        helper.assertTrue(zombie.getActiveEffects().isEmpty() && farPig.getActiveEffects().isEmpty()
-                        && highPig.getActiveEffects().isEmpty(),
-                "The misfortune affects nearby non-hostile creatures in the original horizontal and vertical range");
-        helper.assertTrue(altar.power() == 1130, "The completed cast pays exactly 2,870 without circles");
-        helper.assertItemEntityCountIs(WitcheryItems.getRequired("chalkheart").get(), CAULDRON.above(), 2, 1);
-        pig.removeAllEffects();
+        var area = new AABB(pos).inflate(22);
+        var subjects = List.of(pig, farPig, highPig, zombie, leonard);
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
+                level.getEntitiesOfClass(LivingEntity.class, area).containsAll(subjects),
+                "The cauldron can query all the test mobs")).thenExecute(() -> {
+            leonard.setHealth(1);
+            prepareGoldenChalk(helper, pos);
+            finishCast(helper, pos, altar, 4000, 512);
+            assertEffect(helper, pig, MobEffects.MOVEMENT_SLOWDOWN, 1200, 1);
+            helper.assertTrue(zombie.getActiveEffects().isEmpty() && farPig.getActiveEffects().isEmpty()
+                            && highPig.getActiveEffects().isEmpty(),
+                    "The misfortune affects nearby non-hostile creatures in the original horizontal and vertical range");
+            helper.assertTrue(altar.power() == 1130, "The completed cast pays exactly 2,870 without circles");
+            helper.assertItemEntityCountIs(WitcheryItems.getRequired("chalkheart").get(), CAULDRON.above(), 2, 1);
+            pig.removeAllEffects();
 
-        setSmallCircle(helper, pos, WitcheryBlocks.getRequired("circleglyphritual").get());
-        var leonard = helper.spawn(WitcheryEntities.LEONARD.get(), CAULDRON.south(3));
-        leonard.setHealth(1);
-        prepareGoldenChalk(helper, pos);
-        finishCast(helper, pos, altar, 4000, 512);
-        helper.assertTrue(altar.power() == 1540 && pig.getActiveEffects().isEmpty(),
-                "A white circle removes the risk and discounts the cost to 2,460 when Leonard has one health");
+            setSmallCircle(helper, pos, WitcheryBlocks.getRequired("circleglyphritual").get());
+            prepareGoldenChalk(helper, pos);
+            finishCast(helper, pos, altar, 4000, 512);
+            helper.assertTrue(altar.power() == 1540 && pig.getActiveEffects().isEmpty(),
+                    "A white circle removes the risk and discounts the cost to 2,460 when Leonard has one health");
 
-        leonard.setHealth(2);
-        prepareGoldenChalk(helper, pos);
-        finishCast(helper, pos, altar, 4000, 512);
-        assertEffect(helper, pig, MobEffects.MOVEMENT_SLOWDOWN, 1200, 1);
-        helper.assertTrue(leonard.getActiveEffects().isEmpty(), "A healthy nearby Leonard restores risk but is immune to the effect");
-        leonard.discard();
-        pig.removeAllEffects();
+            leonard.setHealth(2);
+            prepareGoldenChalk(helper, pos);
+            finishCast(helper, pos, altar, 4000, 512);
+            assertEffect(helper, pig, MobEffects.MOVEMENT_SLOWDOWN, 1200, 1);
+            helper.assertTrue(leonard.getActiveEffects().isEmpty(), "A healthy nearby Leonard restores risk but is immune to the effect");
+            leonard.discard();
+            pig.removeAllEffects();
 
-        setSmallCircle(helper, pos, WitcheryBlocks.getRequired("circleglyphinfernal").get());
-        prepareGoldenChalk(helper, pos);
-        finishCast(helper, pos, altar, 4000, 3840);
-        assertEffect(helper, pig, WitcheryEffects.INSANITY.get(), 3600, 2);
-        helper.assertTrue(altar.power() == 1889, "The Infernal discount lowers the cost to 2,111 and raises the misfortune roll");
-        helper.succeed();
+            setSmallCircle(helper, pos, WitcheryBlocks.getRequired("circleglyphinfernal").get());
+            prepareGoldenChalk(helper, pos);
+            finishCast(helper, pos, altar, 4000, 3840);
+            assertEffect(helper, pig, WitcheryEffects.INSANITY.get(), 3600, 2);
+            helper.assertTrue(altar.power() == 1889, "The Infernal discount lowers the cost to 2,111 and raises the misfortune roll");
+        }).thenSucceed();
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_cauldron_lightning")
