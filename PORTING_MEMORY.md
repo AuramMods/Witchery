@@ -2,6 +2,11 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Creative Item Variants and Death's Wormwood Stock (2026-11-22)
+
+- The Witchery tab now offers the original Circle Talisman patterns, Spectral Stone loads, all four Urn tiers, both vampire journals and the original five bound Scarecrows and Screamer Witch's Ladder. The raw ingredient and bound Waystone variants are hidden from creative. The binding rite and the creative stacks share the same fetish state writer. All 146 GameTests passed, including the complete tab and functional states. Data generation and reobfuscation passed. The exact JAR `b86ecd7309ffd0e4943224ef08e86b99c38851ebe909a3daf33b8d6cf9e0171a` opened the creative inventory and four-slot Urn in the muted background client on clean Forge. See `creative-item-variants-client.log` under `/tmp/witchery-flowing-spirit-current`.
+- The copied survival world grew the saved Wormwood seeds into 15 leaves and 27 seeds using the stored Fortune III hoe, prepared farmland and supplied bone meal. The first Spectral Dust hunt attacked naturally spawned undead on raised terrain. The second moved targets to a contained arena and stopped when the server watchdog detected a 60-second tick. The sampled mob AI ran through Thaumaturge's tick wrapper. The saved player still had the 15 leaves, 27 seeds and the enchanted Arthana. The fixture restored the earlier spawn rule in the copied `level.dat` and retained a backup of the crash state. Both copied profiles are starting on the creative-variants JAR. See `auram-death-wormwood-stock.log`, `auram-death-hunt-spectral-controlled.log` and `server-auram-post-spectral-watchdog.log`.
+
 ## Original Spawn Egg Save Import (2026-11-22)
 
 - The legacy importer uses the same 32 standalone Witchery 0.24.1 spawn egg assignments as the creative inventory. It reads numeric or named vanilla Spawn Egg stacks before vanilla's data fixer. Standalone assignments are captured from the original Forge mod list. For mixed profiles, an optional properties file supplies verified original assignments and persists in the world's import snapshot.
@@ -10,7 +15,7 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 ## Creative Spawn Egg Parity (2026-11-22)
 
 - The Witchery tab now uses its original Enchanted Broom icon and offers all 32 original eggs. Both tint values match the original entity registration. The extra egg IDs retained for older saves are omitted from the tab. All 143 GameTests, Java 17 data generation and reobfuscation passed. The clean packaged server dispensed the Demon egg and retained Binky egg and saved the old Brew and Bolt egg IDs in a chest. JAR SHA-256 is `d9ce0bd84bead739bb2804095609d1579cd02cbef4d08cc3af81cc8fd05f8a1c`. See `creative-inventory-full.log` and `creative-eggs-packaged/verify.log` under `/tmp/witchery-flowing-spirit-current`.
-- The remaining creative item review includes the four original Urn tiers, four Spectral Stone variants, filled Circle Talismans, bound fetish variants and the original ingredient visibility rules. The original Forge fixture dispensed a Demon, Leonard and Reflection from vanilla spawn egg metadata 6396, 6418 and 6427. The pre-fix importer changed those same three saved Witchery eggs into Wither, Pig and Wither eggs. See `legacy-eggs-original` and `legacy-eggs-baseline/verify.log` under the scratch pointer.
+- The original Forge fixture dispensed a Demon, Leonard and Reflection from vanilla spawn egg metadata 6396, 6418 and 6427. The pre-fix importer changed those same three saved Witchery eggs into Wither, Pig and Wither eggs. See `legacy-eggs-original` and `legacy-eggs-baseline/verify.log` under the scratch pointer.
 
 ## Leonard Loot and Original Save Import (2026-11-22)
 

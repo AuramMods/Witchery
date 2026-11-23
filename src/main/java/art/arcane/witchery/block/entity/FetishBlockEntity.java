@@ -107,6 +107,12 @@ public final class FetishBlockEntity extends BlockEntity {
         return saved == 0 ? tag.getInt("WITCSpiritEffect") : saved;
     }
 
+    public static void setItemEffect(ItemStack item, FetishEffect effect) {
+        item.getOrCreateTag().putInt("WITCSpiritEffect", effect.id);
+        var data = item.getTagElement("TileData");
+        if (data != null) data.putInt("EffectTypeID", effect.id);
+    }
+
     public boolean isSpectral() {
         return spectral;
     }

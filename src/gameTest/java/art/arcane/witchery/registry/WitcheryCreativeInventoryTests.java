@@ -1,16 +1,23 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.entity.FetishBlockEntity;
+import art.arcane.witchery.item.CircleTalismanItem;
+import art.arcane.witchery.item.LeonardsUrnItem;
+import art.arcane.witchery.item.SpectralStoneItem;
+import art.arcane.witchery.item.VampireBookItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -44,5 +51,54 @@ public final class WitcheryCreativeInventoryTests {
                     "Compatibility egg is hidden and still registered: " + path);
         }
         helper.succeed();
+    }
+
+    @GameTest(template = "qa_imp_contracts")
+    public static void creativeInventoryOffersTheOriginalFunctionalVariants(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var tab = WitcheryCreativeTabs.WITCHERY_TAB.get();
+        tab.buildContents(new CreativeModeTab.ItemDisplayParameters(level.enabledFeatures(), true, level.registryAccess()));
+
+        var talismans = variants(tab, "circletalisman");
+        helper.assertTrue(talismans.stream().map(CircleTalismanItem::storedPattern).toList()
+                        .equals(List.of(0, 1, 2, 3, 8, 16, 24, 64, 128, 192)),
+                "Creative has an empty talisman and every original single-ring and chalk combination");
+        helper.assertTrue(talismans.stream().map(CircleTalismanItem::model).toList()
+                        .equals(List.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)),
+                "Each offered talisman uses its corresponding model");
+
+        var stones = variants(tab, "spectralstone");
+        helper.assertTrue(stones.stream().map(SpectralStoneItem::typeId).toList().equals(List.of(0, 1, 2, 3))
+                        && stones.stream().map(SpectralStoneItem::creatureCount).toList().equals(List.of(0, 1, 1, 1)),
+                "Creative has an empty Spectral Stone and one specimen of each inhabitant");
+        var urns = variants(tab, "leonardsurn");
+        helper.assertTrue(urns.stream().map(LeonardsUrnItem::tier).toList().equals(List.of(0, 1, 2, 3))
+                        && urns.stream().map(stack -> LeonardsUrnItem.contents(stack).size()).toList().equals(List.of(1, 2, 3, 4)),
+                "The four displayed Urn tiers have their original storage capacities");
+        helper.assertTrue(variants(tab, "vampirebook").stream().map(VampireBookItem::tornPages).toList().equals(List.of(0, 9)),
+                "Both the starting and complete vampire journals are available");
+
+        helper.assertTrue(fetishEffects(tab, "scarecrow").equals(List.of(0, 1, 3, 2, 4, 5))
+                        && fetishEffects(tab, "witchsladder").equals(List.of(0, 3))
+                        && fetishEffects(tab, "trent").equals(List.of(0)),
+                "Each fetish exposes the exact effects offered by the original creative inventory");
+        for (String hidden : List.of("ingredient", "bound_waystone", "creature_bound_waystone")) {
+            helper.assertTrue(variants(tab, hidden).isEmpty()
+                            && ForgeRegistries.ITEMS.containsKey(new ResourceLocation(Witchery.MODID, hidden)),
+                    "Save-compatible item stays out of creative: " + hidden);
+        }
+        helper.assertTrue(variants(tab, "waystone").size() == 1 && variants(tab, "globe_artichoke").size() == 1,
+                "The ordinary Waystone and Globe Artichoke remain available");
+        helper.succeed();
+    }
+
+    private static List<ItemStack> variants(CreativeModeTab tab, String path) {
+        var item = WitcheryItems.getRequired(path).get();
+        return tab.getDisplayItems().stream().filter(stack -> stack.is(item)).toList();
+    }
+
+    private static List<Integer> fetishEffects(CreativeModeTab tab, String path) {
+        var item = WitcheryItems.LEGACY_BLOCK_ITEMS.get(path).get();
+        return tab.getDisplayItems().stream().filter(stack -> stack.is(item)).map(FetishBlockEntity::itemEffect).toList();
     }
 }

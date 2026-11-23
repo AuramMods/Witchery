@@ -1,6 +1,7 @@
 package art.arcane.witchery.ritual;
 
 import art.arcane.witchery.block.FetishBlock;
+import art.arcane.witchery.block.entity.FetishBlockEntity;
 import art.arcane.witchery.block.entity.FetishEffect;
 import art.arcane.witchery.entity.DreamSpirit;
 import art.arcane.witchery.entity.SpectralUndead;
@@ -64,9 +65,7 @@ public final class FetishBinding {
 
     private static boolean dropBoundFetish(ServerLevel level, Vec3 center, ItemStack offering, FetishEffect effect) {
         ItemStack result = offering.copyWithCount(1);
-        result.getOrCreateTag().putInt("WITCSpiritEffect", effect.id);
-        var data = result.getTagElement("TileData");
-        if (data != null) data.putInt("EffectTypeID", effect.id);
+        FetishBlockEntity.setItemEffect(result, effect);
         var drop = new ItemEntity(level, center.x, center.y + 1.5, center.z, result, 0, 0.3, 0);
         drop.setDefaultPickUpDelay();
         return level.addFreshEntity(drop);
