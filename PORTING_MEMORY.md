@@ -22,6 +22,11 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - The original Forge 1.7.10 server wrote 16 fixture chests with all 163 registered Ingredient subtypes and all 12 Poppet subtypes. Every entry had its own marker and a count of one, two, or three. The saved regions verified the numeric registry IDs and metadata before import.
 - The packaged JAR `08f44ce48d7d153277eda9e7925fde561c4a7532f6142243e2b5ab3e8bbf5519` imported and reopened all 175 stacks with their mapped item IDs, slots, counts, and markers. Raw and cooked mutton were restored as the corresponding vanilla food items. Both verified boots used Java 17 and headless Forge 47.4.10. See `legacy-all-ingredient-subtypes` under `/tmp/witchery-flowing-spirit-current`.
 
+## Death Combat Regression (2026-11-23)
+
+- The recovered test sampled Death's health after a fixed GameTest delay and failed intermittently. The checked-in case verifies health immediately before and after entity ages 20 and 40, checks the original damage cap and spectral touch, and waits for the guaranteed loot to become visible. This matches the original healing cadence.
+- Java 17 data generation and JAR reobfuscation succeeded. The checked-in replay passed 150 of 151 cases, including the new Death case. The sole failure was the Sun Grenade test's Quartz Sphere drop check. The separate 697-case replay of the previous fixtures passed 694 cases and failed the fixed-delay Death check, the Coven Witch night door check and the blocked Wither offering refund check. See `death-tick-checkin-regression.log` and `sleeping-body-skin-expanded-regression.log` under the same scratch pointer.
+
 ## Sleeping Body Owner Appearance (2026-11-23)
 
 - An original Forge 1.7.10 region saved the sleeping body with only an owner name. The earlier renderer used a UUID lookup, so the imported owner could not select the skin. The body now syncs both identity fields independently. It uses the connected owner's UUID when available and the shared name lookup for a named owner. Protocol 91 covers the additional tracked field.
