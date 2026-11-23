@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Psychedelicraft Disconnect and Auram Imp Preparation (2026-11-22)
+
+- The copied Auram dedicated server reopened on the packaged crop compatibility build, SHA-256 `f604f9e8d3802b0d865b536865059fb51b5152e6bd348b5c30ec8b61cc4df598`. The released Banshee retained its UUID and `Summoner` name at the saved approach. The first client launch encountered an `objc_msgSend` crash in the macOS Metal completion thread. Its JVM report and retry logs belong to the disposable profile.
+- An isolated packaged server with only Psychedelicraft reproduced the missing-player-capability crash after a vanilla zombie attacked a survival player and the player disconnected. With Witchery's optional stale-target fix installed, the same protocol kept the server running and the zombie loaded. The same player reconnected and repeated the check with a Witchery Ent. It attacked before disconnect, and the server kept running with the Ent loaded. This covers the crash seen during the copied Auram Ent fight.
+- The optional profile used Java 17 and Forge 47.4.10 with a muted, nonactivating native client. The patched JAR SHA-256 is `4643c51820625b5fbb488b1e6b89730329e707d1f5b08001e310089d36d610b9`. Data generation, JAR reobfuscation, and all 137 checked-in GameTests passed. `/tmp/witchery-flowing-spirit-current` locates the baseline, fixed zombie and fixed Ent logs.
+
 ## Inter-Mod Block Break Events and Banshee Ingredients (2026-11-22)
 
 - `allowInterModBlockBreakEvents` restores the legacy server setting with its enabled default. Witchery's synthetic Forge break events for brews, spells and rites use the setting. The terrain brew regression observes a canceled event, disables the setting to remove the protected stone, and verifies that the same brew still preserves bedrock. Java 17 data generation, JAR reobfuscation and all 137 checked-in GameTests passed. The reobfuscated JAR SHA-256 is `a095c50f61824408c9eb62dfb7c96ae43360dd96722fdb239ba93ab0cacc1d1e`.

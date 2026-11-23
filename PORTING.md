@@ -15,6 +15,7 @@
 - [x] Restore Mystic Branch glyph selection and 3D item glint. Verify the original defaults and client overrides on packaged Forge.
 - [ ] Close the save migration coverage listed under Legacy Save Fixtures. Check original IDs, metadata, and specialized state along with saves from earlier 1.20.1 builds. Record which data each supported upgrade path preserves.
 - [ ] Run the final data generation, reobfuscated build and regression replay. Exercise that exact JAR on clean Forge and the copied Auram profile, including multiplayer state across death, reconnects, dimension travel and dedicated restarts. Record the tested build and downloadable artifact.
+- [x] Reproduce and address the Psychedelicraft disconnect crash in an isolated packaged server. A vanilla zombie triggered it with Witchery absent. With the compatibility fix installed, the server stayed online after disconnects while either a vanilla zombie or a Witchery Ent was attacking.
 
 ## Witch's Oven Milestone (2026-11-19)
 
