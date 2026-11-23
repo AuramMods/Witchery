@@ -1579,6 +1579,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 - `ModHookTinkersConstruct` offset the Bark Belt icons for its legacy replacement health display. Auram's Tinkers' Construct 3.11.2.166 has a hotbar overlay for equipment. The port places Bark Belt charges above the current health and armor rows using Forge's `leftHeight` counter.
 - `ModHookTreecapitator` maps to the optional Enhanced Falling Trees 0.6.0. Log and leaf tags expose the three species to the felling mod. Witchery's wood state distinguishes adjacent species, and harvesting each log can still awaken an Ent. [Enhanced Falling Trees 0.6.0](https://www.curseforge.com/minecraft/mc-mods/enhanced-falling-trees/files/5899084)
 - `ModHookWaila` maps to the optional Jade plugin on Forge 1.20.1. It presents the original cover identities for trapped plants, Alder Doors, both pit blocks, the three illusions, and werevillagers. Rowan Doors use Jade's normal item lookup.
+- Right Click Harvest 4.6.1 and Quark 4.0-462 leave the wheat interaction to the held Mutating Sprig when all four cotton plants and all four diagonal water sources satisfy the original Wormwood pattern. Ordinary crop harvesting follows the installed mods' behavior for other clicks.
 - `ModHookMorph`
 - `ModHookBaubles` uses the optional Curios inventory on Forge 1.20.1. The `witchery:vampire_mortality_accessories` item tag contains the three surviving Botania accessories. Botania removed the Ring of the Aesir. [Botania changelog](https://botaniamod.net/changelog.html)
 

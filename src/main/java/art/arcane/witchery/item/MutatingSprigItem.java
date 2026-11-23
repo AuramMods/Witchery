@@ -69,8 +69,7 @@ public final class MutatingSprigItem extends Item {
         boolean surface = clicked.is(Blocks.GRASS_BLOCK) || clicked.is(Blocks.MYCELIUM);
         boolean clay = MutandisItem.isSoakedDirt(level, pos);
         PlantMutation plant = findBrambleMutation(level, pos, clicked);
-        boolean wormwood = clicked.is(Blocks.WHEAT) && clicked.getValue(CropBlock.AGE) == CropBlock.MAX_AGE
-                && sides(level, pos, WitcheryBlocks.getRequired("somniancotton").get(), false) && hasDiagonalWater(level, pos);
+        boolean wormwood = canMutateWormwood(level, pos);
         boolean water = sourceWater(level, pos.below());
         boolean grasspers = water && clicked.is(Blocks.CHEST) && (sides(level, pos, Blocks.VINE, false)
                 || Direction.Plane.HORIZONTAL.stream().map(pos::relative).map(level::getBlockState)
@@ -151,6 +150,12 @@ public final class MutatingSprigItem extends Item {
 
     private static AABB catalystArea(BlockPos pos) {
         return new AABB(pos.getX() - 1, pos.getY() - 1, pos.getZ() - 1, pos.getX() + 1, pos.getY() + 2, pos.getZ() + 1);
+    }
+
+    public static boolean canMutateWormwood(Level level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        return state.is(Blocks.WHEAT) && state.getValue(CropBlock.AGE) == CropBlock.MAX_AGE
+                && sides(level, pos, WitcheryBlocks.getRequired("somniancotton").get(), false) && hasDiagonalWater(level, pos);
     }
 
     private static boolean hasDiagonalWater(Level level, BlockPos center) {
