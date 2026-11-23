@@ -14,6 +14,7 @@ import art.arcane.witchery.block.DistilleryBlock;
 import art.arcane.witchery.block.LeechChestBlock;
 import art.arcane.witchery.block.MirrorBlock;
 import art.arcane.witchery.block.MountedSkullBlock;
+import art.arcane.witchery.block.PitDirtBlock;
 import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.block.RiteHeartBlock;
 import art.arcane.witchery.block.RitualGlyphBlock;
@@ -93,7 +94,7 @@ public final class LegacyChunkUpgrade {
     private static final Map<String, Integer> FLUID_QUANTA = Map.of("spiritflowing", 5, "hollowtears", 5, "brew", 2, "disease", 1);
     private static final Set<String> CLASSIC_FLUID_TICKS = Set.of("brew", "disease");
     private static final Set<String> POST_PROCESSING_BLOCKS = Set.of("stockade", "icestockade", "icefence", "icefencegate", "coffinblock",
-            "tormentportal", "spiritportal", "spiritflowing", "hollowtears", "leechchest");
+            "tormentportal", "spiritportal", "spiritflowing", "hollowtears", "leechchest", "pitdirt", "pitgrass");
 
     private LegacyChunkUpgrade() {
     }
@@ -475,7 +476,8 @@ public final class LegacyChunkUpgrade {
                 case 2 -> Direction.WEST;
                 default -> Direction.EAST;
             }).setValue(MirrorBlock.HALF, (metadata & 4) == 0 ? DoubleBlockHalf.LOWER : DoubleBlockHalf.UPPER);
-            case "poppetshelf", "bloodedwool", "pitdirt", "pitgrass", "mirrorwall",
+            case "pitdirt" -> state.setValue(PitDirtBlock.PODZOL, metadata == 2);
+            case "poppetshelf", "bloodedwool", "pitgrass", "mirrorwall",
                     "tormentstone", "embermoss", "glintweed", "infinityegg", "icedoubleslab", "snowdoubleslab",
                     "cauldron", "brazier", "candelabra", "perpetualice", "icestockade", "icefence", "bloodcrucible", "silvervat",
                     "force", "barrier", "slurp", "somniancotton", "web", "cactus", "glowglobe", "leapinglily", "crystalball",

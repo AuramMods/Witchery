@@ -1,6 +1,7 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.block.PlantMineBlock;
+import art.arcane.witchery.block.PitDirtBlock;
 import art.arcane.witchery.block.PerpetualIceBlock;
 import art.arcane.witchery.block.PerpetualIceDoorBlock;
 import art.arcane.witchery.block.PerpetualIceFenceBlock;
@@ -280,7 +281,7 @@ public final class WitcheryBlocks {
             case "cauldron" -> new WitchesCauldronBlock(BlockBehaviour.Properties.copy(Blocks.CAULDRON));
             case "wolfaltar" -> new WolfAltarBlock();
             case "statuegoddess" -> new StatueGoddessBlock();
-            case "pitdirt" -> new Block(BlockBehaviour.Properties.copy(Blocks.DIRT).noOcclusion().noCollission());
+            case "pitdirt" -> new PitDirtBlock();
             case "pitgrass" -> new net.minecraft.world.level.block.SnowyDirtBlock(
                     BlockBehaviour.Properties.copy(Blocks.GRASS_BLOCK).noOcclusion().noCollission());
             case "wallgen" -> new Block(BlockBehaviour.Properties.copy(Blocks.BEDROCK)

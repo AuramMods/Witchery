@@ -1,5 +1,6 @@
 package art.arcane.witchery.client;
 
+import art.arcane.witchery.block.PitDirtBlock;
 import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.block.ShadedGlassBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
@@ -453,6 +454,9 @@ public final class WitcheryClient {
             ItemProperties.register(WitcheryBlocks.getRequired("plantmine").get().asItem(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "plant"),
                     (stack, level, entity, seed) -> PlantMineBlock.Item.plantModel(stack));
+            ItemProperties.register(WitcheryBlocks.getRequired("pitdirt").get().asItem(),
+                    ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "podzol"),
+                    (stack, level, entity, seed) -> PitDirtBlock.isPodzol(stack) ? 1 : 0);
             ItemProperties.register(WitcheryBlocks.getRequired("wickerbundle").get().asItem(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "bloodied"),
                     (stack, level, entity, seed) -> WickerBundleBlock.isBloodied(stack) ? 1 : 0);

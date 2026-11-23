@@ -10,8 +10,48 @@
       ],
       "entries": [
         {
-          "type": "minecraft:item",
-          "name": "witchery:pitdirt"
+          "type": "minecraft:alternatives",
+          "children": [
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "condition": "minecraft:match_tool",
+                  "predicate": {
+                    "enchantments": [
+                      {
+                        "enchantment": "minecraft:silk_touch",
+                        "levels": {
+                          "min": 1
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "block": "witchery:pitdirt",
+                  "condition": "minecraft:block_state_property",
+                  "properties": {
+                    "podzol": "true"
+                  }
+                }
+              ],
+              "functions": [
+                {
+                  "block": "witchery:pitdirt",
+                  "function": "minecraft:copy_state",
+                  "properties": [
+                    "podzol"
+                  ]
+                }
+              ],
+              "name": "witchery:pitdirt"
+            },
+            {
+              "type": "minecraft:item",
+              "name": "witchery:pitdirt"
+            }
+          ]
         }
       ],
       "rolls": 1.0

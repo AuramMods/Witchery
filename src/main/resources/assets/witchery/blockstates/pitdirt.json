@@ -1,7 +1,8 @@
 {
-   "variants" : {
-      "" : {
-         "model" : "witchery:block/pitdirt"
-      }
-   }
+  "variants": {
+    "podzol=false": { "model": "witchery:block/pitdirt" },
+    "cover=none,podzol=true": { "model": "minecraft:block/podzol" },
+    "cover=soil,podzol=true": { "model": "witchery:block/pitdirt_podzol_covered" },
+    "cover=snow,podzol=true": { "model": "witchery:block/pitdirt_podzol_snow" }
+  }
 }

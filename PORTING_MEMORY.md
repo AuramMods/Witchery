@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Pit Dirt Save Import and Auram's Trek Merchant (2026-11-23)
+
+- The original Forge 1.7.10 fixture wrote Pit Dirt metadata `0, 1, 2, 2, 2`, a snowy Pit Grass block, and two stacks in a vanilla chest. The packaged importer kept the Podzol variant and its marker and resolved the placed covers. The old block number and chest item number were both 230 in this particular save. See `pitdirt-save-qa` under `/tmp/witchery-flowing-spirit-current`.
+- The exact packaged build `c1e80740d0efd90c04f697ea018b5c0a7617e3b79d7f60616737892d1b86d8e0` passed the same checks on an ordinary restart. Removing the snow and placing grass resolved the two new covers. The isolated client and server used that JAR and rendered the four block states and the held Podzol model with zero master volume, No Output, and no focus activation. Java 17 data generation and JAR reobfuscation succeeded, and all 148 required Forge GameTests passed. See `pitdirt-client-qa` and `pitdirt-gametest.log` under the scratch pointer.
+- The copied full Auram world generated a Trek Plains Apothecary at `-363.5 68 3212.5` on the matching village JAR. The merchant was saved with its eight offers before the next watchdog sampled a 180-second tick in the random-block-tick path. The saved entity retained the same UUID and both required trades. The fixture backed up the ticket file and removed the 49 remote chunks used for scouting. The recovered copy uses simulation distance two and view distance four for the merchant stop, with the existing client retained for reconnection. See `auram-trek-apothecary-scout.log`, `server-auram-trek-exact.log`, and `server-auram-trek-local-ticks.log`.
+
 ## Trek Village Buildings and First Death Reagents (2026-11-22)
 
 - The seven village styles used by Auram's Trek B0.6 datapack now offer the existing Witchery buildings through their own house pools and the shared entrance connector. The packaged seed-1 Plains village at `1056 2336` had a Bookshop, an Apothecary, a Keep, three Watchtowers, and one saved wall plan. With Apothecaries disabled, the same village start generated a Bookshop, a Keep, a Watchtower, and a Coven Witch Hut. Both profiles used the exact copied Trek datapack.

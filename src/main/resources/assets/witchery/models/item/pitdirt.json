@@ -1,3 +1,6 @@
 {
-   "parent" : "witchery:block/pitdirt"
+  "parent": "witchery:block/pitdirt",
+  "overrides": [
+    { "predicate": { "witchery:podzol": 1 }, "model": "minecraft:block/podzol" }
+  ]
 }

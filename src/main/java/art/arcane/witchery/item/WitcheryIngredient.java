@@ -2,6 +2,7 @@ package art.arcane.witchery.item;
 
 import art.arcane.witchery.block.StockadeBlock;
 import net.minecraft.world.item.BlockItem;
+import art.arcane.witchery.block.PitDirtBlock;
 import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.block.ShadedGlassBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
@@ -218,6 +219,13 @@ public enum WitcheryIngredient {
             return PotionUtils.setPotion(stack, Potions.NIGHT_VISION);
         }
         if (hasLegacyDamage) {
+            if (stackTag.getInt("Damage") == 2 && stack.getItem() instanceof BlockItem blockItem
+                    && blockItem.getBlock() instanceof PitDirtBlock) {
+                var state = stack.getTagElement(BlockItem.BLOCK_STATE_TAG);
+                if (state == null || !state.contains(PitDirtBlock.PODZOL.getName(), Tag.TAG_STRING)) {
+                    PitDirtBlock.setPodzol(stack);
+                }
+            }
             if (stack.getItem() instanceof WitchWoodBlockItem) {
                 WitchWoodBlockItem.importLegacyMetadata(stack, stackTag.getInt("Damage"));
             }

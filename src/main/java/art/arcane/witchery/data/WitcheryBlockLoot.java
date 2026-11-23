@@ -7,6 +7,7 @@ import art.arcane.witchery.block.ChaliceBlock;
 import art.arcane.witchery.block.CursedControls;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.DreamWeave;
+import art.arcane.witchery.block.PitDirtBlock;
 import art.arcane.witchery.block.ShadedGlassBlock;
 import art.arcane.witchery.block.entity.LeechSamples;
 import art.arcane.witchery.block.WitchCrop;
@@ -97,6 +98,13 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                                                 .setProperties(StatePropertiesPredicate.Builder.properties()
                                                         .hasProperty(StockadeBlock.WOOD, StockadeBlock.Wood.OAK)).invert()))))));
                 case "perpetualice" -> add(block, createSilkTouchOnlyTable(block));
+                case "pitdirt" -> add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1)).add(AlternativesEntry.alternatives(
+                                LootItem.lootTableItem(block).when(HAS_SILK_TOUCH)
+                                        .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
+                                                .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(PitDirtBlock.PODZOL, true)))
+                                        .apply(CopyBlockState.copyState(block).copy(PitDirtBlock.PODZOL)),
+                                LootItem.lootTableItem(block))))));
                 case "shadedglass", "shadedglass_active" -> add(block, LootTable.lootTable()
                         .withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1)).when(HAS_SILK_TOUCH)
                                 .add(LootItem.lootTableItem(block).apply(CopyBlockState.copyState(block).copy(ShadedGlassBlock.COLOR)
