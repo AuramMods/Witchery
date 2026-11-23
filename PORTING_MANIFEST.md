@@ -1497,72 +1497,23 @@ Status:
 - Rite IDs 92 and 93 map to `witchery:curse_of_the_wolf` and `witchery:cure_lycanthropy`. Player saves preserve `WerewolfLevel` and the original wolf ordinal 1. Legacy nested data also reads `CreatureType`. Server setting `allowVampireWerewolfHybrids` defaults to true. Protocol 46 includes the two rites and original howl.
 - Entity IDs 135 and 137 map to `witchery:wolfman` and `witchery:werevillager`. `Infectious` remains a legacy save field. `FormerVillager` stores the modern villager snapshot and reads the old numeric `FormerProfession` when available. `WITCWereVillagerUUID` preserves the pre-curse Taglock identity through each form and cure. Protocol 47 includes the creatures and their sounds.
 
-## 1.20.1 Event Hook Scaffold (current)
+## 1.20.1 Forge Event Hooks
 
+- `WitcheryEventHooks` restores infusion state, death brews, and vampire and wolf forms on login or respawn. On dimension change it closes scrying, records Witchery dimension transitions, checks Nether predictions, and syncs infusion and creature state. Tracking clients receive the creature, Nightmare, or ghost appearance when they begin tracking the player.
+- The server player tick advances vampirism, lycanthropy, and other effects and processes Dream, Mirror, and Torment travel. Block interactions post the relevant cursed item and Fiery Touch checks. Mirror activation uses the registered circle rite and portal logic.
 - `allowInterModBlockBreakEvents` defaults to true. Forge block-break cancellation is honored when Witchery terrain effects, spells, or rites would remove or replace blocks. The toggle applies to events posted by Witchery's scripted changes.
-Implementation anchor:
-- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/event/WitcheryEventHooks.java`
 
-Placeholder Forge-bus hook points:
-- `AttachCapabilitiesEvent<Entity>`: capability attachment migration anchor (`ExtendedPlayer` replacement path).
-- `PlayerEvent.PlayerLoggedInEvent`: player bootstrap/sync migration anchor.
-- `PlayerEvent.Clone`: persistent player data copy/migration anchor.
-- `TickEvent.PlayerTickEvent`: scaffold portal collision routing anchor.
-- `PlayerInteractEvent.RightClickBlock`: scaffold mirror-rite trigger routing anchor.
-- `EntityTravelToDimensionEvent`: cross-dimension route observation/migration anchor.
-- `PlayerEvent.PlayerChangedDimensionEvent`: post-travel sync/bootstrap anchor for dimension transitions.
-- `LevelEvent.Load`: world/runtime registry bootstrap migration anchor.
+## 1.20.1 Player Capability and Migration
 
-Status:
-- handlers now contain minimal breadth scaffolding for capability attach/copy, typed player-sync routing, scaffold trigger routing, and dimension-travel observation.
-- feature-specific behavior is deferred to depth migration passes.
-
-## 1.20.1 Capability Scaffold (current)
-Implementation anchors:
-- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/capability/WitcheryCapabilities.java`
-- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/capability/WitcheryPlayerData.java`
-- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/capability/WitcheryPlayerDataProvider.java`
-- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/event/WitcheryEventHooks.java`
-
-Current scaffold behavior:
-- Registers `WitcheryPlayerData` capability type on MOD bus (`RegisterCapabilitiesEvent`).
-- Attaches player capability provider on `AttachCapabilitiesEvent<Entity>` when entity is a `Player`.
-- Copies capability data during `PlayerEvent.Clone`.
-- Sends typed scaffold sync packets from event hooks:
-  - `PlayerLoggedInEvent` -> `extended_player_sync` + `player_sync`
-  - `PlayerEvent.Clone` -> `partial_extended_player_sync`
-
-Current placeholder data surface (`WitcheryPlayerData`):
-| Field | Type | Purpose |
-|---|---|---|
-| `initialized` | `boolean` | breadth session-init marker |
-| `syncRevision` | `int` | incremental sync marker for placeholder packet routing |
-| `creatureTypeOrdinal` | `int` | staged legacy creature type sync slot |
-| `humanBlood` | `int` | staged legacy blood-state sync slot |
-| `grotesqueTicks` | `int` | staged player-style grotesque timer |
-| `nightmareLevel` | `int` | staged dream/nightmare state marker |
-| `ghost` | `boolean` | staged ghost-state marker |
-| `otherPlayerSkin` | `String` | staged alternate skin/name reference |
-| `preparedSpellEffectId` | `int` | staged `spell_prepared` effect id |
-| `preparedSpellLevel` | `int` | staged `spell_prepared` level |
-| `lastItemUpdateSlot` | `int` | staged last `item_update` slot |
-| `lastItemUpdateDamage` | `int` | staged last `item_update` damage value |
-| `lastItemUpdatePage` | `int` | staged last `item_update` page index |
-| `lastMarkupBookSlot` | `int` | staged last `sync_markup_book` slot |
-| `lastMarkupBookPages` | `List<String>` | staged last `sync_markup_book` page payload |
-| `lastHowlGameTime` | `long` | shared cooldown for the wolf pack and Wolfman howls |
-
-Active lycanthropy saves retain `WerewolfLevel`, `WolfmanQuestState`, `WolfmanQuestCounter` and each signed `Location` in `WolfmanQuestChunks`. `LastHowlGameTime` tracks the wolf pack cooldown.
-The wolf's dirt loot modifier records its one-minute cooldown as `LastBoneFindGameTime`.
-
-Status:
-- structural replacement path for legacy `ExtendedPlayer` is now wired.
-- actual migration of legacy fields/behaviors is still TODO.
+- `WitcheryPlayerDataProvider` attaches the `witchery:player_data` capability to players. `PlayerEvent.Clone` copies the data and restores death-protected inventory when applicable. Login sends `extended_player_sync` and `player_sync`. Respawn and dimension changes send `partial_extended_player_sync`.
+- `LegacyWorldIds.upgradePlayer` converts Witchery stacks and effects before vanilla's player data fixer. It copies `WitcheryExtendedPlayer` into the modern capability when one is absent, and moves a restorable `CachedInventory2` into the modern Death Brew inventory record. The original Dream session items and pending `WITCPoSpawn` effects go through the same upgrade path.
+- `WitcheryPlayerData` reads the original creature form, alternate skin, blood stores, vampire and werewolf ranks, potion bottling skill, vampire vision and trial counters. Village records retain their packed `Location` and default to the Overworld when the old record has no dimension. Wolf trial chunks retain each signed `Location`. The modern save also retains `LastHowlGameTime` and `LastBoneFindGameTime` for the wolf's cooldowns.
+- See Legacy Save Fixtures in `PORTING.md` for the imported vampire, wolf and Dream records verified in the packaged game. The broader comparison of legacy player fields and multiplayer packet behavior remains in the release checklist.
 
 ## Mod Hook Integrations (`modHooks.register`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/Witchery.java`
 - `ModHookArsMagica2` maps its mana debit and suffocation exception to Ars Magica Legacy 1.5.0, the build in Auram. The modern API provides mana access for living entities. The inspected 1.5.0 build contains no identified equivalents for the Reconstructor or its Soulbound enchantment hook.
-- `ModHookBloodMagic`
+- `ModHookBloodMagic` maps to Blood Magic 3.3.5-47. Powered Anti-Magic Bolts debit Life Essence, Carnosa Diem trades health for Life Essence, and a vampire using the Sacrificial Dagger pays blood power when its reserve covers the altar offering.
 - `ModHookForestry` had empty initialization and magic-drain methods in 0.24.1.
 - `ModHookMineFactoryReloaded` maps to Industrial Foregoing. The Sower preserves the three saved sapling variants. Forge's crop and bonemeal interfaces and the log and leaf tags cover the eight crops and three trees. The Crusher, Imprisonment Tool, and Duplicator use their respective entity type tags for the 29, 25, and 30 original exclusions. Witchery makes the Crusher apply its full exclusion tag before selecting a target. [Industrial Foregoing 3.5.21](https://www.curseforge.com/minecraft/mc-mods/industrial-foregoing/files/7068937)
 - `ModHookMystCraft` excludes Flowing Spirit, Hollow Tears, Brew, liquid brew and brew gas from automatic sea symbols in Auram's Mystcraft 2 Legacy 0.8.0. Mystcraft still reads server-authored symbol definitions and registers the other fluids.

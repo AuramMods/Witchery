@@ -1351,7 +1351,7 @@
 - [x] Confirm the resized pig's saved scale and remaining duration after a dedicated restart. The returning client saw the enlarged model next to an ordinary pig and saw both return to the same height. The resized survival player was refused at a bed and walked under top slabs. After drinking milk, the same passage blocked normal movement again.
 - [x] Verify multiplayer Resizing with two muted clients. The player crossed a low passage after traveling to the Nether. A newly tracking client saw the quarter-size model and its return to normal.
 - [x] Run Java 17 data generation, JAR reobfuscation, and nine focused GameTests. They cover ordered ingredients, breeding, Fortune and Silk Touch, Volatility protection, and Resizing collision, persistence, combat, and boss behavior.
-- [ ] Resolve the five older rite failures found in the 575-case regression run. Both Wither summons, the focused barrier, corruption refunds, and the Witch's Ladder binding passed in focused reruns. All nine new cases passed in the broad run.
+- [x] Recheck the five older rite failures from the 575-case run. Both Wither summons, the focused barrier, corruption refunds, and the Witch's Ladder binding passed in the 698-case replay. The portable Wither fixture waits for all offerings to be tracked, and the checked-in Ladder fixture waits for the Banshees before activation.
 
 ## Cauldron Farming and Pulverisation (2026-11-21)
 
@@ -1373,7 +1373,7 @@
 - [x] Brew all eight recipes in the muted background client. Flowers generated two blooms, Fertilization matured Wolfsbane, and Harvesting dropped wheat and mature Mandrake Root. Tilling converted all three strengthened soils, and Planting used four of six loose seeds. Pruning preserved an outer leaf and a nearby log. Felling dropped an original Hawthorn log and preserved the planks and leaves.
 - [x] Reopen the same dedicated world with the final JAR. Verify the saved terrain, crops, two flowers, and remaining two seeds. Trigger a Tilling ritual without a coven and confirm it changes sand and leaves netherrack. Throw Pulverisation on supported sand and verify the single loose item.
 - [x] Run Java 17 data generation and JAR reobfuscation. All 11 focused Forge GameTests passed, including the placement veto, Witchery seeds, named legacy ingredients, a real liquid tick, and the Pulverisation footprint.
-- [ ] Resolve the inconsistent Splitting Bolt result. The broad regression passed 585 of 586 cases, including all 11 new cases. The Splitting Bolt case passed on its own on the same revision.
+- [x] Recheck the Splitting Bolt failure from the 586-case run. The isolated case passed on the same revision and the three-projectile spread passed in the 698-case replay.
 
 ## Cauldron Fluid Holds, Lilify and Dissipate (2026-11-21)
 
@@ -1390,7 +1390,7 @@
 - [x] Restore Dissipate's original column footprint, Witchery gas removal, and strength-scaled magic damage to Spectres, Banshees, and Poltergeists. Strengthened casts use Forge fluid density to recognize gases from other mods. All four actions respect Forge protection events.
 - [x] Brew and cast all four recipes with a muted, isolated survival client on packaged Forge. Dissipate cleared the inner cloud and removed ten health from a Spectre. Lava Hold held two source cells and the checked source returned after the enhanced duration. Tide Hold resumed after a dedicated restart and restored the source and falling water. Two Lilify pads spread in their own pond and persisted across a second restart.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all seven focused Forge GameTests. Test the packaged JAR with Mekanism 10.4.16.80 on a headless Forge server. Base Dissipate left Steam intact, and a strengthened brew cleared it while leaving ordinary water.
-- [ ] Resolve the inconsistent broad regression results. The 593-case run passed 587, including all seven new cases. Five of its failed checks passed in the targeted 18-case rerun. The Spectral Familiar ore-search test ran in a different namespace and was omitted from that rerun.
+- [x] Recheck the six older failures from the 593-case run. Five passed in the targeted 18-case rerun. The complete 601-case replay also covered the Spectral Familiar ore search alongside the earlier courtship and rite cases.
 
 ### Mixed Creature and Terrain Brews (2026-11-22)
 
@@ -1967,6 +1967,9 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Buy Garlic from the same Trek Apothecary, plant it at the workshop, and harvest seven from the mature crop. Build a vanilla Wither and earn the Nether Star through player melee. Craft Observations of an Immortal with that star, the harvested Garlic, and supplied nether wart and a book.
 - [x] Earn and attach three Torn Pages from additional Wither kills. The fixture supplied the skulls and soul sand, contained the fights, and provided positioning and protective effects. The inventory test lost the journal after its second upgrade. The fixture recovered the exact two-page stack from the previous player save and attached the third earned page in the crafting menu.
 - [x] Open and close the upgraded journal through its normal screen to learn the rank-four cap. The fixture held midnight while the server accumulated all 300 nighttime intervals. The survival player reached rank four and used the speed power to gain Speed II and Jump Boost II for ten blood. The test restored the ordinary daylight cycle and saved the player under shelter.
+- [x] Earn a fourth Torn Page from another full-health Wither summoned by the player. Use the saved journal and the earned page in the crafting menu, then open and close the four-page journal to learn the rank-five cap. The fixture supplied the vanilla summoning blocks and provided positioning and potion effects. It moved the journal out of the hotbar during the fight to keep boss loot from displacing it.
+- [x] Craft ten Daylight Collectors and ten Quartz Spheres on the same copied Auram save. Place the collectors beside vanilla daylight detectors, load the spheres and harvest ten Sun Grenades at charge 15. The fixture supplied the vanilla starting materials, prepared a roofed platform, and advanced the clock through each detector strength while the server ticked.
+- [x] Use all ten harvested grenades on the survival vampire under shelter. Four counted individually, then six landed together and finished the rank-five trial. The fixture provided Resistance and Regeneration while the grenades burned. The muted background client recovered all ten Quartz Spheres. The dedicated save kept rank five, 746 blood, the four-page journal, and the restored daylight cycle.
 
 ## JEI Machine Recipe Views (2026-11-22)
 

@@ -13,11 +13,7 @@ Legacy source used for porting lives in:
 
 ## Current Porting Status
 
-Status is tracked in phase form:
-- `Phase 0` discovery/inventory: complete.
-- `Phase 1` registration scaffolding: complete.
-- `Phase 2` assets/data scaffolding: in progress.
-- `Phase 3+` systems/behavior parity: pending.
+The Forge 1.20.1 port builds and runs on clean Forge and the copied Auram profile. The same Auram survival save has reached Death, Dream, Torment, Mirror, and vampirism through normal player interactions. The fixtures and remaining progression, legacy parity, migration, and release checks are tracked in the [porting plan](PORTING.md).
 
 Inventory baseline from manifest:
 - Blocks: `121`
