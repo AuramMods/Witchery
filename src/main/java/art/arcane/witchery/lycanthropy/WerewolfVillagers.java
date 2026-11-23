@@ -163,6 +163,12 @@ public final class WerewolfVillagers {
         var data = new CompoundTag();
         VillagerData.CODEC.encodeStart(NbtOps.INSTANCE, new VillagerData(VillagerType.PLAINS, profession, 1))
                 .result().ifPresent(villagerData -> data.put("VillagerData", villagerData));
+        if (wolfman.contains("Offers", Tag.TAG_COMPOUND)) {
+            var offers = wolfman.getCompound("Offers");
+            data.put("Offers", offers.copy());
+            // A legacy trader had a fixed profession. Vanilla clears offers when a novice loses its job site.
+            if (!offers.getList("Recipes", Tag.TAG_COMPOUND).isEmpty()) data.putInt("Xp", 1);
+        }
         return data;
     }
 }

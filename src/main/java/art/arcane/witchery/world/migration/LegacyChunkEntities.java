@@ -44,9 +44,10 @@ final class LegacyChunkEntities {
         if (!oldType.startsWith(LEGACY_PREFIX) && !oldType.startsWith(NAMESPACE)) return;
         ResourceLocation name = ResourceLocation.tryParse(NAMESPACE + oldType.substring(NAMESPACE.length()).toLowerCase(Locale.ROOT));
         if (name == null) return;
-        // The vanilla Witch schema does not visit Goblin trade stacks or a falling brew's ingredients.
+        // The vanilla Witch schema does not visit these trade and brew stacks.
         switch (name.getPath()) {
-            case "goblin" -> ids.upgradeVanillaItems(entity.getCompound("Offers"), fixer, from, targetVersion);
+            case "goblin", "wolfman" -> ids.upgradeVanillaItems(entity.getCompound("Offers"), fixer, from, targetVersion);
+            case "demon" -> ids.upgradeVanillaItems(entity.getCompound("Bargains"), fixer, from, targetVersion);
             case "droplet" -> ids.upgradeVanillaItems(entity.getCompound("Brew"), fixer, from, targetVersion);
             case "brew", "brew2" -> name = prepareBrewProjectile(entity, name, ids, fixer, from, targetVersion);
         }
@@ -55,7 +56,7 @@ final class LegacyChunkEntities {
         // Vanilla's old entity schema needs a known type to fix the entity tree and its typed fields.
         // Keep the Witchery type in the remainder, which survives both passes of the chunk fixer.
         String schemaType = switch (name.getPath()) {
-            case "owl", "toad", "covenwitch", "mindrake", "wingedmonkey" -> "Wolf";
+            case "owl", "toad", "covenwitch", "mindrake", "wingedmonkey", "imp" -> "Wolf";
             case "cat" -> "Ozelot";
             case "deathhorse" -> "EntityHorse";
             case "item" -> "Item";
