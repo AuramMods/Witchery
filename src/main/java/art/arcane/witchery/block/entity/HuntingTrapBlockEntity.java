@@ -8,6 +8,7 @@ import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcherySounds;
+import art.arcane.witchery.world.migration.LegacyGameProfiles;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -178,23 +179,9 @@ public final class HuntingTrapBlockEntity extends BlockEntity {
         sprung = !tag.contains("Sprung", Tag.TAG_BYTE) || tag.getBoolean("Sprung");
         armedAt = tag.getLong("ArmedAt");
         baitSince = tag.getLong("WolftrapStart");
-        owner = tag.contains("Owner", Tag.TAG_COMPOUND) ? readOwner(tag.getCompound("Owner")) : null;
+        owner = tag.contains("Owner", Tag.TAG_COMPOUND) ? LegacyGameProfiles.read(tag.getCompound("Owner")) : null;
         summonedWolf = tag.contains("WolfMost", Tag.TAG_LONG) && tag.contains("WolfLeast", Tag.TAG_LONG)
                 ? new UUID(tag.getLong("WolfMost"), tag.getLong("WolfLeast")) : null;
-    }
-
-    @Nullable
-    private static GameProfile readOwner(CompoundTag tag) {
-        if (tag.contains("Id", Tag.TAG_STRING)) {
-            try {
-                var converted = tag.copy();
-                converted.putUUID("Id", UUID.fromString(tag.getString("Id")));
-                return NbtUtils.readGameProfile(converted);
-            } catch (IllegalArgumentException ignored) {
-                // A legacy profile can still identify its owner by name.
-            }
-        }
-        return NbtUtils.readGameProfile(tag);
     }
 
     @Override

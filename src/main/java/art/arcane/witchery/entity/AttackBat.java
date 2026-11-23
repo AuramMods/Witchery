@@ -2,6 +2,7 @@ package art.arcane.witchery.entity;
 
 import art.arcane.witchery.infusion.OtherwhereInfusion;
 import art.arcane.witchery.item.GlassGobletItem;
+import art.arcane.witchery.world.migration.LegacyGameProfiles;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -92,7 +93,7 @@ public final class AttackBat extends Bat {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        owner = tag.contains("Owner", Tag.TAG_COMPOUND) ? NbtUtils.readGameProfile(tag.getCompound("Owner")) : null;
+        owner = tag.contains("Owner", Tag.TAG_COMPOUND) ? LegacyGameProfiles.read(tag.getCompound("Owner")) : null;
         remainingTicks = tag.contains("SwarmTicks", Tag.TAG_ANY_NUMERIC) ? Mth.clamp(tag.getInt("SwarmTicks"), 1, LIFETIME) : LIFETIME;
     }
 }
