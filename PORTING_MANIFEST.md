@@ -1581,6 +1581,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 - `ModHookWaila` maps to the optional Jade plugin on Forge 1.20.1. It presents the original cover identities for trapped plants, Alder Doors, both pit blocks, the three illusions, and werevillagers. Rowan Doors use Jade's normal item lookup.
 - Right Click Harvest 4.6.1 and Quark 4.0-462 leave the wheat interaction to the held Mutating Sprig when all four cotton plants and all four diagonal water sources satisfy the original Wormwood pattern. Ordinary crop harvesting follows the installed mods' behavior for other clicks.
 - Psychedelicraft 1.20.1-port.4 skips its target modifier lookup when a mob still refers to a disconnected player. Forge has already invalidated that player's capability by the time the stale reference is ticked.
+- Ars Magica Legacy 1.5.0 and L2 Library 2.5.1 preserve Forge player capabilities while the player remains in the world. Their temporary capability lookups still restore invalidation after actual removal. This keeps Thaumaturge and Psychedelicraft state available when a player rejoins Auram before respawning.
 - `ModHookMorph`
 - `ModHookBaubles` uses the optional Curios inventory on Forge 1.20.1. The `witchery:vampire_mortality_accessories` item tag contains the three surviving Botania accessories. Botania removed the Ring of the Aesir. [Botania changelog](https://botaniamod.net/changelog.html)
 

@@ -16,6 +16,8 @@
 - [ ] Close the save migration coverage listed under Legacy Save Fixtures. Check original IDs, metadata, and specialized state along with saves from earlier 1.20.1 builds. Record which data each supported upgrade path preserves.
 - [ ] Run the final data generation, reobfuscated build and regression replay. Exercise that exact JAR on clean Forge and the copied Auram profile, including multiplayer state across death, reconnects, dimension travel and dedicated restarts. Record the tested build and downloadable artifact.
 - [x] Reproduce and address the Psychedelicraft disconnect crash in an isolated packaged server. A vanilla zombie triggered it with Witchery absent. With the compatibility fix installed, the server stayed online after disconnects while either a vanilla zombie or a Witchery Ent was attacking.
+- [x] Trace the invalidated capabilities on a dead Auram player's login. Restrict Ars Magica Legacy and L2 Library's lookup-time invalidation to removed entities. The copied server accepted the saved dead player and recorded both Thaumaturge and Psychedelicraft state capabilities present on login.
+- [ ] Verify the death screen, respawn, and saved inventory on the same packaged JAR on both sides of copied Auram.
 
 ## Witch's Oven Milestone (2026-11-19)
 
