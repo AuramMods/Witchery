@@ -1875,6 +1875,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Cook Birch Saplings in the Witch's Oven, distil two Tears of the Goddess, brew one Mutandis Extremis, and craft a Quartz Sphere. Reopen brewing after the copied workshop lost its table and cauldron. The player placed a replacement table, crafted Anointing Paste from saved seeds, and converted an ordinary cauldron.
 - [x] Brew Drop of Luck, harvest grown Belladonna, and use the Arthana to collect Wool of Bat and Tongue of Dog. Brew and bottle Redstone Soup and Happenstance Oil. Use the oil with the Quartz Sphere and Obsidian to make the Seer Stone at night, then use the stone's reading interaction. The fixture supplied ordinary inputs, positioned missed offerings, and supplied the vanilla creatures for the Arthana hunt.
 - [x] Tame the untamed cat saved in the same world using cod. Plant Dandelions to raise the altar above 8,000 power, draw the medium white ring, and bind Fishbone with the five original offerings and the Seer Stone. The fixture positioned the cat for feeding, then restored its ordinary AI before binding. The flushed save retains the summon flag, owner, and one Infernal Blood for the Imp.
+- [x] Meet a naturally generated coven witch in the same Auram world after binding the familiar. Cathy Grimsby offered a quest for one Demon Heart to the survival player.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.
