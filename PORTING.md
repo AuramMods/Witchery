@@ -1888,6 +1888,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Reopen the Torment checkpoint on the same packaged JAR on both sides of the copied Auram profile. Rejoin in Overworld Survival and verify all four spells, Botis's owner and gift counter, Cathy, Fishbone's dismissed record, the two books, one Demon Heart and 101 infusion charges. The client ran muted and its window remained unfocused.
 - [x] Distil a new Tear of the Goddess from Oven fume, recover stored Gypsum and Hollow Tears, and craft fresh Ritual Chalk. Draw the medium white ring. Consume a Demon from the earlier summons with the saved Hollow Tears, supplied gold and glass, then mount the resulting Mirror. The fixture positioned the Demon and missed offerings.
 - [x] Enter the new linked chamber, respawn after a combat death, and reenter. Win the 100-health Reflection fight with Arthana hits and collect its Demon Heart. Return through the linked exit and verify the defeated state on both frames. The fixture positioned the player and applied instant healing during the later fight. The returned player had two Demon Hearts including the Torment reward.
+- [x] Restart the copied Auram dedicated server with the brew projectile build. Both frames still carry the same connection UUID, reciprocal dimension and coordinate records, and the defeated flag. The server resolved all 55 original entity IDs.
 
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.
@@ -2031,64 +2032,22 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Enumerate high-impact registries (rites, brews, potions, predictions, creature powers, packets, dimensions, integrations).
 - [x] Capture findings in manifest + memory docs.
 
-### Phase 1 - 1.20 Registration Skeleton (breadth)
-- [x] Create `DeferredRegister` structure for blocks.
-- [x] Create `DeferredRegister` structure for items.
-- [x] Create `DeferredRegister` structure for fluids + fluid types.
-- [x] Create `DeferredRegister` structure for block entities.
-- [x] Create `DeferredRegister` structure for entity types.
-- [x] Create `DeferredRegister` structure for menu types.
-- [x] Create `DeferredRegister` structure for mob effects (potions/effects).
-- [x] Create creative mode tab wiring.
-- [x] Register placeholder instances for every legacy registry entry (names first, behavior later).
+### Phase 1 - Forge Registrations
+- [x] Register blocks, items, fluids, fluid types, block entities, menus, effects and the creative tab through Forge.
+- [x] Register the 55 original entity IDs with gameplay entities and save-compatible IDs. The old fixed and custom brew IDs load through the real projectile class.
+- [ ] Review the retained compatibility registrations and player-visible creative items against the original inventory.
 
-### Phase 2 - Data + Assets Skeleton (breadth)
-- [x] Add placeholder blockstates/models/lang entries for all registered blocks/items.
-- [x] Add minimal data-gen providers (loot, recipes, tags).
-  - `WitcheryBlockTagsProvider` (`legacy_blocks`), `WitcheryLootTableProvider`/`WitcheryBlockLoot` (self-drop scaffolding), and `WitcheryRecipeProvider` stub are registered via `WitcheryDataGenerators`.
-- [x] Add placeholder spawn egg / bucket items where needed.
-  - bucket scaffolding is wired for legacy fluid buckets (`bucketspirit`, `buckethollowtears`, `bucketbrew`).
-  - placeholder spawn eggs are generated from legacy entity IDs using the `*_spawn_egg` naming pattern.
-- [~] Ensure game boots with full registry surface present.
-  - All static resource checks pass (no missing model parent/texture references).
-  - Fresh client run verified: no Witchery model/texture bake errors after latest `icedoor`/`wolftrap` asset fixes.
-  - Fresh client launch smoke run after `plantmine` fix no longer reports `IllegalStateException: witchery:plantmine has a collision shape and an offset type`.
+### Phase 2 - Data and Assets
+- [x] Run Java 17 loot, recipe and tag generation and reobfuscate the JAR.
+- [x] Load packaged clean Forge and the copied Auram client and dedicated server. The milestones above record model, animation, sound, menu and particle checks.
+- [ ] Review the original model, texture and sound inventory against the final package, including the less common block states and entity poses.
 
-### Phase 3 - Systems Migration Skeleton (breadth)
-- [x] Network channel + packet stubs (all legacy packet message intents represented).
-  - typed no-payload packet records are now registered for all `19` legacy intents.
-  - codec-backed payload/handler scaffolding is now implemented for:
-    - `player_sync`, `extended_player_sync`, `partial_extended_player_sync`
-    - `item_update`, `sync_entity_size`, `set_client_player_facing`
-    - `cam_pos`, `push_target`, `sound`
-    - `particles`, `player_style`, `spell_prepared`, `sync_markup_book`
-  - explicit no-payload codec records + handlers are now in place for:
-    - `clear_fall_damage`, `howl`
-  - serverbound handler scaffold now applies minimal runtime behavior:
-    - clears fall distance for `clear_fall_damage`.
-    - applies stack NBT mutations for item/book sync intents (`CurrentPage`, `pageStack`) and stages item/spell/book/howl updates into `WitcheryPlayerData`.
-  - clientbound handler scaffold now applies minimal runtime behavior:
-    - `particles` spawns local particles/sound via legacy-aware id mapping (`ParticleEffect`/`SoundEffect`) with effect-count scaling + colored spell support.
-    - `player_sync`, `extended_player_sync`, and `partial_extended_player_sync` now hydrate staged client capability fields from serialized `WitcheryPlayerData` snapshots with stale-revision guards (plus persistent-tag mirrors for sync/style state).
-    - `player_style` applies staged style sync to target player capability/persistent tags on client.
-    - `sound`, `push_target`, `set_client_player_facing`, and `sync_entity_size` now route through client packet handlers with first-pass scaffold behavior.
-    - `cam_pos` now routes through client packet handlers using `WitcheryClientCameraState` plus `WitcheryClientCameraHooks` (client tick camera-entity override scaffold) instead of temporary player persistent-tag staging.
-- [~] GUI/menu stubs for all legacy GUI IDs.
-  - menu intents now preserve legacy GUI ID mapping (`0..8`) plus key name in `LegacyRegistryData`.
-  - The Altar, Witch's Oven, Distillery, Spinning Wheel, Brew Bag, and Leonard's Urn use dedicated menus. The guidebooks, atlas, and vampire journal open client screens through their held items.
-- [~] Dimension/key migration for Dream/Torment/Mirror.
-  - resource keys are scaffolded (`Level`, `LevelStem`, `DimensionType`) for `dream`, `torment`, and `mirror`.
-  - datapack `dimension_type` + `dimension` JSON scaffolding is now present for all three dimensions.
-  - `WitcheryEventHooks` processes dimension travel requests on the server tick, with `WitcheryDimensionTravelHooks` observing Forge dimension changes.
-  - Dream uses the sleeping brew, body and separate inventories through `DreamTravel`. The Rite of Manifestation and snow-frame Spirit Portal allow a time-limited visit to the Overworld while the body remains asleep. The Dream has the three atmosphere variants and the demonic hazards.
-  - The Mirror uses two-block frames, stacked chambers, and Reflection encounters through `MirrorTravel`. `TormentTravel` uses generated maze entrances and exits, with a separate intact layout for upgraded Nether-like Torment saves.
-- [~] Event bus hooks migrated with no-op or minimal behavior.
-  - placeholder Forge-bus hooks are in place for attach-capabilities, player login/clone, player tick, player right-click block, entity travel-to-dimension, player changed-dimension, and level load events.
-  - attach-capabilities/player-clone hooks now include capability provider wiring for player data scaffold.
-  - real handler routing/feature logic is still TODO.
-- [~] Capability/data attachment plan for replacing `ExtendedPlayer`/custom NBT patterns.
-  - `WitcheryPlayerData` + provider + capability registration scaffolding is in place.
-  - migration of legacy fields/logic from `ExtendedPlayer` remains TODO.
+### Phase 3 - Runtime Systems
+- [x] Restore the playable Forge menus for the Altar, Witch's Oven, Distillery, Spinning Wheel, Brew Bag and Leonard's Urn. Held guidebooks, the atlas and the markup book open their corresponding client screens.
+- [ ] Review the three legacy book container registrations and their obsolete placeholder screen. Verify the actual book entry points, saved pages and inventory behavior.
+- [x] Register Dream, Torment and Mirror under their modern keys. Verify sleep and waking, the six Torment mazes and their exit, and the Mirror's linked chambers against the progression and migration milestones above.
+- [x] Attach and clone Witchery player data through Forge and sync gameplay state on load, respawn and dimension changes. Dedicated milestones cover infusion, coven, familiar, vampire, werewolf and Mirror state.
+- [ ] Audit the original extended player fields and packet intents against current gameplay. Include the book update, howl, camera and size paths in the remaining multiplayer checks.
 
 ### Phase 4 - Feature Behavior Pass (depth)
 - [ ] Blocks/tile entity behavior parity pass.
@@ -2106,44 +2065,5 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [ ] Test matrix + release checklist.
 
 ## Immediate Next Actions
-- [x] Add placeholder bucket/block hookups for fluids (if needed for world interaction/testing).
-- [x] Add placeholder block items for non-itemized legacy blocks where useful for QA visibility.
-  - `WitcheryItems.registerLegacyBlockItem(...)` now auto-registers block items for legacy block IDs that do not already map to dedicated item placeholders.
-- [x] Re-run client and validate `run/logs/latest.log` after the lowercase resource-location fix.
-- [x] Re-run client and validate `run/logs/latest.log` after `icedoor` parent-model and `wolftrap` geometry parity fixes.
-- [~] Continue replacing placeholder block models with old 1.7 equivalents (breadth pass before behavior depth).
-- [ ] Run fresh client launch smoke and scan `run/logs/latest.log` for:
-  - spawn egg model resolution errors (`*_spawn_egg` model lookups).
-  - block-model missing texture warnings for the remapped set (`tormentstone`, `refillingchest`, `brewliquid`, `mirrorblock*`, `wolftrap`, `trent`, `scarecrow`).
-- [x] Verify fetish rotation and tint against `RenderFetish`. The original Witch's Ladder uses crossed quads. Its projected form keeps the same opaque texture pixels as the ordinary block.
-- [ ] Run targeted multiplayer/client validation for expanded player sync payload snapshots (`login`, `clone`, `item_update`, `sync_markup_book`, `howl`).
-  - completed crop-family stage model parity pass.
-  - completed structural families (stairs/slabs/fence/fence-gate/pressure-plate/button) with 1.20.1 state models.
-  - completed broad non-cube decorative/functional pass; remaining full-cube placeholders now narrowed to 14 likely-intentional cube blocks.
-  - next breadth target: metadata/state parity for remaining multi-variant legacy cubes (`witchwood`, `witchleaves`, `wickerbundle`, `wallgen`) and orientation/state behavior where legacy used TESR/custom renderers.
-- [ ] Keep this file updated as phases move from breadth to depth.
-  - fixed plant-style solidity/culling mismatch (example: blood rose):
-    - added non-occluding bounded block scaffolds for plant-like legacy blocks so they no longer behave as full cubes.
-    - converted `bloodrose`, `glintweed`, `embermoss`, `crittersnare`, `plantmine` to `minecraft:block/cross` models.
-    - moved `witchsapling` to a dedicated non-colliding variant block scaffold (`wood_type` still preserved).
-  - added client render-layer registration (`cutout`/`cutoutMipped`/`translucent`) for transparent/cross assets to avoid opaque/full-block visual artifacts:
-    - file: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/client/WitcheryClient.java`
-  - completed broad non-opaque shape parity pass for legacy decorative/special blocks:
-    - extended `WitcheryBlocks` mapping to non-occluding/custom-shape scaffolds for high-impact IDs that were still default full cubes (`demonheart`, `wolfhead`, `alluringskull`, `chalice`, `candelabra`, `brazier`, `crystalball`, `placeditem`, `garlicgarland`, `dreamcatcher`, `poppetshelf`, `silvervat`, `daylightcollector`, `bloodcrucible`, `mirrorblock*`, `circle*`, `beartrap`, `wolftrap`, plus fluid/portal placeholders).
-    - added shape-aware horizontal scaffold support for machine/chest-style blocks so existing `facing` blockstates now use non-full bounding where legacy blocks were not full cubes.
-    - restored the Stockade family with legacy post geometry, connections, crafting variants, and contact damage.
-  - expanded client render-layer coverage to include additional alpha-heavy decorative blocks and portal/fluid-style placeholders (cutout + translucent groups).
-  - migrated legacy fluid-like block IDs to true fluid scaffolds:
-    - `spiritflowing`, `hollowtears`, `disease`, `brew`, `brewgas`, `brewliquid` now use `LiquidBlock` tied to `WitcheryFluids` source fluids.
-    - bucket items `bucketspirit`, `buckethollowtears`, `bucketbrew` now register as `BucketItem` instead of generic items.
-  - upgraded GUI placeholder surface to legacy-ID aware menu/screen scaffolds:
-    - `WitcheryMenus` now registers `LegacyPlaceholderMenu` entries keyed from `LegacyRegistryData.LegacyMenuIntent`.
-    - `WitcheryClient` now registers `LegacyPlaceholderScreen` for all menu placeholders.
-    - this keeps every legacy GUI ID wired while container/screen behavior is still breadth-level placeholder logic.
-  - look-ahead queue for next operations:
-    - replace remaining temporary mirror right-click routing with rite-completion activation hooks.
-    - harden camera override lifecycle in `WitcheryClientCameraHooks` for edge cases (dimension swap, target despawn timeout, spectator transitions).
-    - audit other custom-shape blocks that copy offset-style vanilla properties to ensure collision-enabled variants stay `dynamicShape`-safe.
-    - extend client sync handling beyond revision/initialized to include fuller staged groups as payload coverage grows (style/inventory/spell slices).
-    - expand `WitcheryPlayerData` fields toward legacy `ExtendedPlayer` coverage (inventory/state/effect sync groups).
-  - validation: `./gradlew compileJava` succeeds after this pass.
+
+The active progression, migration and release checks are listed under [Remaining Release Verification](#remaining-release-verification-2026-11-22).
