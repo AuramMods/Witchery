@@ -12,12 +12,10 @@ import art.arcane.witchery.item.PlayerCompassItem;
 import art.arcane.witchery.client.screen.AltarScreen;
 import art.arcane.witchery.client.screen.BrewBagScreen;
 import art.arcane.witchery.client.screen.DistilleryScreen;
-import art.arcane.witchery.client.screen.LegacyPlaceholderScreen;
 import art.arcane.witchery.client.screen.SpinningWheelScreen;
 import art.arcane.witchery.client.screen.WitchesOvenScreen;
 import art.arcane.witchery.client.screen.LeonardsUrnScreen;
 import art.arcane.witchery.item.LeonardsUrnItem;
-import art.arcane.witchery.menu.LegacyPlaceholderMenu;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.BrambleBlock;
@@ -163,7 +161,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
@@ -171,7 +168,6 @@ import net.minecraftforge.client.event.RegisterDimensionSpecialEffectsEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 @Mod.EventBusSubscriber(modid = Witchery.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -418,9 +414,6 @@ public final class WitcheryClient {
             ItemProperties.register(WitcheryItems.getRequired("leonardsurn").get(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "urn_tier"),
                     (stack, level, entity, seed) -> LeonardsUrnItem.tier(stack));
-            for (RegistryObject<MenuType<LegacyPlaceholderMenu>> menuType : WitcheryMenus.placeholders().values()) {
-                MenuScreens.register(menuType.get(), LegacyPlaceholderScreen::new);
-            }
             for (String name : new String[]{"witchsapling", "witchleaves", "witchlog", "witchwood", "witchwoodslab", "witchwooddoubleslab"}) {
                 ItemProperties.register(WitcheryBlocks.getRequired(name).get().asItem(), WOOD_TYPE_MODEL,
                         (stack, level, entity, seed) -> WitchWoodType.fromStack(stack).ordinal());

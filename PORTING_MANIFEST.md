@@ -1408,30 +1408,20 @@ Sources:
 | 8 | `ContainerLeonardsUrn` | `ItemLeonardsUrnGUI` |
 
 ### 1.20.1 Forge Menus and Book Screens
-Implementation anchors:
-- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/LegacyRegistryData.java`
-- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryMenus.java`
-- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/menu/LegacyPlaceholderMenu.java`
-- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/client/screen/LegacyPlaceholderScreen.java`
-- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/client/WitcheryClient.java`
 
-Current scaffold behavior:
-- menu metadata now tracks both legacy GUI ID and normalized menu key (`LegacyMenuIntent`).
-- every legacy GUI entry (`0..8`) registers a dedicated menu type keyed to its legacy menu name.
-- The altar, oven, distillery, spinning wheel, Brew Bag, and Leonard's Urn have working Forge menus and screens. Guide volumes and the atlas open the guide screen through the held book packet. Atlas Contents includes the original family order. The held vampire journal opens its reader with sequential navigation and a return to the cover.
+The six container menus are registered in `WitcheryMenus` and bound to their screens in `WitcheryClient`. The original three book GUI IDs opened client readers from held items. Guide volumes and the atlas use the held book packet to open `GuideBookScreen`. The vampire journal opens `VampireBookScreen` from the held item. Page and atlas-selection data live on those items and use bookmark packets. The earlier port's three unused book menu types were removed.
 
-ID mapping used by scaffold:
-| Legacy GUI ID | Key | Menu Type ID |
-|---:|---|---|
-| 0 | `altar` | `witchery:altar` |
-| 1 | `witchcraft_book` | `witchery:witchcraft_book` |
-| 2 | `witches_oven` | `witchery:witches_oven` |
-| 3 | `distillery` | `witchery:distillery` |
-| 4 | `spinning_wheel` | `witchery:spinning_wheel` |
-| 5 | `brew_bag` | `witchery:brew_bag` (eight slots backed by the held bag) |
-| 6 | `biome_book` | `witchery:biome_book` |
-| 7 | `markup_book` | `witchery:markup_book` |
-| 8 | `leonards_urn` | `witchery:leonards_urn` (original layout backed by item inventory) |
+| Legacy GUI ID | Forge menu or client screen |
+|---:|---|
+| 0 | `witchery:altar` |
+| 1 | `GuideBookScreen` for guide volumes |
+| 2 | `witchery:witches_oven` |
+| 3 | `witchery:distillery` |
+| 4 | `witchery:spinning_wheel` |
+| 5 | `witchery:brew_bag` with eight slots backed by the held bag |
+| 6 | `GuideBookScreen` for the atlas |
+| 7 | `VampireBookScreen` for the vampire journal |
+| 8 | `witchery:leonards_urn` with the original layout backed by the held urn |
 
 ## Dimensions
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/Witchery.java`
