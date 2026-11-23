@@ -5,8 +5,8 @@ import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.mixin.SinglePoolElementAccessor;
 import art.arcane.witchery.mixin.StructureTemplatePoolAccessor;
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.pools.LegacySinglePoolElement;
@@ -36,6 +36,7 @@ public final class WitcheryVillagePools {
     public static final ResourceLocation WATCHTOWER = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "village/watchtower");
     private static final int MAX_POOL_ENTRY_WEIGHT = 150;
     private static final List<String> VILLAGE_STYLES = List.of("plains", "desert", "savanna", "snowy", "taiga");
+    private static final List<String> TREK_ADDITIONAL_STYLES = List.of("swamp_vanilla", "cherry");
 
     private WitcheryVillagePools() {}
 
@@ -44,40 +45,52 @@ public final class WitcheryVillagePools {
         var registries = event.getServer().registryAccess();
         var pools = registries.registryOrThrow(Registries.TEMPLATE_POOL);
         var processors = registries.registryOrThrow(Registries.PROCESSOR_LIST);
-        if (WitcheryServerConfig.GENERATE_BOOK_SHOPS.get()) addVillagePiece(pools, processors, BOOKSHOP, 15);
-        if (WitcheryServerConfig.GENERATE_APOTHECARIES.get()) addVillagePiece(pools, processors, APOTHECARY, 15);
-        if (WitcheryServerConfig.GENERATE_WITCH_HUTS.get()) addVillagePiece(pools, processors, WITCH_HUT, 10);
+        var vanilla = housePools(pools, ResourceLocation.DEFAULT_NAMESPACE, VILLAGE_STYLES);
+        var houses = new ArrayList<>(vanilla);
+        houses.addAll(housePools(pools, "trek", VILLAGE_STYLES));
+        houses.addAll(housePools(pools, "trek", TREK_ADDITIONAL_STYLES));
+        if (WitcheryServerConfig.GENERATE_BOOK_SHOPS.get()) addVillagePiece(houses, processors, BOOKSHOP, 15);
+        if (WitcheryServerConfig.GENERATE_APOTHECARIES.get()) addVillagePiece(houses, processors, APOTHECARY, 15);
+        if (WitcheryServerConfig.GENERATE_WITCH_HUTS.get()) addVillagePiece(houses, processors, WITCH_HUT, 10);
         if (WitcheryServerConfig.TOWN_WALL_MODE.get() > 0) {
-            addVillagePiece(pools, processors, WALL_ANCHOR, WitcheryServerConfig.TOWN_WALL_WEIGHT.get());
+            addVillagePiece(houses, processors, WALL_ANCHOR, WitcheryServerConfig.TOWN_WALL_WEIGHT.get());
         }
         if (WitcheryServerConfig.TOWN_KEEP_MODE.get() > 0) {
-            addVillagePiece(pools, processors, KEEP, WitcheryServerConfig.TOWN_KEEP_WEIGHT.get(), 1, true);
+            addVillagePiece(houses, processors, KEEP, WitcheryServerConfig.TOWN_KEEP_WEIGHT.get(), 1, true);
         }
-        addVillagePiece(pools, processors, WATCHTOWER, WitcheryServerConfig.TOWN_GUARD_TOWER_CLUSTER_WEIGHT.get(),
+        addVillagePiece(houses, processors, WATCHTOWER, WitcheryServerConfig.TOWN_GUARD_TOWER_CLUSTER_WEIGHT.get(),
                 WitcheryServerConfig.TOWN_GUARD_TOWER_CLUSTER_GROUPS.get(), true);
-        for (String style : VILLAGE_STYLES) {
-            var poolId = ResourceLocation.withDefaultNamespace("village/" + style + "/houses");
-            pools.getOptional(poolId).ifPresent(pool -> addVanillaClusters(pool, style));
+        for (var village : vanilla) addVanillaClusters(village.pool(), village.style());
+    }
+
+    private static List<VillageHouses> housePools(Registry<StructureTemplatePool> pools, String namespace, List<String> styles) {
+        var houses = new ArrayList<VillageHouses>();
+        for (String style : styles) {
+            var poolId = ResourceLocation.fromNamespaceAndPath(namespace, "village/" + style + "/houses");
+            pools.getOptional(poolId).ifPresent(pool -> houses.add(new VillageHouses(style, pool)));
         }
+        return houses;
     }
 
-    private static void addVillagePiece(Registry<StructureTemplatePool> pools, Registry<StructureProcessorList> processors,
+    private static void addVillagePiece(List<VillageHouses> houses, Registry<StructureProcessorList> processors,
             ResourceLocation template, int weight) {
-        addVillagePiece(pools, processors, template, weight, 1, false);
+        addVillagePiece(houses, processors, template, weight, 1, false);
     }
 
-    private static void addVillagePiece(Registry<StructureTemplatePool> pools, Registry<StructureProcessorList> processors,
+    private static void addVillagePiece(List<VillageHouses> houses, Registry<StructureProcessorList> processors,
             ResourceLocation template, int weight, int groups, boolean usesDistrictPalette) {
         if (weight == 0 || groups == 0) return;
-        for (String style : VILLAGE_STYLES) {
-            var poolId = ResourceLocation.withDefaultNamespace("village/" + style + "/houses");
+        for (var village : houses) {
+            String style = village.style();
             var processorId = usesDistrictPalette && (style.equals("desert") || style.equals("snowy"))
                     ? template.withSuffix("_" + style) : template;
             var processorList = processors.getHolderOrThrow(ResourceKey.create(Registries.PROCESSOR_LIST, processorId));
             var element = StructurePoolElement.single(template.toString(), processorList);
-            pools.getOptional(poolId).ifPresent(pool -> addPieces(pool, template, element, weight, groups));
+            addPieces(village.pool(), template, element, weight, groups);
         }
     }
+
+    private record VillageHouses(String style, StructureTemplatePool pool) {}
 
     private static void addPieces(StructureTemplatePool pool, ResourceLocation template,
             Function<StructureTemplatePool.Projection, ? extends StructurePoolElement> createElement,

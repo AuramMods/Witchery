@@ -728,6 +728,8 @@
 - [x] Restore the resident's skin, all eight trades and the original limit of seven uses per offer. The birch shelf provides a dedicated modern workstation so the resident can claim a job site and restock using vanilla villager AI. Residents have all eight offers at spawn. Villagers who claim a spare shelf learn the offers through normal profession levels.
 - [x] Verify the generated merchant and chest in muted survival. The player bought 14 Dog Tongues in seven purchases and used an iron pickaxe to uncover and open the chest. The merchant restocked at its shelf. Java 17 data generation, JAR reobfuscation, and all four focused apothecary and bookshop GameTests passed.
 - [x] Restart the dedicated server and rejoin with the packaged client. Verify the same resident UUID, workstation, eight trades, restocked offer, chest inventory, and player purchase.
+- [x] Add Witchery's six village buildings to the seven Trek house pools used by Auram. On packaged Forge with Auram's Trek B0.6 datapack, a fresh Plains village at `1056 2336` generated an Apothecary, a Bookshop, a Keep, three Watchtowers, and a saved wall. Disabling Apothecaries left a Bookshop, Keep, Watchtower, and a Coven Witch Hut at the same seed and village start.
+- [x] Restart the Trek village and trade with the same Apothecary in muted background survival. Three purchases used twelve supplied emeralds. The saved player retained all three Spectral Dust, and the saved resident retained its original UUID and eight offers.
 
 ## Village Witch Hut (2026-11-21)
 
@@ -1915,7 +1917,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Replant the harvested seeds and collect the 15 Wormwood leaves needed for the Brazier batches. The survival player used the saved Fortune III hoe, and the fixture supplied bone meal and prepared irrigated farmland. The saved inventory has 15 leaves and 27 seeds.
 - [ ] Collect ten Spectral Dust for Graveyard Dust. On the first hunt, the player attacked naturally spawned undead with the saved enchanted Arthana. Some fell from the raised terrain before the player could collect drops. A retry in a contained arena stopped when the copied server's watchdog detected a 60-second tick. The crash snapshot preserved the Wormwood stock and the Arthana. The fixture restored the saved mob-spawn rule for the restart.
 - [x] Recover the copied Auram server after a second watchdog shutdown during MEGA Cells recipe initialization. The copy now uses a 180-second watchdog window and ordinary Java 17 tiered compilation. The server completed its startup, and the same background client rejoined on its second attempt after the first Forge handshake disconnected. The saved Overworld region contains an original skeleton and zombie spawner beside each other at Y63.
-- [ ] Verify a newly generated Apothecary in Auram's Trek villages and use its merchant offers in survival. The saved Overworld contains a Trek Plains village. Its roads use a separate house pool from vanilla, and Witchery currently only adds its houses to the vanilla pools.
+- [x] Recover the stored Flowing Spirit and produce the first Condensed Fear and Focused Will for Death. The muted survival player used the ordinary Respawn button, moved excess gear to the fixture chest, crafted Quicklime from saved Wood Ash, and distilled it with saved Foul Fume for Oil of Vitriol. The saved bottle and Oil yielded both spirit reagents. The fixture supplied positioning and protective effects.
 
 ## JEI Machine Recipe Views (2026-11-22)
 

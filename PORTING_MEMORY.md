@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Trek Village Buildings and First Death Reagents (2026-11-22)
+
+- The seven village styles used by Auram's Trek B0.6 datapack now offer the existing Witchery buildings through their own house pools and the shared entrance connector. The packaged seed-1 Plains village at `1056 2336` had a Bookshop, an Apothecary, a Keep, three Watchtowers, and one saved wall plan. With Apothecaries disabled, the same village start generated a Bookshop, a Keep, a Watchtower, and a Coven Witch Hut. Both profiles used the exact copied Trek datapack.
+- The muted background client returned to the same resident UUID across dedicated restarts. Its saved player bought three Spectral Dust for twelve supplied emeralds through the merchant menu. The resident retained its eight offers and restocked between the second and third purchases. The validation fixture reads the saved purchases and inventory to account for this restock. The audio device was No Output, with zero master volume and no focus activation. Java 17 data generation, reobfuscation, and all 147 GameTests passed. Exact JAR SHA-256 is `d7807367af9c49007a30229a48d170b64863c1ec9ad8ccf3f71cd402b599489b`. See `trek-villages-qa` under `/tmp/witchery-flowing-spirit-current`.
+- The continuous Auram player respawned with the saved inventory, stored excess supplies in a new fixture chest, and made Quicklime from earned Wood Ash. The Distillery produced Oil of Vitriol from the saved Foul Fume and Quicklime. The player then distilled the earlier Flowing Spirit, collected one Condensed Fear and one Focused Will, and flushed the save. See `auram-death-spirit-distill-storage.log` under the scratch pointer.
+
 ## Nature's Power Terrain and Auram Watchdog Recovery (2026-11-22)
 
 - The `naturesPowerReplaceableBlocks` server setting restores the original configurable ground. It defaults to mycelium and accepts modern block IDs, exact modern states and flattened legacy names or metadata. The existing `witchery:natures_power_replaceable` datapack tag supplies base terrain. Mycelium now comes from the server list, so a datapack that formerly removed it can remove it from that list. Mutandis shares the existing state parser.
