@@ -792,6 +792,8 @@ Implementation anchor:
 
 The 32 original eggs use their original colors and `<normalized_entity_name>_spawn_egg` IDs. They appear in the Witchery creative tab and resolve the legacy numeric spawn egg metadata during world import. The older port's extra egg IDs stay in the Forge item registry for saves and are omitted from the Witchery tab.
 
+Each original egg has a localized name. Older item-only projectile eggs display as legacy spawn eggs in saved inventories. The functional `broom_spawn_egg` item shares the Enchanted Broom's name and still places the rideable broom.
+
 The creative tab follows the original visibility rules for the registered crop blocks, burning machine states, liquids, and technical placements. Player-facing items such as seeds, chalk, the mirror, and the coffin remain available. The original FML fixture's 121 block names and 217 item names all have modern registrations. Specialized state and subtype verification is tracked under Legacy Save Fixtures in the porting plan.
 
 Examples:

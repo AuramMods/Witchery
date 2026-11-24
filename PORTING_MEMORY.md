@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Registry Names, Subtitles, and JEI Localization (2026-11-23)
+
+- English, German, Spanish, Russian, and Simplified Chinese now share 1,414 language keys. This pass fills the remaining 246 keys that previously fell back to English and adds 51 keys that the registries requested even in English. Eighteen of the latter are original spawn eggs in the creative tab. Registered compatibility eggs have readable names. The older functional broom item displays as an Enchanted Broom.
+- The client resolved the names of 122 blocks and 56 entities and the default tooltips for 441 registered items and 436 Witchery creative stacks. Held samples included a colored Shaded Glass block, a bound Taglock Kit, armor, a grenade, and original and older egg IDs. The client resolved and formatted all 1,414 keys and loaded all 46 configured sound subtitles in each language.
+- JEI 15.20.0.129 exposed all five machines and 102 recipe layouts. Every recipe note fit its category after client font wrapping in each language. The oven displayed its actual 30% fume chance with one percent sign, and the client opened the Kettle recipe screen in German and Simplified Chinese.
+- Local Java 17 data generation, reobfuscation, and all 163 Forge GameTests passed. The standalone Forge client and dedicated server with JEI used SHA-256 `9857fd4d9e8fd0142308f438e358fd72b772fa7810fbaddb1285604343dae3b5`. The client stayed hidden with zero master volume and OpenAL No Output, and its process never took focus. The logs and recipe captures are in `build/qa-registry-locales`.
+
 ## Gameplay Message Localization (2026-11-23)
 
 - German, Spanish, Russian, and Simplified Chinese now cover all 235 gameplay message keys in the English resource. This pass fills the remaining rite, Wolf Altar, coven, Seer Stone, Mirror, and vampire messages and adds spell names, prediction notices, death messages, and several matching item and entity labels. The final Wolf Altar trial now distinguishes the initial target from the number remaining in English and all four translations.
