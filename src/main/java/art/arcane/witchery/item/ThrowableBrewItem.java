@@ -13,8 +13,6 @@ import net.minecraft.world.phys.HitResult;
 import java.util.function.BiConsumer;
 
 public final class ThrowableBrewItem extends Item {
-    public static final float THROW_SPEED = 0.5F;
-
     private final BiConsumer<ThrownBrew, HitResult> effect;
 
     public ThrowableBrewItem(BiConsumer<ThrownBrew, HitResult> effect) {
@@ -29,7 +27,7 @@ public final class ThrowableBrewItem extends Item {
 
     static InteractionResultHolder<ItemStack> throwFromHand(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (level instanceof ServerLevel server && !ThrownBrew.throwBottle(server, player, stack, THROW_SPEED)) {
+        if (level instanceof ServerLevel server && !ThrownBrew.throwBottle(server, player, stack)) {
             return InteractionResultHolder.fail(stack);
         }
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);

@@ -94,27 +94,38 @@ public final class ThrownBrew extends ThrowableItemProjectile {
         var brew = new ThrownBrew(caster, level);
         brew.setItem(bottle);
         brew.setNoGravity(true);
-        float yaw = caster.getYRot() * Mth.DEG_TO_RAD;
-        brew.setPos(brew.position().add(-Mth.cos(yaw) * 0.16F, 0, -Mth.sin(yaw) * 0.16F));
-
         // The original constructor chose the ordinary brew speed before setting its spell flag.
-        double spread = 0.0075F;
-        Vec3 motion = caster.getLookAngle().normalize().add(brew.random.nextGaussian() * spread,
-                brew.random.nextGaussian() * spread, brew.random.nextGaussian() * spread).scale(0.75);
-        brew.lerpMotion(motion.x, motion.y, motion.z);
+        brew.launchFromPlayer(caster, 0, 0.75F);
         return brew;
     }
 
-    public static boolean throwBottle(ServerLevel level, Player player, ItemStack stack, float speed) {
+    public static boolean throwBottle(ServerLevel level, Player player, ItemStack stack) {
         var brew = new ThrownBrew(player, level);
         brew.setItem(stack);
-        brew.shootFromRotation(player, player.getXRot(), player.getYRot(), -20, speed, 1);
+        // The original fixed-brew entity launched before assigning the ingredient subtype.
+        if (stack.getItem() instanceof BrewBottleItem) brew.launchFromPlayer(player, -20, 0.75F);
+        else brew.launchFromPlayer(player, 0, 1.5F);
         if (!level.addFreshEntity(brew)) return false;
         level.playSound(null, player, SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 0.5F,
                 0.4F / (level.random.nextFloat() * 0.4F + 0.8F));
         player.awardStat(Stats.ITEM_USED.get(stack.getItem()));
         if (!player.getAbilities().instabuild) stack.shrink(1);
         return true;
+    }
+
+    private void launchFromPlayer(Player player, float pitchOffset, float speed) {
+        float yaw = player.getYRot() * Mth.DEG_TO_RAD;
+        float pitch = player.getXRot();
+        float sinYaw = Mth.sin(yaw);
+        float cosYaw = Mth.cos(yaw);
+        setPos(position().add(-cosYaw * 0.16F, 0, -sinYaw * 0.16F));
+
+        float horizontal = Mth.cos(pitch * Mth.DEG_TO_RAD);
+        Vec3 aim = new Vec3(-sinYaw * horizontal, -Mth.sin((pitch + pitchOffset) * Mth.DEG_TO_RAD), cosYaw * horizontal);
+        double spread = 0.0075F;
+        Vec3 motion = aim.normalize().add(random.nextGaussian() * spread,
+                random.nextGaussian() * spread, random.nextGaussian() * spread).scale(speed);
+        lerpMotion(motion.x, motion.y, motion.z);
     }
 
     @Override
@@ -124,9 +135,10 @@ public final class ThrownBrew extends ThrowableItemProjectile {
             return;
         }
         super.tick();
-        if (isNoGravity() && level() instanceof ServerLevel level) {
-            if (tickCount >= 200) discard();
-            else if (!isRemoved()) {
+        if (level() instanceof ServerLevel level) {
+            boolean spell = isNoGravity();
+            if (tickCount >= 200 && (spell || getItem().getItem() instanceof BrewBottleItem)) discard();
+            else if (spell && !isRemoved()) {
                 int color = BrewBottleItem.color(getItem());
                 var options = new net.minecraft.core.particles.DustParticleOptions(
                         net.minecraft.world.phys.Vec3.fromRGB24(color).toVector3f(), 1);

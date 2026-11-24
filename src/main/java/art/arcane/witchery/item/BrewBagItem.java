@@ -135,8 +135,7 @@ public final class BrewBagItem extends Item {
         var contents = contents(stack);
         ItemStack brew = contents.get(index);
         if (!accepts(brew)) return;
-        float speed = brew.getItem() instanceof BrewBottleItem ? BrewBottleItem.THROW_SPEED : ThrowableBrewItem.THROW_SPEED;
-        if (ThrownBrew.throwBottle(server, player, brew, speed) && !player.getAbilities().instabuild) {
+        if (ThrownBrew.throwBottle(server, player, brew) && !player.getAbilities().instabuild) {
             saveContents(stack, contents);
             player.getInventory().setChanged();
         }

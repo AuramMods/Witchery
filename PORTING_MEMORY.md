@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Hand and Brew Bag Launches (2026-11-24)
+
+- The original fixed-brew entity launched before assigning its Ingredient subtype. The shipped server measured the fixed Brew of Webs at 1.494 blocks per tick and Quicklime at 1.501. Both started just beside and below the player's eyes and traveled along the aim with Gaussian spread. The custom Cauldron brew used the same origin and measured 0.752 blocks per tick with the upward pitch offset. [Witchery 0.24.1](https://www.curseforge.com/minecraft/mc-mods/witchery/files/2234410)
+- The port now shares that initial aim and offset across hand, Brew Bag and Urn launches. Cauldron bottles expire on the 200th air tick. The preceding code added the player's sideways movement to the hand throw and sent the fixed brew at roughly 0.5 blocks per tick with an upward offset from the Bag. The new GameTests exercise the normal hand use for Quicklime and both kinds of brew, and check the motion of all 24 original fixed brews selected from the Bag.
+- A muted, unfocused packaged survival client threw supplied fixed brews by hand and with the Brew Bag gesture. They launched at 1.495 blocks per tick and placed cobwebs. The Bag kept one serving. The supplied custom splash bottle launched at 0.755 with upward motion and placed Witchery Web. A headless restart retained all three impacts. Java 17 data generation, JAR reobfuscation and all 203 local Forge GameTests passed. Logs and the package are in `build/qa-player-brew-flight`. Package SHA-256 `b8289db0453ecea137f4419f7bd58dfb0384de4d1031922e77f0c4ea022b815f`.
+
 ## Leonard's Urn Spell Flight (2026-11-24)
 
 - The original 0.24.1 server's first Urn spell measured 0.756 blocks per tick with its Gaussian spread. The projectile started 0.16 blocks beside and 0.10 blocks below the caster's eyes, ignored caster movement, applied only air drag to vertical velocity, and expired on its 200th air tick. The constructor picked the launch speed before enabling the gravity-free spell flag. [Witchery 0.24.1](https://www.curseforge.com/minecraft/mc-mods/witchery/files/2234410)

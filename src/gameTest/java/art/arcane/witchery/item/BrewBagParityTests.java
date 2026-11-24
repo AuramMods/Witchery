@@ -1,6 +1,7 @@
 package art.arcane.witchery.item;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.brewing.BrewMixture;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.menu.BrewBagMenu;
 import art.arcane.witchery.registry.WitcheryItems;
@@ -9,8 +10,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
@@ -20,6 +23,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -79,6 +83,10 @@ public final class BrewBagParityTests {
 
                     helper.assertTrue(shots.size() == 1 && ItemStack.matches(shots.get(0).getItem(), single),
                             "The up gesture throws one matching " + ingredient + " projectile");
+                    float aim = 10 * Mth.DEG_TO_RAD;
+                    Vec3 motion = shots.get(0).getDeltaMovement();
+                    helper.assertTrue(motion.distanceTo(new Vec3(0, Mth.sin(aim), Mth.cos(aim)).scale(1.5)) < 0.085,
+                            "The bag throws the fixed brew along the player's final aim. Actual " + motion);
                     helper.assertTrue(ItemStack.matches(BrewBagItem.contents(reopened).get(0), single),
                             "The reopened bag retains one tagged serving of " + ingredient);
                     shots.remove(0).discard();
@@ -88,5 +96,62 @@ public final class BrewBagParityTests {
                 shots.forEach(ThrownBrew::discard);
             }
         }).thenSucceed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void handThrownBrewsUseTheOriginalLaunch(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "HandBrewFlight"));
+        player.setPos(Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(5, 16, 5))));
+        player.setDeltaMovement(2, 0, 0);
+        player.setYRot(0);
+        player.setXRot(0);
+
+        var ingredients = List.of(new ItemStack(Items.NETHER_WART), new ItemStack(Items.GUNPOWDER),
+                new ItemStack(WitcheryIngredient.WEB.item()));
+        var bottle = WitcheryItems.getRequired("brewbottle").get().getDefaultInstance();
+        bottle.setTag(BrewMixture.from(ingredients).bottleTag(ingredients));
+
+        var shots = new ArrayList<ThrownBrew>();
+        Consumer<EntityJoinLevelEvent> observe = event -> {
+            if (event.getLevel() == level && event.getEntity() instanceof ThrownBrew shot && shot.getOwner() == player) {
+                shots.add(shot);
+            }
+        };
+        MinecraftForge.EVENT_BUS.addListener(observe);
+        try {
+            for (var stack : List.of(new ItemStack(WitcheryIngredient.BREW_OF_WEBS.item()),
+                    new ItemStack(WitcheryIngredient.QUICKLIME.item()), bottle)) {
+                var payload = stack.copy();
+                player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+                stack.getItem().use(level, player, InteractionHand.MAIN_HAND);
+                helper.assertTrue(shots.size() == 1 && stack.isEmpty(), "Throwing " + payload + " spends one serving");
+                var shot = shots.get(0);
+                Vec3 motion = shot.getDeltaMovement();
+                Vec3 expected = stack == bottle
+                        ? new Vec3(0, Mth.sin(20 * Mth.DEG_TO_RAD), 1).normalize().scale(0.75)
+                        : new Vec3(0, 0, 1.5);
+                helper.assertTrue(motion.distanceTo(expected) < 0.085,
+                        "Original launch heading and speed for " + payload + ". Actual " + motion);
+                Vec3 eyeOffset = new Vec3(player.getX() - 0.16, player.getEyeY() - 0.1, player.getZ());
+                helper.assertTrue(shot.position().distanceTo(eyeOffset) < 1.0E-6 && !shot.isNoGravity()
+                                && ItemStack.matches(shot.getItem(), payload),
+                        "The projectile starts beside the player's eyes and carries the thrown serving");
+                shot.tickCount = 199;
+                shot.tick();
+                helper.assertTrue(!shot.isRemoved() && shot.getDeltaMovement().distanceTo(motion.scale(0.99F).add(0, -0.05, 0)) < 1.0E-6,
+                        "The brew survives the 199th tick with its original gravity and air drag");
+                shot.tickCount = 200;
+                shot.tick();
+                helper.assertTrue(shot.isRemoved() == (stack == bottle),
+                        "The bottled cauldron brew expires on its 200th air tick");
+                shots.remove(0).discard();
+            }
+            helper.succeed();
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(observe);
+            shots.forEach(ThrownBrew::discard);
+            player.discard();
+        }
     }
 }

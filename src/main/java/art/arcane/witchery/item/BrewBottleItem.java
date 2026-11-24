@@ -39,7 +39,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class BrewBottleItem extends Item {
-    public static final float THROW_SPEED = 0.75F;
 
     public BrewBottleItem() {
         super(new Properties().stacksTo(8));
@@ -113,7 +112,7 @@ public final class BrewBottleItem extends Item {
         if (mixture == null) return InteractionResultHolder.pass(stack);
         if (!mixture.splash()) return ItemUtils.startUsingInstantly(level, player, hand);
 
-        if (level instanceof ServerLevel server && !ThrownBrew.throwBottle(server, player, stack, THROW_SPEED)) {
+        if (level instanceof ServerLevel server && !ThrownBrew.throwBottle(server, player, stack)) {
             return InteractionResultHolder.fail(stack);
         }
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
