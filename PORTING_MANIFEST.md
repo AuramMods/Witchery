@@ -1163,6 +1163,8 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 
 Prediction ticks and Crystal Ball readings remove IDs outside the registry. If a restored list includes several registered IDs, the ball reports each once and preserves their saved times and other fields. A new reading is available when the restored list contains only obsolete IDs.
 
+Fall and Wet can force their original three-by-three gravel roof over dirt or farmland. Airborne players use the original block below their feet. Grounded players use the supporting block's height, including the shorter modern farmland surface. Fall clears five layers, and Wet places two layers of water sources outside ultra-warm dimensions. The original minimum heights are relative to the dimension floor. The roof honors Forge group protection, and individual protected blocks below it remain in place.
+
 Mining predictions extend Forge block loot after the harvest. Deepslate and its matching ores extend the legacy stone rules. The treasure prediction places a chest with `minecraft:chests/abandoned_mineshaft`, the modern counterpart of `mineshaftCorridor`.
 
 ## Creature Power Registry

@@ -269,7 +269,7 @@ public final class BrewTerrain {
         return setBlock(owner, level, pos, state, face, false);
     }
 
-    static boolean placeGroup(ServerLevel level, Player actor, Direction face, BooleanSupplier writeBlocks) {
+    public static boolean placeGroup(ServerLevel level, Player actor, Direction face, BooleanSupplier writeBlocks) {
         boolean alreadyCapturing = level.captureBlockSnapshots;
         int first = level.capturedBlockSnapshots.size();
         boolean placed = false;
@@ -369,7 +369,7 @@ public final class BrewTerrain {
         return !old.hasBlockEntity() && canEdit(owner, level, pos, old);
     }
 
-    static boolean isProtectedTerrain(BlockState state) {
+    public static boolean isProtectedTerrain(BlockState state) {
         return state.hasBlockEntity() || state.is(Blocks.BEDROCK) || state.is(Blocks.DRAGON_EGG)
                 || state.is(WitcheryBlocks.getRequired("force").get())
                 || state.is(WitcheryBlocks.getRequired("barrier").get());

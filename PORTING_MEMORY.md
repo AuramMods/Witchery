@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Forced Fall and Wet Forecasts (2026-11-24)
+
+- Both forecasts accept farmland as legacy ground material and can act while the player is airborne within the surveyed block. A grounded forecast uses the supporting block's height to account for modern farmland's shorter collision shape. The legacy minimum heights are measured from the dimension floor. Forced Wet still excludes ultra-warm dimensions.
+- The shared terrain group edit places the nine-block gravel roof. A Forge veto leaves the intact field and retained forecast available for a later attempt. The ground below clears for five blocks on Fall or fills with two layers of source water on Wet. Protected subterranean blocks are skipped individually. The regressions cover a jump over farmland, the shorter grounded surface, a placement veto, a break veto, and bedrock.
+- A muted survival client reopened a disposable save with both overdue forecasts in their original NBT format. The fixture supplied two farmland plots and positioned the player. The normal prediction tick dropped the player into the Wet pool and then the Fall cavity. Both nearby chests kept their two Diamonds. An ordinary dedicated restart retained the pool, air cavity, surrounding stone and chests. Both fulfilled forecasts stayed cleared in saved player data.
+- The two regressions reproduced the preceding behavior. All 185 required local Forge GameTests passed after the fix. Java 17 reobfuscation and the asset inventory audit passed. The packaged client and headless server used SHA-256 `e740326fa3116ca60c44b8f1c6fec38588e1635211b0a3a7ce2d11d89dddcb64`. The client used zero master volume and OpenAL No Output and stayed unfocused. Logs and fixtures are in `build/qa-prediction-terrain`.
+
 ## Recovery of Saved Crystal Ball Forecasts (2026-11-24)
 
 - Remove unregistered forecast IDs during prediction ticks and before a Crystal Ball reading. The ball reports each remaining registered ID once and preserves the saved times and any extra data. The reading slot can be used again when all saved forecasts are obsolete.

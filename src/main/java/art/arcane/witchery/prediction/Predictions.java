@@ -1,9 +1,9 @@
 package art.arcane.witchery.prediction;
 
+import art.arcane.witchery.brewing.BrewTerrain;
 import art.arcane.witchery.entity.BabaYaga;
 import art.arcane.witchery.entity.Ent;
 import art.arcane.witchery.entity.WitchOwl;
-import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -296,23 +296,33 @@ public final class Predictions {
 
     private static boolean sinkGround(ServerPlayer player, boolean water) {
         ServerLevel level = player.serverLevel();
-        BlockPos ground = player.blockPosition().below();
+        BlockPos feet = player.blockPosition();
+        // Modern farmland's collision surface is slightly below the top of its block.
+        BlockPos ground = feet.atY(player.onGround() ? player.getOnPos().getY() : feet.getY() - 1);
         int depth = water ? 2 : 5;
-        if (level.isOutsideBuildHeight(ground.below(depth)) || !player.onGround()
+        // Keep the original clearance above the bottom of the dimension.
+        if (ground.getY() - level.getMinBuildHeight() <= depth + 3
                 || water && level.dimensionType().ultraWarm()) return false;
-        for (BlockPos pos : BlockPos.betweenClosed(ground.offset(-1, 0, -1), ground.offset(1, 0, 1))) {
-            if (!level.getBlockState(pos).is(BlockTags.DIRT) || !level.mayInteract(player, pos)) return false;
+        var field = BlockPos.betweenClosed(ground.offset(-1, 0, -1), ground.offset(1, 0, 1));
+        for (BlockPos pos : field) {
+            BlockState soil = level.getBlockState(pos);
+            if (!soil.is(BlockTags.DIRT) && !soil.is(Blocks.FARMLAND)) return false;
         }
-        for (BlockPos surface : BlockPos.betweenClosed(ground.offset(-1, 0, -1), ground.offset(1, 0, 1))) {
+        if (!BrewTerrain.placeGroup(level, player, Direction.UP, () -> {
+            for (BlockPos surface : field) {
+                if (!level.setBlockAndUpdate(surface, Blocks.GRAVEL.defaultBlockState())) return false;
+            }
+            return true;
+        })) return false;
+
+        BlockState fill = (water ? Blocks.WATER : Blocks.AIR).defaultBlockState();
+        for (BlockPos surface : field) {
             for (int depthOffset = 1; depthOffset <= depth; depthOffset++) {
                 BlockPos pos = surface.below(depthOffset);
-                var state = level.getBlockState(pos);
-                if (state.getDestroySpeed(level, pos) < 0 || state.hasBlockEntity()
-                        || state.is(WitcheryBlocks.getRequired("force").get()) || !level.mayInteract(player, pos)) continue;
-                if (water) level.setBlockAndUpdate(pos, Blocks.WATER.defaultBlockState());
-                else level.removeBlock(pos, false);
+                if (!BrewTerrain.isProtectedTerrain(level.getBlockState(pos))) {
+                    BrewTerrain.setBlock(player, level, pos, fill, Direction.UP);
+                }
             }
-            level.setBlockAndUpdate(surface, Blocks.GRAVEL.defaultBlockState());
         }
         return true;
     }

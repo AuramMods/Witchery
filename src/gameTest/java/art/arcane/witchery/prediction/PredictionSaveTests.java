@@ -2,6 +2,7 @@ package art.arcane.witchery.prediction;
 
 import art.arcane.witchery.Witchery;
 import com.mojang.authlib.GameProfile;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -9,13 +10,18 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
@@ -61,6 +67,93 @@ public final class PredictionSaveTests {
                         && entries.getCompound(0).getLong("WITCPreTime") > 1_000L,
                 "An obsolete forecast cannot occupy the Crystal Ball's reading slot");
         helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void overdueFallWorksAboveFarmlandDuringAJump(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var ground = prepareSoil(helper);
+        level.setBlockAndUpdate(ground, Blocks.FARMLAND.defaultBlockState());
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "ForecastFall"));
+        player.setPos(Vec3.atBottomCenterOf(ground.above()).add(0, 0.25, 0));
+        player.setOnGround(false);
+        var entries = store(player, forecast(4, 1_000L));
+        BlockPos warded = ground.north().below(2);
+        level.setBlockAndUpdate(ground.south().below(), Blocks.BEDROCK.defaultBlockState());
+        Consumer<BlockEvent.BreakEvent> veto = event -> {
+            if (event.getPlayer() == player && event.getPos().equals(warded)) event.setCanceled(true);
+        };
+        MinecraftForge.EVENT_BUS.addListener(veto);
+        try {
+            rollOverdueForecast(player);
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(veto);
+        }
+
+        helper.assertTrue(entries.isEmpty(), "The Fall forecast can fulfill during a jump over farmland");
+        helper.assertTrue(level.getBlockState(ground).is(Blocks.GRAVEL), "The cultivated roof becomes gravel");
+        for (int depth = 1; depth <= 5; depth++) {
+            helper.assertTrue(level.isEmptyBlock(ground.below(depth)), "The Fall cavity is five blocks deep");
+        }
+        helper.assertTrue(level.getBlockState(ground.below(6)).is(Blocks.STONE), "The floor stays below the cavity");
+        helper.assertTrue(level.getBlockState(warded).is(Blocks.STONE)
+                        && level.getBlockState(ground.south().below()).is(Blocks.BEDROCK),
+                "The cavity skips protected blocks under the roof");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void overdueWetKeepsItsReadingWhenTheRoofIsProtected(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var ground = prepareSoil(helper);
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "ForecastWet"));
+        player.setPos(Vec3.atBottomCenterOf(ground.above()));
+        player.setOnGround(true);
+        var entries = store(player, forecast(15, 1_000L));
+        Consumer<BlockEvent.EntityMultiPlaceEvent> veto = event -> {
+            if (event.getEntity() == player) event.setCanceled(true);
+        };
+        MinecraftForge.EVENT_BUS.addListener(veto);
+        try {
+            rollOverdueForecast(player);
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(veto);
+        }
+        helper.assertTrue(entries.size() == 1 && level.getBlockState(ground).is(Blocks.DIRT)
+                        && level.getBlockState(ground.below()).is(Blocks.STONE),
+                "A veto on the gravel roof leaves the soil and active forecast intact");
+
+        level.setBlockAndUpdate(ground, Blocks.FARMLAND.defaultBlockState());
+        player.setPos(Vec3.atBottomCenterOf(ground.above()).add(0, -0.0625, 0));
+        rollOverdueForecast(player);
+        helper.assertTrue(entries.isEmpty(), "The same Wet forecast fulfills while standing on the shorter modern farmland surface");
+        for (BlockPos surface : BlockPos.betweenClosed(ground.offset(-1, 0, -1), ground.offset(1, 0, 1))) {
+            helper.assertTrue(level.getBlockState(surface).is(Blocks.GRAVEL), "The Wet forecast replaces the whole roof");
+            helper.assertTrue(level.getBlockState(surface.below()).equals(Blocks.WATER.defaultBlockState())
+                            && level.getBlockState(surface.below(2)).equals(Blocks.WATER.defaultBlockState())
+                            && level.getBlockState(surface.below(3)).is(Blocks.STONE),
+                    "The Wet forecast fills exactly two layers with water sources");
+        }
+        helper.succeed();
+    }
+
+    private static BlockPos prepareSoil(GameTestHelper helper) {
+        var ground = helper.absolutePos(new BlockPos(6, 8, 6));
+        var level = helper.getLevel();
+        for (BlockPos pos : BlockPos.betweenClosed(ground.offset(-1, -6, -1), ground.offset(1, -1, 1))) {
+            level.setBlockAndUpdate(pos, Blocks.STONE.defaultBlockState());
+        }
+        for (BlockPos pos : BlockPos.betweenClosed(ground.offset(-1, 0, -1), ground.offset(1, 0, 1))) {
+            level.setBlockAndUpdate(pos.above(), Blocks.AIR.defaultBlockState());
+            level.setBlockAndUpdate(pos, Blocks.DIRT.defaultBlockState());
+        }
+        return ground;
+    }
+
+    private static void rollOverdueForecast(FakePlayer player) {
+        player.tickCount = 100;
+        player.getRandom().setSeed(5120);
+        Predictions.tick(player);
     }
 
     private static CompoundTag forecast(int id, long time) {
