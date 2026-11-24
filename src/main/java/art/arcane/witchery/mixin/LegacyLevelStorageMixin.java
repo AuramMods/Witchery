@@ -32,9 +32,12 @@ abstract class LegacyLevelStorageMixin {
             Registry<LevelStem> dimensions, Lifecycle lifecycle, CallbackInfoReturnable<Pair<WorldData, WorldDimensions.Complete>> info) {
         var data = info.getReturnValue();
         if (data == null || !(data.getFirst() instanceof LegacyPrimaryLevelDataAccessor player)) return;
-        if (player.witchery$getRawPlayerTag() == null) return;
+        var raw = player.witchery$getRawPlayerTag();
+        if (raw == null) return;
         var access = (LevelStorageSource.LevelStorageAccess) (Object) this;
         var ids = LegacyWorldIds.find(access.getLevelPath(LevelResource.ROOT));
-        if (ids != null) ids.upgradePlayer(player.witchery$getRawPlayerTag(), DataFixers.getDataFixer(), player.witchery$getPlayerDataVersion());
+        if (ids == null) return;
+        player.witchery$setPlayerTag(ids.upgradePlayer(raw, DataFixers.getDataFixer(), player.witchery$getPlayerDataVersion()));
+        player.witchery$setPlayerTagUpgraded(true);
     }
 }

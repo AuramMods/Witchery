@@ -5,15 +5,22 @@ import art.arcane.witchery.entity.AnimalMerchant;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.registry.WitcheryEntities;
 import com.mojang.datafixers.DataFixer;
+import com.mojang.serialization.Dynamic;
 import net.minecraft.SharedConstants;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.datafix.fixes.References;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
+import java.util.UUID;
 
 final class LegacyChunkEntities {
     private static final String LEGACY_PREFIX = Witchery.MODID + ".";
@@ -25,6 +32,36 @@ final class LegacyChunkEntities {
 
     static void prepare(CompoundTag level, LegacyWorldIds ids, DataFixer fixer, int from) {
         for (Tag tag : level.getList("Entities", Tag.TAG_COMPOUND)) prepareEntity((CompoundTag) tag, ids, fixer, from);
+    }
+
+    @Nullable
+    static CompoundTag upgradePlayerVehicle(CompoundTag riding, LegacyWorldIds ids, DataFixer fixer, int from) {
+        if (!riding.contains("UUIDMost", Tag.TAG_LONG) || !riding.contains("UUIDLeast", Tag.TAG_LONG)) return null;
+        var attachment = new UUID(riding.getLong("UUIDMost"), riding.getLong("UUIDLeast"));
+        int to = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+        CompoundTag root = null;
+        CompoundTag vehicle = riding.copy();
+        while (vehicle != null) {
+            CompoundTag next = vehicle.get("Riding") instanceof CompoundTag parent ? parent : null;
+            vehicle.remove("Riding");
+            prepareEntity(vehicle, ids, fixer, from);
+            if (!(fixer.update(References.ENTITY_TREE, new Dynamic<>(NbtOps.INSTANCE, vehicle), from, to)
+                    .getValue() instanceof CompoundTag fixed)) return null;
+            restoreEntity(fixed);
+            if (EntityType.by(fixed).isEmpty()) return null;
+            if (root != null) {
+                // The old rider held a vehicle tag. The modern vehicle holds its riders.
+                var passengers = fixed.getList("Passengers", Tag.TAG_COMPOUND);
+                passengers.add(root);
+                fixed.put("Passengers", passengers);
+            }
+            root = fixed;
+            vehicle = next;
+        }
+        var saved = new CompoundTag();
+        saved.put("Attach", NbtUtils.createUUID(attachment));
+        saved.put("Entity", root);
+        return saved;
     }
 
     private static void prepareEntity(CompoundTag entity, LegacyWorldIds ids, DataFixer fixer, int from) {

@@ -15,6 +15,7 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -155,7 +156,21 @@ public final class LegacyWorldIds {
         if (unmappedBlocks.add(id)) Witchery.LOGGER.warn("Legacy block {} has no Witchery world import mapping yet", id);
     }
 
-    public void upgradePlayer(CompoundTag player, DataFixer fixer, int from) {
+    public CompoundTag upgradePlayer(CompoundTag player, DataFixer fixer, int from) {
+        preparePlayer(player, fixer, from);
+        CompoundTag updated = DataFixTypes.PLAYER.updateToCurrentVersion(fixer, player, from);
+        if (from < 100 && !player.contains("RootVehicle", Tag.TAG_COMPOUND) && player.contains("Riding", Tag.TAG_COMPOUND)) {
+            CompoundTag mount = LegacyChunkEntities.upgradePlayerVehicle(player.getCompound("Riding"), this, fixer, from);
+            if (mount != null) {
+                updated.put("RootVehicle", mount);
+                // A dedicated login reads the vehicle from the original tag returned by PlayerDataStorage.
+                player.put("RootVehicle", mount);
+            }
+        }
+        return updated;
+    }
+
+    private void preparePlayer(CompoundTag player, DataFixer fixer, int from) {
         var forgeData = player.getCompound("ForgeData");
         var persisted = forgeData.getCompound(Player.PERSISTED_NBT_TAG);
         var expiredDrops = persisted.getList("WITCPriIncInv", Tag.TAG_COMPOUND);

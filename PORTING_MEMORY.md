@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Mounted Player Save Import (2026-11-23)
+
+- Minecraft 1.7.10 saved a rider's vehicle in the player's `Riding` compound. Modern login reads `RootVehicle` and uses its `Attach` UUID to find the player's immediate mount. The importer converts the old vehicle tree with the same entity fixes used for chunk entities and passes the new record to the dedicated and integrated login paths.
+- The disposable fixture moved the original Forge broom named Legacy Sky Rider from its chunk into a synthetic 1.7.10 player record. It used UUID `ad44f2df-90bb-4811-846b-12c2ee4ef44e` and brush color 6. The preceding packaged build joined at the old position on foot, and the named broom was absent from the loaded world.
+- The muted single-player client loaded an original world copy with that record in `level.dat`. It started mounted and Save and Quit retained the broom, its attachment UUID and its dye. The fixture protected the test rider from an archived Huntsman while leaving the original mount intact.
+- The nested-mount GameTest exposed the vanilla fixer carrying the inner rider's remaining fields into the outer vehicle. The importer now fixes each entity before rebuilding the passenger links. On dedicated Forge, a synthetic rider record put the original broom on a separately identified vanilla boat. The client resumed on the original broom with the right dye, and the server kept the outer boat and exactly one copy of the broom.
+- An ordinary dedicated restart kept the same rider attachment, broom UUID, brush color and boat UUID. The matching packaged single-player and dedicated clients were muted and did not take desktop focus. All four focused import GameTests and all 158 required GameTests passed on the rebuilt code.
+- The reobfuscated JAR SHA-256 was `e8d86594f1e7c97f20b75064f7fa0b60f3263582d64d02eb50a8418cfb92747e`. The fixture and logs are under the directory named by `/tmp/witchery-ridden-save-import-current`. See `chain-package.log`, `chain-gametest.log`, `chain/chain.log`, `chain/restart.log`, and `integrated/verified.log`.
+
 ## Custom Potion and Queued Effect Saves (2026-11-23)
 
 - An original Forge 0.24.1 server saved a drinkable and a splash potion in a chest using the vanilla numeric item ID. The original configuration assigned Paralysis to slot 119 and Sinking to slot 43. The preceding packaged importer kept both effect IDs numeric. The fixed importer resolves them before the vanilla item fixer and keeps the vanilla Fire Resistance effect, amplifiers, durations, and display flags.

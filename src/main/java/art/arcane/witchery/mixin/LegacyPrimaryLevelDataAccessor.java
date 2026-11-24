@@ -11,6 +11,12 @@ public interface LegacyPrimaryLevelDataAccessor {
     @Accessor("loadedPlayerTag")
     @Nullable CompoundTag witchery$getRawPlayerTag();
 
+    @Accessor("loadedPlayerTag")
+    void witchery$setPlayerTag(CompoundTag tag);
+
+    @Accessor("upgradedPlayerTag")
+    void witchery$setPlayerTagUpgraded(boolean upgraded);
+
     @Accessor("playerDataVersion")
     int witchery$getPlayerDataVersion();
 }
