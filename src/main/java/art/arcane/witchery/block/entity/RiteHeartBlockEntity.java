@@ -107,6 +107,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     private UUID initiator;
     private int stepTicks;
     private int offeringStep;
+    private boolean livingOffered;
+    private boolean altarPowerOffered;
     private int covenSize;
     private int covenSummoned;
     private final List<Runnable> terrainChanges = new ArrayList<>();
@@ -206,11 +208,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             }
         }
         int required = rite.sacrifices().size();
-        boolean optionalWaystone = rite.action().acceptsOptionalWaystone();
         if (offeringStep >= required) {
-            if (offeringStep == required && optionalWaystone) offerWaystone(level, rite, pos);
-            else if (offeringStep == required + (optionalWaystone ? 1 : 0)) finish(level, rite);
-            else abort(level, "message.witchery.rite.unknown");
+            advanceFinalOfferings(level, rite, pos, required);
             return;
         }
         List<ItemRiteRecipe.Offering> remaining = rite.findSacrifices(level, pos, offeringStep);
@@ -231,22 +230,49 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 8, 0.2, 0.22, 0.2, 0.02);
     }
 
+    private void advanceFinalOfferings(ServerLevel level, ItemRiteRecipe rite, BlockPos pos, int required) {
+        boolean optionalWaystone = rite.action().acceptsOptionalWaystone();
+        boolean awaitingWaystone = optionalWaystone && offeringStep == required;
+        boolean stagedLiving = rite.stagesLivingOffering();
+        // Earlier Hell on Earth saves consumed the villager during the Waystone step.
+        boolean needsLiving = stagedLiving && !livingOffered && (!optionalWaystone || awaitingWaystone);
+        if (offeringStep > required + (optionalWaystone ? 1 : 0)) {
+            abort(level, "message.witchery.rite.unknown");
+        } else if (needsLiving && (!rite.chargesBeforeLivingOffering() || altarPowerOffered)) {
+            livingOffered = offerLiving(level, rite, pos);
+        } else if (awaitingWaystone) {
+            offerWaystone(level, rite, pos);
+        } else if (stagedLiving && !altarPowerOffered) {
+            AltarBlockEntity altar = rite.power() > 0 ? AltarPower.nearest(level, pos) : null;
+            if (rite.power() > 0 && (altar == null || !altar.consumePower(rite.power()))) {
+                abort(level, "message.witchery.rite.missing_power");
+            } else {
+                altarPowerOffered = true;
+            }
+        } else {
+            finish(level, rite);
+        }
+    }
+
     private void finish(ServerLevel level, ItemRiteRecipe rite) {
         BlockPos pos = getBlockPos();
         var action = rite.action();
         var protectionKind = action.protection();
         boolean hellOnEarth = action == ItemRiteRecipe.Action.HELL_ON_EARTH;
-        boolean sacrificesFirst = action == ItemRiteRecipe.Action.SUMMON_WITHER;
+        boolean stagedLiving = rite.stagesLivingOffering();
+        boolean sacrificesFirst = !stagedLiving && action == ItemRiteRecipe.Action.SUMMON_WITHER;
         boolean newSummoning = action == ItemRiteRecipe.Action.SUMMON_WITHER
                 || action == ItemRiteRecipe.Action.SUMMON_WITCH || action == ItemRiteRecipe.Action.SUMMON_SPECTRAL_FAMILIAR;
-        AltarBlockEntity altar = rite.power() > 0 ? AltarPower.nearest(level, pos) : null;
-        boolean missingPower = rite.power() > 0 && (altar == null || altar.power() < rite.power());
+        boolean needsPower = !altarPowerOffered && rite.power() > 0;
+        AltarBlockEntity altar = needsPower ? AltarPower.nearest(level, pos) : null;
+        boolean missingPower = needsPower && (altar == null || altar.power() < rite.power());
         if (missingPower && !sacrificesFirst) {
             abort(level, "message.witchery.rite.missing_power");
             return;
         }
-        Mob living = hellOnEarth ? null : rite.findLivingOffering(level, pos);
-        if (!hellOnEarth && rite.livingOffering() != null && living == null) {
+        boolean needsLiving = !stagedLiving && !hellOnEarth && rite.livingOffering() != null;
+        Mob living = needsLiving ? rite.findLivingOffering(level, pos) : null;
+        if (needsLiving && living == null) {
             abort(level, "message.witchery.rite.missing_living_offering");
             return;
         }
@@ -537,6 +563,16 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         living.discard();
     }
 
+    private boolean offerLiving(ServerLevel level, ItemRiteRecipe rite, BlockPos heart) {
+        Mob living = rite.findLivingOffering(level, heart);
+        if (living == null) {
+            abort(level, "message.witchery.rite.missing_living_offering");
+            return false;
+        }
+        sacrificeLiving(level, living);
+        return true;
+    }
+
     private void prepareStorm(ServerLevel level, ItemRiteRecipe rite, BlockPos heart) {
         BlockPos target = waystoneTarget == null ? heart : waystoneTarget;
         if (!LandscapeRites.canReach(level, heart, target, covenSize)) {
@@ -557,14 +593,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     }
 
     private void offerWaystone(ServerLevel level, ItemRiteRecipe rite, BlockPos heart) {
-        if (rite.action() == ItemRiteRecipe.Action.HELL_ON_EARTH && rite.livingOffering() != null) {
-            Mob living = rite.findLivingOffering(level, heart);
-            if (living == null) {
-                abort(level, "message.witchery.rite.missing_living_offering");
-                return;
-            }
-            sacrificeLiving(level, living);
-        }
+        if (!rite.stagesLivingOffering() && rite.action() == ItemRiteRecipe.Action.HELL_ON_EARTH
+                && rite.livingOffering() != null && !offerLiving(level, rite, heart)) return;
         offeringStep++;
         ItemRiteRecipe.Offering stone = rite.findOptionalWaystone(level, heart);
         if (stone == null) return;
@@ -781,6 +811,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         }
         stepTicks = 0;
         offeringStep = 0;
+        livingOffered = false;
+        altarPowerOffered = false;
         legacyOfferingReturns = false;
         legacyWaystoneMatch = false;
         waystoneTarget = null;
@@ -858,6 +890,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 && (!tag.contains("QueuedRites", Tag.TAG_LIST) || tag.getBoolean("LegacyWaystoneMatch"));
         boolean hasOfferingStep = tag.contains("OfferingStep", Tag.TAG_ANY_NUMERIC);
         offeringStep = hasOfferingStep ? Math.max(0, tag.getInt("OfferingStep")) : sacrificed.size();
+        livingOffered = tag.getBoolean("LivingOffered");
+        altarPowerOffered = tag.getBoolean("AltarPowerOffered");
         legacyOfferingReturns = !hasOfferingStep && activeRite != null && !sacrificed.isEmpty();
         stepTicks = Mth.clamp(tag.getInt("StepTicks"), 0, pulseInterval() - 1);
     }
@@ -973,6 +1007,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             tag.putString("Rite", activeRite.toString());
             tag.putInt("StepTicks", stepTicks);
             if (!legacyOfferingReturns) tag.putInt("OfferingStep", offeringStep);
+            if (livingOffered) tag.putBoolean("LivingOffered", true);
+            if (altarPowerOffered) tag.putBoolean("AltarPowerOffered", true);
             ListTag queued = new ListTag();
             for (var id : queuedRites) queued.add(StringTag.valueOf(id.toString()));
             tag.put("QueuedRites", queued);

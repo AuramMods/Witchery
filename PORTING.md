@@ -611,6 +611,14 @@
 - [x] Verify whole offering reservations in the packaged build. One dropped Redstone stack and one matching filled Grassper queued Protection alone. Adding another dropped stack queued Imprisonment as well. Both wards began upkeep, and the muted client stopped them with one click.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 409 required Forge GameTests. The six new cases cover offering reservations, concurrent upkeep, cancellation, failure refunds, legacy upkeep saves, and both Waystone routes.
 
+## Living Offerings and Altar Charges (2026-11-24)
+
+- [x] Restore separate living and altar offering steps for the six legacy rites that use both. Demon and Wither Summoning, Soaring, and the Grave offer their creature before charging power. Hell on Earth takes the villager, then the optional Bound Waystone, then the altar charge. The Mirror charges 2,000 before looking for its Demon.
+- [x] Save completed living and altar offerings on the Heart Glyph. A Hell on Earth cast from an earlier Forge build that already processed its optional Waystone can move on to altar power without another villager.
+- [x] Verify both failure paths through redstone activation on the packaged headless server. The unpowered Grave consumes its zombie and refunds its held items. The Mirror refunds its held items when the Demon is missing and retains its single debit across a dedicated restart.
+- [x] Reuse those refunded items with a Demon present. Save after paying the altar but before offering the Demon. The packaged server consumes the Demon and produces one Mirror after restarting, with a single altar debit.
+- [x] Run local Java 17 data generation and JAR reobfuscation. All 216 required Forge GameTests passed on the replay after the first run's Lumos/Nox fixture timed out waiting for ticking chunks.
+
 ## Returned Offerings and Waystone Copies (2026-11-21)
 
 - [x] Drop the Arthana, Boline, and reusable Necromantic Stone at their source during their offering step. Preserve durability and item tags. Charged Attuned Stones return discharged. The Rite of the Spectral Stone still consumes its Necromantic Stone.

@@ -58,6 +58,78 @@ public final class CircleRiteTests {
     private static final int TWO_OFFERING_CAST = 80;
     private static final int THREE_OFFERING_CAST = 100;
 
+    @GameTest(template = TEMPLATE, setupTicks = 5)
+    public static void mirrorChargesTheAltarBeforeCheckingForADemon(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.MEDIUM_RITE, "circleglyphritual");
+        var altar = chargedAltar(helper, false);
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var heart = heart(helper);
+        waitForOfferings(helper, new ItemStack(WitcheryIngredient.BREW_OF_HOLLOW_TEARS.item()),
+                new ItemStack(Items.GOLD_INGOT), new ItemStack(Items.GLASS_PANE)).thenExecute(() -> {
+            start(helper);
+            tick(level, center, heart, 80);
+            var paid = heart.saveWithoutMetadata();
+            helper.assertTrue(altar.power() == 8000 && paid.getBoolean("AltarPowerOffered") && drops(helper).isEmpty(),
+                    "The Mirror takes 2,000 power and waits one more step for the Demon");
+
+            heart.load(paid);
+            tick(level, center, heart, 20);
+            helper.assertTrue(!helper.getBlockState(CENTER).getValue(RiteHeartBlock.ACTIVE)
+                            && altar.power() == 8000 && drops(helper).size() == 3,
+                    "The restarted cast refunds all three items if the Demon is missing and retains the one altar debit");
+        }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, setupTicks = 5)
+    public static void graveTakesItsZombieBeforeCheckingForPower(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.SMALL_RITE, "circleglyphritual");
+        ring(helper, RitualCircle.MEDIUM_RITE, "circleglyphritual");
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var heart = heart(helper);
+        var zombie = EntityType.ZOMBIE.create(level);
+        zombie.moveTo(Vec3.atBottomCenterOf(center));
+        zombie.setNoAi(true);
+        level.addFreshEntity(zombie);
+        var stone = new ItemStack(WitcheryIngredient.NECROMANTIC_STONE.item());
+        waitForOfferings(helper, new ItemStack(WitcheryIngredient.INFUSED_BREW_BASE.item()),
+                new ItemStack(Items.BONE), new ItemStack(WitcheryIngredient.WEB.item()), stone).thenExecute(() -> {
+            start(helper);
+            tick(level, center, heart, 100);
+            var offered = heart.saveWithoutMetadata();
+            helper.assertTrue(zombie.isRemoved() && offered.getBoolean("LivingOffered") && drops(helper).size() == 1,
+                    "The Grave takes its zombie in a separate step and has returned the reusable stone");
+
+            heart.load(offered);
+            tick(level, center, heart, 20);
+            helper.assertTrue(!helper.getBlockState(CENTER).getValue(RiteHeartBlock.ACTIVE) && drops(helper).size() == 4,
+                    "Without an altar the Grave returns the three held offerings after restart");
+        }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, setupTicks = 5)
+    public static void olderHellOnEarthCastKeepsItsCompletedVillagerOffering(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.SMALL_RITE, "circleglyphinfernal");
+        var altar = chargedAltar(helper, false);
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var heart = heart(helper);
+        var legacy = new CompoundTag();
+        legacy.putString("Rite", "witchery:rite_of_hell_on_earth");
+        legacy.putInt("OfferingStep", 5);
+        heart.load(legacy);
+        tick(level, center, heart, 20);
+        var paid = heart.saveWithoutMetadata();
+        helper.assertTrue(altar.power() == 5000 && paid.getBoolean("AltarPowerOffered"),
+                "The saved cast at the post-Waystone step charges the altar without asking for another villager");
+        helper.useBlock(CENTER);
+        helper.succeed();
+    }
+
     @GameTest(template = TEMPLATE, batch = "witchery_weather_rite_eclipse")
     public static void portableEclipseFiresOnlyInDaylight(GameTestHelper helper) {
         floor(helper);

@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Living Offerings and Altar Charges (2026-11-24)
+
+- Original rites 23, 25, 39, 80, and 81 place the creature before the power step. Hell on Earth checks for an optional Waystone between them. The Mirror places the 2,000-power step before the Demon. The Heart Glyph restores each completed step independently when reloaded. Earlier Forge Hell on Earth saves past the Waystone step continue after the villager offering.
+- The previous packaged build left the Grave's zombie alive when power was missing and refunded the Mirror's three items without charging power when the Demon was missing. The rebuilt headless package consumed the Grave's zombie, returned the Necromantic Stone and refunded the other three items. The Mirror retained the charge and returned all three items after restart. Both fixtures placed their chalk and offerings before activating the Heart Glyph by redstone.
+- A second cast reused the three refunded Mirror offerings and included a Demon. The headless server saved the paid altar while the Demon still lived. After restarting, it consumed the Demon and produced a Mirror with one altar debit.
+- Java 17 data generation, JAR reobfuscation, and all 216 required local Forge GameTests passed. The first suite passed 215 cases and timed out in the existing Lumos/Nox fixture while waiting for ticking chunks. That fixture passed on the full replay. Logs and the exact packaged JAR are in `build/qa-living-rite-order`. Package SHA-256 `d87cc5192f961ace7784e59a84b77ac85f1f4894be71d3ad6ac0b1bc65e9c3c2`.
+
 ## Legacy Cauldron Offerings and Power (2026-11-24)
 
 - The running 0.24.1 registry accepted the listed offerings for all 26 fixed item recipes. For Drop of Luck, adding Nether Wart before Mandrake left the brew one effect level short of Refined Evil. The preceding packaged port consumed Refined Evil in both that mixture and an empty cauldron. Legacy fixed recipes now apply the ordered brew capacity rules when an offering has a registered brew action.

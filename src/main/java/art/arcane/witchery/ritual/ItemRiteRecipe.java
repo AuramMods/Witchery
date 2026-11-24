@@ -236,6 +236,14 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         return action == Action.ECLIPSE;
     }
 
+    public boolean stagesLivingOffering() {
+        return livingOffering != null && RiteActivation.legacyId(id) != Integer.MAX_VALUE;
+    }
+
+    public boolean chargesBeforeLivingOffering() {
+        return RiteActivation.legacyId(id) == 95; // Rite of the Mirror
+    }
+
     @Nullable
     public String startFailure(ServerLevel level) {
         if (action == Action.HELL_ON_EARTH && !level.dimension().equals(Level.OVERWORLD)) {
