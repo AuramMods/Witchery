@@ -77,6 +77,10 @@ public final class OptionalWaystoneRiteTests {
             WaystoneItem.bindLocation(laterStone, level, target.south(4));
             var laterDrop = drop(helper, laterStone);
             helper.runAfterDelay(21, () -> {
+                helper.assertTrue(heart.saveWithFullMetadata().getBoolean("AltarPowerOffered") && altar.power() < 400,
+                        "The altar pays for the saved target before the ward starts");
+            });
+            helper.runAfterDelay(41, () -> {
                 var wards = heart.saveWithFullMetadata().getList("ProtectionRites", Tag.TAG_COMPOUND);
                 helper.assertTrue(wards.size() == 1 && BlockPos.of(wards.getCompound(0).getLong("Target")).equals(target),
                         "A reloaded rite creates the barrier at the first Waystone's destination");

@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Initial Altar Offerings (2026-11-24)
+
+- All 96 Circle Magic registrations match their original chalk requirements and initial power costs. The source audit verified seventy initial altar sacrifices, all on the original 20-tick cadence. See `registration-audit.log`.
+- Witchery 0.24.1 took three items in the first three pulses of Waystone Binding and Familiar Calling. It debited the altar on tick 80 and resolved each effect on tick 100. A missing familiar returned three items and left altar power at 9,000. Canceling after the Waystone debit returned three items and left power at 9,500.
+- The previous Forge package created the Waystone on the debit pulse. Its failed familiar call returned all three items and restored the altar to 10,000. See `control/control.log`.
+- In clean Forge the survival client started Waystone Binding through the Heart Glyph. The ordinary shutdown saved its exact payment flag and staged items. The next boot produced one Bound Waystone. Further redstone casts verified the failed familiar call and canceled binding. In both cases the three items returned and the spent power remained debited.
+- Copied Auram reproduced the separate debit and result, the familiar refund, and the paid cancellation on the same JAR. The hidden clients used zero master volume and OpenAL No Output. The focus monitors recorded no foreground changes.
+- Local Java 17 data generation, JAR reobfuscation and all 259 required Forge GameTests passed. The new cases include resuming a paid Waystone binding after the altar is removed and the original payment on a failed familiar call. The replay checks ward, weather, volcano, recharge, witch and fetish timing across the separate power and effect pulses. Logs and the exact tested package are in `build/qa-rite-altar-stages`. Package SHA-256 `5dfdf9d8e99d41ae0bd1b13d720ca8f57a7b59750f59ebbc2cdb27d4fc648ccc`.
+
 ## Workstation Recipe Swaps and Brazier Effects (2026-11-24)
 
 - Witchery 0.24.1 kept 798 Distillery ticks and 298 Spinning Wheel ticks when the test replaced one ingredient with another valid recipe. The next tick advanced them to 799 and 299. The last tick produced Soul Sand, two separate Infernal Blood jars, and three Golden Threads. The Distillery kept two of its four Clay Jars. Invalid inputs reset both timers. The preceding packaged Forge build reset both timers to zero after the valid swaps.

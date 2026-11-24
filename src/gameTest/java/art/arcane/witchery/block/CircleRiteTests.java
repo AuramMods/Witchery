@@ -62,9 +62,10 @@ import java.util.function.Consumer;
 public final class CircleRiteTests {
     private static final String TEMPLATE = "qa_rite_terrain";
     private static final BlockPos CENTER = new BlockPos(15, 245, 15);
-    // Each required offering, the optional Waystone, and the altar charge get a separate 20-tick step.
+    // Common cast lengths depend on which optional offering and altar steps the rite uses.
     private static final int TWO_OFFERING_CAST = 80;
     private static final int THREE_OFFERING_CAST = 100;
+    private static final int ALTAR_STEP_TICKS = 20;
 
     @GameTest(template = TEMPLATE, batch = "witchery_rite_redstone_pulse", setupTicks = 5)
     public static void shortRedstonePulsesStartAndStopARite(GameTestHelper helper) {
@@ -187,6 +188,61 @@ public final class CircleRiteTests {
                 above.discard();
                 villager.discard();
             }
+        }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, setupTicks = 5)
+    public static void poweredWaystoneBindsAfterTheSavedAltarOffering(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.SMALL_RITE, "circleglyphritual");
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var altar = chargedAltar(helper, false);
+        waitForOfferings(helper, new ItemStack(WitcheryIngredient.WAYSTONE.item()),
+                new ItemStack(WitcheryIngredient.ENDER_DEW.item()), new ItemStack(Items.GLOWSTONE_DUST)).thenExecute(() -> {
+            var heart = heart(helper);
+            start(helper);
+            tick(level, center, heart, 79);
+            helper.assertTrue(altar.power() == 10_000 && drops(helper).isEmpty(),
+                    "All three items are held before the altar pulse");
+            tick(level, center, heart, 1);
+            var paid = heart.saveWithoutMetadata();
+            helper.assertTrue(altar.power() == 9_500 && paid.getBoolean("AltarPowerOffered") && drops(helper).isEmpty(),
+                    "The fourth pulse pays the altar and saves the pending binding");
+
+            heart.load(paid);
+            level.removeBlock(altar.getBlockPos(), false);
+            tick(level, center, heart, 20);
+            var results = drops(helper);
+            helper.assertTrue(!heart.getBlockState().getValue(RiteHeartBlock.ACTIVE) && results.size() == 1
+                            && results.get(0).getItem().is(WitcheryIngredient.BOUND_WAYSTONE.item()),
+                    "The resumed binding uses the saved payment and creates one stone even if the altar is gone");
+        }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, setupTicks = 5)
+    public static void missingFamiliarReturnsOnlyTheItemOfferings(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.MEDIUM_RITE, "circleglyphritual");
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var altar = chargedAltar(helper, false);
+        waitForOfferings(helper, new ItemStack(WitcheryIngredient.BREATH_OF_THE_GODDESS.item()),
+                new ItemStack(WitcheryIngredient.HINT_OF_REBIRTH.item()),
+                new ItemStack(WitcheryIngredient.WHIFF_OF_MAGIC.item())).thenExecute(() -> {
+            var heart = heart(helper);
+            start(helper);
+            tick(level, center, heart, 80);
+            helper.assertTrue(altar.power() == 9_000 && drops(helper).isEmpty(),
+                    "Calling a Familiar spends 1,000 before searching for a familiar");
+            tick(level, center, heart, 20);
+            var returned = drops(helper);
+            helper.assertTrue(!heart.getBlockState().getValue(RiteHeartBlock.ACTIVE) && altar.power() == 9_000
+                            && returned.size() == 3
+                            && returned.stream().anyMatch(item -> item.getItem().is(WitcheryIngredient.BREATH_OF_THE_GODDESS.item()))
+                            && returned.stream().anyMatch(item -> item.getItem().is(WitcheryIngredient.HINT_OF_REBIRTH.item()))
+                            && returned.stream().anyMatch(item -> item.getItem().is(WitcheryIngredient.WHIFF_OF_MAGIC.item())),
+                    "Failure returns the three spent items and keeps the altar debit");
         }).thenSucceed();
     }
 
@@ -358,7 +414,7 @@ public final class CircleRiteTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, batch = "witchery_summoned_witch", setupTicks = 5, timeoutTicks = 155)
+    @GameTest(template = TEMPLATE, batch = "witchery_summoned_witch", setupTicks = 5, timeoutTicks = 175)
     public static void witchSummoningReturnsTheSameDamagedArthana(GameTestHelper helper) {
         floor(helper);
         ring(helper, RitualCircle.SMALL_RITE, "circleglyphinfernal");
@@ -375,11 +431,15 @@ public final class CircleRiteTests {
             helper.runAfterDelay(110, () -> {
                 float beforeCharge = altar.power();
                 int recharge = 10 * altar.rechargeMultiplier();
-                // One altar recharge occurs in the twenty ticks that bracket the closing rite step.
-                helper.runAfterDelay(20, () -> {
+                helper.runAfterDelay(ALTAR_STEP_TICKS, () -> {
+                    helper.assertTrue(altar.power() == beforeCharge - 2000 + recharge
+                                    && heart(helper).saveWithoutMetadata().getBoolean("AltarPowerOffered"),
+                            "The altar contributes 2,000 on its own step");
+                });
+                helper.runAfterDelay(ALTAR_STEP_TICKS + 20, () -> {
                     var witches = helper.getLevel().getEntitiesOfClass(Witch.class, new AABB(helper.absolutePos(CENTER)).inflate(8));
                     helper.assertTrue(witches.size() == 1, "The small Infernal circle summons exactly one witch");
-                    helper.assertTrue(altar.power() == beforeCharge - 2000 + recharge, "The summoning spends exactly 2,000 power");
+                    helper.assertTrue(altar.power() == beforeCharge - 2000 + 2 * recharge, "The summoning uses the earlier payment");
                     var returned = drops(helper);
                     helper.assertTrue(returned.size() == 1 && ItemStack.matches(returned.get(0).getItem(), arthana),
                             "The summoning returns the original damaged Arthana, found "
@@ -407,6 +467,9 @@ public final class CircleRiteTests {
                         && altar.power() == 10_000 && drops(helper).isEmpty(),
                 "The Waystone is consumed before the altar charge and range check");
         tick(level, center, heart, 20);
+        helper.assertTrue(heart.saveWithoutMetadata().getBoolean("AltarPowerOffered") && altar.power() == 8000
+                        && drops(helper).isEmpty(), "The altar is charged before the storm resolves the remote target");
+        tick(level, center, heart, ALTAR_STEP_TICKS);
         helper.assertTrue(!heart.saveWithoutMetadata().contains("Storm") && altar.power() == 8000
                         && drops(helper).size() == 3 && drops(helper).stream().anyMatch(item -> ItemStack.matches(item.getItem(), tooFar)),
                 "An out-of-range Waystone returns the three offerings after charging altar power");
@@ -414,7 +477,7 @@ public final class CircleRiteTests {
 
         var target = center.east(40).above(3);
         start(helper, new ItemStack(Items.STONE_SWORD), new ItemStack(WitcheryIngredient.WOOD_ASH.item()), bound(level, target));
-        tick(level, center, heart, TWO_OFFERING_CAST);
+        tick(level, center, heart, TWO_OFFERING_CAST + ALTAR_STEP_TICKS);
         var storm = heart.saveWithoutMetadata().getCompound("Storm");
         helper.assertTrue(storm.getBoolean("Greater") && BlockPos.of(storm.getLong("Target")).equals(target)
                 && altar.power() == 6000, "The valid Waystone relocates the greater storm, including its height");
@@ -452,7 +515,7 @@ public final class CircleRiteTests {
         waitForOfferings(helper, new ItemStack(Items.OBSIDIAN), new ItemStack(Items.REDSTONE)).thenExecute(() -> {
             var altar = chargedAltar(helper, CENTER.offset(20, 0, 20), false, 2);
             start(helper);
-            tick(level, center, heart, TWO_OFFERING_CAST + 1);
+            tick(level, center, heart, TWO_OFFERING_CAST + ALTAR_STEP_TICKS + 1);
             var barrier = block("barrier");
             helper.assertTrue(level.getBlockState(wall).is(barrier) && level.getBlockState(roof).is(barrier)
                     && level.getBlockState(wall.below()).is(barrier), "The focused barrier draws walls, roof and floor");
@@ -489,7 +552,7 @@ public final class CircleRiteTests {
         waitForOfferings(helper, potion).thenExecute(() -> {
             var altar = chargedAltar(helper, CENTER.offset(20, 0, 20), false, 2);
             start(helper);
-            tick(level, center, heart, 60);
+            tick(level, center, heart, 60 + ALTAR_STEP_TICKS);
             helper.assertTrue(level.getBlockState(center).getValue(RiteHeartBlock.ACTIVE) && altar.power() == 5960,
                     "The rite pays 4,000 to start and 40 for its first recharge from the extended altar");
 
@@ -512,7 +575,7 @@ public final class CircleRiteTests {
             var altar = chargedAltar(helper, false);
             start(helper);
             var heart = heart(helper);
-            tick(level, center, heart, TWO_OFFERING_CAST);
+            tick(level, center, heart, TWO_OFFERING_CAST + ALTAR_STEP_TICKS);
             var save = heart.saveWithoutMetadata();
             var ward = save.getList("ProtectionRites", Tag.TAG_COMPOUND).getCompound(0);
             helper.assertTrue(BlockPos.of(ward.getLong("Target")).equals(target) && ward.getString("Kind").equals("GREATER_BARRIER"),
@@ -537,7 +600,7 @@ public final class CircleRiteTests {
         }).thenSucceed();
     }
 
-    @GameTest(template = TEMPLATE, batch = "witchery_volcano_refund", setupTicks = 30, timeoutTicks = 130)
+    @GameTest(template = TEMPLATE, batch = "witchery_volcano_refund", setupTicks = 30, timeoutTicks = 150)
     public static void distantDryVolcanoRefundsTheWaystoneAndOfferings(GameTestHelper helper) {
         floor(helper);
         ring(helper, RitualCircle.SMALL_RITE, "circleglyphinfernal");
@@ -546,7 +609,7 @@ public final class CircleRiteTests {
         helper.setBlock(target.below(), Blocks.BEDROCK);
         var stone = bound(helper, target);
         start(helper, new ItemStack(Items.COBBLESTONE), new ItemStack(Items.MAGMA_CREAM), new ItemStack(Items.GOLDEN_SWORD), stone);
-        helper.runAfterDelay(THREE_OFFERING_CAST + 5, () -> {
+        helper.runAfterDelay(THREE_OFFERING_CAST + ALTAR_STEP_TICKS + 5, () -> {
             helper.assertTrue(drops(helper).size() == 4 && !helper.getBlockState(CENTER).getValue(RiteHeartBlock.ACTIVE)
                             && drops(helper).stream().anyMatch(item -> ItemStack.matches(item.getItem(), stone)),
                     "A dry target must return all four offerings");
@@ -574,7 +637,7 @@ public final class CircleRiteTests {
         helper.setBlock(target.east(3), Blocks.CHEST);
         start(helper, new ItemStack(Items.COBBLESTONE), new ItemStack(Items.MAGMA_CREAM), new ItemStack(Items.GOLDEN_SWORD),
                 bound(helper, target));
-        helper.runAfterDelay(THREE_OFFERING_CAST + 50, () -> {
+        helper.runAfterDelay(THREE_OFFERING_CAST + ALTAR_STEP_TICKS + 50, () -> {
             var heart = heart(helper);
             var saved = heart.saveWithoutMetadata();
             var state = saved.getCompound("Landscape");
@@ -583,7 +646,7 @@ public final class CircleRiteTests {
             helper.assertTrue(altar.power() < 9900, "The cone construction follows the 2,000-power debit");
             heart.load(saved);
         });
-        helper.runAfterDelay(THREE_OFFERING_CAST + 230, () -> {
+        helper.runAfterDelay(THREE_OFFERING_CAST + ALTAR_STEP_TICKS + 230, () -> {
             helper.assertFalse(helper.getBlockState(CENTER).getValue(RiteHeartBlock.ACTIVE), "The remote eruption must complete");
             helper.assertTrue(drops(helper).isEmpty(), "The completed eruption spends the offerings and Waystone");
             long rim = List.of(target.above(7).north(), target.above(7).south(), target.above(7).west(), target.above(7).east())

@@ -178,7 +178,7 @@
 
 ## Familiars and Covens (2026-11-19)
 
-- [x] Restore cat familiars through the 8,000-power Rite of Binding a Familiar. The muted survival client tamed a vanilla cat with cod, bound it with a medium white circle, and kept its name. The rite returned all five offerings and altar power when the circle had no eligible pet.
+- [x] Restore cat familiars through the 8,000-power Rite of Binding a Familiar. The muted survival client tamed a vanilla cat with cod, bound it with a medium white circle, and kept its name. A circle without an eligible pet returns its five item offerings after spending the altar power.
 - [x] Restore familiar fire immunity, armor, healing, and damage sharing. The client observed a ten-point hit split into nine for the owner and one for the cat, then healed the cat with cod. All 31 required Forge GameTests passed, including legacy owner tags and the offline owner's protection.
 - [x] Restore the 1,000-power Rite of Calling a Familiar and sneaking dismissal. The muted client recalled the same cat from Torment, dismissed the seated cat, and called one replacement with the saved name and 50 health.
 - [x] Verify the owner's familiar record, cat UUID, and health across a dedicated restart. The disposable world confirmed that a fatal hit on a bound cat dismisses it and kills its online owner, as in the legacy mod.
@@ -624,6 +624,13 @@
 - [x] Verify both failure paths through redstone activation on the packaged headless server. The unpowered Grave consumes its zombie and refunds its held items. The Mirror refunds its held items when the Demon is missing and retains its single debit across a dedicated restart.
 - [x] Reuse those refunded items with a Demon present. Save after paying the altar but before offering the Demon. The packaged server consumes the Demon and produces one Mirror after restarting, with a single altar debit.
 - [x] Run local Java 17 data generation and JAR reobfuscation. All 216 required Forge GameTests passed on the replay after the first run's Lumos/Nox fixture timed out waiting for ticking chunks.
+
+## Initial Altar Offerings (2026-11-24)
+
+- [x] Compare all 96 original Circle Magic registrations with the Forge recipes. White, Otherwhere, and Infernal ring sizes and initial altar costs match every registered rite. Seventy recipes include an initial power sacrifice.
+- [x] Restore the dedicated altar offering step for those seventy rites. The paid flag survives a save between the charge and the effect. A late cancellation or missing familiar returns the staged items and keeps the spent altar charge. The Mirror pays before offering its Demon.
+- [x] Start Waystone Binding with the survival client and shut down after payment. The saved chunk contains all three staged items and `AltarPowerOffered:1b`. A normal restart creates one Bound Waystone. Separate redstone runs verify that a canceled paid binding and a call with no familiar each return all three item offerings.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 259 local Forge GameTests. The checks cover the saved payment, completion with the altar removed, and the familiar refund. The updated ward, weather, volcano, recharge, witch, and fetish checks observe the effect on the pulse after payment.
 
 ## Chalk Rite Offering Sources (2026-11-24)
 

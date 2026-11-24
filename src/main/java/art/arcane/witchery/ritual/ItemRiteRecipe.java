@@ -243,6 +243,10 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         return livingOffering != null && usesLegacyOfferings();
     }
 
+    public boolean stagesAltarPower() {
+        return power > 0 && usesLegacyOfferings();
+    }
+
     public boolean chargesBeforeLivingOffering() {
         return RiteActivation.legacyId(id) == 95; // Rite of the Mirror
     }

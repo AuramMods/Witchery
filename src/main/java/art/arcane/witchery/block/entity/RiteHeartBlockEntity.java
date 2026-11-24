@@ -240,7 +240,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             livingOffered = offerLiving(level, rite, pos);
         } else if (awaitingWaystone) {
             offerWaystone(level, rite, pos);
-        } else if (stagedLiving && !altarPowerOffered) {
+        } else if (!altarPowerOffered && (rite.stagesAltarPower() || stagedLiving)) {
             AltarBlockEntity altar = rite.power() > 0 ? AltarPower.nearest(level, pos) : null;
             if (rite.power() > 0 && (altar == null || !altar.consumePower(rite.power()))) {
                 abort(level, "message.witchery.rite.missing_power");
