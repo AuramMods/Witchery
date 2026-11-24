@@ -1,6 +1,7 @@
 package art.arcane.witchery.entity;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.SunlightBlock;
 import art.arcane.witchery.item.GrenadeItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
@@ -80,10 +81,16 @@ public final class SunGrenadeFuseTests {
         var grenade = new GrenadeProjectile(WitcheryEntities.GRENADE.get(), helper.getLevel());
         var saved = new CompoundTag();
         saved.putBoolean("Impacted", true);
+        saved.putBoolean("BlockPlaced", true);
+        saved.putInt("BlockPlacedX", 42);
+        saved.putInt("BlockPlacedY", 70);
+        saved.putInt("BlockPlacedZ", -24);
         grenade.readAdditionalSaveData(saved);
         helper.assertTrue(grenade.hasImpacted() && grenade.saveWithoutId(new CompoundTag()).getInt("Remaining") == 200,
                 "An original landed grenade restarts with its original duration");
+        helper.assertTrue(grenade.isLighting(new BlockPos(42, 70, -24)), "An original landed grenade keeps the position it lit");
         saved.putInt("Remaining", 675);
+        saved.remove("BlockPlaced");
         grenade.readAdditionalSaveData(saved);
         helper.assertTrue(grenade.saveWithoutId(new CompoundTag()).getInt("Remaining") == 675,
                 "An earlier port's saved fuse must retain its remaining ticks");
@@ -97,5 +104,49 @@ public final class SunGrenadeFuseTests {
                         && GrenadeItem.ownerName(grenade.getItem()).equals("LegacyDisguise"),
                 "The original duplicate grenade keeps its named skin");
         helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_sun_grenade")
+    public static void sunGrenadeMovesItsLightAndKeepsSharedAndPermanentLights(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var light = WitcheryBlocks.getRequired("light").get();
+        var shared = helper.absolutePos(new BlockPos(4, 4, 4));
+        var destination = shared.east(3);
+        var permanent = shared.east(6);
+        level.setBlockAndUpdate(permanent, light.defaultBlockState());
+        var first = new GrenadeProjectile(WitcheryEntities.GRENADE.get(), level);
+        var second = new GrenadeProjectile(WitcheryEntities.GRENADE.get(), level);
+        for (var grenade : new GrenadeProjectile[]{first, second}) {
+            grenade.setPos(Vec3.atCenterOf(shared));
+            grenade.setNoGravity(true);
+            level.addFreshEntity(grenade);
+        }
+
+        helper.runAfterDelay(12, () -> {
+            helper.assertTrue(level.getBlockState(shared).is(light), "Both grenades must light their shared block");
+            first.setPos(Vec3.atCenterOf(destination));
+            first.tick();
+            helper.assertTrue(level.getBlockState(shared).is(light) && level.getBlockState(destination).is(light),
+                    "Moving one grenade keeps the shared light and immediately lights its new block");
+
+            second.setPos(Vec3.atCenterOf(permanent));
+            second.tick();
+            helper.assertTrue(level.isEmptyBlock(shared), "Moving the final grenade clears its old light immediately");
+            var saved = first.saveWithoutId(new CompoundTag());
+            saved.putInt("Remaining", 1);
+            first.load(saved);
+            first.tick();
+            helper.assertTrue(first.isRemoved() && level.isEmptyBlock(destination),
+                    "Bursting after reload clears the saved light on the same tick");
+
+            saved = second.saveWithoutId(new CompoundTag());
+            saved.putInt("Remaining", 1);
+            second.load(saved);
+            second.tick();
+            var permanentState = level.getBlockState(permanent);
+            helper.assertTrue(permanentState.is(light) && !permanentState.getValue(SunlightBlock.TEMPORARY),
+                    "A burst keeps an existing permanent light");
+            helper.succeed();
+        });
     }
 }

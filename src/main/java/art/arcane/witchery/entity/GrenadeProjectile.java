@@ -20,7 +20,6 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
 import net.minecraft.world.item.Item;
@@ -30,6 +29,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 public final class GrenadeProjectile extends ThrowableItemProjectile {
@@ -39,6 +39,7 @@ public final class GrenadeProjectile extends ThrowableItemProjectile {
             EntityDataSerializers.BOOLEAN);
     private static final DustParticleOptions SUNLIGHT = new DustParticleOptions(new Vector3f(1F, 0.92F, 0.14F), 0.8F);
     private int remainingTicks = FUSE_TICKS;
+    @Nullable private BlockPos litPosition;
 
     public GrenadeProjectile(EntityType<? extends GrenadeProjectile> type, Level level) {
         super(type, level);
@@ -74,17 +75,17 @@ public final class GrenadeProjectile extends ThrowableItemProjectile {
         else super.tick();
         if (isRemoved()) return;
 
+        boolean duplicate = GrenadeItem.isDuplicate(getItem());
         if (level() instanceof ServerLevel server) {
             if (--remainingTicks <= 0) finish(server);
-            else if (!GrenadeItem.isDuplicate(getItem()) && tickCount % 5 == 0) {
-                SunlightBlock light = (SunlightBlock) WitcheryBlocks.getRequired("light").get();
-                light.illuminate(server, lightPosition());
+            else if (!duplicate) {
+                if (litPosition != null || tickCount >= 5) moveLight(server, lightPosition());
                 if (hasImpacted()) for (LivingEntity entity : server.getEntitiesOfClass(LivingEntity.class,
                         getBoundingBox().inflate(1), target -> target.isAlive() && target.isPickable() && isUndead(target))) {
                     entity.setSecondsOnFire(3);
                 }
             }
-        } else if (hasImpacted() && random.nextInt(4) == 0) {
+        } else if (!duplicate && hasImpacted() && random.nextInt(4) == 0) {
             level().addParticle(SUNLIGHT, getRandomX(0.4), getY() + 0.05, getRandomZ(0.4), 0, 0.04, 0);
         }
     }
@@ -123,11 +124,24 @@ public final class GrenadeProjectile extends ThrowableItemProjectile {
         return state.isAir() || state.is(WitcheryBlocks.getRequired("light").get()) ? pos : pos.above();
     }
 
+    public boolean isLighting(BlockPos pos) {
+        return !isRemoved() && !GrenadeItem.isDuplicate(getItem()) && pos.equals(litPosition);
+    }
+
+    private void moveLight(ServerLevel level, @Nullable BlockPos destination) {
+        var light = (SunlightBlock) WitcheryBlocks.getRequired("light").get();
+        BlockPos previous = litPosition;
+        litPosition = destination;
+        if (previous != null && !previous.equals(destination)) light.clearUnusedLight(level, previous);
+        if (destination != null) light.illuminate(level, destination);
+    }
+
     private void finish(ServerLevel level) {
         returnQuartzSphere(level);
         if (GrenadeItem.isDuplicate(getItem())) {
             WitcheryFollower.spawnDuplicate(level, position(), GrenadeItem.ownerName(getItem()));
         } else {
+            moveLight(level, null);
             burstSunlight(level);
         }
         discard();
@@ -161,7 +175,7 @@ public final class GrenadeProjectile extends ThrowableItemProjectile {
     }
 
     private static boolean isUndead(LivingEntity entity) {
-        return entity.getMobType() == MobType.UNDEAD || entity instanceof ServerPlayer player && Vampirism.level(player) > 0;
+        return entity instanceof ServerPlayer ? CreatureAlignment.undead(entity) : entity.isInvertedHealAndHarm();
     }
 
     @Override
@@ -170,6 +184,12 @@ public final class GrenadeProjectile extends ThrowableItemProjectile {
         tag.putBoolean("Impacted", hasImpacted());
         tag.putInt("Remaining", remainingTicks);
         tag.putInt("Mode", GrenadeItem.isDuplicate(getItem()) ? 1 : 0);
+        if (litPosition != null) {
+            tag.putBoolean("BlockPlaced", true);
+            tag.putInt("BlockPlacedX", litPosition.getX());
+            tag.putInt("BlockPlacedY", litPosition.getY());
+            tag.putInt("BlockPlacedZ", litPosition.getZ());
+        }
     }
 
     @Override
@@ -179,6 +199,8 @@ public final class GrenadeProjectile extends ThrowableItemProjectile {
             // An original duplicate stored the skin name under Owner. Vanilla now uses Owner for a UUID.
             setItem(GrenadeItem.duplicate(tag.getString("Owner")));
         }
+        litPosition = tag.getBoolean("BlockPlaced") && !GrenadeItem.isDuplicate(getItem())
+                ? new BlockPos(tag.getInt("BlockPlacedX"), tag.getInt("BlockPlacedY"), tag.getInt("BlockPlacedZ")) : null;
         boolean impacted = tag.getBoolean("Impacted");
         entityData.set(IMPACTED, impacted);
         // Earlier 1.20.1 builds wrote an extended fuse for landed grenades.

@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Sun and Duplicate Grenade Fidelity (2026-11-23)
+
+- A Sun Grenade owns one temporary light at a time and saves its last position under the original `BlockPlaced` keys. Movement and a burst release that position immediately. If another Sun Grenade shares the position, it keeps the light. A scheduled recheck also clears temporary lights left by external removal or older port saves. Permanent light blocks are preserved.
+- The original undead check includes players with an active Infused Brew of the Grave. The packaged survival client used the actual throw and drink inputs. A controlled landed Sun Grenade recorded 59 fire ticks on the player and 99 after the burst. The preceding build recorded no fire in either case. The moving-light fixture counted one lit cell on the new build and two on the preceding build.
+- The Sun and Duplicate projectiles use the original 0.3-block camera-facing quads and separate Quartz Sphere and variant textures. In matching views, both rendered sprites measured 26 pixels across. The preceding build measured 44 pixels and rendered item glint. The original carried items retain their glint.
+- Java 17 JAR reobfuscation and all 163 checked-in GameTests passed. The matching clean Forge client and dedicated server used SHA-256 `488c92924d4d8d9950cc3f65b03f68414f984f0bd70ecc0ddc4df928aef0064f`. The normal dedicated restart restored the positioned grenade and its light. A controlled fuse expiry cleared that light and returned one Quartz Sphere. Every client run used zero master volume and No Output with no focus activation. Local evidence is in `build/qa-sun-grenade`.
+
 ## Legacy Player Mirror State and Wolf Cooldowns (2026-11-23)
 
 - The original `WitcheryExtendedPlayer` stores the Mirror room coordinates and two escape timestamps. The importer relocates the active room and timers to `ForgeData.PlayerPersisted`, including custom legacy Mirror dimension IDs. The room only imports for a player inside Mirror. Existing modern entries take precedence. A successful escape records its cooldown even when the player has no prior persistent state.

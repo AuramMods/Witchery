@@ -48,10 +48,15 @@ public final class SunlightBlock extends Block {
 
     @Override
     public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        if (!state.getValue(TEMPORARY)) return;
+        if (state.getValue(TEMPORARY) && !clearUnusedLight(level, pos)) level.scheduleTick(pos, this, RECHECK_TICKS);
+    }
+
+    public boolean clearUnusedLight(ServerLevel level, BlockPos pos) {
+        if (!level.hasChunkAt(pos)) return false;
+        BlockState state = level.getBlockState(pos);
+        if (!state.is(this) || !state.getValue(TEMPORARY)) return true;
         var sources = level.getEntitiesOfClass(GrenadeProjectile.class, new AABB(pos).inflate(2),
-                grenade -> grenade.lightPosition().equals(pos));
-        if (sources.isEmpty()) level.removeBlock(pos, false);
-        else level.scheduleTick(pos, this, RECHECK_TICKS);
+                grenade -> grenade.isLighting(pos));
+        return sources.isEmpty() && level.removeBlock(pos, false);
     }
 }

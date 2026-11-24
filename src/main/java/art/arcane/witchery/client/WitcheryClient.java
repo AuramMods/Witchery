@@ -44,6 +44,7 @@ import art.arcane.witchery.client.renderer.LeonardRenderer;
 import art.arcane.witchery.client.renderer.IllusionRenderer;
 import art.arcane.witchery.client.renderer.BrewProjectileRenderer;
 import art.arcane.witchery.client.renderer.BrewOverlayLayer;
+import art.arcane.witchery.client.renderer.GrenadeRenderer;
 import net.minecraft.client.model.CreeperModel;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
@@ -362,7 +363,7 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.THROWN_BREW.get(), BrewProjectileRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.LEGACY_FIXED_BREW.get(), BrewProjectileRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.LEGACY_CUSTOM_BREW.get(), BrewProjectileRenderer::new);
-        event.registerEntityRenderer(WitcheryEntities.GRENADE.get(), ThrownItemRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.GRENADE.get(), GrenadeRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.KETTLE.get(), KettleRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.BREW_GAS.get(), BrewGasRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.BREW_LIQUID.get(), BrewGasRenderer::new);
