@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Kettle and Distillery Appearance (2026-11-24)
+
+- The Kettle item uses the original empty basin. The placed model shows the chains and up to two bottles, hides the crossbar directly under a solid block, and animates the original four liquid tiles. The crossbar's render bounds follow its facing. The client verified the partial brew tint, the two bottles and all four tiles in a save made by the previous packaged JAR.
+- The Kettle saves and syncs the original `Powered` field. Partial recipes can show power availability while the altar retains its charge. The supplied Brew of Grotesque ingredients waited at an undersized altar and brewed after the fixture added a Skeleton Skull and recharged the altar. A ready batch emits slime and the spell particle selected by its saved power flag. After a dedicated restart, the muted survival client verified the saved flag, the fallback for a missing flag, and an explicit false value. It bottled all three servings and refilled the Kettle. An invalid offering showed the ruined tint.
+- Both Distillery IDs use the original tube angle and the slight tilt on the second jar. The packaged client inspected zero through four jars for each facing and both IDs, including the older burning block entity's renderer. The fixture seeded a saved batch at 680 of 800 ticks. When powered, it took one jar and produced Gypsum, Oil of Vitriol, and Slime for the player to collect through the menu.
+- Local Java 17 JAR reobfuscation, the asset inventory audit and all 163 Forge GameTests passed on SHA-256 `21f145455e9bf5d09304e3880d4d554c7b752787af4520e8c9ea4af395b3c853`.
+
 ## Witch's Oven and Spinning Wheel Appearance (2026-11-24)
 
 - The Witch's Oven model maps the original atlas across its body, lids, chimney and mirrored feet. The client checked both items and all 16 placed combinations of block ID, facing and flame state. The server reopened a save made by the previous packaged JAR during an active Spruce Sapling batch. The player took Hint of Rebirth and Wood Ash through the Oven menu. The fixture supplied materials and enabled doubled filter chance in the disposable world.

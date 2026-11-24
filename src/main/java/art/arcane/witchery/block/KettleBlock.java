@@ -21,6 +21,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -75,6 +76,11 @@ public final class KettleBlock extends BaseEntityBlock {
     @Override
     public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return BASIN;
+    }
+
+    @Override
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.ENTITYBLOCK_ANIMATED;
     }
 
     @Override
@@ -134,12 +140,16 @@ public final class KettleBlock extends BaseEntityBlock {
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         if (level.getBlockEntity(pos) instanceof KettleBlockEntity kettle) {
+            double x = pos.getX() + 0.45;
+            double y = pos.getY() + 0.4;
+            double z = pos.getZ() + 0.5;
             if (kettle.isRuined()) {
-                level.addParticle(ParticleTypes.LARGE_SMOKE, pos.getX() + 0.45, pos.getY() + 0.4, pos.getZ() + 0.5, 0, 0, 0);
-            } else if (kettle.isReady() || kettle.hasIngredients()) {
-                int color = kettle.liquidColor();
-                level.addParticle(ParticleTypes.ENTITY_EFFECT, pos.getX() + 0.45, pos.getY() + 0.4, pos.getZ() + 0.5,
-                        (color >> 16 & 255) / 255.0, (color >> 8 & 255) / 255.0, (color & 255) / 255.0);
+                level.addParticle(ParticleTypes.LARGE_SMOKE, x, y, z, 0, 0, 0);
+            } else if (kettle.isReady()) {
+                level.addParticle(ParticleTypes.ITEM_SLIME, x, y, z, 0, 0, 0);
+                level.addParticle(kettle.isPowered() ? ParticleTypes.EFFECT : ParticleTypes.ENTITY_EFFECT, x, y, z, 0, 0, 0);
+            } else if (kettle.isFull() && kettle.hasIngredients()) {
+                level.addParticle(ParticleTypes.ENTITY_EFFECT, x, y, z, 0, 0, 0);
             }
         }
     }

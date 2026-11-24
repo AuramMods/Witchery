@@ -1,5 +1,6 @@
 package art.arcane.witchery.block.entity;
 
+import art.arcane.witchery.block.KettleBlock;
 import art.arcane.witchery.brewing.KettleRecipe;
 import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.item.WitchClothingItem;
@@ -27,6 +28,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
@@ -46,6 +48,7 @@ public final class KettleBlockEntity extends BlockEntity {
     private final NonNullList<ItemStack> contents = NonNullList.withSize(BOTTLE_SLOT + 1, ItemStack.EMPTY);
     private final List<ItemStack> ingredients = contents.subList(0, BREW_SLOT);
     private boolean ruined;
+    private boolean powered;
     private int color;
     @Nullable private ResourceLocation finishedRecipeId;
 
@@ -106,9 +109,12 @@ public final class KettleBlockEntity extends BlockEntity {
             ruinBatch();
             return;
         }
-        boolean changed = color != recipe.color();
+        boolean complete = ingredients.stream().noneMatch(ItemStack::isEmpty);
+        boolean hasPower = canPower(server, recipe.power(), complete);
+        boolean changed = color != recipe.color() || powered != hasPower;
         color = recipe.color();
-        if (ingredients.stream().noneMatch(ItemStack::isEmpty) && canPower(server, recipe.power())) {
+        powered = hasPower;
+        if (complete && powered) {
             contents.set(BREW_SLOT, recipe.result().copy());
             finishedRecipeId = recipe.id();
             clearIngredients();
@@ -119,12 +125,12 @@ public final class KettleBlockEntity extends BlockEntity {
         }
     }
 
-    private boolean canPower(ServerLevel level, int power) {
+    private boolean canPower(ServerLevel level, int power, boolean consume) {
         if (power == 0) {
             return true;
         }
         AltarBlockEntity altar = AltarPower.nearest(level, worldPosition);
-        return altar != null && altar.consumePower(power);
+        return altar != null && (consume ? altar.consumePower(power) : altar.power() >= power);
     }
 
     public boolean isFull() {
@@ -137,6 +143,16 @@ public final class KettleBlockEntity extends BlockEntity {
 
     public boolean isRuined() {
         return ruined;
+    }
+
+    public boolean isPowered() {
+        return powered;
+    }
+
+    @Override
+    public AABB getRenderBoundingBox() {
+        boolean beamAlongX = getBlockState().getValue(KettleBlock.FACING).getAxis() == Direction.Axis.Z;
+        return new AABB(worldPosition).inflate(beamAlongX ? 0.25 : 0, 0, beamAlongX ? 0 : 0.25);
     }
 
     public boolean hasIngredients() {
@@ -256,6 +272,7 @@ public final class KettleBlockEntity extends BlockEntity {
         clearIngredients();
         contents.set(BREW_SLOT, ItemStack.EMPTY);
         ruined = false;
+        powered = false;
         color = 0;
         finishedRecipeId = null;
     }
@@ -286,6 +303,7 @@ public final class KettleBlockEntity extends BlockEntity {
             }
         }
         ruined = tag.getBoolean("Ruined");
+        powered = tag.contains("Powered") ? tag.getBoolean("Powered") : isReady();
         color = tag.getInt("LiquidColor");
         tank.setFluid(FluidStack.EMPTY);
         if (tag.contains("Tank", Tag.TAG_COMPOUND)) {
@@ -304,6 +322,7 @@ public final class KettleBlockEntity extends BlockEntity {
         super.saveAdditional(tag);
         ContainerHelper.saveAllItems(tag, contents);
         tag.putBoolean("Ruined", ruined);
+        tag.putBoolean("Powered", powered);
         tag.putInt("LiquidColor", color);
         tag.put("Tank", tank.writeToNBT(new CompoundTag()));
         if (finishedRecipeId != null) tag.putString("FinishedRecipe", finishedRecipeId.toString());

@@ -32,7 +32,7 @@ import net.minecraft.world.phys.BlockHitResult;
 public final class DistilleryBlock extends BaseEntityBlock {
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
     public static final IntegerProperty VISIBLE_JARS = IntegerProperty.create("jars", 0, 4);
-    private static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     public DistilleryBlock(Properties properties) {
         super(properties);
@@ -61,7 +61,7 @@ public final class DistilleryBlock extends BaseEntityBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.MODEL;
+        return RenderShape.ENTITYBLOCK_ANIMATED;
     }
 
     @Override

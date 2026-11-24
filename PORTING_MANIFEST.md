@@ -130,6 +130,10 @@ Lifecycle stages:
 - Dark Marks still laugh with the original `mob.torment.laugh` event. The separate original `mob.darkmark.idle` event and clip are available in the sound registry. The original `random.loved` definition points to an absent clip. The original Torment death clip is also absent, so the packaged death event uses the existing lowered-pitch hurt sample.
 
 ## Block Model Parity Anchors (current focus)
+- `witchery:kettle`
+  - The item shows the original empty basin. The placed model adds chains, a crossbar when the space above is open, up to two bottles, and four animated liquid frames. Liquid tint and particles distinguish water, brewing, ready and ruined batches. The block entity saves the original `Powered` flag and tracks power availability without charging a partial recipe.
+- `witchery:distilleryidle` and `witchery:distilleryburning`
+  - Both variants use the original still, frame, angled tube and up to four jars from `ModelDistillery`. The renderer reads the jar count from the synced block state and includes the original tilt on the second jar. Both item forms show the empty machine.
 - `witchery:witchesovenidle` and `witchery:witchesovenburning`
   - Both IDs and their items share the original `ModelWitchesOven` body, lid, chimney and four feet. The baked model maps the original atlas to the corresponding side and rotates with the block's facing. The burning state adds the original smoke and flame positions through block particles.
 - `witchery:spinningwheel`

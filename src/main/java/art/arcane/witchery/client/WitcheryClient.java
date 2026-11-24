@@ -105,6 +105,7 @@ import art.arcane.witchery.client.renderer.HuntingTrapRenderer;
 import art.arcane.witchery.client.renderer.GrassperRenderer;
 import art.arcane.witchery.client.renderer.ImpRenderer;
 import art.arcane.witchery.client.renderer.KettleRenderer;
+import art.arcane.witchery.client.renderer.DistilleryRenderer;
 import art.arcane.witchery.client.renderer.LeechChestRenderer;
 import art.arcane.witchery.client.renderer.LilithRenderer;
 import art.arcane.witchery.client.renderer.LordOfTormentRenderer;
@@ -265,6 +266,7 @@ public final class WitcheryClient {
         event.registerLayerDefinition(FetishRenderer.TRENT, FetishRenderer::trentLayer);
         event.registerLayerDefinition(FetishRenderer.LADDER, FetishRenderer::ladderLayer);
         event.registerLayerDefinition(KettleRenderer.LAYER, KettleRenderer::layer);
+        event.registerLayerDefinition(DistilleryRenderer.LAYER, DistilleryRenderer::layer);
         event.registerLayerDefinition(LeechChestRenderer.LAYER, LeechChestRenderer::layer);
         event.registerLayerDefinition(CoffinRenderer.LAYER, CoffinRenderer::layer);
         event.registerLayerDefinition(SilverVatRenderer.LAYER, SilverVatRenderer::layer);
@@ -379,6 +381,8 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.LEGACY_CUSTOM_BREW.get(), BrewProjectileRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.GRENADE.get(), GrenadeRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.KETTLE.get(), KettleRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.DISTILLERY.get(), DistilleryRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.LEGACY_BURNING_DISTILLERY.get(), DistilleryRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.BREW_GAS.get(), BrewGasRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.BREW_LIQUID.get(), BrewGasRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.SPINNING_WHEEL.get(), SpinningWheelRenderer::new);
@@ -492,7 +496,6 @@ public final class WitcheryClient {
                     "placeditem", "glowglobe", "infinityegg", "garlicgarland", "poppetshelf", "dreamcatcher",
                     "daylightcollector", "bloodcrucible", "silvervat", "cauldron", "cactus",
                     "circle", "circleglyphritual", "circleglyphotherwhere", "circleglyphinfernal",
-                    "kettle", "distilleryidle", "distilleryburning",
                     "witchesovenidle", "witchesovenburning", "fumefunnel", "filteredfumefunnel",
                     "coffinblock", "statueofworship", "refillingchest", "leechchest", "statuegoddess", "wolfaltar",
                     "voidbramble"

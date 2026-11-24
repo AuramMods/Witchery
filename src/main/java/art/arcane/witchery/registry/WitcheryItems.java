@@ -554,6 +554,12 @@ public final class WitcheryItems {
             case "spinningwheel" -> {
                 return new BlockEntityDisplayItem(block, WitcheryBlockEntities.SPINNING_WHEEL);
             }
+            case "kettle" -> {
+                return new BlockEntityDisplayItem(block, WitcheryBlockEntities.KETTLE);
+            }
+            case "distilleryidle", "distilleryburning" -> {
+                return new BlockEntityDisplayItem(block, WitcheryBlockEntities.DISTILLERY);
+            }
             case "statuegoddess" -> {
                 return new StatueGoddessItem(block);
             }

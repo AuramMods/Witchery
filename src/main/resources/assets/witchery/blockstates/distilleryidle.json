@@ -1,24 +1,5 @@
 {
-  "multipart": [
-    {"when": {"facing": "north"}, "apply": {"model": "witchery:block/distilleryidle", "y": 0}},
-    {"when": {"facing": "north", "jars": "1|2|3|4"}, "apply": {"model": "witchery:block/distillery_jar_1", "y": 0}},
-    {"when": {"facing": "north", "jars": "2|3|4"}, "apply": {"model": "witchery:block/distillery_jar_2", "y": 0}},
-    {"when": {"facing": "north", "jars": "3|4"}, "apply": {"model": "witchery:block/distillery_jar_3", "y": 0}},
-    {"when": {"facing": "north", "jars": "4"}, "apply": {"model": "witchery:block/distillery_jar_4", "y": 0}},
-    {"when": {"facing": "east"}, "apply": {"model": "witchery:block/distilleryidle", "y": 90}},
-    {"when": {"facing": "east", "jars": "1|2|3|4"}, "apply": {"model": "witchery:block/distillery_jar_1", "y": 90}},
-    {"when": {"facing": "east", "jars": "2|3|4"}, "apply": {"model": "witchery:block/distillery_jar_2", "y": 90}},
-    {"when": {"facing": "east", "jars": "3|4"}, "apply": {"model": "witchery:block/distillery_jar_3", "y": 90}},
-    {"when": {"facing": "east", "jars": "4"}, "apply": {"model": "witchery:block/distillery_jar_4", "y": 90}},
-    {"when": {"facing": "south"}, "apply": {"model": "witchery:block/distilleryidle", "y": 180}},
-    {"when": {"facing": "south", "jars": "1|2|3|4"}, "apply": {"model": "witchery:block/distillery_jar_1", "y": 180}},
-    {"when": {"facing": "south", "jars": "2|3|4"}, "apply": {"model": "witchery:block/distillery_jar_2", "y": 180}},
-    {"when": {"facing": "south", "jars": "3|4"}, "apply": {"model": "witchery:block/distillery_jar_3", "y": 180}},
-    {"when": {"facing": "south", "jars": "4"}, "apply": {"model": "witchery:block/distillery_jar_4", "y": 180}},
-    {"when": {"facing": "west"}, "apply": {"model": "witchery:block/distilleryidle", "y": 270}},
-    {"when": {"facing": "west", "jars": "1|2|3|4"}, "apply": {"model": "witchery:block/distillery_jar_1", "y": 270}},
-    {"when": {"facing": "west", "jars": "2|3|4"}, "apply": {"model": "witchery:block/distillery_jar_2", "y": 270}},
-    {"when": {"facing": "west", "jars": "3|4"}, "apply": {"model": "witchery:block/distillery_jar_3", "y": 270}},
-    {"when": {"facing": "west", "jars": "4"}, "apply": {"model": "witchery:block/distillery_jar_4", "y": 270}}
-  ]
+  "variants": {
+    "": {"model": "witchery:block/distilleryidle"}
+  }
 }
