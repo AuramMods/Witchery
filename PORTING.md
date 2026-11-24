@@ -200,6 +200,8 @@
 - [x] Pass Java 17 data generation, JAR reobfuscation, and all 16 checked-in Forge GameTests. The three shelter cases cover an outdoor witch opening and closing a door, village detection and rain with a Hobgoblin lead, and daytime restriction with nightfall release. The fixtures put the shelter above the test world's terrain to give the exposed side a clear sky.
 - [x] Pass all 448 selected checks in the broader development suite in a fresh world, including the existing coven, village, and Hobgoblin cases.
 - [x] Isolate the shelter fixtures. A failed run saved an adjacent case's occupied home two chunk sections from the daylight test. The fixtures remove their own home records after use and set the daylight approach to a rainy biome. The coven rite test now runs in a separate batch and checks the active witch by owner UUID.
+- [x] Replay the intermittent nighttime door case on current Forge. All 244 diagnostic trials passed. A traced random stroll opened the same door while targeting a different block. The checked-in test now seeds the witch's random source and checks that the shelter path still targets the covered tile when the door opens.
+- [x] Verify the generated Witch Hut on packaged Forge from six outdoor starting positions. Its original resident opened and shut the door from five positions within the initial observation window. The sixth passed on a dedicated restart. The fixture positioned the resident and held midnight while her ordinary AI ran.
 
 ## Imp Spell Contracts (2026-11-21)
 

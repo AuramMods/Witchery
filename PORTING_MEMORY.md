@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Coven Witch Night Shelter Verification (2026-11-24)
+
+- All 20 trials with different fixed seeds and 224 trials with unseeded witches passed. The original intermittent failure remains unexplained. One trace showed a random stroll opening the shelter door en route to a different target. The checked-in fixture seeds the witch's random source and checks that the chosen shelter is still the active destination when the door opens.
+- The previous packaged JAR generated the seed-1 Witch Hut and its resident. The witch opened and shut its oak door from five of six outdoor placements within 20 seconds. The remaining approach passed after a headless dedicated restart with the same witch UUID. The fixture held midnight and used administrator positioning. Logs are in `build/qa-shelter-diagnosis`.
+- The rebuilt package passed Java 17 reobfuscation and all 196 required local Forge GameTests. Its archive entries match the packaged server JAR apart from the build timestamp in the manifest.
+
 ## Tracked Effects Across Dimension Travel (2026-11-24)
 
 - A two-client clean Forge run measured the local hitbox returning to 0.60 blocks wide after Dream finished loading, even though the server retained the effects. The direct teleport replaces `LocalPlayer`. Witchery already sent the saved scale, but the local tick restored default size while the effect instance was absent. The server now resends active tracked effects to the player using the native effect packet after dimension changes.

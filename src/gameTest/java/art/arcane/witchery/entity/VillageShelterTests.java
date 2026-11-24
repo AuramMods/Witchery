@@ -43,14 +43,18 @@ public final class VillageShelterTests {
         setTime(helper, 18_000);
         helper.runAfterDelay(910, restore);
         CovenWitch witch = helper.spawn(WitcheryEntities.COVEN_WITCH.get(), APPROACH);
+        // Control the shelter roll and competing random strolls in the fixture.
+        witch.getRandom().setSeed(0);
         BlockPos destination = helper.absolutePos(INSIDE);
         helper.startSequence().thenWaitUntil(() -> {
             var path = witch.getNavigation().getPath();
             helper.assertTrue(path != null && path.getTarget().equals(destination),
                     "The Coven Witch should choose the covered side of the house door");
         }).thenWaitUntil(() -> {
-            helper.assertTrue(helper.getBlockState(DOOR).getValue(DoorBlock.OPEN),
-                    "The witch should open the wooden door on her path");
+            var path = witch.getNavigation().getPath();
+            helper.assertTrue(path != null && path.getTarget().equals(destination)
+                            && helper.getBlockState(DOOR).getValue(DoorBlock.OPEN),
+                    "The witch should open the wooden door while following the shelter route");
         }).thenWaitUntil(() -> {
             helper.assertTrue(witch.distanceToSqr(Vec3.atBottomCenterOf(destination)) < 1.25
                             && !helper.getBlockState(DOOR).getValue(DoorBlock.OPEN),
