@@ -1415,6 +1415,8 @@ Sources:
 
 The six container menus are registered in `WitcheryMenus` and bound to their screens in `WitcheryClient`. The original three book GUI IDs opened client readers from held items. Guide volumes and the atlas use the held book packet to open `GuideBookScreen`. The vampire journal opens `VampireBookScreen` from the held item. Page and atlas-selection data live on those items and use bookmark packets. The earlier port's three unused book menu types were removed.
 
+The ten guide volumes and the Vampire Journal have localized text in English, German, Spanish, Russian, and Simplified Chinese. The Circle Magic chapter labels use the original rite names where they identify the chapter, with qualifiers to distinguish variants. Rewritten instructions describe the live recipes. Brew ingredient pages include the individual splash, gas, liquid, and triggered dispersals. Kettle pages resolve both the recipe's familiar species and dimension at display time.
+
 | Legacy GUI ID | Forge menu or client screen |
 |---:|---|
 | 0 | `witchery:altar` |

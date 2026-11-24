@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Guide and Vampire Journal Localization (2026-11-23)
+
+- German, Spanish, Russian, and Simplified Chinese now cover all 323 guide keys, 65 custom brew names, 50 effect names, and all 16 Vampire Journal pages. The journal's title, cover button, and torn-page counter are translated. Format arguments match English across all four language files. Circle Magic has 88 distinct localized chapter titles in its original order.
+- The Circle Magic introduction describes ordinary activation and uses the Seer Stone to call the coven. The Cauldron guide now describes each delivery ingredient using its actual dispersal, including both ways to make a splash. Kettle pages read the familiar's translated entity name and the translated Spirit World destination. The atlas names the Mirror and Torment biomes.
+- Long guide titles reserve space above the body. The journal scrolls illustrated chapters when their text extends beyond the page. The packaged client opened all ten guides in every language and resolved 481 page entries per language. It reopened the same creature Waystone rite by its saved ID and returned the journal to its cover, clearing the server bookmark. The illustrated journal scrolled in German, Spanish, and Russian. The Simplified Chinese sample fit on the page.
+- Java 17 data generation, JAR reobfuscation, and all 163 checked-in Forge GameTests passed. The clean Forge client and dedicated server used the same JAR, SHA-256 `76a6b0b8b2f74cd2bece7f3b751febb9f67f278d1fc1c8505c219958176ce619`. The hidden client used zero master volume and No Output without taking focus. The client report and book captures are in `build/qa-guide-locales`.
+
 ## Sun and Duplicate Grenade Fidelity (2026-11-23)
 
 - A Sun Grenade owns one temporary light at a time and saves its last position under the original `BlockPlaced` keys. Movement and a burst release that position immediately. If another Sun Grenade shares the position, it keeps the light. A scheduled recheck also clears temporary lights left by external removal or older port saves. Permanent light blocks are preserved.

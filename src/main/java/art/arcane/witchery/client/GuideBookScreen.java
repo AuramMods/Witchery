@@ -30,7 +30,7 @@ public final class GuideBookScreen extends Screen {
     private static final ResourceLocation PAPER = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "textures/gui/booksingle.png");
     private static final int INK = 0x352418;
     private static final int BODY_WIDTH = 112;
-    private static final int BODY_HEIGHT = 94;
+    private static final int BODY_BOTTOM = 144;
     private static final int CONTENTS_ROWS = 8;
 
     private final int slot;
@@ -209,13 +209,14 @@ public final class GuideBookScreen extends Screen {
         var indicator = Component.translatable("book.pageIndicator", page + 1, pages.size());
         graphics.drawString(font, indicator, left + 148 - font.width(indicator), top + 13, 0x6C5643, false);
         int y = top + 28;
-        for (var line : font.split(entry.title(), BODY_WIDTH)) {
+        var titleLines = font.split(entry.title(), BODY_WIDTH);
+        for (var line : titleLines.subList(0, Math.min(titleLines.size(), 5))) {
             graphics.drawString(font, line, left + 93 - font.width(line) / 2, y, 0x713426, false);
             y += 10;
         }
 
-        int bodyTop = top + 50;
-        int bottom = bodyTop + BODY_HEIGHT;
+        int bodyTop = Math.max(top + 50, y + 2);
+        int bottom = top + BODY_BOTTOM;
         graphics.enableScissor(left + 34, bodyTop, left + 151, bottom);
         y = bodyTop - scroll;
         if (entry.picture() != null) {
@@ -244,7 +245,7 @@ public final class GuideBookScreen extends Screen {
         graphics.disableScissor();
         maxScroll = Math.max(0, y + scroll - bottom);
         if (maxScroll > 0) {
-            int marker = bodyTop + (BODY_HEIGHT - 10) * scroll / maxScroll;
+            int marker = bodyTop + (bottom - bodyTop - 10) * scroll / maxScroll;
             graphics.fill(left + 150, bodyTop, left + 151, bottom, 0x55995E35);
             graphics.fill(left + 149, marker, left + 151, marker + 10, 0xFF995E35);
         }

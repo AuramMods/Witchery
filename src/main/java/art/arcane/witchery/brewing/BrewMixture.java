@@ -406,6 +406,10 @@ public final class BrewMixture {
                 if (!ingredient.action.nameKey(false).equals(ingredient.action.nameKey(true))) {
                     reversed = Component.translatable(ingredient.action.nameKey(true));
                 }
+            } else if (ingredient.modifier == Modifier.DELIVERY) {
+                var delivery = Delivery.values()[ingredient.amount];
+                effect = Component.translatable("guide.witchery.cauldron.delivery."
+                        + delivery.name().toLowerCase(java.util.Locale.ROOT));
             } else {
                 effect = Component.translatable("guide.witchery.cauldron.modifier."
                         + ingredient.modifier.name().toLowerCase(java.util.Locale.ROOT), ingredient.amount, ingredient.ceiling);

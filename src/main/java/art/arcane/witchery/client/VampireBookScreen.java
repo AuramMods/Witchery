@@ -10,6 +10,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.PageButton;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_HOME;
@@ -27,6 +28,8 @@ public final class VampireBookScreen extends Screen {
     private final int inventorySlot;
     private final int pageCount;
     private int page;
+    private int scroll;
+    private int maxScroll;
     private PageButton previous;
     private PageButton next;
     private Button cover;
@@ -63,9 +66,17 @@ public final class VampireBookScreen extends Screen {
 
     private void turn(int index) {
         page = Math.max(0, Math.min(index, pageCount - 1));
+        scroll = 0;
+        maxScroll = 0;
         previous.visible = page > 0;
         next.visible = page < pageCount - 1;
         cover.visible = page > 0;
+    }
+
+    @Override
+    public boolean mouseScrolled(double x, double y, double amount) {
+        scroll = Mth.clamp(scroll - (int) Math.signum(amount) * 18, 0, maxScroll);
+        return true;
     }
 
     @Override
@@ -97,7 +108,10 @@ public final class VampireBookScreen extends Screen {
         var indicator = Component.translatable("book.pageIndicator", page + 1, pageCount);
         graphics.drawString(font, indicator, left + 149 - font.width(indicator), top + 15, 0x6C5643, false);
         String chapter = VampireBookItem.chapter(page);
-        int y = top + 34;
+        int bodyTop = top + 34;
+        int bodyBottom = top + 146;
+        graphics.enableScissor(left + 36, bodyTop, left + 153, bodyBottom);
+        int y = bodyTop - scroll;
         if (page == 0) {
             for (var line : font.split(getTitle(), 100)) {
                 graphics.drawString(font, line, left + 94 - font.width(line) / 2, y, 0x5D150E, false);
@@ -117,6 +131,13 @@ public final class VampireBookScreen extends Screen {
         for (var line : font.split(Component.translatable(TEXT + chapter), 114)) {
             graphics.drawString(font, line, left + 38, y, 0x261912, false);
             y += 9;
+        }
+        graphics.disableScissor();
+        maxScroll = Math.max(0, y + scroll - bodyBottom);
+        if (maxScroll > 0) {
+            int marker = bodyTop + (bodyBottom - bodyTop - 10) * scroll / maxScroll;
+            graphics.fill(left + 151, bodyTop, left + 152, bodyBottom, 0x55995E35);
+            graphics.fill(left + 151, marker, left + 153, marker + 10, 0xFF995E35);
         }
         super.render(graphics, mouseX, mouseY, partialTick);
     }

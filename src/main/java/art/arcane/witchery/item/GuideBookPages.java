@@ -182,8 +182,12 @@ public final class GuideBookPages {
     private static Page kettle(KettleRecipe recipe) {
         var steps = new ArrayList<>(inputs(recipe.ingredients()));
         if (recipe.power() > 0) steps.add(text("power", recipe.power()));
-        if (recipe.dimension() != null) steps.add(text("dimension", readable(recipe.dimension().getPath())));
-        if (recipe.bottlingFamiliar() != null) steps.add(text("familiar", readable(recipe.bottlingFamiliar().name())));
+        if (recipe.dimension() != null) {
+            var dimension = recipe.dimension();
+            steps.add(text("dimension", Component.translatableWithFallback(dimension.toLanguageKey("dimension"),
+                    readable(dimension.getPath()))));
+        }
+        if (recipe.bottlingFamiliar() != null) steps.add(text("familiar", recipe.bottlingFamiliar().entityType().getDescription()));
         steps.add(text("output", recipe.result().getCount(), recipe.result().getHoverName()));
         return new Page(recipe.result().getHoverName(), steps, List.of(recipe.result()), List.of(), null);
     }
