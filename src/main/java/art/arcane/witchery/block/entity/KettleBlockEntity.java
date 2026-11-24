@@ -62,7 +62,7 @@ public final class KettleBlockEntity extends BlockEntity {
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
             return slot == BOTTLE_SLOT ? stack.is(Items.GLASS_BOTTLE)
-                    : slot < BREW_SLOT && !stack.is(Items.GLASS_BOTTLE) && canAddIngredients() && contents.get(slot).isEmpty();
+                    : slot < BREW_SLOT && !stack.is(Items.GLASS_BOTTLE) && isFull() && contents.get(BREW_SLOT).isEmpty();
         }
 
         @Override
@@ -172,23 +172,26 @@ public final class KettleBlockEntity extends BlockEntity {
         return isReady() ? color : (color & 0xFEFEFE) >>> 1;
     }
 
-    private boolean canAddIngredients() {
-        return isFull() && !ruined && !isReady();
-    }
-
     public ItemStack addDroppedStack(ItemStack stack) {
         if (stack.is(Items.GLASS_BOTTLE)) {
-            return inventory.insertItem(BOTTLE_SLOT, stack, false);
+            ItemStack stored = contents.get(BOTTLE_SLOT);
+            if (stack.getCount() > inventory.getSlotLimit(BOTTLE_SLOT) - stored.getCount()) return stack;
+            // Dropped bottles top up the existing stack and keep its item data.
+            ItemStack bottles = stored.isEmpty() ? stack : stored;
+            inventory.setStackInSlot(BOTTLE_SLOT, bottles.copyWithCount(stored.getCount() + stack.getCount()));
+            return ItemStack.EMPTY;
         }
-        if (!canAddIngredients()) {
-            return stack;
-        }
+        if (!isFull() || stack.isEmpty()) return stack;
         for (int slot = 0; slot < BREW_SLOT; slot++) {
             if (contents.get(slot).isEmpty()) {
-                return inventory.insertItem(slot, stack, false);
+                inventory.setStackInSlot(slot, stack.copyWithCount(Math.min(stack.getCount(), inventory.getSlotLimit(slot))));
+                return ItemStack.EMPTY;
             }
         }
-        ruinBatch();
+        if (!ruined) {
+            ruined = true;
+            update();
+        }
         return ItemStack.EMPTY;
     }
 

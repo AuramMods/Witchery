@@ -11,6 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
@@ -22,6 +23,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -38,6 +40,73 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class KettleDropTests {
+    @GameTest(template = "qa_coven_arena")
+    public static void acceptsDroppedBottlesOnlyWhenTheWholeStackFits(GameTestHelper helper) {
+        var kettle = heatedKettle(helper, new BlockPos(5, 4, 5));
+        var inventory = kettle.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(IllegalStateException::new);
+        var stored = new ItemStack(Items.GLASS_BOTTLE, 63).setHoverName(Component.literal("Stored Bottles"));
+        var offered = new ItemStack(Items.GLASS_BOTTLE, 2).setHoverName(Component.literal("Offered Bottles"));
+        helper.assertTrue(inventory.insertItem(7, stored, false).isEmpty(), "Prepare a nearly full bottle buffer");
+        helper.assertTrue(ItemStack.matches(kettle.addDroppedStack(offered), offered)
+                        && ItemStack.matches(inventory.getStackInSlot(7), stored),
+                "The Kettle leaves the whole two-bottle drop on the ground when there is room for one");
+
+        var saved = kettle.saveWithFullMetadata();
+        saved.getList("Items", Tag.TAG_COMPOUND).getCompound(0).putByte("Count", (byte) 62);
+        kettle.load(saved);
+        helper.assertTrue(kettle.addDroppedStack(offered).isEmpty()
+                        && ItemStack.matches(inventory.getStackInSlot(7), stored.copyWithCount(64)),
+                "The whole drop fills the buffer and keeps the bottles' original stored name");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void acceptsDroppedIngredientsAroundAFinishedBrew(GameTestHelper helper) throws Exception {
+        var kettle = heatedKettle(helper, new BlockPos(5, 4, 5));
+        kettle.load(TagParser.parseTag("""
+                {Items:[{Slot:6b,id:"witchery:brew_of_vines",Count:3b}],Powered:1b,LiquidColor:-16753913,
+                 Tank:{FluidName:"minecraft:water",Amount:1000},FinishedRecipe:"witchery:kettle/brew_of_vines"}
+                """));
+        var inventory = kettle.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(IllegalStateException::new);
+        var vines = new ItemStack(Items.VINE, 2);
+        helper.assertTrue(ItemStack.matches(inventory.insertItem(0, vines, true), vines) && kettle.isReady(),
+                "The item handler refuses new ingredients while the result slot contains a brew");
+        for (int slot = 0; slot < 6; slot++) {
+            helper.assertTrue(kettle.addDroppedStack(vines).isEmpty() && ItemStack.matches(inventory.getStackInSlot(slot), vines),
+                    "The full Kettle accepts each dropped stack into the next free slot");
+        }
+        helper.assertTrue(kettle.isReady() && kettle.addDroppedStack(vines).isEmpty() && kettle.isRuined(),
+                "The seventh dropped stack spoils the batch");
+        kettle.load(kettle.saveWithFullMetadata());
+        helper.assertTrue(!kettle.isReady() && kettle.bottleBrew().isEmpty()
+                        && inventory.getStackInSlot(6).is(WitcheryIngredient.BREW_OF_VINES.item())
+                        && inventory.getStackInSlot(6).getCount() == 3,
+                "The spoiled result stays in the saved Kettle and can no longer be bottled");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void hoppersMergeIngredientsIntoTheSameSlotEvenWhenSpoiled(GameTestHelper helper) {
+        var pos = new BlockPos(5, 4, 5);
+        var kettle = heatedKettle(helper, pos);
+        var inventory = kettle.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(IllegalStateException::new);
+        kettle.addDroppedStack(new ItemStack(Items.VINE));
+        helper.setBlock(pos.above(), Blocks.HOPPER);
+        var hopper = (HopperBlockEntity) helper.getLevel().getBlockEntity(helper.absolutePos(pos.above()));
+        hopper.setItem(0, new ItemStack(Items.VINE));
+
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(inventory.getStackInSlot(0).getCount() == 2
+                        && inventory.getStackInSlot(1).isEmpty(), "The hopper merges a vine into the first ingredient stack"))
+                .thenExecute(() -> {
+                    var saved = kettle.saveWithFullMetadata();
+                    saved.putBoolean("Ruined", true);
+                    kettle.load(saved);
+                    hopper.setItem(0, new ItemStack(Items.VINE));
+                }).thenWaitUntil(() -> helper.assertTrue(kettle.isRuined() && inventory.getStackInSlot(0).getCount() == 3
+                        && inventory.getStackInSlot(1).isEmpty(), "A spoiled Kettle without a result still accepts the hopper ingredient"))
+                .thenSucceed();
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void topsUpAndRinsesAKettleWithWaterBuckets(GameTestHelper helper) {
         var kettle = heatedKettle(helper, new BlockPos(5, 4, 5));

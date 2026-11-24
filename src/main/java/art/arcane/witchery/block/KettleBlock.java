@@ -136,11 +136,8 @@ public final class KettleBlock extends BaseEntityBlock {
                 || !(level.getBlockEntity(pos) instanceof KettleBlockEntity kettle)) {
             return;
         }
-        ItemStack remainder = kettle.addDroppedStack(item.getItem());
-        if (remainder.isEmpty()) {
+        if (kettle.addDroppedStack(item.getItem()).isEmpty()) {
             item.discard();
-        } else if (remainder != item.getItem()) {
-            item.setItem(remainder);
         }
     }
 
