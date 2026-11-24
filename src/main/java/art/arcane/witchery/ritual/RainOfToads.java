@@ -19,8 +19,7 @@ public final class RainOfToads {
 
     public static void lightningPulse(ServerLevel level, BlockPos heart, int stage) {
         if (stage == LAST_LIGHTNING_STAGE) {
-            ServerLevel overworld = level.getServer().overworld();
-            if (!overworld.isRaining() && overworld.getLevelData() instanceof ServerLevelData weather) {
+            if (!WeatherRites.legacyWeather(level).isRaining() && level.getLevelData() instanceof ServerLevelData weather) {
                 weather.setClearWeatherTime(0);
                 weather.setRainTime((300 + level.random.nextInt(600)) * 20);
                 weather.setRaining(true);

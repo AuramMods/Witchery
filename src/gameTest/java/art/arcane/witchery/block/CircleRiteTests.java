@@ -11,6 +11,8 @@ import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
 import art.arcane.witchery.ritual.RitualCircle;
+import art.arcane.witchery.ritual.WeatherRites;
+import art.arcane.witchery.world.WitcheryDimensions;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -37,6 +39,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
@@ -355,6 +358,115 @@ public final class CircleRiteTests {
                 drops(helper).forEach(ItemEntity::discard);
             }
         }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_rite_dimension_conditions")
+    public static void legacyRitesUseEachRealmsDaylightAndThunder(GameTestHelper helper) {
+        var overworld = helper.getLevel();
+        var server = overworld.getServer();
+        var end = server.getLevel(Level.END);
+        var nether = server.getLevel(Level.NETHER);
+        var mirror = server.getLevel(WitcheryDimensions.MIRROR);
+        var torment = server.getLevel(WitcheryDimensions.TORMENT);
+        var eclipse = rite(overworld, "rite_of_total_eclipse_portable");
+        var necromancy = rite(overworld, "rite_of_necromantic_stone");
+        var curse = rite(overworld, "curse_of_misfortune");
+        var cure = rite(overworld, "cure_of_misfortune");
+        var hell = rite(overworld, "rite_of_hell_on_earth");
+        for (var world : List.of(nether, mirror, torment)) {
+            helper.assertTrue(necromancy.startFailure(world) == null
+                            && "message.witchery.rite.day_only".equals(eclipse.startFailure(world)),
+                    "The original circle treats this realm as night: " + world.dimension().location());
+        }
+        helper.assertTrue(eclipse.startFailure(end) == null
+                        && "message.witchery.rite.night_only".equals(necromancy.startFailure(end)),
+                "The original circle treats the End as day");
+        long overworldTime = overworld.getDayTime();
+        try {
+            overworld.setDayTime(6_000);
+            helper.assertTrue(WeatherRites.eclipse(end) && overworld.getDayTime() == 6_000,
+                    "An Eclipse in the End completes while the Overworld clock stays at noon");
+        } finally {
+            overworld.setDayTime(overworldTime);
+        }
+        helper.assertTrue("message.witchery.rite.hell_on_earth_overworld".equals(hell.startFailure(nether)),
+                "Hell on Earth still requires the Overworld");
+
+        float savedRain = overworld.getRainLevel(1);
+        float savedThunder = savedRain == 0 ? 0 : overworld.getThunderLevel(1) / savedRain;
+        float netherRain = nether.getRainLevel(1);
+        float netherThunder = netherRain == 0 ? 0 : nether.getThunderLevel(1) / netherRain;
+        try {
+            overworld.setRainLevel(1);
+            overworld.setThunderLevel(0.8F);
+            nether.setRainLevel(0);
+            helper.assertTrue("message.witchery.rite.storm_only".equals(curse.startFailure(torment))
+                            && cure.startFailure(torment) == null,
+                    "Torment waits for full thunder to start a curse and allows cures during weaker weather");
+            overworld.setThunderLevel(1);
+            helper.assertTrue(curse.startFailure(torment) == null
+                            && "message.witchery.rite.storm_only".equals(curse.startFailure(nether)),
+                    "A storm starting in the Overworld reaches Torment without changing Nether thunder");
+            nether.setRainLevel(1);
+            nether.setThunderLevel(1);
+            helper.assertTrue(curse.startFailure(nether) == null,
+                    "Nether eligibility honors the thunder strength loaded with the level");
+        } finally {
+            overworld.setRainLevel(savedRain);
+            overworld.setThunderLevel(savedThunder);
+            nether.setRainLevel(netherRain);
+            nether.setThunderLevel(netherThunder);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_rite_saved_night_activation", setupTicks = 5)
+    public static void queuedNecromancyKeepsItsNightActivationAfterReload(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.SMALL_RITE, "circleglyphritual");
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var altar = chargedAltar(helper, false);
+        waitForOfferings(helper, new ItemStack(WitcheryIngredient.WAYSTONE.item()),
+                new ItemStack(WitcheryIngredient.ENDER_DEW.item()), new ItemStack(Items.GLOWSTONE_DUST),
+                new ItemStack(WitcheryIngredient.ATTUNED_STONE.item()), new ItemStack(Items.BONE),
+                new ItemStack(Items.ROTTEN_FLESH), new ItemStack(WitcheryIngredient.WOOD_ASH.item()),
+                new ItemStack(Items.IRON_SWORD), new ItemStack(WitcheryIngredient.SPECTRAL_DUST.item())).thenExecute(() -> {
+            long originalTime = level.getDayTime();
+            float originalRain = level.getRainLevel(1);
+            float originalThunder = originalRain == 0 ? 0 : level.getThunderLevel(1) / originalRain;
+            var heart = heart(helper);
+            try {
+                level.setRainLevel(0);
+                level.setThunderLevel(0);
+                level.setDayTime(18_000);
+                level.updateSkyBrightness();
+                start(helper);
+                tick(level, center, heart, 20);
+                var saved = heart.saveWithoutMetadata();
+                helper.assertTrue(saved.getString("Rite").equals("witchery:rite_of_binding_a_waystone")
+                                && saved.getList("QueuedRites", Tag.TAG_STRING).getString(0).equals("witchery:rite_of_necromantic_stone"),
+                        "One activation queues Necromancy behind Waystone Binding");
+
+                level.setDayTime(30_000);
+                level.updateSkyBrightness();
+                heart.load(saved);
+                tick(level, center, heart, 240);
+                helper.assertTrue(drops(helper).stream().anyMatch(drop -> drop.getItem().is(WitcheryIngredient.NECROMANTIC_STONE.item())),
+                        "The saved queue completes the night cast after sunrise");
+                helper.assertTrue(altar.power() == 8_500, "Both queued casts pay their altar charges once");
+            } finally {
+                level.setDayTime(originalTime);
+                level.setRainLevel(originalRain);
+                level.setThunderLevel(originalThunder);
+                level.updateSkyBrightness();
+                drops(helper).forEach(ItemEntity::discard);
+            }
+        }).thenSucceed();
+    }
+
+    private static ItemRiteRecipe rite(ServerLevel level, String path) {
+        return (ItemRiteRecipe) level.getRecipeManager().byKey(ResourceLocation.fromNamespaceAndPath(Witchery.MODID, path)).orElseThrow();
     }
 
     @GameTest(template = TEMPLATE, batch = "witchery_legacy_climate_prelude", setupTicks = 5)

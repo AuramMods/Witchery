@@ -132,34 +132,39 @@ public final class FetishBehaviorTests {
             helper.useBlock(CENTER);
             helper.assertTrue(helper.getBlockState(CENTER).getValue(RiteHeartBlock.ACTIVE), "The medium circle starts the binding rite");
             var heart = (RiteHeartBlockEntity) helper.getBlockEntity(CENTER);
-            helper.runAfterDelay(60, () -> heart.load(heart.saveWithoutMetadata()));
-            helper.runAfterDelay(90, () -> {
-                float beforeCharge = altar.power();
-                int recharge = 10 * altar.rechargeMultiplier();
-                helper.runAfterDelay(20, () -> {
-                    helper.assertTrue(altar.power() == beforeCharge - 6000 + recharge
-                                    && heart.saveWithoutMetadata().getBoolean("AltarPowerOffered"),
-                            "The altar contributes 6,000 while the sacrificed spirits remain alive");
-                    helper.assertTrue(needed.stream().allMatch(Mob::isAlive), "The binding waits until its next step");
-                });
-                helper.runAfterDelay(40, () -> {
-                    var items = level.getEntitiesOfClass(ItemEntity.class, new AABB(center).inflate(6));
-                    var bound = items.stream().map(ItemEntity::getItem).filter(item -> item.is(ladder)).findFirst().orElseThrow();
-                    helper.assertTrue(FetishBlockEntity.itemEffect(bound) == FetishEffect.SCREAMER.id
-                                    && FetishBlockEntity.itemColor(bound) == 14,
-                            "The saved binding rite returns the dyed Witch's Ladder as a Screamer");
-                    helper.assertTrue(altar.power() == beforeCharge - 6000 + 2 * recharge, "The binding uses the earlier payment");
-                    helper.assertTrue(needed.stream().allMatch(Mob::isRemoved) && unrelated.isAlive(),
-                            "The rite consumes the three Dream Spirits and two Banshees and leaves the Poltergeist");
-                    helper.assertTrue(items.size() == 3 && items.stream().anyMatch(item -> ItemStack.matches(item.getItem(), stone))
-                                    && items.stream().anyMatch(item -> ItemStack.matches(item.getItem(), boline)),
-                            "The rite also returns the original named Necromantic Stone and worn Boline");
-                    unrelated.discard();
-                    items.forEach(ItemEntity::discard);
-                    helper.succeed();
-                });
-            });
+            // Advance the glyph within one server tick so altar recharge cannot race the debit.
+            tickHeart(heart, 60);
+            heart.load(heart.saveWithoutMetadata());
+            tickHeart(heart, 20);
+            float beforeCharge = altar.power();
+            tickHeart(heart, 20);
+            helper.assertTrue(altar.power() == beforeCharge - 6_000
+                            && heart.saveWithoutMetadata().getBoolean("AltarPowerOffered"),
+                    "The altar contributes 6,000 while the sacrificed spirits remain alive");
+            helper.assertTrue(needed.stream().allMatch(Mob::isAlive), "The binding waits until its next step");
+
+            tickHeart(heart, 20);
+            var items = level.getEntitiesOfClass(ItemEntity.class, new AABB(center).inflate(6));
+            var bound = items.stream().map(ItemEntity::getItem).filter(item -> item.is(ladder)).findFirst().orElseThrow();
+            helper.assertTrue(FetishBlockEntity.itemEffect(bound) == FetishEffect.SCREAMER.id
+                            && FetishBlockEntity.itemColor(bound) == 14,
+                    "The saved binding rite returns the dyed Witch's Ladder as a Screamer");
+            helper.assertTrue(altar.power() == beforeCharge - 6_000, "The binding uses the earlier payment");
+            helper.assertTrue(needed.stream().allMatch(Mob::isRemoved) && unrelated.isAlive(),
+                    "The rite consumes the three Dream Spirits and two Banshees and leaves the Poltergeist");
+            helper.assertTrue(items.size() == 3 && items.stream().anyMatch(item -> ItemStack.matches(item.getItem(), stone))
+                            && items.stream().anyMatch(item -> ItemStack.matches(item.getItem(), boline)),
+                    "The rite also returns the original named Necromantic Stone and worn Boline");
+            unrelated.discard();
+            items.forEach(ItemEntity::discard);
+            helper.succeed();
         });
+    }
+
+    private static void tickHeart(RiteHeartBlockEntity heart, int ticks) {
+        for (int tick = 0; tick < ticks; tick++) {
+            RiteHeartBlockEntity.serverTick(heart.getLevel(), heart.getBlockPos(), heart.getBlockState(), heart);
+        }
     }
 
     @GameTest(template = TEMPLATE, batch = "witchery_sentinel_target", setupTicks = 5, timeoutTicks = 120)

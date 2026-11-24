@@ -1,6 +1,7 @@
 package art.arcane.witchery.ritual;
 
 import art.arcane.witchery.config.WitcheryServerConfig;
+import art.arcane.witchery.world.WitcheryDimensions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -36,10 +37,9 @@ public final class WeatherRites {
                     strike(level);
                 }
                 case 4 -> {
-                    ServerLevel overworld = level.getServer().overworld();
-                    if (!overworld.isThundering()) {
+                    if (!hasLegacyThunder(level)) {
                         int duration = (300 + level.random.nextInt(600)) * 20;
-                        overworld.setWeatherParameters(0, duration, true, true);
+                        level.setWeatherParameters(0, duration, true, true);
                     }
                     strike(level);
                 }
@@ -102,15 +102,24 @@ public final class WeatherRites {
         return offset - outer + (offset > width ? 2 * inner : 0);
     }
 
+    static ServerLevel legacyWeather(ServerLevel level) {
+        // Torment followed the shared weather cycle despite its dry biome.
+        return level.dimension().equals(WitcheryDimensions.TORMENT) ? level.getServer().overworld() : level;
+    }
+
+    static boolean hasLegacyThunder(ServerLevel level) {
+        return legacyWeather(level).getThunderLevel(1.0F) > 0.9;
+    }
+
     public static boolean eclipse(ServerLevel level) {
         long now = level.getGameTime();
         long cooldown = WitcheryServerConfig.RITE_OF_ECLIPSE_COOLDOWN_SECONDS.get() * 20L;
         Long last = LAST_ECLIPSE.get(level);
         if (cooldown > 0 && level.players().size() > 1 && last != null && now - last < cooldown) return false;
 
-        ServerLevel overworld = level.getServer().overworld();
-        long time = overworld.getDayTime();
-        overworld.setDayTime(time - Math.floorMod(time, DAY_TICKS) + MIDNIGHT);
+        // Secondary dimensions use derived world data, as they did in 1.7.10.
+        long time = level.getDayTime();
+        level.setDayTime(time - Math.floorMod(time, DAY_TICKS) + MIDNIGHT);
         LAST_ECLIPSE.put(level, now);
         return true;
     }

@@ -2,6 +2,18 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Circle Magic Time and Weather (2026-11-24)
+
+- All 96 registered rites match their source traits. The 1.7.10 server treated the End as day and the Nether, Mirror, and Torment as night. A mature storm darkened Overworld noon and allowed thunder-only rites in Torment. The Nether, End, and Mirror kept their initialized weather strengths and picked up an active storm when the server restarted.
+- The Heart Glyph now uses these conditions for the original recipes. Eclipse, Sky's Wrath, and Rain of Toads resolve their time or weather changes against the casting level's data. The real 1.7.10 End exposed `DerivedWorldInfo`, and the Eclipse clock write left Overworld noon intact. The 1.20.1 packaged survival player confirmed the same clock result and the discharged Attuned Stone. A Nether storm reached phase four with cleared Overworld weather in `level.dat`.
+- The clean Forge survival client queued Necromantic Stone behind Waystone Binding at night. The dedicated shutdown saved both cast IDs. After restart, the clock was set to the following noon and the two items were produced. The same player also crafted the Necromantic Stone at a Nether Heart Glyph during Overworld noon.
+- A separate packaged headless run fed a Misfortune circle through redstone. Both Torment and the Nether rejected a clear-weather activation. Torment accepted the new storm as it reached full strength. The Nether accepted it after the next boot loaded the saved storm.
+- A packaged headless Rain of Toads fixture loaded the saved parameters for phase three, then ran the next lightning pulse in each dimension. The subsequent save had rain and thunder both clear after the Nether test. The Overworld test set rain and kept thunder clear.
+- Copied Auram repeated the queued cast through sunrise, Nether Necromancy, and End Eclipse. The test client ran hidden with zero master volume and OpenAL No Output, and the focus monitor recorded no foreground changes. The headless storm replay refreshed the fixture's force-load ticket after restart, then verified Overworld rain and thunder were both clear before and after exact storm phase four.
+- Java 17 data generation, JAR reobfuscation, and all 261 required GameTests passed. The first run used Protection as the first queued rite, and its ongoing upkeep affected the fixture's expected debit. The final run uses Waystone Binding. The Witch's Ladder check now advances the Heart Glyph within one server tick to verify both payment and completion without intervening altar recharge.
+- Evidence and the exact JAR are in `build/qa-rite-weather-traits`. Package SHA-256 `a19512172272f698cca42517a07533d9e971a7357b3d7fdf1721d9de9d620ff0`.
+- Two actual 1.7.10 End Eclipse casts started with freshly placed glyphs aged zero and thirteen ticks. Each took its first items at glyph ticks 20 and 40 and resolved the effect at glyph tick 90. The port currently uses a 20-tick activation-relative pulse for that effect. The exact timing trace is in `legacy/eclipse-timing.log`.
+
 ## Initial Altar Offerings (2026-11-24)
 
 - All 96 Circle Magic registrations match their original chalk requirements and initial power costs. The source audit verified seventy initial altar sacrifices, all on the original 20-tick cadence. See `registration-audit.log`.

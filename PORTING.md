@@ -632,6 +632,16 @@
 - [x] Start Waystone Binding with the survival client and shut down after payment. The saved chunk contains all three staged items and `AltarPowerOffered:1b`. A normal restart creates one Bound Waystone. Separate redstone runs verify that a canceled paid binding and a call with no familiar each return all three item offerings.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 259 local Forge GameTests. The checks cover the saved payment, completion with the altar removed, and the familiar refund. The updated ward, weather, volcano, recharge, witch, and fetish checks observe the effect on the pulse after payment.
 
+## Circle Magic Time and Weather (2026-11-24)
+
+- [x] Compare the day, night, thunder, and dimension restrictions for all 96 original rites. A live Witchery 0.24.1 server confirmed the End's daylight, nighttime in the Nether, Mirror, and Torment, and Overworld sky darkness during thunder. Torment followed live thunder. The Nether, End, and Mirror picked up saved thunder at level load.
+- [x] Restore those eligibility rules at the Heart Glyph. Preserve its queued selection across changes to time or weather. Use the cast's level data when resolving Eclipse, Sky's Wrath, and Rain of Toads.
+- [x] In clean Forge survival, confirm Necromantic Stone remains out of the queue at clear noon. Activate at night, save behind Waystone Binding, restart, and finish both casts after sunrise. Cast Necromantic Stone in the Nether, Eclipse in the End, and Sky's Wrath in the Nether. The Overworld clock and weather stay independent of the secondary-dimension effects.
+- [x] Start Misfortune by redstone in headless clean Forge. Torment accepts live thunder. The Nether accepts the storm after the dedicated restart. Both reject the clear-weather control.
+- [x] Resume the fourth lightning pulse of Rain of Toads from an in-progress cast fixture. The Nether pulses leave Overworld weather clear. The Overworld pulse starts rain with thunder off.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 261 local Forge GameTests. The new checks cover the realm rules and a queued nighttime cast. The Witch's Ladder fixture verifies its exact debit within one server tick.
+- [x] Repeat the queued cast, Nether Necromancy, and End Eclipse in copied Auram with the muted background client. Confirm phase four of the Nether storm on the copied headless server with clear Overworld weather before and after.
+
 ## Chalk Rite Offering Sources (2026-11-24)
 
 - [x] Restore the original search for dropped items, optional Waystones, and living offerings. Measure three-dimensional distance from the Heart Glyph block's lower corner and search the one-block-high glyph layer. Small, medium, and large rites accept drops within four, six, and eight blocks. Living offerings get one extra block of distance within the same search layer.

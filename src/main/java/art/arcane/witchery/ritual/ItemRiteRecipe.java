@@ -240,18 +240,18 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
     }
 
     public boolean stagesLivingOffering() {
-        return livingOffering != null && usesLegacyOfferings();
+        return livingOffering != null && isLegacyRite();
     }
 
     public boolean stagesAltarPower() {
-        return power > 0 && usesLegacyOfferings();
+        return power > 0 && isLegacyRite();
     }
 
     public boolean chargesBeforeLivingOffering() {
         return RiteActivation.legacyId(id) == 95; // Rite of the Mirror
     }
 
-    private boolean usesLegacyOfferings() {
+    private boolean isLegacyRite() {
         return RiteActivation.legacyId(id) != Integer.MAX_VALUE;
     }
 
@@ -272,16 +272,28 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
             if (action.callsStorm() || dayOnly()) return "message.witchery.rite.weather_dream";
             if (action.protection() != null) return "message.witchery.rite.protection_dream";
         }
-        if (dayOnly() && !level.isDay()) return "message.witchery.rite.day_only";
-        if (nightOnly && !level.isNight()) return "message.witchery.rite.night_only";
-        if (action.inflictsDirectedCurse() && !level.isThundering()) return "message.witchery.rite.storm_only";
+        boolean legacy = isLegacyRite();
+        if (dayOnly() && !(legacy ? legacyDaytime(level) : level.isDay())) return "message.witchery.rite.day_only";
+        if (nightOnly && (legacy ? legacyDaytime(level) : !level.isNight())) return "message.witchery.rite.night_only";
+        if (action.inflictsDirectedCurse() && !(legacy ? WeatherRites.hasLegacyThunder(level) : level.isThundering())) {
+            return "message.witchery.rite.storm_only";
+        }
         return null;
+    }
+
+    private static boolean legacyDaytime(ServerLevel level) {
+        var dimension = level.dimension();
+        // The original providers supplied a constant day or night in these realms.
+        if (dimension.equals(Level.END)) return true;
+        if (dimension.equals(Level.NETHER) || dimension.equals(WitcheryDimensions.MIRROR)
+                || dimension.equals(WitcheryDimensions.TORMENT)) return false;
+        return level.getSkyDarken() < 4;
     }
 
     @Nullable
     public Mob findLivingOffering(ServerLevel level, BlockPos pos) {
         if (livingOffering == null) return null;
-        boolean legacy = usesLegacyOfferings();
+        boolean legacy = isLegacyRite();
         int radius = offeringRadius() + 1;
         AABB area = legacy ? legacyOfferingBounds(pos) : new AABB(pos).inflate(radius, 1, radius);
         Vec3 origin = legacy ? Vec3.atLowerCornerOf(pos) : Vec3.atBottomCenterOf(pos);
@@ -298,7 +310,7 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
     @Nullable
     public Offering findNextOffering(ServerLevel level, BlockPos pos, int step) {
         List<Offering> items = validOfferings(level, pos);
-        if (!usesLegacyOfferings()) {
+        if (!isLegacyRite()) {
             List<Offering> matched = matchSacrifices(items, step);
             return matched == null ? null : matched.get(0);
         }
@@ -389,7 +401,7 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
     }
 
     private List<Offering> nearbyOfferings(ServerLevel level, BlockPos pos) {
-        boolean legacy = usesLegacyOfferings();
+        boolean legacy = isLegacyRite();
         int radius = offeringRadius();
         AABB area = legacy ? legacyOfferingBounds(pos) : new AABB(pos).inflate(radius, 0, radius);
         Vec3 origin = legacy ? Vec3.atLowerCornerOf(pos) : Vec3.atBottomCenterOf(pos);
