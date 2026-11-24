@@ -94,6 +94,8 @@ Lifecycle stages:
 | Symbol effects (`EffectRegistry`) | 31 |
 | Packet messages | 19 |
 
+The runtime registry from the shipped 0.24.1 server contains 121 Witchery block IDs and 217 item IDs, including automatic block items that the source count of 102 item declarations omits. Forge 1.20.1 retains all those IDs and adds the internal Apothecary Shelf block. The Witchery tab displays 436 stacks. All 163 Ingredient subtype mappings were checked. Raw and cooked mutton use the corresponding vanilla items, and the two bound Waystones stay hidden. The Rowan Door, Alder Door, Ice Door, Chalice and Candelabra each show their placeable item once in place of the old Ingredient subtype. The generic Ingredient ID and 23 extra spawn egg IDs remain available for saves. All 12 original Poppet choices and 32 original spawn eggs are visible.
+
 ## Registration Mechanics (Important)
 - `BlockBase.func_149663_c` auto-registers blocks via `BlockUtil.registerBlock`.
 - `BlockBaseContainer.func_149663_c` auto-registers blocks + tile entities.
@@ -106,6 +108,7 @@ Lifecycle stages:
 - Original Pit Dirt metadata `2` uses the Podzol variant under the same block and item IDs. The `podzol` block property travels with Silk Touch, pick block, and imported stacks. Loaded Pit Dirt and Pit Grass recompute their soil or snow cover from the block above. Ordinary Pit Dirt mining follows the original plain-drop rule.
 - Witchery's five stair blocks recompute their corner shapes after legacy chunk import. Imported Witchery leaves keep their species and persistent bit. Their distance starts at one while the normal scheduled leaf updates rebuild the distance from the surrounding logs.
 - Forge 1.7.10 stores Witchery's chunk entity IDs with a dot and the original registration's capitalization. The importer converts those registered IDs to the modern namespaced form. It uses vanilla's entity data fixes for UUIDs, names, animals, equipment and passenger trees, and fixes mixed Hobgoblin trades using the world item table.
+- Original Coven Witch quest pets store their trophy stack in `ForgeData.WITCExtraDrops`. When the pet dies, the drop handler upgrades the vanilla stack and its literal display name before reading it. Previously upgraded saves with untouched trophy records use the same path and keep the two original witch UUID fields for quest turn-in.
 - The importer records the three optional `DimensionID` settings from the original `witchery.cfg`. Numeric folders move into namespaced storage before the chunk pass. Dream uses its own legacy Overworld-style structure data. Torment and Mirror use fixed modern biome palettes. Player tags, Waystones, Door Keys, key rings, and Mirror exits use the saved world's numeric mapping.
 - The three witchwood stair IDs use their corresponding plank textures and original four-stair recipes. Recipes read the plank stack's wood state and require all six inputs to match. Hawthorn stairs retain the original lower fire spread and ignition values.
 - The Water and Lava Diviners retain `witchery:divinerwater` and `witchery:divinerlava`. Their legacy top-level item damage converts to modern durability. The wear values and unrelated stack data were verified with numeric IDs from an original Forge save and again after a normal dedicated restart.

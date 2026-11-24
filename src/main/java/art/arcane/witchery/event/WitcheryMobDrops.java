@@ -8,15 +8,20 @@ import art.arcane.witchery.entity.WitchToad;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
+import com.mojang.serialization.Dynamic;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.datafix.DataFixers;
+import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -54,7 +59,7 @@ public final class WitcheryMobDrops {
 
         ListTag questDrops = creature.getPersistentData().getList(CovenWitch.EXTRA_DROPS, Tag.TAG_COMPOUND);
         for (int index = 0; index < questDrops.size(); index++) {
-            ItemStack trophy = WitcheryIngredient.loadInventoryStack(questDrops.getCompound(index));
+            ItemStack trophy = loadQuestDrop(questDrops.getCompound(index));
             if (!trophy.isEmpty()) addDrop(event, trophy);
         }
         if (!(event.getSource().getDirectEntity() instanceof ServerPlayer player)) return;
@@ -68,6 +73,21 @@ public final class WitcheryMobDrops {
                 && creature.getRandom().nextInt(12) <= Math.min(looting, 3)) {
             addDrop(event, new ItemStack(WitcheryBlocks.getRequired("wolfhead").get()));
         }
+    }
+
+    private static ItemStack loadQuestDrop(CompoundTag tag) {
+        // The original quest used vanilla items stored inside ForgeData, outside the entity's item schema.
+        ResourceLocation itemId = ResourceLocation.tryParse(tag.getString("id"));
+        boolean namedLegacyStack = tag.contains("Damage", Tag.TAG_ANY_NUMERIC)
+                && itemId != null && ResourceLocation.DEFAULT_NAMESPACE.equals(itemId.getNamespace());
+        if (tag.contains("id", Tag.TAG_ANY_NUMERIC) || namedLegacyStack) {
+            int version = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+            if (DataFixers.getDataFixer().update(References.ITEM_STACK, new Dynamic<>(NbtOps.INSTANCE, tag), -1, version)
+                    .getValue() instanceof CompoundTag upgraded) {
+                tag = upgraded;
+            }
+        }
+        return WitcheryIngredient.loadInventoryStack(tag);
     }
 
     @SubscribeEvent

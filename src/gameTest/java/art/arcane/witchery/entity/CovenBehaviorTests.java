@@ -11,6 +11,7 @@ import art.arcane.witchery.registry.WitcheryItems;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -105,6 +106,56 @@ public final class CovenBehaviorTests {
         while (RandomSource.create(seed).nextFloat() >= 0.25F) seed++;
         witch.getRandom().setSeed(seed);
         assertThrownEffect(helper, witch, pig, MobEffects.WEAKNESS, 1_351);
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE, setupTicks = 5)
+    public static void turnsInLegacyPetTrophies(GameTestHelper helper) {
+        FakePlayer player = owner(helper);
+        var level = helper.getLevel();
+        for (int quest = 0; quest < 2; quest++) {
+            boolean spider = quest == 0;
+            BlockPos pos = CENTER.offset(quest * 6 - 3, 0, 0);
+            var witch = helper.spawnWithNoFreeWill(WitcheryEntities.COVEN_WITCH.get(), pos.north(2));
+            witch.setCustomName(Component.literal(spider ? "Spider Witch" : "Zombie Witch"));
+            var offer = witch.saveWithoutId(new CompoundTag());
+            offer.putInt("QuestType", quest);
+            offer.putInt("QuestItemsNeeded", 1);
+            offer.putBoolean("QuestAccepted", true);
+            offer.putString("QuestOffered", player.getGameProfile().getName());
+            witch.load(offer);
+
+            var pet = spider ? helper.spawnWithNoFreeWill(EntityType.SPIDER, pos)
+                    : helper.spawnWithNoFreeWill(EntityType.ZOMBIE, pos);
+            var trophy = new CompoundTag();
+            if (spider) trophy.putShort("id", (short) 375);
+            else trophy.putString("id", "minecraft:rotten_flesh");
+            trophy.putByte("Count", (byte) 1);
+            trophy.putShort("Damage", (short) 0);
+            var display = new CompoundTag();
+            String name = spider ? "Legacy Pet Eye" : "Legacy Pet Flesh";
+            display.putString("Name", name);
+            var binding = new CompoundTag();
+            binding.put("display", display);
+            binding.putLong("WITCQuestOwnerIDMost", witch.getUUID().getMostSignificantBits());
+            binding.putLong("WITCQuestOwnerIDLeast", witch.getUUID().getLeastSignificantBits());
+            trophy.put("tag", binding);
+            var drops = new ListTag();
+            drops.add(trophy);
+            pet.getPersistentData().put(CovenWitch.EXTRA_DROPS, drops);
+            pet.kill();
+
+            var trophies = level.getEntitiesOfClass(ItemEntity.class, new AABB(helper.absolutePos(pos)).inflate(1),
+                    item -> item.getItem().getHoverName().getString().equals(name));
+            helper.assertTrue(trophies.size() == 1, "Pet should drop its named legacy trophy");
+            ItemStack stack = trophies.get(0).getItem();
+            helper.assertTrue(stack.is(spider ? Items.SPIDER_EYE : Items.ROTTEN_FLESH), "Trophy should retain its original item");
+            player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+            witch.mobInteract(player, InteractionHand.MAIN_HAND);
+            helper.assertTrue(witch.isRemoved() && stack.isEmpty(), "The quest giver should accept the recovered trophy");
+            trophies.get(0).discard();
+        }
+        helper.assertTrue(CovenWitch.covenSize(player) == 3, "Both quest givers should join the player's coven");
         helper.succeed();
     }
 
