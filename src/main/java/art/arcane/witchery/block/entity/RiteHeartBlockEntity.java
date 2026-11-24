@@ -56,6 +56,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -318,8 +319,9 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         boolean hellOnEarth = action == ItemRiteRecipe.Action.HELL_ON_EARTH;
         boolean stagedLiving = rite.stagesLivingOffering();
         boolean sacrificesFirst = !stagedLiving && action == ItemRiteRecipe.Action.SUMMON_WITHER;
-        boolean newSummoning = action == ItemRiteRecipe.Action.SUMMON_WITHER
-                || action == ItemRiteRecipe.Action.SUMMON_WITCH || action == ItemRiteRecipe.Action.SUMMON_SPECTRAL_FAMILIAR;
+        boolean creatureSummon = action.summonsCreature();
+        boolean finalizeSummon = creatureSummon && (legacy || action == ItemRiteRecipe.Action.SUMMON_WITHER
+                || action == ItemRiteRecipe.Action.SUMMON_WITCH || action == ItemRiteRecipe.Action.SUMMON_SPECTRAL_FAMILIAR);
         boolean needsPower = !altarPowerOffered && rite.power() > 0;
         AltarBlockEntity altar = needsPower ? AltarPower.nearest(level, pos) : null;
         boolean missingPower = needsPower && (altar == null || altar.power() < rite.power());
@@ -365,8 +367,9 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             }
         } else if (infusionType > 0) {
             recipients = nearbyPlayers(level, pos, INFUSION_RANGE, legacy);
-        } else if (action.summonsCreature()) {
-            if (rite.action() == ItemRiteRecipe.Action.SUMMON_IMP && covenSize == 0) {
+        } else if (creatureSummon) {
+            boolean missingCoven = action == ItemRiteRecipe.Action.SUMMON_IMP && covenSize == 0;
+            if (!legacy && missingCoven) {
                 abort(level, "message.witchery.rite.coven_required");
                 return;
             }
@@ -380,13 +383,20 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 default -> throw new IllegalStateException("Unexpected creature rite " + action);
             };
             if (summon == null) {
-                if (newSummoning) abort(level, "message.witchery.rite.summon_cancelled");
+                if (finalizeSummon) abort(level, "message.witchery.rite.summon_cancelled", legacy);
                 return;
             }
-            summon.moveTo(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 0, 0);
-            if (hasObstructedSummoningArea(level, pos) || level.getBlockCollisions(summon, summon.getBoundingBox()).iterator().hasNext()) {
-                if ((summon instanceof Reflection || newSummoning) && altar != null) altar.consumePower(rite.power());
-                abort(level, "message.witchery.rite.obstructed");
+            summon.moveTo(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, legacy ? 1 : 0, 0);
+            if (hasObstructedSummoningArea(level, pos)
+                    || (!legacy && level.getBlockCollisions(summon, summon.getBoundingBox()).iterator().hasNext())) {
+                if ((summon instanceof Reflection || finalizeSummon) && altar != null) altar.consumePower(rite.power());
+                if (legacy) WitcheryNetwork.sendSummoningObstruction(level, Vec3.atLowerCornerOf(pos));
+                abort(level, "message.witchery.rite.obstructed", legacy);
+                return;
+            }
+            if (missingCoven) {
+                playOriginalRiteSound(level, SoundEvents.NOTE_BLOCK_SNARE.value());
+                abort(level, "message.witchery.rite.coven_required", true);
                 return;
             }
             if (summon instanceof Demon demon) demon.summonedByRite();
@@ -396,8 +406,14 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 familiar.setTame(true);
                 familiar.setPersistenceRequired();
             } else if (action == ItemRiteRecipe.Action.SUMMON_IMP) summon.setPersistenceRequired();
-            if (newSummoning) ForgeEventFactory.onFinalizeSpawn(summon, level, level.getCurrentDifficultyAt(summon.blockPosition()),
-                    MobSpawnType.MOB_SUMMONED, null, null);
+            if (finalizeSummon) {
+                ForgeEventFactory.onFinalizeSpawn(summon, level, level.getCurrentDifficultyAt(summon.blockPosition()),
+                        MobSpawnType.MOB_SUMMONED, null, null);
+                if (summon.isSpawnCancelled()) {
+                    abort(level, "message.witchery.rite.summon_cancelled", legacy);
+                    return;
+                }
+            }
             result = summon;
         } else if (rite.action() == ItemRiteRecipe.Action.CORRUPT_VOODOO_PROTECTION) {
             corruptionCaster = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
@@ -479,7 +495,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             result = drop;
         }
         if (result != null && !level.addFreshEntity(result)) {
-            if (newSummoning) abort(level, "message.witchery.rite.summon_cancelled");
+            if (finalizeSummon) abort(level, "message.witchery.rite.summon_cancelled", legacy);
             return;
         }
         if (altar != null && !altar.consumePower(rite.power())) {
@@ -520,7 +536,10 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             abort(level, "message.witchery.rite.eclipse_cooldown");
             return;
         }
-        if (action == ItemRiteRecipe.Action.BANISH_DEMON) Banishment.perform(level, pos);
+        if (action == ItemRiteRecipe.Action.BANISH_DEMON) {
+            if (legacy) playOriginalRiteSound(level, SoundEvents.FIRE_EXTINGUISH);
+            Banishment.perform(level, pos, legacy);
+        }
         if (action.cooksFood() && !CookingRite.cook(level, pos, action == ItemRiteRecipe.Action.COOK_FOOD_PORTABLE)) {
             abort(level, "message.witchery.rite.no_food_to_cook");
             return;
@@ -617,8 +636,11 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (talismanPattern == 0) nextCast(level);
         if (legacy && (manifestation || infusionType > 0)) {
             WitcheryNetwork.sendInfusionRite(level, Vec3.atLowerCornerOf(pos), manifestation);
+        } else if (legacy && creatureSummon) {
+            WitcheryNetwork.sendSummonedCreature(level, result.position());
         } else if (!legacy || (action != ItemRiteRecipe.Action.RECHARGE_INFUSION
-                && action != ItemRiteRecipe.Action.TRAVEL_WAYSTONE && action != ItemRiteRecipe.Action.TRANSPOSE_CREATURE)) {
+                && action != ItemRiteRecipe.Action.TRAVEL_WAYSTONE && action != ItemRiteRecipe.Action.TRANSPOSE_CREATURE
+                && action != ItemRiteRecipe.Action.BANISH_DEMON)) {
             level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
                     16, 0.4, 0.4, 0.4, 0.05);
             level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.9F, 1.35F);
@@ -869,13 +891,27 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     }
 
     private void abort(ServerLevel level, String message) {
+        abort(level, message, false);
+    }
+
+    private void abort(ServerLevel level, String message, boolean originalSound) {
         ServerPlayer player = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
         if (player != null) {
             player.displayClientMessage(Component.translatable(message), true);
         }
         refundSacrifices(level);
         nextCast(level);
-        failSound(level);
+        if (originalSound) {
+            playOriginalRiteSound(level, SoundEvents.NOTE_BLOCK_SNARE.value());
+        } else {
+            failSound(level);
+        }
+    }
+
+    private void playOriginalRiteSound(ServerLevel level, SoundEvent sound) {
+        BlockPos pos = getBlockPos();
+        float pitch = 0.4F / ((float) level.getRandom().nextDouble() * 0.4F + 0.8F);
+        level.playSound(null, pos.getX(), pos.getY(), pos.getZ(), sound, SoundSource.BLOCKS, 0.5F, pitch);
     }
 
     public void refundSacrifices(ServerLevel level) {

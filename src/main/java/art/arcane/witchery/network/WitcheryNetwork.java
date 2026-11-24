@@ -52,8 +52,12 @@ public final class WitcheryNetwork {
     private static final int LEGACY_SMOKE_PARTICLE_ID = 8;
     private static final int LEGACY_INSTANT_SPELL_PARTICLE_ID = 11;
     private static final int LEGACY_PORTAL_PARTICLE_ID = 13;
+    private static final int LEGACY_EXPLOSION_PARTICLE_ID = 15;
     private static final int LEGACY_SPLASH_PARTICLE_ID = 19;
+    private static final int LEGACY_LARGE_SMOKE_PARTICLE_ID = 20;
+    private static final int LEGACY_NO_SOUND_ID = 0;
     private static final int LEGACY_FIZZ_SOUND_ID = 2;
+    private static final int LEGACY_SNARE_SOUND_ID = 3;
     private static final int LEGACY_WATER_SPLASH_SOUND_ID = 4;
     private static final int LEGACY_PLING_SOUND_ID = 9;
     private static final int LEGACY_ENDERMAN_TELEPORT_SOUND_ID = 16;
@@ -310,6 +314,18 @@ public final class WitcheryNetwork {
         int particle = vampire ? LEGACY_SMOKE_PARTICLE_ID : LEGACY_PORTAL_PARTICLE_ID;
         int sound = vampire ? LEGACY_POOF_SOUND_ID : LEGACY_ENDERMAN_TELEPORT_SOUND_ID;
         sendParticlesAround(level, particle, sound, center, 0.5, 2, 16);
+    }
+
+    public static void sendSummonedCreature(ServerLevel level, Vec3 center) {
+        sendParticlesAround(level, LEGACY_PORTAL_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID, center, 0.5, 1, 16);
+    }
+
+    public static void sendSummoningObstruction(ServerLevel level, Vec3 center) {
+        sendParticlesAround(level, LEGACY_LARGE_SMOKE_PARTICLE_ID, LEGACY_SNARE_SOUND_ID, center, 0.5, 2, 16);
+    }
+
+    public static void sendBanishment(ServerLevel level, Vec3 center) {
+        sendParticlesAround(level, LEGACY_EXPLOSION_PARTICLE_ID, LEGACY_NO_SOUND_ID, center, 1, 2, 16);
     }
 
     public static void sendParticlesAround(ServerLevel level, int particleEffectId, int soundEffectId, Vec3 center,

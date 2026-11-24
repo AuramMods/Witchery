@@ -2,6 +2,17 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Summoning Clearance and Banishment (2026-11-24)
+
+- Forge 1.7.10 directly ran six original Wither effect steps. Clear, a roof four blocks above the glyph, one side obstruction, and two blocks on the omitted south edge each produced a Wither. A blocked center and two obstructions in the scanned chamber aborted. The successful constructor placed each Wither one block above the glyph at one degree yaw.
+- The original banishment removed a demon 8.75 blocks west. A target at exactly nine blocks, a demon 9.25 blocks east, and a pig inside the radius stayed. Forge restores the original glyph fizz and silent explosion at each removed target.
+- Built-in summon rites use the original material scan, show their original portal or obstruction packet, and retain any earlier altar payment if Forge vetoes the spawn. Reference and package checks are in `build/qa-summoning-clearance`.
+- In the clean packaged game the muted survival client used both Wither recipes and portable banishment. The roof cast sent portal and fizz at `(130.5, 273, 80.5)`. The obstructed cast took the villager, paid 4,000, refunded the three items, and sent smoke and a snare at `(162, 272, 80)`. Banishment removed only the eligible west demon and sent its explosion with sound ID zero.
+- A normal clean Forge restart kept the Wither's UUID, all three distinct refunds, and the edge Imp while the banished demon stayed gone. Both client launches used zero master volume and OpenAL No Output, and the test window never became active.
+- The copied Auram dedicated server received the same package and summoned one Wither at `(327.5, 299, 183.5)` from a redstone cast. The roof stayed intact and exactly one discharged stone returned.
+- Java 17 data generation and JAR reobfuscation passed. Candidate SHA-256 `7b1f4abec4c50bb301f90832def3a0fe7e85e2cd7714a496dc4c317329b54804`.
+- All 278 required local GameTests passed after the infusion fixture began waiting for its two players to be tracked. The new Wither regression verifies a genuine hitbox intersection outside the original chamber. The Demon regression applies Forge's spawn veto after payment and checks that all four held items return alongside the previously discharged stone.
+
 ## Taglock Circle Transposition (2026-11-24)
 
 - The 0.24.1 server put a tagged pig at `(208, 86, 8)` for a clear glyph. An obstructed glyph at `(220, 86, 8)` completed and put a tagged cow at those coordinates with two intersecting solid blocks.

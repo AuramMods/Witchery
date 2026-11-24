@@ -178,6 +178,8 @@
 
 ## Familiars and Covens (2026-11-19)
 
+- [ ] Restore the original Call Familiar square and recall positions. The native rite admitted a diagonal owner at X/Z +6.25 and called the dismissed toad at the glyph center plus 0.001 on Y. Repeating the rite moved the same toad to the owner's exact position. The Forge rite currently uses a seven-block sphere and recreates the toad at glyph height. The native trace is in `build/qa-familiar-circle/legacy/reference.log`.
+
 - [x] Restore cat familiars through the 8,000-power Rite of Binding a Familiar. The muted survival client tamed a vanilla cat with cod, bound it with a medium white circle, and kept its name. A circle without an eligible pet returns its five item offerings after spending the altar power.
 - [x] Restore familiar fire immunity, armor, healing, and damage sharing. The client observed a ten-point hit split into nine for the owner and one for the cat, then healed the cat with cod. All 31 required Forge GameTests passed, including legacy owner tags and the offline owner's protection.
 - [x] Restore the 1,000-power Rite of Calling a Familiar and sneaking dismissal. The muted client recalled the same cat from Torment, dismissed the seated cat, and called one replacement with the saved name and 50 health.
@@ -558,6 +560,12 @@
 ## Banishment and Creature Summoning (2026-11-21)
 
 - [x] Restore the two small white banishment rites. Blaze Powder and a blank Waystone banish Demons, Death, the Lord of Torment, Imps, and Reflections within nine blocks. The powered rite uses 2,000 altar power. The portable rite discharges an Attuned Stone.
+- [x] Compare original summoning clearance and banishment boundaries on Forge 1.7.10. The original Wither spawn passed with a roof four blocks above the glyph, with one outer obstruction, and with two blocks at the omitted south edge. It refunded for a blocked center or two obstructions inside the scanned chamber. Banishment removed a demon 8.75 blocks west and spared a target exactly nine blocks away, a demon outside the radius, and a pig inside.
+- [x] Restore the original three-layer summon chamber, one-degree yaw, and summon, obstruction, and banishment cues. If Forge vetoes a summoned entity, the paid cast refunds its held items and ends.
+- [x] Activate both Wither recipes with the muted survival client using furnished rings and offerings. The portable cast summoned under the roof and returned its discharged stone. Two blocks inside the chamber blocked the powered cast after it took the villager and paid the altar. It returned all three held items and emitted the original smoke and snare. A portable banishment then removed only the demon inside the strict radius and sent its original explosion packet.
+- [x] Restart the clean packaged server. The client rejoined the same Wither UUID, one set of powered refunds, and the prior banishment result.
+- [x] Activate the roof cast through rising redstone on copied Auram with the same JAR. The Wither appeared one block above the Heart Glyph, the roof remained intact, and the portable stone returned discharged.
+- [x] Run local Java 17 data generation, JAR reobfuscation, and all 278 required Forge GameTests. The first run exposed an intermittent infusion fixture. The rerun waited for both fixture players to be tracked before casting.
 - [x] Restore the medium and large Infernal rings for both Wither recipes. The powered rite uses one Wither Skeleton Skull, Diamond Vapour, an Ender Pearl, a villager, and 4,000 power. The portable rite uses a Diamond and both Attuned Stones in place of the vapour and living offering. The Wither enters combat without the vanilla structure's entrance charge.
 - [x] Restore the witch summon with a small Infernal ring and the spectral familiar summon with a small white ring. Both use 2,000 power and return the same Arthana with its wear. Circle Magic describes the original recipes and clearance requirement.
 - [x] Replace the spectral familiar's placeholder at its original entity ID. Restore the owner, the translucent pig model and sitting pose, the seven ore offerings, and the increasing chance it departs after a payment. Preserve the legacy owner, ore, and search-count data. The familiar searches for matching stone and deepslate ores.

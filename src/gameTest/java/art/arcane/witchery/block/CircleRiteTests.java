@@ -11,6 +11,7 @@ import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEffects;
+import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
 import art.arcane.witchery.ritual.RiteActivation;
@@ -30,6 +31,7 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
@@ -38,6 +40,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.animal.Pig;
+import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Witch;
 import net.minecraft.world.entity.player.Player;
@@ -58,6 +61,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.PlayLevelSoundEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -829,6 +833,78 @@ public final class CircleRiteTests {
         }).thenSucceed();
     }
 
+    @GameTest(template = TEMPLATE, batch = "witchery_wither_summoning_clearance", setupTicks = 5)
+    public static void originalWitherSummonsUnderARoofAboveTheChamber(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.MEDIUM_RITE, "circleglyphinfernal");
+        ring(helper, RitualCircle.LARGE_RITE, "circleglyphinfernal");
+        helper.setBlock(CENTER.above(4), Blocks.STONE);
+        waitForOfferings(helper, new ItemStack(Items.WITHER_SKELETON_SKULL), new ItemStack(Items.DIAMOND),
+                new ItemStack(Items.ENDER_PEARL), new ItemStack(WitcheryIngredient.ATTUNED_STONE.item()),
+                new ItemStack(WitcheryIngredient.CHARGED_ATTUNED_STONE.item())).thenExecute(() -> {
+            start(helper);
+            var level = helper.getLevel();
+            var center = helper.absolutePos(CENTER);
+            tick(level, center, heart(helper), 120);
+            var withers = level.getEntitiesOfClass(WitherBoss.class, new AABB(center).inflate(5));
+            helper.assertTrue(withers.size() == 1, "The original clearance admits a roof above the chamber");
+            var wither = withers.get(0);
+            try {
+                helper.assertTrue(wither.position().equals(Vec3.atBottomCenterOf(center.above())) && wither.getYRot() == 1
+                                && wither.getInvulnerableTicks() == 0,
+                        "The Wither arrives at the original position and yaw in its ordinary combat state");
+                helper.assertTrue(level.getBlockCollisions(wither, wither.getBoundingBox()).iterator().hasNext(),
+                        "The roof actually intersects the Wither's hitbox");
+                var returned = drops(helper);
+                helper.assertTrue(returned.size() == 1 && returned.get(0).getItem().is(WitcheryIngredient.ATTUNED_STONE.item()),
+                        "Success consumes the other offerings and returns exactly the discharged stone");
+            } finally {
+                wither.discard();
+            }
+        }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_demon_summoning_veto", setupTicks = 5)
+    public static void cancelledOriginalDemonSummoningRefundsWithoutRetry(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.LARGE_RITE, "circleglyphinfernal");
+        var altar = chargedAltar(helper, true);
+        waitForOfferings(helper, new ItemStack(WitcheryIngredient.REFINED_EVIL.item()), new ItemStack(Items.BLAZE_ROD),
+                new ItemStack(Items.ENDER_PEARL), new ItemStack(WitcheryIngredient.ATTUNED_STONE.item()),
+                new ItemStack(WitcheryIngredient.CHARGED_ATTUNED_STONE.item())).thenExecute(() -> {
+            start(helper);
+            var level = helper.getLevel();
+            var center = helper.absolutePos(CENTER);
+            var heart = heart(helper);
+            tick(level, center, heart, 100);
+            float before = altar.power();
+            tick(level, center, heart, 20);
+            helper.assertTrue(heart.saveWithoutMetadata().getBoolean("AltarPowerOffered") && altar.power() == before - 3000,
+                    "The original Demon recipe pays the altar before attempting the spawn");
+            var blocked = new ArrayList<Entity>();
+            Consumer<MobSpawnEvent.FinalizeSpawn> veto = event -> {
+                var mob = event.getEntity();
+                if (mob.level() != level || mob.getType() != WitcheryEntities.DEMON.get()
+                        || !mob.blockPosition().equals(center.above())) return;
+                blocked.add(mob);
+                event.setSpawnCancelled(true);
+            };
+            MinecraftForge.EVENT_BUS.addListener(veto);
+            try {
+                tick(level, center, heart, 40);
+                helper.assertTrue(blocked.size() == 1 && level.getEntity(blocked.get(0).getUUID()) == null
+                                && !level.getBlockState(center).getValue(RiteHeartBlock.ACTIVE),
+                        "Forge's spawn veto stops the paid rite after a single attempt");
+                var refunded = drops(helper);
+                helper.assertTrue(altar.power() == before - 3000 && refunded.size() == 5
+                                && refunded.stream().filter(item -> item.getItem().is(WitcheryIngredient.ATTUNED_STONE.item())).count() == 2,
+                        "The four held items and previously discharged stone return while the altar charge stays spent");
+            } finally {
+                MinecraftForge.EVENT_BUS.unregister(veto);
+            }
+        }).thenSucceed();
+    }
+
     @GameTest(template = TEMPLATE, batch = "witchery_weather_rite_waystone", setupTicks = 5)
     public static void greaterStormAcceptsAnOptionalRemoteWaystoneAndRejectsDistantBindings(GameTestHelper helper) {
         ring(helper, RitualCircle.SMALL_RITE, "circleglyphritual");
@@ -1021,42 +1097,46 @@ public final class CircleRiteTests {
         var origin = Vec3.atLowerCornerOf(center).add(0, 0, 0.25);
         var inside = infusionPlayer(level, "InfusionRecipient", origin.add(-3.75, 0, 0), 100);
         var outside = infusionPlayer(level, "InfusionOutside", origin.add(4.25, 0, 0), 100);
-        inside.getAbilities().invulnerable = true;
-        outside.getAbilities().invulnerable = true;
-        try {
-            var heart = heart(helper);
-            for (int type = 1; type <= 4; type++) {
-                var recipe = RiteActivation.legacyRecipeId(26 + type);
+        helper.startSequence().thenWaitUntil(() -> {
+            var players = level.getEntitiesOfClass(ServerPlayer.class, new AABB(center).inflate(8));
+            helper.assertTrue(players.contains(inside) && players.contains(outside), "Both infusion recipients are tracked");
+        }).thenExecute(() -> {
+            inside.getAbilities().invulnerable = true;
+            outside.getAbilities().invulnerable = true;
+            try {
+                var heart = heart(helper);
+                for (int type = 1; type <= 4; type++) {
+                    var recipe = RiteActivation.legacyRecipeId(26 + type);
+                    var cast = new CompoundTag();
+                    cast.putString("Rite", recipe.toString());
+                    cast.putInt("OfferingStep", 1);
+                    cast.putBoolean("AltarPowerOffered", true);
+                    cast.putInt("GlyphPhase", 19);
+                    heart.load(cast);
+                    tick(level, center, heart, 1);
+                    helper.assertTrue(InfusionEnergy.type(inside) == type && infusionCharge(inside) == 200
+                                    && infusionCharge(outside) == 100,
+                            "Only the original four-block sphere receives " + recipe);
+                }
+
+                inside.setPos(origin.add(-4.75, 0, 0));
+                outside.setPos(origin.add(5.25, 0, 0));
                 var cast = new CompoundTag();
-                cast.putString("Rite", recipe.toString());
-                cast.putInt("OfferingStep", 1);
+                cast.putString("Rite", "witchery:rite_of_manifestation");
+                cast.putInt("OfferingStep", 6);
                 cast.putBoolean("AltarPowerOffered", true);
                 cast.putInt("GlyphPhase", 19);
+                cast.putInt("CovenSize", 3);
+                cast.putInt("CovenSummoned", 3);
                 heart.load(cast);
                 tick(level, center, heart, 1);
-                helper.assertTrue(InfusionEnergy.type(inside) == type && infusionCharge(inside) == 200
-                                && infusionCharge(outside) == 100,
-                        "Only the original four-block sphere receives " + recipe);
+                helper.assertTrue(DreamTravel.manifestSeconds(inside) == 225 && DreamTravel.manifestSeconds(outside) == 0,
+                        "Three coven members add seventy-five seconds for recipients within the original five-block radius");
+            } finally {
+                level.removePlayerImmediately(inside, Entity.RemovalReason.DISCARDED);
+                level.removePlayerImmediately(outside, Entity.RemovalReason.DISCARDED);
             }
-
-            inside.setPos(origin.add(-4.75, 0, 0));
-            outside.setPos(origin.add(5.25, 0, 0));
-            var cast = new CompoundTag();
-            cast.putString("Rite", "witchery:rite_of_manifestation");
-            cast.putInt("OfferingStep", 6);
-            cast.putBoolean("AltarPowerOffered", true);
-            cast.putInt("GlyphPhase", 19);
-            cast.putInt("CovenSize", 3);
-            cast.putInt("CovenSummoned", 3);
-            heart.load(cast);
-            tick(level, center, heart, 1);
-            helper.assertTrue(DreamTravel.manifestSeconds(inside) == 225 && DreamTravel.manifestSeconds(outside) == 0,
-                    "Three coven members add seventy-five seconds for recipients within the original five-block radius");
-        } finally {
-            level.removePlayerImmediately(inside, Entity.RemovalReason.DISCARDED);
-            level.removePlayerImmediately(outside, Entity.RemovalReason.DISCARDED);
-        }
-        helper.succeed();
+        }).thenSucceed();
     }
 
     private static CompoundTag legacyRecharge() {
