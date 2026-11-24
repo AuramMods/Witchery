@@ -492,7 +492,7 @@ public final class WitcheryClient {
                     "placeditem", "glowglobe", "infinityegg", "garlicgarland", "poppetshelf", "dreamcatcher",
                     "daylightcollector", "bloodcrucible", "silvervat", "cauldron", "cactus",
                     "circle", "circleglyphritual", "circleglyphotherwhere", "circleglyphinfernal",
-                    "kettle", "spinningwheel", "distilleryidle", "distilleryburning",
+                    "kettle", "distilleryidle", "distilleryburning",
                     "witchesovenidle", "witchesovenburning", "fumefunnel", "filteredfumefunnel",
                     "coffinblock", "statueofworship", "refillingchest", "leechchest", "statuegoddess", "wolfaltar",
                     "voidbramble"

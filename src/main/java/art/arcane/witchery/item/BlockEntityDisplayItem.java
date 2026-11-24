@@ -1,7 +1,5 @@
 package art.arcane.witchery.item;
 
-import art.arcane.witchery.block.entity.BrazierBlockEntity;
-import art.arcane.witchery.registry.WitcheryBlocks;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
@@ -11,32 +9,43 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-public final class BrazierItem extends BlockItem {
-    public BrazierItem(Block block) {
+public final class BlockEntityDisplayItem extends BlockItem {
+    private final Supplier<? extends BlockEntityType<?>> type;
+
+    public BlockEntityDisplayItem(Block block, Supplier<? extends BlockEntityType<?>> type) {
         super(block, new Properties());
+        this.type = type;
     }
 
     @Override
     public void initializeClient(Consumer<IClientItemExtensions> consumer) {
         consumer.accept(new IClientItemExtensions() {
+            private BlockEntityWithoutLevelRenderer renderer;
+
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer() {
-                return DisplayRenderer.INSTANCE;
+                if (renderer == null) {
+                    BlockEntity display = type.get().create(BlockPos.ZERO, getBlock().defaultBlockState());
+                    renderer = new DisplayRenderer(Minecraft.getInstance(), display);
+                }
+                return renderer;
             }
         });
     }
 
     private static final class DisplayRenderer extends BlockEntityWithoutLevelRenderer {
-        private static final DisplayRenderer INSTANCE = new DisplayRenderer(Minecraft.getInstance());
-        private final BrazierBlockEntity display = new BrazierBlockEntity(BlockPos.ZERO,
-                WitcheryBlocks.getRequired("brazier").get().defaultBlockState());
+        private final BlockEntity display;
 
-        private DisplayRenderer(Minecraft minecraft) {
+        private DisplayRenderer(Minecraft minecraft, BlockEntity display) {
             super(minecraft.getBlockEntityRenderDispatcher(), minecraft.getEntityModels());
+            this.display = display;
         }
 
         @Override

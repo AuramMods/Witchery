@@ -130,6 +130,10 @@ Lifecycle stages:
 - Dark Marks still laugh with the original `mob.torment.laugh` event. The separate original `mob.darkmark.idle` event and clip are available in the sound registry. The original `random.loved` definition points to an absent clip. The original Torment death clip is also absent, so the packaged death event uses the existing lowered-pitch hurt sample.
 
 ## Block Model Parity Anchors (current focus)
+- `witchery:witchesovenidle` and `witchery:witchesovenburning`
+  - Both IDs and their items share the original `ModelWitchesOven` body, lid, chimney and four feet. The baked model maps the original atlas to the corresponding side and rotates with the block's facing. The burning state adds the original smoke and flame positions through block particles.
+- `witchery:spinningwheel`
+  - The placed block and item share `SpinningWheelRenderer` with the original seat, legs, thread and mirrored wheel. The wheel and thread step their angles every 75 ms and 50 ms while the server reports active spinning. The item uses the stationary model.
 - `witchery:fumefunnel` and `witchery:filteredfumefunnel`
   - Both use the original `ModelFumeFunnel` body, filter case, two side pipes and chimney cuboids with the shared `witchery:block/fumefunnel` atlas.
   - `FumeFunnelModel` bakes the corresponding parts with the block's facing. Forge model data reads both side positions and the block below to match the original renderer. The idle and burning oven IDs both connect. Item models use the standalone body for their variant.

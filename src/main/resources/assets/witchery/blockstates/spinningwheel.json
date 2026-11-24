@@ -1,8 +1,5 @@
 {
-  "multipart": [
-    {"when": {"facing": "north"}, "apply": {"model": "witchery:block/spinningwheel"}},
-    {"when": {"facing": "east"}, "apply": {"model": "witchery:block/spinningwheel", "y": 90}},
-    {"when": {"facing": "south"}, "apply": {"model": "witchery:block/spinningwheel", "y": 180}},
-    {"when": {"facing": "west"}, "apply": {"model": "witchery:block/spinningwheel", "y": 270}}
-  ]
+  "variants": {
+    "": {"model": "witchery:block/spinningwheel"}
+  }
 }

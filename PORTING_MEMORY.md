@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Witch's Oven and Spinning Wheel Appearance (2026-11-24)
+
+- The Witch's Oven model maps the original atlas across its body, lids, chimney and mirrored feet. The client checked both items and all 16 placed combinations of block ID, facing and flame state. The server reopened a save made by the previous packaged JAR during an active Spruce Sapling batch. The player took Hint of Rebirth and Wood Ash through the Oven menu. The fixture supplied materials and enabled doubled filter chance in the disposable world.
+- The Spinning Wheel item uses the original placed model at rest. When crafting, the world renderer reproduces the original 75 ms rim and 50 ms thread steps. Breaking the fixture altar stopped both parts and preserved progress. Restoring altar power resumed the original batch, and the player took its Cobweb through the Wheel menu. The hidden, muted client verified the Wheel and Brazier item geometry in seven display contexts.
+- Java 17 JAR reobfuscation, the asset inventory audit and all 163 Forge GameTests passed on SHA-256 `4b4c7a70c70589bb3dc571d1a754372abf2cf1ec14794e42efc0f148f82dda8b`.
+
 ## Brazier Appearance (2026-11-24)
 
 - The Brazier uses the original bowl and stand for placed blocks and items. Its ash rises according to the number of occupied offering slots. Initial chunk data and later inventory updates send that count through the existing block entity type. Ignition ash stays in its original saved slot.
