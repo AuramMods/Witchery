@@ -1,6 +1,7 @@
 package art.arcane.witchery.client;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.config.WitcheryClientConfig;
 import art.arcane.witchery.network.WitcheryNetwork;
@@ -8,6 +9,7 @@ import art.arcane.witchery.vampirism.BloodFeeding;
 import art.arcane.witchery.vampirism.VampireAbilities;
 import art.arcane.witchery.vampirism.VampireUltimate;
 import art.arcane.witchery.vampirism.Vampirism;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -19,10 +21,13 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.Locale;
 
@@ -41,6 +46,8 @@ public final class ClientVampirism {
     private static int aimingAt = -1;
     private static int trackedBlood = -1;
     private static int nextReadTick;
+    private static int highlightedPower;
+    private static int powerNameFrames;
 
     private ClientVampirism() {}
 
@@ -68,15 +75,43 @@ public final class ClientVampirism {
     }
 
     private static void choose(LocalPlayer player, int power) {
+        WitcheryPlayerDataProvider.get(player).ifPresent(data -> data.setSelectedVampirePower(power));
+        WitcheryNetwork.requestVampirePower(power, false);
+    }
+
+    @SubscribeEvent
+    public static void onHotbarKey(InputEvent.Key event) {
+        if (event.getAction() == GLFW.GLFW_PRESS) handleHotbarPress(InputConstants.getKey(event.getKey(), event.getScanCode()));
+    }
+
+    @SubscribeEvent
+    public static void onHotbarMouseButton(InputEvent.MouseButton.Post event) {
+        if (event.getAction() == GLFW.GLFW_PRESS) handleHotbarPress(InputConstants.Type.MOUSE.getOrCreate(event.getButton()));
+    }
+
+    private static void handleHotbarPress(InputConstants.Key key) {
+        Minecraft client = Minecraft.getInstance();
+        LocalPlayer player = client.player;
+        if (player == null || player.isSpectator() || client.screen != null || client.getOverlay() != null
+                || BloodFeeding.paralysis(player, 4)) return;
         WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
-            data.setSelectedVampirePower(power);
-            if (power == VampireAbilities.ULTIMATE) {
-                String ultimate = data.getVampireUltimate().name().toLowerCase(Locale.ROOT);
-                player.displayClientMessage(Component.translatable("message.witchery.vampire.ultimate." + ultimate,
-                        data.getVampireUltimateCharges()), true);
+            int max = VampireAbilities.maxPower(data.getVampireLevel());
+            if (max == 0) return;
+            for (int slot = 0; slot < client.options.keyHotbarSlots.length; slot++) {
+                if (!client.options.keyHotbarSlots[slot].isActiveAndMatches(key)) continue;
+                int selected = data.getSelectedVampirePower();
+                if (slot == 0 && player.getInventory().selected == 0) choose(player, selected >= max ? 0 : selected + 1);
+                else if (slot != 0 && selected != 0) choose(player, 0);
+                return;
             }
         });
-        WitcheryNetwork.requestVampirePower(power, false);
+    }
+
+    @SubscribeEvent
+    public static void hideHeldItemName(RenderGuiOverlayEvent.Pre event) {
+        if (event.getOverlay() != VanillaGuiOverlay.ITEM_NAME.type()) return;
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null && !player.isSpectator() && VampireAbilities.selected(player) != 0) event.setCanceled(true);
     }
 
     @SubscribeEvent
@@ -126,6 +161,8 @@ public final class ClientVampirism {
         aimingAt = -1;
         trackedBlood = -1;
         nextReadTick = 0;
+        highlightedPower = 0;
+        powerNameFrames = 0;
     }
 
     public static void receiveBlood(int entityId, int amount) {
@@ -137,6 +174,7 @@ public final class ClientVampirism {
         if (client.player == null || client.player.isSpectator() || client.screen != null || client.options.hideGui) return;
         WitcheryPlayerDataProvider.get(client.player).ifPresent(data -> {
             if (data.getVampireLevel() == 0) return;
+            int activePower = VampireAbilities.selected(client.player);
             int x = WitcheryClientConfig.GUI_ON_LEFT.get() ? 10 : width - 10;
             int y = height / 2 + 16;
             RenderSystem.enableBlend();
@@ -148,7 +186,7 @@ public final class ClientVampirism {
                 int left = width / 2 - 91 - power * 20;
                 int top = height - 22;
                 graphics.blit(WIDGETS, left, top, 0, 0, 21, 22, 256, 256);
-                if (power == data.getSelectedVampirePower()) graphics.blit(WIDGETS, left - 1, top - 1, 0, 22, 24, 22, 256, 256);
+                if (power == activePower) graphics.blit(WIDGETS, left - 1, top - 1, 0, 22, 24, 22, 256, 256);
                 ResourceLocation icon = switch (power) {
                     case VampireAbilities.DRINK -> FANGS;
                     case VampireAbilities.MESMERIZE -> EYE;
@@ -175,8 +213,31 @@ public final class ClientVampirism {
                             width / 2, height / 2 + 20, 0xFFFFFFFF);
                 }
             }
+            renderPowerName(client, graphics, width, height, activePower, data);
             RenderSystem.disableBlend();
         });
+    }
+
+    private static void renderPowerName(Minecraft client, GuiGraphics graphics, int width, int height,
+                                        int power, WitcheryPlayerData data) {
+        if (power != highlightedPower) {
+            highlightedPower = power;
+            powerNameFrames = power == 0 ? 0 : 100;
+        }
+        if (powerNameFrames == 0 || --powerNameFrames == 0) return;
+        Component name = switch (power) {
+            case VampireAbilities.DRINK -> Component.translatable("hud.witchery.vampire.drink");
+            case VampireAbilities.MESMERIZE -> Component.translatable("hud.witchery.vampire.mesmerize");
+            case VampireAbilities.SPEED -> Component.translatable("hud.witchery.vampire.speed");
+            case VampireAbilities.BAT -> Component.translatable("hud.witchery.vampire.bat");
+            case VampireAbilities.ULTIMATE -> Component.translatable(
+                    "message.witchery.vampire.ultimate." + data.getVampireUltimate().name().toLowerCase(Locale.ROOT),
+                    data.getVampireUltimateCharges());
+            default -> Component.empty();
+        };
+        int alpha = Math.min(255, powerNameFrames * 256 / 10);
+        int y = height - (client.player.getAbilities().instabuild ? 55 : 69);
+        graphics.drawCenteredString(client.font, name, width / 2, y, (alpha << 24) | 0xFFFFFF);
     }
 
     private static void drawDrop(GuiGraphics graphics, int x, int y, int amount, int capacity) {

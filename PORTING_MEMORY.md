@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Vampire Power Controls and Mesmerize (2026-11-24)
+
+- A headless Witchery 0.24.1 server confirmed that rank four Mesmerize leaves Werevillagers unaffected and spends 50 blood to paralyze ordinary villagers for 140 ticks. The previous Forge package applied paralysis to both. It also left power selection unchanged on repeated presses of the first hotbar key.
+- The bound first hotbar key now enters the first slot, then cycles through the rank's available powers and returns to ordinary held-item use. Selecting another hotbar slot clears the power. The HUD draws the power name. Mesmerize skips Werevillagers before spending blood.
+- The muted packaged Forge survival client used the normal hotbar key handler to cycle and clear its powers. The render trace captured Drink Blood, Transfix / Toggle Night Vision, and Speed. The Werevillager stayed unaffected with the caster at 400 blood. Mesmerizing an ordinary villager applied paralysis and reduced the caster to 350. A dedicated restart restored the 350 blood and cleared the transient selection.
+- The original Forge event allowed left-click mining while a power was selected. On the rebuilt package the survival client broke a grass block both with feeding selected and after selecting the second slot. A separate rank-ten replay drew all five labels, including Toggle Bat Form and Bat Swarm (3 uses).
+- The copied Auram survival client replayed the rank-four selection cycle and drew all three labels. It kept 400 blood and left the Werevillager unaffected, then spent 50 to paralyze an ordinary villager. The clients used zero master volume and OpenAL No Output, and the focus monitor recorded no foreground changes.
+- Local Java 17 data generation, JAR reobfuscation, and all 234 required Forge GameTests passed. The new cases verify rank two paralysis duration and cost, Werevillager exclusion, and ordinary use and mining when selecting and clearing a power. Logs and the exact JAR are in `build/qa-vampire-power-controls`. Package SHA-256 `f4987d8c96cf81eab62b8aefe423d55f8cf9a032ee0d73654ca74e23f0e3f37b`.
+
 ## Vampire Blood Sight and Werewolf Bites (2026-11-24)
 
 - On the running Witchery 0.24.1 server, the entity trace that drives the HUD found a villager behind stone, while the combined interaction trace hit the wall. A real legacy player object using the feeding interaction on a Werevillager went from 20 to 16 health. The vampire retained 400 blood power, and the Werevillager retained 203 blood.

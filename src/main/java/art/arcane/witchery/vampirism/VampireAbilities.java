@@ -1,6 +1,7 @@
 package art.arcane.witchery.vampirism;
 
 import art.arcane.witchery.entity.VillageGuard;
+import art.arcane.witchery.entity.WereVillager;
 import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.item.VampireClothingItem;
@@ -95,6 +96,7 @@ public final class VampireAbilities {
 
     private static void mesmerize(ServerPlayer player, Entity target, WitcheryPlayerData data) {
         if (!(target instanceof LivingEntity living) || data.getCreatureTypeOrdinal() != 0
+                || living instanceof WereVillager
                 || (!(living instanceof Villager || living instanceof VillageGuard)
                 && !(living instanceof ServerPlayer victim && player.canHarmPlayer(victim)))
                 || living.hasEffect(WitcheryEffects.PARALYSIS.get()) || !Vampirism.drawBlood(player, 50)) {
