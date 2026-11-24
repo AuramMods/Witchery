@@ -929,15 +929,13 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 if (ward != null && getBlockPos().distSqr(target) <= range * range) upkeep.add(new RiteUpkeep.Ward(ward));
                 continue;
             }
+            RiteUpkeep.Timed timed;
             if (rite == 4 && stage == 0) {
-                upkeep.add(RiteUpkeep.Timed.recharge(ResourceLocation.fromNamespaceAndPath(Witchery.MODID,
-                        "rite_of_infusion_recharging"), members, null));
-                continue;
-            }
-            if (stage <= 0) continue;
-            if (rite == 7) {
-                if (stage >= RiteOfTransposition.oreDepthLimit(members)) continue;
-                upkeep.add(RiteUpkeep.Timed.transposeOres(RiteOfTransposition.ORE_RECIPE, members, null, stage));
+                timed = RiteUpkeep.Timed.recharge(ResourceLocation.fromNamespaceAndPath(Witchery.MODID,
+                        "rite_of_infusion_recharging"), members, null);
+            } else if (rite == 7) {
+                if (stage <= 0 || stage >= RiteOfTransposition.oreDepthLimit(members)) continue;
+                timed = RiteUpkeep.Timed.transposeOres(RiteOfTransposition.ORE_RECIPE, members, null, stage);
             } else {
                 LandscapeRites.Species species = LandscapeRites.Species.forLegacyRite(rite);
                 ItemRiteRecipe.Action action = switch (rite) {
@@ -965,7 +963,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 var fissure = action == ItemRiteRecipe.Action.PART_EARTH ? new EarthRites.Fissure(target.asLong(), 0) : null;
                 var progress = new LandscapeRites.Progress(action, species, target, stage, fissure,
                         remote == null && action.raisedEarthRadius() > 0);
-                if (stage >= progress.lastStage(members)) continue;
+                if (stage <= 0 || stage >= progress.lastStage(members)) continue;
                 ResourceLocation recipe = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, switch (action) {
                     case CLIMATE_CHANGE -> "rite_of_climate_change";
                     case ICE_SHELL -> "rite_of_ice_shell";
@@ -984,12 +982,10 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                     case CALL_BEASTS -> "rite_of_calling_the_beasts";
                     default -> "forestation/" + species.name().toLowerCase(Locale.ROOT);
                 });
-                var timed = RiteUpkeep.Timed.landscape(recipe, members, null, progress);
-                if (action == ItemRiteRecipe.Action.FERTILITY || action.expandsCurse()) {
-                    timed.restoreInitiatorName(initiators.getString(index));
-                }
-                upkeep.add(timed);
+                timed = RiteUpkeep.Timed.landscape(recipe, members, null, progress);
             }
+            timed.restoreInitiatorName(initiators.getString(index));
+            upkeep.add(timed);
         }
         for (var ongoing : upkeep) {
             if (ongoing instanceof RiteUpkeep.Timed timed) {

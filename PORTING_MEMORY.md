@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Caster Names in Legacy Timed Rites (2026-11-24)
+
+- The original 0.24.1 server serialized Climate Change with rite 64, stage one, four coven members and the caster name in `Initiators`. The fixture staged the already-paid cast before its first pulse. Its earlier active offering phase was absent from the original format.
+- The previous packaged build resumed the rite but discarded the name and silently ended the cast when no focus was present. The rebuilt port retains the original name for every supported timed upkeep record. A muted background survival client received the translated missing-focus message from its restored glyph. A separate cast ran out of time with the same player in the Nether and sent no message across dimensions.
+- On a successful resume, the fixture supplied Netherrack and one Glowstone Dust. The restored rite painted Badlands at the glyph and left the outside Plains control alone. Both results and the finished glyph survived a headless restart.
+- The checked-in regression verifies that an imported Climate Change prelude and simultaneous Infusion Recharging upkeep retain their separate names through conversion and an ordinary save reload. Local data generation, Java 17 JAR reobfuscation, and all 224 required Forge GameTests passed. Logs and the exact package are in `build/qa-legacy-climate-prelude`. Package SHA-256 `66396de2cf8d5cf23b0fc139b9a41df0f8dc4a4b85102f91c512d84747741d30`.
+
 ## Portable Legacy Mirror Rooms (2026-11-24)
 
 - Witchery 0.24.1 saved the last exterior coordinates on its Mirror room exit after the frame was harvested. The earlier port inferred an active connection from those coordinates. Its packaged build let the player mount the Mirror imported from a legacy chest, but the room exit retained its old exterior coordinates with no shared connection.

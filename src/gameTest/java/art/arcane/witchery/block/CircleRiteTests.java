@@ -18,6 +18,8 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.GameTestSequence;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -297,6 +299,40 @@ public final class CircleRiteTests {
                 drops(helper).forEach(ItemEntity::discard);
             }
         }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_legacy_climate_prelude", setupTicks = 5)
+    public static void legacyClimatePreludeSurvivesBothSaveFormats(GameTestHelper helper) {
+        helper.setBlock(CENTER, block("circle"));
+        var legacy = new CompoundTag();
+        legacy.putByteArray("Rituals", new byte[]{64, 4, 64, 70});
+        legacy.putByteArray("RitualStages", new byte[]{1, 0, -1, 0});
+        legacy.putByteArray("RitualCovens", new byte[]{4, 0, 4, 0});
+        var initiators = new ListTag();
+        initiators.add(StringTag.valueOf("ClimateCaster"));
+        initiators.add(StringTag.valueOf("RechargeCaster"));
+        legacy.put("Initiators", initiators);
+        var heart = heart(helper);
+        heart.load(legacy);
+        var converted = heart.saveWithoutMetadata();
+        var progress = converted.getCompound("Landscape");
+        helper.assertTrue(progress.getInt("Stage") == 1
+                        && converted.getString("InitiatorName").equals("ClimateCaster")
+                        && converted.getInt("CovenSize") == 4,
+                "The imported climate rite retains its first pulse, coven and initiator");
+        var otherRites = converted.getList("UpkeepRites", Tag.TAG_COMPOUND);
+        helper.assertTrue(otherRites.size() == 1 && otherRites.getCompound(0).getBoolean("Recharging")
+                        && otherRites.getCompound(0).getString("InitiatorName").equals("RechargeCaster"),
+                "A simultaneous recharge retains its name, and invalid stages do not activate");
+
+        heart.load(converted);
+        tick(helper.getLevel(), helper.absolutePos(CENTER), heart, 20);
+        var advanced = heart.saveWithoutMetadata();
+        helper.assertTrue(advanced.getCompound("Landscape").getInt("Stage") == 2
+                        && advanced.getString("InitiatorName").equals("ClimateCaster"),
+                "The modern save resumes the next pulse with the imported initiator");
+        heart.toggle(helper.getLevel(), null);
+        helper.succeed();
     }
 
     @GameTest(template = TEMPLATE, batch = "witchery_legacy_ice_shell", setupTicks = 5)

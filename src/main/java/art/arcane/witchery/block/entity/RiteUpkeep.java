@@ -110,7 +110,8 @@ interface RiteUpkeep {
         private ServerPlayer caster(ServerLevel level) {
             var players = level.getServer().getPlayerList();
             if (initiator != null) return players.getPlayer(initiator);
-            return initiatorName.isEmpty() ? null : players.getPlayerByName(initiatorName);
+            ServerPlayer named = initiatorName.isEmpty() ? null : players.getPlayerByName(initiatorName);
+            return named != null && named.serverLevel() == level ? named : null;
         }
 
         void save(CompoundTag tag) {
