@@ -1,10 +1,14 @@
 package art.arcane.witchery.world;
 
+import art.arcane.witchery.registry.WitcherySounds;
+import art.arcane.witchery.vampirism.Vampirism;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
@@ -13,8 +17,8 @@ import net.minecraft.world.level.portal.PortalInfo;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.ITeleporter;
 
-import java.util.function.Function;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 public final class WitcheryTeleport {
     private static final TicketType<Integer> ARRIVAL = TicketType.create("witchery_travel_arrival", Integer::compareTo, 40);
@@ -51,7 +55,13 @@ public final class WitcheryTeleport {
     }
 
     public static boolean move(Entity actor, ServerLevel destination, Vec3 target) {
-        return move(actor, destination, target, TormentTravel::transitionEffect);
+        return move(actor, destination, target, Vampirism.isVampire(actor)
+                ? WitcheryTeleport::vampireTransitionEffect : TormentTravel::transitionEffect);
+    }
+
+    private static void vampireTransitionEffect(ServerLevel level, Vec3 position) {
+        level.sendParticles(ParticleTypes.SMOKE, position.x, position.y + 0.8, position.z, 16, 0.5, 0.9, 0.5, 0.03);
+        level.playSound(null, position.x, position.y, position.z, WitcherySounds.MIRROR_POOF.get(), SoundSource.PLAYERS, 1, 1);
     }
 
     public static boolean move(Entity actor, ServerLevel destination, Vec3 target, BiConsumer<ServerLevel, Vec3> transitionEffect) {

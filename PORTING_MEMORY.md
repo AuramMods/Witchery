@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Transpose Landing and Vampire Teleport Effects (2026-11-24)
+
+- Creature Transpose reads candidate columns even when their chunks are unloaded at cast time, as in the original. It checks its three candidate columns for footing, headroom, bounds and collisions. The regression lets all chunks of a prepared landing platform unload before casting.
+- The shared teleport path selects the original smoke and Witchery poof for vampire players, NPC vampires and vampire Reflections. Other creatures still use portal particles and the Enderman cue. The taglock regression checks both ends and confirms that Ender Inhibition blocks the move and its cues.
+- The muted clean Forge survival client drank supplied Transpose bottles. As an ordinary player it recorded 32 portal particles and two Enderman cues, one at each end. After the fixture set rank one with the legacy creative token, the vampire recorded 32 smoke particles and two Witchery poofs. A dedicated restart retained the rank and coordinates. Another survival drink after reconnecting repeated the vampire cues. The fixture provided the platform, positioning and bottles.
+- All 180 required local Forge GameTests passed after the altar artifact-order fixture moved above natural terrain and waited for the capacity scan. Java 17 reobfuscation and the asset inventory audit passed. The packaged checks used SHA-256 `4f20adb880461912b66ca3e897be7e5a49e78975ddd686b04a1a0da1c5bf98dd`. Both background clients used zero master volume and OpenAL No Output without activating their windows. Logs and fixtures are in `build/qa-transpose-landing`.
+
 ## Cauldron Web Overlap and Lilify Support (2026-11-24)
 
 - A strengthened Webs splash fills surrounding faces and edges even when a prior splash filled the center. The site still checks Forge break protection, and each replacement checks Forge placement protection. The regression keeps a chest and a vetoed cell clear of webs.

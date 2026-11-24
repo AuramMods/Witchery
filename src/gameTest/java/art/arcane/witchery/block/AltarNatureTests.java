@@ -58,10 +58,10 @@ public final class AltarNatureTests {
         helper.succeed();
     }
 
-    @GameTest(template = "qa_coven_arena", batch = "witchery_altar_artifact_order")
+    @GameTest(template = "qa_coven_arena", batch = "witchery_altar_artifact_order", timeoutTicks = 150)
     public static void prioritizesArtifactsByTraversalFromTheCore(GameTestHelper helper) {
         var level = helper.getLevel();
-        var center = helper.absolutePos(new BlockPos(12, 0, 5)).atY(level.getMaxBuildHeight() - 112);
+        var center = helper.absolutePos(new BlockPos(12, 0, 5)).atY(level.getMaxBuildHeight() - 4);
         Block altarBlock = WitcheryBlocks.getRequired("altar").get();
         for (BlockPos member : BlockPos.betweenClosed(center.west(), center.east().south())) {
             level.setBlockAndUpdate(member, altarBlock.defaultBlockState());
@@ -76,15 +76,16 @@ public final class AltarNatureTests {
         level.setBlockAndUpdate(center.south().above(), Blocks.TORCH.defaultBlockState());
         helper.assertTrue(core.rechargeMultiplier() == 3, "The core skull and the south torch should take priority");
 
-        helper.runAfterDelay(22, () -> {
-            helper.assertTrue(core.capacity() == 4, "The core skull should double the oak log's capacity");
+        helper.startSequence().thenWaitUntil(() -> {
+            int capacity = core.capacity();
+            helper.assertTrue(capacity == 4, "The core skull should double the oak log's capacity. Actual capacity " + capacity);
+        }).thenExecute(() -> {
             level.removeBlock(center.above(), false);
             helper.assertTrue(core.capacity() == 6 && core.rechargeMultiplier() == 4,
                     "Removing the core skull should reveal the wither skull bonus immediately");
             level.removeBlock(center.south().above(), false);
             helper.assertTrue(core.rechargeMultiplier() == 5, "Removing the torch should reveal the candelabra bonus immediately");
-            helper.succeed();
-        });
+        }).thenSucceed();
     }
 
     private static void placeLayer(ServerLevel level, BlockPos center, int dy, int count, Block... palette) {

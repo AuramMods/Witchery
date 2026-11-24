@@ -59,8 +59,7 @@ final class BrewTransposition {
         for (int attempt = 0; attempt < 3; attempt++) {
             column = column.offset(level.random.nextInt(2 * range) - range, 0, level.random.nextInt(2 * range) - range);
             if (!level.isInWorldBounds(column) || !level.getWorldBorder().isWithinBounds(column)) continue;
-            // Avoid loading distant terrain for a splash or a lingering brew tick.
-            if (!level.hasChunkAt(column)) continue;
+            // The original search also checked terrain beyond the currently loaded chunks.
             int ceiling = Math.min(column.getY() + 64, level.getMaxBuildHeight() - 3);
             while (column.getY() > level.getMinBuildHeight() && !level.getBlockState(column).blocksMotion()) {
                 column = column.below();

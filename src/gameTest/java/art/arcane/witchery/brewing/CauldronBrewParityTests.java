@@ -12,6 +12,7 @@ import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryItems;
+import art.arcane.witchery.registry.WitcherySounds;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -19,6 +20,9 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -26,6 +30,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.LiquidBlock;
@@ -36,12 +41,14 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.PlayLevelSoundEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -49,6 +56,93 @@ import java.util.function.Consumer;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class CauldronBrewParityTests {
+    @GameTest(template = "qa_coven_arena", timeoutTicks = 210)
+    public static void transposeFindsFootingOutsideLoadedChunks(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var target = EntityType.PIG.create(level);
+        var center = new BlockPos(16000, level.getMaxBuildHeight() - 16, 16000);
+        var first = center.offset(-10, 0, -10);
+        var last = center.offset(9, 0, 9);
+        for (BlockPos pos : BlockPos.betweenClosed(first, last)) {
+            level.setBlock(pos, Blocks.STONE.defaultBlockState(), Block.UPDATE_KNOWN_SHAPE);
+            for (int dy = 1; dy <= 3; dy++) {
+                level.setBlock(pos.above(dy), Blocks.AIR.defaultBlockState(), Block.UPDATE_KNOWN_SHAPE);
+            }
+        }
+        var corners = List.of(first, first.south(19), first.east(19), last);
+        Vec3 startingPosition = Vec3.atBottomCenterOf(center.above(6));
+        target.setPos(startingPosition);
+        var brew = transposeBrew();
+        helper.assertTrue(brew != null, "The original Ender Pearl brew is valid");
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(corners.stream().noneMatch(level::hasChunkAt),
+                "Every chunk containing the prepared landing platform has unloaded")).thenExecute(() -> {
+            try {
+                brew.applySplash(target, target, null, 1, false, startingPosition);
+                var arrival = target.blockPosition();
+                helper.assertTrue(arrival.getY() == center.getY() + 1
+                                && arrival.getX() >= first.getX() && arrival.getX() <= last.getX()
+                                && arrival.getZ() >= first.getZ() && arrival.getZ() <= last.getZ()
+                                && level.getBlockState(arrival.below()).is(Blocks.STONE),
+                        "The splash should load the platform and find solid footing. Actual position " + target.position());
+            } finally {
+                target.discard();
+            }
+        }).thenSucceed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void transposeUsesOriginalVampireAndOrdinaryCues(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var vampire = WitcheryEntities.VAMPIRE.get().create(level);
+        var pig = EntityType.PIG.create(level);
+        var caster = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "TransposeTester"));
+        Vec3 start = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(4, 11, 5)));
+        var destination = new BrewTransposition.Site(level, helper.absolutePos(new BlockPos(8, 11, 5)));
+        Vec3 arrival = Vec3.atBottomCenterOf(destination.pos());
+        vampire.setPos(start);
+        pig.setPos(start);
+        var brew = transposeBrew();
+        helper.assertTrue(brew != null, "The original Ender Pearl brew is valid");
+
+        List<SoundEvent> sounds = new ArrayList<>();
+        Consumer<PlayLevelSoundEvent.AtPosition> listener = event -> {
+            if (event.getLevel() == level && event.getSound() != null
+                    && (event.getPosition().equals(start) || event.getPosition().equals(arrival))) {
+                sounds.add(event.getSound().value());
+            }
+        };
+        MinecraftForge.EVENT_BUS.addListener(listener);
+        try {
+            brew.applyTaglock(vampire, caster, 0, destination);
+            var poof = WitcherySounds.MIRROR_POOF.get();
+            helper.assertTrue(vampire.position().equals(arrival) && sounds.equals(List.of(poof, poof)),
+                    "A vampire gets the original poof at departure and arrival");
+            sounds.clear();
+            brew.applyTaglock(pig, caster, 0, destination);
+            helper.assertTrue(pig.position().equals(arrival)
+                            && sounds.equals(List.of(SoundEvents.ENDERMAN_TELEPORT, SoundEvents.ENDERMAN_TELEPORT)),
+                    "Ordinary creatures get the original portal cue at both positions");
+            sounds.clear();
+            vampire.setPos(start);
+            vampire.addEffect(new MobEffectInstance(WitcheryEffects.ENDER_INHIBITION.get(), 100, 3));
+            brew.applyTaglock(vampire, caster, 0, destination);
+            helper.assertTrue(vampire.position().equals(start) && sounds.isEmpty(),
+                    "Ender Inhibition prevents the move and both teleport cues");
+            helper.succeed();
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(listener);
+            caster.discard();
+            pig.discard();
+            vampire.discard();
+        }
+    }
+
+    private static BrewMixture transposeBrew() {
+        return BrewMixture.from(List.of(new ItemStack(Items.NETHER_WART),
+                new ItemStack(WitcheryIngredient.TEAR_OF_THE_GODDESS.item()), new ItemStack(Items.GUNPOWDER),
+                new ItemStack(Items.ENDER_PEARL)));
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void strongerWebBrewExpandsFromAnExistingWeb(GameTestHelper helper) {
         var level = helper.getLevel();
