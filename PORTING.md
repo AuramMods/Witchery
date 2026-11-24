@@ -663,6 +663,20 @@
 - [x] Reproduce the one-tick Storm range failure on the packaged headless server. Load an original 1.7.10 glyph's saved wave fields and confirm the restored spawn boundary. Load an earlier Forge-format wave and confirm it retains its stage-based schedule.
 - [x] Repeat Hell on Earth in copied Auram. Verify its alternate starting phase waits until stage 21, charges the distant altar by 200, and ends after that altar is removed.
 
+## Ward and Wave Resumption (2026-11-24)
+
+- [x] Trace the original save path for wards, expanding waves and Broken Earth. Wards and imported waves take their first step on tick 20. Broken Earth resumes each tick after the first cut.
+- [x] Preserve the activation wait and range of imported wards. Unbound wards follow a moved Heart Glyph, and Waystone wards retain the range supplied by their saved coven. A portable ward resumes at the original remaining lifetime.
+- [x] Resume both Fertility variants, Blight, Blindness, Hell on Earth and Ice Shell on tick 20, then expand every five ticks. Save pending activation across another reload.
+- [x] Restore Broken Earth's consecutive cuts. Keep the earlier Forge save's next-cut deadline while retaining its heading, seed and stage.
+- [x] Load an original greater barrier and a Fertility wave into a clean packaged headless server. The greater barrier first charges 1.4 and creates its remote wall on tick 20. Fertility resumes on tick 20 and advances again five ticks later.
+- [x] Activate Broken Earth in clean Forge survival. Save the running fissure at stage eight, then restart and confirm that the same path finishes. The headless save check preserves the exact seed and heading.
+- [x] Upgrade a real save from the previous Forge build at stage three with two elapsed ticks. The packaged server kept the remaining 18 ticks before stage four, then made eight consecutive cuts with the same seed and heading.
+- [x] Activate Protection and Moving Earth with redstone on the packaged server. The active unbound ward followed the glyph up seven blocks.
+- [x] Run Java 17 data generation, reobfuscation, and all 268 checked-in Forge GameTests. The tested JAR and logs are in `build/qa-rite-upkeep`.
+- [x] Trace Broken Earth's stages 1–54 in copied Auram. The dedicated server advanced each stage on consecutive ticks and removed the predicted first block after a fresh redstone cast.
+- [ ] Resolve the terrain difference on copied Auram for fissure seed `5406972250557401769`. A saved eastward cast with that seed cut five predicted centers in clean Forge. The same save fields left those centers solid in copied Auram and carved elsewhere. See `control/seeded-fissure.log` and `auram-copy/fissure-trace.log` in the milestone evidence.
+
 ## Chalk Rite Offering Sources (2026-11-24)
 
 - [x] Restore the original search for dropped items, optional Waystones, and living offerings. Measure three-dimensional distance from the Heart Glyph block's lower corner and search the one-block-high glyph layer. Small, medium, and large rites accept drops within four, six, and eight blocks. Living offerings get one extra block of distance within the same search layer.

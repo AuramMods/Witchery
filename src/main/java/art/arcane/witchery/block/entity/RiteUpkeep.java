@@ -6,6 +6,7 @@ import art.arcane.witchery.power.AltarPower;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
 import art.arcane.witchery.ritual.LandscapeRites;
 import art.arcane.witchery.ritual.ProtectionRites;
+import art.arcane.witchery.ritual.RiteActivation;
 import art.arcane.witchery.ritual.RiteOfTransposition;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -34,6 +35,7 @@ interface RiteUpkeep {
     }
 
     final class Timed implements RiteUpkeep {
+        private static final int LEGACY_ACTIVATION_TICKS = 20;
         private final ResourceLocation rite;
         private final int coven;
         @Nullable private final UUID initiator;
@@ -41,6 +43,7 @@ interface RiteUpkeep {
         @Nullable private LandscapeRites.Progress landscape;
         private int oreDepth;
         private int ticks;
+        private boolean resumingLegacyWave;
 
         private Timed(ResourceLocation rite, int coven, @Nullable UUID initiator,
                       @Nullable LandscapeRites.Progress landscape, int oreDepth) {
@@ -64,15 +67,38 @@ interface RiteUpkeep {
         }
 
         private int interval() {
+            if (isLegacyFissure()) return 1;
             if (landscape != null) return landscape.interval();
-            return oreDepth > 0 ? RiteOfTransposition.ORE_PULSE_TICKS : 20;
+            return oreDepth > 0 ? RiteOfTransposition.ORE_PULSE_TICKS : LEGACY_ACTIVATION_TICKS;
         }
 
-        void restoreTicks(int savedTicks) {
-            // Imported Hell on Earth waves wait for the initial 20-tick gate on their first loaded pulse.
-            int minimum = landscape != null && landscape.action() == ItemRiteRecipe.Action.HELL_ON_EARTH
-                    ? interval() - 20 : 0;
-            ticks = Mth.clamp(savedTicks, minimum, interval() - 1);
+        private boolean isLegacyFissure() {
+            return landscape != null && landscape.action() == ItemRiteRecipe.Action.PART_EARTH
+                    && RiteActivation.legacyId(rite) == 19;
+        }
+
+        private boolean hasLegacyWaveGate() {
+            if (landscape == null) return false;
+            var action = landscape.action();
+            return action.expandsCurse() || action == ItemRiteRecipe.Action.FERTILITY || action == ItemRiteRecipe.Action.ICE_SHELL;
+        }
+
+        void waitForLegacyWave() {
+            if (!hasLegacyWaveGate()) return;
+            ticks = interval() - LEGACY_ACTIVATION_TICKS;
+            resumingLegacyWave = true;
+        }
+
+        void restorePreviousForgeTicks(int savedTicks) {
+            // Earlier fissures waited twenty ticks between cuts. Keep their next cut at its saved deadline.
+            restoreTicks(isLegacyFissure() ? Mth.clamp(savedTicks, 0, LEGACY_ACTIVATION_TICKS - 1)
+                    + 1 - LEGACY_ACTIVATION_TICKS : savedTicks);
+        }
+
+        private void restoreTicks(int savedTicks) {
+            int interval = interval();
+            int minimum = isLegacyFissure() || hasLegacyWaveGate() ? interval - LEGACY_ACTIVATION_TICKS : 0;
+            ticks = Mth.clamp(savedTicks, minimum, interval - 1);
         }
 
         void restoreInitiatorName(String name) {
@@ -85,6 +111,10 @@ interface RiteUpkeep {
             if (++ticks < interval()) return true;
             ticks = 0;
             if (landscape != null) {
+                if (resumingLegacyWave) {
+                    level.playSound(null, landscape.target(), SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.8F, 1);
+                    resumingLegacyWave = false;
+                }
                 landscape = LandscapeRites.pulse(level, heart, landscape, coven, caster(level), terrainChanges);
                 return landscape != null;
             }
@@ -121,6 +151,8 @@ interface RiteUpkeep {
         void save(CompoundTag tag) {
             tag.putString("Rite", rite.toString());
             tag.putInt("StepTicks", ticks);
+            if (resumingLegacyWave) tag.putBoolean("ResumingLegacyWave", true);
+            if (isLegacyFissure()) tag.putBoolean("FissurePerTick", true);
             if (coven > 0) {
                 tag.putInt("CovenSize", coven);
                 tag.putInt("CovenSummoned", coven);
@@ -143,7 +175,9 @@ interface RiteUpkeep {
             if (landscape == null && depth == 0 && !tag.getBoolean("Recharging")) return null;
             var upkeep = new Timed(rite, coven, initiator, landscape, depth);
             upkeep.restoreInitiatorName(tag.getString("InitiatorName"));
-            upkeep.restoreTicks(tag.getInt("StepTicks"));
+            if (tag.getBoolean("FissurePerTick")) upkeep.restoreTicks(tag.getInt("StepTicks"));
+            else upkeep.restorePreviousForgeTicks(tag.getInt("StepTicks"));
+            upkeep.resumingLegacyWave = tag.getBoolean("ResumingLegacyWave") && upkeep.hasLegacyWaveGate();
             return upkeep;
         }
     }

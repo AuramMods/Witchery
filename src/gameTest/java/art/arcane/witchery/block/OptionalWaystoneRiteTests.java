@@ -70,24 +70,32 @@ public final class OptionalWaystoneRiteTests {
         WaystoneItem.bindLocation(stone, level, target);
         var offered = drop(helper, stone);
         var altar = chargedAltar(helper);
-        startBarrier(helper, heart -> helper.runAfterDelay(64, () -> {
-            helper.assertTrue(offered.isRemoved() && altar.power() >= 700, "Taking a Waystone does not debit the altar");
+        startBarrier(helper, heart -> {
+            float initialPower = altar.power();
+            int phase = heart.saveWithoutMetadata().getInt("GlyphPhase") % 20;
+            tickHeart(heart, 60 - phase);
+            helper.assertTrue(offered.isRemoved() && altar.power() == initialPower, "Taking a Waystone does not debit the altar");
             heart.load(heart.saveWithFullMetadata());
             var laterStone = new ItemStack(WitcheryIngredient.BOUND_WAYSTONE.item());
             WaystoneItem.bindLocation(laterStone, level, target.south(4));
             var laterDrop = drop(helper, laterStone);
-            helper.runAfterDelay(21, () -> {
-                helper.assertTrue(heart.saveWithFullMetadata().getBoolean("AltarPowerOffered") && altar.power() < 400,
-                        "The altar pays for the saved target before the ward starts");
-            });
-            helper.runAfterDelay(41, () -> {
-                var wards = heart.saveWithFullMetadata().getList("ProtectionRites", Tag.TAG_COMPOUND);
-                helper.assertTrue(wards.size() == 1 && BlockPos.of(wards.getCompound(0).getLong("Target")).equals(target),
-                        "A reloaded rite creates the barrier at the first Waystone's destination");
-                helper.assertTrue(laterDrop.isAlive() && altar.power() < 400, "The rite charges the altar once and leaves the later stone");
-                helper.succeed();
-            });
-        }));
+            tickHeart(heart, 20);
+            helper.assertTrue(heart.saveWithFullMetadata().getBoolean("AltarPowerOffered") && altar.power() == initialPower - 500,
+                    "The altar pays for the saved target before the ward starts");
+            tickHeart(heart, 20);
+            var wards = heart.saveWithFullMetadata().getList("ProtectionRites", Tag.TAG_COMPOUND);
+            helper.assertTrue(wards.size() == 1 && BlockPos.of(wards.getCompound(0).getLong("Target")).equals(target),
+                    "A reloaded rite creates the barrier at the first Waystone's destination");
+            helper.assertTrue(laterDrop.isAlive() && Math.abs(altar.power() - (initialPower - 501.2F)) < 0.01F,
+                    "The ward pays its first upkeep charge and leaves the later offered Waystone");
+            helper.succeed();
+        });
+    }
+
+    private static void tickHeart(RiteHeartBlockEntity heart, int ticks) {
+        for (int tick = 0; tick < ticks; tick++) {
+            RiteHeartBlockEntity.serverTick(heart.getLevel(), heart.getBlockPos(), heart.getBlockState(), heart);
+        }
     }
 
     private static void startBarrier(GameTestHelper helper, Consumer<RiteHeartBlockEntity> started) {

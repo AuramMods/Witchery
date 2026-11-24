@@ -2,6 +2,7 @@ package art.arcane.witchery.ritual;
 
 import art.arcane.witchery.block.BarrierBlock;
 import art.arcane.witchery.block.entity.AltarBlockEntity;
+import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.power.AltarPower;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
@@ -11,6 +12,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.AABB;
@@ -71,31 +73,45 @@ public final class ProtectionRites {
 
     public static final class Upkeep {
         private final Kind kind;
-        private final BlockPos target;
+        @Nullable private final BlockPos boundTarget;
+        private final int coven;
         private int ticks;
+        private int resumeTicks;
         @Nullable private AltarBlockEntity powerSource;
 
-        public Upkeep(Kind kind, BlockPos target) {
-            this(kind, target, 0);
+        public Upkeep(Kind kind, @Nullable BlockPos boundTarget, int coven) {
+            this(kind, boundTarget, coven, 0, 0);
         }
 
-        private Upkeep(Kind kind, BlockPos target, int ticks) {
+        private Upkeep(Kind kind, @Nullable BlockPos boundTarget, int coven, int ticks, int resumeTicks) {
             this.kind = kind;
-            this.target = target.immutable();
+            this.boundTarget = boundTarget == null ? null : boundTarget.immutable();
+            this.coven = coven;
             this.ticks = ticks;
+            this.resumeTicks = resumeTicks;
         }
 
         public boolean tick(ServerLevel level, BlockPos heart) {
+            BlockPos target = boundTarget == null ? heart : boundTarget;
             boolean portable = kind == Kind.PORTABLE_BARRIER;
-            if ((portable && ticks >= PORTABLE_EXPIRY_TICK) || !level.isInWorldBounds(target)
-                    || !level.getWorldBorder().isWithinBounds(target)) return false;
+            // Earlier Forge wards did not retain the coven that determined their Waystone range.
+            if (boundTarget != null && coven >= 0 && !LandscapeRites.canReach(level, heart, target, coven)) {
+                level.playSound(null, heart, SoundEvents.NOTE_BLOCK_SNARE.value(), SoundSource.BLOCKS, 0.9F, 1);
+                return false;
+            }
+            if (!level.isInWorldBounds(target) || !level.getWorldBorder().isWithinBounds(target)) return false;
+            if (resumeTicks > 0) {
+                if (--resumeTicks > 0) return true;
+                level.playSound(null, heart, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.8F, 1);
+            }
+            if (portable && ticks >= PORTABLE_EXPIRY_TICK) return false;
             if (kind.power > 0 && !consumePower(level, heart)) {
                 level.playSound(null, heart, SoundEvents.NOTE_BLOCK_SNARE.value(), SoundSource.BLOCKS, 0.9F, 1);
                 return false;
             }
 
             if (kind.shell.isEmpty()) moveCreatures(level, target, kind.radius, kind == Kind.IMPRISONMENT);
-            else if (ticks % BARRIER_PULSE == 0) refreshBarrier(level);
+            else if (ticks % BARRIER_PULSE == 0) refreshBarrier(level, target);
 
             ticks = portable ? ticks + 1 : (ticks + 1) % BARRIER_PULSE;
             return true;
@@ -109,7 +125,7 @@ public final class ProtectionRites {
             return powerSource != null && powerSource.consumePower(kind.power);
         }
 
-        private void refreshBarrier(ServerLevel level) {
+        private void refreshBarrier(ServerLevel level, BlockPos target) {
             ChunkPos min = new ChunkPos(target.offset(-kind.radius, 0, -kind.radius));
             ChunkPos max = new ChunkPos(target.offset(kind.radius, 0, kind.radius));
             for (int x = min.x; x <= max.x; x++) {
@@ -128,10 +144,13 @@ public final class ProtectionRites {
             }
         }
 
-        public CompoundTag save() {
+        public CompoundTag save(BlockPos heart) {
             var tag = new CompoundTag();
             tag.putString("Kind", kind.name());
-            tag.putLong("Target", target.asLong());
+            tag.putLong("Target", (boundTarget == null ? heart : boundTarget).asLong());
+            if (boundTarget == null) tag.putBoolean("FollowsHeart", true);
+            if (coven >= 0) tag.putInt("CovenSize", coven);
+            if (resumeTicks > 0) tag.putInt("ResumeTicks", resumeTicks);
             tag.putInt("Ticks", ticks);
             return tag;
         }
@@ -147,13 +166,16 @@ public final class ProtectionRites {
             }
             int ticks = tag.getInt("Ticks");
             int max = kind == Kind.PORTABLE_BARRIER ? PORTABLE_EXPIRY_TICK : BARRIER_PULSE - 1;
-            return ticks >= 0 && ticks <= max ? new Upkeep(kind, BlockPos.of(tag.getLong("Target")), ticks) : null;
+            int coven = tag.contains("CovenSize", Tag.TAG_ANY_NUMERIC) ? Mth.clamp(tag.getInt("CovenSize"), 0, CovenWitch.MAX_MEMBERS) : -1;
+            BlockPos boundTarget = tag.getBoolean("FollowsHeart") ? null : BlockPos.of(tag.getLong("Target"));
+            int resumeTicks = Mth.clamp(tag.getInt("ResumeTicks"), 0, BARRIER_PULSE);
+            return ticks >= 0 && ticks <= max ? new Upkeep(kind, boundTarget, coven, ticks, resumeTicks) : null;
         }
 
         @Nullable
-        public static Upkeep fromLegacy(Kind kind, BlockPos target, int stage) {
+        public static Upkeep fromLegacy(Kind kind, @Nullable BlockPos boundTarget, int stage, int coven) {
             if (stage < 0 || kind == Kind.PORTABLE_BARRIER && stage >= 60) return null;
-            return new Upkeep(kind, target, kind == Kind.PORTABLE_BARRIER ? stage * BARRIER_PULSE : 0);
+            return new Upkeep(kind, boundTarget, coven, kind == Kind.PORTABLE_BARRIER ? stage * BARRIER_PULSE : 0, BARRIER_PULSE);
         }
     }
 

@@ -636,16 +636,153 @@ public final class CircleRiteTests {
         legacy.putByteArray("Rituals", new byte[]{65});
         legacy.putByteArray("RitualStages", new byte[]{10});
         legacy.putByteArray("RitualCovens", new byte[]{6});
-        heart(helper).load(legacy);
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var heart = heart(helper);
+        heart.load(legacy);
+        tick(level, center, heart, 10);
+        heart.load(heart.saveWithoutMetadata());
+        tick(level, center, heart, 9);
+        helper.assertTrue(heart.saveWithoutMetadata().getCompound("Landscape").getInt("Stage") == 10,
+                "The reloaded shell keeps its stage for the first nineteen ticks");
+        tick(level, center, heart, 1);
+        helper.assertTrue(heart.saveWithoutMetadata().getCompound("Landscape").getInt("Stage") == 11,
+                "The first imported expansion occurs on tick twenty");
+        tick(level, center, heart, 5);
+        helper.assertBlockPresent(block("perpetualice"), CENTER.east(16));
+        helper.assertBlockPresent(Blocks.STONE, CENTER.west(16));
+        helper.assertBlockPresent(Blocks.AIR, CENTER.east(17));
+        helper.assertFalse(helper.getBlockState(CENTER).getValue(RiteHeartBlock.ACTIVE),
+                "The migrated shell finishes at the six-member radius on tick twenty-five");
+        helper.succeed();
+    }
 
-        helper.runAfterDelay(20, () -> {
-            helper.assertBlockPresent(block("perpetualice"), CENTER.east(16));
-            helper.assertBlockPresent(Blocks.STONE, CENTER.west(16));
-            helper.assertBlockPresent(Blocks.AIR, CENTER.east(17));
-            helper.assertFalse(helper.getBlockState(CENTER).getValue(RiteHeartBlock.ACTIVE),
-                    "The migrated shell finishes at the six-member radius");
-            helper.succeed();
-        });
+    @GameTest(template = TEMPLATE, batch = "witchery_legacy_wave_gate")
+    public static void importedFertilityAndCursesShareTheOriginalActivationGate(GameTestHelper helper) {
+        floor(helper);
+        helper.setBlock(CENTER, block("circle"));
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var heart = heart(helper);
+        var legacy = new CompoundTag();
+        legacy.putByteArray("Rituals", new byte[]{35, 36, 37, 38});
+        legacy.putByteArray("RitualStages", new byte[]{2, 2, 2, 2});
+        heart.load(legacy);
+        tick(level, center, heart, 19);
+        helper.assertTrue(waveStages(heart).equals(List.of(2, 2, 2, 2)), "All four imported waves wait until tick twenty");
+        tick(level, center, heart, 1);
+        helper.assertTrue(waveStages(heart).equals(List.of(3, 3, 3, 3)), "All four waves resume at their saved stages");
+        tick(level, center, heart, 5);
+        helper.assertTrue(waveStages(heart).equals(List.of(4, 4, 4, 4)), "Subsequent expansions run five ticks apart");
+        helper.succeed();
+    }
+
+    private static List<Integer> waveStages(RiteHeartBlockEntity heart) {
+        var save = heart.saveWithoutMetadata();
+        var stages = new ArrayList<Integer>();
+        stages.add(save.getCompound("Landscape").getInt("Stage"));
+        for (Tag entry : save.getList("UpkeepRites", Tag.TAG_COMPOUND)) {
+            stages.add(((CompoundTag) entry).getCompound("Landscape").getInt("Stage"));
+        }
+        return stages;
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_legacy_ward_gate")
+    public static void legacyGreaterBarrierWaitsBeforeChargingAndKeepsItsCovenRange(GameTestHelper helper) {
+        floor(helper);
+        helper.setBlock(CENTER, block("circle"));
+        var altar = chargedAltar(helper, false);
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var target = center.east(70);
+        var wall = target.east(6);
+        var heart = heart(helper);
+        var saved = new CompoundTag();
+        saved.putByteArray("Rituals", new byte[]{11});
+        saved.putByteArray("RitualStages", new byte[]{0});
+        saved.putByteArray("RitualCovens", new byte[]{1});
+        var coordinates = new CompoundTag();
+        coordinates.putInt("posX", target.getX());
+        coordinates.putInt("posY", target.getY());
+        coordinates.putInt("posZ", target.getZ());
+        var locations = new ListTag();
+        locations.add(coordinates);
+        saved.put("Locations", locations);
+
+        heart.load(saved);
+        tick(level, center, heart, 19);
+        var ready = heart.saveWithoutMetadata();
+        helper.assertTrue(altar.power() == 10_000 && level.isEmptyBlock(wall), "The resumed ward waits before spending power or drawing a barrier");
+        heart.load(ready);
+        tick(level, center, heart, 1);
+        helper.assertTrue(Math.abs(altar.power() - 9998.6F) < 0.01F && level.getBlockState(wall).is(block("barrier")),
+                "The first powered shell appears on tick twenty at the one-member coven's bound target");
+
+        var moved = CENTER.west(32);
+        helper.setBlock(moved, block("circle"));
+        var displaced = (RiteHeartBlockEntity) helper.getBlockEntity(moved);
+        displaced.load(heart.saveWithoutMetadata());
+        tick(level, helper.absolutePos(moved), displaced, 1);
+        helper.assertTrue(!displaced.getBlockState().getValue(RiteHeartBlock.ACTIVE) && Math.abs(altar.power() - 9998.6F) < 0.01F,
+                "Moving the heart outside the saved coven range ends the ward before any debit");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_legacy_portable_ward")
+    public static void importedPortableBarrierFollowsTheMovedGlyphAndExpiresOnItsLastPulse(GameTestHelper helper) {
+        helper.setBlock(CENTER.below(), Blocks.STONE);
+        helper.setBlock(CENTER, block("circle"));
+        var level = helper.getLevel();
+        var oldCenter = helper.absolutePos(CENTER);
+        var heart = heart(helper);
+        var legacy = new CompoundTag();
+        legacy.putByteArray("Rituals", new byte[]{12});
+        legacy.putByteArray("RitualStages", new byte[]{58});
+        heart.load(legacy);
+        tick(level, oldCenter, heart, 19);
+        var newCenter = CENTER.west(24);
+        helper.setBlock(newCenter.below(), Blocks.STONE);
+        helper.setBlock(newCenter, block("circle"));
+        var moved = (RiteHeartBlockEntity) helper.getBlockEntity(newCenter);
+        var absolute = helper.absolutePos(newCenter);
+        moved.load(heart.saveWithoutMetadata());
+        tick(level, absolute, moved, 1);
+        helper.assertTrue(level.getBlockState(absolute.east(6)).is(block("barrier")) && level.isEmptyBlock(oldCenter.east(6)),
+                "An unbound ward refreshes around the moved glyph on its first resume pulse");
+        tick(level, absolute, moved, 19);
+        helper.assertTrue(moved.getBlockState().getValue(RiteHeartBlock.ACTIVE), "The saved final second runs to its next pulse");
+        tick(level, absolute, moved, 1);
+        helper.assertFalse(moved.getBlockState().getValue(RiteHeartBlock.ACTIVE), "The second pulse expires the imported portable barrier");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_fissure_saved_step")
+    public static void brokenEarthPreservesAnEarlierForgeDeadlineThenCutsEachTick(GameTestHelper helper) {
+        helper.setBlock(CENTER, block("circle"));
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var heart = heart(helper);
+        var saved = new CompoundTag();
+        saved.putString("Rite", "witchery:rite_of_broken_earth");
+        saved.putInt("StepTicks", 17);
+        var fissure = new CompoundTag();
+        fissure.putString("Action", "PART_EARTH");
+        fissure.putLong("Target", center.asLong());
+        fissure.putInt("Stage", 10);
+        fissure.putLong("FissureSeed", 20L);
+        fissure.putInt("FissureHeading", 2);
+        saved.put("Landscape", fissure);
+        heart.load(saved);
+        tick(level, center, heart, 2);
+        var converted = heart.saveWithoutMetadata();
+        helper.assertTrue(converted.getCompound("Landscape").getInt("Stage") == 10, "The cut still waits for the earlier save's third tick");
+        heart.load(converted);
+        tick(level, center, heart, 1);
+        helper.assertTrue(heart.saveWithoutMetadata().getCompound("Landscape").getInt("Stage") == 11, "The cut occurs on the third tick");
+        tick(level, center, heart, 2);
+        helper.assertTrue(heart.saveWithoutMetadata().getCompound("Landscape").getInt("Stage") == 13,
+                "Subsequent cuts advance on every loaded tick");
+        helper.succeed();
     }
 
     @GameTest(template = TEMPLATE, batch = "witchery_summoned_witch", setupTicks = 5, timeoutTicks = 175)

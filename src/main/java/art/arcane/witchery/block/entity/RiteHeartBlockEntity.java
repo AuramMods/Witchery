@@ -656,7 +656,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             abort(level, "message.witchery.rite.landscape_too_far");
             return false;
         }
-        var progress = new ProtectionRites.Upkeep(kind, target);
+        var progress = new ProtectionRites.Upkeep(kind, waystoneTarget, covenSize);
         if (!usesGlyphClock() || progress.tick(level, heart)) upkeep.add(new RiteUpkeep.Ward(progress));
         return true;
     }
@@ -980,6 +980,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         byte[] covens = tag.getByteArray("RitualCovens");
         ListTag locations = tag.getList("Locations", Tag.TAG_COMPOUND);
         ListTag initiators = tag.getList("Initiators", Tag.TAG_STRING);
+        boolean originalTiming = !tag.contains("StepTicks", Tag.TAG_ANY_NUMERIC);
         for (int index = 0; index < Math.min(rites.length, stages.length); index++) {
             int rite = rites[index];
             // Long rites have valid stages beyond the signed byte range.
@@ -987,10 +988,9 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             int members = index < covens.length ? Mth.clamp(covens[index], 0, CovenWitch.MAX_MEMBERS) : 0;
             var kind = ProtectionRites.Kind.fromLegacy(rite);
             if (kind != null) {
-                BlockPos target = kind.acceptsWaystone() ? readLegacyTarget(locations.getCompound(index)) : getBlockPos();
-                int range = 50 + 50 * members;
-                var ward = ProtectionRites.Upkeep.fromLegacy(kind, target, stage);
-                if (ward != null && getBlockPos().distSqr(target) <= range * range) upkeep.add(new RiteUpkeep.Ward(ward));
+                BlockPos boundTarget = kind.acceptsWaystone() ? legacyTarget(locations.getCompound(index)) : null;
+                var ward = ProtectionRites.Upkeep.fromLegacy(kind, boundTarget, stage, members);
+                if (ward != null) upkeep.add(new RiteUpkeep.Ward(ward));
                 continue;
             }
             RiteUpkeep.Timed timed;
@@ -1025,8 +1025,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 BlockPos target = remote == null ? getBlockPos() : remote;
                 // Legacy saves retained the stage but discarded the offering location and generated path.
                 var fissure = action == ItemRiteRecipe.Action.PART_EARTH ? new EarthRites.Fissure(target.asLong(), 0) : null;
-                boolean legacyHell = action == ItemRiteRecipe.Action.HELL_ON_EARTH
-                        && !tag.contains("StepTicks", Tag.TAG_ANY_NUMERIC);
+                boolean legacyHell = action == ItemRiteRecipe.Action.HELL_ON_EARTH && originalTiming;
                 int hellSpawnOffset = legacyHell ? LandscapeRites.hellSpawnOffset(stage, STEP_TICKS) : 0;
                 var progress = new LandscapeRites.Progress(action, species, target, stage, fissure,
                         remote == null && action.raisedEarthRadius() > 0, hellSpawnOffset);
@@ -1050,23 +1049,19 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                     default -> "forestation/" + species.name().toLowerCase(Locale.ROOT);
                 });
                 timed = RiteUpkeep.Timed.landscape(recipe, members, null, progress);
-                if (legacyHell) timed.restoreTicks(progress.interval() - STEP_TICKS);
+                if (originalTiming) timed.waitForLegacyWave();
             }
             timed.restoreInitiatorName(initiators.getString(index));
             upkeep.add(timed);
         }
-        if (tag.contains("StepTicks", Tag.TAG_ANY_NUMERIC)) {
+        if (!originalTiming) {
             for (var ongoing : upkeep) {
                 if (ongoing instanceof RiteUpkeep.Timed timed) {
-                    timed.restoreTicks(tag.getInt("StepTicks"));
+                    timed.restorePreviousForgeTicks(tag.getInt("StepTicks"));
                     break;
                 }
             }
         }
-    }
-
-    private BlockPos readLegacyTarget(CompoundTag position) {
-        return Objects.requireNonNullElse(legacyTarget(position), getBlockPos());
     }
 
     @Nullable
@@ -1107,7 +1102,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         for (int index = 0; index < upkeep.size(); index++) {
             var ongoing = upkeep.get(index);
             if (ongoing instanceof RiteUpkeep.Ward ward) {
-                CompoundTag wardTag = ward.progress().save();
+                CompoundTag wardTag = ward.progress().save(getBlockPos());
                 wardTag.putInt("UpkeepOrder", index);
                 wards.add(wardTag);
             } else if (ongoing instanceof RiteUpkeep.Timed timed) {
