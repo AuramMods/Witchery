@@ -724,6 +724,7 @@
 
 - [x] Restore the Glass Goblet recipe, filled item and original ritual layout. The muted survival client crafted a goblet from three bottles and glass, then used a Boline on a chicken in the prepared circle. The filled goblet and the skull survived a daytime activation attempt. Using it at night emptied the same goblet and summoned Elle.
 - [x] Restore Elle's lava search, transformation and Lilith's encounter. Elle found a clear lava surface and spent 400 ticks transforming. The muted client defeated the 200-health boss with an enchanted sword and a splash potion in the disposable arena. Lilith survived the defeat, restored her health and accepted the same goblet. GameTests verified the damage cap and the transition to a friendly encounter.
+- [x] Restore Lilith's recovery interruption when a player reflects a Large Fireball. The muted survival client redirected a fixture-supplied fireball with an ordinary attack. It dealt zero fire damage and halted her healing. A headless restart resumed the saved countdown and she healed again after it expired.
 - [x] Collect and drink Lilith's filled goblet. The muted client picked up the reward, drank it to reach rank one, saw 125 blood power on the original droplet meter, and kept an empty goblet. Java 17 data generation, reobfuscation and all 140 required Forge GameTests passed.
 - [x] Verify rank one after a dedicated restart. The 125 blood power, empty goblet and open coffin remained. The muted client kept its blood in shade at noon, then stepped into open daylight, lost its blood reserve and caught fire.
 

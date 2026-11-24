@@ -50,6 +50,8 @@ import org.jetbrains.annotations.Nullable;
 
 public final class Lilith extends Monster implements RangedAttackMob {
     private static final EntityDataAccessor<Boolean> FRIENDLY = SynchedEntityData.defineId(Lilith.class, EntityDataSerializers.BOOLEAN);
+    private static final int HEAL_INTERVAL = 20;
+    private static final int REFLECTED_FIREBALL_HEAL_PULSES = 10;
     private final ServerBossEvent bar = new ServerBossEvent(getDisplayName(), BossEvent.BossBarColor.PURPLE,
             BossEvent.BossBarOverlay.PROGRESS);
     private int invulnerableTicks;
@@ -106,7 +108,7 @@ public final class Lilith extends Monster implements RangedAttackMob {
         }
         lifetime++;
         if (weaknessTicks > 0) weaknessTicks--;
-        if (tickCount % 20 != 0) return;
+        if (tickCount % HEAL_INTERVAL != 0) return;
         if (weaknessTicks == 0) {
             var chilled = WitcheryEffects.LEGACY_EFFECTS.get("potion.chilled").get();
             heal(hasEffect(chilled) || hasEffect(MobEffects.WEAKNESS) ? 1 : 5);
@@ -133,8 +135,12 @@ public final class Lilith extends Monster implements RangedAttackMob {
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        if (invulnerableTicks > 0 || source.is(DamageTypeTags.IS_FIRE)) return false;
-        if (source.getDirectEntity() instanceof LargeFireball && source.getEntity() instanceof Player) weaknessTicks = 200;
+        if (invulnerableTicks > 0) return false;
+        if (source.getDirectEntity() instanceof LargeFireball && source.getEntity() instanceof Player) {
+            // The original countdown advanced on healing pulses, including the next one.
+            weaknessTicks = REFLECTED_FIREBALL_HEAL_PULSES * HEAL_INTERVAL - tickCount % HEAL_INTERVAL;
+        }
+        if (source.is(DamageTypeTags.IS_FIRE)) return false;
         return super.hurt(source, Math.min(12, amount));
     }
 

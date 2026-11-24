@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Reflected Fireballs in Lilith's Fight (2026-11-24)
+
+- The original hurt handler recognized the player-owned Large Fireball before applying fire immunity. The port now does the same and resumes healing on the tenth healing pulse after impact. It retains the existing `WeaknessTicks` save field.
+- On the preceding packaged JAR the survival client redirected a vanilla Large Fireball with its normal attack. The fireball acquired the player's UUID, reached Lilith and left the interruption at zero. With the rebuilt JAR, another reflection left her at 105 health during multiple healing pulses. The fixture supplied the arena, stationary Lilith and fireball.
+- The headless dedicated restart loaded Lilith at the same health with 146 ticks still remaining. She healed again after the timer expired. Both client launches stayed unfocused at zero master volume and used OpenAL No Output.
+- The new GameTest reproduced the bug before the fix and covers unreflected and reflected impacts and the return to normal healing. All 193 required local Forge GameTests, Java 17 JAR reobfuscation, and the asset inventory audit passed. The packaged client and server used SHA-256 `d1ba32bbbce0e2a306cd26e29a10247f67a026dab63805706646d2a532cea72b`. Logs are in `build/qa-lilith-combat`.
+
 ## Biomes O' Plenty Fir Sapling Fume (2026-11-24)
 
 - The original Biomes O' Plenty sapling metadata six is Fir. The modern oven and JEI resolve `biomesoplenty:fir_sapling` to Wood Ash and Hint of Rebirth. The legacy stack importer recognizes the original numeric Forge mapping and named ID when the modern Fir item is registered. [Original Biomes O' Plenty sapling metadata](https://github.com/Glitchfiend/BiomesOPlenty/blob/fc7f1f6392a16224d19538900acedd152ff4f350/src/main/java/biomesoplenty/common/blocks/BlockBOPSapling.java#L26)
