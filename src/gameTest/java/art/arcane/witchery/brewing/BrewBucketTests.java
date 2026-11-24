@@ -24,6 +24,8 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
@@ -42,6 +44,46 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class BrewBucketTests {
+    @GameTest(template = "qa_coven_arena")
+    public static void movesOneBucketOfPlainWaterWithBottles(GameTestHelper helper) {
+        var bowl = hotCauldron(helper, new BlockPos(4, 4, 4));
+        var saved = bowl.saveWithFullMetadata();
+        saved.putInt("HeatTicks", 0);
+        bowl.load(saved);
+        var tank = bowl.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
+        var player = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "BottleWater"));
+        var hand = InteractionHand.OFF_HAND;
+        var pos = bowl.getBlockPos();
+        var hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
+
+        tank.drain(500, IFluidHandler.FluidAction.EXECUTE);
+        player.getInventory().items.replaceAll(stack -> new ItemStack(Items.DIRT, 64));
+        player.setItemInHand(hand, new ItemStack(Items.GLASS_BOTTLE, 2));
+        helper.getLevel().getBlockState(pos).use(helper.getLevel(), player, hand, hit);
+        helper.assertTrue(tank.getFluidInTank(0).getAmount() == 2500 && player.getItemInHand(hand).getCount() == 2,
+                "A full inventory leaves a stacked glass bottle and its water in place");
+
+        player.getInventory().items.set(0, ItemStack.EMPTY);
+        helper.getLevel().getBlockState(pos).use(helper.getLevel(), player, hand, hit);
+        var waterBottle = player.getInventory().items.get(0);
+        helper.assertTrue(tank.getFluidInTank(0).getAmount() == 1500 && player.getItemInHand(hand).is(Items.GLASS_BOTTLE)
+                        && player.getItemInHand(hand).getCount() == 1 && PotionUtils.getPotion(waterBottle) == Potions.WATER,
+                "A glass bottle withdraws exactly 1,000 mB from a cold cauldron");
+
+        player.setItemInHand(hand, waterBottle);
+        player.getInventory().items.set(0, ItemStack.EMPTY);
+        helper.getLevel().getBlockState(pos).use(helper.getLevel(), player, hand, hit);
+        helper.assertTrue(player.getItemInHand(hand).isEmpty() && tank.getFluidInTank(0).getAmount() == 2500,
+                "Pouring the water back consumes its bottle");
+
+        tank.drain(2000, IFluidHandler.FluidAction.EXECUTE);
+        player.setItemInHand(hand, new ItemStack(Items.GLASS_BOTTLE));
+        helper.getLevel().getBlockState(pos).use(helper.getLevel(), player, hand, hit);
+        helper.assertTrue(player.getItemInHand(hand).is(Items.GLASS_BOTTLE) && tank.getFluidInTank(0).getAmount() == 500,
+                "Bottling leaves a partial water portion intact");
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void topsUpPlainWaterWithoutDilutingBrew(GameTestHelper helper) {
         var bowl = hotCauldron(helper, new BlockPos(4, 4, 4));

@@ -41,6 +41,39 @@ import java.util.UUID;
 @PrefixGameTestTemplate(false)
 public final class KettleDropTests {
     @GameTest(template = "qa_coven_arena")
+    public static void bottlingPlainWaterClearsASpoiledKettle(GameTestHelper helper) throws Exception {
+        var kettle = heatedKettle(helper, new BlockPos(5, 4, 5));
+        kettle.load(TagParser.parseTag("""
+                {Items:[{Slot:6b,id:"witchery:brew_of_vines",Count:2b},{Slot:7b,id:"minecraft:glass_bottle",Count:3b}],
+                 Ruined:1b,Tank:{FluidName:"minecraft:water",Amount:1000}}
+                """));
+        var tank = kettle.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
+        var player = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "BottleKettleWater"));
+        var hand = InteractionHand.MAIN_HAND;
+        var pos = kettle.getBlockPos();
+        var hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
+        player.setItemInHand(hand, new ItemStack(Items.GLASS_BOTTLE));
+        helper.getLevel().getBlockState(pos).use(helper.getLevel(), player, hand, hit);
+        helper.assertTrue(PotionUtils.getPotion(player.getItemInHand(hand)) == Potions.WATER && tank.getFluidInTank(0).isEmpty()
+                        && !kettle.isRuined() && !kettle.isReady() && kettle.bottleCount() == 3,
+                "Bottling plain water drains the spoiled Kettle and preserves the stored glass bottles");
+
+        tank.fill(new FluidStack(Fluids.WATER, 500), IFluidHandler.FluidAction.EXECUTE);
+        helper.getLevel().getBlockState(pos).use(helper.getLevel(), player, hand, hit);
+        helper.assertTrue(player.getItemInHand(hand).isEmpty() && tank.getFluidInTank(0).getAmount() == 1000
+                        && kettle.bottleCount() == 3,
+                "A Water Bottle fills the last 500 mB and is consumed");
+
+        kettle.addDroppedStack(new ItemStack(Items.RED_MUSHROOM, 2));
+        player.setItemInHand(hand, PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER));
+        helper.getLevel().getBlockState(pos).use(helper.getLevel(), player, hand, hit);
+        helper.assertTrue(PotionUtils.getPotion(player.getItemInHand(hand)) == Potions.WATER && !kettle.hasIngredients()
+                        && tank.getFluidInTank(0).getAmount() == 1000 && kettle.bottleCount() == 3,
+                "A Water Bottle rinses a full Kettle and stays filled when no water is transferred");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
     public static void acceptsDroppedBottlesOnlyWhenTheWholeStackFits(GameTestHelper helper) {
         var kettle = heatedKettle(helper, new BlockPos(5, 4, 5));
         var inventory = kettle.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(IllegalStateException::new);

@@ -1,10 +1,12 @@
 package art.arcane.witchery.block;
 
 import art.arcane.witchery.block.entity.KettleBlockEntity;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -99,7 +101,12 @@ public final class KettleBlock extends BaseEntityBlock {
             return InteractionResult.PASS;
         }
         ItemStack held = player.getItemInHand(hand);
-        if (held.is(Items.GLASS_BOTTLE) && kettle.isReady()) {
+        if (held.is(Items.GLASS_BOTTLE)) {
+            if (!kettle.isReady()) {
+                if (level.isClientSide) return kettle.isFull() ? InteractionResult.SUCCESS : InteractionResult.PASS;
+                return BrewingContainers.fillWaterBottle(player, hand, kettle, hit.getDirection())
+                        ? InteractionResult.CONSUME : InteractionResult.PASS;
+            }
             if (!level.isClientSide) {
                 ItemStack brew = kettle.bottleBrew(player);
                 if (!brew.isEmpty()) {
@@ -114,9 +121,12 @@ public final class KettleBlock extends BaseEntityBlock {
             }
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
-        if (held.is(Items.WATER_BUCKET)) {
+        boolean waterBottle = BrewingContainers.isWaterBottle(held);
+        if (waterBottle || held.is(Items.WATER_BUCKET)) {
             if (!level.isClientSide) {
-                if (!BrewingBuckets.pour(player, hand, kettle, hit.getDirection())) kettle.rinse();
+                boolean poured = waterBottle ? BrewingContainers.pourWaterBottle(player, hand, kettle, hit.getDirection())
+                        : BrewingContainers.pourBucket(player, hand, kettle, hit.getDirection());
+                if (!poured) kettle.rinse();
                 level.playSound(null, pos, SoundEvents.GENERIC_SWIM, SoundSource.BLOCKS, 1, 1);
             }
             return InteractionResult.sidedSuccess(level.isClientSide);
@@ -132,12 +142,16 @@ public final class KettleBlock extends BaseEntityBlock {
 
     @Override
     public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-        if (level.isClientSide || !(entity instanceof ItemEntity item) || !item.isAlive()
+        if (!(level instanceof ServerLevel server) || !(entity instanceof ItemEntity item) || !item.isAlive()
                 || !(level.getBlockEntity(pos) instanceof KettleBlockEntity kettle)) {
             return;
         }
-        if (kettle.addDroppedStack(item.getItem()).isEmpty()) {
+        ItemStack stack = item.getItem();
+        if (kettle.addDroppedStack(stack).isEmpty()) {
             item.discard();
+            if (!stack.isEmpty() && !stack.is(Items.GLASS_BOTTLE)) {
+                WitcheryNetwork.sendWaterSplash(server, pos.getX() + 0.5, pos.getY() + 0.2, pos.getZ() + 0.5);
+            }
         }
     }
 

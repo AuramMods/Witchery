@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Water Bottle Transfers and Kettle Splash Feedback (2026-11-24)
+
+- Witchery 0.24.1 drew 1,000 mB of plain water from either vessel. Drawing the last water cleared a spoiled Kettle and its saved result. A Water Bottle poured up to 1,000 mB and was consumed in survival. The original kept the glass stack and water intact when the inventory could not accept the filled bottle. The previous clean Forge JAR skipped all four transfers, and its copied Auram Kettle drew 125 mB through the pack's item capability.
+- The rebuilt clean Forge survival client withdrew and poured the same Water Bottle from the Cauldron offhand, topped up each vessel, and verified the mixed Cauldron kept its 600 mB and ingredients. The Kettle rejected a draw at 500 mB and cleared its spoiled result at the full withdrawal while keeping its spare bottles. After a dedicated restart it brewed Vines and served the Witchery brew before the plain water. A Water Bottle rinsed the spoiled full Kettle and stayed in the player's hand.
+- The original Kettle sends a splash packet for each accepted dropped ingredient, including the drop that spoils the batch. Its five-block recipient range is separate from the twenty particles spawned by the client. Clean Forge and copied Auram each received the expected twelve nearby packets and received none from a drop beyond five blocks or from dropped glass bottles.
+- Copied Auram repeated the survival transfers, brew bottling, spoilage, and rinse on the same JAR. Both clients ran hidden with zero master volume and OpenAL No Output. The focus monitors recorded no foreground changes.
+- Local Java 17 data generation, JAR reobfuscation and all 252 required Forge GameTests passed. The added cases check the survival inventory limit for stacked Glass Bottles, exact transfers, and the Kettle's spoilage and bottle buffer. Logs and the tested JAR are in `build/qa-brewing-water-bottles`. Package SHA-256 `6736fc5e5dad811c55d1ed02ae09a4e49d197fc460627e6359b922aae9a5fb19`.
+
 ## Kettle Dropped Stacks and Hopper Feeding (2026-11-24)
 
 - The running Witchery 0.24.1 reference left two dropped Glass Bottles intact when the buffer held 63. With 62 bottles it accepted two, retaining the stored stack's label. It accepted dropped Vines while a brew was ready and Red Mushrooms after spoilage. A seventh ingredient spoiled the Kettle and left three inaccessible servings in its saved result slot.

@@ -17,6 +17,7 @@ import art.arcane.witchery.registry.LegacyRegistryData;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
@@ -46,6 +47,8 @@ public final class WitcheryNetwork {
     private static final int MAX_USERNAME_LENGTH = 64;
     private static final int MAX_PLAYER_SKIN_LENGTH = 256;
     private static final int MAX_MARKUP_CHAPTER_LENGTH = 32;
+    private static final int LEGACY_SPLASH_PARTICLE_ID = 19;
+    private static final int LEGACY_WATER_SPLASH_SOUND_ID = 4;
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             ResourceLocation.parse(Witchery.MODID + ":main"),
             () -> PROTOCOL_VERSION,
@@ -279,6 +282,12 @@ public final class WitcheryNetwork {
                 PacketDistributor.PLAYER.with(() -> player),
                 new ParticlesPacket(particleEffectId, soundEffectId, x, y, z, width, height, color)
         );
+    }
+
+    public static void sendWaterSplash(ServerLevel level, double x, double y, double z) {
+        for (ServerPlayer player : level.getPlayers(viewer -> viewer.distanceToSqr(x, y, z) < 25.0D)) {
+            sendParticles(player, LEGACY_SPLASH_PARTICLE_ID, LEGACY_WATER_SPLASH_SOUND_ID, x, y, z, 0.5D, 0.5D, 0xFFFFFF);
+        }
     }
 
     public static void sendPlayerStyle(

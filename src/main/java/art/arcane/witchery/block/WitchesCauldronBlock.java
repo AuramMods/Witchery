@@ -77,18 +77,21 @@ public final class WitchesCauldronBlock extends BaseEntityBlock {
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         var held = player.getItemInHand(hand);
-        if (held.is(Items.GLASS_BOTTLE) && state.getValue(WATER) > 0
-                && level.getBlockEntity(pos) instanceof WitchesCauldronBlockEntity cauldron) {
-            if (level.isClientSide) return InteractionResult.SUCCESS;
-            if (player instanceof ServerPlayer serverPlayer && cauldron.bottle(serverPlayer, hand)) {
+        if (held.is(Items.GLASS_BOTTLE)) {
+            if (level.isClientSide) return state.getValue(WATER) > 0 ? InteractionResult.SUCCESS : InteractionResult.PASS;
+            if (level.getBlockEntity(pos) instanceof WitchesCauldronBlockEntity cauldron
+                    && (BrewingContainers.fillWaterBottle(player, hand, cauldron, hit.getDirection())
+                    || player instanceof ServerPlayer serverPlayer && cauldron.bottle(serverPlayer, hand))) {
                 return InteractionResult.CONSUME;
             }
             return InteractionResult.PASS;
         }
-        if (held.is(Items.WATER_BUCKET) || held.getItem() instanceof BrewBucketItem) {
-            if (!level.isClientSide && level.getBlockEntity(pos) instanceof WitchesCauldronBlockEntity cauldron
-                    && BrewingBuckets.pour(player, hand, cauldron, hit.getDirection())) {
-                level.playSound(null, pos, SoundEvents.GENERIC_SWIM, SoundSource.BLOCKS, 1, 1);
+        boolean waterBottle = BrewingContainers.isWaterBottle(held);
+        if (waterBottle || held.is(Items.WATER_BUCKET) || held.getItem() instanceof BrewBucketItem) {
+            if (!level.isClientSide && level.getBlockEntity(pos) instanceof WitchesCauldronBlockEntity cauldron) {
+                boolean poured = waterBottle ? BrewingContainers.pourWaterBottle(player, hand, cauldron, hit.getDirection())
+                        : BrewingContainers.pourBucket(player, hand, cauldron, hit.getDirection());
+                if (poured) level.playSound(null, pos, SoundEvents.GENERIC_SWIM, SoundSource.BLOCKS, 1, 1);
             }
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
