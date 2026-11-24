@@ -226,6 +226,7 @@ public final class Vampirism {
 
     public static boolean canShatter(Player player, BlockState stone) {
         return player.isShiftKeyDown() && !player.isCreative() && !player.isSpectator() && player.getFoodData().getFoodLevel() > 0
+                && VampireAbilities.selected(player) == 0
                 && (stone.is(Blocks.STONE) || stone.is(Blocks.COBBLESTONE) || stone.is(Blocks.NETHERRACK))
                 && !player.getMainHandItem().isCorrectToolForDrops(Blocks.STONE.defaultBlockState())
                 && WitcheryPlayerDataProvider.get(player).map(data -> data.getVampireLevel() >= 6

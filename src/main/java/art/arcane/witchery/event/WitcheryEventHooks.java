@@ -10,6 +10,7 @@ import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.entity.Hobgoblin;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.CoffinBlock;
+import art.arcane.witchery.block.GarlicGarlandBlock;
 import art.arcane.witchery.block.entity.AreaWardBlockEntity;
 import art.arcane.witchery.block.entity.PlacedOwnerBlockEntity;
 import art.arcane.witchery.brewing.GrotesqueEffect;
@@ -663,6 +664,17 @@ public final class WitcheryEventHooks {
         var player = event.getEntity();
         if (BloodFeeding.paralysis(player, 4) || (event instanceof PlayerInteractEvent.RightClickBlock
                 || event instanceof PlayerInteractEvent.RightClickItem) && VampireAbilities.selected(player) > 0) event.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public static void onGarlicGarlandAttack(PlayerInteractEvent.LeftClickBlock event) {
+        var player = event.getEntity();
+        if (event.getAction() != PlayerInteractEvent.LeftClickBlock.Action.START || player.isCreative() || player.isSpectator()
+                || Vampirism.level(player) == 0 || VampireAbilities.selected(player) != 0
+                || !(event.getLevel().getBlockState(event.getPos()).getBlock() instanceof GarlicGarlandBlock)) return;
+
+        event.setCanceled(true);
+        if (!event.getLevel().isClientSide) player.setSecondsOnFire(1);
     }
 
     @SubscribeEvent(priority = EventPriority.LOW)

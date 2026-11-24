@@ -11,12 +11,14 @@ import art.arcane.witchery.vampirism.VampireUltimate;
 import art.arcane.witchery.vampirism.Vampirism;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
@@ -182,9 +184,16 @@ public final class ClientVampirism {
                 int row = y - i * 8;
                 drawDrop(graphics, x, row, data.getBloodPower() - i * 250, 250);
             }
+            int hotbarLeft = width / 2 - 91;
+            boolean rightHanded = client.player.getMainArm() == HumanoidArm.RIGHT;
+            // The selected power's outline extends three pixels past the slot.
+            if (rightHanded && !client.player.getOffhandItem().isEmpty()) hotbarLeft -= 29 + 3;
+            if (!rightHanded && client.options.attackIndicator().get() == AttackIndicatorStatus.HOTBAR) hotbarLeft -= 22 + 3;
+            int powersPerRow = Math.max(1, (hotbarLeft - 1) / 20);
             for (int power = 1; power <= VampireAbilities.maxPower(data.getVampireLevel()); power++) {
-                int left = width / 2 - 91 - power * 20;
-                int top = height - 22;
+                int index = power - 1;
+                int left = hotbarLeft - (index % powersPerRow + 1) * 20;
+                int top = height - 22 - index / powersPerRow * 23;
                 graphics.blit(WIDGETS, left, top, 0, 0, 21, 22, 256, 256);
                 if (power == activePower) graphics.blit(WIDGETS, left - 1, top - 1, 0, 22, 24, 22, 256, 256);
                 ResourceLocation icon = switch (power) {
