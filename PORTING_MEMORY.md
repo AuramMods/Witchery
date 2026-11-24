@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Saved Hellhound Cures and Entity Import (2026-11-24)
+
+- The original Hellhound loader restarts the cure effects from the saved `ConversionTime`. The preceding packaged port resumed the timer at 1,197 ticks but retained Weakness and lacked Strength. The rebuilt port uses the same cure setup for reloads and golden apples. A regression checks both an active cure and an untreated Hellhound.
+- Headless packaged Forge imported a synthetic 1.7.10 region and reopened the separate save written by the preceding 1.20.1 JAR. Both retained the Hellhound's UUID and applied Strength I with the same remaining duration as the cure. The six-entity fixture also verified the Spectral Familiar's ore and owner, an Owl's bound Waystone and a Winged Monkey's named Taglock, the Witch Hunter's equipment and drop chances, and the Parasytic Louse's saved charge. The imported save kept these fields after an ordinary restart. The Hellhound finished curing and the named wolf received Nausea.
+- Java 17 JAR reobfuscation and all 197 required local Forge GameTests passed. Logs and the tested JAR are in `build/qa-legacy-entity-state`. Package SHA-256 `a88e5d56991deef18a2670bdda2c91ea86421932521d77a3435dfddf66f23b08`.
+- The same JAR restored all six prepared entity records on copied Auram and replaced the Hellhound's saved Weakness with Strength I for 260 ticks. No players were connected. The countdown stayed at 260 with the pack's entity-tick optimizations enabled. See `auram/pack-saved-entity.log` for the saved-state test and `fresh/restart.log` for the completed cure on clean Forge.
+
 ## Coven Witch Night Shelter Verification (2026-11-24)
 
 - All 20 trials with different fixed seeds and 224 trials with unseeded witches passed. The original intermittent failure remains unexplained. One trace showed a random stroll opening the shelter door en route to a different target. The checked-in fixture seeds the witch's random source and checks that the chosen shelter is still the active destination when the door opens.

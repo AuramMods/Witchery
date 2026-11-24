@@ -5,6 +5,7 @@ import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -93,12 +94,16 @@ public final class Hellhound extends Monster {
         }
         if (!level().isClientSide) {
             if (!player.getAbilities().instabuild) stack.shrink(1);
-            conversionTime = 3600 + random.nextInt(1000);
-            entityData.set(CONVERTING, true);
-            removeEffect(MobEffects.WEAKNESS);
-            addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, conversionTime));
+            startConversion(3600 + random.nextInt(1000));
         }
         return InteractionResult.sidedSuccess(level().isClientSide);
+    }
+
+    private void startConversion(int ticks) {
+        conversionTime = ticks;
+        entityData.set(CONVERTING, true);
+        removeEffect(MobEffects.WEAKNESS);
+        addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, ticks));
     }
 
     @Override
@@ -215,8 +220,13 @@ public final class Hellhound extends Monster {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        conversionTime = tag.contains("ConversionTime") ? tag.getInt("ConversionTime") : -1;
-        entityData.set(CONVERTING, conversionTime >= 0);
+        int remaining = tag.contains("ConversionTime", Tag.TAG_ANY_NUMERIC) ? tag.getInt("ConversionTime") : -1;
+        if (remaining >= 0) {
+            startConversion(remaining);
+        } else {
+            conversionTime = -1;
+            entityData.set(CONVERTING, false);
+        }
     }
 
     @Override
