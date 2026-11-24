@@ -4,6 +4,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.brewing.DeathBrewEffects;
 import art.arcane.witchery.registry.WitcheryEffects;
 import com.mojang.authlib.GameProfile;
+import net.minecraft.SharedConstants;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.NbtIo;
@@ -12,6 +13,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraftforge.common.util.FakePlayer;
@@ -90,6 +92,62 @@ public final class LegacyDeathBrewSaveImportTests {
             afterRestart.getInventory().clearContent();
             DeathBrewEffects.restorePendingInventory(afterRestart);
             helper.assertTrue(afterRestart.getInventory().isEmpty(), "The pending inventory can only be restored once");
+        } finally {
+            FileUtils.deleteDirectory(root.toFile());
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void keepsCustomPotionContentsAndRepairsQueuedEffects(GameTestHelper helper) throws Exception {
+        var root = Files.createTempDirectory("witchery-custom-potion-import-test");
+        try (var access = LevelStorageSource.createDefault(root).createAccess("world")) {
+            var world = access.getLevelPath(LevelResource.ROOT);
+            var registry = TagParser.parseTag("{ItemData:[{K:\"%sminecraft:potion\",V:373}]}".formatted("\u0002"));
+            registry.put("Potions", LegacyWorldEffects.capture(List.of("I:PotionStartID=96",
+                    "I:\"witchery:potion.paralysed\"=119", "I:\"witchery:potion.sinking\"=43")));
+            NbtIo.writeCompressed(registry, world.resolve("witchery-legacy-ids.dat").toFile());
+            var storage = access.createPlayerStorage();
+            var player = new DropTester(helper.getLevel(), "LegacyPotions");
+            var path = access.getLevelPath(LevelResource.PLAYER_DATA_DIR).resolve(player.getStringUUID() + ".dat").toFile();
+            var original = TagParser.parseTag("""
+                    {Health:20f,Dimension:0,Inventory:[
+                      {Slot:0b,id:373s,Damage:0s,Count:1b,tag:{CustomPotionEffects:[
+                       {Id:119b,Amplifier:2b,Duration:240,Ambient:1b,ShowParticles:0b},
+                       {Id:12b,Amplifier:0b,Duration:800}]}},
+                      {Slot:1b,id:"minecraft:potion",Damage:16384s,Count:1b,tag:{CustomPotionEffects:[
+                       {Id:43b,Amplifier:1b,Duration:450}]}}]}
+                    """);
+            NbtIo.writeCompressed(original, path);
+            storage.load(player);
+            var drink = player.getInventory().getItem(0);
+            var splash = player.getInventory().getItem(1);
+            var drinkEffects = PotionUtils.getCustomEffects(drink);
+            helper.assertTrue(drink.is(Items.POTION) && splash.is(Items.SPLASH_POTION) && drinkEffects.size() == 2,
+                    "Both old potion forms and both custom effects must survive the item data fixer");
+            var paralysis = drinkEffects.get(0);
+            helper.assertTrue(paralysis.getEffect() == WitcheryEffects.PARALYSIS.get() && paralysis.getAmplifier() == 2
+                            && paralysis.getDuration() == 240 && paralysis.isAmbient() && !paralysis.isVisible()
+                            && drinkEffects.get(1).getEffect() == MobEffects.FIRE_RESISTANCE,
+                    "Keep the named Witchery effect, its display flags and the companion vanilla effect");
+            var splashEffects = PotionUtils.getCustomEffects(splash);
+            helper.assertTrue(splashEffects.size() == 1 && splashEffects.get(0).getEffect() == WitcheryEffects.SINKING.get(),
+                    "Resolve the effect previously stored in the old splash bottle");
+
+            var converted = TagParser.parseTag("""
+                    {Health:20f,Dimension:"minecraft:overworld",ForgeData:{PlayerPersisted:{WITCPoSpawn:[
+                      {Id:43b,Amplifier:3b,Duration:910},
+                      {Id:43b,"forge:id":"minecraft:fire_resistance",Amplifier:0b,Duration:720}
+                    ]}}}
+                    """);
+            converted.putInt("DataVersion", SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+            NbtIo.writeCompressed(converted, path);
+            storage.load(player);
+            DeathBrewEffects.restoreEffects(player);
+            var sinking = player.getEffect(WitcheryEffects.SINKING.get());
+            helper.assertTrue(sinking != null && sinking.getAmplifier() == 3 && sinking.getDuration() == 910
+                            && player.hasEffect(MobEffects.FIRE_RESISTANCE),
+                    "Repair the pending numeric effect and preserve the already named effect in a 1.20.1 record");
         } finally {
             FileUtils.deleteDirectory(root.toFile());
         }

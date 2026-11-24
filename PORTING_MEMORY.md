@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Custom Potion and Queued Effect Saves (2026-11-23)
+
+- An original Forge 0.24.1 server saved a drinkable and a splash potion in a chest using the vanilla numeric item ID. The original configuration assigned Paralysis to slot 119 and Sinking to slot 43. The preceding packaged importer kept both effect IDs numeric. The fixed importer resolves them before the vanilla item fixer and keeps the vanilla Fire Resistance effect, amplifiers, durations, and display flags.
+- A synthetic player record at the 1.20.1 data version retained the original numeric slot 43 in `WITCPoSpawn`. On the preceding JAR it applied Brewing Expertise when the player logged in. The importer now uses the captured world's configured effect assignments for this Witchery-owned list. It preserves saved effects that already have a Forge registry name.
+- After a dedicated restart, the muted survival client drank the imported bottle and received the original Paralysis III and Fire Resistance. A second muted run opened the death screen from the synthetic player record and respawned with Sinking IV and Fire Resistance. The pending list cleared and both runs recorded zero focus activations.
+- Local Java 17 JAR reobfuscation and all 157 required Forge GameTests passed. The packaged JAR SHA-256 is `f5c2445fefcd7ebdd794661c24baaef099534790f927bcd34b29bcf3c82330ef`. The original fixture and local logs are in the directory named by `/tmp/witchery-custom-potion-import-current`.
+
 ## Obsolete Block Entities and Wolf Trap Saves (2026-11-23)
 
 - The block-entity catalog contains 54 names. Forty-eight have concrete runtime registrations. The Candelabra, both Fume Funnels and Garlic Garland use model-backed blocks. The original village wall marker saved no plan. Chunk reads discard those five obsolete tiles. Protocol 92 retires their registry types and the duplicate Wolf Trap tile type. The `witchery:wolftrap` block loads its state through the same `witchery:beartrap` type as a newly placed trap.

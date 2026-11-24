@@ -40,6 +40,7 @@ public final class LegacyWorldIds {
     private static final String DIMENSIONS = "Dimensions";
     private static final String POTIONS = "Potions";
     private static final String SPAWN_EGGS = "SpawnEggs";
+    private static final ResourceLocation VANILLA_POTION = new ResourceLocation("minecraft", "potion");
     private static final ResourceLocation VANILLA_SPAWN_EGG = new ResourceLocation("minecraft", "spawn_egg");
     private final Map<Integer, ResourceLocation> blocks = new HashMap<>();
     private final Map<Integer, ResourceLocation> items = new HashMap<>();
@@ -158,6 +159,8 @@ public final class LegacyWorldIds {
         var forgeData = player.getCompound("ForgeData");
         var persisted = forgeData.getCompound(Player.PERSISTED_NBT_TAG);
         var expiredDrops = persisted.getList("WITCPriIncInv", Tag.TAG_COMPOUND);
+        // The pending list can keep legacy effect IDs after an earlier import updated the player version.
+        effects.upgrade(persisted.getList("WITCPoSpawn", Tag.TAG_COMPOUND));
         int to = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
         if (from >= 100) {
             // Earlier port builds could resave the player while these stacks still used legacy IDs.
@@ -175,7 +178,6 @@ public final class LegacyWorldIds {
         upgradeItems(player);
         upgradeStoredBrewIngredients(player, fixer);
         upgradeEntityEffects(player);
-        effects.upgrade(persisted.getList("WITCPoSpawn", Tag.TAG_COMPOUND));
         upgradeVanillaItems(persisted.getCompound("WITCSpiritWorld"), fixer, from, to);
         upgradeVanillaItems(expiredDrops, fixer, from, to);
         if (player.contains("WitcheryExtendedPlayer", Tag.TAG_COMPOUND)) {
@@ -282,9 +284,12 @@ public final class LegacyWorldIds {
         if (compound.contains("id", Tag.TAG_ANY_NUMERIC)) {
             int id = compound.getInt("id") & 0xFFFF;
             name = items.get(id);
-            if (name == null && VANILLA_SPAWN_EGG.equals(vanillaItems.get(id))) name = VANILLA_SPAWN_EGG;
+            if (name == null) name = vanillaItems.get(id);
         } else {
             name = ResourceLocation.tryParse(compound.getString("id"));
+        }
+        if (VANILLA_POTION.equals(name)) {
+            effects.upgrade(compound.getCompound("tag").getList("CustomPotionEffects", Tag.TAG_COMPOUND));
         }
         if (VANILLA_SPAWN_EGG.equals(name)) name = spawnEggs.get(compound.getInt("Damage") & 0xFFFF);
         if (name == null || !name.getNamespace().equals(Witchery.MODID) || compound.getByte("Count") <= 0) return;
