@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Chalk Rite Offering Sources (2026-11-24)
+
+- The original Heart Glyph measures offering distance in three dimensions from the lower corner of its block. The one-block-high entity search also applies to living offerings. The Grave uses the original zombie class rule, which includes zombie villagers. A small rite checks four blocks for drops regardless of where the glyph appears within its block.
+- The preceding packaged port accepted a drop too far east by the original measure, sacrificed the zombie hovering above the Grave, and canceled before taking the first item when a later offering moved out of range. It also selected the northern Grassper over the western one. Built-in rites now use the legacy footprint and Grassper order. Each step searches for its own item after the full initial match.
+- The rebuilt headless server confirmed the east and west boundaries and the Grave's choice of a zombie villager over the elevated zombie. The barrier took its Obsidian from the western Grassper with Redstone temporarily out of range. After the fixture returned the Redstone and restarted, the cast consumed it and refunded the Obsidian at the western Grassper. The eastern Grassper stayed full.
+- Java 17 data generation, JAR reobfuscation, and all 219 required local Forge GameTests passed. Logs and the tested JAR are in `build/qa-rite-offering-sources`. Package SHA-256 `8dd5031ac7b00b26a594a84ccd71e7df092d72e70d4ef09272a50218ad94f051`.
+
 ## Living Offerings and Altar Charges (2026-11-24)
 
 - Original rites 23, 25, 39, 80, and 81 place the creature before the power step. Hell on Earth checks for an optional Waystone between them. The Mirror places the 2,000-power step before the Demon. The Heart Glyph restores each completed step independently when reloaded. Earlier Forge Hell on Earth saves past the Waystone step continue after the villager offering.

@@ -200,9 +200,9 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         BlockPos pos = getBlockPos();
         if (legacyWaystoneMatch) {
             legacyWaystoneMatch = false;
-            if (offeringStep == 0 && rite.findSacrifices(level, pos, 0) == null
+            if (offeringStep == 0 && !rite.hasRequiredOfferings(level, pos)
                     && level.getRecipeManager().byKey(RiteActivation.TRAVEL_TO_CREATURE).orElse(null) instanceof ItemRiteRecipe creatureRite
-                    && creatureRite.findSacrifices(level, pos, 0) != null) {
+                    && creatureRite.hasRequiredOfferings(level, pos)) {
                 rite = creatureRite;
                 activeRite = creatureRite.id();
             }
@@ -212,12 +212,11 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             advanceFinalOfferings(level, rite, pos, required);
             return;
         }
-        List<ItemRiteRecipe.Offering> remaining = rite.findSacrifices(level, pos, offeringStep);
-        if (remaining == null) {
+        ItemRiteRecipe.Offering offering = rite.findNextOffering(level, pos, offeringStep);
+        if (offering == null) {
             abort(level, "message.witchery.rite.missing_ingredient");
             return;
         }
-        ItemRiteRecipe.Offering offering = remaining.get(0);
         ItemStack stack = offering.stack().copyWithCount(1);
         BlockPos origin = BlockPos.containing(offering.position());
         ItemStack returned = rite.returnedOffering(stack);

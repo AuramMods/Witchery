@@ -619,6 +619,13 @@
 - [x] Reuse those refunded items with a Demon present. Save after paying the altar but before offering the Demon. The packaged server consumes the Demon and produces one Mirror after restarting, with a single altar debit.
 - [x] Run local Java 17 data generation and JAR reobfuscation. All 216 required Forge GameTests passed on the replay after the first run's Lumos/Nox fixture timed out waiting for ticking chunks.
 
+## Chalk Rite Offering Sources (2026-11-24)
+
+- [x] Restore the original search for dropped items, optional Waystones, and living offerings. Measure three-dimensional distance from the Heart Glyph block's lower corner and search the one-block-high glyph layer. Small, medium, and large rites accept drops within four, six, and eight blocks. Living offerings get one extra block of distance within the same search layer.
+- [x] Scan Grasspers within five blocks on both axes, starting with the westernmost column. Validate required items at activation, then take each item at its own step. Preserve the source position for refunds. The Grave accepts zombie subclasses such as zombie villagers.
+- [x] Run local Java 17 data generation, JAR reobfuscation, and all 219 required Forge GameTests. The new cases cover both sides of the radius, a saved Grassper cast, and the Grave's living offering search.
+- [x] Verify the packaged headless server through rising redstone activation. The small circle refused the east-side drop and took the in-range west-side drop. The Grave selected the zombie villager in the glyph layer. A barrier staged its western Grassper offering while Redstone was out of range. The server restarted, consumed the returned Redstone, and refunded the Obsidian at the same Grassper when the altar was missing.
+
 ## Returned Offerings and Waystone Copies (2026-11-21)
 
 - [x] Drop the Arthana, Boline, and reusable Necromantic Stone at their source during their offering step. Preserve durability and item tags. Charged Attuned Stones return discharged. The Rite of the Spectral Stone still consumes its Necromantic Stone.

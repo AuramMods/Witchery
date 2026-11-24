@@ -3,11 +3,13 @@ package art.arcane.witchery.block;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.AltarBlockEntity;
 import art.arcane.witchery.block.entity.BarrierBlockEntity;
+import art.arcane.witchery.block.entity.GrassperBlockEntity;
 import art.arcane.witchery.block.entity.RiteHeartBlockEntity;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
+import art.arcane.witchery.ritual.ItemRiteRecipe;
 import art.arcane.witchery.ritual.RitualCircle;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
@@ -17,6 +19,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.GameTestSequence;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Entity;
@@ -57,6 +60,87 @@ public final class CircleRiteTests {
     // Each required offering, the optional Waystone, and the altar charge get a separate 20-tick step.
     private static final int TWO_OFFERING_CAST = 80;
     private static final int THREE_OFFERING_CAST = 100;
+
+    @GameTest(template = TEMPLATE, batch = "witchery_rite_offering_boundary", setupTicks = 5)
+    public static void smallRiteMeasuresDroppedOfferingsFromTheGlyphBlockCorner(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.SMALL_RITE, "circleglyphritual");
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var origin = Vec3.atLowerCornerOf(center);
+        var obsidian = drop(level, origin.add(4.25, 0.2, 0.2), new ItemStack(Items.OBSIDIAN));
+        waitForOfferings(helper, new ItemStack(Items.REDSTONE)).thenWaitUntil(() -> {
+            helper.assertTrue(level.getEntitiesOfClass(ItemEntity.class, new AABB(center).inflate(5)).contains(obsidian),
+                    "The obsidian exists before checking the offering boundary");
+        }).thenExecute(() -> {
+            helper.useBlock(CENTER);
+            helper.assertFalse(helper.getBlockState(CENTER).getValue(RiteHeartBlock.ACTIVE),
+                    "An offering beyond four blocks on the east side cannot start the small rite");
+
+            obsidian.setPos(origin.add(-3.75, 0.2, 0.2));
+            start(helper);
+            tick(level, center, heart(helper), 20);
+            helper.assertTrue(obsidian.isRemoved(), "An offering within four blocks on the west side starts and feeds the rite");
+        }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_rite_offering_step", setupTicks = 5)
+    public static void riteUsesTheWesternGrassperAndWaitsUntilTheRedstoneStep(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.SMALL_RITE, "circleglyphritual");
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var west = filledGrassper(helper, CENTER.offset(-5, 0, 5));
+        var east = filledGrassper(helper, CENTER.offset(5, 0, -5));
+        var position = Vec3.atBottomCenterOf(center).add(0, 0.2, 0);
+        var redstone = drop(level, position, new ItemStack(Items.REDSTONE));
+        helper.startSequence().thenWaitUntil(() -> {
+            helper.assertTrue(drops(helper).contains(redstone), "The Redstone is present for initial selection");
+        }).thenExecute(() -> {
+            start(helper);
+            redstone.setPos(position.add(7, 0, 0));
+            var heart = heart(helper);
+            tick(level, center, heart, 20);
+            helper.assertTrue(west.isEmpty() && !east.isEmpty() && heart.saveWithoutMetadata().getInt("OfferingStep") == 1,
+                    "The first step takes obsidian from the western Grassper while the later item is absent");
+
+            heart.load(heart.saveWithoutMetadata());
+            redstone.setPos(position);
+            tick(level, center, heart, 20);
+            helper.assertTrue(redstone.isRemoved() && heart.saveWithoutMetadata().getInt("OfferingStep") == 2,
+                    "Replacing the Redstone before its own step lets the restored cast continue");
+        }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_rite_living_boundary", setupTicks = 5)
+    public static void graveFindsZombieVillagersOnTheGlyphLayer(GameTestHelper helper) {
+        floor(helper);
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var above = EntityType.ZOMBIE.create(level);
+        above.moveTo(Vec3.atBottomCenterOf(center).add(0, 1.3, 0));
+        above.setNoAi(true);
+        above.setNoGravity(true);
+        level.addFreshEntity(above);
+        var villager = EntityType.ZOMBIE_VILLAGER.create(level);
+        villager.moveTo(Vec3.atLowerCornerOf(center).add(-5.8, 0.2, 0.2));
+        villager.setNoAi(true);
+        villager.setNoGravity(true);
+        level.addFreshEntity(villager);
+        var grave = (ItemRiteRecipe) level.getRecipeManager().byKey(ResourceLocation.parse("witchery:rite_of_infusing_grave")).orElseThrow();
+        helper.startSequence().thenWaitUntil(() -> {
+            var nearby = level.getEntitiesOfClass(Entity.class, new AABB(center).inflate(7));
+            helper.assertTrue(nearby.contains(above) && nearby.contains(villager), "Both living candidates are tracked");
+        }).thenExecute(() -> {
+            try {
+                helper.assertTrue(grave.findLivingOffering(level, center) == villager,
+                        "The Grave accepts an in-range zombie villager and ignores a zombie above the glyph layer");
+            } finally {
+                above.discard();
+                villager.discard();
+            }
+        }).thenSucceed();
+    }
 
     @GameTest(template = TEMPLATE, setupTicks = 5)
     public static void mirrorChargesTheAltarBeforeCheckingForADemon(GameTestHelper helper) {
@@ -569,11 +653,23 @@ public final class CircleRiteTests {
         var level = helper.getLevel();
         var point = Vec3.atBottomCenterOf(helper.absolutePos(CENTER)).add(0, 0.3, 0);
         for (var item : items) {
-            var entity = new ItemEntity(level, point.x, point.y, point.z, item.copy(), 0, 0, 0);
-            entity.setNeverPickUp();
-            entity.setNoGravity(true);
-            level.addFreshEntity(entity);
+            drop(level, point, item);
         }
+    }
+
+    private static ItemEntity drop(ServerLevel level, Vec3 point, ItemStack stack) {
+        var entity = new ItemEntity(level, point.x, point.y, point.z, stack.copy(), 0, 0, 0);
+        entity.setNeverPickUp();
+        entity.setNoGravity(true);
+        level.addFreshEntity(entity);
+        return entity;
+    }
+
+    private static GrassperBlockEntity filledGrassper(GameTestHelper helper, BlockPos pos) {
+        helper.setBlock(pos, block("grassper"));
+        var grassper = (GrassperBlockEntity) helper.getBlockEntity(pos);
+        grassper.setItem(0, new ItemStack(Items.OBSIDIAN));
+        return grassper;
     }
 
     private static List<ItemEntity> drops(GameTestHelper helper) {

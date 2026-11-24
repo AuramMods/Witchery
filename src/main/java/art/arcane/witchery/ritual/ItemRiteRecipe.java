@@ -23,6 +23,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -48,6 +49,8 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                              ItemStack result, Action action, boolean nightOnly, @Nullable EntityType<?> livingOffering,
                              boolean consumeNecromanticStone)
         implements Recipe<Container> {
+    private static final int GRASSPER_RANGE = 5;
+
     public enum Action {
         ITEM,
         MANIFESTATION,
@@ -237,11 +240,15 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
     }
 
     public boolean stagesLivingOffering() {
-        return livingOffering != null && RiteActivation.legacyId(id) != Integer.MAX_VALUE;
+        return livingOffering != null && usesLegacyOfferings();
     }
 
     public boolean chargesBeforeLivingOffering() {
         return RiteActivation.legacyId(id) == 95; // Rite of the Mirror
+    }
+
+    private boolean usesLegacyOfferings() {
+        return RiteActivation.legacyId(id) != Integer.MAX_VALUE;
     }
 
     @Nullable
@@ -270,17 +277,32 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
     @Nullable
     public Mob findLivingOffering(ServerLevel level, BlockPos pos) {
         if (livingOffering == null) return null;
-        int radius = rings.stream().mapToInt(ring -> ring.pattern.sacrificeRadius()).max().orElse(4) + 1;
-        double x = pos.getX() + 0.5;
-        double z = pos.getZ() + 0.5;
-        return level.getEntitiesOfClass(Mob.class, new AABB(pos).inflate(radius, 1, radius),
-                mob -> mob.isAlive() && mob.getType() == livingOffering && mob.distanceToSqr(x, pos.getY(), z) <= radius * radius)
+        boolean legacy = usesLegacyOfferings();
+        int radius = offeringRadius() + 1;
+        AABB area = legacy ? legacyOfferingBounds(pos) : new AABB(pos).inflate(radius, 1, radius);
+        Vec3 origin = legacy ? Vec3.atLowerCornerOf(pos) : Vec3.atBottomCenterOf(pos);
+        return level.getEntitiesOfClass(Mob.class, area, mob -> mob.isAlive()
+                        && (mob.getType() == livingOffering || legacy && livingOffering == EntityType.ZOMBIE && mob instanceof Zombie)
+                        && mob.distanceToSqr(origin) <= radius * radius)
                 .stream().findFirst().orElse(null);
     }
 
+    public boolean hasRequiredOfferings(ServerLevel level, BlockPos pos) {
+        return matchSacrifices(validOfferings(level, pos), 0) != null;
+    }
+
     @Nullable
-    public List<Offering> findSacrifices(ServerLevel level, BlockPos pos, int first) {
-        return matchSacrifices(validOfferings(level, pos), first);
+    public Offering findNextOffering(ServerLevel level, BlockPos pos, int step) {
+        List<Offering> items = validOfferings(level, pos);
+        if (!usesLegacyOfferings()) {
+            List<Offering> matched = matchSacrifices(items, step);
+            return matched == null ? null : matched.get(0);
+        }
+        Ingredient required = sacrifices.get(step);
+        for (Offering offering : items) {
+            if (required.test(offering.stack())) return offering;
+        }
+        return null;
     }
 
     @Nullable
@@ -363,26 +385,39 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
     }
 
     private List<Offering> nearbyOfferings(ServerLevel level, BlockPos pos) {
-        int radius = rings.stream().mapToInt(ring -> ring.pattern.sacrificeRadius()).max().orElse(4);
-        AABB area = new AABB(pos).inflate(radius, 0, radius);
-        double x = pos.getX() + 0.5;
-        double z = pos.getZ() + 0.5;
+        boolean legacy = usesLegacyOfferings();
+        int radius = offeringRadius();
+        AABB area = legacy ? legacyOfferingBounds(pos) : new AABB(pos).inflate(radius, 0, radius);
+        Vec3 origin = legacy ? Vec3.atLowerCornerOf(pos) : Vec3.atBottomCenterOf(pos);
         List<Offering> items = new ArrayList<>();
         for (ItemEntity entity : level.getEntitiesOfClass(ItemEntity.class, area, item -> item.isAlive()
-                && (item.getX() - x) * (item.getX() - x) + (item.getZ() - z) * (item.getZ() - z) <= radius * radius)) {
+                && item.distanceToSqr(origin.x, legacy ? origin.y : item.getY(), origin.z) <= radius * radius)) {
             ItemStack stack = entity.getItem();
             items.add(new Offering(stack, entity.position(), new OfferingSource(entity.getUUID(), null), () -> {
                 if (stack.getCount() == 1) entity.discard();
                 else entity.setItem(stack.copyWithCount(stack.getCount() - 1));
             }));
         }
-        for (BlockPos point : BlockPos.betweenClosed(pos.offset(-5, 0, -5), pos.offset(5, 0, 5))) {
-            if (level.getBlockEntity(point) instanceof GrassperBlockEntity grassper && !grassper.isEmpty()) {
-                items.add(new Offering(grassper.getItem(0), Vec3.atBottomCenterOf(point).add(0, 0.8, 0),
-                        new OfferingSource(null, grassper.getBlockPos()), () -> grassper.removeItem(0, 1)));
+        // Original rites scan all Z positions at each X before moving to the next column.
+        BlockPos.MutableBlockPos point = new BlockPos.MutableBlockPos();
+        for (int outer = -GRASSPER_RANGE; outer <= GRASSPER_RANGE; outer++) {
+            for (int inner = -GRASSPER_RANGE; inner <= GRASSPER_RANGE; inner++) {
+                point.setWithOffset(pos, legacy ? outer : inner, 0, legacy ? inner : outer);
+                if (level.getBlockEntity(point) instanceof GrassperBlockEntity grassper && !grassper.isEmpty()) {
+                    items.add(new Offering(grassper.getItem(0), Vec3.atBottomCenterOf(point).add(0, 0.8, 0),
+                            new OfferingSource(null, grassper.getBlockPos()), () -> grassper.removeItem(0, 1)));
+                }
             }
         }
         return items;
+    }
+
+    private int offeringRadius() {
+        return rings.stream().mapToInt(ring -> ring.pattern.sacrificeRadius()).max().orElse(4);
+    }
+
+    private static AABB legacyOfferingBounds(BlockPos pos) {
+        return new AABB(pos.offset(-8, 0, -8), pos.offset(8, 1, 8));
     }
 
     private static boolean assign(int ingredient, List<Ingredient> required, List<Offering> items,
