@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Purified Milk and Duration Boost (2026-11-24)
+
+- Standalone Purified Milk rolls a 50% chance and samples one active effect. The legacy player protection keeps an incurable effect active when the milk selects it and it has more than five ticks left.
+- The Creeper Heart duration brew preserves the same protection while removing other debuffs, extending beneficial effects and applying Queasy. The extended effects keep their Forge curative items. The debuff cleanup for creatures proceeds without the player protection.
+- The preceding JAR reproduced both cases of Overheating being cleared through the survival client's normal drink control. The patched JAR read a synthetic 1.7.10 player record with Overheating II, Weakness, Speed II, Purified Milk subtype 105 and an ordered Creeper Heart brew. The drink retained the curse's duration, amplifier, ambient flag and hidden particles, cleared Weakness, doubled remaining Speed within the recipe's cap, and gave Queasy and a glass bottle.
+- The dedicated restart retained Overheating, Speed and Queasy. The fixture cleared Speed and Queasy and moved the saved Milk to the selected slot. Ten drinks left Overheating ticking. With fixture-supplied Weakness also active, Purified Milk cleared Weakness and kept Overheating. The isolated clean Forge client and dedicated server used matching JARs with SHA-256 `debd7d7403436285d1578cd04b771211a14f91ad2da7fc00a0b45d07160caf75`. The client used zero master volume and OpenAL No Output without taking desktop focus. Logs are in `build/qa-incurable-brews`.
+- Local Java 17 reobfuscation and the asset inventory audit passed. The GameTest run concurrent with packaged client testing failed the existing Focused Barrier activation assertion in the Grassper refund test. All 166 required GameTests passed on a standalone rerun, including the new brew regression.
+
 ## Brew of the Depths and Saved Effects (2026-11-24)
 
 - Drinking starts the original 300-second countdown in `ForgeData.PlayerPersisted.witcheryDepths`. The brew applies Water Breathing and adds Wither II on land when Wither is absent. Submerging the player's eyes clears Wither. Expiry removes Water Breathing and Poison. Death removes the countdown.

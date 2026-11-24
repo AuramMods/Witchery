@@ -36,6 +36,7 @@ import art.arcane.witchery.brewing.BrewErosion;
 import art.arcane.witchery.brewing.BrewIce;
 import art.arcane.witchery.brewing.BrewOfTheDepths;
 import art.arcane.witchery.brewing.BrewSolidification;
+import art.arcane.witchery.brewing.BrewStatusActions;
 import art.arcane.witchery.brewing.BrewSubstitution;
 import art.arcane.witchery.brewing.BrewTerrain;
 import art.arcane.witchery.item.AnointingPasteItem;
@@ -456,7 +457,7 @@ public final class WitcheryItems {
             case "happenstance_oil" -> new DrinkableBrewItem(() -> MobEffects.NIGHT_VISION, 1200, 0);
             case "mystic_unguent" -> new DrinkableBrewItem(() -> MobEffects.WEAKNESS, 1200, 1);
             case "seer_stone" -> new SeerStoneItem();
-            case "purified_milk" -> new DrinkableBrewItem(DrinkableBrewItem::purifyMilk);
+            case "purified_milk" -> new DrinkableBrewItem(BrewStatusActions::drinkPurifiedMilk);
             case "warm_blood" -> new DrinkableBrewItem(Rarity.UNCOMMON, Vampirism::drinkWarmBlood);
             case "liliths_blood" -> new DrinkableBrewItem(Rarity.RARE, Vampirism::drinkLilithsBlood);
             case "icy_needle" -> new IcyNeedleItem();

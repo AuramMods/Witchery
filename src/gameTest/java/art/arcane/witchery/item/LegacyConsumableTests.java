@@ -1,6 +1,7 @@
 package art.arcane.witchery.item;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.brewing.BrewMixture;
 import art.arcane.witchery.brewing.BrewOfTheDepths;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.config.WitcheryServerConfig;
@@ -11,11 +12,12 @@ import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.nbt.TagParser;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.effect.MobEffect;
@@ -40,11 +42,55 @@ import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
+import java.util.List;
 import java.util.UUID;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class LegacyConsumableTests {
+    @GameTest(template = "qa_coven_arena")
+    public static void ordinaryBrewsRetainThePlayersIncurableEffects(GameTestHelper helper) {
+        var player = player(helper);
+        var curse = WitcheryEffects.OVERHEATING.get();
+        var milk = WitcheryIngredient.PURIFIED_MILK.item();
+        try {
+            long seed = 0;
+            while (RandomSource.create(seed).nextInt(2) != 0) seed++;
+            player.getRandom().setSeed(seed);
+            player.addEffect(new MobEffectInstance(curse, 900, 1));
+            consume(helper, player, new ItemStack(milk));
+            assertEffect(helper, player, curse, 900, 1);
+
+            player.removeEffect(curse);
+            player.addEffect(new MobEffectInstance(MobEffects.POISON, 900));
+            player.getRandom().setSeed(seed);
+            consume(helper, player, new ItemStack(milk));
+            helper.assertFalse(player.hasEffect(MobEffects.POISON), "The same successful milk roll removes a curable effect");
+
+            player.addEffect(new MobEffectInstance(curse, 800, 2));
+            player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 900));
+            var speed = new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 1_200, 1);
+            speed.setCurativeItems(List.of(new ItemStack(Items.APPLE)));
+            player.addEffect(speed);
+            var ingredients = List.of(new ItemStack(Items.NETHER_WART), new ItemStack(WitcheryIngredient.TEAR_OF_THE_GODDESS.item()),
+                    new ItemStack(WitcheryIngredient.DIAMOND_VAPOUR.item()), new ItemStack(WitcheryIngredient.CREEPER_HEART.item()));
+            var brew = new ItemStack(WitcheryItems.getRequired("brewbottle").get());
+            var mixture = BrewMixture.from(ingredients);
+            helper.assertTrue(mixture != null, "The ordered offerings make a duration brew");
+            brew.setTag(mixture.bottleTag(ingredients));
+            consume(helper, player, brew);
+            assertEffect(helper, player, curse, 800, 2);
+            assertEffect(helper, player, MobEffects.MOVEMENT_SPEED, 2_400, 1);
+            helper.assertTrue(player.getEffect(MobEffects.MOVEMENT_SPEED).getCurativeItems().get(0).is(Items.APPLE)
+                            && !player.hasEffect(MobEffects.WEAKNESS) && player.hasEffect(WitcheryEffects.QUEASY.get())
+                            && player.getMainHandItem().is(Items.GLASS_BOTTLE),
+                    "Duration Boost preserves the buff's cure, cleans a curable debuff and gives Queasy");
+            helper.succeed();
+        } finally {
+            player.discard();
+        }
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void depthsContinuesLegacyCountdownAndClearsTheOriginalEffects(GameTestHelper helper) {
         var diver = player(helper);

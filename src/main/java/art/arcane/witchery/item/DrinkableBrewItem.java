@@ -20,7 +20,6 @@ import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -75,13 +74,6 @@ public final class DrinkableBrewItem extends Item {
             stack.shrink(1);
         }
         return stack;
-    }
-
-    public static void purifyMilk(LivingEntity drinker) {
-        if (!drinker.getActiveEffects().isEmpty() && drinker.getRandom().nextBoolean()) {
-            List<MobEffectInstance> effects = List.copyOf(drinker.getActiveEffects());
-            drinker.removeEffect(effects.get(drinker.getRandom().nextInt(effects.size())).getEffect());
-        }
     }
 
     public static DrinkableBrewItem frozenHeart() {

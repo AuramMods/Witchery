@@ -18,10 +18,18 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
-final class BrewStatusActions {
+public final class BrewStatusActions {
     private BrewStatusActions() {}
+
+    public static void drinkPurifiedMilk(LivingEntity drinker) {
+        var effects = List.copyOf(drinker.getActiveEffects());
+        if (effects.isEmpty() || drinker.getRandom().nextInt(2) != 0) return;
+        MobEffectInstance chosen = effects.get(drinker.getRandom().nextInt(effects.size()));
+        if (!retainedByPlayer(drinker, chosen)) drinker.removeEffect(chosen.getEffect());
+    }
 
     static void cleanse(LivingEntity target, @Nullable LivingEntity caster, int strength) {
         boolean diseased = target.hasEffect(WitcheryEffects.DISEASED.get());
@@ -97,15 +105,20 @@ final class BrewStatusActions {
         var effects = List.copyOf(target.getActiveEffects());
         if (effects.isEmpty()) return;
         int boost = Mth.ceil(3600 * scale);
-        target.removeAllEffects();
+        var extended = new ArrayList<MobEffectInstance>();
         for (MobEffectInstance effect : effects) {
-            if (harmful(effect)) continue;
+            boolean debuff = harmful(effect);
+            if (debuff && retainedByPlayer(target, effect)) continue;
+            if (!target.removeEffect(effect.getEffect()) || debuff) continue;
             int duration = effect.getDuration();
             if (!effect.isInfiniteDuration()) {
                 duration += Math.min(Math.min(duration, boost), Integer.MAX_VALUE - duration);
             }
-            target.addEffect(new MobEffectInstance(effect.getEffect(), duration, effect.getAmplifier(), effect.isAmbient(), true));
+            var replacement = new MobEffectInstance(effect.getEffect(), duration, effect.getAmplifier(), effect.isAmbient(), true);
+            replacement.setCurativeItems(new ArrayList<>(effect.getCurativeItems()));
+            extended.add(replacement);
         }
+        extended.forEach(target::addEffect);
         target.addEffect(new MobEffectInstance(WitcheryEffects.QUEASY.get(),
                 3600 * Math.max(1, 4 - strength), 0, true, true));
     }
@@ -145,6 +158,12 @@ final class BrewStatusActions {
 
     private static boolean eligible(MobEffectInstance effect, boolean debuff, int strength) {
         return harmful(effect) == debuff && effect.getAmplifier() <= strength && !effect.getCurativeItems().isEmpty();
+    }
+
+    private static boolean retainedByPlayer(LivingEntity target, MobEffectInstance effect) {
+        // The original player tick restored incurable effects with more than five ticks remaining.
+        return target instanceof Player && (effect.isInfiniteDuration() || effect.getDuration() > 5)
+                && effect.getEffect().getCurativeItems().isEmpty();
     }
 
     private static boolean harmful(MobEffectInstance effect) {
