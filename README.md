@@ -2,6 +2,16 @@
 
 This repository is a breadth-first port of the original Witchery mod from Forge 1.7.10 to Forge 1.20.1.
 
+## Local builds and testing
+
+**Local builds only.** Run every Witchery build, test, and package task locally with Java 17 and `./gradlew`. Use the local Gradle cache and CPU cores. Do not add or trigger GitHub Actions workflows or use hosted CI for this mod.
+
+- Use `./gradlew compileJava` for routine scaffolding checks.
+- Use `./gradlew jar` to package the reobfuscated mod and `./gradlew runGameTestServer` for headless Forge tests.
+- Run `./gradlew runData` before packaging when generated resources change. With dependencies already cached, add `--offline` to run Gradle without fetching them again.
+- Reserve `./gradlew build` for intentional local modpack deployment because it copies the JAR into the configured modpack.
+- For client smoke tests, launch Minecraft muted and in the background without taking desktop focus.
+
 ## What This Project Is For
 
 - Rebuild Witchery on modern Forge without losing legacy content coverage.
@@ -39,20 +49,7 @@ Roles:
 
 - Breadth-first, then depth-first.
 - Keep compile health at each step.
-- Validate with `compileJava` during scaffolding work.
 - Keep the three docs updated whenever scope or status changes.
-
-Validation rule:
-- Use `./gradlew compileJava` as the routine check.
-- Do not rely on `runClient` for routine scaffolding validation.
-
-### Local builds and testing
-
-**Local builds only.** Run all Witchery builds, tests, and packaging on the local machine with Java 17 and the Gradle wrapper. Reuse the local Gradle cache and CPU cores. Do not add or trigger GitHub Actions workflows or use hosted CI for this mod.
-
-Use `./gradlew jar` for routine packaging and `./gradlew runGameTestServer` for headless Forge tests. When generated resources change, run `./gradlew runData` before packaging. Reserve `./gradlew build` for intentional local modpack deployment because it copies the reobfuscated JAR into the configured modpack.
-
-When a client smoke test is needed, launch Minecraft muted and in the background without taking desktop focus.
 
 ## How To Check Progress
 
