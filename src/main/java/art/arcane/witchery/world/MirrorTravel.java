@@ -49,12 +49,28 @@ public final class MirrorTravel {
         if (source.isRoomExit() || level.dimension().equals(WitcheryDimensions.MIRROR)) return;
         ServerLevel mirror = level.getServer().getLevel(WitcheryDimensions.MIRROR);
         MirrorBlockEntity exit = linkedFrame(mirror, source);
-        if (exit == null || !exit.isRoomExit() || exit.isConnected() && !position(level, source).equals(exit.counterpart())) return;
+        if (exit == null || !exit.isRoomExit()) return;
+        if (exit.isConnected() && !position(level, source).equals(exit.counterpart())
+                && !canReattachLegacyRoom(mirror, source, exit)) return;
+        connectFrames(level, source, mirror, exit);
+    }
+
+    private static void connectFrames(ServerLevel level, MirrorBlockEntity source, ServerLevel mirror, MirrorBlockEntity exit) {
         UUID connection = source.connectionId() == null ? UUID.randomUUID() : source.connectionId();
         source.bind(position(mirror, exit), connection);
         exit.bind(position(level, source), connection);
         if (exit.demonSlain()) source.markDemonSlain();
         if (source.demonSlain()) exit.markDemonSlain();
+    }
+
+    private static boolean canReattachLegacyRoom(ServerLevel mirror, MirrorBlockEntity source, MirrorBlockEntity exit) {
+        // Legacy saves kept the exterior coordinates even after the frame was harvested.
+        GlobalPos previous = exit.counterpart();
+        if (source.connectionId() != null || exit.connectionId() != null || previous == null) return false;
+        ServerLevel previousLevel = mirror.getServer().getLevel(previous.dimension());
+        if (previousLevel == null) return false;
+        MirrorBlockEntity previousFrame = linkedFrame(previousLevel, exit);
+        return previousFrame == null || previousFrame.isRoomExit() || !position(mirror, exit).equals(previousFrame.counterpart());
     }
 
     public static void unlink(ServerLevel level, MirrorBlockEntity source) {
@@ -109,7 +125,10 @@ public final class MirrorTravel {
         ServerLevel mirror = exterior.getServer().getLevel(WitcheryDimensions.MIRROR);
         if (mirror == null) return false;
         MirrorBlockEntity exit = linkedFrame(mirror, source);
-        if (exit != null && !position(exterior, source).equals(exit.counterpart())) return false;
+        if (exit != null && !position(exterior, source).equals(exit.counterpart())) {
+            if (!exit.isRoomExit() || !canReattachLegacyRoom(mirror, source, exit)) return false;
+            connectFrames(exterior, source, mirror, exit);
+        }
         if (exit == null) exit = createRoom(exterior, mirror, source);
         if (exit == null || !exit.isRoomExit()) return false;
         if (move(player, mirror, front(exit), exit.facing().toYRot())) {

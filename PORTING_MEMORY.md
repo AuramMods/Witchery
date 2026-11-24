@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Portable Legacy Mirror Rooms (2026-11-24)
+
+- Witchery 0.24.1 saved the last exterior coordinates on its Mirror room exit after the frame was harvested. The earlier port inferred an active connection from those coordinates. Its packaged build let the player mount the Mirror imported from a legacy chest, but the room exit retained its old exterior coordinates with no shared connection.
+- Remounting the original item now checks whether its former exterior still reciprocates before updating the room link. Already remounted frames can make the same repair on first entry. The GameTest checks that a duplicate cannot claim a reciprocal exterior or an active binding with a modern connection UUID.
+- On the packaged JAR, a muted background survival client placed the imported Mirror and passed into its original room and back to the new frame. An ordinary restart retained the same connection on both frames and both crossings still worked. Reopening the earlier port's separate save also restored both crossings without moving or replacing its frame. The fixture positioned the player at the portals.
+- Java 17 data generation, JAR reobfuscation, and all 223 required local Forge GameTests passed. Logs and the exact JAR are in `build/qa-portable-mirror-room`. Package SHA-256 `4bfe47ee4afb5276d11f10a9fe3bb73caf6fa0d3c7a9282082f814547471f6e6`.
+
 ## Saved Item Dimension Bindings (2026-11-24)
 
 - The first-import converter already resolved custom numeric dimensions. The ordinary 1.20.1 load path left numeric bindings in older port inventories and the separate entity regions untouched. Loading these records now uses the captured registry for Waystones, Door Keys, and keyring entries whenever the namespaced field is absent.

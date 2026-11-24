@@ -4,10 +4,13 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.MirrorBlock;
 import art.arcane.witchery.block.entity.MirrorBlockEntity;
 import art.arcane.witchery.registry.WitcheryBlocks;
+import art.arcane.witchery.world.MirrorTravel;
+import art.arcane.witchery.world.WitcheryDimensions;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -23,6 +26,50 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class LegacyMirrorFavoriteImportTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_legacy_mirror_favorite")
+    public static void remountsLegacyMirrorWhoseExteriorWasHarvested(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var mirror = level.getServer().getLevel(WitcheryDimensions.MIRROR);
+        var exteriorBlock = (MirrorBlock) WitcheryBlocks.getRequired("mirrorblock").get();
+        var exitBlock = (MirrorBlock) WitcheryBlocks.getRequired("mirrorblock2").get();
+        var previous = helper.absolutePos(new BlockPos(3, 5, 4));
+        var remounted = helper.absolutePos(new BlockPos(7, 5, 4));
+        var roomPos = new BlockPos(36, 72, 40);
+        helper.assertTrue(mirror != null && exitBlock.placePair(mirror, roomPos, Direction.EAST), "Place the original room exit");
+        var room = (MirrorBlockEntity) mirror.getBlockEntity(roomPos);
+        try {
+            helper.assertTrue(exteriorBlock.placePair(level, previous, Direction.NORTH)
+                            && exteriorBlock.placePair(level, remounted, Direction.NORTH),
+                    "Place the original and remounted exterior frames");
+            var original = (MirrorBlockEntity) level.getBlockEntity(previous);
+            var placed = (MirrorBlockEntity) level.getBlockEntity(remounted);
+            room.load(legacyLink(previous));
+            original.load(legacyLink(roomPos));
+            placed.load(legacyLink(roomPos));
+            var originalLink = GlobalPos.of(level.dimension(), previous);
+            var newLink = GlobalPos.of(level.dimension(), remounted);
+            var roomLink = GlobalPos.of(mirror.dimension(), roomPos);
+            MirrorTravel.reconnect(level, placed);
+            helper.assertTrue(originalLink.equals(room.counterpart()) && placed.connectionId() == null,
+                    "A copied legacy item cannot take over a room with a reciprocal exterior frame");
+
+            level.removeBlock(previous, false);
+            room.bind(originalLink, UUID.randomUUID());
+            MirrorTravel.reconnect(level, placed);
+            helper.assertTrue(originalLink.equals(room.counterpart()) && placed.connectionId() == null,
+                    "A legacy item cannot claim an earlier port room with an explicit connection");
+
+            room.load(legacyLink(previous));
+            MirrorTravel.reconnect(level, placed);
+            helper.assertTrue(newLink.equals(room.counterpart()) && roomLink.equals(placed.counterpart())
+                            && room.connectionId() != null && room.connectionId().equals(placed.connectionId()),
+                    "Placing the portable frame restores the original room with one shared connection");
+        } finally {
+            mirror.removeBlock(roomPos, false);
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_legacy_mirror_favorite")
     public static void keepsLegacyFavoriteProfileThroughItemAndConversation(GameTestHelper helper) throws Exception {
         var level = helper.getLevel();
@@ -70,5 +117,17 @@ public final class LegacyMirrorFavoriteImportTests {
         helper.assertTrue(texture.getString("Value").equals("original-texture")
                         && texture.getString("Signature").equals("original-signature"),
                 "The original signed texture stays available when the returning profile has no texture property");
+    }
+
+    private static CompoundTag legacyLink(BlockPos pos) {
+        var coordinates = new CompoundTag();
+        coordinates.putInt("posX", pos.getX());
+        coordinates.putInt("posY", pos.getY());
+        coordinates.putInt("posZ", pos.getZ());
+        coordinates.putInt("Dimension", 0);
+        var legacy = new CompoundTag();
+        legacy.put("DimCoords", coordinates);
+        legacy.putBoolean("DemonSlain", true);
+        return legacy;
     }
 }
