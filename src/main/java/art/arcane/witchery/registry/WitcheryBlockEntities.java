@@ -38,7 +38,6 @@ import art.arcane.witchery.block.entity.WitchesOvenBlockEntity;
 import art.arcane.witchery.block.entity.WolfHeadBlockEntity;
 import art.arcane.witchery.block.entity.WolfAltarBlockEntity;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -223,9 +222,6 @@ public final class WitcheryBlockEntities {
             FETISHES.put(path, type);
             LEGACY_BLOCK_ENTITIES.put(path, type);
         }
-        for (String legacyName : LegacyRegistryData.BLOCK_ENTITIES) {
-            registerLegacyBlockEntity(legacyName);
-        }
     }
 
     private WitcheryBlockEntities() {
@@ -298,24 +294,5 @@ public final class WitcheryBlockEntities {
 
     private static DistilleryBlockEntity createLegacyBurningDistillery(BlockPos pos, BlockState state) {
         return new DistilleryBlockEntity(LEGACY_BURNING_DISTILLERY.get(), pos, state);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static void registerLegacyBlockEntity(String legacyName) {
-        String path = RegistryNameUtil.normalizePath(legacyName);
-        if (LEGACY_BLOCK_ENTITIES.containsKey(path)) {
-            return;
-        }
-
-        RegistryObject<Block> block = WitcheryBlocks.getRequired(path);
-
-        final RegistryObject<BlockEntityType<PlaceholderBlockEntity>>[] holder = (RegistryObject<BlockEntityType<PlaceholderBlockEntity>>[]) new RegistryObject<?>[1];
-        holder[0] = BLOCK_ENTITIES.register(path,
-                () -> BlockEntityType.Builder.of(
-                        (pos, state) -> new PlaceholderBlockEntity(holder[0], pos, state),
-                        block.get())
-                        .build(null));
-
-        LEGACY_BLOCK_ENTITIES.put(path, holder[0]);
     }
 }

@@ -172,16 +172,9 @@ public final class LegacyChunkUpgrade {
     private static void restoreLegacyTileTypes(CompoundTag level, LegacyWorldIds ids) {
         var sections = level.getList("Sections", Tag.TAG_COMPOUND);
         var tiles = level.getList("TileEntities", Tag.TAG_COMPOUND);
-        // Garlands render without tiles. The original pending wall plans only held their bounds in memory.
-        tiles.removeIf(entry -> switch (((CompoundTag) entry).getString("id")) {
-            case "witchery:garlicgarland", "witchery:wallgen" -> true;
-            default -> false;
-        });
+        updateBlockEntityTypes(tiles);
         for (Tag entry : tiles) {
             CompoundTag tile = (CompoundTag) entry;
-            if (tile.getString("id").equals("witchery:wolftrap")) {
-                tile.putString("id", "witchery:beartrap");
-            }
             String tileId = tile.getString("id");
             if ((tileId.equals("witchery:leechchest") || tileId.equals("witchery:refillingchest"))
                     && tile.contains("CustomName", Tag.TAG_STRING)) {
@@ -208,6 +201,21 @@ public final class LegacyChunkUpgrade {
                     tile.putString("id", block.toString());
                 }
                 break;
+            }
+        }
+    }
+
+    public static void updateBlockEntityTypes(ListTag tiles) {
+        // The decorative tiles were empty, and village wall plans were never saved in the marker.
+        tiles.removeIf(entry -> switch (((CompoundTag) entry).getString("id")) {
+            case "witchery:candelabra", "witchery:fumefunnel", "witchery:filteredfumefunnel",
+                    "witchery:garlicgarland", "witchery:wallgen" -> true;
+            default -> false;
+        });
+        for (Tag entry : tiles) {
+            var tile = (CompoundTag) entry;
+            if (tile.getString("id").equals("witchery:wolftrap")) {
+                tile.putString("id", "witchery:beartrap");
             }
         }
     }

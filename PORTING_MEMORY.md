@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Obsolete Block Entities and Wolf Trap Saves (2026-11-23)
+
+- The block-entity catalog contains 54 names. Forty-eight have concrete runtime registrations. The Candelabra, both Fume Funnels and Garlic Garland use model-backed blocks. The original village wall marker saved no plan. Chunk reads discard those five obsolete tiles. Protocol 92 retires their registry types and the duplicate Wolf Trap tile type. The `witchery:wolftrap` block loads its state through the same `witchery:beartrap` type as a newly placed trap.
+- A disposable copy of the original Forge 0.24.1 hunting save imported through the packaged JAR with its west-facing armed Wolf Trap, owner Morgan, bait timestamp 600, and the original Wolfman UUID. An already-converted copy of the same region had the old tile ID written back without the original registry snapshot. The preceding JAR loaded its empty placeholder. The new JAR recovered the saved state and each trap caught its original Wolfman. The north-facing Garlic Garland stayed in place with no tile.
+- An ordinary dedicated restart preserved the repaired trap's owner, facing and sprung state and the Wolfman's infection. A matching clean Forge client armed a newly placed Wolf Trap in survival. Its launch was muted and the focus monitor recorded no activation. All 156 required local GameTests and Java 17 JAR reobfuscation passed.
+- The exact packaged JAR is `563b1e2e0c005474bc0282f487e364c26503c338d2b36a1f0c63698810fa6eab`. The headless logs, packaging and GameTest output are under the directory named by `/tmp/witchery-block-entity-retirement-current`. Its `client-path` file points to the isolated client log and screenshot.
+
 ## Crystal Ball Camera Recovery (2026-11-23)
 
 - The original camera timed out three seconds after its last heartbeat. The modern client now scopes a view to the current player, client level and target ID. It restores the player camera and input when the target disappears. Forge's player clone event also clears the temporary no-gravity flag if vanilla copied it to the replacement player.
