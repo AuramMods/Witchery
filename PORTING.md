@@ -1878,6 +1878,13 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Reconnect to the restarted Auram server and collect twelve Wood Ash and four Exhale of the Horned One through the Witch's Oven menu. Two macOS arm64 client runs hit a Java 17 C2 compiler crash after joining. The successful retry used C1 client compilation, shaders disabled, master volume zero, and OpenAL No Output. The focus monitor recorded no client activation.
 - [x] In the same reopened world, craft Anointing Paste, convert the cauldron, and fill it with three buckets. Use one recovered fume with Mandrake Root and an egg to brew six Mutandis. The automated player throws missed the cauldron. The fixture placed the dropped ingredients over the opening, and the player collected the result. The final save retained twelve Ash, three fumes, and six Mutandis in the player's inventory.
 
+### Current Installed Auram Smoke Test (2026-11-24)
+
+- [x] Run local Java 17 data generation and reobfuscation on `0206791`. Generated resources stayed byte-for-byte identical. The separate package build changed the implementation timestamp in the JAR manifest.
+- [x] Boot the exact Transpose package in a disposable copy of the currently installed Auram profile. The headless server registered Dream, Torment, and Mirror. The muted survival client opened the hopper-fed Oven and collected one of the two Wood Ash outputs through its menu.
+- [x] Verify the saved Oven, both Hoppers, and survival inventory on disk. Run an ordinary dedicated restart, confirm that one Wood Ash remains in the Oven, and verify that the returning player's inventory still holds the other.
+- [x] Reopen the Oven menu after restarting and reconnecting to the current Auram copy. Default network settings timed out during JEI initialization. The disposable copies used the prior 300-second PacketFixer and Forge read timeouts. The muted C1 client finished indexing, reopened the Oven, and verified the saved inventory and output before another clean save.
+
 ## Continuous Auram Survival (2026-11-22)
 
 - [x] Resume the same seed-1 dedicated world and player from the Oven and Mutandis checkpoint. The first two reconnect attempts timed out during the client's recipe indexing. The disposable server used PacketFixer's 300-second timeout and `-Dforge.readTimeout=300` for the successful reconnect. The Java 17 background client kept the prior C1 launch settings.
