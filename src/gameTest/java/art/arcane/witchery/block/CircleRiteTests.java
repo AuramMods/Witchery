@@ -27,6 +27,8 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Witch;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -210,7 +212,7 @@ public final class CircleRiteTests {
         var occupied = wall.above(2);
         level.setBlockAndUpdate(occupied, Blocks.CHEST.defaultBlockState());
         waitForOfferings(helper, new ItemStack(Items.OBSIDIAN), new ItemStack(Items.REDSTONE)).thenExecute(() -> {
-            var altar = chargedAltar(helper, false);
+            var altar = chargedAltar(helper, CENTER.offset(20, 0, 20), false, 2);
             start(helper);
             tick(level, center, heart, TWO_OFFERING_CAST + 1);
             var barrier = block("barrier");
@@ -226,7 +228,8 @@ public final class CircleRiteTests {
                     "The actual barrier collision lets a survival player pass while blocking the cow");
             var wallEntity = (BarrierBlockEntity) level.getBlockEntity(wall);
             helper.assertTrue(wallEntity.saveWithoutMetadata().getInt("remainingTicks") == 30
-                    && Math.abs(altar.power() - 9498.8F) < 0.01F, "The first lease is thirty ticks and upkeep spends 1.2");
+                    && Math.abs(altar.power() - 9498.8F) < 0.01F,
+                    "The altar beyond 16 blocks pays the activation and first 1.2 upkeep charge");
             helper.useBlock(CENTER);
             helper.assertTrue(!level.getBlockState(center).getValue(RiteHeartBlock.ACTIVE)
                     && heart.saveWithoutMetadata().getList("ProtectionRites", Tag.TAG_COMPOUND).isEmpty(),
@@ -234,6 +237,30 @@ public final class CircleRiteTests {
             for (int tick = 0; tick < 30; tick++) BarrierBlockEntity.tick(level, wall, state, wallEntity);
             helper.assertTrue(level.isEmptyBlock(wall), "The last leased barrier expires after thirty ticks");
             cow.discard();
+        }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_recharging_range", setupTicks = 5)
+    public static void infusionRechargePaysUpkeepAtArthanaRange(GameTestHelper helper) {
+        ring(helper, RitualCircle.SMALL_RITE, "circleglyphritual");
+        ring(helper, RitualCircle.MEDIUM_RITE, "circleglyphritual");
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var heart = heart(helper);
+        var potion = PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.REGENERATION);
+        waitForOfferings(helper, potion).thenExecute(() -> {
+            var altar = chargedAltar(helper, CENTER.offset(20, 0, 20), false, 2);
+            start(helper);
+            tick(level, center, heart, 60);
+            helper.assertTrue(level.getBlockState(center).getValue(RiteHeartBlock.ACTIVE) && altar.power() == 5960,
+                    "The rite pays 4,000 to start and 40 for its first recharge from the extended altar");
+
+            var save = altar.saveWithoutMetadata();
+            save.putInt("RangeScale", 1);
+            altar.load(save);
+            tick(level, center, heart, 20);
+            helper.assertTrue(!level.getBlockState(center).getValue(RiteHeartBlock.ACTIVE) && altar.power() == 5960,
+                    "The rite ends without another debit when the altar falls out of range");
         }).thenSucceed();
     }
 
@@ -428,7 +455,10 @@ public final class CircleRiteTests {
     }
 
     private static AltarBlockEntity chargedAltar(GameTestHelper helper, boolean stabilizedPower) {
-        BlockPos corner = CENTER.east(9);
+        return chargedAltar(helper, CENTER.east(9), stabilizedPower, 1);
+    }
+
+    private static AltarBlockEntity chargedAltar(GameTestHelper helper, BlockPos corner, boolean stabilizedPower, int rangeScale) {
         for (var pos : BlockPos.betweenClosed(corner, corner.offset(1, 0, 2))) helper.setBlock(pos, block("altar"));
         if (stabilizedPower) helper.setBlock(corner.offset(1, 1, 2), block("infinityegg"));
         var altar = (AltarBlockEntity) helper.getBlockEntity(corner);
@@ -436,6 +466,7 @@ public final class CircleRiteTests {
         data.putFloat("Power", 10_000);
         data.putInt("PowerScale", 10);
         data.putInt("MaxPower", 1000);
+        data.putInt("RangeScale", rangeScale);
         altar.load(data);
         return altar;
     }

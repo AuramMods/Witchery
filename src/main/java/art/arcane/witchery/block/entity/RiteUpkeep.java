@@ -89,7 +89,7 @@ interface RiteUpkeep {
         }
 
         private boolean rechargeNearby(ServerLevel level, BlockPos heart) {
-            AltarBlockEntity altar = AltarPower.nearest(level, heart, 16);
+            AltarBlockEntity altar = AltarPower.nearest(level, heart);
             if (altar == null || !altar.consumePower(40)) {
                 ServerPlayer player = caster(level);
                 if (player != null) player.displayClientMessage(Component.translatable("message.witchery.rite.missing_power"), true);

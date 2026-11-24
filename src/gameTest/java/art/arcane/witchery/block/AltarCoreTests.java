@@ -2,8 +2,12 @@ package art.arcane.witchery.block;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.AltarBlockEntity;
+import art.arcane.witchery.block.entity.BrazierBlockEntity;
+import art.arcane.witchery.block.entity.CrystalBallBlockEntity;
+import art.arcane.witchery.crafting.BrazierRecipe;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.power.AltarPower;
+import art.arcane.witchery.prediction.Predictions;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
 import com.mojang.authlib.GameProfile;
@@ -14,6 +18,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -103,6 +108,80 @@ public final class AltarCoreTests {
         });
     }
 
+    @GameTest(template = "qa_rite_terrain", batch = "witchery_arthana_consumers", timeoutTicks = 180)
+    public static void brazierAndCrystalBallHonorMountedArthana(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "FortuneTellerQA"));
+        var corner = helper.absolutePos(new BlockPos(1, 4, 14));
+        var corePos = corner.offset(2, 0, 1);
+        var block = WitcheryBlocks.getRequired("altar").get();
+        for (BlockPos part : BlockPos.betweenClosed(corner, corePos)) placeBlock(helper, player, part, block);
+        var core = altar(helper, corePos);
+        level.setBlockAndUpdate(corePos.above(), WitcheryBlocks.getRequired("infinityegg").get().defaultBlockState());
+        level.setBlockAndUpdate(corePos.south(3).below(), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(corePos.south(3), Blocks.DRAGON_EGG.defaultBlockState());
+        var brazierPos = corePos.east(32);
+        var ballPos = corePos.east(31);
+        var outside = corePos.east(33);
+        var ball = placeCrystalBall(helper, ballPos);
+        var distantBall = placeCrystalBall(helper, outside);
+        var brazierBlock = WitcheryBlocks.getRequired("brazier").get();
+        level.setBlockAndUpdate(brazierPos, brazierBlock.defaultBlockState());
+        var brazier = (BrazierBlockEntity) level.getBlockEntity(brazierPos);
+        for (var ingredient : BrazierRecipe.MIST.ingredients()) {
+            useBlock(player, brazierPos, new ItemStack(ingredient));
+        }
+        useBlock(player, brazierPos, new ItemStack(Items.FLINT_AND_STEEL));
+        tickBrazier(helper, brazier);
+        Predictions.attune(player);
+        useBlock(player, ballPos, ItemStack.EMPTY);
+        helper.assertTrue(ball.ready(level.getGameTime()) && brazier.saveWithoutMetadata().getLong("CookTime") == 0,
+                "The unmodified altar cannot power the two blocks at this distance");
+
+        useArtifact(helper, player, corner, new ItemStack(WitcheryItems.getRequired("arthana").get()));
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(core.isInRange(brazierPos),
+                "The mounted blade extends the altar's reach to 32 blocks")).thenExecute(() -> {
+            // The fixture supplies stored charge so the check does not wait for the altar to refill.
+            var charged = core.saveWithoutMetadata();
+            charged.putFloat("Power", 1_000);
+            core.load(charged);
+            useBlock(player, outside, ItemStack.EMPTY);
+            helper.assertTrue(distantBall.ready(level.getGameTime()) && core.power() == 1_000,
+                    "A Crystal Ball 33 blocks away cannot draw power");
+            useBlock(player, ballPos, ItemStack.EMPTY);
+            helper.assertTrue(!ball.ready(level.getGameTime()) && core.power() == 500,
+                    "A trained reader starts the cooldown and draws 500 power from the extended altar");
+        }).thenWaitUntil(() -> helper.assertTrue(brazier.saveWithoutMetadata().getLong("CookTime") > 0,
+                "The loaded Brazier begins burning at the 32-block boundary")).thenExecute(() ->
+                level.removeBlock(corner.above(), false)
+        ).thenWaitUntil(() -> helper.assertTrue(!core.isInRange(brazierPos), "The altar rescans the removed blade"))
+                .thenExecute(() -> {
+                    long progress = brazier.saveWithoutMetadata().getLong("CookTime");
+                    tickBrazier(helper, brazier);
+                    var paused = brazier.saveWithoutMetadata();
+                    helper.assertTrue(paused.getLong("CookTime") == progress && paused.getInt("PowerLevel") == 0,
+                            "The Brazier stops drawing from its cached altar as soon as range shrinks");
+                }).thenSucceed();
+    }
+
+    private static CrystalBallBlockEntity placeCrystalBall(GameTestHelper helper, BlockPos pos) {
+        var level = helper.getLevel();
+        level.setBlockAndUpdate(pos.below(), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(pos, WitcheryBlocks.getRequired("crystalball").get().defaultBlockState());
+        var ball = (CrystalBallBlockEntity) level.getBlockEntity(pos);
+        ball.readAt(level.getGameTime() - 101);
+        return ball;
+    }
+
+    private static void useBlock(FakePlayer player, BlockPos pos, ItemStack stack) {
+        player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+        player.level().getBlockState(pos).use(player.level(), player, InteractionHand.MAIN_HAND, hit(pos));
+    }
+
+    private static void tickBrazier(GameTestHelper helper, BrazierBlockEntity brazier) {
+        BrazierBlockEntity.serverTick(helper.getLevel(), brazier.getBlockPos(), brazier.getBlockState(), brazier);
+    }
+
     private static void placeNature(GameTestHelper helper) {
         BlockPos pos = CORNER.west(2);
         helper.setBlock(pos.below(), Blocks.STONE);
@@ -124,8 +203,11 @@ public final class AltarCoreTests {
 
     private static UseOnContext context(FakePlayer player, BlockPos support, ItemStack item) {
         player.setItemInHand(InteractionHand.MAIN_HAND, item);
-        var hit = new BlockHitResult(Vec3.atCenterOf(support).add(0, 0.5, 0), Direction.UP, support, false);
-        return new UseOnContext(player, InteractionHand.MAIN_HAND, hit);
+        return new UseOnContext(player, InteractionHand.MAIN_HAND, hit(support));
+    }
+
+    private static BlockHitResult hit(BlockPos support) {
+        return new BlockHitResult(Vec3.atCenterOf(support).add(0, 0.5, 0), Direction.UP, support, false);
     }
 
     private static AltarBlockEntity altar(GameTestHelper helper, BlockPos pos) {

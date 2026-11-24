@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Set;
 
 public final class ProtectionRites {
-    public static final int ALTAR_RANGE = 16;
     private static final int BARRIER_PULSE = 20;
     private static final int BARRIER_LIFETIME = 30;
     private static final int PORTABLE_EXPIRY_TICK = 59 * BARRIER_PULSE;
@@ -103,8 +102,9 @@ public final class ProtectionRites {
         }
 
         private boolean consumePower(ServerLevel level, BlockPos heart) {
-            if (powerSource == null || powerSource.isRemoved() || level.random.nextInt(5) == 0 || !powerSource.isCore(level)) {
-                powerSource = AltarPower.nearest(level, heart, ALTAR_RANGE);
+            if (powerSource == null || powerSource.isRemoved() || !powerSource.isInRange(heart)
+                    || level.random.nextInt(5) == 0 || !powerSource.isCore(level)) {
+                powerSource = AltarPower.nearest(level, heart);
             }
             return powerSource != null && powerSource.consumePower(kind.power);
         }

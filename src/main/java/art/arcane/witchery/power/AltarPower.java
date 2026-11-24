@@ -9,18 +9,12 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import org.jetbrains.annotations.Nullable;
 
 public final class AltarPower {
-    private static final int RANGE = AltarBlockEntity.MAX_RANGE;
-
     private AltarPower() {
     }
 
     @Nullable
     public static AltarBlockEntity nearest(ServerLevel level, BlockPos pos) {
-        return nearest(level, pos, RANGE);
-    }
-
-    @Nullable
-    public static AltarBlockEntity nearest(ServerLevel level, BlockPos pos, int range) {
+        int range = AltarBlockEntity.MAX_RANGE;
         AltarBlockEntity closest = null;
         double nearestDistance = range * range;
         for (int x = SectionPos.blockToSectionCoord(pos.getX() - range); x <= SectionPos.blockToSectionCoord(pos.getX() + range); x++) {

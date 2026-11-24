@@ -31,7 +31,6 @@ import java.util.Optional;
 
 public final class BrazierBlockEntity extends BlockEntity {
     private static final int INGREDIENT_SLOTS = 3;
-    private static final int ALTAR_RANGE = 16;
     private final ItemStackHandler ingredients = new ItemStackHandler(INGREDIENT_SLOTS) {
         @Override
         public int getSlotLimit(int slot) {
@@ -109,8 +108,8 @@ public final class BrazierBlockEntity extends BlockEntity {
 
     private boolean drawAltarPower(ServerLevel level, BlockPos pos) {
         long now = level.getGameTime();
-        if (now >= nextAltarSearch || altar != null && (altar.isRemoved() || !altar.isCore(level))) {
-            altar = AltarPower.nearest(level, pos, ALTAR_RANGE);
+        if (now >= nextAltarSearch || altar != null && (altar.isRemoved() || !altar.isInRange(pos) || !altar.isCore(level))) {
+            altar = AltarPower.nearest(level, pos);
             nextAltarSearch = now + 100;
         }
         return altar != null && altar.consumePower(1);

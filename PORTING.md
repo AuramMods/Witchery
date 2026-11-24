@@ -115,6 +115,7 @@
 - [x] Import a charged original altar across a chunk boundary and run a Golden Chalk cast exactly 32 blocks from its saved core after restart. Removing Arthana leaves the next cast waiting. A second restart preserves the broken altar's empty charge. Data generation, JAR reobfuscation, and all 56 required GameTests passed.
 - [x] Verify shared altar capacity caps for legacy wood, soil, and plant variants. Bark-only wood shares its original log limit, carved pumpkins share the pumpkin limit, and flattened mushroom stems count toward the unused red and brown mushroom slots. Original tall flowers and Nether Wart stay outside the scan's eligible crop and flower groups.
 - [x] Match the original Forge server's measured 904 and 280 capacity in the imported wood and garden fixtures. Force a fresh scan on the packaged server. Removing the saplings reduces the first capacity to 824. Replacing the giant mushroom blocks with 26 stems sets the second to 238. Both values survived another headless restart.
+- [x] Use the original inclusive 16-block base and 32-block Arthana ranges for the Brazier, Crystal Ball, and powered rites. Check that wards and the Brazier release cached sources that fall out of range. All 160 checked-in Forge GameTests passed, including a focused barrier and Infusion Recharging beyond the base range.
 
 ## Mirror Milestone (2026-11-19)
 
@@ -499,7 +500,7 @@
 
 ## Protection, Imprisonment and Barrier Rites (2026-11-21)
 
-- [x] Restore the original Feather and Redstone offerings for Protection and Slimeball and Redstone for Imprisonment. Both use a small white ring and 500 initial altar power, then draw 0.8 power per tick from a source within 16 blocks of the Heart Glyph.
+- [x] Restore the original Feather and Redstone offerings for Protection and Slimeball and Redstone for Imprisonment. Both use a small white ring and 500 initial altar power, then draw 0.8 power per tick from an altar in range of the Heart Glyph.
 - [x] Restore the focused, greater, and portable barrier recipes. The powered versions accept a same-dimension Bound Waystone. The portable version uses a Charged Attuned Stone and runs for about a minute.
 - [x] Draw the original circular walls and horizontal caps with 30-tick barrier blocks. Survival players can pass through the focused wall, and it stops creatures. Greater and portable walls block both. All three preserve solid terrain and containers.
 - [x] Save the active wards and their target and timers. Import concurrent 1.7.10 protection wards from `Rituals`, `RitualStages`, `RitualCovens`, and `Locations`, including permanent wards saved at stage zero.
@@ -542,7 +543,7 @@
 ## Portable Volcano and Cooking Rites (2026-11-21)
 
 - [x] Restore the portable volcano with Stone, Magma Cream, an unworn Golden Sword, and a Charged Attuned Stone in the small Infernal ring. Erupt locally without altar power or a Waystone and keep the original lava reservoir requirement and staged cone.
-- [x] Keep the local eruption's progress across saves and import legacy rite ID 13. A dry site refunds Stone, Magma Cream, and the sword and returns a discharged Attuned Stone. The powered rite still accepts a Bound Waystone and draws its power from an altar within the original 16 blocks.
+- [x] Keep the local eruption's progress across saves and import legacy rite ID 13. A dry site refunds Stone, Magma Cream, and the sword and returns a discharged Attuned Stone. The powered rite still accepts a Bound Waystone and draws its power from an altar in range of the glyph.
 - [x] Restore the two small Infernal cooking rites. The powered recipe takes Blaze Rod, Wood Ash, Coal, and 1,000 power. The portable recipe takes a Charged Attuned Stone, Blaze Rod, Wood Ash, and Blaze Powder and discharges its stone.
 - [x] Cook loose food within five blocks on the chalk's level. Use edible outputs from smelting recipes, including Cooked Odd Porkchop. Apply the original per-item 8% or 16% burn rate and return one Charcoal per burnt item. Keep smeltable ores, food outside range, and food whose output is rejected by Forge.
 - [x] Add Circle Magic pages with the offerings, site and optional Waystone for the appropriate volcano recipes, and the two cooking burn rates. Refund cooking ingredients when there is no eligible food after the powered rite's altar payment.
@@ -553,7 +554,7 @@
 ## Area Curses and Rain of Toads (2026-11-21)
 
 - [x] Restore Blight and Blindness with their original Infernal rings, offerings, five-tick wave and coven-scaled radius. Blight causes Nausea II, withers crops, and can harm or transform animals and villagers. An active cat extends Blindness from two to five minutes. Voodoo Protection can stop the wave.
-- [x] Restore Hell on Earth at night in the Overworld. Charge 5,000 altar power after the villager offering. A location-bound Waystone redirects the netherrack wave and the Nether creature summons. The upkeep altar must be within 16 blocks of the target and pay 200 power every two seconds. The server can disable the fires from an active cat familiar.
+- [x] Restore Hell on Earth at night in the Overworld. Charge 5,000 altar power after the villager offering. A location-bound Waystone redirects the netherrack wave and the Nether creature summons. An altar in range of the target pays 200 power every two seconds. The server can disable the fires from an active cat familiar.
 - [x] Restore Rain of Toads with a medium Infernal ring and at least one coven witch. A cast without a coven returns the other offerings and discharges the Attuned Stone. A successful cast begins with four lightning pulses, sets rain when the weather is clear, then showers short-lived poisonous toads.
 - [x] Save expanding stages, targets and eligible initiators. Migrate legacy rites 37–39 and 66, including unsigned stages for Hell on Earth and Rain of Toads. Keep the first four Rain of Toads phases and their staged offerings pending until the first shower.
 - [x] Cast all four rites with the muted survival client on packaged Forge. Blight withered wheat and applied Nausea II. The cat-enhanced Blindness lasted five minutes for the cow on the perimeter and left the inner cow unaffected. Hell on Earth sacrificed its villager, charged the source altar, spawned creatures at the bound destination, and stopped when the destination altar was removed.

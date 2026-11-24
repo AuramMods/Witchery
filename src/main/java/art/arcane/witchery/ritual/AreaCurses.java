@@ -136,7 +136,7 @@ final class AreaCurses {
                     pos -> alterSurface(level, pos, radius, true, enhanced, caster));
         }
         if (radius >= maxRadius && stage <= 250 && (stage - 1) % 8 == 0) {
-            var altar = AltarPower.nearest(level, target, ProtectionRites.ALTAR_RANGE);
+            var altar = AltarPower.nearest(level, target);
             if (altar == null || !altar.consumePower(200)) return false;
             spawnNetherCreature(level, target.above(2));
         }

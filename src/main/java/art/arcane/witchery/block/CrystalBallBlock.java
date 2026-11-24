@@ -110,7 +110,7 @@ public final class CrystalBallBlock extends BaseEntityBlock {
 
     private static boolean consumePower(ServerLevel level, BlockPos pos, ServerPlayer reader) {
         var altar = AltarPower.nearest(level, pos);
-        if (altar != null && altar.getBlockPos().distSqr(pos) <= 16 * 16 && altar.consumePower(500)) return true;
+        if (altar != null && altar.consumePower(500)) return true;
         failure(reader, "nopower");
         return false;
     }

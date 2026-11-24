@@ -239,13 +239,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         boolean sacrificesFirst = action == ItemRiteRecipe.Action.SUMMON_WITHER;
         boolean newSummoning = action == ItemRiteRecipe.Action.SUMMON_WITHER
                 || action == ItemRiteRecipe.Action.SUMMON_WITCH || action == ItemRiteRecipe.Action.SUMMON_SPECTRAL_FAMILIAR;
-        AltarBlockEntity altar = null;
-        if (rite.power() > 0) {
-            altar = protectionKind != null || action == ItemRiteRecipe.Action.BANISH_DEMON || newSummoning
-                    || action == ItemRiteRecipe.Action.FERTILITY || action == ItemRiteRecipe.Action.CALL_BEASTS
-                    || action.directedCurse() != null || action.isVolcano() || action.cooksFood() || hellOnEarth
-                    ? AltarPower.nearest(level, pos, ProtectionRites.ALTAR_RANGE) : AltarPower.nearest(level, pos);
-        }
+        AltarBlockEntity altar = rite.power() > 0 ? AltarPower.nearest(level, pos) : null;
         boolean missingPower = rite.power() > 0 && (altar == null || altar.power() < rite.power());
         if (missingPower && !sacrificesFirst) {
             abort(level, "message.witchery.rite.missing_power");
