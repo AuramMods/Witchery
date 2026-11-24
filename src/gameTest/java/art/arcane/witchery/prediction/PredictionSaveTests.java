@@ -3,14 +3,19 @@ package art.arcane.witchery.prediction;
 import art.arcane.witchery.Witchery;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
@@ -20,6 +25,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -135,6 +141,87 @@ public final class PredictionSaveTests {
                     "The Wet forecast fills exactly two layers with water sources");
         }
         helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void buriedTreasureFillsACoveredAirPocket(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var surface = prepareSoil(helper);
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "ForecastTreasure"));
+        var entries = store(player, forecast(8, 1_000L));
+        var chestPos = surface.below();
+        level.setBlockAndUpdate(surface, Blocks.AIR.defaultBlockState());
+        level.setBlockAndUpdate(chestPos, Blocks.AIR.defaultBlockState());
+        var drops = new ArrayList<>(List.of(new ItemStack(Items.DIRT)));
+
+        harvestForTreasure(player, surface, drops);
+
+        helper.assertTrue(entries.isEmpty() && level.getBlockEntity(chestPos) instanceof ChestBlockEntity,
+                "The buried chest appears in the covered air pocket and clears the forecast");
+        var data = level.getBlockEntity(chestPos).saveWithoutMetadata();
+        var contents = data.getList("Items", Tag.TAG_COMPOUND);
+        var originalLoot = Set.of("minecraft:iron_ingot", "minecraft:gold_ingot", "minecraft:redstone",
+                "minecraft:lapis_lazuli", "minecraft:diamond", "minecraft:coal", "minecraft:bread",
+                "minecraft:iron_pickaxe", "minecraft:rail", "minecraft:melon_seeds", "minecraft:pumpkin_seeds",
+                "minecraft:saddle", "minecraft:iron_horse_armor", "minecraft:enchanted_book");
+        helper.assertTrue(!data.contains("LootTable") && !contents.isEmpty() && contents.size() <= 6
+                        && contents.stream().allMatch(tag -> originalLoot.contains(((CompoundTag) tag).getString("id"))),
+                "The chest immediately saves loot from the original mineshaft pool");
+        helper.assertTrue(drops.size() == 1 && drops.get(0).is(Items.DIRT), "The dirt harvest keeps its normal drop");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void buriedTreasureKeepsItsReadingWhenTheSiteIsOpenOrProtected(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var surface = prepareSoil(helper);
+        var chestPos = surface.below();
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "ProtectedTreasure"));
+        var entries = store(player, forecast(8, 1_000L));
+        level.setBlockAndUpdate(surface, Blocks.AIR.defaultBlockState());
+        BlockPos wall = chestPos.relative(Direction.EAST);
+        level.setBlockAndUpdate(wall, Blocks.AIR.defaultBlockState());
+        harvestForTreasure(player, surface, List.of());
+        helper.assertTrue(entries.size() == 1 && level.getBlockState(chestPos).is(Blocks.STONE),
+                "An exposed site leaves the forecast active");
+        level.setBlockAndUpdate(wall, Blocks.STONE.defaultBlockState());
+
+        Consumer<BlockEvent.BreakEvent> denyBreak = event -> {
+            if (event.getPlayer() == player && event.getPos().equals(chestPos)) event.setCanceled(true);
+        };
+        MinecraftForge.EVENT_BUS.addListener(denyBreak);
+        try {
+            harvestForTreasure(player, surface, List.of());
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(denyBreak);
+        }
+        helper.assertTrue(entries.size() == 1 && level.getBlockState(chestPos).is(Blocks.STONE),
+                "A Forge break veto preserves the site and the forecast");
+
+        Consumer<BlockEvent.EntityPlaceEvent> denyChest = event -> {
+            if (event.getEntity() == player && event.getPos().equals(chestPos)
+                    && event.getPlacedBlock().is(Blocks.CHEST)) event.setCanceled(true);
+        };
+        MinecraftForge.EVENT_BUS.addListener(denyChest);
+        try {
+            harvestForTreasure(player, surface, List.of());
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(denyChest);
+        }
+        helper.assertTrue(entries.size() == 1 && level.getBlockState(chestPos).is(Blocks.STONE)
+                        && level.getBlockEntity(chestPos) == null,
+                "A Forge chest placement veto restores the site, with no chest or spent forecast");
+
+        level.setBlockAndUpdate(chestPos, Blocks.WATER.defaultBlockState());
+        harvestForTreasure(player, surface, List.of());
+        helper.assertTrue(entries.isEmpty() && level.getBlockEntity(chestPos) instanceof ChestBlockEntity,
+                "The same forecast fulfills in a covered water pocket");
+        helper.succeed();
+    }
+
+    private static void harvestForTreasure(FakePlayer player, BlockPos pos, List<ItemStack> drops) {
+        player.serverLevel().getRandom().setSeed(5120);
+        Predictions.onHarvest(player, pos, Blocks.DIRT.defaultBlockState(), drops);
     }
 
     private static BlockPos prepareSoil(GameTestHelper helper) {

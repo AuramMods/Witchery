@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Original Buried Treasure (2026-11-24)
+
+- Dirt, grass, mycelium and sand harvests can place a treasure chest one block down in a covered air, water or ordinary solid cell. A Forge break or place veto leaves the site and saved reading intact. The chest fills immediately from the old Forge mineshaft pool. All fourteen entries, their weights and counts, and three to six rolls match the reference. A level-30 book uses the current enchantment registry.
+- The packaged survival client loaded forecast ID 8 from a disposable save and used a shovel to break the fixture's dirt above the pocket. The fifth harvest produced two Pumpkin Seeds, four Redstone and three Coal. The player opened the chest through its normal menu. A dedicated restart retained the exact item counts and slot positions, and the saved forecast remained cleared.
+- Both added regressions failed on the preceding code. Local Java 17 data generation, reobfuscation, all 187 required Forge GameTests and the asset inventory audit passed. Both packaged installations used SHA-256 `9a27b2ecf520b8b355c655d6c55c1ef94884c79f2e1f6f02200f0c7c677d526f`. The client used zero master volume and OpenAL No Output and stayed unfocused. Logs and fixtures are in `build/qa-buried-treasure`.
+
 ## Forced Fall and Wet Forecasts (2026-11-24)
 
 - Both forecasts accept farmland as legacy ground material and can act while the player is airborne within the surveyed block. A grounded forecast uses the supporting block's height to account for modern farmland's shorter collision shape. The legacy minimum heights are measured from the dimension floor. Forced Wet still excludes ultra-warm dimensions.

@@ -1,7 +1,10 @@
 package art.arcane.witchery.prediction;
 
+import art.arcane.witchery.Witchery;
+import art.arcane.witchery.brewing.BrewTerrain;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
@@ -10,11 +13,17 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
 final class MiningPredictions {
+    private static final ResourceLocation TREASURE_LOOT =
+            ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "chests/mineshaft_corridor");
+
     private MiningPredictions() {}
 
     static boolean addOre(Predictions.Kind kind, RandomSource random, BlockState state, List<ItemStack> drops,
@@ -46,18 +55,25 @@ final class MiningPredictions {
 
         ServerLevel level = player.serverLevel();
         BlockPos below = pos.below();
-        BlockState ground = level.getBlockState(below);
-        if (pos.getY() <= level.getMinBuildHeight() + 6 || ground.isAir() || ground.hasBlockEntity()
-                || !ground.getFluidState().isEmpty() || ground.getDestroySpeed(level, below) < 0
-                || !level.mayInteract(player, below) || level.isEmptyBlock(below.below())) return false;
+        if (pos.getY() <= level.getMinBuildHeight() + 6 || BrewTerrain.isProtectedTerrain(level.getBlockState(below))
+                || level.isEmptyBlock(below.below())) return false;
         for (Direction side : Direction.Plane.HORIZONTAL) {
             if (level.isEmptyBlock(below.relative(side))) return false;
         }
-        if (level.getRandom().nextDouble() >= chance || !level.setBlockAndUpdate(below, Blocks.CHEST.defaultBlockState())) return false;
-        if (level.getBlockEntity(below) instanceof ChestBlockEntity chest) {
-            chest.setLootTable(BuiltInLootTables.ABANDONED_MINESHAFT, level.getRandom().nextLong());
-            chest.setChanged();
+        RandomSource random = level.getRandom();
+        if (random.nextDouble() >= chance || !BrewTerrain.placeGroup(level, player, Direction.UP,
+                () -> level.setBlockAndUpdate(below, Blocks.CHEST.defaultBlockState())
+                        && level.getBlockEntity(below) instanceof ChestBlockEntity)
+                || !(level.getBlockEntity(below) instanceof ChestBlockEntity chest)) return false;
+
+        var params = new LootParams.Builder(level).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(below))
+                .create(LootContextParamSets.CHEST);
+        var loot = level.getServer().getLootData().getLootTable(TREASURE_LOOT);
+        // Legacy mineshaft loot chose a slot on every roll, including already occupied slots.
+        for (ItemStack stack : loot.getRandomItems(params, random.nextLong())) {
+            chest.setItem(random.nextInt(chest.getContainerSize()), stack);
         }
+        chest.setChanged();
         return true;
     }
 }

@@ -1165,7 +1165,9 @@ Prediction ticks and Crystal Ball readings remove IDs outside the registry. If a
 
 Fall and Wet can force their original three-by-three gravel roof over dirt or farmland. Airborne players use the original block below their feet. Grounded players use the supporting block's height, including the shorter modern farmland surface. Fall clears five layers, and Wet places two layers of water sources outside ultra-warm dimensions. The original minimum heights are relative to the dimension floor. The roof honors Forge group protection, and individual protected blocks below it remain in place.
 
-Mining predictions extend Forge block loot after the harvest. Deepslate and its matching ores extend the legacy stone rules. The treasure prediction places a chest with `minecraft:chests/abandoned_mineshaft`, the modern counterpart of `mineshaftCorridor`.
+Mining predictions extend Forge block loot after the harvest. Deepslate and its matching ores extend the legacy stone rules. Buried Treasure places the chest one block below the harvest if all four sides and the bottom are covered. The center can be air or water. Forge protection and protected terrain can prevent placement and leave the forecast active.
+
+Buried Treasure fills the chest immediately with `witchery:chests/mineshaft_corridor`. The table restores the `mineshaftCorridor` hook's three to six rolls, weighted items, count ranges, and level-30 book roll. Slot selection can overwrite an earlier roll, as it did in 1.7.10. The enchantment roll uses the current vanilla enchantment registry. Datapacks can replace the table. Previously placed chests keep their contents or their saved loot table. [Forge 1.7.10 ChestGenHooks](https://raw.githubusercontent.com/MinecraftForge/MinecraftForge/1.7.10/src/main/java/net/minecraftforge/common/ChestGenHooks.java)
 
 ## Creature Power Registry
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/WitcheryRecipes.java`
