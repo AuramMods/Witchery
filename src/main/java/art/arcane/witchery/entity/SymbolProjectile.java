@@ -46,10 +46,12 @@ import org.joml.Vector3f;
 import java.util.function.Consumer;
 
 public final class SymbolProjectile extends ThrowableProjectile {
+    private static final int MAX_FLIGHT_TICKS = 200;
     private static final EntityDataAccessor<Integer> SPELL = SynchedEntityData.defineId(SymbolProjectile.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Vector3f> ACCELERATION = SynchedEntityData.defineId(SymbolProjectile.class, EntityDataSerializers.VECTOR3);
     private static final EntityDataAccessor<Integer> EFFECT_LEVEL = SynchedEntityData.defineId(SymbolProjectile.class, EntityDataSerializers.INT);
     private int age;
+    private int ticksUntilImpact = -1;
 
     public SymbolProjectile(EntityType<? extends SymbolProjectile> type, Level level) {
         super(type, level);
@@ -72,6 +74,7 @@ public final class SymbolProjectile extends ThrowableProjectile {
         moveTo(origin.x, origin.y, origin.z, owner.getYRot(), owner.getXRot());
         entityData.set(SPELL, spell.id());
         entityData.set(ACCELERATION, direction.normalize().scale(0.3).toVector3f());
+        if (spell == SymbolSpell.MORSMORDRE) ticksUntilImpact = spell.lifetime();
     }
 
     @Override
@@ -94,23 +97,33 @@ public final class SymbolProjectile extends ThrowableProjectile {
             return;
         }
         age++;
+        Vec3 start = position();
         Vec3 velocity = getDeltaMovement();
         boolean inWater = isInWater();
         super.tick();
         if (isRemoved()) return;
 
+        if (level() instanceof ServerLevel server) {
+            if (ticksUntilImpact > 0 && --ticksUntilImpact == 0) {
+                impact(server, spell, null, start);
+                discard();
+                return;
+            }
+            if (age >= MAX_FLIGHT_TICKS || spell.lifetime() == 0) {
+                discard();
+                return;
+            }
+        }
+
         Vec3 acceleration = new Vec3(entityData.get(ACCELERATION));
         if (spell.falls() && effectLevel() == 1) {
-            setDeltaMovement(velocity.add(acceleration.scale(Math.pow(0.8, age))).add(0, -0.05, 0));
+            Vec3 decayed = acceleration.scale(0.8);
+            if (!level().isClientSide) entityData.set(ACCELERATION, decayed.toVector3f());
+            setDeltaMovement(velocity.add(decayed).add(0, -0.05, 0));
         } else {
             setDeltaMovement(velocity.add(acceleration).scale(inWater ? 0.8 : 0.95));
         }
-        if (level() instanceof ServerLevel server) {
-            if (age >= spell.lifetime()) {
-                if (spell == SymbolSpell.MORSMORDRE) impact(server, spell, null);
-                discard();
-            }
-        } else {
+        if (level().isClientSide) {
             boolean curse = spell.isCurse();
             level().addParticle(curse ? ParticleTypes.ENTITY_EFFECT : ParticleTypes.ITEM_SLIME,
                     getX(), getY() + 0.5, getZ(), 0, 0, 0);
@@ -122,15 +135,14 @@ public final class SymbolProjectile extends ThrowableProjectile {
     protected void onHit(HitResult hit) {
         SymbolSpell spell = spell();
         if (level() instanceof ServerLevel server && spell != null) {
-            impact(server, spell, hit);
+            // Vanilla's collision callback runs before the projectile advances.
+            impact(server, spell, hit, position());
             discard();
         }
     }
 
-    private void impact(ServerLevel level, SymbolSpell spell, @Nullable HitResult hit) {
+    private void impact(ServerLevel level, SymbolSpell spell, @Nullable HitResult hit, Vec3 center) {
         int effectLevel = effectLevel();
-        // The collision callback runs before the projectile advances, as it did in 1.7.10.
-        Vec3 center = position();
         LivingEntity direct = hit instanceof EntityHitResult entityHit && entityHit.getEntity() instanceof LivingEntity living
                 ? living : null;
         boolean curse = spell.isCurse();
@@ -319,7 +331,9 @@ public final class SymbolProjectile extends ThrowableProjectile {
         super.addAdditionalSaveData(tag);
         tag.putInt("EffectID", entityData.get(SPELL));
         tag.putInt("Age", age);
+        tag.putInt("lifetime", ticksUntilImpact);
         tag.putInt("effectLevel", effectLevel());
+        tag.putBoolean("CurrentAcceleration", true);
         Vector3f acceleration = entityData.get(ACCELERATION);
         tag.putFloat("AccelerationX", acceleration.x);
         tag.putFloat("AccelerationY", acceleration.y);
@@ -330,16 +344,27 @@ public final class SymbolProjectile extends ThrowableProjectile {
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         entityData.set(SPELL, tag.getInt("EffectID"));
-        age = tag.getInt("Age");
+        age = Math.max(0, tag.getInt("Age"));
         entityData.set(EFFECT_LEVEL, Mth.clamp(tag.getInt("effectLevel"), 1, 3));
-        entityData.set(ACCELERATION, new Vector3f(tag.getFloat("AccelerationX"),
-                tag.getFloat("AccelerationY"), tag.getFloat("AccelerationZ")));
+        SymbolSpell spell = spell();
+        Vec3 acceleration = new Vec3(tag.getFloat("AccelerationX"), tag.getFloat("AccelerationY"), tag.getFloat("AccelerationZ"));
+        // Earlier 1.20.1 saves wrote the launch acceleration and computed decay from total age.
+        if (!tag.getBoolean("CurrentAcceleration") && spell != null && spell.falls() && effectLevel() == 1) {
+            acceleration = acceleration.scale(Math.pow(0.8, age));
+        }
+        entityData.set(ACCELERATION, acceleration.toVector3f());
+
         ListTag direction = tag.getList("direction", Tag.TAG_DOUBLE);
         if (direction.size() == 3) {
             setDeltaMovement(direction.getDouble(0), direction.getDouble(1), direction.getDouble(2));
-            if (spell() == SymbolSpell.MORSMORDRE && tag.contains("lifetime", Tag.TAG_ANY_NUMERIC)) {
-                age = Math.max(0, SymbolSpell.MORSMORDRE.lifetime() - tag.getInt("lifetime"));
-            }
+            setNoGravity(true);
+        }
+        ticksUntilImpact = -1;
+        if (tag.contains("lifetime", Tag.TAG_ANY_NUMERIC)) {
+            int remaining = tag.getInt("lifetime");
+            if (remaining != -1) ticksUntilImpact = Math.max(1, remaining);
+        } else if (direction.isEmpty() && spell == SymbolSpell.MORSMORDRE) {
+            ticksUntilImpact = Math.max(1, spell.lifetime() - age);
         }
     }
 }

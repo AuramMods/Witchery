@@ -14,6 +14,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.DoubleTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -124,6 +126,110 @@ public final class SymbolSpellTests {
                     "Cave Inimicum keeps its caster when hit with a Mystic Branch");
             helper.assertTrue(other.hurt(hit, 1) && other.getOwner() == defender,
                     "The Branch still deflects other Mystic Branch projectiles");
+            helper.succeed();
+        } finally {
+            caster.discard();
+            defender.discard();
+        }
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void morsmordreResumesItsCountdownAtTheOriginalImpactCenter(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var origin = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(2, 16, 4)));
+        var caster = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "MorsmordreCaster"));
+        var original = new CompoundTag();
+        original.putInt("EffectID", SymbolSpell.MORSMORDRE.id());
+        original.putInt("effectLevel", 1);
+        original.putInt("lifetime", 2);
+        var direction = new ListTag();
+        direction.add(DoubleTag.valueOf(1));
+        direction.add(DoubleTag.valueOf(0));
+        direction.add(DoubleTag.valueOf(0));
+        original.put("direction", direction);
+
+        var fresh = new SymbolProjectile(level, caster, SymbolSpell.MORSMORDRE, origin.add(0, 0, 3), new Vec3(1, 0, 0));
+        for (int tick = 0; tick < 6; tick++) fresh.tick();
+        var modern = fresh.saveWithoutId(new CompoundTag());
+        var previousPort = modern.copy();
+        previousPort.remove("lifetime");
+        previousPort.remove("CurrentAcceleration");
+        var priorOrigin = fresh.position().add(0, 0, 3);
+
+        var marks = new ArrayList<DarkMark>();
+        Consumer<EntityJoinLevelEvent> recordMark = event -> {
+            if (event.getLevel() == level && event.getEntity() instanceof DarkMark mark) marks.add(mark);
+        };
+        MinecraftForge.EVENT_BUS.addListener(recordMark);
+        try {
+            var imported = WitcheryEntities.SYMBOL_PROJECTILE.get().create(level);
+            imported.load(original);
+            imported.setPos(origin);
+            var restored = WitcheryEntities.SYMBOL_PROJECTILE.get().create(level);
+            restored.load(modern);
+            var previous = WitcheryEntities.SYMBOL_PROJECTILE.get().create(level);
+            previous.load(previousPort);
+            previous.setPos(priorOrigin);
+            var bolts = List.of(imported, restored, previous);
+            bolts.forEach(SymbolProjectile::tick);
+            helper.assertTrue(marks.isEmpty() && bolts.stream().noneMatch(SymbolProjectile::isRemoved)
+                            && imported.position().distanceTo(origin.add(1, 0, 0)) < 1.0E-6,
+                    "All three saves have one tick left and the original direction supplies the imported motion");
+            for (int index = 0; index < bolts.size(); index++) {
+                var bolt = bolts.get(index);
+                Vec3 lastPosition = bolt.position();
+                bolt.tick();
+                helper.assertTrue(bolt.isRemoved() && marks.size() == index + 1
+                                && marks.get(index).position().distanceTo(lastPosition) < 1.0E-6,
+                        "Morsmordre places the Dark Mark before its last movement step");
+            }
+            helper.succeed();
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(recordMark);
+            marks.forEach(DarkMark::discard);
+            caster.discard();
+        }
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void lateDeflectionRestartsFallingSpellAcceleration(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var origin = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(2, 16, 4)));
+        var caster = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "FallingSpellCaster"));
+        var defender = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "FallingSpellDefender"));
+        defender.setYRot(-90);
+        defender.setItemInHand(InteractionHand.MAIN_HAND, WitcheryItems.getRequired("mysticbranch").get().getDefaultInstance());
+
+        try {
+            var straight = new Vec3(1, 0, 0);
+            var old = new SymbolProjectile(level, caster, SymbolSpell.ENNERVATE, origin, straight);
+            for (int tick = 0; tick < 10; tick++) old.tick();
+
+            var previousPort = old.saveWithoutId(new CompoundTag());
+            previousPort.remove("CurrentAcceleration");
+            previousPort.putFloat("AccelerationX", 0.3F);
+            var restored = WitcheryEntities.SYMBOL_PROJECTILE.get().create(level);
+            restored.load(previousPort);
+            old.tick();
+            restored.tick();
+            helper.assertTrue(restored.getDeltaMovement().distanceTo(old.getDeltaMovement()) < 1.0E-6,
+                    "Earlier port saves convert launch acceleration to the current falling acceleration");
+
+            helper.assertTrue(restored.hurt(defender.damageSources().playerAttack(defender), 1),
+                    "The Mystic Branch deflects the older bolt");
+            restored.tick();
+            Vec3 firstMotion = defender.getLookAngle().scale(1.08).add(0, -0.05, 0);
+            helper.assertTrue(restored.getDeltaMovement().distanceTo(firstMotion) < 1.0E-6,
+                    "Deflection starts a new acceleration even after eleven flight ticks");
+
+            var reloaded = WitcheryEntities.SYMBOL_PROJECTILE.get().create(level);
+            reloaded.load(restored.saveWithoutId(new CompoundTag()));
+            restored.tick();
+            reloaded.tick();
+            helper.assertTrue(reloaded.getDeltaMovement().distanceTo(restored.getDeltaMovement()) < 1.0E-6
+                            && reloaded.getDeltaMovement().distanceTo(firstMotion.add(defender.getLookAngle().scale(0.064))
+                            .add(0, -0.05, 0)) < 1.0E-6,
+                    "A saved deflected spell resumes the next decay step without applying the previous flight age");
             helper.succeed();
         } finally {
             caster.discard();

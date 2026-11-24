@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Mystic Branch Countdown and Saved Flight (2026-11-24)
+
+- Morsmordre creates the Dark Mark at the start of its expiry tick, consistent with collision impacts. The original `direction` supplies the saved motion and `lifetime` supplies the remaining countdown. Older 1.20.1 saves without that countdown derive it from `Age`.
+- Deflecting a base Ennervate or Stupefy restores the original 0.1 acceleration in the new direction and decays it from that point. Earlier port saves convert their launch acceleration using the saved age. Protocol 96 updates tracking clients with the decaying acceleration.
+- The preceding packaged server placed the Dark Marks from an original-format chunk entity and an earlier 1.20.1 region record 0.95 blocks past the original center. It also placed a mark from an untimed legacy record. The rebuilt headless server matched both expected centers. An ordinary dedicated restart retained both marks at those coordinates and preserved the still-active untimed spell. Subsequent ticks removed that spell without creating a mark. These are synthetic Anvil region fixtures.
+- The muted clean Forge client drew both gestures with the saved Branch. Morsmordre spent 20 charges and placed the Dark Mark at the expected pre-move position. The dragon cue arrived at the sound packet's one-eighth-block precision. Ennervate spent one charge, and the client tracked the same bolt's acceleration decreasing from 0.3 to 0.24. The fixture supplied the platform and positioning. The client used zero master volume and OpenAL No Output, with no desktop activation for its process.
+- All 174 required Forge GameTests, local Java 17 reobfuscation, and the asset inventory audit passed. The exact package used for the clean Forge client, dedicated server, and migration tests is SHA-256 `5e7461d9732d2b6b9c15c004d23c9bae6910b009e8b1cebde6f70215b53d3bf6`. Logs and fixtures are in `build/qa-symbol-resume`.
+
 ## Mystic Branch Area Effects and Impact Cues (2026-11-24)
 
 - Area spells measure range from the projectile's last position before collision, as in 1.7.10. This covers item retrieval, movement, damage and status areas, and the Dark Mark's spawn point on impact. The physical collision supplies the individual target and struck block face.
