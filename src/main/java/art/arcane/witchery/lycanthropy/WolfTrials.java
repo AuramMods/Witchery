@@ -6,14 +6,18 @@ import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.entity.HornedHuntsman;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcherySounds;
+import art.arcane.witchery.vampirism.BloodFeeding;
 import art.arcane.witchery.vampirism.Vampirism;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
@@ -120,12 +124,13 @@ public final class WolfTrials {
     }
 
     public static void howl(ServerPlayer player) {
-        if (!player.isAlive() || player.isSpectator() || !player.isShiftKeyDown() || player.getXRot() > -89.5F) return;
+        if (!player.isAlive() || player.isSpectator() || !player.isShiftKeyDown() || player.getXRot() > -89.5F
+                || BloodFeeding.paralysis(player, 4)) return;
         var data = WitcheryPlayerDataProvider.get(player).orElse(null);
-        if (data == null) return;
+        if (data == null || data.getSelectedVampirePower() != 0) return;
         ServerLevel world = player.serverLevel();
         if (started(data, 6) && Lycanthropy.isShifted(player) && world.dimensionType().natural() && world.isNight()) {
-            playHowl(world, player);
+            playHowlCue(world, player, WitcherySounds.WOLFMAN_HOWL.get(), 1);
             var chunk = player.chunkPosition();
             if (data.markWolfmanQuestChunk(chunk.x, chunk.z)) advance(data, Trial.NIGHT_HOWLS);
             else tell(player, "chunk_visited");
@@ -138,14 +143,15 @@ public final class WolfTrials {
         boolean paralyze = rank >= 7 && Lycanthropy.isWolfman(player);
         if (!summonPack && !paralyze) return;
         if (!player.isCreative() && data.howlCoolingDown(world.getGameTime())) {
+            playHowlCue(world, player, SoundEvents.NOTE_BLOCK_SNARE.value(), 0.5F);
             tell(player, "howl_cooldown");
             return;
         }
-        playHowl(world, player);
+        playHowlCue(world, player, WitcherySounds.WOLFMAN_HOWL.get(), 1);
         data.markHowled();
         if (summonPack) {
-            int wolves = 2 + world.random.nextInt(rank - 7);
-            for (int member = 0; member < wolves; member++) summonPackWolf(world, player);
+            // The original howl rolls the pack limit again before each spawn attempt.
+            for (int member = 0; member < 2 + world.random.nextInt(rank - 7); member++) summonPackWolf(world, player);
         } else {
             var targets = world.getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(16),
                     target -> target.isAlive() && !Lycanthropy.isWerewolf(target) && !Vampirism.isVampire(target));
@@ -156,21 +162,24 @@ public final class WolfTrials {
         }
     }
 
-    private static void playHowl(ServerLevel world, ServerPlayer player) {
-        world.playSound(null, player, WitcherySounds.WOLFMAN_HOWL.get(), SoundSource.PLAYERS, 1, 1);
+    private static void playHowlCue(ServerLevel world, ServerPlayer player, SoundEvent sound, float volume) {
+        float pitch = 0.4F / (0.8F + (float) world.random.nextDouble() * 0.4F);
+        world.playSound(null, player, sound, SoundSource.PLAYERS, volume, pitch);
     }
 
     private static void summonPackWolf(ServerLevel world, ServerPlayer player) {
-        var at = player.blockPosition().offset(packOffset(world.random), 0, packOffset(world.random)).mutable();
+        var origin = new BlockPos((int) player.getX(), (int) player.getY(), (int) player.getZ());
+        var at = origin.offset(packOffset(world.random), 0, packOffset(world.random)).mutable();
         if (!world.hasChunkAt(at) || !world.getWorldBorder().isWithinBounds(at)) return;
         int top = Math.min(world.getMaxBuildHeight() - 2, at.getY() + 8);
         while (!world.isEmptyBlock(at) && at.getY() < top) at.move(Direction.UP);
-        while (at.getY() > world.getMinBuildHeight() && world.isEmptyBlock(at.below())) at.move(Direction.DOWN);
-        var floor = at.below();
-        if (!world.getBlockState(floor).isFaceSturdy(world, floor, Direction.UP)) return;
+        while (at.getY() > world.getMinBuildHeight() && world.isEmptyBlock(at)) at.move(Direction.DOWN);
+        if (!world.getBlockState(at).isFaceSturdy(world, at, Direction.UP)) return;
+        at.move(Direction.UP);
+        if (!world.isEmptyBlock(at) || !world.isEmptyBlock(at.above())) return;
         Wolf wolf = EntityType.WOLF.create(world);
         if (wolf == null) return;
-        wolf.moveTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5, player.getYRot(), 0);
+        wolf.moveTo(at.getX() + 0.5, at.getY() + 0.05, at.getZ() + 0.5, 0, 0);
         if (!world.noCollision(wolf) || world.containsAnyLiquid(wolf.getBoundingBox())) return;
         wolf.setTame(true);
         wolf.setOwnerUUID(player.getUUID());

@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Original Howl Cues and Pack Spawning (2026-11-24)
+
+- The dedicated howl handler checks paralysis and selected vampire powers as well as the player's pose, form and rank. Successful howls use the original varying pitch. The original snare plays while cooling down, alongside the existing translated action-bar message. Wolf pack size rerolls before each attempt, and spawning needs the original two clear blocks above the floor.
+- The packaged survival client loaded a rank-seven Wolfman, crouched, looked straight up and used the normal interaction. The client received the original howl at pitch 0.411 and its pig target was paralyzed. An immediate repeat received the Note Block Snare at pitch 0.339, left the saved timestamp alone and did not affect the pig. The fixture supplied the rank, form, pig and platform.
+- The next dedicated boot loaded the same timestamp. The fixture set the player to rank-ten Wolf while the server was offline. After the cooldown expired, the same client input summoned two tamed wolves with the player's ownership and Mortal Coil. Both client launches used master volume zero and OpenAL No Output and stayed unfocused.
+- The howl regression reproduced the missing server-side paralysis check. The final sound fixture waits for the pig to be tracked before invoking the handler. All 190 required local Forge GameTests passed, as did JAR reobfuscation and the asset inventory audit. The verified JAR SHA-256 is `d5da9d7f14a8af5bb1f722c073fde58140d520bca0febeaf7dcd9e8d3b9451ec`. Logs are in `build/qa-wolf-howl`.
+
 ## Original Coven Dispenser Loot (2026-11-24)
 
 - New coven circle dispensers and Buried Treasure share the legacy mineshaft loot pool and slot assignment. The dispenser keeps its world-generation seed and rolls at first inventory access through the normal 1.20.1 container lifecycle. The GameTest's seed rolls five times into nine slots and leaves three unsplit stacks because two rolls land in already occupied slots.

@@ -1417,7 +1417,7 @@ Implementation anchors:
   - `item_update` validates the held slot and guide volume. Atlas requests resolve the supplied biome ID against the server's current list and save both `CurrentPage` and `WitcheryBiome`. Network protocol 87 carries the atlas ID.
   - `sync_markup_book` saves the full original `pageStack` trail through the requested unlocked chapter and syncs the learned rank cap.
   - `item_update` records the accepted page in `WitcheryPlayerData` and sends the updated revision.
-  - `howl` checks the player's pose, form, rank and trial status. Successful howls count a new nighttime trial chunk, paralyze nearby targets, or summon a pack according to the original rules.
+  - `howl` checks the player's pose, form, rank, trial status, paralysis, and selected vampire power. A successful howl uses the original varying pitch and counts a new nighttime trial chunk, paralyzes nearby targets, or summons a pack. A blocked repeat plays the original snare alongside the port's action-bar message and keeps the cooldown timestamp. A pack rerolls the limit at each spawn attempt and needs two clear blocks above the floor.
 
 Legacy intent catalog:
 | Legacy ID | Intent Key | Flow |
