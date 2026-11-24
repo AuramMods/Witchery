@@ -159,6 +159,21 @@ public final class LegacyCauldronRitualTests {
     }
 
     @GameTest(template = "qa_coven_arena")
+    public static void readsComparatorEffectsFromAnOriginalPartialCast(GameTestHelper helper) {
+        BlockPos pos = helper.absolutePos(new BlockPos(6, 4, 5));
+        var bowl = placeCauldron(helper, pos, originalRitual(2500, 0, true,
+                oldItem("witchery:ingredient", 22, 1), oldItem("witchery:ingredient", 31, 1),
+                oldItem("minecraft:wheat", 0, 1), oldItem("minecraft:egg", 0, 1)));
+        bowl.load(bowl.saveWithFullMetadata());
+        helper.succeedWhen(() -> {
+            helper.assertTrue(bowl.comparatorSignal() == 15,
+                    "The original-format cast reports full brew capacity while it waits for its final liquid");
+            helper.assertTrue(bowl.saveWithoutMetadata().getBoolean("LegacyRitualPending"),
+                    "Reading the comparator leaves the original trigger in its pending save format");
+        });
+    }
+
+    @GameTest(template = "qa_coven_arena")
     public static void refillsLegacyCastFromItsSavedBrewBucket(GameTestHelper helper) {
         var level = helper.getLevel();
         BlockPos pos = helper.absolutePos(new BlockPos(6, 4, 5));

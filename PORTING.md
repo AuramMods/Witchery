@@ -1193,7 +1193,7 @@
 - [x] Verify two effects in the same brew and their status icons. Glowstone strengthened Wolfsbane while Ender Inhibition remained at its base strength. An Ender Pearl thrown under Ender Inhibition consumed the pearl and left the player in place. In the control throw, clearing the effect restored teleportation. The player's bottling skill survived the restart.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 253 required Forge GameTests. The tests cover solo and mixed brews, the first bottling threshold, named legacy ingredient metadata, splash scaling, Ender Inhibition and the fixed Mutandis recipe.
 - [x] Compare all 184 registered ingredient keys from the running original server. The 169 entries in the modern mixing table match original base altar power and their declared effect-level costs. The remaining 15 keys trigger fixed recipes, including the Witch Hat's 10,000-power Leonard summon.
-- [ ] Restore cauldron comparator readings during active casts. The 0.24.1 boiler reported 15 for a powered Mutandis remainder containing Moonshine. The packaged Forge comparator showed 6 on that cast and 15 on the same brew with the ritual marker clear.
+- [x] Restore cauldron comparator readings during active casts. The rebuilt Forge comparator matches the original signal 15 for a powered Mutandis remainder containing Moonshine. Packaged Forge tests also verify the empty, cold, effectless, unpowered, and spare-capacity readings. The Golden Chalk fixture checks base altar power on a partial cast and circle-adjusted power on a full cast.
 - [ ] Finish the remaining brew actions, modifiers, and castable cauldron rituals.
 
 ## Death and Armor Cauldron Brews (2026-11-21)

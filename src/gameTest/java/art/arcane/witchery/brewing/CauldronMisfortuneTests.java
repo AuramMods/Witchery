@@ -12,6 +12,7 @@ import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.ritual.RitualCircle;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -27,10 +28,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ComparatorBlock;
+import net.minecraft.world.level.block.entity.ComparatorBlockEntity;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -85,6 +90,45 @@ public final class CauldronMisfortuneTests {
                         && bottle.getOrCreateTag().getString("FixedRitual").equals("witchery:golden_chalk"),
                 "The novice bottles the whole saved Golden Chalk cast");
         helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", timeoutTicks = 180)
+    public static void activeCastComparatorUsesTheBrewAndItsAvailablePower(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pos = placeCauldron(helper);
+        var altar = placeAltar(helper);
+        prepareCast(helper, pos, "golden_chalk", WitcheryIngredient.MANDRAKE_ROOT.item().getDefaultInstance(),
+                new ItemStack(Items.GOLD_NUGGET), new ItemStack(Items.WHEAT));
+        setAltarPower(altar, 0);
+        var output = pos.north();
+        level.setBlockAndUpdate(output.below(), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(output, Blocks.COMPARATOR.defaultBlockState().setValue(ComparatorBlock.FACING, Direction.SOUTH));
+        var comparator = (ComparatorBlockEntity) level.getBlockEntity(output);
+        var bowl = cauldron(helper, pos);
+
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(comparator.getOutputSignal() == 9,
+                        "An active Moonshine batch reports missing power"))
+                .thenIdle(25)
+                .thenExecute(() -> {
+                    var stored = altar.saveWithFullMetadata();
+                    stored.putInt("MaxPower", 2050);
+                    stored.putFloat("Power", 2050);
+                    altar.load(stored);
+                })
+                .thenIdle(25)
+                .thenExecute(() -> {
+                    helper.assertTrue(altar.power() == 2050, "The altar holds the base cost between ticks");
+                    helper.assertTrue(comparator.getOutputSignal() == 9, "The full cast still needs its circle-scaled threshold");
+                    var tank = bowl.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
+                    helper.assertTrue(tank.drain(500, IFluidHandler.FluidAction.EXECUTE).getAmount() == 500,
+                            "The active cast retains a 2,500 mB remainder");
+                })
+                .thenWaitUntil(() -> helper.assertTrue(comparator.getOutputSignal() == 15,
+                        "The pending partial cast is powered at base cost and its brew capacity is exhausted"))
+                .thenExecute(() -> level.setBlockAndUpdate(pos.below(), Blocks.AIR.defaultBlockState()))
+                .thenWaitUntil(() -> helper.assertTrue(comparator.getOutputSignal() == 3,
+                        "Cooling the same active cast produces the cold cauldron output"))
+                .thenSucceed();
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_cauldron_misfortune")

@@ -242,10 +242,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         if (canCastWith(trigger)) {
             brewRitual = true;
         } else {
-            var recipes = server.getRecipeManager().getAllRecipesFor(WitcheryRecipes.CAULDRON_RITUAL.get())
-                    .stream().filter(CauldronRitualRecipe::legacy).toList();
-            var priorOfferings = ingredients.subList(0, ingredients.size() - 1);
-            CauldronRitualRecipe recipe = matchingRitual(recipes, priorOfferings, trigger);
+            CauldronRitualRecipe recipe = pendingFixedRecipe(server, trigger);
             if (recipe != null) {
                 ritual = recipe.id();
                 ritualTrigger = trigger.copyWithCount(1);
@@ -260,6 +257,13 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         }
         legacyRitualPending = false;
         publishTankContents();
+    }
+
+    @Nullable
+    private CauldronRitualRecipe pendingFixedRecipe(ServerLevel server, ItemStack trigger) {
+        var recipes = server.getRecipeManager().getAllRecipesFor(WitcheryRecipes.CAULDRON_RITUAL.get())
+                .stream().filter(CauldronRitualRecipe::legacy).toList();
+        return matchingRitual(recipes, ingredients.subList(0, ingredients.size() - 1), trigger);
     }
 
     private void advanceBrewRitual(ServerLevel server, BlockPos pos) {
@@ -602,7 +606,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
     }
 
     private double withdrawalPower(ServerLevel server, int basePower) {
-        return tank.getFluidAmount() == CAPACITY && (ritual != null || brewRitual)
+        return basePower > 0 && tank.getFluidAmount() == CAPACITY && casting()
                 ? basePower * CastCircles.around(server, worldPosition).powerScale() : basePower;
     }
 
@@ -613,10 +617,15 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
     }
 
     @Nullable
-    private CauldronRitualRecipe legacyFixedRecipe() {
+    private CauldronRitualRecipe fixedRecipe() {
         if (ritual == null || level == null) return null;
-        return level.getRecipeManager().byKey(ritual).orElse(null) instanceof CauldronRitualRecipe recipe
-                && recipe.legacy() ? recipe : null;
+        return level.getRecipeManager().byKey(ritual).orElse(null) instanceof CauldronRitualRecipe recipe ? recipe : null;
+    }
+
+    @Nullable
+    private CauldronRitualRecipe legacyFixedRecipe() {
+        var recipe = fixedRecipe();
+        return recipe != null && recipe.legacy() ? recipe : null;
     }
 
     @Nullable
@@ -654,9 +663,12 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         if (!tank.isEmpty()) {
             signal = isBoiling() ? 6 : 3;
             if (isBoiling()) {
-                boolean powered = hasDisplayPower(server);
-                if (!casting() && mixture != null && mixture.used() > 0) {
-                    signal = powered ? (mixture.used() == mixture.capacity() ? 15 : 12) : 9;
+                var trigger = lastIngredient();
+                var recipe = legacyRitualPending && !canCastWith(trigger) ? pendingFixedRecipe(server, trigger) : fixedRecipe();
+                boolean powered = hasDisplayPower(server, recipe);
+                BrewMixture contents = comparatorMixture(recipe);
+                if (contents != null && contents.hasEffects()) {
+                    signal = powered ? (contents.used() == contents.capacity() ? 15 : 12) : 9;
                 }
                 if (powered) sparks = ritualSparkCount(ritualTicks);
             }
@@ -676,17 +688,27 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         return 1 + Mth.clamp(ritual == null ? progress : progress / 10, 0, 5);
     }
 
-    private boolean hasDisplayPower(ServerLevel server) {
-        if (legacyRitualPending || ritualTicks == RITUAL_REFUND) return false;
+    @Nullable
+    private BrewMixture comparatorMixture(@Nullable CauldronRitualRecipe recipe) {
+        if (recipe != null && recipe.legacy()) {
+            return BrewMixture.fixedMixture(legacyRitualPending ? ingredients : fixedOfferings(recipe), brewColor);
+        }
+        return ritual == null ? mixture : null;
+    }
+
+    private boolean hasDisplayPower(ServerLevel server, @Nullable CauldronRitualRecipe recipe) {
+        if (ritualTicks == RITUAL_REFUND || recipe == null
+                && (ritual != null || legacyRitualPending && !canCastWith(lastIngredient()))) return false;
 
         double power;
-        if (ritual != null) {
-            if (!(server.getRecipeManager().byKey(ritual).orElse(null) instanceof CauldronRitualRecipe recipe)) return false;
-            int basePower = recipe.batchPower(ingredients);
-            power = basePower == 0 ? 0 : requiredFixedPower(recipe, basePower, CastCircles.around(server, worldPosition));
+        if (recipe != null) {
+            var offerings = legacyRitualPending ? ingredients.subList(0, ingredients.size() - 1) : ingredients;
+            int basePower = recipe.batchPower(offerings);
+            power = basePower;
+            if (recipe.legacy()) power = withdrawalPower(server, basePower);
+            else if (basePower != 0) power = requiredFixedPower(recipe, basePower, CastCircles.around(server, worldPosition));
         } else if (mixture != null) {
-            power = mixture.power();
-            if (brewRitual && power > 0) power *= CastCircles.around(server, worldPosition).powerScale();
+            power = withdrawalPower(server, mixture.power());
         } else {
             return brewColor != null;
         }

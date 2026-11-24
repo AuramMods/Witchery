@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron Comparator Output During Casts (2026-11-24)
+
+- The original 0.24.1 cauldron reported 15 for a powered 2,500 mB Mutandis cast containing Moonshine. The preceding Forge package emitted 6. The rebuilt comparator uses the ordered cast contents and remaining capacity. Partial casts use the base power threshold and full casts use the circle-adjusted threshold.
+- The packaged clean Forge survival client reopened the earlier save. Its comparator emitted 15 while the remainder boiled, 3 after the fire was removed, and 15 after reheating. The player topped up with the matching Brew Bucket. The cast saved at 3,000 mB with signal 15 one tick into its warmup. After a dedicated restart, it produced six Mutandis and the comparator dropped to 0.
+- An adjacent vanilla comparator in the clean Forge headless fixture also reported 0 for an empty cauldron, 3 for cold water, 6 for boiling water, 9 when the Moonshine cast lacked altar power, and 12 when a powered cast had spare effect capacity.
+- The same JAR repeated the cooling, reheating, and top-up on copied Auram with a named Egg. The comparator emitted 15 on the full cast and 0 after it produced six Mutandis. Both test clients used zero master volume and OpenAL No Output. The focus monitor recorded no foreground changes.
+- Local Java 17 data generation, JAR reobfuscation, and all 241 required Forge GameTests passed. The tests cover the full and partial Golden Chalk power checks and a 2,500 mB original-format cast that retains its saved trigger. The initial run's altar fixture had insufficient capacity to hold its assigned power between ticks. The corrected fixture held the exact 2,050 base power. Logs and the exact JAR are in `build/qa-cauldron-comparator`. Package SHA-256 `2d7904040a8f520662c3e66acd335bc055856d2b927ce7b90b9c9eeb1ba9a26b`.
+
 ## Brew Bucket Top-Ups (2026-11-24)
 
 - The original 0.24.1 cauldron accepted a matching filled Brew Bucket at 2,500 mB and returned the empty Bucket. The preceding Forge package kept the filled bucket and the 2,500 mB remainder. The rebuilt player interaction now pours whatever fits, using the cauldron's existing validation for fluid, color, ordered ingredients and active trigger.

@@ -371,7 +371,7 @@ public final class BrewMixture {
         return tag;
     }
 
-    private static BrewMixture fixedMixture(List<ItemStack> offerings, @Nullable Integer color) {
+    public static BrewMixture fixedMixture(List<ItemStack> offerings, @Nullable Integer color) {
         return new BrewMixture(mix(offerings, true), color != null ? color : BrewColor.fromIngredients(offerings));
     }
 
