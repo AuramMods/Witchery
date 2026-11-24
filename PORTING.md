@@ -2366,7 +2366,9 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Attach and clone Witchery player data through Forge and sync gameplay state on load, respawn and dimension changes. Dedicated milestones cover infusion, coven, familiar, vampire, werewolf and Mirror state.
 - [x] Verify the guide page and Vampire Journal bookmark updates, the wolf howl and saved cooldown, the Crystal Ball camera release through travel and death, and the local Resizing hitbox after dimension loading. Dedicated client results are recorded in the book, howl, and tracked-effect milestones.
 - [ ] Compare the remaining original extended player fields and packet intents against their current gameplay paths and test any gaps.
-- [ ] Verify the vampire blood display with a solid block between the viewer and the target. The original client traces entities directly. The current Forge path clips the trace to blocks and requires line of sight on the server.
+- [x] Match the original entity trace for the vampire blood display. The running 0.24.1 trace found a villager through stone. The rebuilt Forge HUD showed the saved count while its ordinary crosshair hit the wall and hid the reading when a nearer golem intervened. A glass pane also stopped the feeding interaction at 1.1 blocks while the blood count remained visible.
+- [x] Restore the reaction to werewolf blood, including an unshifted werewolf player or a Werevillager. The original and packaged Forge feeding interactions took four health from the vampire without transferring blood. The muted Forge client created 16 flames, and a dedicated restart retained the resulting health and both blood values. Local data generation, reobfuscation, and all 232 Forge GameTests passed.
+- [x] Repeat the blood sight and Werevillager feeding checks on copied Auram. The client saw 180 through stone and hid the reading behind the golem. The test set effective armor to zero after the first mitigated bite. A second normal bite took four health and kept the two blood stores at 400 and 203.
 
 ### Phase 4 - Feature Behavior Pass (depth)
 - [ ] Blocks/tile entity behavior parity pass.

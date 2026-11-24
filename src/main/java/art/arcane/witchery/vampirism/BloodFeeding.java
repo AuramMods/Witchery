@@ -2,25 +2,34 @@ package art.arcane.witchery.vampirism;
 
 import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.entity.Reflection;
 import art.arcane.witchery.entity.VillageGuard;
 import art.arcane.witchery.item.GlassGobletItem;
 import art.arcane.witchery.item.VampireClothingItem;
+import art.arcane.witchery.lycanthropy.Lycanthropy;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryEffects;
+import art.arcane.witchery.registry.WitcherySounds;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import org.jetbrains.annotations.Nullable;
 
 public final class BloodFeeding {
     private static final String EXTENDED_VILLAGER = "WitcheryExtendedVillager";
     private static final String BLOOD = "Blood";
     private static final String SLEEP_START = "SleepStart";
+    private static final double BLOOD_SIGHT_RANGE = 5;
     public static final int MAX_MORTAL_BLOOD = 500;
 
     private BloodFeeding() {}
@@ -77,6 +86,14 @@ public final class BloodFeeding {
     static void drink(ServerPlayer player, LivingEntity target, WitcheryPlayerData vampire) {
         double reach = target.hasEffect(WitcheryEffects.PARALYSIS.get()) ? 2.1 : 1.3;
         if (player.distanceToSqr(target) > reach * reach || !target.isAlive()) return;
+        if (Lycanthropy.isWerewolf(target) || target instanceof Reflection reflection && reflection.hasWolfmanModel()) {
+            player.hurt(WitcheryDamageTypes.vampireBite(player), 4);
+            ServerLevel level = player.serverLevel();
+            level.sendParticles(ParticleTypes.FLAME, target.getX(), target.getY(0.8), target.getZ(),
+                    16, 0.5, 0.2, 0.5, 0);
+            level.playSound(null, target, WitcherySounds.BLOOD_DRINK.get(), SoundSource.PLAYERS, 1, 1);
+            return;
+        }
         int normalBite = VampireClothingItem.lightPieces(player) >= 2 ? 15 : 10;
         int bite = vampire.getCreatureTypeOrdinal() == 0 ? normalBite : 2;
         int amount;
@@ -137,11 +154,26 @@ public final class BloodFeeding {
         return Mth.ceil(0.66F * bite);
     }
 
-    public static void shareVisibleBlood(ServerPlayer viewer, int entityId) {
+    @Nullable
+    public static LivingEntity findSightTarget(Player viewer) {
+        var eye = viewer.getEyePosition();
+        var look = viewer.getLookAngle().scale(BLOOD_SIGHT_RANGE);
+        var hit = ProjectileUtil.getEntityHitResult(viewer, eye, eye.add(look),
+                viewer.getBoundingBox().expandTowards(look).inflate(1),
+                entity -> entity.isPickable() && !entity.isSpectator(), BLOOD_SIGHT_RANGE * BLOOD_SIGHT_RANGE);
+        if (hit != null && hit.getEntity() instanceof LivingEntity target
+                && (target instanceof Villager || target instanceof VillageGuard || target instanceof Player)) {
+            return target;
+        }
+        return null;
+    }
+
+    public static void shareNearbyBlood(ServerPlayer viewer, int entityId) {
         if (Vampirism.level(viewer) == 0) return;
         var target = viewer.serverLevel().getEntity(entityId);
-        if (!(target instanceof LivingEntity living) || target == viewer || viewer.distanceToSqr(target) > 30.25
-                || !living.isAlive() || !viewer.hasLineOfSight(target)) return;
+        double requestRange = BLOOD_SIGHT_RANGE + 0.5;
+        if (!(target instanceof LivingEntity living) || target == viewer || !living.isAlive() || target.isSpectator()
+                || target.getBoundingBox().distanceToSqr(viewer.getEyePosition()) > requestRange * requestRange) return;
         int amount = target instanceof Villager villager ? blood(villager) : target instanceof VillageGuard guard ? guard.getBlood()
                 : target instanceof ServerPlayer player
                 ? WitcheryPlayerDataProvider.get(player).map(data -> data.getVampireLevel() == 0 ? data.getHumanBlood() : -1).orElse(-1) : -1;

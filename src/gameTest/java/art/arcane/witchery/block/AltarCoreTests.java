@@ -151,8 +151,12 @@ public final class AltarCoreTests {
             useBlock(player, ballPos, ItemStack.EMPTY);
             helper.assertTrue(!ball.ready(level.getGameTime()) && core.power() == 500,
                     "A trained reader starts the cooldown and draws 500 power from the extended altar");
-        }).thenWaitUntil(() -> helper.assertTrue(brazier.saveWithoutMetadata().getLong("CookTime") > 0,
-                "The loaded Brazier begins burning at the 32-block boundary")).thenExecute(() ->
+        }).thenWaitUntil(() -> {
+            // The range fixture can place the Brazier outside the test's ticking chunks.
+            if (brazier.saveWithoutMetadata().getLong("CookTime") == 0) tickBrazier(helper, brazier);
+            helper.assertTrue(brazier.saveWithoutMetadata().getLong("CookTime") > 0,
+                    "The loaded Brazier begins burning at the 32-block boundary");
+        }).thenExecute(() ->
                 level.removeBlock(corner.above(), false)
         ).thenWaitUntil(() -> helper.assertTrue(!core.isInRange(brazierPos), "The altar rescans the removed blade"))
                 .thenExecute(() -> {

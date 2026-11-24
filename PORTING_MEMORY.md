@@ -2,6 +2,16 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Vampire Blood Sight and Werewolf Bites (2026-11-24)
+
+- On the running Witchery 0.24.1 server, the entity trace that drives the HUD found a villager behind stone, while the combined interaction trace hit the wall. A real legacy player object using the feeding interaction on a Werevillager went from 20 to 16 health. The vampire retained 400 blood power, and the Werevillager retained 203 blood.
+- The preceding Forge package hid the resident's blood while the crosshair hit stone. An exposed Werevillager lost seven blood and the vampire gained it without taking damage. The rebuilt Forge client senses the nearest eligible creature through blocks. An intervening pickable creature still masks the target and a normal bite uses the ordinary entity interaction.
+- The muted packaged survival client saw 180 blood through stone, lost the reading when an iron golem intervened, and drew no blood when using the fangs on the wall. Exposed Werevillager feeding took four health from the vampire, retained both blood stores, and created 16 flame particles on the client. The dedicated restart restored the vampire's 16 health and 400 blood and the Werevillager's 203 blood.
+- After restart, a glass pane separated the survival player and the Werevillager by 1.1 blocks. The HUD still showed 203, and the ordinary crosshair and right click hit the pane. Both blood values and the vampire's health stayed unchanged.
+- The same package passed the stone, golem, and Werevillager checks on copied Auram. The fixture's original armor reduced the first reaction. After the fixture set effective armor to zero and repositioned the player, the next normal bite took four health and left 400 and 203 blood. Every client used zero master volume and OpenAL No Output, and the focus monitor logged no foreground application changes.
+- The GameTests cover the wall and nearer entity, the five-block range, an unshifted werewolf player, and the Werevillager reaction. The existing Arthana range fixture advances the Brazier through its normal server tick when it sits outside the test's ticking chunks, while retaining the original cache timing and range assertions.
+- Local Java 17 data generation, JAR reobfuscation, and all 232 Forge GameTests passed. Logs and the exact JAR are in `build/qa-vampire-blood-sight`. Package SHA-256 `b5aed463ceab0206d2827686ecb3e958695213566e34b4d74626e83ad4a23b3b`.
+
 ## Vampire Blood Reserve and Targeting (2026-11-24)
 
 - A headless Witchery 0.24.1 server confirmed that an unarmed mortal's direct kill saved 180 blood while reporting zero available. After loading rank one with 600 blood power, normal use of the sheathed Cane Sword consumed that reserve and reached rank two at 750 blood power. The original death handler keys collection to the direct player damage source and the victim's saved blood. This includes villagers, guards and players.

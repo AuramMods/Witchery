@@ -518,7 +518,7 @@ public final class WitcheryNetwork {
                 buffer -> new ExtendedEntityRequestSyncToClientPacket(buffer.readVarInt()),
                 (message, context) -> {
                     ServerPlayer sender = context.getSender();
-                    if (sender != null && sender.isAlive() && !sender.isSpectator()) BloodFeeding.shareVisibleBlood(sender, message.entityId());
+                    if (sender != null && sender.isAlive() && !sender.isSpectator()) BloodFeeding.shareNearbyBlood(sender, message.entityId());
                 }, () -> new ExtendedEntityRequestSyncToClientPacket(0));
     }
 
