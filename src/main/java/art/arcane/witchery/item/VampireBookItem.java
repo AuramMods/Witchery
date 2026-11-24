@@ -18,10 +18,12 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 
 import javax.annotation.Nullable;
+import java.util.ArrayDeque;
 import java.util.List;
 
 public final class VampireBookItem extends Item {
     public static final int MAX_TORN_PAGES = 9;
+    public static final int MAX_BOOKMARK_DEPTH = 64;
     private static final String TORN_PAGES = "VampireBookPages";
     private static final String PAGE_STACK = "pageStack";
     private static final List<String> CHAPTERS = List.of("toc", "ritual1", "ritual2", "ritual3", "ritual4", "ritual5",
@@ -59,27 +61,53 @@ public final class VampireBookItem extends Item {
         return CHAPTERS.get(index);
     }
 
+    public static int chapterIndex(String chapter) {
+        return CHAPTERS.indexOf(chapter);
+    }
+
     public static int chapterCount(ItemStack stack) {
         int pages = tornPages(stack);
         return 6 + pages + (pages >= 8 ? 1 : 0);
     }
 
     public static int bookmark(ItemStack stack) {
-        if (!stack.hasTag()) return 0;
+        var trail = bookmarkTrail(stack);
+        return trail.isEmpty() ? 0 : chapterIndex(trail.get(trail.size() - 1));
+    }
+
+    public static List<String> bookmarkTrail(ItemStack stack) {
+        if (!stack.hasTag()) return List.of();
         ListTag path = stack.getTag().getList(PAGE_STACK, Tag.TAG_STRING);
         int unlocked = chapterCount(stack);
-        for (int i = path.size() - 1; i >= 0; i--) {
-            int chapter = CHAPTERS.indexOf(path.getString(i));
-            if (chapter >= 0 && chapter < unlocked) return chapter;
+        var trail = new ArrayDeque<String>();
+        for (int i = 0; i < path.size(); i++) {
+            String id = path.getString(i);
+            int chapter = chapterIndex(id);
+            if (chapter > 0 && chapter < unlocked) {
+                if (trail.size() == MAX_BOOKMARK_DEPTH) trail.removeFirst();
+                trail.addLast(id);
+            } else if (chapter == 0) {
+                trail.clear();
+            }
         }
-        return 0;
+        return List.copyOf(trail);
     }
 
     public static boolean setBookmark(ItemStack stack, String chapter) {
-        int index = CHAPTERS.indexOf(chapter);
+        int index = chapterIndex(chapter);
         if (index < 0 || index >= chapterCount(stack)) return false;
+        return setBookmarkTrail(stack, CHAPTERS.subList(1, index + 1));
+    }
+
+    public static boolean setBookmarkTrail(ItemStack stack, List<String> trail) {
+        if (trail.size() > MAX_BOOKMARK_DEPTH) return false;
+        int unlocked = chapterCount(stack);
         ListTag path = new ListTag();
-        for (String visited : CHAPTERS.subList(1, index + 1)) path.add(StringTag.valueOf(visited));
+        for (String visited : trail) {
+            int chapter = chapterIndex(visited);
+            if (chapter <= 0 || chapter >= unlocked) return false;
+            path.add(StringTag.valueOf(visited));
+        }
         stack.getOrCreateTag().put(PAGE_STACK, path);
         return true;
     }

@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Vampire Journal Bookmark Trail (2026-11-24)
+
+- Previous now returns to the preceding visited chapter in the saved `pageStack`. Closing an untouched journal preserves its raw list, including unknown legacy entries. Editing saves the recognized unlocked trail. The retained navigation history is bounded at 64 entries. Protocol 97 distinguishes an unchanged trail from a cleared trail, and both paths teach the rank cap from the held stack.
+- The preceding packaged build rewrote a supplied offhand journal from `["ritual1","ritual4","unknownOldLink"]` to the contiguous first four chapters when the survival client merely closed it. On the rebuilt JAR, the same interaction preserved all three entries and taught rank cap four from a three-page journal. Advancing from Ritual IV to Ritual V saved only Ritual I, IV and V.
+- A dedicated restart kept that trail. The survival client reopened Ritual V, went back to Ritual IV and Ritual I, advanced to Ritual II and then selected the cover. The saved offhand stack retained its three torn pages and fixture marker with an empty trail, and the player kept rank cap four. Both packaged clients stayed unfocused at zero master volume and used OpenAL No Output.
+- Local Java 17 reobfuscation, all 191 required Forge GameTests, and the asset inventory audit passed. The new test covers original damage metadata, a noncontiguous saved path, rejection of locked chapters, and the packet round trip for changed, unchanged and cleared trails. Package SHA-256 `007d1017ef5bc00cf4ecbe73feaa562b86df2a5882996358eaebe7c880e78284`. Logs and fixtures are in `build/qa-journal-trail`.
+
 ## Original Howl Cues and Pack Spawning (2026-11-24)
 
 - The dedicated howl handler checks paralysis and selected vampire powers as well as the player's pose, form and rank. Successful howls use the original varying pitch. The original snare plays while cooling down, alongside the existing translated action-bar message. Wolf pack size rerolls before each attempt, and spawning needs the original two clear blocks above the floor.

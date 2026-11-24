@@ -870,6 +870,7 @@
 - [x] Use network protocol 87 to carry the atlas biome ID with the held-book bookmark. The client and dedicated server use matching Witchery builds.
 - [x] Pass all 73 clean Forge GameTests and all 77 with Thaumaturge, Lithostitched, and Curios. After a packaged headless restart, the atlas copied Snowy Beach despite a datapack moving it to a different section. The journal retained its fourteen saved pages through a torn-page upgrade and cleared the trail on return to the cover.
 - [x] Verify both controls in a muted native Forge client on a clean dedicated server. The atlas opened the Forests family and saved `minecraft:birch_forest` as the held item's bookmark. The vampire journal opened on Ritual II, returned to the cover on click, and saved an empty `pageStack` on close.
+- [x] Keep the exact saved vampire journal trail when closing without navigation. Save visited chapters in order when the reader turns a page, follow that path when going back, and clear the trail at the cover. Protocol 97 carries the optional trail and continues to learn the rank cap from the held journal.
 
 ## Brew of the Changing Seasons (2026-11-21)
 

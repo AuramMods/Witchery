@@ -13,6 +13,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_HOME;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_PAGE_DOWN;
@@ -27,6 +30,8 @@ public final class VampireBookScreen extends Screen {
 
     private final int inventorySlot;
     private final int pageCount;
+    private final List<String> openedTrail;
+    private final List<String> trail;
     private int page;
     private int scroll;
     private int maxScroll;
@@ -38,7 +43,9 @@ public final class VampireBookScreen extends Screen {
         super(stack.getHoverName());
         this.inventorySlot = inventorySlot;
         pageCount = VampireBookItem.chapterCount(stack);
-        page = VampireBookItem.bookmark(stack);
+        openedTrail = VampireBookItem.bookmarkTrail(stack);
+        trail = new ArrayList<>(openedTrail);
+        page = lastChapter();
     }
 
     public static void open(ItemStack stack, int inventorySlot) {
@@ -53,11 +60,31 @@ public final class VampireBookScreen extends Screen {
     protected void init() {
         int left = (width - 192) / 2;
         int top = top();
-        previous = addRenderableWidget(new PageButton(left + 39, top + 151, false, button -> turn(page - 1), true));
-        next = addRenderableWidget(new PageButton(left + 126, top + 151, true, button -> turn(page + 1), true));
-        cover = addRenderableWidget(Button.builder(Component.translatable(TEXT + "cover"), button -> turn(0))
+        previous = addRenderableWidget(new PageButton(left + 39, top + 151, false, button -> back(), true));
+        next = addRenderableWidget(new PageButton(left + 126, top + 151, true, button -> forward(), true));
+        cover = addRenderableWidget(Button.builder(Component.translatable(TEXT + "cover"), button -> toCover())
                 .bounds(left + 65, top + 150, 57, 16).build());
         turn(page);
+    }
+
+    private int lastChapter() {
+        return trail.isEmpty() ? 0 : VampireBookItem.chapterIndex(trail.get(trail.size() - 1));
+    }
+
+    private void back() {
+        trail.remove(trail.size() - 1);
+        turn(lastChapter());
+    }
+
+    private void forward() {
+        if (trail.size() == VampireBookItem.MAX_BOOKMARK_DEPTH) trail.remove(0);
+        trail.add(VampireBookItem.chapter(page + 1));
+        turn(lastChapter());
+    }
+
+    private void toCover() {
+        trail.clear();
+        turn(0);
     }
 
     private int top() {
@@ -144,7 +171,9 @@ public final class VampireBookScreen extends Screen {
 
     @Override
     public void removed() {
-        if (minecraft.getConnection() != null) WitcheryNetwork.sendMarkupBookBookmark(inventorySlot, VampireBookItem.chapter(page));
+        if (minecraft.getConnection() != null) {
+            WitcheryNetwork.sendMarkupBookBookmark(inventorySlot, openedTrail.equals(trail) ? null : trail);
+        }
     }
 
     @Override

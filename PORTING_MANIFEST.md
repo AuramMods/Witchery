@@ -1398,7 +1398,7 @@ Implementation anchors:
 - Utility payloads:
   - `particles` -> `(int particleEffectId, int soundEffectId, double x, double y, double z, double width, double height, int color)` (clientbound)
   - `player_style` -> `(String username, int grotesqueTicks, int nightmare, boolean ghost, int creatureType, int blood, String playerSkin)` (clientbound)
-  - `sync_markup_book` -> `(int slot, String chapter)` (serverbound)
+  - `sync_markup_book` -> `(int slot, optional List<String> trail)` (serverbound, protocol 97)
 - Requests with empty payloads:
   - `clear_fall_damage` (serverbound)
   - `howl` (serverbound)
@@ -1415,7 +1415,7 @@ Implementation anchors:
 - Serverbound gameplay handlers:
   - `clear_fall_damage` requests an airborne jump. The server validates the active Double Jump effect and remaining jumps from a ground takeoff before approving the motion.
   - `item_update` validates the held slot and guide volume. Atlas requests resolve the supplied biome ID against the server's current list and save both `CurrentPage` and `WitcheryBiome`. Network protocol 87 carries the atlas ID.
-  - `sync_markup_book` saves the full original `pageStack` trail through the requested unlocked chapter and syncs the learned rank cap.
+  - `sync_markup_book` validates the actual visited trail against the held journal's unlocked chapters. An empty trail returns to the cover. Closing an untouched book keeps its existing `pageStack` verbatim. The server learns the rank cap from the held book in either case. Navigation follows recognized unlocked entries in their saved order, including for earlier port stacks with a single bookmark.
   - `item_update` records the accepted page in `WitcheryPlayerData` and sends the updated revision.
   - `howl` checks the player's pose, form, rank, trial status, paralysis, and selected vampire power. A successful howl uses the original varying pitch and counts a new nighttime trial chunk, paralyzes nearby targets, or summons a pack. A blocked repeat plays the original snare alongside the port's action-bar message and keeps the cooldown timestamp. A pack rerolls the limit at each spawn attempt and needs two clear blocks above the floor.
 

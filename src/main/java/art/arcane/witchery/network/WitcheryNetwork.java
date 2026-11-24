@@ -28,6 +28,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import net.minecraftforge.fml.DistExecutor;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -41,7 +42,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class WitcheryNetwork {
-    private static final String PROTOCOL_VERSION = "96";
+    private static final String PROTOCOL_VERSION = "97";
     private static final int MAX_USERNAME_LENGTH = 64;
     private static final int MAX_PLAYER_SKIN_LENGTH = 256;
     private static final int MAX_MARKUP_CHAPTER_LENGTH = 32;
@@ -306,8 +307,8 @@ public final class WitcheryNetwork {
         CHANNEL.sendToServer(ClearFallDamagePacket.placeholder());
     }
 
-    public static void sendMarkupBookBookmark(int slot, String chapter) {
-        CHANNEL.sendToServer(new SyncMarkupBookPacket(slot, chapter));
+    public static void sendMarkupBookBookmark(int slot, @Nullable List<String> trail) {
+        CHANNEL.sendToServer(new SyncMarkupBookPacket(slot, trail));
     }
 
     public static void sendHowlToServer() {
@@ -705,10 +706,13 @@ public final class WitcheryNetwork {
             int slot = message.slot();
             if (sender.isSpectator() || slot != sender.getInventory().selected && slot != sender.getInventory().getContainerSize() - 1) return;
             ItemStack stack = sender.getInventory().getItem(slot);
-            if (!(stack.getItem() instanceof VampireBookItem) || !VampireBookItem.setBookmark(stack, message.chapter())) return;
-            sender.getInventory().setChanged();
-            sender.containerMenu.broadcastChanges();
-            data.applyMarkupBookSync(slot, List.of(message.chapter()));
+            if (!(stack.getItem() instanceof VampireBookItem)) return;
+            if (message.trail() != null) {
+                if (!VampireBookItem.setBookmarkTrail(stack, message.trail())) return;
+                sender.getInventory().setChanged();
+                sender.containerMenu.broadcastChanges();
+            }
+            data.applyMarkupBookSync(slot, VampireBookItem.bookmarkTrail(stack));
             data.increaseVampireLevelCap(VampireBookItem.tornPages(stack) + 1);
             data.bumpSyncRevision();
             sendPartialExtendedPlayerSync(sender, data);
@@ -998,18 +1002,27 @@ public final class WitcheryNetwork {
         }
     }
 
-    public record SyncMarkupBookPacket(int slot, String chapter) {
+    public record SyncMarkupBookPacket(int slot, @Nullable List<String> trail) {
+        public SyncMarkupBookPacket {
+            if (trail != null) trail = List.copyOf(trail);
+        }
+
         public static SyncMarkupBookPacket placeholder() {
-            return new SyncMarkupBookPacket(0, "toc");
+            return new SyncMarkupBookPacket(0, null);
         }
 
         public static void encode(SyncMarkupBookPacket message, FriendlyByteBuf buffer) {
             buffer.writeVarInt(message.slot());
-            buffer.writeUtf(message.chapter(), MAX_MARKUP_CHAPTER_LENGTH);
+            buffer.writeNullable(message.trail(), (out, trail) ->
+                    out.writeCollection(trail, (buf, chapter) -> buf.writeUtf(chapter, MAX_MARKUP_CHAPTER_LENGTH)));
         }
 
         public static SyncMarkupBookPacket decode(FriendlyByteBuf buffer) {
-            return new SyncMarkupBookPacket(buffer.readVarInt(), buffer.readUtf(MAX_MARKUP_CHAPTER_LENGTH));
+            int slot = buffer.readVarInt();
+            var trail = buffer.readNullable(input -> input.readCollection(
+                    FriendlyByteBuf.limitValue(ArrayList<String>::new, VampireBookItem.MAX_BOOKMARK_DEPTH),
+                    buf -> buf.readUtf(MAX_MARKUP_CHAPTER_LENGTH)));
+            return new SyncMarkupBookPacket(slot, trail);
         }
     }
 

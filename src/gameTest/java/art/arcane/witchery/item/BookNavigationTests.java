@@ -3,6 +3,7 @@ package art.arcane.witchery.item;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.network.WitcheryNetwork.ItemUpdatePacket;
+import art.arcane.witchery.network.WitcheryNetwork.SyncMarkupBookPacket;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcheryRecipes;
@@ -15,6 +16,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.TagParser;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
@@ -259,6 +261,39 @@ public final class BookNavigationTests {
         helper.assertTrue(VampireBookItem.bookmark(reopened) == 0 && VampireBookItem.tornPages(reopened) == 1
                         && reopened.getTag().getList("pageStack", Tag.TAG_STRING).isEmpty(),
                 "Returning to the cover clears only the navigation trail");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void vampireJournalSavesTheVisitedTrail(GameTestHelper helper) throws Exception {
+        ItemStack journal = WitcheryIngredient.loadInventoryStack(TagParser.parseTag("""
+                {id:"witchery:vampirebook",Count:1b,Damage:1s,tag:{Marker:"legacy",pageStack:["ritual1","ritual4","transfix"]}}
+                """));
+        var visited = List.of("ritual1", "ritual4", "transfix");
+        helper.assertTrue(VampireBookItem.tornPages(journal) == 1
+                        && VampireBookItem.bookmarkTrail(journal).equals(visited),
+                "Legacy metadata and the exact history survive import");
+        var previous = List.of("ritual1", "ritual4");
+        helper.assertFalse(VampireBookItem.setBookmarkTrail(journal, List.of("ritual1", "bats")),
+                "A navigation change cannot save an unavailable chapter");
+        helper.assertTrue(VampireBookItem.bookmarkTrail(journal).equals(visited), "A rejected trail leaves the book intact");
+        helper.assertTrue(VampireBookItem.setBookmarkTrail(journal, previous), "Previous removes the visited chapter");
+        ItemStack reopened = ItemStack.of(journal.save(new CompoundTag()));
+        helper.assertTrue(VampireBookItem.bookmarkTrail(reopened).equals(previous)
+                        && reopened.getTag().getString("Marker").equals("legacy"),
+                "The visited trail and unrelated item data survive serialization");
+
+        for (var packet : List.of(new SyncMarkupBookPacket(40, previous), new SyncMarkupBookPacket(40, List.of()),
+                new SyncMarkupBookPacket(40, null))) {
+            var wire = new FriendlyByteBuf(Unpooled.buffer());
+            try {
+                SyncMarkupBookPacket.encode(packet, wire);
+                helper.assertTrue(packet.equals(SyncMarkupBookPacket.decode(wire)) && !wire.isReadable(),
+                        "The wire format distinguishes unchanged, cleared and visited trails");
+            } finally {
+                wire.release();
+            }
+        }
         helper.succeed();
     }
 }
