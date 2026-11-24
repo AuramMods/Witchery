@@ -51,7 +51,7 @@ public final class BrewPlantBlocks {
         private static final VoxelShape EAST = box(0, 0, 0, 2, 16, 16);
 
         public Vine() {
-            super(Properties.copy(Blocks.LADDER).strength(0.2F).sound(SoundType.GRASS).noCollission().noLootTable());
+            super(Properties.copy(Blocks.LADDER).strength(0.2F).sound(SoundType.GRASS).noLootTable());
             registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
         }
 

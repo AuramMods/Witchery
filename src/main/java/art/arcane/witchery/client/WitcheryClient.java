@@ -557,7 +557,7 @@ public final class WitcheryClient {
                 WitcheryBlocks.getRequired("pitgrass").get());
         event.register((state, level, pos, tint) -> tint != 0 ? -1 : level != null && pos != null
                         ? BiomeColors.getAverageFoliageColor(level, pos) : net.minecraft.world.level.FoliageColor.getDefaultColor(),
-                WitcheryBlocks.getRequired("spanishmoss").get());
+                WitcheryBlocks.getRequired("spanishmoss").get(), WitcheryBlocks.getRequired("vine").get());
     }
 
     @SubscribeEvent
@@ -571,7 +571,7 @@ public final class WitcheryClient {
         event.register((stack, tint) -> tint == 0 ? net.minecraft.world.level.GrassColor.get(0.5, 1) : -1,
                 WitcheryBlocks.getRequired("pitgrass").get());
         event.register((stack, tint) -> tint == 0 ? net.minecraft.world.level.FoliageColor.getDefaultColor() : -1,
-                WitcheryBlocks.getRequired("spanishmoss").get());
+                WitcheryBlocks.getRequired("spanishmoss").get(), WitcheryBlocks.getRequired("vine").get());
         event.register((stack, tint) -> tint == 0 && stack.getTag() != null && stack.getTag().contains(BrewDroplet.TINT_KEY)
                 ? stack.getTag().getInt(BrewDroplet.TINT_KEY) : -1, WitcheryIngredient.QUARTZ_SPHERE.item());
         var hunterClothing = java.util.Arrays.stream(HunterClothingItem.Piece.values())

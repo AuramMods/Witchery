@@ -33,6 +33,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.entity.DispenserBlockEntity;
 import net.minecraft.world.level.material.Fluids;
@@ -56,6 +57,36 @@ import java.util.function.Consumer;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class CauldronBrewParityTests {
+    @GameTest(template = "qa_coven_arena")
+    public static void vinesKeepTheirOriginalClimbableCollision(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var wall = new BlockPos(6, 5, 5);
+        helper.setBlock(wall, Blocks.STONE);
+        var brew = BrewMixture.from(List.of(Items.NETHER_WART.getDefaultInstance(), Items.VINE.getDefaultInstance()));
+        var vine = WitcheryBlocks.getRequired("vine").get();
+        var climber = EntityType.PIG.create(level);
+
+        for (Direction face : Direction.Plane.HORIZONTAL) {
+            var pos = helper.absolutePos(wall.relative(face));
+            level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+            var impact = helper.absolutePos(wall);
+            brew.applySplashToBlock(level, impact, face, Vec3.atCenterOf(impact), null);
+            var state = level.getBlockState(pos);
+            helper.assertTrue(state.is(vine) && state.getValue(HorizontalDirectionalBlock.FACING) == face,
+                    "The brew must place its climbable vine against the struck face " + face);
+            var collision = state.getCollisionShape(level, pos);
+            helper.assertTrue(!collision.isEmpty(), "The brew vine must retain its original collision on " + face);
+            Direction support = face.getOpposite();
+            double start = support.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 0.875 : 0;
+            var bounds = collision.bounds();
+            helper.assertTrue(bounds.min(face.getAxis()) == start && bounds.max(face.getAxis()) == start + 0.125
+                            && bounds.minY == 0 && bounds.maxY == 1
+                            && state.isLadder(level, pos, climber),
+                    "The vine must be climbable with a full-height strip against its support on " + face);
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena", timeoutTicks = 210)
     public static void transposeFindsFootingOutsideLoadedChunks(GameTestHelper helper) {
         var level = helper.getLevel();

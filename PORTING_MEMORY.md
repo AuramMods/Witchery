@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Webs, Vines, and Thorns Presentation and Collision (2026-11-24)
+
+- Witchery Vines use the original two-pixel directional collision strip as a climbable surface. Their two visible faces sit 0.05 blocks to either side of the mount and use the surrounding biome's foliage color. Webs use the vanilla Cobweb sprite. Thorns use the vanilla cactus side, top, and bottom sprites on their corresponding faces.
+- Dispensers fired supplied cauldron bottles on the preceding package. The muted client found the same placeholder texture on all three spawned blocks, and the vines lacked both tint and collision. The rebuilt package opened that save, resolved the proper sprites, and matched the distinct Plains and Swamp foliage colors. After the fixture removed the backing blocks, an ordinary forward input climbed the vine from Y 230 to 231.29 while its collision stopped forward motion at Z 49.575. The fixture supplied the platforms, biome regions, and positioning.
+- The original item curse event runs creature effects on the holder for both right-click actions. A survival client used a stick supplied with a legacy-format Webs curse while aiming at the floor. The charge cleared and a web formed above the player. The space over the clicked block stayed empty. A fresh Thorns splash also grew in the same world. A headless restart verified all nine block and facing checks.
+- The new collision GameTest failed on the preceding source and passed on all four orientations after the change. All 181 required local Forge GameTests, Java 17 reobfuscation, and the asset inventory audit passed. The verified package has SHA-256 `00f3c3c918f579ed13ab70b50b5eeb36d442600477887cc795c4ab637247c8d8`. Both isolated clients used zero master volume and OpenAL No Output, and the focus monitor recorded no activation. Logs and fixtures are in `build/qa-brew-plant-parity`.
+
 ## Current Package in the Copied Auram Profile (2026-11-24)
 
 - The recorded temporary directory for the earlier progression world was unavailable. This run used disposable copies of the installed Auram profile and a fresh world with seed `209376`. The client and server both used the packaged Witchery JAR from `0206791`, SHA-256 `4f20adb880461912b66ca3e897be7e5a49e78975ddd686b04a1a0da1c5bf98dd`.

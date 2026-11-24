@@ -2,16 +2,24 @@
   "parent": "minecraft:block/block",
   "ambientocclusion": false,
   "textures": {
-    "vine": "witchery:block/vine",
+    "vine": "minecraft:block/vine",
     "particle": "#vine"
   },
   "elements": [
     {
-      "from": [0, 0, 15.5],
-      "to": [16, 16, 15.5],
+      "from": [0, 0, 15.2],
+      "to": [16, 16, 15.2],
+      "shade": false,
       "faces": {
-        "north": {"texture": "#vine", "uv": [0, 0, 16, 16]},
-        "south": {"texture": "#vine", "uv": [0, 0, 16, 16]}
+        "north": {"texture": "#vine", "tintindex": 0}
+      }
+    },
+    {
+      "from": [0, 0, 16.8],
+      "to": [16, 16, 16.8],
+      "shade": false,
+      "faces": {
+        "south": {"texture": "#vine", "tintindex": 0}
       }
     }
   ]

@@ -1441,6 +1441,7 @@
 - [x] Let a strengthened splash expand from a Web placed by a previous splash. The headless dispenser replay filled faces and edges while leaving the outer corners clear. The new GameTest also covers a chest and a Forge placement veto inside the footprint.
 - [x] Restore directional, climbable Vines. They follow the side of the struck wall and can hang below its support with a strength boost. A living target receives Wrapped in Vine with strength-based fire vulnerability and the original milk immunity.
 - [x] Restore Thorns' cactus columns, supported growth, and contact damage. A living target receives Spiked and damages nearby creatures. The two effects retain their original synced creature overlays.
+- [x] Restore the original Vine collision, foliage tint, and model planes, plus the Cobweb and three cactus face sprites. The packaged client checked both biome colors on blocks placed by the preceding JAR and climbed an unsupported Vine. A headless restart kept the original and newly cast blocks.
 - [x] Brew all three recipes in the muted survival client. Strength-two Webs filled faces and edges around a side impact and preserved the chest with three diamonds. The client climbed the north-facing Vines from Y 200 to Y 203.76. Strength-one Thorns grew four blocks on stone.
 - [x] Cast the targeted effects and verify the overlays in the background client. Wrapped in Vine turned one fire damage into three. Spiked removed three health from a nearby pig and left its host at full health. Reopen the dedicated world and confirm all three placed blocks and both still-active effects.
 - [x] Run Java 17 data generation, JAR reobfuscation, and seven focused Forge GameTests covering the three recipes, metadata, web movement, block protection, climbing, cactus support, and the two effects.
@@ -1745,7 +1746,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Attach the curse to one item from a stack. With an active cat familiar, the muted survival client recovered one stick with two charges from an offering of three. The remaining two sticks kept their ordinary stack.
 - [x] Verify that a right click in air applies Wolfsbane, an immediate second click preserves the remaining charge, and the next click after five seconds reapplies Wolfsbane and clears the curse while keeping the item. The successful cast used a dropped-item fixture for the tongue and stick stack.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 264 required Forge GameTests. Coverage includes the 250-power debit with two white circles, the named 1.7.10 active-brew save, a missing offering, stack splitting, cooldown, and both interaction paths.
-- [ ] Restore additional terrain actions.
+- [x] Verify the original holder-centered behavior for terrain changes with a creature handler. A normal block right-click with a supplied legacy-format Webs curse placed one web above the holder, cleared the charge, and left the clicked site clear. The placed web survived a dedicated restart.
 - [x] Restore Leonard's encounter, summoning ritual and the Insanity hallucinations that can occur during a risky cast.
 
 ## Cauldron Dispersal and Waystone Targets (2026-11-20)

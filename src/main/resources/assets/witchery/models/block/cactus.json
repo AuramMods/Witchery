@@ -1,10 +1,10 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "particle": "witchery:block/cactus",
-    "side": "witchery:block/cactus",
-    "top": "witchery:block/cactus",
-    "bottom": "witchery:block/cactus"
+    "particle": "minecraft:block/cactus_side",
+    "side": "minecraft:block/cactus_side",
+    "top": "minecraft:block/cactus_top",
+    "bottom": "minecraft:block/cactus_bottom"
   },
   "elements": [
     {
