@@ -2,6 +2,16 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Infusion and Manifestation Rite Recipients (2026-11-24)
+
+- The running 0.24.1 server first charged 40 for an imported Infusion Recharging rite at tick 20. A player 3.75 blocks west reached the 200 cap, and a player one block below the glyph whose hitbox overlapped the glyph layer gained ten. A player 4.25 blocks east and a player above the layer received nothing.
+- The original server kept its first altar on a nonrefresh roll after a nearer altar appeared. It switched on the next refresh roll. The Forge copy uses the same one-in-five refresh, rechecks the cached altar's validity and range, and keeps pending pulses or legacy stage-zero records through save and reload.
+- The original Manifestation effect gave an eligible player 225 seconds with three coven witches. The Forge rites now use the same lower-corner sphere and hitbox check, apply the coven bonus, and send the original nearby spell, explosion, fizz and recharge pling cues through the existing particle packet.
+- The packaged muted client used a regeneration potion and both white chalk rings to start recharging. The east-side position held 180 charge and the west-side position gained the first ten. A Seer Stone then summoned three coven members supplied by the fixture roster, and the six-offering Manifestation granted 225 seconds at the west edge of the Otherwhere ring. The client received both original particle and sound messages.
+- The ordinary dedicated restart retained 225 seconds and the active recharge. Moving west brought the saved charge from 190 to 200. A later Light cast sent the original explosion and fizz packet while the east-side player kept their existing infusion. The isolated client reported zero master volume, OpenAL No Output, and a hidden, unfocused window throughout the launch checks.
+- Clean Forge and copied Auram imported the stage-zero recharge tag extracted from the original region using the same packaged JAR. The altar went from 160 to 120 power and breaking it cleared the rite on both servers. The fixture uses a grass-supported altar with base regeneration so the debit can be seen through console polling.
+- Local Java 17 data generation, JAR reobfuscation, and all 272 checked-in Forge GameTests passed. One Wilting check in the first suite processed a crop before the Grave player was tracked. The final fixture waits for both targets. JAR and logs are in `build/qa-infusion-rites`. Package SHA-256 `aeda1db1433c2b956513324603706d973bac79349cf045f30ac6b4bf6b978605`.
+
 ## Falling Brew Projectiles (2026-11-24)
 
 - The original 0.24.1 server ran its healing droplet across a pig with four health. Flight ticks one and four left its health unchanged and the droplet alive. Tick five healed it to eight and consumed the droplet. Brew effects and their particles use the position at the start of the collision tick.

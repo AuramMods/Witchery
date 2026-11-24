@@ -22,6 +22,7 @@ import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.item.SpectralStoneItem;
 import art.arcane.witchery.lycanthropy.Lycanthropy;
 import art.arcane.witchery.lycanthropy.WerewolfVillagers;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.power.AltarPower;
 import art.arcane.witchery.prediction.Predictions;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
@@ -91,6 +92,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     private static final int GLYPH_CLOCK_PERIOD = 120;
     private static final int MANIFEST_RANGE = 5;
     private static final int MANIFEST_DURATION = 150;
+    private static final int MANIFEST_COVEN_BONUS = 25;
     private static final int INFUSION_RANGE = 4;
     private static final int INFUSION_CAPACITY = 200;
     private static final int VAMPIRE_CURE_RANGE = 8;
@@ -311,6 +313,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         BlockPos pos = getBlockPos();
         var action = rite.action();
         var protectionKind = action.protection();
+        boolean legacy = usesGlyphClock();
+        boolean manifestation = action == ItemRiteRecipe.Action.MANIFESTATION;
         boolean hellOnEarth = action == ItemRiteRecipe.Action.HELL_ON_EARTH;
         boolean stagedLiving = rite.stagesLivingOffering();
         boolean sacrificesFirst = !stagedLiving && action == ItemRiteRecipe.Action.SUMMON_WITHER;
@@ -353,14 +357,14 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             default -> 0;
         };
         boolean familiarRite = rite.action() == ItemRiteRecipe.Action.BIND_FAMILIAR || rite.action() == ItemRiteRecipe.Action.CALL_FAMILIAR;
-        if (rite.action() == ItemRiteRecipe.Action.MANIFESTATION) {
-            recipients = nearbyPlayers(level, pos, MANIFEST_RANGE);
+        if (manifestation) {
+            recipients = nearbyPlayers(level, pos, MANIFEST_RANGE, legacy);
             if (recipients.isEmpty()) {
                 abort(level, "message.witchery.rite.no_nearby_player");
                 return;
             }
         } else if (infusionType > 0) {
-            recipients = nearbyPlayers(level, pos, INFUSION_RANGE);
+            recipients = nearbyPlayers(level, pos, INFUSION_RANGE, legacy);
         } else if (action.summonsCreature()) {
             if (rite.action() == ItemRiteRecipe.Action.SUMMON_IMP && covenSize == 0) {
                 abort(level, "message.witchery.rite.coven_required");
@@ -584,8 +588,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             return;
         }
         for (ServerPlayer recipient : recipients) {
-            if (rite.action() == ItemRiteRecipe.Action.MANIFESTATION) {
-                DreamTravel.grantManifestation(recipient, MANIFEST_DURATION);
+            if (manifestation) {
+                DreamTravel.grantManifestation(recipient, MANIFEST_DURATION + (legacy ? covenSize * MANIFEST_COVEN_BONUS : 0));
             } else {
                 recipient.hurt(level.damageSources().magic(), 100);
                 if (recipient.isAlive()) InfusionEnergy.grant(recipient, infusionType, INFUSION_CAPACITY);
@@ -606,12 +610,16 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             if (progress != null) upkeep.add(RiteUpkeep.Timed.landscape(rite.id(), covenSize, initiator, progress));
         } else if (rite.action() == ItemRiteRecipe.Action.RECHARGE_INFUSION) {
             var recharge = RiteUpkeep.Timed.recharge(rite.id(), covenSize, initiator);
-            if (!usesGlyphClock() || recharge.rechargeNearby(level, pos)) upkeep.add(recharge);
+            if (!legacy || recharge.rechargeNearby(level, pos)) upkeep.add(recharge);
         }
         if (talismanPattern == 0) nextCast(level);
-        level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
-                16, 0.4, 0.4, 0.4, 0.05);
-        level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.9F, 1.35F);
+        if (legacy && (manifestation || infusionType > 0)) {
+            WitcheryNetwork.sendInfusionRite(level, Vec3.atLowerCornerOf(pos), manifestation);
+        } else if (!legacy || action != ItemRiteRecipe.Action.RECHARGE_INFUSION) {
+            level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
+                    16, 0.4, 0.4, 0.4, 0.05);
+            level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.9F, 1.35F);
+        }
     }
 
     private static void sacrificeLiving(ServerLevel level, Mob living) {
@@ -819,10 +827,12 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 .filter(target -> target != null && target.isAlive()).findFirst().orElse(null);
     }
 
-    static List<ServerPlayer> nearbyPlayers(ServerLevel level, BlockPos pos, int range) {
-        return level.getEntitiesOfClass(ServerPlayer.class, new AABB(pos).inflate(range, 0, range),
+    static List<ServerPlayer> nearbyPlayers(ServerLevel level, BlockPos pos, int range, boolean legacy) {
+        Vec3 center = legacy ? Vec3.atLowerCornerOf(pos) : Vec3.atBottomCenterOf(pos);
+        AABB layer = legacy ? new AABB(center, center.add(0, 1, 0)) : new AABB(pos);
+        return level.getEntitiesOfClass(ServerPlayer.class, layer.inflate(range, 0, range),
                 player -> player.isAlive() && !player.isSpectator()
-                        && player.distanceToSqr(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5) <= range * range);
+                        && player.distanceToSqr(center) <= range * range);
     }
 
     private static boolean hasObstructedSummoningArea(ServerLevel level, BlockPos center) {

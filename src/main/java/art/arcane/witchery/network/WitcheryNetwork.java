@@ -48,8 +48,12 @@ public final class WitcheryNetwork {
     private static final int MAX_USERNAME_LENGTH = 64;
     private static final int MAX_PLAYER_SKIN_LENGTH = 256;
     private static final int MAX_MARKUP_CHAPTER_LENGTH = 32;
+    private static final int LEGACY_HUGE_EXPLOSION_PARTICLE_ID = 0;
+    private static final int LEGACY_INSTANT_SPELL_PARTICLE_ID = 11;
     private static final int LEGACY_SPLASH_PARTICLE_ID = 19;
+    private static final int LEGACY_FIZZ_SOUND_ID = 2;
     private static final int LEGACY_WATER_SPLASH_SOUND_ID = 4;
+    private static final int LEGACY_PLING_SOUND_ID = 9;
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             ResourceLocation.parse(Witchery.MODID + ":main"),
             () -> PROTOCOL_VERSION,
@@ -287,6 +291,15 @@ public final class WitcheryNetwork {
 
     public static void sendWaterSplash(ServerLevel level, double x, double y, double z) {
         sendParticlesAround(level, LEGACY_SPLASH_PARTICLE_ID, LEGACY_WATER_SPLASH_SOUND_ID, new Vec3(x, y, z), 0.5D, 0.5D, 5);
+    }
+
+    public static void sendInfusionRecharge(ServerLevel level, Vec3 center) {
+        sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_PLING_SOUND_ID, center, 1, 2, 8);
+    }
+
+    public static void sendInfusionRite(ServerLevel level, Vec3 center, boolean manifestation) {
+        int particle = manifestation ? LEGACY_INSTANT_SPELL_PARTICLE_ID : LEGACY_HUGE_EXPLOSION_PARTICLE_ID;
+        sendParticlesAround(level, particle, LEGACY_FIZZ_SOUND_ID, center, 3, 3, 16);
     }
 
     public static void sendParticlesAround(ServerLevel level, int particleEffectId, int soundEffectId, Vec3 center,

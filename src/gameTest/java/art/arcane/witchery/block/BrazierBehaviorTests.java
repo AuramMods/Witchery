@@ -18,6 +18,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
@@ -49,7 +50,7 @@ public final class BrazierBehaviorTests {
         helper.succeed();
     }
 
-    @GameTest(template = "qa_coven_arena", batch = "witchery_brazier_behavior")
+    @GameTest(template = "qa_coven_arena", batch = "witchery_brazier_behavior", setupTicks = 5)
     public static void wiltingHealsGraveInfusedPlayersInRange(GameTestHelper helper) {
         var brazier = place(helper);
         var level = helper.getLevel();
@@ -66,24 +67,33 @@ public final class BrazierBehaviorTests {
         helper.assertTrue(availableCrops == 49, "Expected all 49 candidate crops to be loaded and ripe, got " + availableCrops);
         var infused = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "GraveDrinker"));
         infused.setPos(Vec3.atBottomCenterOf(pos.north()));
-        infused.setHealth(10);
+        infused.setNoGravity(true);
         level.addNewPlayer(infused);
-        try {
-            InfusedBrews.applyGrave(infused);
-            var outside = EntityType.ZOMBIE.create(level);
-            var spot = Vec3.atLowerCornerOf(pos).add(3.75, 0, 0.5);
-            outside.setPos(spot);
-            outside.setHealth(10);
-            level.addFreshEntity(outside);
-            int storage = BrazierRecipe.WILTING.burn(level, pos, 5);
-            helper.assertTrue(infused.getHealth() == 12 && outside.getHealth() == 10 && storage == 2,
-                    "Expected the first wilt to heal only the Grave-infused player and add burn time. Player health "
-                            + infused.getHealth() + ", outside Zombie health " + outside.getHealth()
-                            + ", storage " + storage);
-        } finally {
-            level.removePlayerImmediately(infused, Entity.RemovalReason.DISCARDED);
-        }
-        helper.succeed();
+        var outside = EntityType.ZOMBIE.create(level);
+        outside.setPos(Vec3.atLowerCornerOf(pos).add(3.75, 0, 0.5));
+        outside.setNoAi(true);
+        outside.setNoGravity(true);
+        level.addFreshEntity(outside);
+        var testedArea = new AABB(pos).inflate(5);
+        helper.startSequence().thenWaitUntil(() -> {
+            var tracked = level.getEntitiesOfClass(Entity.class, testedArea);
+            helper.assertTrue(tracked.contains(infused) && tracked.contains(outside),
+                    "Both targets must be tracked before the Brazier pulse");
+        }).thenExecute(() -> {
+            try {
+                InfusedBrews.applyGrave(infused);
+                infused.setHealth(10);
+                outside.setHealth(10);
+                int storage = BrazierRecipe.WILTING.burn(level, pos, 5);
+                helper.assertTrue(infused.getHealth() == 12 && outside.getHealth() == 10 && storage == 2,
+                        "Expected the first wilt to heal only the Grave-infused player and add burn time. Player health "
+                                + infused.getHealth() + ", outside Zombie health " + outside.getHealth()
+                                + ", storage " + storage);
+            } finally {
+                level.removePlayerImmediately(infused, Entity.RemovalReason.DISCARDED);
+                outside.discard();
+            }
+        }).thenSucceed();
     }
 
     private static BrazierBlockEntity place(GameTestHelper helper) {

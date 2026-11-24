@@ -5,13 +5,16 @@ import art.arcane.witchery.block.entity.AltarBlockEntity;
 import art.arcane.witchery.block.entity.BarrierBlockEntity;
 import art.arcane.witchery.block.entity.GrassperBlockEntity;
 import art.arcane.witchery.block.entity.RiteHeartBlockEntity;
+import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
+import art.arcane.witchery.ritual.RiteActivation;
 import art.arcane.witchery.ritual.RitualCircle;
 import art.arcane.witchery.ritual.WeatherRites;
+import art.arcane.witchery.world.DreamTravel;
 import art.arcane.witchery.world.WitcheryDimensions;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
@@ -34,6 +37,7 @@ import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Witch;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionUtils;
@@ -945,6 +949,134 @@ public final class CircleRiteTests {
             helper.assertTrue(!level.getBlockState(center).getValue(RiteHeartBlock.ACTIVE) && altar.power() == 5960,
                     "The rite ends without another debit when the altar falls out of range");
         }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_recharging_recipients")
+    public static void importedInfusionRechargeKeepsItsPulseAndOriginalPlayerBounds(GameTestHelper helper) {
+        floor(helper);
+        helper.setBlock(CENTER, block("circle"));
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var origin = Vec3.atLowerCornerOf(center).add(0, 0, 0.25);
+        var west = infusionPlayer(level, "WestBoundary", origin.add(-3.75, 0, 0), 195);
+        var east = infusionPlayer(level, "EastBoundary", origin.add(4.25, 0, 0), 100);
+        var above = infusionPlayer(level, "AboveGlyph", origin.add(0.25, 1.25, 0), 100);
+        var below = infusionPlayer(level, "BelowGlyph", origin.add(0.25, -1, 0), 100);
+        try {
+            var altar = chargedAltar(helper, false);
+            var heart = heart(helper);
+            heart.load(legacyRecharge());
+            tick(level, center, heart, 19);
+            helper.assertTrue(altar.power() == 10000 && infusionCharge(west) == 195 && infusionCharge(below) == 100,
+                    "The original saved recharge waits through nineteen ticks before a new debit or player pulse");
+            heart.load(heart.saveWithoutMetadata());
+            tick(level, center, heart, 1);
+            helper.assertTrue(altar.power() == 9960 && infusionCharge(west) == 200 && infusionCharge(below) == 110
+                    && infusionCharge(east) == 100 && infusionCharge(above) == 100,
+                    "Tick twenty charges once for eligible players whose hitboxes overlap the glyph layer within the original sphere");
+        } finally {
+            for (var player : List.of(west, east, above, below)) level.removePlayerImmediately(player, Entity.RemovalReason.DISCARDED);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_recharging_altar_cache")
+    public static void infusionRechargeRefreshesOrDiscardsItsCachedAltar(GameTestHelper helper) {
+        floor(helper);
+        helper.setBlock(CENTER, block("circle"));
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var heart = heart(helper);
+        var older = chargedAltar(helper, CENTER.west(13), false, 1);
+        heart.load(legacyRecharge());
+        tick(level, center, heart, 20);
+        var closer = chargedAltar(helper, CENTER.east(8), false, 1);
+
+        level.random.setSeed(2);
+        tick(level, center, heart, 20);
+        helper.assertTrue(older.power() == 9920 && closer.power() == 10000,
+                "An active recharge keeps drawing from the valid original altar between refreshes");
+        level.random.setSeed(0);
+        tick(level, center, heart, 20);
+        helper.assertTrue(older.power() == 9920 && closer.power() == 9960,
+                "The refresh picks the nearer altar before the next debit");
+
+        helper.setBlock(CENTER.east(8), Blocks.AIR);
+        level.random.setSeed(2);
+        tick(level, center, heart, 20);
+        helper.assertTrue(older.power() == 9880 && level.getBlockState(center).getValue(RiteHeartBlock.ACTIVE),
+                "Breaking the selected altar immediately falls back to a valid altar in range");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_infusion_manifestation_recipients")
+    public static void originalPlayerRitesHonorTheirEdgesAndManifestationCovenBonus(GameTestHelper helper) {
+        floor(helper);
+        helper.setBlock(CENTER, block("circle"));
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var origin = Vec3.atLowerCornerOf(center).add(0, 0, 0.25);
+        var inside = infusionPlayer(level, "InfusionRecipient", origin.add(-3.75, 0, 0), 100);
+        var outside = infusionPlayer(level, "InfusionOutside", origin.add(4.25, 0, 0), 100);
+        inside.getAbilities().invulnerable = true;
+        outside.getAbilities().invulnerable = true;
+        try {
+            var heart = heart(helper);
+            for (int type = 1; type <= 4; type++) {
+                var recipe = RiteActivation.legacyRecipeId(26 + type);
+                var cast = new CompoundTag();
+                cast.putString("Rite", recipe.toString());
+                cast.putInt("OfferingStep", 1);
+                cast.putBoolean("AltarPowerOffered", true);
+                cast.putInt("GlyphPhase", 19);
+                heart.load(cast);
+                tick(level, center, heart, 1);
+                helper.assertTrue(InfusionEnergy.type(inside) == type && infusionCharge(inside) == 200
+                                && infusionCharge(outside) == 100,
+                        "Only the original four-block sphere receives " + recipe);
+            }
+
+            inside.setPos(origin.add(-4.75, 0, 0));
+            outside.setPos(origin.add(5.25, 0, 0));
+            var cast = new CompoundTag();
+            cast.putString("Rite", "witchery:rite_of_manifestation");
+            cast.putInt("OfferingStep", 6);
+            cast.putBoolean("AltarPowerOffered", true);
+            cast.putInt("GlyphPhase", 19);
+            cast.putInt("CovenSize", 3);
+            cast.putInt("CovenSummoned", 3);
+            heart.load(cast);
+            tick(level, center, heart, 1);
+            helper.assertTrue(DreamTravel.manifestSeconds(inside) == 225 && DreamTravel.manifestSeconds(outside) == 0,
+                    "Three coven members add seventy-five seconds for recipients within the original five-block radius");
+        } finally {
+            level.removePlayerImmediately(inside, Entity.RemovalReason.DISCARDED);
+            level.removePlayerImmediately(outside, Entity.RemovalReason.DISCARDED);
+        }
+        helper.succeed();
+    }
+
+    private static CompoundTag legacyRecharge() {
+        var saved = new CompoundTag();
+        saved.putByteArray("Rituals", new byte[]{4});
+        saved.putByteArray("RitualStages", new byte[]{0});
+        return saved;
+    }
+
+    private static FakePlayer infusionPlayer(ServerLevel level, String name, Vec3 position, int charge) {
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), name));
+        player.setPos(position);
+        var saved = new CompoundTag();
+        saved.putInt("witcheryInfusionID", 2);
+        saved.putInt("witcheryInfusionCharges", charge);
+        saved.putInt("witcheryInfusionChargesMax", 200);
+        player.getPersistentData().put(Player.PERSISTED_NBT_TAG, saved);
+        level.addNewPlayer(player);
+        return player;
+    }
+
+    private static int infusionCharge(FakePlayer player) {
+        return player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getInt("witcheryInfusionCharges");
     }
 
     @GameTest(template = TEMPLATE, batch = "witchery_ward_remote", setupTicks = 5)

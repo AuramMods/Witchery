@@ -2,6 +2,7 @@ package art.arcane.witchery.block.entity;
 
 import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.infusion.InfusionEnergy;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.power.AltarPower;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
 import art.arcane.witchery.ritual.LandscapeRites;
@@ -41,6 +42,7 @@ interface RiteUpkeep {
         @Nullable private final UUID initiator;
         private String initiatorName = "";
         @Nullable private LandscapeRites.Progress landscape;
+        @Nullable private AltarBlockEntity rechargeSource;
         private int oreDepth;
         private int ticks;
         private boolean resumingLegacyWave;
@@ -123,15 +125,20 @@ interface RiteUpkeep {
         }
 
         boolean rechargeNearby(ServerLevel level, BlockPos heart) {
-            AltarBlockEntity altar = AltarPower.nearest(level, heart);
+            boolean legacy = RiteActivation.legacyId(rite) == 4;
+            AltarBlockEntity altar = legacy ? AltarPower.upkeepSource(level, heart, rechargeSource) : AltarPower.nearest(level, heart);
             if (altar == null || !altar.consumePower(40)) {
                 ServerPlayer player = caster(level);
                 if (player != null) player.displayClientMessage(Component.translatable("message.witchery.rite.missing_power"), true);
                 level.playSound(null, heart, SoundEvents.NOTE_BLOCK_SNARE.value(), SoundSource.BLOCKS, 0.9F, 1);
                 return false;
             }
-            for (ServerPlayer player : RiteHeartBlockEntity.nearbyPlayers(level, heart, 4)) {
-                if (InfusionEnergy.recharge(player, 10)) {
+            rechargeSource = altar;
+            for (ServerPlayer player : RiteHeartBlockEntity.nearbyPlayers(level, heart, 4, legacy)) {
+                if (!InfusionEnergy.recharge(player, 10)) continue;
+                if (legacy) {
+                    WitcheryNetwork.sendInfusionRecharge(level, player.position());
+                } else {
                     level.sendParticles(ParticleTypes.INSTANT_EFFECT, player.getX(), player.getY(0.5), player.getZ(),
                             8, 0.35, 0.65, 0.35, 0);
                     player.playSound(SoundEvents.NOTE_BLOCK_PLING.value(), 0.8F, 1);

@@ -239,6 +239,15 @@
 - [x] Restore the Poppet Shelf.
 - [x] Restore the Vampiric Poppet and Poppet Protection.
 
+## Infusion and Manifestation Rite Recipients (2026-11-24)
+
+- [x] Compare the original server's charge pulse, recipient coordinates, altar refresh, and Manifestation timer. The imported charge pulse first spent 40 at tick 20. It charged the west and below-glyph players, passed over the east and elevated players, and capped the west player at 200.
+- [x] Restore the original recipient bounds and feedback for all four infusion rites, recharging, and Manifestation. Three coven witches add 75 seconds to Manifestation. Recharging keeps a valid altar until the one-in-five refresh or until that altar is removed or out of range.
+- [x] Cast Infusion Recharging and Manifestation through the muted survival client. The eastern player position kept 180 charge and the western position gained ten. A normal Seer Stone cast with three fixture coven members granted 225 seconds. The client received the original spell bursts and both sounds through the existing particle packet.
+- [x] Restart the clean packaged server with the rite active. The client retained all 225 saved seconds of Manifestation and the recharge resumed from 190 to the 200 cap. A later Light cast emitted the original explosion and fizz while a player at the east edge kept their existing infusion.
+- [x] Load the active recharge record exported from a real 1.7.10 save on clean Forge and copied Auram using the same package. The rite resumed, drew 40 from the fixture altar, and stopped when the altar was removed on both servers.
+- [x] Run Java 17 data generation, JAR reobfuscation, and all 272 checked-in Forge GameTests. The prior Wilting check now waits for both targets to be tracked before running its Brazier pulse.
+
 ## Infernal Infusion and Voodoo Poppets (2026-11-19)
 
 - [x] Restore crafting and Taglock binding for Voodoo Poppets and their protection. The muted client bound a pig, pricked it to spend one Bone Needle and half a point of health, and pushed it with a charged poppet. All 42 required Forge GameTests passed, including the old signed poppet's saved wear.

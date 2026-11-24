@@ -13,6 +13,13 @@ public final class AltarPower {
     }
 
     @Nullable
+    public static AltarBlockEntity upkeepSource(ServerLevel level, BlockPos pos, @Nullable AltarBlockEntity current) {
+        if (current != null && !current.isRemoved() && current.isInRange(pos)
+                && level.random.nextInt(5) != 0 && current.isCore(level)) return current;
+        return nearest(level, pos);
+    }
+
+    @Nullable
     public static AltarBlockEntity nearest(ServerLevel level, BlockPos pos) {
         int range = AltarBlockEntity.MAX_RANGE;
         AltarBlockEntity closest = null;

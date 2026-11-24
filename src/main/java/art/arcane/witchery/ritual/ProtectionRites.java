@@ -118,10 +118,7 @@ public final class ProtectionRites {
         }
 
         private boolean consumePower(ServerLevel level, BlockPos heart) {
-            if (powerSource == null || powerSource.isRemoved() || !powerSource.isInRange(heart)
-                    || level.random.nextInt(5) == 0 || !powerSource.isCore(level)) {
-                powerSource = AltarPower.nearest(level, heart);
-            }
+            powerSource = AltarPower.upkeepSource(level, heart, powerSource);
             return powerSource != null && powerSource.consumePower(kind.power);
         }
 
