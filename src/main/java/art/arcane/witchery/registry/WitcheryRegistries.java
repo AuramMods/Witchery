@@ -2,6 +2,7 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.data.GrassSeedLootModifier;
+import art.arcane.witchery.data.LootingBonus;
 import art.arcane.witchery.data.PredictionLootModifier;
 import art.arcane.witchery.data.SmeltingTouchLootModifier;
 import art.arcane.witchery.data.WolfBoneLootModifier;
@@ -28,6 +29,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
+import net.minecraft.world.level.storage.loot.providers.number.LootNumberProviderType;
 import net.minecraftforge.common.loot.IGlobalLootModifier;
 import net.minecraftforge.common.world.BiomeModifier;
 import net.minecraftforge.common.world.StructureModifier;
@@ -39,6 +41,8 @@ import net.minecraftforge.registries.RegistryObject;
 public final class WitcheryRegistries {
     private static final DeferredRegister<Codec<? extends IGlobalLootModifier>> LOOT_MODIFIERS =
             DeferredRegister.create(ForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, Witchery.MODID);
+    private static final DeferredRegister<LootNumberProviderType> LOOT_NUMBER_PROVIDERS =
+            DeferredRegister.create(Registries.LOOT_NUMBER_PROVIDER_TYPE, Witchery.MODID);
     private static final DeferredRegister<Feature<?>> FEATURES = DeferredRegister.create(Registries.FEATURE, Witchery.MODID);
     private static final DeferredRegister<Codec<? extends ChunkGenerator>> CHUNK_GENERATORS =
             DeferredRegister.create(Registries.CHUNK_GENERATOR, Witchery.MODID);
@@ -56,6 +60,8 @@ public final class WitcheryRegistries {
             PARTICLES.register("altar_power", () -> new SimpleParticleType(false));
     public static final RegistryObject<ParticleType<CauldronParticleOptions>> CAULDRON_EFFECT =
             PARTICLES.register("cauldron_effect", CauldronParticleOptions::type);
+    public static final RegistryObject<LootNumberProviderType> LOOTING_BONUS =
+            LOOT_NUMBER_PROVIDERS.register("looting_bonus", () -> new LootNumberProviderType(new LootingBonus.Serializer()));
     public static final RegistryObject<Codec<HobgoblinSpawnModifier>> HOBGOBLIN_SPAWNS =
             BIOME_MODIFIERS.register("hobgoblin_spawns", () -> HobgoblinSpawnModifier.CODEC);
     public static final RegistryObject<Codec<DreamSpiritSpawnModifier>> DREAM_SPIRIT_SPAWNS =
@@ -102,6 +108,7 @@ public final class WitcheryRegistries {
         WitcheryRecipes.register(eventBus);
         WitcherySounds.register(eventBus);
         LOOT_MODIFIERS.register(eventBus);
+        LOOT_NUMBER_PROVIDERS.register(eventBus);
         FEATURES.register(eventBus);
         CHUNK_GENERATORS.register(eventBus);
         BIOME_MODIFIERS.register(eventBus);

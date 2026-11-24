@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Witch Hunter, Village Guard and Reflection Parity (2026-11-24)
+
+- Witch Hunters now recognize Wolfman-shaped Reflections for both target selection and Silver Bolts. Reflections keep the last copied form, vampire state and attack strength while their owner is outside detection range. They clear their copied equipment and owner name during that search.
+- The Hunter's Wooden Bolt count uses one integer roll through two plus Looting. The Guard adds a separate integer Looting roll to its base count. Rare awards roll from zero through 199 and drop below five plus Looting. Both entity tables use Forge's effective Looting level and keep their existing IDs. The regression compares the loot tables across 256 seeds at each of Looting zero and three.
+- The preceding packaged Forge server reset a saved Wolfman Reflection to its ordinary form. The rebuilt JAR loaded the same prepared save, kept the form, cleared the absent owner's helmet and produced a Silver Bolt from a nearby Witch Hunter through normal AI. The live entity loot table also produced a Wooden Bolt. The fixture supplied the Hunter, both Reflection forms and the arena. All 201 required GameTests, Java 17 data generation and JAR reobfuscation passed. Logs are in `build/qa-village-defenders`. Package SHA-256 `9565eef0a5c468f3df40c689c37aa360c4e53f0d03e5fa508428260b4599ff63`.
+
 ## Saved Hellhound Cures and Entity Import (2026-11-24)
 
 - The original Hellhound loader restarts the cure effects from the saved `ConversionTime`. The preceding packaged port resumed the timer at 1,197 ticks but retained Weakness and lacked Strength. The rebuilt port uses the same cure setup for reloads and golden apples. A regression checks both an active cure and an untreated Hellhound.

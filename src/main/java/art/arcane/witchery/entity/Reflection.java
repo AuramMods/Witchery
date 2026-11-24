@@ -239,14 +239,14 @@ public final class Reflection extends Monster implements RangedAttackMob {
         entityData.set(OWNER_NAME, owner == null ? "" : owner.getGameProfile().getName());
         String disguise = owner == null ? "" : MirrorDisguise.alias(owner);
         entityData.set(OWNER_SKIN, disguise.isEmpty() ? entityData.get(OWNER_NAME) : disguise);
-        entityData.set(WOLFMAN_MODEL, owner != null && Lycanthropy.isWolfman(owner));
-        vampire = owner != null && Vampirism.isVampire(owner);
-        getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(hasWolfmanModel() ? 6 : 2);
         for (EquipmentSlot slot : ARMOR) {
             setItemSlot(slot, owner == null ? ItemStack.EMPTY : owner.getItemBySlot(slot).copyWithCount(1));
         }
         ItemStack weapon = ItemStack.EMPTY;
         if (owner != null) {
+            entityData.set(WOLFMAN_MODEL, Lycanthropy.isWolfman(owner));
+            vampire = Vampirism.isVampire(owner);
+            getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(hasWolfmanModel() ? 6 : 2);
             if (!hasWolfmanModel()) weapon = copiedWeapon(owner);
             if (copyEffects) {
                 removeAllEffects();
