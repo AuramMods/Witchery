@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Silver Vat, Grassper and Crystal Ball Models (2026-11-24)
+
+- The Silver Vat uses its original basin, spout textures and animated blue liquid. Its item renders all four spouts. The placed model shows the spouts associated with adjacent block entities and displays one to eight silver pieces depending on the dust stored. The packaged client checked each of the 16 connection combinations, then collected all 16 tagged Silver Dust from the older save. The dust pieces disappeared from the basin.
+- The Grassper and Crystal Ball use their placed models in the inventory, on the ground, in a frame and in either hand. The client measured the restored Grassper offering rotation in Fancy graphics and verified that Fast graphics holds it still. The fixture supplied the block items, furnaces, dust and Grassper offering in a disposable survival world saved by the preceding build.
+- The survival player recovered the Grassper's tagged diamond and collected a second fixture batch of Silver Dust. Using the Crystal Ball consumed 500 altar power and an immediate second attempt kept the same cooldown timestamp. A normal dedicated restart retained both collected stacks, the empty Vat and the saved timestamp.
+- Local Java 17 reobfuscation, the original asset inventory audit and all 164 Forge GameTests passed on SHA-256 `9362ebcebcfc75cbc608397ecf33aca3800e28d948ec2df60b2ad14242c4a8f5`. The clean Forge client and dedicated server used the same JAR. The client used zero master volume and OpenAL No Output without taking focus. Local evidence is in `build/qa-silver-vat-model`.
+
 ## Witch's Cauldron Particles (2026-11-24)
 
 - Boiling cauldrons use the original tinted bubbles and power sparks from `power.png`. The visual update carries the actual fluid amount, tint and spark count. A powered brew shows one spark. An active ritual adds circling sparks as it progresses, up to six. Forge protocol 94 registers the particle type and requires matching client and server builds.

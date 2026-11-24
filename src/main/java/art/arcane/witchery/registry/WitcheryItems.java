@@ -551,6 +551,15 @@ public final class WitcheryItems {
             case "brazier" -> {
                 return new BlockEntityDisplayItem(block, WitcheryBlockEntities.BRAZIER);
             }
+            case "crystalball" -> {
+                return new BlockEntityDisplayItem(block, WitcheryBlockEntities.CRYSTAL_BALL);
+            }
+            case "grassper" -> {
+                return new BlockEntityDisplayItem(block, WitcheryBlockEntities.GRASSPER);
+            }
+            case "silvervat" -> {
+                return new BlockEntityDisplayItem(block, WitcheryBlockEntities.SILVER_VAT);
+            }
             case "spinningwheel" -> {
                 return new BlockEntityDisplayItem(block, WitcheryBlockEntities.SPINNING_WHEEL);
             }

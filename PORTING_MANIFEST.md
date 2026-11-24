@@ -136,6 +136,10 @@ Lifecycle stages:
 - `witchery:cauldron`
   - Boiling liquid emits two bubbles tinted by the brew and positioned at its actual fill height. The atlas extracts sixteen bubble sprites and eight spark sprites from the original `power.png` sheet.
   - A brew with sufficient power emits a spark. The count builds to six circling sparks as a ritual progresses. Block entity updates carry the liquid amount, tint and spark count, which are derived from the existing cauldron save data and current power.
+- `witchery:silvervat`
+  - The placed Vat and its item share the original basin and animated blue surface. The item shows all four spouts. The placed model shows one spout per neighboring block entity and up to eight silver pieces based on the stored dust.
+- `witchery:grassper` and `witchery:crystalball`
+  - The items use their placed 3D models. The Grassper item shows the empty plant. A placed plant displays its held offering, which turns in Fancy and Fabulous graphics. The Crystal Ball shows its stand and three nested translucent cubes.
 - `witchery:kettle`
   - The item shows the original empty basin. The placed model adds chains, a crossbar when the space above is open, up to two bottles, and four animated liquid frames. Liquid tint and particles distinguish water, brewing, ready and ruined batches. The block entity saves the original `Powered` flag and tracks power availability without charging a partial recipe.
 - `witchery:distilleryidle` and `witchery:distilleryburning`

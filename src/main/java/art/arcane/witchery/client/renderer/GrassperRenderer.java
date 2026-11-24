@@ -5,6 +5,8 @@ import art.arcane.witchery.block.GrassperBlock;
 import art.arcane.witchery.block.entity.GrassperBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import net.minecraft.client.GraphicsStatus;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -75,8 +77,10 @@ public final class GrassperRenderer implements BlockEntityRenderer<GrassperBlock
         if (!displayed.isEmpty()) {
             pose.pushPose();
             pose.translate(0.5, 0.38, 0.5);
-            long time = grassper.getLevel() == null ? 0 : grassper.getLevel().getGameTime();
-            pose.mulPose(Axis.YP.rotationDegrees(2 * (time % 180 + partialTick)));
+            if (grassper.getLevel() != null && Minecraft.getInstance().options.graphicsMode().get() != GraphicsStatus.FAST) {
+                long time = grassper.getLevel().getGameTime();
+                pose.mulPose(Axis.YP.rotationDegrees(2.5F * (time % 144 + partialTick)));
+            }
             pose.scale(0.75F, 0.75F, 0.75F);
             items.renderStatic(displayed, ItemDisplayContext.GROUND, light, overlay, pose, buffers,
                     grassper.getLevel(), (int) grassper.getBlockPos().asLong());
