@@ -2,7 +2,6 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.BrambleBlock;
-import art.arcane.witchery.block.BrewDispersalBlock;
 import art.arcane.witchery.block.CursedControls;
 import art.arcane.witchery.block.GlowGlobeBlock;
 import art.arcane.witchery.block.PlantMineBlock;
@@ -27,6 +26,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
@@ -37,7 +37,14 @@ import java.util.Set;
 public final class WitcheryCreativeTabs {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, Witchery.MODID);
 
-    private static final Set<String> HIDDEN_ITEMS = Set.of("ingredient", "bound_waystone", "creature_bound_waystone");
+    private static final Set<String> HIDDEN_ITEMS = Set.of(
+            "ingredient", "bound_waystone", "creature_bound_waystone",
+            "coffinblock", "demonheart", "dreamcatcher", "mirrorblock", "mirrorblock2",
+            "distilleryburning", "witchesovenburning",
+            "artichoke", "belladonna", "garlicplant", "mandrake", "mindrake", "snowbell", "wolfsbane", "wormwood",
+            "barrier", "bucketbrew", "cactus", "circle", "circleglyphinfernal", "circleglyphotherwhere",
+            "circleglyphritual", "force", "light", "lilypad", "placeditem", "slurp", "spiritportal",
+            "tormentstone", "vine", "wallgen", "web");
     private static final int[] TALISMAN_PATTERNS = {0, 1, 2, 3, 8, 16, 24, 64, 128, 192};
 
     public static final RegistryObject<CreativeModeTab> WITCHERY_TAB = CREATIVE_MODE_TABS.register("witchery_tab",
@@ -54,8 +61,7 @@ public final class WitcheryCreativeTabs {
     private static void addItem(Item item, String path, CreativeModeTab.Output output) {
         if (HIDDEN_ITEMS.contains(path) || item instanceof BrewBottleItem) return;
         if (item instanceof BlockItem blockItem && (blockItem.getBlock() instanceof CursedControls.Control
-                || blockItem.getBlock() instanceof BrewDispersalBlock
-                || blockItem.getBlock() instanceof GlowGlobeBlock)) return;
+                || blockItem.getBlock() instanceof LiquidBlock || blockItem.getBlock() instanceof GlowGlobeBlock)) return;
 
         if (item instanceof WitchWoodBlockItem wood) {
             for (WitchWoodType type : WitchWoodType.values()) output.accept(type.stack(wood));

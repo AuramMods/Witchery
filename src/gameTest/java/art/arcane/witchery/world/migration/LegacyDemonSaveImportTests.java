@@ -98,15 +98,15 @@ public final class LegacyDemonSaveImportTests {
                         && Integer.valueOf(3).equals(EnchantmentHelper.getEnchantments(book.getResult()).get(Enchantments.SHARPNESS)),
                 "The numeric enchanted book and its Sharpness enchantment must flatten together");
 
+        var importedWolfman = WitcheryEntities.WOLFMAN.get().create(level);
+        importedWolfman.load(entities.getCompound(1));
         var wolfman = WitcheryEntities.WOLFMAN.get().create(level);
-        wolfman.load(entities.getCompound(1));
-        var wolfmanSave = wolfman.saveWithoutId(new CompoundTag());
-        wolfman = WitcheryEntities.WOLFMAN.get().create(level);
-        wolfman.load(wolfmanSave);
+        wolfman.load(importedWolfman.saveWithoutId(new CompoundTag()));
         var former = wolfman.formerVillagerData();
-        helper.assertTrue(wolfman.isInfectious()
+        var formerIdentity = new UUID(3898142634792601333L, -8057526008622512232L);
+        helper.assertTrue(wolfman.getUUID().equals(formerIdentity) && wolfman.isInfectious()
                         && former.getCompound("VillagerData").getString("profession").equals("minecraft:librarian"),
-                "Keep the infected Wolfman's former librarian profession");
+                "Keep the infected Wolfman's UUID and former librarian profession");
         var offers = new MerchantOffers(former.getCompound("Offers"));
         helper.assertTrue(offers.size() == 1 && offers.get(0).getBaseCostA().is(Items.EMERALD)
                         && offers.get(0).getBaseCostA().getCount() == 5 && offers.get(0).getResult().is(Items.RED_WOOL)
@@ -115,21 +115,6 @@ public final class LegacyDemonSaveImportTests {
                         && offers.get(0).getResult().getTag().getString("LegacyBargain").equals("Wool")
                         && offers.get(0).getUses() == 3 && offers.get(0).getMaxUses() == 9,
                 "The Wolfman's saved villager trade must retain its wool color, tag, price and uses");
-        BlockPos spawn = helper.absolutePos(new BlockPos(2, 2, 2));
-        wolfman.moveTo(spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5);
-        level.addFreshEntity(wolfman);
-        UUID formerIdentity = wolfman.getUUID();
-        helper.assertTrue(WerewolfVillagers.revert(wolfman, true), "The imported Wolfman should revert normally");
-        var resident = WerewolfVillagers.findByTaglock(level.getServer(), formerIdentity);
-        helper.assertTrue(resident instanceof Villager, "Find the reverted villager using its original identity");
-        var villager = (Villager) resident;
-        ResetProfession.create().tryStart(level, villager, level.getGameTime());
-        helper.assertTrue(villager.getOffers().size() == 1
-                        && villager.getOffers().get(0).getResult().is(Items.RED_WOOL)
-                        && villager.getOffers().get(0).getUses() == 3 && villager.getVillagerXp() == 1,
-                "The imported Wolfman's trade should survive reversion and the villager's first job site check");
-        villager.discard();
-
         var imp = WitcheryEntities.IMP.get().create(level);
         imp.load(entities.getCompound(2));
         var impSave = imp.saveWithoutId(new CompoundTag());
@@ -141,6 +126,23 @@ public final class LegacyDemonSaveImportTests {
                         && impSave.getInt("Affection") == 17 && impSave.getInt("SecretsShared") == 2
                         && impSave.getLong("LastGiftTime") == 1800 && impSave.getLong("PowerUpUntil2") == 384000,
                 "The Imp must stay owned, seated and attached to its home with its original gift and contract progress");
-        helper.succeed();
+
+        BlockPos spawn = helper.absolutePos(new BlockPos(2, 2, 2));
+        wolfman.moveTo(spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5);
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.isPositionEntityTicking(spawn),
+                "The Wolfman's spawn position is entity-ticking")).thenExecute(() -> {
+            helper.assertTrue(level.addFreshEntity(wolfman) && level.getEntity(formerIdentity) == wolfman,
+                    "The imported Wolfman must be tracked under its saved UUID");
+            helper.assertTrue(WerewolfVillagers.revert(wolfman, true), "The imported Wolfman should revert normally");
+            var resident = WerewolfVillagers.findByTaglock(level.getServer(), formerIdentity);
+            helper.assertTrue(resident instanceof Villager, "Find the reverted villager using its original identity");
+            var villager = (Villager) resident;
+            ResetProfession.create().tryStart(level, villager, level.getGameTime());
+            helper.assertTrue(villager.getOffers().size() == 1
+                            && villager.getOffers().get(0).getResult().is(Items.RED_WOOL)
+                            && villager.getOffers().get(0).getUses() == 3 && villager.getVillagerXp() == 1,
+                    "The imported Wolfman's trade should survive reversion and the villager's first job site check");
+            villager.discard();
+        }).thenSucceed();
     }
 }

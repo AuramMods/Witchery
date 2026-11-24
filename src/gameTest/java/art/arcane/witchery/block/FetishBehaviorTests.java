@@ -105,13 +105,9 @@ public final class FetishBehaviorTests {
         var glyph = WitcheryBlocks.getRequired("circleglyphritual").get();
         for (BlockPos offset : RitualCircle.MEDIUM_RITE.offsets()) helper.setBlock(CENTER.offset(offset), glyph);
         var altar = chargedAltar(helper);
-        var needed = List.of(
-                placeMob(helper, WitcheryEntities.SPIRIT.get(), CENTER.offset(-2, 0, 2)),
-                placeMob(helper, WitcheryEntities.SPIRIT.get(), CENTER.south(2)),
-                placeMob(helper, WitcheryEntities.SPIRIT.get(), CENTER.offset(2, 0, 2)),
-                placeMob(helper, WitcheryEntities.BANSHEE.get(), CENTER.offset(-1, 0, -2)),
-                placeMob(helper, WitcheryEntities.BANSHEE.get(), CENTER.offset(1, 0, -2)));
-        var unrelated = placeMob(helper, WitcheryEntities.POLTERGEIST.get(), CENTER.east(3));
+        var spirits = List.of(CENTER.offset(-2, 0, 2), CENTER.south(2), CENTER.offset(2, 0, 2),
+                CENTER.offset(-1, 0, -2), CENTER.offset(1, 0, -2));
+        var bystander = CENTER.east(3);
         var ladder = WitcheryBlocks.getRequired("witchsladder").get().asItem();
         var offering = new ItemStack(ladder);
         offering.getOrCreateTag().putByte("BlockColor", (byte) 14);
@@ -119,13 +115,20 @@ public final class FetishBehaviorTests {
         stone.setHoverName(Component.literal("Circle keeper"));
         var boline = new ItemStack(WitcheryItems.getRequired("boline").get());
         boline.setDamageValue(9);
-        offer(helper, offering, new ItemStack(WitcheryIngredient.ATTUNED_STONE.item()), stone, boline);
 
-        // The structure can be ready before the server starts tracking entities in its chunks.
+        // Spawn the offerings after the destination chunks can accept ticking entities.
         helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
-                needed.stream().allMatch(mob -> level.getEntity(mob.getUUID()) == mob)
-                        && level.getEntity(unrelated.getUUID()) == unrelated,
-                "All spirits are tracked before activating the rite")).thenExecute(() -> {
+                level.isPositionEntityTicking(center) && level.isPositionEntityTicking(helper.absolutePos(bystander))
+                        && spirits.stream().map(helper::absolutePos).allMatch(level::isPositionEntityTicking),
+                "The circle and its offerings are in entity-ticking chunks")).thenExecute(() -> {
+            var needed = List.of(
+                    placeMob(helper, WitcheryEntities.SPIRIT.get(), spirits.get(0)),
+                    placeMob(helper, WitcheryEntities.SPIRIT.get(), spirits.get(1)),
+                    placeMob(helper, WitcheryEntities.SPIRIT.get(), spirits.get(2)),
+                    placeMob(helper, WitcheryEntities.BANSHEE.get(), spirits.get(3)),
+                    placeMob(helper, WitcheryEntities.BANSHEE.get(), spirits.get(4)));
+            var unrelated = placeMob(helper, WitcheryEntities.POLTERGEIST.get(), bystander);
+            offer(helper, offering, new ItemStack(WitcheryIngredient.ATTUNED_STONE.item()), stone, boline);
             helper.useBlock(CENTER);
             helper.assertTrue(helper.getBlockState(CENTER).getValue(RiteHeartBlock.ACTIVE), "The medium circle starts the binding rite");
             var heart = (RiteHeartBlockEntity) helper.getBlockEntity(CENTER);

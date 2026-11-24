@@ -76,19 +76,23 @@ public final class LegacyWereVillagerSaveImportTests {
 
         BlockPos spawn = helper.absolutePos(new BlockPos(2, 2, 2));
         wereVillager.moveTo(spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5);
-        helper.assertTrue(level.addFreshEntity(wereVillager) && WerewolfVillagers.transform(wereVillager, true),
-                "The migrated werevillager must still transform through the ordinary conversion");
-        var wolfman = WerewolfVillagers.findByTaglock(level.getServer(), originalIdentity);
-        helper.assertTrue(wolfman instanceof Wolfman wolf && WerewolfVillagers.revert(wolf, false),
-                "The transformed villager must remain curable through its original identity");
-        var restored = WerewolfVillagers.findByTaglock(level.getServer(), originalIdentity);
-        helper.assertTrue(restored instanceof Villager && restored.getType() == EntityType.VILLAGER,
-                "The cured mob must be a normal villager");
-        var cured = (Villager) restored;
-        ResetProfession.create().tryStart(level, cured, level.getGameTime());
-        assertTrades(helper, cured);
-        cured.discard();
-        helper.succeed();
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.isPositionEntityTicking(spawn),
+                "The Werevillager's spawn position is entity-ticking")).thenExecute(() -> {
+            helper.assertTrue(level.addFreshEntity(wereVillager) && level.getEntity(originalIdentity) == wereVillager,
+                    "The migrated werevillager must be tracked under its saved UUID");
+            helper.assertTrue(WerewolfVillagers.transform(wereVillager, true),
+                    "The migrated werevillager must still transform through the ordinary conversion");
+            var wolfman = WerewolfVillagers.findByTaglock(level.getServer(), originalIdentity);
+            helper.assertTrue(wolfman instanceof Wolfman wolf && WerewolfVillagers.revert(wolf, false),
+                    "The transformed villager must remain curable through its original identity");
+            var restored = WerewolfVillagers.findByTaglock(level.getServer(), originalIdentity);
+            helper.assertTrue(restored instanceof Villager && restored.getType() == EntityType.VILLAGER,
+                    "The cured mob must be a normal villager");
+            var cured = (Villager) restored;
+            ResetProfession.create().tryStart(level, cured, level.getGameTime());
+            assertTrades(helper, cured);
+            cured.discard();
+        }).thenSucceed();
     }
 
     private static void assertTrades(GameTestHelper helper, Villager villager) {

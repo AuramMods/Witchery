@@ -1,6 +1,7 @@
 package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.WitchesCauldronBlock;
 import art.arcane.witchery.block.entity.AltarBlockEntity;
 import art.arcane.witchery.block.entity.SlurpBlockEntity;
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
@@ -216,7 +217,7 @@ public final class CauldronBrewParityTests {
             level.setBlockAndUpdate(egg, Blocks.DRAGON_EGG.defaultBlockState());
             var altar = (AltarBlockEntity) level.getBlockEntity(altarPos);
             var saved = altar.saveWithFullMetadata();
-            saved.putInt("Capacity", 250);
+            saved.putInt("MaxPower", 250);
             saved.putFloat("Power", 150);
             altar.load(saved);
             var brew = tank.getFluidInTank(0).copy();
@@ -233,14 +234,17 @@ public final class CauldronBrewParityTests {
                 helper.assertTrue(altar.power() >= 150, "The dispenser did not debit the altar's 150 stored power");
                 pulse(helper, dispenser, false);
                 brew.setAmount(2000);
-                tank.fill(brew, IFluidHandler.FluidAction.EXECUTE);
+                helper.assertTrue(tank.fill(brew, IFluidHandler.FluidAction.EXECUTE) == 2000,
+                        "Refill the cauldron with two buckets of the saved brew");
+                helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
+                        level.getBlockState(pos).getValue(WitchesCauldronBlock.BOILING), "The refilled brew is boiling"))
+                        .thenExecute(() -> pulse(helper, dispenser, true)).thenIdle(6).thenExecute(() -> {
+                            helper.assertTrue(tank.getFluidInTank(0).isEmpty() && dispenser.getItem(0).is(Items.GLASS_BOTTLE)
+                                            && dispenser.getItem(0).getCount() == 1,
+                                    "Drain the partial hot brew without using a bottle. Remaining brew: "
+                                            + tank.getFluidInTank(0).getAmount() + ", altar power: " + altar.power());
+                        }).thenSucceed();
             });
-        });
-        helper.runAfterDelay(225, () -> pulse(helper, dispenser, true));
-        helper.runAfterDelay(231, () -> {
-            helper.assertTrue(tank.getFluidInTank(0).isEmpty() && dispenser.getItem(0).is(Items.GLASS_BOTTLE),
-                    "A partial hot brew drains as in the original without using a bottle");
-            helper.succeed();
         });
     }
 

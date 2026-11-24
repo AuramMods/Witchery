@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Creative Visibility and Original Registry Audit (2026-11-23)
+
+- The original Forge fixture's FML registry contains 121 Witchery block names and 217 item names. Every name is present in the modern registration lists. The chunk importer handles the eight crops, Spanish Moss, the cursed lever and both cursed buttons through their state readers and the other 109 through named entries. `wallgen` was a transient plan in the original and imports as air.
+- The Witchery tab now keeps original technical blocks and duplicate aliases out of its display. The block IDs and the corresponding usable items remain registered. Seeds use block item classes internally, so filter the eight planted crop IDs by name to preserve the actual seeds. The creative GameTest checks both sides of this distinction.
+- A full local run reproduced the old Witch's Ladder failure when the destination chunks were still promoting. The fixture now spawns the offerings after those chunks are entity-ticking. The 153 checked-in GameTests, data generation and reobfuscation passed. See `creative-internal-blocks-final-gametest.log`, `creative-internal-blocks-datagen.log` and `creative-internal-blocks-jar.log` under `/tmp/witchery-flowing-spirit-current`.
+- Two repeat runs exposed an early UUID lookup after Wolfman reversion and a failed partial brew dispenser pulse. Both villager conversion fixtures now spawn in ticking chunks and assert the original UUID, and the dispenser fixture waits for the refilled brew's boiling state. The complete 153-case headless replay passed after those fixture changes. See `creative-fixtures-final-gametest.log`.
+- The isolated Forge client opened creative inventory and the four-slot Urn. The client and dedicated server ran JAR `142c9e35f2a900d2fb1c9f8f9b90374399a5fd46846be0a7f7e487c5302b720d`. Master volume was zero, OpenAL used No Output and the focus monitor saw no activation. See `creative-internal-blocks-native.log`.
+
 ## Auram Werewolf Ranks Six Through Ten (2026-11-23)
 
 - The player completed ten unarmed airborne kills and turned in the rank-five hunt. A grounded control gave no credit, and an eleventh airborne kill left the counter at ten. Counted trials retain `STARTED` at the target count until the player turns them in at the altar. See `auram-wolf-airborne-trial.log` in the directory named by `/tmp/witchery-flowing-spirit-current`.

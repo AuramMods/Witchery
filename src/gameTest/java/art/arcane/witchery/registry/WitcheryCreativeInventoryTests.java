@@ -92,8 +92,31 @@ public final class WitcheryCreativeInventoryTests {
         helper.succeed();
     }
 
+    @GameTest(template = "qa_imp_contracts")
+    public static void creativeInventoryHidesInternalBlocksAndKeepsPlaceableItems(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var tab = WitcheryCreativeTabs.WITCHERY_TAB.get();
+        tab.buildContents(new CreativeModeTab.ItemDisplayParameters(level.enabledFeatures(), true, level.registryAccess()));
+
+        for (String path : List.of("barrier", "belladonna", "brew", "bucketbrew", "cactus", "circle",
+                "circleglyphinfernal", "circleglyphotherwhere", "circleglyphritual", "coffinblock", "demonheart",
+                "distilleryburning", "dreamcatcher", "force", "garlicplant", "light", "lilypad", "mirrorblock", "mirrorblock2",
+                "placeditem", "slurp", "spiritflowing", "spiritportal", "tormentstone", "vine", "wallgen", "web",
+                "witchesovenburning")) {
+            helper.assertTrue(ForgeRegistries.ITEMS.containsKey(ResourceLocation.fromNamespaceAndPath(Witchery.MODID, path))
+                            && variants(tab, path).isEmpty(),
+                    "Keep the legacy internal ID registered and out of creative: " + path);
+        }
+        for (String path : List.of("brew_of_vines", "candelabra", "chalice", "chalkheart", "chalkinfernal", "coffin",
+                "demon_heart", "distilleryidle", "dreamweave_of_nightmares", "garlic", "mirror", "seedsbelladonna",
+                "seedswolfsbane", "thrown_web", "tormentportal", "witchesovenidle")) {
+            helper.assertTrue(variants(tab, path).size() == 1, "Show one usable entry in creative: " + path);
+        }
+        helper.succeed();
+    }
+
     private static List<ItemStack> variants(CreativeModeTab tab, String path) {
-        var item = WitcheryItems.getRequired(path).get();
+        var item = ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath(Witchery.MODID, path));
         return tab.getDisplayItems().stream().filter(stack -> stack.is(item)).toList();
     }
 
