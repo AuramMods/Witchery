@@ -201,6 +201,12 @@ public final class WitcheryPlayerData {
         bloodReserve = Mth.clamp(amount, 0, 250);
     }
 
+    public boolean collectBloodReserve(int amount) {
+        int previous = bloodReserve;
+        setBloodReserve(previous + amount);
+        return previous != bloodReserve;
+    }
+
     public int getMaxBloodPower() {
         return 500 + (werewolfLevel >= 2 ? vampireLevel / 2 : vampireLevel) * 250;
     }

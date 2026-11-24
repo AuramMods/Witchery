@@ -2,6 +2,16 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Vampire Blood Reserve and Targeting (2026-11-24)
+
+- A headless Witchery 0.24.1 server confirmed that an unarmed mortal's direct kill saved 180 blood while reporting zero available. After loading rank one with 600 blood power, normal use of the sheathed Cane Sword consumed that reserve and reached rank two at 750 blood power. The original death handler keys collection to the direct player damage source and the victim's saved blood. This includes villagers, guards and players.
+- The previous packaged port collected blood only on a direct drawn Cane Sword strike. A muted survival client killed a weakened villager with an Iron Sword and gained zero reserve. The same client also displayed the villager's 180 blood when the crosshair hit an intervening cow.
+- The rebuilt port collects direct kills into the saved player reserve up to the original cap of 250. Mortal reserves become available on turning, and sheathed use follows the first vampire trial rules. The closest pickable entity now determines whether the blood HUD displays a target. The existing block visibility check still applies.
+- The packaged clean Forge client hid the reading when a cow intervened and showed 180 once it moved aside. A normal Iron Sword attack collected the 180 blood. Using the supplied sheathed Cane Sword then advanced the player from rank one and 600 blood to rank two and 750 blood. An ordinary restart preserved the new rank, blood power and empty reserve. All client launches used zero master volume and OpenAL No Output, and the focus monitor logged no foreground application changes.
+- A second clean Forge run used two survival clients. The same intervening cow hid the mortal player's blood count, the exposed player became the tracked target, and the vampire gained seven blood through its ordinary feeding power. The victim lost one health after the fixture waited for vanilla's login protection to expire.
+- The same packaged JAR passed the reserve and target checks on copied Auram. The muted survival client joined at rank one with 600 blood. It hid the villager reading behind the cow, collected 180 with the supplied Iron Sword, and used the supplied sheathed Cane Sword to save rank two with 750 blood and an empty reserve.
+- Java 17 data generation, JAR reobfuscation and all 230 required local Forge GameTests passed. The two new cases cover mortal collection and save reload, indirect and no-drop controls, the cap, sheathed use and the full-blood control. Logs and the exact package are in `build/qa-vampire-reserve-parity`. Package SHA-256 `d5737fcdead09bb6c17e2a586dd898636a048f01c8fbab8dbdaca6347dc29963`.
+
 ## Legacy Villager Blood (2026-11-24)
 
 - Witchery 0.24.1 stored the blood held by a villager in the entity's root `WitcheryExtendedVillager` compound. The previous packaged build discarded that value for ordinary villagers and Werevillagers. The rebuilt port imports it when the entity loads, retains unrelated Forge data, and gives an existing modern blood value precedence.

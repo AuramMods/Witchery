@@ -118,10 +118,11 @@ public final class ClientVampirism {
         Vec3 look = player.getLookAngle().scale(5);
         Vec3 end = player.level().clip(new ClipContext(eye, eye.add(look), ClipContext.Block.COLLIDER,
                 ClipContext.Fluid.NONE, player)).getLocation();
-        var target = ProjectileUtil.getEntityHitResult(player, eye, end, player.getBoundingBox().expandTowards(look).inflate(1),
-                entity -> entity.isPickable() && (entity instanceof Villager || entity instanceof VillageGuard || entity instanceof Player),
+        var hit = ProjectileUtil.getEntityHitResult(player, eye, end, player.getBoundingBox().expandTowards(look).inflate(1),
+                entity -> entity.isPickable() && !entity.isSpectator(),
                 eye.distanceToSqr(end));
-        int id = target == null ? -1 : target.getEntity().getId();
+        var target = hit == null ? null : hit.getEntity();
+        int id = target instanceof Villager || target instanceof VillageGuard || target instanceof Player ? target.getId() : -1;
         if (id != aimingAt) {
             aimingAt = id;
             trackedBlood = -1;

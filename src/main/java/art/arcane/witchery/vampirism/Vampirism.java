@@ -7,7 +7,6 @@ import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.entity.Reflection;
 import art.arcane.witchery.entity.VillageGuard;
 import art.arcane.witchery.entity.Vampire;
-import art.arcane.witchery.item.CaneSwordItem;
 import art.arcane.witchery.item.VampireBookItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.network.WitcheryNetwork;
@@ -27,7 +26,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -147,9 +145,8 @@ public final class Vampirism {
         return WitcheryPlayerDataProvider.get(player).map(data -> {
             int reserve = data.getBloodReserve();
             if (reserve == 0 || data.getBloodPower() >= data.getMaxBloodPower()) return false;
-            data.setBloodPower(data.getBloodPower() + reserve);
             data.setBloodReserve(0);
-            sync(player, data);
+            feed(player, data, reserve, data.getMaxBloodPower(), -1, null);
             return true;
         }).orElse(false);
     }
@@ -182,13 +179,13 @@ public final class Vampirism {
     }
 
     public static void onKilled(LivingEntity victim, ServerPlayer killer, DamageSource source) {
-        if (source.getDirectEntity() == killer && victim.getType() == EntityType.BLAZE) {
-            WitcheryPlayerDataProvider.get(killer).ifPresent(data -> {
-                if (data.getVampireLevel() == 5 && canAdvance(data)) advanceTrial(killer, data, 20);
-            });
-        }
-        if (source.is(DamageTypes.PLAYER_ATTACK) && CaneSwordItem.isDrawn(killer.getMainHandItem())) {
-            fillCaneReserve(victim, killer);
+        if (source.getDirectEntity() == killer) {
+            if (victim.getType() == EntityType.BLAZE) {
+                WitcheryPlayerDataProvider.get(killer).ifPresent(data -> {
+                    if (data.getVampireLevel() == 5 && canAdvance(data)) advanceTrial(killer, data, 20);
+                });
+            }
+            collectBloodReserve(victim, killer);
         }
         boolean incompleteBook = false;
         for (ItemStack stack : killer.getInventory().items) {
@@ -208,18 +205,15 @@ public final class Vampirism {
         }
     }
 
-    private static void fillCaneReserve(LivingEntity victim, ServerPlayer killer) {
-        if (victim.getPersistentData().getBoolean("WITCNoDrops")) return;
+    private static void collectBloodReserve(LivingEntity victim, ServerPlayer killer) {
+        if (!(victim instanceof Player) && victim.getPersistentData().getBoolean("WITCNoDrops")) return;
         int blood = victim instanceof Villager villager ? BloodFeeding.blood(villager)
                 : victim instanceof VillageGuard guard ? guard.getBlood()
-                : victim instanceof ServerPlayer player ? WitcheryPlayerDataProvider.get(player).map(WitcheryPlayerData::getHumanBlood).orElse(0) : 0;
+                : victim instanceof Player player ? WitcheryPlayerDataProvider.get(player).map(WitcheryPlayerData::getHumanBlood).orElse(0) : 0;
         if (blood == 0) return;
 
         WitcheryPlayerDataProvider.get(killer).ifPresent(data -> {
-            if (data.getVampireLevel() == 0) return;
-            int before = data.getBloodReserve();
-            data.setBloodReserve(before + blood);
-            if (data.getBloodReserve() != before) sync(killer, data);
+            if (data.collectBloodReserve(blood)) sync(killer, data);
         });
     }
 
