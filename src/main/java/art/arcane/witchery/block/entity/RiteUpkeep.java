@@ -88,7 +88,7 @@ interface RiteUpkeep {
             return rechargeNearby(level, heart);
         }
 
-        private boolean rechargeNearby(ServerLevel level, BlockPos heart) {
+        boolean rechargeNearby(ServerLevel level, BlockPos heart) {
             AltarBlockEntity altar = AltarPower.nearest(level, heart);
             if (altar == null || !altar.consumePower(40)) {
                 ServerPlayer player = caster(level);

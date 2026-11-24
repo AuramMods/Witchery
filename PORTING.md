@@ -642,6 +642,17 @@
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 261 local Forge GameTests. The new checks cover the realm rules and a queued nighttime cast. The Witch's Ladder fixture verifies its exact debit within one server tick.
 - [x] Repeat the queued cast, Nether Necromancy, and End Eclipse in copied Auram with the muted background client. Confirm phase four of the Nether storm on the copied headless server with clear Overworld weather before and after.
 
+## Heart Glyph Cast Timing (2026-11-24)
+
+- [x] Audit the first effect pulse for all 96 original registrations. Restore the glyph's clock during idle time, the 20-tick offering cadence, and the 5-, 10-, 15-, 30-, and 60-tick effect intervals.
+- [x] Run the first Storm and Rain of Toads lightning on the effect pulse. Start ward and recharge upkeep on the pulse that launches each rite.
+- [x] Save the glyph phase while a cast is active. Earlier Forge saves retain their next `StepTicks` deadline and join the glyph clock after it. Test a paid Eclipse from the earlier format without a second altar debit.
+- [x] Cast portable Eclipse in clean Forge survival. Shut down after the three offerings and inspect the pending phase in the saved region. Restart and reconnect to one discharged Attuned Stone and the same day's midnight.
+- [x] Compare Sky's Wrath on two packaged headless servers. The preceding JAR took 50 ticks from the last offering to the first lightning. The rebuilt package struck on the next 30-tick glyph phase and struck again 30 ticks later.
+- [x] Load a live stage-one storm saved by the preceding packaged build. Verify its remaining loaded ticks and that its next strike joins the glyph clock at stage two.
+- [x] Regenerate resources and reobfuscate locally. All 262 checked-in GameTests passed, including exact Eclipse and Storm phases across save and reload, a saved barrier refresh, and exact altar debits.
+- [x] Cast portable Eclipse through the muted background client in copied Auram. Verify midnight, an empty Heart Glyph, and exactly one discharged stone in the player's saved inventory.
+
 ## Chalk Rite Offering Sources (2026-11-24)
 
 - [x] Restore the original search for dropped items, optional Waystones, and living offerings. Measure three-dimensional distance from the Heart Glyph block's lower corner and search the one-block-high glyph layer. Small, medium, and large rites accept drops within four, six, and eight blocks. Living offerings get one extra block of distance within the same search layer.

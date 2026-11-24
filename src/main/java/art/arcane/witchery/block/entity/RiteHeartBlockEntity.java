@@ -87,6 +87,8 @@ import java.util.UUID;
 
 public final class RiteHeartBlockEntity extends BlockEntity {
     private static final int STEP_TICKS = 20;
+    // The least common multiple of the foreground rite intervals.
+    private static final int GLYPH_CLOCK_PERIOD = 60;
     private static final int MANIFEST_RANGE = 5;
     private static final int MANIFEST_DURATION = 150;
     private static final int INFUSION_RANGE = 4;
@@ -101,11 +103,14 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     }
 
     private record SavedUpkeep(RiteUpkeep rite, int order) {}
+    private enum FinalStep { INVALID, LIVING, WAYSTONE, ALTAR, EFFECT }
     @Nullable
     private ResourceLocation activeRite;
     @Nullable
     private UUID initiator;
     private int stepTicks;
+    private int glyphPhase;
+    private boolean resumeRelativePulse;
     private int offeringStep;
     private boolean livingOffered;
     private boolean altarPowerOffered;
@@ -126,6 +131,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (!(level instanceof ServerLevel server)) {
             return;
         }
+        heart.glyphPhase = (heart.glyphPhase + 1) % GLYPH_CLOCK_PERIOD;
         heart.restoreOfferingReturns(server);
         heart.updateRedstone(server, state);
         heart.updateActiveState(server);
@@ -134,12 +140,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             level.blockEntityChanged(pos);
         }
         if (heart.activeRite != null) {
-            if (++heart.stepTicks >= heart.pulseInterval()) {
-                heart.stepTicks = 0;
-                if (heart.storm != null) heart.advanceStorm(server);
-                else if (heart.toadRainStage >= 0) heart.advanceToadRain(server);
-                else heart.advance(server);
-            }
+            heart.tickCast(server);
             level.blockEntityChanged(pos);
         }
         // Moving Earth can relocate this block entity. Finish bookkeeping before it copies the heart's state.
@@ -155,8 +156,46 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (powered) toggle(level, null);
     }
 
-    private int pulseInterval() {
+    private int relativeInterval() {
         return storm == null && toadRainStage < 0 ? STEP_TICKS : WeatherRites.STORM_INTERVAL;
+    }
+
+    private boolean usesGlyphClock() {
+        return activeRite != null && RiteActivation.legacyId(activeRite) != Integer.MAX_VALUE;
+    }
+
+    private void tickCast(ServerLevel level) {
+        boolean clocked = usesGlyphClock();
+        ItemRiteRecipe rite = level.getRecipeManager().byKey(activeRite).orElse(null) instanceof ItemRiteRecipe recipe ? recipe : null;
+        if (clocked && !resumeRelativePulse) {
+            if (glyphPhase % clockInterval(rite) != 0) return;
+        } else {
+            if (++stepTicks < relativeInterval()) return;
+            stepTicks = 0;
+            if (resumeRelativePulse) {
+                // A prior Forge save knows the delay to its next step, but has no glyph phase.
+                glyphPhase = clockInterval(rite) % GLYPH_CLOCK_PERIOD;
+                resumeRelativePulse = false;
+            }
+        }
+        if (storm != null) advanceStorm(level);
+        else if (toadRainStage >= 0) advanceToadRain(level);
+        else advance(level, rite);
+    }
+
+    private int clockInterval(@Nullable ItemRiteRecipe rite) {
+        if (storm != null || toadRainStage >= 0) return WeatherRites.STORM_INTERVAL;
+        if (rite == null || covenSummoned < covenSize || offeringStep < rite.sacrifices().size()
+                || finalStep(rite, rite.sacrifices().size()) != FinalStep.EFFECT) return STEP_TICKS;
+        return switch (rite.action()) {
+            case RAISE_EARTH, RAISE_EARTH_MEDIUM, RAISE_EARTH_LARGE -> 5;
+            case TRANSPOSE_ORES -> RiteOfTransposition.ORE_PULSE_TICKS;
+            case RAISE_VOLCANO, RAISE_PORTABLE_VOLCANO -> 15;
+            case ECLIPSE, CALL_STORM, CALL_GREATER_STORM, CALL_PORTABLE_STORM, RAIN_TOADS,
+                    GLYPHIC_TRANSFORMATION -> WeatherRites.STORM_INTERVAL;
+            case CALL_BEASTS -> 60;
+            default -> STEP_TICKS;
+        };
     }
 
     public void toggle(ServerLevel level, @Nullable Player player) {
@@ -187,8 +226,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         failSound(level);
     }
 
-    private void advance(ServerLevel level) {
-        if (!(level.getRecipeManager().byKey(activeRite).orElse(null) instanceof ItemRiteRecipe rite)) {
+    private void advance(ServerLevel level, @Nullable ItemRiteRecipe rite) {
+        if (rite == null) {
             abort(level, "message.witchery.rite.unknown");
             return;
         }
@@ -228,27 +267,33 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         itemOfferingEffect(level, offering.position());
     }
 
-    private void advanceFinalOfferings(ServerLevel level, ItemRiteRecipe rite, BlockPos pos, int required) {
+    private FinalStep finalStep(ItemRiteRecipe rite, int required) {
         boolean optionalWaystone = rite.action().acceptsOptionalWaystone();
         boolean awaitingWaystone = optionalWaystone && offeringStep == required;
         boolean stagedLiving = rite.stagesLivingOffering();
         // Earlier Hell on Earth saves consumed the villager during the Waystone step.
         boolean needsLiving = stagedLiving && !livingOffered && (!optionalWaystone || awaitingWaystone);
-        if (offeringStep > required + (optionalWaystone ? 1 : 0)) {
-            abort(level, "message.witchery.rite.unknown");
-        } else if (needsLiving && (!rite.chargesBeforeLivingOffering() || altarPowerOffered)) {
-            livingOffered = offerLiving(level, rite, pos);
-        } else if (awaitingWaystone) {
-            offerWaystone(level, rite, pos);
-        } else if (!altarPowerOffered && (rite.stagesAltarPower() || stagedLiving)) {
-            AltarBlockEntity altar = rite.power() > 0 ? AltarPower.nearest(level, pos) : null;
-            if (rite.power() > 0 && (altar == null || !altar.consumePower(rite.power()))) {
-                abort(level, "message.witchery.rite.missing_power");
-            } else {
-                altarPowerOffered = true;
+        if (offeringStep > required + (optionalWaystone ? 1 : 0)) return FinalStep.INVALID;
+        if (needsLiving && (!rite.chargesBeforeLivingOffering() || altarPowerOffered)) return FinalStep.LIVING;
+        if (awaitingWaystone) return FinalStep.WAYSTONE;
+        if (!altarPowerOffered && (rite.stagesAltarPower() || stagedLiving)) return FinalStep.ALTAR;
+        return FinalStep.EFFECT;
+    }
+
+    private void advanceFinalOfferings(ServerLevel level, ItemRiteRecipe rite, BlockPos pos, int required) {
+        switch (finalStep(rite, required)) {
+            case INVALID -> abort(level, "message.witchery.rite.unknown");
+            case LIVING -> livingOffered = offerLiving(level, rite, pos);
+            case WAYSTONE -> offerWaystone(level, rite, pos);
+            case ALTAR -> {
+                AltarBlockEntity altar = rite.power() > 0 ? AltarPower.nearest(level, pos) : null;
+                if (rite.power() > 0 && (altar == null || !altar.consumePower(rite.power()))) {
+                    abort(level, "message.witchery.rite.missing_power");
+                } else {
+                    altarPowerOffered = true;
+                }
             }
-        } else {
-            finish(level, rite);
+            case EFFECT -> finish(level, rite);
         }
     }
 
@@ -437,10 +482,12 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         }
         if (rite.action().callsStorm()) {
             prepareStorm(level, rite, pos);
+            if (storm != null && usesGlyphClock()) advanceStorm(level);
             return;
         }
         if (action == ItemRiteRecipe.Action.RAIN_TOADS) {
             toadRainStage = 0;
+            if (usesGlyphClock()) advanceToadRain(level);
             return;
         }
         if (action == ItemRiteRecipe.Action.PRIOR_INCARNATION) {
@@ -548,7 +595,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             var progress = LandscapeRites.pulse(level, pos, landscape, covenSize, caster, terrainChanges::add);
             if (progress != null) upkeep.add(RiteUpkeep.Timed.landscape(rite.id(), covenSize, initiator, progress));
         } else if (rite.action() == ItemRiteRecipe.Action.RECHARGE_INFUSION) {
-            upkeep.add(RiteUpkeep.Timed.recharge(rite.id(), covenSize, initiator));
+            var recharge = RiteUpkeep.Timed.recharge(rite.id(), covenSize, initiator);
+            if (!usesGlyphClock() || recharge.rechargeNearby(level, pos)) upkeep.add(recharge);
         }
         if (talismanPattern == 0) nextCast(level);
         level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
@@ -598,7 +646,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             abort(level, "message.witchery.rite.landscape_too_far");
             return false;
         }
-        upkeep.add(new RiteUpkeep.Ward(new ProtectionRites.Upkeep(kind, target)));
+        var progress = new ProtectionRites.Upkeep(kind, target);
+        if (!usesGlyphClock() || progress.tick(level, heart)) upkeep.add(new RiteUpkeep.Ward(progress));
         return true;
     }
 
@@ -820,6 +869,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             covenSummoned = 0;
         }
         stepTicks = 0;
+        resumeRelativePulse = false;
         offeringStep = 0;
         livingOffered = false;
         altarPowerOffered = false;
@@ -903,7 +953,9 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         livingOffered = tag.getBoolean("LivingOffered");
         altarPowerOffered = tag.getBoolean("AltarPowerOffered");
         legacyOfferingReturns = !hasOfferingStep && activeRite != null && !sacrificed.isEmpty();
-        stepTicks = Mth.clamp(tag.getInt("StepTicks"), 0, pulseInterval() - 1);
+        stepTicks = Mth.clamp(tag.getInt("StepTicks"), 0, relativeInterval() - 1);
+        glyphPhase = Math.floorMod(tag.getInt("GlyphPhase"), GLYPH_CLOCK_PERIOD);
+        resumeRelativePulse = usesGlyphClock() && !tag.contains("GlyphPhase", Tag.TAG_ANY_NUMERIC);
     }
 
     private static int upkeepOrder(CompoundTag tag) {
@@ -1012,6 +1064,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (activeRite != null) {
             tag.putString("Rite", activeRite.toString());
             tag.putInt("StepTicks", stepTicks);
+            if (usesGlyphClock() && !resumeRelativePulse) tag.putInt("GlyphPhase", glyphPhase);
             if (!legacyOfferingReturns) tag.putInt("OfferingStep", offeringStep);
             if (livingOffered) tag.putBoolean("LivingOffered", true);
             if (altarPowerOffered) tag.putBoolean("AltarPowerOffered", true);

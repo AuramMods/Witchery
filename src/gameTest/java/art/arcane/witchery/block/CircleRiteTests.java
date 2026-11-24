@@ -327,7 +327,6 @@ public final class CircleRiteTests {
         ring(helper, RitualCircle.SMALL_RITE, "circleglyphritual");
         var level = helper.getLevel();
         var center = helper.absolutePos(CENTER);
-        var heart = heart(helper);
         waitForOfferings(helper, new ItemStack(Items.IRON_AXE), new ItemStack(WitcheryIngredient.QUICKLIME.item()),
                 new ItemStack(WitcheryIngredient.CHARGED_ATTUNED_STONE.item())).thenExecute(() -> {
             long originalTime = level.getDayTime();
@@ -342,10 +341,28 @@ public final class CircleRiteTests {
                 helper.assertTrue(!helper.getBlockState(CENTER).getValue(RiteHeartBlock.ACTIVE) && drops(helper).size() == 3,
                         "At night the heart remains idle and all three offerings remain available");
 
+                helper.setBlock(CENTER, Blocks.AIR);
+                helper.setBlock(CENTER, block("circle"));
+                var heart = heart(helper);
+                tick(level, center, heart, 13);
                 level.setDayTime(54_000);
                 level.updateSkyBrightness();
                 helper.useBlock(CENTER);
-                tick(level, center, heart, TWO_OFFERING_CAST);
+                tick(level, center, heart, 6);
+                helper.assertTrue(heart.saveWithoutMetadata().getInt("OfferingStep") == 0,
+                        "A cast on glyph tick thirteen waits for the offering pulse");
+                tick(level, center, heart, 1);
+                helper.assertTrue(heart.saveWithoutMetadata().getInt("OfferingStep") == 1,
+                        "The first offering is taken on glyph tick twenty");
+                tick(level, center, heart, 62);
+                var saved = heart.saveWithoutMetadata();
+                helper.assertTrue(saved.getInt("OfferingStep") == 3 && saved.getInt("GlyphPhase") == 22,
+                        "The pending Eclipse and its glyph phase are saved after all three offerings");
+                heart.load(saved);
+                tick(level, center, heart, 7);
+                helper.assertTrue(level.getDayTime() == 54_000 && heart.getBlockState().getValue(RiteHeartBlock.ACTIVE),
+                        "The reloaded rite remains active through glyph tick eighty-nine");
+                tick(level, center, heart, 1);
                 var returned = drops(helper);
                 helper.assertTrue(level.getDayTime() == 66_000 && !helper.getBlockState(CENTER).getValue(RiteHeartBlock.ACTIVE)
                                 && returned.size() == 1 && returned.get(0).getItem().is(WitcheryIngredient.ATTUNED_STONE.item()),
@@ -358,6 +375,35 @@ public final class CircleRiteTests {
                 drops(helper).forEach(ItemEntity::discard);
             }
         }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_rite_previous_forge_clock")
+    public static void inProgressEclipseFromEarlierForgeKeepsItsNextPulse(GameTestHelper helper) {
+        helper.setBlock(CENTER, block("circle"));
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var heart = heart(helper);
+        var saved = new CompoundTag();
+        saved.putString("Rite", "witchery:rite_of_total_eclipse");
+        saved.putInt("OfferingStep", 2);
+        saved.putBoolean("AltarPowerOffered", true);
+        saved.putInt("StepTicks", 17);
+        long originalTime = level.getDayTime();
+        try {
+            level.setDayTime(54_000);
+            heart.load(saved);
+            tick(level, center, heart, 2);
+            helper.assertTrue(level.getDayTime() == 54_000 && heart.getBlockState().getValue(RiteHeartBlock.ACTIVE),
+                    "The earlier save keeps its remaining three ticks and the altar payment");
+            heart.load(heart.saveWithoutMetadata());
+            tick(level, center, heart, 1);
+            helper.assertTrue(level.getDayTime() == 66_000 && !heart.getBlockState().getValue(RiteHeartBlock.ACTIVE),
+                    "The paid Eclipse completes at the saved deadline without another altar charge");
+        } finally {
+            level.setDayTime(originalTime);
+            level.updateSkyBrightness();
+        }
+        helper.succeed();
     }
 
     @GameTest(template = TEMPLATE, batch = "witchery_rite_dimension_conditions")
@@ -540,28 +586,25 @@ public final class CircleRiteTests {
             charge.putFloat("Power", 5000);
             altar.load(charge);
             start(helper);
-            helper.runAfterDelay(110, () -> {
-                float beforeCharge = altar.power();
-                int recharge = 10 * altar.rechargeMultiplier();
-                helper.runAfterDelay(ALTAR_STEP_TICKS, () -> {
-                    helper.assertTrue(altar.power() == beforeCharge - 2000 + recharge
-                                    && heart(helper).saveWithoutMetadata().getBoolean("AltarPowerOffered"),
-                            "The altar contributes 2,000 on its own step");
-                });
-                helper.runAfterDelay(ALTAR_STEP_TICKS + 20, () -> {
-                    var witches = helper.getLevel().getEntitiesOfClass(Witch.class, new AABB(helper.absolutePos(CENTER)).inflate(8));
-                    helper.assertTrue(witches.size() == 1, "The small Infernal circle summons exactly one witch");
-                    helper.assertTrue(altar.power() == beforeCharge - 2000 + 2 * recharge, "The summoning uses the earlier payment");
-                    var returned = drops(helper);
-                    helper.assertTrue(returned.size() == 1 && ItemStack.matches(returned.get(0).getItem(), arthana),
-                            "The summoning returns the original damaged Arthana, found "
-                                    + returned.stream().map(drop -> drop.getItem().serializeNBT()).toList());
-                    witches.forEach(Entity::discard);
-                    returned.forEach(ItemEntity::discard);
-                    helper.succeed();
-                });
-            });
-        });
+            var level = helper.getLevel();
+            var center = helper.absolutePos(CENTER);
+            var heart = heart(helper);
+            tick(level, center, heart, 100);
+            float beforeCharge = altar.power();
+            tick(level, center, heart, ALTAR_STEP_TICKS);
+            helper.assertTrue(altar.power() == beforeCharge - 2000 && heart.saveWithoutMetadata().getBoolean("AltarPowerOffered"),
+                    "The altar contributes 2,000 on its own step");
+            tick(level, center, heart, 20);
+            var witches = level.getEntitiesOfClass(Witch.class, new AABB(center).inflate(8));
+            helper.assertTrue(witches.size() == 1, "The small Infernal circle summons exactly one witch");
+            helper.assertTrue(altar.power() == beforeCharge - 2000, "The summoning uses the earlier payment");
+            var returned = drops(helper);
+            helper.assertTrue(returned.size() == 1 && ItemStack.matches(returned.get(0).getItem(), arthana),
+                    "The summoning returns the original damaged Arthana, found "
+                            + returned.stream().map(drop -> drop.getItem().serializeNBT()).toList());
+            witches.forEach(Entity::discard);
+            returned.forEach(ItemEntity::discard);
+        }).thenSucceed();
     }
 
     @GameTest(template = TEMPLATE, batch = "witchery_weather_rite_waystone", setupTicks = 5)
@@ -581,7 +624,7 @@ public final class CircleRiteTests {
         tick(level, center, heart, 20);
         helper.assertTrue(heart.saveWithoutMetadata().getBoolean("AltarPowerOffered") && altar.power() == 8000
                         && drops(helper).isEmpty(), "The altar is charged before the storm resolves the remote target");
-        tick(level, center, heart, ALTAR_STEP_TICKS);
+        tick(level, center, heart, 10);
         helper.assertTrue(!heart.saveWithoutMetadata().contains("Storm") && altar.power() == 8000
                         && drops(helper).size() == 3 && drops(helper).stream().anyMatch(item -> ItemStack.matches(item.getItem(), tooFar)),
                 "An out-of-range Waystone returns the three offerings after charging altar power");
@@ -589,10 +632,6 @@ public final class CircleRiteTests {
 
         var target = center.east(40).above(3);
         start(helper, new ItemStack(Items.STONE_SWORD), new ItemStack(WitcheryIngredient.WOOD_ASH.item()), bound(level, target));
-        tick(level, center, heart, TWO_OFFERING_CAST + ALTAR_STEP_TICKS);
-        var storm = heart.saveWithoutMetadata().getCompound("Storm");
-        helper.assertTrue(storm.getBoolean("Greater") && BlockPos.of(storm.getLong("Target")).equals(target)
-                && altar.power() == 6000, "The valid Waystone relocates the greater storm, including its height");
         var strikes = new ArrayList<LightningBolt>();
         var area = new AABB(target).inflate(9);
         Consumer<EntityJoinLevelEvent> observe = event -> {
@@ -602,9 +641,21 @@ public final class CircleRiteTests {
         };
         MinecraftForge.EVENT_BUS.addListener(observe);
         try {
-            tick(level, center, heart, 30);
+            tick(level, center, heart, 89);
+            helper.assertTrue(strikes.isEmpty(), "The storm waits until the glyph's thirty-tick phase after payment");
+            tick(level, center, heart, 1);
+            var saved = heart.saveWithoutMetadata();
+            var storm = saved.getCompound("Storm");
+            helper.assertTrue(storm.getInt("Stage") == 1 && storm.getBoolean("Greater")
+                            && BlockPos.of(storm.getLong("Target")).equals(target) && altar.power() == 6000,
+                    "The valid Waystone relocates the first strike on the same pulse that launches the storm");
             helper.assertTrue(strikes.size() == 1 && strikes.get(0).getY() == target.getY(),
                     "The actual strike arrives in the remote chunk");
+            heart.load(saved);
+            tick(level, center, heart, 29);
+            helper.assertTrue(strikes.size() == 1, "The saved storm waits until its original next phase");
+            tick(level, center, heart, 1);
+            helper.assertTrue(strikes.size() == 2, "The second storm strike comes thirty glyph ticks after the first");
         } finally {
             strikes.forEach(LightningBolt::discard);
             MinecraftForge.EVENT_BUS.unregister(observe);
@@ -627,7 +678,8 @@ public final class CircleRiteTests {
         waitForOfferings(helper, new ItemStack(Items.OBSIDIAN), new ItemStack(Items.REDSTONE)).thenExecute(() -> {
             var altar = chargedAltar(helper, CENTER.offset(20, 0, 20), false, 2);
             start(helper);
-            tick(level, center, heart, TWO_OFFERING_CAST + ALTAR_STEP_TICKS + 1);
+            int phase = heart.saveWithoutMetadata().getInt("GlyphPhase") % 20;
+            tick(level, center, heart, TWO_OFFERING_CAST + ALTAR_STEP_TICKS - phase);
             var barrier = block("barrier");
             helper.assertTrue(level.getBlockState(wall).is(barrier) && level.getBlockState(roof).is(barrier)
                     && level.getBlockState(wall.below()).is(barrier), "The focused barrier draws walls, roof and floor");
@@ -664,7 +716,7 @@ public final class CircleRiteTests {
         waitForOfferings(helper, potion).thenExecute(() -> {
             var altar = chargedAltar(helper, CENTER.offset(20, 0, 20), false, 2);
             start(helper);
-            tick(level, center, heart, 60 + ALTAR_STEP_TICKS);
+            tick(level, center, heart, 60);
             helper.assertTrue(level.getBlockState(center).getValue(RiteHeartBlock.ACTIVE) && altar.power() == 5960,
                     "The rite pays 4,000 to start and 40 for its first recharge from the extended altar");
 
@@ -687,22 +739,25 @@ public final class CircleRiteTests {
             var altar = chargedAltar(helper, false);
             start(helper);
             var heart = heart(helper);
-            tick(level, center, heart, TWO_OFFERING_CAST + ALTAR_STEP_TICKS);
+            int phase = heart.saveWithoutMetadata().getInt("GlyphPhase") % 20;
+            tick(level, center, heart, TWO_OFFERING_CAST + ALTAR_STEP_TICKS - phase);
             var save = heart.saveWithoutMetadata();
             var ward = save.getList("ProtectionRites", Tag.TAG_COMPOUND).getCompound(0);
             helper.assertTrue(BlockPos.of(ward.getLong("Target")).equals(target) && ward.getString("Kind").equals("GREATER_BARRIER"),
                     "The same-dimension Waystone relocates a greater barrier");
+            helper.assertTrue(Math.abs(altar.power() - 8998.6F) < 0.01F,
+                    "The remote ward spends 1.4 from the altar beside the heart on its first pulse");
             heart.load(save);
-            tick(level, center, heart, 1);
             var wall = target.west(6);
+            level.removeBlock(wall, false);
+            tick(level, center, heart, 20);
             var state = level.getBlockState(wall);
             var player = fake(level);
             helper.assertTrue(state.is(block("barrier")) && level.getBlockState(target.above(6)).is(block("barrier"))
                     && level.getBlockState(target.below()).is(block("barrier")) && !level.getBlockState(center.above(6)).is(block("barrier")),
                     "The reloaded ward refreshes the entire remote shell around the original target");
-            helper.assertTrue(!state.getCollisionShape(level, wall, CollisionContext.of(player)).isEmpty()
-                    && Math.abs(altar.power() - 8998.6F) < 0.01F,
-                    "The remote ward spends 1.4 from the altar beside the heart and blocks survival players");
+            helper.assertTrue(!state.getCollisionShape(level, wall, CollisionContext.of(player)).isEmpty(),
+                    "The remote ward blocks survival players");
             player.getAbilities().instabuild = true;
             player.setGameMode(GameType.CREATIVE);
             player.setShiftKeyDown(true);
