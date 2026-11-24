@@ -5,6 +5,7 @@ import art.arcane.witchery.entity.Wolfman;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.lycanthropy.WerewolfVillagers;
 import art.arcane.witchery.registry.WitcheryEntities;
+import art.arcane.witchery.vampirism.BloodFeeding;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -40,7 +41,7 @@ public final class LegacyWereVillagerSaveImportTests {
                 {Level:{xPos:-14,zPos:-68,TerrainPopulated:1b,Entities:[
                   {id:"witchery.werevillager",CustomName:"Legacy Infected Librarian",UUIDMost:3274408037664640634L,
                    UUIDLeast:-8273213417301270937L,Pos:[-211.5d,5.5d,-1080.5d],Health:20s,
-                   Infectious:1b,Age:0,Profession:1,Riches:11,Offers:{Recipes:[
+                   Infectious:1b,WitcheryExtendedVillager:{Blood:77},Age:0,Profession:1,Riches:11,Offers:{Recipes:[
                      {buy:{id:35s,Count:4b,Damage:14s,tag:{PortMarker:"Wool"}},buyB:{id:388s,Count:6b,Damage:0s},
                       sell:{id:403s,Count:1b,Damage:0s,tag:{StoredEnchantments:[{id:16s,lvl:3s}]}},uses:3,maxUses:9},
                      {buy:{id:388s,Count:1b,Damage:0s},sell:{id:4096s,Count:1b,Damage:23s,tag:{PortMarker:"Gift"}},
@@ -72,6 +73,8 @@ public final class LegacyWereVillagerSaveImportTests {
         helper.assertTrue(wereVillager.getUUID().equals(originalIdentity)
                         && wereVillager.saveWithoutId(new CompoundTag()).getBoolean("Infectious"),
                 "The infected villager must keep its original UUID and infectious flag");
+        helper.assertTrue(BloodFeeding.blood(wereVillager) == 77,
+                "An imported infected villager must retain its original blood after an ordinary save");
         assertTrades(helper, wereVillager);
 
         BlockPos spawn = helper.absolutePos(new BlockPos(2, 2, 2));

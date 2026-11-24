@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Legacy Villager Blood (2026-11-24)
+
+- Witchery 0.24.1 stored the blood held by a villager in the entity's root `WitcheryExtendedVillager` compound. The previous packaged build discarded that value for ordinary villagers and Werevillagers. The rebuilt port imports it when the entity loads, retains unrelated Forge data, and gives an existing modern blood value precedence.
+- A synthetic 1.7.10 chunk kept blood counts of 203, zero, and 77 and a modern override of 419 on the exact packaged JAR. An ordinary headless restart preserved all counts, the Werevillager's infection, and the unrelated Forge data. The loader also recovered a root value of 128 in a current-format entity record. Saves already stripped of the original field need the original entity record to recover its old count.
+- A separate Forge 1.7.10 server running Witchery 0.24.1 saved a fixture villager with 281 blood. The packaged port imported the entire copied world with all 121 original block IDs and 217 item IDs and retained the villager's UUID and blood on the first boot and after a dedicated restart.
+- A muted background survival client read 203 in the vampire HUD, selected feeding and drew seven blood from the awake villager. The drained villager still displayed zero. After reconnecting to the restarted dedicated server, the HUD read 196 and zero, and the player retained 132 blood. Both launches reported master volume zero, OpenAL No Output and no foreground application change.
+- Local Java 17 data generation, JAR reobfuscation, and all 228 required Forge GameTests passed. Logs and the exact JAR are in `build/qa-legacy-villager-blood`. Package SHA-256 `8b5b76f007942a32dc2980829a91299cc89e237ce17fb1d702a3bd0609e98798`.
+- The same package passed the clean Forge two-client replay through Dream travel, Crystal Ball release, death, respawn, and a dedicated restart with a saved Taglock. On copied Auram, the muted client kept Hint of Rebirth, Colorful, and the 0.150-block Resizing width through Dream and waking. The headless restart kept the saved fume, effects, and both Oven Ash stacks and loaded a villager's root blood value of 182.
+
 ## Hobgoblin Cargo Retrieval (2026-11-24)
 
 - The preceding build passed the two checked-in hauling cases and mined an ore beneath a bedrock pillar on packaged Forge while retaining its lead and pickaxe wear.

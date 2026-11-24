@@ -30,6 +30,14 @@ public final class BloodFeeding {
         return data.contains(BLOOD, Tag.TAG_ANY_NUMERIC) ? Mth.clamp(data.getInt(BLOOD), 0, MAX_MORTAL_BLOOD) : MAX_MORTAL_BLOOD;
     }
 
+    public static void importLegacyBlood(Villager villager, CompoundTag saved) {
+        CompoundTag legacy = saved.getCompound(EXTENDED_VILLAGER);
+        if (legacy.contains(BLOOD, Tag.TAG_ANY_NUMERIC)
+                && !villager.getPersistentData().getCompound(EXTENDED_VILLAGER).contains(BLOOD, Tag.TAG_ANY_NUMERIC)) {
+            storeBlood(villager, legacy.getInt(BLOOD));
+        }
+    }
+
     private static void storeBlood(Villager villager, int amount) {
         CompoundTag data = villager.getPersistentData().getCompound(EXTENDED_VILLAGER);
         data.putInt(BLOOD, Mth.clamp(amount, 0, MAX_MORTAL_BLOOD));
