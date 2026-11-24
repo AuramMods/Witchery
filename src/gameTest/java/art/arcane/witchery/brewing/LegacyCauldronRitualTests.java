@@ -2,6 +2,7 @@ package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
+import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
@@ -171,6 +172,32 @@ public final class LegacyCauldronRitualTests {
             helper.assertTrue(bowl.saveWithoutMetadata().getBoolean("LegacyRitualPending"),
                     "Reading the comparator leaves the original trigger in its pending save format");
         });
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void withdrawsFromAnOriginalPartialCast(GameTestHelper helper) {
+        BlockPos pos = helper.absolutePos(new BlockPos(6, 4, 5));
+        var bowl = placeCauldron(helper, pos, originalRitual(2500, 0, true,
+                oldItem("witchery:ingredient", 22, 1), oldItem("witchery:ingredient", 31, 1),
+                oldItem("minecraft:wheat", 0, 1), oldItem("minecraft:egg", 0, 1)));
+        bowl.load(bowl.saveWithFullMetadata());
+        var player = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "BottleImportedCast"));
+        WitcheryPlayerDataProvider.get(player).orElseThrow(IllegalStateException::new).setPotionBottling(30);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.GLASS_BOTTLE));
+        helper.assertTrue(bowl.bottle(player, InteractionHand.MAIN_HAND), "The imported brewing remainder can be bottled before a refill");
+        var bottled = player.getMainHandItem().getOrCreateTag();
+        helper.assertTrue(bottled.getString("FixedRitual").equals("witchery:mutandis")
+                        && bottled.getBoolean("RitualTriggered") && tank(bowl).getFluidInTank(0).getAmount() == 1000,
+                "The bottle keeps the original cast and the trained player leaves exactly one bucket");
+        var drained = tank(bowl).drain(1000, IFluidHandler.FluidAction.EXECUTE);
+        helper.assertTrue(drained.getAmount() == 1000 && drained.getTag() != null && drained.getTag().getBoolean("RitualTriggered")
+                        && drained.getTag().getList("Items", Tag.TAG_COMPOUND).equals(bottled.getList("Items", Tag.TAG_COMPOUND))
+                        && !bowl.saveWithoutMetadata().contains("LegacyRitualPending"),
+                "Draining the final bucket retains the original trigger and clears the cauldron");
+        helper.assertTrue(tank(bowl).fill(drained, IFluidHandler.FluidAction.EXECUTE) == 1000
+                        && bowl.saveWithoutMetadata().getBoolean("LegacyRitualPending"),
+                "Returning the imported bucket restores the part-filled pending cast");
+        helper.succeed();
     }
 
     @GameTest(template = "qa_coven_arena")

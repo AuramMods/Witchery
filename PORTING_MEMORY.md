@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Brew Bucket Transfers of Pending Casts (2026-11-24)
+
+- A running Witchery 0.24.1 server gave the player a tagged Brew Bucket from both pending Tongue of Dog and Taglock casts. Each interaction left 2,000 mB and preserved the ordered brew and trigger on the bucket. On the preceding Forge package, the muted survival client kept its empty bucket and the Taglock cast stayed at 3,000 mB.
+- The rebuilt survival client moved one bucket to a second cauldron, saved, and reconnected after a dedicated restart. It moved the remaining two buckets and boiled the full batch with altar power. The original bound pig received Swiftness, and both cauldrons were empty afterward.
+- A separate clean Forge client moved all three buckets of a Tongue of Dog cast that started through the normal dropped-ingredient interaction. The first finish attempt exposed insufficient sustained altar power in the fixture. After a dedicated restart and the addition of an Infinity Egg, the destination applied one item curse charge to the supplied stick and emptied.
+- The same JAR moved all three buckets in copied Auram and cast Swiftness on the original tagged pig. The test clients ran at zero master volume with OpenAL No Output, and the focus monitor recorded no foreground changes.
+- Local Java 17 data generation, JAR reobfuscation, and all 243 required Forge GameTests passed. The new tests cover tagged fluid transfers, rejection of untriggered refills, and bottling and draining a part-filled cast loaded from the original save format. The QA logs and exact package are in `build/qa-triggered-brew-transport`. Package SHA-256 `3095202ae6cf433e0c5b22917631857f44eddadd7f0d7e6a0cd2f3e4d9f490f9`.
+
 ## Cauldron Comparator Output During Casts (2026-11-24)
 
 - The original 0.24.1 cauldron reported 15 for a powered 2,500 mB Mutandis cast containing Moonshine. The preceding Forge package emitted 6. The rebuilt comparator uses the ordered cast contents and remaining capacity. Partial casts use the base power threshold and full casts use the circle-adjusted threshold.

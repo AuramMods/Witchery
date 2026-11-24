@@ -4,6 +4,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.WitchesCauldronBlock;
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
 import art.arcane.witchery.item.BrewBucketItem;
+import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryFluids;
@@ -18,6 +19,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -40,6 +42,58 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class BrewBucketTests {
+    @GameTest(template = "qa_coven_arena")
+    public static void movesAnActiveTaglockCastThroughBucketsAndFluidCapabilities(GameTestHelper helper) {
+        var source = hotCauldron(helper, new BlockPos(4, 4, 4));
+        var destination = hotCauldron(helper, new BlockPos(7, 4, 4));
+        var from = source.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
+        var to = destination.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
+        to.drain(3000, IFluidHandler.FluidAction.EXECUTE);
+        var player = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "MoveTaglock"));
+        var taglock = new ItemStack(WitcheryItems.getRequired("taglockkit").get());
+        TaglockItem.bindSignature(taglock, helper.spawn(EntityType.PIG, new BlockPos(6, 4, 7)));
+        offer(helper, source, new ItemStack(WitcheryIngredient.MANDRAKE_ROOT.item()));
+        offer(helper, source, new ItemStack(Items.WHEAT));
+        offer(helper, source, taglock);
+        var startingCast = source.saveWithFullMetadata();
+        startingCast.putInt("RitualTicks", 12);
+        source.load(startingCast);
+
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BUCKET));
+        use(helper, player, source.getBlockPos());
+        var bucket = player.getMainHandItem().copy();
+        var captured = bucket.getTag();
+        helper.assertTrue(bucket.is(WitcheryItems.getRequired("bucketbrew").get()) && captured != null
+                        && captured.getBoolean("RitualTriggered") && ItemStack.matches(taglock,
+                        ItemStack.of(captured.getList("Items", Tag.TAG_COMPOUND).getCompound(2))),
+                "The Brew Bucket retains the bound Taglock and the active cast flag");
+        helper.assertTrue(from.getFluidInTank(0).getAmount() == 2000 && source.saveWithoutMetadata().getInt("RitualTicks") == 0,
+                "Scooping part of the cast resets its unfinished warmup");
+        use(helper, player, destination.getBlockPos());
+        helper.assertTrue(player.getMainHandItem().is(Items.BUCKET), "The receiving cauldron accepts the cast by hand");
+        destination.load(destination.saveWithFullMetadata());
+        var saved = destination.saveWithoutMetadata();
+        helper.assertTrue(saved.getBoolean("LegacyRitualPending") && to.getFluidInTank(0).isFluidEqual(from.getFluidInTank(0)),
+                "The two portions retain the same triggered brew across a save round trip");
+
+        var remainder = from.drain(2000, IFluidHandler.FluidAction.SIMULATE);
+        var untriggered = remainder.copy();
+        untriggered.getOrCreateTag().remove("RitualTriggered");
+        helper.assertTrue(from.fill(untriggered, IFluidHandler.FluidAction.SIMULATE) == 0
+                        && to.fill(untriggered, IFluidHandler.FluidAction.SIMULATE) == 0,
+                "Neither a live cast nor a transported remainder merges with an untriggered portion");
+        helper.assertTrue(to.fill(from.drain(remainder, IFluidHandler.FluidAction.EXECUTE), IFluidHandler.FluidAction.EXECUTE) == 2000
+                        && from.getFluidInTank(0).isEmpty(),
+                "A tagged capability transfer completes the batch in the receiving cauldron");
+        helper.runAfterDelay(3, () -> {
+            var resumed = destination.saveWithoutMetadata();
+            helper.assertTrue(resumed.getBoolean("RitualTriggered") && !resumed.contains("LegacyRitualPending")
+                            && to.getFluidInTank(0).getAmount() == 3000,
+                    "The full cauldron restores the Taglock ritual after a tagged fluid transfer");
+            helper.succeed();
+        });
+    }
+
     @GameTest(template = "qa_coven_arena", timeoutTicks = 255)
     public static void topsUpAndCompletesAnActiveFixedCast(GameTestHelper helper) {
         var location = new BlockPos(4, 4, 4);
