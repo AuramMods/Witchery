@@ -6,6 +6,7 @@ import art.arcane.witchery.data.PredictionLootModifier;
 import art.arcane.witchery.data.SmeltingTouchLootModifier;
 import art.arcane.witchery.data.WolfBoneLootModifier;
 import art.arcane.witchery.entity.HobgoblinMiningLootModifier;
+import art.arcane.witchery.particle.CauldronParticleOptions;
 import art.arcane.witchery.world.DreamCottonFeature;
 import art.arcane.witchery.world.DreamSpiritSpawnModifier;
 import art.arcane.witchery.world.HellhoundSpawnModifier;
@@ -53,6 +54,8 @@ public final class WitcheryRegistries {
             DeferredRegister.create(ForgeRegistries.PARTICLE_TYPES, Witchery.MODID);
     public static final RegistryObject<SimpleParticleType> ALTAR_POWER =
             PARTICLES.register("altar_power", () -> new SimpleParticleType(false));
+    public static final RegistryObject<ParticleType<CauldronParticleOptions>> CAULDRON_EFFECT =
+            PARTICLES.register("cauldron_effect", CauldronParticleOptions::type);
     public static final RegistryObject<Codec<HobgoblinSpawnModifier>> HOBGOBLIN_SPAWNS =
             BIOME_MODIFIERS.register("hobgoblin_spawns", () -> HobgoblinSpawnModifier.CODEC);
     public static final RegistryObject<Codec<DreamSpiritSpawnModifier>> DREAM_SPIRIT_SPAWNS =

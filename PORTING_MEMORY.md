@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Witch's Cauldron Particles (2026-11-24)
+
+- Boiling cauldrons use the original tinted bubbles and power sparks from `power.png`. The visual update carries the actual fluid amount, tint and spark count. A powered brew shows one spark. An active ritual adds circling sparks as it progresses, up to six. Forge protocol 94 registers the particle type and requires matching client and server builds.
+- A muted survival client reopened the previous build's save with one bucket of plain water and three buckets of unbottled brew. The client measured both surface heights, checked the particle tint and sprite frames, and verified the spark disappearing and returning with the altar. The player bottled the brew and completed a second batch for six Mutandis. The fixture supplied the altar blocks, charge, and brewing ingredients.
+- Local Java 17 JAR reobfuscation, the asset inventory audit and all 164 Forge GameTests passed. The clean Forge client and dedicated server both used SHA-256 `da57ca6a2a4ad1cde4bc3070137025513cfa092e22eded318304830b92a70373`. The hidden client had zero master volume, OpenAL No Output and no focus activation. The recorded samples and captures are in `build/qa-cauldron-effects`.
+
 ## Altar Sparks and Artifact Order (2026-11-24)
 
 - Formed altar members sample nearby plants and draw green sparks at 0.25 blocks per tick. The particle atlas extracts the original eight 8×8 frames directly from `power.png`. The packaged client observed the full forward and reverse animation, measured the flight from a leaf block, and confirmed that unformed altars and stone did not emit it. Vanilla flame sprites still loaded.

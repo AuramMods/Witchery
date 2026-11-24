@@ -13,7 +13,23 @@
         {"sprite": "witchery:altar_power_4", "x": 4, "y": 0, "width": 1, "height": 1},
         {"sprite": "witchery:altar_power_5", "x": 5, "y": 0, "width": 1, "height": 1},
         {"sprite": "witchery:altar_power_6", "x": 6, "y": 0, "width": 1, "height": 1},
-        {"sprite": "witchery:altar_power_7", "x": 7, "y": 0, "width": 1, "height": 1}
+        {"sprite": "witchery:altar_power_7", "x": 7, "y": 0, "width": 1, "height": 1},
+        {"sprite": "witchery:cauldron_bubble_0", "x": 0, "y": 1, "width": 1, "height": 1},
+        {"sprite": "witchery:cauldron_bubble_1", "x": 1, "y": 1, "width": 1, "height": 1},
+        {"sprite": "witchery:cauldron_bubble_2", "x": 2, "y": 1, "width": 1, "height": 1},
+        {"sprite": "witchery:cauldron_bubble_3", "x": 3, "y": 1, "width": 1, "height": 1},
+        {"sprite": "witchery:cauldron_bubble_4", "x": 4, "y": 1, "width": 1, "height": 1},
+        {"sprite": "witchery:cauldron_bubble_5", "x": 5, "y": 1, "width": 1, "height": 1},
+        {"sprite": "witchery:cauldron_bubble_6", "x": 6, "y": 1, "width": 1, "height": 1},
+        {"sprite": "witchery:cauldron_bubble_7", "x": 7, "y": 1, "width": 1, "height": 1},
+        {"sprite": "witchery:cauldron_bubble_8", "x": 8, "y": 1, "width": 1, "height": 1},
+        {"sprite": "witchery:cauldron_bubble_9", "x": 9, "y": 1, "width": 1, "height": 1},
+        {"sprite": "witchery:cauldron_bubble_10", "x": 10, "y": 1, "width": 1, "height": 1},
+        {"sprite": "witchery:cauldron_bubble_11", "x": 11, "y": 1, "width": 1, "height": 1},
+        {"sprite": "witchery:cauldron_bubble_12", "x": 12, "y": 1, "width": 1, "height": 1},
+        {"sprite": "witchery:cauldron_bubble_13", "x": 13, "y": 1, "width": 1, "height": 1},
+        {"sprite": "witchery:cauldron_bubble_14", "x": 14, "y": 1, "width": 1, "height": 1},
+        {"sprite": "witchery:cauldron_bubble_15", "x": 15, "y": 1, "width": 1, "height": 1}
       ]
     }
   ]

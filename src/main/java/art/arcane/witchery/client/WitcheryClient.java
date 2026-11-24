@@ -12,6 +12,7 @@ import art.arcane.witchery.item.SpectralStoneItem;
 import art.arcane.witchery.item.PlayerCompassItem;
 import art.arcane.witchery.client.screen.AltarScreen;
 import art.arcane.witchery.client.particle.AltarPowerParticle;
+import art.arcane.witchery.client.particle.CauldronParticle;
 import art.arcane.witchery.client.screen.BrewBagScreen;
 import art.arcane.witchery.client.screen.DistilleryScreen;
 import art.arcane.witchery.client.screen.SpinningWheelScreen;
@@ -192,6 +193,7 @@ public final class WitcheryClient {
     @SubscribeEvent
     public static void registerParticles(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(WitcheryRegistries.ALTAR_POWER.get(), AltarPowerParticle::provider);
+        event.registerSpriteSet(WitcheryRegistries.CAULDRON_EFFECT.get(), CauldronParticle::provider);
     }
 
     @SubscribeEvent

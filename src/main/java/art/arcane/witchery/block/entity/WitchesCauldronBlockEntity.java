@@ -85,7 +85,8 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
     private boolean legacyRitualPending;
     private int comparatorSignal;
     private int clientBrewColor = -1;
-    private boolean clientRitual;
+    private int clientAmount;
+    private int sparkCount;
 
     private final CauldronTank tank = new CauldronTank();
     private LazyOptional<IFluidHandler> fluidHandler = LazyOptional.of(() -> tank);
@@ -220,8 +221,9 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         if (oldHeat != cauldron.heatTicks || oldProgress != cauldron.ritualTicks) {
             level.blockEntityChanged(pos);
         }
-        if (oldHeat != cauldron.heatTicks || server.getGameTime() % 20 == 0) {
-            cauldron.refreshComparator();
+        if (oldHeat != cauldron.heatTicks || server.getGameTime() % 20 == 0
+                || cauldron.ritualSparkCount(oldProgress) != cauldron.ritualSparkCount(cauldron.ritualTicks)) {
+            cauldron.refreshIndicators(server, false);
         }
     }
 
@@ -504,9 +506,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
     private void onIngredientAdded(ServerLevel server) {
         mixture = BrewMixture.from(ingredients, brewColor);
         splash(server);
-        refreshComparator();
-        BlockState state = getBlockState();
-        server.sendBlockUpdated(getBlockPos(), state, state, Block.UPDATE_CLIENTS);
+        refreshIndicators(server, true);
         setChanged();
     }
 
@@ -598,29 +598,65 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         return comparatorSignal;
     }
 
-    private void refreshComparator() {
-        if (!(level instanceof ServerLevel server) || isRemoved()) return;
+    private void refreshIndicators(ServerLevel server, boolean sync) {
+        if (isRemoved()) return;
         int signal = 0;
+        int sparks = 0;
         if (!tank.isEmpty()) {
             signal = isBoiling() ? 6 : 3;
-            if (isBoiling() && !casting() && mixture != null && mixture.used() > 0) {
-                AltarBlockEntity altar = mixture.power() > 0 ? AltarPower.nearest(server, worldPosition) : null;
-                boolean powered = mixture.power() == 0 || altar != null && altar.power() >= mixture.power();
-                signal = powered ? (mixture.used() == mixture.capacity() ? 15 : 12) : 9;
+            if (isBoiling()) {
+                boolean powered = hasDisplayPower(server);
+                if (!casting() && mixture != null && mixture.used() > 0) {
+                    signal = powered ? (mixture.used() == mixture.capacity() ? 15 : 12) : 9;
+                }
+                if (powered) sparks = ritualSparkCount(ritualTicks);
             }
         }
         if (signal != comparatorSignal) {
             comparatorSignal = signal;
             server.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
         }
+        if (sync || sparks != sparkCount) {
+            sparkCount = sparks;
+            BlockState state = getBlockState();
+            server.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_CLIENTS);
+        }
+    }
+
+    private int ritualSparkCount(int progress) {
+        return 1 + Mth.clamp(ritual == null ? progress : progress / 10, 0, 5);
+    }
+
+    private boolean hasDisplayPower(ServerLevel server) {
+        if (legacyRitualPending || ritualTicks == RITUAL_REFUND) return false;
+
+        double power;
+        if (ritual != null) {
+            if (!(server.getRecipeManager().byKey(ritual).orElse(null) instanceof CauldronRitualRecipe recipe)) return false;
+            int basePower = recipe.batchPower(ingredients);
+            power = basePower == 0 ? 0 : Math.floor(basePower * CastCircles.around(server, worldPosition).powerScale());
+        } else if (mixture != null) {
+            power = mixture.power();
+            if (brewRitual && power > 0) power *= CastCircles.around(server, worldPosition).powerScale();
+        } else {
+            return brewColor != null;
+        }
+        if (power == 0) return true;
+        if (power < 0) return false;
+        AltarBlockEntity altar = AltarPower.nearest(server, worldPosition);
+        return altar != null && altar.power() >= power;
     }
 
     public int clientBrewColor() {
         return clientBrewColor;
     }
 
-    public boolean clientRitual() {
-        return clientRitual;
+    public double clientFillFraction() {
+        return clientAmount / (double) CAPACITY;
+    }
+
+    public int sparkCount() {
+        return sparkCount;
     }
 
     private int visibleBrewColor() {
@@ -631,7 +667,8 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
     public CompoundTag getUpdateTag() {
         CompoundTag tag = new CompoundTag();
         tag.putInt("Color", visibleBrewColor());
-        tag.putBoolean("RitualTriggered", brewRitual);
+        tag.putInt("Amount", tank.getFluidAmount());
+        tag.putInt("Sparks", sparkCount);
         return tag;
     }
 
@@ -642,9 +679,11 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
 
     @Override
     public void handleUpdateTag(CompoundTag tag) {
+        int oldColor = clientBrewColor;
         clientBrewColor = tag.getInt("Color");
-        clientRitual = tag.getBoolean("RitualTriggered");
-        if (level != null && level.isClientSide) {
+        clientAmount = tag.getInt("Amount");
+        sparkCount = tag.getInt("Sparks");
+        if (oldColor != clientBrewColor && level != null && level.isClientSide) {
             BlockState state = getBlockState();
             level.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_CLIENTS);
         }
@@ -710,11 +749,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
 
     private void publishTankContents() {
         updateState();
-        refreshComparator();
-        if (level instanceof ServerLevel server && !isRemoved()) {
-            BlockState state = getBlockState();
-            server.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_CLIENTS);
-        }
+        if (level instanceof ServerLevel server) refreshIndicators(server, true);
         setChanged();
     }
 
