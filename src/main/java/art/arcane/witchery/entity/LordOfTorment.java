@@ -1,5 +1,6 @@
 package art.arcane.witchery.entity;
 
+import art.arcane.witchery.infusion.SymbolSpell;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryEntities;
@@ -117,26 +118,18 @@ public final class LordOfTorment extends Monster implements RangedAttackMob {
     }
 
     @Override
-    public void performRangedAttack(LivingEntity target, float distance) {
-        if (distanceToSqr(target) < 4) {
-            doHurtTarget(target);
-            return;
-        }
+    public void performRangedAttack(LivingEntity target, float strength) {
+        if (!(level() instanceof ServerLevel server)) return;
         beginAttack();
-        playSound(SoundEvents.BLAZE_SHOOT, 1, 1);
-        Vec3 start = position().add(0, getBbHeight() * 0.5, 0);
-        Vec3 aim = target.position().add(0, target.getBbHeight() * 0.5, 0).subtract(start);
+        SymbolProjectile.playMobCastSound(server, this);
         int bursts = random.nextInt(10) == 0 ? 9 : 3;
-        fireAt(start, aim, distance, true);
-        for (int i = 0; i < bursts; i++) fireAt(start.add(0, 0.5, 0), aim, distance, false);
-    }
-
-    private void fireAt(Vec3 origin, Vec3 aim, float distance, boolean ignianima) {
-        double spread = Math.sqrt(distance) * 0.5;
-        Soulfire shot = new Soulfire(WitcheryEntities.SOULFIRE.get(), this, aim.x + random.nextGaussian() * spread,
-                aim.y, aim.z + random.nextGaussian() * spread, ignianima);
-        shot.setPos(origin);
-        level().addFreshEntity(shot);
+        server.addFreshEntity(SymbolProjectile.mobShot(server, this, target, SymbolSpell.IGNIANIMA, strength));
+        for (int i = 0; i < bursts; i++) {
+            Vec3 aim = SymbolProjectile.mobAim(this, target, strength);
+            Soulfire shot = new Soulfire(WitcheryEntities.SOULFIRE.get(), this, aim);
+            shot.setPos(getX(), getY(0.5) + 0.5, getZ());
+            server.addFreshEntity(shot);
+        }
     }
 
     @Override

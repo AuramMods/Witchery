@@ -215,13 +215,9 @@ public final class Leonard extends Monster implements RangedAttackMob {
     }
 
     @Override
-    public void performRangedAttack(LivingEntity target, float distance) {
+    public void performRangedAttack(LivingEntity target, float strength) {
         if (!(level() instanceof ServerLevel level) || entranceTicks > 0 || !random.nextBoolean()) return;
         beginAttack();
-        Vec3 origin = position().add(0, getBbHeight() / 2, 0);
-        double spread = Math.sqrt(distance) * 0.5;
-        Vec3 aim = target.position().add(0, target.getBbHeight() / 2, 0).subtract(origin)
-                .add(random.nextGaussian() * spread, 0, random.nextGaussian() * spread);
         SymbolSpell spell = switch (random.nextInt(21)) {
             case 14, 15 -> SymbolSpell.EXPELLIARMUS;
             case 16, 17 -> SymbolSpell.FLIPENDO;
@@ -229,8 +225,8 @@ public final class Leonard extends Monster implements RangedAttackMob {
             case 20 -> SymbolSpell.CONFUNDUS;
             default -> SymbolSpell.IGNIANIMA;
         };
-        level.addFreshEntity(new SymbolProjectile(level, this, spell, origin, aim));
-        playSound(SoundEvents.GHAST_SHOOT, 1, 1);
+        level.addFreshEntity(SymbolProjectile.mobShot(level, this, target, spell, strength));
+        SymbolProjectile.playMobCastSound(level, this);
     }
 
     @Override

@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Boss and Reflection Spell Flight (2026-11-24)
+
+- Leonard, Lilith, the Reflection, and the Lord of Torment now launch their spells at mid-body height with zero initial motion and 0.1 acceleration. Their aim combines the original strength-based horizontal spread with the additional 0.4 Gaussian spread on each axis. The player's Mystic Branch still starts at 0.3. Lilith's exploding fireball keeps the half-block vertical offset even when she looks up or down.
+- The Lord uses the original ranged attack at close range. It casts a rank-one Ignianima spell and three ordinary Soulfire fireballs, with a one-in-ten chance of nine. New casts use the same Ignianima impact as the Branch. The earlier port's saved `Ignianima` flag remains supported on Soulfire entities.
+- The muted clean Forge survival client received the original ghast cast cue at volume two with variable pitch for all four mobs. The dedicated server recorded the 0.1 spell acceleration, Lilith's explosive fireball, and the Lord's distinct Ignianima and Soulfire entities. The Reflection copied the held Mystic Branch and cast Attraho. The fixture supplied the arena, mobs, player buffs, and encounter positioning. The client used zero master volume and OpenAL No Output without activating its window.
+- A headless server opened a save written by the preceding JAR and retained the supplied Soulfire's `Ignianima` flag and coordinates. All 176 required Forge GameTests, Java 17 JAR reobfuscation and the asset inventory audit passed. The packaged client, server, and save upgrade used SHA-256 `b6e62bf8ec1d221f09ff600eec4fc8d36235220c1a6ae3b77335018b1c162f0d`. Logs and fixtures are in `build/qa-boss-spell-flight`.
+
 ## Mystic Branch Countdown and Saved Flight (2026-11-24)
 
 - Morsmordre creates the Dark Mark at the start of its expiry tick, consistent with collision impacts. The original `direction` supplies the saved motion and `lifetime` supplies the remaining countdown. Older 1.20.1 saves without that countdown derive it from `Age`.

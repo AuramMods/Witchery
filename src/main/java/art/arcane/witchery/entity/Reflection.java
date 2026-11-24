@@ -60,7 +60,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
@@ -324,12 +323,8 @@ public final class Reflection extends Monster implements RangedAttackMob {
     }
 
     private void castAt(ServerLevel level, LivingEntity target, float strength, SymbolSpell spell) {
-        Vec3 origin = position().add(0, getBbHeight() / 2, 0);
-        float spread = (float) Math.sqrt(strength) * 0.5F;
-        Vec3 aim = target.position().add(random.nextGaussian() * spread, target.getBbHeight() / 2,
-                random.nextGaussian() * spread).subtract(origin);
-        if (level.addFreshEntity(new SymbolProjectile(level, this, spell, origin, aim))) {
-            playSound(SoundEvents.GHAST_SHOOT, 1, 1);
+        if (level.addFreshEntity(SymbolProjectile.mobShot(level, this, target, spell, strength))) {
+            SymbolProjectile.playMobCastSound(level, this);
         }
     }
 

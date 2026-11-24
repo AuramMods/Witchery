@@ -30,14 +30,13 @@ public final class Soulfire extends SmallFireball {
         super(type, level);
     }
 
-    public Soulfire(EntityType<? extends Soulfire> type, LivingEntity owner, double x, double y, double z, boolean ignition) {
+    public Soulfire(EntityType<? extends Soulfire> type, LivingEntity owner, Vec3 direction) {
         this(type, owner.level());
         setOwner(owner);
-        Vec3 acceleration = new Vec3(x, y, z).normalize().scale(0.1);
+        Vec3 acceleration = direction.normalize().scale(0.1);
         xPower = acceleration.x;
         yPower = acceleration.y;
         zPower = acceleration.z;
-        entityData.set(IGNITION, ignition);
     }
 
     @Override

@@ -69,12 +69,38 @@ public final class SymbolProjectile extends ThrowableProjectile {
     }
 
     public SymbolProjectile(ServerLevel level, LivingEntity owner, SymbolSpell spell, Vec3 origin, Vec3 direction) {
+        this(level, owner, spell, origin, direction, 0.3);
+    }
+
+    private SymbolProjectile(ServerLevel level, LivingEntity owner, SymbolSpell spell, Vec3 origin, Vec3 direction,
+                             double acceleration) {
         this(WitcheryEntities.SYMBOL_PROJECTILE.get(), level);
         setOwner(owner);
         moveTo(origin.x, origin.y, origin.z, owner.getYRot(), owner.getXRot());
         entityData.set(SPELL, spell.id());
-        entityData.set(ACCELERATION, direction.normalize().scale(0.3).toVector3f());
+        entityData.set(ACCELERATION, direction.normalize().scale(acceleration).toVector3f());
         if (spell == SymbolSpell.MORSMORDRE) ticksUntilImpact = spell.lifetime();
+    }
+
+    static SymbolProjectile mobShot(ServerLevel level, LivingEntity caster, LivingEntity target, SymbolSpell spell,
+                                    float attackStrength) {
+        Vec3 origin = new Vec3(caster.getX(), caster.getY(0.5), caster.getZ());
+        return new SymbolProjectile(level, caster, spell, origin, mobAim(caster, target, attackStrength), 0.1);
+    }
+
+    static Vec3 mobAim(LivingEntity caster, LivingEntity target, float attackStrength) {
+        var random = caster.getRandom();
+        double spread = Math.sqrt(attackStrength) * 0.5;
+        Vec3 aim = new Vec3(target.getX() - caster.getX() + random.nextGaussian() * spread,
+                target.getY(0.5) - caster.getY(0.5),
+                target.getZ() - caster.getZ() + random.nextGaussian() * spread);
+        return aim.add(random.nextGaussian() * 0.4, random.nextGaussian() * 0.4, random.nextGaussian() * 0.4);
+    }
+
+    static void playMobCastSound(ServerLevel level, LivingEntity caster) {
+        var random = level.getRandom();
+        float pitch = 1 + (random.nextFloat() - random.nextFloat()) * 0.2F;
+        level.playSound(null, caster.blockPosition(), SoundEvents.GHAST_SHOOT, caster.getSoundSource(), 2, pitch);
     }
 
     @Override

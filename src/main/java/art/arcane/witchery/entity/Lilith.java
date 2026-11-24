@@ -230,17 +230,15 @@ public final class Lilith extends Monster implements RangedAttackMob {
     }
 
     @Override
-    public void performRangedAttack(LivingEntity target, float distance) {
+    public void performRangedAttack(LivingEntity target, float strength) {
         if (!(level() instanceof ServerLevel world) || friendly() || invulnerableTicks > 0 || !random.nextBoolean()) return;
         beginAttack();
-        playSound(SoundEvents.GHAST_SHOOT, 1, 1);
-        Vec3 start = position().add(0, getBbHeight() / 2, 0);
-        Vec3 aim = target.position().add(0, target.getBbHeight() / 2, 0).subtract(start);
-        double spread = Math.sqrt(distance) * 0.5;
-        aim = aim.add(random.nextGaussian() * spread, 0, random.nextGaussian() * spread);
+        SymbolProjectile.playMobCastSound(world, this);
         if (random.nextInt(3) == 0) {
+            Vec3 aim = SymbolProjectile.mobAim(this, target, strength);
             var fireball = new LargeFireball(world, this, aim.x, aim.y, aim.z, 1);
-            fireball.setPos(start.add(getLookAngle()).add(0, 0.5, 0));
+            Vec3 look = getLookAngle();
+            fireball.setPos(getX() + look.x, getY(0.5) + 0.5, getZ() + look.z);
             world.addFreshEntity(fireball);
         } else {
             SymbolSpell spell = switch (random.nextInt(13)) {
@@ -250,7 +248,7 @@ public final class Lilith extends Monster implements RangedAttackMob {
                 case 3, 4, 5, 6, 7 -> SymbolSpell.FLIPENDO;
                 default -> SymbolSpell.ATTRAHO;
             };
-            world.addFreshEntity(new SymbolProjectile(world, this, spell, start, aim));
+            world.addFreshEntity(SymbolProjectile.mobShot(world, this, target, spell, strength));
         }
     }
 

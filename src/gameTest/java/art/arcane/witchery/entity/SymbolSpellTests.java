@@ -16,11 +16,16 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.RangedAttackMob;
+import net.minecraft.world.entity.projectile.LargeFireball;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
@@ -235,6 +240,105 @@ public final class SymbolSpellTests {
             caster.discard();
             defender.discard();
         }
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void mobSpellsUseTheirOriginalLaunchGeometry(GameTestHelper helper) {
+        var level = helper.getLevel();
+        Vec3 origin = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(2, 10, 4)));
+        var target = EntityType.PIG.create(level);
+        target.setPos(origin.add(8, 2, 0));
+        var leonard = WitcheryEntities.LEONARD.get().create(level);
+        var lilith = WitcheryEntities.LILITH.get().create(level);
+        var reflection = WitcheryEntities.REFLECTION.get().create(level);
+        reflection.setItemInHand(InteractionHand.MAIN_HAND, WitcheryItems.getRequired("mysticbranch").get().getDefaultInstance());
+
+        var shots = new ArrayList<Projectile>();
+        Consumer<EntityJoinLevelEvent> listener = event -> {
+            if (event.getLevel() == level && event.getEntity() instanceof Projectile shot) shots.add(shot);
+        };
+        MinecraftForge.EVENT_BUS.addListener(listener);
+        try {
+            for (Mob caster : List.of(leonard, lilith, reflection)) {
+                caster.setPos(origin);
+                caster.setYRot(-90);
+                caster.setXRot(-35);
+                caster.getRandom().setSeed(28);
+                for (int attack = 0; attack < 24; attack++) ((RangedAttackMob) caster).performRangedAttack(target, 0.7F);
+
+                var spells = shots.stream().filter(SymbolProjectile.class::isInstance).map(SymbolProjectile.class::cast).toList();
+                var fireballs = shots.stream().filter(LargeFireball.class::isInstance).toList();
+                helper.assertTrue(spells.size() > 1 && (caster == lilith ? !fireballs.isEmpty() : fireballs.isEmpty()),
+                        caster.getName().getString() + " uses its original ranged projectile types");
+                Vec3 spellOrigin = new Vec3(caster.getX(), caster.getY(0.5), caster.getZ());
+                for (var spell : spells) {
+                    helper.assertTrue(spell.getOwner() == caster && spell.position().distanceTo(spellOrigin) < 1.0E-6
+                                    && spell.getDeltaMovement().lengthSqr() == 0
+                                    && Math.abs(savedAcceleration(spell).length() - 0.1) < 1.0E-6,
+                            "The spell starts at the caster's midpoint with zero velocity and 0.1 acceleration");
+                }
+                helper.assertTrue(spells.stream().map(spell -> savedAcceleration(spell).y).distinct().count() > 1,
+                        "The original spread also varies the vertical aim");
+                Vec3 look = caster.getLookAngle();
+                Vec3 ballOrigin = spellOrigin.add(look.x, 0.5, look.z);
+                for (var ball : fireballs) {
+                    helper.assertTrue(ball.getOwner() == caster && ball.position().distanceTo(ballOrigin) < 1.0E-6,
+                            "Lilith's fireball offsets forward horizontally even when she looks up");
+                }
+                shots.forEach(Projectile::discard);
+                shots.clear();
+            }
+            helper.succeed();
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(listener);
+            shots.forEach(Projectile::discard);
+        }
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void tormentLordCastsIgnianimaAndBothLegacyVolleySizes(GameTestHelper helper) {
+        var level = helper.getLevel();
+        Vec3 origin = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(2, 10, 4)));
+        var target = EntityType.PIG.create(level);
+        target.setPos(origin.add(1.5, 0, 0));
+        var lord = WitcheryEntities.LORD_OF_TORMENT.get().create(level);
+        lord.setPos(origin);
+        Vec3 center = new Vec3(origin.x, lord.getY(0.5), origin.z);
+        var shots = new ArrayList<Projectile>();
+        Consumer<EntityJoinLevelEvent> listener = event -> {
+            if (event.getLevel() == level && event.getEntity() instanceof Projectile shot) shots.add(shot);
+        };
+        MinecraftForge.EVENT_BUS.addListener(listener);
+        try {
+            for (long seed : new long[]{0, 1}) {
+                lord.getRandom().setSeed(seed);
+                lord.performRangedAttack(target, 0.125F);
+                int count = RandomSource.create(seed).nextInt(10) == 0 ? 9 : 3;
+                helper.assertTrue(shots.size() == count + 1
+                                && shots.get(0) instanceof SymbolProjectile spell && spell.spell() == SymbolSpell.IGNIANIMA
+                                && spell.getOwner() == lord && spell.position().distanceTo(center) < 1.0E-6
+                                && Math.abs(savedAcceleration(spell).length() - 0.1) < 1.0E-6,
+                        "Even at close range the Lord launches Ignianima with the original spell flight");
+                for (var shot : shots.subList(1, shots.size())) {
+                    helper.assertTrue(shot instanceof Soulfire && shot.getOwner() == lord
+                                    && shot.position().distanceTo(center.add(0, 0.5, 0)) < 1.0E-6
+                                    && !shot.saveWithoutId(new CompoundTag()).getBoolean("Ignianima"),
+                            "Each of the " + count + " fireballs is ordinary Soulfire, half a block above the spell");
+                }
+                shots.forEach(Projectile::discard);
+                shots.clear();
+            }
+            helper.assertTrue(target.getHealth() == target.getMaxHealth(), "The ranged attack did not substitute melee damage");
+            helper.succeed();
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(listener);
+            shots.forEach(Projectile::discard);
+        }
+    }
+
+    private static Vec3 savedAcceleration(SymbolProjectile spell) {
+        var saved = spell.saveWithoutId(new CompoundTag());
+        return new Vec3(saved.getFloat("AccelerationX"), saved.getFloat("AccelerationY"), saved.getFloat("AccelerationZ"));
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_tormentum_targets")
