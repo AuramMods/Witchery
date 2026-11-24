@@ -68,6 +68,7 @@ import art.arcane.witchery.client.model.VampireClothingModel;
 import art.arcane.witchery.item.WitchClothingItem;
 import art.arcane.witchery.item.VampireClothingItem;
 import art.arcane.witchery.client.renderer.DreamCatcherRenderer;
+import art.arcane.witchery.client.renderer.BrazierRenderer;
 import art.arcane.witchery.client.renderer.FetishRenderer;
 import art.arcane.witchery.client.renderer.BabaYagaRenderer;
 import art.arcane.witchery.client.renderer.BroomRenderer;
@@ -259,6 +260,7 @@ public final class WitcheryClient {
         event.registerLayerDefinition(MirrorFaceRenderer.LAYER, MirrorFaceRenderer::layer);
         event.registerLayerDefinition(DemonHeartRenderer.LAYER, DemonHeartRenderer::layer);
         event.registerLayerDefinition(DreamCatcherRenderer.LAYER, DreamCatcherRenderer::layer);
+        event.registerLayerDefinition(BrazierRenderer.LAYER, BrazierRenderer::layer);
         event.registerLayerDefinition(FetishRenderer.SCARECROW, FetishRenderer::scarecrowLayer);
         event.registerLayerDefinition(FetishRenderer.TRENT, FetishRenderer::trentLayer);
         event.registerLayerDefinition(FetishRenderer.LADDER, FetishRenderer::ladderLayer);
@@ -394,6 +396,7 @@ public final class WitcheryClient {
         event.registerBlockEntityRenderer(WitcheryBlockEntities.GRASSPER.get(), GrassperRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.POPPET_SHELF.get(), PoppetShelfRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.DREAM_CATCHER.get(), DreamCatcherRenderer::new);
+        event.registerBlockEntityRenderer(WitcheryBlockEntities.BRAZIER.get(), BrazierRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.fetish("scarecrow").get(),
                 context -> new FetishRenderer(context, FetishRenderer.SCARECROW));
         event.registerBlockEntityRenderer(WitcheryBlockEntities.fetish("trent").get(),
@@ -485,7 +488,7 @@ public final class WitcheryClient {
                     "spanishmoss", "vine", "web", "witchsapling", "lilypad", "leapinglily",
                     "rowanwooddoor", "alderwooddoor", "cwoodendoor", "icedoor",
                     "beartrap", "wolftrap", "demonheart", "wolfhead", "alluringskull", "chalice", "candelabra",
-                    "brazier", "crystalball", "scarecrow", "trent", "witchsladder",
+                    "crystalball", "scarecrow", "trent", "witchsladder",
                     "placeditem", "glowglobe", "infinityegg", "garlicgarland", "poppetshelf", "dreamcatcher",
                     "daylightcollector", "bloodcrucible", "silvervat", "cauldron", "cactus",
                     "circle", "circleglyphritual", "circleglyphotherwhere", "circleglyphinfernal",

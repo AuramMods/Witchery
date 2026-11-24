@@ -42,6 +42,7 @@ import art.arcane.witchery.item.BoundPoppetItem;
 import art.arcane.witchery.item.ArthanaItem;
 import art.arcane.witchery.item.BolineItem;
 import art.arcane.witchery.item.BrewBagItem;
+import art.arcane.witchery.item.BrazierItem;
 import art.arcane.witchery.item.AntidoteItem;
 import art.arcane.witchery.item.ArtichokeItem;
 import art.arcane.witchery.item.BrewBottleItem;
@@ -546,6 +547,9 @@ public final class WitcheryItems {
             }
             case "wolfaltar" -> {
                 return new WolfAltarItem(block);
+            }
+            case "brazier" -> {
+                return new BrazierItem(block);
             }
             case "statuegoddess" -> {
                 return new StatueGoddessItem(block);

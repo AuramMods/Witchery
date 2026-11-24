@@ -11,9 +11,12 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -49,7 +52,7 @@ public final class BrazierBlockEntity extends BlockEntity {
 
         @Override
         protected void onContentsChanged(int slot) {
-            if (!loading) setChanged();
+            if (!loading) syncOfferings();
         }
     };
     private LazyOptional<IItemHandler> inventory = LazyOptional.of(() -> ingredients);
@@ -57,6 +60,7 @@ public final class BrazierBlockEntity extends BlockEntity {
     private boolean ignited;
     private boolean powered;
     private boolean redstone;
+    private int displayedOfferings;
     private long cookTime;
     private long storage;
     private Optional<BrazierRecipe> activeRecipe = Optional.empty();
@@ -158,11 +162,9 @@ public final class BrazierBlockEntity extends BlockEntity {
         storage = 0;
         activeRecipe = Optional.empty();
         recipeResolved = false;
-        for (int slot = 0; slot < INGREDIENT_SLOTS; slot++) {
-            ingredients.setStackInSlot(slot, ItemStack.EMPTY);
-        }
+        ingredients.setSize(INGREDIENT_SLOTS);
         setFlame(false);
-        setChanged();
+        syncOfferings();
     }
 
     public void dropContents(Level level) {
@@ -187,6 +189,45 @@ public final class BrazierBlockEntity extends BlockEntity {
         if (level instanceof ServerLevel && getBlockState().getValue(BrazierBlock.LIT) != flame) {
             level.setBlock(worldPosition, getBlockState().setValue(BrazierBlock.LIT, flame), Block.UPDATE_CLIENTS);
         }
+    }
+
+    private void syncOfferings() {
+        setChanged();
+        if (level instanceof ServerLevel server) {
+            BlockState state = getBlockState();
+            server.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_CLIENTS);
+        }
+    }
+
+    public int displayedOfferings() {
+        return displayedOfferings;
+    }
+
+    @Override
+    public CompoundTag getUpdateTag() {
+        int count = 0;
+        for (int slot = 0; slot < INGREDIENT_SLOTS; slot++) {
+            if (!ingredients.getStackInSlot(slot).isEmpty()) count++;
+        }
+        CompoundTag tag = new CompoundTag();
+        tag.putByte("Offerings", (byte) count);
+        return tag;
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag) {
+        displayedOfferings = Mth.clamp(tag.getByte("Offerings"), 0, INGREDIENT_SLOTS);
+    }
+
+    @Override
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet) {
+        CompoundTag tag = packet.getTag();
+        if (tag != null) handleUpdateTag(tag);
     }
 
     @Override

@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Brazier Appearance (2026-11-24)
+
+- The Brazier uses the original bowl and stand for placed blocks and items. Its ash rises according to the number of occupied offering slots. Initial chunk data and later inventory updates send that count through the existing block entity type. Ignition ash stays in its original saved slot.
+- A muted background client read the first offering from a save created by the previous packaged JAR. It inserted the two remaining offerings, verified all three ash heights, ignited the batch and quenched it with water. The client then summoned a Spectre with a second batch and observed the flame and ash clear when the recipe finished. The fixture supplied ingredients, a formed altar and its starting power.
+- The player crafted and placed a new Brazier with the original recipe. The client checked the item geometry through the GUI, ground, fixed and four hand display contexts. A dedicated restart restored both offerings and the correct ash height. Java 17 JAR reobfuscation, the asset inventory audit and all 163 Forge GameTests passed on SHA-256 `600a6eb2e07c43f39eb583f489d8587deb2e52034710d61f4fc1c702536158e9`.
+
 ## Fume Funnel Models (2026-11-23)
 
 - The plain and filtered models use the original `fumefunnel.png` atlas and cuboids. A Witch's Oven on either side adds its own pipe. An oven below swaps the body and its filter for the chimney. Both item models show their standalone forms.
