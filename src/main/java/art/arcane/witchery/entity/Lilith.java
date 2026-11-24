@@ -52,6 +52,7 @@ public final class Lilith extends Monster implements RangedAttackMob {
     private static final EntityDataAccessor<Boolean> FRIENDLY = SynchedEntityData.defineId(Lilith.class, EntityDataSerializers.BOOLEAN);
     private static final int HEAL_INTERVAL = 20;
     private static final int REFLECTED_FIREBALL_HEAL_PULSES = 10;
+    private static final int INNATE_ARMOR = 8;
     private final ServerBossEvent bar = new ServerBossEvent(getDisplayName(), BossEvent.BossBarColor.PURPLE,
             BossEvent.BossBarOverlay.PROGRESS);
     private int invulnerableTicks;
@@ -145,13 +146,22 @@ public final class Lilith extends Monster implements RangedAttackMob {
     }
 
     @Override
+    protected float getDamageAfterArmorAbsorb(DamageSource source, float damage) {
+        float remaining = super.getDamageAfterArmorAbsorb(source, damage);
+        if (source.is(DamageTypeTags.BYPASSES_ARMOR)) return remaining;
+        // The original eight points absorbed a fixed fraction, regardless of the size of the hit.
+        return remaining * (25 - INNATE_ARMOR) / 25;
+    }
+
+    @Override
     public void die(DamageSource source) {
         if (!(level() instanceof ServerLevel world)) return;
         setHealth(getMaxHealth());
         entityData.set(FRIENDLY, true);
         setTarget(null);
         setNoAi(true);
-        removeAllEffects();
+        getActiveEffects().stream().filter(effect -> !effect.getCurativeItems().isEmpty())
+                .map(MobEffectInstance::getEffect).toList().forEach(this::removeEffect);
         ServerPlayer player = source.getEntity() instanceof ServerPlayer attacker && attacker.isAlive()
                 && attacker.level() == world && distanceToSqr(attacker) <= 4096 ? attacker : nearestPlayer(world);
         if (player == null) {
@@ -209,12 +219,19 @@ public final class Lilith extends Monster implements RangedAttackMob {
             var enchantments = EnchantmentHelper.selectEnchantment(random, offering, 40, false);
             if (enchantments.isEmpty()) GlassGobletItem.tell(serverPlayer, "lilith_offer");
             else {
-                ItemStack enchanted = offering.is(Items.BOOK) ? new ItemStack(Items.ENCHANTED_BOOK) : offering.copy();
-                var existing = EnchantmentHelper.getEnchantments(enchanted);
-                for (var enchantment : enchantments) existing.merge(enchantment.enchantment, enchantment.level, Math::max);
+                ItemStack enchanted;
+                if (offering.is(Items.BOOK)) {
+                    enchanted = new ItemStack(Items.ENCHANTED_BOOK, offering.getCount());
+                    CompoundTag tag = offering.getTag();
+                    if (tag != null) enchanted.setTag(tag.copy());
+                } else enchanted = offering.copy();
                 if (enchanted.is(Items.ENCHANTED_BOOK)) {
                     for (var enchantment : enchantments) EnchantedBookItem.addEnchantment(enchanted, enchantment);
-                } else EnchantmentHelper.setEnchantments(existing, enchanted);
+                } else {
+                    var existing = EnchantmentHelper.getEnchantments(enchanted);
+                    for (var enchantment : enchantments) existing.merge(enchantment.enchantment, enchantment.level, Math::max);
+                    EnchantmentHelper.setEnchantments(existing, enchanted);
+                }
                 if (enchanted.isDamageableItem()) enchanted.setDamageValue(0);
                 reward(serverPlayer, hand, enchanted, "lilith_enchanted");
             }
@@ -224,7 +241,11 @@ public final class Lilith extends Monster implements RangedAttackMob {
 
     private void reward(ServerPlayer player, InteractionHand hand, ItemStack reward, String message) {
         player.setItemInHand(hand, ItemStack.EMPTY);
-        if (!reward.isEmpty()) player.drop(reward, false);
+        if (!reward.isEmpty()) {
+            int stackLimit = reward.getMaxStackSize();
+            while (reward.getCount() > stackLimit) player.drop(reward.split(stackLimit), false);
+            player.drop(reward, false);
+        }
         GlassGobletItem.tell(player, message);
         portal(player.serverLevel());
         discard();

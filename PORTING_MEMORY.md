@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Lilith's Innate Armor and Friendly Bargain (2026-11-24)
+
+- The original `EntityLilith` caps the hit at 12 and supplies eight points to 1.7.10's armor calculation. That formula absorbs 32% on every armor-sensitive hit. The modern port applies this innate protection after Forge calculates any added armor. Tests cover capped and smaller hits and armor-bypassing magic.
+- A muted survival player hit a fixture-supplied Lilith with a fully charged Wooden Sword attack. Her health fell from 100 to 98 on the preceding JAR and to 98.64 on the rebuilt JAR. The fixture applied Weakness and Mortal Coil and lowered her health for the final swing. Defeat cleared Weakness and the same friendly Lilith retained Mortal Coil through the dedicated restart.
+- Ordinary use offered two named books with a custom tag. The previous JAR dropped one unnamed enchanted book. The final JAR dropped the two books individually with their original name and tag and their new enchantments. The fixture positioned the player at the drops, and the saved inventory kept both books in separate slots. The clients stayed unfocused and used zero master volume and OpenAL No Output.
+- All three new checks failed on the preceding source. All 196 required local Forge GameTests passed after the repair, as did Java 17 JAR reobfuscation and the asset inventory audit. A headless server with Auram's Apothic Attributes 1.3.7 and Placebo 8.6.3 verified the original reduction, added Forge armor and magic bypass. The verified JAR SHA-256 is `9c439630a2272cdf3a617f3e23d1a6a89163c33298426f0f760598778e6bd8fd`. Logs are in `build/qa-lilith-parity`.
+
 ## Reflected Fireballs in Lilith's Fight (2026-11-24)
 
 - The original hurt handler recognized the player-owned Large Fireball before applying fire immunity. The port now does the same and resumes healing on the tenth healing pulse after impact. It retains the existing `WeaknessTicks` save field.
