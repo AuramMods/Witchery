@@ -46,7 +46,7 @@ final class AreaCurses {
     }
 
     static boolean pulse(ServerLevel level, BlockPos heart, BlockPos target, int stage, int coven,
-                         ItemRiteRecipe.Action action, @Nullable ServerPlayer initiator) {
+                         ItemRiteRecipe.Action action, @Nullable ServerPlayer initiator, boolean summon) {
         ServerPlayer caster = initiator != null && initiator.level() == level ? initiator : null;
         if (stage == 1) {
             if (caster != null) WitchHunterPursuit.noticeBlackMagic(caster);
@@ -56,7 +56,7 @@ final class AreaCurses {
         boolean enhanced = caster != null && FamiliarBinding.hasCurseMastery(caster);
         ServerPlayer terrainActor = caster == null ? FakePlayerFactory.getMinecraft(level) : caster;
         if (action == ItemRiteRecipe.Action.HELL_ON_EARTH) {
-            return hellOnEarth(level, heart, target, stage, coven, radius, enhanced, terrainActor);
+            return hellOnEarth(level, heart, target, stage, coven, radius, enhanced, terrainActor, summon);
         }
         boolean blind = action == ItemRiteRecipe.Action.AREA_BLINDNESS;
         Vec3 center = Vec3.atCenterOf(target);
@@ -125,7 +125,7 @@ final class AreaCurses {
     }
 
     private static boolean hellOnEarth(ServerLevel level, BlockPos heart, BlockPos target, int stage, int coven,
-                                       int radius, boolean enhanced, ServerPlayer caster) {
+                                       int radius, boolean enhanced, ServerPlayer caster, boolean summon) {
         int maxRadius = 20 + 2 * coven;
         if (!target.equals(heart)) {
             level.getChunkSource().addRegionTicket(HELL_SITE, new ChunkPos(target), 2 + maxRadius / 16, target);
@@ -135,7 +135,7 @@ final class AreaCurses {
             ExpandingWave.visitSurface(level, target, radius, true,
                     pos -> alterSurface(level, pos, radius, true, enhanced, caster));
         }
-        if (radius >= maxRadius && stage <= 250 && (stage - 1) % 8 == 0) {
+        if (radius >= maxRadius && stage <= 250 && summon) {
             var altar = AltarPower.nearest(level, target);
             if (altar == null || !altar.consumePower(200)) return false;
             spawnNetherCreature(level, target.above(2));

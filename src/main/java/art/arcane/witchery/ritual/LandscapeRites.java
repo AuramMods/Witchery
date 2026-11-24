@@ -88,13 +88,21 @@ public final class LandscapeRites {
         }
     }
 
+    private static final int EXPANSION_TICKS = 5;
+    private static final int HELL_SPAWN_STAGES = 40 / EXPANSION_TICKS;
+
+    public static int hellSpawnOffset(int completedStage, int glyphPhase) {
+        // Each stage advances the glyph clock by five ticks. Capture which stage shares its 40-tick boundary.
+        return Math.floorMod(completedStage - glyphPhase / EXPANSION_TICKS, HELL_SPAWN_STAGES);
+    }
+
     public record Progress(ItemRiteRecipe.Action action, @Nullable Species species, BlockPos target, int stage,
-                           @Nullable EarthRites.Fissure fissure, boolean followsHeart) {
+                           @Nullable EarthRites.Fissure fissure, boolean followsHeart, int hellSpawnOffset) {
         public int interval() {
             return switch (action) {
                 case RAISE_VOLCANO, RAISE_PORTABLE_VOLCANO -> 15;
                 case ICE_SHELL, RAISE_EARTH, RAISE_EARTH_MEDIUM, RAISE_EARTH_LARGE, FERTILITY -> 5;
-                case BLIGHT, AREA_BLINDNESS, HELL_ON_EARTH -> 5;
+                case BLIGHT, AREA_BLINDNESS, HELL_ON_EARTH -> EXPANSION_TICKS;
                 case RAIN_TOADS -> 30;
                 case CALL_BEASTS -> 60;
                 default -> 20;
@@ -129,6 +137,7 @@ public final class LandscapeRites {
                 tag.putInt("FissureHeading", fissure.heading());
             }
             if (followsHeart) tag.putBoolean("FollowsHeart", true);
+            if (action == ItemRiteRecipe.Action.HELL_ON_EARTH) tag.putInt("HellSpawnOffset", hellSpawnOffset);
             return tag;
         }
 
@@ -155,7 +164,7 @@ public final class LandscapeRites {
             EarthRites.Fissure fissure = action == ItemRiteRecipe.Action.PART_EARTH
                     ? new EarthRites.Fissure(tag.getLong("FissureSeed"), tag.getInt("FissureHeading")) : null;
             var progress = new Progress(action, species, BlockPos.of(tag.getLong("Target")), tag.getInt("Stage"), fissure,
-                    tag.getBoolean("FollowsHeart"));
+                    tag.getBoolean("FollowsHeart"), Math.floorMod(tag.getInt("HellSpawnOffset"), HELL_SPAWN_STAGES));
             return progress.stage() > 0 && progress.stage() < progress.lastStage(coven) ? progress : null;
         }
     }
@@ -207,13 +216,15 @@ public final class LandscapeRites {
             }
             case CALL_BEASTS -> CallOfTheBeasts.pulse(level, progress.target(), stage);
             case BLIGHT, AREA_BLINDNESS, HELL_ON_EARTH -> {
-                if (!AreaCurses.pulse(level, heart, progress.target(), stage, coven, progress.action(), caster)) return null;
+                boolean summon = (stage - 1) % HELL_SPAWN_STAGES == progress.hellSpawnOffset();
+                if (!AreaCurses.pulse(level, heart, progress.target(), stage, coven, progress.action(), caster, summon)) return null;
             }
             case RAIN_TOADS -> RainOfToads.shower(level, progress.target());
             default -> throw new IllegalStateException("Unexpected landscape rite " + progress.action());
         }
         return stage >= progress.lastStage(coven) ? null
-                : new Progress(progress.action(), progress.species(), progress.target(), stage, progress.fissure(), progress.followsHeart());
+                : new Progress(progress.action(), progress.species(), progress.target(), stage, progress.fissure(),
+                        progress.followsHeart(), progress.hellSpawnOffset());
     }
 
     private static void forestPulse(ServerLevel level, BlockPos origin, Species species, int coven, @Nullable ServerPlayer caster) {

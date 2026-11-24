@@ -653,6 +653,16 @@
 - [x] Regenerate resources and reobfuscate locally. All 262 checked-in GameTests passed, including exact Eclipse and Storm phases across save and reload, a saved barrier refresh, and exact altar debits.
 - [x] Cast portable Eclipse through the muted background client in copied Auram. Verify midnight, an empty Heart Glyph, and exactly one discharged stone in the player's saved inventory.
 
+## Hell on Earth Summoning and Waystone Reach (2026-11-24)
+
+- [x] Trace original Hell on Earth casts from glyph ages zero and twenty. At full radius they first debit the destination altar at stages 17 and 21, respectively, and then every forty ticks.
+- [x] Restore the original spawn boundary and persist it with the expansion stage. Keep existing Forge waves on their saved schedule and reproduce the first twenty-tick activation gate when importing original 1.7.10 upkeep.
+- [x] Reject out-of-range Waystones on the first effect tick after all offerings. The original Storm fixture pays 2,000 at glyph tick 80 and returns the three held items at tick 81.
+- [x] Run data generation, reobfuscation and all 264 local GameTests. Test a saved Hell on Earth wave, the original activation gate, the first unpaid summon, and next-tick rejection after reloading the altar payment.
+- [x] Start Hell on Earth from clean Forge survival with both altars and the bound Waystone. Save during expansion and verify that the resumed cast spawns at the target, charges 200 there, and ends after the destination altar is removed.
+- [x] Reproduce the one-tick Storm range failure on the packaged headless server. Load an original 1.7.10 glyph's saved wave fields and confirm the restored spawn boundary. Load an earlier Forge-format wave and confirm it retains its stage-based schedule.
+- [x] Repeat Hell on Earth in copied Auram. Verify its alternate starting phase waits until stage 21, charges the distant altar by 200, and ends after that altar is removed.
+
 ## Chalk Rite Offering Sources (2026-11-24)
 
 - [x] Restore the original search for dropped items, optional Waystones, and living offerings. Measure three-dimensional distance from the Heart Glyph block's lower corner and search the one-block-high glyph layer. Small, medium, and large rites accept drops within four, six, and eight blocks. Living offerings get one extra block of distance within the same search layer.

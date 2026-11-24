@@ -87,8 +87,8 @@ import java.util.UUID;
 
 public final class RiteHeartBlockEntity extends BlockEntity {
     private static final int STEP_TICKS = 20;
-    // The least common multiple of the foreground rite intervals.
-    private static final int GLYPH_CLOCK_PERIOD = 60;
+    // Includes the 40-tick Hell on Earth spawn phase.
+    private static final int GLYPH_CLOCK_PERIOD = 120;
     private static final int MANIFEST_RANGE = 5;
     private static final int MANIFEST_DURATION = 150;
     private static final int INFUSION_RANGE = 4;
@@ -167,14 +167,20 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     private void tickCast(ServerLevel level) {
         boolean clocked = usesGlyphClock();
         ItemRiteRecipe rite = level.getRecipeManager().byKey(activeRite).orElse(null) instanceof ItemRiteRecipe recipe ? recipe : null;
+        boolean effectReady = clocked && readyForEffect(rite);
+        if (effectReady && waystoneTarget != null
+                && !LandscapeRites.canReach(level, getBlockPos(), waystoneTarget, covenSize)) {
+            abort(level, "message.witchery.rite.landscape_too_far");
+            return;
+        }
         if (clocked && !resumeRelativePulse) {
-            if (glyphPhase % clockInterval(rite) != 0) return;
+            if (glyphPhase % clockInterval(rite, effectReady) != 0) return;
         } else {
             if (++stepTicks < relativeInterval()) return;
             stepTicks = 0;
             if (resumeRelativePulse) {
                 // A prior Forge save knows the delay to its next step, but has no glyph phase.
-                glyphPhase = clockInterval(rite) % GLYPH_CLOCK_PERIOD;
+                glyphPhase = clockInterval(rite, effectReady) % GLYPH_CLOCK_PERIOD;
                 resumeRelativePulse = false;
             }
         }
@@ -183,10 +189,14 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         else advance(level, rite);
     }
 
-    private int clockInterval(@Nullable ItemRiteRecipe rite) {
+    private boolean readyForEffect(@Nullable ItemRiteRecipe rite) {
+        return rite != null && covenSummoned >= covenSize && offeringStep >= rite.sacrifices().size()
+                && finalStep(rite, rite.sacrifices().size()) == FinalStep.EFFECT;
+    }
+
+    private int clockInterval(@Nullable ItemRiteRecipe rite, boolean effectReady) {
         if (storm != null || toadRainStage >= 0) return WeatherRites.STORM_INTERVAL;
-        if (rite == null || covenSummoned < covenSize || offeringStep < rite.sacrifices().size()
-                || finalStep(rite, rite.sacrifices().size()) != FinalStep.EFFECT) return STEP_TICKS;
+        if (!effectReady || rite == null) return STEP_TICKS;
         return switch (rite.action()) {
             case RAISE_EARTH, RAISE_EARTH_MEDIUM, RAISE_EARTH_LARGE -> 5;
             case TRANSPOSE_ORES -> RiteOfTransposition.ORE_PULSE_TICKS;
@@ -688,7 +698,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             RainOfToads.lightningPulse(level, heart, ++toadRainStage);
             return;
         }
-        var ready = new LandscapeRites.Progress(ItemRiteRecipe.Action.RAIN_TOADS, null, heart, toadRainStage, null, false);
+        var ready = new LandscapeRites.Progress(ItemRiteRecipe.Action.RAIN_TOADS, null, heart, toadRainStage, null, false, 0);
         var progress = LandscapeRites.pulse(level, heart, ready, covenSize, null, terrainChanges::add);
         if (progress != null) upkeep.add(RiteUpkeep.Timed.landscape(activeRite, covenSize, initiator, progress));
         sacrificed.clear();
@@ -736,8 +746,10 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         BlockPos firstOffering = sacrificed.isEmpty() ? heart.north() : sacrificed.get(0).origin();
         var fissure = rite.action() == ItemRiteRecipe.Action.PART_EARTH
                 ? EarthRites.Fissure.start(heart, firstOffering, level.random.nextLong()) : null;
+        int hellSpawnOffset = rite.action() == ItemRiteRecipe.Action.HELL_ON_EARTH && usesGlyphClock()
+                ? LandscapeRites.hellSpawnOffset(0, glyphPhase) : 0;
         return new LandscapeRites.Progress(rite.action(), species, target, 0, fissure,
-                waystoneTarget == null && rite.action().raisedEarthRadius() > 0);
+                waystoneTarget == null && rite.action().raisedEarthRadius() > 0, hellSpawnOffset);
     }
 
     private static void finishVampireCure(ServerLevel level, BlockPos pos, ServerPlayer vampire) {
@@ -1013,8 +1025,11 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 BlockPos target = remote == null ? getBlockPos() : remote;
                 // Legacy saves retained the stage but discarded the offering location and generated path.
                 var fissure = action == ItemRiteRecipe.Action.PART_EARTH ? new EarthRites.Fissure(target.asLong(), 0) : null;
+                boolean legacyHell = action == ItemRiteRecipe.Action.HELL_ON_EARTH
+                        && !tag.contains("StepTicks", Tag.TAG_ANY_NUMERIC);
+                int hellSpawnOffset = legacyHell ? LandscapeRites.hellSpawnOffset(stage, STEP_TICKS) : 0;
                 var progress = new LandscapeRites.Progress(action, species, target, stage, fissure,
-                        remote == null && action.raisedEarthRadius() > 0);
+                        remote == null && action.raisedEarthRadius() > 0, hellSpawnOffset);
                 if (stage <= 0 || stage >= progress.lastStage(members)) continue;
                 ResourceLocation recipe = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, switch (action) {
                     case CLIMATE_CHANGE -> "rite_of_climate_change";
@@ -1035,14 +1050,17 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                     default -> "forestation/" + species.name().toLowerCase(Locale.ROOT);
                 });
                 timed = RiteUpkeep.Timed.landscape(recipe, members, null, progress);
+                if (legacyHell) timed.restoreTicks(progress.interval() - STEP_TICKS);
             }
             timed.restoreInitiatorName(initiators.getString(index));
             upkeep.add(timed);
         }
-        for (var ongoing : upkeep) {
-            if (ongoing instanceof RiteUpkeep.Timed timed) {
-                timed.restoreTicks(tag.getInt("StepTicks"));
-                break;
+        if (tag.contains("StepTicks", Tag.TAG_ANY_NUMERIC)) {
+            for (var ongoing : upkeep) {
+                if (ongoing instanceof RiteUpkeep.Timed timed) {
+                    timed.restoreTicks(tag.getInt("StepTicks"));
+                    break;
+                }
             }
         }
     }

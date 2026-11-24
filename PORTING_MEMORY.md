@@ -2,6 +2,17 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Hell on Earth Summoning and Waystone Reach (2026-11-24)
+
+- Two original Hell on Earth casts began at glyph ages zero and twenty. The first started expanding at tick 160 and summoned at stage 17 on tick 240. The other started at tick 180 and summoned at stage 21 on tick 280. Each destination altar spent 200 per summon, and the next summon occurred forty ticks later.
+- The Forge glyph now uses a 120-tick clock and saves the corresponding summoning offset on the wave. Existing Forge waves without that field keep their earlier stage-based schedule. An original tile loaded at stage 25 held that stage until tick 20 and first drew destination power at tick 40 on stage 30. The migrated upkeep preserves that gate through a further save reload.
+- The original greater Storm accepted the distant stone offering at glyph tick 60, spent 2,000 at 80, and refunded all three items at 81. The Forge glyph now rejects the target on that first eligible tick even if the effect itself uses a slower schedule. Its regression reloads the paid cast before the rejection.
+- A packaged headless redstone Storm paid on game tick 7,650 and rejected a 51-block Waystone on 7,651. The altar retained the debit and all three offerings returned exactly once.
+- The clean Forge survival client activated Hell on Earth and saved the cast during its first expansion stage. The restart reached stage 17 before summoning, debited the destination from 10,000 to 9,800, and ended after the destination altar was removed. The source altar stayed separate. The fixture moved the villager two blocks to the side so the player could aim at the Heart Glyph.
+- The packaged headless importer test fed the exact wave fields serialized by the 1.7.10 server at stage 30. Expansion resumed after twenty loaded ticks and the stage-35 summon spent 200 on tick forty. An earlier Forge-format wave at stage 16 retained its stage-17 summon on the fifth loaded tick.
+- The copied Auram survival cast took the other glyph phase. The target was clear during stage 18. Stage 21 produced a Nether creature, reduced the destination altar from 10,000 to 9,800, and ended on the next unpaid summon after the altar was removed. Both profiles used hidden clients, zero master volume, and OpenAL No Output with no foreground changes.
+- Local Java 17 data generation, reobfuscation and all 264 required GameTests passed. Logs and the exact package are in `build/qa-hell-on-earth`. Package SHA-256 `eec391b9e6e2dd94337d554fcf31197121fccf13594e43af02770bed599f1b26`.
+
 ## Heart Glyph Cast Timing (2026-11-24)
 
 - The original's 96 first effect phases are recorded in `cadence-audit.log`. Three effect recipes use 5 ticks, one uses 10, two use 15, 82 use 20, seven use 30, and one uses 60. Coven summoning and all four kinds of staged offering use the 20-tick phase. A loaded glyph accumulates age before activation and keeps it between queued rites.
@@ -12,7 +23,7 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - A second legacy Forge storm save had stage one, `StepTicks: 0`, and no `GlyphPhase`. The rebuilt server showed the original elapsed ticks counting up, followed by stage two on the 30th loaded tick with `GlyphPhase: 30`. The game's global clock had advanced eight ticks before the forced chunk started ticking, so the verification used the glyph's elapsed ticks.
 - Copied Auram repeated Eclipse with the same JAR. The floor-item query timed out because the player had already picked up the stone. The saved inventory changed from zero to one Attuned Stone, the day ended at tick 18,000, and the Heart Glyph cleared its cast. The client reported zero master volume and OpenAL No Output. Its focus monitor recorded no foreground changes.
 - Java 17 local data generation, reobfuscation and all 262 checked-in GameTests passed. The tested package and logs are under `build/qa-glyph-clock`. Package SHA-256 `a9189568989d1fc88730a205338fda0847dac6c099dbb1008938fe0b91aa3444`. One vanilla loot serializer reordered two Critter Snare state-copy properties during generation. The checked-in order was retained.
-- The foreground audit found two follow-ups for exact timing. The original bounds check can reject an out-of-range Waystone immediately after the offerings, before its slower effect phase. Hell on Earth's expanded wave checks the glyph's 40-tick phase for spawning.
+- The foreground audit found two timing gaps covered by the later Hell on Earth and Waystone reach milestone. The original range check runs before the effect's periodic pulse, and Hell on Earth's expanded wave checks the glyph's 40-tick boundary.
 
 ## Circle Magic Time and Weather (2026-11-24)
 

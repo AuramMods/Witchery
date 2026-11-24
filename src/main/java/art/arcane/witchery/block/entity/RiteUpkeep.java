@@ -3,6 +3,7 @@ package art.arcane.witchery.block.entity;
 import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.power.AltarPower;
+import art.arcane.witchery.ritual.ItemRiteRecipe;
 import art.arcane.witchery.ritual.LandscapeRites;
 import art.arcane.witchery.ritual.ProtectionRites;
 import art.arcane.witchery.ritual.RiteOfTransposition;
@@ -68,7 +69,10 @@ interface RiteUpkeep {
         }
 
         void restoreTicks(int savedTicks) {
-            ticks = Mth.clamp(savedTicks, 0, interval() - 1);
+            // Imported Hell on Earth waves wait for the initial 20-tick gate on their first loaded pulse.
+            int minimum = landscape != null && landscape.action() == ItemRiteRecipe.Action.HELL_ON_EARTH
+                    ? interval() - 20 : 0;
+            ticks = Mth.clamp(savedTicks, minimum, interval() - 1);
         }
 
         void restoreInitiatorName(String name) {
@@ -77,10 +81,10 @@ interface RiteUpkeep {
 
         @Override
         public boolean tick(ServerLevel level, BlockPos heart, Consumer<Runnable> terrainChanges) {
+            if (landscape != null && !LandscapeRites.canReach(level, heart, landscape.target(), coven)) return false;
             if (++ticks < interval()) return true;
             ticks = 0;
             if (landscape != null) {
-                if (!LandscapeRites.canReach(level, heart, landscape.target(), coven)) return false;
                 landscape = LandscapeRites.pulse(level, heart, landscape, coven, caster(level), terrainChanges);
                 return landscape != null;
             }

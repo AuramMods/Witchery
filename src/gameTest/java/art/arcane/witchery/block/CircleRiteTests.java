@@ -321,6 +321,82 @@ public final class CircleRiteTests {
         helper.succeed();
     }
 
+    @GameTest(template = TEMPLATE, batch = "witchery_hell_spawn_phase")
+    public static void hellOnEarthWaitsForItsSavedFortyTickPhase(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.SMALL_RITE, "circleglyphinfernal");
+        var altar = chargedAltar(helper, false);
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var heart = heart(helper);
+        var pending = new CompoundTag();
+        pending.putString("Rite", "witchery:rite_of_hell_on_earth");
+        pending.putInt("OfferingStep", 5);
+        pending.putBoolean("AltarPowerOffered", true);
+        pending.putInt("GlyphPhase", 19);
+        heart.load(pending);
+        tick(level, center, heart, 81);
+        var expanded = heart.saveWithoutMetadata().getCompound("Landscape");
+        helper.assertTrue(expanded.getInt("Stage") == 17 && expanded.getInt("HellSpawnOffset") == 4 && altar.power() == 10_000,
+                "When the rite begins on glyph tick twenty, completing expansion at stage seventeen makes no spawn attempt");
+
+        tick(level, center, heart, 3);
+        heart.load(heart.saveWithoutMetadata());
+        tick(level, center, heart, 16);
+        helper.assertTrue(altar.power() == 10_000, "The reloaded wave still waits for its own summoning phase");
+        var summoned = new ArrayList<Entity>();
+        Consumer<EntityJoinLevelEvent> observe = event -> {
+            if (event.getLevel() == level && event.getEntity().position().equals(Vec3.atBottomCenterOf(center.above(2)))) {
+                summoned.add(event.getEntity());
+            }
+        };
+        MinecraftForge.EVENT_BUS.addListener(observe);
+        try {
+            tick(level, center, heart, 1);
+            var progress = heart.saveWithoutMetadata().getCompound("Landscape");
+            helper.assertTrue(progress.getInt("Stage") == 21 && altar.power() == 9_800 && summoned.size() == 1,
+                    "Stage twenty-one pays two hundred and spawns exactly one creature");
+            tick(level, center, heart, 39);
+            helper.assertTrue(altar.power() == 9_800 && summoned.size() == 1, "The next summon also waits forty ticks");
+            tick(level, center, heart, 1);
+            helper.assertTrue(altar.power() == 9_600 && summoned.size() == 2, "Forty ticks later the second summon pays once");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(observe);
+            summoned.forEach(Entity::discard);
+            helper.useBlock(CENTER);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_hell_legacy_spawn_phase")
+    public static void originalHellOnEarthSaveReentersItsTwentyTickActivationGate(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.SMALL_RITE, "circleglyphinfernal");
+        var altar = chargedAltar(helper, false);
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var heart = heart(helper);
+        var legacy = new CompoundTag();
+        legacy.putByteArray("Rituals", new byte[]{39});
+        legacy.putByteArray("RitualStages", new byte[]{25});
+        heart.load(legacy);
+        tick(level, center, heart, 7);
+        heart.load(heart.saveWithoutMetadata());
+        tick(level, center, heart, 12);
+        var waiting = heart.saveWithoutMetadata();
+        helper.assertTrue(waiting.getCompound("Landscape").getInt("Stage") == 25 && altar.power() == 10_000,
+                "A 1.7.10 wave keeps its stage until the twentieth loaded tick, including on save reload");
+        tick(level, center, heart, 1);
+        helper.assertTrue(heart.saveWithoutMetadata().getCompound("Landscape").getInt("Stage") == 26 && altar.power() == 10_000,
+                "At tick twenty the legacy wave advances without a summon");
+        tick(level, center, heart, 19);
+        helper.assertTrue(altar.power() == 10_000, "An expanded imported wave still waits for the fortieth loaded tick");
+        level.removeBlock(altar.getBlockPos(), false);
+        tick(level, center, heart, 1);
+        helper.assertFalse(heart.getBlockState().getValue(RiteHeartBlock.ACTIVE), "The wave ends on its first unpaid summon");
+        helper.succeed();
+    }
+
     @GameTest(template = TEMPLATE, batch = "witchery_weather_rite_eclipse")
     public static void portableEclipseFiresOnlyInDaylight(GameTestHelper helper) {
         floor(helper);
@@ -356,7 +432,7 @@ public final class CircleRiteTests {
                         "The first offering is taken on glyph tick twenty");
                 tick(level, center, heart, 62);
                 var saved = heart.saveWithoutMetadata();
-                helper.assertTrue(saved.getInt("OfferingStep") == 3 && saved.getInt("GlyphPhase") == 22,
+                helper.assertTrue(saved.getInt("OfferingStep") == 3 && saved.getInt("GlyphPhase") == 82,
                         "The pending Eclipse and its glyph phase are saved after all three offerings");
                 heart.load(saved);
                 tick(level, center, heart, 7);
@@ -622,14 +698,17 @@ public final class CircleRiteTests {
                         && altar.power() == 10_000 && drops(helper).isEmpty(),
                 "The Waystone is consumed before the altar charge and range check");
         tick(level, center, heart, 20);
-        helper.assertTrue(heart.saveWithoutMetadata().getBoolean("AltarPowerOffered") && altar.power() == 8000
+        var paid = heart.saveWithoutMetadata();
+        helper.assertTrue(paid.getBoolean("AltarPowerOffered") && altar.power() == 8000
                         && drops(helper).isEmpty(), "The altar is charged before the storm resolves the remote target");
-        tick(level, center, heart, 10);
-        helper.assertTrue(!heart.saveWithoutMetadata().contains("Storm") && altar.power() == 8000
+        heart.load(paid);
+        tick(level, center, heart, 1);
+        helper.assertTrue(!heart.getBlockState().getValue(RiteHeartBlock.ACTIVE) && altar.power() == 8000
                         && drops(helper).size() == 3 && drops(helper).stream().anyMatch(item -> ItemStack.matches(item.getItem(), tooFar)),
-                "An out-of-range Waystone returns the three offerings after charging altar power");
+                "The first loaded tick after payment rejects the distant Waystone and returns all three offerings");
         drops(helper).forEach(ItemEntity::discard);
 
+        tick(level, center, heart, 9);
         var target = center.east(40).above(3);
         start(helper, new ItemStack(Items.STONE_SWORD), new ItemStack(WitcheryIngredient.WOOD_ASH.item()), bound(level, target));
         var strikes = new ArrayList<LightningBolt>();
