@@ -24,12 +24,7 @@ public final class WorkstationPowerTests {
     public static void idlePowerAndBlockedOutputs(GameTestHelper helper) {
         var level = helper.getLevel();
         var altarPos = helper.absolutePos(new BlockPos(5, 4, 5));
-        var altarState = WitcheryBlocks.getRequired("altar").get().defaultBlockState();
-        for (BlockPos part : BlockPos.betweenClosed(altarPos, altarPos.offset(2, 0, 1))) {
-            level.setBlockAndUpdate(part, altarState);
-        }
-        AltarBlockEntity.form(level, altarPos);
-        var altar = (AltarBlockEntity) level.getBlockEntity(altarPos);
+        var altar = placeAltar(helper, altarPos);
         var distilleryPos = altarPos.west(2);
         var wheelPos = altarPos.north(2);
         level.setBlockAndUpdate(distilleryPos, WitcheryBlocks.getRequired("distilleryidle").get().defaultBlockState());
@@ -88,6 +83,66 @@ public final class WorkstationPowerTests {
                             && distillery.getItem(3).is(Items.COBBLESTONE) && distillery.getItem(4).isEmpty(),
                     "An incompatible stack should block the batch without wasting any output or input");
         }).thenSucceed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_workstation_power")
+    public static void directRecipeSwapsKeepProgress(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var altarPos = helper.absolutePos(new BlockPos(5, 4, 5));
+        var altar = placeAltar(helper, altarPos);
+        setAltarPower(altar, 30);
+        var distilleryPos = altarPos.west(2);
+        var wheelPos = altarPos.north(2);
+        level.setBlockAndUpdate(distilleryPos, WitcheryBlocks.getRequired("distilleryidle").get().defaultBlockState());
+        level.setBlockAndUpdate(wheelPos, WitcheryBlocks.getRequired("spinningwheel").get().defaultBlockState());
+        var distillery = (DistilleryBlockEntity) level.getBlockEntity(distilleryPos);
+        var wheel = (SpinningWheelBlockEntity) level.getBlockEntity(wheelPos);
+
+        distillery.setItem(0, new ItemStack(WitcheryIngredient.DEMON_HEART.item()));
+        distillery.setItem(1, new ItemStack(WitcheryIngredient.DIAMOND_VAPOUR.item()));
+        distillery.setItem(2, new ItemStack(WitcheryIngredient.CLAY_JAR.item(), 4));
+        wheel.setItem(0, new ItemStack(Items.STRING, 8));
+        wheel.setItem(1, new ItemStack(WitcheryIngredient.WHIFF_OF_MAGIC.item()));
+        var savedDistillery = distillery.saveWithoutMetadata();
+        savedDistillery.putInt("CookTime", 797);
+        savedDistillery.putString("Recipe", "witchery:distilling/infernal_blood_from_diamond_vapour");
+        distillery.load(savedDistillery);
+        var savedWheel = wheel.saveWithoutMetadata();
+        savedWheel.putInt("CookTime", 297);
+        savedWheel.putString("Recipe", "witchery:spinning/cobweb");
+        wheel.load(savedWheel);
+        DistilleryBlockEntity.serverTick(level, distilleryPos, distillery.getBlockState(), distillery);
+        SpinningWheelBlockEntity.serverTick(level, wheelPos, wheel.getBlockState(), wheel);
+
+        distillery.setItem(1, new ItemStack(Items.NETHERRACK));
+        wheel.setItem(0, new ItemStack(Items.HAY_BLOCK));
+        DistilleryBlockEntity.serverTick(level, distilleryPos, distillery.getBlockState(), distillery);
+        SpinningWheelBlockEntity.serverTick(level, wheelPos, wheel.getBlockState(), wheel);
+        helper.assertTrue(distillery.saveWithoutMetadata().getInt("CookTime") == 799
+                        && wheel.saveWithoutMetadata().getInt("CookTime") == 299,
+                "Switching directly to another matching recipe should preserve elapsed ticks");
+
+        DistilleryBlockEntity.serverTick(level, distilleryPos, distillery.getBlockState(), distillery);
+        SpinningWheelBlockEntity.serverTick(level, wheelPos, wheel.getBlockState(), wheel);
+        helper.assertTrue(distillery.getItem(3).is(Items.SOUL_SAND)
+                        && distillery.getItem(4).is(WitcheryIngredient.INFERNAL_BLOOD.item()) && distillery.getItem(4).getCount() == 1
+                        && distillery.getItem(5).is(WitcheryIngredient.INFERNAL_BLOOD.item()) && distillery.getItem(5).getCount() == 1
+                        && distillery.getItem(2).getCount() == 2 && distillery.getItem(1).isEmpty(),
+                "The Distillery should finish the Netherrack recipe with its own two-jar cost and outputs");
+        helper.assertTrue(wheel.getItem(2).is(WitcheryIngredient.GOLDEN_THREAD.item()) && wheel.getItem(2).getCount() == 3
+                        && wheel.getItem(0).isEmpty() && wheel.getItem(1).isEmpty(),
+                "The Wheel should consume the Hay Bale and Whiff of Magic and make three Golden Threads");
+        helper.succeed();
+    }
+
+    private static AltarBlockEntity placeAltar(GameTestHelper helper, BlockPos pos) {
+        var level = helper.getLevel();
+        var state = WitcheryBlocks.getRequired("altar").get().defaultBlockState();
+        for (BlockPos part : BlockPos.betweenClosed(pos, pos.offset(2, 0, 1))) {
+            level.setBlockAndUpdate(part, state);
+        }
+        AltarBlockEntity.form(level, pos);
+        return (AltarBlockEntity) level.getBlockEntity(pos);
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_workstation_power")

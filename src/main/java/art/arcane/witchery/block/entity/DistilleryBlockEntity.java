@@ -12,7 +12,6 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
@@ -75,8 +74,6 @@ public final class DistilleryBlockEntity extends BaseContainerBlockEntity implem
     private int cookTime;
     private boolean powered;
     @Nullable
-    private ResourceLocation activeRecipe;
-    @Nullable
     private AltarBlockEntity altar;
 
     public DistilleryBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -94,12 +91,7 @@ public final class DistilleryBlockEntity extends BaseContainerBlockEntity implem
         distillery.refreshAltar(server, pos, ready);
         if (!ready) {
             distillery.cookTime = 0;
-            distillery.activeRecipe = null;
         } else {
-            if (distillery.activeRecipe != null && !recipe.id().equals(distillery.activeRecipe)) {
-                distillery.cookTime = 0;
-            }
-            distillery.activeRecipe = recipe.id();
             distillery.powered = distillery.altar != null && distillery.altar.consumePower(POWER_PER_TICK);
             if (distillery.powered) {
                 running = true;
@@ -262,7 +254,6 @@ public final class DistilleryBlockEntity extends BaseContainerBlockEntity implem
             }
         }
         cookTime = Mth.clamp(tag.getInt("CookTime"), 0, COOK_TICKS - 1);
-        activeRecipe = tag.contains("Recipe", Tag.TAG_STRING) ? ResourceLocation.tryParse(tag.getString("Recipe")) : null;
     }
 
     @Override
@@ -270,9 +261,6 @@ public final class DistilleryBlockEntity extends BaseContainerBlockEntity implem
         super.saveAdditional(tag);
         ContainerHelper.saveAllItems(tag, items);
         tag.putInt("CookTime", cookTime);
-        if (activeRecipe != null) {
-            tag.putString("Recipe", activeRecipe.toString());
-        }
     }
 
     @Override

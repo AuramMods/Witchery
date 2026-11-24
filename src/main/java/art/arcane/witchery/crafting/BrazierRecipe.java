@@ -1,10 +1,10 @@
 package art.arcane.witchery.crafting;
 
+import art.arcane.witchery.entity.CreatureAlignment;
 import art.arcane.witchery.entity.SpectralUndead;
 import art.arcane.witchery.item.WitcheryIngredient;
-import art.arcane.witchery.vampirism.Vampirism;
+import art.arcane.witchery.network.WitcheryNetwork;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -13,7 +13,6 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
@@ -37,6 +36,11 @@ public enum BrazierRecipe {
     INVISIBILITY(12000, () -> Items.ENDER_PEARL, () -> Items.SPIDER_EYE, () -> Items.BLAZE_ROD),
     WILTING(1200, WitcheryIngredient.CONDENSED_FEAR::item, WitcheryIngredient.WORMY_APPLE::item, WitcheryIngredient.GRAVEYARD_DUST::item);
 
+    private static final int LEGACY_NO_SOUND_ID = 0;
+    private static final int LEGACY_MOB_SPELL_PARTICLE_ID = 9;
+    private static final int LEGACY_INSTANT_SPELL_PARTICLE_ID = 11;
+    private static final int LEGACY_EXPLODE_PARTICLE_ID = 15;
+    private static final int LEGACY_HEART_PARTICLE_ID = 28;
     private final int burnTicks;
     private final List<Supplier<Item>> ingredients;
 
@@ -77,18 +81,17 @@ public enum BrazierRecipe {
         return true;
     }
 
-    public int burn(ServerLevel level, BlockPos pos) {
-        long ticks = level.getGameTime();
+    public int burn(ServerLevel level, BlockPos pos, long ticks) {
         Vec3 center = Vec3.atBottomCenterOf(pos);
         switch (this) {
             case SPECTRE, BANSHEE, POLTERGEIST -> {
                 if (ticks % 100 == 0) {
-                    level.sendParticles(ParticleTypes.INSTANT_EFFECT, center.x, center.y + 1, center.z, 16, 0.5, 0.6, 0.5, 0.02);
+                    WitcheryNetwork.sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_NO_SOUND_ID,
+                            center.add(0, 1, 0), 0.5, 1, 16);
                 }
             }
-            case MIST -> {
-                level.sendParticles(ParticleTypes.POOF, center.x, center.y, center.z, 64, 16, 4, 16, 0.01);
-            }
+            case MIST -> WitcheryNetwork.sendParticlesAround(level, LEGACY_EXPLODE_PARTICLE_ID, LEGACY_NO_SOUND_ID,
+                    center, 16, 4, 64);
             case STRENGTH, RESISTANCE, INVISIBILITY -> {
                 if (ticks % 60 == 0) {
                     MobEffect effect = switch (this) {
@@ -120,13 +123,15 @@ public enum BrazierRecipe {
                 || crop.getValue(age) <= 0 || !age.getPossibleValues().contains(crop.getValue(age) - 1)) return false;
         if (!level.setBlock(cropPos, crop.setValue(age, crop.getValue(age) - 1), Block.UPDATE_CLIENTS)) return false;
 
-        Vec3 center = Vec3.atBottomCenterOf(pos);
-        level.sendParticles(ParticleTypes.ENTITY_EFFECT, center.x, center.y + 1, center.z, 8, 0.3, 0.5, 0.3, 0.05);
-        for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, new AABB(pos).inflate(3),
+        WitcheryNetwork.sendParticlesAround(level, LEGACY_MOB_SPELL_PARTICLE_ID, LEGACY_NO_SOUND_ID,
+                Vec3.atBottomCenterOf(pos.above()), 0.3, 0.5, 8);
+        AABB area = new AABB(Vec3.atLowerCornerOf(pos), Vec3.atLowerCornerOf(pos)).inflate(3);
+        for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, area,
                 candidate -> candidate.isAlive() && candidate.getHealth() < candidate.getMaxHealth()
-                        && (candidate.isInvertedHealAndHarm() || Vampirism.isVampire(candidate)))) {
+                        && CreatureAlignment.undead(candidate))) {
             entity.heal(entity.getMaxHealth() * 0.1F);
-            level.sendParticles(ParticleTypes.HEART, entity.getX(), entity.getEyeY(), entity.getZ(), 8, 0.25, 0.5, 0.25, 0);
+            WitcheryNetwork.sendParticlesAround(level, LEGACY_HEART_PARTICLE_ID, LEGACY_NO_SOUND_ID,
+                    entity.position(), 0.5, 1, 8);
         }
         return true;
     }

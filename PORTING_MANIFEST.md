@@ -1266,6 +1266,8 @@ The `witchery:wood_ash` smelting recipe uses `minecraft:saplings` when `addSmelt
 - `DistilleryRecipes.instance().addRecipe`: 9
 - `SpinningRecipes.instance().addRecipe`: 4
 - An idle Distillery or Spinning Wheel displays a connection to a formed altar even at zero charge. A runnable batch updates the indicator from its 0.6-power debit and keeps its elapsed ticks during a power interruption. A full output resets elapsed ticks. The Distillery also blocks incompatible output stacks to prevent losing part of the batch. The Spinning Wheel preserves the original `PowerLevel` short alongside `CookTime` and `Items`.
+- Both machines use the currently valid recipe throughout the batch. Swapping an ingredient directly to another runnable recipe keeps `CookTime` and the new recipe supplies its outputs and ingredient cost. Earlier port saves may include a `Recipe` string. The machines read the saved progress and inventory and resolve the recipe from those items.
+- The Brazier uses the original nearby particle packet for fizzle, spectral effects, Graveyard Mist, and Wilting. Mist submits up to 300 poofs in a 32-block-wide, four-block-tall volume per powered tick to viewers within 64 blocks. Wilting uses the common undead rule, including a player under the Infused Brew of the Grave.
 
 ### Custom RecipeSorter Keys
 - `witchery:bindpoppet`

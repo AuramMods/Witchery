@@ -269,7 +269,8 @@ public final class WitcheryClientPacketHandlers {
     private static ParticleOptions resolveParticleType(LegacyParticleEffect effect) {
         return switch (effect) {
             case HUGE_EXPLOSION -> ParticleTypes.EXPLOSION_EMITTER;
-            case LARGE_EXPLODE, EXPLODE -> ParticleTypes.EXPLOSION;
+            case LARGE_EXPLODE -> ParticleTypes.EXPLOSION;
+            case EXPLODE -> ParticleTypes.POOF;
             case WATER_BUBBLE -> ParticleTypes.BUBBLE;
             case SUSPENDED -> ParticleTypes.ASH;
             case DEPTH_SUSPEND -> ParticleTypes.WHITE_ASH;
@@ -277,7 +278,8 @@ public final class WitcheryClientPacketHandlers {
             case CRIT -> ParticleTypes.CRIT;
             case MAGIC_CRIT -> ParticleTypes.ENCHANTED_HIT;
             case SMOKE -> ParticleTypes.SMOKE;
-            case MOB_SPELL, SPELL, INSTANT_SPELL -> ParticleTypes.ENTITY_EFFECT;
+            case MOB_SPELL, SPELL -> ParticleTypes.ENTITY_EFFECT;
+            case INSTANT_SPELL -> ParticleTypes.INSTANT_EFFECT;
             case NOTE -> ParticleTypes.NOTE;
             case PORTAL -> ParticleTypes.PORTAL;
             case ENCHANTMENT_TABLE -> ParticleTypes.ENCHANT;

@@ -84,7 +84,9 @@ public final class BrazierBlock extends BaseEntityBlock {
                 level.playSound(null, pos, SoundEvents.GENERIC_SPLASH, SoundSource.BLOCKS, 0.7F, 1);
             }
         } else if (held.is(Items.FLINT_AND_STEEL)) {
-            if (!brazier.ignite()) return InteractionResult.PASS;
+            if (brazier.isEmpty()) return InteractionResult.PASS;
+            brazier.ignite();
+            held.hurtAndBreak(1, player, user -> user.broadcastBreakEvent(hand));
             level.playSound(null, pos, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1, 1);
         } else if (brazier.insert(held) && !player.getAbilities().instabuild) {
             held.shrink(1);

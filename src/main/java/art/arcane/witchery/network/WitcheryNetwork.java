@@ -20,6 +20,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
@@ -285,9 +286,14 @@ public final class WitcheryNetwork {
     }
 
     public static void sendWaterSplash(ServerLevel level, double x, double y, double z) {
-        for (ServerPlayer player : level.getPlayers(viewer -> viewer.distanceToSqr(x, y, z) < 25.0D)) {
-            sendParticles(player, LEGACY_SPLASH_PARTICLE_ID, LEGACY_WATER_SPLASH_SOUND_ID, x, y, z, 0.5D, 0.5D, 0xFFFFFF);
-        }
+        sendParticlesAround(level, LEGACY_SPLASH_PARTICLE_ID, LEGACY_WATER_SPLASH_SOUND_ID, new Vec3(x, y, z), 0.5D, 0.5D, 5);
+    }
+
+    public static void sendParticlesAround(ServerLevel level, int particleEffectId, int soundEffectId, Vec3 center,
+                                           double width, double height, double range) {
+        var target = PacketDistributor.TargetPoint.p(center.x, center.y, center.z, range, level.dimension());
+        CHANNEL.send(PacketDistributor.NEAR.with(target), new ParticlesPacket(particleEffectId, soundEffectId,
+                center.x, center.y, center.z, width, height, 0xFFFFFF));
     }
 
     public static void sendPlayerStyle(

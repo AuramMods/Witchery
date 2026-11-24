@@ -13,7 +13,6 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
@@ -74,8 +73,6 @@ public final class SpinningWheelBlockEntity extends BaseContainerBlockEntity imp
     private int cookTime;
     private boolean powered;
     @Nullable
-    private ResourceLocation activeRecipe;
-    @Nullable
     private AltarBlockEntity altar;
 
     public SpinningWheelBlockEntity(BlockPos pos, BlockState state) {
@@ -101,12 +98,7 @@ public final class SpinningWheelBlockEntity extends BaseContainerBlockEntity imp
         boolean spinning = false;
         if (!ready) {
             cookTime = 0;
-            activeRecipe = null;
         } else {
-            if (activeRecipe != null && !activeRecipe.equals(recipe.id())) {
-                cookTime = 0;
-            }
-            activeRecipe = recipe.id();
             powered = altar != null && altar.consumePower(POWER_PER_TICK);
             if (powered) {
                 if (++cookTime >= COOK_TICKS) {
@@ -257,7 +249,6 @@ public final class SpinningWheelBlockEntity extends BaseContainerBlockEntity imp
         }
         cookTime = Mth.clamp(tag.getInt("CookTime"), 0, COOK_TICKS - 1);
         powered = tag.getInt("PowerLevel") > 0;
-        activeRecipe = tag.contains("Recipe", Tag.TAG_STRING) ? ResourceLocation.tryParse(tag.getString("Recipe")) : null;
     }
 
     @Override
@@ -266,8 +257,5 @@ public final class SpinningWheelBlockEntity extends BaseContainerBlockEntity imp
         ContainerHelper.saveAllItems(tag, items);
         tag.putInt("CookTime", cookTime);
         tag.putShort("PowerLevel", (short) (powered ? 1 : 0));
-        if (activeRecipe != null) {
-            tag.putString("Recipe", activeRecipe.toString());
-        }
     }
 }

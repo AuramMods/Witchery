@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Workstation Recipe Swaps and Brazier Effects (2026-11-24)
+
+- Witchery 0.24.1 kept 798 Distillery ticks and 298 Spinning Wheel ticks when the test replaced one ingredient with another valid recipe. The next tick advanced them to 799 and 299. The last tick produced Soul Sand, two separate Infernal Blood jars, and three Golden Threads. The Distillery kept two of its four Clay Jars. Invalid inputs reset both timers. The preceding packaged Forge build reset both timers to zero after the valid swaps.
+- The packaged clean Forge survival client used the normal hotbar swap in each machine menu. The swapped inventories and elapsed ticks survived a dedicated restart. After restoring altar power the machines spent the replacement ingredients and produced their exact outputs.
+- The original Brazier spent one Flint and Steel durability and left no fire block above the fixture. Invalid offerings removed the ignition marker and ingredients. The rebuilt client verified the same wear and fizzle. The Mist packet kept its original width and height and reached the client 40 blocks away. At 69 blocks the client stopped receiving it.
+- The clean Forge player drank an Infused Brew of the Grave and took ten damage with natural regeneration off. Lighting Wilting reduced the crop age, sent its packet at the basin, restored health from 10 to 12, and stored two burn extensions of 400 ticks each. The GameTest runs the recipe at its first eligible pulse and checks an undead control outside the original box.
+- Copied Auram repeated the menu swaps, exact outputs, ignition wear, fizzle, and near and far Mist checks on the same JAR. A separate clean Forge check accepted dropped Kettle ingredients and observed the same splash packet within five blocks and no packet at 6.5 blocks. All clients had volume zero and OpenAL No Output, and the focus monitors recorded no foreground changes.
+- Local Java 17 data generation, JAR reobfuscation, and all 257 required Forge GameTests passed. Logs and the exact tested package are in `build/qa-workstation-recipes`. Package SHA-256 `455e37f774495888ed1b747a8813dea1ec977e1ebe914fdc90af18902ef263eb`.
+
 ## Distillery and Spinning Wheel Power (2026-11-24)
 
 - The running Witchery 0.24.1 reference showed a connected altar on both idle menus at zero charge. With valid inputs and no charge, the Distillery stayed at 140 ticks and the Wheel stayed at 90. Restoring charge advanced each one tick. Filling a matching output stack reset both batches to zero. The original Wheel saved the idle indicator as a short under `PowerLevel`.

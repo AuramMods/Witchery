@@ -3,19 +3,17 @@ package art.arcane.witchery.block.entity;
 import art.arcane.witchery.block.BrazierBlock;
 import art.arcane.witchery.crafting.BrazierRecipe;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.power.AltarPower;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
@@ -23,6 +21,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
@@ -34,6 +33,8 @@ import java.util.Optional;
 
 public final class BrazierBlockEntity extends BlockEntity {
     private static final int INGREDIENT_SLOTS = 3;
+    private static final int LEGACY_SMOKE_PARTICLE_ID = 8;
+    private static final int LEGACY_FIZZ_SOUND_ID = 2;
     private final ItemStackHandler ingredients = new ItemStackHandler(INGREDIENT_SLOTS) {
         @Override
         public int getSlotLimit(int slot) {
@@ -61,6 +62,7 @@ public final class BrazierBlockEntity extends BlockEntity {
     private boolean powered;
     private boolean redstone;
     private int displayedOfferings;
+    private long ticks;
     private long cookTime;
     private long storage;
     private Optional<BrazierRecipe> activeRecipe = Optional.empty();
@@ -74,7 +76,10 @@ public final class BrazierBlockEntity extends BlockEntity {
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, BrazierBlockEntity brazier) {
-        if (level instanceof ServerLevel server) brazier.burn(server, pos);
+        if (level instanceof ServerLevel server) {
+            brazier.ticks++;
+            brazier.burn(server, pos);
+        }
     }
 
     private void burn(ServerLevel level, BlockPos pos) {
@@ -86,9 +91,8 @@ public final class BrazierBlockEntity extends BlockEntity {
         }
         if (activeRecipe.isEmpty()) {
             clearBatch();
-            level.sendParticles(ParticleTypes.SMOKE, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5,
-                    8, 0.3, 0.4, 0.3, 0.01);
-            level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.6F, 1);
+            WitcheryNetwork.sendParticlesAround(level, LEGACY_SMOKE_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID,
+                    Vec3.atBottomCenterOf(pos.above()), 0.5, 0.5, 8);
             return;
         }
         BrazierRecipe recipe = activeRecipe.get();
@@ -105,7 +109,7 @@ public final class BrazierBlockEntity extends BlockEntity {
             recipe.finish(level, pos);
             clearBatch();
         } else {
-            storage += recipe.burn(level, pos);
+            storage += recipe.burn(level, pos, ticks);
             setChanged();
         }
     }
