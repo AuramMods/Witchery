@@ -5,6 +5,7 @@ import art.arcane.witchery.block.WitchesCauldronBlock;
 import art.arcane.witchery.block.entity.AltarBlockEntity;
 import art.arcane.witchery.block.entity.SlurpBlockEntity;
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
+import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.item.WitcheryIngredient;
@@ -22,6 +23,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
@@ -524,6 +526,53 @@ public final class CauldronBrewParityTests {
                         "The bottled effect is usable even when the list contains a fixed-recipe offering in the original format");
                 helper.succeed();
             });
+        });
+    }
+
+    @GameTest(template = "qa_coven_arena", timeoutTicks = 135)
+    public static void handBottlesFixedRitualAndPreservesItsRemainingBrew(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(5, 4, 5));
+        level.setBlockAndUpdate(pos.below(2), Blocks.NETHERRACK.defaultBlockState());
+        level.setBlockAndUpdate(pos.below(), Blocks.FIRE.defaultBlockState());
+        level.setBlockAndUpdate(pos, WitcheryBlocks.getRequired("cauldron").get().defaultBlockState());
+        var cauldron = (WitchesCauldronBlockEntity) level.getBlockEntity(pos);
+        var tank = cauldron.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
+        tank.fill(new FluidStack(Fluids.WATER, 3000), IFluidHandler.FluidAction.EXECUTE);
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "RitualBottler"));
+        WitcheryPlayerDataProvider.get(player).orElseThrow(IllegalStateException::new).setPotionBottling(30);
+
+        helper.runAfterDelay(105, () -> {
+            drop(helper, pos, WitcheryIngredient.MANDRAKE_ROOT.item());
+            drop(helper, pos, WitcheryIngredient.EXHALE_OF_THE_HORNED_ONE.item());
+            var egg = new ItemStack(Items.EGG).setHoverName(Component.literal("Saved Offering"));
+            drop(helper, pos, egg);
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.GLASS_BOTTLE));
+            helper.assertTrue(cauldron.bottle(player, InteractionHand.MAIN_HAND), "Bottle an active fixed cast by hand");
+            var bottle = player.getMainHandItem().copy();
+            var bottled = bottle.getOrCreateTag();
+            var offerings = bottled.getList("Items", Tag.TAG_COMPOUND);
+            helper.assertTrue(bottle.is(WitcheryItems.getRequired("brewbottle").get()) && bottled.getBoolean("RitualTriggered")
+                            && bottled.getString("FixedRitual").equals("witchery:mutandis") && offerings.size() == 3
+                            && ItemStack.matches(ItemStack.of(offerings.getCompound(2)), egg),
+                    "The bottle keeps the ordered ingredients, original marker and named trigger");
+            helper.assertTrue(tank.getFluidInTank(0).getAmount() == 1500, "Bottling skill leaves a second portion");
+
+            var drained = tank.drain(1000, IFluidHandler.FluidAction.EXECUTE);
+            helper.assertTrue(drained.getAmount() == 1000 && bottled.equals(drained.getTag()),
+                    "A fluid withdrawal carries the same ordered cast and trigger");
+            cauldron.load(cauldron.saveWithFullMetadata());
+            var wrong = drained.copy();
+            wrong.getOrCreateTag().remove("RitualTriggered");
+            helper.assertTrue(tank.fill(wrong, IFluidHandler.FluidAction.EXECUTE) == 0,
+                    "A matching color and offerings without the active-cast marker cannot refill it");
+            helper.assertTrue(tank.fill(drained, IFluidHandler.FluidAction.EXECUTE) == 1000,
+                    "The matching saved cast can refill the remainder after reload");
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.GLASS_BOTTLE));
+            helper.assertTrue(cauldron.bottle(player, InteractionHand.MAIN_HAND) && tank.getFluidInTank(0).isEmpty()
+                            && ItemStack.matches(bottle, player.getMainHandItem()),
+                    "The remaining portion produces the same tagged bottle and clears the pending cast");
+            helper.succeed();
         });
     }
 

@@ -10,11 +10,13 @@ import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.ritual.RitualCircle;
+import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -27,12 +29,14 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @GameTestHolder(Witchery.MODID)
@@ -57,6 +61,30 @@ public final class CauldronMisfortuneTests {
         helper.assertTrue(altar.power() == 0.5F, "The cast at 2,111.5 should spend 2,111 power");
         helper.startSequence().thenWaitUntil(() -> helper.assertItemEntityCountIs(
                 WitcheryItems.getRequired("chalkheart").get(), CAULDRON.above(), 2, 1)).thenSucceed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_cauldron_power_threshold")
+    public static void handBottlingChecksScaledPowerAndDebitsBaseCost(GameTestHelper helper) {
+        BlockPos pos = placeCauldron(helper);
+        var altar = placeAltar(helper);
+        setSmallCircle(helper, pos, WitcheryBlocks.getRequired("circleglyphinfernal").get());
+        prepareGoldenChalk(helper, pos);
+        var cauldron = cauldron(helper, pos);
+        var player = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "ChalkBottler"));
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.GLASS_BOTTLE));
+
+        setAltarPower(altar, 2111);
+        helper.assertTrue(!cauldron.bottle(player, InteractionHand.MAIN_HAND)
+                        && player.getMainHandItem().is(Items.GLASS_BOTTLE) && altar.power() == 2111,
+                "A full pending cast checks the circle's fractional threshold before taking the bottle or power");
+        setAltarPower(altar, 2111.5F);
+        helper.assertTrue(cauldron.bottle(player, InteractionHand.MAIN_HAND) && altar.power() == 61.5F,
+                "A successful hand bottling spends the 2,050 base power and leaves the circle discount to the cast");
+        var bottle = player.getMainHandItem();
+        helper.assertTrue(bottle.is(WitcheryItems.getRequired("brewbottle").get())
+                        && bottle.getOrCreateTag().getString("FixedRitual").equals("witchery:golden_chalk"),
+                "The novice bottles the whole saved Golden Chalk cast");
+        helper.succeed();
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_cauldron_misfortune")
@@ -211,12 +239,16 @@ public final class CauldronMisfortuneTests {
     }
 
     private static void finishCast(GameTestHelper helper, BlockPos pos, AltarBlockEntity altar, float power, long seed) {
-        var stored = altar.saveWithFullMetadata();
-        stored.putFloat("Power", power);
-        altar.load(stored);
+        setAltarPower(altar, power);
         var level = helper.getLevel();
         level.getRandom().setSeed(seed);
         WitchesCauldronBlockEntity.serverTick(level, pos, level.getBlockState(pos), cauldron(helper, pos));
+    }
+
+    private static void setAltarPower(AltarBlockEntity altar, float power) {
+        var stored = altar.saveWithFullMetadata();
+        stored.putFloat("Power", power);
+        altar.load(stored);
     }
 
     private static void assertEffect(GameTestHelper helper, LivingEntity entity, MobEffect type, int duration, int amplifier) {

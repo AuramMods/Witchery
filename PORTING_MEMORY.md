@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Hand Bottling Fixed Cauldron Casts (2026-11-24)
+
+- A running Witchery 0.24.1 server exercised the ordinary hand interaction on a pending Mutandis cast. A novice took all 3,000 mB. With 30 skill, the player bottled 1,500 mB and left the remaining 1,500 mB. Both bottles kept the ordered Mandrake Root, Exhale of the Horned One and Egg and the cast marker.
+- The preceding packaged Forge build accepted the three dropped ingredients and started the cast. Using the glass bottle left it empty in the player's hand and kept the cauldron at 3,000 mB. The rebuilt port applies the usual hand-bottling skill and altar debit to active legacy fixed recipes. A partial active cast can withdraw and accept the same tagged brew while keeping the saved trigger.
+- The muted clean Forge survival client started the cast through its dropped ingredients, bottled 1,500 mB and withdrew a tagged 1,000 mB Brew Bucket. The dedicated restart reopened at 500 mB with the named Egg and the bucket still in the same hand. After pouring the bucket back, the player bottled all 1,500 mB that remained. Both bottles preserved the ordered ingredients and Egg name.
+- Copied Auram replayed the dropped-ingredient cast, hand bottle and both bucket interactions on the same JAR. It saved the 1,500 mB remainder and preserved the named Egg. Both packaged profiles used muted hidden clients with OpenAL No Output. The focus monitor recorded no foreground changes.
+- The powered Golden Chalk GameTest rejects bottling at 2,111.0 with an Infernal circle, accepts it at 2,111.5, and spends the original base cost of 2,050. Java 17 data generation, JAR reobfuscation, and all 238 required Forge GameTests passed. The first run hit an unrelated Lilith reflected-fireball fixture failure that passed on replay. Logs and the exact package are in `build/qa-fixed-ritual-bottling`. Package SHA-256 `e167d5e23263a2441a24cd414f0a57817458424f529193d6d55ad7ae1269fec6`.
+- A separate 2,500 mB top-up probe found an open legacy container difference. The original accepted 500 mB from a matching Brew Bucket and returned an empty Bucket. The packaged port retained both the 2,500 mB in the tank and the filled Brew Bucket. The two runtime logs are `original/bucket-reference.log` and `top-up.log` in the same QA directory.
+
 ## Vampire Hotbar Outline and Block Attacks (2026-11-24)
 
 - The original 0.24.1 server allowed the left-click action to continue with the fangs selected. With the power cleared, a Garlic Garland kept its block and set the vampire on fire. A crouching rank-six vampire shattered stone and paid the 10-point exhaustion cost. The original HUD drew its selection outline on the active power or the selected inventory slot.
