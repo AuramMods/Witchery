@@ -3,6 +3,7 @@ package art.arcane.witchery.item;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.brewing.BrewMixture;
 import art.arcane.witchery.brewing.BrewOfTheDepths;
+import art.arcane.witchery.brewing.GrotesqueEffect;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.infusion.ImpContractEffects;
@@ -48,6 +49,40 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class LegacyConsumableTests {
+    @GameTest(template = "qa_coven_arena")
+    public static void grotesqueBrewRestoresTheSavedAuraIndependentlyOfFear(GameTestHelper helper) {
+        var player = player(helper);
+        var fear = WitcheryEffects.GROTESQUE.get();
+        var persisted = new CompoundTag();
+        player.getPersistentData().put(Player.PERSISTED_NBT_TAG, persisted);
+        try {
+            persisted.putInt(GrotesqueEffect.BREW_TIMER, 12);
+            player.addEffect(new MobEffectInstance(fear, 600, 0, false, false, true));
+            GrotesqueEffect.restoreBrew(player);
+            assertEffect(helper, player, fear, 600, 0);
+            helper.assertTrue(persisted.getInt(GrotesqueEffect.BREW_TIMER) == 12,
+                    "Original brewed pulses and the independent hidden-particle Fear effect both survive login");
+
+            consume(helper, player, new ItemStack(Items.MILK_BUCKET));
+            helper.assertTrue(!player.hasEffect(fear) && persisted.getInt(GrotesqueEffect.BREW_TIMER) == 12,
+                    "Milk cures Fear and leaves the brew countdown active");
+
+            persisted.remove(GrotesqueEffect.BREW_TIMER);
+            player.addEffect(new MobEffectInstance(fear, 41, 0, false, false, false));
+            GrotesqueEffect.restoreBrew(player);
+            helper.assertTrue(!player.hasEffect(fear) && persisted.getInt(GrotesqueEffect.BREW_TIMER) == 11,
+                    "The previous port's 41-tick hidden Brew of Grotesque converts to eleven pulses");
+
+            consume(helper, player, new ItemStack(WitcheryIngredient.BREW_OF_GROTESQUE.item()));
+            helper.assertTrue(player.getMainHandItem().isEmpty() && !player.hasEffect(fear)
+                            && persisted.getInt(GrotesqueEffect.BREW_TIMER) == 1200,
+                    "A new bottle resets the original four-minute countdown");
+            helper.succeed();
+        } finally {
+            player.discard();
+        }
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void ordinaryBrewsRetainThePlayersIncurableEffects(GameTestHelper helper) {
         var player = player(helper);

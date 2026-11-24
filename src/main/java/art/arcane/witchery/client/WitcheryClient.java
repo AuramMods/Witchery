@@ -306,16 +306,15 @@ public final class WitcheryClient {
     public static void addLivingLayers(EntityRenderersEvent.AddLayers event) {
         for (String skin : event.getSkins()) {
             if (event.getPlayerSkin(skin) instanceof PlayerRenderer renderer) {
-                renderer.addLayer(new GrotesqueLayer(renderer, event.getContext().bakeLayer(GrotesqueLayer.LAYER)));
                 addBarkLayer(event, renderer);
-                addBrewOverlayLayer(renderer);
+                addBrewOverlayLayers(event, renderer);
             }
         }
         for (var type : BuiltInRegistries.ENTITY_TYPE) {
             var renderer = event.getEntityRenderer(type);
             if (renderer instanceof HumanoidMobRenderer<?, ?> humanoid) addBarkLayer(event, humanoid);
             if (renderer instanceof ArmorStandRenderer stand) addBarkLayer(event, stand);
-            if (renderer instanceof LivingEntityRenderer<?, ?> living) addBrewOverlayLayer(living);
+            if (renderer instanceof LivingEntityRenderer<?, ?> living) addBrewOverlayLayers(event, living);
         }
     }
 
@@ -324,7 +323,9 @@ public final class WitcheryClient {
         renderer.addLayer(new BarkBeltLayer<>(renderer, event.getEntityModels().bakeLayer(BarkBeltLayer.LAYER)));
     }
 
-    private static <T extends LivingEntity, M extends EntityModel<T>> void addBrewOverlayLayer(LivingEntityRenderer<T, M> renderer) {
+    private static <T extends LivingEntity, M extends EntityModel<T>> void addBrewOverlayLayers(
+            EntityRenderersEvent.AddLayers event, LivingEntityRenderer<T, M> renderer) {
+        renderer.addLayer(new GrotesqueLayer<>(renderer, event.getEntityModels().bakeLayer(GrotesqueLayer.LAYER)));
         renderer.addLayer(new BrewOverlayLayer<>(renderer));
     }
 

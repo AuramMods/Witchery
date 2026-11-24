@@ -293,6 +293,10 @@ public final class WitcheryPlayerData {
         return grotesqueTicks;
     }
 
+    public void setGrotesqueTicks(int ticks) {
+        grotesqueTicks = Math.max(0, ticks);
+    }
+
     public int getNightmareLevel() {
         return nightmareLevel;
     }

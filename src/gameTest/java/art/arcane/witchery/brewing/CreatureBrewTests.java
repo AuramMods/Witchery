@@ -2,6 +2,7 @@ package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryEntities;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
@@ -20,6 +21,36 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class CreatureBrewTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_fear_brew")
+    public static void infernalBloodFearRepelsWitchesAndSparesGolems(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var carrier = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(6, 3, 6));
+        var witch = helper.spawnWithNoFreeWill(EntityType.WITCH, new BlockPos(8, 3, 6));
+        var golem = helper.spawnWithNoFreeWill(EntityType.IRON_GOLEM, new BlockPos(6, 3, 9));
+        var distantCow = helper.spawnWithNoFreeWill(EntityType.COW, new BlockPos(11, 3, 6));
+        var creatures = List.of(carrier, witch, golem, distantCow);
+        double witchX = witch.getX();
+        Vec3 golemStart = golem.position();
+        Vec3 distantCowStart = distantCow.position();
+
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(creatures.stream().allMatch(mob -> level.getEntity(mob.getUUID()) == mob),
+                        "All four creatures are tracked by the level"))
+                .thenExecute(() -> {
+                    var mixture = BrewMixture.from(List.of(Items.NETHER_WART.getDefaultInstance(),
+                            WitcheryIngredient.INFERNAL_BLOOD.item().getDefaultInstance()));
+                    mixture.apply(carrier, null, null, 1, 1);
+                    helper.assertTrue(carrier.hasEffect(WitcheryEffects.GROTESQUE.get()), "Infernal Blood applies Fear to a creature");
+                })
+                .thenWaitUntil(() -> helper.assertTrue(witch.getX() > witchX + 0.5, "Fear pushes the nearby witch away"))
+                .thenExecute(() -> {
+                    helper.assertTrue(golem.position().subtract(golemStart).horizontalDistanceSqr() < 1.0E-6
+                                    && distantCow.position().subtract(distantCowStart).horizontalDistanceSqr() < 1.0E-6,
+                            "Fear spares nearby golems and creatures outside its four-block radius");
+                    creatures.forEach(mob -> mob.discard());
+                }).thenSucceed();
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_heart_brew")
     public static void heartOfGoldPreservesOwnedPetsAndFamiliars(GameTestHelper helper) {
         var level = helper.getLevel();

@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Brew of Grotesque and Fear (2026-11-24)
+
+- Standalone Grotesque resumes the original `ForgeData.PlayerPersisted.witcheryGrotesque` countdown and resets it to 1,200 pulses on drinking. The repulsion runs every fourth world tick, spares ordinary witches, and is independent of milk cures. Player-style packets show the original Demon mask to the drinker and tracking clients.
+- Infernal Blood mixtures apply the curable Fear effect. It repels ordinary witches every fifth world tick and still spares Demons, golems and bosses. Its Demon mask uses the affected creature's head transform when available and the legacy model origin otherwise. Fear uses the same application, removal and tracking packets as the other cauldron overlays.
+- The original-format timer stays in place. Earlier port saves represent the bottled brew as a finite level-I effect with hidden particles and icon. Login converts that shape to four-tick pulses, rounding up a partial pulse. Cauldron Fear preserves its effect icon and stays independently curable.
+- The previous JAR lost the imported mask after one Bucket of Milk and drew no mask on a pig with active Fear. On the rebuilt JAR, a synthetic 1.7.10 player drank milk with the original aura active and kept the visible mask. The aura repelled a cow and spared a witch. The player drank an imported fixed bottle to refresh the countdown, then threw an imported Infernal Blood and Gunpowder mixture at a pig. The pig gained its own mask and repelled a nearby witch. The fixture supplied the test arena and stationary creatures and moved the inherited stacks to the selected slot.
+- After a dedicated restart, the survival player and a second client each rendered both saved masks. Both removed the pig's mask when the fixture cleared Fear. The normal death screen and respawn restored full health and kept the player countdown active. A separate earlier-port save fixture with 200 ticks of the hidden effect loaded with 50 pulses, displayed the mask, and cleared it at expiry.
+- Local Java 17 JAR reobfuscation, the asset inventory audit and all 168 required Forge GameTests passed. The clean Forge dedicated server and both isolated clients used SHA-256 `e8adc85b8fcb4c2a9d71c2eea56fa06f89bbd95a93ac77fdd6a426522d0c1ebe`. Both clients used zero master volume and OpenAL No Output without taking desktop focus. Logs and the test package are in `build/qa-grotesque`.
+
 ## Purified Milk and Duration Boost (2026-11-24)
 
 - Standalone Purified Milk rolls a 50% chance and samples one active effect. The legacy player protection keeps an incurable effect active when the milk selects it and it has more than five ticks left.

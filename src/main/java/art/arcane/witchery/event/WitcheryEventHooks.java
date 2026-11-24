@@ -191,7 +191,7 @@ public final class WitcheryEventHooks {
             if (serverPlayer.level().dimension().equals(Level.NETHER)) Predictions.onNetherVisit(serverPlayer);
             DeathBrewEffects.restorePendingInventory(serverPlayer);
             DeathBrewEffects.restoreEffects(serverPlayer);
-            GrotesqueEffect.restoreLegacyBrew(serverPlayer);
+            GrotesqueEffect.restoreBrew(serverPlayer);
             BrewOfTheDepths.restorePortEffect(serverPlayer);
             InfusionEnergy.sync(serverPlayer);
             VampireFlight.restore(serverPlayer);
@@ -223,6 +223,7 @@ public final class WitcheryEventHooks {
                 DeathBrewEffects.restorePendingInventory(serverPlayer);
                 DeathBrewEffects.restoreEffects(serverPlayer);
             }
+            GrotesqueEffect.restoreBrew(serverPlayer);
             InfusionEnergy.sync(serverPlayer);
             VampireFlight.restore(serverPlayer);
             Lycanthropy.restore(serverPlayer);
@@ -240,7 +241,8 @@ public final class WitcheryEventHooks {
     public static void onStartTracking(PlayerEvent.StartTracking event) {
         if (event.getEntity() instanceof ServerPlayer viewer && event.getTarget() instanceof ServerPlayer target) {
             WitcheryPlayerDataProvider.get(target).ifPresent(data -> {
-                if (data.isGhost() || data.getNightmareLevel() > 0 || data.getCreatureTypeOrdinal() != 0) {
+                if (data.isGhost() || data.getNightmareLevel() > 0 || data.getCreatureTypeOrdinal() != 0
+                        || data.getGrotesqueTicks() > 0) {
                     WitcheryNetwork.sendPlayerStyle(viewer, target.getGameProfile().getName(), data.getGrotesqueTicks(),
                             data.getNightmareLevel(), data.isGhost(), data.getCreatureTypeOrdinal(),
                             data.getHumanBlood(), data.getOtherPlayerSkin());
@@ -293,6 +295,7 @@ public final class WitcheryEventHooks {
         if (!(event.player instanceof ServerPlayer serverPlayer)) {
             return;
         }
+        if (serverPlayer.level().getGameTime() % 4 == 0) GrotesqueEffect.tickBrew(serverPlayer);
         ScryingView.tick(serverPlayer);
         InfusedBrews.tick(serverPlayer);
         ImpContractEffects.tick(serverPlayer);
