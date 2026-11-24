@@ -159,6 +159,13 @@ public final class ThrownBrew extends ThrowableItemProjectile {
     }
 
     @Override
+    protected boolean canHitEntity(Entity target) {
+        if (getItem().getItem() instanceof BrewBottleItem && !(target instanceof LivingEntity)) return false;
+        if (target == getOwner()) return tickCount >= 5 && target.canBeHitByProjectile();
+        return super.canHitEntity(target);
+    }
+
+    @Override
     protected void onHit(HitResult hit) {
         super.onHit(hit);
         if (level() instanceof ServerLevel server) {
