@@ -4,6 +4,7 @@ import art.arcane.witchery.brewing.ResizingEffect;
 import art.arcane.witchery.registry.WitcheryEffects;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.LivingEntity;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,6 +14,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(LivingEntity.class)
 public abstract class ResizingLivingEntityMixin implements ResizingEffect.Scaled {
     @Unique private float witchery$resizeScale = 1;
+    @Unique @Nullable private LivingEntity witchery$resizedShape;
+    @Unique private boolean witchery$hasShapeScale;
 
     @Override
     public float witchery$scale() {
@@ -22,6 +25,24 @@ public abstract class ResizingLivingEntityMixin implements ResizingEffect.Scaled
     @Override
     public void witchery$setScale(float scale) {
         witchery$resizeScale = scale;
+    }
+
+    @Override
+    @Nullable
+    public LivingEntity witchery$replaceResizedShape(@Nullable LivingEntity shape) {
+        LivingEntity previous = witchery$resizedShape;
+        witchery$resizedShape = shape;
+        return previous;
+    }
+
+    @Override
+    public boolean witchery$hasShapeScale() {
+        return witchery$hasShapeScale;
+    }
+
+    @Override
+    public void witchery$setHasShapeScale(boolean hasShapeScale) {
+        witchery$hasShapeScale = hasShapeScale;
     }
 
     @Inject(method = "tickEffects", at = @At("TAIL"))

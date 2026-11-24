@@ -2061,6 +2061,12 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Run the packaged JAR with Industrial Foregoing and Thaumaturge. Restart the same world after switching integrations off and on. Check the Sower's sapling variant, all three protected mob tags, Thaumaturge's aspect values, and the base Witchery recipe. Upgrade a copy of the preceding build's save and verify its Brazier and Crystal Ball state.
 - [x] Verify both switches with JEI and Jade in an isolated muted client. Disable just JEI to remove Witchery's recipe views while Jade still shows cover blocks. Disable the master switch to remove the views and reveal normal Jade inspection. Re-enable both and check all five machine categories.
 
+## Morph and Resizing Compatibility (2026-11-23)
+
+- [x] Replace the old Morph renderer exception with an optional Woodwalkers bridge. Synchronize the active shape's model, eye height, and collision when Resizing changes. Reapply the geometry when a transformed player switches shapes or returns to normal.
+- [x] In the packaged Forge client, verify growth on the Pig, Cat and crouching Zombie shapes, normal player size after returning from a shape, and cleared Resizing. Shrink the Pig to 40% and verify the master integration setting in both states.
+- [x] Restart the dedicated Forge save with the enlarged Pig shape. Reconnect with the muted client and verify the saved shape and effect, then clear Resizing and verify both game processes return to the normal Pig geometry. The exact JAR also passed on a clean headless Forge server, and all 161 checked-in GameTests passed.
+
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.
 - Manifest + durable memory created.
@@ -2236,7 +2242,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [ ] Entity AI/combat/spawn tuning parity.
 
 ### Phase 5 - Integration + Stabilization
-- [ ] Optional mod compat strategy (modern equivalents where relevant).
+- [x] Record the modern counterparts, empty hooks, and retired APIs for the original mod integrations. The manifest records their behavior and the release checklist tracks the packaged matrix.
 - [ ] Save migration / missing mapping strategy.
 - [ ] Balance and progression validation.
 - [ ] Multiplayer sync and desync hardening.

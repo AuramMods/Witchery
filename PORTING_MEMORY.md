@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Morph and Resizing Compatibility (2026-11-23)
+
+- Legacy Morph took ownership of the first-person renderer. The packaged Forge baseline with Woodwalkers 5.8.13 and CraftedCore 5.8.3 showed that the player's Resizing effect doubled the Pig collision bounds, while Woodwalkers read an unscaled model and eye height from its shape.
+- The optional bridge reads the active shape through Woodwalkers' API. It applies the existing Resizing scale to that shape, resets the previous shape, and refreshes the player's collision after a transformation resets its bounds. Woodwalkers still controls its rendering and camera. Its separate eye-height query for a crouching humanoid also uses the shape's scale.
+- The muted packaged client verified twice-normal Pig and Cat forms and restored the 3.6-block player collision height on returning to human form. The crouching Zombie's eye height rose from 1.364 to 2.728 blocks. Shrinking the Pig to 40% set a 0.36-block collision height and a 0.306-block eye height. The active shape followed the master integration setting when it was turned off and back on.
+- Java 17 JAR reobfuscation and all 161 checked-in Forge GameTests passed. A clean headless Forge server ran the exact JAR without Woodwalkers and verified growth and effect removal on an ordinary Pig.
+- After a dedicated restart the survival client rejoined as the enlarged Pig with a 1.8-block hitbox and 1.53-block eye height. Clearing Resizing kept the Pig shape and returned the actual server hitbox and client measurements to normal. The isolated client used No Output, zero master volume, and no focus activation. The tested JAR SHA-256 is `c0a8264dbde24e5d9b92f3eb5e3c813c4432a8ba8ff9009b4bec4d1e56ae5c1c`. See `baseline-retry.log`, `verified.log`, `clean.log`, and `restart-complete.log` in the directory named by `/tmp/witchery-woodwalkers-current`.
+
 ## Optional Mod Configuration (2026-11-23)
 
 - `allowModIntegration` in `config/witchery-common.toml` controls optional integrations on each Forge installation. `allowModJEI` in `config/witchery-client.toml` independently controls the client's Witchery JEI tabs, crafting extensions, and subtypes. Both default to true. Restart the game or dedicated server after changing its config file.

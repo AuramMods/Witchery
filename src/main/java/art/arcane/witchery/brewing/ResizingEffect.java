@@ -1,6 +1,7 @@
 package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.integration.WoodwalkersCompat;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEffects;
 import net.minecraft.network.chat.Component;
@@ -48,6 +49,9 @@ public final class ResizingEffect extends TrackedBrewEffect {
     public interface Scaled {
         float witchery$scale();
         void witchery$setScale(float scale);
+        @Nullable LivingEntity witchery$replaceResizedShape(@Nullable LivingEntity shape);
+        boolean witchery$hasShapeScale();
+        void witchery$setHasShapeScale(boolean hasShapeScale);
     }
 
     public static float scale(LivingEntity entity) {
@@ -56,9 +60,28 @@ public final class ResizingEffect extends TrackedBrewEffect {
     }
 
     public static void setScale(LivingEntity entity, float scale) {
-        if (scale < 0.25F || scale > 3 || !Float.isFinite(scale) || scale == scale(entity)) return;
-        ((Scaled) entity).witchery$setScale(scale);
-        entity.refreshDimensions();
+        if (scale < 0.25F || scale > 3 || !Float.isFinite(scale)) return;
+        boolean changed = scale != scale(entity);
+        if (!changed && scale == 1) return;
+        Scaled state = (Scaled) entity;
+        if (changed) state.witchery$setScale(scale);
+        if (entity instanceof Player player && syncShapeScale(player, state, scale)) changed = true;
+        if (changed) entity.refreshDimensions();
+    }
+
+    private static boolean syncShapeScale(Player player, Scaled state, float scale) {
+        // Woodwalkers renders its live shape and reads its eye height. It also rebuilds the
+        // player's bounding box directly on a shape change, so reapply the effect to both.
+        LivingEntity shape = scale == 1 ? null : WoodwalkersCompat.activeShape(player);
+        LivingEntity old = state.witchery$replaceResizedShape(shape);
+        if (old != null && old != shape) setShapeScale(old, 1);
+        if (shape != null) setShapeScale(shape, scale);
+        return old != shape;
+    }
+
+    private static void setShapeScale(LivingEntity shape, float scale) {
+        ((Scaled) shape).witchery$setHasShapeScale(scale != 1);
+        setScale(shape, scale);
     }
 
     public static void tick(LivingEntity entity) {
