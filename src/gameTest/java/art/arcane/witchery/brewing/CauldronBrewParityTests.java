@@ -28,6 +28,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.entity.DispenserBlockEntity;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
@@ -48,6 +49,73 @@ import java.util.function.Consumer;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class CauldronBrewParityTests {
+    @GameTest(template = "qa_coven_arena")
+    public static void strongerWebBrewExpandsFromAnExistingWeb(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var impact = helper.absolutePos(new BlockPos(5, 6, 5));
+        var center = impact.above();
+        var web = WitcheryBlocks.getRequired("web").get();
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "WebBrewTester"));
+        var protectedCell = center.north();
+        var occupiedCell = center.west();
+        level.setBlockAndUpdate(impact, Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(occupiedCell, Blocks.CHEST.defaultBlockState());
+        var weak = BrewMixture.from(List.of(new ItemStack(Items.NETHER_WART), new ItemStack(Items.GUNPOWDER),
+                new ItemStack(WitcheryIngredient.WEB.item())));
+        var strong = BrewMixture.from(List.of(new ItemStack(Items.NETHER_WART), new ItemStack(Items.GUNPOWDER),
+                new ItemStack(Items.GLOWSTONE_DUST), new ItemStack(Items.BLAZE_ROD), new ItemStack(WitcheryIngredient.WEB.item())));
+        helper.assertTrue(weak != null && strong != null, "Both original cauldron recipes are valid");
+        Consumer<BlockEvent.EntityPlaceEvent> protection = event -> {
+            if (event.getLevel() == level && event.getEntity() == player && event.getPos().equals(protectedCell)) {
+                event.setCanceled(true);
+            }
+        };
+        MinecraftForge.EVENT_BUS.addListener(protection);
+        try {
+            Vec3 hit = Vec3.atBottomCenterOf(center);
+            weak.applySplashToBlock(level, impact, Direction.UP, hit, player);
+            helper.assertTrue(level.getBlockState(center).is(web) && level.isEmptyBlock(center.south()),
+                    "A base-strength splash puts only a web at the center");
+            strong.applySplashToBlock(level, impact, Direction.UP, hit, player);
+            helper.assertTrue(level.getBlockState(center).is(web) && level.getBlockState(center.south()).is(web)
+                            && level.getBlockState(center.above().east()).is(web),
+                    "A second strengthened splash expands around the existing web to faces and edges");
+            helper.assertTrue(level.getBlockState(occupiedCell).is(Blocks.CHEST) && level.isEmptyBlock(protectedCell)
+                            && level.isEmptyBlock(center.above().east().south()),
+                    "The expansion respects occupied and protected cells and leaves the corners clear");
+            helper.succeed();
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(protection);
+            player.discard();
+        }
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void lilifyRequiresSourceWaterForStablePads(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var source = helper.absolutePos(new BlockPos(4, 5, 5));
+        var flowing = source.east(3);
+        var ice = source.south(3);
+        var water = Blocks.WATER.defaultBlockState();
+        level.setBlockAndUpdate(source, water);
+        level.setBlockAndUpdate(flowing, water.setValue(LiquidBlock.LEVEL, 4));
+        level.setBlockAndUpdate(ice, Blocks.ICE.defaultBlockState());
+        var lily = WitcheryBlocks.getRequired("lilypad").get();
+        var recipe = BrewMixture.from(List.of(new ItemStack(Items.NETHER_WART), new ItemStack(Items.GUNPOWDER),
+                new ItemStack(Items.LILY_PAD)));
+        helper.assertTrue(recipe != null, "The original Lilify recipe is valid");
+        recipe.applySplashToBlock(level, source.west(), Direction.EAST, Vec3.atCenterOf(source), null);
+        recipe.applySplashToBlock(level, flowing.west(), Direction.EAST, Vec3.atCenterOf(flowing), null);
+        helper.assertTrue(level.getBlockState(source.above()).is(lily) && level.isEmptyBlock(flowing.above()),
+                "Lilify establishes a pad on the source surface and leaves the flowing surface clear");
+        helper.assertTrue(!lily.defaultBlockState().canSurvive(level, flowing.above())
+                        && !lily.defaultBlockState().canSurvive(level, ice.above()),
+                "The original Witchery pad requires source water for support");
+        level.setBlockAndUpdate(source, water.setValue(LiquidBlock.LEVEL, 4));
+        helper.assertTrue(level.isEmptyBlock(source.above()), "An established pad breaks when its source starts flowing");
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void terrainBrewHonorsConfigurableBlockBreakVeto(GameTestHelper helper) {
         var level = helper.getLevel();

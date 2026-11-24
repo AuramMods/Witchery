@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron Web Overlap and Lilify Support (2026-11-24)
+
+- A strengthened Webs splash fills surrounding faces and edges even when a prior splash filled the center. The site still checks Forge break protection, and each replacement checks Forge placement protection. The regression keeps a chest and a vetoed cell clear of webs.
+- Witchery Lily Pads require source water, as in the original block. Lilify stops at the first free water surface and places a pad when it can survive there. The port skips the original transient placement over flowing water. Existing pads reevaluate their support on neighbor updates and during scheduled growth.
+- The previous packaged build stopped Webs at the occupied center and left a Lily Pad over flowing water. The rebuilt headless Forge server dispensed supplied cauldron bottles into the same stone fixture and two-cell channel. The base splash placed one web, and the second added faces and edges while leaving the corner clear. Lilify placed a pad above the source. A dedicated restart kept the webs and the pad. Changing the support to flowing water broke the pad. The rebuilt server also reopened the preceding build's save and expanded the web it had placed there.
+- All 178 required Forge GameTests, local Java 17 reobfuscation, and the asset inventory audit passed. The tested JAR has SHA-256 `2d20e67bc4fd328d2231c7eadd5a5a8bbb5d0165c03ff3d055602ceb240d8956`. Logs and fixtures are in `build/qa-cauldron-webs`.
+
 ## Boss and Reflection Spell Flight (2026-11-24)
 
 - Leonard, Lilith, the Reflection, and the Lord of Torment now launch their spells at mid-body height with zero initial motion and 0.1 acceleration. Their aim combines the original strength-based horizontal spread with the additional 0.4 Gaussian spread on each axis. The player's Mystic Branch still starts at 0.3. Lilith's exploding fireball keeps the half-block vertical offset even when she looks up or down.

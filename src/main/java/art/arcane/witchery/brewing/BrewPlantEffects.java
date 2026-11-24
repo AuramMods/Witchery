@@ -19,8 +19,12 @@ final class BrewPlantEffects {
         if (center == null) return;
         Player actor = caster != null ? caster : FakePlayerFactory.getMinecraft(level);
         BlockState web = WitcheryBlocks.getRequired("web").get().defaultBlockState();
-        if (!place(level, center, web, Direction.UP, actor)) return;
-        if (strength == 0) return;
+        BlockState existing = level.getBlockState(center);
+        // The original cast checks the site even when only the surrounding cells will change.
+        boolean allowed = existing.canBeReplaced()
+                ? BrewTerrain.setBlock(actor, level, center, web, Direction.UP)
+                : BrewTerrain.canEdit(actor, level, center, existing);
+        if (!allowed || strength == 0) return;
         for (Direction direction : Direction.values()) place(level, center.relative(direction), web, direction, actor);
         if (strength == 1) return;
         for (int x = -1; x <= 1; x++) {

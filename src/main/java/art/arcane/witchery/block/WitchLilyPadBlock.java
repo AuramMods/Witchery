@@ -9,6 +9,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.WaterlilyBlock;
@@ -40,7 +41,13 @@ public final class WitchLilyPadBlock extends WaterlilyBlock {
 
     @Override
     protected boolean mayPlaceOn(BlockState state, BlockGetter level, BlockPos pos) {
-        return state.is(Blocks.WATER);
+        return state.is(Blocks.WATER) && state.getFluidState().isSource();
+    }
+
+    @Override
+    public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+        BlockPos support = pos.below();
+        return mayPlaceOn(level.getBlockState(support), level, support);
     }
 
     @Override
@@ -50,22 +57,24 @@ public final class WitchLilyPadBlock extends WaterlilyBlock {
 
     @Override
     public void onPlace(BlockState state, Level level, BlockPos pos, BlockState previous, boolean moved) {
-        if (!level.isClientSide && !previous.is(this) && state.getValue(GROWTH) > 0) level.scheduleTick(pos, this, SPREAD_DELAY);
+        if (!level.isClientSide && !previous.is(this)) level.scheduleTick(pos, this, SPREAD_DELAY);
     }
 
     @Override
     public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        if (!state.canSurvive(level, pos)) {
+            level.destroyBlock(pos, true);
+            return;
+        }
         int growth = state.getValue(GROWTH);
         if (growth == 0) return;
         BlockPos target = pos.offset(NEIGHBORS.get(random.nextInt(NEIGHBORS.size())));
-        if (level.hasChunkAt(target) && level.isEmptyBlock(target)) {
-            BlockState below = level.getBlockState(target.below());
-            if (below.is(Blocks.WATER) && below.getFluidState().isSource()
-                    && BrewTerrain.setBlock(FakePlayerFactory.getMinecraft(level), level, target,
-                    defaultBlockState().setValue(GROWTH, growth - 1), Direction.UP) && random.nextInt(growth) == 0) {
-                state = state.setValue(GROWTH, growth - 1);
-                level.setBlockAndUpdate(pos, state);
-            }
+        BlockState offspring = defaultBlockState().setValue(GROWTH, growth - 1);
+        if (level.hasChunkAt(target) && level.isEmptyBlock(target) && offspring.canSurvive(level, target)
+                && BrewTerrain.setBlock(FakePlayerFactory.getMinecraft(level), level, target, offspring, Direction.UP)
+                && random.nextInt(growth) == 0) {
+            state = state.setValue(GROWTH, growth - 1);
+            level.setBlockAndUpdate(pos, state);
         }
         if (state.getValue(GROWTH) > 0) level.scheduleTick(pos, this, SPREAD_DELAY);
     }
