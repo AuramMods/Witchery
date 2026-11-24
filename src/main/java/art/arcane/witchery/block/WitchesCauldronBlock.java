@@ -1,6 +1,7 @@
 package art.arcane.witchery.block;
 
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
+import art.arcane.witchery.item.BrewBucketItem;
 import art.arcane.witchery.particle.CauldronParticleOptions;
 import art.arcane.witchery.particle.CauldronParticleOptions.Form;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
@@ -74,7 +75,8 @@ public final class WitchesCauldronBlock extends BaseEntityBlock {
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if (player.getItemInHand(hand).is(Items.GLASS_BOTTLE) && state.getValue(WATER) > 0
+        var held = player.getItemInHand(hand);
+        if (held.is(Items.GLASS_BOTTLE) && state.getValue(WATER) > 0
                 && level.getBlockEntity(pos) instanceof WitchesCauldronBlockEntity cauldron) {
             if (level.isClientSide) return InteractionResult.SUCCESS;
             if (player instanceof ServerPlayer serverPlayer && cauldron.bottle(serverPlayer, hand)) {
@@ -82,10 +84,15 @@ public final class WitchesCauldronBlock extends BaseEntityBlock {
             }
             return InteractionResult.PASS;
         }
-        if (!FluidUtil.getFluidHandler(player.getItemInHand(hand)).isPresent()) {
+        if (!FluidUtil.getFluidHandler(held).isPresent()) {
             return InteractionResult.PASS;
         }
         if (!level.isClientSide) {
+            if (held.getItem() instanceof BrewBucketItem && player instanceof ServerPlayer serverPlayer
+                    && level.getBlockEntity(pos) instanceof WitchesCauldronBlockEntity cauldron
+                    && cauldron.topUpFromBrewBucket(serverPlayer, hand)) {
+                return InteractionResult.CONSUME;
+            }
             FluidUtil.interactWithFluidHandler(player, hand, level, pos, hit.getDirection());
         }
         return InteractionResult.sidedSuccess(level.isClientSide);

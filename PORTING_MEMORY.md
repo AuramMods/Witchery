@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Brew Bucket Top-Ups (2026-11-24)
+
+- The original 0.24.1 cauldron accepted a matching filled Brew Bucket at 2,500 mB and returned the empty Bucket. The preceding Forge package kept the filled bucket and the 2,500 mB remainder. The rebuilt player interaction now pours whatever fits, using the cauldron's existing validation for fluid, color, ordered ingredients and active trigger.
+- A muted clean Forge survival client reopened the earlier port's 2,500 mB Mutandis cast. A bucket missing the Egg's name stayed full and left the amount unchanged. The matching bucket returned empty, topped the cauldron to 3,000 mB, and kept the named Egg. The cast saved one tick into its resumed warmup. The dedicated restart completed it and produced one stack of six Mutandis.
+- A second clean Forge replay topped up an ordinary Swiftness brew from 2,999 mB. The survival client used the offhand and received the empty Bucket there. In a Creative control the same top-up kept the filled Brew Bucket.
+- The same JAR reopened the copied Auram cast at 1,500 mB. The client poured a full bucket, kept the mismatched bucket at 2,500 mB, then topped up with a matching bucket and received one stack of six Mutandis when the ritual completed. The login probe retried after an early startup rejection. The test clients used zero master volume and OpenAL No Output, and the focus monitor recorded no foreground changes.
+- Local Java 17 data generation, JAR reobfuscation, and all 239 required Forge GameTests passed. The added case covers a saved active remainder, reordered offerings, excess brew from the final bucket, the full-cauldron control, and completion. Logs and the exact package are in `build/qa-brew-bucket-top-up`. Package SHA-256 `faf7a14984d92ffb99d35a46a2126ee6589f30ffaa7374d6161266ed65d2b4ba`.
+- A separate comparator check found a remaining difference. The original 0.24.1 boiler reported signal 15 on a powered, boiling 2,500 mB Mutandis cast that also contained Moonshine. The modern comparator reported 6 on the same active cast and 15 without the ritual marker. See `comparator-original/placed-control.log` and `comparator-control/comparison.log` in the same directory.
+
 ## Hand Bottling Fixed Cauldron Casts (2026-11-24)
 
 - A running Witchery 0.24.1 server exercised the ordinary hand interaction on a pending Mutandis cast. A novice took all 3,000 mB. With 30 skill, the player bottled 1,500 mB and left the remaining 1,500 mB. Both bottles kept the ordered Mandrake Root, Exhale of the Horned One and Egg and the cast marker.

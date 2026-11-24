@@ -45,6 +45,7 @@ import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUtils;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -57,6 +58,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
 import org.jetbrains.annotations.Nullable;
@@ -527,6 +529,19 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
     private void onIngredientAdded(ServerLevel server, ItemStack offered) {
         brewColor = BrewColor.append(brewColor == null ? 0 : brewColor, offered);
         onIngredientAdded(server);
+    }
+
+    public boolean topUpFromBrewBucket(ServerPlayer player, InteractionHand hand) {
+        if (tank.getSpace() >= BUCKET) return false;
+        ItemStack held = player.getItemInHand(hand);
+        FluidStack brew = FluidUtil.getFluidContained(held).orElse(FluidStack.EMPTY);
+        // The original empties the bucket when the tank accepts any of its brew.
+        if (tank.fill(brew, IFluidHandler.FluidAction.EXECUTE) == 0) return false;
+        if (!player.getAbilities().instabuild) {
+            player.setItemInHand(hand, ItemUtils.createFilledResult(held, player, new ItemStack(Items.BUCKET), false));
+        }
+        player.serverLevel().playSound(null, worldPosition, SoundEvents.GENERIC_SWIM, SoundSource.BLOCKS, 1, 1);
+        return true;
     }
 
     public boolean bottle(ServerPlayer player, InteractionHand hand) {

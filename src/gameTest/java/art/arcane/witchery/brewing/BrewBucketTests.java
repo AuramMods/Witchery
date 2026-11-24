@@ -3,6 +3,7 @@ package art.arcane.witchery.brewing;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.WitchesCauldronBlock;
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
+import art.arcane.witchery.item.BrewBucketItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryFluids;
@@ -14,6 +15,7 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -38,6 +40,48 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class BrewBucketTests {
+    @GameTest(template = "qa_coven_arena", timeoutTicks = 255)
+    public static void topsUpAndCompletesAnActiveFixedCast(GameTestHelper helper) {
+        var location = new BlockPos(4, 4, 4);
+        helper.setBlock(location.below(2), Blocks.NETHERRACK);
+        helper.setBlock(location.below(), Blocks.FIRE);
+        var bowl = hotCauldron(helper, location);
+        var pos = bowl.getBlockPos();
+        var player = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "BrewTopUp"));
+        var tank = bowl.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
+        offer(helper, bowl, new ItemStack(WitcheryIngredient.MANDRAKE_ROOT.item()));
+        offer(helper, bowl, new ItemStack(WitcheryIngredient.EXHALE_OF_THE_HORNED_ONE.item()));
+        var egg = new ItemStack(Items.EGG).setHoverName(Component.literal("Original Trigger"));
+        offer(helper, bowl, egg);
+
+        var withdrawn = tank.drain(500, IFluidHandler.FluidAction.EXECUTE);
+        helper.assertTrue(withdrawn.getAmount() == 500 && tank.getFluidInTank(0).getAmount() == 2500,
+                "The pending cast can save a 2,500 mB remainder");
+        bowl.load(bowl.saveWithFullMetadata());
+        var bucket = BrewBucketItem.filled(withdrawn);
+        var wrong = bucket.copy();
+        var ingredients = wrong.getOrCreateTag().getList("Items", Tag.TAG_COMPOUND);
+        ingredients.add(ingredients.remove(0));
+        player.setItemInHand(InteractionHand.MAIN_HAND, wrong.copy());
+        use(helper, player, pos);
+        helper.assertTrue(ItemStack.matches(player.getMainHandItem(), wrong) && tank.getFluidInTank(0).getAmount() == 2500,
+                "The cauldron retains the mismatched bucket and the active cast");
+
+        player.setItemInHand(InteractionHand.MAIN_HAND, bucket.copy());
+        use(helper, player, pos);
+        helper.assertTrue(player.getMainHandItem().is(Items.BUCKET) && tank.getFluidInTank(0).getAmount() == 3000
+                        && ItemStack.matches(ItemStack.of(bowl.saveWithoutMetadata().getCompound("RitualTrigger")), egg),
+                "The matching bucket contributes the last 500 mB and returns empty while preserving the trigger");
+        player.setItemInHand(InteractionHand.MAIN_HAND, bucket.copy());
+        use(helper, player, pos);
+        helper.assertTrue(ItemStack.matches(player.getMainHandItem(), bucket) && tank.getFluidInTank(0).getAmount() == 3000,
+                "An already full cauldron returns the filled bucket");
+        helper.startSequence().thenWaitUntil(() -> {
+            helper.assertItemEntityCountIs(WitcheryIngredient.MUTANDIS.item(), location.above(), 2, 6);
+            helper.assertTrue(tank.getFluidInTank(0).isEmpty(), "Completing the refilled ritual empties the cauldron");
+        }).thenSucceed();
+    }
+
     @GameTest(template = "qa_coven_arena", timeoutTicks = 160)
     public static void movesBrewThroughSurvivalBucketsAndFluidCapabilities(GameTestHelper helper) {
         var level = helper.getLevel();
