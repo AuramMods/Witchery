@@ -38,7 +38,18 @@ abstract class TrackedBrewEffect extends MobEffect {
 
     @SubscribeEvent
     public static void syncTracking(PlayerEvent.StartTracking event) {
-        if (!(event.getEntity() instanceof ServerPlayer viewer) || !(event.getTarget() instanceof LivingEntity target)) return;
+        if (event.getEntity() instanceof ServerPlayer viewer && event.getTarget() instanceof LivingEntity target) {
+            syncEffects(viewer, target);
+        }
+    }
+
+    @SubscribeEvent
+    public static void syncAfterDimensionChange(PlayerEvent.PlayerChangedDimensionEvent event) {
+        // Direct teleports replace the local player without replaying its active effect instances.
+        if (event.getEntity() instanceof ServerPlayer player) syncEffects(player, player);
+    }
+
+    private static void syncEffects(ServerPlayer viewer, LivingEntity target) {
         for (var effect : target.getActiveEffects()) {
             if (effect.getEffect() instanceof TrackedBrewEffect) {
                 viewer.connection.send(new ClientboundUpdateMobEffectPacket(target.getId(), effect));

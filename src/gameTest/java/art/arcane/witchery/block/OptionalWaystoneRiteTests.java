@@ -25,12 +25,14 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
+import java.util.function.Consumer;
+
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class OptionalWaystoneRiteTests {
     private static final BlockPos HEART = new BlockPos(7, 4, 7);
 
-    @GameTest(template = "qa_coven_arena", batch = "witchery_waystone_refund", timeoutTicks = 110, setupTicks = 5)
+    @GameTest(template = "qa_coven_arena", batch = "witchery_waystone_refund", timeoutTicks = 160, setupTicks = 5)
     public static void refundsSavedGrassperOfferingWhenTheAltarCannotPay(GameTestHelper helper) {
         var level = helper.getLevel();
         BlockPos origin = helper.absolutePos(HEART.north(2));
@@ -42,25 +44,25 @@ public final class OptionalWaystoneRiteTests {
         WaystoneItem.bindLocation(stone, level, target);
         stone.setHoverName(Component.literal("Western Boundary"));
         grassper.setItem(0, stone);
-        var heart = startBarrier(helper);
-
-        helper.runAfterDelay(64, () -> {
-            helper.assertTrue(grassper.isEmpty(), "The rite takes the optional stone before checking altar power");
-            var saved = heart.saveWithFullMetadata();
-            helper.assertTrue(BlockPos.of(saved.getLong("WaystoneTarget")).equals(target), "The offering step saves its target");
-            heart.load(saved);
-        });
-        helper.runAfterDelay(85, () -> {
-            var items = level.getEntitiesOfClass(ItemEntity.class, new AABB(origin).inflate(1),
-                    item -> item.getItem().is(WitcheryIngredient.BOUND_WAYSTONE.item()));
-            helper.assertTrue(items.size() == 1 && ItemStack.matches(items.get(0).getItem(), stone),
-                    "An underpowered rite returns the original named Waystone where the Grassper held it");
-            helper.assertFalse(heart.getBlockState().getValue(RiteHeartBlock.ACTIVE), "The failed rite has ended");
-            helper.succeed();
+        startBarrier(helper, heart -> {
+            helper.runAfterDelay(64, () -> {
+                helper.assertTrue(grassper.isEmpty(), "The rite takes the optional stone before checking altar power");
+                var saved = heart.saveWithFullMetadata();
+                helper.assertTrue(BlockPos.of(saved.getLong("WaystoneTarget")).equals(target), "The offering step saves its target");
+                heart.load(saved);
+            });
+            helper.runAfterDelay(85, () -> {
+                var items = level.getEntitiesOfClass(ItemEntity.class, new AABB(origin).inflate(1),
+                        item -> item.getItem().is(WitcheryIngredient.BOUND_WAYSTONE.item()));
+                helper.assertTrue(items.size() == 1 && ItemStack.matches(items.get(0).getItem(), stone),
+                        "An underpowered rite returns the original named Waystone where the Grassper held it");
+                helper.assertFalse(heart.getBlockState().getValue(RiteHeartBlock.ACTIVE), "The failed rite has ended");
+                helper.succeed();
+            });
         });
     }
 
-    @GameTest(template = "qa_coven_arena", batch = "witchery_waystone_target", timeoutTicks = 110, setupTicks = 5)
+    @GameTest(template = "qa_coven_arena", batch = "witchery_waystone_target", timeoutTicks = 160, setupTicks = 5)
     public static void usesSavedTargetWithoutTakingASecondWaystone(GameTestHelper helper) {
         var level = helper.getLevel();
         BlockPos target = helper.absolutePos(HEART.west(6).above(4));
@@ -68,9 +70,7 @@ public final class OptionalWaystoneRiteTests {
         WaystoneItem.bindLocation(stone, level, target);
         var offered = drop(helper, stone);
         var altar = chargedAltar(helper);
-        var heart = startBarrier(helper);
-
-        helper.runAfterDelay(64, () -> {
+        startBarrier(helper, heart -> helper.runAfterDelay(64, () -> {
             helper.assertTrue(offered.isRemoved() && altar.power() >= 700, "Taking a Waystone does not debit the altar");
             heart.load(heart.saveWithFullMetadata());
             var laterStone = new ItemStack(WitcheryIngredient.BOUND_WAYSTONE.item());
@@ -83,10 +83,10 @@ public final class OptionalWaystoneRiteTests {
                 helper.assertTrue(laterDrop.isAlive() && altar.power() < 400, "The rite charges the altar once and leaves the later stone");
                 helper.succeed();
             });
-        });
+        }));
     }
 
-    private static RiteHeartBlockEntity startBarrier(GameTestHelper helper) {
+    private static void startBarrier(GameTestHelper helper, Consumer<RiteHeartBlockEntity> started) {
         var level = helper.getLevel();
         var glyph = WitcheryBlocks.getRequired("circleglyphritual").get();
         for (var offset : RitualCircle.SMALL_RITE.offsets()) {
@@ -96,14 +96,19 @@ public final class OptionalWaystoneRiteTests {
         }
         helper.setBlock(HEART.below(), Blocks.STONE);
         helper.setBlock(HEART, WitcheryBlocks.getRequired("circle").get());
-        drop(helper, new ItemStack(Items.OBSIDIAN));
-        drop(helper, new ItemStack(Items.REDSTONE));
+        var obsidian = drop(helper, new ItemStack(Items.OBSIDIAN));
+        var redstone = drop(helper, new ItemStack(Items.REDSTONE));
         var pos = helper.absolutePos(HEART);
         var hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
-        level.getBlockState(pos).use(level, helper.makeMockSurvivalPlayer(), InteractionHand.MAIN_HAND, hit);
-        var heart = (RiteHeartBlockEntity) level.getBlockEntity(pos);
-        helper.assertTrue(heart.getBlockState().getValue(RiteHeartBlock.ACTIVE), "The Heart Glyph starts the Focused Barrier rite");
-        return heart;
+        helper.startSequence().thenWaitUntil(() -> {
+            var visible = level.getEntitiesOfClass(ItemEntity.class, new AABB(pos));
+            helper.assertTrue(visible.contains(obsidian) && visible.contains(redstone), "The required offerings are in the rite's search area");
+        }).thenExecute(() -> {
+            level.getBlockState(pos).use(level, helper.makeMockSurvivalPlayer(), InteractionHand.MAIN_HAND, hit);
+            var heart = (RiteHeartBlockEntity) level.getBlockEntity(pos);
+            helper.assertTrue(heart.getBlockState().getValue(RiteHeartBlock.ACTIVE), "The Heart Glyph starts the Focused Barrier rite");
+            started.accept(heart);
+        });
     }
 
     private static ItemEntity drop(GameTestHelper helper, ItemStack stack) {
