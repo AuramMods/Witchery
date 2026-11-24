@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Familiar Circle Binding and Recall (2026-11-24)
+
+- Original 0.24.1 accepted a toad and owner 6.75 blocks west, rejected a pet whose owner stood 7.25 blocks east, and rejected a pet 7.25 blocks east with an eligible owner. The accepted familiar had 50 health.
+- The original Call Familiar admitted a diagonal owner at X/Z +6.25. A dismissed toad appeared at `(64.5, 86.001, 24.5)`. The next call brought that same toad to `(70.25, 86, 30.25)`. An owner beyond the square stayed dismissed. Native traces are in `build/qa-familiar-circle/legacy/binding-reference.log`.
+- Forge now uses the original layer and distances, preserves direct familiar arrivals, and sends the original binding, calling, recreation and dismissal effects. Java 17 data generation, reobfuscation, and all 280 required local GameTests passed. Package SHA-256 `fcb0c6cedacc2da9a435ea489e7bd7e1cfef900b5875bb99a50e6ac6659cb103`.
+- The clean Forge survival client used Rotten Flesh to tame a test toad and bound it from the west edge using the normal Heart Glyph. It dismissed the seated toad while crouching and called the replacement from the diagonal. The replacement retained the fixture name and color. The client logged the creation at Y 272.001 and the original recall packet at the player's position after the server moved the toad from the Nether.
+- A clean Forge dedicated restart retained the replacement UUID, original color and active familiar record. Both test launches had a hidden, unfocused window, zero master volume and OpenAL No Output.
+- The copied Auram server and client used the same local package. A resource reload interrupted targeting in the first run. The replay used redstone and a native-format dismissed-familiar record in the disposable save. It recreated and recalled one toad, then bound a fixture-owned toad on the west edge and cleared the previous toad's familiar flag. The packed client reported a hidden, unfocused window, zero master volume and OpenAL No Output.
+
 ## Summoning Clearance and Banishment (2026-11-24)
 
 - Forge 1.7.10 directly ran six original Wither effect steps. Clear, a roof four blocks above the glyph, one side obstruction, and two blocks on the omitted south edge each produced a Wither. A blocked center and two obstructions in the scanned chamber aborted. The successful constructor placed each Wither one block above the glyph at one degree yaw.

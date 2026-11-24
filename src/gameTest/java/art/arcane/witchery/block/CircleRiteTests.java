@@ -5,6 +5,8 @@ import art.arcane.witchery.block.entity.AltarBlockEntity;
 import art.arcane.witchery.block.entity.BarrierBlockEntity;
 import art.arcane.witchery.block.entity.GrassperBlockEntity;
 import art.arcane.witchery.block.entity.RiteHeartBlockEntity;
+import art.arcane.witchery.entity.WitchToad;
+import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WaystoneItem;
@@ -1252,6 +1254,121 @@ public final class CircleRiteTests {
                             && altar.power() == 7000 && drops(helper).isEmpty(),
                     "A successful obstructed arrival spends the offerings and retains the single payment");
         }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_familiar_binding_bounds", setupTicks = 5)
+    public static void originalFamiliarBindingMeasuresBothOwnerAndPetFromTheCorner(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.MEDIUM_RITE, "circleglyphritual");
+        var altar = chargedAltar(helper, true);
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var corner = Vec3.atLowerCornerOf(center);
+        var west = infusionPlayer(level, "WestToadOwner", corner.add(-6.75, 0, 0), 0);
+        var east = infusionPlayer(level, "EastToadOwner", corner.add(7.25, 0, 0), 0);
+        var near = infusionPlayer(level, "OwnerOfEastPet", corner.add(-1, 0, -0.5), 0);
+        var westToad = ownedToad(level, west, corner.add(-6.75, 0, 0.25));
+        var nearToad = ownedToad(level, east, corner.add(1, 0, 1.25));
+        var eastToad = ownedToad(level, near, corner.add(7.25, 0, -0.5));
+        var owners = List.of(west, east, near);
+        var toads = List.of(westToad, nearToad, eastToad);
+        var area = new AABB(center).inflate(9);
+        waitForOfferings(helper, new ItemStack(WitcheryIngredient.TEAR_OF_THE_GODDESS.item()),
+                new ItemStack(WitcheryIngredient.ODOUR_OF_PURITY.item()), new ItemStack(WitcheryIngredient.WHIFF_OF_MAGIC.item()),
+                new ItemStack(Items.DIAMOND), new ItemStack(WitcheryIngredient.INFERNAL_BLOOD.item())).thenWaitUntil(() -> {
+            helper.assertTrue(level.getEntitiesOfClass(ServerPlayer.class, area).containsAll(owners)
+                            && level.getEntitiesOfClass(WitchToad.class, area).containsAll(toads),
+                    "All three pairs are tracked by the world");
+        }).thenExecute(() -> {
+            try {
+                start(helper);
+                var heart = heart(helper);
+                tick(level, center, heart, 100);
+                float before = altar.power();
+                tick(level, center, heart, 40);
+                helper.assertTrue(westToad.isFamiliar() && westToad.getHealth() == 50
+                                && FamiliarBinding.hasBrewMastery(west),
+                        "The original west-side pair binds with 50 health and grants Toad mastery");
+                helper.assertTrue(!nearToad.isFamiliar() && !eastToad.isFamiliar()
+                                && !FamiliarBinding.hasActiveFamiliar(east) && !FamiliarBinding.hasActiveFamiliar(near),
+                        "An owner or a pet beyond the original east boundary is excluded");
+                helper.assertTrue(drops(helper).isEmpty() && altar.power() == before - 8000,
+                        "The successful binding spends its five offerings and one altar payment");
+            } finally {
+                toads.forEach(Entity::discard);
+                owners.forEach(owner -> level.removePlayerImmediately(owner, Entity.RemovalReason.DISCARDED));
+            }
+        }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_familiar_call_bounds", setupTicks = 5)
+    public static void originalFamiliarCallRecreatesAtTheGlyphAndRecallsToTheOwner(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.MEDIUM_RITE, "circleglyphritual");
+        var altar = chargedAltar(helper, true);
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var corner = Vec3.atLowerCornerOf(center);
+        var diagonal = infusionPlayer(level, "DiagonalCaller", corner.add(6.25, 0, 6.25), 0);
+        var outside = infusionPlayer(level, "OutsideCaller", corner.add(7.5, 0, 0), 0);
+        dismissedToad(diagonal, "Corner Toad");
+        dismissedToad(outside, "Outside Toad");
+        var area = new AABB(center).inflate(9);
+        waitForOfferings(helper, new ItemStack(WitcheryIngredient.BREATH_OF_THE_GODDESS.item()),
+                new ItemStack(WitcheryIngredient.HINT_OF_REBIRTH.item()), new ItemStack(WitcheryIngredient.WHIFF_OF_MAGIC.item()))
+                .thenWaitUntil(() -> {
+                    var players = level.getEntitiesOfClass(ServerPlayer.class, area);
+                    helper.assertTrue(players.contains(diagonal) && players.contains(outside), "Both calling players are tracked");
+                }).thenExecute(() -> {
+                    try {
+                        start(helper);
+                        var heart = heart(helper);
+                        tick(level, center, heart, 60);
+                        float before = altar.power();
+                        tick(level, center, heart, 20);
+                        var paid = heart.saveWithoutMetadata();
+                        helper.assertTrue(paid.getBoolean("AltarPowerOffered") && altar.power() == before - 1000,
+                                "The calling rite pays before restoring the familiar");
+                        heart.load(paid);
+                        tick(level, center, heart, 20);
+                        var toads = level.getEntitiesOfClass(WitchToad.class, area);
+                        helper.assertTrue(toads.size() == 1, "Only the owner inside the original square calls a Toad");
+                        var familiar = toads.get(0);
+                        helper.assertTrue(familiar.position().equals(Vec3.atBottomCenterOf(center).add(0, 0.001, 0))
+                                        && familiar.isOwnedBy(diagonal) && familiar.getHealth() == 50
+                                        && familiar.getName().getString().equals("Corner Toad") && familiar.color() == 2,
+                                "The saved name, color, health, owner, and original placement survive the paid cast");
+                        helper.assertTrue(FamiliarBinding.callNear(level, center, true)
+                                        && familiar.position().equals(diagonal.position())
+                                        && level.getEntitiesOfClass(WitchToad.class, area).equals(List.of(familiar))
+                                        && !FamiliarBinding.hasActiveFamiliar(outside) && altar.power() == before - 1000,
+                                "Recalling the live Toad moves that same entity to the diagonal owner");
+                    } finally {
+                        level.getEntitiesOfClass(WitchToad.class, area).forEach(Entity::discard);
+                        level.removePlayerImmediately(diagonal, Entity.RemovalReason.DISCARDED);
+                        level.removePlayerImmediately(outside, Entity.RemovalReason.DISCARDED);
+                    }
+                }).thenSucceed();
+    }
+
+    private static WitchToad ownedToad(ServerLevel level, ServerPlayer owner, Vec3 position) {
+        var toad = WitcheryEntities.TOAD.get().create(level);
+        toad.setPos(position);
+        toad.setOwnerUUID(owner.getUUID());
+        toad.setTame(true);
+        toad.setNoAi(true);
+        toad.setNoGravity(true);
+        level.addFreshEntity(toad);
+        return toad;
+    }
+
+    private static void dismissedToad(ServerPlayer owner, String name) {
+        var record = new CompoundTag();
+        record.putInt("FamiliarType", 2);
+        record.putByte("FamiliarColor", (byte) 2);
+        record.putString("FamiliarName", name);
+        record.putBoolean("FamiliarSummoned", false);
+        owner.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).put("WITCFamiliar", record);
     }
 
     @GameTest(template = TEMPLATE, batch = "witchery_waystone_binding_witness", setupTicks = 5)

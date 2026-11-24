@@ -566,10 +566,10 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 return;
             }
         }
-        if (familiarRite && !(rite.action() == ItemRiteRecipe.Action.BIND_FAMILIAR
-                ? FamiliarBinding.bindNear(level, pos) : FamiliarBinding.callNear(level, pos))) {
-            if (altar != null) altar.refundPower(rite.power());
-            abort(level, "message.witchery.rite.no_familiar");
+        if (familiarRite && !(action == ItemRiteRecipe.Action.BIND_FAMILIAR
+                ? FamiliarBinding.bindNear(level, pos, legacy) : FamiliarBinding.callNear(level, pos, legacy))) {
+            if (!legacy && altar != null) altar.refundPower(rite.power());
+            abort(level, "message.witchery.rite.no_familiar", legacy);
             return;
         }
         if (rite.action() == ItemRiteRecipe.Action.TRAVEL_WAYSTONE) {
@@ -638,6 +638,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             WitcheryNetwork.sendInfusionRite(level, Vec3.atLowerCornerOf(pos), manifestation);
         } else if (legacy && creatureSummon) {
             WitcheryNetwork.sendSummonedCreature(level, result.position());
+        } else if (legacy && familiarRite) {
+            WitcheryNetwork.sendFamiliarRite(level, Vec3.atLowerCornerOf(pos), action == ItemRiteRecipe.Action.BIND_FAMILIAR);
         } else if (!legacy || (action != ItemRiteRecipe.Action.RECHARGE_INFUSION
                 && action != ItemRiteRecipe.Action.TRAVEL_WAYSTONE && action != ItemRiteRecipe.Action.TRANSPOSE_CREATURE
                 && action != ItemRiteRecipe.Action.BANISH_DEMON)) {

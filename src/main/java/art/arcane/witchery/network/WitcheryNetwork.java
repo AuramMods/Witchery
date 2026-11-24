@@ -55,6 +55,7 @@ public final class WitcheryNetwork {
     private static final int LEGACY_EXPLOSION_PARTICLE_ID = 15;
     private static final int LEGACY_SPLASH_PARTICLE_ID = 19;
     private static final int LEGACY_LARGE_SMOKE_PARTICLE_ID = 20;
+    private static final int LEGACY_HEART_PARTICLE_ID = 28;
     private static final int LEGACY_NO_SOUND_ID = 0;
     private static final int LEGACY_FIZZ_SOUND_ID = 2;
     private static final int LEGACY_SNARE_SOUND_ID = 3;
@@ -326,6 +327,18 @@ public final class WitcheryNetwork {
 
     public static void sendBanishment(ServerLevel level, Vec3 center) {
         sendParticlesAround(level, LEGACY_EXPLOSION_PARTICLE_ID, LEGACY_NO_SOUND_ID, center, 1, 2, 16);
+    }
+
+    public static void sendFamiliarRite(ServerLevel level, Vec3 center, boolean binding) {
+        if (binding) {
+            sendParticlesAround(level, LEGACY_HEART_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID, center, 3, 3, 16);
+        } else {
+            sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID, center, 1, 2, 16);
+        }
+    }
+
+    public static void sendFamiliarTransition(ServerLevel level, Vec3 center) {
+        sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_ENDERMAN_TELEPORT_SOUND_ID, center, 1, 1, 16);
     }
 
     public static void sendParticlesAround(ServerLevel level, int particleEffectId, int soundEffectId, Vec3 center,

@@ -4,7 +4,9 @@ import art.arcane.witchery.entity.WitchCat;
 import art.arcane.witchery.entity.WitchOwl;
 import art.arcane.witchery.entity.WitchPet;
 import art.arcane.witchery.entity.WitchToad;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEntities;
+import art.arcane.witchery.world.WitcheryTeleport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -114,23 +116,29 @@ public final class FamiliarBinding {
         return record(player).getString("FamiliarName");
     }
 
-    public static boolean bindNear(ServerLevel level, BlockPos circle) {
+    public static boolean bindNear(ServerLevel level, BlockPos circle, boolean legacy) {
         Set<UUID> boundOwners = new HashSet<>();
-        Vec3 center = Vec3.atBottomCenterOf(circle);
-        for (TamableAnimal pet : level.getEntitiesOfClass(TamableAnimal.class, new AABB(circle).inflate(RANGE, 0, RANGE),
+        Vec3 center = legacy ? Vec3.atLowerCornerOf(circle) : Vec3.atBottomCenterOf(circle);
+        for (TamableAnimal pet : level.getEntitiesOfClass(TamableAnimal.class, glyphLayer(circle, legacy),
                 animal -> animal.isAlive() && animal.isTame() && animal.distanceToSqr(center) <= RANGE * RANGE
                         && !(animal instanceof WitchPet witchPet && witchPet.isTemporary()))) {
             Type type = Type.forAnimal(pet);
             if (type != null && pet.getOwner() instanceof ServerPlayer owner && owner.isAlive() && !owner.isSpectator()
                     && owner.distanceToSqr(center) <= RANGE * RANGE && !boundOwners.contains(owner.getUUID())
-                    && bind(owner, pet, type)) {
+                    && bind(owner, pet, type, legacy)) {
                 boundOwners.add(owner.getUUID());
             }
         }
         return !boundOwners.isEmpty();
     }
 
-    private static boolean bind(ServerPlayer owner, TamableAnimal pet, Type type) {
+    private static AABB glyphLayer(BlockPos circle, boolean legacy) {
+        Vec3 corner = Vec3.atLowerCornerOf(circle);
+        AABB layer = legacy ? new AABB(corner, corner.add(0, 1, 0)) : new AABB(circle);
+        return layer.inflate(RANGE, 0, RANGE);
+    }
+
+    private static boolean bind(ServerPlayer owner, TamableAnimal pet, Type type, boolean legacy) {
         TamableAnimal previous = find(owner);
         TamableAnimal familiar = pet;
         if (pet instanceof Cat && !(pet instanceof WitchCat)) {
@@ -149,26 +157,27 @@ public final class FamiliarBinding {
         if (previous != familiar && previous instanceof Familiar old) old.setFamiliar(false);
         if (!familiar.hasCustomName()) familiar.setCustomName(Component.literal(type.names.get(owner.getRandom().nextInt(type.names.size()))));
         store(owner, familiar, type);
-        owner.serverLevel().broadcastEntityEvent(familiar, (byte)7);
+        if (!legacy || familiar != pet) owner.serverLevel().broadcastEntityEvent(familiar, (byte)7);
         return true;
     }
 
-    public static boolean callNear(ServerLevel level, BlockPos circle) {
+    public static boolean callNear(ServerLevel level, BlockPos circle, boolean legacy) {
         Vec3 center = Vec3.atBottomCenterOf(circle);
+        Vec3 arrival = legacy ? center.add(0, 0.001, 0) : center;
         boolean called = false;
-        for (ServerPlayer owner : level.getEntitiesOfClass(ServerPlayer.class, new AABB(circle).inflate(RANGE, 0, RANGE),
-                player -> player.isAlive() && !player.isSpectator() && player.distanceToSqr(center) <= RANGE * RANGE)) {
+        for (ServerPlayer owner : level.getEntitiesOfClass(ServerPlayer.class, glyphLayer(circle, legacy),
+                player -> player.isAlive() && !player.isSpectator() && (legacy || player.distanceToSqr(center) <= RANGE * RANGE))) {
             CompoundTag record = record(owner);
             Type type = Type.forId(record.getInt("FamiliarType"));
             if (type == null) continue;
             TamableAnimal existing = find(owner);
             if (existing != null) {
-                called |= bringTo(owner, existing);
+                called |= legacy ? WitcheryTeleport.moveThroughCircle(existing, level, owner.position()) : bringTo(owner, existing);
             } else if (!record.getBoolean("FamiliarSummoned")) {
                 TamableAnimal familiar = type.entityType().create(level);
                 if (!(familiar instanceof Familiar marked)) continue;
-                familiar.moveTo(center.x, center.y, center.z, 0, 0);
-                if (!level.noCollision(familiar)) continue;
+                familiar.moveTo(arrival.x, arrival.y, arrival.z, 0, 0);
+                if (!legacy && !level.noCollision(familiar)) continue;
                 familiar.tame(owner);
                 if (familiar instanceof WitchCat cat) cat.setBlackCoat();
                 if (familiar instanceof WitchPet pet) pet.setColor(record.getByte("FamiliarColor"));
@@ -178,7 +187,8 @@ public final class FamiliarBinding {
                 marked.setFamiliar(true);
                 if (level.addFreshEntity(familiar)) {
                     store(owner, familiar, type);
-                    effects(level, familiar.position());
+                    if (legacy) WitcheryNetwork.sendFamiliarTransition(level, familiar.position());
+                    else effects(level, familiar.position());
                     called = true;
                 }
             }
@@ -216,7 +226,7 @@ public final class FamiliarBinding {
             owl.spawnAtLocation(owl.getMainHandItem());
             owl.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
         }
-        effects(level, familiar.position());
+        WitcheryNetwork.sendFamiliarTransition(level, familiar.position());
         familiar.discard();
     }
 
