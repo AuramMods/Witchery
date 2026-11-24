@@ -6,7 +6,7 @@
       "item": "witchery:redstone_soup"
     },
     {
-      "type": "forge:nbt",
+      "type": "forge:partial_nbt",
       "item": "minecraft:potion",
       "nbt": {
         "Potion": "minecraft:long_swiftness"

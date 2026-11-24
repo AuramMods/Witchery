@@ -1252,6 +1252,7 @@ The `witchery:wood_ash` smelting recipe uses `minecraft:saplings` when `addSmelt
 - `RecipeSorter.register`: 7 custom recipes
 - `KettleRecipes.instance().addRecipe`: 39. The port has 39 Kettle recipe IDs. The original Spirit of Otherwhere and Infernal Animus IDs accept their regular potions and appear in Brews & Infusions. The two separate splash-potion IDs follow the original hidden-page rule and brew the same outputs.
 - The original Kettle used the first registered recipe that matched the current ingredients and dimension. The 39 built-in JSON recipes carry priorities in that order. When recipes overlap, higher `priority` wins, with recipe ID breaking ties. A datapack recipe that omits `priority` uses zero. The partial mixture takes its tint and power requirement from that choice. The Bramble recipe for doubling Infused Brew Base carries the same one-serving bottling bonus the original Kettle looked up by output item.
+- Built-in Kettle potion ingredients check the base potion and its drinkable or splash item ID. This preserves the original potion metadata requirements for strength and duration and accepts custom names or other independent item tags.
 - `DistilleryRecipes.instance().addRecipe`: 9
 - `SpinningRecipes.instance().addRecipe`: 4
 

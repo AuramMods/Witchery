@@ -131,6 +131,7 @@
 - [x] Restore the original Witch's Hat serving bonus for the Bramble recipe that doubles Infused Brew Base. The new test reloads the finished two-serving batch, exercises a successful Hat roll, and checks that one serving remains in the Kettle.
 - [x] Upgrade the earlier packaged save with the three partial mixtures. On a quiet background client after another dedicated restart, verify the restored tint and power indicator. Complete and bottle Vines without an altar. Complete the Raising ingredients and verify that the mixture waits. After the fixture charges the Altar to 650, the Kettle draws 500 and produces three servings. Bottle one serving through the ordinary use interaction.
 - [x] Reproduce all three original partial mixtures on the same JAR in the headless copied Auram profile. On clean Forge, verify that a datapack recipe with its old JSON shape loads, and that assigning it higher priority changes the same partial mixture after a live reload.
+- [x] Compare all 234 Kettle ingredient slots and all 39 output counts, effective bottling bonuses, familiar restrictions, dimensions and guide flags against the running 0.24.1 registry. Match potion ingredients by their bottle type, effect and duration while accepting the extra tags ignored by 0.24.1. The headless packaged server brewed Flying Ointment and Infernal Animus from renamed drinkable Swiftness and splash Harming, rejected the wrong Swiftness duration and bottle type, and reopened both finished brews after restart.
 
 ## Mirror Milestone (2026-11-19)
 

@@ -3,7 +3,7 @@
   "priority": 7,
   "ingredients": [
     {"item": "witchery:redstone_soup"},
-    {"type": "forge:nbt", "item": "minecraft:potion", "nbt": {"Potion": "minecraft:long_regeneration"}},
+    {"type": "forge:partial_nbt", "item": "minecraft:potion", "nbt": {"Potion": "minecraft:long_regeneration"}},
     {"item": "minecraft:enchanted_golden_apple"},
     {"item": "witchery:attuned_stone"},
     {"item": "witchery:mandrake_root"},

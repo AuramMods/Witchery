@@ -3,7 +3,7 @@
   "priority": 5,
   "ingredients": [
     {"item": "witchery:redstone_soup"},
-    {"type": "forge:nbt", "item": "minecraft:splash_potion", "nbt": {"Potion": "minecraft:long_swiftness"}},
+    {"type": "forge:partial_nbt", "item": "minecraft:splash_potion", "nbt": {"Potion": "minecraft:long_swiftness"}},
     {"item": "minecraft:ender_eye"},
     {"item": "minecraft:ender_eye"},
     {"item": "witchery:drop_of_luck"},

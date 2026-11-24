@@ -3,7 +3,7 @@
   "priority": 9,
   "ingredients": [
     {"item": "witchery:redstone_soup"},
-    {"type": "forge:nbt", "item": "minecraft:potion", "nbt": {"Potion": "minecraft:long_night_vision"}},
+    {"type": "forge:partial_nbt", "item": "minecraft:potion", "nbt": {"Potion": "minecraft:long_night_vision"}},
     {"item": "minecraft:ender_eye"},
     {"item": "minecraft:golden_carrot"},
     {"item": "minecraft:spider_eye"},

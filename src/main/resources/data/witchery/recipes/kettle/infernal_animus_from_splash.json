@@ -3,7 +3,7 @@
   "priority": 3,
   "ingredients": [
     {"item": "witchery:redstone_soup"},
-    {"type": "forge:nbt", "item": "minecraft:splash_potion", "nbt": {"Potion": "minecraft:strong_harming"}},
+    {"type": "forge:partial_nbt", "item": "minecraft:splash_potion", "nbt": {"Potion": "minecraft:strong_harming"}},
     {"item": "witchery:voodoo_poppet"},
     {"item": "witchery:demon_heart"},
     {"item": "witchery:refined_evil"},

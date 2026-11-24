@@ -5,16 +5,20 @@ import art.arcane.witchery.block.entity.KettleBlockEntity;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
+import art.arcane.witchery.registry.WitcheryRecipes;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.TagParser;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
@@ -30,6 +34,33 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class KettleDropTests {
+    @GameTest(template = "qa_coven_arena")
+    public static void matchesPotionTypeWithCustomNames(GameTestHelper helper) {
+        var recipes = helper.getLevel().getRecipeManager().getAllRecipesFor(WitcheryRecipes.KETTLE.get());
+        int potionIngredients = 0;
+        for (var recipe : recipes) {
+            if (!recipe.id().getNamespace().equals(Witchery.MODID)) continue;
+            for (var ingredient : recipe.ingredients()) {
+                for (ItemStack option : ingredient.getItems()) {
+                    boolean splash = option.is(Items.SPLASH_POTION);
+                    if (!splash && !option.is(Items.POTION)) continue;
+                    potionIngredients++;
+                    var named = option.copy();
+                    named.setHoverName(Component.literal("Apothecary's Potion"));
+                    named.getOrCreateTag().putString("Fixture", "legacy-label");
+                    helper.assertTrue(ingredient.test(named), recipe.id() + " should accept the correct potion with extra item data");
+                    helper.assertTrue(!ingredient.test(PotionUtils.setPotion(named.copy(), Potions.WATER)),
+                            recipe.id() + " should still require the original effect and duration");
+                    var otherBottle = PotionUtils.setPotion(new ItemStack(splash ? Items.POTION : Items.SPLASH_POTION),
+                            PotionUtils.getPotion(option));
+                    helper.assertTrue(!ingredient.test(otherBottle), recipe.id() + " should require the correct delivery form");
+                }
+            }
+        }
+        helper.assertTrue(potionIngredients == 11, "Exercise all eleven built-in Kettle potion ingredients");
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_kettle_order", setupTicks = 3)
     public static void usesOriginalRecipeOrderForPartialMixtures(GameTestHelper helper) {
         var vines = heatedKettle(helper, new BlockPos(3, 4, 4));

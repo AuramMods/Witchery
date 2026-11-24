@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Kettle Potion Ingredients (2026-11-24)
+
+- The original running server accepted renamed potions in Flying Ointment and the splash recipes for Spirit of Otherwhere and Infernal Animus. The preceding packaged port ruined the named Flying Ointment and Infernal Animus batches. Built-in ingredients now use the required potion field and drinkable or splash item ID while accepting custom names and tags.
+- The rebuilt headless package accepted the two complete named-potion batches and waited for an altar. With a fixture-supplied altar charge, the Kettles produced one Flying Ointment and two Infernal Animus. The wrong Swiftness duration and bottle type each ruined the control batch. Both finished brews survived an ordinary dedicated restart.
+- The source audit matched all 234 ingredient slots, serving counts, effective bonuses, required familiars, dimensions and guide flags to the original registry. Java 17 data generation, JAR reobfuscation and all 210 required local Forge GameTests passed. The new test validates names, effect matching and bottle type for eleven built-in potion ingredients. Logs and the tested JAR are in `build/qa-kettle-potion-tags`. Package SHA-256 `187000b836524d93fa407bbb07524feb99d299414289afec76f1c7b5409692fb`.
+
 ## Kettle Recipe Order (2026-11-24)
 
 - The running 0.24.1 server matched all 39 Kettle registrations by position, output subtype, power and tint. Dog Tongue alone selected Vines at zero power, Mutandis selected Raising at 500 and Redstone Soup selected Flying Ointment at 3,000. The preceding packaged port selected Grotesque and Infection for the first two. Each built-in recipe now supplies a priority in original order. Protocol 98 synchronizes it and existing Kettle recipe IDs still identify saved batches.

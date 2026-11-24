@@ -3,7 +3,7 @@
   "priority": 11,
   "ingredients": [
     {"item": "witchery:redstone_soup"},
-    {"type": "forge:nbt", "item": "minecraft:potion", "nbt": {"Potion": "minecraft:long_swiftness"}},
+    {"type": "forge:partial_nbt", "item": "minecraft:potion", "nbt": {"Potion": "minecraft:long_swiftness"}},
     {"item": "minecraft:diamond"},
     {"item": "minecraft:feather"},
     {"item": "witchery:bat_wool"},

@@ -6,14 +6,14 @@
       "item": "witchery:redstone_soup"
     },
     {
-      "type": "forge:nbt",
+      "type": "forge:partial_nbt",
       "item": "minecraft:potion",
       "nbt": {
         "Potion": "minecraft:long_invisibility"
       }
     },
     {
-      "type": "forge:nbt",
+      "type": "forge:partial_nbt",
       "item": "minecraft:potion",
       "nbt": {
         "Potion": "minecraft:long_fire_resistance"
