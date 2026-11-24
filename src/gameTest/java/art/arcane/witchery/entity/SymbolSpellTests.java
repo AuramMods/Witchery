@@ -1,9 +1,12 @@
 package art.arcane.witchery.entity;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.brewing.BrewMixture;
 import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.infusion.SpellKnowledge;
 import art.arcane.witchery.infusion.SymbolSpell;
+import art.arcane.witchery.item.LeonardsUrnItem;
+import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryEntities;
@@ -486,5 +489,66 @@ public final class SymbolSpellTests {
                         nearby.discard();
                     }
                 }).thenSucceed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void leonardsUrnKeepsTheOriginalBrewFlight(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var caster = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "UrnSpellCaster"));
+        caster.setPos(Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(5, 16, 5))));
+        caster.setYRot(0);
+        caster.setXRot(0);
+        caster.setDeltaMovement(2, 0, 0);
+
+        var ingredients = List.of(new ItemStack(Items.NETHER_WART), new ItemStack(Items.GUNPOWDER),
+                new ItemStack(WitcheryIngredient.WEB.item()));
+        var mixture = BrewMixture.from(ingredients);
+        var bottle = WitcheryItems.getRequired("brewbottle").get().getDefaultInstance();
+        bottle.setTag(mixture.bottleTag(ingredients));
+        var urn = WitcheryItems.getRequired("leonardsurn").get().getDefaultInstance();
+        LeonardsUrnItem.saveContents(urn, List.of(bottle));
+        caster.getInventory().setItem(1, urn);
+        InfusionEnergy.grant(caster, 2, 200);
+
+        var shots = new ArrayList<ThrownBrew>();
+        Consumer<EntityJoinLevelEvent> capture = event -> {
+            if (event.getLevel() == level && event.getEntity() instanceof ThrownBrew shot && shot.getOwner() == caster) {
+                shots.add(shot);
+            }
+        };
+        MinecraftForge.EVENT_BUS.addListener(capture);
+        try {
+            SymbolSpell.LEONARD_1.cast(level, caster);
+            helper.assertTrue(shots.size() == 1, "The first Urn gesture launches the stored splash brew");
+            var shot = shots.get(0);
+            Vec3 motion = shot.getDeltaMovement();
+            helper.assertTrue(motion.distanceTo(new Vec3(0, 0, 0.75)) < 0.06,
+                    "The spell flies at the original 0.75 speed without inheriting caster movement. Actual " + motion);
+            Vec3 launch = new Vec3(caster.getX() - 0.16, caster.getEyeY() - 0.1, caster.getZ());
+            helper.assertTrue(shot.position().distanceTo(launch) < 1.0E-6 && shot.isNoGravity(),
+                    "The spell starts just beside and below the caster's eyes and has no gravity");
+            int remaining = 200 - Math.max(4, mixture.used() * 2);
+            helper.assertTrue(ItemStack.matches(shot.getItem(), bottle) && ItemStack.matches(LeonardsUrnItem.contents(urn).get(0), bottle)
+                            && InfusionEnergy.canSpend(caster, remaining) && !InfusionEnergy.canSpend(caster, remaining + 1),
+                    "The shot carries the stored mixture and spends the original charge without consuming the bottle");
+
+            var restored = WitcheryEntities.THROWN_BREW.get().create(level);
+            restored.load(shot.saveWithoutId(new CompoundTag()));
+            restored.tick();
+            helper.assertTrue(restored.position().distanceTo(shot.position().add(motion)) < 1.0E-6
+                            && restored.getDeltaMovement().distanceTo(motion.scale(0.99F)) < 1.0E-6,
+                    "A saved Urn spell continues its gravity-free flight with air drag");
+            shot.tickCount = 199;
+            shot.tick();
+            helper.assertTrue(!shot.isRemoved(), "The Urn spell survives the 199th air tick");
+            shot.tickCount = 200;
+            shot.tick();
+            helper.assertTrue(shot.isRemoved(), "The Urn spell expires on the 200th air tick");
+            helper.succeed();
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(capture);
+            shots.forEach(ThrownBrew::discard);
+            caster.discard();
+        }
     }
 }

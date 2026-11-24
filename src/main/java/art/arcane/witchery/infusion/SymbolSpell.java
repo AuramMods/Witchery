@@ -232,10 +232,7 @@ public enum SymbolSpell {
         if (mixture == null) {
             player.playSound(SoundEvents.NOTE_BLOCK_SNARE.value(), 0.9F, 1);
         } else {
-            var projectile = new ThrownBrew(player, level);
-            projectile.setItem(brew);
-            projectile.setNoGravity(true);
-            projectile.shootFromRotation(player, player.getXRot(), player.getYRot(), 0, 4, 1);
+            var projectile = ThrownBrew.forUrnSpell(level, player, brew);
             if (!level.addFreshEntity(projectile)) return;
             level.playSound(null, player.blockPosition(), SoundEvents.GHAST_SHOOT, SoundSource.PLAYERS, 0.8F, 1);
         }

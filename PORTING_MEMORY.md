@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Leonard's Urn Spell Flight (2026-11-24)
+
+- The original 0.24.1 server's first Urn spell measured 0.756 blocks per tick with its Gaussian spread. The projectile started 0.16 blocks beside and 0.10 blocks below the caster's eyes, ignored caster movement, applied only air drag to vertical velocity, and expired on its 200th air tick. The constructor picked the launch speed before enabling the gravity-free spell flag. [Witchery 0.24.1](https://www.curseforge.com/minecraft/mc-mods/witchery/files/2234410)
+- The port now uses that launch for all four slots. The regression failed on the preceding code at about four blocks per tick forward and two sideways from caster movement. It passes on the rebuilt code and verifies the saved projectile's air drag, the stored bottle, and the original charge cost and lifetime. Java 17 data generation, JAR reobfuscation, and all 202 required Forge GameTests passed locally.
+- A survival client cast slot one with the normal five strokes and a supplied Urn, Web brew, Branch, and infusion. The first cast spent four charges and placed Witchery Web at the supported target. After a dedicated restart the web, bottle, and charge persisted. The next cast measured 0.758 blocks per tick at launch from 0.16 blocks beside the player's eyes and placed another web. Both launches stayed hidden and unfocused at master volume zero with OpenAL No Output. Logs and the package are in `build/qa-urn-legacy-flight`. Package SHA-256 `0b8893f860f281eba3407f9e55d9bcf0e8f184772627e258608e4bc0579913d0`.
+- The same JAR booted on the copied 567-mod Auram dedicated server. A command-spawned brew with no owner disappeared without placing a web at the target. The equivalent headless fixture on clean Forge placed a web. Auram still needs a repeat through the normal player cast to determine whether the difference applies to gameplay. See `auram/check-package.log` and `verify-headless-control.log` in the test directory.
+
 ## Witch Hunter, Village Guard and Reflection Parity (2026-11-24)
 
 - Witch Hunters now recognize Wolfman-shaped Reflections for both target selection and Silver Bolts. Reflections keep the last copied form, vampire state and attack strength while their owner is outside detection range. They clear their copied equipment and owner name during that search.

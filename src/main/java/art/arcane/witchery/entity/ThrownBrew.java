@@ -14,6 +14,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -89,6 +90,21 @@ public final class ThrownBrew extends ThrowableItemProjectile {
                 ? stack : ItemStack.EMPTY;
     }
 
+    public static ThrownBrew forUrnSpell(ServerLevel level, Player caster, ItemStack bottle) {
+        var brew = new ThrownBrew(caster, level);
+        brew.setItem(bottle);
+        brew.setNoGravity(true);
+        float yaw = caster.getYRot() * Mth.DEG_TO_RAD;
+        brew.setPos(brew.position().add(-Mth.cos(yaw) * 0.16F, 0, -Mth.sin(yaw) * 0.16F));
+
+        // The original constructor chose the ordinary brew speed before setting its spell flag.
+        double spread = 0.0075F;
+        Vec3 motion = caster.getLookAngle().normalize().add(brew.random.nextGaussian() * spread,
+                brew.random.nextGaussian() * spread, brew.random.nextGaussian() * spread).scale(0.75);
+        brew.lerpMotion(motion.x, motion.y, motion.z);
+        return brew;
+    }
+
     public static boolean throwBottle(ServerLevel level, Player player, ItemStack stack, float speed) {
         var brew = new ThrownBrew(player, level);
         brew.setItem(stack);
@@ -109,7 +125,7 @@ public final class ThrownBrew extends ThrowableItemProjectile {
         }
         super.tick();
         if (isNoGravity() && level() instanceof ServerLevel level) {
-            if (tickCount > 200) discard();
+            if (tickCount >= 200) discard();
             else if (!isRemoved()) {
                 int color = BrewBottleItem.color(getItem());
                 var options = new net.minecraft.core.particles.DustParticleOptions(
