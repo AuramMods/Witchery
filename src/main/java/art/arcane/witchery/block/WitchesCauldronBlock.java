@@ -8,6 +8,7 @@ import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -84,17 +85,15 @@ public final class WitchesCauldronBlock extends BaseEntityBlock {
             }
             return InteractionResult.PASS;
         }
-        if (!FluidUtil.getFluidHandler(held).isPresent()) {
-            return InteractionResult.PASS;
-        }
-        if (!level.isClientSide) {
-            if (held.getItem() instanceof BrewBucketItem && player instanceof ServerPlayer serverPlayer
-                    && level.getBlockEntity(pos) instanceof WitchesCauldronBlockEntity cauldron
-                    && cauldron.topUpFromBrewBucket(serverPlayer, hand)) {
-                return InteractionResult.CONSUME;
+        if (held.is(Items.WATER_BUCKET) || held.getItem() instanceof BrewBucketItem) {
+            if (!level.isClientSide && level.getBlockEntity(pos) instanceof WitchesCauldronBlockEntity cauldron
+                    && BrewingBuckets.pour(player, hand, cauldron, hit.getDirection())) {
+                level.playSound(null, pos, SoundEvents.GENERIC_SWIM, SoundSource.BLOCKS, 1, 1);
             }
-            FluidUtil.interactWithFluidHandler(player, hand, level, pos, hit.getDirection());
+            return InteractionResult.sidedSuccess(level.isClientSide);
         }
+        if (!FluidUtil.getFluidHandler(held).isPresent()) return InteractionResult.PASS;
+        if (!level.isClientSide) FluidUtil.interactWithFluidHandler(player, hand, level, pos, hit.getDirection());
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 

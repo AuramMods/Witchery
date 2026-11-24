@@ -43,6 +43,40 @@ import java.util.UUID;
 @PrefixGameTestTemplate(false)
 public final class BrewBucketTests {
     @GameTest(template = "qa_coven_arena")
+    public static void topsUpPlainWaterWithoutDilutingBrew(GameTestHelper helper) {
+        var bowl = hotCauldron(helper, new BlockPos(4, 4, 4));
+        var tank = bowl.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
+        var player = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "TopUpWater"));
+        var hand = InteractionHand.OFF_HAND;
+        var pos = bowl.getBlockPos();
+        var hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
+
+        helper.assertTrue(tank.drain(500, IFluidHandler.FluidAction.EXECUTE).getAmount() == 500, "Prepare a partial water tank");
+        player.setItemInHand(hand, new ItemStack(Items.WATER_BUCKET));
+        helper.getLevel().getBlockState(pos).use(helper.getLevel(), player, hand, hit);
+        helper.assertTrue(tank.getFluidInTank(0).getAmount() == 3000 && player.getItemInHand(hand).is(Items.BUCKET),
+                "A survival Water Bucket fills the last 500 mB and returns empty to the offhand");
+
+        tank.drain(1, IFluidHandler.FluidAction.EXECUTE);
+        player.getAbilities().instabuild = true;
+        player.setItemInHand(hand, new ItemStack(Items.WATER_BUCKET));
+        helper.getLevel().getBlockState(pos).use(helper.getLevel(), player, hand, hit);
+        helper.assertTrue(tank.getFluidInTank(0).getAmount() == 3000 && player.getItemInHand(hand).is(Items.WATER_BUCKET),
+                "A Creative player fills the final millibucket while keeping the Water Bucket");
+        player.getAbilities().instabuild = false;
+
+        offer(helper, bowl, new ItemStack(Items.NETHER_WART));
+        offer(helper, bowl, new ItemStack(Items.SUGAR));
+        tank.drain(500, IFluidHandler.FluidAction.EXECUTE);
+        var remainder = tank.getFluidInTank(0);
+        helper.getLevel().getBlockState(pos).use(helper.getLevel(), player, hand, hit);
+        var after = tank.getFluidInTank(0);
+        helper.assertTrue(player.getItemInHand(hand).is(Items.WATER_BUCKET) && after.getAmount() == 2500 && after.isFluidEqual(remainder),
+                "Pouring plain water into a partial brew preserves its volume and complete tag");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
     public static void acceptsAnEntireLegacyStackAsOneBrewAction(GameTestHelper helper) {
         var bowl = hotCauldron(helper, new BlockPos(4, 4, 4));
         offer(helper, bowl, new ItemStack(Items.NETHER_WART, 3));

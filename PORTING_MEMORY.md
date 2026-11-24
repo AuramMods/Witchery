@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Water Bucket Top-Ups and Kettle Rinsing (2026-11-24)
+
+- The running original accepted 500 mB from a Water Bucket in either vessel. Its full, spoiled Kettle cleared the mixture, kept 1,000 mB and three spare bottles, and left the Water Bucket in the player's hand. The previous Forge JAR rejected both partial fills and kept the spoiled mixture after the attempted rinse.
+- The rebuilt clean Forge survival client poured from the offhand into the Cauldron and from the main hand into the Kettle. Each returned an empty Bucket. Using water on the full Cauldron and on a separate 2,500 mB brew left the held Water Bucket intact. The full Kettle rinse cleared the ruined flag and discarded the spoiled ingredient. After a dedicated restart that Kettle brewed Vines, and the player bottled one of three servings while keeping all three stored bottles. The topped-up Cauldron produced six Mutandis.
+- Copied Auram repeated both pours, the rinse and rejection controls, and the two resulting brews on the same JAR. The initial offhand test timed out. The successful replay used the loaded test area, waited for the client's held item to sync, and confirmed an ordinary `OFF_HAND` interaction on the server. The clients used zero master volume and OpenAL No Output, and the focus monitor recorded no foreground changes.
+- Local Java 17 data generation, JAR reobfuscation, and all 247 required Forge GameTests passed. The tests exercise both hands, the Creative bucket result, rejection of mismatched liquid, and preservation of the Kettle bottle buffer. Logs and the exact JAR are in `build/qa-partial-brewing-water`. Package SHA-256 `4ef1b4ef1f98d3b68f821e3f1cfebbd30083f18d101039349cbfd4670c2b01b7`.
+- A separate dropped-item comparison found two Kettle differences. The original refused a two-bottle stack when the buffer held 63, then accepted a stack of Vines while the brew was ready and a stack of Red Mushrooms after it was spoiled. The packaged port stored one of the bottles and kept both ingredient stacks on the ground. See `drop-original/reference.log` and `drop-control/control.log` in the same directory.
+
 ## Cauldron Offering Stack Counts (2026-11-24)
 
 - Witchery 0.24.1 consumed three Nether Wart, six Wool and four Sugar from dropped stacks. The brew kept the Wart and Sugar quantities and registered one two-level effect. A duplicate stack of five Sugar stayed intact. A separate Mutandis cast kept three Mandrake Roots, two Exhales and four Eggs.

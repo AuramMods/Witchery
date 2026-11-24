@@ -55,8 +55,7 @@ public final class KettleBlockEntity extends BlockEntity {
     private final FluidTank tank = new FluidTank(BUCKET, resource -> resource.getFluid() == Fluids.WATER) {
         @Override
         protected void onContentsChanged() {
-            resetBatch();
-            update();
+            rinse();
         }
     };
     private final ItemStackHandler inventory = new ItemStackHandler(contents) {
@@ -265,6 +264,11 @@ public final class KettleBlockEntity extends BlockEntity {
         color = 0;
         finishedRecipeId = null;
         contents.set(BREW_SLOT, ItemStack.EMPTY);
+        update();
+    }
+
+    public void rinse() {
+        resetBatch();
         update();
     }
 

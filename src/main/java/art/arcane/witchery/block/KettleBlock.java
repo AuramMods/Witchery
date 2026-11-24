@@ -114,6 +114,13 @@ public final class KettleBlock extends BaseEntityBlock {
             }
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
+        if (held.is(Items.WATER_BUCKET)) {
+            if (!level.isClientSide) {
+                if (!BrewingBuckets.pour(player, hand, kettle, hit.getDirection())) kettle.rinse();
+                level.playSound(null, pos, SoundEvents.GENERIC_SWIM, SoundSource.BLOCKS, 1, 1);
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
         if (FluidUtil.getFluidHandler(held).isPresent()) {
             if (!level.isClientSide) {
                 FluidUtil.interactWithFluidHandler(player, hand, level, pos, hit.getDirection());

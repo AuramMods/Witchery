@@ -8,11 +8,13 @@ import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcheryRecipes;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -21,6 +23,8 @@ import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.fluids.FluidStack;
@@ -34,6 +38,36 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class KettleDropTests {
+    @GameTest(template = "qa_coven_arena")
+    public static void topsUpAndRinsesAKettleWithWaterBuckets(GameTestHelper helper) {
+        var kettle = heatedKettle(helper, new BlockPos(5, 4, 5));
+        var tank = kettle.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
+        var player = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "RinseKettle"));
+        var hand = InteractionHand.MAIN_HAND;
+        var pos = kettle.getBlockPos();
+        var hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
+
+        helper.assertTrue(tank.drain(500, IFluidHandler.FluidAction.EXECUTE).getAmount() == 500, "Prepare a half-filled kettle");
+        kettle.addDroppedStack(new ItemStack(Items.GLASS_BOTTLE, 3));
+        player.setItemInHand(hand, new ItemStack(Items.WATER_BUCKET));
+        helper.getLevel().getBlockState(pos).use(helper.getLevel(), player, hand, hit);
+        helper.assertTrue(tank.getFluidInTank(0).getAmount() == 1000 && player.getItemInHand(hand).is(Items.BUCKET)
+                        && kettle.bottleCount() == 3,
+                "A Water Bucket tops up the half-filled kettle and preserves its spare bottles");
+
+        kettle.addDroppedStack(new ItemStack(Items.RED_MUSHROOM));
+        var spoiled = kettle.saveWithoutMetadata();
+        spoiled.putBoolean("Ruined", true);
+        kettle.load(spoiled);
+        helper.assertTrue(kettle.isRuined() && kettle.hasIngredients(), "Prepare a full ruined batch");
+        player.setItemInHand(hand, new ItemStack(Items.WATER_BUCKET));
+        helper.getLevel().getBlockState(pos).use(helper.getLevel(), player, hand, hit);
+        helper.assertTrue(tank.getFluidInTank(0).getAmount() == 1000 && player.getItemInHand(hand).is(Items.WATER_BUCKET)
+                        && !kettle.isRuined() && !kettle.hasIngredients() && kettle.bottleCount() == 3,
+                "Rinsing a full kettle clears the spoiled batch and keeps its water and three spare bottles");
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void matchesPotionTypeWithCustomNames(GameTestHelper helper) {
         var recipes = helper.getLevel().getRecipeManager().getAllRecipesFor(WitcheryRecipes.KETTLE.get());
