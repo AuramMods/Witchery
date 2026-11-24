@@ -1241,7 +1241,7 @@ The Broom uses `BrushColor` on the vehicle and enchanted item. The vehicle reads
 Bound Waystones retain `PosX`, `PosY`, `PosZ`, `PosD` and `NameD`. New bindings add the namespaced `Dimension` field. Old Waystones resolve the three vanilla dimensions and Witchery's default legacy IDs `-37` for Dream, `-38` for Torment and `-39` for Mirror. Creature-Bound Waystones share the first Taglock signature fields.
 When the world retains its captured legacy registry, loading player, block-entity, and entity storage also repairs unresolved numeric Waystone and Door Key bindings. The same rule applies to each saved keyring entry. An explicit modern dimension takes precedence over the captured mapping.
 
-Owls retain `WITCWaypoint` and their launch coordinates in `HomeX`, `HomeY` and `HomeZ` while delivering. `ReturningFromDelivery` preserves the return leg on modern saves.
+Owls retain `WITCWaypoint` and their launch coordinates in `HomeX`, `HomeY` and `HomeZ` while delivering. `ReturningFromDelivery` preserves the return leg on modern saves. An Owl throws fixed Witchery brews, splash cauldron brews, and splash or lingering vanilla potions at its destination with the bow cue. Drinkable cauldron brews arrive as intact parcels.
 
 The Winged Monkey retains `FeatherColor`, `SuicideIn`, `WITCWaypoint` and the three `Home` coordinates. `MonkeyFlightReturning` identifies the return leg in new saves. An older active Waystone flight stores its destination in the `Home` coordinates. The modern goal uses Forge's flying navigation and only loads routes within the monkey's dimension. The creature identified by a Taglock rides as a passenger without taking control of the monkey.
 

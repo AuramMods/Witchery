@@ -1,6 +1,7 @@
 package art.arcane.witchery.entity;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.brewing.BrewMixture;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
@@ -27,6 +28,7 @@ import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
+import java.util.List;
 import java.util.UUID;
 
 @GameTestHolder(Witchery.MODID)
@@ -120,6 +122,52 @@ public final class FlyingCompanionTests {
 
         helper.succeedWhen(() -> helper.assertTrue(pig.hasEffect(MobEffects.BLINDNESS) && owl.getMainHandItem().isEmpty(),
                 "The owl should throw its Ink at the bound pig"));
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_owl_custom_brews", timeoutTicks = 450)
+    public static void owlThrowsSavedCauldronSplashAndReturns(GameTestHelper helper) {
+        FlightRoute route = runway(helper);
+        WitchOwl owl = companion(helper, route, WitcheryEntities.OWL.get());
+        Pig pig = stationaryPig(helper, route);
+        loadOwlRoute(helper, route, owl, brewedBottle(List.of(new ItemStack(Items.NETHER_WART),
+                new ItemStack(Items.GUNPOWDER), new ItemStack(Items.SPIDER_EYE))));
+        helper.succeedWhen(() -> {
+            helper.assertTrue(pig.hasEffect(MobEffects.POISON), "The splash bottle should poison the pig on impact");
+            helper.assertTrue(owl.getMainHandItem().isEmpty() && owl.isOrderedToSit()
+                            && owl.distanceToSqr(Vec3.atBottomCenterOf(route.origin())) < 2.25,
+                    "The owl should return to its saved launch point without the bottle");
+        });
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_owl_brew_parcel", timeoutTicks = 450)
+    public static void owlDeliversDrinkableCauldronBrewIntact(GameTestHelper helper) {
+        FlightRoute route = runway(helper);
+        WitchOwl owl = companion(helper, route, WitcheryEntities.OWL.get());
+        Pig pig = stationaryPig(helper, route);
+        ItemStack parcel = brewedBottle(List.of(new ItemStack(Items.NETHER_WART), new ItemStack(Items.SPIDER_EYE)));
+        ItemStack expected = parcel.copy();
+        loadOwlRoute(helper, route, owl, parcel);
+        helper.succeedWhen(() -> {
+            var bottles = helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(route.destination()).inflate(2),
+                    drop -> ItemStack.matches(drop.getItem(), expected));
+            helper.assertTrue(bottles.size() == 1 && !pig.hasEffect(MobEffects.POISON),
+                    "The drinkable brew should land as one intact bottle without splashing");
+        });
+    }
+
+    private static ItemStack brewedBottle(List<ItemStack> ingredients) {
+        ItemStack bottle = WitcheryItems.getRequired("brewbottle").get().getDefaultInstance();
+        bottle.setTag(BrewMixture.from(ingredients).bottleTag(ingredients));
+        return bottle;
+    }
+
+    private static void loadOwlRoute(GameTestHelper helper, FlightRoute route, WitchOwl owl, ItemStack parcel) {
+        route.owner().setItemInHand(HAND, parcel);
+        owl.mobInteract(route.owner(), HAND);
+        route.owner().setItemInHand(HAND, locationStone(helper, route));
+        owl.mobInteract(route.owner(), HAND);
+        owl.load(owl.saveWithoutId(new CompoundTag()));
+        launchOwl(route, owl);
     }
 
     private static FlightRoute runway(GameTestHelper helper) {

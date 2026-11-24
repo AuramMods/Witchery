@@ -1,5 +1,6 @@
 package art.arcane.witchery.entity;
 
+import art.arcane.witchery.item.BrewBottleItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.ThrowableBrewItem;
 import art.arcane.witchery.item.WaystoneItem;
@@ -17,6 +18,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
 import net.minecraft.world.entity.projectile.ThrownPotion;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -134,17 +136,18 @@ final class OwlDeliveryGoal extends Goal {
     private boolean deliver(ServerLevel level) {
         ItemStack held = owl.getMainHandItem();
         if (held.isEmpty()) return true;
-        if (held.getItem() instanceof ThrowableBrewItem) {
-            var projectile = new ThrownBrew(owl, level);
-            projectile.setItem(held);
-            projectile.setDeltaMovement(0, -0.1, 0);
-            if (!level.addFreshEntity(projectile)) return false;
-            held.shrink(1);
+        ThrowableItemProjectile projectile = null;
+        if (held.getItem() instanceof ThrowableBrewItem
+                || held.getItem() instanceof BrewBottleItem && BrewBottleItem.isSplash(held)) {
+            projectile = new ThrownBrew(owl, level);
         } else if (held.is(Items.SPLASH_POTION) || held.is(Items.LINGERING_POTION)) {
-            var projectile = new ThrownPotion(level, owl);
+            projectile = new ThrownPotion(level, owl);
+        }
+        if (projectile != null) {
             projectile.setItem(held);
             projectile.setDeltaMovement(0, -0.1, 0);
             if (!level.addFreshEntity(projectile)) return false;
+            owl.playSound(SoundEvents.ARROW_SHOOT, 0.5F, 0.4F / (level.random.nextFloat() * 0.4F + 0.8F));
             held.shrink(1);
         } else {
             ItemEntity parcel = owl.spawnAtLocation(held.copy());

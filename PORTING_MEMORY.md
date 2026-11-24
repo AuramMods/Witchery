@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Owl Cauldron Brew Deliveries (2026-11-24)
+
+- Witchery 0.24.1's flight goal threw custom cauldron brews whose bottles had the splash flag. The previous packaged port dropped both bottles intact. A synthetic 1.7.10 region gave two seated Owls the original numeric brew items, ordered ingredients and Bound Waystones. The old port imported the items and routes correctly, and the survival client launched both Owls through their empty-hand interaction.
+- Owl delivery now launches splash cauldron brews as the existing owned brew projectile. Drinkable bottles keep their complete tags when delivered as items. The original bow cue plays when a potion or brew projectile successfully launches.
+- On the rebuilt package, both Owls returned to their launch points after the survival player released them. The splash applied Poison to the target pig and the Owl itself. A replay protected the fixture Owls from damage to isolate the restart check. The dedicated restart retained both seated Owls, their UUIDs, owner and colors, the damaged pig, and the intact drinkable parcel.
+- Local Java 17 data generation, JAR reobfuscation, and all 226 required Forge GameTests passed. The new cases cover a saved splash flight, Poison on the intended pig, return to the saved launch point, and an intact drinkable control. Logs and the exact package are in `build/qa-owl-cauldron-brews`. Package SHA-256 `1d90f3796d5d4b6e1695fb055667b7b9969fb91acc9cd9343343ba140955dd36`.
+
 ## Caster Names in Legacy Timed Rites (2026-11-24)
 
 - The original 0.24.1 server serialized Climate Change with rite 64, stage one, four coven members and the caster name in `Initiators`. The fixture staged the already-paid cast before its first pulse. Its earlier active offering phase was absent from the original format.
