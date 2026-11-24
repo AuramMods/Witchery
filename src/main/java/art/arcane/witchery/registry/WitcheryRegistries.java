@@ -20,6 +20,8 @@ import art.arcane.witchery.world.VillageFoundation;
 import art.arcane.witchery.world.VillageWallPiece;
 import art.arcane.witchery.world.WickerManFeature;
 import com.mojang.serialization.Codec;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.Feature;
@@ -47,6 +49,10 @@ public final class WitcheryRegistries {
             DeferredRegister.create(Registries.STRUCTURE_PROCESSOR, Witchery.MODID);
     private static final DeferredRegister<StructurePieceType> STRUCTURE_PIECES =
             DeferredRegister.create(Registries.STRUCTURE_PIECE, Witchery.MODID);
+    private static final DeferredRegister<ParticleType<?>> PARTICLES =
+            DeferredRegister.create(ForgeRegistries.PARTICLE_TYPES, Witchery.MODID);
+    public static final RegistryObject<SimpleParticleType> ALTAR_POWER =
+            PARTICLES.register("altar_power", () -> new SimpleParticleType(false));
     public static final RegistryObject<Codec<HobgoblinSpawnModifier>> HOBGOBLIN_SPAWNS =
             BIOME_MODIFIERS.register("hobgoblin_spawns", () -> HobgoblinSpawnModifier.CODEC);
     public static final RegistryObject<Codec<DreamSpiritSpawnModifier>> DREAM_SPIRIT_SPAWNS =
@@ -99,5 +105,6 @@ public final class WitcheryRegistries {
         STRUCTURE_MODIFIERS.register(eventBus);
         STRUCTURE_PROCESSORS.register(eventBus);
         STRUCTURE_PIECES.register(eventBus);
+        PARTICLES.register(eventBus);
     }
 }

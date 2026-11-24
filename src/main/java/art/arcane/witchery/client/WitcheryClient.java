@@ -11,6 +11,7 @@ import art.arcane.witchery.item.CircleTalismanItem;
 import art.arcane.witchery.item.SpectralStoneItem;
 import art.arcane.witchery.item.PlayerCompassItem;
 import art.arcane.witchery.client.screen.AltarScreen;
+import art.arcane.witchery.client.particle.AltarPowerParticle;
 import art.arcane.witchery.client.screen.BrewBagScreen;
 import art.arcane.witchery.client.screen.DistilleryScreen;
 import art.arcane.witchery.client.screen.SpinningWheelScreen;
@@ -143,6 +144,7 @@ import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcheryMenus;
+import art.arcane.witchery.registry.WitcheryRegistries;
 import art.arcane.witchery.world.WitcheryDimensions;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.model.HumanoidModel;
@@ -174,6 +176,7 @@ import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.client.event.RegisterDimensionSpecialEffectsEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
+import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -184,6 +187,11 @@ public final class WitcheryClient {
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "wood_type");
 
     private WitcheryClient() {
+    }
+
+    @SubscribeEvent
+    public static void registerParticles(RegisterParticleProvidersEvent event) {
+        event.registerSpriteSet(WitcheryRegistries.ALTAR_POWER.get(), AltarPowerParticle::provider);
     }
 
     @SubscribeEvent

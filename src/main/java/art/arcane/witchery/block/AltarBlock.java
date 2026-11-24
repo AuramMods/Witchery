@@ -3,10 +3,12 @@ package art.arcane.witchery.block;
 import art.arcane.witchery.block.entity.AltarBlockEntity;
 import art.arcane.witchery.menu.AltarMenu;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
+import art.arcane.witchery.registry.WitcheryRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
@@ -17,6 +19,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Rotation;
@@ -29,6 +32,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraftforge.common.IPlantable;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
@@ -40,6 +44,7 @@ public final class AltarBlock extends BaseEntityBlock {
     private static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty FORMED = BooleanProperty.create("formed");
     private static final int SIZE = 6;
+    private static final List<Direction> ALTAR_NEIGHBORS = List.of(Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST);
 
     public AltarBlock(Properties properties) {
         super(properties);
@@ -72,6 +77,14 @@ public final class AltarBlock extends BaseEntityBlock {
     }
 
     @Override
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos source, boolean moving) {
+        if (source.equals(pos.above()) && state.getValue(FORMED) && level instanceof ServerLevel server
+                && level.getBlockEntity(pos) instanceof AltarBlockEntity altar) {
+            altar.refreshArtifacts(server);
+        }
+    }
+
+    @Override
     public BlockState rotate(BlockState state, Rotation rotation) {
         return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
     }
@@ -84,6 +97,18 @@ public final class AltarBlock extends BaseEntityBlock {
     @Override
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
+    }
+
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        if (!state.getValue(FORMED)) return;
+
+        BlockPos plant = pos.offset(random.nextInt(32) - 15, random.nextInt(8) - 3, random.nextInt(32) - 15);
+        Block block = level.getBlockState(plant).getBlock();
+        if (block instanceof LeavesBlock || block instanceof IPlantable) {
+            level.addParticle(WitcheryRegistries.ALTAR_POWER.get(), plant.getX() + 0.5, plant.getY() + 0.5, plant.getZ() + 0.5,
+                    pos.getX() - plant.getX(), pos.getY() - plant.getY(), pos.getZ() - plant.getZ());
+        }
     }
 
     @Override
@@ -123,7 +148,7 @@ public final class AltarBlock extends BaseEntityBlock {
         while (!pending.isEmpty()) {
             int neighbors = 0;
             BlockPos pos = pending.remove();
-            for (Direction direction : Direction.Plane.HORIZONTAL) {
+            for (Direction direction : ALTAR_NEIGHBORS) {
                 BlockPos next = pos.relative(direction);
                 if (level.hasChunkAt(next) && level.getBlockState(next).getBlock() instanceof AltarBlock) {
                     if (found.add(next)) {
@@ -136,6 +161,6 @@ public final class AltarBlock extends BaseEntityBlock {
                 return List.of();
             }
         }
-        return found.size() == SIZE ? found.stream().sorted().toList() : List.of();
+        return found.size() == SIZE ? List.copyOf(found) : List.of();
     }
 }

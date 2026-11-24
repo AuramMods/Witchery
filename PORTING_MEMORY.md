@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Altar Sparks and Artifact Order (2026-11-24)
+
+- Formed altar members sample nearby plants and draw green sparks at 0.25 blocks per tick. The particle atlas extracts the original eight 8×8 frames directly from `power.png`. The packaged client observed the full forward and reverse animation, measured the flight from a leaf block, and confirmed that unformed altars and stone did not emit it. Vanilla flame sprites still loaded.
+- Competing skulls, lights and chalices are found by walking from the core in the original north, south, east and west order. Changes directly above a member refresh those bonuses immediately. A checked-in GameTest distinguishes a skull on the core from an earlier sorted skull and distinguishes the south torch from the east Candelabra.
+- The survival client placed the sixth brick in the previous build. The fixture supplied the other bricks, a garden and the mounted artifacts. After the same save reopened on the new JAR, all six bricks retained their core. The menu showed 150 capacity and triple recharge. Removing the core skull exposed 225 capacity and quadruple recharge. Removing the torch exposed quintuple recharge. Breaking one member restored the ordinary textures and stopped spark emission.
+- Protocol 93 registers the altar particle for matching client and server builds. The muted client remained hidden and unfocused. Local Java 17 reobfuscation, the original asset audit and all 164 Forge GameTests passed on SHA-256 `7eb1aaf9458ec08ad4805d7b713d2a6c3ee3af1f76ea8eeb2b0eba8139fe0ee7`.
+
 ## Kettle and Distillery Appearance (2026-11-24)
 
 - The Kettle item uses the original empty basin. The placed model shows the chains and up to two bottles, hides the crossbar directly under a solid block, and animates the original four liquid tiles. The crossbar's render bounds follow its facing. The client verified the partial brew tint, the two bottles and all four tiles in a save made by the previous packaged JAR.

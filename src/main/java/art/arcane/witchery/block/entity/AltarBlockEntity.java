@@ -99,10 +99,6 @@ public final class AltarBlockEntity extends BlockEntity {
 
     private void updatePower(ServerLevel server, List<BlockPos> structure) {
         int oldCapacity = capacity;
-        int oldScale = powerScale;
-        int oldRecharge = recharge;
-        int oldRange = range;
-        int oldEnhancement = enhancement;
         float oldPower = power;
         long time = server.getGameTime();
         if (lastScan == Long.MIN_VALUE || time - lastScan >= SCAN_INTERVAL) {
@@ -111,9 +107,17 @@ public final class AltarBlockEntity extends BlockEntity {
         }
         updateArtifacts(server, structure);
         power = (int) Math.min(power + POWER_PER_SECOND * recharge, capacity());
-        if (oldPower != power || oldCapacity != capacity || oldScale != powerScale || oldRecharge != recharge
-                || oldRange != range || oldEnhancement != enhancement) {
+        if (oldPower != power || oldCapacity != capacity) {
             setChanged();
+        }
+    }
+
+    public void refreshArtifacts(ServerLevel level) {
+        List<BlockPos> members = AltarBlock.members(level, worldPosition);
+        AltarBlockEntity core = resolveCore(level, members);
+        if (core != null) {
+            List<BlockPos> orderedMembers = this == core ? members : AltarBlock.members(level, core.getBlockPos());
+            core.updateArtifacts(level, orderedMembers);
         }
     }
 
@@ -171,10 +175,17 @@ public final class AltarBlockEntity extends BlockEntity {
                 pentacle |= WitcheryIngredient.KOBOLDITE_PENTACLE.matches(placed.stack());
             }
         }
-        powerScale = (1 + skullBonus + chaliceBonus) * (infinityEgg ? 10 : 1);
-        recharge = (1 + skullBonus + candleBonus) * (pentacle ? 2 : 1) * (infinityEgg ? 10 : 1);
-        range = arthana ? MAX_RANGE : BASE_RANGE;
-        enhancement = mysticBranch ? 1 : 0;
+        int newPowerScale = (1 + skullBonus + chaliceBonus) * (infinityEgg ? 10 : 1);
+        int newRecharge = (1 + skullBonus + candleBonus) * (pentacle ? 2 : 1) * (infinityEgg ? 10 : 1);
+        int newRange = arthana ? MAX_RANGE : BASE_RANGE;
+        int newEnhancement = mysticBranch ? 1 : 0;
+        if (powerScale != newPowerScale || recharge != newRecharge || range != newRange || enhancement != newEnhancement) {
+            powerScale = newPowerScale;
+            recharge = newRecharge;
+            range = newRange;
+            enhancement = newEnhancement;
+            setChanged();
+        }
     }
 
     @Nullable
@@ -184,14 +195,17 @@ public final class AltarBlockEntity extends BlockEntity {
 
     @Nullable
     private static AltarBlockEntity resolveCore(ServerLevel server, List<BlockPos> members) {
-        AltarBlockEntity fallback = null;
+        AltarBlockEntity saved = null;
+        AltarBlockEntity first = null;
         for (BlockPos member : members) {
             if (server.getBlockEntity(member) instanceof AltarBlockEntity altar) {
-                if (member.equals(altar.corePos)) return altar;
-                if (fallback == null) fallback = altar;
+                if (member.equals(altar.corePos) && (saved == null || member.compareTo(saved.getBlockPos()) < 0)) {
+                    saved = altar;
+                }
+                if (first == null || member.compareTo(first.getBlockPos()) < 0) first = altar;
             }
         }
-        return fallback;
+        return saved != null ? saved : first;
     }
 
     public boolean isCore(ServerLevel server) {

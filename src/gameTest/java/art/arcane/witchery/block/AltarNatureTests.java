@@ -1,6 +1,7 @@
 package art.arcane.witchery.block;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.entity.AltarBlockEntity;
 import art.arcane.witchery.power.AltarNature;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
@@ -55,6 +56,35 @@ public final class AltarNatureTests {
                 Blocks.TALL_GRASS, Blocks.LARGE_FERN, Blocks.NETHER_WART);
         assertCapacity(helper, center, 670);
         helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_altar_artifact_order")
+    public static void prioritizesArtifactsByTraversalFromTheCore(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var center = helper.absolutePos(new BlockPos(12, 0, 5)).atY(level.getMaxBuildHeight() - 112);
+        Block altarBlock = WitcheryBlocks.getRequired("altar").get();
+        for (BlockPos member : BlockPos.betweenClosed(center.west(), center.east().south())) {
+            level.setBlockAndUpdate(member, altarBlock.defaultBlockState());
+        }
+        level.setBlockAndUpdate(center.offset(5, 0, 0), Blocks.OAK_LOG.defaultBlockState());
+        AltarBlockEntity.form(level, center);
+        var core = (AltarBlockEntity) level.getBlockEntity(center);
+        helper.assertTrue(core != null && core.isCore(level), "The last placed block should own the formed altar");
+        level.setBlockAndUpdate(center.west().above(), Blocks.WITHER_SKELETON_SKULL.defaultBlockState());
+        level.setBlockAndUpdate(center.east().above(), WitcheryBlocks.getRequired("candelabra").get().defaultBlockState());
+        level.setBlockAndUpdate(center.above(), Blocks.SKELETON_SKULL.defaultBlockState());
+        level.setBlockAndUpdate(center.south().above(), Blocks.TORCH.defaultBlockState());
+        helper.assertTrue(core.rechargeMultiplier() == 3, "The core skull and the south torch should take priority");
+
+        helper.runAfterDelay(22, () -> {
+            helper.assertTrue(core.capacity() == 4, "The core skull should double the oak log's capacity");
+            level.removeBlock(center.above(), false);
+            helper.assertTrue(core.capacity() == 6 && core.rechargeMultiplier() == 4,
+                    "Removing the core skull should reveal the wither skull bonus immediately");
+            level.removeBlock(center.south().above(), false);
+            helper.assertTrue(core.rechargeMultiplier() == 5, "Removing the torch should reveal the candelabra bonus immediately");
+            helper.succeed();
+        });
     }
 
     private static void placeLayer(ServerLevel level, BlockPos center, int dy, int count, Block... palette) {

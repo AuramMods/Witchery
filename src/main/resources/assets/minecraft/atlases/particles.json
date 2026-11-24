@@ -1,0 +1,20 @@
+{
+  "sources": [
+    {
+      "type": "minecraft:unstitch",
+      "resource": "witchery:particle/power",
+      "divisor_x": 16,
+      "divisor_y": 16,
+      "regions": [
+        {"sprite": "witchery:altar_power_0", "x": 0, "y": 0, "width": 1, "height": 1},
+        {"sprite": "witchery:altar_power_1", "x": 1, "y": 0, "width": 1, "height": 1},
+        {"sprite": "witchery:altar_power_2", "x": 2, "y": 0, "width": 1, "height": 1},
+        {"sprite": "witchery:altar_power_3", "x": 3, "y": 0, "width": 1, "height": 1},
+        {"sprite": "witchery:altar_power_4", "x": 4, "y": 0, "width": 1, "height": 1},
+        {"sprite": "witchery:altar_power_5", "x": 5, "y": 0, "width": 1, "height": 1},
+        {"sprite": "witchery:altar_power_6", "x": 6, "y": 0, "width": 1, "height": 1},
+        {"sprite": "witchery:altar_power_7", "x": 7, "y": 0, "width": 1, "height": 1}
+      ]
+    }
+  ]
+}

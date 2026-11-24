@@ -116,6 +116,7 @@
 - [x] Verify shared altar capacity caps for legacy wood, soil, and plant variants. Bark-only wood shares its original log limit, carved pumpkins share the pumpkin limit, and flattened mushroom stems count toward the unused red and brown mushroom slots. Original tall flowers and Nether Wart stay outside the scan's eligible crop and flower groups.
 - [x] Match the original Forge server's measured 904 and 280 capacity in the imported wood and garden fixtures. Force a fresh scan on the packaged server. Removing the saplings reduces the first capacity to 824. Replacing the giant mushroom blocks with 26 stems sets the second to 238. Both values survived another headless restart.
 - [x] Use the original inclusive 16-block base and 32-block Arthana ranges for the Brazier, Crystal Ball, and powered rites. Check that wards and the Brazier release cached sources that fall out of range. All 160 checked-in Forge GameTests passed, including a focused barrier and Infusion Recharging beyond the base range.
+- [x] Restore the Altar's plant sparks and the original order for competing mounted artifacts. Verify the eight spark frames, formed and unformed textures, saved core, and live menu updates as artifacts and altar members are removed.
 
 ## Mirror Milestone (2026-11-19)
 
