@@ -6,9 +6,11 @@ import art.arcane.witchery.block.entity.BarrierBlockEntity;
 import art.arcane.witchery.block.entity.GrassperBlockEntity;
 import art.arcane.witchery.block.entity.RiteHeartBlockEntity;
 import art.arcane.witchery.infusion.InfusionEnergy;
+import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
+import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
 import art.arcane.witchery.ritual.RiteActivation;
@@ -31,6 +33,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
@@ -1061,6 +1064,128 @@ public final class CircleRiteTests {
         saved.putByteArray("Rituals", new byte[]{4});
         saved.putByteArray("RitualStages", new byte[]{0});
         return saved;
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_waystone_travel_bounds", setupTicks = 5)
+    public static void originalWaystoneTravelUsesGlyphCornerAndRecordedHeight(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.SMALL_RITE, "circleglyphotherwhere");
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var corner = Vec3.atLowerCornerOf(center);
+        var west = stationaryPig(level, corner.add(-2.75, 0, 0));
+        var east = stationaryPig(level, corner.add(3.25, 0, 0));
+        var edge = stationaryPig(level, corner.add(0, 0, 3));
+        var elevated = stationaryPig(level, corner.add(0, 2.75, 0));
+        var inhibited = stationaryPig(level, corner);
+        inhibited.addEffect(new MobEffectInstance(WitcheryEffects.ENDER_INHIBITION.get(), 300, 1));
+        BlockPos destination = center.offset(24, 5, 0);
+        waitForOfferings(helper, bound(level, destination)).thenWaitUntil(() -> {
+            for (var pig : List.of(west, east, edge, elevated, inhibited)) {
+                helper.assertTrue(level.getEntity(pig.getUUID()) == pig, "The travel actor is tracked");
+            }
+        }).thenExecute(() -> {
+            helper.useBlock(CENTER);
+            var heart = heart(helper);
+            helper.assertTrue(level.getBlockState(center).getValue(RiteHeartBlock.ACTIVE),
+                    "The location Waystone starts the travel rite");
+            tick(level, center, heart, 40);
+            for (var pig : List.of(west, elevated)) {
+                Vec3 arrival = pig.position();
+                helper.assertTrue(arrival.y == destination.getY() && arrival.x == Math.floor(arrival.x)
+                                && arrival.z == Math.floor(arrival.z)
+                                && Math.abs(arrival.x - destination.getX()) <= 3
+                                && Math.abs(arrival.z - destination.getZ()) <= 3
+                                && level.isEmptyBlock(pig.blockPosition().below()),
+                        "The original travel uses integer X/Z scatter and the recorded Y even over air");
+            }
+            helper.assertTrue(east.position().equals(corner.add(3.25, 0, 0))
+                            && edge.position().equals(corner.add(0, 0, 3)) && inhibited.position().equals(corner)
+                            && drops(helper).isEmpty(),
+                    "The strict lower-corner radius excludes east, its exact edge, and an inhibited actor");
+        }).thenWaitUntil(() -> {
+            helper.assertTrue(level.getEntity(west.getUUID()) == west && level.getEntity(elevated.getUUID()) == elevated,
+                    "The destination chunk tracks both teleported pigs once its entity data loads");
+        }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_creature_waystone_target", setupTicks = 5)
+    public static void originalCreatureWaystoneTravelKeepsTheTargetsExactPosition(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.SMALL_RITE, "circleglyphotherwhere");
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var corner = Vec3.atLowerCornerOf(center);
+        var traveler = stationaryPig(level, corner.add(-2.75, 0, 0));
+        var target = stationaryPig(level, corner.add(6.25, 1.75, -6.75));
+        var stone = new ItemStack(WitcheryIngredient.CREATURE_BOUND_WAYSTONE.item());
+        TaglockItem.bindSignature(stone, target);
+        waitForOfferings(helper, stone).thenWaitUntil(() -> {
+            helper.assertTrue(level.getEntity(target.getUUID()) == target && level.getEntity(traveler.getUUID()) == traveler,
+                    "Both pigs are tracked");
+        }).thenExecute(() -> {
+            helper.useBlock(CENTER);
+            helper.assertTrue(level.getBlockState(center).getValue(RiteHeartBlock.ACTIVE),
+                    "The creature Waystone starts the travel rite");
+            tick(level, center, heart(helper), 40);
+            helper.assertTrue(traveler.position().equals(target.position()) && drops(helper).isEmpty(),
+                    "The creature Waystone preserves the bound target's full coordinates");
+        }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_waystone_binding_witness", setupTicks = 5)
+    public static void originalBindingsRequireAPlayerWithinTheGlyphLayer(GameTestHelper helper) {
+        floor(helper);
+        helper.setBlock(CENTER, block("circle"));
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var corner = Vec3.atLowerCornerOf(center);
+        var pig = stationaryPig(level, corner.add(1.25, 0, 0.25));
+        helper.startSequence().thenWaitUntil(() -> {
+            helper.assertTrue(level.getEntity(pig.getUUID()) == pig, "The binding candidate is tracked");
+        }).thenExecute(() -> {
+            var heart = heart(helper);
+            var witness = infusionPlayer(level, "BindingWitness", corner.add(4.25, 0, 0.25), 0);
+            try {
+                finishOriginalBinding(level, center, heart, 88, 4);
+                helper.assertTrue(drops(helper).isEmpty(), "The pig cannot be bound with the player outside the original range");
+
+                witness.setPos(corner.add(-3.75, 0, 0.25));
+                finishOriginalBinding(level, center, heart, 89, 5);
+                var result = drops(helper).get(0).getItem();
+                helper.assertTrue(result.is(WitcheryIngredient.CREATURE_BOUND_WAYSTONE.item())
+                                && TaglockItem.resolveTarget(level, result) == pig,
+                        "The player makes binding possible and the original rite selects the pig");
+
+                finishOriginalBinding(level, center, heart, 90, 4);
+                helper.assertTrue(drops(helper).stream().map(ItemEntity::getItem)
+                                .anyMatch(stack -> stack.is(block("statueofworship").asItem()) && stack.getTag() != null
+                                        && stack.getTag().getString("WITCBoundPlayer").equals("BindingWitness")),
+                        "The worship statue binds to the eligible player at the same west-side boundary");
+            } finally {
+                level.removePlayerImmediately(witness, Entity.RemovalReason.DISCARDED);
+            }
+        }).thenSucceed();
+    }
+
+    private static void finishOriginalBinding(ServerLevel level, BlockPos center, RiteHeartBlockEntity heart,
+                                              int rite, int offerings) {
+        var cast = new CompoundTag();
+        cast.putString("Rite", RiteActivation.legacyRecipeId(rite).toString());
+        cast.putInt("OfferingStep", offerings);
+        cast.putBoolean("AltarPowerOffered", true);
+        cast.putInt("GlyphPhase", 19);
+        heart.load(cast);
+        tick(level, center, heart, 1);
+    }
+
+    private static Pig stationaryPig(ServerLevel level, Vec3 position) {
+        var pig = EntityType.PIG.create(level);
+        pig.setPos(position);
+        pig.setNoAi(true);
+        pig.setNoGravity(true);
+        level.addFreshEntity(pig);
+        return pig;
     }
 
     private static FakePlayer infusionPlayer(ServerLevel level, String name, Vec3 position, int charge) {

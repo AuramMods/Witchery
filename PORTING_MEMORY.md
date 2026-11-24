@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Circle Waystone Travel and Binding (2026-11-24)
+
+- Native Witchery 0.24.1 travel admitted a pig 2.75 blocks west and another 2.75 blocks above the glyph. It left a pig 3.25 blocks east, one at exactly three blocks, and a pig with Ender Inhibition amplifier one in place. It chose integer X/Z within three blocks of the bound site and used its exact Y over air. The creature Waystone kept all three fractional coordinates of its pig.
+- The native creature binding refunded with only a pig present. With a player 3.75 blocks west it bound the pig, and a Statue of the Hobgoblin Patron cast bound that player. Forge now uses the original one-block glyph layer, lower-corner distance and entity selection.
+- The two original travel recipes use their direct destinations. Forge still checks finite coordinates and current world bounds. The shared transfer keeps a same-dimension destination chunk available while its entity storage loads. Reference fixtures and packaged checks are under `build/qa-waystone-rites`.
+- The clean Forge survival client used a portable binding rite with fixture offerings. From the east edge it got four offerings and the discharged stone back. The west-side cast bound the pig, and travel with that actual stone arrived at the pig's position. A location Waystone kept the Overworld landing through a restart. A second Waystone with `PosD:-1` took the same player into the Nether at Y 150. Both client runs used zero volume and OpenAL No Output, with the original foreground application unchanged.
+- The copied Auram headless server ran a redstone cast with the same package. The west pig arrived at Y 297 with air underneath. The east pig stayed at the source and the stone was consumed.
+- Local Java 17 data generation, JAR reobfuscation, and all 275 required Forge GameTests passed. Package SHA-256 `9175a8077dd7252f80d93b4ff7a8186d2e00ac1c48c9ea20ae52f187bef68e19`.
+
 ## Infusion and Manifestation Rite Recipients (2026-11-24)
 
 - The running 0.24.1 server first charged 40 for an imported Infusion Recharging rite at tick 20. A player 3.75 blocks west reached the 200 cap, and a player one block below the glyph whose hitbox overlapped the glyph layer gained ten. A player 4.25 blocks east and a player above the layer received nothing.

@@ -454,7 +454,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                     if (WaystoneItem.copyLocation(sacrifice.stack(), output)) break;
                 }
             } else if (rite.action() == ItemRiteRecipe.Action.BIND_CREATURE_WAYSTONE) {
-                LivingEntity target = WaystoneTravel.findBindingTarget(level, pos, false);
+                LivingEntity target = legacy ? originalBindingTarget(level, pos, true)
+                        : WaystoneTravel.findBindingTarget(level, pos, false);
                 if (target == null) {
                     abort(level, "message.witchery.rite.no_waystone_target");
                     return;
@@ -463,8 +464,9 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 TaglockItem.bindSignature(output, target);
             } else if (rite.action() == ItemRiteRecipe.Action.BIND_WORSHIP_STATUE) {
                 Vec3 center = Vec3.atBottomCenterOf(pos);
-                var target = level.getNearestPlayer(center.x, center.y, center.z, 4,
-                        player -> !player.isSpectator() && player.getY() >= pos.getY() && player.getY() <= pos.getY() + 1);
+                var target = legacy ? originalBindingTarget(level, pos, false)
+                        : level.getNearestPlayer(center.x, center.y, center.z, 4,
+                                player -> !player.isSpectator() && player.getY() >= pos.getY() && player.getY() <= pos.getY() + 1);
                 if (!(target instanceof ServerPlayer owner)) {
                     abort(level, "message.witchery.rite.no_nearby_player");
                     return;
@@ -554,7 +556,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (rite.action() == ItemRiteRecipe.Action.TRAVEL_WAYSTONE) {
             ItemStack stone = sacrificed.stream().map(Sacrifice::stack).filter(WaystoneItem::isBoundWaystone)
                     .findFirst().orElse(ItemStack.EMPTY);
-            if (stone.isEmpty() || !WaystoneTravel.teleportCircle(level, pos, stone, 3)) {
+            if (stone.isEmpty() || !WaystoneTravel.teleportCircle(level, pos, stone, 3, legacy)) {
                 if (altar != null) altar.refundPower(rite.power());
                 abort(level, "message.witchery.rite.no_waystone_destination");
                 return;
@@ -829,10 +831,28 @@ public final class RiteHeartBlockEntity extends BlockEntity {
 
     static List<ServerPlayer> nearbyPlayers(ServerLevel level, BlockPos pos, int range, boolean legacy) {
         Vec3 center = legacy ? Vec3.atLowerCornerOf(pos) : Vec3.atBottomCenterOf(pos);
-        AABB layer = legacy ? new AABB(center, center.add(0, 1, 0)) : new AABB(pos);
-        return level.getEntitiesOfClass(ServerPlayer.class, layer.inflate(range, 0, range),
+        AABB bounds = legacy ? originalGlyphLayer(center, range) : new AABB(pos).inflate(range, 0, range);
+        return level.getEntitiesOfClass(ServerPlayer.class, bounds,
                 player -> player.isAlive() && !player.isSpectator()
                         && player.distanceToSqr(center) <= range * range);
+    }
+
+    private static AABB originalGlyphLayer(Vec3 corner, int range) {
+        return new AABB(corner, corner.add(0, 1, 0)).inflate(range, 0, range);
+    }
+
+    @Nullable
+    private static LivingEntity originalBindingTarget(ServerLevel level, BlockPos pos, boolean creature) {
+        int range = 4;
+        var players = nearbyPlayers(level, pos, range, true);
+        if (players.isEmpty()) return null;
+        if (creature) {
+            Vec3 corner = Vec3.atLowerCornerOf(pos);
+            var mobs = level.getEntitiesOfClass(Mob.class, originalGlyphLayer(corner, range),
+                    mob -> mob.isAlive() && mob.distanceToSqr(corner) <= range * range);
+            if (!mobs.isEmpty()) return mobs.get(mobs.size() - 1);
+        }
+        return players.get(players.size() - 1);
     }
 
     private static boolean hasObstructedSummoningArea(ServerLevel level, BlockPos center) {

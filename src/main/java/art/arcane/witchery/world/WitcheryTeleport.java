@@ -26,11 +26,15 @@ public final class WitcheryTeleport {
     private WitcheryTeleport() {}
 
     public static boolean canArrive(Entity actor, ServerLevel level, Vec3 position) {
-        if (!Double.isFinite(position.x) || !Double.isFinite(position.y) || !Double.isFinite(position.z)) return false;
-        BlockPos pos = BlockPos.containing(position);
-        return !level.isOutsideBuildHeight(pos) && level.getWorldBorder().isWithinBounds(pos)
+        return isInWorld(level, position)
                 && !level.getBlockCollisions(actor, actor.getBoundingBox().move(position.subtract(actor.position())))
                 .iterator().hasNext();
+    }
+
+    static boolean isInWorld(ServerLevel level, Vec3 position) {
+        if (!Double.isFinite(position.x) || !Double.isFinite(position.y) || !Double.isFinite(position.z)) return false;
+        BlockPos pos = BlockPos.containing(position);
+        return !level.isOutsideBuildHeight(pos) && level.getWorldBorder().isWithinBounds(pos);
     }
 
     public static boolean randomSurface(Entity actor, ServerLevel level, BlockPos origin, int radius) {
@@ -67,12 +71,17 @@ public final class WitcheryTeleport {
     public static boolean move(Entity actor, ServerLevel destination, Vec3 target, BiConsumer<ServerLevel, Vec3> transitionEffect) {
         ServerLevel origin = (ServerLevel) actor.level();
         Vec3 start = actor.position();
+        ChunkPos startChunk = actor.chunkPosition();
         Entity moved = actor;
         if (actor instanceof ServerPlayer player) {
             player.teleportTo(destination, target.x, target.y, target.z, player.getYRot(), player.getXRot());
             if (player.connection != null) player.connection.resetPosition();
         } else if (origin == destination) {
-            actor.teleportTo(target.x, target.y, target.z);
+            if (startChunk.equals(new ChunkPos(BlockPos.containing(target)))) {
+                actor.teleportTo(target.x, target.y, target.z);
+            } else {
+                actor.teleportToWithTicket(target.x, target.y, target.z);
+            }
         } else {
             moved = actor.changeDimension(destination, new ITeleporter() {
                 @Override
@@ -88,7 +97,7 @@ public final class WitcheryTeleport {
             });
         }
         if (moved == null || moved.level() != destination || moved.distanceToSqr(target) > 0.01) return false;
-        if (origin != destination && !(moved instanceof ServerPlayer)) {
+        if (!(moved instanceof ServerPlayer) && (origin != destination || !startChunk.equals(moved.chunkPosition()))) {
             // Make the destination entity-ticking long enough for its entity storage to load.
             destination.getChunkSource().addRegionTicket(ARRIVAL, moved.chunkPosition(), 2, moved.getId());
         }

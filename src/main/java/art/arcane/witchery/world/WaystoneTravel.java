@@ -41,16 +41,16 @@ public final class WaystoneTravel {
                 .stream().min(preference).orElse(null);
     }
 
-    public static boolean teleportCircle(ServerLevel origin, BlockPos circle, ItemStack stone, int radius) {
-        return teleport(origin, circle, stone, radius, radius, false);
+    public static boolean teleportCircle(ServerLevel origin, BlockPos circle, ItemStack stone, int radius, boolean legacy) {
+        return teleport(origin, circle, stone, radius, radius, false, legacy);
     }
 
     public static boolean teleportDropped(ServerLevel origin, BlockPos circle, ItemStack stone) {
-        return teleport(origin, circle, stone, 4, 0, true);
+        return teleport(origin, circle, stone, 4, 0, true, false);
     }
 
     private static boolean teleport(ServerLevel origin, BlockPos circle, ItemStack stone, int radius, int spread,
-                                    boolean droppedStone) {
+                                    boolean droppedStone, boolean legacy) {
         WaystoneItem.Location location = WaystoneItem.location(stone);
         LivingEntity target = null;
         ServerLevel destination;
@@ -65,19 +65,22 @@ public final class WaystoneTravel {
             return false;
         }
 
-        Vec3 center = Vec3.atBottomCenterOf(circle);
+        Vec3 center = legacy ? Vec3.atLowerCornerOf(circle) : Vec3.atBottomCenterOf(circle);
         boolean sent = false;
         for (Entity actor : origin.getEntities((Entity) null, new AABB(center, center).inflate(radius),
                 candidate -> inRange(candidate, center, radius, droppedStone))) {
             if (!actor.isAlive() || actor.level() != origin || inhibited(actor)) continue;
             Vec3 arrival;
             if (location != null) {
-                arrival = findLanding(actor, destination, location.position(), spread);
+                arrival = legacy ? Vec3.atLowerCornerOf(scatter(origin, location.position(), spread))
+                        : findLanding(actor, destination, location.position(), spread);
             } else {
                 arrival = target.position();
-                if (!WitcheryTeleport.canArrive(actor, destination, arrival)) continue;
+                if (!legacy && !WitcheryTeleport.canArrive(actor, destination, arrival)) continue;
             }
-            if (arrival != null) sent |= WitcheryTeleport.move(actor, destination, arrival);
+            if (arrival != null && (!legacy || WitcheryTeleport.isInWorld(destination, arrival))) {
+                sent |= WitcheryTeleport.move(actor, destination, arrival);
+            }
         }
         return sent;
     }
@@ -95,8 +98,7 @@ public final class WaystoneTravel {
 
     @Nullable
     static Vec3 findLanding(Entity actor, ServerLevel level, BlockPos center, int radius) {
-        BlockPos preferred = center.offset(level.random.nextIntBetweenInclusive(-radius, radius), 0,
-                level.random.nextIntBetweenInclusive(-radius, radius));
+        BlockPos preferred = scatter(level, center, radius);
         Vec3 arrival = landingInColumn(actor, level, preferred);
         if (arrival != null) return arrival;
         for (BlockPos feet : BlockPos.spiralAround(center, radius, Direction.EAST, Direction.SOUTH)) {
@@ -104,6 +106,11 @@ public final class WaystoneTravel {
             if (arrival != null) return arrival;
         }
         return null;
+    }
+
+    private static BlockPos scatter(ServerLevel level, BlockPos center, int radius) {
+        return center.offset(level.random.nextIntBetweenInclusive(-radius, radius), 0,
+                level.random.nextIntBetweenInclusive(-radius, radius));
     }
 
     @Nullable

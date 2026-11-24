@@ -626,6 +626,16 @@
 - [x] Verify whole offering reservations in the packaged build. One dropped Redstone stack and one matching filled Grassper queued Protection alone. Adding another dropped stack queued Imprisonment as well. Both wards began upkeep, and the muted client stopped them with one click.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 409 required Forge GameTests. The six new cases cover offering reservations, concurrent upkeep, cancellation, failure refunds, legacy upkeep saves, and both Waystone routes.
 
+## Circle Waystone Travel and Binding (2026-11-24)
+
+- [x] Compare the original location and creature travel effects on Forge 1.7.10. The original moved the western and elevated pigs within the glyph's three-block sphere and left the eastern, exact-edge, and inhibited pigs in place. It used integer X/Z offsets within three blocks and the recorded Y over air. The creature-bound rite sent its traveler to the target's fractional position.
+- [x] Restore those destinations and bounds for the two registered travel rites. Preserve modern world bounds and the Dream and Mirror dimension restrictions. Load same-dimension arrival chunks and keep them ticking long enough for the moved mobs and items to be tracked.
+- [x] Compare Creature Waystone and Statue of the Hobgoblin Patron binding against 1.7.10. The original binding refunded with only a pig present. A player near the west edge let the creature rite bind the pig and the statue rite bind the player. The powered and portable creature recipes now apply that player requirement and the original glyph layer.
+- [x] Cast portable Creature Waystone binding in muted survival on clean Forge. The player stood outside the eastern edge during the first cast and recovered the four held offerings and discharged stone. The second cast bound the pig from the western edge, and the resulting stone took the player to the pig.
+- [x] Use location Waystones with original numeric dimension tags. The packaged Forge server kept the Overworld landing and bound pig through an ordinary restart. The same player then cast with a `PosD:-1` Waystone and arrived in the Nether with the original three-block scatter and recorded height.
+- [x] Activate by redstone on copied Auram with the same packaged JAR. The west pig arrived over air at the recorded height. The east pig stayed at its original position and the rite consumed the Waystone.
+- [x] Run local Java 17 data generation, JAR reobfuscation, and all 275 required Forge GameTests. The regressions cover both travel routes and circle edges, destination chunk tracking, the creature-binding witness, and the statue's owner.
+
 ## Living Offerings and Altar Charges (2026-11-24)
 
 - [x] Restore separate living and altar offering steps for the six legacy rites that use both. Demon and Wither Summoning, Soaring, and the Grave offer their creature before charging power. Hell on Earth takes the villager, then the optional Bound Waystone, then the altar charge. The Mirror charges 2,000 before looking for its Demon.
@@ -1957,6 +1967,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 ## Rites of Transposition (2026-11-20)
 
 - [x] Use the medium Otherwhere circle, Waystone, bound Taglock Kit, Ender Dew, Iron Axe and 3,000 altar power to summon a creature or player. The muted survival client captured a pig's taglock. After the fixture moved that pig to the Nether and dropped the offerings, the client activated the circle and recovered the same pig at its center. The nearby pig stayed in place.
+- [ ] Restore the exact Taglock summon endpoint. The running 1.7.10 rite put the pig at `(208.0, 86.0, 8.0)` for the glyph at `(208, 86, 8)`. Forge presently centers it at X and Z plus a half block. Compare the original and current behavior when the destination is obstructed.
 - [x] Keep the Dream restriction, Witch Hunter resistance, Statue of Occluded Summons, enhanced carried Voodoo Protection Poppet, and Ender Inhibition IV. A failed attempt returns the offerings and spends the altar charge. Existing enhanced fetish items and block entities provide the original 16-block boost and retain the enhancement when broken and placed again.
 - [x] Verify redstone activation with the muted client connected. It arrived from the Nether on the first attempt. With the migrated scarecrow and bound poppet in the second fixture, the player stayed put, the poppet took 350 wear, and all four offerings returned.
 - [x] Use the large Otherwhere circle and the five original offerings to extract ore from a 17-by-17 area. The rite scans 30 layers and adds five per coven member. Six members also enable gold. Both stone and deepslate ore variants drop their own blocks. The active layer survives a restart and can be restored from the legacy rite 7 save.
