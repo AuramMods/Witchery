@@ -48,9 +48,9 @@ Validation rule:
 
 ### Local builds and testing
 
-**Local only.** Build, test, and package Witchery with Java 17 and the Gradle wrapper on the local machine, using its Gradle cache and CPU cores. Do not add or trigger GitHub Actions workflows for this mod.
+**Local builds only.** Run all Witchery builds, tests, and packaging on the local machine with Java 17 and the Gradle wrapper. Reuse the local Gradle cache and CPU cores. Do not add or trigger GitHub Actions workflows or use hosted CI for this mod.
 
-Use `./gradlew jar` to package the reobfuscated mod and `./gradlew runGameTestServer` for headless Forge tests. When generated resources change, run `./gradlew runData` separately before packaging.
+Use `./gradlew jar` for routine packaging and `./gradlew runGameTestServer` for headless Forge tests. When generated resources change, run `./gradlew runData` before packaging. Reserve `./gradlew build` for intentional local modpack deployment because it copies the reobfuscated JAR into the configured modpack.
 
 When a client smoke test is needed, launch Minecraft muted and in the background without taking desktop focus.
 
