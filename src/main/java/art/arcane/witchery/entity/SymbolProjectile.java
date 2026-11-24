@@ -39,7 +39,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.Tags;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
@@ -48,8 +47,8 @@ import java.util.function.Consumer;
 public final class SymbolProjectile extends ThrowableProjectile {
     private static final EntityDataAccessor<Integer> SPELL = SynchedEntityData.defineId(SymbolProjectile.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Vector3f> ACCELERATION = SynchedEntityData.defineId(SymbolProjectile.class, EntityDataSerializers.VECTOR3);
+    private static final EntityDataAccessor<Integer> EFFECT_LEVEL = SynchedEntityData.defineId(SymbolProjectile.class, EntityDataSerializers.INT);
     private int age;
-    private int effectLevel = 1;
 
     public SymbolProjectile(EntityType<? extends SymbolProjectile> type, Level level) {
         super(type, level);
@@ -63,7 +62,7 @@ public final class SymbolProjectile extends ThrowableProjectile {
     public SymbolProjectile(ServerLevel level, ServerPlayer owner, SymbolSpell spell, int effectLevel) {
         this(level, owner, spell, owner.getEyePosition().add(0, -0.1, 0).add(owner.getLookAngle().scale(1.5)),
                 owner.getLookAngle());
-        this.effectLevel = effectLevel;
+        entityData.set(EFFECT_LEVEL, effectLevel);
     }
 
     public SymbolProjectile(ServerLevel level, LivingEntity owner, SymbolSpell spell, Vec3 origin, Vec3 direction) {
@@ -78,6 +77,7 @@ public final class SymbolProjectile extends ThrowableProjectile {
     protected void defineSynchedData() {
         entityData.define(SPELL, 0);
         entityData.define(ACCELERATION, new Vector3f());
+        entityData.define(EFFECT_LEVEL, 1);
     }
 
     @Nullable
@@ -99,7 +99,7 @@ public final class SymbolProjectile extends ThrowableProjectile {
         if (isRemoved()) return;
 
         Vec3 acceleration = new Vec3(entityData.get(ACCELERATION));
-        if (spell.falls()) {
+        if (spell.falls() && effectLevel() == 1) {
             setDeltaMovement(velocity.add(acceleration.scale(Math.pow(0.8, age))).add(0, -0.05, 0));
         } else {
             setDeltaMovement(velocity.add(acceleration).scale(inWater ? 0.8 : 0.95));
@@ -125,6 +125,7 @@ public final class SymbolProjectile extends ThrowableProjectile {
     }
 
     private void impact(ServerLevel level, SymbolSpell spell, Vec3 location, @Nullable HitResult hit) {
+        int effectLevel = effectLevel();
         LivingEntity direct = hit instanceof EntityHitResult entityHit && entityHit.getEntity() instanceof LivingEntity living
                 ? living : null;
         level.sendParticles(ParticleTypes.WITCH, location.x, location.y, location.z, 16, 0.6, 0.6, 0.6, 0);
@@ -185,7 +186,7 @@ public final class SymbolProjectile extends ThrowableProjectile {
         if (target instanceof Player player && caster instanceof Player attacker && !attacker.canHarmPlayer(player)) return;
         DamageSource thrown = damageSources().thrown(this, caster);
         if (spell == SymbolSpell.CRUCIO) {
-            if (target instanceof Player) target.hurt(thrown, 4 * effectLevel);
+            if (target instanceof Player) target.hurt(thrown, 4 * effectLevel());
             else if (target instanceof Mob) target.hurt(thrown, 4);
         } else if (target instanceof Player player) {
             if (!player.isCreative() && !player.isSpectator()) instantDeath(player, caster);
@@ -209,6 +210,7 @@ public final class SymbolProjectile extends ThrowableProjectile {
     private void retrieveItems(ServerLevel level, Vec3 impact) {
         var owner = getOwner();
         if (owner == null) return;
+        int effectLevel = effectLevel();
         double radius = effectLevel == 1 ? 0.8 : effectLevel == 2 ? 3 : 9;
         for (ItemEntity item : level.getEntitiesOfClass(ItemEntity.class, new AABB(impact, impact).inflate(radius),
                 target -> target.distanceToSqr(impact) <= radius * radius)) {
@@ -218,6 +220,7 @@ public final class SymbolProjectile extends ThrowableProjectile {
 
     private void applyToTargets(ServerLevel level, Vec3 impact, @Nullable LivingEntity direct, double tierTwo,
                                 double tierThree, Consumer<LivingEntity> effect) {
+        int effectLevel = effectLevel();
         if (effectLevel == 1) {
             if (direct != null) effect.accept(direct);
         } else {
@@ -264,7 +267,7 @@ public final class SymbolProjectile extends ThrowableProjectile {
         for (LivingEntity victim : level.getEntitiesOfClass(LivingEntity.class, bounds, LivingEntity::isAlive)) {
             if (victim instanceof ServerPlayer player) {
                 affected |= TormentTravel.requestSpellEncounter(player);
-            } else if (victim instanceof Mob && !victim.getType().is(Tags.EntityTypes.BOSSES)) {
+            } else if (victim instanceof Mob && !CreatureAlignment.boss(victim)) {
                 victim.discard();
                 affected = true;
             }
@@ -286,7 +289,7 @@ public final class SymbolProjectile extends ThrowableProjectile {
 
     @Override
     public boolean hurt(DamageSource source, float damage) {
-        if (isInvulnerableTo(source) || !(source.getEntity() instanceof ServerPlayer player)
+        if (isInvulnerableTo(source) || spell() == SymbolSpell.CAVE_INIMICUM || !(source.getEntity() instanceof ServerPlayer player)
                 || !(player.getMainHandItem().getItem() instanceof MysticBranchItem)) return false;
         Vec3 look = player.getLookAngle();
         setOwner(player);
@@ -296,12 +299,16 @@ public final class SymbolProjectile extends ThrowableProjectile {
         return true;
     }
 
+    private int effectLevel() {
+        return entityData.get(EFFECT_LEVEL);
+    }
+
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("EffectID", entityData.get(SPELL));
         tag.putInt("Age", age);
-        tag.putInt("effectLevel", effectLevel);
+        tag.putInt("effectLevel", effectLevel());
         Vector3f acceleration = entityData.get(ACCELERATION);
         tag.putFloat("AccelerationX", acceleration.x);
         tag.putFloat("AccelerationY", acceleration.y);
@@ -313,7 +320,7 @@ public final class SymbolProjectile extends ThrowableProjectile {
         super.readAdditionalSaveData(tag);
         entityData.set(SPELL, tag.getInt("EffectID"));
         age = tag.getInt("Age");
-        effectLevel = Mth.clamp(tag.getInt("effectLevel"), 1, 3);
+        entityData.set(EFFECT_LEVEL, Mth.clamp(tag.getInt("effectLevel"), 1, 3));
         entityData.set(ACCELERATION, new Vector3f(tag.getFloat("AccelerationX"),
                 tag.getFloat("AccelerationY"), tag.getFloat("AccelerationZ")));
         ListTag direction = tag.getList("direction", Tag.TAG_DOUBLE);

@@ -2,9 +2,12 @@ package art.arcane.witchery.entity;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.infusion.InfusionEnergy;
+import art.arcane.witchery.infusion.SpellKnowledge;
 import art.arcane.witchery.infusion.SymbolSpell;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEffects;
+import art.arcane.witchery.registry.WitcheryEntities;
+import art.arcane.witchery.registry.WitcheryItems;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -38,6 +41,77 @@ import java.util.function.Consumer;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class SymbolSpellTests {
+    @GameTest(template = "qa_coven_arena")
+    public static void rankedProjectilesRecoverTheirFlightAndReinforcementCannotBeDeflected(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var caster = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "ProjectileCaster"));
+        var defender = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "ProjectileDefender"));
+        caster.setPos(Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(7, 16, 5))));
+        caster.setYRot(180);
+        defender.setItemInHand(InteractionHand.MAIN_HAND, WitcheryItems.getRequired("mysticbranch").get().getDefaultInstance());
+
+        try {
+            for (var spell : List.of(SymbolSpell.ENNERVATE, SymbolSpell.STUPEFY)) {
+                var base = new SymbolProjectile(level, caster, spell, 1);
+                var thrown = new SymbolProjectile(level, caster, spell, 2);
+                var restored = WitcheryEntities.SYMBOL_PROJECTILE.get().create(level);
+                restored.load(thrown.saveWithoutId(new CompoundTag()));
+                double startY = restored.getY();
+                for (int tick = 0; tick < 8; tick++) {
+                    base.tick();
+                    restored.tick();
+                }
+                helper.assertTrue(base.getY() < startY - 0.9 && Math.abs(restored.getY() - startY) < 1.0E-6
+                                && restored.getZ() < base.getZ() - 1,
+                        spell + " falls at level one and flies straight at the restored enhanced rank");
+            }
+
+            var reinforcement = new SymbolProjectile(level, caster, SymbolSpell.CAVE_INIMICUM);
+            var other = new SymbolProjectile(level, caster, SymbolSpell.STUPEFY);
+            var hit = defender.damageSources().playerAttack(defender);
+            helper.assertTrue(!reinforcement.hurt(hit, 1) && reinforcement.getOwner() == caster,
+                    "Cave Inimicum keeps its caster when hit with a Mystic Branch");
+            helper.assertTrue(other.hurt(hit, 1) && other.getOwner() == defender,
+                    "The Branch still deflects other Mystic Branch projectiles");
+            helper.succeed();
+        } finally {
+            caster.discard();
+            defender.discard();
+        }
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_tormentum_targets")
+    public static void tormentumSparesLegacyBossesAndOnlyStartsCooldownOnAHit(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var caster = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "TormentumCaster"));
+        SpellKnowledge.TORMENTUM.learn(caster);
+        var yaga = helper.spawnWithNoFreeWill(WitcheryEntities.BABA_YAGA.get(), new BlockPos(6, 3, 5));
+        var leonard = helper.spawnWithNoFreeWill(WitcheryEntities.LEONARD.get(), new BlockPos(8, 3, 5));
+        var pig = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(12, 3, 5));
+        var targets = List.of(yaga, leonard, pig);
+        var center = helper.absolutePos(new BlockPos(7, 3, 5));
+        var hit = new BlockHitResult(Vec3.atCenterOf(center), Direction.UP, center, false);
+
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
+                targets.stream().allMatch(target -> level.getEntity(target.getUUID()) == target), "All targets are tracked"))
+                .thenExecute(() -> {
+                    try {
+                        new SymbolProjectile(level, caster, SymbolSpell.TORMENTUM).onHit(hit);
+                        helper.assertTrue(yaga.isAlive() && leonard.isAlive() && pig.isAlive()
+                                        && SpellKnowledge.TORMENTUM.cooldownRemaining(caster, SymbolSpell.TORMENTUM_COOLDOWN) == 0,
+                                "An impact beside only bosses spends no cooldown");
+                        pig.setPos(Vec3.atBottomCenterOf(center.south()));
+                        new SymbolProjectile(level, caster, SymbolSpell.TORMENTUM).onHit(hit);
+                        helper.assertTrue(yaga.isAlive() && leonard.isAlive() && pig.isRemoved()
+                                        && SpellKnowledge.TORMENTUM.cooldownRemaining(caster, SymbolSpell.TORMENTUM_COOLDOWN) > 0,
+                                "An ordinary creature in the impact still disappears and starts the cooldown");
+                    } finally {
+                        targets.forEach(target -> target.discard());
+                        caster.discard();
+                    }
+                }).thenSucceed();
+    }
+
     @GameTest(template = "qa_rite_terrain", batch = "witchery_terrain_spell_lumos", timeoutTicks = 140)
     public static void lumosAndNoxRestoreLightAndPermittedDrops(GameTestHelper helper) {
         var level = helper.getLevel();

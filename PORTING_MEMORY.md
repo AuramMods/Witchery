@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Mystic Branch Flight, Deflection, and Tormentum (2026-11-24)
+
+- Tormentum honors the original boss immunity. A boss-only impact leaves the cooldown clear. The original cost is still 25 charges and an eligible hit starts `tormentumLastUse`.
+- Base Ennervate and Stupefy fall, while their Worship-enhanced ranks fly straight. The original `effectLevel` field restores the rank from saved spells. Protocol 95 transmits the rank, so the client and dedicated server must use matching versions. The Mystic Branch can still deflect ordinary spells. Cave Inimicum keeps its caster.
+- The preceding JAR erased Baba Yaga with Tormentum and let both Ennervate ranks fall short. The rebuilt JAR spared Baba Yaga at both impacts. Only the second cast removed the nearby pig and started the cooldown. Both Ennervate gestures aimed at a pig twelve blocks away. The client received rank two, and the enhanced cast reached the pig and cleared Slowness. The player used the imported Mystic Branch and old spellbook data. The fixture supplied the arena, targets and Worship, and staged two stationary bolts for the attack control. The Branch redirected Lumos and left Cave Inimicum's ownership unchanged.
+- A normal dedicated restart kept the original spell knowledge, cooldown timestamp, 147 remaining charges and affected creature state. Trying Tormentum again during the cooldown preserved both the timestamp and charge. All 171 local Forge GameTests, Java 17 reobfuscation and the asset inventory audit passed. The dedicated server and isolated client used matching JARs with SHA-256 `dab288b0cf5dfc772e803b0372372f3f53ad5aecad0e572e72e77ded1a728191`. The client used zero master volume and OpenAL No Output without taking focus. Logs are in `build/qa-symbol-parity`.
+
 ## Infernal Binding and Legacy Boss Immunity (2026-11-24)
 
 - The Infernal Hand and Imperio use the original boss exclusions. The preceding packaged JAR let a survival player bind Baba Yaga with the Witch's Hand and consumed five charges. The shared boss predicate recognizes the nine original Witchery bosses and still honors Forge's boss tag.

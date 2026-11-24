@@ -990,6 +990,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 - IDs 2, 21, 22, 23, and 26 are active in `SymbolSpell`. The three projectile spells retain `EffectID` and `effectLevel` on saved `witchery:spelleffect` entities. Aguamenti and Incendio accept all original enhanced gestures. Nox and Meteolojinx Recanto take effect immediately when the gesture is released. Lumos uses the original `witchery:glowglobe` block ID and retains the earlier port's item ID for saved inventories.
 - IDs 1, 3, 5, 6, and 10 restore Accio, Alohomora, Cave Inimicum, Colloportus, and Defodio. Door keys keep `doorX`, `doorY`, `doorZ`, `doorD`, and `doorDN`, with `doorDimension` for modern dimension IDs. Rings keep `doorKeys`. Protocol 70 includes the `witchery:door_keyring` crafting serializer.
 - IDs 4, 9, 12, 13, 16, 20, 31, and 36 finish the legacy spell registry. All 31 IDs and their gesture sets match `EffectRegistry`. IDs 4 and 16 are hidden from Symbology. IDs 4, 9, and 20 require the Infernal Infusion in survival. Imperio keeps `WITCEnslaverName` and uses `WITCEnslaverUUID` for modern ownership.
+- Tormentum uses the legacy boss immunity and starts `tormentumLastUse` when it affects an eligible target. Base Ennervate and Stupefy fall during flight, and their Worship-enhanced casts fly straight. Protocol 95 synchronizes the existing `effectLevel` saved field to tracking clients. Cave Inimicum keeps the original exception to Branch deflection.
 
 ## Ritual Registry (`RiteRegistry`)
 
