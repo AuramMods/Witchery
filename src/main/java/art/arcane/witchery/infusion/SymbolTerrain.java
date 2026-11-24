@@ -100,7 +100,7 @@ public final class SymbolTerrain {
         Entity caster = projectile.getOwner();
         if (strength > 1) {
             double radius = strength == 2 ? 3 : 6;
-            var impact = hit.getLocation();
+            var impact = projectile.position();
             for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, new AABB(impact, impact).inflate(radius),
                     entity -> entity != caster && entity.distanceToSqr(impact) <= radius * radius)) {
                 target.setSecondsOnFire(strength);

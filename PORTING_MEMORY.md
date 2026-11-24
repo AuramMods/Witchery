@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Mystic Branch Area Effects and Impact Cues (2026-11-24)
+
+- Area spells measure range from the projectile's last position before collision, as in 1.7.10. This covers item retrieval, movement, damage and status areas, and the Dark Mark's spawn point on impact. The physical collision supplies the individual target and struck block face.
+- Attraho spares the Horned Huntsman and Ender Dragon. Its saved ranks retain the original two-, three-, and nine-block radii. Ordinary projectiles use slime trails, slime impact particles and the small-slime sound. Curses use spell and flame trails, spell impact particles and the dragon sound.
+- On the preceding packaged JAR an Attraho cast into a wall centered its range at X 7, pulled the pig beyond the collision and affected the Huntsman. Enhanced Accio retrieved the diamond beyond the wall and left the emerald on the caster's side. The fixture provided the arena, targets, loose items and Worship. The survival client used an imported Branch, ordinary directional input and the previously learned spells in a legacy-format player record.
+- On the rebuilt JAR the same Attraho cast centered its range at X 6, pulled the pig on the caster's side, and spared the Huntsman and the pig beyond the collision. Enhanced Accio retrieved the emerald and left the diamond in place. The muted client recorded the small-slime sound at Attraho's impact and the dragon sound at the Morsmordre impact. The normal dedicated restart kept both items in their resulting locations, the Huntsman, and 177 charges.
+- All 172 local Forge GameTests, Java 17 reobfuscation, and the asset inventory audit passed. The clean Forge client and dedicated server used SHA-256 `d0cd669235d2422615a8e15c4e2cd49e9bf7948505cabcabc60072b639d1755a`. The client used zero master volume and OpenAL No Output without taking focus. Logs are in `build/qa-symbol-impact`.
+
 ## Mystic Branch Flight, Deflection, and Tormentum (2026-11-24)
 
 - Tormentum honors the original boss immunity. A boss-only impact leaves the cooldown clear. The original cost is still 25 charges and an eligible hit starts `tormentumLastUse`.

@@ -88,6 +88,12 @@ public enum SymbolSpell {
     public float size() { return size; }
     public int lifetime() { return lifetime; }
     public boolean falls() { return falls; }
+    public boolean isCurse() {
+        return switch (this) {
+            case AVADA_KEDAVRA, CRUCIO, IMPERIO, IGNIANIMA, CARNOSA_DIEM, MORSMORDRE, TORMENTUM -> true;
+            default -> false;
+        };
+    }
     public int baseCost() { return cost; }
     public List<String> gestures() { return patterns; }
     public boolean visibleInGuide(int knownMask) {
@@ -136,7 +142,7 @@ public enum SymbolSpell {
             castUrn(level, player);
             return;
         }
-        if ((this == AVADA_KEDAVRA || this == CRUCIO || this == IMPERIO)
+        if (isCurse() && knowledge == null
                 && !player.getAbilities().instabuild && InfusionEnergy.type(player) != InfernalInfusion.ID) {
             reject(player, "infernal_required");
             return;

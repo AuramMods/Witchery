@@ -30,6 +30,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.AbstractGolem;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Witch;
 import net.minecraft.world.entity.player.Player;
@@ -106,12 +107,14 @@ public final class SymbolProjectile extends ThrowableProjectile {
         }
         if (level() instanceof ServerLevel server) {
             if (age >= spell.lifetime()) {
-                if (spell == SymbolSpell.MORSMORDRE) impact(server, spell, position(), null);
+                if (spell == SymbolSpell.MORSMORDRE) impact(server, spell, null);
                 discard();
             }
         } else {
-            level().addParticle(ParticleTypes.WITCH, getX(), getY(0.5), getZ(), 0, 0, 0);
-            level().addParticle(ParticleTypes.FLAME, getX(), getY(0.5), getZ(), 0, 0, 0);
+            boolean curse = spell.isCurse();
+            level().addParticle(curse ? ParticleTypes.ENTITY_EFFECT : ParticleTypes.ITEM_SLIME,
+                    getX(), getY() + 0.5, getZ(), 0, 0, 0);
+            if (curse) level().addParticle(ParticleTypes.FLAME, getX(), getY() + 0.5, getZ(), 0, 0, 0);
         }
     }
 
@@ -119,21 +122,25 @@ public final class SymbolProjectile extends ThrowableProjectile {
     protected void onHit(HitResult hit) {
         SymbolSpell spell = spell();
         if (level() instanceof ServerLevel server && spell != null) {
-            impact(server, spell, hit.getLocation(), hit);
+            impact(server, spell, hit);
             discard();
         }
     }
 
-    private void impact(ServerLevel level, SymbolSpell spell, Vec3 location, @Nullable HitResult hit) {
+    private void impact(ServerLevel level, SymbolSpell spell, @Nullable HitResult hit) {
         int effectLevel = effectLevel();
+        // The collision callback runs before the projectile advances, as it did in 1.7.10.
+        Vec3 center = position();
         LivingEntity direct = hit instanceof EntityHitResult entityHit && entityHit.getEntity() instanceof LivingEntity living
                 ? living : null;
-        level.sendParticles(ParticleTypes.WITCH, location.x, location.y, location.z, 16, 0.6, 0.6, 0.6, 0);
-        level.playSound(null, location.x, location.y, location.z, SoundEvents.ENDER_DRAGON_HURT,
-                SoundSource.PLAYERS, 0.8F, 1);
+        boolean curse = spell.isCurse();
+        level.sendParticles(curse ? ParticleTypes.ENTITY_EFFECT : ParticleTypes.ITEM_SLIME,
+                center.x, center.y, center.z, 16, 0.6, 0.6, 0.6, 0);
+        level.playSound(null, center.x, center.y, center.z,
+                curse ? SoundEvents.ENDER_DRAGON_HURT : SoundEvents.SLIME_SQUISH_SMALL, SoundSource.PLAYERS, 0.8F, 1);
         switch (spell) {
             case AVADA_KEDAVRA, CRUCIO -> damageCurse(spell, direct);
-            case ENNERVATE -> applyToTargets(level, location, direct, 2, 4, target -> {
+            case ENNERVATE -> applyToTargets(level, center, direct, 2, 4, target -> {
                 target.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
                 target.removeEffect(MobEffects.DIG_SLOWDOWN);
                 target.removeEffect(MobEffects.CONFUSION);
@@ -146,29 +153,29 @@ public final class SymbolProjectile extends ThrowableProjectile {
                     direct.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 6000, 9));
                 }
             }
-            case IGNIANIMA -> Soulfire.ignite(level, this, getOwner(), location);
-            case MORSMORDRE -> DarkMark.summon(level, location);
-            case TORMENTUM -> sendToTorment(level, location);
-            case CONFUNDUS -> applyToTargets(level, location, direct, 2, 4, target -> {
+            case IGNIANIMA -> Soulfire.ignite(level, this, getOwner(), center);
+            case MORSMORDRE -> DarkMark.summon(level, center);
+            case TORMENTUM -> sendToTorment(level, center);
+            case CONFUNDUS -> applyToTargets(level, center, direct, 2, 4, target -> {
                 if (!target.hasEffect(MobEffects.CONFUSION)) target.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 600));
             });
-            case IMPEDIMENTA -> applyToTargets(level, location, direct, 3, 6, target -> {
+            case IMPEDIMENTA -> applyToTargets(level, center, direct, 3, 6, target -> {
                 if (target != getOwner() && !target.hasEffect(MobEffects.MOVEMENT_SLOWDOWN)) {
                     target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 600, 1));
                 }
             });
-            case EXPELLIARMUS -> applyToTargets(level, location, direct, 3, 5, target -> {
+            case EXPELLIARMUS -> applyToTargets(level, center, direct, 3, 5, target -> {
                 if (target != getOwner()) disarm(target);
             });
-            case FLIPENDO -> applyToTargets(level, location, direct, 3, 6, target -> {
+            case FLIPENDO -> applyToTargets(level, center, direct, 3, 6, target -> {
                 if (effectLevel == 2 || target != getOwner()) {
                     Vec3 motion = getDeltaMovement();
                     double scale = target.hasEffect(MobEffects.MOVEMENT_SLOWDOWN) ? 2.5 : 2;
                     applyMotion(target, new Vec3(motion.x * scale, 0.3, motion.z * scale));
                 }
             });
-            case ATTRAHO -> pullToCaster(level, location);
-            case ACCIO -> retrieveItems(level, location);
+            case ATTRAHO -> pullToCaster(level, center);
+            case ACCIO -> retrieveItems(level, center);
             case ALOHOMORA -> SymbolTerrain.toggleDoor(level, getOwner(), hit);
             case CAVE_INIMICUM -> SymbolTerrain.reinforce(level, getOwner(), hit, effectLevel);
             case COLLOPORTUS -> SymbolTerrain.sealDoor(level, getOwner(), hit);
@@ -243,11 +250,15 @@ public final class SymbolProjectile extends ThrowableProjectile {
         target.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, net.minecraft.world.item.ItemStack.EMPTY);
     }
 
-    private void pullToCaster(ServerLevel level, Vec3 location) {
-        if (getOwner() == null) return;
-        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, new AABB(location, location).inflate(2),
-                living -> living != getOwner() && living.distanceToSqr(location) <= 4)) {
-            Vec3 difference = getOwner().position().subtract(target.position());
+    private void pullToCaster(ServerLevel level, Vec3 center) {
+        var owner = getOwner();
+        if (owner == null) return;
+        int rank = effectLevel();
+        double radius = rank == 1 ? 2 : rank == 2 ? 3 : 9;
+        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, new AABB(center, center).inflate(radius),
+                living -> living != owner && !(living instanceof EnderDragon || living instanceof HornedHuntsman)
+                        && living.distanceToSqr(center) <= radius * radius)) {
+            Vec3 difference = owner.position().subtract(target.position());
             if (difference.lengthSqr() < 0.0001) continue;
             target.addEffect(new MobEffectInstance(MobEffects.JUMP, 20, 1));
             applyMotion(target, new Vec3(difference.x * 0.14, difference.y * 0.2 + 0.3, difference.z * 0.14));

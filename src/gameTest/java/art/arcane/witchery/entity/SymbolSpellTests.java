@@ -16,6 +16,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -41,6 +42,56 @@ import java.util.function.Consumer;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class SymbolSpellTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_spell_impact_center")
+    public static void areaSpellsUseTheProjectilePositionBeforeCollision(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var caster = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "SpellAreaCaster"));
+        caster.setPos(Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(3, 3, 5))));
+        var rearPig = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(6, 3, 5));
+        var frontPig = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(10, 3, 5));
+        var huntsman = helper.spawnWithNoFreeWill(WitcheryEntities.HORNED_HUNTSMAN.get(), new BlockPos(7, 3, 6));
+        var start = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(7, 3, 5)));
+        var end = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(9, 3, 5)));
+        var hit = new BlockHitResult(end, Direction.WEST, BlockPos.containing(end), false);
+        var creatures = List.of(rearPig, frontPig, huntsman);
+        var rearGem = new ItemEntity(level, start.x - 0.55, start.y, start.z, new ItemStack(Items.EMERALD));
+        var frontGem = new ItemEntity(level, end.x + 0.55, end.y, end.z, new ItemStack(Items.DIAMOND));
+        var items = List.of(rearGem, frontGem);
+        items.forEach(item -> {
+            item.setNoGravity(true);
+            item.setDeltaMovement(Vec3.ZERO);
+            level.addFreshEntity(item);
+        });
+
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
+                creatures.stream().allMatch(entity -> level.getEntity(entity.getUUID()) == entity)
+                        && items.stream().allMatch(entity -> level.getEntity(entity.getUUID()) == entity),
+                "The area-spell targets are loaded"))
+                .thenExecute(() -> {
+                    try {
+                        var pull = new SymbolProjectile(level, caster, SymbolSpell.ATTRAHO, start, new Vec3(1, 0, 0));
+                        pull.onHit(hit);
+                        helper.assertTrue(rearPig.hasEffect(MobEffects.JUMP) && rearPig.getDeltaMovement().x < 0
+                                        && !frontPig.hasEffect(MobEffects.JUMP) && !huntsman.hasEffect(MobEffects.JUMP),
+                                "Attraho pulls the pig behind the collision and spares the nearby Horned Huntsman");
+                        var confusion = new SymbolProjectile(level, caster, SymbolSpell.CONFUNDUS, 2);
+                        confusion.setPos(start);
+                        confusion.onHit(hit);
+                        helper.assertTrue(rearPig.hasEffect(MobEffects.CONFUSION) && !frontPig.hasEffect(MobEffects.CONFUSION),
+                                "Enhanced Confundus uses the same center for its two-block radius");
+                        var retrieval = new SymbolProjectile(level, caster, SymbolSpell.ACCIO, start, new Vec3(1, 0, 0));
+                        retrieval.onHit(hit);
+                        helper.assertTrue(rearGem.position().equals(caster.position().add(0, 1, 0))
+                                        && frontGem.position().distanceToSqr(end) < 0.64,
+                                "Accio retrieves the emerald near the projectile and leaves the diamond near the collision");
+                    } finally {
+                        caster.discard();
+                        creatures.forEach(entity -> entity.discard());
+                        items.forEach(entity -> entity.discard());
+                    }
+                }).thenSucceed();
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void rankedProjectilesRecoverTheirFlightAndReinforcementCannotBeDeflected(GameTestHelper helper) {
         var level = helper.getLevel();
@@ -96,12 +147,16 @@ public final class SymbolSpellTests {
                 targets.stream().allMatch(target -> level.getEntity(target.getUUID()) == target), "All targets are tracked"))
                 .thenExecute(() -> {
                     try {
-                        new SymbolProjectile(level, caster, SymbolSpell.TORMENTUM).onHit(hit);
+                        var first = new SymbolProjectile(level, caster, SymbolSpell.TORMENTUM);
+                        first.setPos(Vec3.atCenterOf(center));
+                        first.onHit(hit);
                         helper.assertTrue(yaga.isAlive() && leonard.isAlive() && pig.isAlive()
                                         && SpellKnowledge.TORMENTUM.cooldownRemaining(caster, SymbolSpell.TORMENTUM_COOLDOWN) == 0,
                                 "An impact beside only bosses spends no cooldown");
                         pig.setPos(Vec3.atBottomCenterOf(center.south()));
-                        new SymbolProjectile(level, caster, SymbolSpell.TORMENTUM).onHit(hit);
+                        var second = new SymbolProjectile(level, caster, SymbolSpell.TORMENTUM);
+                        second.setPos(Vec3.atCenterOf(center));
+                        second.onHit(hit);
                         helper.assertTrue(yaga.isAlive() && leonard.isAlive() && pig.isRemoved()
                                         && SpellKnowledge.TORMENTUM.cooldownRemaining(caster, SymbolSpell.TORMENTUM_COOLDOWN) > 0,
                                 "An ordinary creature in the impact still disappears and starts the cooldown");
@@ -211,6 +266,7 @@ public final class SymbolSpellTests {
                         helper.assertTrue(ranks.equals(List.of(1, 2, 3)) && InfusionEnergy.canSpend(player, 93)
                                         && !InfusionEnergy.canSpend(player, 94),
                                 "Worship enables both enhanced ranks and the casts spend one, two, and four charges");
+                        projectiles.get(2).setPos(direct.position());
                         projectiles.get(2).onHit(new EntityHitResult(direct));
                         helper.assertTrue(direct.getMainHandItem().isEmpty() && nearby.getMainHandItem().isEmpty(),
                                 "A third-rank impact disarms the direct and nearby targets");
