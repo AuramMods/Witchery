@@ -4,8 +4,6 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.brewing.DeathBrewEffects;
 import art.arcane.witchery.capability.WitcheryCapabilities;
 import art.arcane.witchery.integration.BiomesOPlentySaplings;
-import art.arcane.witchery.item.DoorKeyItem;
-import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.world.MirrorTravel;
 import art.arcane.witchery.world.WitcheryDimensions;
@@ -210,12 +208,12 @@ public final class LegacyWorldIds {
                     upgradeUntypedItems(entry, fixer, -1, to);
                 }
             }
-            upgradeStoredBrewIngredients(player, fixer);
+            repairStoredItems(player, fixer);
             return;
         }
 
         upgradeItems(player);
-        upgradeStoredBrewIngredients(player, fixer);
+        repairStoredItems(player, fixer);
         upgradeEntityEffects(player);
         upgradeUntypedItems(persisted.getCompound("WITCSpiritWorld"), fixer, from, to);
         upgradeUntypedItems(expiredDrops, fixer, from, to);
@@ -251,13 +249,14 @@ public final class LegacyWorldIds {
         }
     }
 
-    public void upgradeStoredBrewIngredients(Tag value, DataFixer fixer) {
+    public void repairStoredItems(Tag value, DataFixer fixer) {
         if (value instanceof ListTag list) {
-            for (Tag entry : list) upgradeStoredBrewIngredients(entry, fixer);
+            for (Tag entry : list) repairStoredItems(entry, fixer);
         } else if (value instanceof CompoundTag compound) {
+            upgradeItemBinding(compound);
             String item = compound.getString("id");
             if (!item.equals("witchery:brewbag") && !item.equals("witchery:leonardsurn")) {
-                for (String key : compound.getAllKeys()) upgradeStoredBrewIngredients(compound.get(key), fixer);
+                for (String key : compound.getAllKeys()) repairStoredItems(compound.get(key), fixer);
                 return;
             }
 
@@ -401,19 +400,23 @@ public final class LegacyWorldIds {
             int damage = compound.getInt("Damage");
             if (damage > 0) stack.setDamageValue(Math.min(damage, stack.getMaxDamage()));
         }
-        if (stack.getTag() != null) {
-            CompoundTag tag = stack.getTag();
-            if (stack.getItem() instanceof WaystoneItem) {
-                dimensions.upgradeReference(tag, "PosD", "Dimension");
-            } else if (stack.getItem() instanceof DoorKeyItem) {
+        compound.remove("Damage");
+        compound.remove("tag");
+        stack.save(compound);
+        upgradeItemBinding(compound);
+    }
+
+    private void upgradeItemBinding(CompoundTag stack) {
+        if (!(stack.get("tag") instanceof CompoundTag tag)) return;
+        switch (stack.getString("id")) {
+            case "witchery:waystone", "witchery:bound_waystone", "witchery:creature_bound_waystone" ->
+                    dimensions.upgradeReference(tag, "PosD", "Dimension");
+            case "witchery:door_key", "witchery:door_keyring" -> {
                 dimensions.upgradeReference(tag, "doorD", "doorDimension");
                 for (Tag key : tag.getList("doorKeys", Tag.TAG_COMPOUND)) {
                     dimensions.upgradeReference((CompoundTag) key, "doorD", "doorDimension");
                 }
             }
         }
-        compound.remove("Damage");
-        compound.remove("tag");
-        stack.save(compound);
     }
 }

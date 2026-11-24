@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Saved Item Dimension Bindings (2026-11-24)
+
+- The first-import converter already resolved custom numeric dimensions. The ordinary 1.20.1 load path left numeric bindings in older port inventories and the separate entity regions untouched. Loading these records now uses the captured registry for Waystones, Door Keys, and keyring entries whenever the namespaced field is absent.
+- In a packaged comparison, a vanilla chest's two Waystones and a separate dropped Waystone loaded with numeric Torment ID `-83` on the preceding build. The repaired package added the Torment dimension key while retaining the item counts, coordinates, original dimension label, and marker tag.
+- A saved dropped Waystone consumed normally in a small Otherwhere circle and moved a pig to the recorded Torment position. A muted background survival client joined with a numeric keyring and opened its Rowan door with the normal interaction. The restarted dedicated server retained the open door and repaired chest stack. The saved keyring retained both its repaired Torment key and its explicit Nether key.
+- Local Java 17 data generation, JAR reobfuscation, and all 222 required Forge GameTests passed. The new test covers the migrated keyring's door authorization, the explicit dimension override, an unmapped numeric ID, and the vanilla chest. Logs and the exact package are in `build/qa-saved-dimension-bindings`. Package SHA-256 `e6a879d5ec77a03dff9472a10e96c67fb8fb31af6d8e327f6d2e574ee27b0da3`.
+
 ## Inhabited Mirror Favorite Import (2026-11-24)
 
 - The previous packaged server opened the legacy frame with the favorite's original name and UUID while dropping its profile properties. The rebuilt server imported the same frame from the synthetic Forge 1.7.10 region with its properties and signature intact. The fixture also recovered the mirror item from a numeric legacy chest stack.

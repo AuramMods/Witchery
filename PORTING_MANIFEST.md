@@ -1238,6 +1238,7 @@ The Owl reads `FeatherColor` and the Toad reads `SkinColor`. Both retain `Famili
 The Broom uses `BrushColor` on the vehicle and enchanted item. The vehicle reads legacy plain-text `CustomName` and saves the modern component name. An older port's `witchery:broom_spawn_egg` can place the vehicle. The Infused Brew of Soaring uses `WITCInfusedBrewType:1` and `WITCInfusedBrewStart` in the player record.
 
 Bound Waystones retain `PosX`, `PosY`, `PosZ`, `PosD` and `NameD`. New bindings add the namespaced `Dimension` field. Old Waystones resolve the three vanilla dimensions and Witchery's default legacy IDs `-37` for Dream, `-38` for Torment and `-39` for Mirror. Creature-Bound Waystones share the first Taglock signature fields.
+When the world retains its captured legacy registry, loading player, block-entity, and entity storage also repairs unresolved numeric Waystone and Door Key bindings. The same rule applies to each saved keyring entry. An explicit modern dimension takes precedence over the captured mapping.
 
 Owls retain `WITCWaypoint` and their launch coordinates in `HomeX`, `HomeY` and `HomeZ` while delivering. `ReturningFromDelivery` preserves the return leg on modern saves.
 
