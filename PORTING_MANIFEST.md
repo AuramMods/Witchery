@@ -1325,8 +1325,9 @@ Implementation anchors:
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/client/event/WitcheryClientCameraHooks.java`
 
 
-- Uses one `SimpleChannel` (`witchery:main`) with protocol version `"92"`. The extended player payload carries vampire rank, blood power, blood reserve, quest progress, vision, ultimate choice and charges, the transient selected power and the saved creature form. `VampireQuestChunks` preserves the original packed `Location` values and records a modern dimension ID. Player style sync updates the other clients that track a transformed player. Vampire packet intents 15 through 17 select or activate a power and query or display a nearby target's blood. Markup book intent 12 saves the trail through the held journal's unlocked chapter and raises the reader's saved cap. The infusion status includes the active infused brew and remaining duration, and the Kettle recipe codec carries the optional bottling familiar.
+- Uses one `SimpleChannel` (`witchery:main`) with protocol version `"92"`. The extended player payload carries vampire rank, blood power, blood reserve, quest progress, vision, ultimate choice and charges, the transient selected power and the saved creature form. `VampireQuestChunks` preserves the original packed `Location` values and records a modern dimension ID. Player style sync updates the other clients that track a transformed player. The vampire messages select or activate a power and query or display a nearby target's blood. Legacy markup book intent 12 saves the trail through the held journal's unlocked chapter and raises the reader's saved cap. The infusion status includes the active infused brew and remaining duration, and the Kettle recipe codec carries the optional bottling familiar.
 - The sleeping body sends its saved owner name alongside an optional owner UUID. This lets tracking clients render bodies imported from 1.7.10, where the save used the owner name alone. The renderer uses the connected owner's UUID when available and uses the shared profile lookup for a named owner.
+- Legacy intent 17 requests the blood value for a nearby visible target, and intent 15 delivers it. Vanilla synchronizes the sleeping pose. Witchery sends player style updates to clients tracking the player.
 - Crystal Ball viewing sends the existing `cam_pos` message for the transient `witchery:eye` or the living subject of a Taglock Kit. Server chunk and entity tracking follow the viewed entity, and the client centers terrain rendering on it. The observing player stays beside the Crystal Ball.
 - The client associates each Crystal Ball view with the local player, level and target entity ID. The stop packet, a player or level replacement, target loss and the original three-second heartbeat timeout all restore the normal camera and the viewer's previous gravity setting. A matching heartbeat can resume the existing view once its target is tracked again.
 - The Mystic Branch recognizes gestures from server-side player rotations. Protocol 12 retires the prepared-spell packet while recording the old intent in `LegacyRegistryData.PACKETS`. The client previews the shared stroke rules from local rotations and displays the recognized spell. `branchGlyphSet` selects the original texture bank with value 1 and defaults to bank 0. Cancelling the use clears the drawing.
@@ -1335,34 +1336,34 @@ Implementation anchors:
 - The `render3dGlintEffect` client option applies to the held Mystic Branch, Huntsman Spear, and enchanted Cane Sword models. It defaults to true and preserves the inventory icons' standard foil. The Huntsman and goblin model glint use their existing independent setting.
 - Validates packet receive direction against legacy flow metadata and logs mismatches.
 - Represents all legacy packet intents in `LegacyRegistryData.PACKETS` as migration metadata.
-- Adds codec-backed payload + handler scaffolding for high-priority sync packets:
+- Player synchronization payloads:
   - `player_sync` -> `(UUID playerId, int syncRevision, CompoundTag playerData)`
   - `extended_player_sync` -> `(UUID playerId, boolean initialized, int syncRevision, CompoundTag playerData)`
   - `partial_extended_player_sync` -> `(UUID playerId, int syncRevision, CompoundTag playerData)`
-- Adds codec-backed payload + handler scaffolding for additional interaction packets:
+- Interaction payloads:
   - `item_update` -> `(int slotIndex, Volume volume, int pageIndex, ResourceLocation entryId)` (serverbound, optional biome ID for the atlas or rite ID for Circle Magic)
   - `sync_entity_size` -> `(int entityId, float scale)` (clientbound, protocol 86)
   - `set_client_player_facing` -> `(float yaw, float pitch)` (clientbound)
   - `cam_pos` -> `(boolean active, boolean updatePosition, int entityId)` (clientbound; aligned with legacy packet shape)
   - `push_target` -> `(int entityId, double velocityX, double velocityY, double velocityZ)` (clientbound)
   - `sound` -> `(String soundId, double x, double y, double z, float volume, float pitch)` (clientbound)
-- Adds codec-backed payload + handler scaffolding for utility packets:
+- Utility payloads:
   - `particles` -> `(int particleEffectId, int soundEffectId, double x, double y, double z, double width, double height, int color)` (clientbound)
   - `player_style` -> `(String username, int grotesqueTicks, int nightmare, boolean ghost, int creatureType, int blood, String playerSkin)` (clientbound)
   - `sync_markup_book` -> `(int slot, String chapter)` (serverbound)
-- Keeps explicit no-payload codec records + handlers for:
+- Requests with empty payloads:
   - `clear_fall_damage` (serverbound)
   - `howl` (serverbound)
-- Adds first functional clientbound behavior hooks:
+- Clientbound behavior:
   - `particles` now dispatches to client packet bridge with legacy `ParticleEffect`/`SoundEffect` id mapping, effect-count scaling, and colored spell particle support.
-  - `player_sync`, `extended_player_sync`, and `partial_extended_player_sync` now dispatch to client packet bridge and hydrate staged capability sync fields from serialized `WitcheryPlayerData` snapshots, including stale-revision guards + persistent-tag mirrors.
-  - `player_style` now dispatches to client packet bridge to apply staged style sync to target players by username.
-  - `sound` now dispatches to client packet bridge to resolve legacy/modern ids and play local scaffold sound.
+  - `player_sync`, `extended_player_sync`, and `partial_extended_player_sync` apply serialized `WitcheryPlayerData` snapshots, reject stale revisions, and update the corresponding persistent tags.
+  - `player_style` applies the synchronized style to the player with the matching username.
+  - `sound` resolves the sound ID and plays the registered event at the transmitted position.
   - `push_target` now dispatches to client packet bridge to apply motion vectors to client entities.
   - `set_client_player_facing` now dispatches to client packet bridge to apply local player rotation.
   - `sync_entity_size` restores the active Resizing scale on the client. The client uses its local pose and creature form to compute physical dimensions from that scale.
   - `cam_pos` now dispatches to client packet bridge with legacy semantics (`active`, `updatePosition`, `entityId`) and stages camera-active/target data in `WitcheryClientCameraState`.
-  - `WitcheryClientCameraHooks` now consumes staged camera state each client tick and applies scaffold camera-entity override/reset behavior (`setCameraEntity(target)` while active, fallback to local player when inactive/invalid target).
+  - `WitcheryClientCameraHooks` applies the current camera target each client tick and restores the local player as the camera when the view ends or its target becomes invalid.
 - Serverbound gameplay handlers:
   - `clear_fall_damage` requests an airborne jump. The server validates the active Double Jump effect and remaining jumps from a ground takeoff before approving the motion.
   - `item_update` validates the held slot and guide volume. Atlas requests resolve the supplied biome ID against the server's current list and save both `CurrentPage` and `WitcheryBiome`. Network protocol 87 carries the atlas ID.
@@ -1370,7 +1371,7 @@ Implementation anchors:
   - `item_update` records the accepted page in `WitcheryPlayerData` and sends the updated revision.
   - `howl` checks the player's pose, form, rank and trial status. Successful howls count a new nighttime trial chunk, paralyze nearby targets, or summon a pack according to the original rules.
 
-Intent mapping used by scaffold:
+Legacy intent catalog:
 | Legacy ID | Intent Key | Flow |
 |---:|---|---|
 | 1 | `brew_prepared` | `SERVERBOUND` |
@@ -1516,7 +1517,8 @@ Status:
 - `LegacyWorldIds.upgradePlayer` converts Witchery stacks and effects before vanilla's player data fixer. It copies `WitcheryExtendedPlayer` into the modern capability when one is absent, and moves a restorable `CachedInventory2` into the modern Death Brew inventory record. The original Dream session items and pending `WITCPoSpawn` effects go through the same upgrade path.
 - The importer converts each entity in an original player `Riding` chain with the same entity restoration used for chunks. It links the converted entities through `Passengers`, writes the outer vehicle as `RootVehicle.Entity`, and keeps the direct mount UUID under `RootVehicle.Attach`. This applies to dedicated player files and the single-player owner record in `level.dat`.
 - The original potion ID table also resolves `CustomPotionEffects` in legacy vanilla potion stacks before the vanilla item conversion splits drinkable and splash bottles. Pending `WITCPoSpawn` records are Witchery-owned and can still be repaired from the captured table after the player save reaches the current data version.
-- `WitcheryPlayerData` reads the original creature form, alternate skin, blood stores, vampire and werewolf ranks, potion bottling skill, vampire vision and trial counters. Village records retain their packed `Location` and default to the Overworld when the old record has no dimension. Wolf trial chunks retain each signed `Location`. The modern save also retains `LastHowlGameTime` and `LastBoneFindGameTime` for the wolf's cooldowns.
+- `WitcheryPlayerData` reads the original creature form, alternate skin, blood stores, vampire and werewolf ranks, potion bottling progress, vampire vision and trial counters. Village records retain their packed `Location` and default to the Overworld when the old record has no dimension. Wolf trial chunks retain each signed `Location`. `PotionThrowing` is retained as dormant save data. The wolf's `LastHowl` and `LastBoneFind` use wall-clock milliseconds for the original one-minute cooldown. Earlier port saves honor their `LastHowlGameTime` and `LastBoneFindGameTime` through the next use of each ability.
+- The legacy `MirrorWorldEntryPoint` moves to `ForgeData.PlayerPersisted` when the imported player is inside Mirror. Both escape cooldowns retain their original world tick. Existing modern saved entries and timers take precedence.
 - See Legacy Save Fixtures in `PORTING.md` for the imported vampire, wolf and Dream records verified in the packaged game. The broader comparison of legacy player fields and multiplayer packet behavior remains in the release checklist.
 
 ## Mod Hook Integrations (`modHooks.register`)

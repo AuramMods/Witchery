@@ -20,6 +20,7 @@ public final class WitcheryPlayerData {
     private static final String KEY_VAMPIRE_LEVEL = "VampireLevel";
     private static final String KEY_WEREWOLF_LEVEL = "WerewolfLevel";
     private static final String KEY_POTION_BOTTLING = "PotionBottling";
+    private static final String KEY_POTION_THROWING = "PotionThrowing";
     private static final String KEY_WOLFMAN_QUEST_STATE = "WolfmanQuestState";
     private static final String KEY_WOLFMAN_QUEST_COUNTER = "WolfmanQuestCounter";
     private static final String KEY_WOLFMAN_QUEST_CHUNKS = "WolfmanQuestChunks";
@@ -46,6 +47,10 @@ public final class WitcheryPlayerData {
     private static final String KEY_LAST_MARKUP_BOOK_PAGES = "LastMarkupBookPages";
     private static final String KEY_LAST_HOWL_GAME_TIME = "LastHowlGameTime";
     private static final String KEY_LAST_BONE_FIND_GAME_TIME = "LastBoneFindGameTime";
+    private static final String KEY_LAST_HOWL = "LastHowl";
+    private static final String KEY_LAST_BONE_FIND = "LastBoneFind";
+    private static final long WOLF_COOLDOWN_MILLIS = 60_000;
+    private static final int PREVIOUS_WOLF_COOLDOWN_TICKS = 1_200;
 
     private boolean initialized;
     private int syncRevision;
@@ -54,6 +59,7 @@ public final class WitcheryPlayerData {
     private int vampireLevel;
     private int werewolfLevel;
     private int potionBottling;
+    private int potionThrowing;
     private WolfmanQuestState wolfmanQuestState = WolfmanQuestState.NOT_STARTED;
     private int wolfmanQuestCounter;
     private final Set<Long> wolfmanQuestChunks = new LinkedHashSet<>();
@@ -83,6 +89,8 @@ public final class WitcheryPlayerData {
     private final List<String> lastMarkupBookPages = new ArrayList<>();
     private long lastHowlGameTime = Long.MIN_VALUE;
     private long lastBoneFindGameTime = Long.MIN_VALUE;
+    private long lastHowl;
+    private long lastBoneFind;
 
     public boolean isInitialized() {
         return initialized;
@@ -329,8 +337,8 @@ public final class WitcheryPlayerData {
         return List.copyOf(lastMarkupBookPages);
     }
 
-    public long getLastHowlGameTime() {
-        return lastHowlGameTime;
+    public boolean howlCoolingDown(long gameTime) {
+        return wolfCooldownActive(lastHowl, lastHowlGameTime, gameTime);
     }
 
     public void applyPlayerStyle(
@@ -370,16 +378,23 @@ public final class WitcheryPlayerData {
         }
     }
 
-    public void markHowled(long gameTime) {
-        lastHowlGameTime = gameTime;
+    public void markHowled() {
+        lastHowl = System.currentTimeMillis();
+        lastHowlGameTime = Long.MIN_VALUE;
     }
 
-    public long getLastBoneFindGameTime() {
-        return lastBoneFindGameTime;
+    public boolean boneFindCoolingDown(long gameTime) {
+        return wolfCooldownActive(lastBoneFind, lastBoneFindGameTime, gameTime);
     }
 
-    public void markBoneFound(long gameTime) {
-        lastBoneFindGameTime = gameTime;
+    public void markBoneFound() {
+        lastBoneFind = System.currentTimeMillis();
+        lastBoneFindGameTime = Long.MIN_VALUE;
+    }
+
+    private static boolean wolfCooldownActive(long lastUse, long previousGameTime, long gameTime) {
+        if (lastUse > 0) return lastUse >= System.currentTimeMillis() - WOLF_COOLDOWN_MILLIS;
+        return previousGameTime != Long.MIN_VALUE && gameTime - previousGameTime < PREVIOUS_WOLF_COOLDOWN_TICKS;
     }
 
     public void copyFrom(WitcheryPlayerData source) {
@@ -390,6 +405,7 @@ public final class WitcheryPlayerData {
         vampireLevel = source.vampireLevel;
         werewolfLevel = source.werewolfLevel;
         potionBottling = source.potionBottling;
+        potionThrowing = source.potionThrowing;
         wolfmanQuestState = source.wolfmanQuestState;
         wolfmanQuestCounter = source.wolfmanQuestCounter;
         wolfmanQuestChunks.clear();
@@ -419,6 +435,8 @@ public final class WitcheryPlayerData {
         lastMarkupBookPages.addAll(source.lastMarkupBookPages);
         lastHowlGameTime = source.lastHowlGameTime;
         lastBoneFindGameTime = source.lastBoneFindGameTime;
+        lastHowl = source.lastHowl;
+        lastBoneFind = source.lastBoneFind;
     }
 
     public CompoundTag serializeNBT() {
@@ -430,6 +448,7 @@ public final class WitcheryPlayerData {
         tag.putInt(KEY_VAMPIRE_LEVEL, vampireLevel);
         tag.putInt(KEY_WEREWOLF_LEVEL, werewolfLevel);
         tag.putInt(KEY_POTION_BOTTLING, potionBottling);
+        tag.putInt(KEY_POTION_THROWING, potionThrowing);
         tag.putInt(KEY_WOLFMAN_QUEST_STATE, wolfmanQuestState.ordinal());
         tag.putInt(KEY_WOLFMAN_QUEST_COUNTER, wolfmanQuestCounter);
         ListTag wolfmanChunks = new ListTag();
@@ -472,8 +491,10 @@ public final class WitcheryPlayerData {
             pageList.add(StringTag.valueOf(page == null ? "" : page));
         }
         tag.put(KEY_LAST_MARKUP_BOOK_PAGES, pageList);
-        tag.putLong(KEY_LAST_HOWL_GAME_TIME, lastHowlGameTime);
-        tag.putLong(KEY_LAST_BONE_FIND_GAME_TIME, lastBoneFindGameTime);
+        if (lastHowl > 0) tag.putLong(KEY_LAST_HOWL, lastHowl);
+        else if (lastHowlGameTime != Long.MIN_VALUE) tag.putLong(KEY_LAST_HOWL_GAME_TIME, lastHowlGameTime);
+        if (lastBoneFind > 0) tag.putLong(KEY_LAST_BONE_FIND, lastBoneFind);
+        else if (lastBoneFindGameTime != Long.MIN_VALUE) tag.putLong(KEY_LAST_BONE_FIND_GAME_TIME, lastBoneFindGameTime);
         return tag;
     }
 
@@ -488,6 +509,7 @@ public final class WitcheryPlayerData {
         setVampireLevel(bloodData.getInt(KEY_VAMPIRE_LEVEL));
         setWerewolfLevel(bloodData.getInt(KEY_WEREWOLF_LEVEL));
         setPotionBottling(bloodData.getInt(KEY_POTION_BOTTLING));
+        potionThrowing = Mth.clamp(bloodData.getInt(KEY_POTION_THROWING), 0, 100);
         wolfmanQuestState = WolfmanQuestState.values()[Mth.clamp(bloodData.getInt(KEY_WOLFMAN_QUEST_STATE), 0, 2)];
         wolfmanQuestCounter = Mth.clamp(bloodData.getInt(KEY_WOLFMAN_QUEST_COUNTER), 0, 100);
         wolfmanQuestChunks.clear();
@@ -534,6 +556,8 @@ public final class WitcheryPlayerData {
                 ? tag.getLong(KEY_LAST_HOWL_GAME_TIME) : Long.MIN_VALUE;
         lastBoneFindGameTime = tag.contains(KEY_LAST_BONE_FIND_GAME_TIME, Tag.TAG_LONG)
                 ? tag.getLong(KEY_LAST_BONE_FIND_GAME_TIME) : Long.MIN_VALUE;
+        lastHowl = bloodData.getLong(KEY_LAST_HOWL);
+        lastBoneFind = bloodData.getLong(KEY_LAST_BONE_FIND);
     }
 
     private record VampireVillage(String dimension, long location) {}

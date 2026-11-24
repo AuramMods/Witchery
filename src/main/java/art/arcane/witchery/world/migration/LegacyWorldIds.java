@@ -6,6 +6,8 @@ import art.arcane.witchery.capability.WitcheryCapabilities;
 import art.arcane.witchery.item.DoorKeyItem;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.world.MirrorTravel;
+import art.arcane.witchery.world.WitcheryDimensions;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.serialization.Dynamic;
 import net.minecraft.SharedConstants;
@@ -171,8 +173,18 @@ public final class LegacyWorldIds {
     }
 
     private void preparePlayer(CompoundTag player, DataFixer fixer, int from) {
+        if (from < 100) dimensions.upgradePlayerLocation(player);
+        var legacy = player.getCompound("WitcheryExtendedPlayer");
         var forgeData = player.getCompound("ForgeData");
         var persisted = forgeData.getCompound(Player.PERSISTED_NBT_TAG);
+        if (!legacy.isEmpty()) {
+            boolean insideMirror = WitcheryDimensions.MIRROR.location().toString().equals(player.getString("Dimension"));
+            MirrorTravel.importLegacyPlayerState(legacy, persisted, insideMirror);
+            if (!persisted.isEmpty()) {
+                forgeData.put(Player.PERSISTED_NBT_TAG, persisted);
+                player.put("ForgeData", forgeData);
+            }
+        }
         var expiredDrops = persisted.getList("WITCPriIncInv", Tag.TAG_COMPOUND);
         // The pending list can keep legacy effect IDs after an earlier import updated the player version.
         effects.upgrade(persisted.getList("WITCPoSpawn", Tag.TAG_COMPOUND));
@@ -189,14 +201,12 @@ public final class LegacyWorldIds {
             return;
         }
 
-        dimensions.upgradePlayerLocation(player);
         upgradeItems(player);
         upgradeStoredBrewIngredients(player, fixer);
         upgradeEntityEffects(player);
         upgradeVanillaItems(persisted.getCompound("WITCSpiritWorld"), fixer, from, to);
         upgradeVanillaItems(expiredDrops, fixer, from, to);
-        if (player.contains("WitcheryExtendedPlayer", Tag.TAG_COMPOUND)) {
-            var legacy = player.getCompound("WitcheryExtendedPlayer");
+        if (!legacy.isEmpty()) {
             if (legacy.getBoolean("CanRestoreInventory") && legacy.contains("CachedInventory2", Tag.TAG_LIST)) {
                 var inventory = legacy.getList("CachedInventory2", Tag.TAG_COMPOUND);
                 upgradeVanillaItems(inventory, fixer, from, to);

@@ -30,7 +30,6 @@ import net.minecraftforge.event.ForgeEventFactory;
 import org.jetbrains.annotations.Nullable;
 
 public final class WolfTrials {
-    private static final int HOWL_COOLDOWN = 1_200;
     private static final int PACK_LIFETIME = 200;
 
     private WolfTrials() {}
@@ -138,14 +137,12 @@ public final class WolfTrials {
         boolean summonPack = rank >= 8 && Lycanthropy.isWolf(player);
         boolean paralyze = rank >= 7 && Lycanthropy.isWolfman(player);
         if (!summonPack && !paralyze) return;
-        long now = world.getGameTime();
-        long previous = data.getLastHowlGameTime();
-        if (!player.isCreative() && previous != Long.MIN_VALUE && now - previous < HOWL_COOLDOWN) {
+        if (!player.isCreative() && data.howlCoolingDown(world.getGameTime())) {
             tell(player, "howl_cooldown");
             return;
         }
         playHowl(world, player);
-        data.markHowled(now);
+        data.markHowled();
         if (summonPack) {
             int wolves = 2 + world.random.nextInt(rank - 7);
             for (int member = 0; member < wolves; member++) summonPackWolf(world, player);

@@ -36,6 +36,8 @@ import java.util.UUID;
 
 public final class MirrorTravel {
     private static final String ENTRY = "MirrorWorldEntryPoint";
+    private static final String ESCAPE_TO_ENTRY = "MirrorEscape1";
+    private static final String ESCAPE_TO_SPAWN = "MirrorEscape2";
     private static final String COOLDOWN = "WITCMirrorTravelCooldown";
     private static final String PENDING = "WITCPendingMirror";
     private static final int TRANSIT_COOLDOWN = 60;
@@ -252,7 +254,7 @@ public final class MirrorTravel {
         ServerLevel here = player.serverLevel();
         if (!player.isAlive() || player.isRemoved() || !here.dimension().equals(WitcheryDimensions.MIRROR)) return;
         CompoundTag data = persist(player);
-        String key = entryPhrase ? "MirrorEscape1" : "MirrorEscape2";
+        String key = entryPhrase ? ESCAPE_TO_ENTRY : ESCAPE_TO_SPAWN;
         long tick = here.getGameTime();
         long duration = entryPhrase ? 6_000 : 72_000;
         if (data.contains(key, Tag.TAG_ANY_NUMERIC) && data.getLong(key) + duration > tick) {
@@ -278,9 +280,13 @@ public final class MirrorTravel {
                 if (arrival == null) arrival = Vec3.atBottomCenterOf(home.getSharedSpawnPos());
             }
             moved = move(player, home, arrival, player.getRespawnAngle());
-            if (moved) persist(player).remove(ENTRY);
         }
-        if (moved) data.putLong(key, tick);
+        if (moved) {
+            data = persist(player);
+            if (!entryPhrase) data.remove(ENTRY);
+            data.putLong(key, tick);
+            player.getPersistentData().put(Player.PERSISTED_NBT_TAG, data);
+        }
     }
 
     @Nullable
@@ -358,6 +364,22 @@ public final class MirrorTravel {
         return player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
     }
 
+    public static void importLegacyPlayerState(CompoundTag legacy, CompoundTag persisted, boolean insideMirror) {
+        CompoundTag entry = legacy.getCompound(ENTRY);
+        if (insideMirror && !hasEntryCoordinates(persisted.getCompound(ENTRY)) && hasEntryCoordinates(entry)) {
+            persisted.put(ENTRY, entry.copy());
+        }
+        // Both versions use the save's total world time for these cooldowns.
+        importEscapeTime(legacy, persisted, ESCAPE_TO_ENTRY);
+        importEscapeTime(legacy, persisted, ESCAPE_TO_SPAWN);
+    }
+
+    private static void importEscapeTime(CompoundTag legacy, CompoundTag persisted, String key) {
+        if (!persisted.contains(key) && legacy.contains(key, Tag.TAG_ANY_NUMERIC) && legacy.getLong(key) >= 0) {
+            persisted.putLong(key, legacy.getLong(key));
+        }
+    }
+
     private static void rememberEntry(ServerPlayer player, BlockPos pos) {
         CompoundTag data = persist(player);
         CompoundTag entry = new CompoundTag();
@@ -371,8 +393,13 @@ public final class MirrorTravel {
     @Nullable
     private static BlockPos entry(ServerPlayer player) {
         CompoundTag data = persist(player).getCompound(ENTRY);
-        return data.contains("posY", Tag.TAG_ANY_NUMERIC)
+        return hasEntryCoordinates(data)
                 ? new BlockPos(data.getInt("posX"), data.getInt("posY"), data.getInt("posZ")) : null;
+    }
+
+    private static boolean hasEntryCoordinates(CompoundTag data) {
+        return data.contains("posX", Tag.TAG_ANY_NUMERIC) && data.contains("posY", Tag.TAG_ANY_NUMERIC)
+                && data.contains("posZ", Tag.TAG_ANY_NUMERIC);
     }
 
     private static final class RoomCounter extends SavedData {
