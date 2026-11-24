@@ -1159,7 +1159,9 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 16 | `PredictionNetherTrip` | 3 | `witchery.prediction.tothenether` |
 | 17 | `PredictionMultiMine` | 13 | `witchery.prediction.coal` |
 
-`Predictions` registers all 17 IDs with their legacy weights, one active outcome, and `WITCPredict.WITCPreList` entries with `WITCPreID` and `WITCPreTime`. `CrystalBallBlockEntity` retains `LastUsedTime` and the training rite grants `WITCFTeller`. The two Baba Yaga readings use the original `witchery:babayaga` entity and legacy `Owner` name. New allied visits also retain the UUID and visit age.
+`Predictions` registers all 17 IDs with their legacy weights and assigns a new forecast only when the active list is empty. `WITCPredict.WITCPreList` entries retain `WITCPreID` and `WITCPreTime`. `CrystalBallBlockEntity` retains `LastUsedTime` and the training rite grants `WITCFTeller`. The two Baba Yaga readings use the original `witchery:babayaga` entity and legacy `Owner` name. New allied visits also retain the UUID and visit age.
+
+Prediction ticks and Crystal Ball readings remove IDs outside the registry. If a restored list includes several registered IDs, the ball reports each once and preserves their saved times and other fields. A new reading is available when the restored list contains only obsolete IDs.
 
 Mining predictions extend Forge block loot after the harvest. Deepslate and its matching ores extend the legacy stone rules. The treasure prediction places a chest with `minecraft:chests/abandoned_mineshaft`, the modern counterpart of `mineshaftCorridor`.
 

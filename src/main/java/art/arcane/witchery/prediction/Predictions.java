@@ -37,6 +37,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -119,9 +120,9 @@ public final class Predictions {
         CompoundTag persisted = persisted(subject);
         CompoundTag root = persisted.getCompound(ROOT);
         ListTag readings = root.getList(LIST, Tag.TAG_COMPOUND);
-        Kind kind;
+        readings.removeIf(entry -> Kind.byId(((CompoundTag) entry).getInt(ID)) == null);
         if (readings.isEmpty()) {
-            kind = choose(subject);
+            Kind kind = choose(subject);
             if (kind != null) {
                 CompoundTag reading = new CompoundTag();
                 reading.putInt(ID, kind.id);
@@ -131,11 +132,19 @@ public final class Predictions {
                 persisted.put(ROOT, root);
                 subject.getPersistentData().put(Player.PERSISTED_NBT_TAG, persisted);
             }
-        } else {
-            kind = Kind.byId(readings.getCompound(0).getInt(ID));
         }
-        subject.sendSystemMessage(Component.translatable(MESSAGE + (kind == null ? "none" : kind.message), subject.getDisplayName())
-                .withStyle(ChatFormatting.LIGHT_PURPLE));
+        var reported = EnumSet.noneOf(Kind.class);
+        for (int index = 0; index < readings.size(); index++) {
+            Kind kind = Kind.byId(readings.getCompound(index).getInt(ID));
+            if (reported.add(kind)) {
+                subject.sendSystemMessage(Component.translatable(MESSAGE + kind.message, subject.getDisplayName())
+                        .withStyle(ChatFormatting.LIGHT_PURPLE));
+            }
+        }
+        if (reported.isEmpty()) {
+            subject.sendSystemMessage(Component.translatable(MESSAGE + "none", subject.getDisplayName())
+                    .withStyle(ChatFormatting.LIGHT_PURPLE));
+        }
     }
 
     public static void onHurt(ServerPlayer player, DamageSource source) {
@@ -191,11 +200,14 @@ public final class Predictions {
         if (player.tickCount % 100 != 0 || player.isSpectator() || !player.isAlive()) return;
         ListTag readings = readings(player);
         long now = timeInTicks();
-        for (int index = readings.size() - 1; index >= 0; index--) {
-            CompoundTag reading = readings.getCompound(index);
+        // Fulfillment can visit the Nether and remove other entries from the live list.
+        var pending = List.copyOf(readings);
+        for (int slot = pending.size() - 1; slot >= 0; slot--) {
+            var reading = (CompoundTag) pending.get(slot);
+            int index = readings.lastIndexOf(reading);
+            if (index < 0) continue;
             Kind kind = Kind.byId(reading.getInt(ID));
-            if (kind == null) continue;
-            if (kind == Kind.WET && player.isInWaterRainOrBubble()
+            if (kind == null || kind == Kind.WET && player.isInWaterRainOrBubble()
                     || kind == Kind.NETHER && player.level().dimension().equals(Level.NETHER)) {
                 readings.remove(index);
                 continue;
@@ -204,7 +216,7 @@ public final class Predictions {
             if (chance > 0 && player.getRandom().nextDouble() < chance) {
                 // Remove the reading before effects that can post another player event.
                 readings.remove(index);
-                if (!fulfill(kind, player)) readings.add(index, reading);
+                if (!fulfill(kind, player)) readings.add(Math.min(index, readings.size()), reading);
             }
         }
     }

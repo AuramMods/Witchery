@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Recovery of Saved Crystal Ball Forecasts (2026-11-24)
+
+- Remove unregistered forecast IDs during prediction ticks and before a Crystal Ball reading. The ball reports each remaining registered ID once and preserves the saved times and any extra data. The reading slot can be used again when all saved forecasts are obsolete.
+- A disposable survival player had a synthetic legacy-format list with ID `65535` followed by Iron and Coal. The preceding packaged build spent 500 altar power, reported no forecast, and left the full list active. The rebuilt package reopened that save, discarded the obsolete ID, and reported Iron and Coal from the same 500-power activation. Both timestamps and the original Iron fixture marker survived another dedicated restart. A separate copy containing only `65535` received a new Wolf Rescue forecast through the ordinary Crystal Ball interaction.
+- Both regressions failed on the preceding source. All 183 required local Forge GameTests, Java 17 reobfuscation, and the asset inventory audit passed on the rebuilt package. Both sides used SHA-256 `e9e9ca3017acce6378069a5de6f4ec7c49be7eea4e92ee32b9e844d6860fc15e`. The isolated clients used zero master volume and OpenAL No Output without desktop activation. Logs and fixtures are in `build/qa-prediction-save`.
+
 ## Webs, Vines, and Thorns Presentation and Collision (2026-11-24)
 
 - Witchery Vines use the original two-pixel directional collision strip as a climbable surface. Their two visible faces sit 0.05 blocks to either side of the mount and use the surrounding biome's foliage color. Webs use the vanilla Cobweb sprite. Thorns use the vanilla cactus side, top, and bottom sprites on their corresponding faces.
