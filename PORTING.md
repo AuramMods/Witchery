@@ -1064,7 +1064,7 @@
 
 - [x] Generate coven circles and witches' shacks on the shared regional grid with Wicker Men. Restore the generation toggles and dry-site checks, and keep the original chances to generate a persistent coven witch at either new site.
 - [x] Restore the coven ring, its desert variant, chiseled water basin, mineshaft loot dispenser, and two vanilla witch spawners. Restore the shack's furnishings and original eight weighted chest entries.
-- [ ] Use the original mineshaft loot pool for newly generated coven circle dispensers. Verify the nine-slot inventory and preserve loot in older saves.
+- [x] Use the original mineshaft loot pool and nine-slot rolls for newly generated coven circle dispensers. The muted survival client took Pumpkin Seeds from a naturally generated circle. A dedicated restart preserved the player's seeds and the dispenser's remaining slots. Opening a save from the preceding JAR preserved both its unopened dispenser's table and seed and an already-filled dispenser's contents.
 - [x] In a fresh world, the muted survival client opened the naturally generated shack door, collected an iron pickaxe, and activated the circle's spawners. The fixtures teleported the client to the generated sites.
 - [x] Restart the dedicated server and verify the same coven witch UUID, the dispenser loot table, the shack door, and the opened chest.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 349 required Forge GameTests. The new cases cover the desert geometry and block entity data, a rotated shack and its loot, and fallback to another enabled type.

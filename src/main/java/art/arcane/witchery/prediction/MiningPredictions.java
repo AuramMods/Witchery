@@ -1,10 +1,9 @@
 package art.arcane.witchery.prediction;
 
-import art.arcane.witchery.Witchery;
 import art.arcane.witchery.brewing.BrewTerrain;
+import art.arcane.witchery.data.WitcheryLootTables;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
@@ -21,9 +20,6 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 
 final class MiningPredictions {
-    private static final ResourceLocation TREASURE_LOOT =
-            ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "chests/mineshaft_corridor");
-
     private MiningPredictions() {}
 
     static boolean addOre(Predictions.Kind kind, RandomSource random, BlockState state, List<ItemStack> drops,
@@ -68,11 +64,8 @@ final class MiningPredictions {
 
         var params = new LootParams.Builder(level).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(below))
                 .create(LootContextParamSets.CHEST);
-        var loot = level.getServer().getLootData().getLootTable(TREASURE_LOOT);
-        // Legacy mineshaft loot chose a slot on every roll, including already occupied slots.
-        for (ItemStack stack : loot.getRandomItems(params, random.nextLong())) {
-            chest.setItem(random.nextInt(chest.getContainerSize()), stack);
-        }
+        level.getServer().getLootData().getLootTable(WitcheryLootTables.MINESHAFT_CORRIDOR)
+                .fill(chest, params, random.nextLong());
         chest.setChanged();
         return true;
     }

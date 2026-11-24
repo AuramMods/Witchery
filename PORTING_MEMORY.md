@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Original Coven Dispenser Loot (2026-11-24)
+
+- New coven circle dispensers and Buried Treasure share the legacy mineshaft loot pool and slot assignment. The dispenser keeps its world-generation seed and rolls at first inventory access through the normal 1.20.1 container lifecycle. The GameTest's seed rolls five times into nine slots and leaves three unsplit stacks because two rolls land in already occupied slots.
+- In a fresh seed 1 world, the packaged survival client opened the naturally generated dispenser at `392 69 344` and took three Pumpkin Seeds. The fixture provided access under the basin and positioned the player. The dispenser's five Lapis Lazuli and one Bread stayed in slots 7 and 8 through a headless dedicated restart. The player kept the seeds.
+- The packaged upgrade reopened a separate seed 1 world created by `22198cc`. Its unopened coven dispenser kept the vanilla mineshaft table and exact seed. A filled fixture dispenser kept both Golden Apples in slot 4.
+- The new test reproduced the preceding table assignment before a concurrent compile interrupted the remainder of the baseline suite. The final standalone run passed all 188 required local Forge GameTests. Java 17 data generation, JAR reobfuscation, and the asset inventory audit passed. The muted client used OpenAL No Output and stayed unfocused. Logs and fixtures are in `build/qa-coven-dispenser` with package SHA-256 `6be6f83ad0ddd8c21497a53896bfcf08dec5d681698c95d471bc8eddd29f9bfd`.
+
 ## Original Buried Treasure (2026-11-24)
 
 - Dirt, grass, mycelium and sand harvests can place a treasure chest one block down in a covered air, water or ordinary solid cell. A Forge break or place veto leaves the site and saved reading intact. The chest fills immediately from the old Forge mineshaft pool. All fourteen entries, their weights and counts, and three to six rolls match the reference. A level-30 book uses the current enchantment registry.

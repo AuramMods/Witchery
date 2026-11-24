@@ -1,6 +1,7 @@
 package art.arcane.witchery.world;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.data.WitcheryLootTables;
 import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -17,7 +18,6 @@ import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
-import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraftforge.event.ForgeEventFactory;
 
 final class CovenStructures {
@@ -47,7 +47,7 @@ final class CovenStructures {
         site.fill(4, 1, 4, 6, 1, 6, Blocks.CHISELED_STONE_BRICKS);
         site.put(5, 1, 5, Blocks.WATER);
         site.put(5, 0, 5, Blocks.DISPENSER.defaultBlockState().setValue(DispenserBlock.FACING, Direction.EAST));
-        RandomizableContainerBlockEntity.setLootTable(site.level(), random, site.at(5, 0, 5), BuiltInLootTables.ABANDONED_MINESHAFT);
+        RandomizableContainerBlockEntity.setLootTable(site.level(), random, site.at(5, 0, 5), WitcheryLootTables.MINESHAFT_CORRIDOR);
         site.spawner(4, 0, 4, EntityType.WITCH, random);
         site.spawner(6, 0, 6, EntityType.WITCH, random);
 
