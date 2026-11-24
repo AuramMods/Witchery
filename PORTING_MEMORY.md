@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Distillery and Spinning Wheel Power (2026-11-24)
+
+- The running Witchery 0.24.1 reference showed a connected altar on both idle menus at zero charge. With valid inputs and no charge, the Distillery stayed at 140 ticks and the Wheel stayed at 90. Restoring charge advanced each one tick. Filling a matching output stack reset both batches to zero. The original Wheel saved the idle indicator as a short under `PowerLevel`.
+- The previous packaged Forge Distillery stayed at 790 ticks with a full matching output, and its Wheel dropped `PowerLevel` when saving. Both previous menus used stored charge in all states. The rebuilt machines use the altar connection when idle and the actual debit when running. An incompatible Distillery output continues to block processing to protect ingredients and all four outputs. The original could consume the ingredients and discard the result for the incompatible slot.
+- Clean Forge showed the idle and active indicators in both survival menus. Both loaded batches stayed at 794 and 294 ticks through a dedicated restart and finished when supplied charge. The Distillery produced both Glowstone stacks and Reek of Misfortune, and the Wheel produced Cobweb.
+- Copied Auram repeated the menu, blockage, and batch completion checks on the same JAR. The successful replay gave JEI time to finish loading before reading the client's response. The client runs on both profiles used zero master volume and OpenAL No Output. The focus monitors recorded no foreground changes.
+- A workshop saved by the original dedicated server also kept both exact times, the idle Wheel's `PowerLevel:1s`, the active Wheel's `PowerLevel:0s`, the eight String, and the old numeric jar through import and a regular dedicated restart. Adding charge let both imported batches finish on the same JAR.
+- Local Java 17 data generation, JAR reobfuscation, and all 254 required Forge GameTests passed. The added tests cover the menu indicators, original Wheel save fields, pause and resume, and matching and incompatible output stacks. The original comparison and packaged JAR are in `build/qa-workstation-power`. Package SHA-256 `40c1747654439ac7a3c8f3554a5b6f13591ca2e11eff4a3c2c86c9bff8ddef04`.
+
 ## Water Bottle Transfers and Kettle Splash Feedback (2026-11-24)
 
 - Witchery 0.24.1 drew 1,000 mB of plain water from either vessel. Drawing the last water cleared a spoiled Kettle and its saved result. A Water Bottle poured up to 1,000 mB and was consumed in survival. The original kept the glass stack and water intact when the inventory could not accept the filled bottle. The previous clean Forge JAR skipped all four transfers, and its copied Auram Kettle drew 125 mB through the pack's item capability.

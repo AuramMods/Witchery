@@ -1265,6 +1265,7 @@ The `witchery:wood_ash` smelting recipe uses `minecraft:saplings` when `addSmelt
 - Built-in Kettle potion ingredients check the base potion and its drinkable or splash item ID. This preserves the original potion metadata requirements for strength and duration and accepts custom names or other independent item tags.
 - `DistilleryRecipes.instance().addRecipe`: 9
 - `SpinningRecipes.instance().addRecipe`: 4
+- An idle Distillery or Spinning Wheel displays a connection to a formed altar even at zero charge. A runnable batch updates the indicator from its 0.6-power debit and keeps its elapsed ticks during a power interruption. A full output resets elapsed ticks. The Distillery also blocks incompatible output stacks to prevent losing part of the batch. The Spinning Wheel preserves the original `PowerLevel` short alongside `CookTime` and `Items`.
 
 ### Custom RecipeSorter Keys
 - `witchery:bindpoppet`

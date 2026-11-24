@@ -90,9 +90,9 @@ public final class DistilleryBlockEntity extends BaseContainerBlockEntity implem
         int oldCookTime = distillery.cookTime;
         boolean running = false;
         DistillingRecipe recipe = distillery.recipes.getRecipeFor(distillery, level).orElse(null);
-        distillery.refreshAltar(server, pos);
-        distillery.powered = distillery.altar != null && distillery.altar.power() >= POWER_PER_TICK;
-        if (recipe == null) {
+        boolean ready = recipe != null && distillery.canStore(recipe);
+        distillery.refreshAltar(server, pos, ready);
+        if (!ready) {
             distillery.cookTime = 0;
             distillery.activeRecipe = null;
         } else {
@@ -100,8 +100,8 @@ public final class DistilleryBlockEntity extends BaseContainerBlockEntity implem
                 distillery.cookTime = 0;
             }
             distillery.activeRecipe = recipe.id();
-            if (distillery.altar != null && distillery.powered && distillery.canStore(recipe)
-                    && distillery.altar.consumePower(POWER_PER_TICK)) {
+            distillery.powered = distillery.altar != null && distillery.altar.consumePower(POWER_PER_TICK);
+            if (distillery.powered) {
                 running = true;
                 if (++distillery.cookTime >= COOK_TICKS) {
                     distillery.finish(recipe);
@@ -120,10 +120,11 @@ public final class DistilleryBlockEntity extends BaseContainerBlockEntity implem
         }
     }
 
-    private void refreshAltar(ServerLevel level, BlockPos pos) {
-        long tick = level.getGameTime();
-        if (tick % 40 == 0 || altar != null && (altar.isRemoved() || !altar.isInRange(pos) || !altar.isCore(level))) {
+    private void refreshAltar(ServerLevel level, BlockPos pos, boolean ready) {
+        if (level.getGameTime() % 40 == 0 || ready && altar == null
+                || altar != null && (altar.isRemoved() || !altar.isInRange(pos) || !altar.isCore(level))) {
             altar = AltarPower.nearest(level, pos);
+            if (!ready) powered = altar != null;
         }
     }
 

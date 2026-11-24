@@ -90,13 +90,16 @@ public final class SpinningWheelBlockEntity extends BaseContainerBlockEntity imp
 
     private void spin(ServerLevel level, BlockPos pos, BlockState state) {
         int oldTime = cookTime;
-        if (level.getGameTime() % 40 == 0 || altar != null && (altar.isRemoved() || !altar.isInRange(pos) || !altar.isCore(level))) {
-            altar = AltarPower.nearest(level, pos);
-        }
-        powered = altar != null && altar.power() >= POWER_PER_TICK;
+        boolean wasPowered = powered;
         SpinningRecipe recipe = items.get(FIBRE_SLOT).isEmpty() ? null : recipes.getRecipeFor(this, level).orElse(null);
+        boolean ready = recipe != null && canStore(recipe.result());
+        if (level.getGameTime() % 40 == 0 || ready && altar == null
+                || altar != null && (altar.isRemoved() || !altar.isInRange(pos) || !altar.isCore(level))) {
+            altar = AltarPower.nearest(level, pos);
+            if (!ready) powered = altar != null;
+        }
         boolean spinning = false;
-        if (recipe == null || !canStore(recipe.result())) {
+        if (!ready) {
             cookTime = 0;
             activeRecipe = null;
         } else {
@@ -104,7 +107,8 @@ public final class SpinningWheelBlockEntity extends BaseContainerBlockEntity imp
                 cookTime = 0;
             }
             activeRecipe = recipe.id();
-            if (altar != null && powered && altar.consumePower(POWER_PER_TICK)) {
+            powered = altar != null && altar.consumePower(POWER_PER_TICK);
+            if (powered) {
                 if (++cookTime >= COOK_TICKS) {
                     finish(recipe);
                     cookTime = 0;
@@ -116,7 +120,7 @@ public final class SpinningWheelBlockEntity extends BaseContainerBlockEntity imp
         if (state.getValue(SpinningWheelBlock.SPINNING) != spinning) {
             level.setBlock(pos, state.setValue(SpinningWheelBlock.SPINNING, spinning), Block.UPDATE_ALL);
         }
-        if (oldTime != cookTime) {
+        if (oldTime != cookTime || wasPowered != powered) {
             level.blockEntityChanged(pos);
         }
     }
@@ -252,6 +256,7 @@ public final class SpinningWheelBlockEntity extends BaseContainerBlockEntity imp
             }
         }
         cookTime = Mth.clamp(tag.getInt("CookTime"), 0, COOK_TICKS - 1);
+        powered = tag.getInt("PowerLevel") > 0;
         activeRecipe = tag.contains("Recipe", Tag.TAG_STRING) ? ResourceLocation.tryParse(tag.getString("Recipe")) : null;
     }
 
@@ -260,6 +265,7 @@ public final class SpinningWheelBlockEntity extends BaseContainerBlockEntity imp
         super.saveAdditional(tag);
         ContainerHelper.saveAllItems(tag, items);
         tag.putInt("CookTime", cookTime);
+        tag.putShort("PowerLevel", (short) (powered ? 1 : 0));
         if (activeRecipe != null) {
             tag.putString("Recipe", activeRecipe.toString());
         }
