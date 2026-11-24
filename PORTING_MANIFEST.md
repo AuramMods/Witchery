@@ -1202,6 +1202,8 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 
 All four infusion recipes, their personal charge and the HUD are implemented. The Witch's Hand uses `witchery:witchhand` and restores Otherwhere movement, Light's cloak and barriers, Overworld's terrain and metal powers, and Infernal minion control and creature powers. Its recall point survives serialization in `WITCRecallD`, `WITCRecallX`, `WITCRecallY` and `WITCRecallZ`. Its right-click cooldown keeps the `WITCCooldown` field. The `witchery:barrier` block retains `remainingTicks`, `blocksPlayers` and `owner` in its block entity, with a UUID for new placements. Infernal minions read `WITCEnslaverName` and save the owner UUID for new bindings. Creature powers retain `WITCBeastPower` and `WITCBeastPowerCharges`. Their projectiles use the migrated Rock and Thrown Web ingredients.
 
+The Infernal Hand and Imperio reject Baba Yaga, Lilith, Death, the Horned Huntsman, Mog, Gulg, Leonard, the Lord of Torment, and the Reflection. The shared boss check also reads Forge's boss tag. Golems, Demons, ordinary witches, Imps, Ents and Elder Guardians retain their separate binding exclusions.
+
 `witchery:poppetshelf` reads legacy `Items` and its nine `Slot` indices. It shares taglock matching and `WITCDamage` with handheld wards. A Forge block ticket replaces the old `poppetX`, `poppetY` and `poppetZ` ticket fields and keeps the owning block position in the dimension's `chunks.dat`.
 
 On an explicit legacy import, Witchery reads its `TicketList` records from each original `forcedchunks.dat` and restores a ticking ticket for every surviving Poppet Shelf. It also loads shelves outside spawn so their stored wards can become active before a player visits.

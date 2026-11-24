@@ -1,8 +1,8 @@
 package art.arcane.witchery.infusion;
 
+import art.arcane.witchery.entity.CreatureAlignment;
 import art.arcane.witchery.entity.Demon;
 import art.arcane.witchery.entity.Imp;
-import art.arcane.witchery.entity.LordOfTorment;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryEntities;
@@ -23,7 +23,6 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.target.TargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.animal.AbstractGolem;
-import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.monster.ElderGuardian;
 import net.minecraft.world.entity.monster.Spider;
 import net.minecraft.world.entity.monster.Witch;
@@ -31,7 +30,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraftforge.common.Tags;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
@@ -155,10 +153,9 @@ public final class InfernalInfusion {
     }
 
     public static boolean canBind(Mob mob) {
-        return !(mob instanceof AbstractGolem) && !(mob instanceof WitherBoss) && !(mob instanceof ElderGuardian)
-                && !(mob instanceof Demon) && !(mob instanceof LordOfTorment) && !(mob instanceof Witch)
-                && !(mob instanceof Imp) && mob.getType() != WitcheryEntities.all().get("ent").get()
-                && !mob.getType().is(Tags.EntityTypes.BOSSES);
+        return !CreatureAlignment.boss(mob) && !(mob instanceof AbstractGolem || mob instanceof ElderGuardian
+                || mob instanceof Demon || mob instanceof Witch || mob instanceof Imp)
+                && mob.getType() != WitcheryEntities.ENT.get();
     }
 
     public static void castImperio(ServerPlayer player, Mob mob) {

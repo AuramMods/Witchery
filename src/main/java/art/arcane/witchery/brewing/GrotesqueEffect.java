@@ -1,13 +1,11 @@
 package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.entity.CreatureAlignment;
 import art.arcane.witchery.entity.Demon;
-import art.arcane.witchery.entity.HobgoblinGod;
-import art.arcane.witchery.entity.Leonard;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.ritual.ProtectionRites;
-import art.arcane.witchery.vampirism.Vampirism;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
@@ -20,7 +18,6 @@ import net.minecraft.world.entity.animal.AbstractGolem;
 import net.minecraft.world.entity.monster.Witch;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.Tags;
 
 public final class GrotesqueEffect extends TrackedBrewEffect {
     public static final String BREW_TIMER = "witcheryGrotesque";
@@ -43,9 +40,8 @@ public final class GrotesqueEffect extends TrackedBrewEffect {
 
     private static void repel(LivingEntity entity, ServerLevel level, boolean brewed) {
         for (Mob mob : level.getEntitiesOfClass(Mob.class, entity.getBoundingBox().inflate(RADIUS),
-                mob -> mob != entity && mob.isAlive() && !(mob instanceof Demon || mob instanceof AbstractGolem
-                        || mob instanceof HobgoblinGod || mob instanceof Leonard)
-                        && !mob.getType().is(Tags.EntityTypes.BOSSES) && !Vampirism.isBoss(mob)
+                mob -> mob != entity && mob.isAlive() && !(mob instanceof Demon || mob instanceof AbstractGolem)
+                        && !CreatureAlignment.boss(mob)
                         && (!brewed || !(mob instanceof Witch)))) {
             Vec3 offset = mob.position().subtract(entity.position());
             double distanceSquared = offset.lengthSqr();

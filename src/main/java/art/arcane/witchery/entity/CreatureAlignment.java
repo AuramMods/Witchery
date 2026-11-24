@@ -35,9 +35,13 @@ public final class CreatureAlignment {
         return Lycanthropy.isShifted(entity) || entity instanceof Reflection copy && copy.hasWolfmanModel();
     }
 
+    public static boolean boss(LivingEntity entity) {
+        return Vampirism.isBoss(entity) || entity.getType().is(Tags.EntityTypes.BOSSES)
+                || entity instanceof HobgoblinGod || entity instanceof Leonard;
+    }
+
     public static boolean immuneToDisease(LivingEntity entity) {
         return undead(entity) || demonic(entity) || Lycanthropy.isWerewolf(entity) || werewolf(entity)
-                || Vampirism.isBoss(entity) || entity.getType().is(Tags.EntityTypes.BOSSES)
-                || entity instanceof AbstractGolem || entity instanceof HobgoblinGod || entity instanceof Leonard;
+                || boss(entity) || entity instanceof AbstractGolem;
     }
 }

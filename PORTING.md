@@ -305,6 +305,8 @@
 
 ## Infernal Infusion Hand Powers (2026-11-20)
 
+- [x] Restore the original boss immunity shared by the Infernal Hand and Imperio. All nine Witchery bosses that implemented `IBossDisplayData` reject binding. The hand spends five charges for an eligible creature and spends zero charges on a boss.
+- [x] Use the imported Witch's Hand, Necromantic Stone and Infused Brew of the Grave in packaged survival. Baba Yaga refused the binding, a pig took five charges, and the Grave brew bound a skeleton without charge while enforcing its cooldown. After restart the stone still redirected a zombie with a name-only legacy binding away from a villager.
 - [x] Restore minion binding, hostile and movement orders, and sacrificing a bound creature. The muted survival client performed the Infernal rite, bound a zombie, ordered it to attack a pig, and moved it toward an aimed block. The binding used five charge, the attack order used one, and the movement order preserved charge.
 - [x] Restore the 25 creature-power IDs and their activation and passive abilities. A separate meter uses the original creature icons and tracks up to 20 charges. The muted client sacrificed a pig, displayed its icon and charge, and restored six health to twenty. With the pig charge spent, another attempt preserved the infusion charge. Sacrificing a bat replaced that power and enabled Night Vision.
 - [x] Build the reobfuscated Java 17 JAR and run all 65 required Forge GameTests. The tests cover legacy minion names, sacrifices, the secondary charge cap, effects, fireballs, arrows and cobwebs. Legacy ingredient 56 migrates to `witchery:thrown_web` and the existing `witchery:web` block item retains its ID.

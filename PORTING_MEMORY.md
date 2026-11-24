@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Infernal Binding and Legacy Boss Immunity (2026-11-24)
+
+- The Infernal Hand and Imperio use the original boss exclusions. The preceding packaged JAR let a survival player bind Baba Yaga with the Witch's Hand and consumed five charges. The shared boss predicate recognizes the nine original Witchery bosses and still honors Forge's boss tag.
+- The checked-in regression drove the Witch's Hand and Imperio's binding handler against all nine bosses and confirmed that the hand consumed no charges. A pig still bound for five charges. All 169 local Forge GameTests passed.
+- The clean Forge survival client used the Witch's Hand from a synthetic 1.7.10 owner record. Baba Yaga stayed unbound at 200 charges. The pig bound at 195. A zombie supplied with the original name-only `ForgeData.WITCEnslaverName` field received the binding effect on join. The imported Necromantic Stone diverted that zombie away from a villager it was already attacking and dealt damage to the aimed cow. The fixture supplied the creatures and arena, set up the existing attack, and selected the imported items.
+- The player drank the imported Infused Brew of the Grave and bound a skeleton with the Necromantic Stone at 195 charges. A second skeleton stayed unbound during the cooldown. After a normal dedicated restart, the zombie's name-only binding, the skeleton's UUID binding, and the active brew remained. The player ordered the same zombie off another villager and watched it hit the aimed cow again.
+- Local Java 17 reobfuscation and the asset inventory audit passed. The isolated Forge client and dedicated server used matching JARs with SHA-256 `34746d3565af180869639b98b7d3c558e0e2de7bfbef12fd709470260ecd8f93`. The isolated client used zero master volume and OpenAL No Output without taking focus. Logs are in `build/qa-infernal-minions`.
+
 ## Brew of Grotesque and Fear (2026-11-24)
 
 - Standalone Grotesque resumes the original `ForgeData.PlayerPersisted.witcheryGrotesque` countdown and resets it to 1,200 pulses on drinking. The repulsion runs every fourth world tick, spares ordinary witches, and is independent of milk cures. Player-style packets show the original Demon mask to the drinker and tracking clients.
