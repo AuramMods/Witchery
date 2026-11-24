@@ -5,6 +5,7 @@ import art.arcane.witchery.entity.MirrorFace;
 import art.arcane.witchery.entity.WitcheryFollower;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcherySounds;
+import art.arcane.witchery.world.migration.LegacyGameProfiles;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -66,7 +67,7 @@ final class MirrorConversation {
                     : level.getServer().getPlayerList().getPlayer(favorite.getId());
             if (chosen != null && chosen.level() == level) tellBearing(player, center, chosen);
         } else {
-            favorite = new GameProfile(player.getUUID(), player.getGameProfile().getName());
+            rememberFavorite(player.getGameProfile());
             fairest = null;
             if (level.getGameTime() - lastFairestSpawn > FAIREST_COOLDOWN
                     && level.random.nextDouble() < WitcheryServerConfig.FAIREST_SPAWN_CHANCE.get()) {
@@ -92,6 +93,15 @@ final class MirrorConversation {
     private boolean isFavorite(ServerPlayer player) {
         return favorite != null && (favorite.getId() != null ? favorite.getId().equals(player.getUUID())
                 : favorite.getName().equalsIgnoreCase(player.getGameProfile().getName()));
+    }
+
+    private void rememberFavorite(GameProfile current) {
+        GameProfile updated = new GameProfile(current.getId(), current.getName());
+        if (favorite != null) updated.getProperties().putAll(favorite.getProperties());
+        for (String key : current.getProperties().keySet()) {
+            updated.getProperties().replaceValues(key, current.getProperties().get(key));
+        }
+        favorite = updated;
     }
 
     private static boolean showFace(ServerLevel level, BlockPos pos, Direction front) {
@@ -159,10 +169,7 @@ final class MirrorConversation {
     }
 
     void load(CompoundTag root) {
-        CompoundTag profile = root.getCompound("Favorite");
-        String name = profile.getString("Name");
-        UUID id = profile.hasUUID("Id") ? profile.getUUID("Id") : parseUuid(profile.getString("Id"));
-        favorite = id == null && name.isEmpty() ? null : new GameProfile(id, name);
+        favorite = root.contains("Favorite", Tag.TAG_COMPOUND) ? LegacyGameProfiles.read(root.getCompound("Favorite")) : null;
         fairest = parseUuid(root.getString("Fairest"));
         lastFairestSpawn = root.getLong("LastFairestSpawnTime");
         ListTag visitors = root.getList("PlayersSeen", Tag.TAG_STRING);

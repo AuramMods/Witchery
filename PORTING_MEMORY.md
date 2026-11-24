@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Inhabited Mirror Favorite Import (2026-11-24)
+
+- The previous packaged server opened the legacy frame with the favorite's original name and UUID while dropping its profile properties. The rebuilt server imported the same frame from the synthetic Forge 1.7.10 region with its properties and signature intact. The fixture also recovered the mirror item from a numeric legacy chest stack.
+- The Mirror uses the shared legacy profile decoder. A favorite's conversation refreshes any property provided by the current profile and retains saved properties absent from it. This keeps the original signatures when the favorite reconnects with a name and UUID alone.
+- The muted, unfocused survival client spoke to the imported Mirror as its favorite. It received the original dialogue and visitor list. The frame cleared the visitors while keeping its signed property and 6,000-tick cooldown timestamp. The client mounted a second Mirror from the imported chest stack, and both frames retained their favorite properties through another dedicated restart.
+- Java 17 data generation, JAR reobfuscation, and all 221 required local Forge GameTests passed. The new test checks conversion of a string UUID, transfer through a portable Mirror, and refresh when the favorite changes their name. Logs and the exact package are in `build/qa-mirror-favorite-import`. Package SHA-256 `7c6b0b311e6e98c3a99360e50f3838aa4456a2a57b75c7f620ba0c042b99e117`.
+
 ## Heart Glyph Redstone and Feedback (2026-11-24)
 
 - The preceding packaged Heart Glyph missed a command-function pulse whose rising and falling edges occurred in one tick. The rebuilt headless server started a rite on that pulse and refunded its staged item on a second pulse. Void Bramble suppressed an attempted activation until the field was removed and a fresh edge arrived. A pending Waystone binding completed once after an ordinary dedicated restart with the input still powered.
