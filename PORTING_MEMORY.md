@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Gameplay Message Localization (2026-11-23)
+
+- German, Spanish, Russian, and Simplified Chinese now cover all 235 gameplay message keys in the English resource. This pass fills the remaining rite, Wolf Altar, coven, Seer Stone, Mirror, and vampire messages and adds spell names, prediction notices, death messages, and several matching item and entity labels. The final Wolf Altar trial now distinguishes the initial target from the number remaining in English and all four translations.
+- The packaged client resolved and formatted 268 strings in each language. The survival client used the Wolf Altar with and without a gold ingot and saw the three-ingot requirement and two-ingot remainder. It tried a Heart Glyph blocked by Void Bramble, called and read with the Seer Stone, and used an empty Glass Goblet. A server chat packet verified both Mirror disguise names, including their reversed order in Simplified Chinese.
+- Java 17 reobfuscation and all 163 Forge GameTests passed. The clean Forge client and dedicated server used the same JAR, SHA-256 `45c877be558f69c10f586ae375a5a9bddb7add2f51c55037795bf3eda3304004`. The client was hidden with zero master volume, No Output, and no focus activation. The local reports are in `build/qa-gameplay-locales`.
+- The language audit found 246 keys still missing in one or more of the four locales. They cover 112 item keys, 67 blocks, 45 subtitles, 12 JEI labels, and 10 entity names. Review which compatibility IDs reach players as part of translating those labels.
+
 ## Guide and Vampire Journal Localization (2026-11-23)
 
 - German, Spanish, Russian, and Simplified Chinese now cover all 323 guide keys, 65 custom brew names, 50 effect names, and all 16 Vampire Journal pages. The journal's title, cover button, and torn-page counter are translated. Format arguments match English across all four language files. Circle Magic has 88 distinct localized chapter titles in its original order.
