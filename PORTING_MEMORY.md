@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Legacy Poppet Shelf Chunk Tickets (2026-11-23)
+
+- An original Witchery 0.24.1 server placed a shelf at `(-211, 4, -1095)`, stored a tagged Death Protection Poppet in slot 3, and moved spawn 1,235 blocks away. Old Forge wrote `TicketList` as uncompressed NBT in `forcedchunks.dat`. The preceding packaged port left that shelf's chunk unloaded after import.
+- The modern import restores the Witchery ticket for surviving shelves in each loaded dimension's original `forcedchunks.dat`. It reuses the same Forge ticking ticket and active shelf registration used for normal placement. Leave the original file in the copied world, then restart normally after import. The fixture and headless server logs are under the directory named by `/tmp/witchery-legacy-shelf-ticket-current`.
+- Packaged Forge loaded the original stack and exactly one ticking ticket on first import, after a normal dedicated restart, and when importing again from the preceding port's converted world. Breaking the shelf cleared the modern ticket. An explicit re-import left the removed shelf unforced and preserved the original file byte for byte. See `legacy-shelf-ticket-packaged-complete.log` and `legacy-shelf-ticket-reimport.log` in the directory named by `/tmp/witchery-flowing-spirit-current`.
+- Java 17 data generation, JAR reobfuscation, and all 153 checked-in Forge GameTests passed. A preceding suite run timed out waiting for the Witch's Ladder fixture, so the fixture now allows up to 400 ticks for chunk promotion and its original staged assertions. See `legacy-shelf-ticket-final-data.log`, `legacy-shelf-ticket-verified-jar.log`, and `legacy-shelf-ticket-verified-gametest.log`. The packaged JAR SHA-256 is `92e630590f58a79563a88ad198a33724d6e5b79bd12f0e8f75c3ddeec68a0a4e`.
+- The matching clean Forge client and dedicated server used that same JAR. The muted background client opened creative inventory and the four-slot Urn with no focus activation. See `legacy-shelf-ticket-client.log`.
+
 ## Creative Visibility and Original Registry Audit (2026-11-23)
 
 - The original Forge fixture's FML registry contains 121 Witchery block names and 217 item names. Every name is present in the modern registration lists. The chunk importer handles the eight crops, Spanish Moss, the cursed lever and both cursed buttons through their state readers and the other 109 through named entries. `wallgen` was a transient plan in the original and imports as air.

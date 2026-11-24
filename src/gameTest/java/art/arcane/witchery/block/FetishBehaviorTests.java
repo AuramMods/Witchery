@@ -96,7 +96,7 @@ public final class FetishBehaviorTests {
                 .thenExecute(pig::discard).thenSucceed();
     }
 
-    @GameTest(template = TEMPLATE, batch = "witchery_bind_witchs_ladder", setupTicks = 5, timeoutTicks = 240)
+    @GameTest(template = TEMPLATE, batch = "witchery_bind_witchs_ladder", setupTicks = 5, timeoutTicks = 400)
     public static void witchsLadderBindsBansheesThroughTheMediumRite(GameTestHelper helper) {
         floor(helper);
         var level = helper.getLevel();

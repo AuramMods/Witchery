@@ -77,7 +77,7 @@ public final class LegacyWorldIds {
     public static void prepare(Path world) {
         Path registry = world.resolve(REGISTRY_FILE);
         Path level = world.resolve("level.dat");
-        if (!Boolean.getBoolean(IMPORT_PROPERTY)) return;
+        if (!isImportRequested()) return;
         try {
             boolean existing = Files.isRegularFile(registry);
             CompoundTag forge = new CompoundTag();
@@ -113,6 +113,10 @@ public final class LegacyWorldIds {
         } catch (IOException e) {
             throw new UncheckedIOException("Could not prepare legacy Witchery save at " + world, e);
         }
+    }
+
+    static boolean isImportRequested() {
+        return Boolean.getBoolean(IMPORT_PROPERTY);
     }
 
     private static void saveSnapshot(Path world, Path registry, CompoundTag snapshot) throws IOException {

@@ -61,6 +61,10 @@ public final class PoppetShelfBlockEntity extends RandomizableContainerBlockEnti
     @Override
     public void onLoad() {
         super.onLoad();
+        keepChunkLoaded();
+    }
+
+    public void keepChunkLoaded() {
         if (level instanceof ServerLevel server) {
             SHELVES.computeIfAbsent(server, ignored -> new LinkedHashSet<>()).add(worldPosition);
             ChunkPos chunk = new ChunkPos(worldPosition);
