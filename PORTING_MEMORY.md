@@ -2,12 +2,19 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Earmuffs and Apothecary Appearance (2026-11-23)
+
+- Earmuffs render the two original ear pads and three band pieces on a pose-aware head model. The original texture and inventory icon are retained, and the tooltip explains the effects in all five supported languages. The language files now share 1,415 keys.
+- The original Apothecary profession texture was already registered as a resource. Its full-hat metadata now hides overlapping biome headwear. The packaged client compared two desert villagers and opened the Apothecary's trade screen. The ordinary villager kept its orange biome headband and the Apothecary showed its own red cap.
+- The survival client crafted and equipped Earmuffs through the ordinary crafting table and item-use inputs. The head model copied the wearer's yaw and used five original pieces. A real Banshee scream left the wearer at full health and produced damage after the Earmuffs came off. A client sound hook trace recorded suppression only while the player wore them. The same disposable server reopened a save from the preceding packaged build with the Earmuffs' damage value and extra NBT intact.
+- Java 17 local data generation, reobfuscation, and all 163 Forge GameTests passed. The client and dedicated server used SHA-256 `ee0583b016eab371678affa873ab04b8c68ef0c68ede3c70aa90a3ed15425053`. The client stayed hidden with zero master volume and OpenAL No Output, and its process never took focus. Logs and paired captures are in `build/qa-equipment-assets`.
+
 ## Held Item Models and Legacy Sound Inventory (2026-11-23)
 
 - The Witch's Hand uses the original hand texture and cuboids with their first-person and third-person finger poses. Invisibility gives the local first-person hand 20% opacity and hides it in third person. Death's Hand still deploys its scythe through the ordinary use input. The Brew Bag's original bottle renders translucent glass in the saved dye color and keeps the cork untinted. Both restored items keep their original sprites in inventory, on the ground, and in frames.
 - The packaged Forge client and dedicated server showed the new hand poses, invisibility, two Brew Bag colors, the ordinary Brew Bag menu, and Death's Hand deployment. The model audit resolved all 441 default item models and 1,988 visible block states. The client loaded the restored `mob.darkmark.idle` clip and received its server sound packet. Dark Marks retain their usual Torment laugh.
 - The JAR retains all 687 original PNGs, ten texture animation metadata files, and 88 original Ogg clips byte-for-byte. Five PNGs use updated paths. The reference audit resolved 2,297 local model and texture references and 89 sample references over 63 sound events. The original `random.loved` definition ships without a clip. Torment's original death definition also points to an absent clip, and the port retains its pitched hurt sample for the death event.
-- Java 17 data generation, reobfuscation, and all 163 Forge GameTests passed. Both sides ran SHA-256 `15811997e9e1c08a497cc4b25c4e19f73f71a99cd4c1ba64949c3349e38cae78`. The background client used zero master volume and OpenAL No Output and did not take focus. The paired captures and logs are in `build/qa-legacy-assets`. Earmuffs still use a leather helmet when worn and need their original model.
+- Java 17 data generation, reobfuscation, and all 163 Forge GameTests passed. Both sides ran SHA-256 `15811997e9e1c08a497cc4b25c4e19f73f71a99cd4c1ba64949c3349e38cae78`. The background client used zero master volume and OpenAL No Output and did not take focus. The paired captures and logs are in `build/qa-legacy-assets`.
 
 ## Registry Names, Subtitles, and JEI Localization (2026-11-23)
 

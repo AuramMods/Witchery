@@ -125,6 +125,8 @@ Lifecycle stages:
 
 - The packaged port retains the original bytes of all 687 PNGs, all ten animation metadata files, and all 88 Ogg clips. Five original PNGs use modern lowercase resource paths, including `textures/entities/witchhand.png`.
 - `witchery:witchhand` uses the original fleshed hand geometry and its first-person and third-person finger poses. Death's Hand shares the model geometry with its original thinner bones and its separate deployed scythe state. The Brew Bag uses the original translucent bottle model, dye tint and untinted stopper. Both ordinary items use their original sprites in inventory and as drops.
+- `witchery:earmuffs` binds the original five-piece geometry and `textures/entities/earmuffs.png` to Forge's head armor slot. It keeps the same registry ID and leather armor properties. The client sound hook and the Banshee and Mandrake handlers use that existing item ID.
+- The original Apothecary texture uses Forge's villager profession layer with full-hat metadata. Native villager sleeping uses the 1.20.1 bed position and render pose in place of the original custom villager bed rendering.
 - Dark Marks still laugh with the original `mob.torment.laugh` event. The separate original `mob.darkmark.idle` event and clip are available in the sound registry. The original `random.loved` definition points to an absent clip. The original Torment death clip is also absent, so the packaged death event uses the existing lowered-pitch hurt sample.
 
 ## Block Model Parity Anchors (current focus)

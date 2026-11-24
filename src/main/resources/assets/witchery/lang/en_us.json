@@ -651,6 +651,7 @@
    "item.witchery.dupgrenade.owner" : "Creates a duplicate of %s",
    "item.witchery.dupstaff" : "Staff of Duplication",
    "item.witchery.earmuffs" : "Earmuffs",
+   "item.witchery.earmuffs.tip" : "Mutes sound and protects against Mandrake and Banshee screams while worn.",
    "item.witchery.garlic" : "Garlic",
    "item.witchery.glassgoblet" : "Glass Goblet",
    "item.witchery.glassgoblet.filled" : "Goblet of Blood",

@@ -833,6 +833,7 @@
    "item.witchery.dupgrenade.owner": "Crea un duplicado de %s",
    "item.witchery.dupstaff": "Bastón de Duplicación",
    "item.witchery.earmuffs": "Orejeras",
+   "item.witchery.earmuffs.tip": "Al llevarlas puestas, silencian el sonido y protegen de los gritos de mandrágoras y banshees.",
    "item.witchery.earth_protection_poppet": "Muñeco de Protección de la Tierra",
    "item.witchery.enchanted_broom": "Escoba Encantada",
    "item.witchery.ender_dew": "Rocío de Ender",

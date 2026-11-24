@@ -833,6 +833,7 @@
    "item.witchery.dupgrenade.owner": "制造 %s 的分身",
    "item.witchery.dupstaff": "拷贝手杖",
    "item.witchery.earmuffs": "护耳",
+   "item.witchery.earmuffs.tip": "佩戴时会静音，并防护曼德拉草和报死女妖的尖叫。",
    "item.witchery.earth_protection_poppet": "地之守护娃娃",
    "item.witchery.enchanted_broom": "魔法扫帚",
    "item.witchery.ender_dew": "末影之露",

@@ -51,6 +51,7 @@ import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.SpiderModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import art.arcane.witchery.client.model.DreamSpiritModel;
+import art.arcane.witchery.client.model.EarmuffsModel;
 import art.arcane.witchery.client.model.SpectralUndeadModel;
 import art.arcane.witchery.client.model.WitchOwlModel;
 import art.arcane.witchery.client.model.WingedMonkeyModel;
@@ -220,6 +221,7 @@ public final class WitcheryClient {
         event.registerLayerDefinition(DeathModel.LAYER, DeathModel::layer);
         event.registerLayerDefinition(LeonardModel.LAYER, LeonardModel::layer);
         event.registerLayerDefinition(DeathClothingModel.LAYER, DeathClothingModel::layer);
+        event.registerLayerDefinition(EarmuffsModel.LAYER, EarmuffsModel::layer);
         event.registerLayerDefinition(WitchHandRenderer.WITCH_HAND, () -> WitchHandRenderer.layer(false));
         event.registerLayerDefinition(WitchHandRenderer.DEATH_HAND, () -> WitchHandRenderer.layer(true));
         event.registerLayerDefinition(BrewBagRenderer.LAYER, BrewBagRenderer::layer);

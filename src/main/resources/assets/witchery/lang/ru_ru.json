@@ -833,6 +833,7 @@
    "item.witchery.dupgrenade.owner": "Создаёт двойника персонажа %s",
    "item.witchery.dupstaff": "Посох удвоения",
    "item.witchery.earmuffs": "Наушники",
+   "item.witchery.earmuffs.tip": "При ношении заглушают звуки и защищают от криков мандрагор и баньши.",
    "item.witchery.earth_protection_poppet": "Кукла защиты от земли",
    "item.witchery.enchanted_broom": "Зачарованная метла",
    "item.witchery.ender_dew": "Роса края",

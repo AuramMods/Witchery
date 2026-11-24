@@ -833,6 +833,7 @@
    "item.witchery.dupgrenade.owner": "Erschafft einen Doppelgänger von %s",
    "item.witchery.dupstaff": "Stab der Duplikation",
    "item.witchery.earmuffs": "Ohrenschützer",
+   "item.witchery.earmuffs.tip": "Beim Tragen werden Geräusche stummgeschaltet und Schreie von Alraunen und Todesfeen abgewehrt.",
    "item.witchery.earth_protection_poppet": "Erdgeborgenheitspuppe",
    "item.witchery.enchanted_broom": "Verzauberter Besen",
    "item.witchery.ender_dew": "Endertau",
