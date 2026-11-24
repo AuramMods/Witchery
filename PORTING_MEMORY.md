@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Legacy Cauldron Offerings and Power (2026-11-24)
+
+- The running 0.24.1 registry accepted the listed offerings for all 26 fixed item recipes. For Drop of Luck, adding Nether Wart before Mandrake left the brew one effect level short of Refined Evil. The preceding packaged port consumed Refined Evil in both that mixture and an empty cauldron. Legacy fixed recipes now apply the ordered brew capacity rules when an offering has a registered brew action.
+- The original Golden Chalk threshold in a single Infernal ring is 2,111.5 altar power. The cauldron waits for that amount and spends 2,111, with the same threshold controlling its power indicator. Custom fixed recipes use their existing rounded threshold.
+- In the rebuilt headless package, dropped Refined Evil stayed outside the empty and underprepared cauldrons. The prepared batch waited until the fixture charged the altar, then produced one Drop of Luck and emptied the tank. Both states survived a dedicated restart. A rising redstone signal then started the Rite of Charging with five dropped offerings and the same altar. The Charged Attuned Stone and inactive powered Heart Glyph survived a second restart.
+- Java 17 data generation, JAR reobfuscation, and all 213 required local Forge GameTests passed. The tests cover the rejected offerings, all 26 item recipe activations plus Leonard, and the fractional Golden Chalk threshold. Logs and the tested JAR are in `build/qa-cauldron-offering-parity`. Package SHA-256 `cc0226862f6ed5ff25b1eddcdabf5ca0a4a1d31678e7c92939a748b066ff4086`.
+
 ## Kettle Potion Ingredients (2026-11-24)
 
 - The original running server accepted renamed potions in Flying Ointment and the splash recipes for Spirit of Otherwhere and Infernal Animus. The preceding packaged port ruined the named Flying Ointment and Infernal Animus batches. Built-in ingredients now use the required potion field and drinkable or splash item ID while accepting custom names and tags.

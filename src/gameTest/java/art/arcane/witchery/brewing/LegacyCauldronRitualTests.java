@@ -5,6 +5,7 @@ import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
+import art.arcane.witchery.registry.WitcheryRecipes;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -16,6 +17,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
@@ -33,6 +35,71 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class LegacyCauldronRitualTests {
+    @GameTest(template = "qa_coven_arena")
+    public static void legacyRecipeOfferingsNeedPreparedEffectCapacity(GameTestHelper helper) {
+        BlockPos pos = helper.absolutePos(new BlockPos(6, 4, 5));
+        var water = boilingWater();
+        var cauldron = placeCauldron(helper, pos, water);
+        var mandrake = WitcheryIngredient.MANDRAKE_ROOT.item();
+        var tear = WitcheryIngredient.TEAR_OF_THE_GODDESS.item();
+        var evil = WitcheryIngredient.REFINED_EVIL.item();
+        var extremis = WitcheryIngredient.MUTANDIS_EXTREMIS.item();
+
+        helper.assertTrue(!offer(cauldron, evil) && !offer(cauldron, WitcheryIngredient.ENT_BRANCH.item()),
+                "The empty brew should reject effect ingredients even when a fixed recipe calls for them");
+        helper.assertTrue(offer(cauldron, Items.NETHER_WART) && offer(cauldron, mandrake) && offer(cauldron, tear)
+                        && !offer(cauldron, evil) && !offer(cauldron, extremis),
+                "Adding Wart before Mandrake leaves the mixture one effect level short of Drop of Luck");
+
+        cauldron.load(water);
+        helper.assertTrue(offer(cauldron, mandrake) && offer(cauldron, Items.NETHER_WART) && offer(cauldron, tear)
+                        && offer(cauldron, evil) && offer(cauldron, extremis),
+                "Adding Mandrake first supplies the capacity for all of the original offerings");
+        helper.assertTrue(cauldron.saveWithFullMetadata().getString("Ritual").equals("witchery:drop_of_luck"),
+                "The same fixed recipe should begin after the original ordered preparation");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void legacyFixedRecipesAcceptTheirPreparedOfferings(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var water = boilingWater();
+        var cauldron = placeCauldron(helper, helper.absolutePos(new BlockPos(6, 4, 5)), water);
+        var recipes = level.getRecipeManager().getAllRecipesFor(WitcheryRecipes.CAULDRON_RITUAL.get()).stream()
+                .filter(CauldronRitualRecipe::legacy).toList();
+        helper.assertTrue(recipes.size() == 27, "Exercise all twenty-seven original fixed cauldron recipes");
+        for (var recipe : recipes) {
+            cauldron.load(water);
+            for (var ingredient : recipe.ingredients()) {
+                ItemStack stack = ingredient.getItems()[0];
+                helper.assertTrue(offer(cauldron, stack.copyWithCount(1)), recipe.id() + " should accept " + stack.getItem());
+            }
+            helper.assertTrue(offer(cauldron, recipe.trigger().getItems()[0].copyWithCount(1)), recipe.id() + " should accept its trigger");
+            helper.assertTrue(cauldron.saveWithFullMetadata().getString("Ritual").equals(recipe.id().toString()),
+                    recipe.id() + " should start after all of its original offerings are in the cauldron");
+        }
+        helper.succeed();
+    }
+
+    private static CompoundTag boilingWater() {
+        var water = new CompoundTag();
+        water.putString("FluidName", "water");
+        water.putInt("Amount", 3000);
+        water.putInt("HeatTicks", 100);
+        return water;
+    }
+
+    private static boolean offer(WitchesCauldronBlockEntity cauldron, Item item) {
+        return offer(cauldron, new ItemStack(item));
+    }
+
+    private static boolean offer(WitchesCauldronBlockEntity cauldron, ItemStack stack) {
+        Vec3 center = Vec3.atCenterOf(cauldron.getBlockPos());
+        var dropped = new ItemEntity(cauldron.getLevel(), center.x, center.y, center.z, stack);
+        cauldron.acceptDroppedItem(dropped);
+        return dropped.isRemoved();
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_legacy_healing")
     public static void originalMelonBrewsRetainTheirInstantEffects(GameTestHelper helper) {
         var wart = oldItem("minecraft:nether_wart", 0, 1);

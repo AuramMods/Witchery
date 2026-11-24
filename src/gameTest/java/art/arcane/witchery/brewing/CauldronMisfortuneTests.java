@@ -40,6 +40,25 @@ import java.util.stream.Collectors;
 public final class CauldronMisfortuneTests {
     private static final BlockPos CAULDRON = new BlockPos(6, 4, 5);
 
+    @GameTest(template = "qa_coven_arena", batch = "witchery_cauldron_power_threshold")
+    public static void fixedCastChecksFractionalPowerBeforeDebiting(GameTestHelper helper) {
+        BlockPos pos = placeCauldron(helper);
+        var altar = placeAltar(helper);
+        setSmallCircle(helper, pos, WitcheryBlocks.getRequired("circleglyphinfernal").get());
+        prepareGoldenChalk(helper, pos);
+        finishCast(helper, pos, altar, 2111, 3840);
+        var waiting = cauldron(helper, pos).saveWithFullMetadata();
+        helper.assertTrue(waiting.getString("Ritual").equals("witchery:golden_chalk") && waiting.getInt("RitualTicks") == 0
+                        && altar.power() == 2111,
+                "The Infernal circle should wait at the rounded debit of 2,111 power");
+
+        prepareGoldenChalk(helper, pos);
+        finishCast(helper, pos, altar, 2111.5F, 3840);
+        helper.assertTrue(altar.power() == 0.5F, "The cast at 2,111.5 should spend 2,111 power");
+        helper.startSequence().thenWaitUntil(() -> helper.assertItemEntityCountIs(
+                WitcheryItems.getRequired("chalkheart").get(), CAULDRON.above(), 2, 1)).thenSucceed();
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_cauldron_misfortune")
     public static void fixedCastUsesCircleAndLeonardRisk(GameTestHelper helper) {
         var level = helper.getLevel();
@@ -191,7 +210,7 @@ public final class CauldronMisfortuneTests {
         cauldron.load(saved);
     }
 
-    private static void finishCast(GameTestHelper helper, BlockPos pos, AltarBlockEntity altar, int power, long seed) {
+    private static void finishCast(GameTestHelper helper, BlockPos pos, AltarBlockEntity altar, float power, long seed) {
         var stored = altar.saveWithFullMetadata();
         stored.putFloat("Power", power);
         altar.load(stored);

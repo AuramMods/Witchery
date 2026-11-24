@@ -370,12 +370,13 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         int batchPower = recipe.batchPower(ingredients);
         CastCircles circles = batchPower > 0 ? CastCircles.around(level, pos) : null;
         if (circles != null) {
-            power = (int) Math.floor(batchPower * circles.powerScale());
+            double required = requiredFixedPower(recipe, batchPower, circles);
             altar = AltarPower.nearest(level, pos);
-            if (altar == null || altar.power() < power) {
+            if (altar == null || altar.power() < required) {
                 ritualTicks = 0;
                 return;
             }
+            power = (int) Math.floor(required);
         }
         if (ritualTicks < recipe.time()) {
             ritualTicks++;
@@ -387,6 +388,12 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
                 mishap(level, pos, risk, batchPower);
             }
         }
+    }
+
+    private static double requiredFixedPower(CauldronRitualRecipe recipe, int batchPower, CastCircles circles) {
+        // The original powered check uses the scaled value before the debit is rounded down.
+        double scaled = batchPower * circles.powerScale();
+        return recipe.legacy() ? scaled : Math.floor(scaled);
     }
 
     private record CastCircles(double powerScale, int risk) {
@@ -479,7 +486,10 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
                 return true;
             }
         }
+        boolean registeredBrewAction = BrewMixture.hasAction(offered);
         for (CauldronRitualRecipe recipe : recipes) {
+            // Ingredients with original brew actions obey their capacity and ordering even for a fixed recipe.
+            if (recipe.legacy() && registeredBrewAction) continue;
             if (recipe.acceptsIngredient(ingredients, offered)) {
                 ingredients.add(offered.copyWithCount(1));
                 onIngredientAdded(server, offered);
@@ -634,7 +644,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         if (ritual != null) {
             if (!(server.getRecipeManager().byKey(ritual).orElse(null) instanceof CauldronRitualRecipe recipe)) return false;
             int basePower = recipe.batchPower(ingredients);
-            power = basePower == 0 ? 0 : Math.floor(basePower * CastCircles.around(server, worldPosition).powerScale());
+            power = basePower == 0 ? 0 : requiredFixedPower(recipe, basePower, CastCircles.around(server, worldPosition));
         } else if (mixture != null) {
             power = mixture.power();
             if (brewRitual && power > 0) power *= CastCircles.around(server, worldPosition).powerScale();
