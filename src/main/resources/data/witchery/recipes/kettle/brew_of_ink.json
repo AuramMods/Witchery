@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 36,
   "ingredients": [
     {"item": "minecraft:ink_sac"},
     {"item": "witchery:quicklime"},

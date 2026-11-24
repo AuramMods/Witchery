@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 8,
   "ingredients": [
     {
       "item": "witchery:redstone_soup"

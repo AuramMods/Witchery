@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 32,
   "ingredients": [
     {"item": "witchery:mutandis_extremis"},
     {"item": "witchery:mandrake_root"},

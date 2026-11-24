@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 28,
   "ingredients": [
     {"item": "witchery:toe_of_frog"},
     {"item": "witchery:creeper_heart"},

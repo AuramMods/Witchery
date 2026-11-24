@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 26,
   "dimension": "witchery:dream",
   "ingredients": [
     {

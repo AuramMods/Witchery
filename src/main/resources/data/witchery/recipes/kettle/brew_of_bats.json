@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 24,
   "ingredients": [
     {"item": "witchery:bat_ball"},
     {"item": "witchery:bat_wool"},

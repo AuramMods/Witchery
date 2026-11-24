@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 25,
   "ingredients": [
     {"item": "witchery:mellifluous_hunger"},
     {"item": "minecraft:rotten_flesh"},

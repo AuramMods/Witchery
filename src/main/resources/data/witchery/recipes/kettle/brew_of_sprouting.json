@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 35,
   "ingredients": [
     {"type": "forge:difference", "base": {"item": "witchery:witchsapling"}, "subtracted": [{"type": "forge:partial_nbt", "item": "witchery:witchsapling", "nbt": {"BlockStateTag": {"wood_type": "alder"}}}, {"type": "forge:partial_nbt", "item": "witchery:witchsapling", "nbt": {"BlockStateTag": {"wood_type": "hawthorn"}}}]},
     {"type": "forge:partial_nbt", "item": "witchery:witchsapling", "nbt": {"BlockStateTag": {"wood_type": "alder"}}},

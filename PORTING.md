@@ -125,6 +125,13 @@
 - [x] Use the original inclusive 16-block base and 32-block Arthana ranges for the Brazier, Crystal Ball, and powered rites. Check that wards and the Brazier release cached sources that fall out of range. All 160 checked-in Forge GameTests passed, including a focused barrier and Infusion Recharging beyond the base range.
 - [x] Restore the Altar's plant sparks and the original order for competing mounted artifacts. Verify the eight spark frames, formed and unformed textures, saved core, and live menu updates as artifacts and altar members are removed.
 
+## Kettle Recipe Order (2026-11-24)
+
+- [x] Compare all 39 Kettle recipe positions, output subtypes, costs, and tints with the running 0.24.1 registry. Restore its first matching recipe for incomplete mixtures. Dog Tongue alone selects Vines, which needs no altar. Mutandis previews Raising at 500 power, and Redstone Soup previews Flying Ointment at 3,000.
+- [x] Restore the original Witch's Hat serving bonus for the Bramble recipe that doubles Infused Brew Base. The new test reloads the finished two-serving batch, exercises a successful Hat roll, and checks that one serving remains in the Kettle.
+- [x] Upgrade the earlier packaged save with the three partial mixtures. On a quiet background client after another dedicated restart, verify the restored tint and power indicator. Complete and bottle Vines without an altar. Complete the Raising ingredients and verify that the mixture waits. After the fixture charges the Altar to 650, the Kettle draws 500 and produces three servings. Bottle one serving through the ordinary use interaction.
+- [x] Reproduce all three original partial mixtures on the same JAR in the headless copied Auram profile. On clean Forge, verify that a datapack recipe with its old JSON shape loads, and that assigning it higher priority changes the same partial mixture after a live reload.
+
 ## Mirror Milestone (2026-11-19)
 
 - [x] Generate the Mirror's stacked nine-block chambers using the original 16-block cell indices. The walls use the original animated liquid textures, cool tint, collision, and unbreakable behavior.

@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 38,
   "ingredients": [
     {"item": "witchery:thrown_web"},
     {"item": "minecraft:red_mushroom"},

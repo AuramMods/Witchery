@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 4,
   "ingredients": [
     {"item": "witchery:redstone_soup"},
     {"type": "forge:nbt", "item": "minecraft:potion", "nbt": {"Potion": "minecraft:strong_harming"}},

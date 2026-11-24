@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Kettle Recipe Order (2026-11-24)
+
+- The running 0.24.1 server matched all 39 Kettle registrations by position, output subtype, power and tint. Dog Tongue alone selected Vines at zero power, Mutandis selected Raising at 500 and Redstone Soup selected Flying Ointment at 3,000. The preceding packaged port selected Grotesque and Infection for the first two. Each built-in recipe now supplies a priority in original order. Protocol 98 synchronizes it and existing Kettle recipe IDs still identify saved batches.
+- The original output lookup gave the Bramble recipe that doubles Infused Brew Base a one-serving Witch's Hat bonus. The same result now follows a successful bonus roll on a reloaded doubled batch. Java 17 data generation, JAR reobfuscation and all 209 local Forge GameTests passed.
+- The clean Forge headless server recalculated the three partial mixtures in the earlier packaged save. A muted, unfocused survival client reopened the world and verified the first two rendered tints and power states. The player completed and bottled Vines without an altar. In a second stage, the completed Raising batch waited for power, then left 150 of the fixture's 650 altar power and produced three servings. The player bottled one normally. The fixture supplied the ingredients, a six-block altar, plant blocks, a Dragon Egg and stored charge. Logs and the exact package are in `build/qa-kettle-recipe-order`. JAR SHA-256 `f54a90752403872d30a741e8baf346bd4f9f6e699e351e2f3f2df288c54e8ff6`.
+- A headless copy of Auram recognized all three partial recipes from dropped ingredients on the same JAR. The clean Forge datapack test kept the built-in match at the default priority, then selected the overlapping custom recipe after its explicit priority was raised and the datapack reloaded.
+
 ## Legacy Item Names and Lore (2026-11-24)
 
 - The packaged baseline left a named fume's display fields and a vanilla book's lore as raw 1.7.10 strings in the Witch's Oven. A vanilla Chest converted the same fume correctly. Witchery's standalone upgrade now converts literal names and lore on its own items and completes the vanilla lore conversion in its block entities. Older imports with the captured registry snapshot can repair raw text still present in those inventories.

@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 23,
   "ingredients": [
     {"item": "witchery:ender_dew"},
     {"item": "witchery:ender_dew"},

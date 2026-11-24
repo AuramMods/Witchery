@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 30,
   "ingredients": [
     {"item": "witchery:icy_needle"},
     {"item": "minecraft:snowball"},

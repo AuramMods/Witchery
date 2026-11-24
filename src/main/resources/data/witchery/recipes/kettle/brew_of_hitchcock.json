@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 14,
   "ingredients": [
     {"item": "minecraft:brown_mushroom"},
     {"item": "minecraft:wheat_seeds"},

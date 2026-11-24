@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 2,
   "ingredients": [
     {"item": "witchery:redstone_soup"},
     {"item": "witchery:brew_of_flowing_spirit"},

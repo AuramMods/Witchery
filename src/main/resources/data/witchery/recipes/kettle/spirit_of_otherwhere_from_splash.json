@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 5,
   "ingredients": [
     {"item": "witchery:redstone_soup"},
     {"type": "forge:nbt", "item": "minecraft:splash_potion", "nbt": {"Potion": "minecraft:long_swiftness"}},

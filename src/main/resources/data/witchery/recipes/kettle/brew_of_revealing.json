@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 22,
   "ingredients": [
     {"item": "minecraft:carrot"},
     {"item": "minecraft:spider_eye"},

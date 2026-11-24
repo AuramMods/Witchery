@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 13,
   "ingredients": [
     {"item": "witchery:brew_of_hollow_tears"},
     {"item": "witchery:subdued_spirit"},

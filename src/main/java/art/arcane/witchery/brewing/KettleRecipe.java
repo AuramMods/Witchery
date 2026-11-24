@@ -22,14 +22,18 @@ import net.minecraftforge.common.util.RecipeMatcher;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Predicate;
 
 public record KettleRecipe(ResourceLocation id, List<Ingredient> ingredients, ItemStack result, int color, int power,
-                           ResourceLocation dimension, int bottlingBonus, @Nullable FamiliarBinding.Type bottlingFamiliar)
+                           ResourceLocation dimension, int bottlingBonus, @Nullable FamiliarBinding.Type bottlingFamiliar,
+                           int priority)
         implements Recipe<Container> {
     public static final int INGREDIENT_SLOTS = 6;
+    public static final Comparator<KettleRecipe> MATCH_ORDER =
+            Comparator.comparingInt(KettleRecipe::priority).reversed().thenComparing(KettleRecipe::id);
 
     public boolean canBrewIn(Level level) {
         return dimension == null || dimension.equals(level.dimension().location());
@@ -120,7 +124,8 @@ public record KettleRecipe(ResourceLocation id, List<Ingredient> ingredients, It
                     throw new JsonSyntaxException("Unknown bottling familiar '" + name + "' for " + id, invalid);
                 }
             }
-            return new KettleRecipe(id, List.copyOf(ingredients), result, GsonHelper.getAsInt(json, "color"), power, dimension, bonus, familiar);
+            return new KettleRecipe(id, List.copyOf(ingredients), result, GsonHelper.getAsInt(json, "color"), power,
+                    dimension, bonus, familiar, GsonHelper.getAsInt(json, "priority", 0));
         }
 
         @Override
@@ -131,7 +136,7 @@ public record KettleRecipe(ResourceLocation id, List<Ingredient> ingredients, It
             }
             return new KettleRecipe(id, List.copyOf(ingredients), buffer.readItem(), buffer.readInt(), buffer.readVarInt(),
                     buffer.readNullable(FriendlyByteBuf::readResourceLocation), buffer.readVarInt(),
-                    buffer.readNullable(data -> data.readEnum(FamiliarBinding.Type.class)));
+                    buffer.readNullable(data -> data.readEnum(FamiliarBinding.Type.class)), buffer.readVarInt());
         }
 
         @Override
@@ -143,6 +148,7 @@ public record KettleRecipe(ResourceLocation id, List<Ingredient> ingredients, It
             buffer.writeNullable(recipe.dimension, FriendlyByteBuf::writeResourceLocation);
             buffer.writeVarInt(recipe.bottlingBonus);
             buffer.writeNullable(recipe.bottlingFamiliar, FriendlyByteBuf::writeEnum);
+            buffer.writeVarInt(recipe.priority);
         }
     }
 }

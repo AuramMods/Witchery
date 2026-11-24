@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 21,
   "ingredients": [
     {"item": "minecraft:dirt"},
     {"item": "witchery:foul_fume"},

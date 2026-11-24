@@ -103,7 +103,7 @@ public final class KettleBlockEntity extends BlockEntity {
         }
         KettleRecipe recipe = server.getRecipeManager().getAllRecipesFor(WitcheryRecipes.KETTLE.get()).stream()
                 .filter(candidate -> candidate.canBrewIn(server) && candidate.matchesPartial(ingredients))
-                .min((first, second) -> first.getId().compareTo(second.getId()))
+                .min(KettleRecipe.MATCH_ORDER)
                 .orElse(null);
         if (recipe == null) {
             ruinBatch();
@@ -230,7 +230,7 @@ public final class KettleBlockEntity extends BlockEntity {
                 && ItemStack.isSameItemSameTags(recipe.result(), brew)) return recipe;
         return recipes.getAllRecipesFor(WitcheryRecipes.KETTLE.get()).stream()
                 .filter(recipe -> ItemStack.isSameItemSameTags(recipe.result(), brew))
-                .min((first, second) -> first.id().compareTo(second.id()))
+                .min(KettleRecipe.MATCH_ORDER)
                 .orElse(null);
     }
 

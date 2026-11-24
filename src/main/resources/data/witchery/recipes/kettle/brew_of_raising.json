@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 33,
   "ingredients": [
     {"item": "witchery:bat_wool"},
     {"item": "witchery:mutandis"},

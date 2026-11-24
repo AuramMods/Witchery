@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 37,
   "ingredients": [
     {"item": "minecraft:green_dye"},
     {"item": "minecraft:brown_mushroom"},

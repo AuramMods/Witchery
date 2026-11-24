@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 27,
   "ingredients": [
     {"item": "witchery:purified_milk"},
     {"item": "minecraft:cookie"},

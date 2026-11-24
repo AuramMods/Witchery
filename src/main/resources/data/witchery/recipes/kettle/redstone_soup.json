@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 12,
   "ingredients": [
     {"item": "minecraft:redstone"},
     {"item": "witchery:drop_of_luck"},

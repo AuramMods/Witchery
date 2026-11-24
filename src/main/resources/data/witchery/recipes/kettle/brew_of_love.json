@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 31,
   "ingredients": [
     {"item": "minecraft:poppy"},
     {"item": "witchery:whiff_of_magic"},

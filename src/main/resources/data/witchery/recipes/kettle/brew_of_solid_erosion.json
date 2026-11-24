@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 17,
   "ingredients": [
     {"item": "witchery:brew_of_erosion"},
     {"item": "witchery:foul_fume"},

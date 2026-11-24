@@ -1,5 +1,6 @@
 {
   "type": "witchery:kettle",
+  "priority": 29,
   "ingredients": [
     {"item": "witchery:mandrake_root"},
     {"item": "witchery:globe_artichoke"},
