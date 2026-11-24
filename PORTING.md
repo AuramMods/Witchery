@@ -1254,6 +1254,7 @@
 - [x] Restore the Kettle's dropped-stack rules. An oversized bottle drop stays intact. An accepted drop keeps the bottle buffer's existing item data. A full Kettle accepts ingredients into free slots after brewing or spoiling, and the next drop at capacity marks the batch spoiled. Hoppers merge matching ingredients and require an empty result slot.
 - [x] Restore plain Water Bottle transfers in both brewing vessels. Drawing plain water takes 1,000 mB. A Kettle serves its ready brew first. Pouring contributes up to 1,000 mB and consumes the Water Bottle in survival. Drawing the last water clears a spoiled Kettle, and a Water Bottle rinses a full Kettle while staying in the player's hand. Both actions keep the spare bottles. A Cauldron containing brew rejects plain water.
 - [x] Restore immediate feedback when the Kettle accepts a dropped ingredient, including the drop that spoils a full batch. The packet plays the water splash at the basin and spawns twenty particles for viewers within five blocks. Dropped glass bottles enter the spare bottle buffer silently.
+- [x] Reconcile the 50 named actions registered directly as `BrewActionEffect` in the original registry with modern ingredient handlers, including the nine tree variants. Their runtime rules remain part of the brew parity pass.
 - [ ] Finish the remaining brew actions, modifiers, and castable cauldron rituals.
 
 ## Death and Armor Cauldron Brews (2026-11-21)
@@ -1610,6 +1611,16 @@
 - [x] Verify the packaged Inferno, Blast, and Hellish Aura splashes in muted survival. Inferno lit terrain and a direct target. Blast removed wool at the impact and preserved the sample outside the explosion. The green aura rendered on its host and burned the adjacent pig.
 - [x] Save a Waystone-targeted Hell Gate during warmup and resume it on a headless server. The ritual found the medium Infernal circle and summoned one Demon after restart. The active aura, Inferno fire, and Blast damage survived the restart.
 - [x] Reopen the summoned Demon and verify its model in the background client. Boot the packaged JAR on headless Forge with the bundled Auram development mods. The copied world loaded the saved Demon, and a ritual-rain droplet produced three Inferno fires.
+
+## Saved Rain Droplets and Inferno Splatters (2026-11-24)
+
+- [x] Run the original Forge server with a healing droplet aimed across an injured pig. The droplet ignored hits on flight ticks one and four and healed the pig from four to eight on tick five. The original Inferno splatter displayed dark red and its world save recorded `Color:0`.
+- [x] Restore the fifth-tick entity collision gate and the pre-collision origin for falling brew effects. The packaged port's previous build healed a pig on its first flight tick. The rebuilt JAR crossed that pig without healing it. The GameTest then confirmed healing on its fifth flight tick.
+- [x] Import both live projectiles from the original Forge region. The Inferno splatter kept its UUID and strength and recovered its original red tint. The droplet kept its UUID, ordered healing ingredients and saved color.
+- [x] Start an earlier Forge conversion of the same region with ordinary server arguments and the corrected package. The saved droplet healed a pig after the restored collision gate opened. A second reload retained the splatter's red tint, and its landing lit the stone platform and spawned four strength-one fragments.
+- [x] Render a zero-color import fixture and an explicit cyan control in the muted packaged client. The same six sprite pixels showed the expected dark red and cyan. The focus monitor recorded only the original foreground process.
+- [x] Replay the same package on copied Auram. The early target stayed at four health, the released older droplet healed its target from four to ten and was consumed, and the zero-color Inferno fixture read back as dark red.
+- [x] Run local Java 17 data generation, JAR reobfuscation, and all 269 required Forge GameTests. The package and results are in `build/qa-brew-projectile-flight`.
 - [x] Pass Java 17 data generation, JAR reobfuscation, and 24 focused GameTests. The nine new cases cover recipe costs, direct and glancing fire, legacy projectile saves, protection events, aura damage, the Infernal circle, explosion placement and probability, and ritual rain. The first Hell Gate fixture failed its spawn assertion. The rerun seeded a clear landing column and passed.
 - [x] Pass all 28 focused GameTests across the new fire brews, area rites, land brews and Transpose. The aura fixture used a sheltered, armor-valued pig to exercise the fire damage and ignition assertions in a controlled environment.
 - [x] Clear the two failures from the 639-case run. The sheltered aura check and villager courtship with the birth fix both passed in the next 640-case run.

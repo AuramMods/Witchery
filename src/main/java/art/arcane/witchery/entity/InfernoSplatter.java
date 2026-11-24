@@ -5,7 +5,6 @@ import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -108,6 +107,8 @@ public final class InfernoSplatter extends ThrowableProjectile implements ItemSu
     protected void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         strength = Math.max(0, Math.min(10, tag.getInt("Level")));
-        if (tag.contains("Color", Tag.TAG_ANY_NUMERIC)) entityData.set(COLOR, tag.getInt("Color"));
+        // The original splatter saved zero from an unused field in place of its red display color.
+        int color = tag.getInt("Color");
+        entityData.set(COLOR, color == 0 ? FIRE_COLOR : color);
     }
 }

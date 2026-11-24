@@ -72,16 +72,48 @@ public final class BrewDispersalSaveImportTests {
                 "The imported falling brew should retain its type and both ordered ingredients");
         var pig = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(4, 3, 4));
         pig.setHealth(4.0F);
+        pig.setNoGravity(true);
         var drop = WitcheryEntities.BREW_DROPLET.get().create(helper.getLevel());
         drop.load(saved);
         helper.assertTrue(saved.getCompound("Brew").getInt("Color") == -812596878
                         && drop.getItem().getTag().getInt(BrewDroplet.TINT_KEY) == (-812596878 & 0xFFFFFF),
                 "The falling brew should retain its saved color");
-        drop.setPos(pig.getX(), pig.getEyeY() + 2.5, pig.getZ());
-        drop.setDeltaMovement(new Vec3(0, -0.3, 0));
+        var approach = pig.position().add(-1, 0.3, 0);
+        var motion = new Vec3(2, 0, 0);
+        drop.setPos(approach);
+        drop.setDeltaMovement(motion);
         helper.assertTrue(helper.getLevel().addFreshEntity(drop), "The imported droplet should join the level");
-        helper.succeedWhen(() -> helper.assertTrue(!drop.isAlive() && pig.getHealth() == 8.0F,
-                "The imported droplet should heal on impact"));
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(drop.isAlive() && drop.getX() > pig.getX()
+                && pig.getHealth() == 4.0F, "The falling brew must pass through creatures before its fifth tick"))
+                .thenExecute(() -> {
+                    drop.tickCount = 4;
+                    drop.setPos(approach);
+                    drop.setDeltaMovement(motion);
+                })
+                .thenWaitUntil(() -> helper.assertTrue(!drop.isAlive() && drop.tickCount == 5 && pig.getHealth() == 8.0F,
+                        "The imported falling brew must heal creatures starting on its fifth tick"))
+                .thenSucceed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void legacyInfernoRecoversItsRedTint(GameTestHelper helper) {
+        var splatter = WitcheryEntities.INFERNO_SPLATTER.get().create(helper.getLevel());
+        var saved = new CompoundTag();
+        saved.putInt("Level", 2);
+        saved.putInt("Effect", 1);
+        saved.putInt("Color", 0);
+        splatter.load(saved);
+        var repaired = splatter.saveWithoutId(new CompoundTag());
+        helper.assertTrue(repaired.getInt("Color") == 0x990000
+                        && splatter.getItem().getTag().getInt(BrewDroplet.TINT_KEY) == 0x990000
+                        && repaired.getInt("Level") == 2,
+                "A legacy Inferno splatter recovers its display color and keeps its strength");
+
+        repaired.putInt("Color", 0xAABBCC);
+        splatter.load(repaired);
+        helper.assertTrue(splatter.getItem().getTag().getInt(BrewDroplet.TINT_KEY) == 0xAABBCC,
+                "A splatter with an explicit color keeps it on load");
+        helper.succeed();
     }
 
     @GameTest(template = "qa_coven_arena")

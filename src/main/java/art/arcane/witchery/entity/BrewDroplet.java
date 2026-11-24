@@ -9,6 +9,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.ItemSupplier;
@@ -66,16 +67,22 @@ public final class BrewDroplet extends ThrowableProjectile implements ItemSuppli
     }
 
     @Override
+    protected boolean canHitEntity(Entity target) {
+        return tickCount >= 5 && super.canHitEntity(target);
+    }
+
+    @Override
     protected void onHit(HitResult hit) {
+        var impact = position();
         super.onHit(hit);
         if (!(level() instanceof ServerLevel server)) return;
         if (mixture != null) {
             if (hit instanceof BlockHitResult block) {
-                mixture.applyToBlock(server, block.getBlockPos(), block.getDirection(), 1, true, null, hit.getLocation());
+                mixture.applyToBlock(server, block.getBlockPos(), block.getDirection(), 1, true, null, impact);
             } else if (hit instanceof EntityHitResult entity && entity.getEntity() instanceof LivingEntity living) {
-                mixture.applyRitualExposure(living, this, 1, hit.getLocation());
+                mixture.applyRitualExposure(living, this, 1, impact);
             }
-            server.levelEvent(2002, BlockPos.containing(hit.getLocation()), entityData.get(COLOR));
+            server.levelEvent(2002, BlockPos.containing(impact), entityData.get(COLOR));
         }
         discard();
     }

@@ -2,6 +2,16 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Falling Brew Projectiles (2026-11-24)
+
+- The original 0.24.1 server ran its healing droplet across a pig with four health. Flight ticks one and four left its health unchanged and the droplet alive. Tick five healed it to eight and consumed the droplet. Brew effects and their particles use the position at the start of the collision tick.
+- The original Inferno splatter's tracked color was `0x990000`. The original server wrote `Color:0` to the region because the saved field was separate from its tracked color. A zero tint now restores `0x990000` on load. Existing explicit nonzero colors survive.
+- Clean packaged Forge compared the previous build and the rebuilt JAR against copies of the actual 1.7.10 region. The old package kept the zero tint and healed on the first flight tick. The new package kept both original projectile UUIDs, recovered the red tint, and left an early target at four health. The droplet kept its two ordered ingredients and color `5465106`.
+- An ordinary dedicated startup of the earlier Forge conversion recovered the saved droplet and splatter. Once released after the five-tick gate, the saved droplet healed its target from four to eight. The next ordinary restart retained the recovered red tint and the splatter's landing lit the stone platform and produced four strength-one fragments.
+- The muted packaged client rendered a stationary zero-color fixture and an explicit cyan control with the same camera and background. Six corresponding pixels changed from dark red to cyan. OpenAL reported No Output, and the focus monitor recorded only the original foreground process.
+- The copied Auram region saved the early target at four health and the same droplet more than ten blocks past it at the original flight height. The region supplied the crossing evidence after console polling missed the short interval near the target. A separate droplet hovered for eight ticks, then healed its target from four to ten on impact and was consumed. A zero-color Inferno fixture saved `10027008` there as well.
+- Java 17 data generation, reobfuscation, and all 269 required Forge GameTests passed. The exact package and logs are in `build/qa-brew-projectile-flight`. Package SHA-256 `8594acac9717ec2e42d3204f897494bc963844df05aca0dd992ea171bd869870`.
+
 ## Ward and Wave Resumption (2026-11-24)
 
 - The original server rebuilt a focused ward and a one-witch greater barrier at tick 20. The greater barrier consumed 1.4 at that tick and made its first wall 70 blocks from the glyph. A portable ward loaded at stage 58 made its last shell on tick 20 and expired on tick 40. Starting from stage 59 expired at tick 20.
