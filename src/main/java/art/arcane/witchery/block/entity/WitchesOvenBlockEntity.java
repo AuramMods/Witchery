@@ -3,6 +3,7 @@ package art.arcane.witchery.block.entity;
 import art.arcane.witchery.block.WitchesOvenBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.config.WitcheryServerConfig;
+import art.arcane.witchery.integration.BiomesOPlentySaplings;
 import art.arcane.witchery.integration.ForestrySaplings;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.menu.WitchesOvenMenu;
@@ -220,7 +221,7 @@ public final class WitchesOvenBlockEntity extends BaseContainerBlockEntity imple
         if (input.is(Items.OAK_SAPLING)) {
             return WitcheryIngredient.EXHALE_OF_THE_HORNED_ONE;
         }
-        if (input.is(Items.SPRUCE_SAPLING)) {
+        if (input.is(Items.SPRUCE_SAPLING) || BiomesOPlentySaplings.isFir(input)) {
             return WitcheryIngredient.HINT_OF_REBIRTH;
         }
         if (input.is(Items.BIRCH_SAPLING)) {

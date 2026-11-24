@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Biomes O' Plenty Fir Sapling Fume (2026-11-24)
+
+- The original Biomes O' Plenty sapling metadata six is Fir. The modern oven and JEI resolve `biomesoplenty:fir_sapling` to Wood Ash and Hint of Rebirth. The legacy stack importer recognizes the original numeric Forge mapping and named ID when the modern Fir item is registered. [Original Biomes O' Plenty sapling metadata](https://github.com/Glitchfiend/BiomesOPlenty/blob/fc7f1f6392a16224d19538900acedd152ff4f350/src/main/java/biomesoplenty/common/blocks/BlockBOPSapling.java#L26)
+- The preceding JAR lost both Fir stacks from a synthetic 1.7.10 chest and gave a current Fir generic Foul Fume. The rebuilt JAR used Auram's Biomes O' Plenty 19.0.0.96 and JEI 15.20.0.129. It recovered both saved stacks with their counts and tags and kept the vanilla Torch control. Metadata five did not convert to Fir.
+- The fixture transferred the imported numeric stack to the survival player's hotbar. A muted client put it into the oven with Coal and a Clay Jar through the normal menu. The imported stack and a current Fir produced Hint of Rebirth, and a current Pine produced Foul Fume. JEI displayed the same results. A headless dedicated restart retained the second imported stack and the results in all three ovens.
+- Local Java 17 reobfuscation, all 192 required Forge GameTests, and the asset inventory audit passed. The client stayed unfocused and used zero master volume and OpenAL No Output. The packaged client and server used SHA-256 `95e27561ddfb6cfbfefdf458113cb815a2d9588bbb555d8d6c99eb759d2167a6`. Logs and fixtures are in `build/qa-bop-oven`.
+
 ## Forestry Sapling Fumes (2026-11-24)
 
 - The oven reads the original active species from `Genome.Chromosomes[0].UID0`. Forestry CE uses its supported individual capability for the active species, and the bridge follows `allowModIntegration`. JEI expands Forestry's registered sapling variants through the same fume selection. Forestry is a compile-only dependency for Witchery and stays optional at runtime. [Forestry CE 2.11.2](https://modrinth.com/mod/forestry-community-edition/version/2.11.2)

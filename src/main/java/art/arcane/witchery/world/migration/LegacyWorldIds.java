@@ -3,6 +3,7 @@ package art.arcane.witchery.world.migration;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.brewing.DeathBrewEffects;
 import art.arcane.witchery.capability.WitcheryCapabilities;
+import art.arcane.witchery.integration.BiomesOPlentySaplings;
 import art.arcane.witchery.item.DoorKeyItem;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
@@ -21,6 +22,7 @@ import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -29,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,6 +51,7 @@ public final class LegacyWorldIds {
     private final Map<Integer, ResourceLocation> blocks = new HashMap<>();
     private final Map<Integer, ResourceLocation> items = new HashMap<>();
     private final Map<Integer, ResourceLocation> vanillaItems = new HashMap<>();
+    private final Set<Integer> legacyBopSaplings = new HashSet<>();
     private final Map<Integer, ResourceLocation> spawnEggs = new HashMap<>();
     private final Set<ResourceLocation> unmappedBlocks = ConcurrentHashMap.newKeySet();
     private final Set<ResourceLocation> unmappedItems = ConcurrentHashMap.newKeySet();
@@ -65,9 +69,14 @@ public final class LegacyWorldIds {
             CompoundTag entry = (CompoundTag) tag;
             String key = entry.getString("K");
             if (key.length() < 2 || !entry.contains("V", Tag.TAG_ANY_NUMERIC)) continue;
-            ResourceLocation id = ResourceLocation.tryParse(key.substring(1));
-            if (id == null) continue;
+            String name = key.substring(1);
             int number = entry.getInt("V");
+            if (key.charAt(0) == 2 && BiomesOPlentySaplings.isLegacySaplings(name)) {
+                legacyBopSaplings.add(number);
+                continue;
+            }
+            ResourceLocation id = ResourceLocation.tryParse(name);
+            if (id == null) continue;
             if (id.getNamespace().equals(Witchery.MODID)) {
                 if (key.charAt(0) == 1) blocks.put(number, id);
                 if (key.charAt(0) == 2) items.put(number, id);
@@ -306,12 +315,22 @@ public final class LegacyWorldIds {
 
     private void upgradeStack(CompoundTag compound) {
         ResourceLocation name;
+        boolean legacySapling;
         if (compound.contains("id", Tag.TAG_ANY_NUMERIC)) {
             int id = compound.getInt("id") & 0xFFFF;
+            legacySapling = legacyBopSaplings.contains(id);
             name = items.get(id);
             if (name == null) name = vanillaItems.get(id);
         } else {
-            name = ResourceLocation.tryParse(compound.getString("id"));
+            String id = compound.getString("id");
+            legacySapling = BiomesOPlentySaplings.isLegacySaplings(id);
+            name = ResourceLocation.tryParse(id);
+        }
+        if (legacySapling && compound.getInt("Damage") == BiomesOPlentySaplings.LEGACY_FIR_METADATA
+                && compound.getByte("Count") > 0 && ForgeRegistries.ITEMS.containsKey(BiomesOPlentySaplings.FIR)) {
+            compound.putString("id", BiomesOPlentySaplings.FIR.toString());
+            compound.remove("Damage");
+            return;
         }
         if (VANILLA_POTION.equals(name)) {
             effects.upgrade(compound.getCompound("tag").getList("CustomPotionEffects", Tag.TAG_COMPOUND));
