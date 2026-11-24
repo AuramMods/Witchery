@@ -167,11 +167,13 @@ public final class LegacyWorldIds {
                     upgradeVanillaItems(entry, fixer, -1, to);
                 }
             }
+            upgradeStoredBrewIngredients(player, fixer);
             return;
         }
 
         dimensions.upgradePlayerLocation(player);
         upgradeItems(player);
+        upgradeStoredBrewIngredients(player, fixer);
         upgradeEntityEffects(player);
         effects.upgrade(persisted.getList("WITCPoSpawn", Tag.TAG_COMPOUND));
         upgradeVanillaItems(persisted.getCompound("WITCSpiritWorld"), fixer, from, to);
@@ -206,6 +208,31 @@ public final class LegacyWorldIds {
             if (compound.contains("Count", Tag.TAG_ANY_NUMERIC)) upgradeStack(compound);
         } else if (value instanceof ListTag list) {
             for (Tag entry : list) upgradeItems(entry);
+        }
+    }
+
+    public void upgradeStoredBrewIngredients(Tag value, DataFixer fixer) {
+        if (value instanceof ListTag list) {
+            for (Tag entry : list) upgradeStoredBrewIngredients(entry, fixer);
+        } else if (value instanceof CompoundTag compound) {
+            String item = compound.getString("id");
+            if (!item.equals("witchery:brewbag") && !item.equals("witchery:leonardsurn")) {
+                for (String key : compound.getAllKeys()) upgradeStoredBrewIngredients(compound.get(key), fixer);
+                return;
+            }
+
+            // The item schema visits tag.Items, but the carriers put the bottles in tag.Inventory.Items.
+            var bottles = compound.getCompound("tag").getCompound("Inventory").getList("Items", Tag.TAG_COMPOUND);
+            int currentVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+            for (Tag entry : bottles) {
+                var bottle = (CompoundTag) entry;
+                if (!bottle.getString("id").equals("witchery:brewbottle")) continue;
+                for (Tag ingredient : bottle.getCompound("tag").getList("Items", Tag.TAG_COMPOUND)) {
+                    if (((CompoundTag) ingredient).contains("id", Tag.TAG_ANY_NUMERIC)) {
+                        upgradeVanillaItems(ingredient, fixer, -1, currentVersion);
+                    }
+                }
+            }
         }
     }
 

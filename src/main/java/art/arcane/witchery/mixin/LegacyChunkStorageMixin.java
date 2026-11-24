@@ -6,6 +6,7 @@ import art.arcane.witchery.world.migration.LegacyWorldIds;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.serialization.Codec;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.Level;
@@ -77,6 +78,10 @@ abstract class LegacyChunkStorageMixin {
         }
         CompoundTag updated = type.updateToCurrentVersion(fixer, chunk, version);
         if (legacy) LegacyChunkUpgrade.finish(updated, dimension);
+        if (witchery$legacyIds != null) {
+            witchery$legacyIds.upgradeStoredBrewIngredients(updated.getList("block_entities", Tag.TAG_COMPOUND), fixer);
+            if (legacy) witchery$legacyIds.upgradeStoredBrewIngredients(updated.getList("entities", Tag.TAG_COMPOUND), fixer);
+        }
         return updated;
     }
 }

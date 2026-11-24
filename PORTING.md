@@ -1529,6 +1529,7 @@
 - [x] Compare the original fixture's FML registry snapshot against the modern registration lists and chunk importer. All 121 block names and 217 item names are present. The chunk importer has 109 named cases and delegates the eight crops, Spanish Moss, the cursed lever and both cursed buttons to their state readers. The transient `wallgen` ID resolves to air during import because the original wall plan held its bounds in memory.
 - [x] Import the original Forge ticking ticket for a Poppet Shelf 1,235 blocks from spawn. On packaged Forge the shelf and its tagged Death Protection Poppet loaded before any player connected, survived a normal dedicated restart, and also loaded when re-importing the earlier 1.20.1 copy. Breaking the shelf removed its modern ticket. Re-importing after removal left the old entry inactive and preserved the original file.
 - [x] Convert expired drops stored for the Rite of Prior Incarnation. The player storage regression covers original records, 1.20.1 records with legacy numeric stacks, and a modern stack saved beside them. After a packaged dedicated restart, a muted survival client activated the Heart Glyph and recovered four Red Wool, a tagged Diamond Sword with 27 wear and Sharpness III, and three tagged Soft Clay Jars. The rite spawned the player's named skeleton and cleared the recovered record.
+- [x] Migrate the ordered ingredients inside saved Brew Bag and Leonard's Urn bottles. A packaged dedicated server kept the original Splash Poison and Splash Speed brews, including their color, slot and delivery mode, on import and after restart. A normal startup also repaired the same chest in the older 1.20.1 copy. All 155 required Forge GameTests passed, covering fresh and previously imported chest and player inventories.
 - [ ] Expand migration to other block and subtype data and specialized entity and block-entity fields. Add fixtures before calling the migration complete.
 
 ### Importing a copy of a legacy world
@@ -1542,6 +1543,8 @@ java -Dwitchery.importLegacyWorld=true @user_jvm_args.txt @libraries/net/minecra
 The first boot records the old IDs in `witchery-legacy-ids.dat` inside the copy. Keep that file with the save so old dedicated player files can convert when their owners log in. Subsequent boots use the normal launch command. To import a single-player copy, add `-Dwitchery.importLegacyWorld=true` to the Java arguments for its first launch.
 
 The same registry snapshot lets an earlier 1.20.1 import repair any numeric items still stored for the Rite of Prior Incarnation. The player's next login converts those items before the rite reads them.
+
+The snapshot also lets the importer recover numeric brew ingredients inside Brew Bags and Leonard's Urns. On an earlier imported world, opening the chunk containing a stored bag or urn, or loading the player carrying it, repairs that brew using the saved registry.
 
 Keep the original dimension folders' `forcedchunks.dat` files in the copy during import. Witchery reads each saved Poppet Shelf position and loads the shelf before registering its modern Forge ticking ticket. If an earlier build imported the save, run the import flag again to recover any distant shelves from those files. Subsequent launches read the modern tickets from the dimension's `data/chunks.dat`.
 

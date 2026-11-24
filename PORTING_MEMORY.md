@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Legacy Brew Bag and Urn Contents (2026-11-23)
+
+- An original Forge server brewed Splash Poison and Splash Speed and wrote matching loose bottles and carrier copies to a vanilla chest. The fixture used the original `Inventory.Items` slot format for the Brew Bag and four-slot Leonard's Urn. The preceding packaged build converted the loose bottles and left numeric vanilla ingredients in both stored bottles. The new GameTest reproduced the Brew Bag failure through actual chunk data fixing.
+- The import now fixes numeric vanilla ingredients specifically inside saved Bag and Urn bottles. It uses the original Forge registry and the full item data fixer for each numeric ingredient, so the repair works even when the containing player or chunk already has a 1.20.1 data version.
+- Packaged headless Forge kept both colors, splash delivery, slot 3 and the ordered ingredients on first import and after restart. A separate normal startup repaired the same chest in the preceding build's data-version-3465 world. The first whole-world attempt reached the fixture runner's startup deadline, so the verified fresh import loaded and converted the target chunk through normal server startup. See `legacy-stored-brew-verified-package.log` and `legacy-stored-brew-verified-repair.log`.
+- All 155 required Forge GameTests passed, including the original and already-converted chest and player fixtures. The packaged JAR was `ffeadfd6dff38e18060ff01c54196f2c913e77e3dfdeffa5938078fd8e98bbbb`. See `legacy-stored-brew-after-gametest.log` and `legacy-stored-brew-jar.log` under the directory named by `/tmp/witchery-flowing-spirit-current`.
+
 ## Legacy Rite of Prior Incarnation Recovery (2026-11-23)
 
 - The original rite stored expired drops under `ForgeData.PlayerPersisted.WITCPriIncInv`. Witchery subtype conversion already reached that list, but vanilla's player data fixer did not visit it. The new GameTest reproduced the lost numeric Red Wool entry on the preceding build. Import now applies the vanilla item data fixer there, including to numeric stacks in previously imported 1.20.1 player records when the legacy registry snapshot is present.
