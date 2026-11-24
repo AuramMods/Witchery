@@ -13,7 +13,7 @@ Legacy source used for porting lives in:
 
 ## Current Porting Status
 
-The Forge 1.20.1 port builds and runs on clean Forge and the copied Auram profile. The same Auram survival save has reached Death, Dream, Torment, Mirror, and vampirism through normal player interactions. The fixtures and remaining progression, legacy parity, migration, and release checks are tracked in the [porting plan](PORTING.md).
+The Forge 1.20.1 port builds and runs on clean Forge and the copied Auram profile. The same Auram survival save reached Death, Dream, Torment, and Mirror and completed the vampire and werewolf trials through rank ten. The fixtures and remaining legacy parity, migration, and release checks are tracked in the [porting plan](PORTING.md).
 
 Inventory baseline from manifest:
 - Blocks: `121`

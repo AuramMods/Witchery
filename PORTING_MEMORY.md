@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Auram Werewolf Ranks Six Through Ten (2026-11-23)
+
+- The player completed ten unarmed airborne kills and turned in the rank-five hunt. A grounded control gave no credit, and an eleventh airborne kill left the counter at ten. Counted trials retain `STARTED` at the target count until the player turns them in at the altar. See `auram-wolf-airborne-trial.log` in the directory named by `/tmp/witchery-flowing-spirit-current`.
+- Crouch, look exactly straight up, and use the native right-click input. The driver used `press_use` so the Forge client event sent the normal howl packet. A daytime howl and a second howl in one chunk did not count. The save recorded sixteen unique chunk keys and the altar awarded rank seven. See `auram-wolf-howl-trial.log`.
+- The normal empty-hand wolf interaction tamed six wild wolves after the player switched from Wolfman to wolf with the Moon Charm. The region file contains all six distinct UUIDs, the player's owner UUID, and their seated state. See `auram-wolf-taming-trial.log` and `auram-wolf-tamed-ids.json`.
+- A wolf-form Zombified Piglin kill gave no credit. The player used the Moon Charm to enter Wolfman form and defeated thirty naturally spawned individuals around the saved Nether fortress and portal. The fixture supported positioning and combat. Returning through the portal and using the altar awarded rank nine. See `auram-wolf-nether-hunt.log` and `auram-wolf-nether-credited.json`.
+- The final trial used a supplied full-health villager. The same altar saved werewolf rank ten, vampire rank ten, Wolfman form, and 60 maximum health. See `auram-wolf-final-hunt.log`.
+- A dedicated-server client reconnect restored both rank-ten levels, Wolfman form, 60 maximum health, Moon Charm damage four, and an empty trial counter. The placed Wolf Altar and original copied-save rules persisted. Both profiles used JAR `aa89072c889ef4b47fcda03c9d6fde1a4ce6c0675526edc2d640f09e1ea3778c`. The client stayed muted with zero focus activations. See `auram-wolf-rank-ten-reconnect.log`.
+
 ## Auram Wolf Altar (2026-11-23)
 
 - Grow more Wolfsbane from the saved seeds. For Nether hunts, the plateau above the saved Blaze fortress around `-495 132 554` loaded enough naturally spawned Hellhounds for the first altar trials. The fixture marked hounds persistent before moving them a long distance into the real portal. The server otherwise despawned a hound during that transfer. The current batch crossed with the same UUIDs. The Nether loot rule stayed in place. The player obtained five heads and fourteen tongues including the earlier reserves. See `auram-wolf-altar-crop.log`, `auram-wolf-altar-ferry-first.log`, `auram-wolf-altar-ferry.log`, and `auram-wolf-altar-hunt.log` in the directory named by `/tmp/witchery-flowing-spirit-current`.
