@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Fume Funnel Models (2026-11-23)
+
+- The plain and filtered models use the original `fumefunnel.png` atlas and cuboids. A Witch's Oven on either side adds its own pipe. An oven below swaps the body and its filter for the chimney. Both item models show their standalone forms.
+- The Forge baked model reads adjacent ovens from the client's render region. Existing saves need only the saved facing and placed blocks. An older 1.20.1 save displayed the attached pipe after restart. The muted background client placed an oven in survival, opened its menu through the funnel, and showed the pipe appearing and disappearing across a chunk boundary.
+- Java 17 JAR reobfuscation and all 163 required Forge GameTests passed. The matching clean Forge client and dedicated server exercised all 64 combinations of funnel type, facing and oven arrangement on JAR SHA-256 `dd3e938c21c5db3a94cd084a40678e9fbe240aabac1e7172a0916ad3927185a5`.
+
 ## Earmuffs and Apothecary Appearance (2026-11-23)
 
 - Earmuffs render the two original ear pads and three band pieces on a pose-aware head model. The original texture and inventory icon are retained, and the tooltip explains the effects in all five supported languages. The language files now share 1,415 keys.

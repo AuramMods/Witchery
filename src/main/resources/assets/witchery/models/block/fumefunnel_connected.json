@@ -1,0 +1,4 @@
+{
+  "loader": "witchery:fume_funnel",
+  "body": "witchery:block/fumefunnel"
+}

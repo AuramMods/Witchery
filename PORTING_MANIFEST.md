@@ -130,6 +130,9 @@ Lifecycle stages:
 - Dark Marks still laugh with the original `mob.torment.laugh` event. The separate original `mob.darkmark.idle` event and clip are available in the sound registry. The original `random.loved` definition points to an absent clip. The original Torment death clip is also absent, so the packaged death event uses the existing lowered-pitch hurt sample.
 
 ## Block Model Parity Anchors (current focus)
+- `witchery:fumefunnel` and `witchery:filteredfumefunnel`
+  - Both use the original `ModelFumeFunnel` body, filter case, two side pipes and chimney cuboids with the shared `witchery:block/fumefunnel` atlas.
+  - `FumeFunnelModel` bakes the corresponding parts with the block's facing. Forge model data reads both side positions and the block below to match the original renderer. The idle and burning oven IDs both connect. Item models use the standalone body for their variant.
 - `witchery:wolfaltar`
   - Uses the original Wolf Altar geometry and texture through its block entity renderer and inventory renderer. The facing determines the front of the statue and the reward position.
   - The survival recipe accepts either Wolf Head variant in each trophy slot. The original offerings and trials advance from rank one through rank ten. The gold reward creates `witchery:mooncharm`, which retains its legacy wear value.

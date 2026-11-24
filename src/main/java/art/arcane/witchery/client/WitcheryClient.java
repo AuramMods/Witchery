@@ -28,6 +28,7 @@ import art.arcane.witchery.client.model.MindrakeModel;
 import art.arcane.witchery.client.model.DarkMarkModel;
 import art.arcane.witchery.client.model.DemonModel;
 import art.arcane.witchery.client.model.EntModel;
+import art.arcane.witchery.client.model.FumeFunnelModel;
 import art.arcane.witchery.client.model.ImpModel;
 import art.arcane.witchery.client.model.HobgoblinModel;
 import art.arcane.witchery.client.model.HobgoblinGodModel;
@@ -167,6 +168,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.client.event.RegisterDimensionSpecialEffectsEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
@@ -180,6 +182,11 @@ public final class WitcheryClient {
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "wood_type");
 
     private WitcheryClient() {
+    }
+
+    @SubscribeEvent
+    public static void registerGeometryLoaders(ModelEvent.RegisterGeometryLoaders event) {
+        event.register("fume_funnel", FumeFunnelModel.LOADER);
     }
 
     @SubscribeEvent

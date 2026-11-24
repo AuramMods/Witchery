@@ -1,8 +1,8 @@
 {
   "variants": {
-    "facing=north": { "model": "witchery:block/fumefunnel", "y": 180, "uvlock": true },
-    "facing=east": { "model": "witchery:block/fumefunnel", "y": 270, "uvlock": true },
-    "facing=south": { "model": "witchery:block/fumefunnel", "y": 0, "uvlock": true },
-    "facing=west": { "model": "witchery:block/fumefunnel", "y": 90, "uvlock": true }
+    "facing=north": {"model": "witchery:block/fumefunnel_connected"},
+    "facing=east": {"model": "witchery:block/fumefunnel_connected", "y": 90},
+    "facing=south": {"model": "witchery:block/fumefunnel_connected", "y": 180},
+    "facing=west": {"model": "witchery:block/fumefunnel_connected", "y": 270}
   }
 }
