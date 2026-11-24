@@ -2,22 +2,80 @@ package art.arcane.witchery.entity;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.registry.WitcheryEntities;
+import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BarrelBlockEntity;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
+
+import java.util.UUID;
+import java.util.function.Consumer;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class HobgoblinHaulTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_hobgoblin_cargo", setupTicks = 5)
+    public static void retrievingCargoPreservesPartiallyAcceptedStacks(GameTestHelper helper) {
+        var start = new BlockPos(4, 2, 5);
+        helper.setBlock(start.below(), Blocks.STONE);
+        helper.setBlock(start.west().below(), Blocks.STONE);
+        var goblin = helper.spawn(WitcheryEntities.GOBLIN.get(), start);
+        goblin.setNoAi(true);
+        goblin.setLeashedTo(helper.spawn(EntityType.ARMOR_STAND, start.west()), false);
+        var level = helper.getLevel();
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "CargoCollector"));
+        var inventory = player.getInventory();
+        var cargo = new ItemStack(Items.RAW_IRON, 6);
+        cargo.getOrCreateTag().putString("Marker", "Goblin Cargo");
+        goblin.setItemInHand(InteractionHand.MAIN_HAND, cargo);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.PIG_SPAWN_EGG));
+        helper.assertTrue(goblin.exchangePickaxe(player, InteractionHand.MAIN_HAND) == InteractionResult.PASS
+                        && goblin.getMainHandItem().getCount() == 6,
+                "A spawn egg should pass through to the usual mob interaction without retrieving cargo");
+        for (int slot = 0; slot < inventory.items.size(); slot++) {
+            inventory.setItem(slot, new ItemStack(Items.COBBLESTONE, 64));
+        }
+        inventory.setItem(0, cargo.copyWithCount(63));
+
+        Consumer<EntityJoinLevelEvent> denyDrop = event -> {
+            if (event.getLevel() == level && event.getEntity() instanceof ItemEntity item
+                    && ItemStack.isSameItemSameTags(item.getItem(), cargo)) event.setCanceled(true);
+        };
+        MinecraftForge.EVENT_BUS.addListener(denyDrop);
+        try {
+            goblin.exchangePickaxe(player, InteractionHand.MAIN_HAND);
+            helper.assertTrue(inventory.getItem(0).getCount() == 64
+                            && ItemStack.matches(goblin.getMainHandItem(), cargo.copyWithCount(5)),
+                    "The goblin should retain exactly the remainder when a partial transfer's drop is denied");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(denyDrop);
+        }
+
+        inventory.getItem(0).shrink(2);
+        goblin.exchangePickaxe(player, InteractionHand.MAIN_HAND);
+        helper.succeedWhen(() -> {
+            var overflow = level.getEntitiesOfClass(ItemEntity.class, new AABB(goblin.blockPosition()).inflate(3),
+                    drop -> ItemStack.isSameItemSameTags(drop.getItem(), cargo));
+            helper.assertTrue(inventory.getItem(0).getCount() == 64 && goblin.getMainHandItem().isEmpty()
+                            && overflow.size() == 1 && overflow.get(0).getItem().getCount() == 3,
+                    "Retry places two more in the inventory and drops the remaining three exactly once");
+        });
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_storage_waypoint", timeoutTicks = 180)
     public static void walksPastWaypointToleranceToDepositOre(GameTestHelper helper) {
         var storage = new BlockPos(3, 280, 7);

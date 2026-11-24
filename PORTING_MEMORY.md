@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Hobgoblin Cargo Retrieval (2026-11-24)
+
+- The preceding build passed the two checked-in hauling cases and mined an ore beneath a bedrock pillar on packaged Forge while retaining its lead and pickaxe wear.
+- Collecting cargo now keeps any inventory overflow in the Hobgoblin's hand when Forge rejects its drop. If a later interaction can insert some pieces or spawn the remainder, only that transferred portion leaves the hand. Spawn eggs bypass the exchange as they did in Witchery 0.24.1.
+- The regression uses six tagged ore and a player stack with room for one. A canceled spawn leaves five ore in the creature's hand. After the fixture makes room for two more ore in the stack, retry fills it and drops three matching ore. Java 17 data generation, JAR reobfuscation, and all 227 required local Forge GameTests passed. Logs and the exact package are in `build/qa-hobgoblin-covered-ore`. Package SHA-256 `d9e49e749a5c4aa5fcee4144d6c4c81a22c1841aea0d3020325c1e433729293a`.
+- A local Forge probe canceled the first tagged item spawn in both packaged builds. The muted background survival client put one ore in its nearly full stack. The preceding build lost the other five. The rebuilt package kept them in the Goblin's hand and dropped them together on the next normal interaction. A dedicated restart preserved the Goblin's tether and the entire overflow. The reconnecting client picked up all five after the fixture freed one slot.
+
 ## Owl Cauldron Brew Deliveries (2026-11-24)
 
 - Witchery 0.24.1's flight goal threw custom cauldron brews whose bottles had the splash flag. The previous packaged port dropped both bottles intact. A synthetic 1.7.10 region gave two seated Owls the original numeric brew items, ordered ingredients and Bound Waystones. The old port imported the items and routes correctly, and the survival client launched both Owls through their empty-hand interaction.

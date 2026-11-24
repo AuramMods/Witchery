@@ -1129,6 +1129,7 @@
 - [x] Reopen a copy of the preceding packaged server's stalled save with the fixed JAR. The existing Goblin delivered its ore to the chest and remained tied to the same fence. An ordinary dedicated restart kept its UUID, attachment and exactly one stored Raw Iron.
 - [x] Pass Java 17 data generation, JAR reobfuscation, and all 114 checked-in Forge GameTests. The first run passed the hauling regression and reproduced a sporadic Coven Witch door-test failure. The full rerun passed both.
 - [x] Pass all 117 GameTests with Thaumaturge, Lithostitched, and Curios loaded.
+- [x] Preserve manually collected Hobgoblin cargo when the inventory fills and Forge rejects the overflow drop. The packaged comparison shows the preceding JAR clearing five rejected ore. In the rebuilt JAR the leashed Hobgoblin retained all five and delivered them on the survival player's next interaction. After a dedicated restart the player picked up the complete tagged overflow. All 227 required local Forge GameTests passed.
 
 ## Hobgoblin Worship and Breeding (2026-11-20)
 

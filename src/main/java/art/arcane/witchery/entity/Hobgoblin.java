@@ -42,12 +42,14 @@ import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.PickaxeItem;
+import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.Level;
@@ -209,16 +211,23 @@ public final class Hobgoblin extends AbstractVillager {
     }
 
     public InteractionResult exchangePickaxe(Player player, InteractionHand hand) {
-        if (hand != InteractionHand.MAIN_HAND || !isAlive() || !isLeashed() || isBaby() || player.isShiftKeyDown()) {
+        if (hand != InteractionHand.MAIN_HAND || !isAlive() || !isLeashed() || isBaby() || isTrading() || player.isShiftKeyDown()) {
             return InteractionResult.PASS;
         }
         ItemStack offered = player.getItemInHand(hand);
+        if (offered.getItem() instanceof SpawnEggItem) return InteractionResult.PASS;
         ItemStack held = getMainHandItem();
         if (held.isEmpty() && !(offered.getItem() instanceof PickaxeItem)) return InteractionResult.PASS;
         if (!level().isClientSide) {
             if (!held.isEmpty()) {
-                setItemInHand(hand, ItemStack.EMPTY);
-                if (!player.addItem(held)) spawnAtLocation(held);
+                ItemStack remaining = held.copy();
+                player.addItem(remaining);
+                if (!remaining.isEmpty()) {
+                    var drop = new ItemEntity(level(), getX(), getY() + 1, getZ(), remaining.copy());
+                    drop.setDefaultPickUpDelay();
+                    if (level().addFreshEntity(drop)) remaining = ItemStack.EMPTY;
+                }
+                setItemInHand(hand, remaining.isEmpty() ? ItemStack.EMPTY : remaining);
             } else {
                 setItemInHand(hand, offered.split(1));
                 setGuaranteedDrop(EquipmentSlot.MAINHAND);
