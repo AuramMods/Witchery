@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Brew of the Depths and Saved Effects (2026-11-24)
+
+- Drinking starts the original 300-second countdown in `ForgeData.PlayerPersisted.witcheryDepths`. The brew applies Water Breathing and adds Wither II on land when Wither is absent. Submerging the player's eyes clears Wither. Expiry removes Water Breathing and Poison. Death removes the countdown.
+- Original countdowns resume directly. The `witchery:depths` effect remains registered for earlier Forge 1.20.1 saves. Its remaining ticks convert to seconds on join. The preceding packaged build loaded a synthetic 1.7.10 player record and left its 12-second counter untouched. The new build resumed a separate previous-port record with the saved effect.
+- On the rebuilt JAR the original-format record applied Wither II on land, cleared it when the survival player was submerged, and removed Water Breathing and a fixture-supplied Poison effect at expiry. The player drank the bottle inherited as legacy ingredient subtype 77 and started a fresh five-minute countdown. Its unrelated item and player tags survived the import.
+- The dedicated restart kept the active countdown. Drinking a fixture-supplied Milk Bucket cleared the current potion effects and the next pulse reapplied Water Breathing. A controlled death and immediate respawn cleared the timer and the brew effects. Logs are in `build/qa-depths`.
+- Local Java 17 JAR reobfuscation, the asset inventory audit and all 165 Forge GameTests passed, including the regression for the original countdown, effect cleanup, previous port effect, fresh brew and death. The matching clean Forge client and dedicated server used SHA-256 `eb9142238dfd658b44a2d075b731b6a5f2183f68913f2ab516817b10e18d696e`. The isolated client used zero master volume and OpenAL No Output without taking focus.
+
 ## Silver Vat, Grassper and Crystal Ball Models (2026-11-24)
 
 - The Silver Vat uses its original basin, spout textures and animated blue liquid. Its item renders all four spouts. The placed model shows the spouts associated with adjacent block entities and displays one to eight silver pieces depending on the dust stored. The packaged client checked each of the 16 connection combinations, then collected all 16 tagged Silver Dust from the older save. The dust pieces disappeared from the basin.

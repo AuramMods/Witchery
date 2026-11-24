@@ -3,6 +3,7 @@ package art.arcane.witchery.event;
 import art.arcane.witchery.block.AlluringSkullBlock;
 import art.arcane.witchery.block.OwnedColumnBlock;
 import art.arcane.witchery.brewing.BrewItemCurse;
+import art.arcane.witchery.brewing.BrewOfTheDepths;
 import art.arcane.witchery.brewing.ChilledEffect;
 import art.arcane.witchery.brewing.DeathBrewEffects;
 import art.arcane.witchery.entity.CovenWitch;
@@ -72,12 +73,10 @@ import art.arcane.witchery.world.WitcheryDimensionTravelHooks;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -193,6 +192,7 @@ public final class WitcheryEventHooks {
             DeathBrewEffects.restorePendingInventory(serverPlayer);
             DeathBrewEffects.restoreEffects(serverPlayer);
             GrotesqueEffect.restoreLegacyBrew(serverPlayer);
+            BrewOfTheDepths.restorePortEffect(serverPlayer);
             InfusionEnergy.sync(serverPlayer);
             VampireFlight.restore(serverPlayer);
             Lycanthropy.restore(serverPlayer);
@@ -310,14 +310,7 @@ public final class WitcheryEventHooks {
         Predictions.tick(serverPlayer);
         CovenWitch.tickVisits(serverPlayer);
 
-        if (serverPlayer.level().getGameTime() % 20 == 0 && serverPlayer.hasEffect(WitcheryEffects.DEPTHS.get())) {
-            if (serverPlayer.isEyeInFluid(FluidTags.WATER)) {
-                serverPlayer.setAirSupply(serverPlayer.getMaxAirSupply());
-                serverPlayer.removeEffect(MobEffects.WITHER);
-            } else if (!serverPlayer.hasEffect(MobEffects.WITHER)) {
-                serverPlayer.addEffect(new MobEffectInstance(MobEffects.WITHER, 100, 1));
-            }
-        }
+        if (serverPlayer.level().getGameTime() % 20 == 0) BrewOfTheDepths.tickSecond(serverPlayer);
         WitchFootwear.tick(serverPlayer);
     }
 
@@ -445,6 +438,7 @@ public final class WitcheryEventHooks {
         }
         FamiliarBinding.handleDeath(event);
         if (event.isCanceled()) return;
+        if (event.getEntity() instanceof ServerPlayer player) BrewOfTheDepths.clearOnDeath(player);
         DeathBrewEffects.onDeath(event.getEntity());
         if (event.getEntity() instanceof ServerPlayer player) ImpContractEffects.clear(player);
         if (event.getSource().getEntity() instanceof ServerPlayer killer) {

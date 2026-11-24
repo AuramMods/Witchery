@@ -1,20 +1,25 @@
 package art.arcane.witchery.item;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.brewing.BrewOfTheDepths;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.infusion.ImpContractEffects;
+import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryItems;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.TagParser;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -40,6 +45,45 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class LegacyConsumableTests {
+    @GameTest(template = "qa_coven_arena")
+    public static void depthsContinuesLegacyCountdownAndClearsTheOriginalEffects(GameTestHelper helper) {
+        var diver = player(helper);
+        var persisted = new CompoundTag();
+        diver.getPersistentData().put(Player.PERSISTED_NBT_TAG, persisted);
+        diver.setPos(Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(4, 3, 5))));
+        try {
+            persisted.putInt("witcheryDepths", 2);
+            BrewOfTheDepths.tickSecond(diver);
+            assertEffect(helper, diver, MobEffects.WATER_BREATHING, 6_000, 0);
+            assertEffect(helper, diver, MobEffects.WITHER, 100, 1);
+            helper.assertTrue(persisted.getInt("witcheryDepths") == 1, "The original counter advances by one second");
+
+            diver.addEffect(new MobEffectInstance(MobEffects.POISON, 140));
+            for (int y = 3; y <= 5; y++) helper.setBlock(new BlockPos(4, y, 5), Blocks.WATER);
+            diver.baseTick();
+            diver.baseTick();
+            helper.assertTrue(diver.isEyeInFluid(FluidTags.WATER), "The diver is submerged in real water");
+            BrewOfTheDepths.tickSecond(diver);
+            helper.assertTrue(!persisted.contains("witcheryDepths") && !diver.hasEffect(MobEffects.WATER_BREATHING)
+                            && !diver.hasEffect(MobEffects.WITHER) && !diver.hasEffect(MobEffects.POISON),
+                    "The last underwater pulse removes Wither, Water Breathing and Poison");
+
+            diver.addEffect(new MobEffectInstance(WitcheryEffects.DEPTHS.get(), 41));
+            BrewOfTheDepths.restorePortEffect(diver);
+            helper.assertTrue(persisted.getInt("witcheryDepths") == 3 && !diver.hasEffect(WitcheryEffects.DEPTHS.get()),
+                    "A previous Forge release's 41-tick effect converts to three legacy pulses");
+
+            consume(helper, diver, new ItemStack(WitcheryIngredient.BREW_OF_THE_DEPTHS.item()));
+            helper.assertTrue(diver.getMainHandItem().isEmpty() && persisted.getInt("witcheryDepths") == 300,
+                    "Drinking a fresh brew starts the original five-minute timer");
+            BrewOfTheDepths.clearOnDeath(diver);
+            helper.assertTrue(!persisted.contains("witcheryDepths"), "Death clears the active brew countdown");
+            helper.succeed();
+        } finally {
+            diver.discard();
+        }
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void artichokeHungerTracksTheFoodActuallyRestored(GameTestHelper helper) {
         var player = player(helper);

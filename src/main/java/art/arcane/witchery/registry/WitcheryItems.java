@@ -34,6 +34,7 @@ import art.arcane.witchery.brewing.BrewImpacts;
 import art.arcane.witchery.brewing.BrewCreatureEffects;
 import art.arcane.witchery.brewing.BrewErosion;
 import art.arcane.witchery.brewing.BrewIce;
+import art.arcane.witchery.brewing.BrewOfTheDepths;
 import art.arcane.witchery.brewing.BrewSolidification;
 import art.arcane.witchery.brewing.BrewSubstitution;
 import art.arcane.witchery.brewing.BrewTerrain;
@@ -404,7 +405,7 @@ public final class WitcheryItems {
             case "brew_of_wasting" -> new ThrowableBrewItem(BrewCreatureEffects::wasting);
             case "brew_of_grotesque" -> new DrinkableBrewItem(drinker ->
                     drinker.addEffect(new MobEffectInstance(WitcheryEffects.GROTESQUE.get(), 4_800, 0, false, false, false)));
-            case "brew_of_the_depths" -> new DrinkableBrewItem(WitcheryEffects.DEPTHS, 6000, 0);
+            case "brew_of_the_depths" -> new DrinkableBrewItem(BrewOfTheDepths::drink);
             case "brew_of_sleeping" -> new DrinkableBrewItem(DreamTravel::requestSleep);
             case "brew_of_flowing_spirit" -> new ThrowableBrewItem(BrewImpacts::depositSpirit);
             case "brew_of_hollow_tears" -> new ThrowableBrewItem(BrewImpacts::depositHollowTears);
