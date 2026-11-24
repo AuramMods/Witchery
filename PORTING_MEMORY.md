@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Heart Glyph Redstone and Feedback (2026-11-24)
+
+- The preceding packaged Heart Glyph missed a command-function pulse whose rising and falling edges occurred in one tick. The rebuilt headless server started a rite on that pulse and refunded its staged item on a second pulse. Void Bramble suppressed an attempted activation until the field was removed and a fresh edge arrived. A pending Waystone binding completed once after an ordinary dedicated restart with the input still powered.
+- Active glyphs emit the original red-dust cue. Item offerings use a poof and the modern pop for `random.pop`. Living offerings pair the pop with portal particles. The redstone GameTest verifies the pop on the offering step and the snare on cancellation.
+- An isolated survival client used the Heart Glyph through its normal interaction. The client created red dust at age zero over the center of the glyph and created poof particles at the first offering. The background run used zero master volume and OpenAL No Output. The focus monitor recorded no foreground application change.
+- Local Java 17 data generation, JAR reobfuscation, and all 220 Forge GameTests passed. Logs and the tested JAR are in `build/qa-heart-glyph-feedback`. Package SHA-256 `51fdf7c0a7cc294a7941acfd414a5df1508761ac3b55b4446abf720af981f71c`.
+
 ## Chalk Rite Offering Sources (2026-11-24)
 
 - The original Heart Glyph measures offering distance in three dimensions from the lower corner of its block. The one-block-high entity search also applies to living offerings. The Grave uses the original zombie class rule, which includes zombie villagers. A small rite checks four blocks for drops regardless of where the glyph appears within its block.

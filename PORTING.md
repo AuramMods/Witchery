@@ -626,6 +626,13 @@
 - [x] Run local Java 17 data generation, JAR reobfuscation, and all 219 required Forge GameTests. The new cases cover both sides of the radius, a saved Grassper cast, and the Grave's living offering search.
 - [x] Verify the packaged headless server through rising redstone activation. The small circle refused the east-side drop and took the in-range west-side drop. The Grave selected the zombie villager in the glyph layer. A barrier staged its western Grassper offering while Redstone was out of range. The server restarted, consumed the returned Redstone, and refunded the Obsidian at the same Grassper when the altar was missing.
 
+## Heart Glyph Redstone and Feedback (2026-11-24)
+
+- [x] Process rising redstone edges on neighbor updates. On the exact packaged JAR, a pulse that rose and fell in one tick started the rite. A second short pulse canceled it and refunded its staged offering. Holding a signal through a dedicated restart let a pending Waystone rite finish once.
+- [x] Verify Void Bramble suppression with the new activation path. A blocked edge left the offerings in place. Removing the Bramble while holding the signal left the glyph idle until a fresh rising edge.
+- [x] Restore red dust over the active glyph, a poof over consumed item offerings, and the pop at the item or living offering. Local data generation, JAR reobfuscation, and all 220 Forge GameTests passed. The redstone regression also verifies the offering pop and the cancellation snare.
+- [x] Use the Heart Glyph in the packaged survival client and verify red dust over its center and poof particles at a consumed offering. The client stayed hidden and unfocused with zero master volume and OpenAL No Output.
+
 ## Returned Offerings and Waystone Copies (2026-11-21)
 
 - [x] Drop the Arthana, Boline, and reusable Necromantic Stone at their source during their offering step. Preserve durability and item tags. Charged Attuned Stones return discharged. The Rite of the Spectral Stone still consumes its Necromantic Stone.

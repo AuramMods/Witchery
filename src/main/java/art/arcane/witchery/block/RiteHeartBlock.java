@@ -7,7 +7,7 @@ import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -94,6 +94,13 @@ public final class RiteHeartBlock extends BaseEntityBlock {
     }
 
     @Override
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos neighborPos, boolean moving) {
+        if (level instanceof ServerLevel server && level.getBlockEntity(pos) instanceof RiteHeartBlockEntity heart) {
+            heart.updateRedstone(server, state);
+        }
+    }
+
+    @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (level instanceof ServerLevel server && level.getBlockEntity(pos) instanceof RiteHeartBlockEntity heart) {
             heart.toggle(server, player, player.getItemInHand(hand).getItem() instanceof SeerStoneItem);
@@ -113,8 +120,8 @@ public final class RiteHeartBlock extends BaseEntityBlock {
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         if (state.getValue(ACTIVE)) {
-            level.addParticle(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 0.25 + random.nextDouble(),
-                    pos.getZ() + 0.5, (random.nextDouble() - 0.5) * 3, 0.3, (random.nextDouble() - 0.5) * 3);
+            level.addParticle(DustParticleOptions.REDSTONE, pos.getX() + 0.4 + random.nextFloat() * 0.2,
+                    pos.getY() + 0.1 + random.nextFloat() * 0.3, pos.getZ() + 0.4 + random.nextFloat() * 0.2, 0, 0, 0);
         }
     }
 }

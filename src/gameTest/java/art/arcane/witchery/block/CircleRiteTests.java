@@ -21,6 +21,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -42,6 +44,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.PlayLevelSoundEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.gametest.GameTestHolder;
@@ -60,6 +63,49 @@ public final class CircleRiteTests {
     // Each required offering, the optional Waystone, and the altar charge get a separate 20-tick step.
     private static final int TWO_OFFERING_CAST = 80;
     private static final int THREE_OFFERING_CAST = 100;
+
+    @GameTest(template = TEMPLATE, batch = "witchery_rite_redstone_pulse", setupTicks = 5)
+    public static void shortRedstonePulsesStartAndStopARite(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.SMALL_RITE, "circleglyphritual");
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var heart = heart(helper);
+        var power = CENTER.below();
+        var sounds = new ArrayList<SoundEvent>();
+        Consumer<PlayLevelSoundEvent.AtPosition> listener = event -> {
+            if (event.getLevel() == level && event.getSound() != null
+                    && event.getPosition().distanceToSqr(Vec3.atCenterOf(center)) < 1) {
+                sounds.add(event.getSound().value());
+            }
+        };
+        waitForOfferings(helper, new ItemStack(Items.OBSIDIAN), new ItemStack(Items.REDSTONE)).thenExecute(() -> {
+            MinecraftForge.EVENT_BUS.addListener(listener);
+            try {
+                helper.setBlock(power, Blocks.REDSTONE_BLOCK);
+                helper.setBlock(power, Blocks.STONE);
+                var started = helper.getBlockState(CENTER);
+                helper.assertTrue(started.getValue(RiteHeartBlock.ACTIVE) && !started.getValue(RiteHeartBlock.POWERED)
+                                && sounds.isEmpty(),
+                        "The rising edge starts the rite before the same-tick falling edge and the first offering sound");
+
+                tick(level, center, heart, 20);
+                helper.assertTrue(heart.saveWithoutMetadata().getInt("OfferingStep") == 1
+                                && sounds.equals(List.of(SoundEvents.BUBBLE_COLUMN_BUBBLE_POP)),
+                        "The staged item plays the offering pop at its own step");
+
+                helper.setBlock(power, Blocks.REDSTONE_BLOCK);
+                helper.setBlock(power, Blocks.STONE);
+                var stopped = helper.getBlockState(CENTER);
+                helper.assertTrue(!stopped.getValue(RiteHeartBlock.ACTIVE) && !stopped.getValue(RiteHeartBlock.POWERED)
+                                && sounds.equals(List.of(SoundEvents.BUBBLE_COLUMN_BUBBLE_POP, SoundEvents.NOTE_BLOCK_SNARE.value()))
+                                && drops(helper).size() == 2,
+                        "The second pulse cancels and refunds the staged offering with the original snare cue");
+            } finally {
+                MinecraftForge.EVENT_BUS.unregister(listener);
+            }
+        }).thenSucceed();
+    }
 
     @GameTest(template = TEMPLATE, batch = "witchery_rite_offering_boundary", setupTicks = 5)
     public static void smallRiteMeasuresDroppedOfferingsFromTheGlyphBlockCorner(GameTestHelper helper) {

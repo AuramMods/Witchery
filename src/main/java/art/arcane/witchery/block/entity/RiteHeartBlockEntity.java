@@ -127,13 +127,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             return;
         }
         heart.restoreOfferingReturns(server);
-        boolean powered = level.hasNeighborSignal(pos);
-        if (powered != state.getValue(RiteHeartBlock.POWERED)) {
-            level.setBlock(pos, state.setValue(RiteHeartBlock.POWERED, powered), Block.UPDATE_CLIENTS);
-            if (powered) {
-                heart.toggle(server, null);
-            }
-        }
+        heart.updateRedstone(server, state);
         heart.updateActiveState(server);
         if (!heart.upkeep.isEmpty()) {
             if (heart.upkeep.removeIf(rite -> !rite.tick(server, pos, heart.terrainChanges::add))) heart.updateActiveState(server);
@@ -151,6 +145,14 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         // Moving Earth can relocate this block entity. Finish bookkeeping before it copies the heart's state.
         heart.terrainChanges.forEach(Runnable::run);
         heart.terrainChanges.clear();
+    }
+
+    public void updateRedstone(ServerLevel level, BlockState state) {
+        BlockPos pos = getBlockPos();
+        boolean powered = level.hasNeighborSignal(pos);
+        if (powered == state.getValue(RiteHeartBlock.POWERED)) return;
+        level.setBlock(pos, state.setValue(RiteHeartBlock.POWERED, powered), Block.UPDATE_CLIENTS);
+        if (powered) toggle(level, null);
     }
 
     private int pulseInterval() {
@@ -177,7 +179,6 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             if (covenSize > 0 && player instanceof ServerPlayer serverPlayer) CovenWitch.dismissNearbyForRite(serverPlayer);
             covenSummoned = 0;
             nextCast(level);
-            level.playSound(null, pos, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
             return;
         }
         if (player != null) {
@@ -224,9 +225,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         else if (!dropOffering(level, origin, returned)) return;
         offering.consume().run();
         offeringStep++;
-        var location = offering.position();
-        level.sendParticles(ParticleTypes.INSTANT_EFFECT, location.x, location.y + 0.2, location.z,
-                8, 0.2, 0.22, 0.2, 0.02);
+        itemOfferingEffect(level, offering.position());
     }
 
     private void advanceFinalOfferings(ServerLevel level, ItemRiteRecipe rite, BlockPos pos, int required) {
@@ -559,7 +558,19 @@ public final class RiteHeartBlockEntity extends BlockEntity {
 
     private static void sacrificeLiving(ServerLevel level, Mob living) {
         level.sendParticles(ParticleTypes.PORTAL, living.getX(), living.getY(0.5), living.getZ(), 16, 0.4, 0.6, 0.4, 0.05);
+        playOfferingPop(level, living.position());
         living.discard();
+    }
+
+    private static void itemOfferingEffect(ServerLevel level, Vec3 location) {
+        level.sendParticles(ParticleTypes.POOF, location.x, location.y + 0.5, location.z,
+                20, 0.25, 0.25, 0.25, 0);
+        playOfferingPop(level, location);
+    }
+
+    private static void playOfferingPop(ServerLevel level, Vec3 location) {
+        float pitch = 0.4F / (level.getRandom().nextFloat() * 0.4F + 0.8F);
+        level.playSound(null, location.x, location.y, location.z, SoundEvents.BUBBLE_COLUMN_BUBBLE_POP, SoundSource.BLOCKS, 0.5F, pitch);
     }
 
     private boolean offerLiving(ServerLevel level, ItemRiteRecipe rite, BlockPos heart) {
@@ -607,7 +618,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         waystoneTarget = location.position();
         sacrificed.add(new Sacrifice(stone.stack().copyWithCount(1), BlockPos.containing(stone.position())));
         stone.consume().run();
-        level.sendParticles(ParticleTypes.INSTANT_EFFECT, origin.x, origin.y + 0.2, origin.z, 8, 0.2, 0.22, 0.2, 0.02);
+        itemOfferingEffect(level, origin);
     }
 
     private void advanceStorm(ServerLevel level) {

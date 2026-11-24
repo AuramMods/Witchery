@@ -1006,6 +1006,7 @@ All 96 IDs registered by Witchery 0.24.1 appear in the modern rite order and res
 Rite IDs 10, 11, 14, 15, 20, 39, and 70 through 77 accept an optional Bound Waystone before the altar charge. The active Heart Glyph saves the consumed stack and its destination under `Sacrifices` and `WaystoneTarget`.
 Rites 23, 25, 39, 80, and 81 sacrifice their creature before spending power. Rite 95 spends power first. The Heart Glyph saves each finished step under `LivingOffered` and `AltarPowerOffered`. Earlier rite 39 saves past the Waystone step already include the villager offering.
 The original offering search uses a one-block-high glyph layer with an eight-block horizontal extent in each direction. The exact radius is measured in three dimensions from the Heart Glyph block's lower corner. Grasspers use a separate 11×11 square on that layer, scanned west to east and then north to south within each column. The activation check reserves sources, and each offering step then looks up the current item.
+The Heart Glyph responds to rising redstone edges on neighbor updates and retains its powered block state across restarts. Its active state emits red dust near the glyph. Successful item offerings spawn the modern poof particles and play the modern pop that corresponds to the original `random.pop`. Living offerings pair the same pop with portal particles.
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/WitcheryRecipes.java`
 
 | Rite ID | Book Entry | Unlocalized Name |
