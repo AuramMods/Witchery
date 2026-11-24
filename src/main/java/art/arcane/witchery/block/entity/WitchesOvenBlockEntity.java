@@ -3,6 +3,7 @@ package art.arcane.witchery.block.entity;
 import art.arcane.witchery.block.WitchesOvenBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.config.WitcheryServerConfig;
+import art.arcane.witchery.integration.ForestrySaplings;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.menu.WitchesOvenMenu;
 import art.arcane.witchery.registry.WitcheryBlocks;
@@ -234,6 +235,9 @@ public final class WitchesOvenBlockEntity extends BaseContainerBlockEntity imple
                 case HAWTHORN -> WitcheryIngredient.ODOUR_OF_PURITY;
                 case ROWAN -> WitcheryIngredient.WHIFF_OF_MAGIC;
             };
+        }
+        if (ForestrySaplings.isSapling(input) || input.hasTag() && input.getTag().contains("Genome")) {
+            return ForestrySaplings.fumeFor(input);
         }
         return WitcheryIngredient.FOUL_FUME;
     }

@@ -3,6 +3,7 @@ package art.arcane.witchery.integration.jei;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.block.entity.WitchesOvenBlockEntity;
+import art.arcane.witchery.integration.ForestrySaplings;
 import art.arcane.witchery.config.WitcheryClientConfig;
 import art.arcane.witchery.config.WitcheryCommonConfig;
 import art.arcane.witchery.item.WitcheryIngredient;
@@ -142,6 +143,10 @@ public final class WitcheryJeiPlugin implements IModPlugin {
                 if (stack.is(sapling.asItem())) {
                     for (WitchWoodType wood : WitchWoodType.values()) {
                         ItemStack variant = wood.stack(sapling);
+                        if (ingredient.test(variant)) addOvenInput(groups, variant);
+                    }
+                } else if (ForestrySaplings.isSapling(stack)) {
+                    for (ItemStack variant : ForestrySaplings.variants()) {
                         if (ingredient.test(variant)) addOvenInput(groups, variant);
                     }
                 } else {

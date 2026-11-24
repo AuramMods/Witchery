@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Forestry Sapling Fumes (2026-11-24)
+
+- The oven reads the original active species from `Genome.Chromosomes[0].UID0`. Forestry CE uses its supported individual capability for the active species, and the bridge follows `allowModIntegration`. JEI expands Forestry's registered sapling variants through the same fume selection. Forestry is a compile-only dependency for Witchery and stays optional at runtime. [Forestry CE 2.11.2](https://modrinth.com/mod/forestry-community-edition/version/2.11.2)
+- The preceding JAR cooked a real Forestry Black Spruce and produced generic Foul Fume. With the rebuilt JAR the muted survival client supplied Black Spruce, a jar, and coal through the oven screen. It produced Hint of Rebirth. Apple Oak produced Exhale of the Horned One, Silver Birch produced Breath of the Goddess, and Mundane Larch produced only Wood Ash and retained the jar. The fixture supplied the four Forestry saplings, ovens, and paired filtered funnels at the boosted capture setting.
+- The client inspected the four matching JEI entries. A separate Silver Birch batch was saved at seven ticks with the original active species still in the input. A dedicated restart retained the previous four outcomes and finished the saved batch with Breath of the Goddess. The two packaged clients stayed unfocused with master volume zero and OpenAL No Output.
+- Local Java 17 reobfuscation, all 192 required clean Forge GameTests, and the asset inventory audit passed. The clean regression covers three original genome tags, unsupported and incomplete genomes, and an ordinary sapling. Package SHA-256 `37e2259dd96ce6a1ff20c19bb4deca64d1689adbee5b7c5b2a08964fc9c35820`. Logs and fixtures are in `build/qa-forestry-oven`.
+
 ## Vampire Journal Bookmark Trail (2026-11-24)
 
 - Previous now returns to the preceding visited chapter in the saved `pageStack`. Closing an untouched journal preserves its raw list, including unknown legacy entries. Editing saves the recognized unlocked trail. The retained navigation history is bounded at 64 entries. Protocol 97 distinguishes an unchanged trail from a cleared trail, and both paths teach the rank cap from the held stack.
