@@ -155,14 +155,27 @@ public final class LegacyWorldIds {
     }
 
     public void upgradePlayer(CompoundTag player, DataFixer fixer, int from) {
-        dimensions.upgradePlayerLocation(player);
-        upgradeItems(player);
         var forgeData = player.getCompound("ForgeData");
         var persisted = forgeData.getCompound(Player.PERSISTED_NBT_TAG);
+        var expiredDrops = persisted.getList("WITCPriIncInv", Tag.TAG_COMPOUND);
         int to = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+        if (from >= 100) {
+            // Earlier port builds could resave the player while these stacks still used legacy IDs.
+            for (Tag entry : expiredDrops) {
+                if (((CompoundTag) entry).contains("id", Tag.TAG_ANY_NUMERIC)) {
+                    upgradeItems(entry);
+                    upgradeVanillaItems(entry, fixer, -1, to);
+                }
+            }
+            return;
+        }
+
+        dimensions.upgradePlayerLocation(player);
+        upgradeItems(player);
         upgradeEntityEffects(player);
         effects.upgrade(persisted.getList("WITCPoSpawn", Tag.TAG_COMPOUND));
         upgradeVanillaItems(persisted.getCompound("WITCSpiritWorld"), fixer, from, to);
+        upgradeVanillaItems(expiredDrops, fixer, from, to);
         if (player.contains("WitcheryExtendedPlayer", Tag.TAG_COMPOUND)) {
             var legacy = player.getCompound("WitcheryExtendedPlayer");
             if (legacy.getBoolean("CanRestoreInventory") && legacy.contains("CachedInventory2", Tag.TAG_LIST)) {

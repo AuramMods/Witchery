@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Legacy Rite of Prior Incarnation Recovery (2026-11-23)
+
+- The original rite stored expired drops under `ForgeData.PlayerPersisted.WITCPriIncInv`. Witchery subtype conversion already reached that list, but vanilla's player data fixer did not visit it. The new GameTest reproduced the lost numeric Red Wool entry on the preceding build. Import now applies the vanilla item data fixer there, including to numeric stacks in previously imported 1.20.1 player records when the legacy registry snapshot is present.
+- The packaged check used a copy of the original Forge world and a synthetic player record in the original format. The first connection loaded four Red Wool, the Diamond Sword with 27 wear and Sharpness III, and three Soft Clay Jars. A normal dedicated restart retained all three stacks and the fractional death coordinates. With fixture-supplied chalk, offerings and positioning, the muted survival client activated the Heart Glyph using the real use key. The rite emitted all three original drops, preserved both item tags, spawned the named skeleton, and cleared the recovery record. Both connections recorded zero focus activations.
+- The matching client and dedicated server used JAR `26b114c4ab62df15ec8c304a47dae4b59d9a02500adcf9f5b951fd7b458d83d4`. See `legacy-prior-incarnation-runtime-import.log` and `legacy-prior-incarnation-runtime-cast.log` under the directory named by `/tmp/witchery-flowing-spirit-current`.
+- Java 17 JAR reobfuscation and all 154 checked-in Forge GameTests passed locally. See `legacy-prior-incarnation-jar.log` and `legacy-prior-incarnation-final-gametest.log`.
+
 ## Legacy Poppet Shelf Chunk Tickets (2026-11-23)
 
 - An original Witchery 0.24.1 server placed a shelf at `(-211, 4, -1095)`, stored a tagged Death Protection Poppet in slot 3, and moved spawn 1,235 blocks away. Old Forge wrote `TicketList` as uncompressed NBT in `forcedchunks.dat`. The preceding packaged port left that shelf's chunk unloaded after import.
