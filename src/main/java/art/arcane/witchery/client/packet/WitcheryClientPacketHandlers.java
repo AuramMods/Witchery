@@ -2,8 +2,8 @@ package art.arcane.witchery.client.packet;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.brewing.ResizingEffect;
-import art.arcane.witchery.client.WitcheryClientCameraState;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.client.event.WitcheryClientCameraHooks;
 import art.arcane.witchery.network.WitcheryNetwork;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -107,14 +107,7 @@ public final class WitcheryClientPacketHandlers {
     }
 
     public static void handleCamPos(WitcheryNetwork.CamPosPacket message) {
-        ClientLevel level = Minecraft.getInstance().level;
-        if (level == null) return;
-        if (!message.active()) {
-            WitcheryClientCameraState.markInactive();
-            return;
-        }
-        WitcheryClientCameraState.markActive(level.getGameTime());
-        if (message.updatePosition()) WitcheryClientCameraState.setTargetEntityId(message.entityId());
+        WitcheryClientCameraHooks.updateView(message.active(), message.updatePosition(), message.entityId());
     }
 
     public static void handlePlayerSync(WitcheryNetwork.PlayerSyncPacket message) {

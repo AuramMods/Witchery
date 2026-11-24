@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Crystal Ball Camera Recovery (2026-11-23)
+
+- The original camera timed out three seconds after its last heartbeat. The modern client now scopes a view to the current player, client level and target ID. It restores the player camera and input when the target disappears. Forge's player clone event also clears the temporary no-gravity flag if vanilla copied it to the replacement player.
+- An isolated Forge 47.4.10 survival client held use on a placed Crystal Ball with a filled Taglock Kit or a bound Waystone. The fixture supplied the arena, altar power and bound items. Removing the cow only from the client reproduced the stale camera and no-gravity flag on the preceding JAR. The new JAR restored the camera and gravity while the server's cow was still alive and the use key remained held.
+- The exact matching client and dedicated server JAR was `2704947b67e8032e567ddadaf5c3488a8fbbb0469bd0fa2339ae55e92ba2504e`. The same client recovered after a target crossed to the Nether, after the viewer crossed dimensions, and after death, respawn and reconnect. An orderly dedicated restart during a Waystone view preserved the bound item, closed the old view and let the client open a fresh one. Both client launches reported zero master volume, OpenAL No Output, and no focus activation. The local evidence is under the directory named by `/tmp/witchery-scrying-lifecycle-current`. It contains `baseline-repro-final.log` and a `final-path` file pointing to the matching JAR run's `fixed.log` and `restart.log`.
+- Local Java 17 JAR reobfuscation and all 155 required Forge GameTests passed. See `final-package.log` and `final-gametest.log` alongside the baseline log.
+
 ## Legacy Brew Bag and Urn Contents (2026-11-23)
 
 - An original Forge server brewed Splash Poison and Splash Speed and wrote matching loose bottles and carrier copies to a vanilla chest. The fixture used the original `Inventory.Items` slot format for the Brew Bag and four-slot Leonard's Urn. The preceding packaged build converted the loose bottles and left numeric vanilla ingredients in both stored bottles. The new GameTest reproduced the Brew Bag failure through actual chunk data fixing.
