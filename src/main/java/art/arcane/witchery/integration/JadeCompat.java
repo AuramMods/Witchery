@@ -1,5 +1,6 @@
 package art.arcane.witchery.integration;
 
+import art.arcane.witchery.config.WitcheryCommonConfig;
 import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.entity.Illusion;
 import art.arcane.witchery.entity.WereVillager;
@@ -48,6 +49,7 @@ public final class JadeCompat implements IWailaPlugin {
         @Override
         @Nullable
         public Accessor<?> onRayTrace(HitResult hit, @Nullable Accessor<?> current, @Nullable Accessor<?> original) {
+            if (!WitcheryCommonConfig.ALLOW_MOD_INTEGRATION.get()) return current;
             if (current instanceof BlockAccessor block) {
                 BlockState state = block.getBlockState();
                 Block disguise = blockDisguise(state);

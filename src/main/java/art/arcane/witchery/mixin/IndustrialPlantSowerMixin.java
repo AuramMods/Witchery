@@ -2,6 +2,7 @@ package art.arcane.witchery.mixin;
 
 import art.arcane.witchery.block.WitchSaplingBlock;
 import art.arcane.witchery.block.WitchWoodType;
+import art.arcane.witchery.config.WitcheryCommonConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
@@ -39,6 +40,7 @@ abstract class IndustrialPlantSowerMixin {
         WitchWoodType wood = witchery$selectedWood;
         witchery$selectedWood = null;
         BlockState state = plant.getPlant(level, position);
-        return plant instanceof WitchSaplingBlock && wood != null ? state.setValue(WitchWoodType.PROPERTY, wood) : state;
+        return plant instanceof WitchSaplingBlock && wood != null && WitcheryCommonConfig.ALLOW_MOD_INTEGRATION.get()
+                ? state.setValue(WitchWoodType.PROPERTY, wood) : state;
     }
 }

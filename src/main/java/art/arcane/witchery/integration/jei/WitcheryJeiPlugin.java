@@ -3,6 +3,8 @@ package art.arcane.witchery.integration.jei;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.block.entity.WitchesOvenBlockEntity;
+import art.arcane.witchery.config.WitcheryClientConfig;
+import art.arcane.witchery.config.WitcheryCommonConfig;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryRecipes;
@@ -52,6 +54,7 @@ public final class WitcheryJeiPlugin implements IModPlugin {
 
     @Override
     public void registerItemSubtypes(ISubtypeRegistration registration) {
+        if (!enabled()) return;
         for (String block : List.of("witchsapling", "witchleaves", "witchlog", "witchwood", "witchwoodslab", "witchwooddoubleslab")) {
             registration.registerSubtypeInterpreter(WitcheryBlocks.getRequired(block).get().asItem(),
                     (stack, context) -> WitchWoodType.fromStack(stack).getSerializedName());
@@ -61,11 +64,13 @@ public final class WitcheryJeiPlugin implements IModPlugin {
 
     @Override
     public void registerVanillaCategoryExtensions(IVanillaCategoryExtensionRegistration registration) {
+        if (!enabled()) return;
         DynamicCraftingLayout.register(registration.getCraftingCategory());
     }
 
     @Override
     public void registerCategories(IRecipeCategoryRegistration registration) {
+        if (!enabled()) return;
         for (Machine machine : MACHINES) {
             registration.addRecipeCategories(new MachineRecipeCategory(
                     machine.type(), machine.stack(), machine.rows(), registration.getJeiHelpers().getGuiHelper()));
@@ -74,11 +79,13 @@ public final class WitcheryJeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
+        if (!enabled()) return;
         for (Machine machine : MACHINES) registration.addRecipeCatalyst(machine.stack(), machine.type());
     }
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
+        if (!enabled()) return;
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null) return;
         var manager = level.getRecipeManager();
@@ -159,6 +166,10 @@ public final class WitcheryJeiPlugin implements IModPlugin {
             }
         });
         return entries;
+    }
+
+    private static boolean enabled() {
+        return WitcheryCommonConfig.ALLOW_MOD_INTEGRATION.get() && WitcheryClientConfig.ALLOW_MOD_JEI.get();
     }
 
     private static void addOvenInput(Map<WitcheryIngredient, List<ItemStack>> groups, ItemStack stack) {

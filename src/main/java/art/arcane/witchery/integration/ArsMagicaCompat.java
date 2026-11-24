@@ -1,6 +1,7 @@
 package art.arcane.witchery.integration;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.config.WitcheryCommonConfig;
 import art.arcane.witchery.lycanthropy.Lycanthropy;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.vampirism.VampireFlight;
@@ -22,13 +23,13 @@ public final class ArsMagicaCompat {
     private ArsMagicaCompat() {}
 
     public static void drain(LivingEntity entity, float fraction) {
-        if (ModList.get().isLoaded(MOD_ID)) ManaAccess.drain(entity, fraction);
+        if (enabled()) ManaAccess.drain(entity, fraction);
     }
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void onSuffocation(LivingAttackEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player) || !event.getSource().is(DamageTypes.IN_WALL)
-                || !ModList.get().isLoaded(MOD_ID)) return;
+                || !enabled()) return;
 
         var resizing = player.getEffect(WitcheryEffects.RESIZING.get());
         boolean small = resizing != null && resizing.getAmplifier() <= 1;
@@ -36,6 +37,10 @@ public final class ArsMagicaCompat {
 
         var pos = player.blockPosition();
         if (!player.level().getBlockState(pos).isSolidRender(player.level(), pos)) event.setCanceled(true);
+    }
+
+    private static boolean enabled() {
+        return ModList.get().isLoaded(MOD_ID) && WitcheryCommonConfig.ALLOW_MOD_INTEGRATION.get();
     }
 
     private record ManaApi(Object helper, Method currentMana, Method maxMana, Method setMana) {

@@ -1,5 +1,6 @@
 package art.arcane.witchery.mixin;
 
+import art.arcane.witchery.config.WitcheryCommonConfig;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -22,7 +23,7 @@ abstract class IndustrialMobCrusherMixin {
     // The Crusher checks its instant-kill tag later, after picking a target.
     @Inject(method = "lambda$work$3", at = @At("HEAD"), cancellable = true)
     private static void witchery$skipProtectedMobs(Mob mob, CallbackInfoReturnable<Boolean> result) {
-        if (mob.getType().is(witchery$crusherBlacklist)) {
+        if (WitcheryCommonConfig.ALLOW_MOD_INTEGRATION.get() && mob.getType().is(witchery$crusherBlacklist)) {
             result.setReturnValue(false);
         }
     }

@@ -6,6 +6,7 @@ import art.arcane.witchery.config.WitcheryClientConfig;
 import art.arcane.witchery.config.WitcheryCommonConfig;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.integration.BloodMagicCompat;
+import art.arcane.witchery.integration.IntegrationDataPack;
 import art.arcane.witchery.item.EndlessWaterBrewItem;
 import art.arcane.witchery.item.GrenadeItem;
 import art.arcane.witchery.network.WitcheryNetwork;
@@ -30,6 +31,7 @@ public class Witchery {
         context.registerConfig(ModConfig.Type.CLIENT, WitcheryClientConfig.SPEC);
         IEventBus modEventBus = context.getModEventBus();
         WitcheryRegistries.register(modEventBus);
+        modEventBus.addListener(IntegrationDataPack::addPack);
         modEventBus.addListener(Witchery::setupCommon);
         WitcheryNetwork.register();
     }

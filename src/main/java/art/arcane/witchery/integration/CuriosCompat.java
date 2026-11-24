@@ -1,5 +1,6 @@
 package art.arcane.witchery.integration;
 
+import art.arcane.witchery.config.WitcheryCommonConfig;
 import art.arcane.witchery.Witchery;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -16,7 +17,8 @@ public final class CuriosCompat {
     private CuriosCompat() {}
 
     public static boolean disablesVampireProtection(ServerPlayer player) {
-        return ModList.get().isLoaded("curios") && Hooks.hasMortalityAccessory(player);
+        return ModList.get().isLoaded("curios") && WitcheryCommonConfig.ALLOW_MOD_INTEGRATION.get()
+                && Hooks.hasMortalityAccessory(player);
     }
 
     private static final class Hooks {

@@ -1,5 +1,6 @@
 package art.arcane.witchery.integration;
 
+import art.arcane.witchery.config.WitcheryCommonConfig;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.world.WitcheryDimensions;
 import net.minecraft.core.Registry;
@@ -33,11 +34,13 @@ public final class ThaumaturgeCompat {
     private ThaumaturgeCompat() {}
 
     public static void drain(ServerPlayer player, float fraction) {
-        if (ModList.get().isLoaded(MOD_ID)) Wands.drain(player, fraction);
+        if (ModList.get().isLoaded(MOD_ID) && WitcheryCommonConfig.ALLOW_MOD_INTEGRATION.get()) {
+            Wands.drain(player, fraction);
+        }
     }
 
     public static boolean excludesGeneration(LevelAccessor level) {
-        if (!(level instanceof ServerLevelAccessor server)) return false;
+        if (!(level instanceof ServerLevelAccessor server) || !WitcheryCommonConfig.ALLOW_MOD_INTEGRATION.get()) return false;
         var dimension = server.getLevel().dimension();
         return WitcheryDimensions.DREAM.equals(dimension) || WitcheryDimensions.TORMENT.equals(dimension);
     }

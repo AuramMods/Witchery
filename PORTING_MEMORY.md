@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Optional Mod Configuration (2026-11-23)
+
+- `allowModIntegration` in `config/witchery-common.toml` controls optional integrations on each Forge installation. `allowModJEI` in `config/witchery-client.toml` independently controls the client's Witchery JEI tabs, crafting extensions, and subtypes. Both default to true. Restart the game or dedicated server after changing its config file.
+- `witchery:mod_integration` contributes the Industrial Foregoing capture, duplication, and Crusher tags plus Thaumaturge's Witchery aspect maps. Its ID stays in the pack list in both modes and its namespaces load only when the setting is enabled.
+- Java 17 data generation, reobfuscation, and all 161 checked-in Forge GameTests passed locally. The new test covers the three machine tags.
+- The same packaged headless world loaded with integration enabled, disabled, and re-enabled. Witchery's Industrial Foregoing tags and Thaumaturge aspects followed the switch. Disabling it made the Sower use its default Rowan placement and left Thaumaturge's own aspect calculation and the Witchery Antidote recipe available. Re-enabling restored the original overrides.
+- A packaged Jade and JEI client presented all five machine categories with both switches on. Turning off just JEI retained the Jade dirt disguise and vanilla crafting categories. Turning off the master switch retained vanilla crafting and showed Pit Dirt. Re-enabling restored the five categories and cover tooltip after the server reloaded. Both client sessions used zero master volume, the No Output device, and a hidden window with no recorded focus activation by the client.
+- The Forge server also reopened a copy of the preceding 1.20.1 workshop save. The new pack was enabled automatically and the saved Brazier cook time and Crystal Ball cooldown were retained. The tested JAR SHA-256 is `d0307ad36a3bbf98dab200962df0c25265efd7dd321a6801368ab1590ed1f042`. See `headless.log`, `headless-resume.log`, and `client-matrix/switches.log` in the directory named by `/tmp/witchery-integration-config-current`.
+
 ## Arthana Range for Powered Gameplay (2026-11-23)
 
 - Original `PowerSources.get` filters candidates by the distance from each core and that altar's range. Its radius argument is unused. The inclusive base range of 16 blocks extends to 32 when an Arthana is mounted on an altar member.

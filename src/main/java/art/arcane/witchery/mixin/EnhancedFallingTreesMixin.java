@@ -2,6 +2,7 @@ package art.arcane.witchery.mixin;
 
 import art.arcane.witchery.block.WitchLeavesBlock;
 import art.arcane.witchery.block.WitchWoodType;
+import art.arcane.witchery.config.WitcheryCommonConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
@@ -27,7 +28,7 @@ abstract class EnhancedFallingTreesMixin {
     @Inject(method = "isMatchingLog", at = @At("HEAD"), cancellable = true)
     private void witchery$keepTrunkSpeciesSeparate(BlockState candidate, BlockState trunk,
                                                    CallbackInfoReturnable<Boolean> result) {
-        if (witchery$differentWood(candidate, trunk)) {
+        if (WitcheryCommonConfig.ALLOW_MOD_INTEGRATION.get() && witchery$differentWood(candidate, trunk)) {
             result.setReturnValue(false);
         }
     }
@@ -39,6 +40,7 @@ abstract class EnhancedFallingTreesMixin {
         if (!extraRequiredBlockCheck(candidate)) {
             return false;
         }
+        if (!WitcheryCommonConfig.ALLOW_MOD_INTEGRATION.get()) return true;
         BlockState trunk = level.getBlockState(logs.iterator().next());
         boolean witchwood = trunk.hasProperty(WitchWoodType.PROPERTY);
         // The first accepted seed sets the leaf species for the rest of the canopy search.
@@ -49,7 +51,7 @@ abstract class EnhancedFallingTreesMixin {
     @Inject(method = "isValidLeaf", at = @At("HEAD"), cancellable = true)
     private void witchery$stayInSameCanopy(BlockState candidate, int distance, BlockState seed,
                                           CallbackInfoReturnable<Boolean> result) {
-        if (witchery$differentWood(candidate, seed)) {
+        if (WitcheryCommonConfig.ALLOW_MOD_INTEGRATION.get() && witchery$differentWood(candidate, seed)) {
             result.setReturnValue(false);
         }
     }

@@ -1,5 +1,6 @@
 package art.arcane.witchery.mixin;
 
+import art.arcane.witchery.config.WitcheryCommonConfig;
 import art.arcane.witchery.entity.Ent;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
@@ -25,7 +26,7 @@ abstract class EnhancedFallingTreesHarvestMixin {
                                                     Set<BlockPos> collected, BlockPos origin, LevelAccessor level,
                                                     @Coerce Object treeType, Player player) {
         BlockPos pos = blocks.next();
-        if (level instanceof ServerLevel server && !player.isCreative()) {
+        if (level instanceof ServerLevel server && !player.isCreative() && WitcheryCommonConfig.ALLOW_MOD_INTEGRATION.get()) {
             var log = WitcheryBlocks.getRequired("witchlog").get();
             if (server.getBlockState(pos).is(log)) {
                 Ent.tryAwaken(server, pos, log);

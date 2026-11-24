@@ -2054,6 +2054,13 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Verify a potion-specific Louse and Biting Belt result, three leather for a Witch's Hat and four for a Witch's Robe, dyeing a Brew Bag red, copying Snowy Beach from the selected atlas and adding a second key to a keyring. Both the Urn and Taglock recipe screens opened through JEI.
 - [x] Run all 142 required GameTests, data generation and JAR reobfuscation. The first headless run failed at the Witch Summoning fixture's activation check. The fixture now waits for all five dropped offerings to be visible before lighting the glyph. The rerun passed, including the power and damaged Arthana checks. The final build and the tested client archive differ only in the manifest's build timestamp.
 
+## Optional Mod Configuration (2026-11-23)
+
+- [x] Restore the master integration setting and the separate recipe-browser setting. Register the contributed Industrial Foregoing tags and Thaumaturge aspect maps through a built-in datapack with a stable ID across configuration changes.
+- [x] Run local Java 17 data generation, reobfuscate the JAR, and pass all 161 checked-in Forge GameTests. The new test checks the three Industrial Foregoing protection tags.
+- [x] Run the packaged JAR with Industrial Foregoing and Thaumaturge. Restart the same world after switching integrations off and on. Check the Sower's sapling variant, all three protected mob tags, Thaumaturge's aspect values, and the base Witchery recipe. Upgrade a copy of the preceding build's save and verify its Brazier and Crystal Ball state.
+- [x] Verify both switches with JEI and Jade in an isolated muted client. Disable just JEI to remove Witchery's recipe views while Jade still shows cover blocks. Disable the master switch to remove the views and reveal normal Jade inspection. Re-enable both and check all five machine categories.
+
 ## Current Snapshot (2026-02-09)
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.
 - Manifest + durable memory created.

@@ -1,5 +1,6 @@
 package art.arcane.witchery.integration;
 
+import art.arcane.witchery.config.WitcheryCommonConfig;
 import art.arcane.witchery.vampirism.Vampirism;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.common.MinecraftForge;
@@ -18,11 +19,15 @@ public final class BloodMagicCompat {
     }
 
     public static void drain(ServerPlayer player, float fraction) {
-        if (ModList.get().isLoaded(MOD_ID)) Hooks.drain(player, fraction);
+        if (enabled()) Hooks.drain(player, fraction);
     }
 
     public static void boost(ServerPlayer player, float health) {
-        if (ModList.get().isLoaded(MOD_ID)) Hooks.boost(player, health);
+        if (enabled()) Hooks.boost(player, health);
+    }
+
+    private static boolean enabled() {
+        return ModList.get().isLoaded(MOD_ID) && WitcheryCommonConfig.ALLOW_MOD_INTEGRATION.get();
     }
 
     private static final class Hooks {
@@ -52,7 +57,8 @@ public final class BloodMagicCompat {
         }
 
         private static void onSacrifice(SacrificeKnifeUsedEvent event) {
-            if (!(event.player instanceof ServerPlayer player) || Vampirism.level(player) == 0) return;
+            if (!WitcheryCommonConfig.ALLOW_MOD_INTEGRATION.get()
+                    || !(event.player instanceof ServerPlayer player) || Vampirism.level(player) == 0) return;
             event.shouldDrainHealth = false;
             if (event.shouldFillAltar && !Vampirism.drawBlood(player, event.healthDrained * 100)) {
                 event.shouldFillAltar = false;

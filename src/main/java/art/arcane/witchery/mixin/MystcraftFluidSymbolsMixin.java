@@ -1,6 +1,7 @@
 package art.arcane.witchery.mixin;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.config.WitcheryCommonConfig;
 import net.minecraft.core.DefaultedRegistry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.material.Fluid;
@@ -23,6 +24,7 @@ abstract class MystcraftFluidSymbolsMixin {
     @Redirect(method = "registerFluidSeaSymbols", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/core/DefaultedRegistry;iterator()Ljava/util/Iterator;"))
     private static Iterator<Fluid> witchery$skipRitualFluids(DefaultedRegistry<Fluid> fluids) {
+        if (!WitcheryCommonConfig.ALLOW_MOD_INTEGRATION.get()) return fluids.iterator();
         return fluids.stream().filter(fluid -> {
             ResourceLocation id = fluids.getKey(fluid);
             return id == null || !Witchery.MODID.equals(id.getNamespace()) || !witchery$excludedSeaFluids.contains(id.getPath());
