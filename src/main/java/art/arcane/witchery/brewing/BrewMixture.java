@@ -254,7 +254,7 @@ public final class BrewMixture {
                 return previous != null && previous.modifier == Modifier.DELIVERY;
             });
         }
-        current.add(offered.copyWithCount(1));
+        current.add(offered.copy());
     }
 
     @Nullable

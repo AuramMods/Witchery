@@ -2,6 +2,16 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron Offering Stack Counts (2026-11-24)
+
+- Witchery 0.24.1 consumed three Nether Wart, six Wool and four Sugar from dropped stacks. The brew kept the Wart and Sugar quantities and registered one two-level effect. A duplicate stack of five Sugar stayed intact. A separate Mutandis cast kept three Mandrake Roots, two Exhales and four Eggs.
+- The previous Forge JAR kept Wart and Sugar at count one and left the rest as drops. In the first comparison, a leftover Wart was absorbed again after the Sugar for an extra 50 power. The controlled replay moved the leftover Wart outside the basin after the first acceptance to isolate the counts.
+- The rebuilt clean Forge client scooped a Brew Bucket with the full Wart and Sugar quantities. The duplicate still held five Sugar. The client moved the first bucket of the separate Mutandis cast to a second cauldron, saved and reconnected after a dedicated restart. The remaining two buckets kept the named four-egg stack. The full batch restored the same trigger and produced one stack of six Mutandis.
+- Copied Auram repeated the normal brew, the duplicate control, and the three-bucket Mutandis transfer on the same JAR. All client QA used zero master volume and OpenAL No Output. The focus monitor recorded no foreground changes.
+- A headless Tongue of Dog cast with no eligible curse offering returned one named stack of three tongues and kept the rest of the 3,000 mB brew. The dedicated restart retained both the refund and the four-Sugar ingredient stack. The restart check waits for the dropped entity to load before reading it.
+- Local Java 17 data generation, JAR reobfuscation and all 245 required Forge GameTests passed. The new regressions check the amount of each dropped stack, duplicate rejection, and fixed trigger resolution after a tagged fluid transfer. Logs and the exact JAR are in `build/qa-cauldron-offering-stacks`. Package SHA-256 `b28094f277f110fb6419e9afda36859487bd82156e935a65d1d3592509ed4974`.
+- A separate water comparison found that Witchery 0.24.1 accepted a hand-held Water Bucket with exactly 500 mB of free space in either vessel. The packaged port kept the full bucket and left the Cauldron at 2,500 mB and the Kettle at 500 mB. The full-bucket control filled a 2,000 mB Cauldron and returned empty. See `water-original/reference.log` and `water-control/water.log` in the same directory.
+
 ## Brew Bucket Transfers of Pending Casts (2026-11-24)
 
 - A running Witchery 0.24.1 server gave the player a tagged Brew Bucket from both pending Tongue of Dog and Taglock casts. Each interaction left 2,000 mB and preserved the ordered brew and trigger on the bucket. On the preceding Forge package, the muted survival client kept its empty bucket and the Taglock cast stayed at 3,000 mB.

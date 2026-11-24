@@ -15,6 +15,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -171,6 +172,36 @@ public final class LegacyCauldronRitualTests {
                     "The original-format cast reports full brew capacity while it waits for its final liquid");
             helper.assertTrue(bowl.saveWithoutMetadata().getBoolean("LegacyRitualPending"),
                     "Reading the comparator leaves the original trigger in its pending save format");
+        });
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void preservesFixedOfferingCountsThroughBrewTransfer(GameTestHelper helper) {
+        BlockPos pos = helper.absolutePos(new BlockPos(6, 4, 5));
+        var source = placeCauldron(helper, pos, boilingWater());
+        var receiver = placeCauldron(helper, pos.east(4), new CompoundTag());
+        var root = new ItemStack(WitcheryIngredient.MANDRAKE_ROOT.item(), 3);
+        var exhale = new ItemStack(WitcheryIngredient.EXHALE_OF_THE_HORNED_ONE.item(), 2);
+        var eggs = new ItemStack(Items.EGG, 4).setHoverName(Component.literal("Stacked Trigger"));
+        helper.assertTrue(offer(source, root) && offer(source, exhale) && offer(source, eggs),
+                "A dropped stack is accepted as one offering for each ingredient and trigger");
+        var saved = source.saveWithFullMetadata();
+        helper.assertTrue(saved.getString("Ritual").equals("witchery:mutandis")
+                        && ItemStack.matches(eggs, ItemStack.of(saved.getCompound("RitualTrigger"))),
+                "The active fixed recipe keeps all four eggs and their name");
+        var brew = tank(source).drain(3000, IFluidHandler.FluidAction.EXECUTE);
+        helper.assertTrue(tank(receiver).fill(brew, IFluidHandler.FluidAction.EXECUTE) == 3000,
+                "The destination can accept the full tagged cast");
+        receiver.load(receiver.saveWithFullMetadata());
+        helper.runAfterDelay(5, () -> {
+            var restored = receiver.saveWithoutMetadata();
+            var offerings = restored.getList("Ingredients", Tag.TAG_COMPOUND);
+            helper.assertTrue(restored.getString("Ritual").equals("witchery:mutandis") && offerings.size() == 2
+                            && ItemStack.matches(root, ItemStack.of(offerings.getCompound(0)))
+                            && ItemStack.matches(exhale, ItemStack.of(offerings.getCompound(1)))
+                            && ItemStack.matches(eggs, ItemStack.of(restored.getCompound("RitualTrigger"))),
+                    "Resuming a transferred fixed cast retains the quantities and tags of all original offerings");
+            helper.succeed();
         });
     }
 

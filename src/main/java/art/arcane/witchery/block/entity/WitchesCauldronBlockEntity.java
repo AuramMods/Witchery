@@ -242,7 +242,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
             CauldronRitualRecipe recipe = pendingFixedRecipe(server, trigger);
             if (recipe != null) {
                 ritual = recipe.id();
-                ritualTrigger = trigger.copyWithCount(1);
+                ritualTrigger = trigger.copy();
                 ritualTicks = (int) Math.min(recipe.time(), 10L * ritualTicks);
                 ingredients.remove(ingredients.size() - 1);
             } else {
@@ -431,10 +431,12 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
             server.playSound(null, worldPosition, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1.0F, 2.0F);
         } else if (WitcheryIngredient.QUICKLIME.matches(offered)) {
             detonate(server, item);
-        } else if (addIngredient(server, offered)) {
+        } else {
+            int consumed = addIngredient(server, offered);
+            if (consumed == 0) return;
             ItemStack remainder = offered.getCraftingRemainingItem();
-            offered.shrink(1);
-            if (offered.isEmpty()) item.discard();
+            if (consumed == offered.getCount()) item.discard();
+            else item.setItem(offered.copyWithCount(offered.getCount() - consumed));
             if (!remainder.isEmpty()) Block.popResource(server, worldPosition.above(), remainder);
         }
     }
@@ -465,32 +467,35 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
                 worldPosition.getZ() + 0.5, 8, 0.22, 0.16, 0.22, 0.03);
     }
 
-    private boolean addIngredient(ServerLevel server, ItemStack offered) {
+    private int addIngredient(ServerLevel server, ItemStack offered) {
         if (!isBoiling() || casting()) {
-            return false;
+            return 0;
         }
+        // Each accepted legacy stack contributes one ordered brew action.
+        int count = offered.getCount();
         int wool = BrewMixture.woolColor(offered);
         if (wool >= 0) {
             brewColor = wool;
             onIngredientAdded(server);
-            return true;
+            return count;
         }
         if (tank.getFluidAmount() == CAPACITY && canCastWith(offered)) {
-            ingredients.add(offered.copyWithCount(1));
+            ingredients.add(offered.copy());
             brewRitual = true;
             ritualTicks = 0;
             onIngredientAdded(server, offered);
-            return true;
+            return count;
         }
         List<CauldronRitualRecipe> recipes = server.getRecipeManager().getAllRecipesFor(WitcheryRecipes.CAULDRON_RITUAL.get());
         if (tank.getFluidAmount() == CAPACITY) {
             var recipe = matchingRitual(recipes, ingredients, offered);
             if (recipe != null) {
                 ritual = recipe.id();
-                ritualTrigger = offered.copyWithCount(1);
+                int consumed = recipe.legacy() ? count : 1;
+                ritualTrigger = offered.copyWithCount(consumed);
                 ritualTicks = 0;
                 onIngredientAdded(server, offered);
-                return true;
+                return consumed;
             }
         }
         boolean registeredBrewAction = BrewMixture.hasAction(offered);
@@ -498,19 +503,20 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
             // Ingredients with original brew actions obey their capacity and ordering even for a fixed recipe.
             if (recipe.legacy() && registeredBrewAction) continue;
             if (recipe.acceptsIngredient(ingredients, offered)) {
-                ingredients.add(offered.copyWithCount(1));
+                int consumed = recipe.legacy() ? count : 1;
+                ingredients.add(offered.copyWithCount(consumed));
                 onIngredientAdded(server, offered);
-                return true;
+                return consumed;
             }
         }
         if (BrewMixture.canAdd(ingredients, offered)) {
             if (offered.getItem() instanceof BiomeNoteItem && !server.registryAccess().registryOrThrow(Registries.BIOME)
-                    .containsKey(BiomeNoteItem.biomeId(offered))) return false;
+                    .containsKey(BiomeNoteItem.biomeId(offered))) return 0;
             BrewMixture.add(ingredients, offered);
             onIngredientAdded(server, offered);
-            return true;
+            return count;
         }
-        return false;
+        return 0;
     }
 
     @Nullable

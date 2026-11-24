@@ -43,6 +43,30 @@ import java.util.UUID;
 @PrefixGameTestTemplate(false)
 public final class BrewBucketTests {
     @GameTest(template = "qa_coven_arena")
+    public static void acceptsAnEntireLegacyStackAsOneBrewAction(GameTestHelper helper) {
+        var bowl = hotCauldron(helper, new BlockPos(4, 4, 4));
+        offer(helper, bowl, new ItemStack(Items.NETHER_WART, 3));
+        offer(helper, bowl, new ItemStack(Items.WHITE_WOOL, 6));
+        offer(helper, bowl, new ItemStack(Items.SUGAR, 4));
+        var pos = bowl.getBlockPos();
+        var duplicate = new ItemEntity(helper.getLevel(), pos.getX() + .5, pos.getY() + .5, pos.getZ() + .5,
+                new ItemStack(Items.SUGAR, 5));
+        bowl.acceptDroppedItem(duplicate);
+        helper.assertTrue(!duplicate.isRemoved() && duplicate.getItem().getCount() == 5,
+                "An unaccepted stack keeps its full count");
+        bowl.load(bowl.saveWithFullMetadata());
+        var tank = bowl.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
+        var tag = tank.getFluidInTank(0).getTag();
+        helper.assertTrue(tag != null && tag.getInt("UsedCapacity") == 2 && tag.getInt("EffectCount") == 1,
+                "An accepted Sugar stack supplies one two-level effect");
+        var stored = tag.getList("Items", Tag.TAG_COMPOUND);
+        helper.assertTrue(stored.size() == 2 && ItemStack.matches(new ItemStack(Items.NETHER_WART, 3), ItemStack.of(stored.getCompound(0)))
+                        && ItemStack.matches(new ItemStack(Items.SUGAR, 4), ItemStack.of(stored.getCompound(1))),
+                "The saved brew tag keeps the complete Wart and Sugar stacks while Wool only sets its dye");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
     public static void movesAnActiveTaglockCastThroughBucketsAndFluidCapabilities(GameTestHelper helper) {
         var source = hotCauldron(helper, new BlockPos(4, 4, 4));
         var destination = hotCauldron(helper, new BlockPos(7, 4, 4));
