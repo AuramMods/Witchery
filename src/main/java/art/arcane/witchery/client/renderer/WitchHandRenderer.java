@@ -20,90 +20,102 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
-public final class DeathHandRenderer extends BlockEntityWithoutLevelRenderer {
-    public static final ModelLayerLocation LAYER = new ModelLayerLocation(
+public final class WitchHandRenderer extends BlockEntityWithoutLevelRenderer {
+    public static final ModelLayerLocation WITCH_HAND = new ModelLayerLocation(
+            ResourceLocation.fromNamespaceAndPath("witchery", "witchhand"), "main");
+    public static final ModelLayerLocation DEATH_HAND = new ModelLayerLocation(
             ResourceLocation.fromNamespaceAndPath("witchery", "deathshand"), "main");
-    private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("witchery", "textures/entities/deathshand.png");
-    private static final CubeDeformation BONES = new CubeDeformation(-0.3F);
+    private final ResourceLocation texture;
     private final ModelPart model;
+    private final boolean skeletal;
 
-    public DeathHandRenderer(Minecraft minecraft) {
+    public WitchHandRenderer(Minecraft minecraft, boolean skeletal) {
         super(minecraft.getBlockEntityRenderDispatcher(), minecraft.getEntityModels());
-        model = minecraft.getEntityModels().bakeLayer(LAYER);
+        this.skeletal = skeletal;
+        model = minecraft.getEntityModels().bakeLayer(skeletal ? DEATH_HAND : WITCH_HAND);
+        texture = ResourceLocation.fromNamespaceAndPath("witchery",
+                skeletal ? "textures/entities/deathshand.png" : "textures/entities/witchhand.png");
     }
 
-    public static LayerDefinition layer() {
+    public static LayerDefinition layer(boolean skeletal) {
+        var shape = skeletal ? new CubeDeformation(-0.3F) : CubeDeformation.NONE;
         var mesh = new MeshDefinition();
         var root = mesh.getRoot();
         var hand = root.addOrReplaceChild("hand", CubeListBuilder.create(), PartPose.ZERO);
         var firstPerson = hand.addOrReplaceChild("first_person", CubeListBuilder.create(), PartPose.ZERO);
         var thirdPerson = hand.addOrReplaceChild("third_person", CubeListBuilder.create(), PartPose.ZERO);
-        hand.addOrReplaceChild("wrist", CubeListBuilder.create().texOffs(0, 0).mirror()
+        hand.addOrReplaceChild("wrist", CubeListBuilder.create().texOffs(0, 0).mirror(skeletal)
                 .addBox(-3, 0, 0, 5, 5, 2), PartPose.ZERO);
-        bone(hand, "palm_upper", 0, 7, 0, 0, 0, 5, 1, 5,
+        addPart(hand, shape, skeletal, "palm_upper", 0, 7, 0, 0, 0, 5, 1, 5,
                 PartPose.offsetAndRotation(-3, 0, -5, 0, 0, 0));
-        bone(hand, "palm_lower", 0, 13, 0, 0, 0, 5, 2, 3,
+        addPart(hand, shape, skeletal, "palm_lower", 0, 13, 0, 0, 0, 5, 2, 3,
                 PartPose.offsetAndRotation(-3, 1, -3, 0, 0, 0));
-        bone(hand, "finger1_upper", 0, 18, 0, 0, -2, 1, 1, 4,
+        addPart(hand, shape, skeletal, "finger1_upper", 0, 18, 0, 0, -2, 1, 1, 4,
                 PartPose.offsetAndRotation(-3, 1, -7, 0.4833219F, 0, 0));
-        bone(hand, "finger2_upper", 6, 19, 0, 0, -2, 1, 1, 4,
+        addPart(hand, shape, skeletal, "finger2_upper", 6, 19, 0, 0, -2, 1, 1, 4,
                 PartPose.offsetAndRotation(-1, 1, -7, 0.4833219F, 0, 0));
-        bone(hand, "finger3_upper", 12, 18, 0, 0, -2, 1, 1, 4,
+        addPart(hand, shape, skeletal, "finger3_upper", 12, 18, 0, 0, -2, 1, 1, 4,
                 PartPose.offsetAndRotation(1, 1, -7, 0.4833219F, 0, 0));
-        bone(hand, "finger1_lower", 0, 23, 0, 0, -4, 1, 1, 4,
+        addPart(hand, shape, skeletal, "finger1_lower", 0, 23, 0, 0, -4, 1, 1, 4,
                 PartPose.offsetAndRotation(-3, 2, -9, 2.044824F, 0, 0));
-        bone(hand, "finger2_lower", 6, 24, 0, 0, -4, 1, 1, 4,
+        addPart(hand, shape, skeletal, "finger2_lower", 6, 24, 0, 0, -4, 1, 1, 4,
                 PartPose.offsetAndRotation(-1, 2, -9, 2.044824F, 0, 0));
-        bone(hand, "finger3_lower", 12, 23, 0, 0, -4, 1, 1, 4,
+        addPart(hand, shape, skeletal, "finger3_lower", 12, 23, 0, 0, -4, 1, 1, 4,
                 PartPose.offsetAndRotation(1, 2, -9, 2.044824F, 0, 0));
-        bone(firstPerson, "right_palm", 16, 0, 0, 0, 0, 2, 1, 6,
+        addPart(firstPerson, shape, skeletal, "right_palm", 16, 0, 0, 0, 0, 2, 1, 6,
                 PartPose.offsetAndRotation(2, 0, -5, 0, 0, 0));
-        bone(firstPerson, "right_finger_upper", 20, 7, 0, 0, -4, 1, 1, 4,
+        addPart(firstPerson, shape, skeletal, "right_finger_upper", 20, 7, 0, 0, -4, 1, 1, 4,
                 PartPose.offsetAndRotation(3, 0, -5, -0.5205006F, 0, 0));
-        bone(firstPerson, "right_finger_lower", 20, 12, 0, 0, 0, 1, 1, 4,
+        addPart(firstPerson, shape, skeletal, "right_finger_lower", 20, 12, 0, 0, 0, 1, 1, 4,
                 PartPose.offsetAndRotation(3, -1, -8, -2.732628F, 0, 0));
-        bone(firstPerson, "right_thumb_upper", 22, 17, 0, 0, 0, 1, 1, 3,
+        addPart(firstPerson, shape, skeletal, "right_thumb_upper", 22, 17, 0, 0, 0, 1, 1, 3,
                 PartPose.offsetAndRotation(3.5F, 1, 0, -2.7F, -0.7F, -0.669215F));
-        bone(firstPerson, "right_thumb_lower", 22, 21, 0, -1, -1, 1, 1, 3,
+        addPart(firstPerson, shape, skeletal, "right_thumb_lower", 22, 21, 0, -1, -1, 1, 1, 3,
                 PartPose.offsetAndRotation(5, 3, -2, -1.896109F, 0.2602503F, 0.3717861F));
-        bone(thirdPerson, "left_palm", 16, 0, 0, 0, 0, 2, 1, 6,
+        addPart(thirdPerson, shape, skeletal, "left_palm", 16, 0, 0, 0, 0, 2, 1, 6,
                 PartPose.offsetAndRotation(-5, 0, -5, 0, 0, 0));
-        bone(thirdPerson, "left_finger_upper", 20, 7, 0, 0, -4, 1, 1, 4,
+        addPart(thirdPerson, shape, skeletal, "left_finger_upper", 20, 7, 0, 0, -4, 1, 1, 4,
                 PartPose.offsetAndRotation(-5, 0, -5, -0.5205006F, 0, 0));
-        bone(thirdPerson, "left_finger_lower", 20, 12, 0, 0, 0, 1, 1, 4,
+        addPart(thirdPerson, shape, skeletal, "left_finger_lower", 20, 12, 0, 0, 0, 1, 1, 4,
                 PartPose.offsetAndRotation(-5, -1, -8, -2.732628F, 0, 0));
-        bone(thirdPerson, "left_thumb_upper", 22, 17, 0, 0, 0, 1, 1, 3,
+        addPart(thirdPerson, shape, skeletal, "left_thumb_upper", 22, 17, 0, 0, 0, 1, 1, 3,
                 PartPose.offsetAndRotation(-5, 1, 0, -1.7F, 0.8F, 0.148711F));
-        bone(thirdPerson, "left_thumb_lower", 22, 21, 0, 0, 0, 1, 1, 3,
+        addPart(thirdPerson, shape, skeletal, "left_thumb_lower", 22, 21, 0, 0, 0, 1, 1, 3,
                 PartPose.offsetAndRotation(-6, 4, -1, -2.082002F, 0.0371828F, -0.6320403F));
-        root.addOrReplaceChild("scythe", DeathModel.scythe(), PartPose.offsetAndRotation(0, -3, -5, 0, Mth.HALF_PI, 0));
+        if (skeletal) {
+            root.addOrReplaceChild("scythe", DeathModel.scythe(), PartPose.offsetAndRotation(0, -3, -5, 0, Mth.HALF_PI, 0));
+        }
         return LayerDefinition.create(mesh, 64, 64);
     }
 
-    private static void bone(PartDefinition parent, String name, int u, int v, float x, float y, float z,
-                             float width, float height, float depth, PartPose pose) {
-        parent.addOrReplaceChild(name, CubeListBuilder.create().texOffs(u, v).mirror()
-                .addBox(x, y, z, width, height, depth, BONES), pose);
+    private static void addPart(PartDefinition parent, CubeDeformation shape, boolean mirror, String name,
+                                   int u, int v, float x, float y, float z,
+                                   float width, float height, float depth, PartPose pose) {
+        parent.addOrReplaceChild(name, CubeListBuilder.create().texOffs(u, v).mirror(mirror)
+                .addBox(x, y, z, width, height, depth, shape), pose);
     }
 
     @Override
     public void renderByItem(ItemStack stack, ItemDisplayContext context, PoseStack pose, MultiBufferSource buffers,
                              int light, int overlay) {
         boolean firstPerson = context.firstPerson();
-        boolean deployed = DeathHandItem.deployed(stack);
         ModelPart hand = model.getChild("hand");
         hand.getChild("first_person").visible = firstPerson;
         hand.getChild("third_person").visible = !firstPerson;
-        curlOuterFinger(hand.getChild("first_person"), "right", 3, deployed);
-        curlOuterFinger(hand.getChild("third_person"), "left", -5, deployed);
-        ModelPart scythe = model.getChild("scythe");
-        scythe.visible = deployed;
+        if (skeletal) {
+            boolean deployed = DeathHandItem.deployed(stack);
+            curlOuterFinger(hand.getChild("first_person"), "right", 3, deployed);
+            curlOuterFinger(hand.getChild("third_person"), "left", -5, deployed);
+            model.getChild("scythe").visible = deployed;
+        }
+        var player = Minecraft.getInstance().player;
+        boolean translucent = !skeletal && firstPerson && player != null && player.isInvisible();
 
         pose.pushPose();
         pose.translate(0.5, 0.5, 0.5);
         pose.scale(1, -1, -1);
-        model.render(pose, buffers.getBuffer(RenderType.entityCutoutNoCull(TEXTURE)), light, overlay);
+        var renderType = translucent ? RenderType.entityTranslucent(texture) : RenderType.entityCutoutNoCull(texture);
+        model.render(pose, buffers.getBuffer(renderType), light, overlay, 1, 1, 1, translucent ? 0.2F : 1);
         pose.popPose();
     }
 

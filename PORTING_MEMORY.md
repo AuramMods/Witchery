@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Held Item Models and Legacy Sound Inventory (2026-11-23)
+
+- The Witch's Hand uses the original hand texture and cuboids with their first-person and third-person finger poses. Invisibility gives the local first-person hand 20% opacity and hides it in third person. Death's Hand still deploys its scythe through the ordinary use input. The Brew Bag's original bottle renders translucent glass in the saved dye color and keeps the cork untinted. Both restored items keep their original sprites in inventory, on the ground, and in frames.
+- The packaged Forge client and dedicated server showed the new hand poses, invisibility, two Brew Bag colors, the ordinary Brew Bag menu, and Death's Hand deployment. The model audit resolved all 441 default item models and 1,988 visible block states. The client loaded the restored `mob.darkmark.idle` clip and received its server sound packet. Dark Marks retain their usual Torment laugh.
+- The JAR retains all 687 original PNGs, ten texture animation metadata files, and 88 original Ogg clips byte-for-byte. Five PNGs use updated paths. The reference audit resolved 2,297 local model and texture references and 89 sample references over 63 sound events. The original `random.loved` definition ships without a clip. Torment's original death definition also points to an absent clip, and the port retains its pitched hurt sample for the death event.
+- Java 17 data generation, reobfuscation, and all 163 Forge GameTests passed. Both sides ran SHA-256 `15811997e9e1c08a497cc4b25c4e19f73f71a99cd4c1ba64949c3349e38cae78`. The background client used zero master volume and OpenAL No Output and did not take focus. The paired captures and logs are in `build/qa-legacy-assets`. Earmuffs still use a leather helmet when worn and need their original model.
+
 ## Registry Names, Subtitles, and JEI Localization (2026-11-23)
 
 - English, German, Spanish, Russian, and Simplified Chinese now share 1,414 language keys. This pass fills the remaining 246 keys that previously fell back to English and adds 51 keys that the registries requested even in English. Eighteen of the latter are original spawn eggs in the creative tab. Registered compatibility eggs have readable names. The older functional broom item displays as an Enchanted Broom.

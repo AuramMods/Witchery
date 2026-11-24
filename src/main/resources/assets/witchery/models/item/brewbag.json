@@ -1,6 +1,14 @@
 {
-   "parent" : "minecraft:item/generated",
-   "textures" : {
-      "layer0" : "witchery:item/brewbag"
-   }
+  "loader": "forge:separate_transforms",
+  "textures": {"particle": "witchery:item/brewbag"},
+  "base": {
+    "parent": "minecraft:item/generated",
+    "textures": {"layer0": "witchery:item/brewbag"}
+  },
+  "perspectives": {
+    "firstperson_righthand": {"parent": "witchery:item/brewbag_held"},
+    "firstperson_lefthand": {"parent": "witchery:item/brewbag_held"},
+    "thirdperson_righthand": {"parent": "witchery:item/brewbag_held"},
+    "thirdperson_lefthand": {"parent": "witchery:item/brewbag_held"}
+  }
 }

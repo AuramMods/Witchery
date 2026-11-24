@@ -1,10 +1,13 @@
 package art.arcane.witchery.item;
 
+import art.arcane.witchery.client.renderer.WitchHandRenderer;
 import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.infusion.InfernalInfusion;
 import art.arcane.witchery.infusion.LightInfusion;
 import art.arcane.witchery.infusion.OtherwhereInfusion;
 import art.arcane.witchery.infusion.OverworldInfusion;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -16,6 +19,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+
+import java.util.function.Consumer;
 
 public final class WitchHandItem extends Item {
     private static final String COOLDOWN = "WITCCooldown";
@@ -24,6 +30,19 @@ public final class WitchHandItem extends Item {
 
     public WitchHandItem() {
         super(new Properties().stacksTo(1).rarity(Rarity.UNCOMMON));
+    }
+
+    @Override
+    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+        consumer.accept(new IClientItemExtensions() {
+            private WitchHandRenderer renderer;
+
+            @Override
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                if (renderer == null) renderer = new WitchHandRenderer(Minecraft.getInstance(), false);
+                return renderer;
+            }
+        });
     }
 
     @Override

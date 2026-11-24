@@ -1,6 +1,6 @@
 package art.arcane.witchery.item;
 
-import art.arcane.witchery.client.renderer.DeathHandRenderer;
+import art.arcane.witchery.client.renderer.WitchHandRenderer;
 import art.arcane.witchery.registry.WitcheryDamageTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
@@ -86,11 +86,11 @@ public final class DeathHandItem extends Item {
     @Override
     public void initializeClient(Consumer<IClientItemExtensions> consumer) {
         consumer.accept(new IClientItemExtensions() {
-            private DeathHandRenderer renderer;
+            private WitchHandRenderer renderer;
 
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer() {
-                if (renderer == null) renderer = new DeathHandRenderer(Minecraft.getInstance());
+                if (renderer == null) renderer = new WitchHandRenderer(Minecraft.getInstance(), true);
                 return renderer;
             }
         });

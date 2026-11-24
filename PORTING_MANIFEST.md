@@ -121,6 +121,12 @@ Lifecycle stages:
   - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/assets/witchery/models/item/*_spawn_egg.json`.
 - The packaged Forge JAR has one `minecraft:item/template_spawn_egg` model for each of the 55 legacy entity paths. This includes the 32 original eggs and the item IDs retained for older port saves.
 
+## Legacy Texture and Sound Inventory
+
+- The packaged port retains the original bytes of all 687 PNGs, all ten animation metadata files, and all 88 Ogg clips. Five original PNGs use modern lowercase resource paths, including `textures/entities/witchhand.png`.
+- `witchery:witchhand` uses the original fleshed hand geometry and its first-person and third-person finger poses. Death's Hand shares the model geometry with its original thinner bones and its separate deployed scythe state. The Brew Bag uses the original translucent bottle model, dye tint and untinted stopper. Both ordinary items use their original sprites in inventory and as drops.
+- Dark Marks still laugh with the original `mob.torment.laugh` event. The separate original `mob.darkmark.idle` event and clip are available in the sound registry. The original `random.loved` definition points to an absent clip. The original Torment death clip is also absent, so the packaged death event uses the existing lowered-pitch hurt sample.
+
 ## Block Model Parity Anchors (current focus)
 - `witchery:wolfaltar`
   - Uses the original Wolf Altar geometry and texture through its block entity renderer and inventory renderer. The facing determines the front of the statue and the reward position.

@@ -1,8 +1,11 @@
 package art.arcane.witchery.item;
 
+import art.arcane.witchery.client.renderer.BrewBagRenderer;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.menu.BrewBagMenu;
 import com.google.gson.JsonParseException;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -21,9 +24,11 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.network.NetworkHooks;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public final class BrewBagItem extends Item {
     public static final int SLOT_COUNT = 8;
@@ -58,6 +63,19 @@ public final class BrewBagItem extends Item {
 
     public static void saveContents(ItemStack bag, List<ItemStack> contents) {
         ItemInventory.save(bag, contents);
+    }
+
+    @Override
+    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+        consumer.accept(new IClientItemExtensions() {
+            private BrewBagRenderer renderer;
+
+            @Override
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                if (renderer == null) renderer = new BrewBagRenderer(Minecraft.getInstance());
+                return renderer;
+            }
+        });
     }
 
     @Override

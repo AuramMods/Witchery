@@ -119,6 +119,7 @@
     "subtitle": "subtitles.witchery.nightmare.death",
     "sounds": ["witchery:mob/nightmare/nightmare_dead"]
   },
+  "mob.darkmark.idle": {"sounds": ["witchery:mob/darkmark/idle"]},
   "mob.torment.laugh": {
     "subtitle": "subtitles.witchery.torment.laugh",
     "sounds": ["witchery:mob/torment/laugh"]
