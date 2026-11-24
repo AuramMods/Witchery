@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Taglock Circle Transposition (2026-11-24)
+
+- The 0.24.1 server put a tagged pig at `(208, 86, 8)` for a clear glyph. An obstructed glyph at `(220, 86, 8)` completed and put a tagged cow at those coordinates with two intersecting solid blocks.
+- The built-in Taglock rite moves the target to the lower corner even with an obstruction. Original Taglock and Waystone circle travel use portal and Enderman sounds for ordinary targets, or smoke and Witchery poof for vampires, at departure and arrival. Other teleports keep their existing destination rules.
+- All 276 required local Forge GameTests passed. The new checkpoint test starts a normal cast, saves the four offerings and paid flag, and resumes the original cow into an obstructed corner with a single 3,000-power debit. Reference and package checks are under `build/qa-taglock-transposition`.
+- In the clean packaged server the background survival client collected each signature by using the Taglock Kit. It received portal and Enderman packets at `(136.25, 272, 83.25)` and `(130, 272, 80)` for the first cow. It received smoke and poof at both endpoints for the vampire. These clients stayed hidden and unfocused with zero master volume and OpenAL No Output.
+- The saved clean Forge region had `AltarPowerOffered:1b`, all four offerings, and glyph phase 41. The original cow was present in the separate Nether entity region. A regular restart moved the same UUID to `(184, 272, 80)` and completed the cast without another payment. Copied Auram redstone put its cow at the obstructed `(326, 288, 183)` and consumed all four offerings.
+- Local Java 17 data generation and reobfuscation both passed. Candidate SHA-256 `42949722fac923d8e688292d163183e48814459efa549919609b8d70f2bd4415`.
+
 ## Circle Waystone Travel and Binding (2026-11-24)
 
 - Native Witchery 0.24.1 travel admitted a pig 2.75 blocks west and another 2.75 blocks above the glyph. It left a pig 3.25 blocks east, one at exactly three blocks, and a pig with Ender Inhibition amplifier one in place. It chose integer X/Z within three blocks of the bound site and used its exact Y over air. The creature Waystone kept all three fractional coordinates of its pig.

@@ -78,8 +78,9 @@ public final class WaystoneTravel {
                 arrival = target.position();
                 if (!legacy && !WitcheryTeleport.canArrive(actor, destination, arrival)) continue;
             }
-            if (arrival != null && (!legacy || WitcheryTeleport.isInWorld(destination, arrival))) {
-                sent |= WitcheryTeleport.move(actor, destination, arrival);
+            if (arrival != null) {
+                sent |= legacy ? WitcheryTeleport.moveThroughCircle(actor, destination, arrival)
+                        : WitcheryTeleport.move(actor, destination, arrival);
             }
         }
         return sent;

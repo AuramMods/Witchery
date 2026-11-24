@@ -1133,6 +1133,47 @@ public final class CircleRiteTests {
         }).thenSucceed();
     }
 
+    @GameTest(template = TEMPLATE, batch = "witchery_taglock_transposition_arrival", setupTicks = 5)
+    public static void originalTaglockTranspositionResumesPaidCastAtObstructedCorner(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.MEDIUM_RITE, "circleglyphotherwhere");
+        helper.setBlock(CENTER.west(), Blocks.STONE);
+        helper.setBlock(CENTER.above(), Blocks.STONE);
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var arrival = Vec3.atLowerCornerOf(center);
+        var target = EntityType.COW.create(level);
+        target.setPos(arrival.add(-10.25, 2, 2.25));
+        target.setNoAi(true);
+        target.setNoGravity(true);
+        level.addFreshEntity(target);
+        var taglock = new ItemStack(WitcheryItems.getRequired("taglockkit").get());
+        TaglockItem.bindSignature(taglock, target);
+        var altar = chargedAltar(helper, true);
+        waitForOfferings(helper, new ItemStack(WitcheryIngredient.WAYSTONE.item()), taglock,
+                new ItemStack(WitcheryIngredient.ENDER_DEW.item()), new ItemStack(Items.IRON_AXE)).thenWaitUntil(() -> {
+            helper.assertTrue(level.getEntity(target.getUUID()) == target, "The taglocked cow is tracked");
+        }).thenExecute(() -> {
+            helper.useBlock(CENTER);
+            helper.assertTrue(level.getBlockState(center).getValue(RiteHeartBlock.ACTIVE),
+                    "The medium Otherwhere circle begins Taglock Transposition");
+            var heart = heart(helper);
+            tick(level, center, heart, 100);
+            var saved = heart.saveWithoutMetadata();
+            helper.assertTrue(saved.getBoolean("AltarPowerOffered") && saved.getList("Sacrifices", Tag.TAG_COMPOUND).size() == 4
+                            && altar.power() == 7000 && !target.position().equals(arrival),
+                    "All four offerings and the single altar payment precede the summon");
+            heart.load(saved);
+            tick(level, center, heart, 20);
+            helper.assertTrue(target.position().equals(arrival)
+                            && level.getBlockCollisions(target, target.getBoundingBox()).iterator().hasNext(),
+                    "The resumed original rite puts the same cow at the glyph corner even when blocks intersect its hitbox");
+            helper.assertTrue(!level.getBlockState(center).getValue(RiteHeartBlock.ACTIVE)
+                            && altar.power() == 7000 && drops(helper).isEmpty(),
+                    "A successful obstructed arrival spends the offerings and retains the single payment");
+        }).thenSucceed();
+    }
+
     @GameTest(template = TEMPLATE, batch = "witchery_waystone_binding_witness", setupTicks = 5)
     public static void originalBindingsRequireAPlayerWithinTheGlyphLayer(GameTestHelper helper) {
         floor(helper);

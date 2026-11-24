@@ -29,7 +29,7 @@ public final class RiteOfTransposition {
 
     @Nullable
     public static String summon(ServerLevel level, BlockPos circle, @Nullable LivingEntity target,
-                               @Nullable ServerPlayer caster) {
+                                @Nullable ServerPlayer caster, boolean legacy) {
         if (target == null) return "message.witchery.rite.no_taglock_target";
         if (target.level().dimension().equals(WitcheryDimensions.DREAM)
                 || level.dimension().equals(WitcheryDimensions.DREAM)) return "message.witchery.rite.transpose_dream";
@@ -38,9 +38,10 @@ public final class RiteOfTransposition {
         if (VoodooPoppetItem.deflectSummoning(caster, target)) return "message.witchery.rite.transpose_warded";
         var inhibition = target.getEffect(WitcheryEffects.ENDER_INHIBITION.get());
         if (inhibition != null && inhibition.getAmplifier() >= 3) return "message.witchery.rite.transpose_inhibited";
-        Vec3 arrival = Vec3.atBottomCenterOf(circle);
-        return WitcheryTeleport.canArrive(target, level, arrival) && WitcheryTeleport.move(target, level, arrival)
-                ? null : "message.witchery.rite.transpose_obstructed";
+        Vec3 arrival = legacy ? Vec3.atLowerCornerOf(circle) : Vec3.atBottomCenterOf(circle);
+        boolean moved = legacy ? WitcheryTeleport.moveThroughCircle(target, level, arrival)
+                : WitcheryTeleport.canArrive(target, level, arrival) && WitcheryTeleport.move(target, level, arrival);
+        return moved ? null : "message.witchery.rite.transpose_obstructed";
     }
 
     public static int oreDepthLimit(int covenSize) {

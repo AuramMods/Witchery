@@ -564,7 +564,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         }
         if (rite.action() == ItemRiteRecipe.Action.TRANSPOSE_CREATURE) {
             ServerPlayer caster = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
-            String failure = RiteOfTransposition.summon(level, pos, boundOffering(level), caster);
+            String failure = RiteOfTransposition.summon(level, pos, boundOffering(level), caster, legacy);
             if (failure != null) {
                 abort(level, failure);
                 return;
@@ -617,7 +617,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (talismanPattern == 0) nextCast(level);
         if (legacy && (manifestation || infusionType > 0)) {
             WitcheryNetwork.sendInfusionRite(level, Vec3.atLowerCornerOf(pos), manifestation);
-        } else if (!legacy || action != ItemRiteRecipe.Action.RECHARGE_INFUSION) {
+        } else if (!legacy || (action != ItemRiteRecipe.Action.RECHARGE_INFUSION
+                && action != ItemRiteRecipe.Action.TRAVEL_WAYSTONE && action != ItemRiteRecipe.Action.TRANSPOSE_CREATURE)) {
             level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
                     16, 0.4, 0.4, 0.4, 0.05);
             level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.9F, 1.35F);

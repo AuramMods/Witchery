@@ -1,5 +1,6 @@
 package art.arcane.witchery.world;
 
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcherySounds;
 import art.arcane.witchery.vampirism.Vampirism;
 import net.minecraft.core.BlockPos;
@@ -31,7 +32,7 @@ public final class WitcheryTeleport {
                 .iterator().hasNext();
     }
 
-    static boolean isInWorld(ServerLevel level, Vec3 position) {
+    private static boolean isInWorld(ServerLevel level, Vec3 position) {
         if (!Double.isFinite(position.x) || !Double.isFinite(position.y) || !Double.isFinite(position.z)) return false;
         BlockPos pos = BlockPos.containing(position);
         return !level.isOutsideBuildHeight(pos) && level.getWorldBorder().isWithinBounds(pos);
@@ -63,15 +64,28 @@ public final class WitcheryTeleport {
                 ? WitcheryTeleport::vampireTransitionEffect : TormentTravel::transitionEffect);
     }
 
+    public static boolean moveThroughCircle(Entity actor, ServerLevel destination, Vec3 target) {
+        if (!isInWorld(destination, target)) return false;
+        boolean vampire = Vampirism.isVampire(actor);
+        return move(actor, destination, target,
+                (level, position) -> WitcheryNetwork.sendCircleTeleport(level, position, vampire), true);
+    }
+
     private static void vampireTransitionEffect(ServerLevel level, Vec3 position) {
         level.sendParticles(ParticleTypes.SMOKE, position.x, position.y + 0.8, position.z, 16, 0.5, 0.9, 0.5, 0.03);
         level.playSound(null, position.x, position.y, position.z, WitcherySounds.MIRROR_POOF.get(), SoundSource.PLAYERS, 1, 1);
     }
 
     public static boolean move(Entity actor, ServerLevel destination, Vec3 target, BiConsumer<ServerLevel, Vec3> transitionEffect) {
+        return move(actor, destination, target, transitionEffect, false);
+    }
+
+    private static boolean move(Entity actor, ServerLevel destination, Vec3 target,
+                                BiConsumer<ServerLevel, Vec3> transitionEffect, boolean departureBeforeMove) {
         ServerLevel origin = (ServerLevel) actor.level();
         Vec3 start = actor.position();
         ChunkPos startChunk = actor.chunkPosition();
+        if (departureBeforeMove) transitionEffect.accept(origin, start);
         Entity moved = actor;
         if (actor instanceof ServerPlayer player) {
             player.teleportTo(destination, target.x, target.y, target.z, player.getYRot(), player.getXRot());
@@ -102,7 +116,7 @@ public final class WitcheryTeleport {
             destination.getChunkSource().addRegionTicket(ARRIVAL, moved.chunkPosition(), 2, moved.getId());
         }
         moved.resetFallDistance();
-        transitionEffect.accept(origin, start);
+        if (!departureBeforeMove) transitionEffect.accept(origin, start);
         transitionEffect.accept(destination, target);
         return true;
     }
