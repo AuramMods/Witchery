@@ -776,6 +776,8 @@ public final class CircleRiteTests {
         tick(level, center, heart, 2);
         var converted = heart.saveWithoutMetadata();
         helper.assertTrue(converted.getCompound("Landscape").getInt("Stage") == 10, "The cut still waits for the earlier save's third tick");
+        helper.assertFalse(converted.getCompound("Landscape").contains("FissureUsesLegacyRandom"),
+                "An earlier Forge fissure still uses its original profile's random factory");
         heart.load(converted);
         tick(level, center, heart, 1);
         helper.assertTrue(heart.saveWithoutMetadata().getCompound("Landscape").getInt("Stage") == 11, "The cut occurs on the third tick");

@@ -1024,7 +1024,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 BlockPos remote = action.usesWaystoneTarget() ? legacyTarget(locations.getCompound(index)) : null;
                 BlockPos target = remote == null ? getBlockPos() : remote;
                 // Legacy saves retained the stage but discarded the offering location and generated path.
-                var fissure = action == ItemRiteRecipe.Action.PART_EARTH ? new EarthRites.Fissure(target.asLong(), 0) : null;
+                var fissure = action == ItemRiteRecipe.Action.PART_EARTH ? new EarthRites.Fissure(target.asLong(), 0, true) : null;
                 boolean legacyHell = action == ItemRiteRecipe.Action.HELL_ON_EARTH && originalTiming;
                 int hellSpawnOffset = legacyHell ? LandscapeRites.hellSpawnOffset(stage, STEP_TICKS) : 0;
                 var progress = new LandscapeRites.Progress(action, species, target, stage, fissure,

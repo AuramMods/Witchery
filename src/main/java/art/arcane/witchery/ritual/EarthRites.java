@@ -13,6 +13,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.LegacyRandomSource;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.common.util.FakePlayerFactory;
@@ -28,7 +29,7 @@ public final class EarthRites {
 
     private EarthRites() {}
 
-    public record Fissure(long seed, int heading) {
+    public record Fissure(long seed, int heading, boolean usesLegacyRandom) {
         public Fissure {
             heading = Math.floorMod(heading, 8);
         }
@@ -36,11 +37,12 @@ public final class EarthRites {
         public static Fissure start(BlockPos heart, BlockPos offering, long seed) {
             double yaw = Math.atan2(heart.getZ() - offering.getZ(), heart.getX() - offering.getX());
             int octant = Mth.ceil(yaw / (Math.PI / 4) - 0.5);
-            return new Fissure(seed, octant + 6);
+            return new Fissure(seed, octant + 6, true);
         }
 
         void cut(ServerLevel level, BlockPos origin, int stage, int coven, @Nullable ServerPlayer caster) {
-            RandomSource path = RandomSource.create(seed);
+            // A mod can replace the random factory. Old records still use the generator from their profile.
+            RandomSource path = usesLegacyRandom ? new LegacyRandomSource(seed) : RandomSource.create(seed);
             BlockPos center = origin.below();
             int direction = heading;
             // The first four outbound positions leave the casting circle intact.

@@ -675,7 +675,7 @@
 - [x] Activate Protection and Moving Earth with redstone on the packaged server. The active unbound ward followed the glyph up seven blocks.
 - [x] Run Java 17 data generation, reobfuscation, and all 268 checked-in Forge GameTests. The tested JAR and logs are in `build/qa-rite-upkeep`.
 - [x] Trace Broken Earth's stages 1–54 in copied Auram. The dedicated server advanced each stage on consecutive ticks and removed the predicted first block after a fresh redstone cast.
-- [ ] Resolve the terrain difference on copied Auram for fissure seed `5406972250557401769`. A saved eastward cast with that seed cut five predicted centers in clean Forge. The same save fields left those centers solid in copied Auram and carved elsewhere. See `control/seeded-fissure.log` and `auram-copy/fissure-trace.log` in the milestone evidence.
+- [x] Resolve the terrain difference caused by Auram's Faster Random option. A new cast saves a fixed random generator. The exact packaged JAR replayed five identical cut centers for seed `5406972250557401769` on both profiles. A save from the earlier Forge package retained its original path on each profile. New redstone casts also advanced through consecutive stages 1–54 and cut their expected first block on both servers.
 
 ## Chalk Rite Offering Sources (2026-11-24)
 

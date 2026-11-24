@@ -135,6 +135,7 @@ public final class LandscapeRites {
             if (fissure != null) {
                 tag.putLong("FissureSeed", fissure.seed());
                 tag.putInt("FissureHeading", fissure.heading());
+                if (fissure.usesLegacyRandom()) tag.putBoolean("FissureUsesLegacyRandom", true);
             }
             if (followsHeart) tag.putBoolean("FollowsHeart", true);
             if (action == ItemRiteRecipe.Action.HELL_ON_EARTH) tag.putInt("HellSpawnOffset", hellSpawnOffset);
@@ -162,7 +163,8 @@ public final class LandscapeRites {
             }
             if (!action.usesLandscapeUpkeep() || (action == ItemRiteRecipe.Action.FORESTATION) != (species != null)) return null;
             EarthRites.Fissure fissure = action == ItemRiteRecipe.Action.PART_EARTH
-                    ? new EarthRites.Fissure(tag.getLong("FissureSeed"), tag.getInt("FissureHeading")) : null;
+                    ? new EarthRites.Fissure(tag.getLong("FissureSeed"), tag.getInt("FissureHeading"),
+                            tag.getBoolean("FissureUsesLegacyRandom")) : null;
             var progress = new Progress(action, species, BlockPos.of(tag.getLong("Target")), tag.getInt("Stage"), fissure,
                     tag.getBoolean("FollowsHeart"), Math.floorMod(tag.getInt("HellSpawnOffset"), HELL_SPAWN_STAGES));
             return progress.stage() > 0 && progress.stage() < progress.lastStage(coven) ? progress : null;

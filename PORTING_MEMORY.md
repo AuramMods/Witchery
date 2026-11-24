@@ -12,7 +12,14 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - The muted clean Forge survival client cast Broken Earth from a Brew of Erosion dropped east of the ring. Stages one through eight advanced in seven ticks. An ordinary shutdown saved stage eight, the eastward heading and the same seed. The server resumed and the client rejoined after the expected terrain cut.
 - The previous Forge package saved an actual redstone cast at stage three with two elapsed ticks. A server tick trace on the upgraded JAR recorded 18 ticks to stage four, then eight consecutive cuts with the saved seed and heading. A separate packaged redstone cast kept Protection active as Moving Earth lifted the glyph seven blocks.
 - Local Java 17 data generation, JAR reobfuscation, and all 268 required Forge GameTests passed. The package and logs are in `build/qa-rite-upkeep`. Package SHA-256 `a8a2b1e12eab263763dba47a4ae2cef5adc5f87b2d7cd7b0b2b80798658edeff`.
-- Copied Auram recorded 54 consecutive active stages and the expected first terrain cut for a fresh redstone cast. An earlier muted client cast also advanced at the restored rate. Replaying that client's seed `5406972250557401769` from stage one reproduced five exact cut centers on clean Forge. Copied Auram left those same centers stone and cut a different path. The region inspection and server logs are in `build/qa-rite-upkeep`. The cross-profile path difference is open.
+- Copied Auram recorded 54 consecutive active stages and the expected first terrain cut for a fresh redstone cast. An earlier muted client cast also advanced at the restored rate. Replaying that client's seed `5406972250557401769` from stage one reproduced five exact cut centers on clean Forge. Copied Auram left those same centers stone and cut a different path. The region inspection and server logs are in `build/qa-rite-upkeep`.
+
+## Fixed Random Source for Broken Earth (2026-11-24)
+
+- AuramCore's Faster Random option replaces Minecraft's seeded random factory with `L64X128MixRandom`. Its path contained all 249 carved floor blocks in the copied Auram replay. The vanilla generator's path had no overlap in that fixture.
+- New casts and raw 1.7.10 imports pick `LegacyRandomSource` directly and save `FissureUsesLegacyRandom` with their seed and heading. The saved route is independent of factory overrides. An earlier Forge cast keeps using the random factory on its original profile because its save has no generator marker.
+- Clean Forge and copied Auram ran the same reobfuscated package. Each traced a fresh marked redstone cast through stages 1–54 over 54 consecutive ticks and verified its first physical cut. Both replayed the same marked seed through the same five stone columns. An unmarked replay cut the legacy columns on clean Forge and kept the Faster Random path on copied Auram.
+- Local Java 17 data generation, JAR reobfuscation, and all 268 required Forge GameTests passed. The tested JAR and logs are in `build/qa-fissure-random`. Package SHA-256 `6249b57ffd7122fe58b3ebd09a93137bbde7d3582970ed28462b4ffafa4f8c27`.
 
 ## Hell on Earth Summoning and Waystone Reach (2026-11-24)
 
