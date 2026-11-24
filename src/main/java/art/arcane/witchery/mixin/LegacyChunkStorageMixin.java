@@ -81,6 +81,7 @@ abstract class LegacyChunkStorageMixin {
         var tiles = updated.getList("block_entities", Tag.TAG_COMPOUND);
         LegacyChunkUpgrade.updateBlockEntityTypes(tiles);
         if (witchery$legacyIds != null) {
+            if (!legacy) witchery$legacyIds.repairConvertedTileItems(tiles, fixer, version);
             witchery$legacyIds.upgradeStoredBrewIngredients(tiles, fixer);
             if (legacy) witchery$legacyIds.upgradeStoredBrewIngredients(updated.getList("entities", Tag.TAG_COMPOUND), fixer);
         }

@@ -1594,6 +1594,7 @@
 - [x] Import a `witchery.spellEffect` chunk entity with the original motion list and two remaining ticks. Resume a separate earlier-port Morsmordre with six elapsed ticks. Both should place a Dark Mark after one further movement step. The original untimed record should expire without placing a mark in clear air.
 - [x] Reopen a Forge 1.20.1 save from the preceding JAR with a Soulfire entity in Ignianima mode. The headless restart kept its saved flag and position after new Lord casts switched to the original spell entity.
 - [x] Recover the Coven Witch's named Spider Eye and Rotten Flesh trophies from legacy quest pets. A fresh synthetic 1.7.10 region and the same pets already saved by an older 1.20.1 build both dropped the intended items with their literal names and quest bindings. The dropped items kept that data after a headless restart.
+- [x] Preserve custom names and lore in mixed Witchery storage. A fresh synthetic 1.7.10 region and a region already converted by the earlier build kept both named Whiffs of Magic and the named vanilla Book in a Witch's Oven. The vanilla Chest control kept the same text. After an ordinary dedicated restart, the muted survival client took both stacks from the Oven through its menu.
 - [ ] Expand migration to other block and subtype data and specialized entity and block-entity fields. Add fixtures before calling the migration complete.
 
 ### Importing a copy of a legacy world

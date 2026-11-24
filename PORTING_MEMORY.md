@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Legacy Item Names and Lore (2026-11-24)
+
+- The packaged baseline left a named fume's display fields and a vanilla book's lore as raw 1.7.10 strings in the Witch's Oven. A vanilla Chest converted the same fume correctly. Witchery's standalone upgrade now converts literal names and lore on its own items and completes the vanilla lore conversion in its block entities. Older imports with the captured registry snapshot can repair raw text still present in those inventories.
+- The exact candidate preserved both stacks in a new synthetic 1.7.10 import and in the same region converted by the preceding build. After an ordinary dedicated restart, a muted survival client took both stacks from the actual Oven menu. The player received two Whiffs of Magic and one Book with the original names, lore and fume marker. The client reported master volume zero, OpenAL No Output and an unfocused hidden window.
+- Java 17 data generation, JAR reobfuscation and all 207 required local Forge GameTests passed. The new test verifies literal text that resembles JSON, recovery of raw text from an earlier conversion, and retention of already formatted lore. Logs and the tested JAR are in `build/qa-legacy-item-names`. Package SHA-256 `7b62700319c1ddd3b51d29c0b0fd0e54c624629b52feee4ac50ffc9dd4e4263c`. The rebuild uses the checked-in ordering of the two independent Critter Snare loot properties. The package comparison found only that ordering and the manifest timestamp differed.
+
 ## Coven Pet Trophy Import (2026-11-24)
 
 - The original Coven Witch's Spider and Zombie keep their trophy stacks in `ForgeData.WITCExtraDrops`. That list survived conversion to 1.20.1, but the preceding build dropped nothing for the numeric Spider Eye and showed the vanilla name for the named Rotten Flesh fixture. The loot handler now applies the vanilla item data fixer when it reads an original-format trophy. Both items keep their display names and the witch UUID used for turn-in.

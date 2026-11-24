@@ -9,6 +9,7 @@ import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.world.MirrorTravel;
 import art.arcane.witchery.world.WitcheryDimensions;
+import com.google.gson.JsonParseException;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.serialization.Dynamic;
 import net.minecraft.SharedConstants;
@@ -16,7 +17,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.datafix.fixes.References;
@@ -46,6 +49,7 @@ public final class LegacyWorldIds {
     private static final String DIMENSIONS = "Dimensions";
     private static final String POTIONS = "Potions";
     private static final String SPAWN_EGGS = "SpawnEggs";
+    private static final int ITEM_LORE_COMPONENT_VERSION = 1803;
     private static final ResourceLocation VANILLA_POTION = new ResourceLocation("minecraft", "potion");
     private static final ResourceLocation VANILLA_SPAWN_EGG = new ResourceLocation("minecraft", "spawn_egg");
     private final Map<Integer, ResourceLocation> blocks = new HashMap<>();
@@ -203,7 +207,7 @@ public final class LegacyWorldIds {
             for (Tag entry : expiredDrops) {
                 if (((CompoundTag) entry).contains("id", Tag.TAG_ANY_NUMERIC)) {
                     upgradeItems(entry);
-                    upgradeVanillaItems(entry, fixer, -1, to);
+                    upgradeUntypedItems(entry, fixer, -1, to);
                 }
             }
             upgradeStoredBrewIngredients(player, fixer);
@@ -213,12 +217,12 @@ public final class LegacyWorldIds {
         upgradeItems(player);
         upgradeStoredBrewIngredients(player, fixer);
         upgradeEntityEffects(player);
-        upgradeVanillaItems(persisted.getCompound("WITCSpiritWorld"), fixer, from, to);
-        upgradeVanillaItems(expiredDrops, fixer, from, to);
+        upgradeUntypedItems(persisted.getCompound("WITCSpiritWorld"), fixer, from, to);
+        upgradeUntypedItems(expiredDrops, fixer, from, to);
         if (!legacy.isEmpty()) {
             if (legacy.getBoolean("CanRestoreInventory") && legacy.contains("CachedInventory2", Tag.TAG_LIST)) {
                 var inventory = legacy.getList("CachedInventory2", Tag.TAG_COMPOUND);
-                upgradeVanillaItems(inventory, fixer, from, to);
+                upgradeUntypedItems(inventory, fixer, from, to);
                 DeathBrewEffects.storeLegacyInventory(persisted, inventory);
                 forgeData.put(Player.PERSISTED_NBT_TAG, persisted);
                 player.put("ForgeData", forgeData);
@@ -265,7 +269,7 @@ public final class LegacyWorldIds {
                 if (!bottle.getString("id").equals("witchery:brewbottle")) continue;
                 for (Tag ingredient : bottle.getCompound("tag").getList("Items", Tag.TAG_COMPOUND)) {
                     if (((CompoundTag) ingredient).contains("id", Tag.TAG_ANY_NUMERIC)) {
-                        upgradeVanillaItems(ingredient, fixer, -1, currentVersion);
+                        upgradeUntypedItems(ingredient, fixer, -1, currentVersion);
                     }
                 }
             }
@@ -287,29 +291,77 @@ public final class LegacyWorldIds {
             for (String key : tile.getAllKeys()) {
                 Tag value = tile.get(key);
                 upgradeItems(value);
-                if (witcheryTile) upgradeVanillaItems(value, fixer, from, to);
+                if (witcheryTile) upgradeUntypedItems(value, fixer, from, to);
             }
         }
     }
 
-    void upgradeVanillaItems(Tag value, DataFixer fixer, int from, int to) {
+    public void repairConvertedTileItems(ListTag tiles, DataFixer fixer, int version) {
+        for (Tag entry : tiles) {
+            var tile = (CompoundTag) entry;
+            var id = ResourceLocation.tryParse(tile.getString("id"));
+            if (id != null && id.getNamespace().equals(Witchery.MODID)) {
+                for (String key : tile.getAllKeys()) upgradeUntypedItems(tile.get(key), fixer, version, version);
+            }
+        }
+    }
+
+    void upgradeUntypedItems(Tag value, DataFixer fixer, int from, int to) {
         if (value instanceof CompoundTag compound) {
-            for (String key : compound.getAllKeys()) upgradeVanillaItems(compound.get(key), fixer, from, to);
+            for (String key : compound.getAllKeys()) upgradeUntypedItems(compound.get(key), fixer, from, to);
             if (!compound.contains("Count", Tag.TAG_ANY_NUMERIC)) return;
             ResourceLocation id = compound.contains("id", Tag.TAG_ANY_NUMERIC)
                     ? vanillaItems.get(compound.getInt("id") & 0xFFFF) : ResourceLocation.tryParse(compound.getString("id"));
-            if (id == null || !id.getNamespace().equals(ResourceLocation.DEFAULT_NAMESPACE)) return;
+            if (id == null) return;
+            boolean witcheryItem = id.getNamespace().equals(Witchery.MODID);
+            if (!witcheryItem && !id.getNamespace().equals(ResourceLocation.DEFAULT_NAMESPACE)) return;
+            if (witcheryItem || from >= 100) {
+                upgradeItemDisplay(compound.getCompound("tag").getCompound("display"), from < 100);
+                return;
+            }
 
             // Vanilla's chunk fixer cannot see containers outside its typed schema.
             var named = compound.copy();
             named.putString("id", id.toString());
             if (fixer.update(References.ITEM_STACK, new Dynamic<>(NbtOps.INSTANCE, named), from, to).getValue() instanceof CompoundTag fixed) {
+                // Untyped chunk inventories receive only the first vanilla data-fixer pass.
+                if (to < ITEM_LORE_COMPONENT_VERSION) {
+                    upgradeItemLore(fixed.getCompound("tag").getCompound("display"), true);
+                }
                 // Item fixes may move damage or remove legacy fields. Keep the slot and any remaining custom data.
                 for (String key : Set.copyOf(compound.getAllKeys())) compound.remove(key);
                 compound.merge(fixed);
             }
         } else if (value instanceof ListTag list) {
-            for (Tag entry : list) upgradeVanillaItems(entry, fixer, from, to);
+            for (Tag entry : list) upgradeUntypedItems(entry, fixer, from, to);
+        }
+    }
+
+    private static void upgradeItemDisplay(CompoundTag display, boolean originalFormat) {
+        if (display.contains("Name", Tag.TAG_STRING)) {
+            String name = display.getString("Name");
+            if (!name.isEmpty() && (originalFormat || !isComponent(name))) {
+                display.putString("Name", Component.Serializer.toJson(Component.literal(name)));
+            }
+        }
+        upgradeItemLore(display, originalFormat);
+    }
+
+    private static void upgradeItemLore(CompoundTag display, boolean originalFormat) {
+        ListTag lore = display.getList("Lore", Tag.TAG_STRING);
+        for (int line = 0; line < lore.size(); line++) {
+            String text = lore.getString(line);
+            if (originalFormat || !isComponent(text)) {
+                lore.set(line, StringTag.valueOf(Component.Serializer.toJson(Component.literal(text))));
+            }
+        }
+    }
+
+    private static boolean isComponent(String text) {
+        try {
+            return Component.Serializer.fromJson(text) != null;
+        } catch (JsonParseException ignored) {
+            return false;
         }
     }
 

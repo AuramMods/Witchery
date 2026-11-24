@@ -72,7 +72,7 @@ final class LegacyChunkEntities {
         int targetVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
         var forgeData = entity.getCompound("ForgeData");
         if (forgeData.contains(AnimalMerchant.STOCK_TAG, Tag.TAG_COMPOUND)) {
-            ids.upgradeVanillaItems(forgeData.getCompound(AnimalMerchant.STOCK_TAG), fixer, from, targetVersion);
+            ids.upgradeUntypedItems(forgeData.getCompound(AnimalMerchant.STOCK_TAG), fixer, from, targetVersion);
         }
 
         String oldType = entity.getString("id");
@@ -81,9 +81,9 @@ final class LegacyChunkEntities {
         if (name == null) return;
         // The vanilla Witch schema does not visit these trade and brew stacks.
         switch (name.getPath()) {
-            case "goblin", "wolfman" -> ids.upgradeVanillaItems(entity.getCompound("Offers"), fixer, from, targetVersion);
-            case "demon" -> ids.upgradeVanillaItems(entity.getCompound("Bargains"), fixer, from, targetVersion);
-            case "droplet" -> ids.upgradeVanillaItems(entity.getCompound("Brew"), fixer, from, targetVersion);
+            case "goblin", "wolfman" -> ids.upgradeUntypedItems(entity.getCompound("Offers"), fixer, from, targetVersion);
+            case "demon" -> ids.upgradeUntypedItems(entity.getCompound("Bargains"), fixer, from, targetVersion);
+            case "droplet" -> ids.upgradeUntypedItems(entity.getCompound("Brew"), fixer, from, targetVersion);
             case "brew", "brew2" -> name = prepareBrewProjectile(entity, name, ids, fixer, from, targetVersion);
         }
         if (!ForgeRegistries.ENTITY_TYPES.containsKey(name)) return;
@@ -109,7 +109,7 @@ final class LegacyChunkEntities {
     private static ResourceLocation prepareBrewProjectile(CompoundTag entity, ResourceLocation legacyType,
                                                           LegacyWorldIds ids, DataFixer fixer, int from, int to) {
         boolean fixedRecipe = legacyType.getPath().equals("brew");
-        if (!fixedRecipe) ids.upgradeVanillaItems(entity.getCompound("Brew"), fixer, from, to);
+        if (!fixedRecipe) ids.upgradeUntypedItems(entity.getCompound("Brew"), fixer, from, to);
         ItemStack stack = ThrownBrew.readLegacyPayload(entity, fixedRecipe);
         if (stack.isEmpty()) return legacyType;
         if (!fixedRecipe && entity.getBoolean("Spell")) entity.putBoolean("NoGravity", true);
