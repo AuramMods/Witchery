@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Crystal Ball encounter timing and placement (2026-11-25)
+
+- Natural and random periodic fulfillment run on the world's 100-tick pulse. The world random source supplies weighted readings and fulfillment rolls. Visiting the Nether records eligibility immediately. A natural Nether fulfillment waits for the next pulse while the player is there.
+- Fights, rescues and suitors start 0.05 blocks above the lowest air cell that fits the creature. Water in the second air cell kept the Zombie prediction active. A slab supported the Wolf rescue. The Love forecast stayed pending until there was opaque support beneath the landing block. Successful arrivals send silent smoke within 16 blocks.
+- The original 0.24.1 headless run, the reobfuscated clean Forge server and copied Auram agreed on all eight timing, placement and target samples. The preceding 1.20.1 package used player age, accepted the flooded cell and thin Love platform, and rejected the slab. Auram's FasterRandom used a different seed to produce a roll below five percent.
+- The muted, unfocused Forge survival client loaded a Wolf Rescue reading supplied in the original NBT fields. Dedicated-server damage attributed to a supplied Zombie triggered the rescue. The client received the silent smoke at the Wolf's landing point with a 0.5-block width and two-block height. An ordinary dedicated restart kept the same Wolf UUID and empty forecast list.
+- All 358 local Forge GameTests passed. An earlier run sampled the Raising color before its Kettle had advanced. The recipe-order fixture now runs each Kettle through its own 20-tick brew interval before checking its color and result.
+- The reobfuscated JAR is `build/qa-forecast-encounters/candidate.jar` with SHA-256 `e8280abd646d4a98f73a5294fb1280e8f28edbdba2ecd134365e7389ee086795`. The native, previous-package, clean Forge, Auram and muted survival evidence is in `build/qa-forecast-encounters/comparison.txt`.
+
 ## Witch's Oven batch swaps and fume stacks (2026-11-25)
 
 - A runnable replacement keeps the Oven's elapsed cook time. The input present at completion determines the recipe and the fume. A loaded tick with empty or uncookable input clears progress. Removing and returning the input before that tick retains progress.

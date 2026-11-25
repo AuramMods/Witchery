@@ -1198,6 +1198,10 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 
 Prediction ticks and Crystal Ball readings remove IDs outside the registry. If a restored list includes several registered IDs, the ball reports each once and preserves their saved times and other fields. A new reading is available when the restored list contains only obsolete IDs.
 
+Periodic readings run every 100 ticks on the world clock in saved-list order. The world random source supplies the weighted reading and fulfillment rolls. Entering the Nether records eligibility for future Nether forecasts. An active reading is fulfilled during the next world pulse while the player is there.
+
+Fight, rescue and Love arrivals search up to eight blocks upward and then down to the first non-air block. A continuous column of air above that block must fit the creature. A slab can support a rescue. Love also requires opaque support below the landing block. Arrivals start 0.05 blocks above the center of the first air cell and send silent smoke to players within 16 blocks. Forge world bounds, collision, Peaceful difficulty and canceled mob spawns still govern whether the forecast succeeds.
+
 Fall and Wet can force their original three-by-three gravel roof over dirt or farmland. Airborne players use the original block below their feet. Grounded players use the supporting block's height, including the shorter modern farmland surface. Fall clears five layers, and Wet places two layers of water sources outside ultra-warm dimensions. The original minimum heights are relative to the dimension floor. The roof honors Forge group protection, and individual protected blocks below it remain in place.
 
 Mining predictions extend Forge block loot after the harvest. Deepslate and its matching ores extend the legacy stone rules. Buried Treasure places the chest one block below the harvest if all four sides and the bottom are covered. The center can be air or water. Forge protection and protected terrain can prevent placement and leave the forecast active.

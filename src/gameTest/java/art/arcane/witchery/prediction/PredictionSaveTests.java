@@ -15,10 +15,15 @@ import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.monster.Blaze;
+import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.phys.Vec3;
@@ -70,8 +75,11 @@ public final class PredictionSaveTests {
         var player = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "NewFortune"));
         var entries = store(player, forecast(999, 1_000L));
         player.tickCount = 100;
-        Predictions.tick(player);
-        helper.assertTrue(entries.isEmpty(), "The player tick clears obsolete forecast IDs");
+        tickAtWorldTime(player, 99);
+        helper.assertTrue(entries.size() == 1, "Player age does not advance the forecast between world pulses");
+        player.tickCount = 17;
+        tickAtWorldTime(player, 100);
+        helper.assertTrue(entries.isEmpty(), "The world pulse clears obsolete forecast IDs at any player age");
 
         entries.add(forecast(999, 1_000L));
         Predictions.attune(player);
@@ -130,7 +138,11 @@ public final class PredictionSaveTests {
         };
         MinecraftForge.EVENT_BUS.addListener(listener);
         try {
-            level.getRandom().setSeed(5120);
+            setEncounterLayer(level, ground.below(), Blocks.AIR);
+            rollOverdueForecast(player);
+            helper.assertTrue(entries.size() == 1 && sounds.isEmpty(),
+                    "An isolated platform lacks the original support below a suitor's landing block");
+            setEncounterLayer(level, ground.below(), Blocks.STONE);
             rollOverdueForecast(player);
         } finally {
             MinecraftForge.EVENT_BUS.unregister(listener);
@@ -141,6 +153,82 @@ public final class PredictionSaveTests {
                         && sound.getSource() == SoundSource.NEUTRAL && sound.getNewVolume() == 0.5F
                         && sound.getNewPitch() >= 1F / 3F && sound.getNewPitch() <= 0.5F,
                 "Keep the original sound ID, category, half volume and pitch range");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_prediction_encounter_air")
+    public static void overdueFightRequiresTheOriginalAirColumn(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var ground = prepareEncounterFloor(helper);
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "ForecastFight"));
+        player.setPos(Vec3.atBottomCenterOf(ground.above()));
+        var entries = store(player, forecast(1, 1_000L));
+        List<Zombie> spawned = new ArrayList<>();
+        Consumer<EntityJoinLevelEvent> listener = event -> {
+            if (event.getEntity() instanceof Zombie zombie) spawned.add(zombie);
+        };
+        MinecraftForge.EVENT_BUS.addListener(listener);
+        try {
+            setEncounterLayer(level, ground.above(2), Blocks.WATER);
+            rollOverdueForecast(player);
+            helper.assertTrue(entries.size() == 1 && spawned.isEmpty(),
+                    "Water in the second block interrupts the clear two-block column");
+            setEncounterLayer(level, ground.above(2), Blocks.AIR);
+            rollOverdueForecast(player);
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(listener);
+        }
+        helper.assertTrue(entries.isEmpty() && spawned.size() == 1,
+                "The same forecast fulfills once the column has enough air");
+        Zombie zombie = spawned.get(0);
+        helper.assertTrue(Math.abs(zombie.getY() - (ground.getY() + 1.05)) < 0.0001 && zombie.getTarget() == player,
+                "The arrival uses the original fractional height and targets the forecast player");
+        zombie.discard();
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_prediction_rescue_slab")
+    public static void wolfRescueCanArriveAboveASlab(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var ground = prepareEncounterFloor(helper);
+        setEncounterLayer(level, ground, Blocks.STONE_SLAB);
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "ForecastRescue"));
+        player.setPos(Vec3.atBottomCenterOf(ground.above()));
+        var entries = store(player, forecast(14, 1_000L));
+        var attacker = EntityType.ZOMBIE.create(level);
+        attacker.moveTo(player.getX() + 1, player.getY(), player.getZ());
+        List<Wolf> spawned = new ArrayList<>();
+        Consumer<EntityJoinLevelEvent> listener = event -> {
+            if (event.getEntity() instanceof Wolf wolf) spawned.add(wolf);
+        };
+        MinecraftForge.EVENT_BUS.addListener(listener);
+        try {
+            Predictions.onHurt(player, level.damageSources().mobAttack(attacker));
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(listener);
+        }
+        helper.assertTrue(entries.isEmpty() && spawned.size() == 1,
+                "A rescue recognizes the clear air above legacy slab footing");
+        helper.assertTrue(spawned.get(0).getTarget() == attacker
+                        && Math.abs(spawned.get(0).getY() - (ground.getY() + 1.05)) < 0.0001,
+                "The rescue starts above the slab block with the recorded attacker as its target");
+        spawned.get(0).discard();
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_prediction_nether_pulse")
+    public static void enteringTheNetherFulfillsTheForecastOnTheNextWorldPulse(GameTestHelper helper) {
+        var nether = helper.getLevel().getServer().getLevel(Level.NETHER);
+        var player = new FakePlayer(nether, new GameProfile(UUID.randomUUID(), "ForecastNetherVisit"));
+        var entries = store(player, forecast(16, 1_000L));
+
+        Predictions.onNetherVisit(player);
+        tickAtWorldTime(player, 99);
+        helper.assertTrue(entries.size() == 1
+                        && player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getBoolean("WITCVisitedNether"),
+                "Entering the Nether records eligibility and keeps the active forecast until its scheduled check");
+        tickAtWorldTime(player, 100);
+        helper.assertTrue(entries.isEmpty(), "The next world pulse fulfills the forecast while the player is in the Nether");
         helper.succeed();
     }
 
@@ -308,12 +396,18 @@ public final class PredictionSaveTests {
 
     private static BlockPos prepareEncounterFloor(GameTestHelper helper) {
         var ground = helper.absolutePos(new BlockPos(8, 10, 8));
-        for (BlockPos pos : BlockPos.betweenClosed(ground.offset(-6, 0, -6), ground.offset(6, 0, 6))) {
-            helper.getLevel().setBlockAndUpdate(pos, Blocks.STONE.defaultBlockState());
-            helper.getLevel().setBlockAndUpdate(pos.above(), Blocks.AIR.defaultBlockState());
-            helper.getLevel().setBlockAndUpdate(pos.above(2), Blocks.AIR.defaultBlockState());
-        }
+        var level = helper.getLevel();
+        setEncounterLayer(level, ground.below(), Blocks.STONE);
+        setEncounterLayer(level, ground, Blocks.STONE);
+        setEncounterLayer(level, ground.above(), Blocks.AIR);
+        setEncounterLayer(level, ground.above(2), Blocks.AIR);
         return ground;
+    }
+
+    private static void setEncounterLayer(ServerLevel level, BlockPos center, Block block) {
+        for (BlockPos pos : BlockPos.betweenClosed(center.offset(-6, 0, -6), center.offset(6, 0, 6))) {
+            level.setBlockAndUpdate(pos, block.defaultBlockState());
+        }
     }
 
     private static final class PortalWitness extends FakePlayer {
@@ -340,9 +434,19 @@ public final class PredictionSaveTests {
     }
 
     private static void rollOverdueForecast(FakePlayer player) {
-        player.tickCount = 100;
-        player.getRandom().setSeed(5120);
-        Predictions.tick(player);
+        player.level().getRandom().setSeed(5120);
+        tickAtWorldTime(player, 100);
+    }
+
+    private static void tickAtWorldTime(FakePlayer player, long time) {
+        var clock = player.serverLevel().getServer().getWorldData().overworldData();
+        long previous = clock.getGameTime();
+        clock.setGameTime(time);
+        try {
+            Predictions.tick(player);
+        } finally {
+            clock.setGameTime(previous);
+        }
     }
 
     private static CompoundTag forecast(int id, long time) {

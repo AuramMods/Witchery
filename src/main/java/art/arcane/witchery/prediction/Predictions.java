@@ -4,12 +4,12 @@ import art.arcane.witchery.brewing.BrewTerrain;
 import art.arcane.witchery.entity.BabaYaga;
 import art.arcane.witchery.entity.Ent;
 import art.arcane.witchery.entity.WitchOwl;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -19,6 +19,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
@@ -51,6 +52,7 @@ public final class Predictions {
     private static final String TIME = "WITCPreTime";
     private static final String VISITED_NETHER = "WITCVisitedNether";
     private static final String MESSAGE = "witchery.prediction.";
+    private static final int CHECK_INTERVAL = 100;
     private static final long DUE_AFTER = 9_600;
 
     enum Kind {
@@ -172,7 +174,6 @@ public final class Predictions {
         CompoundTag persisted = persisted(player);
         persisted.putBoolean(VISITED_NETHER, true);
         player.getPersistentData().put(Player.PERSISTED_NBT_TAG, persisted);
-        readings(player).removeIf(entry -> entry instanceof CompoundTag tag && tag.getInt(ID) == Kind.NETHER.id);
     }
 
     public static void onHarvest(ServerPlayer player, BlockPos pos, BlockState state, List<ItemStack> drops) {
@@ -199,13 +200,11 @@ public final class Predictions {
     }
 
     public static void tick(ServerPlayer player) {
-        if (player.tickCount % 100 != 0 || player.isSpectator() || !player.isAlive()) return;
+        if (player.level().getGameTime() % CHECK_INTERVAL != 0 || player.isSpectator() || !player.isAlive()) return;
         ListTag readings = readings(player);
         long now = timeInTicks();
-        // Fulfillment can visit the Nether and remove other entries from the live list.
-        var pending = List.copyOf(readings);
-        for (int slot = pending.size() - 1; slot >= 0; slot--) {
-            var reading = (CompoundTag) pending.get(slot);
+        for (Tag pending : List.copyOf(readings)) {
+            var reading = (CompoundTag) pending;
             int index = readings.lastIndexOf(reading);
             if (index < 0) continue;
             Kind kind = Kind.byId(reading.getInt(ID));
@@ -215,7 +214,7 @@ public final class Predictions {
                 continue;
             }
             double chance = kind.tickChance(now - reading.getLong(TIME));
-            if (chance > 0 && player.getRandom().nextDouble() < chance) {
+            if (chance > 0 && player.level().getRandom().nextDouble() < chance) {
                 // Remove the reading before effects that can post another player event.
                 readings.remove(index);
                 if (!fulfill(kind, player)) readings.add(Math.min(index, readings.size()), reading);
@@ -230,7 +229,7 @@ public final class Predictions {
         for (Kind kind : Kind.values()) {
             if (kind != Kind.NETHER || canPredictNether) weight += kind.weight;
         }
-        int choice = subject.getRandom().nextInt(weight);
+        int choice = subject.level().getRandom().nextInt(weight);
         for (Kind kind : Kind.values()) {
             if (kind == Kind.NETHER && !canPredictNether) continue;
             choice -= kind.weight;
@@ -280,21 +279,33 @@ public final class Predictions {
         ServerLevel level = player.serverLevel();
         RandomSource random = level.getRandom();
         BlockPos start = player.blockPosition().offset(encounterOffset(random, radius), 0, encounterOffset(random, radius));
-        BlockPos.MutableBlockPos feet = start.mutable();
-        while (feet.getY() < start.getY() + 8 && !level.getBlockState(feet).isAir()) feet.move(Direction.UP);
-        while (feet.getY() > level.getMinBuildHeight() && level.getBlockState(feet.below()).isAir()) feet.move(Direction.DOWN);
-        if (level.isOutsideBuildHeight(feet) || !level.getWorldBorder().isWithinBounds(feet)
-                || !level.getBlockState(feet.below()).isFaceSturdy(level, feet.below(), Direction.UP)) return false;
+        BlockPos ground = encounterGround(level, start);
+        BlockPos feet = ground.above();
+        if (level.isOutsideBuildHeight(feet) || !level.getWorldBorder().isWithinBounds(feet) || level.isEmptyBlock(ground)) return false;
+        if (type == EntityType.VILLAGER && !level.getBlockState(ground.below()).isSolidRender(level, ground.below())) return false;
         T mob = type.create(level);
         if (mob == null || mob instanceof Monster && level.getDifficulty() == Difficulty.PEACEFUL) return false;
-        Vec3 arrival = Vec3.atBottomCenterOf(feet);
+        int requiredAir = Mth.ceil(mob.getBbHeight());
+        if (requiredAir > 6) return false;
+        for (int y = 0; y < requiredAir; y++) {
+            BlockPos air = feet.above(y);
+            if (level.isOutsideBuildHeight(air) || !level.isEmptyBlock(air)) return false;
+        }
+        Vec3 arrival = Vec3.atBottomCenterOf(feet).add(0, 0.05, 0);
         mob.moveTo(arrival.x, arrival.y, arrival.z, 0, 0);
         if (!level.noCollision(mob)) return false;
         mob.finalizeSpawn(level, level.getCurrentDifficultyAt(feet), MobSpawnType.EVENT, null, null);
         setup.accept(mob);
         if (!level.addFreshEntity(mob)) return false;
-        level.sendParticles(ParticleTypes.SMOKE, mob.getX(), mob.getY(0.5), mob.getZ(), 16, 0.25, 0.4, 0.25, 0.035);
+        WitcheryNetwork.sendPredictionArrival(level, mob.position());
         return true;
+    }
+
+    private static BlockPos encounterGround(ServerLevel level, BlockPos start) {
+        BlockPos.MutableBlockPos ground = start.mutable();
+        while (ground.getY() < start.getY() + 8 && !level.isEmptyBlock(ground)) ground.move(Direction.UP);
+        while (ground.getY() > level.getMinBuildHeight() && level.isEmptyBlock(ground)) ground.move(Direction.DOWN);
+        return ground.immutable();
     }
 
     private static int encounterOffset(RandomSource random, int radius) {
@@ -344,9 +355,7 @@ public final class Predictions {
 
         RandomSource random = source.getRandom();
         BlockPos start = player.blockPosition().below().offset(encounterOffset(random, 4), 0, encounterOffset(random, 4));
-        BlockPos.MutableBlockPos ground = start.mutable();
-        while (ground.getY() < start.getY() + 8 && !source.isEmptyBlock(ground)) ground.move(Direction.UP);
-        while (ground.getY() > source.getMinBuildHeight() && source.isEmptyBlock(ground)) ground.move(Direction.DOWN);
+        BlockPos ground = encounterGround(source, start);
         if (!source.isOutsideBuildHeight(ground) && source.getWorldBorder().isWithinBounds(ground)
                 && source.isEmptyBlock(ground.above()) && source.isEmptyBlock(ground.above(2))) {
             var blaze = EntityType.BLAZE.create(source);

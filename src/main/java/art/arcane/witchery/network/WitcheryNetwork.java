@@ -356,6 +356,10 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_PORTAL_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID, center, 0.5, 1, 16);
     }
 
+    public static void sendPredictionArrival(ServerLevel level, Vec3 center) {
+        sendParticlesAround(level, LEGACY_SMOKE_PARTICLE_ID, LEGACY_NO_SOUND_ID, center, 0.5, 2, 16);
+    }
+
     public static void sendSentinelAppearance(ServerLevel level, Vec3 center, double height) {
         sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_SPECTRE_AMBIENT_SOUND_ID, center, 1, height, 16);
     }
