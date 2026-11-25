@@ -226,13 +226,17 @@ public final class CauldronMisfortuneTests {
         prepareCast(helper, pos, "summon_leonard", new ItemStack(Items.NETHER_WART),
                 WitcheryIngredient.TEAR_OF_THE_GODDESS.item().getDefaultInstance(),
                 WitcheryIngredient.DIAMOND_VAPOUR.item().getDefaultInstance(), new ItemStack(Items.DIAMOND), new ItemStack(Items.NETHER_STAR));
-        finishCast(helper, pos, altar, 20000, 512);
-
-        var summoned = helper.getLevel().getEntitiesOfClass(Leonard.class, new AABB(pos).inflate(2));
-        helper.assertTrue(summoned.size() == 1 && pig.getActiveEffects().isEmpty(),
-                "Risk is based on Leonard's presence before the ritual produces its result");
-        summoned.forEach(Entity::discard);
-        helper.succeed();
+        var level = helper.getLevel();
+        var surroundings = new AABB(pos).inflate(2);
+        helper.startSequence().thenWaitUntil(() -> {
+            helper.assertTrue(level.getEntity(pig.getUUID()) == pig, "The nearby pig is tracked before the cast");
+        }).thenExecute(() -> finishCast(helper, pos, altar, 20000, 512)).thenWaitUntil(() -> {
+            var summoned = level.getEntitiesOfClass(Leonard.class, surroundings);
+            helper.assertTrue(summoned.size() == 1, "Exactly one Leonard is tracked after the cast");
+            helper.assertTrue(pig.getActiveEffects().isEmpty(),
+                    "Risk is based on Leonard's presence before the ritual produces its result");
+            summoned.forEach(Entity::discard);
+        }).thenSucceed();
     }
 
     private static BlockPos placeCauldron(GameTestHelper helper) {

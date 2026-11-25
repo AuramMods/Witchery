@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Calling the Beasts Arrivals (2026-11-24)
+
+- The original headless 0.24.1 server moved two eligible pigs into stone at `(94, 86, 17)` and `(98, 86, 16)` with seed zero. The third stayed at its source. The four Portal and Enderman packets had width 0.5, height two, and range 16. Forge now uses the direct circle transfer, retains the world-bounds check, and omits the extra completion fizz on the original rite.
+- The clean Forge survival client used a Seer Stone on the glyph, summoned all three members of the supplied coven roster, consumed the eight offerings, and paid 6,000 from the altar. Two muted background clients received the original arrival and departure packets. The extra pig, inhibited pig and southeastern cow stayed at their sources. The ordinary save contained stage one, and after restart the cow arrived at `(651, 272, 81)` with its portal cue.
+- Eight pulses on the original server produced a disk save with `Rituals:[B;68b]`, `RitualStages:[B;8b]` and `RitualCovens:[B;3b]`. Merging those fields into a glyph on the copied Auram server restored stage eight. Its next pulse put two pigs into stone at `(730, 306, 184)` and `(729, 306, 182)` and emitted the four endpoint packets. The inhibited control stayed at its source.
+- Local Java 17 data generation and JAR reobfuscation passed. Candidate SHA-256 `fcfbbebd8971a1e21dbebd4c76c9bcd7c0791e99a9d5605a770f80a32552ca62`. The original reference, candidate, save checks and packet traces are under `build/qa-call-beasts-origin`.
+- All 285 required local Forge GameTests passed. The new regression checks the original seeded landings inside stone, the two-animal limit, and Ender Inhibition. The first run failed in the unrelated Leonard test. Its fixture now waits for the pig to be tracked before casting and for Leonard to be tracked before checking the pig's effects.
+
 ## Hell on Earth Arrival Cue (2026-11-24)
 
 - The original headless 0.24.1 server emitted Large Explode and Blaze death at both test Waystones. The first paid attempts fell on stages 17 and 21 in the two original phases. The native Forge veto fixture still kept its 200 debit and sent the cue on each of two canceled spawns. See `build/qa-hell-arrival/legacy/native-veto.log`.

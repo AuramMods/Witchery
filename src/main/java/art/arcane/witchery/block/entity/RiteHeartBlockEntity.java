@@ -644,7 +644,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             WitcheryNetwork.sendFamiliarRite(level, Vec3.atLowerCornerOf(pos), action == ItemRiteRecipe.Action.BIND_FAMILIAR);
         } else if (!firstExpansionCue && (!legacy || (action != ItemRiteRecipe.Action.RECHARGE_INFUSION
                 && action != ItemRiteRecipe.Action.TRAVEL_WAYSTONE && action != ItemRiteRecipe.Action.TRANSPOSE_CREATURE
-                && action != ItemRiteRecipe.Action.BANISH_DEMON))) {
+                && action != ItemRiteRecipe.Action.BANISH_DEMON && action != ItemRiteRecipe.Action.CALL_BEASTS))) {
             level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
                     16, 0.4, 0.4, 0.4, 0.05);
             level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.9F, 1.35F);

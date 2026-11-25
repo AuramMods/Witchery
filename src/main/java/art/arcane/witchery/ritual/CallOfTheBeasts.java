@@ -31,7 +31,7 @@ final class CallOfTheBeasts {
                 mob -> mob.isAlive() && ANIMALS.contains(mob.getType()) && mob.distanceToSqr(center) > 32
                         && !mob.hasEffect(WitcheryEffects.ENDER_INHIBITION.get()))) {
             Vec3 target = center.add(level.random.nextInt(5) - 2, 0, level.random.nextInt(5) - 2);
-            if (WitcheryTeleport.canArrive(animal, level, target)) WitcheryTeleport.move(animal, level, target);
+            WitcheryTeleport.moveThroughCircle(animal, level, target);
             if (++attempted >= 2) return;
         }
     }
