@@ -444,7 +444,8 @@ public final class CauldronBrewParityTests {
     @GameTest(template = "qa_coven_arena", batch = "witchery_cauldron_dispenser", timeoutTicks = 245)
     public static void dispenserBottlesOnlyBoilingPoweredCauldrons(GameTestHelper helper) {
         var level = helper.getLevel();
-        var pos = helper.absolutePos(new BlockPos(5, 4, 5));
+        // Keep the fire above water flowing from earlier GameTests.
+        var pos = helper.absolutePos(new BlockPos(5, 160, 5));
         var dispenser = dispenser(helper, pos.north(), new ItemStack(Items.GLASS_BOTTLE, 2));
         level.setBlockAndUpdate(pos.below(2), Blocks.NETHERRACK.defaultBlockState());
         level.setBlockAndUpdate(pos.below(), Blocks.FIRE.defaultBlockState());

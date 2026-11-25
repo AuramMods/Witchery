@@ -29,6 +29,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -39,7 +40,8 @@ public final class RiteHeartBlock extends BaseEntityBlock {
     private static final VoxelShape SHAPE = box(0, 0, 0, 16, 0.25, 16);
 
     public RiteHeartBlock() {
-        super(Properties.copy(Blocks.WHITE_CARPET).noCollission().noLootTable().strength(3.0F, 600));
+        super(Properties.copy(Blocks.WHITE_CARPET).noCollission().noLootTable().strength(3.0F, 600)
+                .pushReaction(PushReaction.DESTROY));
         registerDefaultState(defaultBlockState().setValue(ACTIVE, false).setValue(POWERED, false));
     }
 

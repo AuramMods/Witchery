@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -27,7 +28,8 @@ public final class RitualGlyphBlock extends Block {
     private final String chalk;
 
     public RitualGlyphBlock(String chalk) {
-        super(Properties.copy(Blocks.WHITE_CARPET).noCollission().noLootTable().strength(2.0F, 600));
+        super(Properties.copy(Blocks.WHITE_CARPET).noCollission().noLootTable().strength(2.0F, 600)
+                .pushReaction(PushReaction.DESTROY));
         this.chalk = chalk;
         registerDefaultState(defaultBlockState().setValue(PATTERN, 0));
     }

@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Piston parity (2026-11-25)
+
+- Extending pistons now leave the Candelabra and both Fume Funnels in place. They break the Heart Glyph, three chalk glyphs, Dream Catcher, Ember Moss, Garlic Garland, Glint Weed, Plant Mine, and both snow slab forms. Sticky pistons leave all 14 in place. An active Heart Glyph still refunds its staged offering when the piston breaks it.
+- The original headless server ran all 14 cases plus stone. Clean Forge and copied Auram reproduced each extension, sticky retraction and exact drop. Both modern servers also tested a stacked `snowslab` state. It yields two items, like `snowdoubleslab`. The first probes showed why drop lanes need walls and clean coordinates. The moving piston pushed a slab item out of one search area, and the earlier copied world had an unrelated dropped sword at a fixture. The final replay recorded newly spawned and settled items separately.
+- Clean Forge matched the original push and pull eligibility on all 121 shared default states. Quark's enabled Pistons Move Tile Entities option in Auram made 28 other Witchery blocks eligible for movement. A powered replay moved one altar block, a Poppet Shelf holding a named poppet, and a Placed Item holding a named sword. The shelf kept the poppet and both saved tickets pointed to the new shelf positions in the same chunk. Sticky retraction into an unsupported cell dropped the original named sword. The comparison and replay are in `comparison.txt` and `pack-quark/behavior.log`.
+- All 335 local Forge GameTests passed. The saved world from a failed replay showed water from earlier fixtures had reached the piston lanes and extinguished the dispenser cauldron's fire. Both fixtures now run above that water. The checked-in tests cover both directions of piston travel, the original drops, and an active Heart Glyph's offering refund.
+- The local reobfuscated JAR is `build/qa-piston-behavior/verified.jar` with SHA-256 `ed22d20fa95245ed67a41dd78c4819769725248635b56e531a1dccf7c247684a`. Reference and packaged logs are under `build/qa-piston-behavior/`.
+
 ## Creative pick-block parity (2026-11-25)
 
 - Compared 40 default block picks and two extra states against Witchery 0.24.1. Force, Spirit Portal, Torment Portal, brew gas, and liquid brew now return an empty pick. The unpopulated placed-item block now returns the original Arthana fallback. A populated mount returns a copy with its item data, including wear 17 and the saved Keepsake tag in the sword fixture.

@@ -97,6 +97,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -193,8 +194,8 @@ public final class WitcheryBlocks {
                             .strength(3.5F)
                             .noOcclusion()
                             .lightLevel(state -> state.getValue(WitchesOvenBlock.LIT) ? 13 : 0));
-            case "fumefunnel", "filteredfumefunnel" ->
-                    new FumeFunnelBlock(BlockBehaviour.Properties.copy(Blocks.STONE).strength(3.5F).noOcclusion());
+            case "fumefunnel", "filteredfumefunnel" -> new FumeFunnelBlock(BlockBehaviour.Properties.copy(Blocks.STONE)
+                    .strength(3.5F).noOcclusion().pushReaction(PushReaction.BLOCK));
             case "coffinblock" -> new CoffinBlock();
             case "statueofworship" -> new StatueOfWorshipBlock();
             case "refillingchest" -> new RefillingChestBlock();
@@ -209,9 +210,9 @@ public final class WitcheryBlocks {
             case "witchwoodslab", "witchwooddoubleslab" -> new WitchWoodSlabBlock(path.equals("witchwooddoubleslab"));
             case "iceslab" -> new SlabBlock(BlockBehaviour.Properties.copy(Blocks.GLASS).mapColor(MapColor.ICE)
                     .sound(SoundType.STONE).strength(2, 3));
-            case "snowslab" -> new SlabBlock(BlockBehaviour.Properties.copy(Blocks.SNOW_BLOCK));
+            case "snowslab" -> new SlabBlock(BlockBehaviour.Properties.copy(Blocks.SNOW_BLOCK).pushReaction(PushReaction.DESTROY));
             case "icedoubleslab" -> new Block(BlockBehaviour.Properties.copy(Blocks.ICE).strength(2, 3));
-            case "snowdoubleslab" -> new Block(BlockBehaviour.Properties.copy(Blocks.SNOW_BLOCK));
+            case "snowdoubleslab" -> new Block(BlockBehaviour.Properties.copy(Blocks.SNOW_BLOCK).pushReaction(PushReaction.DESTROY));
             case "stockade" -> new StockadeBlock.Wooden();
             case "icestockade" -> new StockadeBlock(true);
             case "icefence" -> new PerpetualIceFenceBlock();
@@ -235,8 +236,8 @@ public final class WitcheryBlocks {
             case "alluringskull" -> new AlluringSkullBlock();
             case "chalice" ->
                     new ChaliceBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BARS).noOcclusion().strength(3.0F));
-            case "candelabra" ->
-                    new CandelabraBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BARS).noOcclusion().strength(2.0F).lightLevel(state -> 15));
+            case "candelabra" -> new CandelabraBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BARS)
+                    .noOcclusion().strength(2.0F).lightLevel(state -> 15).pushReaction(PushReaction.BLOCK));
             case "brazier" -> new BrazierBlock();
             case "crystalball" -> new CrystalBallBlock();
             case "decursedirected" -> new AreaWardBlock(AreaWardBlockEntity.Kind.DIRECTED);
@@ -247,8 +248,8 @@ public final class WitcheryBlocks {
             case "infinityegg" -> new InfinityEggBlock();
             case "garlicgarland" -> new GarlicGarlandBlock();
             case "poppetshelf" -> new PoppetShelfBlock();
-            case "dreamcatcher" ->
-                    new DreamCatcherBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS).strength(1).noCollission().noOcclusion());
+            case "dreamcatcher" -> new DreamCatcherBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS)
+                    .strength(1).noCollission().noOcclusion().pushReaction(PushReaction.DESTROY));
             case "silvervat" -> new SilverVatBlock();
             case "daylightcollector" -> new DaylightCollectorBlock();
             case "bloodcrucible" -> new BloodCrucibleBlock();

@@ -56,6 +56,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.piston.PistonBaseBlock;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
@@ -84,6 +85,31 @@ public final class CircleRiteTests {
     private static final int TWO_OFFERING_CAST = 80;
     private static final int THREE_OFFERING_CAST = 100;
     private static final int ALTAR_STEP_TICKS = 20;
+
+    @GameTest(template = TEMPLATE, batch = "witchery_piston_rite_refund")
+    public static void pistonDestroyingAHeartRefundsItsStagedOffering(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.SMALL_RITE, "circleglyphritual");
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var heart = heart(helper);
+        waitForOfferings(helper, new ItemStack(Items.OBSIDIAN), new ItemStack(Items.REDSTONE)).thenExecute(() -> {
+            helper.useBlock(CENTER);
+            helper.assertTrue(helper.getBlockState(CENTER).getValue(RiteHeartBlock.ACTIVE), "Start the small rite through its Heart Glyph");
+            tick(level, center, heart, 20);
+            helper.assertTrue(heart.saveWithoutMetadata().getInt("OfferingStep") == 1 && drops(helper).size() == 1,
+                    "One offering is staged before the piston runs");
+            helper.setBlock(CENTER.west(), Blocks.PISTON.defaultBlockState().setValue(PistonBaseBlock.FACING, Direction.EAST));
+            helper.setBlock(CENTER.west(2), Blocks.REDSTONE_BLOCK);
+        }).thenWaitUntil(() -> {
+            helper.assertTrue(helper.getBlockState(CENTER).is(Blocks.PISTON_HEAD) && level.getBlockEntity(center) == null,
+                    "An extending piston removes the active Heart Glyph");
+            var restored = drops(helper);
+            helper.assertTrue(restored.size() == 2 && restored.stream().anyMatch(item -> ItemStack.matches(item.getItem(), new ItemStack(Items.OBSIDIAN)))
+                            && restored.stream().anyMatch(item -> ItemStack.matches(item.getItem(), new ItemStack(Items.REDSTONE))),
+                    "The staged offering returns alongside the untouched offering exactly once");
+        }).thenSucceed();
+    }
 
     @GameTest(template = TEMPLATE, batch = "witchery_rite_redstone_pulse", setupTicks = 5)
     public static void shortRedstonePulsesStartAndStopARite(GameTestHelper helper) {

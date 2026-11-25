@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -26,7 +27,8 @@ public final class GarlicGarlandBlock extends HorizontalDirectionalBlock {
     private static final VoxelShape WEST = box(13.6, 12.8, 1.6, 16, 16, 14.4);
 
     public GarlicGarlandBlock() {
-        super(Properties.of().mapColor(MapColor.PLANT).sound(SoundType.GRASS).strength(0.2F).noCollission());
+        super(Properties.of().mapColor(MapColor.PLANT).sound(SoundType.GRASS).strength(0.2F).noCollission()
+                .pushReaction(PushReaction.DESTROY));
         registerDefaultState(defaultBlockState().setValue(FACING, Direction.NORTH));
     }
 

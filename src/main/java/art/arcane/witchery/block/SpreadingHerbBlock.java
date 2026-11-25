@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.common.IForgeShearable;
@@ -31,7 +32,7 @@ public abstract class SpreadingHerbBlock extends BushBlock {
 
     protected SpreadingHerbBlock(int light, VoxelShape outline) {
         super(Properties.of().mapColor(MapColor.PLANT).noCollission().instabreak().randomTicks()
-                .sound(SoundType.GRASS).lightLevel(state -> light));
+                .sound(SoundType.GRASS).lightLevel(state -> light).pushReaction(PushReaction.DESTROY));
         this.outline = outline;
     }
 
