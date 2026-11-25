@@ -2,6 +2,16 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Familiar Damage Sharing (2026-11-24)
+
+- The original Forge event gave the owner 10 damage with no familiar record, 9.9 with a dismissed familiar UUID, and 9 with a loaded familiar at nearby coordinates in the Nether. The native comparison is under `build/qa-familiar-circle/legacy/protection-nether-reference.log`.
+- The Forge damage hook now reads the saved UUID regardless of dismissal and uses the original 24-block coordinate distance. A redirected hit reaches the familiar only at one damage point or more. The summoned flag still controls species mastery.
+- Local Java 17 data generation and JAR reobfuscation passed. The test package is under `build/qa-familiar-damage`. SHA-256 `c77220d7e8efb1ade1f4eff26297fc79911738a5299f96bb1c644b7a9a0d4e16`.
+- The clean Forge client used the previously tamed and bound toad. Ten-point magic hits cost the owner 9 and the near familiar 1 in both the Overworld and the Nether. Moving the familiar 25 blocks away cost the owner 9.9 and left the familiar's health alone. The client then dismissed the returned toad by crouching and took 9.9 from the same hit.
+- A normal dedicated restart kept the dismissed UUID with no live familiar. The next ten-point damage event still cost 9.9. The muted clients remained hidden and unfocused with OpenAL No Output.
+- Copied Auram ran the same local package with its previously bound toad. The first test hit was rejected as invulnerable. The successful replay waited 65 server ticks after login before preparing the fixture. Ten-point magic hits then split nine and one in the same dimension and across the Nether boundary. At 25 blocks only the owner took damage, losing 9.9. The background client reported zero master volume and OpenAL No Output, and its process never became the foreground app.
+- All 282 required Forge GameTests passed. The new checks distinguish the complete saved UUID from a missing half, and verify damage sharing at 24 blocks, just beyond 24, and below the one-point threshold for hurting the familiar.
+
 ## Familiar Circle Binding and Recall (2026-11-24)
 
 - Original 0.24.1 accepted a toad and owner 6.75 blocks west, rejected a pet whose owner stood 7.25 blocks east, and rejected a pet 7.25 blocks east with an eligible owner. The accepted familiar had 50 health.

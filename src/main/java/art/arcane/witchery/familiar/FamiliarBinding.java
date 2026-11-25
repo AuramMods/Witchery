@@ -231,9 +231,10 @@ public final class FamiliarBinding {
     }
 
     public static void shareDamage(ServerPlayer owner, LivingHurtEvent event) {
-        if (!hasActiveFamiliar(owner)) return;
-        TamableAnimal familiar = find(owner);
-        boolean near = familiar != null && owner.level() == familiar.level() && owner.distanceToSqr(familiar) <= 576;
+        UUID id = familiarId(record(owner));
+        if (id == null) return;
+        TamableAnimal familiar = find(owner, id);
+        boolean near = familiar != null && owner.distanceToSqr(familiar) <= 576;
         float redirected = event.getAmount() * (near ? 0.1F : 0.01F);
         event.setAmount(event.getAmount() - redirected);
         if (familiar != null && redirected >= 1) familiar.hurt(event.getSource(), redirected);
@@ -262,8 +263,12 @@ public final class FamiliarBinding {
     @Nullable
     private static TamableAnimal find(ServerPlayer owner) {
         CompoundTag record = record(owner);
-        UUID id = record.getBoolean("FamiliarSummoned") ? familiarId(record) : null;
-        if (id == null) return null;
+        UUID id = familiarId(record);
+        return record.getBoolean("FamiliarSummoned") && id != null ? find(owner, id) : null;
+    }
+
+    @Nullable
+    private static TamableAnimal find(ServerPlayer owner, UUID id) {
         for (ServerLevel level : owner.server.getAllLevels()) {
             if (level.getEntity(id) instanceof TamableAnimal animal && animal instanceof Familiar
                     && animal.isAlive() && owner.getUUID().equals(animal.getOwnerUUID())) return animal;
