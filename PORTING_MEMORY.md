@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Taglock purification outcomes (2026-11-25)
+
+- With a strength-one cast and the original random draw of 0.7310, Witchery 0.24.1 removed Weakness I and II in separate casts. Weakness III returned as Weakness IV for its original remaining duration. Speed stayed at 1,200 ticks in all three trials. The GameTest checks both sides of the 1%, 25% and 75% rolls.
+- The original packet placed a half-block-wide, two-block-high burst at the target's feet. A clean cure uses Spell and the level-up sound. A worsened effect uses Mob Spell and the Ender Dragon growl. Both use the existing Witchery particle packet and the original 16-block audience. The client maps Spell and Mob Spell to distinct modern particles and plays the cues at volume 0.5 with a pitch between one-third and one-half.
+- The copied Auram dedicated server produced both original packets through dropped ingredients and a bound Taglock. The muted clean Forge client resolved both particle types and measured volume 0.5 with pitches 0.44560 and 0.34903 from three blocks away. The client at 19 blocks received neither cue. The clean fixture used a white chalk ring to isolate the purification outcome from the independent cauldron mishap.
+- After a normal clean Forge dedicated restart, the same pig retained Speed and the worsened effects at their tested amplifier. Both launches kept their volume at zero, used OpenAL No Output, and left the foreground app in focus. Reobfuscation and all 389 local Forge GameTests passed on seed `5471593853027166409`. The exact JAR is `build/qa-taglock-purification/candidate.jar` with SHA-256 `5202042fa5a05e8a6673b96faa22dd41ad3ca4e509259ca1241182a175154895`. See `build/qa-taglock-purification/comparison.txt`.
+
 ## Creeper Heart Duration Boost (2026-11-25)
 
 - Witchery 0.24.1 extended Speed from 1,200 to 2,400 ticks, Weakness from 900 to 1,800, Poison from 6,000 to 9,600, and Overheating from 800 to 1,600 on both a creature and a server player. A first dose added 14,400 ticks of Queasy. The creature's second dose added ambient Nausea without extending the active durations again.

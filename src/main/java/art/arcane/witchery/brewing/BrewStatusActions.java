@@ -1,13 +1,11 @@
 package art.arcane.witchery.brewing;
 
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEffects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -18,6 +16,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class BrewStatusActions {
@@ -50,20 +49,17 @@ public final class BrewStatusActions {
 
     static void ritualCleanse(LivingEntity target, int strength) {
         if (!(target.level() instanceof ServerLevel level)) return;
-        boolean worsened = false;
+        List<MobEffectInstance> worsened = new ArrayList<>();
         for (MobEffectInstance effect : List.copyOf(target.getActiveEffects())) {
             if (!harmful(effect) || !target.removeEffect(effect.getEffect())) continue;
             int amplifier = effect.getAmplifier();
             double chance = amplifier < strength ? 0.01 : amplifier == strength ? 0.25 : 0.75;
             if (level.random.nextDouble() < chance) {
-                target.addEffect(new MobEffectInstance(effect.getEffect(), effect.getDuration(), amplifier + 1));
-                worsened = true;
+                worsened.add(new MobEffectInstance(effect.getEffect(), effect.getDuration(), amplifier + 1));
             }
         }
-        level.sendParticles(worsened ? ParticleTypes.ENTITY_EFFECT : ParticleTypes.EFFECT,
-                target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(), 16, 0.5, 0.6, 0.5, 0);
-        level.playSound(null, target.blockPosition(), worsened ? SoundEvents.ENDER_DRAGON_GROWL
-                : SoundEvents.PLAYER_LEVELUP, SoundSource.NEUTRAL, 1, 1);
+        worsened.forEach(target::addEffect);
+        WitcheryNetwork.sendTaglockPurificationCue(level, target.position(), !worsened.isEmpty());
     }
 
     static void removeBuffs(LivingEntity target, int strength) {

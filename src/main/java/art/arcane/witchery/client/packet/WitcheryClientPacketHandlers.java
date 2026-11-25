@@ -282,7 +282,8 @@ public final class WitcheryClientPacketHandlers {
             case CRIT -> ParticleTypes.CRIT;
             case MAGIC_CRIT -> ParticleTypes.ENCHANTED_HIT;
             case SMOKE -> ParticleTypes.SMOKE;
-            case MOB_SPELL, SPELL -> ParticleTypes.ENTITY_EFFECT;
+            case MOB_SPELL -> ParticleTypes.ENTITY_EFFECT;
+            case SPELL -> ParticleTypes.EFFECT;
             case INSTANT_SPELL -> ParticleTypes.INSTANT_EFFECT;
             case NOTE -> ParticleTypes.NOTE;
             case PORTAL -> ParticleTypes.PORTAL;

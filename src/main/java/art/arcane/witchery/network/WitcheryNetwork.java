@@ -74,6 +74,8 @@ public final class WitcheryNetwork {
     private static final int LEGACY_POP_SOUND_ID = 11;
     private static final int LEGACY_ENDERMAN_TELEPORT_SOUND_ID = 16;
     private static final int LEGACY_GHAST_FIREBALL_SOUND_ID = 19;
+    private static final int LEGACY_DRAGON_GROWL_SOUND_ID = 27;
+    private static final int LEGACY_LEVEL_UP_SOUND_ID = 29;
     private static final int LEGACY_SPECTRE_AMBIENT_SOUND_ID = 43;
     private static final int LEGACY_BLAZE_DEATH_SOUND_ID = 44;
     private static final int LEGACY_DRINK_SOUND_ID = 56;
@@ -335,6 +337,12 @@ public final class WitcheryNetwork {
 
     public static void sendInfusionRecharge(ServerLevel level, Vec3 center) {
         sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_PLING_SOUND_ID, center, 1, 2, 8);
+    }
+
+    public static void sendTaglockPurificationCue(ServerLevel level, Vec3 center, boolean worsened) {
+        int particle = worsened ? LEGACY_MOB_SPELL_PARTICLE_ID : LEGACY_SPELL_PARTICLE_ID;
+        int sound = worsened ? LEGACY_DRAGON_GROWL_SOUND_ID : LEGACY_LEVEL_UP_SOUND_ID;
+        sendParticlesAround(level, particle, sound, center, 0.5, 2, 16);
     }
 
     public static void sendInfusionRite(ServerLevel level, Vec3 center, boolean manifestation) {

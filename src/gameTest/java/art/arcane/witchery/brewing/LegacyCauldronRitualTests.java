@@ -21,8 +21,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -266,6 +268,38 @@ public final class LegacyCauldronRitualTests {
                         && applied.isVisible() && applied.showIcon(),
                 "Expected " + effect.getDescriptionId() + " for " + ticks + " ticks with ambient=" + ambient
                         + " and visible particles and icon, got " + applied);
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_taglock_purification")
+    public static void taglockPurificationKeepsTheThreeOriginalWorseningThresholds(GameTestHelper helper) {
+        var pig = helper.spawn(EntityType.PIG, new BlockPos(5, 2, 5));
+        pig.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 1_200));
+        record Trial(int amplifier, double low, double high, boolean worsens) {}
+        var trials = List.of(new Trial(0, 0, 0.01, true), new Trial(0, 0.01, 0.25, false),
+                new Trial(1, 0.01, 0.25, true), new Trial(1, 0.25, 0.75, false),
+                new Trial(2, 0.25, 0.75, true), new Trial(2, 0.75, 1, false));
+        var random = RandomSource.create();
+        for (var trial : trials) {
+            pig.removeEffect(MobEffects.WEAKNESS);
+            pig.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 900, trial.amplifier(), true, false));
+            long seed = 0;
+            double roll;
+            do {
+                random.setSeed(seed++);
+                roll = random.nextDouble();
+            } while (roll <= trial.low() || roll >= trial.high());
+            helper.getLevel().getRandom().setSeed(seed - 1);
+            BrewStatusActions.ritualCleanse(pig, 1);
+            if (trial.worsens()) {
+                verifyBrewEffect(helper, pig, MobEffects.WEAKNESS, 900, false);
+                helper.assertTrue(pig.getEffect(MobEffects.WEAKNESS).getAmplifier() == trial.amplifier() + 1,
+                        "A worsened effect gains exactly one amplifier level");
+            } else {
+                helper.assertFalse(pig.hasEffect(MobEffects.WEAKNESS), "The original threshold clears this effect");
+            }
+            verifyBrewEffect(helper, pig, MobEffects.MOVEMENT_SPEED, 1_200, false);
+        }
+        helper.succeed();
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_gas_ritual_height")
