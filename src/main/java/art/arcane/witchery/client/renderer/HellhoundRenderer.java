@@ -81,10 +81,11 @@ public final class HellhoundRenderer extends MobRenderer<Hellhound, HellhoundRen
         public void setupAnim(Hellhound hound, float swing, float amount, float age, float yaw, float pitch) {
             head.xRot = pitch * Mth.DEG_TO_RAD + (hound.isConverting() ? 0.5F : 0.15F);
             head.yRot = yaw * Mth.DEG_TO_RAD;
-            tail.xRot = (hound.isConverting() ? 2.0F : 0.59184116F) + Math.max(0, 1.5F * amount - 0.1F);
-            float step = Mth.cos(swing * 0.6662F) * 1.4F * amount;
-            leftHindLeg.xRot = rightFrontLeg.xRot = -step;
-            rightHindLeg.xRot = leftFrontLeg.xRot = step;
+            tail.xRot = hound.isConverting() ? 2.0F : 0.59184116F;
+            if (amount > 0.1) tail.xRot += 1.5F * amount - 0.1;
+            float stride = swing * 0.6662F;
+            leftHindLeg.xRot = rightFrontLeg.xRot = Mth.cos(stride + Mth.PI) * 1.4F * amount;
+            rightHindLeg.xRot = leftFrontLeg.xRot = Mth.cos(stride) * 1.4F * amount;
             float partialTick = age - hound.tickCount;
             head.zRot = hound.shakeAngle(partialTick, 0);
             mane.zRot = hound.shakeAngle(partialTick, -0.08F);

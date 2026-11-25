@@ -2,6 +2,16 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Hellhound combat, cure, and animation (2026-11-25)
+
+- An original Hellhound has eight percent innate armor. Its other damage reduction reads the attacker credited by the source. A skeleton arrow for eight damage leaves 15.86 health and a player arrow leaves 12.64. A four-point player hit leaves 16.32. Earlier Forge saves migrate the two-point armor default and retain the entity UUID. The trophy roll uses the world random source.
+- Iron bars and beds accelerate the cure on the original roll and integer-coordinate cube. At Z −0.5, a bar at Z 3 advanced a 100-tick cure to 98 on both versions. The finished cure uses the original conversion sound. Flames surround the body every other client tick. The shake plays at the original pitch range and throws water from 0.8 blocks above the feet.
+- The root and limb measurements matched all 336 original values across seven native and packaged poses. At walk amount 0.08 the preceding JAR had already lifted the tail. The rebuilt client keeps the original resting angle until the original threshold.
+- The failed Witch Hunter platform was at Y 100 inside Stone and ore. On the same seed, the Coven visit landing was at Y 103 inside Terracotta. Both fixtures use absolute Y 160 and clear the blocks where the actors need to fit.
+- The muted Forge survival client threw a supplied Splash Potion of Weakness and spent a Golden Apple to start the cure at 3,974 ticks. The fixture shortened the remaining cure to 35 ticks to check the completion event at volume two. The next dedicated restart kept the converted wolf and the earlier Forge Hellhound's UUID and health. All three client launches used OpenAL's No Output device and kept the original foreground app.
+- The copied Auram dedicated server matched the original damage from a skeleton-fired arrow using the same JAR. The fixture supplied a 75-tick cure and verified that the converted wolf received ten seconds of Nausea.
+- All 375 required local Forge GameTests passed on seed `5471593853027166409` after both fixtures were repaired. The reobfuscated JAR is `build/qa-hellhound-parity/candidate.jar` with SHA-256 `69151939dae9a63579798fa78dc3c795703872bef7807740ef2549181c09e196`. Results are in `build/qa-hellhound-parity/comparison.txt`.
+
 ## Wolfman poses and equipment rendering (2026-11-25)
 
 - The Wolfman, the transformed player, and a Wolfman Reflection use the same model. Its walk lifts and sways the tail. The upper body, legs, and arms take the original crouch and riding positions. Melee uses both the ten-tick attack and the ordinary arm swing. Held items, blocking, and bow drawing follow the active hand and support both modern main-hand settings.

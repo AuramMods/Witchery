@@ -31,9 +31,11 @@ public final class WitchHunterPursuitTests {
     @GameTest(template = "qa_coven_arena", batch = "witchery_hunter_notice_migration", timeoutTicks = 220)
     public static void hunterNoticesUseWallClockAndDispatchOnTheWorldPulse(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        BlockPos site = helper.absolutePos(new BlockPos(9, 160, 9));
+        BlockPos site = helper.absolutePos(new BlockPos(9, 0, 9)).atY(160);
         for (BlockPos pos : BlockPos.betweenClosed(site.offset(-8, -1, -8), site.offset(8, -1, 8))) {
             level.setBlockAndUpdate(pos, Blocks.STONE.defaultBlockState());
+            level.setBlockAndUpdate(pos.above(), Blocks.AIR.defaultBlockState());
+            level.setBlockAndUpdate(pos.above(2), Blocks.AIR.defaultBlockState());
         }
         var imported = player(level, site, "ImportedNotice");
         var unripe = player(level, site, "UnripeNotice");

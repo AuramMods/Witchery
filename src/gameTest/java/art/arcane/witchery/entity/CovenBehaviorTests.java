@@ -163,11 +163,14 @@ public final class CovenBehaviorTests {
     public static void visitsABedAndKeepsTheExistingMembersLifetime(GameTestHelper helper) {
         FakePlayer owner = owner(helper);
         var level = helper.getLevel();
-        // Give the visitor a dry landing above the shared arena.
-        BlockPos home = helper.absolutePos(CENTER.above(160));
+        BlockPos home = helper.absolutePos(CENTER).atY(160);
         BlockPos landing = home.offset(-2, 0, -2);
         BlockPos away = home.east(4);
-        level.setBlockAndUpdate(landing.below(), Blocks.STONE.defaultBlockState());
+        for (BlockPos pos : List.of(landing, away)) {
+            level.setBlockAndUpdate(pos.below(), Blocks.STONE.defaultBlockState());
+            level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+            level.setBlockAndUpdate(pos.above(), Blocks.AIR.defaultBlockState());
+        }
         owner.setPos(Vec3.atBottomCenterOf(home));
         long seed = 0;
         while (RandomSource.create(seed).nextInt(20) != 0) seed++;
@@ -214,7 +217,6 @@ public final class CovenBehaviorTests {
             state.putInt("SuicideIn", 1_650);
             witch.load(state);
             witch.setNoAi(true);
-            level.setBlockAndUpdate(away.below(), Blocks.STONE.defaultBlockState());
             witch.moveTo(Vec3.atBottomCenterOf(away));
             recalled.add(witch);
         }).thenWaitUntil(() -> helper.assertTrue(level.getGameTime() % 100 == 0

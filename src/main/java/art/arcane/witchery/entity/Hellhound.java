@@ -13,6 +13,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -44,6 +45,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.ForgeEventFactory;
 
 public final class Hellhound extends Monster {
+    private static final int INNATE_ARMOR = 2;
+    private static final int CONVERSION_COMPLETE_EVENT = 1027;
     private static final EntityDataAccessor<Boolean> CONVERTING = SynchedEntityData.defineId(Hellhound.class, EntityDataSerializers.BOOLEAN);
     private int conversionTime = -1;
     private boolean wetFur;
@@ -57,7 +60,7 @@ public final class Hellhound extends Monster {
 
     public static AttributeSupplier.Builder attributes() {
         return createMonsterAttributes().add(Attributes.MAX_HEALTH, 20).add(Attributes.MOVEMENT_SPEED, 0.3)
-                .add(Attributes.ATTACK_DAMAGE, 4).add(Attributes.ARMOR, 2);
+                .add(Attributes.ATTACK_DAMAGE, 4);
     }
 
     @Override
@@ -108,22 +111,28 @@ public final class Hellhound extends Monster {
 
     @Override
     public void tick() {
-        super.tick();
-        if (!isAlive()) return;
-        tickWetFur();
-        if (level() instanceof ServerLevel level && isConverting()) {
+        if (isAlive() && level() instanceof ServerLevel level && isConverting()) {
             conversionTime -= conversionProgress();
             if (conversionTime <= 0 && ForgeEventFactory.canLivingConvert(this, EntityType.WOLF, ticks -> conversionTime = ticks)) {
                 var wolf = convertTo(EntityType.WOLF, false);
                 if (wolf != null) {
                     wolf.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200));
                     ForgeEventFactory.onLivingConvert(this, wolf);
-                    if (!isSilent()) level.playSound(null, wolf, SoundEvents.ZOMBIE_VILLAGER_CURE, getSoundSource(), 1, 1);
+                    if (!isSilent()) level.levelEvent(CONVERSION_COMPLETE_EVENT, legacyPosition(), 0);
+                    return;
                 }
             }
-        } else if (level().isClientSide && tickCount % 2 == 0) {
-            level().addParticle(ParticleTypes.FLAME, getRandomX(0.7), getY(0.6) + random.nextDouble() * 0.6,
-                    getRandomZ(0.7), 0, 0, 0);
+        }
+        super.tick();
+        if (!isAlive()) return;
+        tickWetFur();
+        if (level().isClientSide && tickCount % 2 == 0) {
+            var effectsRandom = level().getRandom();
+            double width = getBbWidth() * 0.7;
+            double x = getX() + (effectsRandom.nextDouble() - 0.5) * width;
+            double y = getY() + 0.5 + effectsRandom.nextDouble() * (getBbHeight() - 0.1);
+            double z = getZ() + (effectsRandom.nextDouble() - 0.5) * width;
+            level().addParticle(ParticleTypes.FLAME, x, y, z, 0, 0, 0);
         }
     }
 
@@ -137,7 +146,7 @@ public final class Hellhound extends Monster {
         if (!level().isClientSide && wetFur && !shaking && onGround() && !isPathFinding()) {
             shaking = true;
             level().broadcastEntityEvent(this, (byte) 8);
-            playSound(SoundEvents.WOLF_SHAKE, getSoundVolume(), getVoicePitch());
+            playSound(SoundEvents.WOLF_SHAKE, getSoundVolume(), (random.nextFloat() - random.nextFloat()) * 0.2F + 1);
         }
         if (!shaking) return;
         previousShakeAge = shakeAge;
@@ -150,7 +159,9 @@ public final class Hellhound extends Monster {
             int count = (int) (Mth.sin((shakeAge - 0.4F) * Mth.PI) * 7);
             var motion = getDeltaMovement();
             for (int particle = 0; particle < count; particle++) {
-                level().addParticle(ParticleTypes.SPLASH, getRandomX(1), getY(0.8), getRandomZ(1), motion.x, motion.y, motion.z);
+                double x = getX() + (random.nextFloat() * 2 - 1) * getBbWidth() * 0.5;
+                double z = getZ() + (random.nextFloat() * 2 - 1) * getBbWidth() * 0.5;
+                level().addParticle(ParticleTypes.SPLASH, x, getY() + 0.8, z, motion.x, motion.y, motion.z);
             }
         }
     }
@@ -169,19 +180,27 @@ public final class Hellhound extends Monster {
     }
 
     private int conversionProgress() {
+        if (random.nextFloat() >= 0.01F) return 1;
+        BlockPos origin = legacyPosition();
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         int progress = 1;
-        if (random.nextFloat() < 0.01F) {
-            BlockPos origin = blockPosition();
-            int accelerators = 0;
-            for (BlockPos pos : BlockPos.betweenClosed(origin.offset(-4, -4, -4), origin.offset(3, 3, 3))) {
-                BlockState state = level().getBlockState(pos);
-                if (state.is(Blocks.IRON_BARS) || state.is(BlockTags.BEDS)) {
-                    if (random.nextFloat() < 0.3F) progress++;
-                    if (++accelerators == 14) break;
+        int accelerators = 0;
+        for (int x = -4; x < 4; x++) {
+            for (int y = -4; y < 4; y++) {
+                for (int z = -4; z < 4; z++) {
+                    BlockState state = level().getBlockState(pos.setWithOffset(origin, x, y, z));
+                    if (state.is(Blocks.IRON_BARS) || state.is(BlockTags.BEDS)) {
+                        if (random.nextFloat() < 0.3F) progress++;
+                        if (++accelerators == 14) return progress;
+                    }
                 }
             }
         }
         return progress;
+    }
+
+    private BlockPos legacyPosition() {
+        return new BlockPos((int) getX(), (int) getY(), (int) getZ());
     }
 
     @Override
@@ -191,9 +210,15 @@ public final class Hellhound extends Monster {
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        if (source.getEntity() != null && !(source.getEntity() instanceof Player)
-                && !(source.getDirectEntity() instanceof AbstractArrow)) amount = (amount + 1) / 2;
+        Entity attacker = source.getEntity();
+        if (attacker != null && !(attacker instanceof Player) && !(attacker instanceof AbstractArrow)) amount = (amount + 1) / 2;
         return super.hurt(source, amount);
+    }
+
+    @Override
+    protected float getDamageAfterArmorAbsorb(DamageSource source, float damage) {
+        float remaining = super.getDamageAfterArmorAbsorb(source, damage);
+        return source.is(DamageTypeTags.BYPASSES_ARMOR) ? remaining : remaining * (25 - INNATE_ARMOR) / 25;
     }
 
     @Override
@@ -208,18 +233,21 @@ public final class Hellhound extends Monster {
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean playerKill) {
         super.dropCustomDeathLoot(source, looting, playerKill);
         spawnAtLocation(WitcheryIngredient.DOG_TONGUE.item());
-        if (random.nextInt(12) <= Math.min(looting, 3)) spawnAtLocation(WitcheryItems.getRequired("hellhound_head").get());
+        if (level().getRandom().nextInt(12) <= Math.min(looting, 3)) spawnAtLocation(WitcheryItems.getRequired("hellhound_head").get());
     }
 
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
+        tag.putBoolean("InnateArmor", true);
         tag.putInt("ConversionTime", isConverting() ? Math.max(0, conversionTime) : -1);
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+        var armor = getAttribute(Attributes.ARMOR);
+        if (!tag.getBoolean("InnateArmor") && armor.getBaseValue() == INNATE_ARMOR) armor.setBaseValue(0);
         int remaining = tag.contains("ConversionTime", Tag.TAG_ANY_NUMERIC) ? tag.getInt("ConversionTime") : -1;
         if (remaining >= 0) {
             startConversion(remaining);

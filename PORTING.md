@@ -1241,6 +1241,7 @@
 - [x] Restore the original Hellhound cure effects when loading a saved countdown. Reloading an active cure removes Weakness and applies Strength for the remaining duration. The same logic starts a cure from a golden apple. The regression also checks that an untreated Hellhound retains Weakness after reload.
 - [x] Start a new cure on copied Auram with the tested package. The muted survival player threw a supplied Splash Potion of Weakness and used a supplied Golden Apple on the weakened Hellhound. The apple was consumed, and the dedicated save recorded Strength and 3,989 ticks remaining. The fixture supplied the Hellhound and positioned the player.
 - [x] Keep loaded Hellhound cures ticking beyond player range. With nobody online, the earlier JAR held at 400 ticks in copied Auram. The rebuilt JAR advanced the cure and finished it as a wolf with Nausea after an ordinary dedicated restart. The untreated Hellhound's effect timer stayed paused. The same JAR finished the clean Forge restart test and passed all 289 required local GameTests.
+- [x] Restore Hellhound armor, the extra reduction for skeleton-fired arrows, and the world roll for the head drop. Restore the original cure search coordinates, the completion cue, the slow-walk tail and the flame and shake placement. The original server and local Forge regressions matched four damage cases and the negative-coordinate cure boost. The packaged client matched all 336 measured animation values.
 
 ## Curse of the Wolf and Player Wolf Form (2026-11-20)
 
