@@ -15,6 +15,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
@@ -43,7 +44,8 @@ public final class LegacyDeathBrewSaveImportTests {
                     {ItemData:[{K:"%sminecraft:wool",V:35},{K:"%sminecraft:iron_helmet",V:306}]}
                     """.formatted("\u0002", "\u0002"));
             registry.put("Potions", LegacyWorldEffects.capture(List.of("I:PotionStartID=96",
-                    "I:\"witchery:potion.keepinventory\"=173", "I:\"witchery:potion.sinking\"=174")));
+                    "I:\"witchery:potion.keepinventory\"=173", "I:\"witchery:potion.sinking\"=174",
+                    "I:\"witchery:potion.paralysed\"=43")));
             NbtIo.writeCompressed(registry, world.resolve("witchery-legacy-ids.dat").toFile());
             var storage = access.createPlayerStorage();
             var playerDirectory = access.getLevelPath(LevelResource.PLAYER_DATA_DIR);
@@ -52,6 +54,7 @@ public final class LegacyDeathBrewSaveImportTests {
             var activeRecord = TagParser.parseTag("""
                     {Dimension:0,Health:20f,Inventory:[{Slot:2b,id:388s,Damage:0s,Count:7b}],
                      ActiveEffects:[{Id:-83b,Amplifier:1b,Duration:333,Ambient:1b,ShowParticles:0b},
+                                    {Id:43b,Amplifier:2b,Duration:1800},
                                     {Id:1b,Amplifier:0b,Duration:240}],
                      ForgeData:{PlayerPersisted:{WITCPoSpawn:[{Id:-82b,Amplifier:2b,Duration:225}]}}}
                     """);
@@ -61,6 +64,9 @@ public final class LegacyDeathBrewSaveImportTests {
             helper.assertTrue(effect != null && effect.getAmplifier() == 1 && effect.getDuration() == 333
                             && effect.isAmbient() && !effect.isVisible() && active.hasEffect(MobEffects.MOVEMENT_SPEED),
                     "Restore a configured active effect with its level, duration, and flags alongside a vanilla effect");
+            helper.assertTrue(active.hasEffect(WitcheryEffects.PARALYSIS.get())
+                            && active.getAttributeValue(Attributes.MOVEMENT_SPEED) == 0,
+                    "The original player upgrade retains the Paralysis modifier through vanilla data fixing");
             DeathBrewEffects.restoreEffects(active);
             var sinking = active.getEffect(WitcheryEffects.SINKING.get());
             helper.assertTrue(sinking != null && sinking.getAmplifier() == 2 && sinking.getDuration() == 225,

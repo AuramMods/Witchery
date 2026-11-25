@@ -235,6 +235,8 @@ public final class LegacyWorldIds {
         var retainedInventory = DeathBrewEffects.pendingLegacyInventory(persisted);
         var expiredDrops = persisted.getList("WITCPriIncInv", Tag.TAG_COMPOUND);
         var dreamSession = persisted.getCompound("WITCSpiritWorld");
+        upgradeEntityEffects(player);
+        repairEntityEffects(player.getCompound("RootVehicle").getCompound("Entity"));
         // The pending list can keep legacy effect IDs after an earlier import updated the player version.
         effects.upgrade(persisted.getList("WITCPoSpawn", Tag.TAG_COMPOUND));
         int to = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
@@ -250,7 +252,6 @@ public final class LegacyWorldIds {
 
         upgradeItems(player);
         repairStoredItems(player, fixer);
-        upgradeEntityEffects(player);
         upgradeUntypedItems(retainedInventory, fixer, from, to);
         upgradeUntypedItems(dreamSession, fixer, from, to);
         upgradeUntypedItems(expiredDrops, fixer, from, to);
@@ -267,7 +268,16 @@ public final class LegacyWorldIds {
     }
 
     void upgradeEntityEffects(CompoundTag entity) {
-        effects.upgrade(entity.getList("ActiveEffects", Tag.TAG_COMPOUND));
+        effects.upgradeActive(entity.getList("ActiveEffects", Tag.TAG_COMPOUND));
+    }
+
+    public void repairEntityEffects(ListTag entities) {
+        for (Tag entry : entities) repairEntityEffects((CompoundTag) entry);
+    }
+
+    private void repairEntityEffects(CompoundTag entity) {
+        upgradeEntityEffects(entity);
+        repairEntityEffects(entity.getList("Passengers", Tag.TAG_COMPOUND));
     }
 
     public void upgradeItems(Tag value) {

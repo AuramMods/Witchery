@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Active effects in earlier saves (2026-11-25)
+
+- The original headless server saved active Paralysis and Sinking as numeric potion IDs 43 and 119, with amplifier and duration in the same compound. A separate earlier-port fixture exercises a signed-byte slot above 127 in the captured table.
+- In the previous packaged build the player loaded legacy slot 43 as Wolfsbane, and the passenger lost its legacy Sinking effect. The named Fire Resistance control survived on both entities.
+- Ordinary player and entity storage now repair active effects through the original registry snapshot. A named effect remains authoritative. The entity pass also covers a player's saved mount and passengers nested under a saved vehicle.
+- Newly mapped effects apply their current attribute modifiers during entity load. The clean Forge survival client logged in at zero movement speed with Paralysis III. It rejoined after a dedicated restart at zero speed again. The pig kept Sinking III with its hidden weaker tier while remaining mounted, and both named Fire Resistance controls survived.
+- Copied Auram ran the same packaged JAR and recovered both effects with the same gameplay and passenger state. The player saves kept the named effects without the migration marker. All three client launches stayed unfocused with zero master volume and OpenAL No Output.
+- Java 17 data generation, JAR reobfuscation, and all 322 required Forge GameTests passed locally. The regressions cover the original player upgrade, ordinary login to an earlier port save, a saved player mount, and a passenger read through entity region storage. The earlier Dream inventory regression now reports health and hunger, body removal, and inventory persistence in separate assertions. The packaged JAR SHA-256 is `758cfa5af5045c34ea6687a8b6f40d96c46671b7825b8f1199951a176f5aa643`. Logs and copied fixtures are in `build/qa-active-effects/`.
+
 ## Retained death inventories in earlier saves (2026-11-25)
 
 - The original headless Forge server ran Keep Inventory's death and drop handlers. Its armed cache held four Red Wool at slot 5 and a named Iron Helmet with 13 wear at slot 103. The original respawn restored both slots and consumed the cache once.

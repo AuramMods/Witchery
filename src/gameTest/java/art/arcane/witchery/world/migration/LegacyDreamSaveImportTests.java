@@ -124,9 +124,11 @@ public final class LegacyDreamSaveImportTests {
                         "The already converted Overworld slot keeps its wear and styled name");
             }
             var session = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getCompound("WITCSpiritWorld");
-            helper.assertTrue(player.getHealth() == 14 && player.getFoodData().getFoodLevel() == 11 && body.isRemoved()
-                            && !session.contains("OverworldInventory") && session.getList("SpiritInventory", Tag.TAG_COMPOUND).size() == 1,
-                    "Waking consumes the body inventory record, parks ordinary Dream loot, and restores health and hunger");
+            helper.assertTrue(player.getHealth() == 14 && player.getFoodData().getFoodLevel() == 11,
+                    "Waking restores health and hunger");
+            helper.assertTrue(body.isRemoved(), "Waking removes the original sleeping body");
+            helper.assertTrue(!session.contains("OverworldInventory") && session.getList("SpiritInventory", Tag.TAG_COMPOUND).size() == 1,
+                    "Waking consumes the body inventory record and parks ordinary Dream loot");
         } finally {
             body.discard();
             player.discard();

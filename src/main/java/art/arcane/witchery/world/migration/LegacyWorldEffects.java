@@ -5,13 +5,17 @@ import art.arcane.witchery.registry.LegacyRegistryData;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-final class LegacyWorldEffects {
+public final class LegacyWorldEffects {
+    private static final String RESTORE_ATTRIBUTES = "WITCRestoreEffectAttributes";
     private static final int FIRST_WITCHERY_ID = 32;
     private static final Pattern START = Pattern.compile("\\s*I:PotionStartID\\s*=\\s*(-?\\d+)\\s*");
     private static final Pattern ID = Pattern.compile("\\s*I:\"?witchery:(potion\\.[a-z]+)\"?\\s*=\\s*(-?\\d+)\\s*");
@@ -41,11 +45,35 @@ final class LegacyWorldEffects {
     }
 
     void upgrade(ListTag effects) {
+        upgrade(effects, false);
+    }
+
+    void upgradeActive(ListTag effects) {
+        upgrade(effects, true);
+    }
+
+    private void upgrade(ListTag effects, boolean active) {
         for (Tag value : effects) {
             CompoundTag effect = (CompoundTag) value;
             if (effect.contains("forge:id", Tag.TAG_STRING) || !effect.contains("Id", Tag.TAG_ANY_NUMERIC)) continue;
             String name = names.get(effect.getByte("Id") & 255);
-            if (name != null) effect.putString("forge:id", name);
+            if (name == null) continue;
+            effect.putString("forge:id", name);
+            if (active) effect.putBoolean(RESTORE_ATTRIBUTES, true);
+        }
+    }
+
+    public static void restoreActiveAttributes(LivingEntity entity, CompoundTag saved) {
+        // LivingEntity loads attributes and active effects separately. Replay only newly mapped effects.
+        for (Tag value : saved.getList("ActiveEffects", Tag.TAG_COMPOUND)) {
+            CompoundTag effect = (CompoundTag) value;
+            if (!effect.getBoolean(RESTORE_ATTRIBUTES)) continue;
+            var name = ResourceLocation.tryParse(effect.getString("forge:id"));
+            if (name == null) continue;
+            var type = ForgeRegistries.MOB_EFFECTS.getValue(name);
+            if (type == null || type.getAttributeModifiers().isEmpty()) continue;
+            var active = entity.getEffect(type);
+            if (active != null) type.addAttributeModifiers(entity, entity.getAttributes(), active.getAmplifier());
         }
     }
 }

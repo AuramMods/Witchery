@@ -31,10 +31,11 @@ abstract class LegacyEntityStorageMixin {
     }
 
     @Inject(method = "upgradeChunkTag", at = @At("RETURN"))
-    private void witchery$repairStoredEntityItems(CompoundTag input, CallbackInfoReturnable<CompoundTag> info) {
+    private void witchery$repairStoredEntities(CompoundTag input, CallbackInfoReturnable<CompoundTag> info) {
         var entities = info.getReturnValue().getList("Entities", Tag.TAG_COMPOUND);
         LegacyChunkEntities.restore(entities);
         if (witchery$legacyIds != null) {
+            witchery$legacyIds.repairEntityEffects(entities);
             witchery$legacyIds.repairStoredItems(entities, fixerUpper);
         }
     }
