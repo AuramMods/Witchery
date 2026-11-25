@@ -1,6 +1,7 @@
 package art.arcane.witchery.infusion;
 
 import art.arcane.witchery.block.BarrierBlock;
+import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -68,7 +69,7 @@ public final class LightInfusion {
         HitResult hit = OtherwhereInfusion.rayTrace(player, 16);
         ServerLevel level = player.serverLevel();
         if (hit instanceof EntityHitResult entityHit && entityHit.getEntity() instanceof LivingEntity target) {
-            if (target.isAlive() && InfusionEnergy.spendHandCharge(player, 3)) cage(level, target.blockPosition(), 1, player);
+            if (target.isAlive() && InfusionEnergy.spendHandCharge(player, 3)) cage(level, cageBase(target), 1, player);
         } else if (hit instanceof BlockHitResult blockHit && hit.getType() == HitResult.Type.BLOCK
                 && InfusionEnergy.spendHandCharge(player, 3)) {
             if (blockHit.getDirection() == Direction.UP) shield(level, blockHit.getBlockPos(), player);
@@ -79,12 +80,17 @@ public final class LightInfusion {
     public static void attack(ServerPlayer player, LivingEntity target) {
         if (!target.isAlive() || target.isSpectator()) return;
         ServerLevel level = player.serverLevel();
-        BlockPos raised = target.blockPosition().above(4);
+        BlockPos raised = cageBase(target).above(4);
         if (level.isOutsideBuildHeight(raised.above(3)) || !clearForCage(level, raised)) return;
         if (!InfusionEnergy.spendHandCharge(player, 5)) return;
         cage(level, raised, 2, null);
-        target.teleportTo(raised.getX() + 0.5, raised.getY(), raised.getZ() + 0.5);
+        target.teleportTo(raised.getX(), raised.getY(), raised.getZ());
         target.resetFallDistance();
+    }
+
+    private static BlockPos cageBase(LivingEntity target) {
+        // The original cage uses integer casts, which truncate negative positions toward zero.
+        return new BlockPos((int) target.getX(), (int) target.getY(), (int) target.getZ());
     }
 
     private static boolean clearForCage(ServerLevel level, BlockPos base) {
@@ -119,14 +125,20 @@ public final class LightInfusion {
         Vec3 across = Vec3.directionFromRotation(0, owner.getYRot()).yRot(Mth.HALF_PI);
         int dx = Mth.floor(0.5 + across.x);
         int dz = Mth.floor(0.5 + across.z);
+        var barrier = WitcheryBlocks.getRequired("barrier").get();
         for (int column = -1; column <= 1; column++) {
-            for (int y = 0; y < 3; y++) place(level, base.offset(column * dx, y, column * dz), owner);
+            for (int y = 0; y < 3; y++) {
+                BlockPos pos = base.offset(column * dx, y, column * dz);
+                var state = level.getBlockState(pos);
+                if (state.canBeReplaced() || state.is(barrier)) place(level, pos, owner);
+            }
         }
     }
 
     private static void extend(ServerLevel level, BlockPos hit, Direction direction) {
         for (int i = 1; i <= 15; i++) {
-            if (!place(level, hit.relative(direction, i), null)) break;
+            BlockPos pos = hit.relative(direction, i);
+            if (!level.getBlockState(pos).canBeReplaced() || !place(level, pos, null)) break;
         }
     }
 

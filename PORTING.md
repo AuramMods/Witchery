@@ -354,6 +354,7 @@
 - [x] Restore the Light shield, cage and side projections. A brief sneak-use draws a three-by-three shield, cages an aimed creature or projects a line from the face of a block. Attacking lifts a creature four blocks into a cage for five charge. Owner-aware collision uses the original barrier texture and loaded ten-second lifetime. Legacy `owner`, `blocksPlayers` and `remainingTicks` fields load into the current block entity.
 - [x] The muted client returned to Light using its second serving of Ghost of the Light and the rite. It held and released the Hand to cloak for two charge, walked through and rendered its own shield, raised a pig into the cage, caged another pig at its original elevation, and projected a 15-block line from a stone face. The shield expired in the loaded world.
 - [x] Java 17 data generation and reobfuscation succeeded. All 55 required Forge GameTests passed, including cloak charge and aggression, owner-specific collision, lifetime and preserving charge when a raised cage is obstructed.
+- [x] Restore the original Light cage coordinates, shield gaps, and side projection stopping rule. At negative coordinates the muted survival client lifted one pig to the same integer corner as 0.24.1 and caged a second pig using the same truncation. The projection stopped at a torch. The shield kept a second torch and renewed its existing barrier. All 395 local Forge GameTests passed.
 
 ## Overworld Infusion Hand Powers (2026-11-20)
 

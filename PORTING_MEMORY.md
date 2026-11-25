@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Light Hand cages, projections, and shields (2026-11-25)
+
+- The Witchery 0.24.1 server lifted a pig from `(-94.25, 180.25, -100.5)` to `(-94, 184, -100)` and built its cage around that corner. Both Light cage casts now use the original integer truncation. The preceding 1.20.1 JAR landed a pig at `(-94.5, 184, -100.5)` in the same test layout.
+- The original projection stopped at a torch, leaving the first two barrier cells and empty space behind the torch. The original shield skipped a torch and refreshed a previous barrier to 200 ticks with the caster as owner. Forge uses replaceable states for these casts and retains the original shield refresh exception for existing barriers.
+- The packaged clean Forge survival client used a fixture-supplied Hand and 20 charge through the ordinary attack and crouch-use controls. It lifted the first pig, caged the second, matched both torch outcomes and renewed the old barrier with its own owner tag. A dedicated restart retained the exact landing, both torches and the six remaining charges. Both launches used master volume zero and OpenAL No Output and kept desktop focus. The same JAR loaded the affected coordinates and saved on the headless Auram copy.
+- Reobfuscation and all 395 local Forge GameTests passed on seed `5471593853027166409`. The exact candidate JAR is `build/qa-light-barriers/candidate.jar` with SHA-256 `0ba5f0d7609f05f9b9aab8813a1e47cc6f17b84464ddde49c576e102bda506fb`. See `build/qa-light-barriers/comparison.txt`.
+
 ## Otherwhere and Enderman travel cues (2026-11-25)
 
 - In Witchery 0.24.1, a held Otherwhere Hand played the orb at a valid aim, pop at an empty aim, snare on failed release, pling at the recall threshold and fizz when it set the recall point. The reference recorded volume 0.5 and pitches in the one-third to one-half range for all five. The GameTest checks the same sounds through the Hand and confirms that failed release and storing a point preserve charge.
