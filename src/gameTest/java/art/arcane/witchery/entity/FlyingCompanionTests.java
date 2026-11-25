@@ -49,12 +49,14 @@ public final class FlyingCompanionTests {
         monkey.mobInteract(route.owner(), HAND);
 
         CompoundTag saved = monkey.saveWithoutId(new CompoundTag());
-        helper.assertTrue(taglock.isEmpty() && saved.contains("WITCWaypoint") && monkey.isOrderedToSit(),
+        helper.assertTrue(taglock.isEmpty() && saved.contains("WITCWaypoint") && monkey.isOrderedToSit() && !monkey.hasActiveFlight(),
                 "The seated monkey should save its assigned route and consume one Taglock");
         monkey.load(saved);
         monkey.mobInteract(route.owner(), HAND);
+        helper.assertTrue(monkey.hasActiveFlight(), "The launched monkey should keep ticking during its flight");
         helper.succeedWhen(() -> {
-            helper.assertTrue(monkey.isOrderedToSit() && monkey.distanceToSqr(Vec3.atBottomCenterOf(route.origin())) < 2.25,
+            helper.assertTrue(monkey.isOrderedToSit() && !monkey.hasActiveFlight()
+                            && monkey.distanceToSqr(Vec3.atBottomCenterOf(route.origin())) < 2.25,
                     "The monkey should return to its launch point and sit");
             helper.assertTrue(!pig.isPassenger() && pig.distanceToSqr(Vec3.atBottomCenterOf(route.origin())) < 3,
                     "The same pig should be released at the launch point");
@@ -96,13 +98,15 @@ public final class FlyingCompanionTests {
         waypoint.putShort("Damage", (short) 13);
         waypoint.getCompound("tag").remove("Dimension");
         owl.load(saved);
+        helper.assertTrue(!owl.hasActiveDelivery(), "The saved route should wait while the owl is told to sit");
         launchOwl(route, owl);
+        helper.assertTrue(owl.hasActiveDelivery(), "The launched owl should keep ticking during its delivery");
 
         helper.succeedWhen(() -> {
             var letters = helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(route.destination()).inflate(2),
                     drop -> drop.getItem().is(Items.PAPER) && drop.getItem().getHoverName().getString().equals("Waystone Letter"));
             helper.assertTrue(letters.size() == 1, "The owl should deliver the original named parcel once");
-            helper.assertTrue(owl.getMainHandItem().isEmpty() && owl.isOrderedToSit()
+            helper.assertTrue(owl.getMainHandItem().isEmpty() && owl.isOrderedToSit() && !owl.hasActiveDelivery()
                             && owl.distanceToSqr(Vec3.atBottomCenterOf(route.origin())) < 2.25,
                     "The owl should return to its launch point without the parcel");
         });

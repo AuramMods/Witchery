@@ -175,6 +175,10 @@ public final class WitchOwl extends WitchPet {
         entityData.set(DELIVERING, active);
     }
 
+    public boolean hasActiveDelivery() {
+        return isAlive() && !isNoAi() && delivery.canUse();
+    }
+
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);

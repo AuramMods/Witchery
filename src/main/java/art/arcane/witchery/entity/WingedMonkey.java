@@ -189,6 +189,10 @@ public final class WingedMonkey extends TamableAnimal {
         if (!player.getAbilities().instabuild) item.shrink(1);
     }
 
+    public boolean hasActiveFlight() {
+        return isAlive() && !isNoAi() && flight.canUse();
+    }
+
     @Override
     public boolean isFood(ItemStack item) {
         return FOOD.test(item);

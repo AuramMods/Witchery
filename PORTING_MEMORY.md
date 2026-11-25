@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Companion Flights and Auram Tick Distance (2026-11-24)
+
+- Does It Tick 1.1.4 filters loaded entities by player range in copied Auram. The earlier package paused a launched Owl carrying paper and a launched Winged Monkey with a valid Taglock. The fixture had no players and both launch chunks were loaded.
+- The optional compatibility hook exempts server-side Owl deliveries and Winged Monkey flights while their existing AI can run. The companions still manage their own flight tickets. A seated or idle companion, or one with AI disabled, uses the ordinary tick rules.
+- On clean Forge the muted survival client gave an Owl named paper and a location Waystone and launched it by hand. The player stayed at the launch point. With the destination 192 blocks away and unloaded at launch, the Owl delivered one parcel, came home and sat. An ordinary dedicated restart kept the same UUID, finished route and named parcel.
+- The rebuilt package completed the same 192-block Owl delivery and a 96-block Winged Monkey Taglock route on copied Auram with no players online. The pig was recorded as a passenger during the return and saved separately at full health near the launch point. The two idle controls and the two seated companions with saved routes all retained their original ages. The Auram configuration files matched byte for byte between the previous and rebuilt packages.
+- Java 17 data generation and JAR reobfuscation passed. All 288 required local Forge GameTests passed on the rerun. The first run failed the unrelated rank-eight Wolf Howl fixture, which passed on the same source in the rerun. Candidate SHA-256 `32d96a7ac663553614a0e594346f7a109afdcf3a60b6e23c480e24031165d069`. Local profiles and evidence are under `build/qa-companion-flight-ticking`.
+
 ## Owl Parcel Fallback and Lifetime (2026-11-24)
 
 - The original headless 0.24.1 server ran the ordinary Owl delivery AI with a Creature-Bound Waystone naming a missing pig. Both parcels fell at their launch points. The Mindrake Bulb had a 60-tick lifetime and the Mandrake Seeds had the ordinary 6,000-tick lifetime. The same server saved two seated and owned Owls with the two numeric seed IDs, their original Waystone subtype and missing target, and their launch coordinates. Native logs and saves are under `build/qa-owl-parcels`.

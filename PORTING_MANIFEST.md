@@ -1265,6 +1265,8 @@ A Creature-Bound Waystone can assign an Owl to an unavailable recipient. If the 
 
 The Winged Monkey retains `FeatherColor`, `SuicideIn`, `WITCWaypoint` and the three `Home` coordinates. `MonkeyFlightReturning` identifies the return leg in new saves. An older active Waystone flight stores its destination in the `Home` coordinates. The modern goal uses Forge's flying navigation and only loads routes within the monkey's dimension. The creature identified by a Taglock rides as a passenger without taking control of the monkey.
 
+With Does It Tick installed, running Owl deliveries and Winged Monkey flights can tick beyond the configured player range while their flight tickets keep the relevant chunks loaded. Seated and idle companions and those with AI disabled follow the mod's usual rules. The compatibility hook is optional and uses the same flight state that the companion goals read from saves.
+
 Treefyd keeps `Owner`, `SentinalPlant`, `KnownPlayers`, `KnownCreatureTypes`, and `KnownCreatures`. New bindings also save player UUIDs and the namespaced keys of groupable animal species. Legacy individual permissions use the original `CreatureMost` and `CreatureLeast` fields. Planting creates short grass and an owned Treefyd in one interaction. A Forge cancellation keeps the original block and seed.
 
 ## Recipe System Registries
