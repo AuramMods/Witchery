@@ -224,20 +224,26 @@ public final class DreamTravel {
         ServerLevel level = (ServerLevel) target.level();
         BlockPos near = target.blockPosition();
         int span = maxRange - minRange;
-        int dx = target.getRandom().nextInt(span * 2 + 1) - span;
-        int dz = target.getRandom().nextInt(span * 2 + 1) - span;
-        BlockPos column = near.offset(dx + minRange * Integer.signum(dx), 0, dz + minRange * Integer.signum(dz));
-        for (int offset = 0; offset <= 8; offset++) {
-            BlockPos above = column.above(offset);
-            BlockPos below = column.below(offset);
-            BlockPos position = canStand(level, above) ? above : canStand(level, below) ? below : null;
-            if (position != null && !level.getBlockState(position.below()).getFluidState().isSource()) {
-                mob.moveTo(position.getX() + 0.5, position.getY(), position.getZ() + 0.5, 0, 0);
-                if (level.noCollision(mob) && !level.containsAnyLiquid(mob.getBoundingBox())) {
-                    level.addFreshEntity(mob);
-                }
-                return;
-            }
+        int dx = target.getRandom().nextInt(span * 2 + 1);
+        int dz = target.getRandom().nextInt(span * 2 + 1);
+        // The middle draw belongs to the negative range on each axis.
+        if (dx > span) dx += 2 * minRange;
+        if (dz > span) dz += 2 * minRange;
+        BlockPos.MutableBlockPos floor = near.offset(dx - maxRange, 0, dz - maxRange).mutable();
+        int highestFloor = Math.min(near.getY() + 8, level.getMaxBuildHeight() - 3);
+        while (floor.getY() < highestFloor && !level.isEmptyBlock(floor)) {
+            floor.move(Direction.UP);
+        }
+        while (floor.getY() > level.getMinBuildHeight() && level.isEmptyBlock(floor)) {
+            floor.move(Direction.DOWN);
+        }
+        if (level.isOutsideBuildHeight(floor) || floor.getY() > highestFloor || level.isEmptyBlock(floor)
+                || !level.isEmptyBlock(floor.above()) || !level.isEmptyBlock(floor.above(2))) {
+            return;
+        }
+        mob.moveTo(floor.getX() + 0.5, floor.getY() + 1.05, floor.getZ() + 0.5, 0, 0);
+        if (level.noCollision(mob) && !level.containsAnyLiquid(mob.getBoundingBox())) {
+            level.addFreshEntity(mob);
         }
     }
 

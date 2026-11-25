@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Nightmare placement (2026-11-25)
+
+- The 0.24.1 server drew offsets `(-2, 3)` from the victim's column for seed 34. From Y 180 it placed the Nightmare at Y 161.05 over the lower floor and Y 189.05 over raised terrain. One clear block above the raised floor prevented the spawn.
+- The rebuilt shared Dream and Waking Nightmare placement restores the original per-axis draws and downward search. It adapts the vertical bounds to the current dimension and keeps Forge collision and liquid checks. A GameTest exercises the offset, deep descent, ascent and clearance below Y 0.
+- On the prepared Dream platform, the previous packaged build went more than three spawn intervals without a Nightmare on the lower floor. The muted clean Forge survival client used a supplied Sleeping Apple. The rebuilt package created a Nightmare assigned to the player at `(207.5, 161.05, 213.5)`, about 13 blocks below the player's feet. An ordinary dedicated restart kept the same Nightmare UUID, its victim and the active Dream. Both client launches used master volume zero and OpenAL No Output and kept desktop focus.
+- JAR reobfuscation and all 403 local Forge GameTests passed on seed `5471593853027166409`. The headless Auram copy loaded and saved Dream with the same JAR. The exact candidate is `build/qa-nightmare-placement/candidate.jar` with SHA-256 `ef9f975d95eaef13136621d6be5579db2bcd192ceed08d879985693ab40a10e5`. See `build/qa-nightmare-placement/comparison.txt`.
+
 ## Infernal minion orders and sacrifice (2026-11-25)
 
 - Witchery 0.24.1 sends Spell and zombie infection on binding, Crit and breath on target orders, and Instant Spell and pop on movement orders. The first two originate at the creature's feet, and movement uses the destination's lower block corner. The Hand sends all three within 16 blocks, and Imperio sends the binding cue within eight. A crouched use against a side face spent zero charge and stayed quiet.
