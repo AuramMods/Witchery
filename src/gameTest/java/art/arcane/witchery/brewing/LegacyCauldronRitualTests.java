@@ -229,33 +229,43 @@ public final class LegacyCauldronRitualTests {
                         bottle.setTag(mixture.bottleTag(ingredients));
                         helper.assertTrue(bottleItem.finishUsingItem(bottle, level, pig).is(Items.GLASS_BOTTLE),
                                 "Drinking the same mixture should return its bottle");
-                        helper.assertTrue(pig.getEffect(recipe.effect()) != null
-                                        && pig.getEffect(recipe.effect()).getDuration() == recipe.drinkTicks(),
-                                "Drinking should apply the ordinary duration for " + recipe.effect().getDescriptionId());
-                        verifyBrewEffect(helper, pig, MobEffects.MOVEMENT_SPEED, 3600, true);
-                        verifyBrewEffect(helper, pig, MobEffects.REGENERATION, 900, true);
+                        verifyBrewEffect(helper, pig, recipe.effect(), recipe.drinkTicks(), true);
+                        verifyBrewEffect(helper, pig, MobEffects.MOVEMENT_SPEED, 3600, false);
+                        verifyBrewEffect(helper, pig, MobEffects.REGENERATION, 900, false);
                         pig.removeAllEffects();
 
                         ingredients.add(taglock);
                         mixture = BrewMixture.from(ingredients);
                         helper.assertTrue(BrewRituals.pulse(level, origin, mixture, mixture.bottleTag(ingredients), taglock, 1, false)
                                         == BrewRituals.Result.COMPLETE, "The copied Taglock cast should complete");
-                        helper.assertTrue(pig.getEffect(recipe.effect()) != null
-                                        && pig.getEffect(recipe.effect()).getDuration() == recipe.targetedTicks(),
-                                "The Taglock should apply its own duration for " + recipe.effect().getDescriptionId());
-                        verifyBrewEffect(helper, pig, MobEffects.MOVEMENT_SPEED, 7200, false);
-                        verifyBrewEffect(helper, pig, MobEffects.REGENERATION, 900, true);
+                        verifyBrewEffect(helper, pig, recipe.effect(), recipe.targetedTicks(), true);
+                        verifyBrewEffect(helper, pig, MobEffects.MOVEMENT_SPEED, 7200, true);
+                        verifyBrewEffect(helper, pig, MobEffects.REGENERATION, 900, false);
                         pig.removeAllEffects();
                     }
                     pig.discard();
                 }).thenSucceed();
     }
 
-    private static void verifyBrewEffect(GameTestHelper helper, LivingEntity target, MobEffect effect, int ticks, boolean particles) {
+    @GameTest(template = "qa_coven_arena")
+    public static void goldNuggetMakesOnlyTheNextActionEffectAmbient(GameTestHelper helper) {
+        var pig = helper.spawn(EntityType.PIG, new BlockPos(4, 2, 4));
+        var ingredients = List.of(new ItemStack(Items.NETHER_WART), new ItemStack(WitcheryIngredient.TEAR_OF_THE_GODDESS.item()),
+                new ItemStack(Items.GOLD_NUGGET), new ItemStack(Items.SNOWBALL), new ItemStack(Items.SUGAR));
+        var brew = BrewMixture.from(ingredients);
+        var restored = BrewMixture.from(brew.bottleTag(ingredients));
+        restored.apply(pig, null, null, 1, 1);
+        verifyBrewEffect(helper, pig, WitcheryEffects.SNOW_TRAIL.get(), 3600, true);
+        verifyBrewEffect(helper, pig, MobEffects.MOVEMENT_SPEED, 3600, false);
+        helper.succeed();
+    }
+
+    private static void verifyBrewEffect(GameTestHelper helper, LivingEntity target, MobEffect effect, int ticks, boolean ambient) {
         var applied = target.getEffect(effect);
-        helper.assertTrue(applied != null && applied.getDuration() == ticks && applied.isVisible() == particles,
-                "Expected " + effect.getDescriptionId() + " for " + ticks + " ticks with visible particles " + particles
-                        + ", got " + applied);
+        helper.assertTrue(applied != null && applied.getDuration() == ticks && applied.isAmbient() == ambient
+                        && applied.isVisible() && applied.showIcon(),
+                "Expected " + effect.getDescriptionId() + " for " + ticks + " ticks with ambient=" + ambient
+                        + " and visible particles and icon, got " + applied);
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_gas_ritual_height")

@@ -64,7 +64,7 @@ public final class BrewMixture {
     }
 
     private enum Modifier {
-        CAPACITY, STRENGTH, DURATION, INVERT, HIDE_PARTICLES, DRINK_SPEED, DELIVERY, EXTENT, LIFETIME, WAYSTONE, RITUAL,
+        CAPACITY, STRENGTH, DURATION, INVERT, AMBIENT, DRINK_SPEED, DELIVERY, EXTENT, LIFETIME, WAYSTONE, RITUAL,
         NO_BLOCK_TARGET, NO_ENTITY_TARGET, RAISE_EFFECT_CEILING, SET_COLOR
     }
 
@@ -171,7 +171,7 @@ public final class BrewMixture {
     }
 
     private record ActionApplication(Action action, int strength, int blockStrength, boolean inverted, int durationMultiplier,
-                                     int blockDurationMultiplier, boolean showParticles, boolean affectsEntities, boolean affectsBlocks,
+                                     int blockDurationMultiplier, boolean ambient, boolean affectsEntities, boolean affectsBlocks,
                                      @Nullable ResourceLocation biome) implements BrewEffect {}
 
     private record Ingredient(int power, @Nullable Modifier modifier, int amount, int ceiling,
@@ -197,14 +197,14 @@ public final class BrewMixture {
         }
     }
 
-    public record Application(MobEffect effect, int ticks, int amplifier, boolean showParticles,
+    public record Application(MobEffect effect, int ticks, int amplifier, boolean ambient,
                               boolean inverted, int taglockTicks, boolean affectsEntities) implements BrewEffect {
         public MobEffectInstance instance(int duration) {
-            return instance(duration, amplifier, showParticles);
+            return instance(duration, amplifier, ambient);
         }
 
-        private MobEffectInstance instance(int duration, int strength, boolean particles) {
-            return new MobEffectInstance(effect, duration, strength, effect == WitcheryEffects.COLORFUL.get(), particles, true);
+        private MobEffectInstance instance(int duration, int strength, boolean ambient) {
+            return new MobEffectInstance(effect, duration, strength, ambient, true);
         }
     }
 
@@ -688,7 +688,7 @@ public final class BrewMixture {
                 } else {
                     boolean extended = taglock && application.taglockTicks > 0;
                     int duration = extended ? application.taglockTicks : Mth.ceil(application.ticks * durationScale);
-                    target.addEffect(application.instance(duration, amplifier, !extended && application.showParticles), source);
+                    target.addEffect(application.instance(duration, amplifier, extended || application.ambient), source);
                 }
             } else if (effect instanceof ActionApplication application) {
                 int strength = Math.min(application.strength, strengthLimit);
@@ -725,7 +725,7 @@ public final class BrewMixture {
                 }
                 int ticks = Mth.ceil((shell ? 200 : 3600) * application.durationMultiplier * durationScale);
                 target.addEffect(new MobEffectInstance(WitcheryEffects.CHILLED.get(), ticks, Math.min(strength, 10),
-                        false, application.showParticles, true), source);
+                        application.ambient, true), source);
                 if (shell && !glancing) BrewColdEffects.shell(level, target.blockPosition(), strength, player);
             }
             case HARM_DEMONS, HARM_UNDEAD, HARM_INSECTS, HARM_WEREWOLVES -> {
@@ -759,7 +759,7 @@ public final class BrewMixture {
             case MOVE_ANIMALS -> BrewCreatureEffects.moveAnimals(target, strength, application.inverted);
             case SNOW -> target.addEffect(new MobEffectInstance(WitcheryEffects.SNOW_TRAIL.get(),
                     Mth.ceil(3600 * application.durationMultiplier * durationScale), strength,
-                    false, application.showParticles, true), source);
+                    application.ambient, true), source);
             case REMOVE_DEBUFFS -> {
                 if (taglock) BrewStatusActions.ritualCleanse(target, strength);
                 else BrewStatusActions.cleanse(target, caster, strength);
@@ -797,7 +797,7 @@ public final class BrewMixture {
                 var effect = application.action == Action.VINES ? WitcheryEffects.WRAPPED_IN_VINE : WitcheryEffects.SPIKED;
                 int ticks = Mth.ceil(1800 * application.durationMultiplier * durationScale);
                 target.addEffect(new MobEffectInstance(effect.get(), ticks, Math.min(strength, 10),
-                        false, application.showParticles, true), source);
+                        application.ambient, true), source);
             }
             case SPROUTING -> target.addEffect(new MobEffectInstance(WitcheryEffects.SPROUTING.get(),
                     Mth.ceil(300 * application.durationMultiplier * durationScale), strength), source);
@@ -817,7 +817,7 @@ public final class BrewMixture {
             }
             case HELL_GATE -> target.addEffect(new MobEffectInstance(WitcheryEffects.HELLISH_AURA.get(),
                     Mth.ceil(3600 * application.durationMultiplier * durationScale), Math.min(strength, 10),
-                    false, application.showParticles, true), source);
+                    application.ambient, true), source);
             case BLAST -> {
                 if (target.level() instanceof ServerLevel level && (strengthScale == 1 || level.random.nextDouble() < strengthScale * 0.2)) {
                     BrewFireEffects.blast(level, target.position(), strength, caster);
@@ -964,7 +964,7 @@ public final class BrewMixture {
         private final EffectBoost entityDuration = new EffectBoost();
         private final EffectBoost blockDuration = new EffectBoost();
         private boolean inverted;
-        private boolean hideParticles;
+        private boolean ambient;
         private boolean unlimitedBoosts;
         private boolean raisedEffectCeiling;
         private boolean noBlockTarget;
@@ -1002,7 +1002,7 @@ public final class BrewMixture {
                 };
                 var biome = ingredient.action == Action.CHANGING_SEASONS ? BiomeNoteItem.biomeId(stack) : null;
                 effects.add(new ActionApplication(ingredient.action, actionStrength, blockStrength.current, inverted,
-                        entityDuration.current + 1, blockDuration.current + 1, !hideParticles, !noEntityTarget, !noBlockTarget, biome));
+                        entityDuration.current + 1, blockDuration.current + 1, ambient, !noEntityTarget, !noBlockTarget, biome));
                 // Creature-only potion effects do not spend the modifiers for the terrain impact.
                 blockStrength.current = 0;
                 blockDuration.current = 0;
@@ -1014,7 +1014,7 @@ public final class BrewMixture {
                 } else {
                     int ceiling = raisedEffectCeiling ? 10 : ingredient.ceiling;
                     effects.add(new Application(effect.effect.get(), effect.duration * (entityDuration.current + 1),
-                            Math.min(entityStrength.current, ceiling), !hideParticles, inverted,
+                            Math.min(entityStrength.current, ceiling), ambient, inverted,
                             effect.curse ? effect.duration * TAGLOCK_DURATION_MULTIPLIER : 0, !noEntityTarget));
                 }
             }
@@ -1023,7 +1023,7 @@ public final class BrewMixture {
             // The original ritual curse restores these two modifiers before the next ingredient.
             if (!taglock || !ingredient.retainsTaglockModifiers()) {
                 entityDuration.current = 0;
-                hideParticles = false;
+                ambient = false;
             }
         }
 
@@ -1042,7 +1042,7 @@ public final class BrewMixture {
                     blockDuration.increase(ingredient.ceiling, unlimitedBoosts);
                 }
                 case INVERT -> inverted = true;
-                case HIDE_PARTICLES -> hideParticles = true;
+                case AMBIENT -> ambient = true;
                 case DRINK_SPEED -> drinkTicks += ingredient.amount;
                 case DELIVERY -> delivery = Delivery.values()[ingredient.amount];
                 case EXTENT -> {
@@ -1075,7 +1075,7 @@ public final class BrewMixture {
         modifier(entries, "obsidian", 100, Modifier.DURATION, 1, 2, 0);
         modifier(entries, "witchery:seedsmindrake", 150, Modifier.DURATION, 1, 3, 0);
         modifier(entries, "fermented_spider_eye", 25, Modifier.INVERT, 0, 0, 0);
-        modifier(entries, "gold_nugget", 50, Modifier.HIDE_PARTICLES, 0, 0, 0);
+        modifier(entries, "gold_nugget", 50, Modifier.AMBIENT, 0, 0, 0);
         modifier(entries, "witchery:rowan_berries", 50, Modifier.DRINK_SPEED, -8, 0, 0);
         modifier(entries, "witchery:exhale_of_the_horned_one", 0, Modifier.DRINK_SPEED, -4, 0, 0);
         modifier(entries, "witchery:spanishmoss", 50, Modifier.DRINK_SPEED, -4, 0, 0);
