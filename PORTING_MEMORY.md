@@ -2,6 +2,17 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Powered cursed control placement (2026-11-25)
+
+- The preceding packaged build notified the powered stone button's cell and its supporting block before Forge vetoed a curse. It then restored the block state.
+- Single-control conversion now stages the block with vanilla's moving flag to defer the outgoing control's removal notification. An approved conversion replays that notification. A veto restores the old control with the same quiet flag and clears the newly staged curse data.
+- The original conversion clears a pressed button, preserves a powered lever, and retains a pressed plate's signal and release tick. The modern conversion keeps those distinctions.
+- The packaged Forge survival client threw at two powered stone buttons with lamps behind their stone supports. The veto preserved the first powered button and its lit lamp without a neighbor notification. The approved cast installed one charge, notified the support after approval, and let the second lamp turn off.
+- On a dedicated restart, the two button and lamp states and the approved charge stayed intact. The client ran with zero master volume and OpenAL No Output. The focus monitor recorded no activation.
+- The saved-region check caught discarded curse data in an intermediate Auram build. Forge snapshot capture looked up the staged entity again during rollback. The cleanup now runs after the vanilla block state is restored and removes the temporary data from the chunk.
+- Copied Auram repeated both button decisions with the same JAR and a fixture player. The saved region files from both profiles held no entity at the denied button and exactly one charge at the accepted button.
+- Local Java 17 data generation, JAR reobfuscation and all 308 required Forge GameTests passed. The powered-control test covers both buttons, the lever and all three pressure plates. The Love forecast fixture now seeds the encounter location and clears its headroom to stabilize the regression. The tested JAR SHA-256 is `290e8578efa699aa154c0d38b97bc72a2bcbab312002ed5e735afcc8f68aa83e`. The packaged baseline, test results and saved-region verifier are under `build/qa-powered-controls`.
+
 ## Chalk and cursed control placements (2026-11-24)
 
 - The previous Forge build split the chalk stack and played the draw cue before Forge decided whether to place the glyph. A veto could restore the held count while leaving the extra sticks in inventory. Flagrate posted its placement event while the target was still empty.

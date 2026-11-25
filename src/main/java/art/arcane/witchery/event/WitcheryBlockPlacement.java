@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.event.ForgeEventFactory;
@@ -74,7 +75,23 @@ public final class WitcheryBlockPlacement {
         level.captureBlockSnapshots = true;
         level.restoringBlockSnapshots = true;
         try {
-            for (int i = changes.size() - 1; i >= 0; i--) changes.get(i).restore(true, false);
+            for (int i = changes.size() - 1; i >= 0; i--) {
+                var change = changes.get(i);
+                if ((change.getFlag() & Block.UPDATE_MOVE_BY_PISTON) != 0) {
+                    BlockPos pos = change.getPos();
+                    BlockState previous = change.getReplacedBlock();
+                    boolean changedBlock = !change.getCurrentBlock().is(previous.getBlock());
+                    level.setBlock(pos, previous, Block.UPDATE_CLIENTS | Block.UPDATE_MOVE_BY_PISTON);
+                    if (changedBlock) {
+                        // Clear staged data after the write. Snapshot capture reads the block entity before changing its state.
+                        var chunk = level.getChunkAt(pos);
+                        chunk.removeBlockEntity(pos);
+                        var staged = chunk.getBlockEntities().remove(pos);
+                        if (staged != null) staged.setRemoved();
+                    }
+                }
+                change.restore(true, false);
+            }
         } finally {
             level.capturedBlockSnapshots.subList(first, level.capturedBlockSnapshots.size()).clear();
             level.captureBlockSnapshots = capturing;

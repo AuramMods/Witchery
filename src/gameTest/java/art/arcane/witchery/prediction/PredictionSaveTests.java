@@ -130,6 +130,7 @@ public final class PredictionSaveTests {
         };
         MinecraftForge.EVENT_BUS.addListener(listener);
         try {
+            level.getRandom().setSeed(5120);
             rollOverdueForecast(player);
         } finally {
             MinecraftForge.EVENT_BUS.unregister(listener);
@@ -309,6 +310,8 @@ public final class PredictionSaveTests {
         var ground = helper.absolutePos(new BlockPos(8, 10, 8));
         for (BlockPos pos : BlockPos.betweenClosed(ground.offset(-6, 0, -6), ground.offset(6, 0, 6))) {
             helper.getLevel().setBlockAndUpdate(pos, Blocks.STONE.defaultBlockState());
+            helper.getLevel().setBlockAndUpdate(pos.above(), Blocks.AIR.defaultBlockState());
+            helper.getLevel().setBlockAndUpdate(pos.above(2), Blocks.AIR.defaultBlockState());
         }
         return ground;
     }

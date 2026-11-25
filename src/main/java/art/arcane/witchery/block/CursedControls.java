@@ -99,11 +99,14 @@ public final class CursedControls {
             if (door) {
                 if (!swapDoor(level, base, kind.original(), changed, thrower, face)) return true;
             } else {
-                BlockState replacement = changed.withPropertiesOf(state);
-                if (kind == Kind.STONE_BUTTON || kind == Kind.WOODEN_BUTTON) {
-                    replacement = replacement.setValue(BlockStateProperties.POWERED, false);
-                }
-                if (!WitcheryBlockPlacement.place(level, pos, replacement, thrower, face)) return true;
+                BlockState matching = changed.withPropertiesOf(state);
+                BlockState replacement = kind == Kind.STONE_BUTTON || kind == Kind.WOODEN_BUTTON
+                        ? matching.setValue(BlockStateProperties.POWERED, false) : matching;
+                // A powered control's normal removal notifies its support even while Forge captures snapshots.
+                int flags = Block.UPDATE_ALL | Block.UPDATE_MOVE_BY_PISTON;
+                if (!WitcheryBlockPlacement.placeTogether(level, thrower, face,
+                        () -> level.setBlock(pos, replacement, flags))) return true;
+                state.onRemove(level, pos, replacement, false);
                 scheduleRelease(level, pos, replacement, kind);
             }
         }
