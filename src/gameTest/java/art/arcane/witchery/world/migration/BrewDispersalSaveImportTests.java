@@ -54,12 +54,18 @@ public final class BrewDispersalSaveImportTests {
         try {
             NbtIo.writeCompressed(registry, snapshot.toFile());
             var fixer = helper.getLevel().getServer().getFixerUpper();
-            var intermediate = LegacyChunkUpgrade.upgrade(DataFixTypes.CHUNK, fixer, original, -1, 1493,
-                    LegacyWorldIds.find(root));
+            var ids = LegacyWorldIds.find(root);
+            var intermediate = LegacyChunkUpgrade.upgrade(DataFixTypes.CHUNK, fixer, original, -1, 1493, ids);
             ChunkStorage.injectDatafixingContext(intermediate, Level.OVERWORLD, Optional.empty());
             var imported = DataFixTypes.CHUNK.updateToCurrentVersion(fixer, intermediate, 1493);
             LegacyChunkUpgrade.finish(imported, Level.OVERWORLD);
             saved = imported.getList("entities", Tag.TAG_COMPOUND).getCompound(0);
+            CompoundTag convertedBrew = saved.getCompound("Brew");
+            saved.put("Brew", original.getCompound("Level").getList("Entities", Tag.TAG_COMPOUND)
+                    .getCompound(0).getCompound("Brew").copy());
+            ids.repairStoredItems(saved, fixer);
+            helper.assertTrue(convertedBrew.equals(saved.getCompound("Brew")),
+                    "An earlier conversion with a raw falling recipe recovers the same brew as a first import");
         } finally {
             Files.deleteIfExists(snapshot);
             Files.deleteIfExists(root);

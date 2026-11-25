@@ -261,7 +261,7 @@ public final class LegacyWorldIds {
     private void repairLegacyInventory(ListTag inventory, DataFixer fixer, int to) {
         for (Tag entry : inventory) {
             var stack = (CompoundTag) entry;
-            if (stack.contains("id", Tag.TAG_ANY_NUMERIC) || stack.contains("Damage", Tag.TAG_ANY_NUMERIC)) {
+            if (hasLegacyStackEncoding(stack)) {
                 upgradeItems(stack);
                 upgradeUntypedItems(stack, fixer, -1, to);
             }
@@ -295,6 +295,10 @@ public final class LegacyWorldIds {
             for (Tag entry : list) repairStoredItems(entry, fixer);
         } else if (value instanceof CompoundTag compound) {
             upgradeItemBinding(compound);
+            if (compound.getString("id").equals("witchery:droplet") && compound.get("Brew") instanceof CompoundTag brew) {
+                repairLegacyInventory(brew.getList("Items", Tag.TAG_COMPOUND), fixer,
+                        SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+            }
             if (compound.contains("Count", Tag.TAG_ANY_NUMERIC) && compound.get("tag") instanceof CompoundTag itemTag) {
                 int currentVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
                 // Vanilla's fixer does not visit the recipe inside a curse attached to an arbitrary item.
@@ -345,18 +349,19 @@ public final class LegacyWorldIds {
         if (value instanceof CompoundTag compound) {
             for (String key : compound.getAllKeys()) upgradeUntypedItems(compound.get(key), fixer, from, to);
             if (!compound.contains("Count", Tag.TAG_ANY_NUMERIC)) return;
+            // A converted chunk can still contain an original stack in a Witchery-only field.
+            boolean partiallyConverted = from >= 100 && hasLegacyStackEncoding(compound);
+            if (partiallyConverted) upgradeStack(compound);
             ResourceLocation id = compound.contains("id", Tag.TAG_ANY_NUMERIC)
                     ? vanillaItems.get(compound.getInt("id") & 0xFFFF) : ResourceLocation.tryParse(compound.getString("id"));
             if (id == null) return;
             boolean witcheryItem = id.getNamespace().equals(Witchery.MODID);
             if (!witcheryItem && !id.getNamespace().equals(ResourceLocation.DEFAULT_NAMESPACE)) return;
-            if (witcheryItem || from >= 100) {
-                upgradeItemDisplay(compound.getCompound("tag").getCompound("display"), from < 100);
-            } else {
+            if (!witcheryItem && (from < 100 || partiallyConverted)) {
                 // Vanilla's chunk fixer cannot see containers outside its typed schema.
                 var named = compound.copy();
                 named.putString("id", id.toString());
-                if (fixer.update(References.ITEM_STACK, new Dynamic<>(NbtOps.INSTANCE, named), from, to)
+                if (fixer.update(References.ITEM_STACK, new Dynamic<>(NbtOps.INSTANCE, named), partiallyConverted ? -1 : from, to)
                         .getValue() instanceof CompoundTag fixed) {
                     // Untyped chunk inventories receive only the first vanilla data-fixer pass.
                     if (to < ITEM_LORE_COMPONENT_VERSION) {
@@ -368,11 +373,16 @@ public final class LegacyWorldIds {
                 }
             }
             var tag = compound.getCompound("tag");
+            if (witcheryItem || from >= 100) upgradeItemDisplay(tag.getCompound("display"), from < 100);
             upgradeEnchantments(tag, "ench", "Enchantments");
             upgradeEnchantments(tag, "StoredEnchantments", "StoredEnchantments");
         } else if (value instanceof ListTag list) {
             for (Tag entry : list) upgradeUntypedItems(entry, fixer, from, to);
         }
+    }
+
+    private static boolean hasLegacyStackEncoding(CompoundTag stack) {
+        return stack.contains("id", Tag.TAG_ANY_NUMERIC) || stack.contains("Damage", Tag.TAG_ANY_NUMERIC);
     }
 
     private static void upgradeEnchantments(CompoundTag tag, String originalKey, String currentKey) {

@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Saved brewing recipes in converted worlds (2026-11-25)
+
+- The original Forge server saved a heated Cauldron with 3,000 mB of colored Wolfsbane brew, a lever with two charges of Poison, and a Kettle with three servings of Brew of Revealing. The mixed-format fixture restores those original item lists into a copy of the converted 1.20.1 chunk. On an ordinary load, the preceding JAR emptied the Cauldron ingredient list and the Kettle output and left the lever recipe encoded with numeric IDs.
+- Ordinary chunk and entity loads now use the world's retained legacy registry to repair those stacks. The copied Auram dedicated server loaded and saved all three recipes with their remaining quantities, order and colors. The repair also covers saved brew droplets. The GameTests check a rain droplet's effect, button activation, a Kettle's vanilla potion variant, and idempotence with an adjacent modern formatted stack.
+- The muted clean Forge survival client used ordinary glass bottles to drink the recovered Wolfsbane brew and take one Brew of Revealing. Using the lever applied Poison. An ordinary restart kept the drained Cauldron, two Kettle servings and the remaining lever charge. The last charge applied Poison and restored the vanilla lever. Both launches kept the foreground app in focus and used OpenAL No Output at master volume zero.
+- All 387 required local GameTests passed on seed `5471593853027166409`. The exact reobfuscated JAR is `build/qa-saved-brewing-stacks/candidate.jar` with SHA-256 `4509e5392ed71e618956d061d29b9d55f07d69801b8a15ddf6e875f6eea55074`. See `build/qa-saved-brewing-stacks/comparison.txt` for the original, preceding Forge, clean Forge and copied Auram traces.
+
 ## Saved curses on inventory items (2026-11-25)
 
 - The original Forge server ran the triggered dispersal's ritual callback twice on the fixture's named iron pickaxe. It saved two charges in a vanilla chest and a separate dropped copy. Vanilla's item fixer leaves the curse's recipe in `WITCCurse.Curse.Items` outside its known item lists. The previous Forge JAR converted the pickaxe and its Witchery ingredient and left numeric Nether Wart, Spider Eye and Zombie Head in the curse.
