@@ -43,8 +43,9 @@ public final class LegacyBlockReplacementTests {
         var ids = List.of("circle", "circleglyphritual", "circleglyphotherwhere", "circleglyphinfernal",
                 "snowpressureplate", "csnowpressureplate", "snowslab", "snowdoubleslab");
         for (int index = 0; index < ids.size(); index++) {
-            var pos = helper.absolutePos(new BlockPos(3 + index * 2, 160, 3));
+            var pos = helper.absolutePos(new BlockPos(3 + index * 2, 0, 3)).atY(160);
             level.setBlockAndUpdate(pos.below(), Blocks.STONE.defaultBlockState());
+            level.setBlockAndUpdate(pos.above(), Blocks.AIR.defaultBlockState());
             level.setBlockAndUpdate(pos, state(ids.get(index)));
             var held = new ItemStack(Items.STONE, 2);
             helper.assertTrue(place(player, pos, Direction.UP, 0.5, held).consumesAction()
@@ -53,9 +54,10 @@ public final class LegacyBlockReplacementTests {
                     "The stone should replace the clicked " + ids.get(index));
         }
 
-        var pos = helper.absolutePos(new BlockPos(5, 160, 7));
+        var pos = helper.absolutePos(new BlockPos(5, 0, 7)).atY(160);
         var catcher = state("dreamcatcher");
         level.setBlockAndUpdate(pos.south(), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(pos.north(), Blocks.AIR.defaultBlockState());
         level.setBlockAndUpdate(pos, catcher);
         var imported = new CompoundTag();
         imported.putInt("WITCWeaveID", 3);
@@ -98,8 +100,10 @@ public final class LegacyBlockReplacementTests {
         var top = bottom.setValue(SlabBlock.TYPE, SlabType.TOP);
         var doubleState = bottom.setValue(SlabBlock.TYPE, SlabType.DOUBLE);
         var legacyDouble = state("snowdoubleslab");
-        var pos = helper.absolutePos(new BlockPos(5, 160, 6));
+        var pos = helper.absolutePos(new BlockPos(5, 0, 6)).atY(160);
         var held = new ItemStack(bottom.getBlock(), 8);
+        level.setBlockAndUpdate(pos.above(), Blocks.AIR.defaultBlockState());
+        level.setBlockAndUpdate(pos.east(), Blocks.AIR.defaultBlockState());
         level.setBlockAndUpdate(pos, bottom);
         place(player, pos, Direction.UP, 0.5, held);
         helper.assertTrue(level.getBlockState(pos).equals(doubleState) && held.getCount() == 7,

@@ -2,6 +2,16 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron liquid rain (2026-11-25)
+
+- The casting world supplies every random draw, even when a Bound Waystone sends rain into another dimension. The rain stays centered on the cauldron's X and Z. A clear column keeps its original launch height between 100 and 119. The 1.20.1 height adjustment lifts only drops whose columns intersect high terrain or a roof. Closed dimensions keep their logical ceiling cap.
+- The original server and clean packaged Forge matched all five positions on pulses one and fifteen with different destination seeds. Pulse fifteen finished the extended cast. The preceding port varied the columns with the destination seed and clamped all those heights to 126. In the open-dimension roof test, the rebuilt JAR lifted the blocked column to 222 and kept the four original clear heights.
+- The copied Auram server used six stationary fixture coven members and the pack's FasterRandom generator. Both cross-dimension pulses matched all three rolls in the casting world's trace despite different destination seeds. A same-dimension cast lifted only the drop whose destination column contained the test roof.
+- The muted survival client joined a clean dedicated server for a cast started with dropped ingredients and a Bound Waystone. The fixture supplied the materials, two terrain heights, altar charge, and observer placement. A droplet passed through Y 118 in a clear column and another passed through Y 168 above the roof. The cast extinguished a fire below and left the fire beyond its radius burning. The normal restart kept both results and an empty cauldron. Both launches used OpenAL's No Output device and kept the original foreground app.
+- The two intermittently failing placement GameTests used a relative Y coordinate that landed at Y 100 in the generated test world. The saved region had dirt and stone in cells the tests expected to be empty. The fixtures now use absolute Y 160 and clear the cells required by their assertions.
+- All 373 required local Forge GameTests passed in the regular run. Both placement tests and the rain test passed on seed `5079230840918558374`, which had exposed the placement failures. That replay timed out while waiting for offerings in two existing Circle Magic cases for Waystone cancellation and the Demon spawn veto.
+- The exact reobfuscated JAR is `build/qa-cauldron-rain/candidate.jar` with SHA-256 `f04c512e1f6e8cc50e9d5c7846c1097afe1a3ff178d6797ed6f76f84b7787215`. Runtime evidence and the seed replay are in `build/qa-cauldron-rain/comparison.txt`.
+
 ## Imp timers and original entity migration (2026-11-25)
 
 - Witchery 0.24.1 saves the Imp's three-minute gift cooldown and one-hour Demon Heart deadline in 50 ms units since the Unix epoch. The previous 1.20.1 build used world ticks and kept an expired original Imp powered. The rebuilt JAR preserves the original stamps and converts earlier Forge saves using the elapsed or remaining world ticks at load.

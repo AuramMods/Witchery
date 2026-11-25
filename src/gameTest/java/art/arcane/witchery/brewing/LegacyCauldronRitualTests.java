@@ -4,6 +4,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.AltarBlockEntity;
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.entity.BrewDroplet;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
@@ -30,10 +31,13 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.gametest.GameTestHolder;
@@ -42,6 +46,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
@@ -301,6 +306,49 @@ public final class LegacyCauldronRitualTests {
                     atTarget.discard();
                     onShelf.discard();
                 }).thenSucceed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_liquid_ritual_height")
+    public static void liquidRitualOnlyRaisesDropsAboveObstructedColumns(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var origin = helper.absolutePos(new BlockPos(5, 0, 5)).atY(214);
+        var stone = new ItemStack(WitcheryIngredient.BOUND_WAYSTONE.item());
+        WaystoneItem.bindLocation(stone, level, origin.offset(12, 16, 0));
+        var trigger = new ItemStack(WitcheryIngredient.DOG_TONGUE.item());
+        var offerings = List.of(new ItemStack(WitcheryIngredient.MANDRAKE_ROOT.item()), new ItemStack(Items.NETHER_WART),
+                new ItemStack(Items.GLISTERING_MELON_SLICE), new ItemStack(WitcheryIngredient.WORMWOOD.item()), stone, trigger);
+        var mixture = BrewMixture.from(offerings, null);
+
+        // The seed 817 pulse recorded from Witchery 0.24.1, relative to the cauldron.
+        var original = List.of(origin.offset(0, 0, -7).atY(114), origin.offset(5, 0, -2).atY(114),
+                origin.offset(14, 0, -6).atY(119), origin.offset(6, 0, 13).atY(109), origin.offset(-3, 0, 9).atY(104));
+        BlockPos obstruction = original.get(0).atY(205);
+        var previous = level.getBlockState(obstruction);
+        level.setBlockAndUpdate(obstruction, Blocks.STONE.defaultBlockState());
+        var expected = original.stream().map(pos -> {
+            int surface = level.getHeight(Heightmap.Types.MOTION_BLOCKING, pos.getX(), pos.getZ());
+            return pos.getY() < surface ? pos.atY(surface + 16) : pos;
+        }).toList();
+        helper.assertTrue(expected.get(0).getY() >= 222, "The fixture blocks the first rain column");
+        var actual = new ArrayList<BlockPos>();
+        Consumer<EntityJoinLevelEvent> capture = event -> {
+            if (event.getLevel() == level && event.getEntity() instanceof BrewDroplet drop) {
+                actual.add(drop.blockPosition());
+                event.setCanceled(true);
+            }
+        };
+        MinecraftForge.EVENT_BUS.addListener(capture);
+        try {
+            level.getRandom().setSeed(817);
+            helper.assertTrue(BrewRituals.pulse(level, origin, mixture, mixture.bottleTag(offerings), trigger, 1, false)
+                            == BrewRituals.Result.ONGOING,
+                    "The first pulse of the Waystone-targeted rain continues");
+            helper.assertTrue(actual.equals(expected), "Rain should use the original columns and clear heights: " + actual);
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(capture);
+            level.setBlockAndUpdate(obstruction, previous);
+        }
+        helper.succeed();
     }
 
     @GameTest(template = "qa_coven_arena")

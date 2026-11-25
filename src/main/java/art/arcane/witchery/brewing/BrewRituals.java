@@ -76,9 +76,7 @@ public final class BrewRituals {
                 yield pulse < 8 + mixture.extent() * 8 ? Result.ONGOING : Result.COMPLETE;
             }
             case LIQUID -> {
-                // The original rain selects the target dimension but scatters around the cauldron's X and Z.
-                BlockPos center = new BlockPos(origin.getX(), target.getY(), origin.getZ());
-                rain(level, center, brew, 16 + 8 * mixture.extent());
+                rain(source, level, origin, brew, 16 + 8 * mixture.extent());
                 yield pulse < 10 + mixture.lifetime() * 5 ? Result.ONGOING : Result.COMPLETE;
             }
             case DRINK -> Result.FAILED;
@@ -205,28 +203,30 @@ public final class BrewRituals {
         }
     }
 
-    private static void rain(ServerLevel level, BlockPos center, CompoundTag brew, int radius) {
-        var random = level.getRandom();
+    private static void rain(ServerLevel source, ServerLevel destination, BlockPos cauldron, CompoundTag brew, int radius) {
+        // The Waystone selects the dimension. The cauldron supplies the horizontal center and random rolls.
+        var random = source.getRandom();
         int halfQuantity = radius / 4;
         int quantity = halfQuantity + random.nextInt(halfQuantity);
         for (int drop = 0; drop < quantity; drop++) {
-            int heightOffset = random.nextInt(20);
+            int height = 100 + random.nextInt(20);
             int x = random.nextInt(2 * radius) - radius;
             int z = random.nextInt(2 * radius) - radius;
             if (x * x + z * z > radius * radius) continue;
-            BlockPos column = center.offset(x, 0, z);
-            if (!level.getWorldBorder().isWithinBounds(column)) continue;
-            level.getChunkSource().addRegionTicket(CAST_TICKET, new ChunkPos(column), 2, center);
-            boolean ceiling = level.dimensionType().hasCeiling();
-            int surface = ceiling ? center.getY() : Math.max(center.getY(),
-                    level.getHeight(Heightmap.Types.MOTION_BLOCKING, column.getX(), column.getZ()));
-            int height = Math.max(100, surface + 16) + heightOffset;
-            if (ceiling) height = Math.min(height, level.dimensionType().logicalHeight() - 2);
-            var droplet = WitcheryEntities.BREW_DROPLET.get().create(level);
+            BlockPos column = cauldron.offset(x, 0, z);
+            if (!destination.getWorldBorder().isWithinBounds(column)) continue;
+            destination.getChunkSource().addRegionTicket(CAST_TICKET, new ChunkPos(column), 2, cauldron);
+            if (destination.dimensionType().hasCeiling()) {
+                height = Math.min(height, destination.getMinBuildHeight() + destination.dimensionType().logicalHeight() - 2);
+            } else {
+                int surface = destination.getHeight(Heightmap.Types.MOTION_BLOCKING, column.getX(), column.getZ());
+                if (height < surface) height = surface + 16;
+            }
+            var droplet = WitcheryEntities.BREW_DROPLET.get().create(destination);
             if (droplet == null) continue;
             droplet.setBrew(brew);
             droplet.setPos(column.getX(), height, column.getZ());
-            level.addFreshEntity(droplet);
+            destination.addFreshEntity(droplet);
         }
     }
 }
