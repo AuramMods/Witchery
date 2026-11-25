@@ -18,7 +18,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class BrewStatusActions {
@@ -95,9 +94,9 @@ public final class BrewStatusActions {
         target.addEffect(new MobEffectInstance(MobEffects.POISON, Math.max(Mth.ceil(60 * duration), 40)), source);
     }
 
-    static void extendBuffs(LivingEntity target, int strength, double scale) {
+    static void boostDuration(LivingEntity target, int strength, double scale) {
         if (target.hasEffect(WitcheryEffects.QUEASY.get())) {
-            boolean blind = target.getRandom().nextInt(3) == 0;
+            boolean blind = target.level().getRandom().nextInt(3) == 0;
             target.addEffect(new MobEffectInstance(blind ? MobEffects.BLINDNESS : MobEffects.CONFUSION,
                     blind ? 2400 : 6000, 0, true, true));
             return;
@@ -105,20 +104,17 @@ public final class BrewStatusActions {
         var effects = List.copyOf(target.getActiveEffects());
         if (effects.isEmpty()) return;
         int boost = Mth.ceil(3600 * scale);
-        var extended = new ArrayList<MobEffectInstance>();
         for (MobEffectInstance effect : effects) {
-            boolean debuff = harmful(effect);
-            if (debuff && retainedByPlayer(target, effect)) continue;
-            if (!target.removeEffect(effect.getEffect()) || debuff) continue;
-            int duration = effect.getDuration();
-            if (!effect.isInfiniteDuration()) {
-                duration += Math.min(Math.min(duration, boost), Integer.MAX_VALUE - duration);
+            if (effect.getEffect().isInstantenous()) {
+                target.removeEffect(effect.getEffect());
+                continue;
             }
-            var replacement = new MobEffectInstance(effect.getEffect(), duration, effect.getAmplifier(), effect.isAmbient(), true);
-            replacement.setCurativeItems(new ArrayList<>(effect.getCurativeItems()));
-            extended.add(replacement);
+            int duration = effect.mapDuration(remaining -> remaining + Math.min(Math.min(remaining, boost), Integer.MAX_VALUE - remaining));
+            if (duration == effect.getDuration()) continue;
+            // Updating the active tier keeps its Forge cures and any weaker effect queued behind it.
+            target.addEffect(new MobEffectInstance(effect.getEffect(), duration, effect.getAmplifier(),
+                    effect.isAmbient(), effect.isVisible(), effect.showIcon()));
         }
-        extended.forEach(target::addEffect);
         target.addEffect(new MobEffectInstance(WitcheryEffects.QUEASY.get(),
                 3600 * Math.max(1, 4 - strength), 0, true, true));
     }

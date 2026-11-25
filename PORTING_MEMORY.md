@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Creeper Heart Duration Boost (2026-11-25)
+
+- Witchery 0.24.1 extended Speed from 1,200 to 2,400 ticks, Weakness from 900 to 1,800, Poison from 6,000 to 9,600, and Overheating from 800 to 1,600 on both a creature and a server player. A first dose added 14,400 ticks of Queasy. The creature's second dose added ambient Nausea without extending the active durations again.
+- Duration Boost now updates the active effects through Forge's normal effect API. It uses the smaller of the remaining duration and the exposure-scaled three-minute cap. Custom cures, visibility, status icons and the queued weaker tier retain their saved data.
+- A muted clean Forge survival client used two supplied bottles through the normal drink control. It extended all four timed effects. The second dose gave ambient Blindness. After reconnecting to the restarted server, all five effects and the backlash had the expected remaining time. Both client launches used OpenAL No Output and master volume zero while the foreground app kept focus.
+- The preceding packaged JAR cleared all three debuffs on the tagged pig. In copied Auram, actual dropped offerings and the bound Taglock extended Speed, Weakness and Overheating to twice their remaining duration and added 3,600 ticks to Poison, measured across the cast. The dedicated server saved the result normally.
+- Java 17 reobfuscation and all 388 local Forge GameTests passed on seed `5471593853027166409`. The candidate JAR at `build/qa-brew-duration/candidate.jar` has SHA-256 `1cdea9e48e419ef4d2fe31d54293343fe911564ef94e7fe69540ddc0c5b6b529`. The native, baseline, clean Forge and copied Auram traces are in `build/qa-brew-duration/comparison.txt`.
+
 ## Ambient cauldron effects (2026-11-25)
 
 - The original server marks Gold Nugget effects and long Taglock curses as ambient. The potion effect's legacy accessor writes `Ambient` in the saved record. The preceding Forge JAR used an ordinary effect with particles disabled. New doses use the modern ambient flag with their particles and status icon enabled. Bottles and cauldron recipes derive the flags when applied. Active effects load their stored flags.
@@ -1186,7 +1194,7 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 ## Purified Milk and Duration Boost (2026-11-24)
 
 - Standalone Purified Milk rolls a 50% chance and samples one active effect. The legacy player protection keeps an incurable effect active when the milk selects it and it has more than five ticks left.
-- The Creeper Heart duration brew preserves the same protection while removing other debuffs, extending beneficial effects and applying Queasy. The extended effects keep their Forge curative items. The debuff cleanup for creatures proceeds without the player protection.
+- This checkpoint added protection for the Creeper Heart brew's handling of a player's incurable effects and kept Forge curative items on extended buffs. The later native duration comparison established that the original also extends harmful and incurable effects.
 - The preceding JAR reproduced both cases of Overheating being cleared through the survival client's normal drink control. The patched JAR read a synthetic 1.7.10 player record with Overheating II, Weakness, Speed II, Purified Milk subtype 105 and an ordered Creeper Heart brew. The drink retained the curse's duration, amplifier, ambient flag and hidden particles, cleared Weakness, doubled remaining Speed within the recipe's cap, and gave Queasy and a glass bottle.
 - The dedicated restart retained Overheating, Speed and Queasy. The fixture cleared Speed and Queasy and moved the saved Milk to the selected slot. Ten drinks left Overheating ticking. With fixture-supplied Weakness also active, Purified Milk cleared Weakness and kept Overheating. The isolated clean Forge client and dedicated server used matching JARs with SHA-256 `debd7d7403436285d1578cd04b771211a14f91ad2da7fc00a0b45d07160caf75`. The client used zero master volume and OpenAL No Output without taking desktop focus. Logs are in `build/qa-incurable-brews`.
 - Local Java 17 reobfuscation and the asset inventory audit passed. The GameTest run concurrent with packaged client testing failed the existing Focused Barrier activation assertion in the Grassper refund test. All 166 required GameTests passed on a standalone rerun, including the new brew regression.
