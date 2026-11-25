@@ -1,26 +1,115 @@
 package art.arcane.witchery.entity;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.infusion.CreaturePower;
 import art.arcane.witchery.infusion.InfernalInfusion;
 import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryItems;
 import com.mojang.authlib.GameProfile;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.PlayLevelSoundEvent;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class InfernalMinionTests {
+    @GameTest(template = "qa_coven_arena")
+    public static void ownerProtectionPreservesAnOrderedTarget(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var caster = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "InfernalOrderQA"));
+        var zombie = EntityType.ZOMBIE.create(level);
+        var pig = EntityType.PIG.create(level);
+        InfernalInfusion.bind(zombie, caster);
+        zombie.setTarget(pig);
+        zombie.setTarget(caster);
+        helper.assertTrue(zombie.getTarget() == pig, "Rejecting an attempt to target the owner preserves the ordered victim");
+        zombie.setTarget(null);
+        zombie.setTarget(caster);
+        helper.assertTrue(zombie.getTarget() == null, "An idle bound zombie also refuses its owner");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void grantsPowerBeforeAttemptingSacrificeDamage(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var caster = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "InfernalSacrificeQA"));
+        caster.setShiftKeyDown(true);
+        InfusionEnergy.grant(caster, InfernalInfusion.ID, 20);
+        var pig = EntityType.PIG.create(level);
+        InfernalInfusion.bind(pig, caster);
+        var hand = WitcheryItems.getRequired("witchhand").get().getDefaultInstance();
+        var hits = new AtomicInteger();
+        Consumer<LivingHurtEvent> cancel = event -> {
+            if (event.getEntity() != pig) return;
+            hits.incrementAndGet();
+            helper.assertTrue(CreaturePower.forId(CreaturePower.activeId(caster)) == CreaturePower.PIG
+                            && CreaturePower.charges(caster) == 1,
+                    "The original creature power is granted before the sacrifice damage event");
+            helper.assertTrue(event.getSource().getDirectEntity() == caster && event.getSource().getEntity() == null,
+                    "Sacrifice uses the caster as the direct source with no credited attacker");
+            event.setCanceled(true);
+        };
+        MinecraftForge.EVENT_BUS.addListener(cancel);
+        try {
+            hand.getItem().onLeftClickEntity(hand, caster, pig);
+            helper.assertTrue(hits.get() == 1 && pig.isAlive() && pig.getHealth() == 10
+                            && caster.getPersistentData().getCompound(FakePlayer.PERSISTED_NBT_TAG)
+                            .getInt("witcheryInfusionCharges") == 19,
+                    "The veto protects the creature and the original hand and creature charge changes persist");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(cancel);
+            pig.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void ignoresSideFacesAndRejectsEmptyMovementOrders(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var caster = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "InfernalMovementQA"));
+        var base = helper.absolutePos(new BlockPos(2, 0, 2)).atY(200);
+        var start = Vec3.atBottomCenterOf(base);
+        caster.moveTo(start.x, start.y, start.z, 0, 0);
+        caster.setShiftKeyDown(true);
+        level.setBlockAndUpdate(base.offset(0, 1, 5), Blocks.STONE.defaultBlockState());
+        InfusionEnergy.grant(caster, InfernalInfusion.ID, 20);
+        var hand = WitcheryItems.getRequired("witchhand").get().getDefaultInstance();
+        var cues = new AtomicInteger();
+        Consumer<PlayLevelSoundEvent.AtEntity> capture = event -> {
+            if (event.getEntity() == caster) cues.incrementAndGet();
+        };
+        MinecraftForge.EVENT_BUS.addListener(capture);
+        try {
+            hand.getItem().releaseUsing(hand, level, caster, hand.getUseDuration() - 5);
+            helper.assertTrue(cues.get() == 0, "Side faces stay quiet on the original movement command");
+            caster.moveTo(start.x, level.getMaxBuildHeight() + 2, start.z, 0, -90);
+            hand.getItem().releaseUsing(hand, level, caster, hand.getUseDuration() - 5);
+            helper.assertTrue(cues.get() == 1 && caster.getPersistentData().getCompound(FakePlayer.PERSISTED_NBT_TAG)
+                            .getInt("witcheryInfusionCharges") == 20,
+                    "An empty aim plays the rejection cue and movement commands leave the infusion reserve intact");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(capture);
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void infernalHandAndImperioRespectLegacyBossImmunity(GameTestHelper helper) {
         var level = helper.getLevel();

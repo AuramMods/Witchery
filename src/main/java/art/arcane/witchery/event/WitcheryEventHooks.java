@@ -382,7 +382,8 @@ public final class WitcheryEventHooks {
     public static void protectPlayerFromTargeting(LivingChangeTargetEvent event) {
         if (!(event.getEntity() instanceof Mob mob) || !(event.getNewTarget() instanceof ServerPlayer player)) return;
         if (InfernalInfusion.owns(mob, player) && mob.hasEffect(WitcheryEffects.ENSLAVED.get())) {
-            event.setNewTarget(null);
+            // Reject the new candidate while preserving the minion's current order.
+            event.setCanceled(true);
             return;
         }
         boolean deterred = player.isInvisible()

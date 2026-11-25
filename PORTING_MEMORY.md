@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Infernal minion orders and sacrifice (2026-11-25)
+
+- Witchery 0.24.1 sends Spell and zombie infection on binding, Crit and breath on target orders, and Instant Spell and pop on movement orders. The first two originate at the creature's feet, and movement uses the destination's lower block corner. The Hand sends all three within 16 blocks, and Imperio sends the binding cue within eight. A crouched use against a side face spent zero charge and stayed quiet.
+- The native Forge damage veto saw the Pig power and its first charge before the attempted sacrifice damage. The caster was the direct source and the credited attacker was absent. The protected pig stayed at ten health and the infusion charge was spent. Three GameTests cover that order and attribution, the side-face and empty-aim responses, and a bound mob keeping an assigned target when its AI tries to target its owner.
+- Two muted clean Forge survival clients used a fixture-supplied Witch's Hand, Mystic Branch, and saved powers. The zombie took its assigned pig from ten health to seven and then four after trying to target its owner. The clients received the original cues at the measured ranges, and the movement order made the zombie walk toward the aimed block. The ordinary sacrifice added zero player kills. A dedicated restart kept all three surviving bindings and both Pig charges. Both launches used master volume zero and OpenAL No Output and kept desktop focus.
+- Reobfuscation and all 402 local Forge GameTests passed on seed `5471593853027166409`. The same JAR loaded the order area and saved the headless Auram copy. The exact candidate is `build/qa-infernal-order-cues/candidate.jar` with SHA-256 `f62612c333e64bfba5dbc2ccc7517fc74739089967c8052b20c13dfacebbaa11`. See `build/qa-infernal-order-cues/comparison.txt` for the native and packaged traces.
+
 ## Infernal arrow and web projectiles (2026-11-25)
 
 - Witchery 0.24.1 fired both Spider webs and the charged Skeleton arrow from `(94.09, 181.52, 31.75)` with the caster at `(94.25, 180, 31.75)` and moving `(1.2, 0.6, -0.35)`. The webs went forward near 1.5 blocks per tick and the critical arrow near three. Both now launch from that shoulder offset and use Forge's small projectile spread independently of the caster's movement.

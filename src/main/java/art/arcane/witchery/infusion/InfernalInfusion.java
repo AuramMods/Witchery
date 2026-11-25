@@ -3,6 +3,7 @@ package art.arcane.witchery.infusion;
 import art.arcane.witchery.entity.CreatureAlignment;
 import art.arcane.witchery.entity.Demon;
 import art.arcane.witchery.entity.Imp;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryEntities;
@@ -15,7 +16,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -31,6 +31,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
@@ -52,13 +53,13 @@ public final class InfernalInfusion {
                 if (InfusionEnergy.spendHandCharge(player, 1)) sacrifice(player, mob);
             } else if (InfusionEnergy.spendHandCharge(player, 5)) {
                 bind(mob, player);
-                particles(mob, ParticleTypes.ENTITY_EFFECT);
-                mob.level().playSound(null, mob.blockPosition(), SoundEvents.ZOMBIE_INFECT, mob.getSoundSource(), 0.8F, 1);
+                WitcheryNetwork.sendInfernalBinding(player.serverLevel(), mob.position(), 16);
             }
             return;
         }
-        if (!InfusionEnergy.spendHandCharge(player, 1)) return;
-        orderAttack(minions(player), target);
+        if (InfusionEnergy.spendHandCharge(player, 1) && orderAttack(minions(player), target)) {
+            WitcheryNetwork.sendInfernalAttackOrder(player.serverLevel(), target.position());
+        }
     }
 
     private static boolean orderAttack(List<Mob> minions, LivingEntity target) {
@@ -71,19 +72,25 @@ public final class InfernalInfusion {
             mob.getNavigation().moveTo(target, 1);
             commanded = true;
         }
-        if (commanded) particles(target, ParticleTypes.CRIT);
         return commanded;
     }
 
     public static void release(ServerPlayer player, int elapsed) {
         HitResult hit = OtherwhereInfusion.rayTrace(player, 15);
         if (player.isShiftKeyDown()) {
-            if (!(hit instanceof BlockHitResult block) || hit.getType() != HitResult.Type.BLOCK
-                    || block.getDirection() != Direction.UP) {
+            if (hit.getType() != HitResult.Type.BLOCK) {
                 fail(player);
                 return;
             }
-            orderTo(player, minions(player), block.getBlockPos().above());
+            var block = (BlockHitResult) hit;
+            if (block.getDirection() == Direction.UP) {
+                var minions = minions(player);
+                if (!minions.isEmpty()) {
+                    BlockPos destination = block.getBlockPos().above();
+                    orderTo(minions, destination);
+                    WitcheryNetwork.sendInfernalMoveOrder(player.serverLevel(), Vec3.atLowerCornerOf(destination));
+                }
+            }
             return;
         }
         CreaturePower power = CreaturePower.forId(CreaturePower.activeId(player));
@@ -109,16 +116,21 @@ public final class InfernalInfusion {
         if (!player.isShiftKeyDown() && hit instanceof EntityHitResult entity
                 && entity.getEntity() instanceof LivingEntity target && target.isAlive() && !target.isSpectator()
                 && orderAttack(undead, target)) {
+            particles(target, ParticleTypes.CRIT);
             player.serverLevel().playSound(null, target.blockPosition(), SoundEvents.ZOMBIE_DEATH, player.getSoundSource(), 0.5F, 1);
         } else if (hit instanceof BlockHitResult block && hit.getType() == HitResult.Type.BLOCK
                 && block.getDirection() == Direction.UP && !undead.isEmpty()) {
-            orderTo(player, undead, block.getBlockPos().above());
+            BlockPos destination = block.getBlockPos().above();
+            orderTo(undead, destination);
+            player.serverLevel().sendParticles(ParticleTypes.INSTANT_EFFECT, destination.getX() + 0.5,
+                    destination.getY() + 0.5, destination.getZ() + 0.5, 16, 0.5, 0.7, 0.5, 0.03);
+            player.serverLevel().playSound(null, destination, SoundEvents.CHICKEN_EGG, player.getSoundSource(), 0.5F, 1);
         } else {
             fail(player);
         }
     }
 
-    private static void orderTo(ServerPlayer player, List<Mob> minions, BlockPos destination) {
+    private static void orderTo(List<Mob> minions, BlockPos destination) {
         for (Mob minion : minions) {
             clearAggro(minion);
             MoveOrder move = order(minion);
@@ -131,11 +143,6 @@ public final class InfernalInfusion {
                 minion.restrictTo(destination, 10);
             }
         }
-        if (!minions.isEmpty()) {
-            player.serverLevel().sendParticles(ParticleTypes.INSTANT_EFFECT, destination.getX() + 0.5,
-                    destination.getY() + 0.5, destination.getZ() + 0.5, 16, 0.5, 0.7, 0.5, 0.03);
-            player.serverLevel().playSound(null, destination, SoundEvents.CHICKEN_EGG, player.getSoundSource(), 0.5F, 1);
-        }
     }
 
     private static void sacrifice(ServerPlayer player, Mob creature) {
@@ -144,8 +151,8 @@ public final class InfernalInfusion {
             fail(player);
             return;
         }
-        creature.hurt(player.serverLevel().damageSources().indirectMagic(player, player), creature.getHealth() + 1);
-        if (!creature.isAlive()) power.absorb(player);
+        power.absorb(player);
+        creature.hurt(player.serverLevel().damageSources().indirectMagic(player, null), creature.getHealth() + 1);
     }
 
     private static List<Mob> minions(ServerPlayer player) {
@@ -163,9 +170,7 @@ public final class InfernalInfusion {
     public static void castImperio(ServerPlayer player, Mob mob) {
         if (!canBind(mob) || owns(mob, player)) return;
         bind(mob, player);
-        ServerLevel level = player.serverLevel();
-        level.sendParticles(ParticleTypes.ENTITY_EFFECT, mob.getX(), mob.getY(0.5), mob.getZ(), 8, 0.45, 0.65, 0.45, 0.04);
-        level.playSound(null, mob.blockPosition(), SoundEvents.ZOMBIE_INFECT, SoundSource.PLAYERS, 1, 1);
+        WitcheryNetwork.sendInfernalBinding(player.serverLevel(), mob.position(), 8);
     }
 
     public static boolean owns(Mob mob, @Nullable LivingEntity owner) {

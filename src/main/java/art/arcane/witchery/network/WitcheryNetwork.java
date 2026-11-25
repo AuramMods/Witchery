@@ -52,6 +52,7 @@ public final class WitcheryNetwork {
     private static final int MAX_MARKUP_CHAPTER_LENGTH = 32;
     private static final int LEGACY_HUGE_EXPLOSION_PARTICLE_ID = 0;
     private static final int LEGACY_LARGE_EXPLOSION_PARTICLE_ID = 1;
+    private static final int LEGACY_CRIT_PARTICLE_ID = 6;
     private static final int LEGACY_SMOKE_PARTICLE_ID = 8;
     private static final int LEGACY_MOB_SPELL_PARTICLE_ID = 9;
     private static final int LEGACY_SPELL_PARTICLE_ID = 10;
@@ -74,8 +75,10 @@ public final class WitcheryNetwork {
     private static final int LEGACY_POP_SOUND_ID = 11;
     private static final int LEGACY_ENDERMAN_TELEPORT_SOUND_ID = 16;
     private static final int LEGACY_GHAST_FIREBALL_SOUND_ID = 19;
+    private static final int LEGACY_ZOMBIE_INFECT_SOUND_ID = 24;
     private static final int LEGACY_DRAGON_GROWL_SOUND_ID = 27;
     private static final int LEGACY_LEVEL_UP_SOUND_ID = 29;
+    private static final int LEGACY_BREATH_SOUND_ID = 41;
     private static final int LEGACY_SPECTRE_AMBIENT_SOUND_ID = 43;
     private static final int LEGACY_BLAZE_DEATH_SOUND_ID = 44;
     private static final int LEGACY_DRINK_SOUND_ID = 56;
@@ -441,6 +444,18 @@ public final class WitcheryNetwork {
 
     public static void sendThrownWebImpact(ServerLevel level, Vec3 center) {
         sendParticlesAround(level, LEGACY_EXPLOSION_PARTICLE_ID, LEGACY_NO_SOUND_ID, center, 1, 1, 8);
+    }
+
+    public static void sendInfernalBinding(ServerLevel level, Vec3 center, int radius) {
+        sendParticlesAround(level, LEGACY_SPELL_PARTICLE_ID, LEGACY_ZOMBIE_INFECT_SOUND_ID, center, 1, 2, radius);
+    }
+
+    public static void sendInfernalAttackOrder(ServerLevel level, Vec3 center) {
+        sendParticlesAround(level, LEGACY_CRIT_PARTICLE_ID, LEGACY_BREATH_SOUND_ID, center, 0.5, 2, 16);
+    }
+
+    public static void sendInfernalMoveOrder(ServerLevel level, Vec3 destination) {
+        sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_POP_SOUND_ID, destination, 0.5, 2, 16);
     }
 
     public static void sendParticlesAround(ServerLevel level, int particleEffectId, int soundEffectId, Vec3 center,

@@ -377,8 +377,8 @@
 - [x] Build the reobfuscated Java 17 JAR and run all 65 required Forge GameTests. The tests cover legacy minion names, sacrifices, the secondary charge cap, effects, fireballs, arrows and cobwebs. Legacy ingredient 56 migrates to `witchery:thrown_web` and the existing `witchery:web` block item retains its ID.
 - [x] The dedicated restart retained the minion's owner, the bat power and nine creature charges. On the packaged server with `allow-flight=false`, the muted survival client held jump for 6.8 seconds, rose from Y 110 to Y 168.8, remained connected and took two damage after landing.
 - [x] Acquire the Owl and Toad powers through their survival entities. The muted client mutated both species, bound a wild member of each species and sacrificed it with the Infernal Hand. Each power started with ten reserve charges.
-
 - [x] Restore the Infernal Spider, Cave Spider, and Skeleton launch origin and aim while moving. The native trace and Forge test verify the original shoulder offset and speed. The muted packaged clients fired a recoverable Skeleton arrow and matched the original Thrown Web impacts against a wall, a full snow block, and a creature at negative coordinates.
+- [x] Restore the original binding, attack, and movement cues, including Imperio's shorter range. The bound zombie kept its assigned pig target and landed successive attacks after its AI attempted to target its owner. Sacrifices grant creature power before applying damage and carry no player kill credit. Two muted clean Forge survival clients exercised the Witch's Hand and Mystic Branch. After restart, the server retained all three surviving creature bindings, two Pig charges, and the protected pig's ten health. All 402 local Forge GameTests passed.
 
 ## Poppet Shelf (2026-11-20)
 

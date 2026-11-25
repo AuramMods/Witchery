@@ -1274,6 +1274,8 @@ The four original infusion rites and Infusion Recharging check a four-block sphe
 
 The Infernal Hand and Imperio reject Baba Yaga, Lilith, Death, the Horned Huntsman, Mog, Gulg, Leonard, the Lord of Torment, and the Reflection. The shared boss check also reads Forge's boss tag. Golems, Demons, ordinary witches, Imps, Ents and Elder Guardians retain their separate binding exclusions.
 
+The Infernal Hand plays the original Spell and zombie infection cue at the feet of a bound creature, with a 16-block audience. Imperio uses the same cue within eight blocks. A hostile order sends Crit and breath at the target. A movement order sends Instant Spell and pop at the lower corner of the destination. Both orders use the original 16-block audience. A bound mob keeps its ordered target if its own AI attempts to target its owner. Crouch-use against a side face is silent. The sacrifice stores the creature power before applying indirect magic damage, with the caster as the direct source and no credited attacker. A Forge listener can veto the damage while the creature charge remains earned.
+
 `witchery:poppetshelf` reads legacy `Items` and its nine `Slot` indices. It shares taglock matching and `WITCDamage` with handheld wards. A Forge block ticket replaces the old `poppetX`, `poppetY` and `poppetZ` ticket fields and keeps the owning block position in the dimension's `chunks.dat`.
 
 On an explicit legacy import, Witchery reads its `TicketList` records from each original `forcedchunks.dat` and restores a ticking ticket for every surviving Poppet Shelf. It also loads shelves outside spawn so their stored wards can become active before a player visits.
