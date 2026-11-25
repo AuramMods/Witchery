@@ -3,6 +3,7 @@ package art.arcane.witchery.item;
 import art.arcane.witchery.block.KettleBlock;
 import art.arcane.witchery.block.WitchesCauldronBlock;
 import art.arcane.witchery.event.WitcheryBlockBreak;
+import art.arcane.witchery.event.WitcheryBlockPlacement;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.core.BlockPos;
@@ -28,7 +29,6 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.FakePlayerFactory;
-import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import org.jetbrains.annotations.Nullable;
@@ -129,39 +129,8 @@ public final class EndlessWaterBrewItem extends Item {
     }
 
     private static boolean setWater(ServerLevel level, BlockPos pos, BlockState state, ServerPlayer player, Direction face) {
-        if (!level.getWorldBorder().isWithinBounds(pos)) return false;
-        // Approve the placed water before durability, sounds or fluid updates. Remove this snapshot so
-        // Forge's outer ItemStack.useOn handler does not post the same event again for a hand pour.
-        int snapshotIndex = level.capturedBlockSnapshots.size();
-        boolean capturing = level.captureBlockSnapshots;
-        level.captureBlockSnapshots = true;
-        try {
-            if (!level.setBlockAndUpdate(pos, state)) return false;
-            var snapshot = level.capturedBlockSnapshots.remove(snapshotIndex);
-            level.captureBlockSnapshots = false;
-            boolean allowed = false;
-            try {
-                allowed = !ForgeEventFactory.onBlockPlace(player, snapshot, face);
-            } finally {
-                if (!allowed) {
-                    boolean restoring = level.restoringBlockSnapshots;
-                    level.restoringBlockSnapshots = true;
-                    try {
-                        snapshot.restore(true, false);
-                    } finally {
-                        level.restoringBlockSnapshots = restoring;
-                    }
-                }
-            }
-            if (!allowed) return false;
-            var placed = level.getBlockState(pos);
-            var previous = snapshot.getReplacedBlock();
-            placed.onPlace(level, pos, previous, false);
-            level.markAndNotifyBlock(pos, level.getChunkAt(pos), previous, placed, snapshot.getFlag(), 512);
-            return true;
-        } finally {
-            level.captureBlockSnapshots = capturing;
-        }
+        // Resolve the pour before durability and sound. The item's outer Forge capture still owns its other changes.
+        return level.getWorldBorder().isWithinBounds(pos) && WitcheryBlockPlacement.placeNow(level, pos, state, player, face);
     }
 
     private static void waterPlaced(ServerLevel level, BlockPos pos, ServerPlayer player, SoundEvent sound, boolean atPlayer) {

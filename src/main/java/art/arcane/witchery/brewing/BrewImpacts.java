@@ -2,6 +2,7 @@ package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.event.WitcheryBlockBreak;
+import art.arcane.witchery.event.WitcheryBlockPlacement;
 import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.infusion.InfernalInfusion;
 import art.arcane.witchery.registry.WitcheryBlocks;
@@ -36,7 +37,6 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.living.BabyEntitySpawnEvent;
 import org.jetbrains.annotations.Nullable;
@@ -267,10 +267,7 @@ public final class BrewImpacts {
                 || brew.getOwner() instanceof Player player && !level.mayInteract(player, pos)) {
             return;
         }
-        if (brew.getOwner() != null && ForgeEventFactory.onBlockPlace(brew.getOwner(), BlockSnapshot.create(level.dimension(), level, pos), face)) {
-            return;
-        }
-        level.setBlockAndUpdate(pos, WitcheryBlocks.getRequired(block).get().defaultBlockState());
+        WitcheryBlockPlacement.place(level, pos, WitcheryBlocks.getRequired(block).get().defaultBlockState(), brew.getOwner(), face);
     }
 
     static boolean enhanced(ThrownBrew brew) {

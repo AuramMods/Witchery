@@ -2,6 +2,7 @@ package art.arcane.witchery.block;
 
 import art.arcane.witchery.block.entity.BrewFluidBlockEntity;
 import art.arcane.witchery.brewing.BrewMixture;
+import art.arcane.witchery.event.WitcheryBlockPlacement;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryFluids;
 import net.minecraft.core.BlockPos;
@@ -28,8 +29,6 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.common.util.BlockSnapshot;
-import net.minecraftforge.event.ForgeEventFactory;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -114,10 +113,8 @@ public final class BrewDispersalBlock extends LiquidBlock implements EntityBlock
     public void release(ServerLevel level, BlockPos pos, Direction face, CompoundTag tag, BrewMixture mixture, int color,
                         @Nullable Entity caster) {
         if (!canReplace(level, pos)) return;
-        if (caster != null && ForgeEventFactory.onBlockPlace(caster, BlockSnapshot.create(level.dimension(), level, pos), face)) {
-            return;
-        }
-        if (level.setBlockAndUpdate(pos, defaultBlockState()) && level.getBlockEntity(pos) instanceof BrewFluidBlockEntity fluid) {
+        if (WitcheryBlockPlacement.place(level, pos, defaultBlockState(), caster, face)
+                && level.getBlockEntity(pos) instanceof BrewFluidBlockEntity fluid) {
             fluid.initialize(tag, mixture, color, caster);
         }
     }

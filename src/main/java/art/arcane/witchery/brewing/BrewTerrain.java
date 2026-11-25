@@ -4,6 +4,7 @@ import art.arcane.witchery.block.BrewDispersalBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.event.WitcheryBlockBreak;
+import art.arcane.witchery.event.WitcheryBlockPlacement;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.world.WitcheryTeleport;
 import net.minecraft.core.BlockPos;
@@ -287,31 +288,12 @@ public final class BrewTerrain {
             var captured = level.capturedBlockSnapshots.subList(first, level.capturedBlockSnapshots.size());
             changes = List.copyOf(captured);
             if (!alreadyCapturing || !placed) captured.clear();
-            if (!placed) restore(level, changes);
+            if (!placed) WitcheryBlockPlacement.restore(level, changes);
         }
         if (placed && !alreadyCapturing) {
-            for (BlockSnapshot change : changes) {
-                BlockPos pos = change.getPos();
-                var state = level.getBlockState(pos);
-                var previous = change.getReplacedBlock();
-                state.onPlace(level, pos, previous, false);
-                level.markAndNotifyBlock(pos, level.getChunkAt(pos), previous, state, change.getFlag(), 512);
-            }
+            WitcheryBlockPlacement.notifyPlacement(level, changes);
         }
         return placed;
-    }
-
-    private static void restore(ServerLevel level, List<BlockSnapshot> changes) {
-        boolean capturing = level.captureBlockSnapshots;
-        boolean restoring = level.restoringBlockSnapshots;
-        level.captureBlockSnapshots = false;
-        level.restoringBlockSnapshots = true;
-        try {
-            for (int i = changes.size() - 1; i >= 0; i--) changes.get(i).restore(true, false);
-        } finally {
-            level.captureBlockSnapshots = capturing;
-            level.restoringBlockSnapshots = restoring;
-        }
     }
 
     static void forEachColumn(ServerLevel level, BlockPos center, int radius, Consumer<BlockPos> action) {
@@ -355,9 +337,9 @@ public final class BrewTerrain {
         boolean replacingDispersal = old.getBlock() instanceof BrewDispersalBlock && (state.isAir()
                 || state.is(WitcheryBlocks.getRequired("perpetualice").get()));
         if ((old.hasBlockEntity() && !replacingDispersal) || !canEdit(owner, level, pos, old)) return false;
-        if (!state.isAir() && owner != null && ForgeEventFactory.onBlockPlace(owner,
-                BlockSnapshot.create(level.dimension(), level, pos), face)) return false;
-        if (!level.setBlockAndUpdate(pos, state)) return false;
+        boolean changed = state.isAir() ? level.setBlockAndUpdate(pos, state)
+                : WitcheryBlockPlacement.place(level, pos, state, owner, face);
+        if (!changed) return false;
         if (particles) {
             level.sendParticles(ParticleTypes.POOF, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
                     6, 0.25, 0.25, 0.25, 0.02);

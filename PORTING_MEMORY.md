@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Brew placement and protection (2026-11-24)
+
+- The previous Forge build posted placement events before replacing a block. A protection listener saw grass for a Web and air for a gas cloud. Listeners that canceled those specific blocks let the brew change the world.
+- Terrain brews, gas and liquid dispersal sources, Flowing Spirit, and Hollow Tears now stage the real world change in a Forge snapshot. The event can inspect that placement and the previous state. On veto the snapshot restores the previous block and any block entity data. On approval the placement runs its normal block and neighbor updates.
+- Endless Water uses the same placement code. It resolves the pour before spending durability or playing a sound, even inside Forge's outer item-use capture. Grouped brew writes keep their existing multi-block approval step.
+- The packaged clean Forge survival client threw two Web brews and two gas brews and poured Endless Water twice. The vetoed cells held grass or air. The allowed cells held a Web, an initialized gaseous Poison brew with its three ingredients, and a water source. Both water attempts emitted one placement event. Only the allowed pour advanced the bottle from wear three to wear four.
+- A dedicated restart preserved both pairs of Web and water cells. The client ran with zero master volume and OpenAL No Output, and the focus monitor recorded no activation. The same package repeated the Web and gas cases on copied Auram with a fixture player.
+- Java 17 data generation, JAR reobfuscation, and all 305 required Forge GameTests passed locally. The regression checked that a denied cloud leaves no scheduled tick or block entity and that freezing an active cloud under a veto restores its saved payload. The tested JAR SHA-256 is `4f18d6f93a91620907c953e9c12f65a1c3cca984756f4a3761ea1dddcd2e791b`. The baseline, test results and packaged checks are under `build/qa-brew-placement`.
+
 ## Grenade impacts and fuse expiry (2026-11-24)
 
 - On Witchery 0.24.1, a Sun Grenade flew through a boat and stopped at `(99.0, 120.4, 29.5)` when its next step would have hit a pig. It stopped at `(102.25, 120.4, 31.5)` on the wall fixture. A Duplicate Grenade created its follower at that same pre-impact point and returned one Quartz Sphere half a block above it.

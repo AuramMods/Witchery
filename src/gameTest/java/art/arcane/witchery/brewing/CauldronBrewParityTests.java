@@ -3,6 +3,7 @@ package art.arcane.witchery.brewing;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.WitchesCauldronBlock;
 import art.arcane.witchery.block.entity.AltarBlockEntity;
+import art.arcane.witchery.block.entity.BrewFluidBlockEntity;
 import art.arcane.witchery.block.entity.SlurpBlockEntity;
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
@@ -185,16 +186,21 @@ public final class CauldronBrewParityTests {
         var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "WebBrewTester"));
         var protectedCell = center.north();
         var occupiedCell = center.west();
+        var grass = Blocks.GRASS.defaultBlockState();
         level.setBlockAndUpdate(impact, Blocks.STONE.defaultBlockState());
         level.setBlockAndUpdate(occupiedCell, Blocks.CHEST.defaultBlockState());
+        level.setBlockAndUpdate(protectedCell.below(), Blocks.DIRT.defaultBlockState());
+        level.setBlockAndUpdate(protectedCell, grass);
         var weak = BrewMixture.from(List.of(new ItemStack(Items.NETHER_WART), new ItemStack(Items.GUNPOWDER),
                 new ItemStack(WitcheryIngredient.WEB.item())));
         var strong = BrewMixture.from(List.of(new ItemStack(Items.NETHER_WART), new ItemStack(Items.GUNPOWDER),
                 new ItemStack(Items.GLOWSTONE_DUST), new ItemStack(Items.BLAZE_ROD), new ItemStack(WitcheryIngredient.WEB.item())));
         helper.assertTrue(weak != null && strong != null, "Both original cauldron recipes are valid");
+        var seen = new ArrayList<BlockEvent.EntityPlaceEvent>();
         Consumer<BlockEvent.EntityPlaceEvent> protection = event -> {
             if (event.getLevel() == level && event.getEntity() == player && event.getPos().equals(protectedCell)) {
-                event.setCanceled(true);
+                seen.add(event);
+                if (event.getPlacedBlock().is(web)) event.setCanceled(true);
             }
         };
         MinecraftForge.EVENT_BUS.addListener(protection);
@@ -207,9 +213,70 @@ public final class CauldronBrewParityTests {
             helper.assertTrue(level.getBlockState(center).is(web) && level.getBlockState(center.south()).is(web)
                             && level.getBlockState(center.above().east()).is(web),
                     "A second strengthened splash expands around the existing web to faces and edges");
-            helper.assertTrue(level.getBlockState(occupiedCell).is(Blocks.CHEST) && level.isEmptyBlock(protectedCell)
+            helper.assertTrue(seen.size() == 1 && seen.get(0).getBlockSnapshot().getReplacedBlock().equals(grass)
+                            && seen.get(0).getPlacedBlock().is(web),
+                    "The placement event must see the web and retain the replaced grass snapshot");
+            helper.assertTrue(level.getBlockState(occupiedCell).is(Blocks.CHEST) && level.getBlockState(protectedCell).equals(grass)
                             && level.isEmptyBlock(center.above().east().south()),
                     "The expansion respects occupied and protected cells and leaves the corners clear");
+            helper.succeed();
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(protection);
+            player.discard();
+        }
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_brew_placement")
+    public static void gasPlacementVetoLeavesNoCloudOrBlockEntity(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var impact = helper.absolutePos(new BlockPos(5, 6, 5));
+        var blocked = impact.above();
+        var open = blocked.east(3);
+        var gas = WitcheryBlocks.getRequired("brewgas").get();
+        var ice = WitcheryBlocks.getRequired("perpetualice").get();
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "GasBrewTester"));
+        var ingredients = List.of(Items.NETHER_WART.getDefaultInstance(), Items.SPIDER_EYE.getDefaultInstance(),
+                WitcheryIngredient.BAT_WOOL.item().getDefaultInstance());
+        var mixture = BrewMixture.from(ingredients);
+        var bottle = WitcheryItems.getRequired("brewbottle").get().getDefaultInstance();
+        bottle.setTag(mixture.bottleTag(ingredients));
+        level.setBlockAndUpdate(impact, Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(open.below(), Blocks.STONE.defaultBlockState());
+
+        var seen = new ArrayList<BlockEvent.EntityPlaceEvent>();
+        Consumer<BlockEvent.EntityPlaceEvent> protection = event -> {
+            if (event.getLevel() == level && event.getEntity() == player
+                    && (event.getPos().equals(blocked) || event.getPos().equals(open))) {
+                seen.add(event);
+                if (event.getPos().equals(blocked) && event.getPlacedBlock().is(gas)) event.setCanceled(true);
+                if (event.getPos().equals(open) && event.getPlacedBlock().is(ice)) event.setCanceled(true);
+            }
+        };
+        MinecraftForge.EVENT_BUS.addListener(protection);
+        try {
+            for (BlockPos cell : List.of(blocked, open)) {
+                var shot = new ThrownBrew(player, level);
+                shot.setItem(bottle);
+                shot.setPos(Vec3.atBottomCenterOf(cell).add(0, 0.6, 0));
+                shot.setDeltaMovement(0, -1.4, 0);
+                shot.tick();
+            }
+            helper.assertTrue(seen.size() == 2 && seen.stream().allMatch(event -> event.getPlacedBlock().is(gas)
+                            && event.getBlockSnapshot().getReplacedBlock().isAir()),
+                    "Both gas impacts report the actual gas state over the original air");
+            helper.assertTrue(level.isEmptyBlock(blocked) && level.getBlockEntity(blocked) == null
+                            && !level.getBlockTicks().hasScheduledTick(blocked, gas),
+                    "The veto restores the empty cell without leaving a cloud, data or a scheduled tick");
+            helper.assertTrue(level.getBlockState(open).is(gas)
+                            && level.getBlockEntity(open) instanceof BrewFluidBlockEntity cloud && cloud.hasContents()
+                            && level.getBlockTicks().hasScheduledTick(open, gas),
+                    "Allowed gas placement initializes the cloud and schedules its first tick");
+            var before = level.getBlockEntity(open).saveWithFullMetadata();
+            helper.assertTrue(!BrewTerrain.setBlock(player, level, open, ice.defaultBlockState(), Direction.UP)
+                            && level.getBlockState(open).is(gas)
+                            && level.getBlockEntity(open) instanceof BrewFluidBlockEntity restored
+                            && restored.saveWithFullMetadata().equals(before),
+                    "A vetoed ice replacement restores the active gas and its entire brew payload");
             helper.succeed();
         } finally {
             MinecraftForge.EVENT_BUS.unregister(protection);
