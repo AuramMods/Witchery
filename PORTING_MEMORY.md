@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron ritual feedback (2026-11-25)
+
+- The original server emitted six captured packets across successful Swiftness and Mutandis casts, three rejected casts, and a cast interrupted after warmup. Success pairs spell particles with a fizz. Colored smoke and a pop indicate distance in green, missing circles in red, unresolved targets in purple, and interruption in olive.
+- The packet is sent within eight blocks of the basin center at Y + 0.6 and uses the original width of 0.5 and height of 1. Failed target checks leave the brew and return the last offering. Losing power while an active cast is underway empties the cauldron.
+- The preceding package performed the casts without any of the six original cues. The rebuilt package on clean Forge sent all six at their original positions, colors, and dimensions. A client outside the eight-block radius received no cue for a second Mutandis completion. An ordinary dedicated restart retained the failed brews without replaying their cues.
+- On the restarted world, a new missing-circle cast created twenty tinted smoke particles and called the local pop sound once. The isolated client measured zero master volume, selected OpenAL No Output, and stayed unfocused.
+- Copied Auram used the same package and produced the same six casts. Its muted, unfocused client processed each server cue exactly once after recipe indexing. The three target failures preserved their mixtures and returned their triggers. The interrupted gas cast emptied its tank.
+- Java 17 data generation and JAR reobfuscation succeeded locally. The first suite run hit a Sentinel guard assertion. All 315 required Forge GameTests passed on rerun. The candidate SHA-256 is `b422d48c5d81bec78c89f2f34c8d8aa15279d0f5cb565dbf4d4026246a6e7df7`. The original trace and packaged replay are under `build/qa-cauldron-ritual-feedback/`.
+
 ## Vampire hunts in imported villages (2026-11-25)
 
 - The original Witchery server sent a vampire from `(-53.5, 120, 33.5)` to `(94.5, 121.05, 33.5)`. The 148-block trip falls inside the original 128-block search plus the village's saved 32-block radius. The original server also wrote a named vampire and its home coordinates for the import fixture.

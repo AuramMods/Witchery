@@ -12,6 +12,7 @@ import art.arcane.witchery.brewing.CauldronRitualRecipe;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.item.BiomeNoteItem;
+import art.arcane.witchery.network.WitcheryNetwork;
 import net.minecraft.core.registries.Registries;
 import art.arcane.witchery.power.AltarPower;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
@@ -24,7 +25,6 @@ import art.arcane.witchery.ritual.RitualCircle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -71,6 +71,10 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
     private static final int BOIL_TICKS = 100;
     private static final int RITUAL_WARMUP_PULSES = 20;
     private static final int RITUAL_REFUND = -1;
+    private static final int INTERRUPTED_RITUAL_COLOR = 0xFF888800;
+    private static final int DISTANT_TARGET_COLOR = 0xFF008800;
+    private static final int INVALID_CIRCLES_COLOR = 0xFF880000;
+    private static final int FAILED_RITUAL_COLOR = 0xFF880088;
     private final List<ItemStack> ingredients = new ArrayList<>();
     @Nullable
     private ResourceLocation ritual;
@@ -246,7 +250,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
             } else {
                 if (!refundRitualTrigger(server)) return;
                 ritualTicks = 0;
-                ritualParticles(server, ParticleTypes.SMOKE);
+                WitcheryNetwork.sendCauldronRitualFailure(server, worldPosition, FAILED_RITUAL_COLOR);
             }
             mixture = BrewMixture.from(ingredients, brewColor);
         }
@@ -263,7 +267,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
 
     private void advanceBrewRitual(ServerLevel server, BlockPos pos) {
         if (ritualTicks == RITUAL_REFUND || mixture == null) {
-            endBrewRitual(server);
+            endBrewRitual(server, FAILED_RITUAL_COLOR);
             return;
         }
         var circles = CastCircles.around(server, pos);
@@ -273,7 +277,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         if (!isBoiling() || tank.getFluidAmount() != CAPACITY || basePower > 0 && (altar == null || altar.power() < cost)) {
             if (ritualTicks > RITUAL_WARMUP_PULSES) {
                 clearMixture();
-                ritualParticles(server, ParticleTypes.SMOKE);
+                WitcheryNetwork.sendCauldronRitualFailure(server, pos, INTERRUPTED_RITUAL_COLOR);
             } else {
                 ritualTicks = 0;
             }
@@ -285,10 +289,12 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         var result = BrewRituals.pulse(server, pos, mixture, mixture.bottleTag(ingredients), lastIngredient(),
                 ritualTicks - RITUAL_WARMUP_PULSES, leonard);
         switch (result) {
-            case FAILED, TOO_FAR -> endBrewRitual(server);
+            case FAILED -> endBrewRitual(server, FAILED_RITUAL_COLOR);
+            case TOO_FAR -> endBrewRitual(server, DISTANT_TARGET_COLOR);
+            case INVALID_CIRCLES -> endBrewRitual(server, INVALID_CIRCLES_COLOR);
             case COMPLETE -> {
                 clearMixture();
-                ritualParticles(server, ParticleTypes.POOF);
+                WitcheryNetwork.sendCauldronRitualComplete(server, pos);
                 mishap(server, pos, circles.risk() + (leonard ? 1 : 0), basePower);
             }
             case ONGOING -> {
@@ -297,8 +303,11 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         }
     }
 
-    private void endBrewRitual(ServerLevel server) {
-        ritualTicks = RITUAL_REFUND;
+    private void endBrewRitual(ServerLevel server, int color) {
+        if (ritualTicks != RITUAL_REFUND) {
+            ritualTicks = RITUAL_REFUND;
+            WitcheryNetwork.sendCauldronRitualFailure(server, worldPosition, color);
+        }
         ItemStack trigger = lastIngredient();
         if (trigger.is(WitcheryIngredient.DOG_TONGUE.item()) || trigger.getItem() instanceof TaglockItem) {
             if (!refundRitualTrigger(server)) return;
@@ -306,7 +315,6 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         brewRitual = false;
         ritualTicks = 0;
         onIngredientAdded(server);
-        ritualParticles(server, ParticleTypes.SMOKE);
     }
 
     private boolean refundRitualTrigger(ServerLevel server) {
@@ -325,12 +333,6 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
     private boolean canCastWith(ItemStack trigger) {
         return mixture != null && mixture.hasEffects() && (trigger.getItem() instanceof TaglockItem
                 || trigger.is(WitcheryIngredient.DOG_TONGUE.item()) && mixture.splash());
-    }
-
-    private void ritualParticles(ServerLevel server, SimpleParticleType particles) {
-        Vec3 center = Vec3.atCenterOf(worldPosition);
-        server.sendParticles(particles, center.x, center.y + 0.5, center.z, 8, 0.25, 0.2, 0.25, 0.02);
-        server.playSound(null, worldPosition, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.7F, 1.3F);
     }
 
     private static void mishap(ServerLevel server, BlockPos pos, int risk, int power) {
@@ -794,6 +796,10 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
             return false;
         }
         clearMixture();
+        if (recipe.legacy()) {
+            WitcheryNetwork.sendCauldronRitualComplete(server, pos);
+            return true;
+        }
         boolean summoned = recipe.summon() != null;
         server.sendParticles(summoned ? ParticleTypes.EXPLOSION : ParticleTypes.POOF,
                 pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 8, 0.25, 0.2, 0.25, 0.02);

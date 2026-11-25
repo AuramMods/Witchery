@@ -33,7 +33,7 @@ public final class BrewRituals {
             TicketType.create("witchery_brew_ritual", Comparator.comparingLong(BlockPos::asLong), 160);
 
     public enum Result {
-        ONGOING, COMPLETE, FAILED, TOO_FAR
+        ONGOING, COMPLETE, FAILED, TOO_FAR, INVALID_CIRCLES
     }
 
     private BrewRituals() {}
@@ -52,7 +52,7 @@ public final class BrewRituals {
         ServerLevel level = site.level();
         BlockPos target = site.pos();
         boolean transpose = mixture.hasTransposition();
-        if (!hasRequiredCircles(mixture, site)) return Result.FAILED;
+        if (!hasRequiredCircles(mixture, site)) return Result.INVALID_CIRCLES;
 
         return switch (mixture.impactDelivery()) {
             case TRIGGERED -> BrewItemCurse.attach(source, origin, brew) ? Result.COMPLETE : Result.FAILED;
@@ -93,8 +93,7 @@ public final class BrewRituals {
         BrewTransposition.Site destination = null;
         if (mixture.hasTransposition() || mixture.requiresInfernalCircle()) {
             var site = reachableSite(source, origin, mixture.destination(), coven, leonard);
-            if (site == null) return Result.TOO_FAR;
-            if (!hasRequiredCircles(mixture, site)) return Result.FAILED;
+            if (site == null || !hasRequiredCircles(mixture, site)) return Result.INVALID_CIRCLES;
             if (mixture.hasTransposition()) destination = site;
         }
         if (!HunterClothingItem.resistsCurse(target) && !AreaWardBlockEntity.protectsBrew(target)

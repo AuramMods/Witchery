@@ -69,8 +69,11 @@ public final class WitcheryClientPacketHandlers {
             double pz = message.z() + random.nextDouble() * width * 2.0D - width;
 
             if (effect == LegacyParticleEffect.SPELL_COLORED) {
-                Vector3f rgb = colorToVector(message.color());
-                level.addParticle(ParticleTypes.ENTITY_EFFECT, px, py, pz, rgb.x(), rgb.y(), rgb.z());
+                var smoke = minecraft.particleEngine.createParticle(ParticleTypes.SMOKE, px, py, pz, 0, 0, 0);
+                if (smoke != null) {
+                    Vector3f rgb = colorToVector(message.color());
+                    smoke.setColor(rgb.x(), rgb.y(), rgb.z());
+                }
             } else {
                 level.addParticle(particleType, px, py, pz, 0.0D, 0.0D, 0.0D);
             }
@@ -377,9 +380,9 @@ public final class WitcheryClientPacketHandlers {
     }
 
     private static Vector3f colorToVector(int color) {
-        float red = ((color >> 16) & 0xFF) / 255.0F;
-        float green = ((color >> 8) & 0xFF) / 255.0F;
-        float blue = (color & 0xFF) / 255.0F;
+        float red = ((color >> 16) & 0xFF) / 256.0F;
+        float green = ((color >> 8) & 0xFF) / 256.0F;
+        float blue = (color & 0xFF) / 256.0F;
         return new Vector3f(red, green, blue);
     }
 

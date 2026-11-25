@@ -62,11 +62,13 @@ public final class WitcheryNetwork {
     private static final int LEGACY_LARGE_SMOKE_PARTICLE_ID = 20;
     private static final int LEGACY_RED_DUST_PARTICLE_ID = 22;
     private static final int LEGACY_HEART_PARTICLE_ID = 28;
+    private static final int LEGACY_COLORED_SPELL_PARTICLE_ID = 31;
     private static final int LEGACY_NO_SOUND_ID = 0;
     private static final int LEGACY_FIZZ_SOUND_ID = 2;
     private static final int LEGACY_SNARE_SOUND_ID = 3;
     private static final int LEGACY_WATER_SPLASH_SOUND_ID = 4;
     private static final int LEGACY_PLING_SOUND_ID = 9;
+    private static final int LEGACY_POP_SOUND_ID = 11;
     private static final int LEGACY_ENDERMAN_TELEPORT_SOUND_ID = 16;
     private static final int LEGACY_GHAST_FIREBALL_SOUND_ID = 19;
     private static final int LEGACY_BLAZE_DEATH_SOUND_ID = 44;
@@ -316,6 +318,16 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_SPLASH_PARTICLE_ID, LEGACY_WATER_SPLASH_SOUND_ID, new Vec3(x, y, z), 0.5D, 0.5D, 5);
     }
 
+    public static void sendCauldronRitualComplete(ServerLevel level, BlockPos pos) {
+        sendParticlesAround(level, LEGACY_SPELL_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID,
+                Vec3.atBottomCenterOf(pos).add(0, 0.6, 0), 0.5, 1, 8);
+    }
+
+    public static void sendCauldronRitualFailure(ServerLevel level, BlockPos pos, int color) {
+        sendParticlesAround(level, LEGACY_COLORED_SPELL_PARTICLE_ID, LEGACY_POP_SOUND_ID,
+                Vec3.atBottomCenterOf(pos).add(0, 0.6, 0), 0.5, 1, 8, color);
+    }
+
     public static void sendInfusionRecharge(ServerLevel level, Vec3 center) {
         sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_PLING_SOUND_ID, center, 1, 2, 8);
     }
@@ -379,9 +391,14 @@ public final class WitcheryNetwork {
 
     public static void sendParticlesAround(ServerLevel level, int particleEffectId, int soundEffectId, Vec3 center,
                                            double width, double height, double range) {
+        sendParticlesAround(level, particleEffectId, soundEffectId, center, width, height, range, 0xFFFFFF);
+    }
+
+    private static void sendParticlesAround(ServerLevel level, int particleEffectId, int soundEffectId, Vec3 center,
+                                            double width, double height, double range, int color) {
         var target = PacketDistributor.TargetPoint.p(center.x, center.y, center.z, range, level.dimension());
         CHANNEL.send(PacketDistributor.NEAR.with(target), new ParticlesPacket(particleEffectId, soundEffectId,
-                center.x, center.y, center.z, width, height, 0xFFFFFF));
+                center.x, center.y, center.z, width, height, color));
     }
 
     public static void sendPlayerStyle(

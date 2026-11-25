@@ -130,6 +130,7 @@
 - [x] Match the original Forge server's measured 904 and 280 capacity in the imported wood and garden fixtures. Force a fresh scan on the packaged server. Removing the saplings reduces the first capacity to 824. Replacing the giant mushroom blocks with 26 stems sets the second to 238. Both values survived another headless restart.
 - [x] Use the original inclusive 16-block base and 32-block Arthana ranges for the Brazier, Crystal Ball, and powered rites. Check that wards and the Brazier release cached sources that fall out of range. All 160 checked-in Forge GameTests passed, including a focused barrier and Infusion Recharging beyond the base range.
 - [x] Restore the Altar's plant sparks and the original order for competing mounted artifacts. Verify the eight spark frames, formed and unformed textures, saved core, and live menu updates as artifacts and altar members are removed.
+- [ ] Restore capacity from naturally settled flowing water. A blocked channel fed by one source held water levels 0 through 7 on both versions. The original altar gained eight capacity and the 1.20.1 altar gained one. The original trace and headless comparison are in `build/qa-altar-stationary-water/`.
 
 ## Kettle Recipe Order (2026-11-24)
 
@@ -1317,6 +1318,7 @@
 - [x] Restore plain Water Bottle transfers in both brewing vessels. Drawing plain water takes 1,000 mB. A Kettle serves its ready brew first. Pouring contributes up to 1,000 mB and consumes the Water Bottle in survival. Drawing the last water clears a spoiled Kettle, and a Water Bottle rinses a full Kettle while staying in the player's hand. Both actions keep the spare bottles. A Cauldron containing brew rejects plain water.
 - [x] Restore immediate feedback when the Kettle accepts a dropped ingredient, including the drop that spoils a full batch. The packet plays the water splash at the basin and spawns twenty particles for viewers within five blocks. Dropped glass bottles enter the spare bottle buffer silently.
 - [x] Reconcile the 50 named actions registered directly as `BrewActionEffect` in the original registry with modern ingredient handlers, including the nine tree variants. Their runtime rules remain part of the brew parity pass.
+- [x] Restore cauldron casting feedback from the original runtime. A completed Swiftness cast or Mutandis recipe sends the spell and fizz cue within eight blocks. The three rejected casts return their final offering and show separate colors. Removing altar power during an active gas cast empties the cauldron with the original interruption cue.
 - [ ] Finish the remaining brew actions, modifiers, and castable cauldron rituals.
 
 ## Death and Armor Cauldron Brews (2026-11-21)

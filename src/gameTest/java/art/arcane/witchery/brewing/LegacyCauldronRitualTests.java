@@ -3,6 +3,7 @@ package art.arcane.witchery.brewing;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
@@ -32,11 +33,37 @@ import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
+import java.util.List;
 import java.util.UUID;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class LegacyCauldronRitualTests {
+    @GameTest(template = "qa_coven_arena")
+    public static void distinguishesMissingCirclesFromDistantTargets(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos origin = helper.absolutePos(new BlockPos(6, 4, 5));
+        var trigger = new ItemStack(WitcheryIngredient.DOG_TONGUE.item());
+        var missingCircles = List.of(new ItemStack(WitcheryIngredient.MANDRAKE_ROOT.item()), new ItemStack(Items.NETHER_WART),
+                new ItemStack(WitcheryIngredient.TEAR_OF_THE_GODDESS.item()), new ItemStack(WitcheryIngredient.REFINED_EVIL.item()),
+                new ItemStack(Items.GUNPOWDER), trigger);
+        var hellGate = BrewMixture.from(missingCircles, null);
+        helper.assertTrue(hellGate.requiresInfernalCircle(), "The fixture contains Hell Gate");
+        helper.assertTrue(BrewRituals.pulse(level, origin, hellGate, hellGate.bottleTag(missingCircles), trigger, 1, false)
+                        == BrewRituals.Result.INVALID_CIRCLES,
+                "A Hell Gate without its Infernal ring reports invalid circles");
+
+        var bound = new ItemStack(WitcheryIngredient.BOUND_WAYSTONE.item());
+        WaystoneItem.bindLocation(bound, level, origin.east(33));
+        var distant = List.of(new ItemStack(Items.NETHER_WART), new ItemStack(Items.SUGAR),
+                new ItemStack(Items.GUNPOWDER), bound, trigger);
+        var swiftness = BrewMixture.from(distant, null);
+        helper.assertTrue(BrewRituals.pulse(level, origin, swiftness, swiftness.bottleTag(distant), trigger, 1, false)
+                        == BrewRituals.Result.TOO_FAR,
+                "An ordinary brew aimed one block past its range reports distance");
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void legacyRecipeOfferingsNeedPreparedEffectCapacity(GameTestHelper helper) {
         BlockPos pos = helper.absolutePos(new BlockPos(6, 4, 5));
