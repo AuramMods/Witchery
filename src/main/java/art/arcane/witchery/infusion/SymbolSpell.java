@@ -7,6 +7,7 @@ import art.arcane.witchery.item.LeonardsUrnItem;
 import art.arcane.witchery.item.RitualChalkItem;
 import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryEffects;
+import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -176,7 +177,7 @@ public enum SymbolSpell {
             }
             case METEOLOJINX_RECANTO -> {
                 if (level.isRaining()) level.getServer().overworld().setWeatherParameters(0, 0, false, false);
-                else player.playSound(SoundEvents.NOTE_BLOCK_SNARE.value(), 0.9F, 1);
+                else snare(player);
             }
             case NOX -> SymbolTerrain.extinguishLights(level, player);
             case EPISKEY -> {
@@ -195,7 +196,7 @@ public enum SymbolSpell {
                     if (this == FLAGRATE) RitualChalkItem.drawInfernal(level, hit, player);
                     else LightInfusion.shield(level, hit.getBlockPos(), player);
                 } else {
-                    player.playSound(SoundEvents.NOTE_BLOCK_SNARE.value(), 0.9F, 1);
+                    snare(player);
                 }
             }
             default -> {
@@ -230,7 +231,7 @@ public enum SymbolSpell {
         }
         if (!InfusionEnergy.canSpend(player, charge)) return;
         if (mixture == null) {
-            player.playSound(SoundEvents.NOTE_BLOCK_SNARE.value(), 0.9F, 1);
+            snare(player);
         } else {
             var projectile = ThrownBrew.forUrnSpell(level, player, brew);
             if (!level.addFreshEntity(projectile)) return;
@@ -242,7 +243,11 @@ public enum SymbolSpell {
     public static void reject(ServerPlayer player, String reason, Object... arguments) {
         player.displayClientMessage(Component.translatable("message.witchery.mystic_branch." + reason, arguments)
                 .withStyle(ChatFormatting.RED), true);
-        player.playSound(SoundEvents.NOTE_BLOCK_SNARE.value(), 0.9F, 1);
+        snare(player);
+    }
+
+    private static void snare(ServerPlayer player) {
+        WitcherySounds.playLegacyPlayerCue(player, SoundEvents.NOTE_BLOCK_SNARE.value(), 0.5F);
     }
 
     private static List<String> strokes(String first, String turn, String last) {

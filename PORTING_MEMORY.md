@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Gesture Preparation and Rejection Cues (2026-11-24)
+
+- The original server trace captured nine harp, pop and snare cues at the caster's fractional coordinates. Harp and pop volumes were one. Snare volume was one-half. Seeded pitches agreed with the original formula and stayed between one-third and one-half. The original callback uses the caster's position.
+- Forge now sends those sounds through the server's entity-bound sound broadcast, including the caster and nearby listeners. The Mystic Branch still recognizes gestures on the server. Brew Bag selection stays quiet on empty slots. The regression verifies single cues while holding a valid draw, missing-infusion and unknown-symbol rejection, and selection after drawing toward an empty Brew Bag slot.
+- Two muted background survival clients on packaged clean Forge received one preparation harp, one rejection snare and one preparation pop each. The server recognized a three-stroke Branch gesture and rejected it for missing infusion. Drawing toward an empty Brew Bag slot played no cue. The next stroke prepared the filled slot and releasing the item consumed the Brew of Ink.
+- The previous package played the rejection snare at fixed pitch and volume `0.9` for the nearby observer and omitted the caster. The rebuilt package played the half-volume snare for both clients. An ordinary clean Forge restart preserved the Brew Bag and its spent slot.
+- Data generation, JAR reobfuscation and all 289 required local Forge GameTests passed. The exact package produced all three original cues in the copied Auram dedicated-server replay. The original traces and local profiles are under `build/qa-gesture-cues`. Candidate SHA-256 `a441cc8597e0382b7206092ab6f6d01aefb7d75d07b2644bd4c72e6adeff4d8e`.
+
 ## Companion Flights and Auram Tick Distance (2026-11-24)
 
 - Does It Tick 1.1.4 filters loaded entities by player range in copied Auram. The earlier package paused a launched Owl carrying paper and a launched Winged Monkey with a valid Taglock. The fixture had no players and both launch chunks were loaded.

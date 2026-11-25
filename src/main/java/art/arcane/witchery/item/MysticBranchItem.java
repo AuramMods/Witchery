@@ -2,12 +2,12 @@ package art.arcane.witchery.item;
 
 import art.arcane.witchery.block.PlacedItemBlock;
 import art.arcane.witchery.infusion.SymbolSpell;
+import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -107,7 +107,7 @@ public final class MysticBranchItem extends Item {
         if (spell != null) {
             drawing.putInt("Prepared", spell.id());
             if (player instanceof ServerPlayer server) {
-                server.level().playSound(null, player.blockPosition(), SoundEvents.NOTE_BLOCK_HARP.value(), SoundSource.PLAYERS, 1, 1);
+                WitcherySounds.playLegacyPlayerCue(server, SoundEvents.NOTE_BLOCK_HARP.value(), 1);
             }
         }
     }

@@ -3,6 +3,7 @@ package art.arcane.witchery.item;
 import art.arcane.witchery.client.renderer.BrewBagRenderer;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.menu.BrewBagMenu;
+import art.arcane.witchery.registry.WitcherySounds;
 import com.google.gson.JsonParseException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
@@ -13,7 +14,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -165,8 +165,8 @@ public final class BrewBagItem extends Item {
         resetAim(player, aim);
         if (accepts(contents(bag).get(slot))) {
             aim.putInt("Slot", slot);
-            if (player.level() instanceof ServerLevel server) {
-                server.playSound(null, player, SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 1.0F, 1.0F);
+            if (player instanceof ServerPlayer server) {
+                WitcherySounds.playLegacyPlayerCue(server, SoundEvents.ITEM_PICKUP, 1);
             }
         }
     }

@@ -2,7 +2,9 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -75,6 +77,12 @@ public final class WitcherySounds {
     public static final RegistryObject<SoundEvent> SPECTRE_HIT = sound("mob.spectre.spectre_hit");
     public static final RegistryObject<SoundEvent> SPECTRE_DEATH = sound("mob.spectre.spectre_die");
     public static final RegistryObject<SoundEvent> BANSHEE_SCREAM = sound("mob.banshee.banshee_scream");
+
+    public static void playLegacyPlayerCue(ServerPlayer player, SoundEvent sound, float volume) {
+        var level = player.serverLevel();
+        float pitch = 0.4F / ((float) level.random.nextDouble() * 0.4F + 0.8F);
+        level.playSound(null, player, sound, SoundSource.PLAYERS, volume, pitch);
+    }
 
     private WitcherySounds() {
     }

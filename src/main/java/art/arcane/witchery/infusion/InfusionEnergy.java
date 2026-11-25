@@ -4,6 +4,7 @@ import art.arcane.witchery.integration.ArsMagicaCompat;
 import art.arcane.witchery.integration.BloodMagicCompat;
 import art.arcane.witchery.integration.ThaumaturgeCompat;
 import art.arcane.witchery.network.WitcheryNetwork;
+import art.arcane.witchery.registry.WitcherySounds;
 import art.arcane.witchery.ritual.DirectedCurse;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -109,6 +110,6 @@ public final class InfusionEnergy {
     private static void explain(ServerPlayer player, String key) {
         player.displayClientMessage(Component.translatable("message.witchery.infusion." + key)
                 .withStyle(ChatFormatting.RED), true);
-        player.playSound(SoundEvents.NOTE_BLOCK_SNARE.value(), 0.9F, 1.0F);
+        WitcherySounds.playLegacyPlayerCue(player, SoundEvents.NOTE_BLOCK_SNARE.value(), 0.5F);
     }
 }
