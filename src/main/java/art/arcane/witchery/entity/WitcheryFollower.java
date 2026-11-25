@@ -173,6 +173,10 @@ public final class WitcheryFollower extends TamableAnimal {
         return entityData.get(TYPE);
     }
 
+    public boolean isTemporaryDuplicate() {
+        return followerType() == 5 && lifetime > 0;
+    }
+
     public String playerSkin() {
         return entityData.get(SKIN);
     }

@@ -18,6 +18,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -25,7 +26,6 @@ import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -40,6 +40,7 @@ public final class GrenadeProjectile extends ThrowableItemProjectile {
     private static final DustParticleOptions SUNLIGHT = new DustParticleOptions(new Vector3f(1F, 0.92F, 0.14F), 0.8F);
     private int remainingTicks = FUSE_TICKS;
     @Nullable private BlockPos litPosition;
+    private String legacyThrowerName = "";
 
     public GrenadeProjectile(EntityType<? extends GrenadeProjectile> type, Level level) {
         super(type, level);
@@ -75,16 +76,35 @@ public final class GrenadeProjectile extends ThrowableItemProjectile {
         return entityData.get(IMPACTED);
     }
 
+    @Nullable
+    @Override
+    public Entity getOwner() {
+        var owner = super.getOwner();
+        if (owner != null || legacyThrowerName.isEmpty() || !(level() instanceof ServerLevel server)) return owner;
+        for (var player : server.players()) {
+            if (player.getGameProfile().getName().equals(legacyThrowerName)) {
+                setOwner(player);
+                legacyThrowerName = "";
+                return player;
+            }
+        }
+        return null;
+    }
+
     @Override
     public void tick() {
+        ServerLevel server = level() instanceof ServerLevel serverLevel ? serverLevel : null;
+        if (server != null && --remainingTicks <= 0) {
+            finish(server);
+            return;
+        }
         if (hasImpacted()) baseTick();
         else super.tick();
         if (isRemoved()) return;
 
         boolean duplicate = GrenadeItem.isDuplicate(getItem());
-        if (level() instanceof ServerLevel server) {
-            if (--remainingTicks <= 0) finish(server);
-            else if (!duplicate) {
+        if (server != null) {
+            if (!duplicate) {
                 if (litPosition != null || tickCount >= 5) moveLight(server, lightPosition());
                 if (hasImpacted()) for (LivingEntity entity : server.getEntitiesOfClass(LivingEntity.class,
                         getBoundingBox().inflate(1), target -> target.isAlive() && target.isPickable() && isUndead(target))) {
@@ -97,28 +117,23 @@ public final class GrenadeProjectile extends ThrowableItemProjectile {
     }
 
     @Override
+    protected boolean canHitEntity(Entity target) {
+        return target instanceof LivingEntity && target.canBeHitByProjectile()
+                && (tickCount >= 5 || target != getOwner());
+    }
+
+    @Override
     protected void onHit(HitResult hit) {
         if (hasImpacted()) return;
         super.onHit(hit);
         if (level() instanceof ServerLevel server) {
-            Vec3 point = hit.getLocation();
+            // Stop at the start of the collision tick, before ThrowableProjectile advances the position.
+            setDeltaMovement(Vec3.ZERO);
+            setNoGravity(true);
             if (GrenadeItem.isDuplicate(getItem())) {
-                if (hit instanceof BlockHitResult block) {
-                    double clearance = switch (block.getDirection()) {
-                        case UP -> 0.02;
-                        case DOWN -> 1.85;
-                        default -> 0.32;
-                    };
-                    point = point.add(Vec3.atLowerCornerOf(block.getDirection().getNormal()).scale(clearance));
-                }
-                setPos(point);
                 finish(server);
                 return;
             }
-            if (hit instanceof BlockHitResult block) point = point.add(Vec3.atLowerCornerOf(block.getDirection().getNormal()).scale(0.02));
-            setPos(point);
-            setDeltaMovement(Vec3.ZERO);
-            setNoGravity(true);
             entityData.set(IMPACTED, true);
             hasImpulse = true;
         }
@@ -187,6 +202,7 @@ public final class GrenadeProjectile extends ThrowableItemProjectile {
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
+        if (!legacyThrowerName.isEmpty()) tag.putString("ownerName", legacyThrowerName);
         tag.putBoolean("Impacted", hasImpacted());
         tag.putInt("Remaining", remainingTicks);
         tag.putInt("Mode", GrenadeItem.isDuplicate(getItem()) ? 1 : 0);
@@ -201,6 +217,7 @@ public final class GrenadeProjectile extends ThrowableItemProjectile {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+        legacyThrowerName = tag.hasUUID("Owner") ? "" : tag.getString("ownerName");
         if (tag.getInt("Mode") == 1 && !GrenadeItem.isDuplicate(getItem())) {
             // An original duplicate stored the skin name under Owner. Vanilla now uses Owner for a UUID.
             setItem(GrenadeItem.duplicate(tag.getString("Owner")));

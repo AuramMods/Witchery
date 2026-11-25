@@ -892,7 +892,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 137 | `WERE_VILLAGER` | `EntityVillagerWere` | `werevillager` |
 | 138 | `VILLAGE_GUARD` | `EntityVillageGuard` | `villageguard` |
 | 139 | `VAMPIRE_VILLAGER` | `EntityVampire` | `vampire` |
-| 140 | `GRENADE` | `EntityGrenade` | `grenade` (Sun and Duplicate Grenades, saved `Mode`, `Impacted`, `Remaining`, and the original `BlockPlaced` coordinates) |
+| 140 | `GRENADE` | `EntityGrenade` | `grenade` (Sun and Duplicate Grenades, saved `Mode`, `Impacted`, `Remaining`, original `BlockPlaced` coordinates and `ownerName`) |
 | 141 | `LILITH` | `EntityLilith` | `lilith` |
 | 142 | `FOLLOWER` | `EntityFollower` | `follower` (Elle, four named Fairest variants, and type-five duplicate with saved `Skin` and `TicksToLive`) |
 | 143 | `WINGED_MONKEY` | `EntityWingedMonkey` | `wingedmonkey` (cocoa mutation, taming, Taglock pickup and Waystone transport) |
@@ -1272,6 +1272,8 @@ The Winged Monkey retains `FeatherColor`, `SuicideIn`, `WITCWaypoint` and the th
 With Does It Tick installed, running Owl deliveries and Winged Monkey flights can tick beyond the configured player range while their flight tickets keep the relevant chunks loaded. Seated and idle companions and those with AI disabled follow the mod's usual rules. The compatibility hook is optional and uses the same flight state that the companion goals read from saves.
 
 The same optional hook lets a loaded Hellhound finish its golden apple cure beyond player range. It reads the cure flag restored from `ConversionTime`. Untreated Hellhounds use the pack's ordinary tick rules. The cure adds no chunk ticket.
+
+Sun and Duplicate Grenades also finish their flight and fuse while their chunks are loaded beyond player range. A temporary copy keeps ticking until its saved lifetime expires.
 
 Treefyd keeps `Owner`, `SentinalPlant`, `KnownPlayers`, `KnownCreatureTypes`, and `KnownCreatures`. New bindings also save player UUIDs and the namespaced keys of groupable animal species. Legacy individual permissions use the original `CreatureMost` and `CreatureLeast` fields. Planting creates short grass and an owned Treefyd in one interaction. A Forge cancellation keeps the original block and seed.
 

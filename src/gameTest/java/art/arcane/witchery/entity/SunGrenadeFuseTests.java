@@ -15,8 +15,10 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
+import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
@@ -38,6 +40,97 @@ import java.util.function.Consumer;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class SunGrenadeFuseTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_grenade_impact", setupTicks = 5)
+    public static void sunGrenadePassesThroughBoatsAndCanHitItsThrowerOnTickFive(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var origin = helper.absoluteVec(new Vec3(3.5, 8.4, 4.5));
+        var boat = new Boat(level, origin.x + 1.3, origin.y - 0.1, origin.z);
+        level.addFreshEntity(boat);
+        var pig = helper.spawn(EntityType.PIG, new BlockPos(6, 8, 4));
+        pig.setNoAi(true);
+        var sun = new GrenadeProjectile(WitcheryEntities.GRENADE.get(), level);
+        sun.setPos(origin);
+        sun.setDeltaMovement(1.5, 0, 0);
+        sun.tickCount = 1;
+        sun.tick();
+        Vec3 ahead = origin.add(1.5, 0, 0);
+        helper.assertTrue(!sun.hasImpacted() && sun.position().distanceTo(ahead) < 1.0E-6,
+                "The sun grenade flies through the boat");
+        sun.tickCount = 2;
+        sun.tick();
+        helper.assertTrue(sun.hasImpacted() && sun.position().distanceTo(ahead) < 1.0E-6,
+                "The sun grenade stops at the start of its collision tick with the pig");
+
+        Vec3 returning = pig.position().add(-1.25, 0.4, 0);
+        var returningGrenade = new GrenadeProjectile(level, pig);
+        returningGrenade.setPos(returning);
+        returningGrenade.setDeltaMovement(1.5, 0, 0);
+        returningGrenade.tickCount = 4;
+        returningGrenade.tick();
+        helper.assertTrue(!returningGrenade.hasImpacted(), "The thrower is still protected on tick four");
+        returningGrenade.setPos(returning);
+        returningGrenade.setDeltaMovement(1.5, 0, 0);
+        returningGrenade.tickCount = 5;
+        returningGrenade.tick();
+        helper.assertTrue(returningGrenade.hasImpacted() && returningGrenade.position().distanceTo(returning) < 1.0E-6,
+                "The thrower can be struck on tick five, even before the grenade clears its owner");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_grenade_impact", setupTicks = 5)
+    public static void grenadesResolveWallHitsAtTheStartOfTheImpactTick(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var start = helper.absoluteVec(new Vec3(5.25, 8.4, 5.5));
+        helper.setBlock(new BlockPos(6, 8, 5), Blocks.STONE);
+        var sun = new GrenadeProjectile(WitcheryEntities.GRENADE.get(), level);
+        sun.setPos(start);
+        sun.setDeltaMovement(1.5, 0, 0);
+        sun.tick();
+        helper.assertTrue(sun.hasImpacted() && sun.position().distanceTo(start) < 1.0E-6
+                        && sun.getDeltaMovement().equals(Vec3.ZERO),
+                "The sun grenade stops before advancing into the wall");
+
+        var duplicate = new GrenadeProjectile(WitcheryEntities.GRENADE.get(), level);
+        duplicate.setItem(GrenadeItem.duplicate("ImpactFixture"));
+        duplicate.setPos(start);
+        duplicate.setDeltaMovement(1.5, 0, 0);
+        duplicate.tick();
+        assertDuplicateAt(helper, start, "ImpactFixture");
+        helper.assertTrue(duplicate.isRemoved(), "The duplicate grenade completes on contact with the wall");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_grenade_impact", setupTicks = 5)
+    public static void duplicateGrenadeExpiresBeforeTheLastFlightStep(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var origin = helper.absoluteVec(new Vec3(5.5, 8.4, 5.5));
+        var grenade = new GrenadeProjectile(WitcheryEntities.GRENADE.get(), level);
+        grenade.setItem(GrenadeItem.duplicate("FuseFixture"));
+        grenade.setPos(origin);
+        grenade.setDeltaMovement(1.5, 0, 0);
+        var saved = grenade.saveWithoutId(new CompoundTag());
+        saved.putInt("Remaining", 1);
+        grenade.load(saved);
+        grenade.tick();
+        assertDuplicateAt(helper, origin, "FuseFixture");
+        helper.assertTrue(grenade.isRemoved(), "Fuse expiry spends the grenade at the current position");
+        helper.succeed();
+    }
+
+    private static void assertDuplicateAt(GameTestHelper helper, Vec3 origin, String skin) {
+        var level = helper.getLevel();
+        var area = new AABB(origin, origin).inflate(3);
+        var copies = level.getEntitiesOfClass(WitcheryFollower.class, area,
+                follower -> follower.getName().getString().equals(skin));
+        helper.assertTrue(copies.size() == 1 && copies.get(0).position().distanceTo(origin) < 1.0E-6,
+                "One named duplicate appears at the grenade's starting position for that tick");
+        var spheres = level.getEntitiesOfClass(ItemEntity.class, area,
+                drop -> drop.getItem().is(WitcheryIngredient.QUARTZ_SPHERE.item()));
+        helper.assertTrue(spheres.size() == 1 && spheres.get(0).getItem().getCount() == 1
+                        && spheres.get(0).position().distanceTo(origin.add(0, 0.5, 0)) < 1.0E-6,
+                "One Quartz Sphere appears a half block above that position");
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_sun_grenade", setupTicks = 5)
     public static void dispensersLaunchGrenadesAndBrewsWithOriginalAim(GameTestHelper helper) {
         var level = helper.getLevel();
@@ -204,10 +297,13 @@ public final class SunGrenadeFuseTests {
         saved.putBoolean("Impacted", false);
         saved.putInt("Mode", 1);
         saved.putString("Owner", "LegacyDisguise");
+        saved.putString("ownerName", "LegacyThrower");
         grenade.readAdditionalSaveData(saved);
         helper.assertTrue(GrenadeItem.isDuplicate(grenade.getItem())
                         && GrenadeItem.ownerName(grenade.getItem()).equals("LegacyDisguise"),
                 "The original duplicate grenade keeps its named skin");
+        helper.assertTrue(grenade.saveWithoutId(new CompoundTag()).getString("ownerName").equals("LegacyThrower"),
+                "An imported grenade keeps its original thrower until that player can be resolved");
         helper.succeed();
     }
 

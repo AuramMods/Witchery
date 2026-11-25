@@ -2,6 +2,17 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Grenade impacts and fuse expiry (2026-11-24)
+
+- On Witchery 0.24.1, a Sun Grenade flew through a boat and stopped at `(99.0, 120.4, 29.5)` when its next step would have hit a pig. It stopped at `(102.25, 120.4, 31.5)` on the wall fixture. A Duplicate Grenade created its follower at that same pre-impact point and returned one Quartz Sphere half a block above it.
+- The native fixture also confirmed that a Sun Grenade can hit its thrower on the fifth flight tick and that the Duplicate Grenade expires before moving on the final fuse tick.
+- The preceding 1.20.1 build failed the boat, wall, final fuse tick, and saved thrower checks. The port now matches those original impact points and timing. An unresolved legacy `ownerName` survives saves and resolves when the named player is present in the same level. A Duplicate Grenade's separate saved skin still comes from `Owner`.
+- Redstone on clean packaged Forge fired a Sun Grenade through a boat. It hit a pig, stopped at its pre-impact position and lit that cell. A survival player threw a Duplicate Grenade at a wall. The duplicate and one Quartz Sphere appeared at the pre-impact position and half a block above it. The saved-name fixture independently restored the player's ownership and the duplicate's other skin.
+- A dedicated restart retained the Sun Grenade's landed state and exact coordinates. The survival client ran with zero master volume and OpenAL No Output. The focus monitor recorded no activation of the client process.
+- In a copied Auram world with no players online, the grenade spawned at the dispenser outlet but stayed there with its initial motion and 200 fuse ticks. The existing Does It Tick compatibility hook now keeps loaded grenades and temporary copies ticking beyond player range. The saved grenade resumed flight on the rebuilt JAR and hit the pig during startup.
+- Fresh redstone pulses on copied Auram sent a Sun Grenade past the boat into the pig and a Duplicate Grenade into the wall. Both returned one Quartz Sphere at the expected offsets. The Sun Grenade cleared its light and the named copy expired with no players online.
+- Java 17 data generation, JAR reobfuscation, and all 304 required Forge GameTests passed locally. The tested JAR SHA-256 is `4e2178984edf35815ae983b086afa250b5f295047f582252c4194e3d94c08cf0`. The native trace, regression logs and packaged checks are under `build/qa-grenade-impact`.
+
 ## Grenade and brew launches (2026-11-24)
 
 - A headless Witchery 0.24.1 trace sampled Sun Grenades, Duplicate Grenades, a splash-format brew, and Brew of Ink from east-, up-, and down-facing dispensers. The projectiles left the outlet 0.7 blocks from the dispenser's center. All four used a nominal speed of 1.375 blocks per tick, an upward aim adjustment of 0.1 before normalization, and Gaussian spread.
