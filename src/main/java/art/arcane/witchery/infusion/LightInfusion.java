@@ -31,7 +31,7 @@ public final class LightInfusion {
 
     public static void channel(ServerPlayer player, int elapsed) {
         if (elapsed == 0 || elapsed % CLOAK_TICKS != 0) return;
-        if (!InfusionEnergy.spend(player, 1)) {
+        if (!InfusionEnergy.spendHandCharge(player, 1)) {
             endCloak(player);
             return;
         }
@@ -68,9 +68,9 @@ public final class LightInfusion {
         HitResult hit = OtherwhereInfusion.rayTrace(player, 16);
         ServerLevel level = player.serverLevel();
         if (hit instanceof EntityHitResult entityHit && entityHit.getEntity() instanceof LivingEntity target) {
-            if (target.isAlive() && InfusionEnergy.spend(player, 3)) cage(level, target.blockPosition(), 1, player);
+            if (target.isAlive() && InfusionEnergy.spendHandCharge(player, 3)) cage(level, target.blockPosition(), 1, player);
         } else if (hit instanceof BlockHitResult blockHit && hit.getType() == HitResult.Type.BLOCK
-                && InfusionEnergy.spend(player, 3)) {
+                && InfusionEnergy.spendHandCharge(player, 3)) {
             if (blockHit.getDirection() == Direction.UP) shield(level, blockHit.getBlockPos(), player);
             else extend(level, blockHit.getBlockPos(), blockHit.getDirection());
         }
@@ -81,7 +81,7 @@ public final class LightInfusion {
         ServerLevel level = player.serverLevel();
         BlockPos raised = target.blockPosition().above(4);
         if (level.isOutsideBuildHeight(raised.above(3)) || !clearForCage(level, raised)) return;
-        if (!InfusionEnergy.spend(player, 5)) return;
+        if (!InfusionEnergy.spendHandCharge(player, 5)) return;
         cage(level, raised, 2, null);
         target.teleportTo(raised.getX() + 0.5, raised.getY(), raised.getZ() + 0.5);
         target.resetFallDistance();

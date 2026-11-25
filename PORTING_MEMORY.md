@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Infusion charge depletion and recharge (2026-11-25)
+
+- An unaffordable Witch's Hand power removes the current charge field and keeps the infusion ID and capacity. An exact payment leaves a numeric zero. The original server and copied Auram both removed the charge field for an eleven-charge player trying a twelve-charge shockwave and on the cloak's first unaffordable pulse. The preceding Forge build left both fields in place.
+- The Mystic Branch and ordinary item consumers keep the remaining charge when a use fails. The Contract of Torment, Ruby Slippers and Baba Yaga's hat use the original charge-field prerequisite even in creative. The Hand and Branch retain their separate creative behavior. Passive fire and drowning defenses silently skip an unaffordable charge without draining it. The original and copied Auram both preserved all four charges on an unaffordable Skeleton defense.
+- The clean Forge survival client started with the fixture's nine charges, Contract, Hand, and a prepared recharge circle. The real Contract use kept all nine charges and the item. The Hand cleared the current charge, and the client HUD kept the Overworld infusion and 200 capacity. After restart the field was still absent. The player activated the Heart Glyph with a regeneration potion on the ground, and the first pulse restored ten charges. A rock cast spent three. Another restart kept seven charges, the Hand and the moved terrain.
+- All 385 required local GameTests passed on seed `5471593853027166409`. All three clean Forge launches used a hidden, unfocused window and OpenAL No Output at master volume zero. The exact reobfuscated JAR is `build/qa-infusion-charge/candidate.jar` with SHA-256 `8ccdd0bdcddf3e196d967ea2f78aa1af15771df4054e2f35b909819d5df5f9d4`. See `build/qa-infusion-charge/comparison.txt` for the original, preceding Forge, clean Forge and copied Auram traces.
+
 ## Overworld infusion raised terrain, soft landings and disarm (2026-11-25)
 
 - The original top-face cast shifts six layers up three blocks, including air gaps. The original server and the copied Auram fixture cleared an overhang, kept the chiseled sandstone state and lifted the pig from Y 180 to 183 for two charges. The preceding Forge JAR kept the overhang. The moving column continues to preserve block entities and unbreakable blocks.

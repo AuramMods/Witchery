@@ -70,26 +70,52 @@ public final class InfusionEnergy {
 
     public static boolean spend(ServerPlayer player, int cost) {
         if (!canSpend(player, cost)) return false;
-        if (!player.getAbilities().instabuild) {
-            CompoundTag infusion = data(player);
-            infusion.putInt(CHARGE, infusion.getInt(CHARGE) - cost);
-            sync(player, infusion);
-        }
+        if (!player.getAbilities().instabuild) debit(player, data(player), cost);
         return true;
     }
 
     public static boolean canSpend(ServerPlayer player, int cost) {
         CompoundTag infusion = data(player);
-        if (player.getAbilities().instabuild) return true;
         if (infusion.getInt(TYPE) <= 0 || !infusion.contains(CHARGE, Tag.TAG_ANY_NUMERIC)) {
             explain(player, "required");
             return false;
         }
-        if (infusion.getInt(CHARGE) < cost) {
+        if (!player.getAbilities().instabuild && infusion.getInt(CHARGE) < cost) {
             explain(player, "empty");
             return false;
         }
         return true;
+    }
+
+    public static boolean spendHandCharge(ServerPlayer player, int cost) {
+        if (!checkHandCharge(player, cost)) return false;
+        if (!player.getAbilities().instabuild) debit(player, data(player), cost);
+        return true;
+    }
+
+    // An attempted Hand power empties an unaffordable infusion even when a successful debit is deferred.
+    public static boolean checkHandCharge(ServerPlayer player, int cost) {
+        if (player.getAbilities().instabuild) return true;
+        CompoundTag infusion = data(player);
+        if (infusion.getInt(CHARGE) >= cost) return true;
+        if (infusion.contains(CHARGE)) {
+            infusion.remove(CHARGE);
+            sync(player, infusion);
+        }
+        WitcherySounds.playLegacyPlayerCue(player, SoundEvents.NOTE_BLOCK_SNARE.value(), 0.5F);
+        return false;
+    }
+
+    public static boolean spendCreatureDefense(ServerPlayer player, int cost) {
+        CompoundTag infusion = data(player);
+        if (infusion.getInt(CHARGE) < cost) return false;
+        debit(player, infusion, cost);
+        return true;
+    }
+
+    private static void debit(ServerPlayer player, CompoundTag infusion, int cost) {
+        infusion.putInt(CHARGE, infusion.getInt(CHARGE) - cost);
+        sync(player, infusion);
     }
 
     public static void sync(ServerPlayer player) {

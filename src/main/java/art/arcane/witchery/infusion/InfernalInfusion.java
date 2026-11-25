@@ -49,15 +49,15 @@ public final class InfernalInfusion {
             if (!(target instanceof Mob mob) || !canBind(mob)) {
                 fail(player);
             } else if (owns(mob, player)) {
-                if (InfusionEnergy.spend(player, 1)) sacrifice(player, mob);
-            } else if (InfusionEnergy.spend(player, 5)) {
+                if (InfusionEnergy.spendHandCharge(player, 1)) sacrifice(player, mob);
+            } else if (InfusionEnergy.spendHandCharge(player, 5)) {
                 bind(mob, player);
                 particles(mob, ParticleTypes.ENTITY_EFFECT);
                 mob.level().playSound(null, mob.blockPosition(), SoundEvents.ZOMBIE_INFECT, mob.getSoundSource(), 0.8F, 1);
             }
             return;
         }
-        if (!InfusionEnergy.spend(player, 1)) return;
+        if (!InfusionEnergy.spendHandCharge(player, 1)) return;
         orderAttack(minions(player), target);
     }
 

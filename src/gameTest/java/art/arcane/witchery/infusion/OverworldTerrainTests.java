@@ -186,6 +186,13 @@ public final class OverworldTerrainTests {
         helper.assertTrue(charge(caster) == 20 && level.getBlockState(block).getValue(SlabBlock.TYPE) == SlabType.DOUBLE,
                 "The legacy double slab is not a rock source");
         level.setBlockAndUpdate(block, Blocks.CHISELED_SANDSTONE.defaultBlockState());
+        InfusionEnergy.grant(caster, OverworldInfusion.ID, 2);
+        release(caster, 5);
+        helper.assertTrue(!caster.getPersistentData().getCompound(FakePlayer.PERSISTED_NBT_TAG).contains("witcheryInfusionCharges")
+                        && InfusionEnergy.type(caster) == OverworldInfusion.ID
+                        && level.getBlockState(block).is(Blocks.CHISELED_SANDSTONE),
+                "The unaffordable launch empties the infusion before moving the source block");
+        InfusionEnergy.grant(caster, OverworldInfusion.ID, 20);
         Consumer<EntityJoinLevelEvent> veto = event -> {
             if (event.getLevel() == level && isRock(event)) event.setCanceled(true);
         };

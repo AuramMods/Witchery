@@ -58,8 +58,8 @@ public final class OtherwhereInfusion {
         Vec3 target = blinkTarget(player, elapsed);
         ServerLevel level = player.serverLevel();
         if (target == null || !WitcheryTeleport.canArrive(player, level, target)) return fail(player, "no_destination");
-        if (!InfusionEnergy.canSpend(player, 1) || !WitcheryTeleport.move(player, level, target)) return false;
-        return InfusionEnergy.spend(player, 1);
+        if (!InfusionEnergy.checkHandCharge(player, 1) || !WitcheryTeleport.move(player, level, target)) return false;
+        return InfusionEnergy.spendHandCharge(player, 1);
     }
 
     public static void attack(ServerPlayer player, LivingEntity victim) {
@@ -82,9 +82,9 @@ public final class OtherwhereInfusion {
             fail(player, "no_destination");
             return;
         }
-        if (InfusionEnergy.canSpend(player, 2) && WitcheryTeleport.move(player, level, playerTarget)) {
+        if (InfusionEnergy.checkHandCharge(player, 2) && WitcheryTeleport.move(player, level, playerTarget)) {
             if (moveVictim) WitcheryTeleport.move(victim, level, victimTarget);
-            InfusionEnergy.spend(player, 2);
+            InfusionEnergy.spendHandCharge(player, 2);
         }
     }
 
@@ -99,9 +99,9 @@ public final class OtherwhereInfusion {
         if (!WitcheryTeleport.canArrive(player, destination, target)) return fail(player, "no_destination");
         boolean moveCompanion = companion != null && !inhibited(companion) && WitcheryTeleport.canArrive(companion, destination, target);
         int cost = companion == null ? 2 : 4;
-        if (!InfusionEnergy.canSpend(player, cost) || !WitcheryTeleport.move(player, destination, target)) return false;
+        if (!InfusionEnergy.checkHandCharge(player, cost) || !WitcheryTeleport.move(player, destination, target)) return false;
         if (moveCompanion) WitcheryTeleport.move(companion, destination, target);
-        return InfusionEnergy.spend(player, cost);
+        return InfusionEnergy.spendHandCharge(player, cost);
     }
 
     private static void remember(ServerPlayer player) {

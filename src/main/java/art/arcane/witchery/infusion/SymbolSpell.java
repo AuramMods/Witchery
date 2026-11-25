@@ -138,17 +138,17 @@ public enum SymbolSpell {
     }
 
     public void cast(ServerLevel level, ServerPlayer player, int requestedLevel) {
-        if (!InfusionEnergy.canSpend(player, 0)) return;
+        boolean creative = player.getAbilities().instabuild;
+        if (!creative && !InfusionEnergy.canSpend(player, 0)) return;
         if (id >= LEONARD_1.id && id <= LEONARD_4.id) {
             castUrn(level, player);
             return;
         }
-        if (isCurse() && knowledge == null
-                && !player.getAbilities().instabuild && InfusionEnergy.type(player) != InfernalInfusion.ID) {
+        if (isCurse() && knowledge == null && !creative && InfusionEnergy.type(player) != InfernalInfusion.ID) {
             reject(player, "infernal_required");
             return;
         }
-        if (!player.getAbilities().instabuild && knowledge != null) {
+        if (!creative && knowledge != null) {
             if (!knowledge.isKnown(player)) {
                 reject(player, "unknown_spell");
                 return;
@@ -163,7 +163,7 @@ public enum SymbolSpell {
         int effectLevel = requestedLevel > 1 && requestedLevel <= 3 && worship != null
                 && requestedLevel <= worship.getAmplifier() + 2 ? requestedLevel : 1;
         int charge = cost << (effectLevel - 1);
-        if (!InfusionEnergy.canSpend(player, charge)) return;
+        if (!creative && !InfusionEnergy.canSpend(player, charge)) return;
 
         switch (this) {
             case CARNOSA_DIEM -> {
@@ -204,7 +204,7 @@ public enum SymbolSpell {
                 level.playSound(null, player.blockPosition(), SoundEvents.GHAST_SHOOT, SoundSource.PLAYERS, 0.8F, 1);
             }
         }
-        InfusionEnergy.spend(player, charge);
+        if (!creative) InfusionEnergy.spend(player, charge);
     }
 
     private static void heal(ServerLevel level, LivingEntity target) {
@@ -229,7 +229,8 @@ public enum SymbolSpell {
             charge = Math.max(4, worship == null ? base * 2
                     : worship.getAmplifier() == 0 ? base + (base + 1) / 2 : base);
         }
-        if (!InfusionEnergy.canSpend(player, charge)) return;
+        boolean creative = player.getAbilities().instabuild;
+        if (!creative && !InfusionEnergy.canSpend(player, charge)) return;
         if (mixture == null) {
             snare(player);
         } else {
@@ -237,7 +238,7 @@ public enum SymbolSpell {
             if (!level.addFreshEntity(projectile)) return;
             level.playSound(null, player.blockPosition(), SoundEvents.GHAST_SHOOT, SoundSource.PLAYERS, 0.8F, 1);
         }
-        InfusionEnergy.spend(player, charge);
+        if (!creative) InfusionEnergy.spend(player, charge);
     }
 
     public static void reject(ServerPlayer player, String reason, Object... arguments) {

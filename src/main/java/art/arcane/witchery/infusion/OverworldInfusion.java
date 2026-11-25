@@ -78,11 +78,11 @@ public final class OverworldInfusion {
         if (!SOFT_LANDING.contains(block)) return;
 
         if (player.isShiftKeyDown()) {
-            if (!InfusionEnergy.spend(player, 10)) return;
+            if (!InfusionEnergy.spendHandCharge(player, 10)) return;
             event.setDistance(0);
             level.explode(player, player.getX(), ground.getY() + 0.5, player.getZ(), 3, Level.ExplosionInteraction.TNT);
-        } else if (InfusionEnergy.canSpend(player, 5) && level.removeBlock(ground, false)) {
-            InfusionEnergy.spend(player, 5);
+        } else if (InfusionEnergy.checkHandCharge(player, 5) && level.removeBlock(ground, false)) {
+            InfusionEnergy.spendHandCharge(player, 5);
             event.setDistance(0);
             drop(level, ground, new ItemStack(block == Blocks.RED_SAND ? Blocks.SAND : block));
         }
@@ -93,7 +93,7 @@ public final class OverworldInfusion {
         for (ItemStack stack : target.getAllSlots()) {
             if (!METAL.contains(stack.getItem())) continue;
             boolean sneak = player.isShiftKeyDown();
-            if (InfusionEnergy.spend(player, sneak ? 4 : 2)) {
+            if (InfusionEnergy.spendHandCharge(player, sneak ? 4 : 2)) {
                 Vec3 look = player.getLookAngle();
                 Vec3 motion = new Vec3(look.x * 2.4, sneak ? 1.5 : 0.3, look.z * 2.4);
                 target.setDeltaMovement(motion);
@@ -114,7 +114,7 @@ public final class OverworldInfusion {
             if (elapsed % 20 == 0) WitcherySounds.playLegacyPlayerCue(player, SoundEvents.EXPERIENCE_ORB_PICKUP, 0.5F);
             return;
         }
-        if (elapsed % 4 != 0 || !InfusionEnergy.spend(player, 1)) return;
+        if (elapsed % 4 != 0 || !InfusionEnergy.spendHandCharge(player, 1)) return;
 
         ServerLevel level = player.serverLevel();
         Vec3 feet = player.position();
@@ -140,8 +140,8 @@ public final class OverworldInfusion {
                     BlockState state = level.getBlockState(pos);
                     Item ingot = oreToIngot(state);
                     if (ingot == null) continue;
-                    if (!InfusionEnergy.canSpend(player, 2)) return;
-                    if (replaceOre(level, pos, state, ingot, 1)) InfusionEnergy.spend(player, 2);
+                    if (!InfusionEnergy.checkHandCharge(player, 2)) return;
+                    if (replaceOre(level, pos, state, ingot, 1)) InfusionEnergy.spendHandCharge(player, 2);
                 }
             }
         }
@@ -154,7 +154,7 @@ public final class OverworldInfusion {
             return;
         }
         if (!player.isShiftKeyDown() && hit instanceof EntityHitResult entityHit && entityHit.getEntity() instanceof Mob target
-                && InfusionEnergy.spend(player, 2)) {
+                && InfusionEnergy.spendHandCharge(player, 2)) {
             ItemStack held = target.getMainHandItem();
             if (METAL.contains(held.getItem()) && target.spawnAtLocation(held, 2) != null) {
                 target.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
@@ -163,7 +163,7 @@ public final class OverworldInfusion {
         }
 
         int seconds = elapsed / 20;
-        if (!player.isShiftKeyDown() && seconds >= 2 && InfusionEnergy.spend(player, 6 * seconds)) {
+        if (!player.isShiftKeyDown() && seconds >= 2 && InfusionEnergy.spendHandCharge(player, 6 * seconds)) {
             WAVES.computeIfAbsent(player.serverLevel(), level -> new ArrayList<>())
                     .add(new Shockwave(player, 2 * seconds + 2));
         } else {
@@ -176,13 +176,13 @@ public final class OverworldInfusion {
         BlockPos pos = hit.getBlockPos();
         BlockState state = level.getBlockState(pos);
         if (player.isShiftKeyDown()) {
-            if (!InfusionEnergy.spend(player, 2)) return;
+            if (!InfusionEnergy.spendHandCharge(player, 2)) return;
             Item ingot = oreToIngot(state);
             if (ingot != null) replaceOre(level, pos, state, ingot, 2);
             return;
         }
         if (hit.getDirection() == Direction.UP) {
-            if (level.getBlockState(pos.below(10)).blocksMotion() && InfusionEnergy.spend(player, 2)) {
+            if (level.getBlockState(pos.below(10)).blocksMotion() && InfusionEnergy.spendHandCharge(player, 2)) {
                 raiseTerrain(level, pos);
             }
             return;
@@ -190,14 +190,14 @@ public final class OverworldInfusion {
         if (hit.getDirection() == Direction.DOWN || !ROCK_SOURCE.contains(state.getBlock())
                 || (state.hasProperty(SlabBlock.TYPE) && state.getValue(SlabBlock.TYPE) == SlabType.DOUBLE)
                 || level.getBlockState(pos.relative(hit.getDirection().getClockWise())).blocksMotion()
-                || !InfusionEnergy.canSpend(player, 3)) return;
+                || !InfusionEnergy.checkHandCharge(player, 3)) return;
         ThrownBrew rock = ThrownBrew.forTerrainRock(level, player, pos);
         if (!level.addFreshEntity(rock)) return;
         if (!state.equals(level.getBlockState(pos)) || !level.removeBlock(pos, false)) {
             rock.discard();
             return;
         }
-        InfusionEnergy.spend(player, 3);
+        InfusionEnergy.spendHandCharge(player, 3);
         WitcheryNetwork.sendTerrainRockCue(level, Vec3.atLowerCornerOf(pos), true);
     }
 

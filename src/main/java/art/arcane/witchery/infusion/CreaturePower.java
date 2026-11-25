@@ -122,7 +122,7 @@ public enum CreaturePower {
             InfernalInfusion.fail(player);
             return;
         }
-        if (!InfusionEnergy.spend(player, 1)) return;
+        if (!InfusionEnergy.spendHandCharge(player, 1)) return;
         activate(player, elapsed, hit);
         if (!player.getAbilities().instabuild) {
             data(player).putInt(CHARGES, remaining);
@@ -179,22 +179,22 @@ public enum CreaturePower {
             InfusionEnergy.recharge(player, 25);
             event.setCanceled(true);
         } else if (event.getSource().is(DamageTypeTags.IS_FIRE)) {
-            if (this == ZOMBIFIED_PIGLIN && InfusionEnergy.spend(player, 3)) {
+            if (this == ZOMBIFIED_PIGLIN && InfusionEnergy.spendCreatureDefense(player, 3)) {
                 buff(player, MobEffects.FIRE_RESISTANCE, 1200, 0);
                 fizz(player);
                 event.setCanceled(true);
             } else if ((this == GHAST || this == BLAZE) && !player.hasEffect(MobEffects.FIRE_RESISTANCE)
-                    && InfusionEnergy.spend(player, 3)) {
+                    && InfusionEnergy.spendCreatureDefense(player, 3)) {
                 buff(player, MobEffects.FIRE_RESISTANCE, 200, 0);
                 fizz(player);
             }
         } else if (event.getSource().is(DamageTypes.DROWN)) {
-            if (this == SQUID && InfusionEnergy.spend(player, 1)) {
+            if (this == SQUID && InfusionEnergy.spendCreatureDefense(player, 1)) {
                 buff(player, MobEffects.WATER_BREATHING, 1200, 1);
                 player.setAirSupply(300);
                 fizz(player);
                 event.setCanceled(true);
-            } else if (this == SKELETON && InfusionEnergy.spend(player, 5)) {
+            } else if (this == SKELETON && InfusionEnergy.spendCreatureDefense(player, 5)) {
                 buff(player, MobEffects.WATER_BREATHING, 600, 0);
                 player.setAirSupply(30);
                 fizz(player);

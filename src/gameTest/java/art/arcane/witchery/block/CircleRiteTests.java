@@ -1193,7 +1193,8 @@ public final class CircleRiteTests {
         var west = infusionPlayer(level, "WestBoundary", origin.add(-3.75, 0, 0), 195);
         var east = infusionPlayer(level, "EastBoundary", origin.add(4.25, 0, 0), 100);
         var above = infusionPlayer(level, "AboveGlyph", origin.add(0.25, 1.25, 0), 100);
-        var below = infusionPlayer(level, "BelowGlyph", origin.add(0.25, -1, 0), 100);
+        var below = infusionPlayer(level, "BelowGlyph", origin.add(0.25, -1, 0), 0);
+        below.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).remove("witcheryInfusionCharges");
         var players = List.of(west, east, above, below);
         players.forEach(player -> player.setNoGravity(true));
         var bounds = new AABB(center).inflate(6);
@@ -1206,12 +1207,12 @@ public final class CircleRiteTests {
                 var heart = heart(helper);
                 heart.load(legacyRecharge());
                 tick(level, center, heart, 19);
-                helper.assertTrue(altar.power() == 10000 && infusionCharge(west) == 195 && infusionCharge(below) == 100,
+                helper.assertTrue(altar.power() == 10000 && infusionCharge(west) == 195 && infusionCharge(below) == 0,
                         "The original saved recharge waits through nineteen ticks before a new debit or player pulse");
                 heart.load(heart.saveWithoutMetadata());
                 tick(level, center, heart, 1);
                 var charges = players.stream().map(CircleRiteTests::infusionCharge).toList();
-                helper.assertTrue(altar.power() == 9960 && charges.equals(List.of(200, 100, 100, 110)),
+                helper.assertTrue(altar.power() == 9960 && charges.equals(List.of(200, 100, 100, 10)),
                         "Tick twenty charges only eligible players, measured altar power " + altar.power() + " and charges " + charges);
             } finally {
                 for (var player : players) level.removePlayerImmediately(player, Entity.RemovalReason.DISCARDED);
