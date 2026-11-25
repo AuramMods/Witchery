@@ -40,7 +40,7 @@ public final class CrystalBallBlock extends BaseEntityBlock {
     private static final VoxelShape SHAPE = box(4.8, 0, 4.8, 11.2, 9.6, 11.2);
 
     public CrystalBallBlock() {
-        super(Properties.copy(Blocks.GLASS).strength(2).noOcclusion());
+        super(Properties.copy(Blocks.GLASS).strength(2).requiresCorrectToolForDrops().noOcclusion());
     }
 
     @Override

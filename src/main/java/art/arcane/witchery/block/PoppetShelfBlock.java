@@ -26,7 +26,7 @@ public final class PoppetShelfBlock extends BaseEntityBlock {
     private static final VoxelShape SHAPE = box(0, 0, 0, 16, 8.16, 16);
 
     public PoppetShelfBlock() {
-        super(Properties.copy(Blocks.OAK_PLANKS).strength(2.5F).noOcclusion());
+        super(Properties.copy(Blocks.STONE).strength(2.5F).noOcclusion());
     }
 
     @Override

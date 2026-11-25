@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -29,7 +30,7 @@ public final class BrewPlantBlocks {
 
     public static final class Web extends Block {
         public Web() {
-            super(Properties.copy(Blocks.COBWEB).strength(8).noLootTable());
+            super(Properties.of().mapColor(MapColor.WOOL).noCollission().strength(8).noLootTable());
         }
 
         @Override

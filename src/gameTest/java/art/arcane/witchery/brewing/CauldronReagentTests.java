@@ -13,10 +13,12 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.FakePlayer;
@@ -118,37 +120,41 @@ public final class CauldronReagentTests {
         });
     }
 
-    @GameTest(template = "qa_coven_arena")
+    @GameTest(template = "qa_coven_arena", batch = "witchery_cauldron_reagent_tracking")
     public static void plainLiquidsResistQuicklimeAndGypsumUsesWholeStack(GameTestHelper helper) {
         var level = helper.getLevel();
         var pos = helper.absolutePos(new BlockPos(6, 4, 6));
         var tank = tank(placeCauldron(helper, pos));
         Vec3 center = Vec3.atCenterOf(pos);
         var player = addPlayer(helper, center.add(2, 1, 0));
-        try {
-            for (var fluid : List.of(Fluids.WATER, WitcheryFluids.getRequiredSource("brew").get())) {
-                tank.fill(new FluidStack(fluid, 1000), IFluidHandler.FluidAction.EXECUTE);
-                var quicklime = dropAt(helper, center, WitcheryIngredient.QUICKLIME, 4);
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
+                level.getEntitiesOfClass(Player.class, new AABB(pos).inflate(5)).contains(player),
+                "The cauldron can find the nearby player before testing the reagents")).thenExecute(() -> {
+            try {
+                for (var fluid : List.of(Fluids.WATER, WitcheryFluids.getRequiredSource("brew").get())) {
+                    tank.fill(new FluidStack(fluid, 1000), IFluidHandler.FluidAction.EXECUTE);
+                    var quicklime = dropAt(helper, center, WitcheryIngredient.QUICKLIME, 4);
+                    level.getBlockState(pos).entityInside(level, pos, quicklime);
+                    helper.assertTrue(!quicklime.isRemoved() && quicklime.getItem().getCount() == 4
+                                    && tank.getFluidInTank(0).getAmount() == 1000,
+                            "Quicklime leaves plain water and unprepared brew alone even with a player present");
+
+                    var gypsum = dropAt(helper, center, WitcheryIngredient.GYPSUM, 4);
+                    level.getBlockState(pos).entityInside(level, pos, gypsum);
+                    helper.assertTrue(gypsum.isRemoved() && tank.getFluidInTank(0).isEmpty(),
+                            "A whole dropped stack of Gypsum clears the cold liquid");
+                }
+
+                var dyed = BrewMixture.ingredientTag(List.of(), 0xc74636);
+                int accepted = tank.fill(new FluidStack(WitcheryFluids.getRequiredSource("brew").get(), 1000, dyed), IFluidHandler.FluidAction.EXECUTE);
+                helper.assertTrue(accepted == 1000, "Fill the cauldron with the dye-only brew before the blast check");
+                var quicklime = dropAt(helper, center, WitcheryIngredient.QUICKLIME, 1);
                 level.getBlockState(pos).entityInside(level, pos, quicklime);
-                helper.assertTrue(!quicklime.isRemoved() && quicklime.getItem().getCount() == 4
-                                && tank.getFluidInTank(0).getAmount() == 1000,
-                        "Quicklime leaves plain water and unprepared brew alone even with a player present");
-
-                var gypsum = dropAt(helper, center, WitcheryIngredient.GYPSUM, 4);
-                level.getBlockState(pos).entityInside(level, pos, gypsum);
-                helper.assertTrue(gypsum.isRemoved() && tank.getFluidInTank(0).isEmpty(),
-                        "A whole dropped stack of Gypsum clears the cold liquid");
+                helper.assertTrue(quicklime.isRemoved() && tank.getFluidInTank(0).isEmpty(), "A dye-only brew still reacts");
+            } finally {
+                level.removePlayerImmediately(player, Entity.RemovalReason.DISCARDED);
             }
-
-            var dyed = BrewMixture.ingredientTag(List.of(), 0xc74636);
-            tank.fill(new FluidStack(WitcheryFluids.getRequiredSource("brew").get(), 1000, dyed), IFluidHandler.FluidAction.EXECUTE);
-            var quicklime = dropAt(helper, center, WitcheryIngredient.QUICKLIME, 1);
-            level.getBlockState(pos).entityInside(level, pos, quicklime);
-            helper.assertTrue(quicklime.isRemoved() && tank.getFluidInTank(0).isEmpty(), "A dye-only brew still reacts");
-            helper.succeed();
-        } finally {
-            level.removePlayerImmediately(player, Entity.RemovalReason.DISCARDED);
-        }
+        }).thenSucceed();
     }
 
     private static WitchesCauldronBlockEntity placeCauldron(GameTestHelper helper, BlockPos pos) {

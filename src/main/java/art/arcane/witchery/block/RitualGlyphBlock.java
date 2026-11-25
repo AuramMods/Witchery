@@ -27,7 +27,7 @@ public final class RitualGlyphBlock extends Block {
     private final String chalk;
 
     public RitualGlyphBlock(String chalk) {
-        super(Properties.copy(Blocks.WHITE_CARPET).noCollission().noLootTable().instabreak());
+        super(Properties.copy(Blocks.WHITE_CARPET).noCollission().noLootTable().strength(2.0F, 1000));
         this.chalk = chalk;
         registerDefaultState(defaultBlockState().setValue(PATTERN, 0));
     }

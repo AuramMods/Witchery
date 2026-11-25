@@ -27,7 +27,8 @@ public final class DaylightCollectorBlock extends Block {
     private static final VoxelShape SHAPE = box(3.2, 0, 3.2, 12.8, 12.8, 12.8);
 
     public DaylightCollectorBlock() {
-        super(BlockBehaviour.Properties.copy(Blocks.DAYLIGHT_DETECTOR).strength(3.5F).sound(SoundType.METAL).noOcclusion());
+        super(BlockBehaviour.Properties.copy(Blocks.DAYLIGHT_DETECTOR).strength(3.5F).sound(SoundType.METAL)
+                .requiresCorrectToolForDrops().noOcclusion());
         registerDefaultState(stateDefinition.any().setValue(CHARGE, 0));
     }
 

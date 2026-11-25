@@ -17,7 +17,7 @@ public final class WolfHeadBlock extends MountedSkullBlock {
     public static final BooleanProperty HELLHOUND = BooleanProperty.create("hellhound");
 
     public WolfHeadBlock() {
-        super(Properties.copy(Blocks.SKELETON_SKULL).noOcclusion());
+        super(Properties.copy(Blocks.SKELETON_SKULL).noOcclusion().instabreak());
         registerDefaultState(defaultBlockState().setValue(HELLHOUND, false));
     }
 

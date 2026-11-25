@@ -13,14 +13,19 @@
     "witchery:witchesovenidle",
     "witchery:witchesovenburning",
     "witchery:cauldron",
-    "witchery:perpetualice",
-    "witchery:icestockade",
-    "witchery:icefence",
-    "witchery:icefencegate",
-    "witchery:icedoor",
-    "witchery:icestairs",
-    "witchery:iceslab",
-    "witchery:icedoubleslab",
-    "witchery:icepressureplate"
+    "witchery:beartrap",
+    "witchery:wolftrap",
+    "witchery:bloodcrucible",
+    "witchery:poppetshelf",
+    "witchery:brazier",
+    "witchery:kettle",
+    "witchery:fumefunnel",
+    "witchery:filteredfumefunnel",
+    "witchery:candelabra",
+    "witchery:chalice",
+    "witchery:crystalball",
+    "witchery:daylightcollector",
+    "witchery:cstonepressureplate",
+    "witchery:shadedglass_active"
   ]
 }

@@ -27,7 +27,7 @@ public final class ShadedGlassBlock extends GlassBlock {
     private final boolean darkened;
 
     public ShadedGlassBlock(boolean darkened) {
-        super(Properties.copy(darkened ? Blocks.TINTED_GLASS : Blocks.GLASS));
+        super(darkened ? Properties.copy(Blocks.TINTED_GLASS).requiresCorrectToolForDrops() : Properties.copy(Blocks.GLASS));
         this.darkened = darkened;
         registerDefaultState(defaultBlockState().setValue(COLOR, Color.WHITE));
     }

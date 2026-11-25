@@ -10,6 +10,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.PressurePlateBlock;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
 
@@ -17,8 +18,9 @@ public final class FrozenPressurePlateBlock extends PressurePlateBlock {
     private final boolean ice;
 
     public FrozenPressurePlateBlock(boolean ice) {
-        super(Sensitivity.EVERYTHING, Properties.copy(Blocks.STONE_PRESSURE_PLATE)
-                .strength(ice ? 2 : 0.2F, ice ? 5 : 0.2F), BlockSetType.STONE);
+        super(Sensitivity.EVERYTHING, ice
+                ? Properties.copy(Blocks.OAK_PRESSURE_PLATE).strength(2, 5).sound(SoundType.GLASS)
+                : Properties.copy(Blocks.STONE_PRESSURE_PLATE).strength(0.2F), BlockSetType.STONE);
         this.ice = ice;
     }
 

@@ -14,6 +14,19 @@
     "witchery:witchsladder",
     "witchery:rowanwooddoor",
     "witchery:alderwooddoor",
-    "witchery:stockade"
+    "witchery:stockade",
+    "witchery:bramble",
+    "witchery:circle",
+    "witchery:circleglyphritual",
+    "witchery:circleglyphotherwhere",
+    "witchery:circleglyphinfernal",
+    "witchery:cwoodendoor",
+    "witchery:cwoodpressureplate",
+    "witchery:dreamcatcher",
+    "witchery:icefencegate",
+    "witchery:plantmine",
+    "witchery:spanishmoss",
+    "witchery:spinningwheel",
+    "witchery:wickerbundle"
   ]
 }

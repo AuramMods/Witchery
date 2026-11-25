@@ -95,6 +95,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.WoodType;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -183,9 +184,9 @@ public final class WitcheryBlocks {
             case "alderwooddoor" -> new WitchDoorBlock(true);
             case "cwoodendoor" -> new CursedControls.Door();
             case "altar" -> new AltarBlock(BlockBehaviour.Properties.copy(Blocks.STONE).strength(2.0F));
-            case "kettle" -> new KettleBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion());
+            case "kettle" -> new KettleBlock(BlockBehaviour.Properties.copy(Blocks.STONE).strength(2.0F).noOcclusion());
             case "spinningwheel" ->
-                    new SpinningWheelBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS).noOcclusion());
+                    new SpinningWheelBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS).strength(3.5F).noOcclusion());
             case "distilleryidle", "distilleryburning" ->
                     new DistilleryBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).strength(3.5F).noOcclusion()
                             .lightLevel(state -> state.getValue(DistilleryBlock.LIT) ? 6 : 0));
@@ -195,7 +196,7 @@ public final class WitcheryBlocks {
                             .noOcclusion()
                             .lightLevel(state -> state.getValue(WitchesOvenBlock.LIT) ? 13 : 0));
             case "fumefunnel", "filteredfumefunnel" ->
-                    new FumeFunnelBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion());
+                    new FumeFunnelBlock(BlockBehaviour.Properties.copy(Blocks.STONE).strength(3.5F).noOcclusion());
             case "coffinblock" -> new CoffinBlock();
             case "statueofworship" -> new StatueOfWorshipBlock();
             case "refillingchest" -> new RefillingChestBlock();
@@ -204,11 +205,12 @@ public final class WitcheryBlocks {
             case "stairswoodalder" -> new WitchWoodStairBlock(WitchWoodType.ALDER);
             case "stairswoodhawthorn" -> new WitchWoodStairBlock(WitchWoodType.HAWTHORN);
             case "icestairs" -> new StairBlock(() -> getRequired("perpetualice").get().defaultBlockState(),
-                    BlockBehaviour.Properties.copy(Blocks.STONE_STAIRS).noOcclusion().friction(0.98F).strength(2, 5));
+                    BlockBehaviour.Properties.copy(Blocks.GLASS).mapColor(MapColor.ICE).friction(0.98F).strength(2, 5));
             case "snowstairs" -> new StairBlock(Blocks.SNOW_BLOCK.defaultBlockState(),
                     BlockBehaviour.Properties.copy(Blocks.SNOW_BLOCK));
             case "witchwoodslab", "witchwooddoubleslab" -> new WitchWoodSlabBlock(path.equals("witchwooddoubleslab"));
-            case "iceslab" -> new SlabBlock(BlockBehaviour.Properties.copy(Blocks.STONE_SLAB).noOcclusion().strength(2, 5));
+            case "iceslab" -> new SlabBlock(BlockBehaviour.Properties.copy(Blocks.GLASS).mapColor(MapColor.ICE)
+                    .sound(SoundType.STONE).strength(2, 5));
             case "snowslab" -> new SlabBlock(BlockBehaviour.Properties.copy(Blocks.SNOW_BLOCK));
             case "icedoubleslab" -> new Block(BlockBehaviour.Properties.copy(Blocks.ICE).strength(2, 5));
             case "snowdoubleslab" -> new Block(BlockBehaviour.Properties.copy(Blocks.SNOW_BLOCK));
@@ -229,7 +231,7 @@ public final class WitcheryBlocks {
             case "wolftrap" -> new HuntingTrapBlock(true);
             case "beartrap" -> new HuntingTrapBlock(false);
             case "demonheart" ->
-                    new DemonHeartBlock(BlockBehaviour.Properties.copy(Blocks.STONE).strength(1).noOcclusion()
+                    new DemonHeartBlock(BlockBehaviour.Properties.copy(Blocks.DIRT).strength(1).noOcclusion()
                             .sound(SoundType.NETHERRACK).lightLevel(state -> 3));
             case "wolfhead" -> new WolfHeadBlock();
             case "alluringskull" -> new AlluringSkullBlock();

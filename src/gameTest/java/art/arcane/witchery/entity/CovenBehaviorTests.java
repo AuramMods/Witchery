@@ -214,47 +214,51 @@ public final class CovenBehaviorTests {
         }).thenSucceed();
     }
 
-    // Give the newly forced test chunks time to register their entity sections.
-    @GameTest(template = TEMPLATE, batch = "witchery_coven_rite", setupTicks = 5)
+    @GameTest(template = TEMPLATE, batch = "witchery_coven_rite")
     public static void replacesAnActiveVisitAtTheRiteAndRemovesADeadMember(GameTestHelper helper) {
         var level = helper.getLevel();
         FakePlayer owner = owner(helper);
         level.addNewPlayer(owner);
-        try {
-            BlockPos center = helper.absolutePos(CENTER);
+        BlockPos center = helper.absolutePos(CENTER);
+        var corners = List.of(center.offset(-3, 0, -3), center.offset(-3, 0, 3),
+                center.offset(3, 0, -3), center.offset(3, 0, 3));
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(corners.stream().allMatch(level::isPositionEntityTicking),
+                "The recall and ritual seating area is ticking")).thenExecute(() -> {
             helper.assertTrue(CovenWitch.covenSize(owner) == 1 && owner.blockPosition().equals(center),
                     "The owner should keep the coven and test position after joining");
             BlockPos floor = center.offset(-2, -1, -2);
             helper.assertTrue(level.getBlockState(floor).isFaceSturdy(level, floor, Direction.UP),
                     "The ritual fixture should have a solid landing surface");
             helper.assertTrue(CovenWitch.recallMember(owner, 0), "The Seer Stone call should find a clear position");
-            CovenWitch visitor = ritualMember(helper, owner, "Seer Stone recall");
-            placeTalismanRite(helper);
-            owner.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(WitcheryIngredient.SEER_STONE.item()));
-            var state = level.getBlockState(center);
-            state.use(level, owner, InteractionHand.MAIN_HAND,
-                    new BlockHitResult(Vec3.atCenterOf(center), Direction.UP, center, false));
-            helper.assertTrue(level.getBlockState(center).getValue(RiteHeartBlock.ACTIVE) && visitor.isRemoved()
-                            && CovenWitch.covenSize(owner) == 1,
-                    "Starting a real rite should dismiss the visit and retain the roster");
-            helper.assertTrue(CovenWitch.summonToRite(owner, center, 0), "The witch should take the first ritual seat");
-            CovenWitch summoned = ritualMember(helper, owner, "first ritual seat");
-            var saved = summoned.saveWithoutId(new CompoundTag());
-            helper.assertTrue(!summoned.getUUID().equals(visitor.getUUID()) && saved.getBoolean("Sitting") && !summoned.isNoAi()
-                            && saved.getInt("SuicideIn") == 300 && summoned.blockPosition().equals(center.offset(-2, 0, -2)),
-                    "The ritual should use a seated witch who can still drink and has the original fifteen-second lifetime");
-            saved.remove("Sitting");
-            saved.putBoolean("NoAI", true);
-            summoned.load(saved);
-            helper.assertTrue(summoned.saveWithoutId(new CompoundTag()).getBoolean("Sitting") && !summoned.isNoAi(),
-                    "Older port saves should recover seated state from the former NoAI flag");
-            summoned.hurt(level.damageSources().genericKill(), 1000);
-            helper.assertTrue(CovenWitch.covenSize(owner) == 0, "A real death should remove the member from the online owner's coven");
-        } finally {
-            CovenWitch.dismissNearbyForRite(owner);
-            level.removePlayerImmediately(owner, Entity.RemovalReason.DISCARDED);
-        }
-        helper.succeed();
+        }).thenWaitUntil(() -> ritualMember(helper, owner, "Seer Stone recall")).thenExecute(() -> {
+            try {
+                CovenWitch visitor = ritualMember(helper, owner, "Seer Stone recall");
+                placeTalismanRite(helper);
+                owner.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(WitcheryIngredient.SEER_STONE.item()));
+                var state = level.getBlockState(center);
+                state.use(level, owner, InteractionHand.MAIN_HAND,
+                        new BlockHitResult(Vec3.atCenterOf(center), Direction.UP, center, false));
+                helper.assertTrue(level.getBlockState(center).getValue(RiteHeartBlock.ACTIVE) && visitor.isRemoved()
+                                && CovenWitch.covenSize(owner) == 1,
+                        "Starting a real rite should dismiss the visit and retain the roster");
+                helper.assertTrue(CovenWitch.summonToRite(owner, center, 0), "The witch should take the first ritual seat");
+                CovenWitch summoned = ritualMember(helper, owner, "first ritual seat");
+                var saved = summoned.saveWithoutId(new CompoundTag());
+                helper.assertTrue(!summoned.getUUID().equals(visitor.getUUID()) && saved.getBoolean("Sitting") && !summoned.isNoAi()
+                                && saved.getInt("SuicideIn") == 300 && summoned.blockPosition().equals(center.offset(-2, 0, -2)),
+                        "The ritual should use a seated witch who can still drink and has the original fifteen-second lifetime");
+                saved.remove("Sitting");
+                saved.putBoolean("NoAI", true);
+                summoned.load(saved);
+                helper.assertTrue(summoned.saveWithoutId(new CompoundTag()).getBoolean("Sitting") && !summoned.isNoAi(),
+                        "Older port saves should recover seated state from the former NoAI flag");
+                summoned.hurt(level.damageSources().genericKill(), 1000);
+                helper.assertTrue(CovenWitch.covenSize(owner) == 0, "A real death should remove the member from the online owner's coven");
+            } finally {
+                CovenWitch.dismissNearbyForRite(owner);
+                level.removePlayerImmediately(owner, Entity.RemovalReason.DISCARDED);
+            }
+        }).thenSucceed();
     }
 
     @GameTest(template = TEMPLATE, batch = "witchery_seer_stone_reuse", timeoutTicks = 160)

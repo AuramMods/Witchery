@@ -54,10 +54,18 @@ public class WitcheryBlockTagsProvider extends BlockTagsProvider {
         tag(BlockTags.MINEABLE_WITH_AXE).add(log, planks, coffin,
                 WitcheryBlocks.getRequired("scarecrow").get(), WitcheryBlocks.getRequired("trent").get(),
                 WitcheryBlocks.getRequired("witchsladder").get(), WitcheryBlocks.getRequired("rowanwooddoor").get(),
-                WitcheryBlocks.getRequired("alderwooddoor").get(), WitcheryBlocks.getRequired("stockade").get());
+                WitcheryBlocks.getRequired("alderwooddoor").get(), WitcheryBlocks.getRequired("stockade").get(),
+                WitcheryBlocks.getRequired("bramble").get(), WitcheryBlocks.getRequired("circle").get(),
+                WitcheryBlocks.getRequired("circleglyphritual").get(), WitcheryBlocks.getRequired("circleglyphotherwhere").get(),
+                WitcheryBlocks.getRequired("circleglyphinfernal").get(),
+                WitcheryBlocks.getRequired("cwoodendoor").get(), WitcheryBlocks.getRequired("cwoodpressureplate").get(),
+                WitcheryBlocks.getRequired("dreamcatcher").get(), WitcheryBlocks.getRequired("icefencegate").get(),
+                WitcheryBlocks.getRequired("plantmine").get(), WitcheryBlocks.getRequired("spanishmoss").get(),
+                WitcheryBlocks.getRequired("spinningwheel").get(), WitcheryBlocks.getRequired("wickerbundle").get());
         tag(BlockTags.MINEABLE_WITH_SHOVEL).add(
                 WitcheryBlocks.getRequired("snowstairs").get(), WitcheryBlocks.getRequired("snowslab").get(),
-                WitcheryBlocks.getRequired("snowdoubleslab").get(), WitcheryBlocks.getRequired("snowpressureplate").get());
+                WitcheryBlocks.getRequired("snowdoubleslab").get(), WitcheryBlocks.getRequired("snowpressureplate").get(),
+                WitcheryBlocks.getRequired("csnowpressureplate").get());
         Block silverVat = WitcheryBlocks.getRequired("silvervat").get();
         tag(BlockTags.NEEDS_STONE_TOOL).add(silverVat);
         tag(BlockTags.MINEABLE_WITH_PICKAXE).add(
@@ -73,10 +81,13 @@ public class WitcheryBlockTagsProvider extends BlockTagsProvider {
                 WitcheryBlocks.getRequired("leechchest").get(),
                 WitcheryBlocks.getRequired("witchesovenidle").get(),
                 WitcheryBlocks.getRequired("witchesovenburning").get(),
-                WitcheryBlocks.getRequired("cauldron").get(), WitcheryBlocks.getRequired("perpetualice").get(),
-                WitcheryBlocks.getRequired("icestockade").get(), WitcheryBlocks.getRequired("icefence").get(),
-                WitcheryBlocks.getRequired("icefencegate").get(), WitcheryBlocks.getRequired("icedoor").get(),
-                WitcheryBlocks.getRequired("icestairs").get(), WitcheryBlocks.getRequired("iceslab").get(),
-                WitcheryBlocks.getRequired("icedoubleslab").get(), WitcheryBlocks.getRequired("icepressureplate").get());
+                WitcheryBlocks.getRequired("cauldron").get(),
+                WitcheryBlocks.getRequired("beartrap").get(), WitcheryBlocks.getRequired("wolftrap").get(),
+                WitcheryBlocks.getRequired("bloodcrucible").get(), WitcheryBlocks.getRequired("poppetshelf").get(),
+                WitcheryBlocks.getRequired("brazier").get(), WitcheryBlocks.getRequired("kettle").get(),
+                WitcheryBlocks.getRequired("fumefunnel").get(), WitcheryBlocks.getRequired("filteredfumefunnel").get(),
+                WitcheryBlocks.getRequired("candelabra").get(), WitcheryBlocks.getRequired("chalice").get(),
+                WitcheryBlocks.getRequired("crystalball").get(), WitcheryBlocks.getRequired("daylightcollector").get(),
+                WitcheryBlocks.getRequired("cstonepressureplate").get(), WitcheryBlocks.getRequired("shadedglass_active").get());
     }
 }

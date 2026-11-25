@@ -861,6 +861,14 @@
 - [x] Verify a two-block Void Bramble column and the north-facing Goddess statue in the muted client. The packaged game rendered the foliage and the complete stone model.
 - [x] Match the original mining rules for the Goddess, the two ward statues, and the Wolf Altar. The original Forge server confirmed 2.5 hardness and pickaxe harvesting for all four, with the Statue of Worship at 3.5 as a control. On packaged clean Forge and copied Auram, a muted survival visitor mined all five and got one of each. The same tool left Void Bramble intact. All 323 local Forge GameTests passed.
 
+## Block harvesting (2026-11-25)
+
+- [x] Restore pickaxe harvesting for the Kettle, Fume Funnels, Poppet Shelf, Blood Crucible, Bear Trap, Brazier, Candelabra, Chalice, Crystal Ball, Daylight Collector, and cursed stone pressure plate. The Wolf Trap also mines faster with a pickaxe and retains its empty loot list. The shelf drops its inventory and removes its chunk ticket, and a Filled Chalice returns its filled item.
+- [x] Restore axe speeds for the affected wood blocks, chalk glyphs, and ice gate. Match the measured hardness of chalk, wolf trophies, and the Spinning Wheel. Recover Demon Hearts and ordinary ice construction pieces by hand. Darkened Shaded Glass still uses color-preserving Silk Touch loot, and Perpetual Ice still uses its original Silk Touch rule.
+- [x] Compare all 121 original default block states with the packaged port. The remaining tool differences are shovel harvesting for the five snow constructions and raw eligibility for the disease fluid. Four raw hardness differences are confined to the brew and Slurp blocks. Their temporary effect behavior is tracked with the corresponding rites and brews.
+- [x] Restart copied Auram on the same packaged JAR and verify 15 survival harvest outcomes on its headless server. On packaged clean Forge, the muted survival client mined seven fixtures with the normal attack binding, recovered the marked Poppet from its shelf, and broke the Wolf Trap without a drop.
+- [x] Pass all 326 required Forge GameTests locally, including the survival block harvest regression cases.
+
 ## Coffin (2026-11-20)
 
 - [x] Craft the original placeable coffin from a bed, three planks and five logs. The muted survival client crafted the item and placed the head and foot together. Placement tests refused an obstructed or unsupported second half and retained the item.

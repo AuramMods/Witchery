@@ -227,7 +227,11 @@ public final class CursedControls {
 
         public Plate(Kind kind) {
             super(kind == Kind.STONE_PLATE ? Sensitivity.MOBS : Sensitivity.EVERYTHING,
-                    Properties.copy(kind == Kind.STONE_PLATE ? Blocks.STONE_PRESSURE_PLATE : Blocks.OAK_PRESSURE_PLATE),
+                    switch (kind) {
+                        case STONE_PLATE -> Properties.copy(Blocks.STONE_PRESSURE_PLATE);
+                        case SNOW_PLATE -> Properties.copy(Blocks.OAK_PRESSURE_PLATE).requiresCorrectToolForDrops();
+                        default -> Properties.copy(Blocks.OAK_PRESSURE_PLATE);
+                    },
                     kind == Kind.STONE_PLATE ? BlockSetType.STONE : BlockSetType.OAK);
             this.kind = kind;
         }
