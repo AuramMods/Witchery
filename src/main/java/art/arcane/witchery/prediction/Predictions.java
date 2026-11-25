@@ -5,6 +5,7 @@ import art.arcane.witchery.entity.BabaYaga;
 import art.arcane.witchery.entity.Ent;
 import art.arcane.witchery.entity.WitchOwl;
 import art.arcane.witchery.registry.WitcheryEntities;
+import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -15,6 +16,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.RandomSource;
@@ -243,12 +245,12 @@ public final class Predictions {
             case ARROW -> hostileEncounter(player, EntityType.SKELETON);
             case ENT -> hostileEncounter(player, WitcheryEntities.ENT.get());
             case FALL -> sinkGround(player, false);
-            case LOVE -> encounter(player, EntityType.VILLAGER, 6, villager -> PredictedCourtship.start(villager, player));
+            case LOVE -> startCourtship(player);
             case BABA_HOSTILE -> hostileEncounter(player, WitcheryEntities.BABA_YAGA.get());
             case BABA_ALLY -> encounter(player, WitcheryEntities.BABA_YAGA.get(), 4, baba -> baba.bind(player));
             case FRIEND -> encounter(player, EntityType.WOLF, 4, wolf -> wolf.tame(player));
             case WET -> sinkGround(player, true);
-            case NETHER -> sendToNether(player);
+            case NETHER -> startNetherForecast(player);
             default -> false;
         };
     }
@@ -266,6 +268,12 @@ public final class Predictions {
 
     private static boolean hostileEncounter(ServerPlayer player, EntityType<? extends Mob> type) {
         return encounter(player, type, 4, mob -> mob.setTarget(player));
+    }
+
+    private static boolean startCourtship(ServerPlayer player) {
+        if (!encounter(player, EntityType.VILLAGER, 6, villager -> PredictedCourtship.start(villager, player))) return false;
+        WitcherySounds.playLegacyPlayerCue(player, WitcherySounds.FORECAST_LOVE.get(), SoundSource.NEUTRAL, 0.5F);
+        return true;
     }
 
     private static <T extends Mob> boolean encounter(ServerPlayer player, EntityType<T> type, int radius, Consumer<T> setup) {
@@ -327,11 +335,26 @@ public final class Predictions {
         return true;
     }
 
-    private static boolean sendToNether(ServerPlayer player) {
-        ServerLevel nether = player.server.getLevel(Level.NETHER);
-        if (nether == null || player.level() == nether || player.changeDimension(nether) == null) return false;
+    private static boolean startNetherForecast(ServerPlayer player) {
+        ServerLevel source = player.serverLevel();
+        if (source.dimension().equals(Level.NETHER)) return false;
         player.sendSystemMessage(Component.translatable(MESSAGE + "tothenether.summoned").withStyle(ChatFormatting.LIGHT_PURPLE));
-        hostileEncounter(player, EntityType.BLAZE);
+        // The original forecast simulates one tick of portal contact. Vanilla handles warm-up and cooldown.
+        player.handleInsidePortal(player.blockPosition());
+
+        RandomSource random = source.getRandom();
+        BlockPos start = player.blockPosition().below().offset(encounterOffset(random, 4), 0, encounterOffset(random, 4));
+        BlockPos.MutableBlockPos ground = start.mutable();
+        while (ground.getY() < start.getY() + 8 && !source.isEmptyBlock(ground)) ground.move(Direction.UP);
+        while (ground.getY() > source.getMinBuildHeight() && source.isEmptyBlock(ground)) ground.move(Direction.DOWN);
+        if (!source.isOutsideBuildHeight(ground) && source.getWorldBorder().isWithinBounds(ground)
+                && source.isEmptyBlock(ground.above()) && source.isEmptyBlock(ground.above(2))) {
+            var blaze = EntityType.BLAZE.create(source);
+            if (blaze != null) {
+                blaze.moveTo(ground.getX(), ground.getY(), ground.getZ(), 0, 0);
+                source.addFreshEntity(blaze);
+            }
+        }
         return true;
     }
 

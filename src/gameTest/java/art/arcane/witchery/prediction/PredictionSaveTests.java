@@ -1,6 +1,7 @@
 package art.arcane.witchery.prediction;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.registry.WitcherySounds;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -11,6 +12,10 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.monster.Blaze;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -19,6 +24,8 @@ import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.PlayLevelSoundEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -72,6 +79,67 @@ public final class PredictionSaveTests {
         helper.assertTrue(entries.size() == 1 && Predictions.Kind.byId(entries.getCompound(0).getInt("WITCPreID")) != null
                         && entries.getCompound(0).getLong("WITCPreTime") > 1_000L,
                 "An obsolete forecast cannot occupy the Crystal Ball's reading slot");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_prediction_nether")
+    public static void overdueNetherForecastTouchesThePortalAndSpawnsInTheSourceWorld(GameTestHelper helper) {
+        var source = helper.getLevel();
+        BlockPos ground = prepareEncounterFloor(helper);
+        var player = new PortalWitness(source);
+        player.setPos(Vec3.atBottomCenterOf(ground.above()));
+        var entries = store(player, forecast(16, 1_000L));
+        List<Blaze> blazes = new ArrayList<>();
+        Consumer<EntityJoinLevelEvent> listener = event -> {
+            if (event.getEntity() instanceof Blaze blaze) blazes.add(blaze);
+        };
+        MinecraftForge.EVENT_BUS.addListener(listener);
+        try {
+            rollOverdueForecast(player);
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(listener);
+        }
+
+        helper.assertTrue(entries.isEmpty() && player.contactsPortal() && !player.changedDimension,
+                "A successful overdue forecast marks portal contact without moving the survival player");
+        helper.assertTrue(player.advancePortal() == 1 && !player.contactsPortal() && player.advancePortal() == 0
+                        && !player.changedDimension && player.serverLevel() == source,
+                "One vanilla portal step is insufficient to carry a survival player to the Nether");
+        helper.assertTrue(blazes.size() == 1, "The forecast summons exactly one Blaze");
+        var blaze = blazes.get(0);
+        int x = Math.abs(blaze.blockPosition().getX() - ground.getX());
+        int z = Math.abs(blaze.blockPosition().getZ() - ground.getZ());
+        helper.assertTrue(blaze.level() == source && blaze.getY() == ground.getY()
+                        && blaze.getX() == blaze.getBlockX() && blaze.getZ() == blaze.getBlockZ()
+                        && x >= 2 && x <= 4 && z >= 2 && z <= 4 && blaze.getTarget() == null,
+                "The Blaze uses the original integer ground coordinates and starts without a forced target");
+        blaze.discard();
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_prediction_love_cue")
+    public static void overdueLoveForecastPlaysOneOriginalCueAtThePlayer(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos ground = prepareEncounterFloor(helper);
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "ForecastLove"));
+        player.setPos(Vec3.atBottomCenterOf(ground.above()));
+        var entries = store(player, forecast(9, 1_000L));
+        List<PlayLevelSoundEvent.AtEntity> sounds = new ArrayList<>();
+        Consumer<PlayLevelSoundEvent.AtEntity> listener = event -> {
+            if (event.getEntity() == player) sounds.add(event);
+        };
+        MinecraftForge.EVENT_BUS.addListener(listener);
+        try {
+            rollOverdueForecast(player);
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(listener);
+        }
+        helper.assertTrue(entries.isEmpty() && sounds.size() == 1, "A spawned suitor sends one cue at the forecast player");
+        var sound = sounds.get(0);
+        helper.assertTrue(sound.getSound().value() == WitcherySounds.FORECAST_LOVE.get()
+                        && sound.getSource() == SoundSource.NEUTRAL && sound.getNewVolume() == 0.5F
+                        && sound.getNewPitch() >= 1F / 3F && sound.getNewPitch() <= 0.5F,
+                "Keep the original sound ID, category, half volume and pitch range");
         helper.succeed();
     }
 
@@ -235,6 +303,37 @@ public final class PredictionSaveTests {
             level.setBlockAndUpdate(pos, Blocks.DIRT.defaultBlockState());
         }
         return ground;
+    }
+
+    private static BlockPos prepareEncounterFloor(GameTestHelper helper) {
+        var ground = helper.absolutePos(new BlockPos(8, 10, 8));
+        for (BlockPos pos : BlockPos.betweenClosed(ground.offset(-6, 0, -6), ground.offset(6, 0, 6))) {
+            helper.getLevel().setBlockAndUpdate(pos, Blocks.STONE.defaultBlockState());
+        }
+        return ground;
+    }
+
+    private static final class PortalWitness extends FakePlayer {
+        private boolean changedDimension;
+
+        private PortalWitness(ServerLevel level) {
+            super(level, new GameProfile(UUID.randomUUID(), "ForecastNether"));
+        }
+
+        @Override
+        public Entity changeDimension(ServerLevel destination) {
+            changedDimension = true;
+            return this;
+        }
+
+        private int advancePortal() {
+            handleNetherPortal();
+            return portalTime;
+        }
+
+        private boolean contactsPortal() {
+            return isInsidePortal;
+        }
     }
 
     private static void rollOverdueForecast(FakePlayer player) {

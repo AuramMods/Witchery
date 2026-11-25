@@ -56,6 +56,7 @@ public final class WitcherySounds {
     public static final RegistryObject<SoundEvent> BOW_CLICK = sound("random.click");
     public static final RegistryObject<SoundEvent> BOW_WIND_UP = sound("random.wind_up");
     public static final RegistryObject<SoundEvent> WITCH_HUNTERS_ARRIVE = sound("random.theycome");
+    public static final RegistryObject<SoundEvent> FORECAST_LOVE = sound("random.loved");
     public static final RegistryObject<SoundEvent> WOLFMAN_HOWL = sound("mob.wolfman.howl");
     public static final RegistryObject<SoundEvent> WOLFMAN_EAT = sound("mob.wolfman.eat");
     public static final RegistryObject<SoundEvent> WOLFMAN_SAY = sound("mob.wolfman.say");
@@ -79,9 +80,13 @@ public final class WitcherySounds {
     public static final RegistryObject<SoundEvent> BANSHEE_SCREAM = sound("mob.banshee.banshee_scream");
 
     public static void playLegacyPlayerCue(ServerPlayer player, SoundEvent sound, float volume) {
+        playLegacyPlayerCue(player, sound, SoundSource.PLAYERS, volume);
+    }
+
+    public static void playLegacyPlayerCue(ServerPlayer player, SoundEvent sound, SoundSource source, float volume) {
         var level = player.serverLevel();
         float pitch = 0.4F / ((float) level.random.nextDouble() * 0.4F + 0.8F);
-        level.playSound(null, player, sound, SoundSource.PLAYERS, volume, pitch);
+        level.playSound(null, player, sound, source, volume, pitch);
     }
 
     private WitcherySounds() {

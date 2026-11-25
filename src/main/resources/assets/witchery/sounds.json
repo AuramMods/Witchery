@@ -87,6 +87,7 @@
     "subtitle": "subtitles.witchery.witch_hunters_arrive",
     "sounds": ["witchery:random/theycome"]
   },
+  "random.loved": {"sounds": ["witchery:random/loved"]},
   "random.horn": {
     "subtitle": "subtitles.witchery.hunting_horn",
     "sounds": ["witchery:random/horn"]
@@ -130,7 +131,7 @@
   },
   "mob.torment.death": {
     "subtitle": "subtitles.witchery.torment.death",
-    "sounds": [{"name": "witchery:mob/torment/hit", "pitch": 0.7}]
+    "sounds": ["witchery:mob/torment/death"]
   },
   "mob.baba.baba_living": {
     "subtitle": "subtitles.witchery.coven.talk",
