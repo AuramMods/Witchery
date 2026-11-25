@@ -44,34 +44,24 @@ public final class AltarBlockEntity extends BlockEntity {
     }
 
     public static void form(ServerLevel server, BlockPos pos) {
-        List<BlockPos> members = AltarBlock.members(server, pos);
-        for (BlockPos member : members) {
+        AltarBlock.Structure structure = AltarBlock.changedStructure(server, pos);
+        BlockPos newCore = structure.core();
+        for (BlockPos member : structure.members()) {
             if (server.getBlockEntity(member) instanceof AltarBlockEntity altar) {
                 altar.reset();
-                altar.rememberCore(pos);
+                altar.rememberCore(newCore);
             }
         }
-        for (BlockPos member : members) {
-            server.setBlock(member, server.getBlockState(member).setValue(AltarBlock.FORMED, true), Block.UPDATE_ALL);
-        }
-        if (!members.isEmpty() && server.getBlockEntity(pos) instanceof AltarBlockEntity core) {
-            core.scanNature(server);
-            core.updateArtifacts(server, members);
-        }
-    }
-
-    public void dismantle(ServerLevel server) {
-        BlockPos oldCore = corePos;
-        if (oldCore == null) return;
-        for (BlockPos member : BlockPos.betweenClosed(worldPosition.offset(-2, 0, -2), worldPosition.offset(2, 0, 2))) {
-            if (!server.hasChunkAt(member)) continue;
+        for (BlockPos member : structure.members()) {
             BlockState state = server.getBlockState(member);
-            if (state.getBlock() instanceof AltarBlock && server.getBlockEntity(member) instanceof AltarBlockEntity altar
-                    && oldCore.equals(altar.corePos)) {
-                altar.rememberCore(null);
-                altar.reset();
-                server.setBlock(member, state.setValue(AltarBlock.FORMED, false), Block.UPDATE_ALL);
+            if (state.getValue(AltarBlock.FORMED) != (newCore != null)) {
+                server.setBlock(member, state.setValue(AltarBlock.FORMED, newCore != null), Block.UPDATE_ALL);
             }
+        }
+        if (newCore != null && server.getBlockEntity(newCore) instanceof AltarBlockEntity core) {
+            core.scanNature(server);
+            // Artifacts are evaluated in traversal order from the newly selected core.
+            core.updateArtifacts(server, AltarBlock.members(server, newCore));
         }
     }
 

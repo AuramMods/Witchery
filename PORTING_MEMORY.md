@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Altar structure changes (2026-11-25)
+
+- Adding a seventh connected altar block clears every loaded member's formed state, core coordinates, and charge during placement. Breaking that block reforms the remaining six while starting from the broken position and visiting north, south, east, and west. The new core is the first member reached. Its initial scan uses the surrounding nature and the existing artifacts, and it starts empty.
+- Witchery 0.24.1, clean Forge, and copied Auram agreed on all four samples for a structure spanning a chunk boundary. The seventh block cleared ten power and the core links in both chunks. Its removal selected the adjoining core at X 64. The new core had 250 capacity and zero power, then gained ten on its twentieth loaded tick. The preceding JAR had kept the former core and ten power through the same edit.
+- The patched JAR reopened a previous Forge save containing a still-charged seven-block structure. Removing the extra block on that boot rebuilt it empty. The next ordinary restart preserved the new core, and it again charged on loaded tick 20. A separate 0.24.1 import and ordinary restart retained the reformed original core, its 250 capacity, and ten power.
+- The muted survival client loaded the copied world with the altar at 258 power, placed the seventh block, and mined it with a Diamond Pickaxe. The reformed altar chose the adjacent core and retained its mounted Arthana's 32-block range. The first launch stopped in the fixture's Forge early-display window. Disabling that window in the copied profile allowed the hidden, unfocused retry with zero master volume and OpenAL No Output.
+- All 353 local Forge GameTests passed. The reobfuscated package is `build/qa-altar-shape/candidate.jar` with SHA-256 `74974a98e20acd794bcdaa7057d4b0c042f749d590932276e81161568bdd58fd`. The original and packaged traces, restart saves, and survival log are in the same directory.
+
 ## Altar formation, inspection, and recharge (2026-11-25)
 
 - Forming an altar scans nature immediately. Opening a formed altar refreshes capacity more than 100 loaded ticks after its last scan. The original same-tick refresh is also preserved. The core recharges on loaded ticks 20, 40, and onward, and clamps excess charge at that time if the scanned capacity shrank.

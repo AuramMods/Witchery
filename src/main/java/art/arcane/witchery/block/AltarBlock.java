@@ -45,6 +45,7 @@ public final class AltarBlock extends BaseEntityBlock {
     public static final BooleanProperty FORMED = BooleanProperty.create("formed");
     private static final int SIZE = 6;
     private static final List<Direction> ALTAR_NEIGHBORS = List.of(Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST);
+    private static final Structure NO_STRUCTURE = new Structure(List.of(), null);
 
     public AltarBlock(Properties properties) {
         super(properties);
@@ -69,11 +70,8 @@ public final class AltarBlock extends BaseEntityBlock {
 
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState replacement, boolean moving) {
-        if (!replacement.is(this) && level instanceof ServerLevel server
-                && server.getBlockEntity(pos) instanceof AltarBlockEntity altar) {
-            altar.dismantle(server);
-        }
         super.onRemove(state, level, pos, replacement, moving);
+        if (!replacement.is(this) && level instanceof ServerLevel server) AltarBlockEntity.form(server, pos);
     }
 
     @Override
@@ -139,13 +137,23 @@ public final class AltarBlock extends BaseEntityBlock {
     }
 
     public static List<BlockPos> members(ServerLevel level, BlockPos origin) {
-        if (!(level.getBlockState(origin).getBlock() instanceof AltarBlock)) {
-            return List.of();
-        }
+        Structure structure = findStructure(level, origin, false);
+        return structure.core() == null ? List.of() : structure.members();
+    }
+
+    public static Structure changedStructure(ServerLevel level, BlockPos origin) {
+        return findStructure(level, origin, true);
+    }
+
+    private static Structure findStructure(ServerLevel level, BlockPos origin, boolean includeUnformed) {
+        boolean originIsAltar = level.getBlockState(origin).getBlock() instanceof AltarBlock;
+        if (!originIsAltar && !includeUnformed) return NO_STRUCTURE;
+
         Set<BlockPos> found = new LinkedHashSet<>();
         ArrayDeque<BlockPos> pending = new ArrayDeque<>();
-        found.add(origin.immutable());
+        if (originIsAltar) found.add(origin.immutable());
         pending.add(origin.immutable());
+        boolean valid = true;
         while (!pending.isEmpty()) {
             int neighbors = 0;
             BlockPos pos = pending.remove();
@@ -158,10 +166,13 @@ public final class AltarBlock extends BaseEntityBlock {
                     neighbors++;
                 }
             }
-            if (neighbors < 2 || neighbors > 3 || found.size() > SIZE) {
-                return List.of();
-            }
+            // After a break the removed position seeds traversal of its neighbors.
+            if (originIsAltar || !pos.equals(origin)) valid &= neighbors >= 2 && neighbors <= 3;
+            if (!includeUnformed && (!valid || found.size() > SIZE)) return NO_STRUCTURE;
         }
-        return found.size() == SIZE ? List.copyOf(found) : List.of();
+        BlockPos core = valid && found.size() == SIZE ? found.iterator().next() : null;
+        return new Structure(List.copyOf(found), core);
     }
+
+    public record Structure(List<BlockPos> members, @Nullable BlockPos core) {}
 }

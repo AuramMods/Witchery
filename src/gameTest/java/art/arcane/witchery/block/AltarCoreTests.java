@@ -151,6 +151,52 @@ public final class AltarCoreTests {
         helper.succeed();
     }
 
+    @GameTest(template = "qa_coven_arena", batch = "witchery_altar_seventh_block")
+    public static void placingAndRemovingASeventhBlockDischargesTheAltarImmediately(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var origin = helper.absolutePos(CORNER).atY(level.getMaxBuildHeight() - 4);
+        var corner = origin.offset(14 - Math.floorMod(origin.getX(), 16), 0, 0);
+        var end = corner.offset(2, 0, 1);
+        var extra = corner.east(3);
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "AltarOverbuild"));
+        var block = WitcheryBlocks.getRequired("altar").get();
+        var egg = extra.east(3);
+        level.setBlockAndUpdate(egg.below(), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(egg, Blocks.DRAGON_EGG.defaultBlockState());
+        for (BlockPos part : BlockPos.betweenClosed(corner, end)) {
+            if (!part.equals(corner)) placeBlock(helper, player, part, block);
+        }
+        placeBlock(helper, player, corner, block);
+        var firstCore = altar(helper, corner);
+        tickAltar(helper, firstCore, 20);
+        helper.assertTrue(firstCore.power() == 10 && firstCore.isCore(level),
+                "The sixth placement creates a charged altar spanning the chunk boundary");
+
+        placeBlock(helper, player, extra, block);
+        for (BlockPos part : BlockPos.betweenClosed(corner, end)) {
+            helper.assertTrue(!level.getBlockState(part).getValue(AltarBlock.FORMED)
+                            && !altar(helper, part).saveWithoutMetadata().contains("CoreX"),
+                    "The seventh placement immediately clears every member's formed state and saved link");
+        }
+        helper.assertTrue(firstCore.power() == 0 && AltarPower.nearest(level, extra) == null,
+                "The connected seven blocks discharge and provide no power");
+
+        helper.assertTrue(player.gameMode.destroyBlock(extra), "The seventh block can be removed in survival");
+        var newCorePos = corner.east(2);
+        var newCore = altar(helper, newCorePos);
+        for (BlockPos part : BlockPos.betweenClosed(corner, end)) {
+            helper.assertTrue(level.getBlockState(part).getValue(AltarBlock.FORMED)
+                            && altar(helper, part).resolveCore(level) == newCore,
+                    "Breaking the extra block immediately forms all six members around the adjacent core");
+        }
+        helper.assertTrue(newCore.power() == 0 && newCore.capacity() == 250 && AltarPower.nearest(level, extra) == newCore,
+                "The reformed altar scans its surroundings and starts with zero stored charge");
+        tickAltar(helper, newCore, 20);
+        helper.assertTrue(newCore.power() == 10 && firstCore.power() == 0,
+                "Only the newly selected core recharges");
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_rite_terrain", batch = "witchery_arthana_consumers", timeoutTicks = 180)
     public static void brazierAndCrystalBallHonorMountedArthana(GameTestHelper helper) {
         var level = helper.getLevel();
