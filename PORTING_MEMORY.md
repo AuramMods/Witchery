@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Dream Arrival Position and Motion (2026-11-24)
+
+- The original Forge server chose `(94.5, 92.1, 31.5)` when two landing spots were equally distant at 12 blocks above and below the starting point. Removing the upper platform put the next arrival at `(94.5, 68.1, 31.5)`. Both calls ignored the neighboring platform at the starting height. The original packet serializes `(0, 0.1, 0)` on sleep and wake. The two ghost transitions use the same landing search with no push.
+- The previous packaged port chose the neighboring platform at `(95.5, 80.05, 31.5)` and sent no arrival push. The first rebuild delivered the push but the vanilla movement check still measured the first move from the departure coordinates. A correction packet reset the client's motion whenever the fixture crossed the 12-block gap. The revised travel uses the same connection reset as the other Witchery teleport paths.
+- The muted background survival client drank two Brews of Sleeping and used Icy Needles to wake. The final package chose both original landing spots on successive trips and moved the client to `92.2` and `68.2` on the next tick. Both wakes reached `80.2`. The manifestation fixture granted rite time and initiated that request. Manifestation and the needle's ghost return each sent a position update without a push. The server logged no moved-too-quickly correction during the six transitions.
+- The same JAR repeated all six transitions with an actual muted background survival client on copied Auram. WorldEdit's command tree raised an exception for the earlier fake-player fixture, so the pack replay used a normal login with the existing extended connection timeout. The server saved every dimension on shutdown. A separate ordinary clean Forge restart kept four restored diamonds, one parked Dream emerald, and the awake state.
+- Java 17 data generation, JAR reobfuscation and all 291 required local Forge GameTests passed. Artifacts and packet traces are under `build/qa-dream-arrival-motion`. Final SHA-256 `b8c3035d34c1572660377a73b8fa9f1ecd05b60259a5cf764ebc80ca81a9142a`.
+
 ## Infernal Creature Power Cues (2026-11-24)
 
 - The original headless server captured three `mob.slime.big` packets at the player's fractional coordinates. Magma Cube, Slime and Toad all used a radius of eight blocks with default volume and pitch and set fall distance to zero. The original recipient resolves the defaults to half volume and a pitch between one-third and one-half. Headless replay of the original activation sound helper also matched the seeded half-volume fizz.

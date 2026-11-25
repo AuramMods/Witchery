@@ -365,6 +365,7 @@ public final class DreamTravel {
             session.remove(SPIRIT_HUNGER);
         }
         syncStyle(player, demonic ? 2 : nightmare ? 1 : 0, false);
+        pushArrival(player);
     }
 
     private record DreamAmbience(double nightmareChance, double demonicChance) {
@@ -457,6 +458,7 @@ public final class DreamTravel {
         persistent.remove(MANIFESTED);
         player.clearFire();
         syncStyle(player, 0, false);
+        pushArrival(player);
     }
 
     private static void manifest(ServerPlayer player, CompoundTag persistent) {
@@ -570,35 +572,42 @@ public final class DreamTravel {
     }
 
     private static void move(ServerPlayer player, ServerLevel destination, BlockPos arrival, float yaw, float pitch) {
-        player.teleportTo(destination, arrival.getX() + 0.5, arrival.getY() + 0.05, arrival.getZ() + 0.5, yaw, pitch);
+        player.teleportTo(destination, arrival.getX() + 0.5, arrival.getY() + 0.1, arrival.getZ() + 0.5, yaw, pitch);
+        if (player.connection != null) player.connection.resetPosition();
         player.resetFallDistance();
+    }
+
+    private static void pushArrival(ServerPlayer player) {
+        player.setDeltaMovement(0, 0.1, 0);
+        if (player.connection != null && player.connection.connection.isConnected()) {
+            WitcheryNetwork.sendPushTarget(player, player.getId(), 0, 0.1, 0);
+        }
     }
 
     private static BlockPos findArrival(ServerLevel level, BlockPos near) {
         int minY = level.getMinBuildHeight() + 1;
         int maxY = level.getMaxBuildHeight() - 2;
         int start = Mth.clamp(near.getY(), minY, maxY);
-        BlockPos local = findStandingInColumn(level, near.atY(start), minY, maxY, 0, 8);
+        BlockPos local = findStandingInColumn(level, near.atY(start), minY, maxY, Math.max(start - minY, maxY - start));
         if (local != null) {
             return local;
         }
         for (int radius = 1; radius <= 2; radius++) {
             for (BlockPos column : BlockPos.betweenClosed(near.offset(-radius, 0, -radius), near.offset(radius, 0, radius))) {
                 if (Math.max(Math.abs(column.getX() - near.getX()), Math.abs(column.getZ() - near.getZ())) != radius) continue;
-                BlockPos nearby = findStandingInColumn(level, column.atY(start), minY, maxY, 0, 4);
+                BlockPos nearby = findStandingInColumn(level, column.atY(start), minY, maxY, 4);
                 if (nearby != null) {
                     return nearby;
                 }
             }
         }
-        BlockPos distant = findStandingInColumn(level, near.atY(start), minY, maxY, 9, Math.max(start - minY, maxY - start));
-        return distant != null ? distant : level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, near);
+        return level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, near);
     }
 
     private static BlockPos findStandingInColumn(ServerLevel level, BlockPos near, int minY, int maxY,
-                                                int minOffset, int maxOffset) {
+                                                int maxOffset) {
         int start = near.getY();
-        for (int offset = minOffset; offset <= maxOffset; offset++) {
+        for (int offset = 0; offset <= maxOffset; offset++) {
             BlockPos above = near.atY(start + offset);
             if (above.getY() <= maxY && canStand(level, above)) {
                 return above;

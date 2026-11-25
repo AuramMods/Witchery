@@ -131,4 +131,61 @@ public final class SleepingAppleTests {
                 "Waking restores the parked stack and the post-meal hunger");
         helper.succeed();
     }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void dreamArrivalChecksTheWholeColumnAndWakingPushesUp(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var dream = level.getServer().getLevel(WitcheryDimensions.DREAM);
+        var anchor = helper.absolutePos(new BlockPos(3, 2, 3));
+        level.setBlockAndUpdate(anchor.below(), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(anchor, Blocks.AIR.defaultBlockState());
+        level.setBlockAndUpdate(anchor.above(), Blocks.AIR.defaultBlockState());
+        for (int offset = -14; offset <= 14; offset++) {
+            dream.setBlockAndUpdate(anchor.above(offset), Blocks.AIR.defaultBlockState());
+        }
+        dream.setBlockAndUpdate(anchor.above(11), Blocks.STONE.defaultBlockState());
+        dream.setBlockAndUpdate(anchor.below(13), Blocks.STONE.defaultBlockState());
+        dream.setBlockAndUpdate(anchor.east().below(), Blocks.STONE.defaultBlockState());
+        dream.setBlockAndUpdate(anchor.east(), Blocks.AIR.defaultBlockState());
+        dream.setBlockAndUpdate(anchor.east().above(), Blocks.AIR.defaultBlockState());
+
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "DreamArrivalQA"));
+        player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
+        player.setPos(Vec3.atBottomCenterOf(anchor));
+        var brew = WitcheryIngredient.BREW_OF_SLEEPING.item();
+        var needle = WitcheryIngredient.ICY_NEEDLE.item();
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(brew));
+        player.getInventory().setItem(1, new ItemStack(needle));
+        try {
+            player.setItemInHand(InteractionHand.MAIN_HAND, brew.finishUsingItem(player.getMainHandItem(), level, player));
+            helper.assertTrue(DreamTravel.processRequests(player) && player.serverLevel() == dream,
+                    "The Brew of Sleeping must take the player to Dream");
+            assertArrival(helper, player, anchor.above(12));
+
+            player.getCooldowns().removeCooldown(needle);
+            player.getInventory().selected = 1;
+            if (!player.getMainHandItem().is(needle)) {
+                player.getInventory().selected = 0;
+            }
+            helper.assertTrue(player.getMainHandItem().is(needle), "The Icy Needle must carry into Dream");
+            needle.use(dream, player, InteractionHand.MAIN_HAND);
+            helper.assertTrue(DreamTravel.processRequests(player) && player.serverLevel() == level,
+                    "Waking must return the player to the sleeping body");
+            assertArrival(helper, player, anchor);
+        } finally {
+            if (player.serverLevel() == dream) {
+                DreamTravel.requestWake(player);
+                DreamTravel.processRequests(player);
+            }
+            player.discard();
+        }
+        helper.succeed();
+    }
+
+    private static void assertArrival(GameTestHelper helper, FakePlayer player, BlockPos position) {
+        helper.assertTrue(player.position().distanceToSqr(Vec3.atBottomCenterOf(position).add(0, 0.1, 0)) < 1e-10,
+                "Arrival must be centered above the closest standing spot in the original column, preferring the upper tie");
+        helper.assertTrue(player.getDeltaMovement().equals(new Vec3(0, 0.1, 0)) && player.fallDistance == 0,
+                "Arrival must apply the original upward push and clear falling distance");
+    }
 }
