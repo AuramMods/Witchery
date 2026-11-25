@@ -71,6 +71,7 @@ public final class WitcheryNetwork {
     private static final int LEGACY_POP_SOUND_ID = 11;
     private static final int LEGACY_ENDERMAN_TELEPORT_SOUND_ID = 16;
     private static final int LEGACY_GHAST_FIREBALL_SOUND_ID = 19;
+    private static final int LEGACY_SPECTRE_AMBIENT_SOUND_ID = 43;
     private static final int LEGACY_BLAZE_DEATH_SOUND_ID = 44;
     private static final int LEGACY_DRINK_SOUND_ID = 56;
     private static final int LEGACY_POOF_SOUND_ID = 57;
@@ -353,6 +354,10 @@ public final class WitcheryNetwork {
 
     public static void sendSummonedCreature(ServerLevel level, Vec3 center) {
         sendParticlesAround(level, LEGACY_PORTAL_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID, center, 0.5, 1, 16);
+    }
+
+    public static void sendSentinelAppearance(ServerLevel level, Vec3 center, double height) {
+        sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_SPECTRE_AMBIENT_SOUND_ID, center, 1, height, 16);
     }
 
     public static void sendHellOnEarthArrival(ServerLevel level, Vec3 arrival) {

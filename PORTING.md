@@ -2083,6 +2083,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Boot the reobfuscated JAR on a disposable headless Forge 47.4.10 server. The same pig, both temporary Spectres, and the fetish's cooldown survived a full restart. With the trusted player back in range, both guards kept pursuing the pig. They expired after the fixture removed the player and pig. The tested JAR SHA-256 is `70c637d30253cdd86aed0bf793da04b88555b5bcf948ba681247efa82052cdfe`.
 - [x] Match the original dye palette and separate render opacity for the Scarecrow fabric, Trent face, and Witch's Ladder. Compare ordinary and spectral forms of all three on the muted packaged client and verify the Trent face at all four facings.
 - [x] Wait for the Sentinel's scheduled activation in the GameTest, then exercise both guards' AI before and after reloading their saved data. Java 17 data generation, JAR reobfuscation, and all 107 checked-in Forge GameTests passed.
+- [x] Restore the Sentinel's original northwest spawn column, two blocks of headroom, Spectre height, strict cooldown, and arrival cue. Clean Forge and copied Auram verified two guards at the original lower and upper floors and none when the column is blocked. The packaged clean Forge restart retained both guard pairs and their target UUIDs.
 
 ## Death and Binky (2026-11-20)
 

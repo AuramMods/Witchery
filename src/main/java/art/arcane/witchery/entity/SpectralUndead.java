@@ -2,6 +2,7 @@ package art.arcane.witchery.entity;
 
 import art.arcane.witchery.infusion.InfernalInfusion;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryItems;
@@ -165,12 +166,30 @@ public final class SpectralUndead extends Monster {
     }
 
     public static void summonSentinel(ServerLevel level, LivingEntity intruder) {
-        SpectralUndead guard = summonNear(level, intruder.blockPosition(), Kind.SPECTRE, 1, 1);
+        if (level.getDifficulty() == Difficulty.PEACEFUL) return;
+        BlockPos column = intruder.blockPosition().north().west();
+        if (!level.isLoaded(column) || !level.getWorldBorder().isWithinBounds(column)) return;
+
+        int bottom = level.getMinBuildHeight();
+        int top = level.getMaxBuildHeight();
+        int floor = Math.min(column.getY(), top - 1);
+        int searchTop = Math.min(floor + 8, top - 1);
+        while (floor < searchTop && !level.isEmptyBlock(column.atY(floor))) floor++;
+        while (floor >= bottom && level.isEmptyBlock(column.atY(floor))) floor--;
+        if (floor < bottom || floor + 2 >= top || !level.isEmptyBlock(column.atY(floor + 1))
+                || !level.isEmptyBlock(column.atY(floor + 2))) return;
+
+        SpectralUndead guard = Kind.SPECTRE.type().create(level);
         if (guard == null) return;
+        guard.moveTo(column.getX() + 0.5, floor + 1.05, column.getZ() + 0.5, 0, 0);
+        guard.initializeAppearance();
+        guard.setPersistenceRequired();
         guard.lifeTicks = 600;
         guard.sentinelTarget = intruder.getUUID();
+        // Both guards can arrive in the original column on the same tick.
+        if (!level.addFreshEntity(guard)) return;
         guard.followSentinelTarget(intruder);
-        guard.playSound(WitcherySounds.SPECTRE_AMBIENT.get(), 1, 1);
+        WitcheryNetwork.sendSentinelAppearance(level, guard.position(), guard.getBbHeight());
     }
 
     private void followSentinelTarget(LivingEntity intruder) {

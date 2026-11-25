@@ -38,6 +38,7 @@ import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -178,6 +179,8 @@ public final class FetishBehaviorTests {
         owner.setPos(Vec3.atBottomCenterOf(helper.absolutePos(CENTER.south(5))));
         level.addNewPlayer(owner);
         var data = alarm(FetishEffect.SENTINEL);
+        long lastActivation = level.getGameTime() - FetishEffect.SENTINEL.cooldown - 1;
+        data.putLong("LastActivation", lastActivation);
         var trusted = new CompoundTag();
         trusted.putString("PlayerName", owner.getGameProfile().getName());
         var players = new ListTag();
@@ -189,12 +192,13 @@ public final class FetishBehaviorTests {
         pig.getAttribute(Attributes.MAX_HEALTH).setBaseValue(1000);
         pig.setHealth(pig.getMaxHealth());
         var guardArea = new AABB(center).inflate(8);
-        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(fetish.saveWithoutMetadata().getLong("LastActivation") > 0,
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(fetish.saveWithoutMetadata().getLong("LastActivation") != lastActivation,
                 "The loaded fetish detects the intruding pig on its scheduled tick")).thenExecute(() -> {
             var guards = level.getEntitiesOfClass(SpectralUndead.class, guardArea);
             try {
                 helper.assertTrue(guards.size() == 2 && guards.stream().allMatch(guard -> guard.temporary() && guard.getTarget() == pig),
-                        "The Sentinel summons exactly two temporary guards targeting the pig");
+                        "The Sentinel summons exactly two temporary guards targeting the pig: "
+                                + guards.stream().map(guard -> guard + " target=" + guard.getTarget()).toList());
                 // The dedicated test server may load chunks before ticking their entities.
                 for (int tick = 0; tick < 12; tick++) {
                     guards.forEach(level::tickNonPassenger);
@@ -219,6 +223,67 @@ public final class FetishBehaviorTests {
             }
             guards.forEach(level::tickNonPassenger);
             helper.assertTrue(guards.stream().allMatch(SpectralUndead::isRemoved), "The guards vanish with their target");
+        }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_sentinel_column", timeoutTicks = 120)
+    public static void sentinelUsesTheNorthwestColumnAndItsOriginalHeadroom(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var bases = List.of(CENTER, CENTER.above(20), CENTER.above(40));
+        var floors = List.of(-4, 3, 10);
+        var intruders = new ArrayList<Mob>();
+        for (int index = 0; index < bases.size(); index++) {
+            BlockPos pigPos = bases.get(index);
+            BlockPos column = pigPos.north().west();
+            for (BlockPos pos : BlockPos.betweenClosed(pigPos.offset(-1, -1, -1), pigPos.offset(1, -1, 1))) {
+                helper.setBlock(pos, Blocks.STONE);
+            }
+            helper.setBlock(column.below(), Blocks.AIR);
+            int floor = floors.get(index);
+            if (floor < 0) {
+                helper.setBlock(column.above(floor), Blocks.STONE);
+            } else {
+                for (int y = 0; y <= floor; y++) helper.setBlock(column.above(y), Blocks.STONE);
+                if (floor == 3) helper.setBlock(column.above(6), Blocks.STONE);
+            }
+            helper.setBlock(pigPos.north(4), WitcheryBlocks.getRequired("trent").get());
+            intruders.add(placeMob(helper, EntityType.PIG, pigPos));
+        }
+
+        BlockPos firstAlarm = helper.absolutePos(CENTER.north(4));
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue((level.getGameTime() + firstAlarm.asLong()) % 20 == 0
+                        && intruders.stream().allMatch(pig -> level.getEntity(pig.getUUID()) == pig),
+                "The pigs are tracked and the alarms are due to tick")).thenExecute(() -> {
+            for (int index = 0; index < bases.size(); index++) {
+                BlockPos pigPos = bases.get(index);
+                BlockPos alarmPos = helper.absolutePos(pigPos.north(4));
+                var fetish = (FetishBlockEntity) level.getBlockEntity(alarmPos);
+                var data = alarm(FetishEffect.SENTINEL);
+                data.putLong("LastActivation", level.getGameTime() - FetishEffect.SENTINEL.cooldown);
+                fetish.load(data);
+                var guardArea = new AABB(helper.absolutePos(pigPos)).inflate(8);
+                FetishBlockEntity.tick(level, alarmPos, fetish.getBlockState(), fetish);
+                helper.assertTrue(level.getEntitiesOfClass(SpectralUndead.class, guardArea).isEmpty(),
+                        "The exact 600-tick cooldown boundary still suppresses the alarm");
+
+                data.putLong("LastActivation", level.getGameTime() - FetishEffect.SENTINEL.cooldown - 1);
+                fetish.load(data);
+                FetishBlockEntity.tick(level, alarmPos, fetish.getBlockState(), fetish);
+                var guards = level.getEntitiesOfClass(SpectralUndead.class, guardArea);
+                int floor = floors.get(index);
+                if (floor == 10) {
+                    helper.assertTrue(guards.isEmpty(), "The blocked column prevents spawning even with neighboring floors");
+                } else {
+                    BlockPos column = helper.absolutePos(pigPos.north().west()).above(floor);
+                    Vec3 spawn = Vec3.atBottomCenterOf(column).add(0, 1.05, 0);
+                    Mob pig = intruders.get(index);
+                    helper.assertTrue(guards.size() == 2 && guards.stream().allMatch(guard -> guard.getTarget() == pig
+                                    && guard.position().distanceToSqr(spawn) < 1.0E-6 && guard.getBbHeight() == 1.8F),
+                            "Two original-sized Spectres appear at " + spawn + ": " + guards);
+                }
+                guards.forEach(SpectralUndead::discard);
+                intruders.get(index).discard();
+            }
         }).thenSucceed();
     }
 

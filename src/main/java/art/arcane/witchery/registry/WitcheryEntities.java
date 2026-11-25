@@ -100,7 +100,7 @@ public final class WitcheryEntities {
             ENTITY_TYPES.register("spirit", () -> EntityType.Builder.of(DreamSpirit::new, MobCategory.AMBIENT)
                     .sized(0.25F, 0.25F).clientTrackingRange(8).build(Witchery.MODID + ":spirit"));
     public static final RegistryObject<EntityType<SpectralUndead>> SPECTRE =
-            spectral("spectre", SpectralUndead.Kind.SPECTRE, 0.6F, 2.2F);
+            spectral("spectre", SpectralUndead.Kind.SPECTRE, 0.6F, 1.8F);
     public static final RegistryObject<EntityType<SpectralUndead>> BANSHEE =
             spectral("banshee", SpectralUndead.Kind.BANSHEE, 0.6F, 2.2F);
     public static final RegistryObject<EntityType<SpectralUndead>> POLTERGEIST =

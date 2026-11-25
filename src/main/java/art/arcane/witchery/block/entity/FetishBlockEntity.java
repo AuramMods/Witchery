@@ -64,8 +64,8 @@ public final class FetishBlockEntity extends BlockEntity {
         }
 
         var detection = fetish.alarm.detect(server, pos, effect.radius);
-        if (detection.triggered() && (effect.cooldown == 0 || fetish.lastActivation == 0
-                || server.getGameTime() - fetish.lastActivation >= effect.cooldown)) {
+        if (detection.triggered() && (effect.cooldown == 0
+                || server.getGameTime() - fetish.lastActivation > effect.cooldown)) {
             effect.activate(server, pos, ((FetishBlock) state.getBlock()).isLadderFetish(), detection.intruders());
             if (effect.cooldown > 0) {
                 fetish.lastActivation = server.getGameTime();

@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Sentinel guard spawning (2026-11-25)
+
+- The original Trent summoned both guards in the same column one block northwest of the pig. It found footing four blocks below or three blocks above the pig, then spawned each guard 0.05 blocks above the first open block. A column blocked through the search limit produced no guards even with open neighboring floors. Each spawned guard targeted the pig and saved 600 ticks of lifetime.
+- The earlier 1.20.1 JAR placed guards in other columns in all three fixtures, including two guards when the original refused to spawn. The port now searches the original column, uses 1.20.1 build bounds, and keeps the original Spectre's 1.8-block height. The alarm checks its saved cooldown before summoning and waits until more than 600 ticks have elapsed.
+- The original packets paired Instant Spell and the Spectre ambient sound at each spawn point, with width 1, height 1.8, and a 16-block audience.
+- A survival player on the clean Forge package stood inside the alarm radius on the Trent's trusted list. Both guards targeted the pig at each usable floor. The blocked fixture spawned no guards. The muted client processed the four original packets exactly once each. A headless restart kept both guard pairs and the UUID of each pair's original intruder.
+- The same JAR in copied Auram reproduced both guard pairs, their original target UUIDs, and the blocked control. The client processed all four original cues. Both clients stayed unfocused with zero master volume and OpenAL No Output.
+- Local Java 17 data generation, JAR reobfuscation, and all 318 required Forge GameTests passed. The new regression requires the exact 600-tick boundary to suppress summoning and verifies the original lower and upper floors, including a ceiling just above the two-block clearance. The reobfuscated JAR SHA-256 is `7b6b48090af166316f67cba2309e578d831ee37a1fe44aae11ce78b76b68fc35`. Logs and the original runtime fixture are in `build/qa-sentinel/`.
+
 ## Gas ritual target height (2026-11-25)
 
 - The original server ran the first pulse at a Bound Waystone with footing four blocks above, four below, and eight below. In the first two cases Swiftness reached the pig at the Waystone's height. With a controlled terrain roll, Extinguish cleared the fire on that row. The pigs and fires on the shelves were unaffected. The eighth-block shelf produced no creature effect, terrain effect, or cue.
