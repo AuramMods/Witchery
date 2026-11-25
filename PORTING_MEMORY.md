@@ -2,13 +2,19 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron heat after a full withdrawal (2026-11-25)
+
+- A complete withdrawal clears sampled altar power and empties the tank. The next loaded tick clears the retained heat if the tank remains empty. The next ritual pulse resets unfinished warmup. Ritual completion and interruption still clear heat and warmup immediately.
+- Witchery 0.24.1, clean Forge, and copied Auram agreed on all 14 measurements across capability drain, hand bottling, dispenser bottling, and Gypsum. Moving all 3,000 mB out and back before the next altar sample kept the Dog Tongue brew and fixed Mutandis cast hot. Both advanced from pulse five to six at the next ritual check. The previous Forge JAR had dropped both heat and warmup on all four withdrawal paths.
+- A clean Forge dedicated restart kept both empty cauldrons' retained heat and warmup. A separate copied Witchery 0.24.1 save preserved the same state through Forge world import and another ordinary boot. The fixture refilled both before their first loaded tick from two saved donor cauldrons. Both casts sampled power and advanced to pulse six.
+- All 351 local Forge GameTests passed. The reobfuscated package is `build/qa-cauldron-heat/verified.jar` with SHA-256 `1c7f14c6573f708bde78b6019a30b1573f12fa95cb682ac277ad4554c512e20c`. The comparisons and dedicated restart logs are under the same directory.
+
 ## Cauldron bottling and partial transfer (2026-11-25)
 
 - An empty bottle uses the Cauldron's last altar power sample. Hand bottling then debits the nearest altar's live base cost. Dispensing draws from the brew while leaving altar charge intact. Witchery 0.24.1 and both rebuilt profiles matched all five bottling cases. A late charge waited for the next sample, a dispenser used the last positive sample after charge dropped, and hand bottling succeeded with exactly 400 base power between samples.
 - A partial drain preserves warmup until the next ritual pulse. In the original and rebuilt profiles, both a Tongue of Dog cast and a fixed Mutandis cast advanced from pulse five to six when the borrowed bucket returned before the next check. Leaving the Tongue of Dog cast at 2,000 mB reset warmup on that check and preserved the brew.
 - The previous port started a brew through dropped offerings and sampled the altar with its normal ticker. The fixture cleared the live charge and queued a redstone-powered dispenser just before a clean dedicated shutdown. The rebuilt server processed the queued activation after restart, used one glass bottle, and ejected one brew while the altar held zero power.
 - The Java 17 reobfuscated JAR is `build/qa-cauldron-bottling/verified.jar` with SHA-256 `8a36590f0c78938a6ecf67223fc6ba1333f16ff9c13102dcce3090d831ef7e87`. All 350 local Forge GameTests passed. The native and packaged comparisons and the ordinary restart logs are under the same directory.
-- The next heat comparison drained and returned all 3,000 mB before another tile tick. Witchery 0.24.1 retained its boiling heat through the transfer and the following tick. The current port cleared heat on the drain and started heating again on the next tick. Both traces are in `build/qa-cauldron-bottling/empty-refill/`.
 
 ## Cauldron ritual timing (2026-11-25)
 

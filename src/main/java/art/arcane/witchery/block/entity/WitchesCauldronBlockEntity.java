@@ -233,7 +233,8 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
             cauldron.advanceBrewRitual(server, pos);
         } else if (cauldron.ritual != null) {
             cauldron.advanceRitual(server, pos, ritualPulse);
-        } else if (ritualPulse && cauldron.legacyRitualPending && cauldron.tank.getFluidAmount() < CAPACITY) {
+        } else if (ritualPulse && cauldron.ritualTicks > 0
+                && (!cauldron.isBoiling() || !cauldron.powered || cauldron.tank.getFluidAmount() < CAPACITY)) {
             cauldron.pauseRitual(server, pos, cauldron.ritualTicks > RITUAL_WARMUP_PULSES);
         }
         if (oldHeat != cauldron.heatTicks || oldProgress != cauldron.ritualTicks || wasPowered != cauldron.powered) {
@@ -462,7 +463,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
 
         if (WitcheryIngredient.GYPSUM.matches(offered)) {
             item.discard();
-            clearMixture();
+            emptyTank();
             reagentSmoke(server);
             server.playSound(null, worldPosition, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1.0F, 2.0F);
         } else if (WitcheryIngredient.QUICKLIME.matches(offered)) {
@@ -492,7 +493,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         if (ritual != null) actions++;
         float power = Math.min(1.0F + 0.5F * actions, 10.0F);
         item.discard();
-        clearMixture();
+        emptyTank();
         Vec3 center = Vec3.atCenterOf(worldPosition).add(0, 1, 0);
         server.explode(nearest, center.x, center.y, center.z, power, Level.ExplosionInteraction.NONE);
         reagentSmoke(server);
@@ -597,7 +598,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
 
     private void retainLiquid(int remaining) {
         if (remaining == 0) {
-            clearMixture();
+            emptyTank();
         } else {
             tank.setFluid(new FluidStack(tank.getFluid().getFluid(), remaining));
             publishTankContents();
@@ -612,7 +613,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         if (bottled == null) return ItemStack.EMPTY;
         boolean full = tank.getFluidAmount() == CAPACITY;
         // The original dispenser drains the available liquid even when it has less than one full portion.
-        clearMixture();
+        emptyTank();
         server.playSound(null, worldPosition, SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1, 1);
         return full ? filledBottle(bottled) : ItemStack.EMPTY;
     }
@@ -796,7 +797,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
     }
 
     private boolean isBoiling() {
-        return heatTicks >= BOIL_TICKS;
+        return !tank.isEmpty() && heatTicks >= BOIL_TICKS;
     }
 
     private int visibleWaterLevel() {
@@ -839,6 +840,17 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
     }
 
     private void clearMixture() {
+        ritualTicks = 0;
+        heatTicks = 0;
+        emptyTank();
+    }
+
+    private void emptyTank() {
+        // A withdrawal leaves the tile's heat and completed pulses to the normal tick checks.
+        if (ritual != null && ritualTicks > 0) {
+            ritualTicks = legacyFixedRecipe() != null ? ritualTicks / RITUAL_PULSE_INTERVAL : 0;
+        }
+        ritualTicks = Math.max(0, ritualTicks);
         ingredients.clear();
         mixture = null;
         brewColor = null;
@@ -846,8 +858,6 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         ritualTrigger = ItemStack.EMPTY;
         brewRitual = false;
         legacyRitualPending = false;
-        ritualTicks = 0;
-        heatTicks = 0;
         powered = false;
         tank.setFluid(FluidStack.EMPTY);
         publishTankContents();
@@ -943,7 +953,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         }
         if (brewRitual) tag.putBoolean("RitualTriggered", true);
         if (legacyRitualPending) tag.putBoolean("LegacyRitualPending", true);
-        if (casting()) {
+        if (casting() || ritualTicks > 0) {
             tag.putInt("RitualTicks", ritualTicks);
         }
     }

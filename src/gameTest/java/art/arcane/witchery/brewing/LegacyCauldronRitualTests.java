@@ -53,13 +53,7 @@ public final class LegacyCauldronRitualTests {
         var cauldron = placeCauldron(helper, pos, originalRitual(3000, 0, true,
                 oldItem("minecraft:nether_wart", 0, 1), oldItem("minecraft:sugar", 0, 1),
                 oldItem("minecraft:gunpowder", 0, 1), oldItem("witchery:dog_tongue", 0, 1)));
-        var core = pos.east(5);
-        var altarState = WitcheryBlocks.getRequired("altar").get().defaultBlockState();
-        for (var member : BlockPos.betweenClosed(core, core.offset(2, 0, 1))) {
-            level.setBlockAndUpdate(member, altarState);
-        }
-        AltarBlockEntity.form(level, core);
-        var altar = (AltarBlockEntity) level.getBlockEntity(core);
+        var altar = formAltar(helper, pos.east(5));
 
         tickCauldron(helper, cauldron, 7);
         var charged = altar.saveWithoutMetadata();
@@ -137,6 +131,65 @@ public final class LegacyCauldronRitualTests {
                         && cauldron.saveWithoutMetadata().getInt("RitualTicks") == 0,
                 "The next pulse resets unfinished warmup when the cauldron is still partial");
         helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_cauldron_empty_refill")
+    public static void fullTransferKeepsHeatAndLocalWarmupBeforeTheNextSample(GameTestHelper helper) {
+        var pos = helper.absolutePos(new BlockPos(5, 4, 5));
+        var brew = placeCauldron(helper, pos, originalRitual(3000, 5, true,
+                oldItem("minecraft:nether_wart", 0, 1), oldItem("minecraft:sugar", 0, 1),
+                oldItem("minecraft:gunpowder", 0, 1), oldItem("witchery:dog_tongue", 0, 1)));
+        var fixed = placeCauldron(helper, pos.south(3), originalRitual(3000, 5, true,
+                oldItem("witchery:ingredient", 22, 1), oldItem("witchery:ingredient", 31, 1),
+                oldItem("minecraft:egg", 0, 1)));
+        var altar = formAltar(helper, pos.east(6));
+        var charged = altar.saveWithoutMetadata();
+        charged.putFloat("Power", 10_000);
+        altar.load(charged);
+
+        refillBetweenChecks(helper, brew);
+        refillBetweenChecks(helper, fixed);
+        helper.assertTrue(brew.saveWithoutMetadata().getInt("RitualTicks") == 6
+                        && fixed.saveWithoutMetadata().getInt("RitualTicks") == 60,
+                "Both rituals advance their sixth pulse after the full refill and new altar sample");
+
+        tank(brew).drain(3000, IFluidHandler.FluidAction.EXECUTE);
+        tickCauldron(helper, brew, 1);
+        var cooled = brew.saveWithoutMetadata();
+        helper.assertTrue(cooled.getInt("HeatTicks") == 0 && cooled.getInt("RitualTicks") == 6,
+                "The first empty tick cools the cauldron while warmup waits for its own pulse");
+        tickCauldron(helper, brew, 9);
+        helper.assertTrue(brew.saveWithoutMetadata().getInt("RitualTicks") == 0,
+                "The next ritual pulse clears unfinished warmup for a cauldron that stayed empty");
+        helper.succeed();
+    }
+
+    private static void refillBetweenChecks(GameTestHelper helper, WitchesCauldronBlockEntity cauldron) {
+        var tank = tank(cauldron);
+        tickCauldron(helper, cauldron, 6);
+        var portion = tank.drain(3000, IFluidHandler.FluidAction.EXECUTE);
+        var empty = cauldron.saveWithoutMetadata();
+        helper.assertTrue(tank.getFluidInTank(0).isEmpty() && empty.getInt("HeatTicks") == 100
+                        && empty.getInt("RitualTicks") == 5 && !empty.getBoolean("Powered")
+                        && cauldron.comparatorSignal() == 0,
+                "The drained cauldron saves heat and completed pulses with its power and liquid cleared");
+        cauldron.load(empty);
+        helper.assertTrue(tank.fill(portion, IFluidHandler.FluidAction.EXECUTE) == 3000,
+                "The drained brew can return after the save round trip");
+        tickCauldron(helper, cauldron, 2);
+        helper.assertTrue(cauldron.saveWithoutMetadata().getInt("HeatTicks") == 100
+                        && cauldron.saveWithoutMetadata().getBoolean("Powered"),
+                "Refilling before the next sample keeps the cauldron boiling and restores power");
+    }
+
+    private static AltarBlockEntity formAltar(GameTestHelper helper, BlockPos core) {
+        var level = helper.getLevel();
+        var state = WitcheryBlocks.getRequired("altar").get().defaultBlockState();
+        for (var member : BlockPos.betweenClosed(core, core.offset(2, 0, 1))) {
+            level.setBlockAndUpdate(member, state);
+        }
+        AltarBlockEntity.form(level, core);
+        return (AltarBlockEntity) level.getBlockEntity(core);
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_taglock_modifier_order")
