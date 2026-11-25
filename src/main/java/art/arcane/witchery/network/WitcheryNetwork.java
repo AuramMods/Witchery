@@ -53,6 +53,7 @@ public final class WitcheryNetwork {
     private static final int LEGACY_INSTANT_SPELL_PARTICLE_ID = 11;
     private static final int LEGACY_PORTAL_PARTICLE_ID = 13;
     private static final int LEGACY_EXPLOSION_PARTICLE_ID = 15;
+    private static final int LEGACY_FLAME_PARTICLE_ID = 16;
     private static final int LEGACY_SPLASH_PARTICLE_ID = 19;
     private static final int LEGACY_LARGE_SMOKE_PARTICLE_ID = 20;
     private static final int LEGACY_HEART_PARTICLE_ID = 28;
@@ -62,6 +63,7 @@ public final class WitcheryNetwork {
     private static final int LEGACY_WATER_SPLASH_SOUND_ID = 4;
     private static final int LEGACY_PLING_SOUND_ID = 9;
     private static final int LEGACY_ENDERMAN_TELEPORT_SOUND_ID = 16;
+    private static final int LEGACY_GHAST_FIREBALL_SOUND_ID = 19;
     private static final int LEGACY_POOF_SOUND_ID = 57;
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             ResourceLocation.parse(Witchery.MODID + ":main"),
@@ -327,6 +329,10 @@ public final class WitcheryNetwork {
 
     public static void sendBanishment(ServerLevel level, Vec3 center) {
         sendParticlesAround(level, LEGACY_EXPLOSION_PARTICLE_ID, LEGACY_NO_SOUND_ID, center, 1, 2, 16);
+    }
+
+    public static void sendCookingRite(ServerLevel level, Vec3 origin) {
+        sendParticlesAround(level, LEGACY_FLAME_PARTICLE_ID, LEGACY_GHAST_FIREBALL_SOUND_ID, origin, 3, 2, 16);
     }
 
     public static void sendFamiliarRite(ServerLevel level, Vec3 center, boolean binding) {

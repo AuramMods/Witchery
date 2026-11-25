@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Infernal Cooking Rites (2026-11-24)
+
+- The original Forge 1.7.10 server cooked the east-edge input and left the west-edge and elevated controls. With seed zero and 16 Porkchops it returned 15 cooked and one Charcoal for rite 51, and 13 cooked and three Charcoal for rite 58. Both products started at the lower X/Z corner of the glyph, 0.05 above it, with velocity `(0, 0.2, 0)` and a zero pickup delay. An ore-only cast aborted with a refund. See `build/qa-cooking-origin/legacy/burn-reference.log`.
+- Both Forge rites restore those drops and use the existing particle packet for Flame and Ghast fireball, with width three, height two, and 16-block reach. Java 17 data generation, JAR reobfuscation, and all 284 required local GameTests passed. Package SHA-256 `b969aa13c8524de356fe58171bd8afc88140e92441225803421fa35930d49771`.
+- In clean Forge, the muted survival client used the Heart Glyph and received the original completion packet. It collected all 28 Cooked Porkchops and four Charcoal. A separate ore-only cast paid the altar once, returned Blaze Rod, Wood Ash and Coal, and kept the ore.
+- The saved clean Forge region held portable Cooking after two offering steps, with phase 41 and the Blaze Rod still held. The charged stone had already discharged. On an ordinary restart the cast cooked 28 Odd Porkchops, burned four and left one discharged stone. The muted survival client picked up all the food and Charcoal. Both client windows stayed in the background with zero master volume and OpenAL No Output.
+- The copied Auram client joined with zero master volume and OpenAL No Output. The foreground monitor never recorded its process. The redstone cast emptied the Heart Glyph and saved 26 Cooked Odd Porkchops and six Charcoal at the same lower X/Z corner with no pickup delay. The save kept one discharged stone, two raw Odd Porkchops and two Raw Iron from the controls. The pack packet capture timed out. The on-disk evidence is in `build/qa-cooking-origin/auram-copy/saved-outputs.log`.
+
 ## Familiar Damage Sharing (2026-11-24)
 
 - The original Forge event gave the owner 10 damage with no familiar record, 9.9 with a dismissed familiar UUID, and 9 with a loaded familiar at nearby coordinates in the Nether. The native comparison is under `build/qa-familiar-circle/legacy/protection-nether-reference.log`.

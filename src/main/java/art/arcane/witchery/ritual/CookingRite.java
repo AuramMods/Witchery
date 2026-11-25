@@ -1,10 +1,8 @@
 package art.arcane.witchery.ritual;
 
+import art.arcane.witchery.network.WitcheryNetwork;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -25,7 +23,8 @@ public final class CookingRite {
     public static boolean cook(ServerLevel level, BlockPos heart, boolean portable) {
         Vec3 center = Vec3.atBottomCenterOf(heart);
         AABB bounds = new AABB(center, center.add(0, 1, 0)).inflate(RADIUS, 0, RADIUS);
-        Vec3 output = center.add(0, 0.05, 0);
+        Vec3 origin = Vec3.atLowerCornerOf(heart);
+        Vec3 output = origin.add(0, 0.05, 0);
         double burnChance = portable ? 0.16 : 0.08;
         boolean cookedAny = false;
         for (ItemEntity food : level.getEntitiesOfClass(ItemEntity.class, bounds,
@@ -50,10 +49,7 @@ public final class CookingRite {
                 spawned.forEach(Entity::discard);
             }
         }
-        if (cookedAny) {
-            level.sendParticles(ParticleTypes.FLAME, center.x, center.y + 0.15, center.z, 16, 1.5, 0.6, 1.5, 0.02);
-            level.playSound(null, heart, SoundEvents.GHAST_SHOOT, SoundSource.BLOCKS, 1, 1);
-        }
+        if (cookedAny) WitcheryNetwork.sendCookingRite(level, origin);
         return cookedAny;
     }
 
@@ -61,7 +57,7 @@ public final class CookingRite {
         while (count > 0) {
             int amount = Math.min(count, template.getMaxStackSize());
             var drop = new ItemEntity(level, pos.x, pos.y, pos.z, template.copyWithCount(amount), 0, 0.2, 0);
-            drop.setDefaultPickUpDelay();
+            drop.setNoPickUpDelay();
             if (!level.addFreshEntity(drop)) return false;
             spawned.add(drop);
             count -= amount;
