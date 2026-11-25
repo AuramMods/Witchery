@@ -217,6 +217,7 @@ The runtime registry from the shipped 0.24.1 server contains 121 Witchery block 
   - Slab IDs:
     - `witchery:witchwoodslab`, `witchery:iceslab`, `witchery:snowslab`
     - blockstate includes `type=bottom/top/double`; `double` points at legacy double slab cube models (`witchwooddoubleslab`, `icedoubleslab`, `snowdoubleslab`).
+    - Snow slabs accept ordinary block items in their clicked cells. A matching slab merges on the exposed top or bottom face or with an adjacent half. Other clicks can change the half or leave it unchanged. The flattened and legacy double-slab forms both accept a single slab in their place.
   - Fence/FenceGate IDs:
     - `witchery:icefence`, `witchery:icefencegate`
     - fence uses multipart `north/east/south/west`; gate uses `facing/open/in_wall`.

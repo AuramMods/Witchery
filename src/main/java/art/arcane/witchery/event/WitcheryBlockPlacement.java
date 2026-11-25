@@ -1,9 +1,13 @@
 package art.arcane.witchery.event;
 
+import art.arcane.witchery.block.DreamCatcherBlock;
+import art.arcane.witchery.block.RiteHeartBlock;
+import art.arcane.witchery.block.entity.RiteHeartBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.BlockSnapshot;
@@ -64,6 +68,25 @@ public final class WitcheryBlockPlacement {
             BlockState previous = change.getReplacedBlock();
             placed.onPlace(level, pos, previous, false);
             level.markAndNotifyBlock(pos, level.getChunkAt(pos), previous, placed, change.getFlag(), 512);
+            refundReplacedHeart(level, change);
+        }
+    }
+
+    public static void finishItemReplacement(BlockSnapshot snapshot) {
+        if (!(snapshot.getLevel() instanceof ServerLevel level)) return;
+        var previous = snapshot.getReplacedBlock();
+        if (previous.getBlock() instanceof DreamCatcherBlock
+                && !snapshot.getCurrentBlock().is(previous.getBlock())) {
+            Block.popResource(level, snapshot.getPos(), new ItemStack(previous.getValue(DreamCatcherBlock.WEAVE).item()));
+        }
+        refundReplacedHeart(level, snapshot);
+    }
+
+    private static void refundReplacedHeart(ServerLevel level, BlockSnapshot snapshot) {
+        var previous = snapshot.getReplacedBlock();
+        if (previous.getBlock() instanceof RiteHeartBlock && !snapshot.getCurrentBlock().is(previous.getBlock())
+                && snapshot.getBlockEntity() instanceof RiteHeartBlockEntity heart) {
+            heart.refundSacrifices(level);
         }
     }
 

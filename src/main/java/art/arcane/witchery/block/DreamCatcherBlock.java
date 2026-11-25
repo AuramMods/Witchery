@@ -74,6 +74,11 @@ public final class DreamCatcherBlock extends BaseEntityBlock {
     }
 
     @Override
+    public boolean canBeReplaced(BlockState state, BlockPlaceContext context) {
+        return !(context.getItemInHand().getItem() instanceof DreamWeaveItem);
+    }
+
+    @Override
     public BlockState updateShape(BlockState state, Direction direction, BlockState neighbor, LevelAccessor level,
                                   BlockPos pos, BlockPos neighborPos) {
         return direction == state.getValue(FACING).getOpposite() && !state.canSurvive(level, pos)

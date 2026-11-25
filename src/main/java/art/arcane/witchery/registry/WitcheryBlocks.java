@@ -34,6 +34,7 @@ import art.arcane.witchery.block.BloodRoseBlock;
 import art.arcane.witchery.block.BloodCrucibleBlock;
 import art.arcane.witchery.block.GarlicGarlandBlock;
 import art.arcane.witchery.block.SilverVatBlock;
+import art.arcane.witchery.block.SnowSlabBlock;
 import art.arcane.witchery.block.ShadedGlassBlock;
 import art.arcane.witchery.block.CrystalBallBlock;
 import art.arcane.witchery.block.DaylightCollectorBlock;
@@ -214,9 +215,9 @@ public final class WitcheryBlocks {
             case "witchwoodslab", "witchwooddoubleslab" -> new WitchWoodSlabBlock(path.equals("witchwooddoubleslab"));
             case "iceslab" -> new SlabBlock(BlockBehaviour.Properties.copy(Blocks.GLASS).mapColor(MapColor.ICE)
                     .sound(SoundType.STONE).strength(2, 3));
-            case "snowslab" -> new SlabBlock(BlockBehaviour.Properties.copy(Blocks.SNOW_BLOCK).pushReaction(PushReaction.DESTROY));
+            case "snowslab" -> new SnowSlabBlock();
             case "icedoubleslab" -> new Block(BlockBehaviour.Properties.copy(Blocks.ICE).strength(2, 3));
-            case "snowdoubleslab" -> new Block(BlockBehaviour.Properties.copy(Blocks.SNOW_BLOCK).pushReaction(PushReaction.DESTROY));
+            case "snowdoubleslab" -> new SnowSlabBlock.DoubleSlab();
             case "stockade" -> new StockadeBlock.Wooden();
             case "icestockade" -> new StockadeBlock(true);
             case "icefence" -> new PerpetualIceFenceBlock();

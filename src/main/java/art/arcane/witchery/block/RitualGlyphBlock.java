@@ -8,6 +8,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -47,6 +48,11 @@ public final class RitualGlyphBlock extends Block {
     @Override
     public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
         return supportsGlyph(level, pos);
+    }
+
+    @Override
+    public boolean canBeReplaced(BlockState state, BlockPlaceContext context) {
+        return true;
     }
 
     public static boolean supportsGlyph(LevelReader level, BlockPos pos) {

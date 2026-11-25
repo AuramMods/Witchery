@@ -38,6 +38,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -85,6 +86,44 @@ public final class CircleRiteTests {
     private static final int TWO_OFFERING_CAST = 80;
     private static final int THREE_OFFERING_CAST = 100;
     private static final int ALTAR_STEP_TICKS = 20;
+
+    @GameTest(template = TEMPLATE, batch = "witchery_replace_active_heart")
+    public static void onlyApprovedPlacementRefundsAReplacedHeartsOffering(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.SMALL_RITE, "circleglyphritual");
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var heart = heart(helper);
+        var player = fake(level);
+        player.setShiftKeyDown(true);
+        var held = new ItemStack(Items.STONE, 2);
+        waitForOfferings(helper, new ItemStack(Items.OBSIDIAN), new ItemStack(Items.REDSTONE)).thenExecute(() -> {
+            helper.useBlock(CENTER);
+            tick(level, center, heart, 20);
+            helper.assertTrue(heart.saveWithoutMetadata().getInt("OfferingStep") == 1 && drops(helper).size() == 1,
+                    "The active rite has staged one of the two offerings");
+            Consumer<BlockEvent.EntityPlaceEvent> veto = event -> {
+                if (event.getEntity() == player && event.getPos().equals(center)) event.setCanceled(true);
+            };
+            MinecraftForge.EVENT_BUS.addListener(veto);
+            try {
+                helper.assertTrue(LegacyBlockReplacementTests.place(player, center, Direction.UP, 0.02, held) == InteractionResult.FAIL
+                                && held.getCount() == 2 && helper.getBlockState(CENTER).getValue(RiteHeartBlock.ACTIVE)
+                                && heart(helper).saveWithoutMetadata().getInt("OfferingStep") == 1 && drops(helper).size() == 1,
+                        "A veto should keep the active Heart Glyph, its offering and the player's stack");
+            } finally {
+                MinecraftForge.EVENT_BUS.unregister(veto);
+            }
+            helper.assertTrue(LegacyBlockReplacementTests.place(player, center, Direction.UP, 0.02, held).consumesAction()
+                            && helper.getBlockState(CENTER).is(Blocks.STONE) && level.getBlockEntity(center) == null,
+                    "An approved use should place stone in the Heart Glyph's own cell");
+        }).thenWaitUntil(() -> {
+            var returned = drops(helper);
+            helper.assertTrue(returned.size() == 2 && returned.stream().anyMatch(item -> ItemStack.matches(item.getItem(), new ItemStack(Items.OBSIDIAN)))
+                            && returned.stream().anyMatch(item -> ItemStack.matches(item.getItem(), new ItemStack(Items.REDSTONE))),
+                    "Only the approved replacement should refund one staged offering");
+        }).thenSucceed();
+    }
 
     @GameTest(template = TEMPLATE, batch = "witchery_piston_rite_refund")
     public static void pistonDestroyingAHeartRefundsItsStagedOffering(GameTestHelper helper) {

@@ -106,6 +106,7 @@ import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.item.GuideBookItem;
 import art.arcane.witchery.item.BiomeNoteItem;
 import art.arcane.witchery.item.WitchHandItem;
+import art.arcane.witchery.item.SnowSlabItem;
 import art.arcane.witchery.item.WitchWoodBlockItem;
 import art.arcane.witchery.item.WitchSeedsItem;
 import art.arcane.witchery.vampirism.Vampirism;
@@ -532,6 +533,9 @@ public final class WitcheryItems {
     private static BlockItem createBlockItem(String path) {
         Block block = WitcheryBlocks.getRequired(path).get();
         switch (path) {
+            case "snowslab", "snowdoubleslab" -> {
+                return new SnowSlabItem(block, new Item.Properties());
+            }
             case "alluringskull" -> {
                 return new BlockItem(block, new Item.Properties().stacksTo(1));
             }

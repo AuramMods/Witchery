@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Blocks;
@@ -37,5 +38,10 @@ public final class FrozenPressurePlateBlock extends PressurePlateBlock {
     public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
         return super.canSurvive(state, level, pos)
                 || level.getBlockState(pos.below()).is(WitcheryBlocks.getRequired("icefence").get());
+    }
+
+    @Override
+    public boolean canBeReplaced(BlockState state, BlockPlaceContext context) {
+        return !ice || super.canBeReplaced(state, context);
     }
 }

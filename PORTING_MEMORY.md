@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Clicked-cell placement (2026-11-25)
+
+- The original survival interaction replaced the Heart Glyph, three chalk glyphs, Dream Catcher, two snow pressure plates, and both snow slab IDs in the clicked cell. Replacing the Dream Catcher dropped its fitted weave. The other eight left no block item. The rebuilt clean Forge and copied Auram packages match all 121 shared default placement checks and all 20 original survival-use cases, plus two placements against the modern stacked-slab state.
+- Matching snow slabs merge when the player clicks the exposed top or bottom face or when the adjacent cell holds a half. Other faces can flip a half or leave it unchanged without using an item. Replacing either double-slab form with one half consumes that one item. Ice Slab placement was the control and still placed the stone in the adjacent cell.
+- The muted, unfocused clean Forge survival client used the normal placement binding. It replaced the Heart Glyph and Dream Catcher with stone, merged a snow slab, and replaced the resulting double with a third slab. The server saved both stone cells, one bottom slab, and one Nightmare Dreamweave. OpenAL used No Output and the monitor recorded no client activation.
+- All 339 local Forge GameTests passed. Canceled placements preserve the held stack, fitted weave, or staged offering. Approved replacement releases exactly one fitted weave or returns the active Heart Glyph's staged offering once.
+- The reobfuscated JAR is `build/qa-block-replacement/verified.jar` with SHA-256 `4ae10fe89f75e4187643bc616d06f2f520e816b292ff7b45d9c09efdc521bda0`. Reference, packaged server, and client logs are in `build/qa-block-replacement/`. The first native fake-player run omitted the held stack from the inventory and activated the Heart Glyph. The replay put the stack in the selected slot and exercised crouched placement.
+
 ## Piston movement with Quark (2026-11-25)
 
 - The earlier packaged Auram build let a piston move two altar members. The altar went from six formed members and 55 stored power to zero formed members and zero power. An extending piston and a retracting sticky piston also carried stocked Poppet Shelves across the X 31/32 chunk boundary, changing both saved ticket positions.

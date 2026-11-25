@@ -15,6 +15,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -238,6 +239,11 @@ public final class CursedControls {
 
         @Override
         public Kind kind() { return kind; }
+
+        @Override
+        public boolean canBeReplaced(BlockState state, BlockPlaceContext context) {
+            return kind == Kind.SNOW_PLATE || super.canBeReplaced(state, context);
+        }
 
         @Override
         public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
