@@ -2,11 +2,13 @@ package art.arcane.witchery.world.migration;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.entity.SleepingBody;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.world.DreamTravel;
 import art.arcane.witchery.world.WitcheryDimensions;
 import com.mojang.authlib.GameProfile;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
@@ -15,6 +17,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -22,11 +25,13 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.storage.LevelStorageSource;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import org.apache.commons.io.FileUtils;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.UUID;
 
@@ -60,10 +65,25 @@ public final class LegacyDreamSaveImportTests {
         helper.assertTrue("LegacyDreamer".equals(trackedBody.ownerName()) && trackedBody.ownerId().isEmpty(),
                 "Legacy owner name must reach tracking clients without inventing an owner UUID");
         body.setPos(anchor.getX() + 0.5, anchor.getY(), anchor.getZ() + 0.5);
-        overworld.addFreshEntity(body);
+        helper.assertTrue(overworld.addFreshEntity(body), "The sleeping body joins the Overworld");
 
         var profile = new GameProfile(UUID.randomUUID(), "LegacyDreamer");
         var player = new FakePlayer(overworld, profile);
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(overworld.getEntitiesOfClass(SleepingBody.class,
+                        new AABB(anchor).inflate(3), tracked -> tracked.belongsTo(player)).contains(body),
+                "The legacy sleeping body is visible to the wake search"))
+                .thenExecute(() -> {
+                    try {
+                        verifyWake(helper, earlierPort, dream, anchor, body, player);
+                    } catch (IOException | CommandSyntaxException failure) {
+                        throw new IllegalStateException("Could not load the Dream save fixture", failure);
+                    }
+                }).thenSucceed();
+    }
+
+    private static void verifyWake(GameTestHelper helper, boolean earlierPort, ServerLevel dream, BlockPos anchor,
+                                   SleepingBody body, FakePlayer player) throws IOException, CommandSyntaxException {
+        var overworld = helper.getLevel();
         var root = Files.createTempDirectory("witchery-dream-import-test");
         try (var access = LevelStorageSource.createDefault(root).createAccess("world")) {
             var registry = TagParser.parseTag("""
@@ -95,7 +115,7 @@ public final class LegacyDreamSaveImportTests {
                          display:{Name:'{"text":"Earlier port leggings","italic":false}'},Marker:"preserve"}}
                         """));
             }
-            NbtIo.writeCompressed(legacy, access.getLevelPath(LevelResource.PLAYER_DATA_DIR).resolve(profile.getId() + ".dat").toFile());
+            NbtIo.writeCompressed(legacy, access.getLevelPath(LevelResource.PLAYER_DATA_DIR).resolve(player.getUUID() + ".dat").toFile());
             storage.load(player);
             WitcheryPlayerDataProvider.get(player).ifPresent(data -> DreamTravel.restoreStyle(player, data));
             helper.assertTrue(WitcheryPlayerDataProvider.get(player).map(data -> data.isGhost() && data.getNightmareLevel() == 2).orElse(false),
@@ -134,7 +154,6 @@ public final class LegacyDreamSaveImportTests {
             player.discard();
             FileUtils.deleteDirectory(root.toFile());
         }
-        helper.succeed();
     }
 
     private static void useNeedle(GameTestHelper helper, FakePlayer player) {

@@ -9,6 +9,7 @@ import art.arcane.witchery.block.StockadeBlock;
 import art.arcane.witchery.block.FrozenPressurePlateBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.block.GlowGlobeBlock;
+import art.arcane.witchery.block.InfinityEggBlock;
 import art.arcane.witchery.block.WitchDoorBlock;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.BarrierBlock;
@@ -112,7 +113,6 @@ import java.util.Map;
 
 public final class WitcheryBlocks {
     private static final VoxelShape SHAPE_FULL_BLOCK = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 16.0D, 16.0D);
-    private static final VoxelShape SHAPE_INFINITY_EGG = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
 
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, Witchery.MODID);
     public static final RegistryObject<SlabBlock> APOTHECARY_SHELF = BLOCKS.register("apothecary_shelf",
@@ -247,8 +247,7 @@ public final class WitcheryBlocks {
             case "scarecrow", "trent", "witchsladder" -> new FetishBlock(path);
             case "placeditem" -> new PlacedItemBlock();
             case "glowglobe" -> new GlowGlobeBlock();
-            case "infinityegg" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.DRAGON_EGG), SHAPE_INFINITY_EGG, true);
+            case "infinityegg" -> new InfinityEggBlock();
             case "garlicgarland" -> new GarlicGarlandBlock();
             case "poppetshelf" -> new PoppetShelfBlock();
             case "dreamcatcher" ->

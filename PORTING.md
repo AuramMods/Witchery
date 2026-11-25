@@ -869,7 +869,15 @@
 - [x] Restart copied Auram on the same packaged JAR and verify 15 survival harvest outcomes on its headless server. On packaged clean Forge, the muted survival client mined seven fixtures with the normal attack binding, recovered the marked Poppet from its shelf, and broke the Wolf Trap without a drop.
 - [x] Pass all 326 required Forge GameTests locally, including the survival block harvest regression cases.
 - [x] Match the remaining 43 legacy blast resistance values. The original, packaged clean Forge, and copied Auram agree across all 121 shared default block states. Real blasts removed Perpetual Ice, witchwood planks, both hunting traps, and both stockades at their original thresholds. Drops preserved the Hawthorn variant, and Perpetual Ice and the Wolf Trap left no items. All 329 local Forge GameTests passed.
-- [ ] Restore Infinity Egg gravity and right-click handling. The 0.24.1 egg consumed right-click without moving and fell six blocks to the lower platform when its support was removed. The packaged port passed the interaction through and stayed suspended.
+- [ ] Restore creative pick-block behavior for Force, the Spirit Portal, and the Torment Portal. The original and packaged ray traces reached all three, but only the 1.20.1 port returned items. The Barrier, Glow Globe, and Alluring Skull matched their original pick results.
+
+## Infinity Egg (2026-11-25)
+
+- [x] Match the original five-tick fall delay, inset collision shape, grass support, and right-click handling. The muted Forge survival client clicked with a gold block in hand without placing it, tracked the falling block after support removal, and mined the landed egg for exactly one item.
+- [x] Verify the Infinity Egg's tenfold capacity and recharge bonus after landing on an altar. Mining it returns the recharge multiplier to one.
+- [x] Import a real 0.24.1 save with a scheduled fall, an in-flight egg, and an egg saved before its first entity tick. All three landed exactly once. The already landed and grass-supported eggs kept their positions through import and a second dedicated start.
+- [x] Replay the click, fall, grass support, altar bonus and exact item drop headlessly on copied Auram using the same reobfuscated JAR.
+- [x] Pass all 331 required Forge GameTests locally, including the live altar landing and the original pending and in-flight save conversions.
 
 ## Coffin (2026-11-20)
 

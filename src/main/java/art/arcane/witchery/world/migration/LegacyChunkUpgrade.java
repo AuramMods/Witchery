@@ -255,15 +255,38 @@ public final class LegacyChunkUpgrade {
                 }
                 return true;
             }
-            if (!belongsTo(name, CURSED_CONTROLS) && !belongsTo(name, BREW_DISPERSALS) && !GROWING_LILY_PAD.equals(name)) return false;
+            if (!belongsTo(name, CURSED_CONTROLS) && !belongsTo(name, BREW_DISPERSALS)
+                    && !GROWING_LILY_PAD.equals(name) && !LegacyChunkEntities.INFINITY_EGG.equals(name)) return false;
             tick.putString("i", name.toString());
             saved.add(tick);
             dormantBrews.remove(savedPosition(tick), name.toString());
             return true;
         });
+        restoreUnstartedEggFalls(level.getList("Entities", Tag.TAG_COMPOUND), ids, saved);
         // Legacy runoff could stop scheduling when its level stabilized. Restart the modern dispersal tick on load.
         dormantBrews.forEach((pos, id) -> saved.add(blockTick(id, pos, 5)));
         return saved;
+    }
+
+    private static void restoreUnstartedEggFalls(ListTag entities, LegacyWorldIds ids, ListTag ticks) {
+        String egg = LegacyChunkEntities.INFINITY_EGG.toString();
+        entities.removeIf(entry -> {
+            var entity = (CompoundTag) entry;
+            if (entity.getInt("Time") != 0 || !LegacyChunkEntities.isFallingInfinityEgg(entity, ids)) return false;
+            var position = entity.getList("Pos", Tag.TAG_DOUBLE);
+            if (position.size() != 3) return false;
+            var origin = BlockPos.containing(position.getDouble(0), position.getDouble(1), position.getDouble(2));
+            // The old entity had not removed its source block yet. Schedule that block to fall once.
+            var scheduled = ticks.stream().map(CompoundTag.class::cast)
+                    .filter(tick -> tick.getString("i").equals(egg) && savedPosition(tick).equals(origin)).findFirst();
+            if (scheduled.isPresent()) {
+                var tick = scheduled.get();
+                tick.putInt("t", Math.min(tick.getInt("t"), 1));
+            } else {
+                ticks.add(blockTick(egg, origin, 1));
+            }
+            return true;
+        });
     }
 
     private static CompoundTag blockTick(String id, BlockPos pos, int delay) {

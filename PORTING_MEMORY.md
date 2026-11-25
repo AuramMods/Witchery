@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Infinity Egg gravity and saved falls (2026-11-25)
+
+- The original headless server measured a five-tick delay and confirmed that a grass-supported egg stays in place. The port now uses a real falling block with the original inset bounds, consumes use and stays mineable. A landed egg gives its existing tenfold altar capacity and recharge bonus.
+- On packaged clean Forge, the background survival client used the normal right-click binding with gold in hand. It kept its gold and left the adjacent cell empty. The client tracked the falling Infinity Egg and resolved its block model, then mined the landed egg with the normal attack binding. The server reported one item and the altar's recharge multiplier returned to one. The window stayed hidden and unfocused with master volume zero and OpenAL No Output.
+- The native region contained a pending numeric egg tick and two `FallingSand` entities saved before and after their first tick. The importer restores the queued block tick and the active entity's state and motion. A zero-age entity becomes one scheduled fall from its original block. The exact packaged dedicated server imported all three and saved one landed egg per column, without a duplicate item. All positions survived a restart with import disabled. Logs are in `build/qa-infinity-egg/`.
+- Copied Auram matched the click, fall, grass, altar and drop behavior headlessly. The reobfuscated JAR used for the client, native import, restart and Auram replay is `build/qa-infinity-egg/verified.jar` with SHA-256 `6a67489a42a4f3418ae8cb1303f7eab3a2404a6a8f4f5e8ea09dc4438971a9de`.
+- All 331 local Forge GameTests passed. The Infinity Egg fixture clears the flat-world stone from its fall path. The Dream import fixture waits for the sleeping body in the same search used by waking before checking recovery and body removal.
+- Original and packaged probes used normal outline targeting and the block pick hook for eleven IDs. Force, Spirit Portal, and Torment Portal were targetable in both engines. Their original pick results were empty, while this port gives the corresponding block items. The logs are in `build/qa-pick-block-parity/`.
+
 ## Legacy block blast resistance (2026-11-25)
 
 - Restored all 43 remaining blast resistance differences measured after the temporary brew pass. The original and the reobfuscated Forge JAR now agree on effective resistance for every shared default block state. The audit compares 121 shared IDs and includes each block's default fluid state. See `build/qa-block-blast-resistance/comparison.txt`.
