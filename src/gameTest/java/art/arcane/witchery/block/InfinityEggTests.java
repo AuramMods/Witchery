@@ -35,8 +35,6 @@ public final class InfinityEggTests {
         for (var pos : BlockPos.betweenClosed(corner, corner.offset(2, 0, 1))) {
             level.setBlockAndUpdate(pos, altar.defaultBlockState());
         }
-        AltarBlockEntity.form(level, corner);
-        var core = (AltarBlockEntity) level.getBlockEntity(corner);
         var landing = corner.above();
         var origin = landing.above(4);
         for (var pos : BlockPos.betweenClosed(landing, origin.above())) {
@@ -48,6 +46,8 @@ public final class InfinityEggTests {
         level.setBlockAndUpdate(grass.below(), Blocks.GRASS_BLOCK.defaultBlockState());
         level.setBlockAndUpdate(grass, Blocks.GRASS.defaultBlockState());
         level.setBlockAndUpdate(grass.above(), egg.defaultBlockState());
+        AltarBlockEntity.form(level, corner);
+        var core = (AltarBlockEntity) level.getBlockEntity(corner);
 
         var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "InfinityEggMiner"));
         player.setPos(origin.getX() + 0.5, origin.getY() - 2.0, origin.getZ() + 2.5);

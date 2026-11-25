@@ -131,6 +131,7 @@ public final class AltarBlock extends BaseEntityBlock {
             if (core == null) {
                 return InteractionResult.PASS;
             }
+            core.inspect(server);
             player.openMenu(new SimpleMenuProvider((id, inventory, viewer) -> new AltarMenu(id, core, pos),
                     Component.translatable("block.witchery.altar")));
         }

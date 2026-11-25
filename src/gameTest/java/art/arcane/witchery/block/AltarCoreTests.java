@@ -78,13 +78,13 @@ public final class AltarCoreTests {
         var block = WitcheryBlocks.getRequired("altar").get();
         var corner = helper.absolutePos(CORNER);
         var last = corner.offset(2, 0, 1);
+        placeNature(helper);
         for (BlockPos part : BlockPos.betweenClosed(corner, last)) {
             placeBlock(helper, player, part, block);
         }
         var core = altar(helper, last);
         helper.assertTrue(altar(helper, corner).resolveCore(level) == core && level.getBlockState(last).getValue(AltarBlock.FORMED),
                 "The last placed altar block becomes the core and forms the altar immediately");
-        placeNature(helper);
         useArtifact(helper, player, corner, new ItemStack(WitcheryItems.getRequired("mysticbranch").get()));
         useArtifact(helper, player, corner.south(), new ItemStack(WitcheryIngredient.KOBOLDITE_PENTACLE.item()));
 
@@ -106,6 +106,49 @@ public final class AltarCoreTests {
                     "Completing the repaired altar makes the newly placed member its core");
             helper.succeed();
         });
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_altar_scan_timing")
+    public static void formationAndInspectionSampleNatureWhileLoadedTicksRecharge(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var corePos = helper.absolutePos(CORNER).atY(level.getMaxBuildHeight() - 4);
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "AltarInspection"));
+        var altarBlock = WitcheryBlocks.getRequired("altar").get();
+        var egg = corePos.north(3);
+        level.setBlockAndUpdate(egg.below(), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(egg, Blocks.DRAGON_EGG.defaultBlockState());
+        for (BlockPos part : BlockPos.betweenClosed(corePos.offset(-2, 0, -1), corePos)) {
+            placeBlock(helper, player, part, altarBlock);
+        }
+        var core = altar(helper, corePos);
+        helper.assertTrue(core.capacity() == 250 && core.power() == 0,
+                "The last placement samples nature before the first recharge");
+        tickAltar(helper, core, 19);
+        helper.assertTrue(core.power() == 0, "Recharge waits for loaded tick 20");
+        tickAltar(helper, core, 1);
+        helper.assertTrue(core.power() == 10, "The twentieth loaded tick adds ten power");
+
+        level.setBlockAndUpdate(egg.north(), Blocks.OAK_LOG.defaultBlockState());
+        tickAltar(helper, core, 80);
+        var otherMember = corePos.west(2);
+        useBlock(player, otherMember, ItemStack.EMPTY);
+        helper.assertTrue(core.capacity() == 250 && core.power() == 50,
+                "Opening on the hundredth loaded tick still uses the previous scan");
+        tickAltar(helper, core, 1);
+        useBlock(player, otherMember, ItemStack.EMPTY);
+        helper.assertTrue(core.capacity() == 252 && core.power() == 50,
+                "Opening a different member after the throttle refreshes the core");
+
+        level.removeBlock(egg, false);
+        tickAltar(helper, core, 119);
+        helper.assertTrue(core.capacity() == 252 && core.power() == 110,
+                "An unattended altar keeps its capacity and continues recharging");
+        useBlock(player, corePos, ItemStack.EMPTY);
+        helper.assertTrue(core.capacity() == 2 && core.power() == 110,
+                "Inspection lowers capacity immediately and leaves stored charge until recharge");
+        tickAltar(helper, core, 20);
+        helper.assertTrue(core.power() == 2, "The next recharge clamps the stored power to the new capacity");
+        helper.succeed();
     }
 
     @GameTest(template = "qa_rite_terrain", batch = "witchery_arthana_consumers", timeoutTicks = 180)
@@ -184,6 +227,12 @@ public final class AltarCoreTests {
 
     private static void tickBrazier(GameTestHelper helper, BrazierBlockEntity brazier) {
         BrazierBlockEntity.serverTick(helper.getLevel(), brazier.getBlockPos(), brazier.getBlockState(), brazier);
+    }
+
+    private static void tickAltar(GameTestHelper helper, AltarBlockEntity core, int count) {
+        for (int tick = 0; tick < count; tick++) {
+            AltarBlockEntity.serverTick(helper.getLevel(), core.getBlockPos(), core.getBlockState(), core);
+        }
     }
 
     private static void placeNature(GameTestHelper helper) {

@@ -122,6 +122,7 @@ public final class PlacedItemBlock extends BaseEntityBlock {
             return false;
         }
         placed.place(item);
+        level.updateNeighborsAt(pos, state.getBlock());
         item.shrink(1);
         return true;
     }

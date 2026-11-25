@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Altar formation, inspection, and recharge (2026-11-25)
+
+- Forming an altar scans nature immediately. Opening a formed altar refreshes capacity more than 100 loaded ticks after its last scan. The original same-tick refresh is also preserved. The core recharges on loaded ticks 20, 40, and onward, and clamps excess charge at that time if the scanned capacity shrank.
+- The original, rebuilt clean Forge, and copied Auram traces tested formation, the first recharge, opening at ticks 100 and 101, and replacing nature while the altar sat unattended. With a Dragon Egg removed, the original and rebuilt altar still held 110 power when reopened with only six capacity. The next recharge reduced its power to six.
+- The muted background survival client placed the sixth altar block in a fixture with a supplied Dragon Egg and five altar blocks. Its core kept 250 capacity while nearby logs changed. Reopening from a different member showed 256 and later 258. Normal Arthana placement immediately extended the range to 32 blocks. The client reported zero master volume, OpenAL No Output, and an unfocused hidden window.
+- A local restart from the previous Forge JAR kept the saved core and its fractional 5.25 power until tick 20. A separate Witchery 0.24.1 save import and ordinary restart both retained its core, six capacity, and six stored power.
+- The first copied Auram run reached the Altar's read-only menu and hit Adapt 2.2.7's missing-inventory exception. A compatibility mixin lets Forge open that screen without sending it through Adapt's inventory-opening hook. The packaged replay exercised the same block interaction and matched all ten original samples. The muted Auram client also placed the sixth block and opened the non-core member twice, seeing capacities 256 and 258. The fixture first raced the recipe index. The replay waited for the index and reached the client interactions. Its final probe queried the wrong height, and the saved chunk confirmed the Arthana at its actual position, the 32-block range, and 258 capacity.
+- All 352 local Forge GameTests passed. The reobfuscated package is `build/qa-altar-refresh/verified.jar` with SHA-256 `8d96eb0d35315abcbbb0d26ca66f7eef9b082c7665ed4aef85c8d2007205057d`. The source traces, save fixtures, and survival logs are in the same directory.
+
 ## Cauldron heat after a full withdrawal (2026-11-25)
 
 - A complete withdrawal clears sampled altar power and empties the tank. The next loaded tick clears the retained heat if the tank remains empty. The next ritual pulse resets unfinished warmup. Ritual completion and interruption still clear heat and warmup immediately.

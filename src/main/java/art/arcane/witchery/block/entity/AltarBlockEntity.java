@@ -36,7 +36,8 @@ public final class AltarBlockEntity extends BlockEntity {
     private int recharge = 1;
     private int range = BASE_RANGE;
     private int enhancement;
-    private long lastScan = Long.MIN_VALUE;
+    private long ticks;
+    private long lastScan;
 
     public AltarBlockEntity(BlockPos pos, BlockState state) {
         super(WitcheryBlockEntities.ALTAR.get(), pos, state);
@@ -52,6 +53,10 @@ public final class AltarBlockEntity extends BlockEntity {
         }
         for (BlockPos member : members) {
             server.setBlock(member, server.getBlockState(member).setValue(AltarBlock.FORMED, true), Block.UPDATE_ALL);
+        }
+        if (!members.isEmpty() && server.getBlockEntity(pos) instanceof AltarBlockEntity core) {
+            core.scanNature(server);
+            core.updateArtifacts(server, members);
         }
     }
 
@@ -71,7 +76,7 @@ public final class AltarBlockEntity extends BlockEntity {
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, AltarBlockEntity altar) {
-        if (!(level instanceof ServerLevel server) || Math.floorMod(level.getGameTime() + pos.asLong(), RECHARGE_INTERVAL) != 0) {
+        if (!(level instanceof ServerLevel server) || ++altar.ticks % RECHARGE_INTERVAL != 0) {
             return;
         }
         List<BlockPos> members = AltarBlock.members(server, pos);
@@ -79,6 +84,7 @@ public final class AltarBlockEntity extends BlockEntity {
         boolean formed = core != null;
         // A missing chunk cannot tell us whether one of its altar blocks was removed.
         if (!formed && !server.hasChunksAt(pos.offset(-2, 0, -2), pos.offset(2, 0, 2))) return;
+        boolean becameCore = altar == core && !pos.equals(altar.corePos);
         altar.rememberCore(formed ? core.getBlockPos() : null);
         if (state.getValue(AltarBlock.FORMED) != formed) {
             level.setBlock(pos, state.setValue(AltarBlock.FORMED, formed), Block.UPDATE_ALL);
@@ -87,7 +93,11 @@ public final class AltarBlockEntity extends BlockEntity {
             altar.reset();
             return;
         }
-        altar.updatePower(server, members);
+        if (becameCore) {
+            altar.scanNature(server);
+            altar.updateArtifacts(server, members);
+        }
+        altar.rechargePower();
     }
 
     private void rememberCore(@Nullable BlockPos pos) {
@@ -97,17 +107,27 @@ public final class AltarBlockEntity extends BlockEntity {
         }
     }
 
-    private void updatePower(ServerLevel server, List<BlockPos> structure) {
-        int oldCapacity = capacity;
-        float oldPower = power;
-        long time = server.getGameTime();
-        if (lastScan == Long.MIN_VALUE || time - lastScan >= SCAN_INTERVAL) {
-            capacity = AltarNature.capacity(server, worldPosition);
-            lastScan = time;
+    public void inspect(ServerLevel server) {
+        updateArtifacts(server, AltarBlock.members(server, worldPosition));
+        long elapsed = ticks - lastScan;
+        if (elapsed <= 0 || elapsed > SCAN_INTERVAL) {
+            scanNature(server);
         }
-        updateArtifacts(server, structure);
-        power = (int) Math.min(power + POWER_PER_SECOND * recharge, capacity());
-        if (oldPower != power || oldCapacity != capacity) {
+    }
+
+    private void scanNature(ServerLevel server) {
+        lastScan = ticks;
+        int updated = AltarNature.capacity(server, worldPosition);
+        if (updated != capacity) {
+            capacity = updated;
+            setChanged();
+        }
+    }
+
+    private void rechargePower() {
+        float updated = (int) Math.min(power + POWER_PER_SECOND * recharge, capacity());
+        if (updated != power) {
+            power = updated;
             setChanged();
         }
     }
@@ -122,9 +142,9 @@ public final class AltarBlockEntity extends BlockEntity {
     }
 
     private void reset() {
-        if (lastScan != Long.MIN_VALUE || capacity != 0 || power != 0 || range != BASE_RANGE
+        if (lastScan != 0 || capacity != 0 || power != 0 || range != BASE_RANGE
                 || powerScale != 1 || recharge != 1 || enhancement != 0) {
-            lastScan = Long.MIN_VALUE;
+            lastScan = 0;
             capacity = 0;
             power = 0;
             powerScale = 1;
