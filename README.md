@@ -4,7 +4,7 @@ This repository is a breadth-first port of the original Witchery mod from Forge 
 
 ## Local-only builds and testing
 
-**Build, test, and package Witchery on the local workstation, including for pull requests and releases.** Use Java 17 and the workstation's Gradle cache. This project has no GitHub Actions workflows. Do not add workflows or use GitHub Actions to run checks, build JARs, or publish releases.
+**Build, test, and package Witchery on the local workstation, including for pull requests and releases.** Use Java 17 and the workstation's Gradle cache. Do not create, enable, or run GitHub Actions workflows for this repository.
 
 With dependencies cached, package the reobfuscated release JAR and run the headless Forge tests locally before pushing changes.
 
