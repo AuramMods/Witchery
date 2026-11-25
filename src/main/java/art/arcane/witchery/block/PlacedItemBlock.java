@@ -2,6 +2,7 @@ package art.arcane.witchery.block;
 
 import art.arcane.witchery.block.entity.PlacedItemBlockEntity;
 import art.arcane.witchery.registry.WitcheryBlocks;
+import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -82,7 +83,8 @@ public final class PlacedItemBlock extends BaseEntityBlock {
 
     @Override
     public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
-        return level.getBlockEntity(pos) instanceof PlacedItemBlockEntity placed ? placed.stack().copy() : ItemStack.EMPTY;
+        ItemStack stack = level.getBlockEntity(pos) instanceof PlacedItemBlockEntity placed ? placed.stack() : ItemStack.EMPTY;
+        return stack.isEmpty() ? new ItemStack(WitcheryItems.getRequired("arthana").get()) : stack.copy();
     }
 
     @Override

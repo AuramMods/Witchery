@@ -97,7 +97,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.level.material.MapColor;
-import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -112,8 +111,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public final class WitcheryBlocks {
-    private static final VoxelShape SHAPE_FULL_BLOCK = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 16.0D, 16.0D);
-
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, Witchery.MODID);
     public static final RegistryObject<SlabBlock> APOTHECARY_SHELF = BLOCKS.register("apothecary_shelf",
             () -> new SlabBlock(BlockBehaviour.Properties.copy(Blocks.BIRCH_SLAB)));
@@ -274,8 +271,7 @@ public final class WitcheryBlocks {
                     BlockBehaviour.Properties.copy(Blocks.WATER).instabreak().noCollission().noLootTable());
             case "brewgas" -> new BrewDispersalBlock(true);
             case "brewliquid" -> new BrewDispersalBlock(false);
-            case "force" -> new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.BARRIER)
-                    .explosionResistance(5_999.4F).noLootTable(), SHAPE_FULL_BLOCK, true);
+            case "force" -> new ForceBlock();
             case "barrier" -> new BarrierBlock();
             case "light" -> new SunlightBlock();
             case "slurp" -> new SlurpBlock();
@@ -300,24 +296,14 @@ public final class WitcheryBlocks {
         return BlockBehaviour.Properties.copy(Blocks.WATER).strength(100.0F).noCollission().noLootTable().lightLevel(state -> 3);
     }
 
-    private static final class LegacyNonSolidShapeBlock extends Block {
-        private final VoxelShape shape;
-        private final boolean hasCollision;
-
-        private LegacyNonSolidShapeBlock(BlockBehaviour.Properties properties, VoxelShape shape, boolean hasCollision) {
-            super(hasCollision ? properties.noOcclusion().dynamicShape() : properties.noOcclusion().noCollission());
-            this.shape = shape;
-            this.hasCollision = hasCollision;
+    private static final class ForceBlock extends Block {
+        private ForceBlock() {
+            super(Properties.copy(Blocks.BARRIER).explosionResistance(5_999.4F).noLootTable().noOcclusion().dynamicShape());
         }
 
         @Override
-        public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-            return shape;
-        }
-
-        @Override
-        public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-            return hasCollision ? shape : Shapes.empty();
+        public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+            return ItemStack.EMPTY;
         }
 
         @Override

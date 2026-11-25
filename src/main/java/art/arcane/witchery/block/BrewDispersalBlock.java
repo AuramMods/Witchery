@@ -85,6 +85,11 @@ public final class BrewDispersalBlock extends LiquidBlock implements EntityBlock
     }
 
     @Override
+    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+        return ItemStack.EMPTY;
+    }
+
+    @Override
     public ItemStack pickupBlock(LevelAccessor level, BlockPos pos, BlockState state) {
         return ItemStack.EMPTY;
     }

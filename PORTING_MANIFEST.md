@@ -232,6 +232,7 @@ The runtime registry from the shipped 0.24.1 server contains 121 Witchery block 
     - portal geometry: `spiritportal`, `tormentportal`
     - decorative/machine approximations: `altar`, `kettle`, `spinningwheel`, `statueofworship`, `coffinblock`, `refillingchest`, `mirrorwall`, `clever`, `distilleryidle`, `distilleryburning`, `fumefunnel`, `filteredfumefunnel`, `witchesovenidle`, `witchesovenburning`
   - `witchery:infinityegg` keeps the original inset shape and five-tick falling delay. It consumes use without teleporting, remains supported by grass, and multiplies altar capacity and recharge by ten when it lands on a formed altar. Legacy queued falls keep their named block tick. The legacy falling entity keeps its position, motion, and block type. An entity saved before its first update resumes from a single scheduled source block.
+  - Force, Spirit Portal, Torment Portal, brew gas, and liquid brew return empty creative picks. The placed-item block copies its mounted stack and picks an Arthana when empty.
   - fixed slab item model placeholders:
     - `icedoubleslab`, `snowdoubleslab`, `witchwooddoubleslab` now parent block models instead of placeholder `taglockkit`.
   - remaining `cube_all` set narrowed to:

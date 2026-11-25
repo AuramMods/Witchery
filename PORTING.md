@@ -869,7 +869,14 @@
 - [x] Restart copied Auram on the same packaged JAR and verify 15 survival harvest outcomes on its headless server. On packaged clean Forge, the muted survival client mined seven fixtures with the normal attack binding, recovered the marked Poppet from its shelf, and broke the Wolf Trap without a drop.
 - [x] Pass all 326 required Forge GameTests locally, including the survival block harvest regression cases.
 - [x] Match the remaining 43 legacy blast resistance values. The original, packaged clean Forge, and copied Auram agree across all 121 shared default block states. Real blasts removed Perpetual Ice, witchwood planks, both hunting traps, and both stockades at their original thresholds. Drops preserved the Hawthorn variant, and Perpetual Ice and the Wolf Trap left no items. All 329 local Forge GameTests passed.
-- [ ] Restore creative pick-block behavior for Force, the Spirit Portal, and the Torment Portal. The original and packaged ray traces reached all three, but only the 1.20.1 port returned items. The Barrier, Glow Globe, and Alluring Skull matched their original pick results.
+- [ ] Restore original piston behavior. Comparing the engines' piston rules across all 121 original default block states found 14 differences. Powered pistons left the original Candelabra and both Fume Funnels in place and broke Ritual Chalk. The port moved all four. Verify the other changed cases with actual pistons.
+
+## Creative pick-block (2026-11-25)
+
+- [x] Restore empty picks for Force, both portals, and both temporary brew dispersals. Force keeps its solid collision and all five retain their registered items for saved inventories and commands.
+- [x] Restore the Arthana fallback on an empty placed-item block. A populated mount produces an independent copy with the stored wear and item data.
+- [x] Compare 42 original and packaged picks through their outline and pick hooks. Clean Forge and copied Auram both matched after mapping original metadata and item names. The fixture covers properly assembled doors, all eight crops, the filled Chalice, and a mounted sword with wear 17 and its saved Keepsake tag. All 333 local Forge GameTests passed.
+- [x] Press the normal pick-block binding in a muted, unfocused Forge client. Force and both portals returned no item. The Alluring Skull, empty mount, and populated mount returned their original results. The Spirit Portal input check used a complete Overworld frame after the disposable server hit its watchdog during a cold Dream force-load.
 
 ## Infinity Egg (2026-11-25)
 

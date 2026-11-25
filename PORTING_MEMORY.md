@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Creative pick-block parity (2026-11-25)
+
+- Compared 40 default block picks and two extra states against Witchery 0.24.1. Force, Spirit Portal, Torment Portal, brew gas, and liquid brew now return an empty pick. The unpopulated placed-item block now returns the original Arthana fallback. A populated mount returns a copy with its item data, including wear 17 and the saved Keepsake tag in the sword fixture.
+- Clean Forge and copied Auram matched all 42 pick results after mapping original names and ingredient metadata. Original and modern traces also agreed on whether each state was targetable, including the three doors with both halves present. All 333 local Forge GameTests passed. The reobfuscated JAR SHA-256 is `6fb3340f2953080cbd8efd240770a80902952df6fb1271ec65e143db8ae56b32`. The original and Forge logs and normalization script are in `build/qa-block-picks/`.
+- The final client replay used the normal pick binding on Force, both portals, the Alluring Skull, and both mount states. It kept master volume at zero, used OpenAL No Output, and never became frontmost. The first login timed out in the Forge handshake. A later attempt to force-load a fresh Dream chunk hit the server watchdog. The completed replay used a staged 2-by-2 Spirit Portal in a complete Overworld frame and saved normally.
+- A piston eligibility comparison measured all 121 shared default states and found 14 differences. Actual powered pistons moved ordinary stone in both engines. The original left the Candelabra and both Fume Funnels in place and destroyed Ritual Chalk. The port moved all four. Other rows include glyphs, Dream Catchers, plants and snow slabs. See `build/qa-piston-parity/comparison.txt` and the two `activation.log` files.
+
 ## Infinity Egg gravity and saved falls (2026-11-25)
 
 - The original headless server measured a five-tick delay and confirmed that a grass-supported egg stays in place. The port now uses a real falling block with the original inset bounds, consumes use and stays mineable. A landed egg gives its existing tenfold altar capacity and recharge bonus.
