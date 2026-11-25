@@ -18,6 +18,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
@@ -47,6 +48,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.DifficultyInstance;
@@ -287,7 +289,19 @@ public final class SpectralUndead extends Monster {
     public boolean doHurtTarget(Entity target) {
         if (kind == Kind.BANSHEE) return false;
         if (kind == Kind.SPECTRE && target instanceof LivingEntity living) {
-            return canAttack(living) && spectralTouch(living, 0.15F);
+            if (!canAttack(living)) return false;
+            float damage = Math.max(1, living.getMaxHealth() * 0.15F)
+                    + EnchantmentHelper.getDamageBonus(getMainHandItem(), living.getMobType());
+            if (!living.hurt(WitcheryDamageTypes.spectralTouch(this), damage)) return false;
+            int knockback = EnchantmentHelper.getKnockbackBonus(this);
+            if (knockback > 0) {
+                float yaw = getYRot() * Mth.DEG_TO_RAD;
+                living.knockback(knockback * 0.5, Mth.sin(yaw), -Mth.cos(yaw));
+                setDeltaMovement(getDeltaMovement().multiply(0.6, 1, 0.6));
+            }
+            int fire = EnchantmentHelper.getFireAspect(this);
+            if (fire > 0) living.setSecondsOnFire(fire * 4);
+            return true;
         }
         return super.doHurtTarget(target);
     }
@@ -318,18 +332,19 @@ public final class SpectralUndead extends Monster {
         boolean wasScreaming = screaming();
         if (tickCount % (wasScreaming ? 20 : 100) == 0) {
             boolean nearby = false;
-            for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(6),
+            Vec3 center = position();
+            for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, new AABB(center, center).inflate(6),
                     candidate -> candidate.isAlive() && distanceToSqr(candidate) <= 36
                             && (candidate instanceof Player || candidate == getTarget() || candidate == getLastHurtByMob()))) {
                 nearby = true;
-                if (!target.getItemBySlot(EquipmentSlot.HEAD).is(WitcheryItems.getRequired("earmuffs").get())) {
+                if (!(target instanceof Player) || !target.getItemBySlot(EquipmentSlot.HEAD).is(WitcheryItems.getRequired("earmuffs").get())) {
                     spectralTouch(target, 0.1F);
                 }
             }
             entityData.set(SCREAMING, nearby);
         }
         if (screaming() && (!wasScreaming || tickCount % 60 == 0)) {
-            playSound(WitcherySounds.BANSHEE_SCREAM.get(), 1, 0.7F + random.nextFloat() * 0.3F);
+            playSound(WitcherySounds.BANSHEE_SCREAM.get(), 1, 0.7F + level.getRandom().nextFloat() * 0.3F);
         }
     }
 

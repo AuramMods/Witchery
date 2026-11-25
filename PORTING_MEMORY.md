@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Spectral touch and Banshee combat (2026-11-25)
+
+- Spectral touch drains health without spending absorption hearts. Forge still runs its damage events, and the existing armor and shield bypass remains in effect. An ordinary melee blow still spends absorption first.
+- A Spectre's touch adds its equipped weapon's current vanilla enchantment damage and applies Knockback and Fire Aspect on a hit. The Banshee samples the original six-block sphere around its feet and uses the world random source for its scream pitch. Earmuffs protect player health during the scream.
+- Witchery 0.24.1, clean Forge, and copied Auram matched 8.5 remaining health for the Pig and 17 for the player, with four absorption points in both cases. The preceding port spent absorption first. The shield control on both rebuilt servers lost three health, kept four absorption points, and left the shield intact.
+- A muted, unfocused survival client used a fixture-supplied shield, Absorption effect and stationary Banshee. The player took two health from each of the first two screams, then equipped Earmuffs and kept 16 health and four absorption points through several more pulses. A dedicated restart retained the player state and the Banshee UUID. The fixture disabled natural health regeneration to measure individual hits.
+- All 365 local Forge GameTests passed. The tested reobfuscated JAR is `build/qa-spectral-combat/candidate.jar` with SHA-256 `49def99860dfc8c74c3a533ebe9c7c92114d7abbc7d587a174d668f7ee27fa75`. The native, preceding-port, clean Forge, Auram, client and restart results are in `build/qa-spectral-combat/comparison.txt`.
+
 ## Brazier and Spectral Stone summons (2026-11-25)
 
 - Each summon checks one world-random column for two continuous air blocks above its footing and places the creature 0.05 blocks above that air cell. A submerged second cell blocks the summon. A Banshee's original 1.8-block hitbox fits over a slab below a two-block ceiling.
