@@ -5,6 +5,7 @@ import art.arcane.witchery.brewing.DeathBrewEffects;
 import art.arcane.witchery.capability.WitcheryCapabilities;
 import art.arcane.witchery.integration.BiomesOPlentySaplings;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.mixin.LegacyEnchantmentNamesAccessor;
 import art.arcane.witchery.world.MirrorTravel;
 import art.arcane.witchery.world.WitcheryDimensions;
 import com.google.gson.JsonParseException;
@@ -338,23 +339,54 @@ public final class LegacyWorldIds {
             if (!witcheryItem && !id.getNamespace().equals(ResourceLocation.DEFAULT_NAMESPACE)) return;
             if (witcheryItem || from >= 100) {
                 upgradeItemDisplay(compound.getCompound("tag").getCompound("display"), from < 100);
-                return;
-            }
-
-            // Vanilla's chunk fixer cannot see containers outside its typed schema.
-            var named = compound.copy();
-            named.putString("id", id.toString());
-            if (fixer.update(References.ITEM_STACK, new Dynamic<>(NbtOps.INSTANCE, named), from, to).getValue() instanceof CompoundTag fixed) {
-                // Untyped chunk inventories receive only the first vanilla data-fixer pass.
-                if (to < ITEM_LORE_COMPONENT_VERSION) {
-                    upgradeItemLore(fixed.getCompound("tag").getCompound("display"), true);
+            } else {
+                // Vanilla's chunk fixer cannot see containers outside its typed schema.
+                var named = compound.copy();
+                named.putString("id", id.toString());
+                if (fixer.update(References.ITEM_STACK, new Dynamic<>(NbtOps.INSTANCE, named), from, to)
+                        .getValue() instanceof CompoundTag fixed) {
+                    // Untyped chunk inventories receive only the first vanilla data-fixer pass.
+                    if (to < ITEM_LORE_COMPONENT_VERSION) {
+                        upgradeItemLore(fixed.getCompound("tag").getCompound("display"), true);
+                    }
+                    // Keep the slot and remaining custom data when an item fix removes or moves a field.
+                    for (String key : Set.copyOf(compound.getAllKeys())) compound.remove(key);
+                    compound.merge(fixed);
                 }
-                // Item fixes may move damage or remove legacy fields. Keep the slot and any remaining custom data.
-                for (String key : Set.copyOf(compound.getAllKeys())) compound.remove(key);
-                compound.merge(fixed);
             }
+            var tag = compound.getCompound("tag");
+            upgradeEnchantments(tag, "ench", "Enchantments");
+            upgradeEnchantments(tag, "StoredEnchantments", "StoredEnchantments");
         } else if (value instanceof ListTag list) {
             for (Tag entry : list) upgradeUntypedItems(entry, fixer, from, to);
+        }
+    }
+
+    private static void upgradeEnchantments(CompoundTag tag, String originalKey, String currentKey) {
+        var original = tag.getList(originalKey, Tag.TAG_COMPOUND);
+        if (original.isEmpty()) return;
+        var current = tag.getList(currentKey, Tag.TAG_COMPOUND);
+        var named = new HashSet<String>();
+        for (Tag entry : current) {
+            var enchantment = (CompoundTag) entry;
+            if (enchantment.contains("id", Tag.TAG_STRING)) named.add(enchantment.getString("id"));
+        }
+        var converted = new ListTag();
+        original.removeIf(entry -> {
+            var enchantment = (CompoundTag) entry;
+            if (!enchantment.contains("id", Tag.TAG_ANY_NUMERIC)) return false;
+            String name = LegacyEnchantmentNamesAccessor.witchery$getNamesById().get(enchantment.getInt("id"));
+            if (name == null) return false;
+            if (named.add(name)) {
+                enchantment.putString("id", name);
+                converted.add(enchantment);
+            }
+            return true;
+        });
+        if (original.isEmpty() && !originalKey.equals(currentKey)) tag.remove(originalKey);
+        if (!converted.isEmpty()) {
+            current.addAll(converted);
+            tag.put(currentKey, current);
         }
     }
 

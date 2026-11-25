@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Enchantments in imported inventories (2026-11-25)
+
+- Witchery 0.24.1 saved a Grassper with a named Arthana carrying Sharpness III, Unbreaking II, and nine wear. A Leech Chest and a vanilla Chest each held a named Fortune II book in slot four. The preceding package left both Witchery inventories' enchantment IDs numeric. The vanilla Chest already held the named enchantment.
+- Item conversion outside vanilla's typed inventories now uses Minecraft's numeric enchantment table for applied and stored enchantments. Existing named entries take precedence over stale duplicates. Unknown numeric IDs are retained by this repair for later resolution.
+- The rebuilt JAR recovered all three enchantments on an ordinary boot of the world saved by the preceding 1.20.1 package. The Arthana retained its name and wear, both books kept their names and slots, and the vanilla Chest retained Fortune II. The repair uses the captured registry in the imported save folder.
+- Clean Forge and copied Auram both imported the original region with the rebuilt JAR. A survival player took the Arthana from the Grassper through its normal interaction. After an ordinary dedicated restart, the same player retained the Arthana, and both books retained Fortune II. The client sessions ran at zero master volume with OpenAL No Output and took no desktop focus.
+- Local Java 17 data generation, JAR reobfuscation, and all 311 required Forge GameTests passed. The cases also cover mixed named and numeric entries, an unresolved ID, and a repeat upgrade. Logs, the original world, and candidate SHA-256 `b1f3fb5384ab2a4db2d128157ce69491bf585aa2e815e6bf97cd6580645ee1b7` are in `build/qa-stored-enchantments/`.
+
 ## Spell and landscape placement protection (2026-11-25)
 
 - The previous Forge build reported snow, air, and dirt in place of the incoming Glow Globe, fire, and lava. Type-specific protection listeners allowed all three writes. The baseline GameTests reproduced each failure.
