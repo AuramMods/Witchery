@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Heart Glyph cancellation timing (2026-11-25)
+
+- Canceling a registered rite hides the glyph immediately, clears pending recipes and upkeep, and plays the first snare. It then runs the foreground step on the next loaded tick at its existing phase. The cast closes and plays a second snare. Another activation during that interval does not start another cast.
+- A cancellation just before the Waystone Binding power pulse spends 500 and refunds its three held items. That result survived an ordinary restart from a chunk saved at phase 79 with `CancellationPending:1b`. The reopened server used only the production JAR and saved the same three refunded stacks.
+- The original 0.24.1 server, clean Forge, and copied Auram agreed on 16 of 18 observations across cancellation after an offering, before an offering, before a debit, before binding, and a completed control. On the last binding pulse 0.24.1 also returned the spent items. The Forge port yields one Bound Waystone and commits the ingredients, which removes that duplication.
+- The muted, unfocused survival client activated and canceled Waystone Binding by hand on a prepared circle. The fixture supplied three offerings. After the first Waystone entered the cast, the cancellation returned one replacement Waystone entity and left the other two items available.
+- Local data generation, the reobfuscated build and all 360 Forge GameTests passed. The tested JAR is `build/qa-rite-cancel/candidate.jar` with SHA-256 `3ce65aac216cb56433d7825e776143f7ad41306db33b3c4442604cf1bfff231f`. Rebuilding after data generation changed only the manifest timestamp and archive metadata. The measurements and save check are in `build/qa-rite-cancel/comparison.txt`.
+
 ## Heart Glyph offering cues and altar failures (2026-11-25)
 
 - A dropped item or Grassper offering sends the original half-width, one-block-high explode and pop. A living offering sends the one-by-two portal and pop at its feet. A rejected optional Waystone stays in place and sends smoke and pling. All three packets use a 16-block reach.

@@ -187,8 +187,13 @@ public final class CircleRiteTests {
                                 && sounds.get(0).getPosition().equals(Vec3.atLowerCornerOf(center))
                                 && sounds.get(0).getNewVolume() == 0.5F
                                 && sounds.get(0).getNewPitch() >= 1F / 3 && sounds.get(0).getNewPitch() <= 0.5F
-                                && drops(helper).size() == 2,
-                        "The second pulse cancels and refunds the staged offering with the original snare cue");
+                                && heart.saveWithoutMetadata().getBoolean("CancellationPending") && drops(helper).size() == 1,
+                        "The second pulse hides the glyph and plays the first snare before the staged item returns");
+                tick(level, center, heart, 1);
+                helper.assertTrue(drops(helper).size() == 2 && sounds.size() == 2
+                                && sounds.get(1).getSound().value() == SoundEvents.NOTE_BLOCK_SNARE.value()
+                                && !heart.saveWithoutMetadata().contains("Rite", Tag.TAG_STRING),
+                        "The next loaded tick plays the second snare and refunds the staged offering once");
             } finally {
                 MinecraftForge.EVENT_BUS.unregister(listener);
             }
@@ -302,6 +307,61 @@ public final class CircleRiteTests {
             helper.assertTrue(!heart.getBlockState().getValue(RiteHeartBlock.ACTIVE) && results.size() == 1
                             && results.get(0).getItem().is(WitcheryIngredient.BOUND_WAYSTONE.item()),
                     "The resumed binding uses the saved payment and creates one stone even if the altar is gone");
+        }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_cancel_waystone_payment", setupTicks = 5)
+    public static void pendingCancellationRunsTheAltarPulseAfterReload(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.SMALL_RITE, "circleglyphritual");
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var altar = chargedAltar(helper, false);
+        waitForOfferings(helper, new ItemStack(WitcheryIngredient.WAYSTONE.item()),
+                new ItemStack(WitcheryIngredient.ENDER_DEW.item()), new ItemStack(Items.GLOWSTONE_DUST),
+                new ItemStack(Items.OBSIDIAN), new ItemStack(Items.REDSTONE)).thenExecute(() -> {
+            var heart = heart(helper);
+            start(helper);
+            int phase = heart.saveWithoutMetadata().getInt("GlyphPhase") % 20;
+            tick(level, center, heart, 79 - phase);
+            helper.assertTrue(altar.power() == 10_000 && drops(helper).size() == 2
+                            && heart.saveWithoutMetadata().getList("QueuedRites", Tag.TAG_STRING).size() == 1,
+                    "The binding holds three offerings before payment and the Barrier waits behind it");
+
+            helper.useBlock(CENTER);
+            helper.useBlock(CENTER);
+            var cancelled = heart.saveWithoutMetadata();
+            helper.assertTrue(cancelled.getBoolean("CancellationPending") && !heart.getBlockState().getValue(RiteHeartBlock.ACTIVE)
+                            && cancelled.getList("QueuedRites", Tag.TAG_STRING).isEmpty() && drops(helper).size() == 2,
+                    "Both uses leave one cancellation pending, hide the glyph and discard the queued Barrier");
+            heart.load(cancelled);
+            tick(level, center, heart, 1);
+            tick(level, center, heart, 40);
+            helper.assertTrue(altar.power() == 9_500 && drops(helper).size() == 5
+                            && !heart.saveWithoutMetadata().contains("Rite", Tag.TAG_STRING),
+                    "The reloaded cancellation runs the payment once, refunds three items and leaves the Barrier offerings alone");
+        }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_cancel_waystone_binding", setupTicks = 5)
+    public static void cancellationOnTheBindingPulseCommitsTheOfferings(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.SMALL_RITE, "circleglyphritual");
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var altar = chargedAltar(helper, false);
+        waitForOfferings(helper, new ItemStack(WitcheryIngredient.WAYSTONE.item()),
+                new ItemStack(WitcheryIngredient.ENDER_DEW.item()), new ItemStack(Items.GLOWSTONE_DUST)).thenExecute(() -> {
+            var heart = heart(helper);
+            start(helper);
+            int phase = heart.saveWithoutMetadata().getInt("GlyphPhase") % 20;
+            tick(level, center, heart, 99 - phase);
+            helper.useBlock(CENTER);
+            tick(level, center, heart, 1);
+            var results = drops(helper);
+            helper.assertTrue(altar.power() == 9_500 && !heart.getBlockState().getValue(RiteHeartBlock.ACTIVE)
+                            && results.size() == 1 && results.get(0).getItem().is(WitcheryIngredient.BOUND_WAYSTONE.item()),
+                    "The final pulse returns one Bound Waystone and keeps the spent crafting materials committed");
         }).thenSucceed();
     }
 

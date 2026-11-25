@@ -124,6 +124,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     private final List<Runnable> terrainChanges = new ArrayList<>();
     private boolean legacyOfferingReturns;
     private boolean legacyWaystoneMatch;
+    private boolean cancellationPending;
     @Nullable private BlockPos waystoneTarget;
     @Nullable private WeatherRites.Storm storm;
     private int toadRainStage = -1;
@@ -146,6 +147,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         }
         if (heart.activeRite != null) {
             heart.tickCast(server);
+            if (heart.cancellationPending) heart.finishCancellation(server);
             level.blockEntityChanged(pos);
         }
         // Moving Earth can relocate this block entity. Finish bookkeeping before it copies the heart's state.
@@ -221,7 +223,15 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (isRiteActive()) {
             upkeep.clear();
             queuedRites.clear();
-            abort(level, "message.witchery.rite.cancelled");
+            if (usesGlyphClock() || activeRite == null) {
+                // The original clears the display now and runs the current step on the next loaded tick.
+                cancellationPending = activeRite != null;
+                updateActiveState(level);
+                playOriginalRiteSound(level, getBlockPos(), SoundEvents.NOTE_BLOCK_SNARE.value());
+                setChanged();
+            } else {
+                abort(level, "message.witchery.rite.cancelled");
+            }
             return;
         }
         BlockPos pos = getBlockPos();
@@ -921,11 +931,21 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (player != null && player.level() == level) showRiteError(player, message);
         refundSacrifices(level);
         nextCast(level);
+        if (cancellationPending) return;
         if (originalSound) {
             playOriginalRiteSound(level, getBlockPos(), SoundEvents.NOTE_BLOCK_SNARE.value());
         } else {
             failSound(level);
         }
+    }
+
+    private void finishCancellation(ServerLevel level) {
+        cancellationPending = false;
+        // A last step may have launched upkeep. Its first pulse already ran, but it must not keep ticking.
+        upkeep.clear();
+        refundSacrifices(level);
+        nextCast(level);
+        playOriginalRiteSound(level, getBlockPos(), SoundEvents.NOTE_BLOCK_SNARE.value());
     }
 
     private static void showRiteError(Player player, String message) {
@@ -987,8 +1007,9 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     private void updateActiveState(ServerLevel level) {
         BlockPos pos = getBlockPos();
         BlockState current = level.getBlockState(pos);
-        if (current.hasProperty(RiteHeartBlock.ACTIVE) && current.getValue(RiteHeartBlock.ACTIVE) != isRiteActive()) {
-            level.setBlock(pos, current.setValue(RiteHeartBlock.ACTIVE, isRiteActive()), Block.UPDATE_CLIENTS);
+        boolean shown = isRiteActive() && !cancellationPending;
+        if (current.hasProperty(RiteHeartBlock.ACTIVE) && current.getValue(RiteHeartBlock.ACTIVE) != shown) {
+            level.setBlock(pos, current.setValue(RiteHeartBlock.ACTIVE, shown), Block.UPDATE_CLIENTS);
         }
     }
 
@@ -1043,6 +1064,11 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         for (var ongoing : savedUpkeep) upkeep.add(ongoing.rite());
         if (activeRite == null && upkeep.isEmpty()) loadLegacyUpkeep(tag);
         if (activeRite == null) activeRite = queuedRites.pollFirst();
+        cancellationPending = usesGlyphClock() && tag.getBoolean("CancellationPending");
+        if (cancellationPending) {
+            queuedRites.clear();
+            upkeep.clear();
+        }
         waystoneTarget = activeRite != null && tag.contains("WaystoneTarget", Tag.TAG_LONG)
                 ? BlockPos.of(tag.getLong("WaystoneTarget")) : null;
         storm = activeRite == null ? null : WeatherRites.Storm.load(tag.getCompound("Storm"));
@@ -1171,6 +1197,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             if (!legacyOfferingReturns) tag.putInt("OfferingStep", offeringStep);
             if (livingOffered) tag.putBoolean("LivingOffered", true);
             if (altarPowerOffered) tag.putBoolean("AltarPowerOffered", true);
+            if (cancellationPending) tag.putBoolean("CancellationPending", true);
             ListTag queued = new ListTag();
             for (var id : queuedRites) queued.add(StringTag.valueOf(id.toString()));
             tag.put("QueuedRites", queued);

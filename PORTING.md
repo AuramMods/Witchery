@@ -758,6 +758,7 @@
 - [x] Restore red dust over the active glyph, a poof over consumed item offerings, and the pop at the item or living offering. Local data generation, JAR reobfuscation, and all 220 Forge GameTests passed. The redstone regression also verifies the offering pop and the cancellation snare.
 - [x] Use the Heart Glyph in the packaged survival client and verify red dust over its center and poof particles at a consumed offering. The client stayed hidden and unfocused with zero master volume and OpenAL No Output.
 - [x] Restore the three original offering cues and separate missing-altar and insufficient-power messages. Witchery 0.24.1 sends explode and pop for an item, portal and pop for a living offering, and smoke and pling when a Waystone is from another dimension. The muted Forge survival client received distinct chat messages for no altar and a formed altar with insufficient power. Both failures returned the staged items.
+- [x] Restore cancellation on the next loaded Heart Glyph tick. Manual and redstone cancellation hide the glyph immediately, clear the queue, and let the current step run at its saved phase. A cancellation saved just before an altar debit restored the single 500-power payment and three refunds after an ordinary restart. A last-tick successful binding yields one Bound Waystone and commits its ingredients to prevent the original duplication.
 
 ## Returned Offerings and Waystone Copies (2026-11-21)
 
@@ -2416,7 +2417,10 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] In the packaged Forge client, verify growth on the Pig, Cat and crouching Zombie shapes, normal player size after returning from a shape, and cleared Resizing. Shrink the Pig to 40% and verify the master integration setting in both states.
 - [x] Restart the dedicated Forge save with the enlarged Pig shape. Reconnect with the muted client and verify the saved shape and effect, then clear Resizing and verify both game processes return to the normal Pig geometry. The exact JAR also passed on a clean headless Forge server, and all 161 checked-in GameTests passed.
 
-## Current Snapshot (2026-02-09)
+## Initial Port Snapshot (2026-02-09)
+
+See the current [release checklist](#remaining-release-verification-2026-11-22) and the [dimension runtime checks](#phase-3---runtime-systems) for progress since this snapshot.
+
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.
 - Manifest + durable memory created.
 - Phase 1 registry scaffolding is in place and compiling.
