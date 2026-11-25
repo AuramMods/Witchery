@@ -236,7 +236,7 @@ public final class BrewBucketTests {
         }).thenSucceed();
     }
 
-    @GameTest(template = "qa_coven_arena", timeoutTicks = 160)
+    @GameTest(template = "qa_coven_arena", batch = "witchery_brew_survival_transport", timeoutTicks = 160)
     public static void movesBrewThroughSurvivalBucketsAndFluidCapabilities(GameTestHelper helper) {
         var level = helper.getLevel();
         var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "BrewTransport"));
@@ -424,7 +424,9 @@ public final class BrewBucketTests {
     private static void use(GameTestHelper helper, Player player, BlockPos cauldron) {
         var level = helper.getLevel();
         var hit = new BlockHitResult(Vec3.atCenterOf(cauldron), Direction.UP, cauldron, false);
-        helper.assertTrue(level.getBlockState(cauldron).use(level, player, InteractionHand.MAIN_HAND, hit).consumesAction(),
-                "The cauldron handles the player interaction");
+        var state = level.getBlockState(cauldron);
+        var held = player.getMainHandItem().getItem();
+        helper.assertTrue(state.use(level, player, InteractionHand.MAIN_HAND, hit).consumesAction(),
+                "The cauldron handles " + held + " at " + cauldron + ", found " + state);
     }
 }

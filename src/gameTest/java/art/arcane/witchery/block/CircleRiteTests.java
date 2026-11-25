@@ -361,6 +361,7 @@ public final class CircleRiteTests {
         Consumer<EntityJoinLevelEvent> observe = event -> {
             if (event.getLevel() == level && event.getEntity().position().equals(Vec3.atBottomCenterOf(center.above(2)))) {
                 summoned.add(event.getEntity());
+                if (summoned.size() == 2) event.setCanceled(true);
             }
         };
         MinecraftForge.EVENT_BUS.addListener(observe);
@@ -372,7 +373,10 @@ public final class CircleRiteTests {
             tick(level, center, heart, 39);
             helper.assertTrue(altar.power() == 9_800 && summoned.size() == 1, "The next summon also waits forty ticks");
             tick(level, center, heart, 1);
-            helper.assertTrue(altar.power() == 9_600 && summoned.size() == 2, "Forty ticks later the second summon pays once");
+            helper.assertTrue(altar.power() == 9_600 && summoned.size() == 2
+                            && level.getEntity(summoned.get(1).getUUID()) == null
+                            && heart.saveWithoutMetadata().getCompound("Landscape").getInt("Stage") == 29,
+                    "Forty ticks later a Forge veto prevents the second spawn while its payment and wave progress remain");
         } finally {
             MinecraftForge.EVENT_BUS.unregister(observe);
             summoned.forEach(Entity::discard);

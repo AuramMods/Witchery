@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Hell on Earth Arrival Cue (2026-11-24)
+
+- The original headless 0.24.1 server emitted Large Explode and Blaze death at both test Waystones. The first paid attempts fell on stages 17 and 21 in the two original phases. The native Forge veto fixture still kept its 200 debit and sent the cue on each of two canceled spawns. See `build/qa-hell-arrival/legacy/native-veto.log`.
+- Forge sends the same packet at the arrival point with width one, height two and a 16-block reach. A Forge veto prevents the entity while preserving the paid wave's progress. The local phase regression checks this on the second of two scheduled attempts.
+- The muted clean Forge survival client started a normal cast. Both test players then rejoined an ordinary dedicated restart with stage one and summon offset four saved. At stage 21 the destination altar fell from 16,000 to 15,800. A Zombified Piglin arrived, and the nearby observer received the packet at `(688.5, 274, 80.5)`. The source player stayed beyond the delivery range. Breaking the destination altar ended the wave at the next unpaid attempt.
+- Java 17 data generation and JAR reobfuscation passed. Package SHA-256 `f5081078667309ae79a7f074170f5bfdb0c683bdb29c643790a31fa227615701`. Exact package and logs are under `build/qa-hell-arrival`.
+- All 284 local Forge GameTests passed. The first run failed in the timed Brew Bucket survival test. The rerun placed that fixture in its own batch and reports the held item and block state if an interaction fails.
+- The copied Auram headless replay used the same JAR and the normal redstone entry point. Its first paid attempt produced a Blaze and the same packet at `(598.5, 308, 183.5)` on stage 21. Destination power fell from 16,000 to 15,800. The next unpaid attempt closed the wave after the altar was removed. The harness reads each altar's actual capacity before filling it, and the clean clients ran muted without taking focus.
+
 ## Expanding Rite Waves (2026-11-24)
 
 - The running 0.24.1 server captured Spell packets for both Fertility rites and Mob Spell packets for Blight, Blindness and Hell on Earth. Surface packets reach 16 blocks for surfaces at or above the glyph and 32 for lower surfaces. The first wave sent two packets at each cardinal control and chose the upper surface when the upper and lower surfaces were equally distant. See `build/qa-expanding-wave/legacy/sound-reference.log`.

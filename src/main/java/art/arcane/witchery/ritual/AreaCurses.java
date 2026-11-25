@@ -5,15 +5,13 @@ import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.entity.WitchHunterPursuit;
 import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.item.VoodooPoppetItem;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.power.AltarPower;
 import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -147,11 +145,11 @@ final class AreaCurses {
                 : roll < 0.6 ? EntityType.MAGMA_CUBE : EntityType.ZOMBIFIED_PIGLIN;
         Mob creature = type.create(level);
         if (creature == null) return;
-        creature.moveTo(Vec3.atBottomCenterOf(pos));
+        Vec3 arrival = Vec3.atBottomCenterOf(pos);
+        creature.moveTo(arrival);
         ForgeEventFactory.onFinalizeSpawn(creature, level, level.getCurrentDifficultyAt(pos), MobSpawnType.MOB_SUMMONED, null, null);
-        if (level.addFreshEntity(creature)) {
-            level.sendParticles(ParticleTypes.EXPLOSION, creature.getX(), creature.getY(), creature.getZ(), 16, 0.5, 1, 0.5, 0);
-            level.playSound(null, pos, SoundEvents.BLAZE_DEATH, SoundSource.HOSTILE, 1, 1);
-        }
+        level.addFreshEntity(creature);
+        // The original cue follows each paid attempt, including a spawn canceled by Forge.
+        WitcheryNetwork.sendHellOnEarthArrival(level, arrival);
     }
 }

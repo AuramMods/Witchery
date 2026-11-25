@@ -50,6 +50,7 @@ public final class WitcheryNetwork {
     private static final int MAX_PLAYER_SKIN_LENGTH = 256;
     private static final int MAX_MARKUP_CHAPTER_LENGTH = 32;
     private static final int LEGACY_HUGE_EXPLOSION_PARTICLE_ID = 0;
+    private static final int LEGACY_LARGE_EXPLOSION_PARTICLE_ID = 1;
     private static final int LEGACY_SMOKE_PARTICLE_ID = 8;
     private static final int LEGACY_MOB_SPELL_PARTICLE_ID = 9;
     private static final int LEGACY_SPELL_PARTICLE_ID = 10;
@@ -67,6 +68,7 @@ public final class WitcheryNetwork {
     private static final int LEGACY_PLING_SOUND_ID = 9;
     private static final int LEGACY_ENDERMAN_TELEPORT_SOUND_ID = 16;
     private static final int LEGACY_GHAST_FIREBALL_SOUND_ID = 19;
+    private static final int LEGACY_BLAZE_DEATH_SOUND_ID = 44;
     private static final int LEGACY_POOF_SOUND_ID = 57;
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             ResourceLocation.parse(Witchery.MODID + ":main"),
@@ -324,6 +326,10 @@ public final class WitcheryNetwork {
 
     public static void sendSummonedCreature(ServerLevel level, Vec3 center) {
         sendParticlesAround(level, LEGACY_PORTAL_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID, center, 0.5, 1, 16);
+    }
+
+    public static void sendHellOnEarthArrival(ServerLevel level, Vec3 arrival) {
+        sendParticlesAround(level, LEGACY_LARGE_EXPLOSION_PARTICLE_ID, LEGACY_BLAZE_DEATH_SOUND_ID, arrival, 1, 2, 16);
     }
 
     public static void sendSummoningObstruction(ServerLevel level, Vec3 center) {
