@@ -57,11 +57,15 @@ public final class DeathBrewEffects {
         }
     }
 
+    public static ListTag pendingLegacyInventory(CompoundTag persisted) {
+        return persisted.getList(LEGACY_RETAINED_INVENTORY, Tag.TAG_COMPOUND);
+    }
+
     public static void restorePendingInventory(ServerPlayer player) {
         if (!player.isAlive()) return;
         CompoundTag persisted = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
         if (persisted.contains(LEGACY_RETAINED_INVENTORY, Tag.TAG_LIST)) {
-            player.getInventory().load(persisted.getList(LEGACY_RETAINED_INVENTORY, Tag.TAG_COMPOUND));
+            player.getInventory().load(pendingLegacyInventory(persisted));
             persisted.remove(LEGACY_RETAINED_INVENTORY);
             player.inventoryMenu.broadcastChanges();
         }

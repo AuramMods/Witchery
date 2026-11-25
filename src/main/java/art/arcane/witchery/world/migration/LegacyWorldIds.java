@@ -209,16 +209,30 @@ public final class LegacyWorldIds {
     private void preparePlayer(CompoundTag player, DataFixer fixer, int from) {
         if (from < 100) dimensions.upgradePlayerLocation(player);
         var legacy = player.getCompound("WitcheryExtendedPlayer");
+        var capabilities = player.getCompound("ForgeCaps");
+        String playerDataId = WitcheryCapabilities.playerDataId().toString();
         var forgeData = player.getCompound("ForgeData");
         var persisted = forgeData.getCompound(Player.PERSISTED_NBT_TAG);
         if (!legacy.isEmpty()) {
             boolean insideMirror = WitcheryDimensions.MIRROR.location().toString().equals(player.getString("Dimension"));
             MirrorTravel.importLegacyPlayerState(legacy, persisted, insideMirror);
-            if (!persisted.isEmpty()) {
-                forgeData.put(Player.PERSISTED_NBT_TAG, persisted);
-                player.put("ForgeData", forgeData);
+            if (!capabilities.contains(playerDataId, Tag.TAG_COMPOUND)) {
+                var imported = new CompoundTag();
+                imported.put("WitcheryExtendedPlayer", legacy.copy());
+                capabilities.put(playerDataId, imported);
+                player.put("ForgeCaps", capabilities);
             }
+        } else {
+            legacy = capabilities.getCompound(playerDataId).getCompound("WitcheryExtendedPlayer");
         }
+        if (legacy.getBoolean("CanRestoreInventory") && legacy.contains("CachedInventory2", Tag.TAG_LIST)) {
+            DeathBrewEffects.storeLegacyInventory(persisted, legacy.getList("CachedInventory2", Tag.TAG_COMPOUND));
+        }
+        if (!persisted.isEmpty()) {
+            forgeData.put(Player.PERSISTED_NBT_TAG, persisted);
+            player.put("ForgeData", forgeData);
+        }
+        var retainedInventory = DeathBrewEffects.pendingLegacyInventory(persisted);
         var expiredDrops = persisted.getList("WITCPriIncInv", Tag.TAG_COMPOUND);
         var dreamSession = persisted.getCompound("WITCSpiritWorld");
         // The pending list can keep legacy effect IDs after an earlier import updated the player version.
@@ -226,6 +240,7 @@ public final class LegacyWorldIds {
         int to = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
         if (from >= 100) {
             // These lists are outside the player inventory schema and can outlive the first import.
+            repairLegacyInventory(retainedInventory, fixer, to);
             repairLegacyInventory(expiredDrops, fixer, to);
             repairLegacyInventory(dreamSession.getList("OverworldInventory", Tag.TAG_COMPOUND), fixer, to);
             repairLegacyInventory(dreamSession.getList("SpiritInventory", Tag.TAG_COMPOUND), fixer, to);
@@ -236,25 +251,9 @@ public final class LegacyWorldIds {
         upgradeItems(player);
         repairStoredItems(player, fixer);
         upgradeEntityEffects(player);
+        upgradeUntypedItems(retainedInventory, fixer, from, to);
         upgradeUntypedItems(dreamSession, fixer, from, to);
         upgradeUntypedItems(expiredDrops, fixer, from, to);
-        if (!legacy.isEmpty()) {
-            if (legacy.getBoolean("CanRestoreInventory") && legacy.contains("CachedInventory2", Tag.TAG_LIST)) {
-                var inventory = legacy.getList("CachedInventory2", Tag.TAG_COMPOUND);
-                upgradeUntypedItems(inventory, fixer, from, to);
-                DeathBrewEffects.storeLegacyInventory(persisted, inventory);
-                forgeData.put(Player.PERSISTED_NBT_TAG, persisted);
-                player.put("ForgeData", forgeData);
-            }
-            var capabilities = player.getCompound("ForgeCaps");
-            String playerDataId = WitcheryCapabilities.playerDataId().toString();
-            if (!capabilities.contains(playerDataId, Tag.TAG_COMPOUND)) {
-                var imported = new CompoundTag();
-                imported.put("WitcheryExtendedPlayer", legacy.copy());
-                capabilities.put(playerDataId, imported);
-                player.put("ForgeCaps", capabilities);
-            }
-        }
     }
 
     private void repairLegacyInventory(ListTag inventory, DataFixer fixer, int to) {

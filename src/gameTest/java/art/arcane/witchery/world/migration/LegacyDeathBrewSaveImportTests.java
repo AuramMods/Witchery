@@ -2,16 +2,21 @@ package art.arcane.witchery.world.migration;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.brewing.DeathBrewEffects;
+import art.arcane.witchery.capability.WitcheryCapabilities;
+import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.registry.WitcheryEffects;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.SharedConstants;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.level.storage.LevelResource;
@@ -92,6 +97,91 @@ public final class LegacyDeathBrewSaveImportTests {
             afterRestart.getInventory().clearContent();
             DeathBrewEffects.restorePendingInventory(afterRestart);
             helper.assertTrue(afterRestart.getInventory().isEmpty(), "The pending inventory can only be restored once");
+        } finally {
+            FileUtils.deleteDirectory(root.toFile());
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_earlier_retained_inventory")
+    public static void earlierPortRespawnRecoversBothRetainedInventoryFormats(GameTestHelper helper) throws Exception {
+        var root = Files.createTempDirectory("witchery-earlier-retained-inventory");
+        try (var access = LevelStorageSource.createDefault(root).createAccess("world")) {
+            var registry = TagParser.parseTag("""
+                    {ItemData:[{K:"%sminecraft:wool",V:35},{K:"%sminecraft:iron_helmet",V:306}]}
+                    """.formatted("\u0002", "\u0002"));
+            NbtIo.writeCompressed(registry, access.getLevelPath(LevelResource.ROOT).resolve("witchery-legacy-ids.dat").toFile());
+            var storage = access.createPlayerStorage();
+            var directory = access.getLevelPath(LevelResource.PLAYER_DATA_DIR);
+            String capabilityId = WitcheryCapabilities.playerDataId().toString();
+            var legacy = TagParser.parseTag("""
+                    {PotionThrowing:37,CanRestoreInventory:1b,CachedInventory2:[
+                      {Slot:5b,id:35s,Damage:14s,Count:4b},
+                      {Slot:103b,id:"minecraft:iron_helmet",Damage:13s,Count:1b,tag:{Keepsake:1b}},
+                      {Slot:6b,id:"minecraft:copper_ingot",Count:2b,tag:{AlreadyModern:1b}}]}
+                    """);
+            var earlier = TagParser.parseTag("{Health:0f,Dimension:\"minecraft:overworld\"}");
+            earlier.putInt("DataVersion", SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+
+            var rootRecord = earlier.copy();
+            rootRecord.put("WitcheryExtendedPlayer", legacy.copy());
+            var wrappedRecord = earlier.copy();
+            var caps = new CompoundTag();
+            var wrapper = new CompoundTag();
+            wrapper.put("WitcheryExtendedPlayer", legacy.copy());
+            caps.put(capabilityId, wrapper);
+            wrappedRecord.put("ForgeCaps", caps);
+
+            var pendingRecord = earlier.copy();
+            var stale = legacy.copy();
+            stale.getList("CachedInventory2", Tag.TAG_COMPOUND).getCompound(0).putShort("Damage", (short) 11);
+            pendingRecord.put("WitcheryExtendedPlayer", stale);
+            var forgeData = new CompoundTag();
+            var persisted = new CompoundTag();
+            persisted.put("WITCLegacyRetainedInventory", legacy.getList("CachedInventory2", Tag.TAG_COMPOUND).copy());
+            forgeData.put(Player.PERSISTED_NBT_TAG, persisted);
+            pendingRecord.put("ForgeData", forgeData);
+            pendingRecord.put("ForgeCaps", TagParser.parseTag("{\"%s\":{PotionThrowing:64}}".formatted(capabilityId)));
+
+            for (var record : List.of(pendingRecord, rootRecord, wrappedRecord)) {
+                var dead = new DropTester(helper.getLevel(), "EarlierDead");
+                NbtIo.writeCompressed(record, directory.resolve(dead.getStringUUID() + ".dat").toFile());
+                storage.load(dead);
+                DeathBrewEffects.restorePendingInventory(dead);
+                helper.assertTrue(dead.getInventory().isEmpty(), "The earlier save keeps its inventory pending while dead");
+                int throwing = record == pendingRecord ? 64 : 37;
+                helper.assertTrue(WitcheryPlayerDataProvider.get(dead).orElseThrow(IllegalStateException::new)
+                                .serializeNBT().getInt("PotionThrowing") == throwing,
+                        "Keep the existing capability or recover the earlier throwing skill");
+                storage.save(dead);
+                storage.load(dead);
+                var respawned = new DropTester(helper.getLevel(), "EarlierRespawn");
+                respawned.restoreFrom(dead, false);
+                DeathBrewEffects.restorePendingInventory(respawned);
+                var wool = respawned.getInventory().getItem(5);
+                var helmet = respawned.getItemBySlot(EquipmentSlot.HEAD);
+                var copper = respawned.getInventory().getItem(6);
+                helper.assertTrue(wool.is(Items.RED_WOOL) && wool.getCount() == 4
+                                && helmet.is(Items.IRON_HELMET) && helmet.getDamageValue() == 13 && helmet.getTag().getBoolean("Keepsake")
+                                && copper.is(Items.COPPER_INGOT) && copper.getCount() == 2 && copper.getTag().getBoolean("AlreadyModern"),
+                        "Respawn restores both legacy item layouts and the modern stack to their original slots");
+                respawned.getInventory().clearContent();
+                storage.save(respawned);
+                storage.load(respawned);
+                DeathBrewEffects.restorePendingInventory(respawned);
+                helper.assertTrue(respawned.getInventory().isEmpty(), "A consumed cache stays consumed after saving and loading");
+            }
+
+            var dormant = new DropTester(helper.getLevel(), "DormantCache");
+            var dormantRecord = earlier.copy();
+            dormantRecord.putFloat("Health", 20);
+            var disabled = legacy.copy();
+            disabled.putBoolean("CanRestoreInventory", false);
+            dormantRecord.put("WitcheryExtendedPlayer", disabled);
+            NbtIo.writeCompressed(dormantRecord, directory.resolve(dormant.getStringUUID() + ".dat").toFile());
+            storage.load(dormant);
+            DeathBrewEffects.restorePendingInventory(dormant);
+            helper.assertTrue(dormant.getInventory().isEmpty(), "A cache without the original restore flag stays dormant");
         } finally {
             FileUtils.deleteDirectory(root.toFile());
         }

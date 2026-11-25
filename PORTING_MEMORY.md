@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Retained death inventories in earlier saves (2026-11-25)
+
+- The original headless Forge server ran Keep Inventory's death and drop handlers. Its armed cache held four Red Wool at slot 5 and a named Iron Helmet with 13 wear at slot 103. The original respawn restored both slots and consumed the cache once.
+- The previous packaged port consumed a pending cache on respawn and lost the four Red Wool. The named Iron Helmet kept its tag but reset from 13 wear to zero. An already-modern Copper Ingot stack survived.
+- A normal login now imports an armed `CachedInventory2` from the original extended player data, including the earlier capability wrapper. An existing pending list takes precedence. Its old IDs and damage fields are converted using the saved registry before the inventory reaches the respawn handler. The original slot indices and modern entries remain valid.
+- On packaged clean Forge the player saved and rejoined while still dead. The ordinary Respawn button restored all three items with their exact slots, armor wear, and names. The saved cache was consumed.
+- Copied Auram started from the original extended player cache and kept the saved throwing skill. The replay allowed JEI to finish indexing and the Respawn button to become active. Respawn restored the same slots, item data, and armor wear, and the resulting save contained the inventory once. Both test clients stayed unfocused with zero master volume and OpenAL No Output.
+- Java 17 data generation, JAR reobfuscation, and all 320 required Forge GameTests passed locally. The new regression covers the root record, capability wrapper, and existing pending list. It preserves current progression and reopens the saved player to verify one-time restoration. A cache with the original restore flag cleared stays dormant. The exact JAR SHA-256 is `866b3748c6d12fb802d645d13a85c74dc3285db3d5a5964c1f80894fcdb622e5`. Fixtures and logs are in `build/qa-retained-inventory/`.
+
 ## Dream inventory recovery for earlier imports (2026-11-25)
 
 - The 1.7.10 player saved both inventories inside `WITCSpiritWorld`. Each entry carried its inventory slot and legacy ID or metadata. An earlier 1.20.1 import could update the player data version while leaving those lists in the original format.
