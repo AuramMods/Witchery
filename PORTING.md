@@ -1624,7 +1624,7 @@
 - [x] Restore Witchery's slowing Web block and the three original coverage tiers on terrain and living targets. Respect Forge protection events. Ordinary spiders retain their web immunity.
 - [x] Let a strengthened splash expand from a Web placed by a previous splash. The headless dispenser replay filled faces and edges while leaving the outer corners clear. The new GameTest also covers a chest and a Forge placement veto inside the footprint.
 - [x] Report the proposed Web to Forge placement listeners. A veto that checks the placed block preserved the original grass. The same capture handles dispersal sources. A denied gas cast left no cloud or scheduled tick, and a denied ice replacement recovered an active cloud's full payload.
-- [ ] Verify placement protection for triggered controls, ritual chalk and other spell or rite paths that still post the event before changing the block. Check both halves together when a curse converts a door.
+- [ ] Verify placement protection for Mystic Branch terrain spells, Fiery Touch and landscape rites. These paths still call the event before the write.
 - [x] Restore directional, climbable Vines. They follow the side of the struck wall and can hang below its support with a strength boost. A living target receives Wrapped in Vine with strength-based fire vulnerability and the original milk immunity.
 - [x] Restore Thorns' cactus columns, supported growth, and contact damage. A living target receives Spiked and damages nearby creatures. The two effects retain their original synced creature overlays.
 - [x] Restore the original Vine collision, foliage tint, and model planes, plus the Cobweb and three cactus face sprites. The packaged client checked both biome colors on blocks placed by the preceding JAR and climbed an unsupported Vine. A headless restart kept the original and newly cast blocks.
@@ -1958,6 +1958,8 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 ## Triggered Brews and Cursed Controls (2026-11-20)
 
 - [x] Restore Zombie Head as the zero-power triggered dispersal ingredient. Thrown brews arm the original seven controls. An identical recipe adds a charge, and a different recipe replaces the saved mixture.
+- [x] Submit both halves of a cursed door in one Forge placement event. A veto leaves both oak halves intact and removes the temporary curse data. An accepted cast preserves the hinge, facing and open state. Recharging the accepted door adds one saved charge.
+- [ ] Replay a veto while a button, lever or pressure plate is powered. These blocks can send neighbor updates from `onRemove` during Forge snapshot capture.
 - [x] Retain each control's appearance and redstone behavior. Manual button, lever and door use or a new pressure plate press apply the stored mixture at full duration. The last charge restores the original block in its current state, including an active redstone pulse and both halves of an open door.
 - [x] Preserve the cursed control block IDs and saved mixture keys. The importer resolves the original shared tile ID from the block at its position. Numeric brew ingredients include the old Zombie Head skull metadata.
 - [x] Verify two separate Wolfsbane batches in the muted survival client. Both throws armed the same wall button. The first press applied Wolfsbane, lit a lamp through the support and spent one charge. A dedicated-server restart retained the remaining charge and original mixture. The final press reapplied Wolfsbane, restored the vanilla button during the pulse and turned the lamp off on release.

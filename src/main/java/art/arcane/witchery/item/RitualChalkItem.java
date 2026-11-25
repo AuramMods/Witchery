@@ -2,6 +2,7 @@ package art.arcane.witchery.item;
 
 import art.arcane.witchery.block.RitualGlyphBlock;
 import art.arcane.witchery.event.WitcheryBlockBreak;
+import art.arcane.witchery.event.WitcheryBlockPlacement;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.core.BlockPos;
@@ -18,8 +19,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.common.util.BlockSnapshot;
-import net.minecraftforge.event.ForgeEventFactory;
 import org.jetbrains.annotations.Nullable;
 
 public final class RitualChalkItem extends Item {
@@ -42,7 +41,7 @@ public final class RitualChalkItem extends Item {
         Player player = context.getPlayer();
         ItemStack chalk = context.getItemInHand();
         InteractionResult result = draw(level, context.getClickedPos(), context.getClickedFace(),
-                WitcheryBlocks.getRequired(glyph).get(), player, chalk, false);
+                WitcheryBlocks.getRequired(glyph).get(), player, chalk);
         if (!level.isClientSide && result.consumesAction() && player != null && !player.getAbilities().instabuild) {
             damageChalk(chalk, player, context);
         }
@@ -51,11 +50,11 @@ public final class RitualChalkItem extends Item {
 
     public static void drawInfernal(ServerLevel level, BlockHitResult hit, ServerPlayer player) {
         draw(level, hit.getBlockPos(), hit.getDirection(), WitcheryBlocks.getRequired("circleglyphinfernal").get(),
-                player, player.getUseItem(), true);
+                player, player.getUseItem());
     }
 
     private static InteractionResult draw(Level level, BlockPos clicked, Direction face, Block glyphBlock,
-                                          @Nullable Player player, ItemStack held, boolean cast) {
+                                          @Nullable Player player, ItemStack held) {
         boolean replacesGlyph = glyphBlock instanceof RitualGlyphBlock
                 && level.getBlockState(clicked).getBlock() instanceof RitualGlyphBlock;
         if (!replacesGlyph && face != Direction.UP) {
@@ -77,15 +76,18 @@ public final class RitualChalkItem extends Item {
                 state = state.setValue(RitualGlyphBlock.PATTERN, server.random.nextInt(RitualGlyphBlock.PATTERN_COUNT));
             }
             if (state != previous) {
-                if (cast && player != null && (!server.mayInteract(player, target)
+                if (player != null && (!server.mayInteract(player, target)
                         || !server.getWorldBorder().isWithinBounds(target)
-                        || !previous.isAir() && WitcheryBlockBreak.isCanceled(server, target, previous, player)
-                        || ForgeEventFactory.onBlockPlace(player, BlockSnapshot.create(server.dimension(), server, target), face))) {
+                        || !previous.isAir() && WitcheryBlockBreak.isCanceled(server, target, previous, player))) {
                     return InteractionResult.FAIL;
                 }
-                if (!server.setBlockAndUpdate(target, state)) return InteractionResult.FAIL;
+                // Resolve the write before sound or splitting a stacked chalk item under Forge's outer item-use capture.
+                boolean placed = player == null ? server.setBlockAndUpdate(target, state)
+                        : WitcheryBlockPlacement.placeNow(server, target, state, player, face);
+                if (!placed) return InteractionResult.FAIL;
             }
-            server.playSound(null, target, WitcherySounds.CHALK.get(), SoundSource.BLOCKS, 1, 1);
+            server.playSound(null, clicked.getX(), clicked.getY(), clicked.getZ(),
+                    WitcherySounds.CHALK.get(), SoundSource.BLOCKS, 1, 1);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

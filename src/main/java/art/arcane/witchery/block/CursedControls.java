@@ -2,6 +2,8 @@ package art.arcane.witchery.block;
 
 import art.arcane.witchery.block.entity.CursedControlBlockEntity;
 import art.arcane.witchery.brewing.BrewMixture;
+import art.arcane.witchery.event.WitcheryBlockBreak;
+import art.arcane.witchery.event.WitcheryBlockPlacement;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
@@ -30,8 +32,6 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraftforge.common.util.BlockSnapshot;
-import net.minecraftforge.event.ForgeEventFactory;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
@@ -91,19 +91,19 @@ public final class CursedControls {
         if (kind == null) return false;
         boolean door = kind == Kind.WOODEN_DOOR;
         BlockPos base = door ? lowerDoor(pos, state) : pos;
-        if (!allowed(level, base, face, thrower) || door && !allowed(level, base.above(), face, thrower)) {
+        if (!canChange(level, base, thrower) || door && !canChange(level, base.above(), thrower)) {
             return true;
         }
         if (!(state.getBlock() instanceof Control)) {
             Block changed = kind.cursed();
             if (door) {
-                if (!swapDoor(level, base, kind.original(), changed)) return true;
+                if (!swapDoor(level, base, kind.original(), changed, thrower, face)) return true;
             } else {
                 BlockState replacement = changed.withPropertiesOf(state);
                 if (kind == Kind.STONE_BUTTON || kind == Kind.WOODEN_BUTTON) {
                     replacement = replacement.setValue(BlockStateProperties.POWERED, false);
                 }
-                if (!level.setBlockAndUpdate(pos, replacement)) return true;
+                if (!WitcheryBlockPlacement.place(level, pos, replacement, thrower, face)) return true;
                 scheduleRelease(level, pos, replacement, kind);
             }
         }
@@ -122,9 +122,10 @@ public final class CursedControls {
         return null;
     }
 
-    private static boolean allowed(ServerLevel level, BlockPos pos, Direction face, @Nullable Entity thrower) {
-        return level.getWorldBorder().isWithinBounds(pos) && (thrower == null || !ForgeEventFactory.onBlockPlace(
-                thrower, BlockSnapshot.create(level.dimension(), level, pos), face));
+    private static boolean canChange(ServerLevel level, BlockPos pos, @Nullable Entity thrower) {
+        return level.isInWorldBounds(pos) && level.getWorldBorder().isWithinBounds(pos)
+                && (!(thrower instanceof Player player) || level.mayInteract(player, pos)
+                && !WitcheryBlockBreak.isCanceled(level, pos, level.getBlockState(pos), player));
     }
 
     private static void activated(Level level, BlockPos pos, Entity target, Kind kind) {
@@ -137,7 +138,7 @@ public final class CursedControls {
             return;
         }
         if (door) {
-            swapDoor(server, base, kind.cursed(), kind.original());
+            swapDoor(server, base, kind.cursed(), kind.original(), null, Direction.UP);
         } else {
             BlockState restored = kind.original().withPropertiesOf(state);
             server.setBlockAndUpdate(pos, restored);
@@ -155,7 +156,8 @@ public final class CursedControls {
         return state.getValue(DoorBlock.HALF) == DoubleBlockHalf.UPPER ? pos.below() : pos;
     }
 
-    private static boolean swapDoor(ServerLevel level, BlockPos pos, Block from, Block to) {
+    private static boolean swapDoor(ServerLevel level, BlockPos pos, Block from, Block to,
+                                    @Nullable Entity thrower, Direction face) {
         BlockPos above = pos.above();
         BlockState bottom = level.getBlockState(pos);
         BlockState top = level.getBlockState(above);
@@ -163,8 +165,9 @@ public final class CursedControls {
                 || bottom.getValue(DoorBlock.HALF) != DoubleBlockHalf.LOWER
                 || top.getValue(DoorBlock.HALF) != DoubleBlockHalf.UPPER) return false;
         int flags = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
-        level.setBlock(pos, to.withPropertiesOf(bottom), flags);
-        level.setBlock(above, to.withPropertiesOf(top), flags);
+        if (!WitcheryBlockPlacement.placeTogether(level, thrower, face, () ->
+                level.setBlock(pos, to.withPropertiesOf(bottom), flags)
+                        && level.setBlock(above, to.withPropertiesOf(top), flags))) return false;
         level.updateNeighborsAt(pos, to);
         level.updateNeighborsAt(above, to);
         return true;

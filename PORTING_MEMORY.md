@@ -2,6 +2,17 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Chalk and cursed control placements (2026-11-24)
+
+- The previous Forge build split the chalk stack and played the draw cue before Forge decided whether to place the glyph. A veto could restore the held count while leaving the extra sticks in inventory. Flagrate posted its placement event while the target was still empty.
+- The chalk and Flagrate paths now submit the actual glyph first. Accepted survival draws split and wear the stack once. The cue uses the original clicked block's coordinates, volume one and pitch one.
+- On the original server, drawing from three chalk sticks placed the glyph, wore the held stick by one and dropped two unused sticks because the fixture inventory was full. The sound played at the clicked support at `(96, 119, 31)`.
+- The previous curse checked two separate placement events before changing a door. The actual door conversion now stages both halves and reports their old and new states together. A veto restores both halves before neighbor shape updates and discards the uncharged block entities. An accepted cast charges the completed door. Recharging an existing control preserves its saved mixture rules and uses the original Forge break-permission option.
+- On packaged clean Forge the survival player kept three undamaged chalk sticks on veto. The accepted draw wore one stick and played one cue at the supporting block. A triggered Poison brew left both protected oak halves in place. Two throws charged the approved door twice. After a dedicated restart the player rejoined, spent both charges by opening and closing the door, and recovered the ordinary oak door with its original hinge and facing.
+- Both client sessions used zero master volume and OpenAL No Output. Neither client process received focus.
+- The same package repeated both chalk and door decisions on copied Auram using a fixture player. It saved the accepted glyph and the intact two-charge cursed door, then stopped headlessly.
+- Java 17 data generation, JAR reobfuscation, and all 307 required Forge GameTests passed locally. The tested JAR SHA-256 is `b82d66b4879b85b9a53f31c9f3f2fe5a8dbd4e1c179447b81e29731a7d218a34`. The native trace, Forge regressions and packaged checks are under `build/qa-control-placement`.
+
 ## Brew placement and protection (2026-11-24)
 
 - The previous Forge build posted placement events before replacing a block. A protection listener saw grass for a Web and air for a gas cloud. Listeners that canceled those specific blocks let the brew change the world.

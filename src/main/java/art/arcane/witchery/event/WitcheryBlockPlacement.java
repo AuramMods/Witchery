@@ -10,6 +10,7 @@ import net.minecraftforge.event.ForgeEventFactory;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 public final class WitcheryBlockPlacement {
     private WitcheryBlockPlacement() {}
@@ -21,6 +22,10 @@ public final class WitcheryBlockPlacement {
     }
 
     public static boolean placeNow(ServerLevel level, BlockPos pos, BlockState state, Entity actor, Direction face) {
+        return placeTogether(level, actor, face, () -> level.setBlockAndUpdate(pos, state));
+    }
+
+    public static boolean placeTogether(ServerLevel level, @Nullable Entity actor, Direction face, BooleanSupplier writeBlocks) {
         boolean capturing = level.captureBlockSnapshots;
         int first = level.capturedBlockSnapshots.size();
         List<BlockSnapshot> changes = List.of();
@@ -29,7 +34,7 @@ public final class WitcheryBlockPlacement {
             boolean changed;
             level.captureBlockSnapshots = true;
             try {
-                changed = level.setBlockAndUpdate(pos, state);
+                changed = writeBlocks.getAsBoolean();
             } finally {
                 var captured = level.capturedBlockSnapshots.subList(first, level.capturedBlockSnapshots.size());
                 changes = List.copyOf(captured);
@@ -37,9 +42,9 @@ public final class WitcheryBlockPlacement {
                 level.captureBlockSnapshots = false;
             }
             if (!changed || changes.isEmpty()) return false;
-            approved = changes.size() == 1
+            approved = actor == null || (changes.size() == 1
                     ? !ForgeEventFactory.onBlockPlace(actor, changes.get(0), face)
-                    : !ForgeEventFactory.onMultiBlockPlace(actor, changes, face);
+                    : !ForgeEventFactory.onMultiBlockPlace(actor, changes, face));
             if (approved) notifyPlacement(level, changes);
             return approved;
         } finally {
@@ -64,11 +69,14 @@ public final class WitcheryBlockPlacement {
     public static void restore(ServerLevel level, List<BlockSnapshot> changes) {
         boolean capturing = level.captureBlockSnapshots;
         boolean restoring = level.restoringBlockSnapshots;
-        level.captureBlockSnapshots = false;
+        int first = level.capturedBlockSnapshots.size();
+        // Restoring one half of a paired block must not update shapes against a transient neighbor.
+        level.captureBlockSnapshots = true;
         level.restoringBlockSnapshots = true;
         try {
             for (int i = changes.size() - 1; i >= 0; i--) changes.get(i).restore(true, false);
         } finally {
+            level.capturedBlockSnapshots.subList(first, level.capturedBlockSnapshots.size()).clear();
             level.captureBlockSnapshots = capturing;
             level.restoringBlockSnapshots = restoring;
         }
