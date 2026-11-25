@@ -1220,6 +1220,7 @@
    "message.witchery.rite.missing_ingredient": "Отсутствуют необходимые предметы.",
    "message.witchery.rite.missing_lava": "Отсутствует лава под кругом.",
    "message.witchery.rite.missing_living_offering": "Требуется жертвоприношение.",
+   "message.witchery.rite.missing_altar": "Отсутствует алтарь.",
    "message.witchery.rite.missing_power": "В алтаре недостаточно энергии.",
    "message.witchery.rite.night_only": "Этот ритуал нужно начать ночью.",
    "message.witchery.rite.no_familiar": "Ни один фамильяр не может откликнуться на этот ритуал.",

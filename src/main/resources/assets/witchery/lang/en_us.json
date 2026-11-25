@@ -1256,6 +1256,7 @@
    "message.witchery.rite.prior_incarnation_disabled" : "This world has disabled recovery through Prior Incarnation.",
    "message.witchery.rite.prior_incarnation_dream" : "Prior Incarnation cannot be cast in the Spirit World.",
    "message.witchery.rite.missing_chalk" : "Drop unused Ritual, Otherwhere, or Infernal Chalk near the Heart Glyph.",
+   "message.witchery.rite.missing_altar": "No altar nearby.",
    "message.witchery.rite.missing_power" : "The rite needs more altar power.",
    "message.witchery.rite.no_nearby_player" : "The rite needs a player within the circle.",
    "message.witchery.rite.night_only" : "This rite must start at night.",

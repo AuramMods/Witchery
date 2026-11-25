@@ -35,7 +35,6 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.InteractionResult;
@@ -158,11 +157,11 @@ public final class CircleRiteTests {
         var center = helper.absolutePos(CENTER);
         var heart = heart(helper);
         var power = CENTER.below();
-        var sounds = new ArrayList<SoundEvent>();
+        var sounds = new ArrayList<PlayLevelSoundEvent.AtPosition>();
         Consumer<PlayLevelSoundEvent.AtPosition> listener = event -> {
             if (event.getLevel() == level && event.getSound() != null
                     && event.getPosition().distanceToSqr(Vec3.atCenterOf(center)) < 1) {
-                sounds.add(event.getSound().value());
+                sounds.add(event);
             }
         };
         waitForOfferings(helper, new ItemStack(Items.OBSIDIAN), new ItemStack(Items.REDSTONE)).thenExecute(() -> {
@@ -177,14 +176,17 @@ public final class CircleRiteTests {
 
                 tick(level, center, heart, 20);
                 helper.assertTrue(heart.saveWithoutMetadata().getInt("OfferingStep") == 1
-                                && sounds.equals(List.of(SoundEvents.BUBBLE_COLUMN_BUBBLE_POP)),
-                        "The staged item plays the offering pop at its own step");
+                                && sounds.isEmpty(),
+                        "The staged item is taken once and its packet does not produce a second server sound");
 
                 helper.setBlock(power, Blocks.REDSTONE_BLOCK);
                 helper.setBlock(power, Blocks.STONE);
                 var stopped = helper.getBlockState(CENTER);
                 helper.assertTrue(!stopped.getValue(RiteHeartBlock.ACTIVE) && !stopped.getValue(RiteHeartBlock.POWERED)
-                                && sounds.equals(List.of(SoundEvents.BUBBLE_COLUMN_BUBBLE_POP, SoundEvents.NOTE_BLOCK_SNARE.value()))
+                                && sounds.size() == 1 && sounds.get(0).getSound().value() == SoundEvents.NOTE_BLOCK_SNARE.value()
+                                && sounds.get(0).getPosition().equals(Vec3.atLowerCornerOf(center))
+                                && sounds.get(0).getNewVolume() == 0.5F
+                                && sounds.get(0).getNewPitch() >= 1F / 3 && sounds.get(0).getNewPitch() <= 0.5F
                                 && drops(helper).size() == 2,
                         "The second pulse cancels and refunds the staged offering with the original snare cue");
             } finally {

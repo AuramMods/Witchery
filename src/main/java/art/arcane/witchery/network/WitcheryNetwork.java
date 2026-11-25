@@ -360,6 +360,15 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_SMOKE_PARTICLE_ID, LEGACY_NO_SOUND_ID, center, 0.5, 2, 16);
     }
 
+    public static void sendRiteItemOffering(ServerLevel level, Vec3 center, boolean rejected) {
+        sendParticlesAround(level, rejected ? LEGACY_SMOKE_PARTICLE_ID : LEGACY_EXPLOSION_PARTICLE_ID,
+                rejected ? LEGACY_PLING_SOUND_ID : LEGACY_POP_SOUND_ID, center, 0.5, 1, 16);
+    }
+
+    public static void sendRiteLivingOffering(ServerLevel level, Vec3 center) {
+        sendParticlesAround(level, LEGACY_PORTAL_PARTICLE_ID, LEGACY_POP_SOUND_ID, center, 1, 2, 16);
+    }
+
     public static void sendSentinelAppearance(ServerLevel level, Vec3 center, double height) {
         sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_SPECTRE_AMBIENT_SOUND_ID, center, 1, height, 16);
     }

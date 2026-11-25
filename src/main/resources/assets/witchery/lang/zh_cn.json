@@ -1220,6 +1220,7 @@
    "message.witchery.rite.missing_ingredient": "缺少汇魔物品..",
    "message.witchery.rite.missing_lava": "下边没有岩浆..",
    "message.witchery.rite.missing_living_offering": "缺少作为祭品的活物.",
+   "message.witchery.rite.missing_altar": "附近没有祭坛.",
    "message.witchery.rite.missing_power": "祭坛未能提供充沛能量..",
    "message.witchery.rite.night_only": "此仪式必须在夜间开始。",
    "message.witchery.rite.no_familiar": "没有魔宠能响应此仪式。",

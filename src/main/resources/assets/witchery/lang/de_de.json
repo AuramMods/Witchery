@@ -1220,6 +1220,7 @@
    "message.witchery.rite.missing_ingredient": "Fehlendes Foki Item.",
    "message.witchery.rite.missing_lava": "Darunter befindet sich keine Lava.",
    "message.witchery.rite.missing_living_offering": "Fehlendes, lebendiges Opfer.",
+   "message.witchery.rite.missing_altar": "Der Altar ist zu weit weg.",
    "message.witchery.rite.missing_power": "Der Altar ist nicht stark genug dafür.",
    "message.witchery.rite.night_only": "Dieser Ritus muss nachts beginnen.",
    "message.witchery.rite.no_familiar": "Kein Vertrauter kann diesem Ritus folgen.",

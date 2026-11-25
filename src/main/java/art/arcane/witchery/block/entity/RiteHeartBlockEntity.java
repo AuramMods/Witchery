@@ -29,6 +29,7 @@ import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryItems;
+import art.arcane.witchery.registry.WitcherySounds;
 import art.arcane.witchery.ritual.FetishBinding;
 import art.arcane.witchery.ritual.ClimateChange;
 import art.arcane.witchery.ritual.CookingRite;
@@ -46,6 +47,7 @@ import art.arcane.witchery.ritual.WeatherRites;
 import art.arcane.witchery.vampirism.Vampirism;
 import art.arcane.witchery.world.DreamTravel;
 import art.arcane.witchery.world.WaystoneTravel;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -233,10 +235,12 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             nextCast(level);
             return;
         }
-        if (player != null) {
-            player.displayClientMessage(Component.translatable(selection.failure()), true);
+        if (player != null) showRiteError(player, selection.failure());
+        if (player instanceof ServerPlayer caster && selection.failure().equals(RiteActivation.NULL_FIELD_FAILURE)) {
+            WitcherySounds.playLegacyPlayerCue(caster, SoundEvents.NOTE_BLOCK_SNARE.value(), SoundSource.BLOCKS, 0.5F);
+        } else {
+            playOriginalRiteSound(level, pos, SoundEvents.NOTE_BLOCK_SNARE.value());
         }
-        failSound(level);
     }
 
     private void advance(ServerLevel level, @Nullable ItemRiteRecipe rite) {
@@ -277,7 +281,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         else if (!dropOffering(level, origin, returned)) return;
         offering.consume().run();
         offeringStep++;
-        itemOfferingEffect(level, offering.position());
+        itemOfferingEffect(level, offering.position(), usesGlyphClock());
     }
 
     private FinalStep finalStep(ItemRiteRecipe rite, int required) {
@@ -300,7 +304,9 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             case WAYSTONE -> offerWaystone(level, rite, pos);
             case ALTAR -> {
                 AltarBlockEntity altar = rite.power() > 0 ? AltarPower.nearest(level, pos) : null;
-                if (rite.power() > 0 && (altar == null || !altar.consumePower(rite.power()))) {
+                if (rite.power() > 0 && altar == null) {
+                    abort(level, "message.witchery.rite.missing_altar");
+                } else if (altar != null && !altar.consumePower(rite.power())) {
                     abort(level, "message.witchery.rite.missing_power");
                 } else {
                     altarPowerOffered = true;
@@ -337,7 +343,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         }
         if (sacrificesFirst) {
             // The Wither rite sacrifices the villager before charging the altar.
-            if (living != null) sacrificeLiving(level, living);
+            if (living != null) sacrificeLiving(level, living, legacy);
             living = null;
             if (missingPower) {
                 abort(level, "message.witchery.rite.missing_power");
@@ -594,7 +600,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             ServerPlayer caster = level.getServer().getPlayerList().getPlayer(initiator);
             if (caster != null) Predictions.attune(caster);
         }
-        if (living != null) sacrificeLiving(level, living);
+        if (living != null) sacrificeLiving(level, living, legacy);
         if (corruptionCaster != null) {
             if (curseTarget != null) PoppetProtectionItem.corrupt(corruptionCaster, curseTarget);
             level.sendParticles(ParticleTypes.FLAME, pos.getX() + 0.5, pos.getY() + 0.2, pos.getZ() + 0.5,
@@ -651,13 +657,21 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         }
     }
 
-    private static void sacrificeLiving(ServerLevel level, Mob living) {
-        level.sendParticles(ParticleTypes.PORTAL, living.getX(), living.getY(0.5), living.getZ(), 16, 0.4, 0.6, 0.4, 0.05);
-        playOfferingPop(level, living.position());
+    private static void sacrificeLiving(ServerLevel level, Mob living, boolean legacy) {
+        if (legacy) {
+            WitcheryNetwork.sendRiteLivingOffering(level, living.position());
+        } else {
+            level.sendParticles(ParticleTypes.PORTAL, living.getX(), living.getY(0.5), living.getZ(), 16, 0.4, 0.6, 0.4, 0.05);
+            playOfferingPop(level, living.position());
+        }
         living.discard();
     }
 
-    private static void itemOfferingEffect(ServerLevel level, Vec3 location) {
+    private static void itemOfferingEffect(ServerLevel level, Vec3 location, boolean legacy) {
+        if (legacy) {
+            WitcheryNetwork.sendRiteItemOffering(level, location, false);
+            return;
+        }
         level.sendParticles(ParticleTypes.POOF, location.x, location.y + 0.5, location.z,
                 20, 0.25, 0.25, 0.25, 0);
         playOfferingPop(level, location);
@@ -674,7 +688,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             abort(level, "message.witchery.rite.missing_living_offering");
             return false;
         }
-        sacrificeLiving(level, living);
+        sacrificeLiving(level, living, usesGlyphClock());
         return true;
     }
 
@@ -707,14 +721,18 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         var location = WaystoneItem.location(stone.stack());
         var origin = stone.position();
         if (location == null || !location.dimension().equals(level.dimension())) {
-            level.sendParticles(ParticleTypes.SMOKE, origin.x, origin.y + 0.2, origin.z, 8, 0.2, 0.22, 0.2, 0.02);
-            level.playSound(null, BlockPos.containing(origin), SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.BLOCKS, 1, 1);
+            if (usesGlyphClock()) {
+                WitcheryNetwork.sendRiteItemOffering(level, origin, true);
+            } else {
+                level.sendParticles(ParticleTypes.SMOKE, origin.x, origin.y + 0.2, origin.z, 8, 0.2, 0.22, 0.2, 0.02);
+                level.playSound(null, BlockPos.containing(origin), SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.BLOCKS, 1, 1);
+            }
             return;
         }
         waystoneTarget = location.position();
         sacrificed.add(new Sacrifice(stone.stack().copyWithCount(1), BlockPos.containing(stone.position())));
         stone.consume().run();
-        itemOfferingEffect(level, origin);
+        itemOfferingEffect(level, origin, usesGlyphClock());
     }
 
     private void advanceStorm(ServerLevel level) {
@@ -895,14 +913,12 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     }
 
     private void abort(ServerLevel level, String message) {
-        abort(level, message, false);
+        abort(level, message, usesGlyphClock());
     }
 
     private void abort(ServerLevel level, String message, boolean originalSound) {
         ServerPlayer player = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
-        if (player != null) {
-            player.displayClientMessage(Component.translatable(message), true);
-        }
+        if (player != null && player.level() == level) showRiteError(player, message);
         refundSacrifices(level);
         nextCast(level);
         if (originalSound) {
@@ -910,6 +926,10 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         } else {
             failSound(level);
         }
+    }
+
+    private static void showRiteError(Player player, String message) {
+        player.sendSystemMessage(Component.translatable(message).withStyle(ChatFormatting.RED));
     }
 
     static void playOriginalRiteSound(ServerLevel level, BlockPos pos, SoundEvent sound) {

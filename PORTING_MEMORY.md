@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Heart Glyph offering cues and altar failures (2026-11-25)
+
+- A dropped item or Grassper offering sends the original half-width, one-block-high explode and pop. A living offering sends the one-by-two portal and pop at its feet. A rejected optional Waystone stays in place and sends smoke and pling. All three packets use a 16-block reach.
+- Missing and underpowered altars report distinct errors in red chat. The absent-altar message is translated in all five supported languages. Failed activation and cast aborts for registered rites use the original half-volume snare and its pitch range.
+- The original 0.24.1 server, the reobfuscated clean Forge client, and copied Auram agreed on all 17 offering cue samples. The muted survival client started the casts by hand with supplied offerings and a formed low-power altar. It received both altar errors and used a Waystone with legacy numeric coordinates. A Nether stone kept its entity UUID. A compatible stone was taken and returned when the altar was missing.
+- An ordinary clean Forge restart resumed the small Barrier with one offering already staged, returned the held items exactly once, and left the rejected Waystone at its original UUID. All 358 local Forge GameTests passed. The reobfuscated package is `build/qa-rite-cues/candidate.jar` with SHA-256 `4edf6b043fa78752ecab27958071ca1885d2231c1a8f603e9e1f97a628aad22e`. The comparison and restart evidence are in `build/qa-rite-cues/comparison.txt`.
+
 ## Crystal Ball encounter timing and placement (2026-11-25)
 
 - Natural and random periodic fulfillment run on the world's 100-tick pulse. The world random source supplies weighted readings and fulfillment rolls. Visiting the Nether records eligibility immediately. A natural Nether fulfillment waits for the next pulse while the player is there.

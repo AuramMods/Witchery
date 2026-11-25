@@ -757,6 +757,7 @@
 - [x] Verify Void Bramble suppression with the new activation path. A blocked edge left the offerings in place. Removing the Bramble while holding the signal left the glyph idle until a fresh rising edge.
 - [x] Restore red dust over the active glyph, a poof over consumed item offerings, and the pop at the item or living offering. Local data generation, JAR reobfuscation, and all 220 Forge GameTests passed. The redstone regression also verifies the offering pop and the cancellation snare.
 - [x] Use the Heart Glyph in the packaged survival client and verify red dust over its center and poof particles at a consumed offering. The client stayed hidden and unfocused with zero master volume and OpenAL No Output.
+- [x] Restore the three original offering cues and separate missing-altar and insufficient-power messages. Witchery 0.24.1 sends explode and pop for an item, portal and pop for a living offering, and smoke and pling when a Waystone is from another dimension. The muted Forge survival client received distinct chat messages for no altar and a formed altar with insufficient power. Both failures returned the staged items.
 
 ## Returned Offerings and Waystone Copies (2026-11-21)
 

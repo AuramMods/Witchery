@@ -1220,6 +1220,7 @@
    "message.witchery.rite.missing_ingredient": "Falta el objeto focal.",
    "message.witchery.rite.missing_lava": "No hay lava debajo.",
    "message.witchery.rite.missing_living_offering": "Falta el sacrificio de una criatura.",
+   "message.witchery.rite.missing_altar": "No hay un altar cercano.",
    "message.witchery.rite.missing_power": "El altar no tiene suficiente energía.",
    "message.witchery.rite.night_only": "Este rito debe comenzar de noche.",
    "message.witchery.rite.no_familiar": "Ningún familiar puede responder a este rito.",

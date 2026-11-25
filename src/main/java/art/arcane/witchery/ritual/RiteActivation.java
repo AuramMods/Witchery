@@ -22,6 +22,7 @@ import static java.util.Map.entry;
 public final class RiteActivation {
     public static final ResourceLocation TRAVEL_TO_LOCATION = id("rite_of_traveling_to_a_waystone");
     public static final ResourceLocation TRAVEL_TO_CREATURE = id("rite_of_traveling_to_a_creature_waystone");
+    public static final String NULL_FIELD_FAILURE = "message.witchery.rite.null_field";
 
     private static final Map<String, Integer> LEGACY_ORDER = Map.ofEntries(
             entry("rite_of_binding_a_circle", 1), entry("rite_of_binding_a_waystone", 2), entry("rite_of_charging", 3),
@@ -94,7 +95,7 @@ public final class RiteActivation {
 
     public static Selection select(ServerLevel level, BlockPos heart) {
         if (level.dimension().equals(WitcheryDimensions.DREAM) || VoidBrambleBlockEntity.preventsRite(level, heart)) {
-            return new Selection(List.of(), "message.witchery.rite.null_field");
+            return new Selection(List.of(), NULL_FIELD_FAILURE);
         }
         var recipes = level.getRecipeManager().getAllRecipesFor(WitcheryRecipes.ITEM_RITE.get()).stream().sorted(ORDER).toList();
         var queue = new ArrayList<ResourceLocation>();
