@@ -865,9 +865,10 @@
 
 - [x] Restore pickaxe harvesting for the Kettle, Fume Funnels, Poppet Shelf, Blood Crucible, Bear Trap, Brazier, Candelabra, Chalice, Crystal Ball, Daylight Collector, and cursed stone pressure plate. The Wolf Trap also mines faster with a pickaxe and retains its empty loot list. The shelf drops its inventory and removes its chunk ticket, and a Filled Chalice returns its filled item.
 - [x] Restore axe speeds for the affected wood blocks, chalk glyphs, and ice gate. Match the measured hardness of chalk, wolf trophies, and the Spinning Wheel. Recover Demon Hearts and ordinary ice construction pieces by hand. Darkened Shaded Glass still uses color-preserving Silk Touch loot, and Perpetual Ice still uses its original Silk Touch rule.
-- [x] Compare all 121 original default block states with the packaged port. The remaining tool differences are shovel harvesting for the five snow constructions and raw eligibility for the disease fluid. Four raw hardness differences are confined to the brew and Slurp blocks. Their temporary effect behavior is tracked with the corresponding rites and brews.
+- [x] Compare all 121 original default block states with the packaged port. The remaining tool differences are shovel harvesting for the five snow constructions and raw eligibility for the disease fluid. The temporary brew and Slurp blast pass matched their original hardness values without making those cells selectable.
 - [x] Restart copied Auram on the same packaged JAR and verify 15 survival harvest outcomes on its headless server. On packaged clean Forge, the muted survival client mined seven fixtures with the normal attack binding, recovered the marked Poppet from its shelf, and broke the Wolf Trap without a drop.
 - [x] Pass all 326 required Forge GameTests locally, including the survival block harvest regression cases.
+- [ ] Match the remaining legacy block blast resistance values. The native and packaged comparison found 43 differences. At the tested powers, vanilla explosions break Perpetual Ice, witchwood planks, both hunting traps, and the wooden Stockade in 0.24.1. All five survive in the port.
 
 ## Coffin (2026-11-20)
 
@@ -1605,6 +1606,7 @@
 | Lily Pad | Lilify | 200 | 1 |
 
 - [x] Restore the open sphere for Tide Hold and Lava Hold. The invisible `witchery:slurp` block prevents inflow and allows travel through the temporarily drained space. When the timer ends, it restores the original source or flowing block state. Duration modifiers extend the ten-second base.
+- [x] Match the original interaction with explosions. Terrain blasts clear base brew, brew gas, liquid brew, and Slurp, and can reach blocks behind them. An intact hold restores the exact fluid level. A destroyed hold leaves its cell empty after expiry, and disease fluid keeps its original blast resistance. Native fixtures, packaged clean Forge and copied Auram, and both new GameTests covered these outcomes. All 328 local Forge GameTests passed.
 - [x] Keep the remaining loaded ticks through saves. Import original `Timeout`, `blockName`, and `blockMeta` fields for held water and lava.
 - [x] Restore Lilify's upward scan from a block face or creature position. Witchery pads use the brew's two strength bits to set their initial growth. They spread over source water on scheduled ticks, return the ordinary Lily Pad when picked, and have the original one-in-four harvest drop.
 - [x] Require source water for a placed Witchery pad. A packaged dispenser produced a pad over the source and left the flowing cell clear. The source pad persisted across a headless restart and broke when its support started flowing.

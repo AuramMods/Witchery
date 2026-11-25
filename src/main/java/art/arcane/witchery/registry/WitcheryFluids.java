@@ -191,6 +191,10 @@ public final class WitcheryFluids {
         } else if (brew) {
             properties[0].levelDecreasePerBlock(4).tickRate(config.viscosity() / 200);
         }
+        if (brew || dispersal) {
+            // Explosion rays use the larger of the block and fluid resistances.
+            properties[0].explosionResistance(0.0F);
+        }
 
         if (config.blockPath() != null) {
             properties[0].block(() -> (LiquidBlock) WitcheryBlocks.getRequired(config.blockPath()).get());

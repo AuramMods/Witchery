@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 public final class SlurpBlock extends BaseEntityBlock {
     public SlurpBlock() {
-        super(Properties.copy(Blocks.BARRIER).noCollission().noLootTable().forceSolidOn());
+        super(Properties.copy(Blocks.BARRIER).instabreak().noCollission().noLootTable().forceSolidOn());
     }
 
     @Override

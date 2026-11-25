@@ -46,7 +46,8 @@ public final class BrewDispersalBlock extends LiquidBlock implements EntityBlock
 
     public BrewDispersalBlock(boolean gas) {
         super(WitcheryFluids.getRequiredSource(gas ? "brewgas" : "brewliquid"),
-                Properties.copy(Blocks.WATER).noCollission().noOcclusion().noLootTable());
+                Properties.copy(Blocks.WATER).strength(gas ? -1.0F : 0.0F, 0.0F)
+                        .noCollission().noOcclusion().noLootTable());
         this.gas = gas;
     }
 

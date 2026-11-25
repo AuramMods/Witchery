@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Temporary brew and fluid hold blasts (2026-11-25)
+
+- The original headless server cleared base brew, gas, liquid brew, and Slurp with a terrain-damaging blast. The glass behind each cell also broke. Slurp did not release its saved fluid when destroyed. Intact water and lava holds restored level 3 on expiry. Disease fluid and the glass behind it survived.
+- The port now uses zero blast resistance on the four temporary blocks and on the three corresponding Forge fluids. Forge uses the larger of block and fluid resistance. The original hardness was zero except for brew gas, which had hardness -1. All four retain empty selection shapes.
+- Clean Forge and copied Auram matched the native results headlessly on the same reobfuscated JAR. The packaged expiry probe loaded the original `Timeout`, `blockName`, and `blockMeta` fields. The first Auram probe stopped with one tick remaining in both saved holds. The replay on fresh coordinates verified both restored states. All 328 local Forge GameTests passed. The tested JAR is `build/qa-temporary-blasts/verified.jar` with SHA-256 `f6be5e49f332748b5e566479937eab98cce0ebc28db8f23ac4aca75f3dbbd39d`.
+- The subsequent blast resistance audit measured all 121 shared block IDs and found 43 differences outside the fixed temporary blocks. These include Perpetual Ice and its constructions at 3 vs 5, witchwood planks and stairs at 2 vs 3, and both hunting traps at 6 vs 10. See `build/qa-temporary-blasts/resistance-audit/comparison.txt`. Confirm actual blast and drop behavior for these groups when restoring the values.
+- Direct blasts confirmed five of those differences in gameplay. Perpetual Ice, witchwood planks, Bear Trap, Wolf Trap, and the wooden Stockade broke at the tested power on the original server. All five stayed intact in the port. The two `thresholds.log` runs under `build/qa-temporary-blasts/resistance-audit/` record the exact powers.
+
 ## Workstation and block harvesting (2026-11-25)
 
 - The 121-block comparison found nine blocks that originally qualified for pickaxe drops but rejected the tool in the port. The corrected pickaxe tag also covers the Wolf Trap, whose original loot list is empty, and restores the pickaxe requirement on the Poppet Shelf, Crystal Ball, Daylight Collector, and darkened Shaded Glass. The original Kettle hardness is 2 and both Fume Funnels are 3.5.

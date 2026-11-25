@@ -270,7 +270,8 @@ public final class WitcheryBlocks {
             case "spiritflowing" -> new SpiritFluidBlock(WitcheryFluids.getRequiredSource("fluidspirit"), spiritProperties(), true);
             case "hollowtears" -> new SpiritFluidBlock(WitcheryFluids.getRequiredSource("hollowtears"), spiritProperties(), false);
             case "disease" -> new DiseaseBlock();
-            case "brew" -> createLegacyFluidBlock("brew");
+            case "brew" -> new LiquidBlock(WitcheryFluids.getRequiredSource("brew"),
+                    BlockBehaviour.Properties.copy(Blocks.WATER).instabreak().noCollission().noLootTable());
             case "brewgas" -> new BrewDispersalBlock(true);
             case "brewliquid" -> new BrewDispersalBlock(false);
             case "force" ->
@@ -293,14 +294,6 @@ public final class WitcheryBlocks {
                     .noCollission());
             default -> new Block(BlockBehaviour.Properties.copy(Blocks.STONE));
         };
-    }
-
-    private static LiquidBlock createLegacyFluidBlock(String legacyFluidName) {
-        return new LiquidBlock(WitcheryFluids.getRequiredSource(legacyFluidName),
-                BlockBehaviour.Properties.copy(Blocks.WATER)
-                        .strength(100.0F)
-                        .noCollission()
-                        .noLootTable());
     }
 
     private static BlockBehaviour.Properties spiritProperties() {
