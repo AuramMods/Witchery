@@ -2,5 +2,11 @@
   "parent": "minecraft:item/generated",
   "textures": {
     "layer0": "witchery:item/alluringskull_off"
-  }
+  },
+  "overrides": [
+    {
+      "predicate": { "witchery:active": 1 },
+      "model": "witchery:item/alluringskull_on"
+    }
+  ]
 }

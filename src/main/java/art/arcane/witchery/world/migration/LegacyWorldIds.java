@@ -57,6 +57,7 @@ public final class LegacyWorldIds {
     private static final int ITEM_LORE_COMPONENT_VERSION = 1803;
     private static final ResourceLocation VANILLA_POTION = new ResourceLocation("minecraft", "potion");
     private static final ResourceLocation VANILLA_SPAWN_EGG = new ResourceLocation("minecraft", "spawn_egg");
+    private static final ResourceLocation ALLURING_SKULL = new ResourceLocation(Witchery.MODID, "alluringskull");
     private final Map<Integer, ResourceLocation> blocks = new HashMap<>();
     private final Map<Integer, ResourceLocation> items = new HashMap<>();
     private final Map<Integer, ResourceLocation> vanillaItems = new HashMap<>();
@@ -297,6 +298,12 @@ public final class LegacyWorldIds {
         } else if (value instanceof CompoundTag compound) {
             upgradeItemBinding(compound);
             String id = compound.getString("id");
+            if (compound.contains("Count", Tag.TAG_ANY_NUMERIC) && compound.contains("Damage", Tag.TAG_ANY_NUMERIC)
+                    && (ALLURING_SKULL.toString().equals(id) || compound.contains("id", Tag.TAG_ANY_NUMERIC)
+                    && ALLURING_SKULL.equals(items.get(compound.getInt("id") & 0xFFFF)))) {
+                upgradeStack(compound);
+                upgradeItemDisplay(compound.getCompound("tag").getCompound("display"), false);
+            }
             int currentVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
             upgradeMerchantItems(compound, id, fixer, currentVersion, currentVersion);
             if (compound.get("Brew") instanceof CompoundTag brew) {

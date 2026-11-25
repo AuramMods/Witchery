@@ -1,5 +1,6 @@
 package art.arcane.witchery.item;
 
+import art.arcane.witchery.block.AlluringSkullBlock;
 import art.arcane.witchery.block.StockadeBlock;
 import net.minecraft.world.item.BlockItem;
 import art.arcane.witchery.block.PitDirtBlock;
@@ -219,6 +220,9 @@ public enum WitcheryIngredient {
             return PotionUtils.setPotion(stack, Potions.NIGHT_VISION);
         }
         if (hasLegacyDamage) {
+            if (stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof AlluringSkullBlock) {
+                AlluringSkullBlock.importLegacyItemState(stack, stackTag.getInt("Damage"));
+            }
             if (stackTag.getInt("Damage") == 2 && stack.getItem() instanceof BlockItem blockItem
                     && blockItem.getBlock() instanceof PitDirtBlock) {
                 var state = stack.getTagElement(BlockItem.BLOCK_STATE_TAG);

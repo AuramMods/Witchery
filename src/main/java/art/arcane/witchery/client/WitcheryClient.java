@@ -1,5 +1,6 @@
 package art.arcane.witchery.client;
 
+import art.arcane.witchery.block.AlluringSkullBlock;
 import art.arcane.witchery.block.PitDirtBlock;
 import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.block.ShadedGlassBlock;
@@ -467,6 +468,9 @@ public final class WitcheryClient {
             ItemProperties.register(WitcheryItems.getRequired("glassgoblet").get(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "filled"),
                     (stack, level, entity, seed) -> GlassGobletItem.filled(stack) ? 1 : 0);
+            ItemProperties.register(WitcheryBlocks.getRequired("alluringskull").get().asItem(),
+                    ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "active"),
+                    (stack, level, entity, seed) -> AlluringSkullBlock.isActiveItem(stack) ? 1 : 0);
             ItemProperties.register(WitcheryItems.getRequired("canesword").get(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "drawn"),
                     (stack, level, entity, seed) -> CaneSwordItem.isDrawn(stack) ? 1 : 0);

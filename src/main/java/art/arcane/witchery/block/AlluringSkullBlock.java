@@ -5,12 +5,14 @@ import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -29,6 +31,18 @@ public final class AlluringSkullBlock extends MountedSkullBlock {
     public AlluringSkullBlock() {
         super(Properties.copy(Blocks.SKELETON_SKULL).strength(-1, 600).lightLevel(state -> 7).noOcclusion());
         registerDefaultState(defaultBlockState().setValue(ACTIVE, false));
+    }
+
+    public static void importLegacyItemState(ItemStack stack, int metadata) {
+        var state = stack.getTagElement(BlockItem.BLOCK_STATE_TAG);
+        if (metadata == 1 && (state == null || !state.contains(ACTIVE.getName(), Tag.TAG_STRING))) {
+            stack.getOrCreateTagElement(BlockItem.BLOCK_STATE_TAG).putString(ACTIVE.getName(), "true");
+        }
+    }
+
+    public static boolean isActiveItem(ItemStack stack) {
+        var state = stack.getTagElement(BlockItem.BLOCK_STATE_TAG);
+        return state != null && ACTIVE.getValue(state.getString(ACTIVE.getName())).orElse(false);
     }
 
     @Override

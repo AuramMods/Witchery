@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Alluring Skull item migration (2026-11-25)
+
+- Witchery 0.24.1 saved three Alluring Skulls in a vanilla chest under numeric ID 210 with damage values 0, 1 and 1. Normal use spent the item and placed tile type 0 or 1 respectively. The two active chest stacks lost their variant on the previous package. Their custom name and the two already placed skulls survived.
+- The rebuilt JAR uses `BlockStateTag.active` to retain the item form and select its sprite. An ordinary boot also restored both raw named and numeric stacks in a prepared earlier 1.20.1 region with its registry snapshot. An explicit modern `active=false` took precedence over leftover metadata. The repair survived a second boot. Recovering an active variant whose metadata was discarded requires the original save.
+- The muted background survival client took both variants from the imported chest after a dedicated restart. The item renderer resolved the original active and dormant sprites, and ordinary placement produced the matching block states. A second ordinary restart kept both placed states and the remaining active chest item. The fixture supplied a stone approach to the chest and mounting area. The client used master volume zero and OpenAL No Output and kept desktop focus.
+- The headless Auram copy imported the same original chest and saved both variants. Java 17 data generation, reobfuscation, and all 414 local Forge GameTests passed on seed `5471593853027166409`. The exact candidate is `build/qa-alluring-skull-items/candidate.jar` with SHA-256 `5ae1659635ae79f3e94ce4a6f04a3235fa40952bde32a3e3243896436d6d0e27`. See `build/qa-alluring-skull-items/comparison.txt`.
+
 ## Spinning Wheel slots, output, and bounds (2026-11-25)
 
 - Witchery 0.24.1 shift-clicked a Hay Bale into slot 3 with String in the fibre slot, Dirt in slot 1 and five Hay Bales in slot 4. It left a separately named String stack in the player's hotbar when the existing String in the fibre slot could not merge. Completing Golden Thread grew the renamed output to four and consumed Whiff of Magic from slot 1 while keeping the spare in slot 3.
