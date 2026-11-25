@@ -1,13 +1,13 @@
 package art.arcane.witchery.entity;
 
 import art.arcane.witchery.block.entity.BloodCrucibleBlockEntity;
-import art.arcane.witchery.item.GlassGobletItem;
 import art.arcane.witchery.item.VampireClothingItem;
 import art.arcane.witchery.item.VampireClothingItem.Style;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.vampirism.BloodFeeding;
 import art.arcane.witchery.vampirism.Vampirism;
+import art.arcane.witchery.world.WitcheryTeleport;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
@@ -41,6 +41,7 @@ import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
@@ -48,6 +49,7 @@ import java.util.Comparator;
 public final class Vampire extends PathfinderMob {
     private static final int VILLAGE_RANGE = 128;
     private static final int BITES_PER_NIGHT = 5;
+    private static final int TRAVEL_HEIGHT = 8;
     private BlockPos home;
     private boolean hunting;
     private int bites;
@@ -103,28 +105,37 @@ public final class Vampire extends PathfinderMob {
         if (home == null) home = blockPosition();
         if (!world.isNight()) {
             if (getLastHurtByMob() == null) setTarget(null);
-            hunting = false;
-            bites = 0;
-            if (tickCount % 100 == 2 && returnHome(world)) restrictTo(home, 4);
+            if (tickCount % 100 == 2) {
+                hunting = false;
+                bites = 0;
+                if (distanceToSqr(Vec3.atLowerCornerOf(home)) > 16) returnHome(world);
+            }
             if (tickCount % 20 == 2 && Vampirism.isInSunlight(this)) setSecondsOnFire(2);
-        } else if (hunting && bites >= BITES_PER_NIGHT) {
-            if (tickCount % 20 == 2 && returnHome(world)) {
+        } else if (bites >= BITES_PER_NIGHT) {
+            if (hunting) {
                 hunting = false;
                 setTarget(null);
                 setLastHurtByMob(null);
-                restrictTo(home, 4);
+                returnHome(world);
                 fillNearbyCrucible(world);
             }
-        } else if (bites == 0 && !hunting && tickCount % 500 == 2) {
+        } else if (!hunting && tickCount % 500 == 2) {
             beginHunt(world);
         }
     }
 
     private void fillNearbyCrucible(ServerLevel world) {
-        for (BlockPos pos : BlockPos.betweenClosed(home.offset(-6, -6, -6), home.offset(6, 6, 6))) {
-            if (world.hasChunkAt(pos) && world.getBlockEntity(pos) instanceof BloodCrucibleBlockEntity crucible) {
-                crucible.depositBlood();
-                return;
+        var pos = new BlockPos.MutableBlockPos();
+        for (int x = -6; x <= 6; x++) {
+            for (int z = -6; z <= 6; z++) {
+                pos.setWithOffset(home, x, 0, z);
+                for (int y = -6; y <= 6; y++) {
+                    pos.setY(home.getY() + y);
+                    if (world.getBlockEntity(pos) instanceof BloodCrucibleBlockEntity crucible) {
+                        crucible.depositBlood();
+                        return;
+                    }
+                }
             }
         }
     }
@@ -136,32 +147,35 @@ public final class Vampire extends PathfinderMob {
         var victim = nearby.stream().min(Comparator.comparingDouble(this::distanceToSqr));
         if (victim.isEmpty()) return;
         BlockPos village = victim.get().blockPosition();
-        if (village.distSqr(blockPosition()) <= 16 || relocate(world, village)) {
-            clearRestriction();
-            hunting = true;
-            setTarget(victim.get());
-        }
+        relocate(world, village);
+        clearRestriction();
+        hunting = true;
+        setTarget(victim.get());
     }
 
-    private boolean returnHome(ServerLevel world) {
-        return home.distSqr(blockPosition()) <= 16 || relocate(world, home);
+    private void returnHome(ServerLevel world) {
+        relocate(world, home);
+        restrictTo(home, 4);
     }
 
-    private boolean relocate(ServerLevel world, BlockPos destination) {
-        double oldX = getX();
-        double oldY = getY();
-        double oldZ = getZ();
-        for (int attempt = 0; attempt < 8; attempt++) {
-            BlockPos landing = destination.offset(random.nextInt(9) - 4, 0, random.nextInt(9) - 4);
-            if (!world.hasChunkAt(landing) || !world.getBlockState(landing.below()).isSolidRender(world, landing.below())) continue;
-            if (randomTeleport(landing.getX() + 0.5, landing.getY(), landing.getZ() + 0.5, false)) {
-                getNavigation().stop();
-                world.sendParticles(ParticleTypes.SMOKE, oldX, oldY + 0.9, oldZ, 16, 0.4, 0.5, 0.4, 0.01);
-                world.sendParticles(ParticleTypes.SMOKE, getX(), getY() + 0.9, getZ(), 16, 0.4, 0.5, 0.4, 0.01);
-                playSound(SoundEvents.ENDERMAN_TELEPORT, 1, 1);
-                return true;
+    boolean relocate(ServerLevel world, BlockPos destination) {
+        if (world.getWorldBorder().isWithinBounds(destination)) {
+            for (int step = 0; step <= TRAVEL_HEIGHT * 2; step++) {
+                int offset = (step & 1) == 0 ? -step / 2 : (step + 1) / 2;
+                BlockPos ground = destination.above(offset);
+                if (world.isOutsideBuildHeight(ground) || world.isOutsideBuildHeight(ground.above(2))) break;
+                if (!world.getBlockState(ground).isSolidRender(world, ground)
+                        || !world.isEmptyBlock(ground.above()) || !world.isEmptyBlock(ground.above(2))) continue;
+                Vec3 landing = Vec3.atLowerCornerOf(ground).add(0.5, 1.05, 0.5);
+                if (WitcheryTeleport.move(this, world, landing, WitcheryNetwork::sendVampireHuntTravel)) {
+                    getNavigation().stop();
+                    return true;
+                }
+                break;
             }
         }
+        WitcheryNetwork.sendVampireHuntTravel(world, position());
+        WitcheryNetwork.sendVampireHuntTravel(world, position());
         return false;
     }
 
@@ -172,7 +186,7 @@ public final class Vampire extends PathfinderMob {
             bites++;
             if (BloodFeeding.takeFromVillager(villager, 30) > 0) {
                 heal(4);
-                GlassGobletItem.bloodParticles(world, villager);
+                WitcheryNetwork.sendVampireHuntBite(world, new Vec3(villager.getX(), villager.getY(0.8), villager.getZ()));
             }
         }
         return true;

@@ -60,6 +60,7 @@ public final class WitcheryNetwork {
     private static final int LEGACY_FLAME_PARTICLE_ID = 16;
     private static final int LEGACY_SPLASH_PARTICLE_ID = 19;
     private static final int LEGACY_LARGE_SMOKE_PARTICLE_ID = 20;
+    private static final int LEGACY_RED_DUST_PARTICLE_ID = 22;
     private static final int LEGACY_HEART_PARTICLE_ID = 28;
     private static final int LEGACY_NO_SOUND_ID = 0;
     private static final int LEGACY_FIZZ_SOUND_ID = 2;
@@ -69,6 +70,7 @@ public final class WitcheryNetwork {
     private static final int LEGACY_ENDERMAN_TELEPORT_SOUND_ID = 16;
     private static final int LEGACY_GHAST_FIREBALL_SOUND_ID = 19;
     private static final int LEGACY_BLAZE_DEATH_SOUND_ID = 44;
+    private static final int LEGACY_DRINK_SOUND_ID = 56;
     private static final int LEGACY_POOF_SOUND_ID = 57;
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             ResourceLocation.parse(Witchery.MODID + ":main"),
@@ -322,6 +324,14 @@ public final class WitcheryNetwork {
         int particle = vampire ? LEGACY_SMOKE_PARTICLE_ID : LEGACY_PORTAL_PARTICLE_ID;
         int sound = vampire ? LEGACY_POOF_SOUND_ID : LEGACY_ENDERMAN_TELEPORT_SOUND_ID;
         sendParticlesAround(level, particle, sound, center, 0.5, 2, 16);
+    }
+
+    public static void sendVampireHuntTravel(ServerLevel level, Vec3 center) {
+        sendParticlesAround(level, LEGACY_SMOKE_PARTICLE_ID, LEGACY_POOF_SOUND_ID, center, 0.8, 1.5, 16);
+    }
+
+    public static void sendVampireHuntBite(ServerLevel level, Vec3 center) {
+        sendParticlesAround(level, LEGACY_RED_DUST_PARTICLE_ID, LEGACY_DRINK_SOUND_ID, center, 0.5, 0.2, 16);
     }
 
     public static void sendSummonedCreature(ServerLevel level, Vec3 center) {
