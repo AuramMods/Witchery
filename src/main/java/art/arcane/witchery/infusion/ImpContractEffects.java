@@ -1,6 +1,7 @@
 package art.arcane.witchery.infusion;
 
 import art.arcane.witchery.event.WitcheryBlockBreak;
+import art.arcane.witchery.event.WitcheryBlockPlacement;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -10,8 +11,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.common.util.BlockSnapshot;
-import net.minecraftforge.event.ForgeEventFactory;
 
 public enum ImpContractEffects {
     FIERY_TOUCH("witchery.imp.firetouch"),
@@ -68,9 +67,8 @@ public enum ImpContractEffects {
         if (leftClick) pos = pos.offset(random.nextInt(3) - 1, 0, random.nextInt(3) - 1);
         var fire = Blocks.FIRE.defaultBlockState();
         if (!level.isLoaded(pos) || !level.isEmptyBlock(pos) || level.isEmptyBlock(pos.below())
-                || !fire.canSurvive(level, pos) || !level.mayInteract(player, pos)
-                || ForgeEventFactory.onBlockPlace(player, BlockSnapshot.create(level.dimension(), level, pos), face)) return;
-        if (level.setBlockAndUpdate(pos, fire)) {
+                || !fire.canSurvive(level, pos) || !level.mayInteract(player, pos)) return;
+        if (WitcheryBlockPlacement.placeNow(level, pos, fire, player, face)) {
             level.playSound(null, pos, SoundEvents.FIRE_AMBIENT, SoundSource.BLOCKS, 1, 0.8F + random.nextFloat() * 0.4F);
         }
     }

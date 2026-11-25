@@ -2,6 +2,7 @@ package art.arcane.witchery.ritual;
 
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.event.WitcheryBlockBreak;
+import art.arcane.witchery.event.WitcheryBlockPlacement;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.world.WitcheryTeleport;
 import net.minecraft.core.BlockPos;
@@ -23,9 +24,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.common.util.FakePlayerFactory;
-import net.minecraftforge.event.ForgeEventFactory;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -369,11 +368,11 @@ public final class LandscapeRites {
         if (existing.equals(replacement)) return true;
         if (existing.hasBlockEntity() || existing.getDestroySpeed(level, pos) < 0) return false;
         if (caster != null && (!level.mayInteract(caster, pos)
-                || !existing.isAir() && WitcheryBlockBreak.isCanceled(level, pos, existing, caster)
-                || !replacement.isAir() && ForgeEventFactory.onBlockPlace(caster, BlockSnapshot.create(level.dimension(), level, pos), Direction.UP))) {
+                || !existing.isAir() && WitcheryBlockBreak.isCanceled(level, pos, existing, caster))) {
             return false;
         }
-        return level.setBlockAndUpdate(pos, replacement);
+        return replacement.isAir() ? level.setBlockAndUpdate(pos, replacement)
+                : WitcheryBlockPlacement.place(level, pos, replacement, caster, Direction.UP);
     }
 
     public static void playRiteStart(ServerLevel level, BlockPos target) {

@@ -13,6 +13,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
@@ -36,11 +37,15 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.PlayLevelSoundEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
+import java.util.ArrayList;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
@@ -143,12 +148,39 @@ public final class ImpContractTests {
         BlockPos clicked = helper.absolutePos(CENTER.east());
         level.setBlockAndUpdate(clicked, Blocks.STONE.defaultBlockState());
         var hit = new BlockHitResult(Vec3.atCenterOf(clicked).add(0, 0.5, 0), Direction.UP, clicked, false);
+        var ignition = clicked.above();
+        var placements = new ArrayList<BlockEvent.EntityPlaceEvent>();
+        var sounds = new ArrayList<PlayLevelSoundEvent.AtPosition>();
+        Consumer<BlockEvent.EntityPlaceEvent> protection = event -> {
+            if (event.getLevel() == level && event.getEntity() == player && event.getPos().equals(ignition)
+                    && event.getPlacedBlock().is(Blocks.FIRE)) {
+                placements.add(event);
+                if (placements.size() == 1) event.setCanceled(true);
+            }
+        };
+        Consumer<PlayLevelSoundEvent.AtPosition> listen = event -> {
+            if (event.getLevel() == level && BlockPos.containing(event.getPosition()).equals(ignition)
+                    && event.getSound() != null && event.getSound().value().equals(SoundEvents.FIRE_AMBIENT)) sounds.add(event);
+        };
         player.setItemInHand(HAND, ItemStack.EMPTY);
-        for (int tries = 0; tries < 80 && level.isEmptyBlock(clicked.above()); tries++) {
+        MinecraftForge.EVENT_BUS.addListener(protection);
+        MinecraftForge.EVENT_BUS.addListener(listen);
+        try {
+            player.getRandom().setSeed(5120);
             player.gameMode.useItemOn(player, level, ItemStack.EMPTY, HAND, hit);
+            helper.assertTrue(placements.size() == 1 && placements.get(0).getBlockSnapshot().getReplacedBlock().isAir()
+                            && level.isEmptyBlock(ignition) && !level.getBlockTicks().hasScheduledTick(ignition, Blocks.FIRE)
+                            && sounds.isEmpty(),
+                    "A veto on Fiery Touch's proposed fire keeps the cell empty and suppresses its cue and tick");
+            player.getRandom().setSeed(5120);
+            player.gameMode.useItemOn(player, level, ItemStack.EMPTY, HAND, hit);
+            helper.assertTrue(placements.size() == 2 && level.getBlockState(ignition).is(Blocks.FIRE)
+                            && level.getBlockTicks().hasScheduledTick(ignition, Blocks.FIRE) && sounds.size() == 1,
+                    "An approved Fiery Touch starts fire at the clicked face and plays its cue once");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(protection);
+            MinecraftForge.EVENT_BUS.unregister(listen);
         }
-        helper.assertTrue(level.getBlockState(clicked.above()).is(Blocks.FIRE),
-                "Fiery Touch should start fire at the clicked block face");
 
         BlockPos water = helper.absolutePos(CENTER.west());
         for (int height = 0; height <= 1; height++) {

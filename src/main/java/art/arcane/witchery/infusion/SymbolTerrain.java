@@ -7,6 +7,7 @@ import art.arcane.witchery.block.WitchDoorBlock;
 import art.arcane.witchery.block.WitchesCauldronBlock;
 import art.arcane.witchery.block.entity.BrazierBlockEntity;
 import art.arcane.witchery.event.WitcheryBlockBreak;
+import art.arcane.witchery.event.WitcheryBlockPlacement;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -39,8 +40,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.BlockSnapshot;
-import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import org.jetbrains.annotations.Nullable;
@@ -278,8 +277,8 @@ public final class SymbolTerrain {
 
     private static void place(ServerLevel level, @Nullable Entity caster, BlockPos pos, BlockState state, Direction face) {
         var old = level.getBlockState(pos);
-        if (old.equals(state) || !canModify(level, caster, pos, old)
-                || caster != null && ForgeEventFactory.onBlockPlace(caster, BlockSnapshot.create(level.dimension(), level, pos), face)) return;
-        level.setBlockAndUpdate(pos, state);
+        if (!old.equals(state) && canModify(level, caster, pos, old)) {
+            WitcheryBlockPlacement.place(level, pos, state, caster, face);
+        }
     }
 }

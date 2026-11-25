@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Spell and landscape placement protection (2026-11-25)
+
+- The previous Forge build reported snow, air, and dirt in place of the incoming Glow Globe, fire, and lava. Type-specific protection listeners allowed all three writes. The baseline GameTests reproduced each failure.
+- Aguamenti, Incendio, Lumos, Fiery Touch, and landscape rites use the shared placement transaction. Player placement events report the incoming block and the previous state. A veto restores the previous state and leaves no fire or lava tick. Fiery Touch plays its cue after approval.
+- A survival client on the clean packaged Forge server drew two Lumos gestures and used Fiery Touch on two faces. It checked each veto and approval. The same server exercised two Raise Volcano pulses using a stage-nine fixture. A dedicated restart preserved the six resulting cells. The client ran with zero master volume and OpenAL No Output, and the focus monitor recorded no activation.
+- Copied Auram verified all six placement outcomes with the same JAR and a fixture player. Auram's faster random source mapped the clean Forge test seed to a failed ignition roll. Repeating fixture clicks until the effect attempted placement exercised the actual interaction path. Only the approved fire played its cue.
+- Local Java 17 data generation, JAR reobfuscation, and all 309 required Forge GameTests passed. The test package SHA-256 is `beb775e04161c31d57ea8d39090db42cf5a8f44dc98e9fc5078b09423bcf90b3`. Logs and the exact candidate are in `build/qa-spell-rite-placement/`.
+
 ## Powered cursed control placement (2026-11-25)
 
 - The preceding packaged build notified the powered stone button's cell and its supporting block before Forge vetoed a curse. It then restored the block state.

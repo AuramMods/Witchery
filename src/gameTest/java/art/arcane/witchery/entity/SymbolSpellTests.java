@@ -401,10 +401,29 @@ public final class SymbolSpellTests {
                     level.setBlockAndUpdate(wall, Blocks.STONE.defaultBlockState());
                     level.setBlockAndUpdate(globe.below(), Blocks.STONE.defaultBlockState());
                     level.setBlockAndUpdate(globe, Blocks.SNOW.defaultBlockState());
-                    new SymbolProjectile(level, player, SymbolSpell.LUMOS, 1)
-                            .onHit(new BlockHitResult(Vec3.atCenterOf(globe), Direction.WEST, wall, false));
+                    var hit = new BlockHitResult(Vec3.atCenterOf(globe), Direction.WEST, wall, false);
+                    var glowGlobe = WitcheryBlocks.getRequired("glowglobe").get();
+                    var placements = new ArrayList<BlockEvent.EntityPlaceEvent>();
+                    Consumer<BlockEvent.EntityPlaceEvent> protection = event -> {
+                        if (event.getLevel() == level && event.getEntity() == player && event.getPos().equals(globe)
+                                && event.getPlacedBlock().is(glowGlobe)) {
+                            placements.add(event);
+                            event.setCanceled(true);
+                        }
+                    };
+                    MinecraftForge.EVENT_BUS.addListener(protection);
+                    try {
+                        new SymbolProjectile(level, player, SymbolSpell.LUMOS, 1).onHit(hit);
+                        helper.assertTrue(placements.size() == 1
+                                        && placements.get(0).getBlockSnapshot().getReplacedBlock().is(Blocks.SNOW)
+                                        && level.getBlockState(globe).is(Blocks.SNOW),
+                                "A veto on the proposed Glow Globe restores its snow layer");
+                    } finally {
+                        MinecraftForge.EVENT_BUS.unregister(protection);
+                    }
+                    new SymbolProjectile(level, player, SymbolSpell.LUMOS, 1).onHit(hit);
                     var light = level.getBlockState(globe);
-                    helper.assertTrue(light.is(WitcheryBlocks.getRequired("glowglobe").get())
+                    helper.assertTrue(light.is(glowGlobe)
                                     && light.getLightEmission(level, globe) == 14
                                     && light.getCollisionShape(level, globe, CollisionContext.empty()).isEmpty(),
                             "Lumos replaces the snow layer with a level-14, non-solid Glow Globe");

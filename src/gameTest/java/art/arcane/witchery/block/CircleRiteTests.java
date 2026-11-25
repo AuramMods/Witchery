@@ -16,6 +16,7 @@ import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
+import art.arcane.witchery.ritual.LandscapeRites;
 import art.arcane.witchery.ritual.RiteActivation;
 import art.arcane.witchery.ritual.RitualCircle;
 import art.arcane.witchery.ritual.WeatherRites;
@@ -56,6 +57,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -1569,6 +1571,43 @@ public final class CircleRiteTests {
                     "The center shaft must open through the original terrain");
             helper.succeed();
         });
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_volcano_protection")
+    public static void volcanoPulseHonorsVetoOnProposedLava(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var heart = helper.absolutePos(CENTER);
+        var target = heart.south(4);
+        var vent = target.above(2);
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "VolcanoProtection"));
+        player.setPos(Vec3.atBottomCenterOf(heart));
+        level.setBlockAndUpdate(target.above(), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(vent, Blocks.DIRT.defaultBlockState());
+        var progress = new LandscapeRites.Progress(ItemRiteRecipe.Action.RAISE_VOLCANO, null, target, 9, null, false, 0);
+        var placements = new ArrayList<BlockEvent.EntityPlaceEvent>();
+        Consumer<BlockEvent.EntityPlaceEvent> protection = event -> {
+            if (event.getLevel() == level && event.getEntity() == player && event.getPos().equals(vent)
+                    && event.getPlacedBlock().is(Blocks.LAVA)) {
+                placements.add(event);
+                if (placements.size() == 1) event.setCanceled(true);
+            }
+        };
+        MinecraftForge.EVENT_BUS.addListener(protection);
+        try {
+            LandscapeRites.pulse(level, heart, progress, 0, player, Runnable::run);
+            helper.assertTrue(placements.size() == 1 && placements.get(0).getBlockSnapshot().getReplacedBlock().is(Blocks.DIRT)
+                            && level.getBlockState(vent).is(Blocks.DIRT)
+                            && !level.getFluidTicks().hasScheduledTick(vent, Fluids.LAVA),
+                    "A veto on the volcano's proposed lava preserves dirt without a lava tick");
+            LandscapeRites.pulse(level, heart, progress, 0, player, Runnable::run);
+            helper.assertTrue(placements.size() == 2 && level.getBlockState(vent).is(Blocks.LAVA)
+                            && level.getFluidTicks().hasScheduledTick(vent, Fluids.LAVA),
+                    "An approved pulse replaces dirt with a ticking lava source");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(protection);
+            player.discard();
+        }
+        helper.succeed();
     }
 
     @GameTest(template = TEMPLATE, batch = "witchery_earth_lift", setupTicks = 5, timeoutTicks = 165)
