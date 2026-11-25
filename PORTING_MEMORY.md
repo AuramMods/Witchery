@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Merchant stock in converted worlds (2026-11-25)
+
+- Witchery 0.24.1 serialized a partially used Demon Heart bargain, a Hobgoblin Koboldite Nugget offer, and a Wolfman's original red wool offer. The mixed-format fixture placed those native records in a 1.20.1 entity region alongside a separate animal shop stock record and kept the original registry snapshot. The preceding JAR read both the Demon Heart and its three-diamond price as air.
+- Original imports and ordinary reopens now share the trade stack upgrade. It resolves both payments and the result in `Bargains`, `Offers`, `FormerVillager.Offers`, and the animal shop stock in `ForgeData`. Offer order, saved quantities, use counts, and existing styled names stay intact.
+- The muted clean Forge survival client bought the recovered Demon Heart for three diamonds and kept it after a dedicated restart. The recovered offer reached its two-use limit. At dawn the Wolfman reverted and kept the original price of five emeralds for two red wool. Both client launches used master volume zero and OpenAL No Output and kept the existing app in focus.
+- The headless Auram copy loaded and resaved all four merchants, then retained their stock after a dedicated restart. The Forge GameTest also covers the case where the Wolfman's trade already sits under `FormerVillager`, and checks that an existing modern styled offer survives alongside the legacy stacks.
+- Reobfuscation and all 392 local Forge GameTests passed on seed `5471593853027166409`. The exact candidate JAR is `build/qa-merchant-stock/candidate.jar` with SHA-256 `22892312b3f9c2425dd8c90b9470d26f442f67ccdca13e2d5392b4166ee0b964`. See `build/qa-merchant-stock/comparison.txt` for the native, preceding-package, clean Forge and copied Auram traces.
+
 ## Brew Bucket and projectile payloads in converted worlds (2026-11-25)
 
 - Witchery 0.24.1 withdrew a Brew Bucket with color `123456` from a 3,000 mB cauldron and left 2,000 mB. Its serialized ordered ingredients are Nether Wart, Sugar and a bound Taglock. The same native runner serialized a separate custom spell containing a Wolfsbane bottle with color `654321`.

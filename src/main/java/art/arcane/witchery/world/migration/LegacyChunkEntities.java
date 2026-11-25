@@ -1,7 +1,6 @@
 package art.arcane.witchery.world.migration;
 
 import art.arcane.witchery.Witchery;
-import art.arcane.witchery.entity.AnimalMerchant;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.lycanthropy.WerewolfVillagers;
 import art.arcane.witchery.registry.WitcheryApothecary;
@@ -83,11 +82,6 @@ public final class LegacyChunkEntities {
             prepareEntity(entity.getCompound("Riding"), ids, fixer, from);
         }
         int targetVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
-        var forgeData = entity.getCompound("ForgeData");
-        if (forgeData.contains(AnimalMerchant.STOCK_TAG, Tag.TAG_COMPOUND)) {
-            ids.upgradeUntypedItems(forgeData.getCompound(AnimalMerchant.STOCK_TAG), fixer, from, targetVersion);
-        }
-
         String oldType = entity.getString("id");
         if (isFallingInfinityEgg(entity, ids)) {
             // The vanilla fixer interprets TileID using vanilla's numeric registry.
@@ -100,15 +94,14 @@ public final class LegacyChunkEntities {
             entity.putBoolean(LEGACY_APOTHECARY, true);
         }
         ResourceLocation name = WitcheryEntities.legacyEntityId(oldType);
+        ids.upgradeMerchantItems(entity, name == null ? oldType : name.toString(), fixer, from, targetVersion);
         if (name == null) return;
         if ((name.getPath().equals("werevillager") && ids.isApothecary(entity, "Profession"))
                 || (name.getPath().equals("wolfman") && ids.isApothecary(entity, "FormerProfession"))) {
             entity.putBoolean(LEGACY_APOTHECARY, true);
         }
-        // The vanilla Witch schema does not visit these trade and brew stacks.
+        // The vanilla Witch schema does not visit these brew stacks.
         switch (name.getPath()) {
-            case "goblin", "wolfman" -> ids.upgradeUntypedItems(entity.getCompound("Offers"), fixer, from, targetVersion);
-            case "demon" -> ids.upgradeUntypedItems(entity.getCompound("Bargains"), fixer, from, targetVersion);
             case "droplet" -> ids.upgradeUntypedItems(entity.getCompound("Brew"), fixer, from, targetVersion);
             case "brew", "brew2" -> name = prepareBrewProjectile(entity, name, ids, fixer, from, targetVersion);
         }

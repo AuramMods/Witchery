@@ -4,6 +4,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.brewing.BrewItemCurse;
 import art.arcane.witchery.brewing.DeathBrewEffects;
 import art.arcane.witchery.capability.WitcheryCapabilities;
+import art.arcane.witchery.entity.AnimalMerchant;
 import art.arcane.witchery.integration.BiomesOPlentySaplings;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.mixin.LegacyEnchantmentNamesAccessor;
@@ -297,6 +298,7 @@ public final class LegacyWorldIds {
             upgradeItemBinding(compound);
             String id = compound.getString("id");
             int currentVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+            upgradeMerchantItems(compound, id, fixer, currentVersion, currentVersion);
             if (compound.get("Brew") instanceof CompoundTag brew) {
                 if (id.equals("witchery:droplet")) {
                     repairLegacyInventory(brew.getList("Items", Tag.TAG_COMPOUND), fixer, currentVersion);
@@ -346,6 +348,23 @@ public final class LegacyWorldIds {
             var id = ResourceLocation.tryParse(tile.getString("id"));
             if (id != null && id.getNamespace().equals(Witchery.MODID)) {
                 for (String key : tile.getAllKeys()) upgradeUntypedItems(tile.get(key), fixer, version, version);
+            }
+        }
+    }
+
+    void upgradeMerchantItems(CompoundTag entity, String id, DataFixer fixer, int from, int to) {
+        // These offers live outside the vanilla merchant data-fix schema.
+        if (entity.get("ForgeData") instanceof CompoundTag forgeData) {
+            upgradeUntypedItems(forgeData.get(AnimalMerchant.STOCK_TAG), fixer, from, to);
+        }
+        switch (id) {
+            case "witchery:demon" -> upgradeUntypedItems(entity.get("Bargains"), fixer, from, to);
+            case "witchery:goblin" -> upgradeUntypedItems(entity.get("Offers"), fixer, from, to);
+            case "witchery:wolfman" -> {
+                upgradeUntypedItems(entity.get("Offers"), fixer, from, to);
+                if (entity.get("FormerVillager") instanceof CompoundTag former) {
+                    upgradeUntypedItems(former.get("Offers"), fixer, from, to);
+                }
             }
         }
     }

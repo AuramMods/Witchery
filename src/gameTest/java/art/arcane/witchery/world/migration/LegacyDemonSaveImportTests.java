@@ -1,6 +1,10 @@
 package art.arcane.witchery.world.migration;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.entity.AnimalMerchant;
+import art.arcane.witchery.entity.Demon;
+import art.arcane.witchery.entity.Hobgoblin;
+import art.arcane.witchery.entity.Wolfman;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.lycanthropy.WerewolfVillagers;
 import art.arcane.witchery.registry.WitcheryEntities;
@@ -9,19 +13,26 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.util.datafix.DataFixTypes;
+import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.world.entity.ai.behavior.ResetProfession;
+import net.minecraft.world.entity.animal.Cow;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.trading.MerchantOffers;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.storage.ChunkStorage;
+import net.minecraft.world.level.chunk.storage.EntityStorage;
+import net.minecraft.world.level.chunk.storage.RegionFile;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
+import org.apache.commons.io.FileUtils;
 
 import java.nio.file.Files;
 import java.util.Optional;
@@ -30,6 +41,79 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class LegacyDemonSaveImportTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_mixed_merchant_stock")
+    public static void repairsTradesInExistingEntityRegions(GameTestHelper helper) throws Exception {
+        var root = Files.createTempDirectory("witchery-existing-merchant-stock");
+        try {
+            var registry = TagParser.parseTag("{ItemData:[{V:35},{V:378},{V:388},{V:4096}]}");
+            String[] names = {"minecraft:wool", "minecraft:magma_cream", "minecraft:emerald", "witchery:ingredient"};
+            var entries = registry.getList("ItemData", Tag.TAG_COMPOUND);
+            for (int index = 0; index < names.length; index++) {
+                entries.getCompound(index).putString("K", "\u0002" + names[index]);
+            }
+            NbtIo.writeCompressed(registry, root.resolve("witchery-legacy-ids.dat").toFile());
+            var directory = Files.createDirectories(root.resolve("entities"));
+            var chunk = new ChunkPos(0, 0);
+            var saved = NbtUtils.addCurrentDataVersion(TagParser.parseTag("""
+                    {Position:[I;0,0],Entities:[
+                       {id:"witchery:demon",Pos:[4d,70d,4d],Health:100f,PlayerCreated:1b,Bargains:{Recipes:[
+                         {buy:{id:378s,Count:2b,Damage:0s},buyB:{id:"witchery:ingredient",Count:1b,Damage:24s},
+                          sell:{id:4096s,Count:1b,Damage:23s},uses:2,maxUses:7},
+                         {buy:{id:"minecraft:emerald",Count:3b},sell:{id:"minecraft:book",Count:1b,
+                          tag:{display:{Name:'{"text":"Current book","color":"blue"}'}}},uses:1,maxUses:4}]}},
+                       {id:"witchery:goblin",Pos:[5d,70d,4d],Profession:1,Riches:12,Offers:{Recipes:[
+                         {buy:{id:388s,Count:2b,Damage:0s},sell:{id:35s,Count:3b,Damage:14s},uses:4,maxUses:8}]}},
+                       {id:"witchery:wolfman",Pos:[6d,70d,4d],Infectious:1b,FormerVillager:{Xp:3,
+                         VillagerData:{profession:"minecraft:librarian",type:"minecraft:plains",level:1},Offers:{Recipes:[
+                           {buy:{id:388s,Count:5b,Damage:0s},sell:{id:"minecraft:wool",Count:2b,Damage:11s},uses:3,maxUses:9}]}}},
+                       {id:"minecraft:cow",Pos:[7d,70d,4d],ForgeData:{WitcheryShopStock:{Recipes:[
+                         {buy:{id:388s,Count:2b,Damage:0s},sell:{id:35s,Count:1b,Damage:5s},uses:1,maxUses:3}]}}}]}
+                    """));
+            try (var region = new RegionFile(directory.resolve("r.0.0.mca"), directory, true);
+                 var stream = region.getChunkDataOutputStream(chunk)) {
+                NbtIo.write(saved, stream);
+            }
+            try (var storage = new EntityStorage(helper.getLevel(), directory, DataFixers.getDataFixer(), true, Runnable::run)) {
+                var loaded = storage.loadEntities(chunk).join();
+                var merchants = loaded.getEntities().toList();
+                var demon = (Demon) merchants.get(0);
+                var heart = demon.getOffers().get(0);
+                helper.assertTrue(heart.getBaseCostA().is(Items.MAGMA_CREAM) && heart.getBaseCostA().getCount() == 2
+                                && heart.getCostB().is(WitcheryIngredient.BAT_WOOL.item())
+                                && heart.getCostB().getCount() == 1 && heart.getResult().is(WitcheryIngredient.DEMON_HEART.item())
+                                && heart.getUses() == 2 && heart.getMaxUses() == 7,
+                        "Ordinary entity loading restores the original payment, output and uses for the Demon Heart");
+                var current = demon.getOffers().get(1);
+                helper.assertTrue(current.getResult().save(new CompoundTag()).equals(saved.getList("Entities", Tag.TAG_COMPOUND)
+                                .getCompound(0).getCompound("Bargains").getList("Recipes", Tag.TAG_COMPOUND)
+                                .getCompound(1).getCompound("sell")) && current.getUses() == 1 && current.getMaxUses() == 4,
+                        "A modern offer in the same list retains its styled name and usage history");
+                var goblin = (Hobgoblin) merchants.get(1);
+                var wool = goblin.getOffers().get(0);
+                helper.assertTrue(wool.getBaseCostA().is(Items.EMERALD) && wool.getBaseCostA().getCount() == 2
+                                && wool.getResult().is(Items.RED_WOOL) && wool.getResult().getCount() == 3
+                                && wool.getUses() == 4 && wool.getMaxUses() == 8,
+                        "The Hobgoblin keeps its sold quantity, wool metadata, price and uses");
+                var wolfman = (Wolfman) merchants.get(2);
+                var former = wolfman.formerVillagerData();
+                var formerTrade = new MerchantOffers(former.getCompound("Offers")).get(0);
+                helper.assertTrue(wolfman.isInfectious() && former.getInt("Xp") == 3
+                                && formerTrade.getBaseCostA().is(Items.EMERALD) && formerTrade.getBaseCostA().getCount() == 5
+                                && formerTrade.getResult().is(Items.BLUE_WOOL) && formerTrade.getResult().getCount() == 2
+                                && formerTrade.getUses() == 3 && formerTrade.getMaxUses() == 9,
+                        "The Wolfman retains the recovered sales alongside its former villager data");
+                var cow = (Cow) merchants.get(3);
+                var animalTrade = new MerchantOffers(cow.getPersistentData().getCompound(AnimalMerchant.STOCK_TAG)).get(0);
+                helper.assertTrue(animalTrade.getBaseCostA().is(Items.EMERALD) && animalTrade.getResult().is(Items.LIME_WOOL)
+                                && animalTrade.getUses() == 1 && animalTrade.getMaxUses() == 3,
+                        "Repair the animal shop recipe inside Forge's persisted data");
+            }
+        } finally {
+            FileUtils.deleteDirectory(root.toFile());
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_legacy_demon_and_imp")
     public static void preservesLegacyBargainsAndImpOwnership(GameTestHelper helper) throws Exception {
         var registry = TagParser.parseTag("{ItemData:[{V:264},{V:266},{V:388},{V:403},{V:35},{V:4096}]}");
