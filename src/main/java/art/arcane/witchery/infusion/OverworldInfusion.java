@@ -1,12 +1,11 @@
 package art.arcane.witchery.infusion;
 
 import art.arcane.witchery.entity.ThrownBrew;
-import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.network.WitcheryNetwork;
+import art.arcane.witchery.ritual.ProtectionRites;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -185,15 +184,15 @@ public final class OverworldInfusion {
         }
         if (hit.getDirection() == Direction.DOWN || !ROCK_SOURCE.contains(state.getBlock())
                 || level.getBlockState(pos.relative(hit.getDirection().getClockWise())).blocksMotion()
-                || !InfusionEnergy.canSpend(player, 3) || !level.removeBlock(pos, false)) return;
+                || !InfusionEnergy.canSpend(player, 3)) return;
+        ThrownBrew rock = ThrownBrew.forTerrainRock(level, player, pos);
+        if (!level.addFreshEntity(rock)) return;
+        if (!state.equals(level.getBlockState(pos)) || !level.removeBlock(pos, false)) {
+            rock.discard();
+            return;
+        }
         InfusionEnergy.spend(player, 3);
-        ThrownBrew rock = new ThrownBrew(player, level);
-        rock.setItem(new ItemStack(WitcheryIngredient.ROCK.item()));
-        rock.setPos(Vec3.atCenterOf(pos));
-        rock.shootFromRotation(player, player.getXRot(), player.getYRot(), 0, 1.5F, 1);
-        level.addFreshEntity(rock);
-        level.sendParticles(ParticleTypes.POOF, rock.getX(), rock.getY(), rock.getZ(), 8, 0.5, 0.5, 0.5, 0.05);
-        level.playSound(null, pos, SoundEvents.GENERIC_EXPLODE, player.getSoundSource(), 0.75F, 1);
+        WitcheryNetwork.sendTerrainRockCue(level, Vec3.atLowerCornerOf(pos), true);
     }
 
     private static void raiseTerrain(ServerLevel level, BlockPos top) {
@@ -269,7 +268,7 @@ public final class OverworldInfusion {
         private int stage;
 
         private Shockwave(ServerPlayer player, int stages) {
-            center = player.blockPosition().below();
+            center = new BlockPos((int) player.getX(), (int) player.getY() - 1, (int) player.getZ());
             caster = player.getUUID();
             this.stages = stages;
         }
@@ -286,15 +285,16 @@ public final class OverworldInfusion {
 
             ServerPlayer owner = level.getServer().getPlayerList().getPlayer(caster);
             Vec3 origin = Vec3.atLowerCornerOf(center);
-            AABB area = new AABB(center.above()).inflate(radius, 0.5, radius);
+            AABB area = new AABB(center.offset(-radius, 1, -radius), center.offset(radius, 3, radius));
+            int outerRadius = radius + 1;
             for (LivingEntity victim : level.getEntitiesOfClass(LivingEntity.class, area)) {
-                Vec3 offset = victim.position().subtract(origin);
-                double distance = offset.length();
-                if (distance < radius || distance > radius + 1) continue;
+                double distance = center.distSqr(victim.blockPosition());
+                if (distance < radius * radius || distance > outerRadius * outerRadius) continue;
                 victim.hurt(owner == null ? level.damageSources().magic() : level.damageSources().playerAttack(owner), 8);
-                if (distance <= 6 && !(victim instanceof Player) && !(victim instanceof EnderDragon)) {
-                    victim.push(Math.signum(offset.x) * 0.22, offset.y * 4.32 / Math.pow(distance, 4),
-                            Math.signum(offset.z) * 0.22);
+                Vec3 offset = victim.position().subtract(origin);
+                if (offset.lengthSqr() <= 36 && !(victim instanceof Player) && !(victim instanceof EnderDragon)) {
+                    Vec3 motion = ProtectionRites.repulsion(offset);
+                    victim.push(motion.x, motion.y, motion.z);
                 }
             }
             return stage >= stages;
@@ -305,12 +305,14 @@ public final class OverworldInfusion {
             int z = 0;
             int error = 1 - radius;
             while (x >= z) {
-                for (int dx = -1; dx <= 1; dx += 2) {
-                    for (int dz = -1; dz <= 1; dz += 2) {
-                        pixel(level, center.offset(dx * x, 0, dz * z), delta);
-                        if (x != z) pixel(level, center.offset(dx * z, 0, dz * x), delta);
-                    }
-                }
+                pixel(level, center.offset(x, 0, z), delta);
+                pixel(level, center.offset(z, 0, x), delta);
+                pixel(level, center.offset(-x, 0, z), delta);
+                pixel(level, center.offset(-z, 0, x), delta);
+                pixel(level, center.offset(-x, 0, -z), delta);
+                pixel(level, center.offset(-z, 0, -x), delta);
+                pixel(level, center.offset(x, 0, -z), delta);
+                pixel(level, center.offset(z, 0, -x), delta);
                 z++;
                 if (error < 0) error += 2 * z + 1;
                 else {

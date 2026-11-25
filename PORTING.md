@@ -361,6 +361,7 @@
 - [x] In the muted packaged client, use the Overworld rite with the fixture's bottled offering and bound ward. Convert gold and iron ore and collect the ingots with the magnet. Disarm a zombie and push its chainmail with a sneak attack. A rock dealt six damage, a lifted column rose three blocks with its nearby chest intact, and a two-second shockwave dealt eight damage. A plain grass landing and a sneaking snow landing each preserved health.
 - [x] A dedicated restart retained infusion ID 2, 151 charge, the Witch's Hand, the raised terracotta and its adjacent chest.
 - [x] Restore the magnet's feet-centered reach, diagonal movement and original order for converting nearby ore. The original server and rebuilt Forge spent the three-charge pulse on iron first, and both reached the negative-coordinate edge. The live Forge comparison also exercised the bounded pull for an aligned item.
+- [x] Restore the shockwave's integer-centered ring order, target height and block-position reach. The copied Auram server matched the original six-pulse trace for terrain height and target health. The clean Forge survival client used the Hand to launch a six-damage rock for three charges and cast the wave for twelve. The dedicated restart retained the terrain and 85 remaining charge. A cancelled rock spawn preserves its source block and charge.
 
 ## Infernal Infusion Hand Powers (2026-11-20)
 

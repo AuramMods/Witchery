@@ -70,6 +70,7 @@ public final class WitcheryNetwork {
     private static final int LEGACY_WATER_SPLASH_SOUND_ID = 4;
     private static final int LEGACY_HARP_SOUND_ID = 8;
     private static final int LEGACY_PLING_SOUND_ID = 9;
+    private static final int LEGACY_EXPLOSION_SOUND_ID = 10;
     private static final int LEGACY_POP_SOUND_ID = 11;
     private static final int LEGACY_ENDERMAN_TELEPORT_SOUND_ID = 16;
     private static final int LEGACY_GHAST_FIREBALL_SOUND_ID = 19;
@@ -422,6 +423,12 @@ public final class WitcheryNetwork {
 
     public static void sendFamiliarTransition(ServerLevel level, Vec3 center) {
         sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_ENDERMAN_TELEPORT_SOUND_ID, center, 1, 1, 16);
+    }
+
+    public static void sendTerrainRockCue(ServerLevel level, Vec3 location, boolean launch) {
+        double size = launch ? 0.5 : 1;
+        int sound = launch ? LEGACY_EXPLOSION_SOUND_ID : LEGACY_NO_SOUND_ID;
+        sendParticlesAround(level, LEGACY_EXPLOSION_PARTICLE_ID, sound, location, size, size, 8);
     }
 
     public static void sendParticlesAround(ServerLevel level, int particleEffectId, int soundEffectId, Vec3 center,

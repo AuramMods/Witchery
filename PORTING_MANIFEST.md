@@ -1513,6 +1513,7 @@ Implementation anchors:
   - `sound` resolves the sound ID and plays the registered event at the transmitted position.
   - `push_target` now dispatches to client packet bridge to apply motion vectors to client entities.
   - The Overworld infusion sends the original repulsion vector directly to the affected player. A standing cast lifts the player by 0.3 blocks per tick and a crouched cast uses 1.5. Both use the caster's look direction for the 2.4 horizontal multiplier.
+  - Terrain rocks use the legacy brew launch spread and speed. The `particles` packet sends the starting explosion cue with sound from the source block and a silent impact cue from the projectile's previous position.
   - `set_client_player_facing` now dispatches to client packet bridge to apply local player rotation.
   - `sync_entity_size` restores the active Resizing scale on the client. The client uses its local pose and creature form to compute physical dimensions from that scale.
   - On dimension change, the server replays the player's active tracked Witchery effects to the replacement local player through vanilla effect packets. This keeps Resizing, Colorful, Grotesque, Disease, Hellish Aura, and the plant brew effects available immediately after direct teleports.

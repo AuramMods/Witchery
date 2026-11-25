@@ -4,6 +4,7 @@ import art.arcane.witchery.brewing.BrewCreatureEffects;
 import art.arcane.witchery.item.BrewBottleItem;
 import art.arcane.witchery.item.ThrowableBrewItem;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ItemParticleOption;
@@ -98,6 +99,14 @@ public final class ThrownBrew extends ThrowableItemProjectile {
         return brew;
     }
 
+    public static ThrownBrew forTerrainRock(ServerLevel level, Player caster, BlockPos source) {
+        var rock = new ThrownBrew(caster, level);
+        rock.setItem(new ItemStack(WitcheryIngredient.ROCK.item()));
+        BrewProjectileLaunch.fromPlayer(rock, caster, 0, 1.5F);
+        rock.setPos(Vec3.atCenterOf(source));
+        return rock;
+    }
+
     public static boolean throwBottle(ServerLevel level, Player player, ItemStack stack) {
         var brew = new ThrownBrew(player, level);
         brew.setItem(stack);
@@ -163,7 +172,7 @@ public final class ThrownBrew extends ThrowableItemProjectile {
                 if (hit instanceof EntityHitResult entity) {
                     entity.getEntity().hurt(server.damageSources().thrown(this, getOwner()), 6);
                 }
-                server.sendParticles(ParticleTypes.POOF, impact.x, impact.y, impact.z, 8, 0.5, 0.5, 0.5, 0.05);
+                WitcheryNetwork.sendTerrainRockCue(server, position(), false);
                 discard();
                 return;
             }

@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Overworld infusion shockwave and terrain rock (2026-11-25)
+
+- The shockwave truncates the caster's coordinates and centers the terrain one block below their feet. Each pulse follows the original eight ring visits and checks entity block positions in the original two-block-high hit box. It keeps the existing safeguards for block entities and unbreakable blocks.
+- The original server and packaged Auram server moved the two test columns to Y 180 and 181 on the first pulse, then returned both to Y 179 by the third. The full six-pulse trace matched, including the two pigs damaged for eight health each and the third pig left at ten health. The previous Forge JAR hit only the third pig.
+- A launched rock starts at the center of its source block with the original brew spread and speed. The launch emits a half-block explosion cue with sound, and the impact sends a silent one-block cue from the projectile's last tick position. A Forge spawn veto leaves the source and the player's charges intact.
+- The muted clean Forge client used the ordinary survival Hand controls and supplied targets, terrain and starting charge. The rock dealt six damage and spent three charges. The shockwave hit the same two targets and spent twelve. The dedicated restart retained the four pigs, their health, the Hand, 85 charge and the resulting terrain. Both launches used OpenAL's No Output device and kept the foreground app in focus.
+- All 379 required local Forge GameTests passed on seed `5471593853027166409`. The exact reobfuscated JAR is `build/qa-overworld-terrain/candidate.jar` with SHA-256 `fdf2195005bf8b744c00208287fafd2dc62cee10553cb01851a5f38d15896e6d`. The original, preceding Forge, clean Forge and copied Auram results are in `build/qa-overworld-terrain/comparison.txt`.
+
 ## Overworld infusion magnet and repulsion (2026-11-25)
 
 - The Witch's Hand starts the crouched magnet after 40 ticks and searches a six-block box around the caster's feet. It takes a one-block X step with the original proportional Y and Z movement when X is at least one block away. A bounded pull handles closer and aligned items. The Y component uses the current pose's eye height.
