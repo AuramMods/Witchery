@@ -3,6 +3,8 @@ package art.arcane.witchery.world.migration;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.entity.AnimalMerchant;
 import art.arcane.witchery.entity.ThrownBrew;
+import art.arcane.witchery.lycanthropy.WerewolfVillagers;
+import art.arcane.witchery.registry.WitcheryApothecary;
 import art.arcane.witchery.registry.WitcheryEntities;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.serialization.Dynamic;
@@ -26,6 +28,7 @@ final class LegacyChunkEntities {
     private static final String LEGACY_PREFIX = Witchery.MODID + ".";
     private static final String NAMESPACE = Witchery.MODID + ":";
     private static final String ORIGINAL_TYPE = "WitcheryLegacyEntityType";
+    private static final String LEGACY_APOTHECARY = "WitcheryLegacyApothecary";
 
     private LegacyChunkEntities() {
     }
@@ -76,9 +79,16 @@ final class LegacyChunkEntities {
         }
 
         String oldType = entity.getString("id");
+        if ((oldType.equals("Villager") || oldType.equals("minecraft:villager")) && ids.isApothecary(entity, "Profession")) {
+            entity.putBoolean(LEGACY_APOTHECARY, true);
+        }
         if (!oldType.startsWith(LEGACY_PREFIX) && !oldType.startsWith(NAMESPACE)) return;
         ResourceLocation name = ResourceLocation.tryParse(NAMESPACE + oldType.substring(NAMESPACE.length()).toLowerCase(Locale.ROOT));
         if (name == null) return;
+        if ((name.getPath().equals("werevillager") && ids.isApothecary(entity, "Profession"))
+                || (name.getPath().equals("wolfman") && ids.isApothecary(entity, "FormerProfession"))) {
+            entity.putBoolean(LEGACY_APOTHECARY, true);
+        }
         // The vanilla Witch schema does not visit these trade and brew stacks.
         switch (name.getPath()) {
             case "goblin", "wolfman" -> ids.upgradeUntypedItems(entity.getCompound("Offers"), fixer, from, targetVersion);
@@ -138,7 +148,32 @@ final class LegacyChunkEntities {
                 entity.putInt("Xp", 1);
             }
         }
+        if (entity.getBoolean(LEGACY_APOTHECARY)) {
+            entity.remove(LEGACY_APOTHECARY);
+            if (entity.getString("id").equals(NAMESPACE + "wolfman")) {
+                if (!entity.contains("FormerVillager", Tag.TAG_COMPOUND)) {
+                    CompoundTag former = WerewolfVillagers.legacyProfession(entity);
+                    if (former != null) {
+                        restoreApothecary(former);
+                        entity.put("FormerVillager", former);
+                    }
+                }
+            } else {
+                restoreApothecary(entity);
+            }
+        }
         for (Tag tag : entity.getList("Passengers", Tag.TAG_COMPOUND)) restoreEntity((CompoundTag) tag);
+    }
+
+    private static void restoreApothecary(CompoundTag villager) {
+        var data = villager.getCompound("VillagerData");
+        data.putString("profession", WitcheryApothecary.PROFESSION.getId().toString());
+        villager.put("VillagerData", data);
+        // Villagers with experience retain their profession while looking for a workstation.
+        if (villager.getInt("Xp") == 0) villager.putInt("Xp", 1);
+        if (villager.getCompound("Offers").getList("Recipes", Tag.TAG_COMPOUND).isEmpty()) {
+            villager.put("Offers", WitcheryApothecary.residentOffers().createTag());
+        }
     }
 
     private static void restoreEquipmentSlots(CompoundTag entity) {

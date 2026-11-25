@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 public final class LegacyWorldIds {
     private static final String IMPORT_PROPERTY = "witchery.importLegacyWorld";
@@ -47,6 +48,9 @@ public final class LegacyWorldIds {
     private static final String DIMENSIONS = "Dimensions";
     private static final String POTIONS = "Potions";
     private static final String SPAWN_EGGS = "SpawnEggs";
+    private static final String APOTHECARY_PROFESSION = "ApothecaryProfession";
+    private static final int DEFAULT_APOTHECARY_PROFESSION = 2435;
+    private static final Pattern APOTHECARY_CONFIG_ID = Pattern.compile("\\s*I:ApothecaryVillagerID\\s*=\\s*(-?\\d+)\\s*");
     private static final int ITEM_LORE_COMPONENT_VERSION = 1803;
     private static final ResourceLocation VANILLA_POTION = new ResourceLocation("minecraft", "potion");
     private static final ResourceLocation VANILLA_SPAWN_EGG = new ResourceLocation("minecraft", "spawn_egg");
@@ -59,10 +63,13 @@ public final class LegacyWorldIds {
     private final Set<ResourceLocation> unmappedItems = ConcurrentHashMap.newKeySet();
     private final LegacyWorldDimensions dimensions;
     private final LegacyWorldEffects effects;
+    private final int apothecaryProfession;
 
     private LegacyWorldIds(CompoundTag snapshot) {
         dimensions = new LegacyWorldDimensions(snapshot.getCompound(DIMENSIONS));
         effects = new LegacyWorldEffects(snapshot.getCompound(POTIONS));
+        apothecaryProfession = snapshot.contains(APOTHECARY_PROFESSION, Tag.TAG_ANY_NUMERIC)
+                ? snapshot.getInt(APOTHECARY_PROFESSION) : DEFAULT_APOTHECARY_PROFESSION;
         var eggs = snapshot.getCompound(SPAWN_EGGS);
         for (String metadata : eggs.getAllKeys()) {
             spawnEggs.put(Integer.parseInt(metadata), new ResourceLocation(Witchery.MODID, eggs.getString(metadata) + "_spawn_egg"));
@@ -107,11 +114,13 @@ public final class LegacyWorldIds {
             }
             boolean captureDimensions = !snapshot.contains(DIMENSIONS, Tag.TAG_COMPOUND);
             boolean capturePotions = !snapshot.contains(POTIONS, Tag.TAG_COMPOUND);
-            if (captureDimensions || capturePotions) {
+            boolean captureApothecary = !snapshot.contains(APOTHECARY_PROFESSION, Tag.TAG_ANY_NUMERIC);
+            if (captureDimensions || capturePotions || captureApothecary) {
                 String configPath = System.getProperty(CONFIG_PROPERTY);
                 List<String> config = configPath == null ? List.of() : Files.readAllLines(Path.of(configPath));
                 if (captureDimensions) snapshot.put(DIMENSIONS, LegacyWorldDimensions.capture(config));
                 if (capturePotions) snapshot.put(POTIONS, LegacyWorldEffects.capture(config));
+                if (captureApothecary) snapshot.putInt(APOTHECARY_PROFESSION, captureApothecaryProfession(config));
             }
             String eggMapping = System.getProperty(EGG_IDS_PROPERTY);
             boolean captureEggs = eggMapping != null || !existing;
@@ -120,7 +129,7 @@ public final class LegacyWorldIds {
             }
             LegacyWorldIds ids = new LegacyWorldIds(snapshot);
             if (ids.blocks.isEmpty() && ids.items.isEmpty()) return;
-            if (captureDimensions || capturePotions || captureEggs) {
+            if (captureDimensions || capturePotions || captureApothecary || captureEggs) {
                 saveSnapshot(world, registry, snapshot);
                 Witchery.LOGGER.info("Captured {} Witchery block IDs and {} item IDs for {}", ids.blocks.size(), ids.items.size(), world);
             }
@@ -132,6 +141,19 @@ public final class LegacyWorldIds {
 
     static boolean isImportRequested() {
         return Boolean.getBoolean(IMPORT_PROPERTY);
+    }
+
+    static int captureApothecaryProfession(List<String> config) {
+        int profession = DEFAULT_APOTHECARY_PROFESSION;
+        for (String line : config) {
+            var entry = APOTHECARY_CONFIG_ID.matcher(line);
+            if (entry.matches()) profession = Integer.parseInt(entry.group(1));
+        }
+        return profession;
+    }
+
+    boolean isApothecary(CompoundTag entity, String professionKey) {
+        return entity.contains(professionKey, Tag.TAG_ANY_NUMERIC) && entity.getInt(professionKey) == apothecaryProfession;
     }
 
     private static void saveSnapshot(Path world, Path registry, CompoundTag snapshot) throws IOException {

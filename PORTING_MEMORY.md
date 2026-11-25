@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Apothecary Save Import (2026-11-24)
+
+- The original 0.24.1 server wrote Apothecaries with its default profession ID 2435 and with the configured ID 3267. Both worlds contain ordinary, infected, shifted and untraded merchants and a vanilla librarian control. The three stocked merchants saved five offers each. The first offer sold three Wool of Bat for one emerald and recorded two, three or four uses of nine. The native logs and region readout are under `build/qa-apothecary-import`.
+- The previous packaged port loaded the custom-ID ordinary resident as `minecraft:none` with the five saved offers. The new importer keeps the profession and stock with the original UUID and assigns an untraded Apothecary the current eight-offer resident catalogue. It captures the original config when supplied. A world whose earlier conversion erased the profession needs a source copy that still has the numeric ID.
+- The clean Forge Wolfman reverted at dawn and kept its five offers. The survival client used the ordinary merchant's first offer, raising it from two uses to three. It crafted a shelf from a supplied Birch Slab and Glass Bottle and placed it. The fixture held the other villagers clear while the merchant claimed the shelf and restocked to zero uses. An ordinary restart retained the original UUID, the job site, the five offers, and the client's three Wool of Bat. Both client launches used zero master volume and OpenAL No Output and stayed out of the foreground.
+- The copied Auram headless server imported the default-ID world on the same package. The original offers, counts and profession were available in the ordinary and infected villagers and in the shifted villager's saved human record. The server saved all dimensions on shutdown.
+- Local Java 17 data generation, JAR reobfuscation, and all 287 required Forge GameTests passed. The regression checks the custom ID, vanilla controls, a named trade item tag, and the Wolfman's saved trade through a cure. Candidate SHA-256 `36f6adc4a7f680be5ddf389d5304074d9380e751c7c2ca7ab54e83ca9caa973d`.
+
 ## Vampire Hunts and Home Returns (2026-11-24)
 
 - The original headless 0.24.1 server returned to `(96.5, 90.05, 16.5)` when two home surfaces were equally distant. Blocking headroom at the upper surface sent the vampire to `(96.5, 84.05, 16.5)`. The original search checks the same column at offsets zero, +1, -1, through ±8. It sends Smoke and Witchery poof at both endpoints with width 0.8, height 1.5, and reach 16.

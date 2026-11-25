@@ -85,6 +85,12 @@ public class WitcheryRecipeProvider extends RecipeProvider {
         witchWoodStairs(recipeOutput, WitchWoodType.HAWTHORN, witchPlanks, hawthornPlanks);
         protectionRecipes(recipeOutput);
 
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.DECORATIONS, WitcheryBlocks.APOTHECARY_SHELF.get())
+                .requires(Blocks.BIRCH_SLAB)
+                .requires(Items.GLASS_BOTTLE)
+                .unlockedBy("has_birch_slab", has(Blocks.BIRCH_SLAB))
+                .save(recipeOutput);
+
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryIngredient.TREEFYD_SEEDS.item(), 2)
                 .define('X', WitcheryIngredient.MUTANDIS_EXTREMIS.item())
                 .define('A', WitcheryIngredient.REEK_OF_MISFORTUNE.item())
