@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Stone statue harvesting (2026-11-25)
+
+- The original Forge server measured hardness 2.5 for the Goddess, both ward statues, and the Wolf Altar. The Statue of Worship measured 3.5. Bare hands made progress but could not harvest any of the five. A diamond pickaxe made faster progress and qualified for the drop. Void Bramble measured hardness -1 and made zero mining progress.
+- A muted clean Forge client held the normal attack key with a diamond pickaxe on the preceding JAR. The Goddess statue placed by another player stayed intact. The rebuilt version uses the original 2.5 hardness. The generated pickaxe tag covers the Goddess, both ward statues, and the Wolf Altar alongside the existing Statue of Worship.
+- On packaged clean Forge a survival visitor mined all five statues through the normal attack binding. Each dropped one item. The same tool made no progress on Void Bramble. The replay used a fresh area after the dedicated restart so drops from the first pass could not affect the count.
+- Copied Auram matched all five drops and the Void Bramble control on the same JAR. The first attempt timed out while JEI was indexing recipes. The completed replay allowed the client to enter the world and respond to the normal attack binding. Both test profiles stayed unfocused with zero master volume and OpenAL No Output.
+- Java 17 data generation, JAR reobfuscation, and all 323 required Forge GameTests passed locally. The new regression compares hand and pickaxe progress and checks each survival drop. The tested JAR SHA-256 is `795d226d4eca44ee37ec2259d3f983ee5c3fa5cebaea8b672600c6a1c5f53924`. Logs and disposable profiles are in `build/qa-goddess-mining/`.
+- Compared hardness, mining progress, and tool qualification for all 121 shared block IDs on the original and packaged servers. The probes sampled each block's default state by hand and with a diamond pickaxe, axe, shovel, and shears. The reports in `build/qa-goddess-mining/harvest-audit/` identify remaining differences, including the Poppet Shelf, Blood Crucible, both hunting traps, the Kettle, and both Fume Funnels. Confirm state-specific and special drop rules before applying the registry differences.
+
 ## Active effects in earlier saves (2026-11-25)
 
 - The original headless server saved active Paralysis and Sinking as numeric potion IDs 43 and 119, with amplifier and duration in the same compound. A separate earlier-port fixture exercises a signed-byte slot above 127 in the captured table.

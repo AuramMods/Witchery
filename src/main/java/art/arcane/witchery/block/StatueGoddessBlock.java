@@ -34,7 +34,7 @@ public final class StatueGoddessBlock extends OwnedColumnBlock {
     private static final VoxelShape EAST_WEST = box(1.6, 0, 0, 14.4, 32, 16);
 
     public StatueGoddessBlock() {
-        super(Properties.copy(Blocks.STONE).strength(-1, 1000).noOcclusion(), true);
+        super(Properties.copy(Blocks.STONE).strength(2.5F, 1000).noOcclusion(), true);
         registerDefaultState(defaultBlockState().setValue(FACING, Direction.NORTH));
     }
 

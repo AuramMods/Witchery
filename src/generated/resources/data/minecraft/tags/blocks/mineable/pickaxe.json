@@ -2,7 +2,11 @@
   "values": [
     "witchery:silvervat",
     "witchery:altar",
+    "witchery:statuegoddess",
+    "witchery:decursedirected",
+    "witchery:decurseteleport",
     "witchery:statueofworship",
+    "witchery:wolfaltar",
     "witchery:distilleryidle",
     "witchery:distilleryburning",
     "witchery:leechchest",

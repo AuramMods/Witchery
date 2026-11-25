@@ -859,6 +859,7 @@
 - [x] Restore the Goddess statue's five directed cures and the related vanilla effect removal. Any player can use the statue. The owner can reclaim it while crouching. A prior 1.20.1 placeholder without an owner remains recoverable with the same interaction.
 - [x] Pass Java 17 data generation, JAR reobfuscation, and all 40 Forge GameTests. In a packaged headless restart, the imported Void Bramble suppressed redstone activation. A pig touched the plant and saved at a different location while a dropped bottle stayed behind. Removing the plant let the same offerings start the rite.
 - [x] Verify a two-block Void Bramble column and the north-facing Goddess statue in the muted client. The packaged game rendered the foliage and the complete stone model.
+- [x] Match the original mining rules for the Goddess, the two ward statues, and the Wolf Altar. The original Forge server confirmed 2.5 hardness and pickaxe harvesting for all four, with the Statue of Worship at 3.5 as a control. On packaged clean Forge and copied Auram, a muted survival visitor mined all five and got one of each. The same tool left Void Bramble intact. All 323 local Forge GameTests passed.
 
 ## Coffin (2026-11-20)
 

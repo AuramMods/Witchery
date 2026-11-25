@@ -31,6 +31,7 @@ import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.crafting.conditions.ICondition;
@@ -172,6 +173,33 @@ public final class ProtectionBlockTests {
         } finally {
             goddess.set(originalGoddess);
             bramble.set(originalBramble);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_protection_statue_mining")
+    public static void survivalVisitorsCanMineStoneStatuesWithAPickaxe(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var owner = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "StatueOwner"));
+        var visitor = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "StatueVisitor"));
+        BlockPos support = new BlockPos(5, 1, 4);
+        helper.setBlock(support, Blocks.STONE);
+        helper.setBlock(support.above(), Blocks.AIR);
+        for (String id : List.of("statuegoddess", "decursedirected", "decurseteleport", "wolfaltar", "statueofworship")) {
+            Block statue = WitcheryBlocks.getRequired(id).get();
+            BlockPos pos = place(helper, owner, support, new ItemStack(statue));
+            BlockState state = level.getBlockState(pos);
+            visitor.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            float bareHandProgress = state.getDestroyProgress(visitor, level, pos);
+            float hardness = id.equals("statueofworship") ? 3.5F : 2.5F;
+            helper.assertTrue(state.getDestroySpeed(level, pos) == hardness && bareHandProgress > 0,
+                    id + " has the original finite stone hardness");
+            helper.assertFalse(visitor.hasCorrectToolForDrops(state), id + " needs a pickaxe to drop an item");
+            visitor.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.DIAMOND_PICKAXE));
+            helper.assertTrue(visitor.hasCorrectToolForDrops(state) && state.getDestroyProgress(visitor, level, pos) > bareHandProgress,
+                    "A pickaxe harvests " + id + " at the original faster rate");
+            helper.assertTrue(visitor.gameMode.destroyBlock(pos) && level.isEmptyBlock(pos), "A visitor can harvest " + id);
+            helper.assertItemEntityCountIs(statue.asItem(), support.above(), 2, 1);
         }
         helper.succeed();
     }
