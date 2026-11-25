@@ -716,6 +716,7 @@
 - [x] Load a live stage-one storm saved by the preceding packaged build. Verify its remaining loaded ticks and that its next strike joins the glyph clock at stage two.
 - [x] Regenerate resources and reobfuscate locally. All 262 checked-in GameTests passed, including exact Eclipse and Storm phases across save and reload, a saved barrier refresh, and exact altar debits.
 - [x] Cast portable Eclipse through the muted background client in copied Auram. Verify midnight, an empty Heart Glyph, and exactly one discharged stone in the player's saved inventory.
+- [x] Stabilize dropped offerings in the Circle Magic regression suite. Wait for the arena to tick entities, then use the same item entities through the Heart Glyph. The fixed-seed local replay passed all 373 GameTests, including the final Waystone binding pulse and the Demon spawn veto with its five refunds.
 
 ## Hell on Earth Summoning and Waystone Reach (2026-11-24)
 

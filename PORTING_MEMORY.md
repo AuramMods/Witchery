@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Circle Magic offering fixtures (2026-11-25)
+
+- The failing run's entity regions still held all three Waystone offerings and all five Demon offerings directly over their Heart Glyphs. A traced replay on seed `5079230840918558374` reproduced the Waystone visibility gap. Its chunk already exposed its blocks, but on the first three observed ticks it had not entered entity ticking, neither UUID lookup nor the nearby query could see any offering, and all three items were still at age zero.
+- The shared Circle Magic test helper waits for the offering chunk to start ticking entities before dropping the stacks. It checks whether Forge accepted each drop and waits for the same entities to appear in the nearby query before using the Heart Glyph.
+- All 373 required Forge GameTests passed on the original failing seed with the JVM limited to three processors. The Waystone test checked the final binding pulse and the Demon test checked Forge's spawn veto and all five refunds. The original failure, entity region evidence, and corrected replay are in `build/qa-rite-fixtures/comparison.txt`.
+
 ## Cauldron liquid rain (2026-11-25)
 
 - The casting world supplies every random draw, even when a Bound Waystone sends rain into another dimension. The rain stays centered on the cauldron's X and Z. A clear column keeps its original launch height between 100 and 119. The 1.20.1 height adjustment lifts only drops whose columns intersect high terrain or a roof. Closed dimensions keep their logical ceiling cap.

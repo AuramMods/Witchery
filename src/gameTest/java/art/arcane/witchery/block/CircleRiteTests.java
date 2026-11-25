@@ -1854,12 +1854,23 @@ public final class CircleRiteTests {
     }
 
     private static GameTestSequence waitForOfferings(GameTestHelper helper, ItemStack... offerings) {
-        offer(helper, offerings);
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var position = offeringPosition(helper);
+        List<ItemEntity> offered = new ArrayList<>(offerings.length);
         return helper.startSequence().thenWaitUntil(() -> {
-            var dropped = drops(helper);
+            helper.assertTrue(level.isPositionEntityTicking(center), "The offering chunk can tick entities");
+        }).thenExecute(() -> {
             for (var offering : offerings) {
-                helper.assertTrue(dropped.stream().anyMatch(item -> ItemStack.matches(item.getItem(), offering)),
-                        "The dropped offering is visible before using the Heart Glyph: " + offering);
+                var entity = drop(level, position, offering);
+                helper.assertTrue(entity.isAddedToWorld(), "The server accepted the offering: " + offering);
+                offered.add(entity);
+            }
+        }).thenWaitUntil(() -> {
+            var visible = drops(helper);
+            for (ItemEntity offering : offered) {
+                helper.assertTrue(visible.contains(offering),
+                        "The Heart Glyph can find the exact dropped offering: " + offering.getItem());
             }
         });
     }
@@ -1871,10 +1882,14 @@ public final class CircleRiteTests {
 
     private static void offer(GameTestHelper helper, ItemStack... items) {
         var level = helper.getLevel();
-        var point = Vec3.atBottomCenterOf(helper.absolutePos(CENTER)).add(0, 0.3, 0);
+        var point = offeringPosition(helper);
         for (var item : items) {
             drop(level, point, item);
         }
+    }
+
+    private static Vec3 offeringPosition(GameTestHelper helper) {
+        return Vec3.atBottomCenterOf(helper.absolutePos(CENTER)).add(0, 0.3, 0);
     }
 
     private static ItemEntity drop(ServerLevel level, Vec3 point, ItemStack stack) {
