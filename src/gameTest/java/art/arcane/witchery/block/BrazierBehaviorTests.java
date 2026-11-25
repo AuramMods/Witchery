@@ -3,8 +3,11 @@ package art.arcane.witchery.block;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.BrazierBlockEntity;
 import art.arcane.witchery.crafting.BrazierRecipe;
+import art.arcane.witchery.entity.SpectralUndead;
 import art.arcane.witchery.infusion.InfusedBrews;
+import art.arcane.witchery.item.SpectralStoneItem;
 import art.arcane.witchery.registry.WitcheryBlocks;
+import art.arcane.witchery.registry.WitcheryItems;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -22,10 +25,14 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.util.UUID;
+import java.util.ArrayList;
+import java.util.function.Consumer;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
@@ -94,6 +101,90 @@ public final class BrazierBehaviorTests {
                 outside.discard();
             }
         }).thenSucceed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_brazier_spectral_landing", setupTicks = 5)
+    public static void brazierBansheeFitsAboveASlabUnderATwoBlockCeiling(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos origin = summonFloor(helper);
+        BlockPos column = origin.west(2).north();
+        level.setBlockAndUpdate(column, Blocks.STONE_SLAB.defaultBlockState());
+        level.setBlockAndUpdate(column.above(3), Blocks.STONE.defaultBlockState());
+        level.getRandom().setSeed(0);
+
+        var arrivals = arrivalsDuring(helper, () -> BrazierRecipe.BANSHEE.finish(level, origin));
+        helper.assertTrue(arrivals.size() == 1, "Only the selected Banshee should arrive");
+        var banshee = arrivals.get(0);
+        helper.assertTrue(banshee.kind() == SpectralUndead.Kind.BANSHEE
+                        && banshee.position().distanceToSqr(Vec3.atBottomCenterOf(column.above()).add(0, 0.05, 0)) < 1.0E-8
+                        && Math.abs(banshee.getBbHeight() - 1.8) < 0.0001,
+                "The original Banshee fits in the two air blocks above the sampled slab");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_brazier_stray_summon", setupTicks = 5)
+    public static void blockedBrazierColumnStillAllowsTheSeparateStrayRoll(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos origin = summonFloor(helper);
+        BlockPos first = origin.west(2).north().above();
+        level.setBlockAndUpdate(first, Blocks.WATER.defaultBlockState());
+        level.getRandom().setSeed(0);
+        helper.assertTrue(arrivalsDuring(helper, () -> BrazierRecipe.SPECTRE.finish(level, origin)).isEmpty(),
+                "A blocked sampled column must not redirect the regular summon to the open floor nearby");
+
+        level.setBlockAndUpdate(first, Blocks.AIR.defaultBlockState());
+        level.setBlockAndUpdate(origin.west().south(2).above(), Blocks.WATER.defaultBlockState());
+        level.getRandom().setSeed(23);
+        var arrivals = arrivalsDuring(helper, () -> BrazierRecipe.SPECTRE.finish(level, origin));
+        helper.assertTrue(arrivals.size() == 1 && arrivals.get(0).kind() == SpectralUndead.Kind.POLTERGEIST
+                        && arrivals.get(0).blockPosition().equals(origin.west(7).north(7)),
+                "The five-percent roll can place a stray Poltergeist even when the main summon is blocked");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_spectral_stone_landing", setupTicks = 5)
+    public static void spectralStoneTriesTheNextChargeAndKeepsTheBlockedOne(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos origin = summonFloor(helper);
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "SpectralRelease"));
+        player.setPos(Vec3.atBottomCenterOf(origin.above(3)));
+        player.setXRot(90);
+        level.setBlockAndUpdate(origin.west().above(), Blocks.WATER.defaultBlockState());
+        var stone = (SpectralStoneItem) WitcheryItems.getRequired("spectralstone").get();
+        var stack = new ItemStack(stone);
+        SpectralStoneItem.applyLegacyContents(stack, 33);
+        level.getRandom().setSeed(0);
+        var arrivals = arrivalsDuring(helper, () -> stone.releaseUsing(stack, level, player, stone.getUseDuration(stack) - 40));
+        helper.assertTrue(arrivals.size() == 1 && arrivals.get(0).blockPosition().equals(origin.south())
+                        && SpectralStoneItem.creatureCount(stack) == 1,
+                "The second draw succeeds independently and the blocked charge remains in the stone");
+        helper.succeed();
+    }
+
+    private static BlockPos summonFloor(GameTestHelper helper) {
+        BlockPos center = helper.absolutePos(new BlockPos(11, 10, 11));
+        var level = helper.getLevel();
+        for (BlockPos pos : BlockPos.betweenClosed(center.offset(-8, -1, -8), center.offset(8, -1, 8))) {
+            level.setBlock(pos, Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
+            level.setBlock(pos.above(), Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+            level.setBlock(pos.above(2), Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+        }
+        return center;
+    }
+
+    private static ArrayList<SpectralUndead> arrivalsDuring(GameTestHelper helper, Runnable summon) {
+        var arrivals = new ArrayList<SpectralUndead>();
+        Consumer<EntityJoinLevelEvent> observer = event -> {
+            if (event.getLevel() == helper.getLevel() && event.getEntity() instanceof SpectralUndead undead) arrivals.add(undead);
+        };
+        MinecraftForge.EVENT_BUS.addListener(observer);
+        try {
+            summon.run();
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(observer);
+        }
+        arrivals.forEach(Entity::discard);
+        return arrivals;
     }
 
     private static BrazierBlockEntity place(GameTestHelper helper) {

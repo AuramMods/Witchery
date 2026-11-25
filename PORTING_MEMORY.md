@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Brazier and Spectral Stone summons (2026-11-25)
+
+- Each summon checks one world-random column for two continuous air blocks above its footing and places the creature 0.05 blocks above that air cell. A submerged second cell blocks the summon. A Banshee's original 1.8-block hitbox fits over a slab below a two-block ceiling.
+- A primary Brazier summon sends instant spell and harp at the creature's feet. The independent five-percent double roll can summon a stray Poltergeist even when the primary landing is blocked. The stray sends silent mob-spell particles. Both cues reach 16 blocks. A Spectral Stone tries every charge independently, retains blocked charges, and sends silent instant-spell particles when it succeeds.
+- The native 0.24.1 server, reobfuscated clean Forge, and copied Auram agreed on all five cases and five arrival packets. The preceding package searched neighboring columns and skipped the expected stray Poltergeist. FasterRandom in Auram used a different seed to reproduce the same draws.
+- The muted, unfocused survival client inserted three supplied offerings and lit the Brazier normally. The fixture advanced its established batch to tick 590. The resulting Banshee arrived beneath the ceiling, sent the harp packet and kept its UUID after a dedicated restart. A second muted client session charged a supplied two-Spectre stone on open ground, released two owned Spectres and left the stone empty.
+- All 363 local Forge GameTests passed on the final run. The tested reobfuscated JAR is `build/qa-brazier-summons/candidate.jar` with SHA-256 `ff61d53b7fc23646c413c174d05c17fc6ec7a9a40e8c109e3fc478cfffd5ab78`. The native and packaged measurements and survival checks are in `build/qa-brazier-summons/comparison.txt`.
+
 ## Heart Glyph cancellation timing (2026-11-25)
 
 - Canceling a registered rite hides the glyph immediately, clears pending recipes and upkeep, and plays the first snare. It then runs the foreground step on the next loaded tick at its existing phase. The cast closes and plays a second snare. Another activation during that interval does not start another cast.

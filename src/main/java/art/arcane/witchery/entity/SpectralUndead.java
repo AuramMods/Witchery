@@ -8,7 +8,6 @@ import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -59,7 +58,6 @@ import net.minecraftforge.event.ForgeEventFactory;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -69,7 +67,6 @@ public final class SpectralUndead extends Monster {
     private static final EntityDataAccessor<Boolean> OBSCURED =
             SynchedEntityData.defineId(SpectralUndead.class, EntityDataSerializers.BOOLEAN);
     private static final int HAUNT_RADIUS = 16;
-    private static final int[] SPAWN_HEIGHTS = {0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 7, -7, 8, -8};
 
     public enum Kind {
         SPECTRE(1), BANSHEE(2), POLTERGEIST(3);
@@ -90,6 +87,24 @@ public final class SpectralUndead extends Monster {
                 case BANSHEE -> WitcheryEntities.BANSHEE.get();
                 case POLTERGEIST -> WitcheryEntities.POLTERGEIST.get();
             };
+        }
+    }
+
+    public enum Summoning {
+        BRAZIER(1, 2), STRAY(6, 10), STONE(0, 1);
+
+        private final int min;
+        private final int max;
+
+        Summoning(int min, int max) {
+            this.min = min;
+            this.max = max;
+        }
+
+        private int offset(ServerLevel level) {
+            int span = max - min;
+            int draw = level.getRandom().nextInt(span * 2 + 1);
+            return draw - max + (draw > span ? min * 2 : 0);
         }
     }
 
@@ -141,47 +156,33 @@ public final class SpectralUndead extends Monster {
     }
 
     @Nullable
-    public static SpectralUndead summonNear(ServerLevel level, BlockPos origin, Kind kind, int minDistance, int maxDistance) {
+    public static SpectralUndead summonNear(ServerLevel level, BlockPos origin, Kind kind, Summoning source) {
         if (level.getDifficulty() == Difficulty.PEACEFUL) return null;
+        BlockPos column = origin.offset(source.offset(level), 0, source.offset(level));
+        BlockPos feet = landing(level, column);
+        if (feet == null) return null;
+
         SpectralUndead mob = kind.type().create(level);
         if (mob == null) return null;
-
-        List<BlockPos> columns = new ArrayList<>();
-        for (int x = -maxDistance; x <= maxDistance; x++) {
-            for (int z = -maxDistance; z <= maxDistance; z++) {
-                int distance = Math.max(Math.abs(x), Math.abs(z));
-                if (distance >= minDistance) columns.add(origin.offset(x, 0, z));
-            }
-        }
-        // Shuffle with the world random source so valid columns retain equal odds.
-        for (int index = columns.size() - 1; index > 0; index--) {
-            Collections.swap(columns, index, level.random.nextInt(index + 1));
-        }
-        for (BlockPos column : columns) {
-            for (int y : SPAWN_HEIGHTS) {
-                if (mob.trySpawnAt(level, column.above(y))) return mob;
-            }
-        }
-        return null;
+        mob.moveTo(feet.getX() + 0.5, feet.getY() + 0.05, feet.getZ() + 0.5, 0, 0);
+        if (level.getBlockCollisions(mob, mob.getBoundingBox()).iterator().hasNext()) return null;
+        // Preserve the brazier's next world roll. Vanilla's spawn finalization also draws from that random source.
+        mob.initializeAppearance();
+        mob.setPersistenceRequired();
+        if (!level.addFreshEntity(mob)) return null;
+        WitcheryNetwork.sendSpectralSummon(level, mob.position(), mob.getBbHeight(), source);
+        return mob;
     }
 
     public static void summonSentinel(ServerLevel level, LivingEntity intruder) {
         if (level.getDifficulty() == Difficulty.PEACEFUL) return;
         BlockPos column = intruder.blockPosition().north().west();
-        if (!level.isLoaded(column) || !level.getWorldBorder().isWithinBounds(column)) return;
-
-        int bottom = level.getMinBuildHeight();
-        int top = level.getMaxBuildHeight();
-        int floor = Math.min(column.getY(), top - 1);
-        int searchTop = Math.min(floor + 8, top - 1);
-        while (floor < searchTop && !level.isEmptyBlock(column.atY(floor))) floor++;
-        while (floor >= bottom && level.isEmptyBlock(column.atY(floor))) floor--;
-        if (floor < bottom || floor + 2 >= top || !level.isEmptyBlock(column.atY(floor + 1))
-                || !level.isEmptyBlock(column.atY(floor + 2))) return;
+        BlockPos feet = landing(level, column);
+        if (feet == null) return;
 
         SpectralUndead guard = Kind.SPECTRE.type().create(level);
         if (guard == null) return;
-        guard.moveTo(column.getX() + 0.5, floor + 1.05, column.getZ() + 0.5, 0, 0);
+        guard.moveTo(feet.getX() + 0.5, feet.getY() + 0.05, feet.getZ() + 0.5, 0, 0);
         guard.initializeAppearance();
         guard.setPersistenceRequired();
         guard.lifeTicks = 600;
@@ -192,6 +193,20 @@ public final class SpectralUndead extends Monster {
         WitcheryNetwork.sendSentinelAppearance(level, guard.position(), guard.getBbHeight());
     }
 
+    @Nullable
+    private static BlockPos landing(ServerLevel level, BlockPos column) {
+        if (!level.isLoaded(column) || !level.getWorldBorder().isWithinBounds(column)) return null;
+        int bottom = level.getMinBuildHeight();
+        int top = level.getMaxBuildHeight();
+        int floor = Math.min(column.getY(), top - 1);
+        int searchTop = Math.min(floor + 8, top - 1);
+        while (floor < searchTop && !level.isEmptyBlock(column.atY(floor))) floor++;
+        while (floor >= bottom && level.isEmptyBlock(column.atY(floor))) floor--;
+        if (floor < bottom || floor + 2 >= top || !level.isEmptyBlock(column.atY(floor + 1))
+                || !level.isEmptyBlock(column.atY(floor + 2))) return null;
+        return column.atY(floor + 1);
+    }
+
     private void followSentinelTarget(LivingEntity intruder) {
         if (sentinelTargeting == null) {
             // The original Sentinel gives creatures of the intruder's class priority over the usual player target.
@@ -199,18 +214,6 @@ public final class SpectralUndead extends Monster {
             targetSelector.addGoal(2, sentinelTargeting);
         }
         setTarget(intruder);
-    }
-
-    private boolean trySpawnAt(ServerLevel level, BlockPos pos) {
-        if (!level.isLoaded(pos) || !level.getWorldBorder().isWithinBounds(pos)
-                || !level.getBlockState(pos.below()).isFaceSturdy(level, pos.below(), Direction.UP)) return false;
-        moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, random.nextFloat() * 360, 0);
-        if (!level.noCollision(this) || level.containsAnyLiquid(getBoundingBox())) return false;
-        initializeAppearance();
-        setPersistenceRequired();
-        if (!level.addFreshEntity(this)) return false;
-        level.sendParticles(ParticleTypes.INSTANT_EFFECT, getX(), getY(0.5), getZ(), 16, 0.5, 0.5, 0.5, 0.03);
-        return true;
     }
 
     @Override

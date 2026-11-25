@@ -6,6 +6,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.brewing.BrewAirJump;
 import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.entity.SpectralUndead;
 import art.arcane.witchery.item.VampireBookItem;
 import art.arcane.witchery.item.GuideBookItem;
 import art.arcane.witchery.item.GuideBookPages;
@@ -67,6 +68,7 @@ public final class WitcheryNetwork {
     private static final int LEGACY_FIZZ_SOUND_ID = 2;
     private static final int LEGACY_SNARE_SOUND_ID = 3;
     private static final int LEGACY_WATER_SPLASH_SOUND_ID = 4;
+    private static final int LEGACY_HARP_SOUND_ID = 8;
     private static final int LEGACY_PLING_SOUND_ID = 9;
     private static final int LEGACY_POP_SOUND_ID = 11;
     private static final int LEGACY_ENDERMAN_TELEPORT_SOUND_ID = 16;
@@ -358,6 +360,12 @@ public final class WitcheryNetwork {
 
     public static void sendPredictionArrival(ServerLevel level, Vec3 center) {
         sendParticlesAround(level, LEGACY_SMOKE_PARTICLE_ID, LEGACY_NO_SOUND_ID, center, 0.5, 2, 16);
+    }
+
+    public static void sendSpectralSummon(ServerLevel level, Vec3 center, double height, SpectralUndead.Summoning source) {
+        int particle = source == SpectralUndead.Summoning.STRAY ? LEGACY_MOB_SPELL_PARTICLE_ID : LEGACY_INSTANT_SPELL_PARTICLE_ID;
+        int sound = source == SpectralUndead.Summoning.BRAZIER ? LEGACY_HARP_SOUND_ID : LEGACY_NO_SOUND_ID;
+        sendParticlesAround(level, particle, sound, center, 1, height, 16);
     }
 
     public static void sendRiteItemOffering(ServerLevel level, Vec3 center, boolean rejected) {

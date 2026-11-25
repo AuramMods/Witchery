@@ -102,7 +102,7 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<SpectralUndead>> SPECTRE =
             spectral("spectre", SpectralUndead.Kind.SPECTRE, 0.6F, 1.8F);
     public static final RegistryObject<EntityType<SpectralUndead>> BANSHEE =
-            spectral("banshee", SpectralUndead.Kind.BANSHEE, 0.6F, 2.2F);
+            spectral("banshee", SpectralUndead.Kind.BANSHEE, 0.6F, 1.8F);
     public static final RegistryObject<EntityType<SpectralUndead>> POLTERGEIST =
             spectral("poltergeist", SpectralUndead.Kind.POLTERGEIST, 0.6F, 1.8F);
     public static final RegistryObject<EntityType<Demon>> DEMON =

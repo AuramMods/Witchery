@@ -2125,6 +2125,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Run Java 17 data generation, JAR reobfuscation and all 294 required Forge GameTests. The four new cases cover powered and paused summons, redstone and flint ignition, water cleanup, original spectral offerings, legacy stone metadata and a reloaded rite that binds and releases three creatures.
 - [x] Reveal obscured Spectres and invisible Poltergeists with the original Kettle splash or the Odour of Purity action.
 - [x] Restore brazier ignition by the Mystic Branch's Incendio.
+- [x] Restore the original single-column spectral summons, Banshee hitbox, arrival cues, and independent stray Poltergeist roll. Witchery 0.24.1, clean Forge, and copied Auram matched all five landing scenarios. A muted survival client loaded and lit a Brazier and summoned a Banshee beneath a two-block ceiling. Its UUID survived a dedicated restart. The client also charged and released two owned Spectres from a supplied Spectral Stone.
 
 ## Spirit-Bound Fetishes (2026-11-20)
 

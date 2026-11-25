@@ -6,8 +6,6 @@ import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.network.WitcheryNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -144,11 +142,9 @@ public enum BrazierRecipe {
             default -> null;
         };
         if (kind == null) return;
-        if (SpectralUndead.summonNear(level, pos, kind, 1, 2) != null) {
-            level.playSound(null, pos, SoundEvents.NOTE_BLOCK_HARP.value(), SoundSource.BLOCKS, 1, 1);
-        }
-        if (level.random.nextFloat() < 0.05F) {
-            SpectralUndead.summonNear(level, pos, SpectralUndead.Kind.POLTERGEIST, 6, 10);
+        SpectralUndead.summonNear(level, pos, kind, SpectralUndead.Summoning.BRAZIER);
+        if (level.getRandom().nextDouble() < 0.05D) {
+            SpectralUndead.summonNear(level, pos, SpectralUndead.Kind.POLTERGEIST, SpectralUndead.Summoning.STRAY);
         }
     }
 }

@@ -142,8 +142,8 @@ public final class SpectralStoneItem extends Item {
 
         int released = 0;
         for (int i = 0; i < count; i++) {
-            SpectralUndead mob = SpectralUndead.summonNear(server, pos, kind, 0, 1);
-            if (mob == null) break;
+            SpectralUndead mob = SpectralUndead.summonNear(server, pos, kind, SpectralUndead.Summoning.STONE);
+            if (mob == null) continue;
             mob.setSummoner(player);
             released++;
         }
