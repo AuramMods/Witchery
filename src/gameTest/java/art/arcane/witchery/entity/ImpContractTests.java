@@ -92,12 +92,14 @@ public final class ImpContractTests {
         missing.getOrCreateTag().putString("WITCPlayer1", "OfflineContractTest");
         offer(imp, player, missing);
         helper.assertTrue(missing.getCount() == 1, "An offline target should leave the contract intact");
+        long beforeCast = System.currentTimeMillis() / 50;
         offer(imp, player, tolerance);
         var active = pig.getEffect(MobEffects.FIRE_RESISTANCE);
         helper.assertTrue(tolerance.isEmpty() && active != null && active.getDuration() == 18_000,
                 "Fiery Tolerance should apply fifteen minutes of Fire Resistance to a creature");
         CompoundTag saved = imp.saveWithoutId(new CompoundTag());
-        helper.assertTrue(saved.getInt("Affection") == 20 && saved.getLong("LastGiftTime") == helper.getLevel().getGameTime(),
+        helper.assertTrue(saved.getInt("Affection") == 20 && saved.getLong("LastGiftTime") >= beforeCast
+                        && saved.getLong("LastGiftTime") <= System.currentTimeMillis() / 50,
                 "Casting should preserve affection and start the gift cooldown");
         imp.load(saved);
         ItemStack gift = new ItemStack(Items.DIAMOND_BLOCK);
@@ -107,6 +109,54 @@ public final class ImpContractTests {
         helper.assertTrue(gift.isEmpty() && second.getCount() == 1
                         && imp.saveWithoutId(new CompoundTag()).getInt("SecretsShared") == saved.getInt("SecretsShared"),
                 "Reloading should keep the same cooldown for spells and gift rewards");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_imp_timer_migration")
+    public static void impKeepsTheOriginalPowerAndGiftTimersAcrossSaveFormats(GameTestHelper helper) {
+        FakePlayer player = player(helper);
+        Imp imp = imp(helper, player);
+        long now = System.currentTimeMillis() / 50;
+        var legacy = imp.saveWithoutId(new CompoundTag());
+        legacy.putInt("Affection", 30);
+        legacy.putInt("SecretsShared", 1);
+        legacy.putLong("LastGiftTime", now - 800);
+        legacy.putLong("PowerUpUntil2", now + 12_000);
+        imp.load(legacy);
+        var active = imp.saveWithoutId(new CompoundTag());
+        helper.assertTrue(imp.isPowered() && active.getLong("PowerUpUntil2") == now + 12_000,
+                "An original Imp keeps the future power deadline exactly");
+
+        var gift = new ItemStack(Items.DIAMOND_BLOCK);
+        offer(imp, player, gift);
+        active = imp.saveWithoutId(new CompoundTag());
+        helper.assertTrue(gift.isEmpty() && active.getInt("SecretsShared") == 1 && active.getLong("LastGiftTime") == now - 800,
+                "An original gift still blocks rewards during the remaining cooldown");
+
+        active.putLong("PowerUpUntil2", now - 100);
+        imp.load(active);
+        imp.aiStep();
+        helper.assertTrue(!imp.isPowered() && imp.saveWithoutId(new CompoundTag()).getLong("PowerUpUntil2") == 0,
+                "Power that expired while offline is cleared on the next loaded tick");
+
+        long world = helper.getLevel().getGameTime();
+        long priorGift = Math.max(1, world - 200);
+        active.putLong("LastGiftTime", priorGift);
+        active.putLong("PowerUpUntil2", world + 1_200);
+        long beforeLoad = System.currentTimeMillis() / 50;
+        imp.load(active);
+        var normalized = imp.saveWithoutId(new CompoundTag());
+        long afterLoad = System.currentTimeMillis() / 50;
+        helper.assertTrue(imp.isPowered() && normalized.getLong("PowerUpUntil2") >= beforeLoad + 1_200
+                        && normalized.getLong("PowerUpUntil2") <= afterLoad + 1_200
+                        && normalized.getLong("LastGiftTime") >= beforeLoad + priorGift - world
+                        && normalized.getLong("LastGiftTime") <= afterLoad + priorGift - world,
+                "The previous port's deadlines preserve their offsets when converted");
+        imp.load(normalized);
+        var reloaded = imp.saveWithoutId(new CompoundTag());
+        helper.assertTrue(normalized.getLong("PowerUpUntil2") == reloaded.getLong("PowerUpUntil2")
+                        && normalized.getLong("LastGiftTime") == reloaded.getLong("LastGiftTime"),
+                "Reloading keeps the normalized timestamps");
         helper.succeed();
     }
 

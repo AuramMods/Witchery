@@ -55,8 +55,12 @@ public final class LegacyDemonSaveImportTests {
                   {id:"witchery.imp",CustomName:"Legacy Owned Imp",UUIDMost:-5580138881016446618L,
                    UUIDLeast:-4845020358879725485L,Pos:[-212.5d,5.5d,-1082.5d],Health:50s,
                    OwnerUUID:"25315451-cd27-4f35-a7e1-e7cef7ec05e9",Sitting:1b,Affection:17,SecretsShared:2,
-                   LastGiftTime:1800L,PowerUpUntil2:384000L,HomeLocX:-212,HomeLocY:5,HomeLocZ:-1083}]}}
+                   HomeLocX:-212,HomeLocY:5,HomeLocZ:-1083}]}}
                 """);
+        long epochTicks = System.currentTimeMillis() / 50;
+        var originalImp = original.getCompound("Level").getList("Entities", Tag.TAG_COMPOUND).getCompound(2);
+        originalImp.putLong("LastGiftTime", epochTicks - 1_800);
+        originalImp.putLong("PowerUpUntil2", epochTicks + 38_400);
         var root = Files.createTempDirectory("witchery-legacy-demon-and-imp");
         var snapshot = root.resolve("witchery-legacy-ids.dat");
         CompoundTag imported;
@@ -124,7 +128,8 @@ public final class LegacyDemonSaveImportTests {
                         && UUID.fromString("25315451-cd27-4f35-a7e1-e7cef7ec05e9").equals(imp.getOwnerUUID())
                         && imp.hasRestriction() && imp.getRestrictCenter().equals(new BlockPos(-212, 5, -1083))
                         && impSave.getInt("Affection") == 17 && impSave.getInt("SecretsShared") == 2
-                        && impSave.getLong("LastGiftTime") == 1800 && impSave.getLong("PowerUpUntil2") == 384000,
+                        && imp.isPowered() && impSave.getLong("LastGiftTime") == epochTicks - 1_800
+                        && impSave.getLong("PowerUpUntil2") == epochTicks + 38_400,
                 "The Imp must stay owned, seated and attached to its home with its original gift and contract progress");
 
         BlockPos spawn = helper.absolutePos(new BlockPos(2, 2, 2));

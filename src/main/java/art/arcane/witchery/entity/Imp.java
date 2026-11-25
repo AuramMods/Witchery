@@ -4,6 +4,7 @@ import art.arcane.witchery.item.ImpSpellContractItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcherySounds;
+import art.arcane.witchery.util.WitcheryTime;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -135,7 +136,7 @@ public final class Imp extends TamableAnimal {
 
     private void setPoweredUntil(long until) {
         poweredUntil = until;
-        entityData.set(POWERED, until > level().getGameTime());
+        entityData.set(POWERED, until > WitcheryTime.epochTicks());
         getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(isPowered() ? 8 : 4);
     }
 
@@ -193,7 +194,7 @@ public final class Imp extends TamableAnimal {
     }
 
     private void offerGift(ServerPlayer player, ItemStack item) {
-        long now = level().getGameTime();
+        long now = WitcheryTime.epochTicks();
         var spell = TaglockItem.isBound(item) ? ImpSpellContractItem.spellFor(item) : null;
         if (item.is(WitcheryIngredient.DEMON_HEART.item())) {
             consume(player, item);
@@ -283,7 +284,7 @@ public final class Imp extends TamableAnimal {
             return;
         }
         ageTicks++;
-        if (poweredUntil > 0 && level().getGameTime() >= poweredUntil) setPoweredUntil(0);
+        if (poweredUntil > 0 && WitcheryTime.epochTicks() >= poweredUntil) setPoweredUntil(0);
         if (ageTicks % 400 == 0 || isPowered() && ageTicks % 20 == 0) heal(1);
         if (ageTicks % 6000 == 0 && getOwner() instanceof ServerPlayer owner) {
             affection = Math.max(0, affection - 1);
@@ -350,10 +351,13 @@ public final class Imp extends TamableAnimal {
         super.readAdditionalSaveData(tag);
         affection = Math.max(0, tag.getInt("Affection"));
         secretsShared = Mth.clamp(tag.getInt("SecretsShared"), 0, SECRETS.length);
-        lastGiftTime = tag.getLong("LastGiftTime");
+        long now = WitcheryTime.epochTicks();
+        long worldTime = level().getGameTime();
+        lastGiftTime = WitcheryTime.toEpochTick(tag.getLong("LastGiftTime"), worldTime, now);
         ageTicks = Math.max(0, tag.getInt("LifeTicks"));
-        long until = tag.contains("PowerUpUntil2", Tag.TAG_ANY_NUMERIC) ? tag.getLong("PowerUpUntil2")
-                : tag.getLong("PowerUpUntil") > 0 ? level().getGameTime() + POWER_DURATION : 0;
+        long until = tag.contains("PowerUpUntil2", Tag.TAG_ANY_NUMERIC)
+                ? WitcheryTime.toEpochTick(tag.getLong("PowerUpUntil2"), worldTime, now)
+                : tag.getLong("PowerUpUntil") > 0 ? now + POWER_DURATION : 0;
         setPoweredUntil(until);
         if (isTame() && tag.contains("HomeLocY", Tag.TAG_ANY_NUMERIC)) {
             restrictTo(new BlockPos(tag.getInt("HomeLocX"), tag.getInt("HomeLocY"), tag.getInt("HomeLocZ")), 16);

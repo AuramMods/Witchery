@@ -21,7 +21,10 @@ public final class ScryEye extends Entity {
     @Override
     public void tick() {
         super.tick();
-        if (!level().isClientSide) setPos(getX(), getY() + 0.5, getZ());
+        if (!level().isClientSide) {
+            if (tickCount > LIFETIME) discard();
+            else setPos(getX(), getY() + 0.5, getZ());
+        }
     }
 
     @Override

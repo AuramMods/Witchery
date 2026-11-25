@@ -4,6 +4,7 @@ import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcherySounds;
+import art.arcane.witchery.util.WitcheryTime;
 import art.arcane.witchery.vampirism.Vampirism;
 import art.arcane.witchery.world.WitcheryTeleport;
 import art.arcane.witchery.world.migration.LegacyVillages;
@@ -24,8 +25,6 @@ import org.jetbrains.annotations.Nullable;
 public final class WitchHunterPursuit {
     private static final String TRIGGER = "WITCHunterTrigger";
     private static final int NOTICE_DELAY = 2_400;
-    // Epoch ticks from 2001 onward predate the original mod and exceed ordinary saved world ages.
-    private static final long MIN_EPOCH_TICK = 1_000_000_000_000L / 50;
 
     private WitchHunterPursuit() {}
 
@@ -33,7 +32,7 @@ public final class WitchHunterPursuit {
         CompoundTag persistent = caster.getPersistentData();
         CompoundTag data = persistent.getCompound(Player.PERSISTED_NBT_TAG);
         if (data.getLong(TRIGGER) <= 0 && caster.serverLevel().getRandom().nextDouble() < 0.1) {
-            data.putLong(TRIGGER, System.currentTimeMillis() / 50);
+            data.putLong(TRIGGER, WitcheryTime.epochTicks());
             persistent.put(Player.PERSISTED_NBT_TAG, data);
         }
     }
@@ -42,9 +41,9 @@ public final class WitchHunterPursuit {
         ServerLevel world = player.serverLevel();
         if (world.getGameTime() % 100 != 1 || player.isSpectator() || world.getDifficulty() == Difficulty.PEACEFUL) return;
         CompoundTag data = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
-        long now = System.currentTimeMillis() / 50;
+        long now = WitcheryTime.epochTicks();
         long noticed = data.getLong(TRIGGER);
-        if (noticed > 0 && noticed < MIN_EPOCH_TICK) {
+        if (WitcheryTime.isWorldTick(noticed)) {
             // Earlier 1.20.1 builds stored the Overworld game tick under the same key.
             long elapsed = Math.max(0, player.server.overworld().getGameTime() - noticed);
             noticed = now - Math.min(elapsed, NOTICE_DELAY);

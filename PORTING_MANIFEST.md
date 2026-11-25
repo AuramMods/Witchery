@@ -96,6 +96,8 @@ Lifecycle stages:
 
 The runtime registry from the shipped 0.24.1 server contains 121 Witchery block IDs and 217 item IDs, including automatic block items that the source count of 102 item declarations omits. Forge 1.20.1 retains all those IDs and adds the internal Apothecary Shelf block. The Witchery tab displays 436 stacks. All 163 Ingredient subtype mappings were checked. Raw and cooked mutton use the corresponding vanilla items, and the two bound Waystones stay hidden. The Rowan Door, Alder Door, Ice Door, Chalice and Candelabra each show their placeable item once in place of the old Ingredient subtype. The generic Ingredient ID and 23 extra spawn egg IDs remain available for saves. All 12 original Poppet choices and 32 original spawn eggs are visible.
 
+Original server records for all 55 entity IDs resolve in the packaged importer and retain their UUID and position. The 54 persistent types can be saved and reloaded. The transient Scrying Eye rises during its first 200 ticks and expires on tick 201 when it has no active viewer.
+
 ## Registration Mechanics (Important)
 - `BlockBase.func_149663_c` auto-registers blocks via `BlockUtil.registerBlock`.
 - `BlockBaseContainer.func_149663_c` auto-registers blocks + tile entities.

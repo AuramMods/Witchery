@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Imp timers and original entity migration (2026-11-25)
+
+- Witchery 0.24.1 saves the Imp's three-minute gift cooldown and one-hour Demon Heart deadline in 50 ms units since the Unix epoch. The previous 1.20.1 build used world ticks and kept an expired original Imp powered. The rebuilt JAR preserves the original stamps and converts earlier Forge saves using the elapsed or remaining world ticks at load.
+- Clean Forge and copied Auram loaded all 55 native entity records with their positions and UUIDs. The 54 persistent types kept both fields on save and reload. The Scrying Eye expires at tick 201 without a viewer in the original and rebuilt JARs. The eye stays transient in 1.20.1.
+- The muted background survival client loaded an original active Imp with eight attack damage and an expired Imp with four. It used the ordinary item binding to check cooldown, cancel power with an Icy Needle, and renew power with a Demon Heart. A dedicated restart kept the active Imp's UUID, gift stamp, renewed deadline, and attack damage. Both launches used OpenAL's No Output device and kept the original foreground app.
+- All 372 required local Forge GameTests passed on the final run. An earlier run hit intermittent failures in the existing survival block placement and snow slab tests. The exact reobfuscated JAR tested on both servers and the client is `build/qa-imp-clock/candidate.jar` with SHA-256 `6dc0d69b8bbb59424b8f9ace941ef69c011d0a974da41d9026ffbc80e310b2f0`. The original, previous-port, clean Forge, copied Auram, and survival results are in `build/qa-imp-clock/comparison.txt`.
+
 ## Witch Hunter notice migration (2026-11-25)
 
 - Black magic creates its notice in epoch ticks and dispatch checks run at phase one of the world's 100-tick cycle. Notice and dispatch rolls use the world random source. The original trace kept the notice at 2,399 ticks and spawned two hunters at 2,400 on a passing roll.
