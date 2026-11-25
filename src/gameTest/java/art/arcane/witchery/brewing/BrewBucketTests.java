@@ -256,8 +256,9 @@ public final class BrewBucketTests {
             use(helper, player, source);
             helper.assertTrue(player.getMainHandItem().is(Items.BUCKET), "Filling the cauldron returns an empty bucket");
         }
-        helper.runAfterDelay(105, () -> {
-            helper.assertTrue(level.getBlockState(source).getValue(WitchesCauldronBlock.BOILING), "Fire brought the brew to a boil");
+        helper.startSequence().thenWaitUntil(() -> {
+            helper.assertTrue(level.getBlockState(source).getValue(WitchesCauldronBlock.BOILING), "Fire brings the brew to a boil");
+        }).thenExecute(() -> {
             for (var item : new ItemStack[]{new ItemStack(Items.NETHER_WART), new ItemStack(Items.SUGAR), new ItemStack(Items.BLUE_WOOL)}) {
                 var dropped = new ItemEntity(level, source.getX() + 0.5, source.getY() + 0.4, source.getZ() + 0.5, item);
                 level.getBlockState(source).entityInside(level, source, dropped);
@@ -311,8 +312,7 @@ public final class BrewBucketTests {
             helper.assertTrue(externalTank.isEmpty() && moved.getAmount() == 1000
                             && destinationTank.getFluidInTank(0).getAmount() == 2000,
                     "An identical mixture can be combined again");
-            helper.succeed();
-        });
+        }).thenSucceed();
     }
 
     @GameTest(template = "qa_coven_arena")

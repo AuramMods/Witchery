@@ -43,6 +43,7 @@ import java.util.List;
 
 public final class KettleBlockEntity extends BlockEntity {
     private static final int BUCKET = 1000;
+    private static final int BREW_INTERVAL = 20;
     private static final int BREW_SLOT = KettleRecipe.INGREDIENT_SLOTS;
     private static final int BOTTLE_SLOT = BREW_SLOT + 1;
     private final NonNullList<ItemStack> contents = NonNullList.withSize(BOTTLE_SLOT + 1, ItemStack.EMPTY);
@@ -50,12 +51,13 @@ public final class KettleBlockEntity extends BlockEntity {
     private boolean ruined;
     private boolean powered;
     private int color;
+    private int brewTicks;
     @Nullable private ResourceLocation finishedRecipeId;
 
     private final FluidTank tank = new FluidTank(BUCKET, resource -> resource.getFluid() == Fluids.WATER) {
         @Override
         protected void onContentsChanged() {
-            rinse();
+            update();
         }
     };
     private final ItemStackHandler inventory = new ItemStackHandler(contents) {
@@ -83,7 +85,8 @@ public final class KettleBlockEntity extends BlockEntity {
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, KettleBlockEntity kettle) {
-        if (level instanceof ServerLevel server && level.getGameTime() % 20 == 0) {
+        if (level instanceof ServerLevel server && ++kettle.brewTicks == BREW_INTERVAL) {
+            kettle.brewTicks = 0;
             kettle.brew(server);
         }
     }
@@ -243,7 +246,7 @@ public final class KettleBlockEntity extends BlockEntity {
 
     private ItemStack extractBrew(int amount, boolean automated, boolean simulate) {
         ItemStack brew = contents.get(BREW_SLOT);
-        if (!isReady() || !isFull() || amount <= 0 || (automated && bottleCount() < brew.getCount())) {
+        if (!isReady() || amount <= 0 || (automated && (!isFull() || bottleCount() < brew.getCount()))) {
             return ItemStack.EMPTY;
         }
         int count = Math.min(amount, brew.getCount());

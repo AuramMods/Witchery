@@ -104,8 +104,9 @@ public final class KettleBlock extends BaseEntityBlock {
         if (held.is(Items.GLASS_BOTTLE)) {
             if (!kettle.isReady()) {
                 if (level.isClientSide) return kettle.isFull() ? InteractionResult.SUCCESS : InteractionResult.PASS;
-                return BrewingContainers.fillWaterBottle(player, hand, kettle, hit.getDirection())
-                        ? InteractionResult.CONSUME : InteractionResult.PASS;
+                if (!BrewingContainers.fillWaterBottle(player, hand, kettle, hit.getDirection())) return InteractionResult.PASS;
+                kettle.rinse();
+                return InteractionResult.CONSUME;
             }
             if (!level.isClientSide) {
                 ItemStack brew = kettle.bottleBrew(player);
@@ -124,16 +125,19 @@ public final class KettleBlock extends BaseEntityBlock {
         boolean waterBottle = BrewingContainers.isWaterBottle(held);
         if (waterBottle || held.is(Items.WATER_BUCKET)) {
             if (!level.isClientSide) {
-                boolean poured = waterBottle ? BrewingContainers.pourWaterBottle(player, hand, kettle, hit.getDirection())
-                        : BrewingContainers.pourBucket(player, hand, kettle, hit.getDirection());
-                if (!poured) kettle.rinse();
+                if (waterBottle) {
+                    BrewingContainers.pourWaterBottle(player, hand, kettle, hit.getDirection());
+                } else {
+                    BrewingContainers.pourBucket(player, hand, kettle, hit.getDirection());
+                }
+                kettle.rinse();
                 level.playSound(null, pos, SoundEvents.GENERIC_SWIM, SoundSource.BLOCKS, 1, 1);
             }
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
         if (FluidUtil.getFluidHandler(held).isPresent()) {
-            if (!level.isClientSide) {
-                FluidUtil.interactWithFluidHandler(player, hand, level, pos, hit.getDirection());
+            if (!level.isClientSide && FluidUtil.interactWithFluidHandler(player, hand, level, pos, hit.getDirection())) {
+                kettle.rinse();
             }
             return InteractionResult.sidedSuccess(level.isClientSide);
         }

@@ -2,6 +2,16 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Kettle brewing and fluid transfer (2026-11-25)
+
+- The Kettle uses its own 20-tick brewing interval. With the world clock offset by 15 ticks, Witchery 0.24.1 and both rebuilt headless profiles first colored Brew of Ice on loaded tick 20. The closer altar was empty. Charging it at tick 21 allowed the brew to complete at tick 40 for exactly 1,000 power. The farther altar kept all 2,400 power.
+- The previous port erased a finished brew when a fluid handler drained 400 mB. The original and both rebuilt profiles held three servings in 600 mB and let a player take one by hand. Refilling enabled automated bottling of the last two, leaving one spare glass bottle and an empty tank. Hand-held water containers still rinse the vessel.
+- An ordinary clean Forge restart opened a waiting six-ingredient batch saved by the previous port and a fixture with three ready servings at 600 mB. The waiting batch held its ingredients and tint beside a charged farther altar. An Infinity Egg allowed the closer altar to recharge and finish the batch. A second ordinary restart preserved both outputs and the partly drained tank.
+- A separate Witchery 0.24.1 save was stopped after a 400 mB drain and one hand bottling. The Forge 1.20.1 import and an ordinary restart kept 600 mB, two Ice servings, the original tint and power flag, and three spare glass bottles.
+- All 347 local Forge GameTests passed in `build/qa-kettle-power-timing/gametest-final.log`. Earlier runs failed on an immediate wolf lookup and a fixed delay before the Cauldron boiled. The howl fixture now observes owned wolves at spawn and the bucket transport fixture waits for the boiling block state.
+- The reobfuscated package is `build/qa-kettle-power-timing/verified.jar` with SHA-256 `46f37884459eed3917bbba0deb79db7fc7d016c0f8a48563ca269b40332bb0cc`. The native, preceding, and rebuilt headless comparisons and the restart logs are under the same directory.
+- The next Cauldron comparison used a hot, full Dog Tongue ritual with available power. The original advanced at loaded ticks 8, 18, 28, and 38. With world time offset by 15, the current package instead advanced at 3, 13, 23, and 33. Both held 3,000 mB through warmup. The traces are under `build/qa-cauldron-pulse-timing/`.
+
 ## Workstation altar switching (2026-11-25)
 
 - With the original Distillery, Spinning Wheel, and Brazier running, a newly formed closer empty altar takes over after one final draw from the previous altar. All three batches pause on the second tick and resume at their saved progress when the closer altar has charge. The previous packaged build kept drawing from the farther altar on all four measured ticks. The rebuilt clean Forge and copied Auram profiles matched all 12 original power and progress samples.
@@ -9,7 +19,6 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - An ordinary clean Forge restart loaded the preceding JAR's paused batches at 794, 294, and 594 ticks. They remained paused beside a charged farther altar. Adding a Dragon Egg near the closer altar let it recharge naturally. The Distillery produced two Glowstone Dust and Reek of Misfortune, the Wheel produced Cobweb, and the Brazier summoned a Spectre. The headless console fixture supplied the saved ingredients and placed the two altars.
 - All 345 local Forge GameTests passed in `build/qa-workstation-altar-switch/gametest-core8.log`. The first two runs had one existing fixture timeout each, waiting for a Lumos chunk and a Cauldron misfortune query. Both passed on the eight-core replay.
 - The reobfuscated package is `build/qa-workstation-altar-switch/verified.jar` with SHA-256 `78215cfe6723057938ff78dc87cb930fcb88d22f77af2e72068e1a9c92abc569`. Comparison and ordinary restart logs are in the same directory.
-- The next Kettle comparison found a timing gap with Brew of Ice. The original first colored the blocked brew at loaded tick 20 and paid the closer altar on tick 40. With the world clock offset by 15 ticks, the current package colored it on tick 5 and paid on tick 25. Both drew 1,000 power from the closer altar and left the farther one unchanged. The headless probes are in `build/qa-kettle-power-timing/`.
 
 ## Custom brew bottle display (2026-11-25)
 

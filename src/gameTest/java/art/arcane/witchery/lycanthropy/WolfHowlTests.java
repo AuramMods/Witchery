@@ -15,11 +15,11 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.PlayLevelSoundEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -85,22 +85,32 @@ public final class WolfHowlTests {
             level.setBlockAndUpdate(pos.above(), Blocks.STONE.defaultBlockState());
         }
         var first = playerAt(helper, at, 8, 1);
-        var area = new AABB(at).inflate(8, 2, 8);
-        WolfTrials.howl(first);
-        helper.assertTrue(level.getEntitiesOfClass(Wolf.class, area, wolf -> first.getUUID().equals(wolf.getOwnerUUID())).isEmpty(),
-                "The legacy pack cannot spawn in a one-block-high tunnel");
-
-        for (BlockPos pos : BlockPos.betweenClosed(at.offset(-6, 1, -6), at.offset(6, 1, 6))) {
-            level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
-        }
         var second = playerAt(helper, at, 8, 1);
-        WolfTrials.howl(second);
-        var pack = level.getEntitiesOfClass(Wolf.class, area, wolf -> second.getUUID().equals(wolf.getOwnerUUID()));
-        helper.assertTrue(!pack.isEmpty() && pack.size() <= 2
-                        && pack.stream().allMatch(wolf -> wolf.hasEffect(WitcheryEffects.MORTAL_COIL.get())
-                        && wolf.getPersistentData().getBoolean("WITCNoDrops")),
-                "An open rank-eight howl summons up to two owned wolves with the original lifetime and no rewards");
-        pack.forEach(Wolf::discard);
+        var pack = new ArrayList<Wolf>();
+        Consumer<EntityJoinLevelEvent> listener = event -> {
+            if (event.getLevel() == level && event.getEntity() instanceof Wolf wolf
+                    && (first.getUUID().equals(wolf.getOwnerUUID()) || second.getUUID().equals(wolf.getOwnerUUID()))) {
+                pack.add(wolf);
+            }
+        };
+        MinecraftForge.EVENT_BUS.addListener(listener);
+        try {
+            WolfTrials.howl(first);
+            helper.assertTrue(pack.isEmpty(), "The legacy pack cannot spawn in a one-block-high tunnel");
+
+            for (BlockPos pos : BlockPos.betweenClosed(at.offset(-6, 1, -6), at.offset(6, 1, 6))) {
+                level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+            }
+            WolfTrials.howl(second);
+            helper.assertTrue(!pack.isEmpty() && pack.size() <= 2
+                            && pack.stream().allMatch(wolf -> second.getUUID().equals(wolf.getOwnerUUID())
+                            && wolf.hasEffect(WitcheryEffects.MORTAL_COIL.get())
+                            && wolf.getPersistentData().getBoolean("WITCNoDrops")),
+                    "An open rank-eight howl summons up to two owned wolves with the original lifetime and no rewards");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(listener);
+            pack.forEach(Wolf::discard);
+        }
         helper.succeed();
     }
 

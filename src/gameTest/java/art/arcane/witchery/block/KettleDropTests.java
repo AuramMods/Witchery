@@ -1,6 +1,7 @@
 package art.arcane.witchery.block;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.entity.AltarBlockEntity;
 import art.arcane.witchery.block.entity.KettleBlockEntity;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
@@ -40,6 +41,75 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class KettleDropTests {
+    @GameTest(template = "qa_rite_terrain", batch = "witchery_kettle_timing")
+    public static void kettleUsesItsOwnTicksAndWaitsForTheClosestAltar(GameTestHelper helper) {
+        var kettle = heatedKettle(helper, new BlockPos(5, 4, 5));
+        for (var ingredient : List.of(WitcheryIngredient.ICY_NEEDLE.item(), Items.SNOWBALL,
+                WitcheryIngredient.GLOBE_ARTICHOKE.item(), Items.GLISTERING_MELON_SLICE, Items.RED_MUSHROOM,
+                WitcheryIngredient.ODOUR_OF_PURITY.item())) {
+            kettle.addDroppedStack(new ItemStack(ingredient));
+        }
+        var far = placeAltar(helper, kettle.getBlockPos().south(12));
+        var near = placeAltar(helper, kettle.getBlockPos().east(4));
+        charge(far, 2_400);
+
+        tickKettle(helper, kettle, 19);
+        helper.assertTrue(kettle.saveWithoutMetadata().getInt("LiquidColor") == 0 && !kettle.isReady(),
+                "The kettle leaves its new mixture unevaluated for its first 19 ticks");
+        tickKettle(helper, kettle, 1);
+        helper.assertTrue(kettle.saveWithoutMetadata().getInt("LiquidColor") == -13565953
+                        && !kettle.isReady() && far.power() == 2_400,
+                "Its twentieth tick colors the brew but cannot draw from the closer empty altar");
+
+        charge(near, 1_200);
+        tickKettle(helper, kettle, 19);
+        helper.assertTrue(!kettle.isReady() && near.power() == 1_200,
+                "New power waits for the kettle's next brew check");
+        tickKettle(helper, kettle, 1);
+        var inventory = kettle.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(IllegalStateException::new);
+        helper.assertTrue(kettle.isReady() && kettle.isPowered() && far.power() == 2_400 && near.power() == 200
+                        && inventory.getStackInSlot(6).is(WitcheryIngredient.BREW_OF_ICE.item())
+                        && inventory.getStackInSlot(6).getCount() == 3,
+                "Tick 40 spends exactly 1,000 power from the closer altar and produces three servings");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_kettle_fluid_transfer")
+    public static void automationPreservesTheBrewWhenWaterMoves(GameTestHelper helper) throws Exception {
+        var kettle = heatedKettle(helper, new BlockPos(5, 4, 5));
+        kettle.load(TagParser.parseTag("""
+                {Items:[{Slot:6b,id:"witchery:brew_of_ice",Count:3b},{Slot:7b,id:"minecraft:glass_bottle",Count:3b}],
+                 Powered:1b,LiquidColor:-13565953,Tank:{FluidName:"minecraft:water",Amount:1000},
+                 FinishedRecipe:"witchery:kettle/brew_of_ice"}
+                """));
+        var tank = kettle.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
+        var inventory = kettle.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(IllegalStateException::new);
+        helper.assertTrue(tank.drain(400, IFluidHandler.FluidAction.EXECUTE).getAmount() == 400,
+                "The fluid handler can drain 400 mB of water from a ready kettle");
+        kettle.load(kettle.saveWithFullMetadata());
+        helper.assertTrue(kettle.isReady() && tank.getFluidInTank(0).getAmount() == 600
+                        && inventory.getStackInSlot(6).getCount() == 3 && inventory.extractItem(6, 1, false).isEmpty(),
+                "The partly drained kettle keeps its three servings and blocks automated extraction across a save");
+
+        var player = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "KettleFluidBottler"));
+        var hand = InteractionHand.MAIN_HAND;
+        var pos = kettle.getBlockPos();
+        player.setItemInHand(hand, new ItemStack(Items.GLASS_BOTTLE));
+        kettle.getBlockState().use(helper.getLevel(), player, hand,
+                new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false));
+        helper.assertTrue(player.getItemInHand(hand).is(WitcheryIngredient.BREW_OF_ICE.item())
+                        && inventory.getStackInSlot(6).getCount() == 2 && kettle.bottleCount() == 3
+                        && tank.getFluidInTank(0).getAmount() == 600,
+                "Hand bottling takes one serving and leaves the water and stored bottles alone");
+
+        tank.fill(new FluidStack(Fluids.WATER, 400), IFluidHandler.FluidAction.EXECUTE);
+        var brewed = inventory.extractItem(6, 2, false);
+        helper.assertTrue(brewed.is(WitcheryIngredient.BREW_OF_ICE.item()) && brewed.getCount() == 2
+                        && kettle.bottleCount() == 1 && !kettle.isReady() && tank.getFluidInTank(0).isEmpty(),
+                "Refilling unblocks automation and the last serving empties the kettle");
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void bottlingPlainWaterClearsASpoiledKettle(GameTestHelper helper) throws Exception {
         var kettle = heatedKettle(helper, new BlockPos(5, 4, 5));
@@ -280,5 +350,28 @@ public final class KettleDropTests {
         helper.assertTrue(fluid.fill(new FluidStack(Fluids.WATER, 1000), IFluidHandler.FluidAction.EXECUTE) == 1000,
                 "The fixture must fill the kettle");
         return kettle;
+    }
+
+    private static void tickKettle(GameTestHelper helper, KettleBlockEntity kettle, int ticks) {
+        // Keep world time fixed to distinguish a loaded tile's clock from the server's clock.
+        for (int tick = 0; tick < ticks; tick++) {
+            KettleBlockEntity.serverTick(helper.getLevel(), kettle.getBlockPos(), kettle.getBlockState(), kettle);
+        }
+    }
+
+    private static AltarBlockEntity placeAltar(GameTestHelper helper, BlockPos core) {
+        var level = helper.getLevel();
+        var state = WitcheryBlocks.getRequired("altar").get().defaultBlockState();
+        for (var member : BlockPos.betweenClosed(core, core.offset(2, 0, 1))) {
+            level.setBlockAndUpdate(member, state);
+        }
+        AltarBlockEntity.form(level, core);
+        return (AltarBlockEntity) level.getBlockEntity(core);
+    }
+
+    private static void charge(AltarBlockEntity altar, float amount) {
+        var saved = altar.saveWithoutMetadata();
+        saved.putFloat("Power", amount);
+        altar.load(saved);
     }
 }
