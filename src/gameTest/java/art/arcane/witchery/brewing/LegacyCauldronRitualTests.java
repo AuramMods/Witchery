@@ -3,9 +3,11 @@ package art.arcane.witchery.brewing;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
+import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcheryRecipes;
 import com.mojang.authlib.GameProfile;
@@ -18,8 +20,10 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -34,12 +38,74 @@ import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class LegacyCauldronRitualTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_taglock_modifier_order")
+    public static void taglockCursePassesDurationAndParticleModifiersToTheNextEffect(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var origin = helper.absolutePos(new BlockPos(5, 4, 5));
+        var pig = helper.spawn(EntityType.PIG, new BlockPos(7, 4, 5));
+        pig.setNoAi(true);
+        var taglock = new ItemStack(WitcheryItems.getRequired("taglockkit").get());
+        TaglockItem.bindSignature(taglock, pig);
+        var bottleItem = WitcheryItems.getRequired("brewbottle").get();
+        record Recipe(Item ingredient, MobEffect effect, boolean inverted, int targetedTicks, int drinkTicks) {}
+        var recipes = List.of(
+                new Recipe(WitcheryIngredient.DISTURBED_COTTON.item(), WitcheryEffects.SINKING.get(), false, 36_003_600, 7200),
+                new Recipe(WitcheryIngredient.DROP_OF_LUCK.item(), WitcheryEffects.BREWING_EXPERTISE.get(), false, 14400, 14400),
+                new Recipe(WitcheryIngredient.DROP_OF_LUCK.item(), WitcheryEffects.INSANITY.get(), true, 36_003_600, 7200),
+                new Recipe(Items.RED_DYE, WitcheryEffects.COLORFUL.get(), false, 1800, 1800));
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.getEntity(pig.getUUID()) == pig,
+                "The creature is available to the Taglock"))
+                .thenExecute(() -> {
+                    for (var recipe : recipes) {
+                        var ingredients = new ArrayList<>(List.of(new ItemStack(Items.NETHER_WART),
+                                new ItemStack(WitcheryIngredient.TEAR_OF_THE_GODDESS.item()),
+                                new ItemStack(WitcheryIngredient.DIAMOND_VAPOUR.item()), new ItemStack(Items.DIAMOND),
+                                new ItemStack(Items.REDSTONE), new ItemStack(Items.GOLD_NUGGET)));
+                        if (recipe.inverted()) ingredients.add(new ItemStack(Items.FERMENTED_SPIDER_EYE));
+                        ingredients.add(new ItemStack(recipe.ingredient()));
+                        ingredients.add(new ItemStack(Items.SUGAR));
+                        ingredients.add(new ItemStack(Items.GHAST_TEAR));
+                        var mixture = BrewMixture.from(ingredients);
+                        var bottle = new ItemStack(bottleItem);
+                        bottle.setTag(mixture.bottleTag(ingredients));
+                        helper.assertTrue(bottleItem.finishUsingItem(bottle, level, pig).is(Items.GLASS_BOTTLE),
+                                "Drinking the same mixture should return its bottle");
+                        helper.assertTrue(pig.getEffect(recipe.effect()) != null
+                                        && pig.getEffect(recipe.effect()).getDuration() == recipe.drinkTicks(),
+                                "Drinking should apply the ordinary duration for " + recipe.effect().getDescriptionId());
+                        verifyBrewEffect(helper, pig, MobEffects.MOVEMENT_SPEED, 3600, true);
+                        verifyBrewEffect(helper, pig, MobEffects.REGENERATION, 900, true);
+                        pig.removeAllEffects();
+
+                        ingredients.add(taglock);
+                        mixture = BrewMixture.from(ingredients);
+                        helper.assertTrue(BrewRituals.pulse(level, origin, mixture, mixture.bottleTag(ingredients), taglock, 1, false)
+                                        == BrewRituals.Result.COMPLETE, "The copied Taglock cast should complete");
+                        helper.assertTrue(pig.getEffect(recipe.effect()) != null
+                                        && pig.getEffect(recipe.effect()).getDuration() == recipe.targetedTicks(),
+                                "The Taglock should apply its own duration for " + recipe.effect().getDescriptionId());
+                        verifyBrewEffect(helper, pig, MobEffects.MOVEMENT_SPEED, 7200, false);
+                        verifyBrewEffect(helper, pig, MobEffects.REGENERATION, 900, true);
+                        pig.removeAllEffects();
+                    }
+                    pig.discard();
+                }).thenSucceed();
+    }
+
+    private static void verifyBrewEffect(GameTestHelper helper, LivingEntity target, MobEffect effect, int ticks, boolean particles) {
+        var applied = target.getEffect(effect);
+        helper.assertTrue(applied != null && applied.getDuration() == ticks && applied.isVisible() == particles,
+                "Expected " + effect.getDescriptionId() + " for " + ticks + " ticks with visible particles " + particles
+                        + ", got " + applied);
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_gas_ritual_height")
     public static void gasWaveKeepsTheTargetHeightWhenFootingIsAboveOrBelow(GameTestHelper helper) {
         var level = helper.getLevel();

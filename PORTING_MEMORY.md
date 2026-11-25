@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Mixed Taglock cast modifiers (2026-11-25)
+
+- Witchery 0.24.1 carries the preceding Redstone duration and Gold Nugget particle setting through curses to the next ordinary effect in a Taglock cast. The original server confirmed Sinking, Brewing Expertise, inverted Drop of Luck, and Colorful. Their own durations follow their existing rules. A direct drink consumes the modifiers immediately.
+- A dropped-item cast on the preceding Forge JAR applied Swiftness for 3,600 ticks with visible particles after Sinking. The rebuilt clean Forge JAR saved the cast at warmup pulse five. After an ordinary dedicated restart it applied Swiftness for 7,200 ticks with hidden particles, with 7,199 remaining at first inspection. Sinking retained its long duration and the following Regeneration was visible with 899 ticks left of its base 900.
+- The same JAR resumed a cast saved by the preceding 1.20.1 build and recorded all three exact durations at application. Copied Auram repeated the dropped-item cast and saved normally. The headless fixture supplied the altar charge, target pig, and its bound Taglock. All 341 local Forge GameTests passed, including the original four curse cases and ordinary-drink controls.
+- The reobfuscated JAR is `build/qa-taglock-order/verified.jar` with SHA-256 `ee6e72f5ac4473a7b7e2dd28d3289f6d5f21b57743b2648fcb6176c4925c1f8b`. The native trace and headless clean Forge replay are in `build/qa-taglock-order/`.
+- The same native runner captured six original bottle titles and tooltips in `build/qa-taglock-order/native/display.log`. A splash lists Snow before Speed when offered in that order. Gas, liquid, and triggered brews show their extent and linger tiers, and the 20-tick drink shows `Quaffing: Fast`. The current bottle groups potion effects ahead of terrain actions, uses base durations for splash tooltips, and omits those modifier lines.
+
 ## Dream Catcher and frozen pressure plate imports (2026-11-25)
 
 - A Witchery 0.24.1 server saved five Dream Catcher weaves and two powered plates. The previous packaged JAR initially loaded all five as Movement and rewrote both plate release delays to zero. Replacing the Nightmare Catcher before its first tick dropped Fleet Feet.

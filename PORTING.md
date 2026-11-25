@@ -1347,6 +1347,7 @@
 - [x] Restore immediate feedback when the Kettle accepts a dropped ingredient, including the drop that spoils a full batch. The packet plays the water splash at the basin and spawns twenty particles for viewers within five blocks. Dropped glass bottles enter the spare bottle buffer silently.
 - [x] Reconcile the 50 named actions registered directly as `BrewActionEffect` in the original registry with modern ingredient handlers, including the nine tree variants. Their runtime rules remain part of the brew parity pass.
 - [x] Restore cauldron casting feedback from the original runtime. A completed Swiftness cast or Mutandis recipe sends the spell and fizz cue within eight blocks. The three rejected casts return their final offering and show separate colors. Removing altar power during an active gas cast empties the cauldron with the original interruption cue.
+- [ ] Restore custom brew names and tooltips using the original ingredient order. The reference shows effect entries in that order, half durations for splash tooltips, dispersal extent and linger tiers, and the quaffing speed when modified. The packaged port currently groups potion effects before action names and omits the dispersal tiers and quaffing line.
 - [ ] Finish the remaining brew actions, modifiers, and castable cauldron rituals.
 
 ## Death and Armor Cauldron Brews (2026-11-21)
@@ -1417,6 +1418,8 @@
 - [x] Brew and drink all nine variants in the muted survival client using supplied ingredients. At the fixture's first bottling skill tier, Expertise reduced the draw from 1.5 buckets to one. Absorption gave four temporary health points and Health Boost raised maximum health to 24. Darkness damaged the player until a torch was placed. A roof blocked Sun Allergy damage, and milk left Darkness Allergy active.
 - [x] Capture a pig's Taglock and drop it into a heated cauldron with Sinking IV and a duration modifier. With no coven, the cast applied Sinking II for nearly 36,003,600 ticks, with particles hidden. The bound pig retained that effect after a dedicated restart. The neighboring pig remained unaffected.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 17 focused GameTests. The broad suite passed 529 of 530. The powered Wither case passed in the 13-test summoning and brewing rerun.
+- [x] Compare mixed Taglock casts and ordinary drinks on the original server. Disturbed Cotton, either Drop of Luck variant, and coloring dyes preserve the preceding Redstone duration and Gold Nugget particle setting for the next ingredient in Taglock casts. Regular potions consume those modifiers. The prior Forge build gave Swiftness 3,600 visible ticks after Sinking. The rebuilt packaged cast resumed its saved warmup and gave Swiftness 7,200 hidden ticks, then applied unmodified Regeneration.
+- [x] Open a cast saved at warmup pulse five by the preceding 1.20.1 JAR. On the rebuilt package, the pig received exactly 7,200 hidden Swiftness ticks, 900 visible Regeneration ticks, and 36,003,600 hidden Sinking ticks. The same cast completed from dropped ingredients on copied Auram. Reobfuscation and all 341 local Forge GameTests passed.
 
 ## Snow and Cauldron Targeting Modifiers (2026-11-21)
 

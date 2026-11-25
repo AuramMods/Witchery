@@ -170,6 +170,10 @@ public final class BrewMixture {
     private record Ingredient(int power, @Nullable Modifier modifier, int amount, int ceiling,
                               int yieldModifier, @Nullable Potion normal, @Nullable Potion inverted, @Nullable Action action) {
         boolean isEffect() { return normal != null || action != null; }
+
+        boolean retainsTaglockModifiers() {
+            return normal != null && (normal.curse || inverted.curse || normal.dye != null);
+        }
     }
 
     private record Potion(Supplier<MobEffect> effect, int duration, boolean curse, @Nullable BrewDye dye) {
@@ -234,7 +238,7 @@ public final class BrewMixture {
     }
 
     public static boolean canAdd(List<ItemStack> current, ItemStack offered) {
-        Mixing mixing = mix(current, false);
+        Mixing mixing = mix(current, false, false);
         ResourceLocation id = id(offered);
         Ingredient ingredient = INGREDIENTS.get(id);
         return mixing != null && ingredient != null && ingredient.modifier != Modifier.RITUAL
@@ -264,13 +268,28 @@ public final class BrewMixture {
 
     @Nullable
     public static BrewMixture from(List<ItemStack> stacks, @Nullable Integer savedColor) {
+        return from(stacks, savedColor, false);
+    }
+
+    @Nullable
+    private static BrewMixture from(List<ItemStack> stacks, @Nullable Integer savedColor, boolean taglock) {
         if (stacks.isEmpty() && savedColor == null) return null;
-        Mixing mixing = mix(stacks, false);
+        Mixing mixing = mix(stacks, false, taglock);
         return mixing != null ? new BrewMixture(mixing, savedColor != null ? savedColor : BrewColor.fromIngredients(stacks)) : null;
     }
 
     @Nullable
     public static BrewMixture from(@Nullable CompoundTag tag) {
+        return from(tag, false);
+    }
+
+    @Nullable
+    static BrewMixture forTaglock(CompoundTag tag) {
+        return from(tag, true);
+    }
+
+    @Nullable
+    private static BrewMixture from(@Nullable CompoundTag tag, boolean taglock) {
         if (tag == null || !tag.contains(ITEMS, Tag.TAG_LIST)) return null;
         List<ItemStack> stacks = new ArrayList<>();
         for (Tag entry : tag.getList(ITEMS, Tag.TAG_COMPOUND)) {
@@ -279,7 +298,7 @@ public final class BrewMixture {
         Integer color = BrewColor.saved(tag);
         boolean fixedRitual = tag.contains("FixedRitual", Tag.TAG_STRING)
                 || tag.getBoolean("RitualTriggered") && tag.contains("BrewName", Tag.TAG_STRING);
-        BrewMixture mixture = fixedRitual ? fixedMixture(stacks, color) : from(stacks, color);
+        BrewMixture mixture = fixedRitual ? fixedMixture(stacks, color) : from(stacks, color, taglock);
         return mixture != null && (!tag.getBoolean("Splash") || mixture.splash()) ? mixture : null;
     }
 
@@ -372,7 +391,7 @@ public final class BrewMixture {
     }
 
     public static BrewMixture fixedMixture(List<ItemStack> offerings, @Nullable Integer color) {
-        return new BrewMixture(mix(offerings, true), color != null ? color : BrewColor.fromIngredients(offerings));
+        return new BrewMixture(mix(offerings, true, false), color != null ? color : BrewColor.fromIngredients(offerings));
     }
 
     public List<Application> effects() {
@@ -795,8 +814,8 @@ public final class BrewMixture {
     }
 
     @Nullable
-    private static Mixing mix(List<ItemStack> stacks, boolean ignoreRecipeOfferings) {
-        Mixing mixing = new Mixing();
+    private static Mixing mix(List<ItemStack> stacks, boolean ignoreRecipeOfferings, boolean taglock) {
+        Mixing mixing = new Mixing(taglock);
         for (ItemStack stack : stacks) {
             ResourceLocation id = id(stack);
             Ingredient ingredient = INGREDIENTS.get(id);
@@ -825,6 +844,7 @@ public final class BrewMixture {
     private static final class Mixing {
         private final List<BrewEffect> effects = new ArrayList<>();
         private final Set<ResourceLocation> segment = new HashSet<>();
+        private final boolean taglock;
         private int capacity;
         private int used;
         private int power;
@@ -844,6 +864,10 @@ public final class BrewMixture {
         private boolean noBlockTarget;
         private boolean noEntityTarget;
         private final List<WaystoneItem.Location> destinations = new ArrayList<>(2);
+
+        Mixing(boolean taglock) {
+            this.taglock = taglock;
+        }
 
         void add(ItemStack stack, ResourceLocation id, Ingredient ingredient) {
             power += ingredient.power;
@@ -889,9 +913,12 @@ public final class BrewMixture {
                 }
             }
             entityStrength.current = 0;
-            entityDuration.current = 0;
             inverted = false;
-            hideParticles = false;
+            // The original ritual curse restores these two modifiers before the next ingredient.
+            if (!taglock || !ingredient.retainsTaglockModifiers()) {
+                entityDuration.current = 0;
+                hideParticles = false;
+            }
         }
 
         private void applyModifier(Ingredient ingredient) {

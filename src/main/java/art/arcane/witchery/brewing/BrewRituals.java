@@ -45,7 +45,10 @@ public final class BrewRituals {
 
     public static Result pulse(ServerLevel source, BlockPos origin, BrewMixture mixture, CompoundTag brew,
                                ItemStack trigger, int pulse, boolean leonard) {
-        if (trigger.getItem() instanceof TaglockItem) return taglockCast(source, origin, mixture, trigger, leonard);
+        if (trigger.getItem() instanceof TaglockItem) {
+            var targeted = BrewMixture.forTaglock(brew);
+            return targeted == null ? Result.FAILED : taglockCast(source, origin, targeted, trigger, leonard);
+        }
         int coven = nearbyCoven(source, origin);
         var site = reachableSite(source, origin, mixture.destination(), coven, leonard);
         if (site == null) return Result.TOO_FAR;
