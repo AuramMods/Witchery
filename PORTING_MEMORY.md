@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Spinning Wheel slots, output, and bounds (2026-11-25)
+
+- Witchery 0.24.1 shift-clicked a Hay Bale into slot 3 with String in the fibre slot, Dirt in slot 1 and five Hay Bales in slot 4. It left a separately named String stack in the player's hotbar when the existing String in the fibre slot could not merge. Completing Golden Thread grew the renamed output to four and consumed Whiff of Magic from slot 1 while keeping the spare in slot 3.
+- The original collision covered the full cell. A ray through the corner hit the wheel and its top was non-sturdy. On the previous packaged port a dropped item fell through that corner to Y 184. The rebuilt wheel stopped it at Y 185 and accepted an ordinary use interaction through that corner.
+- The muted clean Forge survival client verified the shift-click order and both powered and resting model poses. The prepared paused batch restarted at 298 ticks with its named output intact. The resumed batch finished with four named Golden Threads, which the client shift-clicked into its inventory. Both clients used master volume zero and OpenAL No Output and kept desktop focus.
+- A packaged datapack recipe with its own named result preserved a differently named saved output and left the inputs intact. Once the slot was cleared, its named result spun normally.
+- The headless Auram copy paused, resumed, and saved the four named threads using the same JAR. The dropped-item collision sample ran on clean Forge because the headless pack left the item unticked with no players online.
+- Reobfuscation and all 413 local Forge GameTests passed on seed `5471593853027166409`. The exact candidate is `build/qa-wheel-inventory/candidate.jar` with SHA-256 `9320c994ee39b0e410a4fd7c871bb44634adee8990039cfeaac7bf0582d22680`. See `build/qa-wheel-inventory/comparison.txt` for the native, previous, and rebuilt traces.
+
 ## Distillery glow timing (2026-11-25)
 
 - The Witchery 0.24.1 trace kept the Distillery lit on ticks 1 through 21 after a single paid tick. The glow went out on tick 22. Two short returns of power advanced the recipe without relighting the block. The next update relit it on tick 43, and removing the input cleared both progress and glow on tick 44.

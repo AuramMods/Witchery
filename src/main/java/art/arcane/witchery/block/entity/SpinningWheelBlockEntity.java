@@ -114,8 +114,13 @@ public final class SpinningWheelBlockEntity extends BaseContainerBlockEntity imp
 
     private boolean canStore(ItemStack result) {
         ItemStack output = items.get(OUTPUT_SLOT);
-        return (output.isEmpty() || ItemStack.isSameItemSameTags(output, result))
-                && output.getCount() + result.getCount() <= Math.min(getMaxStackSize(), result.getMaxStackSize());
+        int limit = Math.min(getMaxStackSize(), result.getMaxStackSize());
+        if (output.isEmpty()) return result.getCount() <= limit;
+        // Plain results can grow a matching named stack. Recipes that supply data must preserve it.
+        boolean compatible = result.hasTag() ? ItemStack.isSameItemSameTags(output, result)
+                : ItemStack.isSameItem(output, result) && output.getDamageValue() == result.getDamageValue()
+                    && output.areCapsCompatible(result);
+        return compatible && output.getCount() + result.getCount() <= Math.min(limit, output.getMaxStackSize());
     }
 
     private void finish(SpinningRecipe recipe) {

@@ -11,9 +11,11 @@ import art.arcane.witchery.menu.DistilleryMenu;
 import art.arcane.witchery.menu.SpinningWheelMenu;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -285,6 +287,59 @@ public final class WorkstationPowerTests {
         var saved = wheel.saveWithoutMetadata();
         helper.assertTrue(menu.powered() && menu.progressWidth(300) == 90 && saved.getShort("PowerLevel") == 1,
                 "The original short PowerLevel should survive loading, menu creation and saving");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_spinning_wheel_inventory")
+    public static void spinningWheelRestoresSlotOrderAndFullBlockBounds(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(3, 4, 3));
+        var state = WitcheryBlocks.getRequired("spinningwheel").get().defaultBlockState()
+                .setValue(SpinningWheelBlock.FACING, Direction.EAST);
+        level.setBlockAndUpdate(pos, state);
+        var wheel = (SpinningWheelBlockEntity) level.getBlockEntity(pos);
+        var player = helper.makeMockPlayer();
+        var menu = (SpinningWheelMenu) wheel.createMenu(1, player.getInventory(), player);
+        wheel.setItem(0, new ItemStack(Items.STRING, 8));
+        wheel.setItem(1, new ItemStack(Items.DIRT));
+        wheel.setItem(4, new ItemStack(Items.HAY_BLOCK, 5));
+        player.getInventory().setItem(0, new ItemStack(Items.HAY_BLOCK));
+        menu.quickMoveStack(player, 32);
+        helper.assertTrue(player.getInventory().getItem(0).isEmpty() && wheel.getItem(3).is(Items.HAY_BLOCK)
+                        && wheel.getItem(3).getCount() == 1 && wheel.getItem(4).getCount() == 5,
+                "Blocked fibre must use the first available individual modifier slot");
+        player.getInventory().setItem(0, new ItemStack(Items.STRING).setHoverName(Component.literal("Spare string")));
+        menu.quickMoveStack(player, 32);
+        helper.assertTrue(player.getInventory().getItem(0).hasCustomHoverName() && wheel.getItem(0).getCount() == 8,
+                "Named matching fibre tries the fibre slot and respects its normal stack merge rules");
+        helper.assertTrue(state.getShape(level, pos).bounds().getSize() == 1.0
+                        && state.getCollisionShape(level, pos).bounds().getSize() == 1.0
+                        && !state.isFaceSturdy(level, pos, Direction.UP),
+                "The wheel has full outline and collision and no sturdy top");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_spinning_wheel_inventory")
+    public static void spinningWheelAddsToNamedOutputAndUsesFirstMatchingModifier(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(3, 4, 3));
+        level.setBlockAndUpdate(pos, WitcheryBlocks.getRequired("spinningwheel").get().defaultBlockState());
+        var wheel = (SpinningWheelBlockEntity) level.getBlockEntity(pos);
+        var altar = placeAltar(helper, pos.east(3));
+        var name = Component.literal("Saved golden thread");
+        wheel.setItem(0, new ItemStack(Items.HAY_BLOCK, 2));
+        wheel.setItem(1, new ItemStack(WitcheryIngredient.WHIFF_OF_MAGIC.item()));
+        wheel.setItem(2, new ItemStack(WitcheryIngredient.GOLDEN_THREAD.item()).setHoverName(name));
+        wheel.setItem(3, new ItemStack(WitcheryIngredient.WHIFF_OF_MAGIC.item()));
+        var saved = wheel.saveWithoutMetadata();
+        saved.putInt("CookTime", 299);
+        wheel.load(saved);
+        setAltarPower(altar, 1);
+        SpinningWheelBlockEntity.serverTick(level, pos, wheel.getBlockState(), wheel);
+        helper.assertTrue(wheel.getItem(2).getCount() == 4 && wheel.getItem(2).getHoverName().equals(name)
+                        && wheel.getItem(0).getCount() == 1 && wheel.getItem(1).isEmpty()
+                        && wheel.getItem(3).getCount() == 1,
+                "One batch adds three threads to the named stack and consumes only the first modifier");
         helper.succeed();
     }
 

@@ -100,11 +100,14 @@ public final class SpinningWheelMenu extends AbstractContainerMenu {
     private boolean moveToMachineOrInventory(Player player, int index, ItemStack stack) {
         List<SpinningRecipe> recipes = player.level().getRecipeManager().getAllRecipesFor(WitcheryRecipes.SPINNING.get());
         ItemStack fibre = wheel.getItem(FIBRE_SLOT);
-        if ((fibre.isEmpty() || ItemStack.isSameItemSameTags(stack, fibre)) && recipes.stream().anyMatch(recipe -> recipe.fibre().test(stack))) {
+        boolean matchesFibre = recipes.stream().anyMatch(recipe -> recipe.fibre().test(stack));
+        if (matchesFibre && (fibre.isEmpty()
+                || ItemStack.isSameItem(stack, fibre) && stack.getDamageValue() == fibre.getDamageValue())) {
             return moveItemStackTo(stack, FIBRE_SLOT, FIBRE_SLOT + 1, false);
         }
-        if (recipes.stream().anyMatch(recipe -> recipe.modifiers().stream().anyMatch(modifier -> modifier.test(stack)))) {
-            return moveItemStackTo(stack, 1, 2, false) || moveItemStackTo(stack, 3, 5, false);
+        if (matchesFibre || recipes.stream().anyMatch(recipe -> recipe.modifiers().stream().anyMatch(modifier -> modifier.test(stack)))) {
+            return moveItemStackTo(stack, 1, 2, false) || moveItemStackTo(stack, 3, 4, false)
+                    || moveItemStackTo(stack, 4, 5, false);
         }
         return index < HOTBAR_START ? moveItemStackTo(stack, HOTBAR_START, INVENTORY_END, false)
                 : moveItemStackTo(stack, SLOT_COUNT, HOTBAR_START, false);
