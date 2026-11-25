@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -34,7 +35,7 @@ public final class StatueGoddessBlock extends OwnedColumnBlock {
     private static final VoxelShape EAST_WEST = box(1.6, 0, 0, 14.4, 32, 16);
 
     public StatueGoddessBlock() {
-        super(Properties.copy(Blocks.STONE).strength(2.5F, 600).noOcclusion(), true);
+        super(Properties.copy(Blocks.STONE).strength(2.5F, 600).noOcclusion().pushReaction(PushReaction.BLOCK), true);
         registerDefaultState(defaultBlockState().setValue(FACING, Direction.NORTH));
     }
 

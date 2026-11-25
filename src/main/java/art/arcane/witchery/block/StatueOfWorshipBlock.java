@@ -32,6 +32,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
@@ -47,7 +48,7 @@ public final class StatueOfWorshipBlock extends BaseEntityBlock {
     private static final VoxelShape SHAPE = Block.box(2, 0, 2, 14, 22, 14);
 
     public StatueOfWorshipBlock() {
-        super(Properties.copy(Blocks.STONE).strength(3.5F, 12).noOcclusion());
+        super(Properties.copy(Blocks.STONE).strength(3.5F, 12).noOcclusion().pushReaction(PushReaction.BLOCK));
     }
 
     @Override

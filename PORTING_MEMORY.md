@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Piston movement with Quark (2026-11-25)
+
+- The earlier packaged Auram build let a piston move two altar members. The altar went from six formed members and 55 stored power to zero formed members and zero power. An extending piston and a retracting sticky piston also carried stocked Poppet Shelves across the X 31/32 chunk boundary, changing both saved ticket positions.
+- All 28 affected legacy block IDs now declare a blocking piston reaction. Witchery 0.24.1 and the rebuilt clean Forge and Auram packages kept the charged altar formed and both shelves at their original positions with their named poppets. Both rebuilt worlds saved Forge ticking tickets for the original coordinates. A vanilla chest still moved on extension and retraction in Auram and kept its named paper. The Placed Item retained its mounted sword.
+- Both rebuilt profiles matched the original push and pull criteria for all 121 shared default block states and all 16 powered-piston cases from the previous cycle. The native reference, prior Auram behavior, and rebuilt comparisons are under `build/qa-quark-piston/`. The Java 17 reobfuscated JAR is `build/qa-quark-piston/verified.jar` with SHA-256 `065115085d47d61ef3f66dec98873c972f5feefc2609713e5641af32b9913e77`.
+- Dedicated restarts on both rebuilt profiles restored the linked altar and both stocked shelves with their original ticking tickets. All 336 local Forge GameTests passed. The earlier failed coven visit replay saved gravel in the landing column. The isolated fixture now waits for the moved witch to be tracked before checking that the second visit preserves its identity and remaining time.
+- A separate block placement comparison found nine clicked-cell differences across 121 shared default states. The original replacement hook accepts the Heart Glyph, three chalk glyphs, Dream Catcher, both snow pressure plates, and both snow slab IDs. The packaged context for a stone block chooses the adjacent cell on each. Logs are in `build/qa-block-replacement/`. Verify actual survival placement and its drops before changing the rules.
+
 ## Piston parity (2026-11-25)
 
 - Extending pistons now leave the Candelabra and both Fume Funnels in place. They break the Heart Glyph, three chalk glyphs, Dream Catcher, Ember Moss, Garlic Garland, Glint Weed, Plant Mine, and both snow slab forms. Sticky pistons leave all 14 in place. An active Heart Glyph still refunds its staged offering when the piston breaks it.

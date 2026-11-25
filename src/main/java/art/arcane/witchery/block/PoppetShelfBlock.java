@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -26,7 +27,7 @@ public final class PoppetShelfBlock extends BaseEntityBlock {
     private static final VoxelShape SHAPE = box(0, 0, 0, 16, 8.16, 16);
 
     public PoppetShelfBlock() {
-        super(Properties.copy(Blocks.STONE).strength(2.5F).noOcclusion());
+        super(Properties.copy(Blocks.STONE).strength(2.5F).noOcclusion().pushReaction(PushReaction.BLOCK));
     }
 
     @Override

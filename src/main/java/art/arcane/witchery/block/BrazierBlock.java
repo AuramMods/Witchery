@@ -29,6 +29,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -38,7 +39,8 @@ public final class BrazierBlock extends BaseEntityBlock {
     private static final VoxelShape SHAPE = box(3.2, 0, 3.2, 12.8, 15.2, 12.8);
 
     public BrazierBlock() {
-        super(Properties.copy(Blocks.IRON_BLOCK).noOcclusion().strength(3.5F).sound(SoundType.METAL));
+        super(Properties.copy(Blocks.IRON_BLOCK).noOcclusion().strength(3.5F).sound(SoundType.METAL)
+                .pushReaction(PushReaction.BLOCK));
         registerDefaultState(defaultBlockState().setValue(LIT, false));
     }
 

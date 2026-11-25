@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -27,7 +28,7 @@ public final class BloodCrucibleBlock extends BaseEntityBlock {
     private static final VoxelShape SHAPE = box(4, 0, 4, 12, 5, 12);
 
     public BloodCrucibleBlock() {
-        super(Properties.copy(Blocks.STONE).strength(2.5F, 600).noOcclusion());
+        super(Properties.copy(Blocks.STONE).strength(2.5F, 600).noOcclusion().pushReaction(PushReaction.BLOCK));
     }
 
     @Override

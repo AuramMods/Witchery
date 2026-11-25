@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -26,7 +27,7 @@ public final class AreaWardBlock extends HorizontalDirectionalBlock implements E
     private final AreaWardBlockEntity.Kind kind;
 
     public AreaWardBlock(AreaWardBlockEntity.Kind kind) {
-        super(Properties.copy(Blocks.STONE).strength(2.5F, 5_999.4F).noOcclusion());
+        super(Properties.copy(Blocks.STONE).strength(2.5F, 5_999.4F).noOcclusion().pushReaction(PushReaction.BLOCK));
         this.kind = kind;
         registerDefaultState(defaultBlockState().setValue(FACING, Direction.NORTH));
     }

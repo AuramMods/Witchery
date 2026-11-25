@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.piston.PistonBaseBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.SlabType;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -28,6 +29,20 @@ public final class LegacyPistonTests {
     private enum Extension { MOVE, BLOCK, DESTROY }
 
     private record PistonCase(BlockState state, Extension extension, ItemStack drop) {}
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_legacy_pistons")
+    public static void legacyBlockEntitiesDeclareImmovablePistonReaction(GameTestHelper helper) {
+        // Quark bypasses the vanilla block-entity check. These blocks must declare their own reaction.
+        List<String> ids = List.of("altar", "beartrap", "bloodcrucible", "brazier", "cauldron", "chalice", "crystalball",
+                "decursedirected", "decurseteleport", "demonheart", "distilleryburning", "distilleryidle", "kettle",
+                "leechchest", "mirrorblock", "placeditem", "poppetshelf", "scarecrow", "silvervat", "spinningwheel",
+                "statuegoddess", "statueofworship", "trent", "witchesovenburning", "witchesovenidle", "witchsladder",
+                "wolfaltar", "wolftrap");
+        for (String id : ids) {
+            helper.assertTrue(state(id).getPistonPushReaction() == PushReaction.BLOCK, id + " must block piston movement");
+        }
+        helper.succeed();
+    }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_legacy_pistons", timeoutTicks = 120)
     public static void pistonsMatchLegacyExtensionAndRetraction(GameTestHelper helper) {

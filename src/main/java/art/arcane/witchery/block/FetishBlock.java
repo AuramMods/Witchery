@@ -35,6 +35,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
@@ -57,7 +58,8 @@ public final class FetishBlock extends BaseEntityBlock {
     }
 
     private static Properties properties(String path) {
-        var properties = Properties.copy(Blocks.OAK_PLANKS).strength(3.5F, 60_000.0F).noOcclusion();
+        var properties = Properties.copy(Blocks.OAK_PLANKS).strength(3.5F, 60_000.0F).noOcclusion()
+                .pushReaction(PushReaction.BLOCK);
         return path.equals("witchsladder") ? properties.noCollission() : properties.dynamicShape();
     }
 

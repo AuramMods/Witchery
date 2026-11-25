@@ -18,11 +18,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.BlockHitResult;
 
 public final class LeechChestBlock extends LegacyPairingChestBlock {
     public LeechChestBlock() {
-        super(Properties.copy(Blocks.CHEST).strength(25, 600).requiresCorrectToolForDrops(), WitcheryBlockEntities.LEECH_CHEST::get);
+        super(Properties.copy(Blocks.CHEST).strength(25, 600).requiresCorrectToolForDrops()
+                .pushReaction(PushReaction.BLOCK), WitcheryBlockEntities.LEECH_CHEST::get);
     }
 
     @Override

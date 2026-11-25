@@ -182,17 +182,21 @@ public final class WitcheryBlocks {
             case "rowanwooddoor" -> new WitchDoorBlock(false);
             case "alderwooddoor" -> new WitchDoorBlock(true);
             case "cwoodendoor" -> new CursedControls.Door();
-            case "altar" -> new AltarBlock(BlockBehaviour.Properties.copy(Blocks.STONE).strength(2.0F));
-            case "kettle" -> new KettleBlock(BlockBehaviour.Properties.copy(Blocks.STONE).strength(2.0F).noOcclusion());
-            case "spinningwheel" ->
-                    new SpinningWheelBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS).strength(3.5F).noOcclusion());
+            case "altar" -> new AltarBlock(BlockBehaviour.Properties.copy(Blocks.STONE)
+                    .strength(2.0F).pushReaction(PushReaction.BLOCK));
+            case "kettle" -> new KettleBlock(BlockBehaviour.Properties.copy(Blocks.STONE)
+                    .strength(2.0F).noOcclusion().pushReaction(PushReaction.BLOCK));
+            case "spinningwheel" -> new SpinningWheelBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS)
+                    .strength(3.5F).noOcclusion().pushReaction(PushReaction.BLOCK));
             case "distilleryidle", "distilleryburning" ->
                     new DistilleryBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).strength(3.5F).noOcclusion()
+                            .pushReaction(PushReaction.BLOCK)
                             .lightLevel(state -> state.getValue(DistilleryBlock.LIT) ? 6 : 0));
             case "witchesovenidle", "witchesovenburning" ->
                     new WitchesOvenBlock(BlockBehaviour.Properties.copy(Blocks.FURNACE)
                             .strength(3.5F)
                             .noOcclusion()
+                            .pushReaction(PushReaction.BLOCK)
                             .lightLevel(state -> state.getValue(WitchesOvenBlock.LIT) ? 13 : 0));
             case "fumefunnel", "filteredfumefunnel" -> new FumeFunnelBlock(BlockBehaviour.Properties.copy(Blocks.STONE)
                     .strength(3.5F).noOcclusion().pushReaction(PushReaction.BLOCK));
@@ -231,11 +235,12 @@ public final class WitcheryBlocks {
             case "beartrap" -> new HuntingTrapBlock(false);
             case "demonheart" ->
                     new DemonHeartBlock(BlockBehaviour.Properties.copy(Blocks.DIRT).strength(1).noOcclusion()
+                            .pushReaction(PushReaction.BLOCK)
                             .sound(SoundType.NETHERRACK).lightLevel(state -> 3));
             case "wolfhead" -> new WolfHeadBlock();
             case "alluringskull" -> new AlluringSkullBlock();
-            case "chalice" ->
-                    new ChaliceBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BARS).noOcclusion().strength(3.0F));
+            case "chalice" -> new ChaliceBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BARS)
+                    .noOcclusion().strength(3.0F).pushReaction(PushReaction.BLOCK));
             case "candelabra" -> new CandelabraBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BARS)
                     .noOcclusion().strength(2.0F).lightLevel(state -> 15).pushReaction(PushReaction.BLOCK));
             case "brazier" -> new BrazierBlock();
@@ -254,7 +259,8 @@ public final class WitcheryBlocks {
             case "daylightcollector" -> new DaylightCollectorBlock();
             case "bloodcrucible" -> new BloodCrucibleBlock();
             case "mirrorblock", "mirrorblock2" -> new MirrorBlock(BlockBehaviour.Properties.copy(Blocks.GLASS)
-                    .strength(path.equals("mirrorblock") ? 1 : -1, 5_999.4F).noLootTable(), path.equals("mirrorblock2"));
+                    .strength(path.equals("mirrorblock") ? 1 : -1, 5_999.4F).noLootTable().pushReaction(PushReaction.BLOCK),
+                    path.equals("mirrorblock2"));
             case "circle" -> new RiteHeartBlock();
             case "circleglyphritual" -> new RitualGlyphBlock("chalkritual");
             case "circleglyphotherwhere" -> new RitualGlyphBlock("chalkotherwhere");
@@ -278,7 +284,7 @@ public final class WitcheryBlocks {
             case "slurp" -> new SlurpBlock();
             case "cactus" -> new BrewPlantBlocks.Cactus();
             case "voidbramble" -> new VoidBrambleBlock();
-            case "cauldron" -> new WitchesCauldronBlock(BlockBehaviour.Properties.copy(Blocks.CAULDRON));
+            case "cauldron" -> new WitchesCauldronBlock(BlockBehaviour.Properties.copy(Blocks.CAULDRON).pushReaction(PushReaction.BLOCK));
             case "wolfaltar" -> new WolfAltarBlock();
             case "statuegoddess" -> new StatueGoddessBlock();
             case "pitdirt" -> new PitDirtBlock();

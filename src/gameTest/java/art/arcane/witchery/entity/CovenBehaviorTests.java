@@ -159,22 +159,29 @@ public final class CovenBehaviorTests {
         helper.succeed();
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 150)
+    @GameTest(template = TEMPLATE, timeoutTicks = 240)
     public static void visitsABedAndKeepsTheExistingMembersLifetime(GameTestHelper helper) {
         FakePlayer owner = owner(helper);
         var level = helper.getLevel();
-        BlockPos home = helper.absolutePos(CENTER);
+        // Give the visitor a dry landing above the shared arena.
+        BlockPos home = helper.absolutePos(CENTER.above(160));
+        BlockPos landing = home.offset(-2, 0, -2);
+        BlockPos away = home.east(4);
+        level.setBlockAndUpdate(landing.below(), Blocks.STONE.defaultBlockState());
+        owner.setPos(Vec3.atBottomCenterOf(home));
         long seed = 0;
         while (RandomSource.create(seed).nextInt(20) != 0) seed++;
         long visitSeed = seed;
+        var config = WitcheryServerConfig.ALLOW_COVEN_WITCH_VISITS;
+        var recalled = new ArrayList<CovenWitch>();
         helper.startSequence().thenWaitUntil(() ->
-                helper.assertTrue(level.getGameTime() % 100 == 0, "Wait for the bed visit check")).thenExecute(() -> {
-            helper.assertTrue(level.getBlockState(home.offset(-2, -1, -2)).isFaceSturdy(level, home.offset(-2, -1, -2), Direction.UP),
-                    "The visit fixture should have a solid landing surface");
+                helper.assertTrue(level.isPositionEntityTicking(landing) && level.isPositionEntityTicking(away)
+                        && level.getGameTime() % 100 == 0, "Wait for the landing, the moved witch's chunk and the bed visit check"))
+                .thenExecute(() -> {
             owner.setRespawnPosition(Level.NETHER, home, 0, true, false);
             owner.getRandom().setSeed(visitSeed);
             CovenWitch.tickVisits(owner);
-            helper.assertTrue(witches(helper).isEmpty(), "The respawn point must be in the current dimension");
+            helper.assertTrue(ownedWitches(helper, owner).isEmpty(), "The respawn point must be in the current dimension");
             owner.setRespawnPosition(level.dimension(), home, 0, false, false);
             owner.setPos(Vec3.atBottomCenterOf(home.east(20)));
             owner.getRandom().setSeed(visitSeed);
@@ -182,30 +189,48 @@ public final class CovenBehaviorTests {
             AABB area = owner.getBoundingBox().inflate(4);
             helper.assertTrue(level.getEntitiesOfClass(CovenWitch.class, area).isEmpty(), "Visits should stay within sixteen blocks of the bed");
             owner.setPos(Vec3.atBottomCenterOf(home));
-            var config = WitcheryServerConfig.ALLOW_COVEN_WITCH_VISITS;
             boolean enabled = config.get();
             try {
                 config.set(false);
                 owner.getRandom().setSeed(visitSeed);
                 CovenWitch.tickVisits(owner);
-                helper.assertTrue(witches(helper).isEmpty(), "The server toggle should stop automatic visits");
+                helper.assertTrue(ownedWitches(helper, owner).isEmpty(), "The server toggle should stop automatic visits");
                 config.set(true);
                 owner.getRandom().setSeed(visitSeed);
                 CovenWitch.tickVisits(owner);
-                var members = witches(helper);
-                helper.assertTrue(members.size() == 1 && members.get(0).getName().getString().equals(MEMBER),
-                        "The next check should call the saved member");
-                CovenWitch witch = members.get(0);
-                var state = witch.saveWithoutId(new CompoundTag());
-                helper.assertTrue(state.getInt("SuicideIn") == 1_800 && state.getUUID("Owner").equals(owner.getUUID()),
-                        "A new visit should last ninety seconds");
-                state.putInt("SuicideIn", 1_650);
-                witch.load(state);
-                witch.moveTo(Vec3.atBottomCenterOf(home.east(4)));
+            } finally {
+                config.set(enabled);
+            }
+        }).thenWaitUntil(() -> {
+            var members = ownedWitches(helper, owner);
+            helper.assertTrue(members.size() == 1 && members.get(0).getName().getString().equals(MEMBER),
+                    "The first visit should track the saved member");
+        }).thenExecute(() -> {
+            CovenWitch witch = ownedWitches(helper, owner).get(0);
+            var state = witch.saveWithoutId(new CompoundTag());
+            helper.assertTrue(state.getInt("SuicideIn") >= 1_799 && state.getInt("SuicideIn") <= 1_800
+                            && state.getUUID("Owner").equals(owner.getUUID()) && witch.blockPosition().equals(landing),
+                    "A new visit should land at the bed and last ninety seconds");
+            state.putInt("SuicideIn", 1_650);
+            witch.load(state);
+            witch.setNoAi(true);
+            level.setBlockAndUpdate(away.below(), Blocks.STONE.defaultBlockState());
+            witch.moveTo(Vec3.atBottomCenterOf(away));
+            recalled.add(witch);
+        }).thenWaitUntil(() -> helper.assertTrue(level.getGameTime() % 100 == 0
+                        && ownedWitches(helper, owner).equals(recalled),
+                "Wait for the moved witch to be tracked at the next bed visit check")).thenExecute(() -> {
+            boolean enabled = config.get();
+            try {
+                CovenWitch witch = recalled.get(0);
+                int remaining = witch.saveWithoutId(new CompoundTag()).getInt("SuicideIn");
+                helper.assertTrue(remaining > 0 && remaining <= 1_650 && witch.blockPosition().equals(away),
+                        "The existing witch should still be away from the bed and partway through its visit");
+                config.set(true);
                 owner.getRandom().setSeed(visitSeed);
                 CovenWitch.tickVisits(owner);
-                helper.assertTrue(witches(helper).equals(List.of(witch)) && witch.blockPosition().equals(home.offset(-2, 0, -2))
-                                && witch.saveWithoutId(new CompoundTag()).getInt("SuicideIn") == 1_650,
+                helper.assertTrue(ownedWitches(helper, owner).equals(recalled) && witch.blockPosition().equals(landing)
+                                && witch.saveWithoutId(new CompoundTag()).getInt("SuicideIn") == remaining,
                         "A second visit should reuse the same witch without resetting the timer");
             } finally {
                 config.set(enabled);

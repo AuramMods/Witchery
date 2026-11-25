@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -26,7 +27,7 @@ public final class SilverVatBlock extends BaseEntityBlock {
     private static final VoxelShape SHAPE = box(0, 0, 0, 16, 10.24, 16);
 
     public SilverVatBlock() {
-        super(Properties.copy(Blocks.IRON_BLOCK).strength(8).noOcclusion());
+        super(Properties.copy(Blocks.IRON_BLOCK).strength(8).noOcclusion().pushReaction(PushReaction.BLOCK));
     }
 
     @Override

@@ -25,6 +25,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -33,7 +34,8 @@ public final class PlacedItemBlock extends BaseEntityBlock {
     private static final VoxelShape SHAPE = box(3.2, 0, 3.2, 12.8, 0.8, 12.8);
 
     public PlacedItemBlock() {
-        super(Properties.copy(Blocks.WHITE_CARPET).noCollission().noLootTable().instabreak());
+        super(Properties.copy(Blocks.WHITE_CARPET).noCollission().noLootTable().instabreak()
+                .pushReaction(PushReaction.BLOCK));
         registerDefaultState(defaultBlockState().setValue(FACING, Direction.NORTH));
     }
 

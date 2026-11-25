@@ -28,6 +28,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -40,7 +41,8 @@ public final class CrystalBallBlock extends BaseEntityBlock {
     private static final VoxelShape SHAPE = box(4.8, 0, 4.8, 11.2, 9.6, 11.2);
 
     public CrystalBallBlock() {
-        super(Properties.copy(Blocks.GLASS).strength(2).requiresCorrectToolForDrops().noOcclusion());
+        super(Properties.copy(Blocks.GLASS).strength(2).requiresCorrectToolForDrops().noOcclusion()
+                .pushReaction(PushReaction.BLOCK));
     }
 
     @Override

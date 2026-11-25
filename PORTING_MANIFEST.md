@@ -210,6 +210,7 @@ The runtime registry from the shipped 0.24.1 server contains 121 Witchery block 
 - Structural model/state families (2026-02-08 breadth pass)
   - The original and packaged Forge servers agree on effective blast resistance for all 121 shared default block states. Perpetual Ice and ordinary ice constructions use resistance 3, witchwood planks and stairs use 2, Bear and Wolf Traps use 6, and both Stockades and the Statue of Worship use 12.
   - Pistons leave the Candelabra and both Fume Funnels in place, and break the Heart Glyph, chalk glyphs, Dream Catcher, Ember Moss, Garlic Garland, Glint Weed, Plant Mine, and snow slabs. Dream Catchers drop their fitted weave. Garlic Garland and Glint Weed drop one item each. Both double snow slab forms drop two slabs.
+  - The 28 legacy block IDs that Quark made movable declare a blocking piston reaction. This preserves the original immovability of altar members, workstations, wards, Poppet Shelves, Placed Items, and the other affected block entities when Quark moves ordinary containers.
   - Stairs IDs:
     - `witchery:stairswoodrowan`, `witchery:stairswoodalder`, `witchery:stairswoodhawthorn`, `witchery:icestairs`, `witchery:snowstairs`
     - blockstate shape source pattern: vanilla 1.20.1 `oak_stairs` variant matrix.
