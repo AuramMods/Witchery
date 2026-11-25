@@ -5,6 +5,8 @@ import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.gametest.GameTestHolder;
@@ -13,6 +15,43 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class VampireHuntTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_vampire_hunt_landings")
+    public static void archivedHuntRetainsItsPatrolAcrossSaves(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos center = helper.absolutePos(new BlockPos(8, 0, 8));
+        var saved = new CompoundTag();
+        var village = new CompoundTag();
+        village.putLong("Center", center.asLong());
+        village.putInt("Radius", 32);
+        saved.put("HuntVillage", village);
+        saved.putBoolean("Hunting", true);
+        saved.putInt("HuntBites", 3);
+
+        var vampire = WitcheryEntities.VAMPIRE.get().create(level);
+        vampire.readAdditionalSaveData(saved);
+        var roundTrip = new CompoundTag();
+        vampire.addAdditionalSaveData(roundTrip);
+        var reloaded = WitcheryEntities.VAMPIRE.get().create(level);
+        reloaded.readAdditionalSaveData(roundTrip);
+        var villager = EntityType.VILLAGER.create(level);
+        villager.setPos(Vec3.atBottomCenterOf(center.east(31)));
+        helper.assertTrue(reloaded.canAttack(villager), "Residents inside the archived village remain targets");
+        villager.setPos(Vec3.atBottomCenterOf(center.east(33)));
+        helper.assertTrue(!reloaded.canAttack(villager), "Residents outside the saved patrol are excluded");
+        helper.assertTrue(roundTrip.getBoolean("Hunting") && roundTrip.getInt("HuntBites") == 3
+                        && village.equals(roundTrip.getCompound("HuntVillage")),
+                "The saved hunt contains its original patrol and bite count");
+
+        roundTrip.remove("HuntVillage");
+        reloaded.readAdditionalSaveData(roundTrip);
+        reloaded.addAdditionalSaveData(roundTrip);
+        helper.assertTrue(!reloaded.hasRestriction() && reloaded.canAttack(villager)
+                        && roundTrip.getBoolean("Hunting") && roundTrip.getInt("HuntBites") == 3
+                        && !roundTrip.contains("HuntVillage"),
+                "Existing hunts without an archived patrol retain their progress and unrestricted targets");
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_vampire_hunt_landings", timeoutTicks = 120)
     public static void huntSearchesTheOriginalColumnAboveAndBelow(GameTestHelper helper) {
         var level = helper.getLevel();

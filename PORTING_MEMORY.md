@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Vampire hunts in imported villages (2026-11-25)
+
+- The original Witchery server sent a vampire from `(-53.5, 120, 33.5)` to `(94.5, 121.05, 33.5)`. The 148-block trip falls inside the original 128-block search plus the village's saved 32-block radius. The original server also wrote a named vampire and its home coordinates for the import fixture.
+- The port uses archived centers alongside occupied modern sites. It searches the original column, restricts targets to the saved village radius, and persists the center and radius while the hunt is active. Existing port saves without the patrol tag retain their saved bite counts.
+- The preceding package kept the imported vampire near home after 525 nighttime ticks even with the village and its residents loaded. The resident in the fixture had no modern job site.
+- On clean Forge, a muted survival client observed the arrival poof and first bite at the archived village. An ordinary restart preserved the same vampire UUID, patrol radius, one bite, and the resident's 480 blood. The last four bites brought the resident to 400 blood. The vampire cleared the patrol, returned home, and deposited five blood in the first Blood Crucible. The second vessel stayed empty.
+- Copied Auram imported the original fixture and ran the full hunt with an ordinary survival client in range. The vampire reached the exact original landing, took five bites, returned home, and filled only the first Crucible. Both profiles used the exact same JAR, kept the original village file byte for byte, and ran their clients at zero master volume with OpenAL No Output and no test window activation.
+- Local Java 17 data generation, JAR reobfuscation, and all 314 required Forge GameTests passed. The exact package SHA-256 is `f0c2f6cadf99c24f5f9b641c1e414d56a3a4034f7f55ea791f34ea4452175b5b`. The native fixture, package, and validation logs are in `build/qa-vampire-legacy-hunt/`.
+
 ## Vampire travel to imported villages (2026-11-25)
 
 - Witchery 0.24.1 searched the saved village center column, testing upper ground before equally distant lower ground. The original trace landed at `(94, 124, 33)` and `(94, 120, 33)` after the upper headroom was blocked. It refused a fully blocked center with usable footing in the adjacent column.

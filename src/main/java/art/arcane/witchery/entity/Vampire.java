@@ -5,8 +5,10 @@ import art.arcane.witchery.item.VampireClothingItem;
 import art.arcane.witchery.item.VampireClothingItem.Style;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.vampirism.BloodFeeding;
+import art.arcane.witchery.vampirism.VampireVillages;
 import art.arcane.witchery.vampirism.Vampirism;
 import art.arcane.witchery.world.WitcheryTeleport;
+import art.arcane.witchery.world.migration.LegacyVillages;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -53,6 +55,7 @@ public final class Vampire extends PathfinderMob {
     private BlockPos home;
     private boolean hunting;
     private int bites;
+    @Nullable private VampireVillages.Territory huntVillage;
 
     public Vampire(EntityType<? extends Vampire> type, Level level) {
         super(type, level);
@@ -106,14 +109,14 @@ public final class Vampire extends PathfinderMob {
         if (!world.isNight()) {
             if (getLastHurtByMob() == null) setTarget(null);
             if (tickCount % 100 == 2) {
-                hunting = false;
+                finishHunt();
                 bites = 0;
                 if (distanceToSqr(Vec3.atLowerCornerOf(home)) > 16) returnHome(world);
             }
             if (tickCount % 20 == 2 && Vampirism.isInSunlight(this)) setSecondsOnFire(2);
         } else if (bites >= BITES_PER_NIGHT) {
             if (hunting) {
-                hunting = false;
+                finishHunt();
                 setTarget(null);
                 setLastHurtByMob(null);
                 returnHome(world);
@@ -121,6 +124,14 @@ public final class Vampire extends PathfinderMob {
             }
         } else if (!hunting && tickCount % 500 == 2) {
             beginHunt(world);
+        }
+    }
+
+    private void finishHunt() {
+        hunting = false;
+        if (huntVillage != null) {
+            huntVillage = null;
+            clearRestriction();
         }
     }
 
@@ -141,16 +152,36 @@ public final class Vampire extends PathfinderMob {
     }
 
     private void beginHunt(ServerLevel world) {
+        var legacy = LegacyVillages.nearest(world, blockPosition(), VILLAGE_RANGE).orElse(null);
         var nearby = world.getEntitiesOfClass(Villager.class, getBoundingBox().inflate(VILLAGE_RANGE),
                 villager -> villager.isAlive() && distanceToSqr(villager) <= VILLAGE_RANGE * VILLAGE_RANGE
-                        && world.isVillage(villager.blockPosition()));
+                        && world.isVillage(villager.blockPosition())
+                        && (legacy == null || LegacyVillages.nearest(world, villager.blockPosition(), 0).isEmpty()));
         var victim = nearby.stream().min(Comparator.comparingDouble(this::distanceToSqr));
+        if (legacy != null && (victim.isEmpty()
+                || distanceToSqr(Vec3.atCenterOf(legacy.center())) <= distanceToSqr(victim.get()))) {
+            relocate(world, legacy.center());
+            huntVillage = new VampireVillages.Territory(legacy.center(), legacy.radius());
+            restrictTo(huntVillage.center(), huntVillage.radius());
+            hunting = true;
+            setTarget(null);
+            return;
+        }
         if (victim.isEmpty()) return;
         BlockPos village = victim.get().blockPosition();
         relocate(world, village);
         clearRestriction();
         hunting = true;
         setTarget(victim.get());
+    }
+
+    @Override
+    public boolean canAttack(LivingEntity target) {
+        return (!(target instanceof Villager) || inHuntingGround(target)) && super.canAttack(target);
+    }
+
+    private boolean inHuntingGround(LivingEntity target) {
+        return huntVillage == null || isWithinRestriction(target.blockPosition());
     }
 
     private void returnHome(ServerLevel world) {
@@ -182,7 +213,8 @@ public final class Vampire extends PathfinderMob {
     @Override
     public boolean doHurtTarget(Entity target) {
         if (!(target instanceof Villager villager)) return super.doHurtTarget(target);
-        if (level() instanceof ServerLevel world && hunting && bites < BITES_PER_NIGHT && random.nextInt(10) == 0) {
+        if (level() instanceof ServerLevel world && hunting && bites < BITES_PER_NIGHT
+                && inHuntingGround(villager) && random.nextInt(10) == 0) {
             bites++;
             if (BloodFeeding.takeFromVillager(villager, 30) > 0) {
                 heal(4);
@@ -221,6 +253,12 @@ public final class Vampire extends PathfinderMob {
         tag.putInt("BaseZ", base.getZ());
         tag.putBoolean("Hunting", hunting);
         tag.putInt("HuntBites", bites);
+        if (huntVillage != null) {
+            var village = new CompoundTag();
+            village.putLong("Center", huntVillage.center().asLong());
+            village.putInt("Radius", huntVillage.radius());
+            tag.put("HuntVillage", village);
+        }
     }
 
     @Override
@@ -229,7 +267,14 @@ public final class Vampire extends PathfinderMob {
         if (tag.contains("BaseY", Tag.TAG_ANY_NUMERIC)) {
             home = new BlockPos(tag.getInt("BaseX"), tag.getInt("BaseY"), tag.getInt("BaseZ"));
         }
+        finishHunt();
         hunting = tag.getBoolean("Hunting");
         bites = Math.max(0, Math.min(BITES_PER_NIGHT, tag.getInt("HuntBites")));
+        var village = tag.getCompound("HuntVillage");
+        int radius = village.getInt("Radius");
+        if (hunting && radius > 0 && village.contains("Center", Tag.TAG_LONG)) {
+            huntVillage = new VampireVillages.Territory(BlockPos.of(village.getLong("Center")), radius);
+            restrictTo(huntVillage.center(), radius);
+        }
     }
 }
