@@ -9,6 +9,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -35,6 +36,9 @@ import org.jetbrains.annotations.Nullable;
 
 public final class Wolfman extends Monster {
     private int attackTicks;
+    private boolean playerRiding;
+    @Nullable
+    private InteractionHand playerUseHand;
     private boolean infectious;
     @Nullable
     private CompoundTag formerVillager;
@@ -102,7 +106,18 @@ public final class Wolfman extends Monster {
 
     public void setPlayerAnimation(Player player) {
         attackTicks = player.swinging ? Math.max(0, 10 - player.swingTime) : 0;
+        attackAnim = player.attackAnim;
+        oAttackAnim = player.oAttackAnim;
+        swingingArm = player.swingingArm;
+        setShiftKeyDown(player.isShiftKeyDown());
+        playerRiding = player.isPassenger();
+        playerUseHand = player.isUsingItem() ? player.getUsedItemHand() : null;
     }
+
+    public boolean isPlayerRiding() { return playerRiding; }
+
+    @Nullable
+    public InteractionHand playerUseHand() { return playerUseHand; }
 
     @Override
     public void handleEntityEvent(byte event) {

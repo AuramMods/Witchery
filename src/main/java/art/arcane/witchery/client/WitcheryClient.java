@@ -43,6 +43,7 @@ import art.arcane.witchery.client.model.DeathModel;
 import art.arcane.witchery.client.model.LeonardModel;
 import art.arcane.witchery.entity.DreamSpirit;
 import art.arcane.witchery.entity.LostSoul;
+import art.arcane.witchery.entity.Wolfman;
 import art.arcane.witchery.client.renderer.LeonardRenderer;
 import art.arcane.witchery.client.renderer.IllusionRenderer;
 import art.arcane.witchery.client.renderer.BrewProjectileRenderer;
@@ -289,6 +290,8 @@ public final class WitcheryClient {
         event.registerLayerDefinition(HornedHuntsmanRenderer.LAYER, HornedHuntsmanRenderer::layer);
         event.registerLayerDefinition(WolfHeadRenderer.LAYER, WolfHeadRenderer::layer);
         event.registerLayerDefinition(WolfmanRenderer.LAYER, WolfmanRenderer::layer);
+        event.registerLayerDefinition(WolfmanRenderer.INNER_ARMOR, WolfmanRenderer::innerArmorLayer);
+        event.registerLayerDefinition(WolfmanRenderer.OUTER_ARMOR, WolfmanRenderer::outerArmorLayer);
         event.registerLayerDefinition(WolfAltarRenderer.LAYER, WolfAltarRenderer::layer);
         event.registerLayerDefinition(StatueGoddessRenderer.LAYER, StatueGoddessRenderer::layer);
         event.registerLayerDefinition(AreaWardRenderer.WOLF_LAYER, AreaWardRenderer::wolfLayer);
@@ -339,7 +342,7 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.WITCH_HUNTER.get(), WitchHunterRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.HELLHOUND.get(), HellhoundRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.HORNED_HUNTSMAN.get(), HornedHuntsmanRenderer::new);
-        event.registerEntityRenderer(WitcheryEntities.WOLFMAN.get(), WolfmanRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.WOLFMAN.get(), context -> new WolfmanRenderer<>(context, Wolfman::attackTicks));
         event.registerEntityRenderer(WitcheryEntities.WERE_VILLAGER.get(), VillagerRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.ATTACK_BAT.get(), BatRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.SCRY_EYE.get(), NoopRenderer::new);

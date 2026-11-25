@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Wolfman poses and equipment rendering (2026-11-25)
+
+- The Wolfman, the transformed player, and a Wolfman Reflection use the same model. Its walk lifts and sways the tail. The upper body, legs, and arms take the original crouch and riding positions. Melee uses both the ten-tick attack and the ordinary arm swing. Held items, blocking, and bow drawing follow the active hand and support both modern main-hand settings.
+- Wolfmen and Wolfman Reflections use wolf-shaped inner and outer armor meshes through Forge's equipment layer. Armor parts follow the animated limbs and use the equipped item's texture, dye, trim, and glint. Headwear uses the modern head layer.
+- A headless Java 8 probe ran the original Witchery 0.24.1 model against the remapped Minecraft client classes. The rebuilt Forge client matched all 288 measured fields across idle, walking, crouching, riding, melee, holding, blocking, and bow poses. The preceding Forge build differed in 86 fields. The rebuilt client drew both iron armor textures on a Wolfman loaded from the preceding build's save, with the same UUID.
+- A muted clean Forge survival client used the Moon Charm at rank seven, crouched, drew an offhand bow, and rode a fixture boat. The reopened save retained the transformed player and the armored Wolfman. The Reflection probe supplied an iron helmet and chestplate to its copied Wolfman form to check equipment rendering. All client launches used OpenAL's No Output device and kept the original foreground app.
+- Copied Auram's dedicated server loaded and saved the Wolfman equipment and Reflection form. All 373 required local Forge GameTests passed on seed `5079230840918558374`. The first run hit an intermittent Witch Hunter dispatch assertion. The reobfuscated JAR is `build/qa-wolfman-poses/candidate.jar` with SHA-256 `920dcb4070e8830407e6c5faa7b51f6cd32ef90f89be92233f0caabc03e3dfff`. Results are in `build/qa-wolfman-poses/comparison.txt`.
+
 ## Circle Magic offering fixtures (2026-11-25)
 
 - The failing run's entity regions still held all three Waystone offerings and all five Demon offerings directly over their Heart Glyphs. A traced replay on seed `5079230840918558374` reproduced the Waystone visibility gap. Its chunk already exposed its blocks, but on the first three observed ticks it had not entered entity ticking, neither UUID lookup nor the nearby query could see any offering, and all three items were still at age zero.

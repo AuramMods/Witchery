@@ -10,7 +10,6 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.HumanoidMobRenderer;
-import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.resources.ResourceLocation;
 
@@ -19,7 +18,7 @@ public final class ReflectionRenderer extends HumanoidMobRenderer<Reflection, Hu
             Witchery.MODID, "textures/entities/reflection.png");
     private final HumanoidModel<Reflection> classic;
     private final HumanoidModel<Reflection> slim;
-    private final MobRenderer<Reflection, WolfmanRenderer.Model<Reflection>> wolfman;
+    private final WolfmanRenderer<Reflection> wolfman;
 
     public ReflectionRenderer(EntityRendererProvider.Context context) {
         super(context, new PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER), false), 0.5F);
@@ -27,13 +26,7 @@ public final class ReflectionRenderer extends HumanoidMobRenderer<Reflection, Hu
         slim = new PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER_SLIM), true);
         addLayer(new HumanoidArmorLayer<>(this, new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER_INNER_ARMOR)),
                 new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER_OUTER_ARMOR)), context.getModelManager()));
-        wolfman = new MobRenderer<>(context, new WolfmanRenderer.Model<>(context.bakeLayer(WolfmanRenderer.LAYER),
-                Reflection::attackTicks), 0.5F) {
-            @Override
-            public ResourceLocation getTextureLocation(Reflection reflection) {
-                return WolfmanRenderer.TEXTURE;
-            }
-        };
+        wolfman = new WolfmanRenderer<>(context, Reflection::attackTicks);
     }
 
     @Override

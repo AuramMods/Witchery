@@ -1671,6 +1671,7 @@ Status:
 - The `hellhoundSpawnWeight` server setting feeds the Forge Nether biome modifier when the world loads. It defaults to 25, clamps to at least one, and preserves the original groups of one to three.
 - Rite IDs 92 and 93 map to `witchery:curse_of_the_wolf` and `witchery:cure_lycanthropy`. Player saves preserve `WerewolfLevel` and the original wolf ordinal 1. Legacy nested data also reads `CreatureType`. Server setting `allowVampireWerewolfHybrids` defaults to true. Protocol 46 includes the two rites and original howl.
 - Entity IDs 135 and 137 map to `witchery:wolfman` and `witchery:werevillager`. `Infectious` remains a legacy save field. `FormerVillager` stores the modern villager snapshot and reads the old numeric `FormerProfession` when available. `WITCWereVillagerUUID` preserves the pre-curse Taglock identity through each form and cure. Protocol 47 includes the creatures and their sounds.
+- The Wolfman model is shared by the creature, transformed players, and Wolfman Reflections. The renderer uses the original crouch, seated legs, melee swing, tail sway, held-item, blocking, and bow poses. Players copy their current use hand, riding state, and attack progress into the render proxy. Wolfmen and Wolfman Reflections use matching inner and outer armor meshes through the Forge equipment layer.
 
 ## 1.20.1 Forge Event Hooks
 
