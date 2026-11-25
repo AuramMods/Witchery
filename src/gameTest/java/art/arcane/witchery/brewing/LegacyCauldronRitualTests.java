@@ -18,6 +18,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
@@ -39,6 +40,56 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class LegacyCauldronRitualTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_gas_ritual_height")
+    public static void gasWaveKeepsTheTargetHeightWhenFootingIsAboveOrBelow(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos target = helper.absolutePos(new BlockPos(8, 0, 8)).atY(198);
+        var trigger = new ItemStack(WitcheryIngredient.DOG_TONGUE.item());
+        var offerings = List.of(new ItemStack(WitcheryIngredient.MANDRAKE_ROOT.item()), new ItemStack(Items.NETHER_WART),
+                new ItemStack(Items.SUGAR), new ItemStack(Items.COAL), new ItemStack(WitcheryIngredient.BAT_WOOL.item()), trigger);
+        var brew = BrewMixture.from(offerings, null);
+        var atTarget = EntityType.PIG.create(level);
+        var onShelf = EntityType.PIG.create(level);
+        atTarget.setPos(Vec3.atLowerCornerOf(target).add(0.25, 0.5, 0.25));
+        onShelf.setPos(Vec3.atLowerCornerOf(target).add(0.25, 5, 0.25));
+        for (var pig : List.of(atTarget, onShelf)) {
+            pig.setNoAi(true);
+            pig.setNoGravity(true);
+            level.addFreshEntity(pig);
+        }
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.getEntity(atTarget.getUUID()) == atTarget
+                        && level.getEntity(onShelf.getUUID()) == onShelf, "Both pigs are tracked"))
+                .thenExecute(() -> {
+                    for (int offset : new int[]{4, -4, -8}) {
+                        BlockPos shelf = target.above(offset);
+                        BlockPos targetFire = target.east(2);
+                        BlockPos shelfFire = shelf.east(2).above();
+                        level.setBlockAndUpdate(shelf, Blocks.STONE.defaultBlockState());
+                        onShelf.setPos(Vec3.atLowerCornerOf(shelf.above()).add(0.25, 0, 0.25));
+                        for (BlockPos fire : List.of(targetFire, shelfFire)) {
+                            level.setBlockAndUpdate(fire.below(), Blocks.NETHERRACK.defaultBlockState());
+                            level.setBlockAndUpdate(fire, Blocks.FIRE.defaultBlockState());
+                        }
+                        level.getRandom().setSeed(5120); // Make the first terrain roll less than one percent.
+                        BrewRituals.pulse(level, target, brew, brew.bottleTag(offerings), trigger, 1, false);
+                        helper.assertTrue(atTarget.hasEffect(MobEffects.MOVEMENT_SPEED) == (offset != -8)
+                                        && !onShelf.hasEffect(MobEffects.MOVEMENT_SPEED),
+                                "Only a shelf within seven blocks admits the wave at its original height: " + offset);
+                        helper.assertTrue(level.isEmptyBlock(targetFire) == (offset != -8)
+                                        && level.getBlockState(shelfFire).is(Blocks.FIRE),
+                                "The terrain roll reaches the target row and preserves fire at the shelf: " + offset);
+                        atTarget.removeEffect(MobEffects.MOVEMENT_SPEED);
+                        for (BlockPos fire : List.of(targetFire, shelfFire)) {
+                            level.removeBlock(fire, false);
+                            level.removeBlock(fire.below(), false);
+                        }
+                        level.setBlockAndUpdate(shelf, Blocks.AIR.defaultBlockState());
+                    }
+                    atTarget.discard();
+                    onShelf.discard();
+                }).thenSucceed();
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void distinguishesMissingCirclesFromDistantTargets(GameTestHelper helper) {
         var level = helper.getLevel();

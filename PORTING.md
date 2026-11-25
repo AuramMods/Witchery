@@ -1993,6 +1993,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Restore the Bound Waystone's 100-power modifier and same-dimension distance limits. A cast without coven assistance reaches 32 blocks. Failed range checks return the tongue and preserve the base brew. Gas and instant casts use the bound coordinates. The legacy rain uses the bound dimension and the cauldron's horizontal coordinates.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 268 required Forge GameTests. Coverage includes the gas wave before and after reload, valid and distant waystones, liquid projectile saves and contact effects, and active-brew bottling.
 - [x] Verify the bound gas wave with the muted background client and dropped-ingredient fixtures. The pig at the waystone received Wolfsbane first. The wave reached a second pig farther out and left the pig beside the cauldron unaffected.
+- [x] Keep gas waves at the original target height. Footing within seven blocks above or below admits a column. Creature effects, the terrain roll, and the silent spell cue use the Waystone's height. An eighth-block shelf produces no effect or cue.
 - [x] Verify the packaged liquid cast and Extinguish rite. The client rendered tinted droplets and their impacts. The server recorded the falling brew's ordered ingredients, and the cauldron emptied after ten pulses. With the waystone as the target, fire five blocks away went out and fire eight blocks away stayed lit.
 
 ## Fixed Cauldron Recipes and Outputs (2026-11-20)

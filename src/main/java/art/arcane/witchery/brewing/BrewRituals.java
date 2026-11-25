@@ -7,12 +7,12 @@ import art.arcane.witchery.item.HunterClothingItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.VoodooPoppetItem;
 import art.arcane.witchery.item.WaystoneItem;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.ritual.RitualCircle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -178,24 +178,28 @@ public final class BrewRituals {
     private static void gasColumn(ServerLevel level, BlockPos column, BrewMixture mixture, int coven) {
         if (!level.getWorldBorder().isWithinBounds(column)) return;
         for (int distance = 0; distance < 8; distance++) {
-            if (gasSurface(level, column.above(distance), mixture, coven)) return;
-            if (distance > 0 && gasSurface(level, column.below(distance), mixture, coven)) return;
+            if (hasOpenSurface(level, column.above(distance))
+                    || distance > 0 && hasOpenSurface(level, column.below(distance))) {
+                // The surface admits the column, but the original wave acts at the target's height.
+                applyGasAtColumn(level, column, mixture, coven);
+                return;
+            }
         }
     }
 
-    private static boolean gasSurface(ServerLevel level, BlockPos ground, BrewMixture mixture, int coven) {
-        if (level.isOutsideBuildHeight(ground.getY()) || level.getBlockState(ground).isAir()
-                || !level.getBlockState(ground.above()).isAir()) return false;
-        level.sendParticles(ParticleTypes.EFFECT, ground.getX() + 0.5, ground.getY() + 1, ground.getZ() + 0.5,
-                16, 0.48, 0.35, 0.48, 0.05);
-        if (level.getRandom().nextFloat() < 0.01F) mixture.applyGasRitualToBlock(level, ground, coven);
-        Vec3 center = Vec3.atLowerCornerOf(ground);
+    private static boolean hasOpenSurface(ServerLevel level, BlockPos ground) {
+        return !level.isOutsideBuildHeight(ground.getY()) && !level.isEmptyBlock(ground) && level.isEmptyBlock(ground.above());
+    }
+
+    private static void applyGasAtColumn(ServerLevel level, BlockPos column, BrewMixture mixture, int coven) {
+        WitcheryNetwork.sendRiteWaveSurface(level, column, false, false);
+        if (level.getRandom().nextDouble() < 0.01D) mixture.applyGasRitualToBlock(level, column, coven);
+        Vec3 center = Vec3.atLowerCornerOf(column);
         AABB contacts = new AABB(center, center).inflate(1.5);
         for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, contacts,
                 candidate -> candidate.distanceToSqr(center.x, candidate.getY(), center.z) <= 2.25)) {
             mixture.applyRitualExposure(target, null, coven, center);
         }
-        return true;
     }
 
     private static void rain(ServerLevel level, BlockPos center, CompoundTag brew, int radius) {

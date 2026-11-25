@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Gas ritual target height (2026-11-25)
+
+- The original server ran the first pulse at a Bound Waystone with footing four blocks above, four below, and eight below. In the first two cases Swiftness reached the pig at the Waystone's height. With a controlled terrain roll, Extinguish cleared the fire on that row. The pigs and fires on the shelves were unaffected. The eighth-block shelf produced no creature effect, terrain effect, or cue.
+- The 1.20.1 cast uses the surface search to admit the column and keeps all applications at the original target height. The Spell packet uses the original offset of one block, width and height of one, no sound, and a 16-block audience. The terrain roll uses the original double-precision draw.
+- The preceding package applied Swiftness to both shelf pigs. The rebuilt clean Forge package reproduced both original cue payloads and applied Swiftness to the target-row pigs. The distant shelf produced no cue. All three casts used ordinary dropped ingredients, and a dedicated restart retained their creature effects and the empty cauldron.
+- The same JAR on copied Auram reproduced all three casts with a survival player nearby. The client processed both original cues exactly once, including one queued during JEI recipe indexing. The test clients ran in the background with zero master volume and OpenAL No Output, and the focus monitor recorded no activation for them.
+- Java 17 data generation and JAR reobfuscation succeeded locally. The new GameTest passed for all three heights and checked both terrain rows. One local run passed all 317 required Forge GameTests. Other runs, including the confirmation run, hit the intermittent Sentinel guard assertion. The package SHA-256 is `2f8514fcdb647b6cf05822300228c1b95f2d6cb5e902f7a16661891723cecd72`. The original runtime trace and packaged replays are in `build/qa-gas-ritual-height/`.
+
 ## Altar capacity from settled water (2026-11-25)
 
 - The original server counted zero while the placed water awaited its first update, eight after it settled at levels 0 through 7, and zero after draining. Seven channels left 56 settled blocks and gave a formed altar 50 capacity and charge.
