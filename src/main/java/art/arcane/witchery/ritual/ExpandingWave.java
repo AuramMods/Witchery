@@ -1,7 +1,7 @@
 package art.arcane.witchery.ritual;
 
+import art.arcane.witchery.network.WitcheryNetwork;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -35,15 +35,14 @@ final class ExpandingWave {
     private static void visitColumn(ServerLevel level, BlockPos column, boolean curse, Consumer<BlockPos> action) {
         if (!level.hasChunkAt(column) || !level.getWorldBorder().isWithinBounds(column)) return;
         for (int height = 0; height < 15; height++) {
-            if (apply(level, column.above(height), curse, 16, action)) return;
-            if (height > 0 && apply(level, column.below(height), curse, 32, action)) return;
+            if (apply(level, column.above(height), curse, false, action)) return;
+            if (height > 0 && apply(level, column.below(height), curse, true, action)) return;
         }
     }
 
-    private static boolean apply(ServerLevel level, BlockPos pos, boolean curse, int particles, Consumer<BlockPos> action) {
+    private static boolean apply(ServerLevel level, BlockPos pos, boolean curse, boolean belowGlyph, Consumer<BlockPos> action) {
         if (level.isEmptyBlock(pos) || !level.isEmptyBlock(pos.above())) return false;
-        level.sendParticles(curse ? ParticleTypes.ENTITY_EFFECT : ParticleTypes.EFFECT,
-                pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, particles, 0.5, 0.5, 0.5, 0);
+        WitcheryNetwork.sendRiteWaveSurface(level, pos, curse, belowGlyph);
         action.accept(pos);
         return true;
     }

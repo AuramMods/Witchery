@@ -164,6 +164,10 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
             return this == BLIGHT || this == AREA_BLINDNESS || this == HELL_ON_EARTH;
         }
 
+        public boolean usesExpansionClock() {
+            return expandsCurse() || this == FERTILITY || this == ICE_SHELL;
+        }
+
         public boolean isVolcano() {
             return this == RAISE_VOLCANO || this == RAISE_PORTABLE_VOLCANO;
         }

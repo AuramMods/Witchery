@@ -681,12 +681,30 @@ public final class CircleRiteTests {
         legacy.putByteArray("Rituals", new byte[]{35, 36, 37, 38});
         legacy.putByteArray("RitualStages", new byte[]{2, 2, 2, 2});
         heart.load(legacy);
-        tick(level, center, heart, 19);
-        helper.assertTrue(waveStages(heart).equals(List.of(2, 2, 2, 2)), "All four imported waves wait until tick twenty");
-        tick(level, center, heart, 1);
-        helper.assertTrue(waveStages(heart).equals(List.of(3, 3, 3, 3)), "All four waves resume at their saved stages");
-        tick(level, center, heart, 5);
-        helper.assertTrue(waveStages(heart).equals(List.of(4, 4, 4, 4)), "Subsequent expansions run five ticks apart");
+        var sounds = new ArrayList<PlayLevelSoundEvent.AtPosition>();
+        Consumer<PlayLevelSoundEvent.AtPosition> listener = event -> {
+            if (event.getLevel() == level && event.getPosition().distanceToSqr(Vec3.atCenterOf(center)) < 1) sounds.add(event);
+        };
+        MinecraftForge.EVENT_BUS.addListener(listener);
+        try {
+            tick(level, center, heart, 19);
+            helper.assertTrue(waveStages(heart).equals(List.of(2, 2, 2, 2)) && sounds.isEmpty(),
+                    "All four imported waves stay quiet until tick twenty");
+            heart.load(heart.saveWithoutMetadata());
+            tick(level, center, heart, 1);
+            helper.assertTrue(waveStages(heart).equals(List.of(3, 3, 3, 3)), "All four waves resume at their saved stages");
+            helper.assertTrue(sounds.size() == 4 && sounds.stream().allMatch(sound -> sound.getSound() != null
+                            && sound.getSound().value() == SoundEvents.FIRE_EXTINGUISH
+                            && sound.getPosition().equals(Vec3.atLowerCornerOf(center)) && sound.getNewVolume() == 0.5F
+                            && sound.getNewPitch() >= 1F / 3 && sound.getNewPitch() <= 0.5F),
+                    "The pending fizz survives reload and each imported wave plays it once at the glyph's lower corner");
+            heart.load(heart.saveWithoutMetadata());
+            tick(level, center, heart, 5);
+            helper.assertTrue(waveStages(heart).equals(List.of(4, 4, 4, 4)) && sounds.size() == 4,
+                    "Subsequent expansions run five ticks apart without replaying the fizz after a Forge reload");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(listener);
+        }
         helper.succeed();
     }
 
@@ -1043,22 +1061,29 @@ public final class CircleRiteTests {
         var east = infusionPlayer(level, "EastBoundary", origin.add(4.25, 0, 0), 100);
         var above = infusionPlayer(level, "AboveGlyph", origin.add(0.25, 1.25, 0), 100);
         var below = infusionPlayer(level, "BelowGlyph", origin.add(0.25, -1, 0), 100);
-        try {
-            var altar = chargedAltar(helper, false);
-            var heart = heart(helper);
-            heart.load(legacyRecharge());
-            tick(level, center, heart, 19);
-            helper.assertTrue(altar.power() == 10000 && infusionCharge(west) == 195 && infusionCharge(below) == 100,
-                    "The original saved recharge waits through nineteen ticks before a new debit or player pulse");
-            heart.load(heart.saveWithoutMetadata());
-            tick(level, center, heart, 1);
-            helper.assertTrue(altar.power() == 9960 && infusionCharge(west) == 200 && infusionCharge(below) == 110
-                    && infusionCharge(east) == 100 && infusionCharge(above) == 100,
-                    "Tick twenty charges once for eligible players whose hitboxes overlap the glyph layer within the original sphere");
-        } finally {
-            for (var player : List.of(west, east, above, below)) level.removePlayerImmediately(player, Entity.RemovalReason.DISCARDED);
-        }
-        helper.succeed();
+        var players = List.of(west, east, above, below);
+        players.forEach(player -> player.setNoGravity(true));
+        var bounds = new AABB(center).inflate(6);
+        helper.startSequence().thenWaitUntil(() -> {
+            helper.assertTrue(level.getEntitiesOfClass(ServerPlayer.class, bounds).containsAll(players),
+                    "The four recipient fixtures are tracked before recharging");
+        }).thenExecute(() -> {
+            try {
+                var altar = chargedAltar(helper, false);
+                var heart = heart(helper);
+                heart.load(legacyRecharge());
+                tick(level, center, heart, 19);
+                helper.assertTrue(altar.power() == 10000 && infusionCharge(west) == 195 && infusionCharge(below) == 100,
+                        "The original saved recharge waits through nineteen ticks before a new debit or player pulse");
+                heart.load(heart.saveWithoutMetadata());
+                tick(level, center, heart, 1);
+                var charges = players.stream().map(CircleRiteTests::infusionCharge).toList();
+                helper.assertTrue(altar.power() == 9960 && charges.equals(List.of(200, 100, 100, 110)),
+                        "Tick twenty charges only eligible players, measured altar power " + altar.power() + " and charges " + charges);
+            } finally {
+                for (var player : players) level.removePlayerImmediately(player, Entity.RemovalReason.DISCARDED);
+            }
+        }).thenSucceed();
     }
 
     @GameTest(template = TEMPLATE, batch = "witchery_recharging_altar_cache")

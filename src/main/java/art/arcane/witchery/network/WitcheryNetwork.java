@@ -14,6 +14,7 @@ import art.arcane.witchery.item.CircleBookIndex;
 import art.arcane.witchery.infusion.SpellKnowledge;
 import art.arcane.witchery.lycanthropy.WolfTrials;
 import art.arcane.witchery.registry.LegacyRegistryData;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -50,6 +51,8 @@ public final class WitcheryNetwork {
     private static final int MAX_MARKUP_CHAPTER_LENGTH = 32;
     private static final int LEGACY_HUGE_EXPLOSION_PARTICLE_ID = 0;
     private static final int LEGACY_SMOKE_PARTICLE_ID = 8;
+    private static final int LEGACY_MOB_SPELL_PARTICLE_ID = 9;
+    private static final int LEGACY_SPELL_PARTICLE_ID = 10;
     private static final int LEGACY_INSTANT_SPELL_PARTICLE_ID = 11;
     private static final int LEGACY_PORTAL_PARTICLE_ID = 13;
     private static final int LEGACY_EXPLOSION_PARTICLE_ID = 15;
@@ -333,6 +336,12 @@ public final class WitcheryNetwork {
 
     public static void sendCookingRite(ServerLevel level, Vec3 origin) {
         sendParticlesAround(level, LEGACY_FLAME_PARTICLE_ID, LEGACY_GHAST_FIREBALL_SOUND_ID, origin, 3, 2, 16);
+    }
+
+    public static void sendRiteWaveSurface(ServerLevel level, BlockPos surface, boolean curse, boolean belowGlyph) {
+        int particle = curse ? LEGACY_MOB_SPELL_PARTICLE_ID : LEGACY_SPELL_PARTICLE_ID;
+        sendParticlesAround(level, particle, LEGACY_NO_SOUND_ID, Vec3.atBottomCenterOf(surface.above()),
+                1, 1, belowGlyph ? 32 : 16);
     }
 
     public static void sendFamiliarRite(ServerLevel level, Vec3 center, boolean binding) {

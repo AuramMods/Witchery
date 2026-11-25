@@ -48,10 +48,7 @@ final class AreaCurses {
     static boolean pulse(ServerLevel level, BlockPos heart, BlockPos target, int stage, int coven,
                          ItemRiteRecipe.Action action, @Nullable ServerPlayer initiator, boolean summon) {
         ServerPlayer caster = initiator != null && initiator.level() == level ? initiator : null;
-        if (stage == 1) {
-            if (caster != null) WitchHunterPursuit.noticeBlackMagic(caster);
-            level.playSound(null, target, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1, 1);
-        }
+        if (stage == 1 && caster != null) WitchHunterPursuit.noticeBlackMagic(caster);
         int radius = stage + 3;
         boolean enhanced = caster != null && FamiliarBinding.hasCurseMastery(caster);
         ServerPlayer terrainActor = caster == null ? FakePlayerFactory.getMinecraft(level) : caster;

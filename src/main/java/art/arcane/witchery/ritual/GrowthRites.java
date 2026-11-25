@@ -15,8 +15,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
@@ -54,7 +52,6 @@ final class GrowthRites {
     }
 
     static void fertility(ServerLevel level, BlockPos heart, int radius, @Nullable ServerPlayer caster) {
-        if (radius == 4) level.playSound(null, heart, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1, 1);
         ServerPlayer grower = caster != null && caster.level() == level ? caster : null;
         boolean enhanced = grower != null && FamiliarBinding.hasCurseMastery(grower);
         Vec3 center = Vec3.atCenterOf(heart);

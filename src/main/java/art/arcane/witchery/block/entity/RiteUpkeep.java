@@ -80,9 +80,7 @@ interface RiteUpkeep {
         }
 
         private boolean hasLegacyWaveGate() {
-            if (landscape == null) return false;
-            var action = landscape.action();
-            return action.expandsCurse() || action == ItemRiteRecipe.Action.FERTILITY || action == ItemRiteRecipe.Action.ICE_SHELL;
+            return landscape != null && landscape.action().usesExpansionClock();
         }
 
         void waitForLegacyWave() {
@@ -114,7 +112,7 @@ interface RiteUpkeep {
             ticks = 0;
             if (landscape != null) {
                 if (resumingLegacyWave) {
-                    level.playSound(null, landscape.target(), SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.8F, 1);
+                    RiteHeartBlockEntity.playOriginalRiteSound(level, landscape.target(), SoundEvents.FIRE_EXTINGUISH);
                     resumingLegacyWave = false;
                 }
                 landscape = LandscapeRites.pulse(level, heart, landscape, coven, caster(level), terrainChanges);

@@ -395,7 +395,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 return;
             }
             if (missingCoven) {
-                playOriginalRiteSound(level, SoundEvents.NOTE_BLOCK_SNARE.value());
+                playOriginalRiteSound(level, getBlockPos(), SoundEvents.NOTE_BLOCK_SNARE.value());
                 abort(level, "message.witchery.rite.coven_required", true);
                 return;
             }
@@ -537,7 +537,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             return;
         }
         if (action == ItemRiteRecipe.Action.BANISH_DEMON) {
-            if (legacy) playOriginalRiteSound(level, SoundEvents.FIRE_EXTINGUISH);
+            if (legacy) playOriginalRiteSound(level, pos, SoundEvents.FIRE_EXTINGUISH);
             Banishment.perform(level, pos, legacy);
         }
         if (action.cooksFood() && !CookingRite.cook(level, pos, action == ItemRiteRecipe.Action.COOK_FOOD_PORTABLE)) {
@@ -621,12 +621,14 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             CircleTalismanItem.eraseCapturedGlyphs(level, pos);
             if (talismanPattern != 0) level.removeBlock(pos, false);
         }
+        boolean firstExpansionCue = action.usesExpansionClock();
         if (rite.action() == ItemRiteRecipe.Action.TRANSPOSE_ORES) {
             if (RiteOfTransposition.transposeOreLayer(level, pos, 1, covenSize)) {
                 upkeep.add(RiteUpkeep.Timed.transposeOres(rite.id(), covenSize, initiator, 1));
             }
         } else if (landscape != null) {
             ServerPlayer caster = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
+            if (firstExpansionCue) playOriginalRiteSound(level, landscape.target(), SoundEvents.FIRE_EXTINGUISH);
             var progress = LandscapeRites.pulse(level, pos, landscape, covenSize, caster, terrainChanges::add);
             if (progress != null) upkeep.add(RiteUpkeep.Timed.landscape(rite.id(), covenSize, initiator, progress));
         } else if (rite.action() == ItemRiteRecipe.Action.RECHARGE_INFUSION) {
@@ -640,9 +642,9 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             WitcheryNetwork.sendSummonedCreature(level, result.position());
         } else if (legacy && familiarRite) {
             WitcheryNetwork.sendFamiliarRite(level, Vec3.atLowerCornerOf(pos), action == ItemRiteRecipe.Action.BIND_FAMILIAR);
-        } else if (!legacy || (action != ItemRiteRecipe.Action.RECHARGE_INFUSION
+        } else if (!firstExpansionCue && (!legacy || (action != ItemRiteRecipe.Action.RECHARGE_INFUSION
                 && action != ItemRiteRecipe.Action.TRAVEL_WAYSTONE && action != ItemRiteRecipe.Action.TRANSPOSE_CREATURE
-                && action != ItemRiteRecipe.Action.BANISH_DEMON)) {
+                && action != ItemRiteRecipe.Action.BANISH_DEMON))) {
             level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
                     16, 0.4, 0.4, 0.4, 0.05);
             level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.9F, 1.35F);
@@ -904,14 +906,13 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         refundSacrifices(level);
         nextCast(level);
         if (originalSound) {
-            playOriginalRiteSound(level, SoundEvents.NOTE_BLOCK_SNARE.value());
+            playOriginalRiteSound(level, getBlockPos(), SoundEvents.NOTE_BLOCK_SNARE.value());
         } else {
             failSound(level);
         }
     }
 
-    private void playOriginalRiteSound(ServerLevel level, SoundEvent sound) {
-        BlockPos pos = getBlockPos();
+    static void playOriginalRiteSound(ServerLevel level, BlockPos pos, SoundEvent sound) {
         float pitch = 0.4F / ((float) level.getRandom().nextDouble() * 0.4F + 0.8F);
         level.playSound(null, pos.getX(), pos.getY(), pos.getZ(), sound, SoundSource.BLOCKS, 0.5F, pitch);
     }
