@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 public final class PerpetualIceDoorBlock extends DoorBlock {
     public PerpetualIceDoorBlock() {
-        super(Properties.copy(Blocks.OAK_DOOR).strength(2, 5), BlockSetType.OAK);
+        super(Properties.copy(Blocks.OAK_DOOR).strength(2, 3), BlockSetType.OAK);
     }
 
     @Override

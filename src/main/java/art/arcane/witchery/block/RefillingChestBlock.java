@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 public final class RefillingChestBlock extends LegacyPairingChestBlock {
     public RefillingChestBlock() {
-        super(Properties.copy(Blocks.CHEST).strength(-1, 9_999).noLootTable(), WitcheryBlockEntities.REFILLING_CHEST::get);
+        super(Properties.copy(Blocks.CHEST).strength(-1, 5_999.4F).noLootTable(), WitcheryBlockEntities.REFILLING_CHEST::get);
     }
 
     @Override

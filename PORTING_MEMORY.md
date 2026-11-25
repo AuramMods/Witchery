@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Legacy block blast resistance (2026-11-25)
+
+- Restored all 43 remaining blast resistance differences measured after the temporary brew pass. The original and the reobfuscated Forge JAR now agree on effective resistance for every shared default block state. The audit compares 121 shared IDs and includes each block's default fluid state. See `build/qa-block-blast-resistance/comparison.txt`.
+- The original, clean Forge and copied Auram each ran 48 terrain blasts per case. Perpetual Ice broke at power 1 without loot. Hawthorn planks broke at 0.7 and kept their variant in every drop. Bear and Wolf Traps broke at 2. Only the Bear Trap gave items. Wood and ice Stockades broke at 4, and Hawthorn stockade drops kept their variant. Both modern profiles confirmed that ordinary TNT-strength blasts left the barrier, ritual chalk, Scarecrow and Mirror Wall in place. Copied Auram also matched every measured default resistance.
+- The local reobfuscated JAR and all 329 required Forge GameTests passed. The checked-in regression exercises the terrain blast and its item drops, including both Hawthorn variants. The packaged JAR SHA-256 is `41405501d5b34cda46e6f764957eb82e0f106d6609255f5147b82447dc0d7a93`.
+- A separate original-versus-packaged check identified an Infinity Egg gap. Original right-click consumed the interaction and kept the egg in place. Removing its support let it fall six blocks and land. The packaged egg passed through the interaction and stayed suspended after support removal. The reference logs are in `build/qa-infinity-egg-reference/`.
+
 ## Temporary brew and fluid hold blasts (2026-11-25)
 
 - The original headless server cleared base brew, gas, liquid brew, and Slurp with a terrain-damaging blast. The glass behind each cell also broke. Slurp did not release its saved fluid when destroyed. Intact water and lava holds restored level 3 on expiry. Disease fluid and the glass behind it survived.

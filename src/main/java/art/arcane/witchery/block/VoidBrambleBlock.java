@@ -19,7 +19,7 @@ public final class VoidBrambleBlock extends OwnedColumnBlock {
     private static final VoxelShape OUTLINE = box(0.8, 0, 0.8, 15.2, 16, 15.2);
 
     public VoidBrambleBlock() {
-        super(Properties.copy(Blocks.SWEET_BERRY_BUSH).strength(-1, 1000).noCollission().noOcclusion()
+        super(Properties.copy(Blocks.SWEET_BERRY_BUSH).strength(-1, 600).noCollission().noOcclusion()
                 .sound(SoundType.GRASS).lightLevel(state -> 1), false);
     }
 

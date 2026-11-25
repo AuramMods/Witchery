@@ -868,7 +868,8 @@
 - [x] Compare all 121 original default block states with the packaged port. The remaining tool differences are shovel harvesting for the five snow constructions and raw eligibility for the disease fluid. The temporary brew and Slurp blast pass matched their original hardness values without making those cells selectable.
 - [x] Restart copied Auram on the same packaged JAR and verify 15 survival harvest outcomes on its headless server. On packaged clean Forge, the muted survival client mined seven fixtures with the normal attack binding, recovered the marked Poppet from its shelf, and broke the Wolf Trap without a drop.
 - [x] Pass all 326 required Forge GameTests locally, including the survival block harvest regression cases.
-- [ ] Match the remaining legacy block blast resistance values. The native and packaged comparison found 43 differences. At the tested powers, vanilla explosions break Perpetual Ice, witchwood planks, both hunting traps, and the wooden Stockade in 0.24.1. All five survive in the port.
+- [x] Match the remaining 43 legacy blast resistance values. The original, packaged clean Forge, and copied Auram agree across all 121 shared default block states. Real blasts removed Perpetual Ice, witchwood planks, both hunting traps, and both stockades at their original thresholds. Drops preserved the Hawthorn variant, and Perpetual Ice and the Wolf Trap left no items. All 329 local Forge GameTests passed.
+- [ ] Restore Infinity Egg gravity and right-click handling. The 0.24.1 egg consumed right-click without moving and fell six blocks to the lower platform when its support was removed. The packaged port passed the interaction through and stayed suspended.
 
 ## Coffin (2026-11-20)
 

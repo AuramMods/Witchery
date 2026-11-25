@@ -208,6 +208,7 @@ The runtime registry from the shipped 0.24.1 server contains 121 Witchery block 
     - `witchery:wolfsbane` -> stage `0..7`.
     - `witchery:garlicplant` -> stage `0..5` (`age=6..7` mapped to stage `5`).
 - Structural model/state families (2026-02-08 breadth pass)
+  - The original and packaged Forge servers agree on effective blast resistance for all 121 shared default block states. Perpetual Ice and ordinary ice constructions use resistance 3, witchwood planks and stairs use 2, Bear and Wolf Traps use 6, and both Stockades and the Statue of Worship use 12.
   - Stairs IDs:
     - `witchery:stairswoodrowan`, `witchery:stairswoodalder`, `witchery:stairswoodhawthorn`, `witchery:icestairs`, `witchery:snowstairs`
     - blockstate shape source pattern: vanilla 1.20.1 `oak_stairs` variant matrix.

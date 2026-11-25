@@ -22,7 +22,7 @@ import net.minecraft.world.phys.BlockHitResult;
 
 public final class LeechChestBlock extends LegacyPairingChestBlock {
     public LeechChestBlock() {
-        super(Properties.copy(Blocks.CHEST).strength(25, 1000).requiresCorrectToolForDrops(), WitcheryBlockEntities.LEECH_CHEST::get);
+        super(Properties.copy(Blocks.CHEST).strength(25, 600).requiresCorrectToolForDrops(), WitcheryBlockEntities.LEECH_CHEST::get);
     }
 
     @Override

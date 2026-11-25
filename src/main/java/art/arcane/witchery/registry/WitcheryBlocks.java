@@ -158,7 +158,8 @@ public final class WitcheryBlocks {
     private static Block createBlock(String path) {
         return switch (path) {
             case "witchlog" -> new LegacyWitchLogBlock();
-            case "witchwood" -> new LegacyWitchWoodVariantBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS));
+            case "witchwood" -> new LegacyWitchWoodVariantBlock(
+                    BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS).explosionResistance(2));
             case "witchleaves" -> new WitchLeavesBlock(BlockBehaviour.Properties.copy(Blocks.OAK_LEAVES));
             case "witchsapling" -> new WitchSaplingBlock(BlockBehaviour.Properties.copy(Blocks.OAK_SAPLING));
             case "wickerbundle" -> new WickerBundleBlock();
@@ -205,19 +206,19 @@ public final class WitcheryBlocks {
             case "stairswoodalder" -> new WitchWoodStairBlock(WitchWoodType.ALDER);
             case "stairswoodhawthorn" -> new WitchWoodStairBlock(WitchWoodType.HAWTHORN);
             case "icestairs" -> new StairBlock(() -> getRequired("perpetualice").get().defaultBlockState(),
-                    BlockBehaviour.Properties.copy(Blocks.GLASS).mapColor(MapColor.ICE).friction(0.98F).strength(2, 5));
+                    BlockBehaviour.Properties.copy(Blocks.GLASS).mapColor(MapColor.ICE).friction(0.98F).strength(2, 3));
             case "snowstairs" -> new StairBlock(Blocks.SNOW_BLOCK.defaultBlockState(),
                     BlockBehaviour.Properties.copy(Blocks.SNOW_BLOCK));
             case "witchwoodslab", "witchwooddoubleslab" -> new WitchWoodSlabBlock(path.equals("witchwooddoubleslab"));
             case "iceslab" -> new SlabBlock(BlockBehaviour.Properties.copy(Blocks.GLASS).mapColor(MapColor.ICE)
-                    .sound(SoundType.STONE).strength(2, 5));
+                    .sound(SoundType.STONE).strength(2, 3));
             case "snowslab" -> new SlabBlock(BlockBehaviour.Properties.copy(Blocks.SNOW_BLOCK));
-            case "icedoubleslab" -> new Block(BlockBehaviour.Properties.copy(Blocks.ICE).strength(2, 5));
+            case "icedoubleslab" -> new Block(BlockBehaviour.Properties.copy(Blocks.ICE).strength(2, 3));
             case "snowdoubleslab" -> new Block(BlockBehaviour.Properties.copy(Blocks.SNOW_BLOCK));
             case "stockade" -> new StockadeBlock.Wooden();
             case "icestockade" -> new StockadeBlock(true);
             case "icefence" -> new PerpetualIceFenceBlock();
-            case "icefencegate" -> new FenceGateBlock(BlockBehaviour.Properties.copy(Blocks.OAK_FENCE_GATE).strength(2, 5), WoodType.OAK);
+            case "icefencegate" -> new FenceGateBlock(BlockBehaviour.Properties.copy(Blocks.OAK_FENCE_GATE).strength(2, 3), WoodType.OAK);
             case "icepressureplate" -> new FrozenPressurePlateBlock(true);
             case "snowpressureplate" -> new FrozenPressurePlateBlock(false);
             case "cwoodpressureplate" -> new CursedControls.Plate(CursedControls.Kind.WOODEN_PLATE);
@@ -256,17 +257,17 @@ public final class WitcheryBlocks {
             case "daylightcollector" -> new DaylightCollectorBlock();
             case "bloodcrucible" -> new BloodCrucibleBlock();
             case "mirrorblock", "mirrorblock2" -> new MirrorBlock(BlockBehaviour.Properties.copy(Blocks.GLASS)
-                    .strength(path.equals("mirrorblock") ? 1 : -1, 9_999).noLootTable(), path.equals("mirrorblock2"));
+                    .strength(path.equals("mirrorblock") ? 1 : -1, 5_999.4F).noLootTable(), path.equals("mirrorblock2"));
             case "circle" -> new RiteHeartBlock();
             case "circleglyphritual" -> new RitualGlyphBlock("chalkritual");
             case "circleglyphotherwhere" -> new RitualGlyphBlock("chalkotherwhere");
             case "circleglyphinfernal" -> new RitualGlyphBlock("chalkinfernal");
             case "spiritportal" -> new SpiritPortalBlock(BlockBehaviour.Properties.copy(Blocks.NETHER_PORTAL).noLootTable());
             case "mirrorwall" -> new GlassBlock(BlockBehaviour.Properties.copy(Blocks.GLASS)
-                    .strength(-1, 9_999).noLootTable());
+                    .strength(-1, 5_999.4F).noLootTable());
             case "tormentportal" -> new TormentPortalBlock();
             case "tormentstone" -> new Block(BlockBehaviour.Properties.copy(Blocks.MYCELIUM)
-                    .strength(-1, 9_999).noLootTable().noOcclusion());
+                    .strength(-1, 5_999.4F).noLootTable().noOcclusion());
             case "spiritflowing" -> new SpiritFluidBlock(WitcheryFluids.getRequiredSource("fluidspirit"), spiritProperties(), true);
             case "hollowtears" -> new SpiritFluidBlock(WitcheryFluids.getRequiredSource("hollowtears"), spiritProperties(), false);
             case "disease" -> new DiseaseBlock();
@@ -274,8 +275,8 @@ public final class WitcheryBlocks {
                     BlockBehaviour.Properties.copy(Blocks.WATER).instabreak().noCollission().noLootTable());
             case "brewgas" -> new BrewDispersalBlock(true);
             case "brewliquid" -> new BrewDispersalBlock(false);
-            case "force" ->
-                    new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.BARRIER).noLootTable(), SHAPE_FULL_BLOCK, true);
+            case "force" -> new LegacyNonSolidShapeBlock(BlockBehaviour.Properties.copy(Blocks.BARRIER)
+                    .explosionResistance(5_999.4F).noLootTable(), SHAPE_FULL_BLOCK, true);
             case "barrier" -> new BarrierBlock();
             case "light" -> new SunlightBlock();
             case "slurp" -> new SlurpBlock();
@@ -288,7 +289,7 @@ public final class WitcheryBlocks {
             case "pitgrass" -> new net.minecraft.world.level.block.SnowyDirtBlock(
                     BlockBehaviour.Properties.copy(Blocks.GRASS_BLOCK).noOcclusion().noCollission());
             case "wallgen" -> new Block(BlockBehaviour.Properties.copy(Blocks.BEDROCK)
-                    .strength(-1.0F, 3600000.0F)
+                    .strength(-1.0F, 6_000.0F)
                     .noOcclusion()
                     .noLootTable()
                     .noCollission());

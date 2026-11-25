@@ -31,7 +31,7 @@ public final class TormentPortalBlock extends Block {
     private static final VoxelShape PORTAL_Z = box(6, 0, 0, 10, 16, 16);
 
     public TormentPortalBlock() {
-        super(Properties.copy(Blocks.NETHER_PORTAL).strength(-1, 9_999).noLootTable().lightLevel(state -> 11));
+        super(Properties.copy(Blocks.NETHER_PORTAL).strength(-1, 5_999.4F).noLootTable().lightLevel(state -> 11));
         registerDefaultState(defaultBlockState().setValue(AXIS, Direction.Axis.X).setValue(LEGACY_ORIENTATION, false));
     }
 

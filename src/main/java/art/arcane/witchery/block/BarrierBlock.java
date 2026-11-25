@@ -28,7 +28,7 @@ public final class BarrierBlock extends BaseEntityBlock {
     private static final VoxelShape BOUNDS = box(1, 1, 1, 15, 15, 15);
 
     public BarrierBlock() {
-        super(Properties.copy(Blocks.BARRIER).strength(-1, 1000).dynamicShape().noOcclusion().noLootTable());
+        super(Properties.copy(Blocks.BARRIER).strength(-1, 600).dynamicShape().noOcclusion().noLootTable());
     }
 
     public static boolean place(ServerLevel level, BlockPos pos, @Nullable Player owner, boolean blocksPlayers, int duration) {

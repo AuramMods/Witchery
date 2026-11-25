@@ -37,7 +37,7 @@ public final class HuntingTrapBlock extends BaseEntityBlock {
     private final boolean silvered;
 
     public HuntingTrapBlock(boolean silvered) {
-        super(Properties.copy(Blocks.IRON_BLOCK).strength(5, 10).sound(SoundType.METAL).noOcclusion().noCollission());
+        super(Properties.copy(Blocks.IRON_BLOCK).strength(5, 6).sound(SoundType.METAL).noOcclusion().noCollission());
         this.silvered = silvered;
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
     }

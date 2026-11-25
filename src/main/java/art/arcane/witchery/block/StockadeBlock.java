@@ -112,7 +112,7 @@ public class StockadeBlock extends FenceBlock {
             box(4.8, 0, 0.8, 11.2, 16, 15.2), box(0.8, 0, 4.8, 8.8, 16, 11.2));
 
     public StockadeBlock(boolean frozen) {
-        super(Properties.copy(Blocks.OAK_FENCE).strength(25, 20)
+        super(Properties.copy(Blocks.OAK_FENCE).strength(25, 12)
                 .sound(frozen ? SoundType.GLASS : SoundType.WOOD));
         registerDefaultState(defaultBlockState().setValue(COVERED, false));
     }

@@ -38,7 +38,7 @@ public final class PlantMineBlock extends Block {
     private static final VoxelShape SHAPE = box(5.8, 0, 5.8, 10.2, 8.6, 10.2);
 
     public PlantMineBlock() {
-        super(Properties.of().mapColor(MapColor.PLANT).sound(SoundType.GRASS).strength(6, 1000)
+        super(Properties.of().mapColor(MapColor.PLANT).sound(SoundType.GRASS).strength(6, 600)
                 .noOcclusion().randomTicks().noLootTable());
         registerDefaultState(defaultBlockState().setValue(VARIANT, Variant.ROSE_WEBS));
     }

@@ -27,7 +27,7 @@ public final class AlluringSkullBlock extends MountedSkullBlock {
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
 
     public AlluringSkullBlock() {
-        super(Properties.copy(Blocks.SKELETON_SKULL).strength(-1, 1_000).lightLevel(state -> 7).noOcclusion());
+        super(Properties.copy(Blocks.SKELETON_SKULL).strength(-1, 600).lightLevel(state -> 7).noOcclusion());
         registerDefaultState(defaultBlockState().setValue(ACTIVE, false));
     }
 

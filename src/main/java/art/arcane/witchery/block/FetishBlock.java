@@ -57,7 +57,7 @@ public final class FetishBlock extends BaseEntityBlock {
     }
 
     private static Properties properties(String path) {
-        var properties = Properties.copy(Blocks.OAK_PLANKS).strength(3.5F, 100000.0F).noOcclusion();
+        var properties = Properties.copy(Blocks.OAK_PLANKS).strength(3.5F, 60_000.0F).noOcclusion();
         return path.equals("witchsladder") ? properties.noCollission() : properties.dynamicShape();
     }
 

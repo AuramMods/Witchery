@@ -50,7 +50,7 @@ public final class WolfAltarBlock extends BaseEntityBlock {
     private static final int GOLD_REQUIRED = 3;
 
     public WolfAltarBlock() {
-        super(Properties.copy(Blocks.STONE).strength(2.5F, 1000).noOcclusion().dynamicShape());
+        super(Properties.copy(Blocks.STONE).strength(2.5F, 600).noOcclusion().dynamicShape());
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
     }
 

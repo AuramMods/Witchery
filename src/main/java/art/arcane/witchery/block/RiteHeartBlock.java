@@ -39,7 +39,7 @@ public final class RiteHeartBlock extends BaseEntityBlock {
     private static final VoxelShape SHAPE = box(0, 0, 0, 16, 0.25, 16);
 
     public RiteHeartBlock() {
-        super(Properties.copy(Blocks.WHITE_CARPET).noCollission().noLootTable().strength(3.0F, 1000.0F));
+        super(Properties.copy(Blocks.WHITE_CARPET).noCollission().noLootTable().strength(3.0F, 600));
         registerDefaultState(defaultBlockState().setValue(ACTIVE, false).setValue(POWERED, false));
     }
 

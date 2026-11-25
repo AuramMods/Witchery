@@ -13,7 +13,7 @@ public final class WitchWoodStairBlock extends StairBlock {
 
     public WitchWoodStairBlock(WitchWoodType wood) {
         super(() -> WitcheryBlocks.getRequired("witchwood").get().defaultBlockState().setValue(WitchWoodType.PROPERTY, wood),
-                Properties.copy(Blocks.OAK_STAIRS));
+                Properties.copy(Blocks.OAK_STAIRS).explosionResistance(2));
         this.wood = wood;
     }
 

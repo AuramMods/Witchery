@@ -9,7 +9,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public final class PerpetualIceFenceBlock extends FenceBlock {
     public PerpetualIceFenceBlock() {
-        super(Properties.copy(Blocks.OAK_FENCE).strength(2, 5).sound(SoundType.GLASS));
+        super(Properties.copy(Blocks.OAK_FENCE).strength(2, 3).sound(SoundType.GLASS));
     }
 
     @Override

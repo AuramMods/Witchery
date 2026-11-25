@@ -26,7 +26,7 @@ public final class AreaWardBlock extends HorizontalDirectionalBlock implements E
     private final AreaWardBlockEntity.Kind kind;
 
     public AreaWardBlock(AreaWardBlockEntity.Kind kind) {
-        super(Properties.copy(Blocks.STONE).strength(2.5F, 9999).noOcclusion());
+        super(Properties.copy(Blocks.STONE).strength(2.5F, 5_999.4F).noOcclusion());
         this.kind = kind;
         registerDefaultState(defaultBlockState().setValue(FACING, Direction.NORTH));
     }

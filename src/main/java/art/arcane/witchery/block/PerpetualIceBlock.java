@@ -10,7 +10,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public final class PerpetualIceBlock extends IceBlock {
     public PerpetualIceBlock() {
-        super(Properties.copy(Blocks.ICE).friction(0.98F).strength(2, 5));
+        super(Properties.copy(Blocks.ICE).friction(0.98F).strength(2, 3));
     }
 
     @Override

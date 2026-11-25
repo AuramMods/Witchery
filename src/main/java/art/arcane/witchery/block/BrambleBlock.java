@@ -24,7 +24,7 @@ public final class BrambleBlock extends Block {
     private static final VoxelShape SHAPE = box(0.8, 0, 0.8, 15.2, 16, 15.2);
 
     public BrambleBlock() {
-        super(Properties.copy(Blocks.DANDELION).strength(20, 1000));
+        super(Properties.copy(Blocks.DANDELION).strength(20, 600));
         registerDefaultState(defaultBlockState().setValue(WILD, true));
     }
 

@@ -19,7 +19,7 @@ public final class FrozenPressurePlateBlock extends PressurePlateBlock {
 
     public FrozenPressurePlateBlock(boolean ice) {
         super(Sensitivity.EVERYTHING, ice
-                ? Properties.copy(Blocks.OAK_PRESSURE_PLATE).strength(2, 5).sound(SoundType.GLASS)
+                ? Properties.copy(Blocks.OAK_PRESSURE_PLATE).strength(2, 3).sound(SoundType.GLASS)
                 : Properties.copy(Blocks.STONE_PRESSURE_PLATE).strength(0.2F), BlockSetType.STONE);
         this.ice = ice;
     }
