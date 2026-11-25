@@ -3,21 +3,20 @@ package art.arcane.witchery.item;
 import art.arcane.witchery.block.BrewDispersalBlock;
 import art.arcane.witchery.block.CursedControls;
 import art.arcane.witchery.brewing.BrewMixture;
-import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.registry.WitcheryBlocks;
+import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.effect.MobEffectUtil;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -35,10 +34,11 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public final class BrewBottleItem extends Item {
+    private static final String TRANSLATION_PREFIX = "item.witchery.brewbottle.";
 
     public BrewBottleItem() {
         super(new Properties().stacksTo(8));
@@ -59,39 +59,59 @@ public final class BrewBottleItem extends Item {
 
     @Override
     public Component getName(ItemStack stack) {
-        BrewMixture mixture = BrewMixture.from(stack.getTag());
-        if (mixture == null) return super.getName(stack);
-        List<Component> names = new ArrayList<>();
-        for (var effect : mixture.effects()) names.add(effect.brewName());
-        mixture.actionNames().forEach(key -> names.add(Component.translatable(key)));
-        Component effects = names.isEmpty() ? Component.translatable("item.witchery.brewbottle.water")
-                : ComponentUtils.formatList(names, Component.literal(", "));
-        String key = "item.witchery.brewbottle." + switch (mixture.delivery()) {
-            case DRINK -> "drink";
-            case SPLASH -> "splash";
-            case GAS -> "gas";
-            case LIQUID -> "liquid";
-            case TRIGGERED -> "triggered";
-        };
-        return Component.translatable(key, effects);
+        var description = BrewMixture.describe(stack.getTag());
+        if (description == null) return super.getName(stack);
+        List<BrewMixture.NamedEffect> effects = description.effects();
+        MutableComponent joined = Component.empty();
+        if (effects.isEmpty()) joined.append(Component.translatable(TRANSLATION_PREFIX + "water"));
+        for (int index = 0; index < effects.size(); index++) {
+            if (index > 0) joined.append(index == effects.size() - 1 ? " & " : ", ");
+            joined.append(effects.get(index).name());
+        }
+        return Component.translatable(TRANSLATION_PREFIX + description.delivery().name().toLowerCase(Locale.ROOT), joined);
     }
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flags) {
-        BrewMixture mixture = BrewMixture.from(stack.getTag());
-        if (mixture == null) return;
-        for (var application : mixture.effects()) {
-            boolean colorful = application.effect() == WitcheryEffects.COLORFUL.get();
-            MutableComponent text = (colorful ? application.brewName() : application.effect().getDisplayName()).copy();
-            if (application.amplifier() > 0 && !colorful) {
-                text.append(" ").append(Component.translatable("potion.potency." + application.amplifier()));
+        var description = BrewMixture.describe(stack.getTag());
+        if (description == null) return;
+        boolean splash = description.delivery() != BrewMixture.Delivery.DRINK;
+        if (splash) {
+            var dispersal = Component.translatable(TRANSLATION_PREFIX + "dispersal."
+                    + description.delivery().name().toLowerCase(Locale.ROOT));
+            if (description.extent() > 0) dispersal.append(" ").append(potency(description.extent()));
+            if (description.lifetime() > 0) {
+                dispersal.append(" [").append(Component.translatable(TRANSLATION_PREFIX + "linger",
+                        potency(description.lifetime()))).append("]");
             }
-            if (application.ticks() > 0) {
-                text.append(" (").append(MobEffectUtil.formatDuration(application.instance(application.ticks()), 1)).append(")");
+            tooltip.add(dispersal);
+        }
+        if (description.effects().isEmpty()) tooltip.add(Component.translatable(TRANSLATION_PREFIX + "water"));
+        for (var effect : description.effects()) {
+            MutableComponent text = effect.name().copy();
+            if (effect.strength() > 0) text.append(" ").append(potency(effect.strength()));
+            int duration = splash ? effect.duration() / 2 : effect.duration();
+            if (duration > 0) {
+                int seconds = duration / 20;
+                text.append(String.format(Locale.ROOT, " [%d:%02d]", seconds / 60, seconds % 60));
             }
             tooltip.add(text);
         }
-        mixture.actionNames().forEach(key -> tooltip.add(Component.translatable(key)));
+        int speed = drinkTicks(stack.getTag(), description.drinkTicks());
+        if (speed != 32) {
+            String tier = speed > 48 ? "very_slow" : speed > 32 ? "slow" : speed < 16 ? "very_fast" : "fast";
+            tooltip.add(Component.translatable(TRANSLATION_PREFIX + "quaffing",
+                    Component.translatable(TRANSLATION_PREFIX + "quaffing." + tier)).withStyle(ChatFormatting.BLUE));
+        }
+    }
+
+    private static Component potency(int strength) {
+        return Component.translatable("potion.potency." + strength);
+    }
+
+    private static int drinkTicks(@Nullable CompoundTag tag, int fallback) {
+        int saved = tag == null ? 0 : tag.getInt("BrewDrinkSpeed");
+        return saved > 0 ? saved : fallback;
     }
 
     @Override
@@ -102,7 +122,7 @@ public final class BrewBottleItem extends Item {
     @Override
     public int getUseDuration(ItemStack stack) {
         BrewMixture mixture = BrewMixture.from(stack.getTag());
-        return mixture != null ? mixture.drinkTicks() : 32;
+        return mixture != null ? drinkTicks(stack.getTag(), mixture.drinkTicks()) : 32;
     }
 
     @Override

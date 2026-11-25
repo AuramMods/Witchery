@@ -30,9 +30,15 @@ import java.util.UUID;
 public final class LegacyBlockHarvestTests {
     @GameTest(template = "qa_coven_arena", batch = "witchery_workstation_harvest")
     public static void originalPickaxeBlocksReturnTheirExpectedItems(GameTestHelper helper) {
+        var pos = helper.absolutePos(new BlockPos(5, 2, 4));
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(helper.getLevel().isPositionEntityTicking(pos),
+                "The mining fixture's chunk is tracking dropped entities"))
+                .thenExecute(() -> verifyPickaxeDrops(helper, pos)).thenSucceed();
+    }
+
+    private static void verifyPickaxeDrops(GameTestHelper helper, BlockPos pos) {
         var level = helper.getLevel();
         var miner = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "WorkstationMiner"));
-        var pos = helper.absolutePos(new BlockPos(5, 2, 4));
         var area = new AABB(pos).inflate(1);
         level.setBlockAndUpdate(pos.below(), Blocks.STONE.defaultBlockState());
         var hardness = Map.ofEntries(Map.entry("beartrap", 5F), Map.entry("bloodcrucible", 2.5F),
@@ -72,7 +78,7 @@ public final class LegacyBlockHarvestTests {
                 default -> state.getBlock().asItem();
             };
             int count = drops.stream().filter(item -> item.getItem().is(expected)).mapToInt(item -> item.getItem().getCount()).sum();
-            helper.assertTrue(count == (id.equals("wolftrap") ? 0 : 1), id + " returns exactly its original drop count");
+            helper.assertTrue(count == (id.equals("wolftrap") ? 0 : 1), id + " returns exactly its original drop count. Found " + count);
             if (id.equals("poppetshelf")) {
                 helper.assertTrue(drops.stream().anyMatch(item -> ItemStack.isSameItemSameTags(item.getItem(), poppet)),
                         "Mining the shelf also releases its stored poppet with its item data");
@@ -82,7 +88,6 @@ public final class LegacyBlockHarvestTests {
             }
             drops.forEach(ItemEntity::discard);
         }
-        helper.succeed();
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_block_special_harvest")

@@ -155,6 +155,15 @@ public final class BrewMixture {
                 default -> tree != null;
             };
         }
+
+        int displayedDuration() {
+            return switch (this) {
+                case SNOW, COLD -> 3600;
+                case VINES, THORNS -> 1800;
+                case SPROUTING -> 300;
+                default -> 0;
+            };
+        }
     }
 
     private sealed interface BrewEffect permits Application, ActionApplication {
@@ -163,9 +172,7 @@ public final class BrewMixture {
 
     private record ActionApplication(Action action, int strength, int blockStrength, boolean inverted, int durationMultiplier,
                                      int blockDurationMultiplier, boolean showParticles, boolean affectsEntities, boolean affectsBlocks,
-                                     @Nullable ResourceLocation biome) implements BrewEffect {
-        String nameKey() { return action.nameKey(inverted); }
-    }
+                                     @Nullable ResourceLocation biome) implements BrewEffect {}
 
     private record Ingredient(int power, @Nullable Modifier modifier, int amount, int ceiling,
                               int yieldModifier, @Nullable Potion normal, @Nullable Potion inverted, @Nullable Action action) {
@@ -199,16 +206,33 @@ public final class BrewMixture {
         private MobEffectInstance instance(int duration, int strength, boolean particles) {
             return new MobEffectInstance(effect, duration, strength, effect == WitcheryEffects.COLORFUL.get(), particles, true);
         }
-
-        public Component brewName() {
-            return effect == WitcheryEffects.COLORFUL.get() ? BrewDye.byLegacyId(amplifier).label() : BrewMixture.brewName(effect);
-        }
     }
 
     private static Component brewName(MobEffect effect) {
-        if (effect == WitcheryEffects.FEEL_NO_PAIN.get()) return Component.translatable("brew.witchery.moonshine");
-        if (effect == WitcheryEffects.DOUBLE_JUMP.get()) return Component.translatable("brew.witchery.frogs_legs");
-        return effect.getDisplayName();
+        String name = switch (effect.getDescriptionId()) {
+            case "effect.minecraft.water_breathing" -> "gills";
+            case "effect.minecraft.fire_resistance" -> "fire_resist";
+            case "effect.minecraft.night_vision" -> "owl_eye";
+            case "effect.minecraft.instant_health" -> "healing";
+            case "effect.minecraft.instant_damage" -> "harming";
+            case "effect.minecraft.jump_boost" -> "jumping";
+            case "effect.minecraft.blindness" -> "ink";
+            case "effect.witchery.potion.grotesque" -> "fear";
+            case "effect.witchery.potion.keepinventory" -> "sticky_items";
+            case "effect.witchery.potion.keepeffects" -> "sticky_effects";
+            case "effect.witchery.potion.illfitting" -> "ill_fitting";
+            case "effect.witchery.potion.repellattacker" -> "repel";
+            case "effect.witchery.potion.feelnopain" -> "moonshine";
+            case "effect.witchery.potion.swimming" -> "swim_boost";
+            case "effect.witchery.potion.doublejump" -> "frogs_legs";
+            case "effect.witchery.potion.brewingexpertise" -> "decanting";
+            case "effect.witchery.potion.allergydark" -> "grues_prey";
+            case "effect.witchery.potion.allergysun" -> "undeads_curse";
+            case "effect.witchery.potion.diseased" -> "disease";
+            case "effect.witchery.potion.fortune" -> "luck";
+            default -> null;
+        };
+        return name == null ? effect.getDisplayName() : Component.translatable("brew.witchery." + name);
     }
 
     private final List<BrewEffect> effects;
@@ -291,15 +315,21 @@ public final class BrewMixture {
     @Nullable
     private static BrewMixture from(@Nullable CompoundTag tag, boolean taglock) {
         if (tag == null || !tag.contains(ITEMS, Tag.TAG_LIST)) return null;
-        List<ItemStack> stacks = new ArrayList<>();
-        for (Tag entry : tag.getList(ITEMS, Tag.TAG_COMPOUND)) {
-            stacks.add(loadIngredient((CompoundTag) entry));
-        }
+        List<ItemStack> stacks = loadIngredients(tag);
         Integer color = BrewColor.saved(tag);
-        boolean fixedRitual = tag.contains("FixedRitual", Tag.TAG_STRING)
-                || tag.getBoolean("RitualTriggered") && tag.contains("BrewName", Tag.TAG_STRING);
-        BrewMixture mixture = fixedRitual ? fixedMixture(stacks, color) : from(stacks, color, taglock);
+        BrewMixture mixture = isFixedRitual(tag) ? fixedMixture(stacks, color) : from(stacks, color, taglock);
         return mixture != null && (!tag.getBoolean("Splash") || mixture.splash()) ? mixture : null;
+    }
+
+    private static List<ItemStack> loadIngredients(CompoundTag tag) {
+        List<ItemStack> stacks = new ArrayList<>();
+        for (Tag entry : tag.getList(ITEMS, Tag.TAG_COMPOUND)) stacks.add(loadIngredient((CompoundTag) entry));
+        return stacks;
+    }
+
+    private static boolean isFixedRitual(CompoundTag tag) {
+        return tag.contains("FixedRitual", Tag.TAG_STRING)
+                || tag.getBoolean("RitualTriggered") && tag.contains("BrewName", Tag.TAG_STRING);
     }
 
     public static ItemStack loadIngredient(CompoundTag tag) {
@@ -398,9 +428,26 @@ public final class BrewMixture {
         return effects.stream().filter(Application.class::isInstance).map(Application.class::cast).toList();
     }
 
-    public List<String> actionNames() {
-        return effects.stream().filter(ActionApplication.class::isInstance).map(ActionApplication.class::cast)
-                .map(ActionApplication::nameKey).distinct().toList();
+    public record NamedEffect(Component name, int strength, int duration) {}
+
+    public record Description(List<NamedEffect> effects, Delivery delivery, int extent, int lifetime, int drinkTicks) {}
+
+    @Nullable
+    public static Description describe(@Nullable CompoundTag tag) {
+        if (tag == null || !tag.contains(ITEMS, Tag.TAG_LIST)) return null;
+        List<ItemStack> stacks = loadIngredients(tag);
+        boolean fixedRitual = isFixedRitual(tag);
+        if (!fixedRitual && stacks.isEmpty() && BrewColor.saved(tag) == null) return null;
+
+        var description = new DescriptionBuilder();
+        for (ItemStack stack : stacks) {
+            var ingredient = validIngredient(stack, id(stack));
+            if (ingredient != null) description.add(ingredient);
+            else if (!fixedRitual) return null;
+        }
+        if (tag.getBoolean("Splash") && description.delivery == Delivery.DRINK) return null;
+        return new Description(List.copyOf(description.effects), description.delivery, description.dispersalExtent,
+                description.dispersalLifetime, Math.max(2, description.drinkTicks));
     }
 
     public record GuideIngredient(ItemStack stack, int power, int capacityCost, Component effect, @Nullable Component reversed) {}
@@ -814,13 +861,20 @@ public final class BrewMixture {
     }
 
     @Nullable
+    private static Ingredient validIngredient(ItemStack stack, ResourceLocation id) {
+        Ingredient ingredient = INGREDIENTS.get(id);
+        if (ingredient == null || stack.isEmpty()
+                || ingredient.action == Action.CHANGING_SEASONS && BiomeNoteItem.biomeId(stack) == null) return null;
+        return ingredient;
+    }
+
+    @Nullable
     private static Mixing mix(List<ItemStack> stacks, boolean ignoreRecipeOfferings, boolean taglock) {
         Mixing mixing = new Mixing(taglock);
         for (ItemStack stack : stacks) {
             ResourceLocation id = id(stack);
-            Ingredient ingredient = INGREDIENTS.get(id);
-            if (ingredient == null || stack.isEmpty()
-                    || ingredient.action == Action.CHANGING_SEASONS && BiomeNoteItem.biomeId(stack) == null) {
+            Ingredient ingredient = validIngredient(stack, id);
+            if (ingredient == null) {
                 if (ignoreRecipeOfferings) continue;
                 return null;
             }
@@ -837,6 +891,58 @@ public final class BrewMixture {
             if (current < ceiling && (total < 7 || unlimitedBoosts)) {
                 current++;
                 total++;
+            }
+        }
+    }
+
+    private static final class DescriptionBuilder {
+        private final List<NamedEffect> effects = new ArrayList<>();
+        private final EffectBoost strength = new EffectBoost();
+        private final EffectBoost duration = new EffectBoost();
+        private boolean inverted;
+        private boolean unlimitedBoosts;
+        private int extent;
+        private int lifetime;
+        private int dispersalExtent;
+        private int dispersalLifetime;
+        private int drinkTicks = 32;
+        private Delivery delivery = Delivery.DRINK;
+
+        void add(Ingredient ingredient) {
+            if (ingredient.isEffect()) {
+                Component name;
+                int baseDuration;
+                if (ingredient.action != null) {
+                    name = Component.translatable(ingredient.action.nameKey(inverted));
+                    baseDuration = ingredient.action.displayedDuration();
+                } else {
+                    name = (inverted ? ingredient.inverted : ingredient.normal).brewName();
+                    // The original label uses the ingredient's base duration for both effect names.
+                    baseDuration = ingredient.normal.duration;
+                }
+                effects.add(new NamedEffect(name, strength.current, baseDuration * (duration.current + 1)));
+                strength.current = 0;
+                duration.current = 0;
+                inverted = false;
+                return;
+            }
+            // The legacy name records each modifier in order, independently of the runtime effect caps.
+            switch (ingredient.modifier) {
+                case CAPACITY -> unlimitedBoosts |= ingredient.ceiling == 10;
+                case STRENGTH -> strength.increase(Integer.MAX_VALUE, unlimitedBoosts);
+                case DURATION -> duration.increase(Integer.MAX_VALUE, unlimitedBoosts);
+                case EXTENT -> extent++;
+                case LIFETIME -> lifetime++;
+                case DELIVERY -> {
+                    delivery = Delivery.values()[ingredient.amount];
+                    dispersalExtent = extent;
+                    dispersalLifetime = lifetime;
+                    extent = 0;
+                    lifetime = 0;
+                }
+                case INVERT -> inverted = true;
+                case DRINK_SPEED -> drinkTicks += ingredient.amount;
+                default -> { }
             }
         }
     }

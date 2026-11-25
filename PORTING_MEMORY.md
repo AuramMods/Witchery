@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Custom brew bottle display (2026-11-25)
+
+- The original server and muted packaged client agree on nine English cases covering Colored Water, a 20-tick drink, all four dispersals, three ordered effects, inversion, and a modifier offered after the dispersal ingredient. The display preserves the original half-duration labels for splashes and the raw modifier order. The original inverted Sugar label shows three minutes of Slowness, and its actual effect lasts 90 seconds.
+- The updated client opened the same bottle saved by the previous JAR and displayed Snow followed by Speed with the original durations. Live resource reloads verified the new linger and quaffing lines in German, Spanish, Russian, and Simplified Chinese. The five locale files contain the same 28 new keys and format arguments.
+- The muted survival client completed the fast drink with the normal use binding, gained Speed II and Regeneration for their expected durations, and recovered one Glass Bottle. The first action had opened the Altar menu because the copied player faced an Altar. Moving that fixture to open air allowed the normal drink. The client reported zero master volume, OpenAL No Output and no activation.
+- Copied Auram completed the headless Taglock brew check with the same reobfuscated JAR. The package is `build/qa-brew-display/verified.jar` with SHA-256 `6414edcd562fcbd5d5773747f71fc13ff128114e160e444ab4aba1474422eaba`. The first formatter used zero-padded minutes. The final comparison uses the original minute format, with runtime evidence in `build/qa-brew-display/comparison.txt`.
+- All 343 local Forge GameTests passed in `build/qa-brew-display/gametest-complete.log`. The existing pickaxe test intermittently missed a dropped item before the fixture waited for entity ticking. The revised fixture passed both subsequent full runs. The first of those runs stopped on an untracked Infusion Recharge test player, and the final run passed that case too.
+
 ## Mixed Taglock cast modifiers (2026-11-25)
 
 - Witchery 0.24.1 carries the preceding Redstone duration and Gold Nugget particle setting through curses to the next ordinary effect in a Taglock cast. The original server confirmed Sinking, Brewing Expertise, inverted Drop of Luck, and Colorful. Their own durations follow their existing rules. A direct drink consumes the modifiers immediately.
