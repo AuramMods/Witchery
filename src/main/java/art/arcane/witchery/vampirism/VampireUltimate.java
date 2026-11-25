@@ -91,16 +91,37 @@ public enum VampireUltimate {
         if (home == here && player.distanceToSqr(arrival.x, player.getY(), arrival.z) <= 36) {
             var village = VampireVillages.forFeedingGrounds(here, player.blockPosition());
             if (village.isEmpty()) return false;
-            arrival = safeFooting(player, here, village.get());
+            var target = village.get();
+            arrival = target.legacy() ? legacyVillageFooting(player, here, target.position())
+                    : safeFooting(player, here, target.position());
             if (arrival == null) return false;
         }
         if (!WitcheryTeleport.canArrive(player, home, arrival)) return false;
-        return WitcheryTeleport.move(player, home, arrival, VampireUltimate::travelEffect);
+        return WitcheryTeleport.moveWithLegacyCues(player, home, arrival);
     }
 
-    private static void travelEffect(ServerLevel level, Vec3 position) {
-        level.sendParticles(ParticleTypes.SMOKE, position.x, position.y + 0.85, position.z, 16, 0.5, 0.8, 0.5, 0.03);
-        level.playSound(null, position.x, position.y, position.z, SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.8F, 1);
+    @Nullable
+    static Vec3 legacyVillageFooting(ServerPlayer player, ServerLevel world, BlockPos village) {
+        BlockPos start = village.above();
+        for (int distance = 0; distance < 16; distance++) {
+            Vec3 landing = villageLanding(player, world, start.above(distance));
+            if (landing != null) return landing;
+            if (distance > 0) {
+                landing = villageLanding(player, world, start.below(distance));
+                if (landing != null) return landing;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private static Vec3 villageLanding(ServerPlayer player, ServerLevel world, BlockPos ground) {
+        if (world.isOutsideBuildHeight(ground) || world.isOutsideBuildHeight(ground.above(2))
+                || world.getBlockState(ground).canBeReplaced()
+                || !world.getBlockState(ground.above()).canBeReplaced()
+                || !world.getBlockState(ground.above(2)).canBeReplaced()) return null;
+        Vec3 landing = Vec3.atLowerCornerOf(ground.above());
+        return WitcheryTeleport.canArrive(player, world, landing) ? landing : null;
     }
 
     @Nullable

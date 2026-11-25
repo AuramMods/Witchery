@@ -64,11 +64,11 @@ public final class WitcheryTeleport {
                 ? WitcheryTeleport::vampireTransitionEffect : TormentTravel::transitionEffect);
     }
 
-    public static boolean moveThroughCircle(Entity actor, ServerLevel destination, Vec3 target) {
+    public static boolean moveWithLegacyCues(Entity actor, ServerLevel destination, Vec3 target) {
         if (!isInWorld(destination, target)) return false;
         boolean vampire = Vampirism.isVampire(actor);
         return move(actor, destination, target,
-                (level, position) -> WitcheryNetwork.sendCircleTeleport(level, position, vampire), true);
+                (level, position) -> WitcheryNetwork.sendLegacyTeleport(level, position, vampire), true);
     }
 
     private static void vampireTransitionEffect(ServerLevel level, Vec3 position) {

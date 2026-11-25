@@ -72,14 +72,21 @@ public final class VampireAbilities {
         VampireUltimate ultimate = data.getVampireUltimate();
         int charges = data.getVampireUltimateCharges();
         if (charges == 0 || data.getCreatureTypeOrdinal() != 0 || !ultimate.activate(player)) {
-            player.playNotifySound(SoundEvents.NOTE_BLOCK_SNARE.value(), SoundSource.PLAYERS, 1, 0.5F);
+            if (ultimate == VampireUltimate.FARM) {
+                float pitch = 0.4F / ((float) player.serverLevel().getRandom().nextDouble() * 0.4F + 0.8F);
+                player.playNotifySound(SoundEvents.NOTE_BLOCK_SNARE.value(), SoundSource.PLAYERS, 0.5F, pitch);
+            } else {
+                player.playNotifySound(SoundEvents.NOTE_BLOCK_SNARE.value(), SoundSource.PLAYERS, 1, 0.5F);
+            }
             return;
         }
         if (!player.getAbilities().instabuild) {
             data.setVampireUltimate(ultimate, charges - 1);
             Vampirism.sync(player, data);
         }
-        player.playNotifySound(SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 1, 1);
+        if (ultimate != VampireUltimate.FARM) {
+            player.playNotifySound(SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 1, 1);
+        }
     }
 
     public static void interact(ServerPlayer player, Entity target) {

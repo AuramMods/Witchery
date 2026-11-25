@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.WeakHashMap;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -140,8 +141,10 @@ public final class VampireVillages {
                 .distinct();
     }
 
-    static Optional<BlockPos> forFeedingGrounds(ServerLevel world, BlockPos position) {
+    static Optional<FeedingGround> forFeedingGrounds(ServerLevel world, BlockPos position) {
         int range = 512;
+        var legacy = LegacyVillages.nearest(world, position, range).orElse(null);
+        Predicate<BlockPos> outsideLegacyVillage = point -> legacy == null || !legacy.contains(point, 0);
         var poi = world.getPoiManager();
         var generated = loadedVillages(world, position, range)
                 .filter(start -> distanceTo(start.getBoundingBox(), position) <= range * range)
@@ -153,10 +156,17 @@ public final class VampireVillages {
                 .flatMap(chunk -> poi.getInChunk(type -> type.is(PoiTypes.HOME), chunk, PoiManager.Occupancy.IS_OCCUPIED))
                 .map(PoiRecord::getPos)
                 .filter(home -> home.distSqr(position) <= range * range)
+                .filter(outsideLegacyVillage)
                 .min(Comparator.comparingDouble(home -> home.distSqr(position)))
                 .map(home -> clusterAnchor(poi, home));
-        return Stream.concat(generated, occupied.stream()).min(Comparator.comparingDouble(candidate -> candidate.distSqr(position)));
+        var modern = Stream.concat(generated, occupied.stream())
+                .filter(outsideLegacyVillage)
+                .map(center -> new FeedingGround(center, false));
+        return Stream.concat(Stream.ofNullable(legacy).map(village -> new FeedingGround(village.center(), true)), modern)
+                .min(Comparator.comparingDouble(candidate -> candidate.position().distSqr(position)));
     }
+
+    record FeedingGround(BlockPos position, boolean legacy) {}
 
     private static double distanceTo(BoundingBox box, BlockPos position) {
         return position.distToLowCornerSqr(Mth.clamp(position.getX(), box.minX(), box.maxX()),

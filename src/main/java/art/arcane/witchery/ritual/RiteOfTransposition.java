@@ -39,7 +39,7 @@ public final class RiteOfTransposition {
         var inhibition = target.getEffect(WitcheryEffects.ENDER_INHIBITION.get());
         if (inhibition != null && inhibition.getAmplifier() >= 3) return "message.witchery.rite.transpose_inhibited";
         Vec3 arrival = legacy ? Vec3.atLowerCornerOf(circle) : Vec3.atBottomCenterOf(circle);
-        boolean moved = legacy ? WitcheryTeleport.moveThroughCircle(target, level, arrival)
+        boolean moved = legacy ? WitcheryTeleport.moveWithLegacyCues(target, level, arrival)
                 : WitcheryTeleport.canArrive(target, level, arrival) && WitcheryTeleport.move(target, level, arrival);
         return moved ? null : "message.witchery.rite.transpose_obstructed";
     }

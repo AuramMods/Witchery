@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Vampire travel to imported villages (2026-11-25)
+
+- Witchery 0.24.1 searched the saved village center column, testing upper ground before equally distant lower ground. The original trace landed at `(94, 124, 33)` and `(94, 120, 33)` after the upper headroom was blocked. It refused a fully blocked center with usable footing in the adjacent column.
+- Travel now considers the village centers in `data/villages.dat`. A modern home or structure inside the same legacy village uses the saved center. The original vertical search uses 1.20.1 collision checks and build limits. The original travel cues are smoke and the Witchery poof at both endpoints. A rejected cast sends the caster the original half-volume snare.
+- The preceding packaged build left a rank-ten fixture at home with four uses even though the original village was nearby. The rebuilt package on copied Auram reached both intended floors and spent one use each time. It retained all four uses and stayed put in the blocked-column fixture.
+- The background survival client imported a rank-ten player record with four travel uses and a saved respawn point. The hotbar power reached the two floors, rejected the obstruction with two uses remaining, and returned from the Nether with one. The client recorded two half-volume poofs for each successful cast and one half-volume snare on rejection.
+- An ordinary dedicated restart retained travel type `3` and the final charge. Both client sessions used zero master volume and OpenAL No Output, and the focus monitor recorded no activation.
+- Local Java 17 data generation, JAR reobfuscation, and all 313 required Forge GameTests passed. The exact package SHA-256 is `c2772fa49ea44f63ada755b63440a61cf083d28e5f81eb83be151ba9552e8530`. The original trace, packages, and validation logs are in `build/qa-vampire-travel/`.
+
 ## Legacy village reputation and visits (2026-11-25)
 
 - The original Forge server saved two settlements in `data/villages.dat`, centered at `(94, 120, 33)` and `(199, 120, 33)`, each with a radius of 32. The fixture player's reputation was 10 in the west and 9 in the east. A second name had scores of -15 and 5.

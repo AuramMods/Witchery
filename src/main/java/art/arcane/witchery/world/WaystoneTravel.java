@@ -79,7 +79,7 @@ public final class WaystoneTravel {
                 if (!legacy && !WitcheryTeleport.canArrive(actor, destination, arrival)) continue;
             }
             if (arrival != null) {
-                sent |= legacy ? WitcheryTeleport.moveThroughCircle(actor, destination, arrival)
+                sent |= legacy ? WitcheryTeleport.moveWithLegacyCues(actor, destination, arrival)
                         : WitcheryTeleport.move(actor, destination, arrival);
             }
         }

@@ -325,7 +325,7 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, particle, LEGACY_FIZZ_SOUND_ID, center, 3, 3, 16);
     }
 
-    public static void sendCircleTeleport(ServerLevel level, Vec3 center, boolean vampire) {
+    public static void sendLegacyTeleport(ServerLevel level, Vec3 center, boolean vampire) {
         int particle = vampire ? LEGACY_SMOKE_PARTICLE_ID : LEGACY_PORTAL_PARTICLE_ID;
         int sound = vampire ? LEGACY_POOF_SOUND_ID : LEGACY_ENDERMAN_TELEPORT_SOUND_ID;
         sendParticlesAround(level, particle, sound, center, 0.5, 2, 16);

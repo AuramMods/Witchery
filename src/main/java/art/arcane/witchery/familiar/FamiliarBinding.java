@@ -172,7 +172,7 @@ public final class FamiliarBinding {
             if (type == null) continue;
             TamableAnimal existing = find(owner);
             if (existing != null) {
-                called |= legacy ? WitcheryTeleport.moveThroughCircle(existing, level, owner.position()) : bringTo(owner, existing);
+                called |= legacy ? WitcheryTeleport.moveWithLegacyCues(existing, level, owner.position()) : bringTo(owner, existing);
             } else if (!record.getBoolean("FamiliarSummoned")) {
                 TamableAnimal familiar = type.entityType().create(level);
                 if (!(familiar instanceof Familiar marked)) continue;

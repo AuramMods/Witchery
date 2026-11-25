@@ -27,6 +27,30 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class VampireAbilitiesTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_legacy_village_travel")
+    public static void travelChecksTheOriginalVillageColumn(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var center = helper.absolutePos(new BlockPos(5, 220, 5));
+        var vampire = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "VillageTravel"));
+        vampire.setPos(Vec3.atBottomCenterOf(center.south(4)));
+        for (BlockPos point : BlockPos.betweenClosed(center.offset(-1, -15, -1), center.offset(1, 19, 1))) {
+            level.setBlockAndUpdate(point, Blocks.AIR.defaultBlockState());
+        }
+        level.setBlockAndUpdate(center.below(), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(center.above(3), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(center.east().above(), Blocks.STONE.defaultBlockState());
+        helper.assertTrue(Vec3.atLowerCornerOf(center.above(4)).equals(VampireUltimate.legacyVillageFooting(vampire, level, center)),
+                "Travel picks the upper surface when the two village floors are equally close");
+        level.setBlockAndUpdate(center.above(4), Blocks.STONE.defaultBlockState());
+        helper.assertTrue(Vec3.atLowerCornerOf(center).equals(VampireUltimate.legacyVillageFooting(vampire, level, center)),
+                "Obstructed headroom sends the vampire to the equally close lower floor first");
+        for (int y = -15; y <= 19; y++) level.setBlockAndUpdate(center.above(y), Blocks.STONE.defaultBlockState());
+        helper.assertTrue(VampireUltimate.legacyVillageFooting(vampire, level, center) == null,
+                "A blocked village center prevents travel even with a safe surface in the next column");
+        vampire.discard();
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void mesmerizesOrdinaryVillagersAndRejectsWerevillagers(GameTestHelper helper) {
         var level = helper.getLevel();

@@ -1096,6 +1096,7 @@
 - [x] Travel to a saved coffin and from the coffin to a village. The client used daytime sleep to set its real respawn at the coffin. A cast from over forty blocks away brought it back to the coffin. A cast while nearby moved it to the settlement where a villager had claimed a bed. Each cast spent one use.
 - [x] Travel home from the Nether. A dimension change now sends the Witchery capability to the replacement client player. The muted client kept its selected power when entering the Nether and returned to the same Overworld coffin. All 178 required Forge GameTests passed, including the bone offering, return to the saved spawn and the village destination.
 - [x] Restart the dedicated server and verify the saved coffin, travel choice and final remaining use. The client rejoined beside its coffin with one travel charge and 1,062 blood.
+- [x] Use the original saved village center when casting travel near home in an imported world. Verify the upper tie, lower fallback, and fully blocked center. Restore smoke and the Witchery poof at both endpoints and the original rejection cue.
 
 ## Blooded Wool and Dark Cloth (2026-11-20)
 
