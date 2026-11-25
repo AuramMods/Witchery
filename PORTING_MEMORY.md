@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Grenade and brew launches (2026-11-24)
+
+- A headless Witchery 0.24.1 trace sampled Sun Grenades, Duplicate Grenades, a splash-format brew, and Brew of Ink from east-, up-, and down-facing dispensers. The projectiles left the outlet 0.7 blocks from the dispenser's center. All four used a nominal speed of 1.375 blocks per tick, an upward aim adjustment of 0.1 before normalization, and Gaussian spread.
+- The previous 1.20.1 build launched Sun and Duplicate Grenades at the 0.75-block-per-tick hand-throw speed. Its hand throws started directly at the player's eye line and added player movement to the projectile. Both launch regressions failed on that build through the actual item and redstone paths.
+- The port now shares the original dispenser launch settings across all four types. It also restores the 0.16-block side offset, raised aim, 0.75-block-per-tick speed, and independent launch motion for grenades thrown by hand.
+- The clean Forge server saw all four redstone launches from the original outlet coordinates and both grenade variants thrown by the survival client. Each redstone pulse consumed one item and retained the other. An ordinary dedicated restart preserved those inventory counts and item types. The client ran with zero master volume and OpenAL No Output. The focus monitor recorded no activation of the client process.
+- The same JAR repeated all four redstone launches and inventory checks on copied Auram. Both servers saved and stopped headlessly.
+- Java 17 data generation, JAR reobfuscation, and all 301 required Forge GameTests passed locally. The tested JAR SHA-256 is `00d345dc708834b866edd0af53e0076173f53a01825aa2f4ad43e774132c8328`. The original trace, regression logs, and packaged fixtures are under `build/qa-dispenser-flight`.
+
 ## Endless Water pours (2026-11-24)
 
 - Witchery 0.24.1 spent one use when a player poured onto an empty space, an existing source, flowing water, or lava. A hand pour filled a vanilla cauldron to level three. The dispenser left both types of water and vanilla cauldrons alone. It filled a Kettle with 1,000 mB, a Witchery Cauldron with 3,000 mB, and replaced lava with source water.

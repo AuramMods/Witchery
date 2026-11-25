@@ -47,6 +47,12 @@ public final class GrenadeProjectile extends ThrowableItemProjectile {
 
     public GrenadeProjectile(Level level, LivingEntity thrower) {
         super(WitcheryEntities.GRENADE.get(), thrower, level);
+        BrewProjectileLaunch.fromPlayer(this, thrower, -20, 0.75F);
+    }
+
+    @Override
+    public void shoot(double x, double y, double z, float speed, float inaccuracy) {
+        BrewProjectileLaunch.shoot(this, random, new Vec3(x, y, z), speed, inaccuracy);
     }
 
     @Override

@@ -14,7 +14,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -95,7 +94,7 @@ public final class ThrownBrew extends ThrowableItemProjectile {
         brew.setItem(bottle);
         brew.setNoGravity(true);
         // The original constructor chose the ordinary brew speed before setting its spell flag.
-        brew.launchFromPlayer(caster, 0, 0.75F);
+        BrewProjectileLaunch.fromPlayer(brew, caster, 0, 0.75F);
         return brew;
     }
 
@@ -103,8 +102,8 @@ public final class ThrownBrew extends ThrowableItemProjectile {
         var brew = new ThrownBrew(player, level);
         brew.setItem(stack);
         // The original fixed-brew entity launched before assigning the ingredient subtype.
-        if (stack.getItem() instanceof BrewBottleItem) brew.launchFromPlayer(player, -20, 0.75F);
-        else brew.launchFromPlayer(player, 0, 1.5F);
+        if (stack.getItem() instanceof BrewBottleItem) BrewProjectileLaunch.fromPlayer(brew, player, -20, 0.75F);
+        else BrewProjectileLaunch.fromPlayer(brew, player, 0, 1.5F);
         if (!level.addFreshEntity(brew)) return false;
         level.playSound(null, player, SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 0.5F,
                 0.4F / (level.random.nextFloat() * 0.4F + 0.8F));
@@ -113,19 +112,9 @@ public final class ThrownBrew extends ThrowableItemProjectile {
         return true;
     }
 
-    private void launchFromPlayer(Player player, float pitchOffset, float speed) {
-        float yaw = player.getYRot() * Mth.DEG_TO_RAD;
-        float pitch = player.getXRot();
-        float sinYaw = Mth.sin(yaw);
-        float cosYaw = Mth.cos(yaw);
-        setPos(position().add(-cosYaw * 0.16F, 0, -sinYaw * 0.16F));
-
-        float horizontal = Mth.cos(pitch * Mth.DEG_TO_RAD);
-        Vec3 aim = new Vec3(-sinYaw * horizontal, -Mth.sin((pitch + pitchOffset) * Mth.DEG_TO_RAD), cosYaw * horizontal);
-        double spread = 0.0075F;
-        Vec3 motion = aim.normalize().add(random.nextGaussian() * spread,
-                random.nextGaussian() * spread, random.nextGaussian() * spread).scale(speed);
-        lerpMotion(motion.x, motion.y, motion.z);
+    @Override
+    public void shoot(double x, double y, double z, float speed, float inaccuracy) {
+        BrewProjectileLaunch.shoot(this, random, new Vec3(x, y, z), speed, inaccuracy);
     }
 
     @Override

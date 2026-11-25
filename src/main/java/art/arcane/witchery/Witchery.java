@@ -8,7 +8,6 @@ import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.integration.BloodMagicCompat;
 import art.arcane.witchery.integration.IntegrationDataPack;
 import art.arcane.witchery.item.EndlessWaterBrewItem;
-import art.arcane.witchery.item.GrenadeItem;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryRegistries;
 import com.mojang.logging.LogUtils;
@@ -39,7 +38,6 @@ public class Witchery {
     private static void setupCommon(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             ForgeChunkManager.setForcedChunkLoadingCallback(MODID, PoppetShelfBlockEntity::restoreTickets);
-            GrenadeItem.registerDispenser();
             EndlessWaterBrewItem.registerDispenser();
             BrewDispenser.register();
             BloodMagicCompat.register();

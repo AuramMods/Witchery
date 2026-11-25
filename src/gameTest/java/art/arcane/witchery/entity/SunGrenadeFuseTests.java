@@ -2,29 +2,134 @@ package art.arcane.witchery.entity;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.SunlightBlock;
+import art.arcane.witchery.brewing.BrewMixture;
 import art.arcane.witchery.item.GrenadeItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
+import art.arcane.witchery.registry.WitcheryItems;
+import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.block.entity.DispenserBlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class SunGrenadeFuseTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_sun_grenade", setupTicks = 5)
+    public static void dispensersLaunchGrenadesAndBrewsWithOriginalAim(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var ingredients = List.of(Items.NETHER_WART.getDefaultInstance(), Items.SPIDER_EYE.getDefaultInstance(),
+                Items.GUNPOWDER.getDefaultInstance());
+        var splash = WitcheryItems.getRequired("brewbottle").get().getDefaultInstance();
+        splash.setTag(BrewMixture.from(ingredients).bottleTag(ingredients));
+        var fixtures = List.of(
+                new Launcher(new BlockPos(3, 8, 3), Direction.EAST,
+                        WitcheryItems.getRequired("sungrenade").get().getDefaultInstance()),
+                new Launcher(new BlockPos(7, 8, 3), Direction.UP, GrenadeItem.duplicate("FlightFixture")),
+                new Launcher(new BlockPos(3, 8, 7), Direction.DOWN, splash),
+                new Launcher(new BlockPos(7, 8, 7), Direction.NORTH,
+                        WitcheryIngredient.BREW_OF_INK.item().getDefaultInstance()));
+        var shots = new ArrayList<Launch>();
+        Consumer<EntityJoinLevelEvent> observe = event -> {
+            if (event.getLevel() == level && event.getEntity() instanceof ThrowableItemProjectile shot
+                    && (shot instanceof GrenadeProjectile || shot instanceof ThrownBrew)
+                    && fixtures.stream().anyMatch(fixture -> ItemStack.isSameItemSameTags(shot.getItem(), fixture.payload())
+                            && shot.position().distanceTo(Vec3.atCenterOf(helper.absolutePos(fixture.pos()))) < 1)) {
+                shots.add(new Launch(shot.getItem().copy(), shot.position(), shot.getDeltaMovement()));
+            }
+        };
+        MinecraftForge.EVENT_BUS.addListener(observe);
+        for (var fixture : fixtures) {
+            var pos = helper.absolutePos(fixture.pos());
+            level.setBlockAndUpdate(pos, Blocks.DISPENSER.defaultBlockState().setValue(DispenserBlock.FACING, fixture.face()));
+            ((DispenserBlockEntity) level.getBlockEntity(pos)).setItem(0, fixture.payload().copyWithCount(2));
+            level.setBlockAndUpdate(pos.south(), Blocks.REDSTONE_BLOCK.defaultBlockState());
+        }
+        helper.runAfterDelay(8, () -> {
+            MinecraftForge.EVENT_BUS.unregister(observe);
+            helper.assertTrue(shots.size() == fixtures.size(), "One projectile leaves each Witchery dispenser");
+            for (var fixture : fixtures) {
+                var pos = helper.absolutePos(fixture.pos());
+                var shot = shots.stream().filter(launch -> ItemStack.matches(launch.payload(), fixture.payload()))
+                        .findFirst().orElseThrow();
+                var direction = Vec3.atLowerCornerOf(fixture.face().getNormal());
+                var outlet = Vec3.atCenterOf(pos).add(direction.scale(0.7));
+                var heading = direction.add(0, 0.1F, 0).normalize().scale(1.375F);
+                helper.assertTrue(shot.origin().distanceTo(outlet) < 1.0E-6
+                                && shot.velocity().distanceTo(heading) < 0.17,
+                        "Original dispenser launch for " + fixture.payload() + " facing " + fixture.face() + ". Got " + shot);
+                helper.assertTrue(ItemStack.matches(((DispenserBlockEntity) level.getBlockEntity(pos)).getItem(0),
+                                fixture.payload()), "A redstone pulse spends exactly one matching item");
+            }
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void handGrenadesLaunchFromBesideTheEyeWithoutInheritingMotion(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "HandGrenadeFlight"));
+        player.setPos(Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(5, 16, 5))));
+        player.setYRot(0);
+        player.setXRot(0);
+        player.setDeltaMovement(0.3, -0.42, 0.2);
+        var shots = new ArrayList<GrenadeProjectile>();
+        Consumer<EntityJoinLevelEvent> observe = event -> {
+            if (event.getLevel() == level && event.getEntity() instanceof GrenadeProjectile shot && shot.getOwner() == player) {
+                shots.add(shot);
+            }
+        };
+        MinecraftForge.EVENT_BUS.addListener(observe);
+        try {
+            for (var stack : List.of(WitcheryItems.getRequired("sungrenade").get().getDefaultInstance(),
+                    GrenadeItem.duplicate("FlightFixture"))) {
+                var payload = stack.copy();
+                player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+                stack.getItem().use(level, player, InteractionHand.MAIN_HAND);
+                helper.assertTrue(stack.isEmpty() && shots.size() == 1, "A hand throw spends one grenade");
+                var shot = shots.remove(0);
+                var origin = new Vec3(player.getX() - 0.16F, player.getEyeY() - 0.1F, player.getZ());
+                var heading = new Vec3(0, Math.sin(Math.toRadians(20)), 1).normalize().scale(0.75F);
+                helper.assertTrue(shot.position().distanceTo(origin) < 1.0E-6
+                                && shot.getDeltaMovement().distanceTo(heading) < 0.055
+                                && ItemStack.matches(shot.getItem(), payload),
+                        "Original hand grenade launch. Got " + shot.position() + " at " + shot.getDeltaMovement());
+                shot.discard();
+            }
+            helper.succeed();
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(observe);
+            shots.forEach(GrenadeProjectile::discard);
+        }
+    }
+
+    private record Launcher(BlockPos pos, Direction face, ItemStack payload) {}
+
+    private record Launch(ItemStack payload, Vec3 origin, Vec3 velocity) {}
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_sun_grenade", setupTicks = 5, timeoutTicks = 260)
     public static void sunGrenadeKeepsItsOriginalFuseAfterImpact(GameTestHelper helper) {
         var level = helper.getLevel();
