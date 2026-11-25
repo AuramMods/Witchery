@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Otherwhere and Enderman travel cues (2026-11-25)
+
+- In Witchery 0.24.1, a held Otherwhere Hand played the orb at a valid aim, pop at an empty aim, snare on failed release, pling at the recall threshold and fizz when it set the recall point. The reference recorded volume 0.5 and pitches in the one-third to one-half range for all five. The GameTest checks the same sounds through the Hand and confirms that failed release and storing a point preserve charge.
+- The original Otherwhere blink and Enderman power each emitted two Portal and Enderman packets with width 0.5, height 2 and an audience within 16 blocks. The preceding packaged port moved the player while emitting zero packets of this type. The fixed build sends the departure packet before movement and the arrival packet afterward. Recall and lifting use the same travel helper as in the original, including the vampire cue for those two actions.
+- In clean Forge survival, Otherwhere blink and recall used one and two charge respectively. The Enderman power used one infusion charge and one creature charge. Both players received both cues for their own cast and only the cue within range when observing the other player. Reconnecting after a dedicated restart preserved the stored point and all three balances.
+- The copied Auram dedicated server loaded, ticked and saved the exact reobfuscated build. The two clean Forge players started with fixture-supplied Witch's Hands and saved infusion charges. Both clients used master volume zero, opened on the No Output device and kept the foreground app in focus.
+- Reobfuscation and all 393 local Forge GameTests passed on seed `5471593853027166409`. The exact candidate JAR is `build/qa-otherwhere-cues/candidate.jar` with SHA-256 `27e9fd20bd14392ee0c08076bcd2260a6ae33de8939ec2e5c209a0be73220f7c`. See `build/qa-otherwhere-cues/comparison.txt` for the reference, baseline and packaged replay.
+
 ## Merchant stock in converted worlds (2026-11-25)
 
 - Witchery 0.24.1 serialized a partially used Demon Heart bargain, a Hobgoblin Koboldite Nugget offer, and a Wolfman's original red wool offer. The mixed-format fixture placed those native records in a 1.20.1 entity region alongside a separate animal shop stock record and kept the original registry snapshot. The preceding JAR read both the Demon Heart and its three-diamond price as air.

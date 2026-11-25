@@ -346,6 +346,8 @@
 - [x] The muted survival player blinked from Z 28.5 to Z 37.69 for one charge, remembered a position, returned to it for two charge and raised a pig and the caster for two charge. Ender Inhibition III preserved the player's position and charge. Sneak-attacking a pig in the Nether recalled both the player and the pig to the marked Overworld point for four charge.
 - [x] The dedicated save retained the Hand, its cooldown tag, both recalled entities, all four legacy recall fields and 191 charge after a full restart.
 
+- [x] Restore the original Otherwhere Hand charge feedback and the teleport cues for Otherwhere and the Infernal Enderman power. The 0.24.1 server trace and Forge GameTest check the five charge sounds. The paired muted survival replay verifies portal cues at both ends and confirms that observers receive only the cue within range.
+
 ## Light Infusion Hand Powers (2026-11-20)
 
 - [x] Restore sustained cloaking for one charge every 30 ticks and clear nearby hostile targets. Stopping item use ends the cloak. A separate Invisibility potion retains its duration.

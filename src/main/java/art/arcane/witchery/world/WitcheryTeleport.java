@@ -72,8 +72,15 @@ public final class WitcheryTeleport {
     }
 
     public static boolean moveWithLegacyCues(Entity actor, ServerLevel destination, Vec3 target) {
+        return moveWithLegacyCues(actor, destination, target, Vampirism.isVampire(actor));
+    }
+
+    public static boolean moveWithPortalCues(Entity actor, ServerLevel destination, Vec3 target) {
+        return moveWithLegacyCues(actor, destination, target, false);
+    }
+
+    private static boolean moveWithLegacyCues(Entity actor, ServerLevel destination, Vec3 target, boolean vampire) {
         if (!isInWorld(destination, target)) return false;
-        boolean vampire = Vampirism.isVampire(actor);
         return move(actor, destination, target,
                 (level, position) -> WitcheryNetwork.sendLegacyTeleport(level, position, vampire), true);
     }
