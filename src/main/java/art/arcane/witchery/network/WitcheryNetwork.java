@@ -282,6 +282,7 @@ public final class WitcheryNetwork {
     }
 
     public static void sendPushTarget(ServerPlayer player, int entityId, double velocityX, double velocityY, double velocityZ) {
+        if (player.connection == null || !player.connection.connection.isConnected()) return;
         CHANNEL.send(
                 PacketDistributor.PLAYER.with(() -> player),
                 new PushTargetPacket(entityId, velocityX, velocityY, velocityZ)

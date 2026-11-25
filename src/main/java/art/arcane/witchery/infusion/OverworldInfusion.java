@@ -2,6 +2,7 @@ package art.arcane.witchery.infusion;
 
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.network.WitcheryNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -89,9 +90,14 @@ public final class OverworldInfusion {
             boolean sneak = player.isShiftKeyDown();
             if (InfusionEnergy.spend(player, sneak ? 4 : 2)) {
                 Vec3 look = player.getLookAngle();
-                target.setDeltaMovement(look.x * 2.4, sneak ? 1.5 : 0.3, look.z * 2.4);
-                target.hurtMarked = true;
+                Vec3 motion = new Vec3(look.x * 2.4, sneak ? 1.5 : 0.3, look.z * 2.4);
+                target.setDeltaMovement(motion);
                 target.hasImpulse = true;
+                if (target instanceof ServerPlayer victim) {
+                    WitcheryNetwork.sendPushTarget(victim, victim.getId(), motion.x, motion.y, motion.z);
+                } else {
+                    target.hurtMarked = true;
+                }
             }
             return;
         }
@@ -106,21 +112,33 @@ public final class OverworldInfusion {
         if (elapsed % 4 != 0 || !InfusionEnergy.spend(player, 1)) return;
 
         ServerLevel level = player.serverLevel();
+        Vec3 feet = player.position();
         Vec3 destination = player.getEyePosition();
-        for (ItemEntity item : level.getEntitiesOfClass(ItemEntity.class, player.getBoundingBox().inflate(6),
+        for (ItemEntity item : level.getEntitiesOfClass(ItemEntity.class, new AABB(feet, feet).inflate(6),
                 entity -> metal(entity.getItem()))) {
             Vec3 offset = destination.subtract(item.position());
-            if (offset.lengthSqr() > 1) item.setPos(item.position().add(offset.normalize()));
-            else item.setPos(destination);
+            // The original makes X the one-block step. Use a bounded pull close to alignment.
+            double alongX = Math.abs(offset.x);
+            double distance = alongX >= 1 ? alongX : Math.max(1, offset.length());
+            item.setPos(item.position().add(offset.scale(1 / distance)));
         }
 
-        BlockPos center = player.blockPosition();
-        for (BlockPos pos : BlockPos.betweenClosed(center.offset(-6, -3, -6), center.offset(6, 3, 6))) {
-            BlockState state = level.getBlockState(pos);
-            Item ingot = oreToIngot(state);
-            if (ingot == null) continue;
-            if (!InfusionEnergy.canSpend(player, 2)) break;
-            if (replaceOre(level, pos, state, ingot, 1)) InfusionEnergy.spend(player, 2);
+        convertNearbyOres(player, level, new BlockPos((int) feet.x, (int) feet.y, (int) feet.z));
+    }
+
+    private static void convertNearbyOres(ServerPlayer player, ServerLevel level, BlockPos center) {
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (int x = -6; x <= 6; x++) {
+            for (int y = -3; y <= 3; y++) {
+                for (int z = -6; z <= 6; z++) {
+                    pos.setWithOffset(center, x, y, z);
+                    BlockState state = level.getBlockState(pos);
+                    Item ingot = oreToIngot(state);
+                    if (ingot == null) continue;
+                    if (!InfusionEnergy.canSpend(player, 2)) return;
+                    if (replaceOre(level, pos, state, ingot, 1)) InfusionEnergy.spend(player, 2);
+                }
+            }
         }
     }
 

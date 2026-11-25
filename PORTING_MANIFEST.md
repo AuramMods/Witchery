@@ -1512,6 +1512,7 @@ Implementation anchors:
   - `player_style` applies the synchronized style to the player with the matching username.
   - `sound` resolves the sound ID and plays the registered event at the transmitted position.
   - `push_target` now dispatches to client packet bridge to apply motion vectors to client entities.
+  - The Overworld infusion sends the original repulsion vector directly to the affected player. A standing cast lifts the player by 0.3 blocks per tick and a crouched cast uses 1.5. Both use the caster's look direction for the 2.4 horizontal multiplier.
   - `set_client_player_facing` now dispatches to client packet bridge to apply local player rotation.
   - `sync_entity_size` restores the active Resizing scale on the client. The client uses its local pose and creature form to compute physical dimensions from that scale.
   - On dimension change, the server replays the player's active tracked Witchery effects to the replacement local player through vanilla effect packets. This keeps Resizing, Colorful, Grotesque, Disease, Hellish Aura, and the plant brew effects available immediately after direct teleports.

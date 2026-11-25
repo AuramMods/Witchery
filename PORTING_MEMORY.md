@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Overworld infusion magnet and repulsion (2026-11-25)
+
+- The Witch's Hand starts the crouched magnet after 40 ticks and searches a six-block box around the caster's feet. It takes a one-block X step with the original proportional Y and Z movement when X is at least one block away. A bounded pull handles closer and aligned items. The Y component uses the current pose's eye height.
+- The ore scan truncates the caster's coordinates and visits X, then Y, then Z. With three charges, the first pulse spends one charge on the magnet and two on the first ore. The original server and rebuilt Forge convert iron before gold in the fixture. The previous Forge build converted the gold first and pulled an item above the original range.
+- The original server also converted an ore at Z six when the caster stood at Z −0.5. The regression covers that boundary, the original diagonal pull and a finite pull for an aligned item. All 377 required Forge GameTests passed on seed `5471593853027166409`.
+- Two muted background survival clients verified repulsion through ordinary Witch's Hand attacks. The armored target received the original `(0, 0.3, 2.4)` and `(0, 1.5, 2.4)` motion vectors. The caster spent two and four charges respectively. The fixture supplied the hands, armor, ores, dropped items and starting charges. The dedicated restart kept both infusion records, the converted ore, the four item positions and the equipment. OpenAL used its No Output device, and the foreground app kept focus.
+- The copied Auram dedicated fixture matched the diagonal pull, ore order and negative-coordinate boundary. The exact reobfuscated JAR is `build/qa-overworld-magnet/candidate.jar` with SHA-256 `8228259da02e2f63faa0855981c15775e40820eda709926d50ae07e2a2a22272`. See `build/qa-overworld-magnet/comparison.txt` for the original, preceding Forge build, and packaged results.
+
 ## Witch Hunter and Village Guard poses (2026-11-25)
 
 - The original NPC renderers hold ranged weapons in one hand during idle and combat. The Forge models use that pose for an occupied hand and apply it to either modern hand. Both use the original crouch offsets. The Witch Hunter uses the original seated leg angles.
