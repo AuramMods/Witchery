@@ -1,13 +1,13 @@
 package art.arcane.witchery.entity;
 
 import art.arcane.witchery.config.WitcheryServerConfig;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcherySounds;
 import art.arcane.witchery.vampirism.Vampirism;
+import art.arcane.witchery.world.WitcheryTeleport;
 import art.arcane.witchery.world.migration.LegacyVillages;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -17,30 +17,40 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.ForgeEventFactory;
 import org.jetbrains.annotations.Nullable;
 
 public final class WitchHunterPursuit {
     private static final String TRIGGER = "WITCHunterTrigger";
     private static final int NOTICE_DELAY = 2_400;
+    // Epoch ticks from 2001 onward predate the original mod and exceed ordinary saved world ages.
+    private static final long MIN_EPOCH_TICK = 1_000_000_000_000L / 50;
 
     private WitchHunterPursuit() {}
 
     public static void noticeBlackMagic(ServerPlayer caster) {
         CompoundTag persistent = caster.getPersistentData();
         CompoundTag data = persistent.getCompound(Player.PERSISTED_NBT_TAG);
-        if (data.getLong(TRIGGER) <= 0 && caster.getRandom().nextFloat() < 0.1F) {
-            data.putLong(TRIGGER, Math.max(1, caster.server.overworld().getGameTime()));
+        if (data.getLong(TRIGGER) <= 0 && caster.serverLevel().getRandom().nextDouble() < 0.1) {
+            data.putLong(TRIGGER, System.currentTimeMillis() / 50);
             persistent.put(Player.PERSISTED_NBT_TAG, data);
         }
     }
 
     public static void tick(ServerPlayer player) {
-        if (player.tickCount % 100 != 1 || player.isSpectator() || player.serverLevel().getDifficulty() == Difficulty.PEACEFUL) return;
+        ServerLevel world = player.serverLevel();
+        if (world.getGameTime() % 100 != 1 || player.isSpectator() || world.getDifficulty() == Difficulty.PEACEFUL) return;
         CompoundTag data = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
-        long now = player.server.overworld().getGameTime();
+        long now = System.currentTimeMillis() / 50;
         long noticed = data.getLong(TRIGGER);
-        boolean trace = noticed > 0 && now - noticed >= NOTICE_DELAY && player.getRandom().nextFloat() < 0.01F;
+        if (noticed > 0 && noticed < MIN_EPOCH_TICK) {
+            // Earlier 1.20.1 builds stored the Overworld game tick under the same key.
+            long elapsed = Math.max(0, player.server.overworld().getGameTime() - noticed);
+            noticed = now - Math.min(elapsed, NOTICE_DELAY);
+            data.putLong(TRIGGER, noticed);
+        }
+        boolean trace = noticed > 0 && now - noticed >= NOTICE_DELAY && world.getRandom().nextDouble() < 0.01;
         if (!trace && !villageReportsVampire(player)) return;
 
         data.remove(TRIGGER);
@@ -52,9 +62,9 @@ public final class WitchHunterPursuit {
     }
 
     private static boolean villageReportsVampire(ServerPlayer player) {
-        if (Vampirism.level(player) < 10 || player.isCreative()
-                || player.getRandom().nextDouble() >= WitcheryServerConfig.VAMPIRE_HUNTER_SPAWN_CHANCE.get()) return false;
         ServerLevel world = player.serverLevel();
+        if (Vampirism.level(player) < 10 || player.isCreative()
+                || world.getRandom().nextDouble() >= WitcheryServerConfig.VAMPIRE_HUNTER_SPAWN_CHANCE.get()) return false;
         var legacy = LegacyVillages.nearest(world, player.blockPosition(), 128).orElse(null);
         var residents = world.getEntitiesOfClass(Villager.class, player.getBoundingBox().inflate(128, 16, 128),
                 villager -> villager.isAlive() && reportsPlayer(world, villager, player, legacy));
@@ -73,23 +83,23 @@ public final class WitchHunterPursuit {
     private static boolean summon(ServerPlayer player) {
         ServerLevel world = player.serverLevel();
         BlockPos origin = player.blockPosition();
-        RandomSource random = player.getRandom();
-        var position = origin.offset(offset(random), 0, offset(random)).mutable();
-        if (!world.hasChunkAt(position)) return false;
-        int top = Math.min(world.getMaxBuildHeight() - 2, origin.getY() + 8);
-        while (position.getY() < top && !world.isEmptyBlock(position)) position.move(Direction.UP);
-        while (position.getY() > world.getMinBuildHeight() && world.isEmptyBlock(position.below())) position.move(Direction.DOWN);
-        if (!world.isEmptyBlock(position) || !world.isEmptyBlock(position.above())
-                || !world.getBlockState(position.below()).isFaceSturdy(world, position.below(), Direction.UP)) return false;
+        RandomSource random = world.getRandom();
+        BlockPos column = origin.offset(offset(random), 0, offset(random));
+        if (!world.hasChunkAt(column) || !world.getWorldBorder().isWithinBounds(column)) return false;
+        BlockPos ground = WitcheryTeleport.findEncounterGround(world, column);
+        BlockPos position = ground.above();
+        if (world.isOutsideBuildHeight(position.above()) || world.isEmptyBlock(ground)
+                || !world.isEmptyBlock(position) || !world.isEmptyBlock(position.above())) return false;
 
         WitchHunter hunter = WitcheryEntities.WITCH_HUNTER.get().create(world);
         if (hunter == null) return false;
-        hunter.moveTo(position.getX() + 0.5, position.getY() + 0.05, position.getZ() + 0.5, 0, 0);
+        Vec3 arrival = Vec3.atBottomCenterOf(position).add(0, 0.05, 0);
+        hunter.moveTo(arrival.x, arrival.y, arrival.z, 0, 0);
         if (!world.noCollision(hunter)) return false;
         ForgeEventFactory.onFinalizeSpawn(hunter, world, world.getCurrentDifficultyAt(position), MobSpawnType.EVENT, null, null);
         if (!world.addFreshEntity(hunter)) return false;
         hunter.pursue(player);
-        world.sendParticles(ParticleTypes.SMOKE, hunter.getX(), hunter.getY(0.5), hunter.getZ(), 16, 0.5, 0.5, 0.5, 0.01);
+        WitcheryNetwork.sendWitchHunterArrival(world, arrival, hunter.getBbHeight());
         return true;
     }
 

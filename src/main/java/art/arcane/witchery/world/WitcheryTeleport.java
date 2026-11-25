@@ -26,6 +26,13 @@ public final class WitcheryTeleport {
 
     private WitcheryTeleport() {}
 
+    public static BlockPos findEncounterGround(ServerLevel level, BlockPos start) {
+        var ground = start.mutable();
+        while (ground.getY() < start.getY() + 8 && !level.isEmptyBlock(ground)) ground.move(Direction.UP);
+        while (ground.getY() > level.getMinBuildHeight() && level.isEmptyBlock(ground)) ground.move(Direction.DOWN);
+        return ground.immutable();
+    }
+
     public static boolean canArrive(Entity actor, ServerLevel level, Vec3 position) {
         return isInWorld(level, position)
                 && !level.getBlockCollisions(actor, actor.getBoundingBox().move(position.subtract(actor.position())))

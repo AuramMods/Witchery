@@ -362,6 +362,10 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_SMOKE_PARTICLE_ID, LEGACY_NO_SOUND_ID, center, 0.5, 2, 16);
     }
 
+    public static void sendWitchHunterArrival(ServerLevel level, Vec3 center, double height) {
+        sendParticlesAround(level, LEGACY_SMOKE_PARTICLE_ID, LEGACY_NO_SOUND_ID, center, 1, height, 16);
+    }
+
     public static void sendSpectralSummon(ServerLevel level, Vec3 center, double height, SpectralUndead.Summoning source) {
         int particle = source == SpectralUndead.Summoning.STRAY ? LEGACY_MOB_SPELL_PARTICLE_ID : LEGACY_INSTANT_SPELL_PARTICLE_ID;
         int sound = source == SpectralUndead.Summoning.BRAZIER ? LEGACY_HARP_SOUND_ID : LEGACY_NO_SOUND_ID;

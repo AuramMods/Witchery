@@ -47,7 +47,8 @@ public final class PoppetDamageTests {
                 TaglockItem.bindSignature(poppet, target);
                 Vec3 beforePush = new Vec3(0, -0.08, 0);
                 target.setDeltaMovement(beforePush);
-                caster.getRandom().setSeed(4097); // First roll reports the action, second roll resists it.
+                level.getRandom().setSeed(noticeSeed());
+                caster.getRandom().setSeed(4097);
                 poppet.use(level, caster, InteractionHand.MAIN_HAND);
                 poppet.releaseUsing(level, caster, 20);
                 helper.assertTrue(target.getDeltaMovement().equals(beforePush) && poppet.getTag().getInt("WITCDamage") == 0,
@@ -119,23 +120,27 @@ public final class PoppetDamageTests {
                         "A submerged bearer with air neither harms the target nor draws pursuit");
 
                 bearer.setAirSupply(0);
+                long before = System.currentTimeMillis() / 50;
+                level.getRandom().setSeed(seed);
                 bearer.getRandom().setSeed(seed);
                 recipient.setSecondsOnFire(10);
                 bearer.getInventory().tick();
-                long now = level.getServer().overworld().getGameTime();
+                long now = System.currentTimeMillis() / 50;
                 var notice = persistence.getCompound(Player.PERSISTED_NBT_TAG);
                 helper.assertTrue(recipient.getHealth() == 9 && !recipient.isOnFire(),
                         "A carried poppet deals drowning damage and extinguishes the bound target");
-                helper.assertTrue(notice.getLong(trigger) == now, "The submerged action records the bearer for pursuit");
+                helper.assertTrue(notice.getLong(trigger) >= before && notice.getLong(trigger) <= now,
+                        "The submerged action records the bearer for pursuit using the original real-time clock");
 
                 equipHunterOutfit(guarded);
                 TaglockItem.bindSignature(poppet, guarded);
                 notice.remove(trigger);
+                level.getRandom().setSeed(seed);
                 bearer.getRandom().setSeed(seed);
                 guarded.getRandom().setSeed(seed);
                 guarded.setSecondsOnFire(10);
                 bearer.getInventory().tick();
-                helper.assertTrue(guarded.getHealth() == 10 && !guarded.isOnFire() && notice.getLong(trigger) == now,
+                helper.assertTrue(guarded.getHealth() == 10 && !guarded.isOnFire() && notice.getLong(trigger) >= now,
                         "The hunter outfit can block the damage while the action still draws pursuit and extinguishes the target");
                 helper.succeed();
             } finally {
@@ -210,7 +215,7 @@ public final class PoppetDamageTests {
 
     private static long noticeSeed() {
         long seed = 0;
-        while (RandomSource.create(seed).nextFloat() >= 0.1F) seed++;
+        while (RandomSource.create(seed).nextDouble() >= 0.1) seed++;
         return seed;
     }
 

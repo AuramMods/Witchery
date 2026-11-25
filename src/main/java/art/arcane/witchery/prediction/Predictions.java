@@ -7,6 +7,7 @@ import art.arcane.witchery.entity.WitchOwl;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcherySounds;
+import art.arcane.witchery.world.WitcheryTeleport;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -279,7 +280,7 @@ public final class Predictions {
         ServerLevel level = player.serverLevel();
         RandomSource random = level.getRandom();
         BlockPos start = player.blockPosition().offset(encounterOffset(random, radius), 0, encounterOffset(random, radius));
-        BlockPos ground = encounterGround(level, start);
+        BlockPos ground = WitcheryTeleport.findEncounterGround(level, start);
         BlockPos feet = ground.above();
         if (level.isOutsideBuildHeight(feet) || !level.getWorldBorder().isWithinBounds(feet) || level.isEmptyBlock(ground)) return false;
         if (type == EntityType.VILLAGER && !level.getBlockState(ground.below()).isSolidRender(level, ground.below())) return false;
@@ -299,13 +300,6 @@ public final class Predictions {
         if (!level.addFreshEntity(mob)) return false;
         WitcheryNetwork.sendPredictionArrival(level, mob.position());
         return true;
-    }
-
-    private static BlockPos encounterGround(ServerLevel level, BlockPos start) {
-        BlockPos.MutableBlockPos ground = start.mutable();
-        while (ground.getY() < start.getY() + 8 && !level.isEmptyBlock(ground)) ground.move(Direction.UP);
-        while (ground.getY() > level.getMinBuildHeight() && level.isEmptyBlock(ground)) ground.move(Direction.DOWN);
-        return ground.immutable();
     }
 
     private static int encounterOffset(RandomSource random, int radius) {
@@ -355,7 +349,7 @@ public final class Predictions {
 
         RandomSource random = source.getRandom();
         BlockPos start = player.blockPosition().below().offset(encounterOffset(random, 4), 0, encounterOffset(random, 4));
-        BlockPos ground = encounterGround(source, start);
+        BlockPos ground = WitcheryTeleport.findEncounterGround(source, start);
         if (!source.isOutsideBuildHeight(ground) && source.getWorldBorder().isWithinBounds(ground)
                 && source.isEmptyBlock(ground.above()) && source.isEmptyBlock(ground.above(2))) {
             var blaze = EntityType.BLAZE.create(source);
