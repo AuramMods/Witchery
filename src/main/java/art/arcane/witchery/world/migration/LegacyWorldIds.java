@@ -295,16 +295,21 @@ public final class LegacyWorldIds {
             for (Tag entry : list) repairStoredItems(entry, fixer);
         } else if (value instanceof CompoundTag compound) {
             upgradeItemBinding(compound);
-            if (compound.getString("id").equals("witchery:droplet") && compound.get("Brew") instanceof CompoundTag brew) {
-                repairLegacyInventory(brew.getList("Items", Tag.TAG_COMPOUND), fixer,
-                        SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+            String id = compound.getString("id");
+            int currentVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+            if (compound.get("Brew") instanceof CompoundTag brew) {
+                if (id.equals("witchery:droplet")) {
+                    repairLegacyInventory(brew.getList("Items", Tag.TAG_COMPOUND), fixer, currentVersion);
+                } else if (id.equals("witchery:brew2") && hasLegacyStackEncoding(brew)) {
+                    // Converted projectiles can retain the original bottle outside the vanilla Item field.
+                    upgradeStack(brew);
+                }
             }
             if (compound.contains("Count", Tag.TAG_ANY_NUMERIC) && compound.get("tag") instanceof CompoundTag itemTag) {
-                int currentVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
                 // Vanilla's fixer does not visit the recipe inside a curse attached to an arbitrary item.
                 repairLegacyInventory(BrewItemCurse.savedBrew(itemTag).getList("Items", Tag.TAG_COMPOUND), fixer, currentVersion);
-                switch (compound.getString("id")) {
-                    case "witchery:brewbottle" ->
+                switch (id) {
+                    case "witchery:brewbottle", "witchery:bucketbrew" ->
                             repairLegacyInventory(itemTag.getList("Items", Tag.TAG_COMPOUND), fixer, currentVersion);
                     case "witchery:brewbag", "witchery:leonardsurn" ->
                             repairLegacyInventory(itemTag.getCompound("Inventory").getList("Items", Tag.TAG_COMPOUND), fixer, currentVersion);

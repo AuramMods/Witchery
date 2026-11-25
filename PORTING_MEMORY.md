@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Brew Bucket and projectile payloads in converted worlds (2026-11-25)
+
+- Witchery 0.24.1 withdrew a Brew Bucket with color `123456` from a 3,000 mB cauldron and left 2,000 mB. Its serialized ordered ingredients are Nether Wart, Sugar and a bound Taglock. The same native runner serialized a separate custom spell containing a Wolfsbane bottle with color `654321`.
+- The mixed-format fixture put three copies of the original bucket's cargo in a vanilla chest in a converted 1.20.1 chunk. A separate modern entity region held the original projectile's bottle and spell flag. The preceding JAR kept the numeric cargo unreadable and discarded the spell before applying its effect. With the original registry snapshot present, ordinary loads now restore both payloads.
+- The muted clean Forge client retrieved a saved Brew Bucket through the vanilla chest menu, poured the first portion and saved the 1,000 mB pending cast. It recovered the other two original portions after restart, lit the fire and completed the Taglock cast on the bound pig. The separate recovered spell applied Wolfsbane on impact. Both launches used OpenAL No Output and master volume zero and kept the foreground app in focus.
+- The headless Auram copy kept the entity stationary and saved the recovered bottle under the normal `Item` field. Its second boot kept the color, ordered recipe, original position, momentum and no-gravity spell mode. The vanilla chest retained the repaired recipe and binding on both boots.
+- Reobfuscation and all 391 local Forge GameTests passed on seed `5471593853027166409`. The exact candidate JAR is `build/qa-stored-brew-transport/candidate.jar` with SHA-256 `5753772f3f931801e359778aa8451b4e30a1bee286feb9009eac4e824e7ad7ea`. See `build/qa-stored-brew-transport/comparison.txt` for native, preceding-package, clean Forge and copied Auram traces.
+
 ## Taglock purification outcomes (2026-11-25)
 
 - With a strength-one cast and the original random draw of 0.7310, Witchery 0.24.1 removed Weakness I and II in separate casts. Weakness III returned as Weakness IV for its original remaining duration. Speed stayed at 1,200 ticks in all three trials. The GameTest checks both sides of the 1%, 25% and 75% rolls.
