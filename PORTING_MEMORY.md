@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Hellhound Cures Beyond Player Range (2026-11-24)
+
+- The original Witchery 0.24.1 server advanced a 100-tick cure to 50 with nobody online. In the loaded spawn area it then removed the Hellhound, spawned a wolf at the same position and gave it Nausea.
+- The optional Does It Tick hook now checks the Hellhound's active cure flag alongside the two existing companion flight checks. A cure uses its existing saved countdown and adds no chunk ticket. An untreated Hellhound follows the original pack's tick filter.
+- The previous JAR stayed at 400 cure ticks on copied Auram with no players online. With the same Does It Tick settings the new JAR reached 337 ticks. The untreated Hellhound's effect timer stayed at 1,800 in both copies. The test used ordinary forced chunks and gave both hounds `NoAI` to isolate the cure and effect timers.
+- Ordinary dedicated restarts resumed the cure at 332 ticks on clean Forge and 335 ticks on copied Auram. In both cases the same named animal finished as a wolf with Nausea. The untreated Hellhound's effect continued to tick normally on clean Forge and stayed at 1,800 ticks in copied Auram.
+- Local Java 17 data generation, JAR reobfuscation and all 289 required Forge GameTests passed. All runtime checks used headless servers with nobody connected. Evidence is under `build/qa-hellhound-cure-ticking`. Candidate SHA-256 `b69abd1ba12e7361fe4e7ebe7d7ea78507599d9ab8fd334cc7f929c4fda1f624`.
+
 ## Gesture Preparation and Rejection Cues (2026-11-24)
 
 - The original server trace captured nine harp, pop and snare cues at the caster's fractional coordinates. Harp and pop volumes were one. Snare volume was one-half. Seeded pitches agreed with the original formula and stayed between one-third and one-half. The original callback uses the caster's position.

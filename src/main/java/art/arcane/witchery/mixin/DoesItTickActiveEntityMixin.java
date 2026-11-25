@@ -1,5 +1,6 @@
 package art.arcane.witchery.mixin;
 
+import art.arcane.witchery.entity.Hellhound;
 import art.arcane.witchery.entity.WingedMonkey;
 import art.arcane.witchery.entity.WitchOwl;
 import net.minecraft.world.entity.Entity;
@@ -11,14 +12,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Pseudo
 @Mixin(targets = "toni.doesittick.DoesItTick", remap = false)
-abstract class DoesItTickCompanionFlightMixin {
+abstract class DoesItTickActiveEntityMixin {
     @Inject(method = "isTickable(Lnet/minecraft/world/entity/Entity;)Z",
             at = @At("HEAD"), cancellable = true, require = 0)
-    private static void witchery$keepCompanionFlightsTicking(Entity entity, CallbackInfoReturnable<Boolean> result) {
+    private static void witchery$keepActiveEntitiesTicking(Entity entity, CallbackInfoReturnable<Boolean> result) {
         if (entity.level().isClientSide()) return;
-        // Active companion flights keep their own chunks ticking through their flight tickets.
         if ((entity instanceof WitchOwl owl && owl.hasActiveDelivery())
-                || (entity instanceof WingedMonkey monkey && monkey.hasActiveFlight())) {
+                || (entity instanceof WingedMonkey monkey && monkey.hasActiveFlight())
+                || (entity instanceof Hellhound hound && hound.isConverting())) {
             result.setReturnValue(true);
         }
     }

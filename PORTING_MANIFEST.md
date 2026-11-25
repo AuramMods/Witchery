@@ -1267,6 +1267,8 @@ The Winged Monkey retains `FeatherColor`, `SuicideIn`, `WITCWaypoint` and the th
 
 With Does It Tick installed, running Owl deliveries and Winged Monkey flights can tick beyond the configured player range while their flight tickets keep the relevant chunks loaded. Seated and idle companions and those with AI disabled follow the mod's usual rules. The compatibility hook is optional and uses the same flight state that the companion goals read from saves.
 
+The same optional hook lets a loaded Hellhound finish its golden apple cure beyond player range. It reads the cure flag restored from `ConversionTime`. Untreated Hellhounds use the pack's ordinary tick rules. The cure adds no chunk ticket.
+
 Treefyd keeps `Owner`, `SentinalPlant`, `KnownPlayers`, `KnownCreatureTypes`, and `KnownCreatures`. New bindings also save player UUIDs and the namespaced keys of groupable animal species. Legacy individual permissions use the original `CreatureMost` and `CreatureLeast` fields. Planting creates short grass and an owned Treefyd in one interaction. A Forge cancellation keeps the original block and seed.
 
 ## Recipe System Registries
