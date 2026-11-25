@@ -2,9 +2,9 @@
 
 This repository is a breadth-first port of the original Witchery mod from Forge 1.7.10 to Forge 1.20.1.
 
-## Local builds and testing
+## Local-only builds and testing
 
-**Witchery does not use GitHub Actions or hosted CI.** Keep `.github/workflows/` empty. Run all builds, tests, and packaging on your workstation with Java 17, `./gradlew`, and the local Gradle cache. This applies to pull requests and releases too.
+**Build, test, and package Witchery locally, including for pull requests and releases.** Use Java 17, `./gradlew`, and your workstation's Gradle cache. Contributors and coding agents must keep the repository free of GitHub Actions workflows and other hosted CI.
 
 With dependencies cached, run `./gradlew --offline jar runGameTestServer` to package and test the mod locally before pushing changes. If a dependency is missing from the cache, rerun the command locally without `--offline`. Upload locally built release JARs to GitHub.
 
