@@ -49,6 +49,7 @@ public final class Nightmare extends Monster {
     public static final int SWIPE_TICKS = 15;
     private String victimName = "";
     private UUID victimId;
+    private boolean foundVictim;
     private int defenseTicks;
     private int swipeTicks;
 
@@ -88,9 +89,10 @@ public final class Nightmare extends Monster {
         return super.canAttack(target) && (!hasVictim() || targets(target));
     }
 
-    public void assignVictim(LivingEntity victim) {
+    public void assignVictim(Player victim) {
         victimId = victim.getUUID();
-        victimName = victim instanceof Player player ? player.getGameProfile().getName() : victim.getName().getString();
+        victimName = victim.getGameProfile().getName();
+        foundVictim = true;
         setTarget(victim);
     }
 
@@ -118,16 +120,33 @@ public final class Nightmare extends Monster {
         if (hasVictim()) {
             Entity target = victimId == null ? level.players().stream().filter(this::targets).findFirst().orElse(null)
                     : level.getEntity(victimId);
-            if (target instanceof LivingEntity victim && victim.isAlive() && distanceToSqr(victim) <= 256
-                    && (level.dimension().equals(WitcheryDimensions.DREAM)
-                    ? victim instanceof ServerPlayer player && DreamTravel.isNightmare(player)
-                    : WakingNightmareEffect.isHaunted(victim)) && canAttack(victim)) {
+            if (target instanceof Player victim) {
+                foundVictim = true;
+                if (!victim.isAlive() || distanceToSqr(victim) > 256 || !canAttack(victim)) {
+                    disappear(level);
+                    return;
+                }
                 if (getTarget() != victim) setTarget(victim);
-            } else if (tickCount > 30) {
-                WitcheryNetwork.sendBanishment(level, position());
-                discard();
+            } else if (target instanceof LivingEntity) {
+                // Earlier Forge saves could bind the Nightmare to the creature that received the brew.
+                victimId = null;
+                victimName = "";
+                if (getTarget() == target) setTarget(null);
+            } else {
+                // Give an unloaded victim time to reconnect when the Nightmare is restored from disk.
+                if (foundVictim || tickCount > 30) disappear(level);
+                return;
             }
         }
+        if (getTarget() instanceof ServerPlayer player && !DreamTravel.hasNightmare(player)
+                && !WakingNightmareEffect.isHaunted(player) && random.nextInt(5) == 0) {
+            disappear(level);
+        }
+    }
+
+    private void disappear(ServerLevel level) {
+        WitcheryNetwork.sendBanishment(level, position());
+        discard();
     }
 
     @Override

@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Waking Nightmare targets (2026-11-25)
+
+- Witchery 0.24.1 spawned an unbound apparition from a pig and assigned a personal victim when the target was a player. A personal Nightmare disappeared on its first out-of-range tick. An unbound apparition with an awake player target departed on the seventh tick of the native fixture's random sequence.
+- The port now assigns only player victims, rolls departure once per tick for an awake player at the original one-in-five rate, and removes personal apparitions that lose a known target. The loaded entity has a short grace period for an absent player. It retains the active Dream session check when the player manifests outside Dream.
+- The muted survival client threw a prepared Splash Brew of Waking Nightmare at pigs through normal input in both builds. The previous build bound the spawned Nightmare to one pig. The rebuilt JAR produced an unbound apparition that attacked the haunted player and sent the silent burst once the effect cleared.
+- The previous build's pig-bound apparition kept its UUID and 100 health through two ordinary loads with the rebuilt JAR. Both loads had an empty victim name and no victim UUID. In a separate dedicated restart the active name-bound player apparition kept its UUID and 51 health. All client launches used master volume zero and OpenAL No Output and kept desktop focus.
+- JAR reobfuscation and all 408 local Forge GameTests passed on seed `5471593853027166409`. The headless Auram copy loaded and saved the apparition area with the same JAR. The exact candidate is `build/qa-nightmare-targeting/candidate.jar` with SHA-256 `e4b15f661e0d5df44bc8d88b8fb6a38ec3da417f381665c6889fc551db5a03f4`. See `build/qa-nightmare-targeting/comparison.txt`.
+
 ## Nightmare guard and cues (2026-11-25)
 
 - A Forge attack veto on Witchery 0.24.1 preserved all 100 health and still opened the guard for 40 ticks outside Dream and 80 inside. The GameTest covers that ordering and the Huntsman's Spear's shorter 30- and 40-tick durations. Accepted hits retain the original 15-point damage cap.

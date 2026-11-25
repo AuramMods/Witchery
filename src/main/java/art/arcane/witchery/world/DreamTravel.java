@@ -128,8 +128,11 @@ public final class DreamTravel {
     }
 
     public static boolean isNightmare(ServerPlayer player) {
-        return player.level().dimension().equals(WitcheryDimensions.DREAM)
-                && player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getCompound(SPIRIT_WORLD).getBoolean("Nightmare");
+        return player.level().dimension().equals(WitcheryDimensions.DREAM) && hasNightmare(player);
+    }
+
+    public static boolean hasNightmare(ServerPlayer player) {
+        return player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getCompound(SPIRIT_WORLD).getBoolean("Nightmare");
     }
 
     public static boolean isDemonicNightmare(ServerLevel level) {
@@ -181,13 +184,14 @@ public final class DreamTravel {
         }
         int interval = intensity > 4 ? 30 : intensity > 2 ? 60 : 180;
         if (victim.getRandom().nextInt(interval) != 0) return;
-        AABB nearby = victim.getBoundingBox().inflate(16, 8, 16);
-        if (!level.getEntitiesOfClass(Nightmare.class, nearby, nightmare -> nightmare.isAlive() && nightmare.targets(victim)).isEmpty()) {
+        AABB nearby = new AABB(victim.position(), victim.position()).inflate(16, 8, 16);
+        if (victim instanceof Player player && !level.getEntitiesOfClass(Nightmare.class, nearby,
+                nightmare -> nightmare.isAlive() && nightmare.targets(player)).isEmpty()) {
             return;
         }
         Nightmare nightmare = WitcheryEntities.NIGHTMARE.get().create(level);
         if (nightmare != null) {
-            nightmare.assignVictim(victim);
+            if (victim instanceof Player player) nightmare.assignVictim(player);
             spawnNear(victim, nightmare, 2, 6);
         }
     }
