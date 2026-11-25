@@ -2,6 +2,16 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Legacy village reputation and visits (2026-11-25)
+
+- The original Forge server saved two settlements in `data/villages.dat`, centered at `(94, 120, 33)` and `(199, 120, 33)`, each with a radius of 32. The fixture player's reputation was 10 in the west and 9 in the east. A second name had scores of -15 and 5.
+- Witchery reads the original, dimension-local file once per level and leaves it intact. The saved name and village center supply the original score for guard recruitment and defense and Witch Hunter reports. Current villager gossip contributes to the effective score. Inhabited legacy villages also supply territory when modern village structures and occupied home points are absent.
+- The rank-seven vampire trial identifies inhabited legacy villages by their original center chunk, using the original 32-block scouting margin. That lets a previously saved visit remain counted when the modern structure or home points would identify the same town by a different chunk.
+- The preceding package could not recruit in the imported west village. The rebuilt package let the muted survival player recruit in the village that saved reputation 10. The village that saved 9 refused. Revisiting the original recorded center kept the vampire trial at one visit, and reaching the second village advanced it to two.
+- A rank-ten fixture named in the original records drew two Witch Hunters near the village with reputation -15. At the village with reputation 5, the same fixture drew none even though the hostile village's residents were also loaded. Copied Auram repeated the two reports and guard decisions on an ordinary boot of the world previously converted by the preceding JAR.
+- The saved guard was present in the entity region and returned on a normal clean Forge restart. The survival player rejoined with two trial visits. Both client sessions ran at zero master volume with OpenAL No Output and took no desktop focus. The original village file remained byte-identical on both server profiles.
+- Local data generation, JAR reobfuscation, and all 312 required Forge GameTests passed on candidate SHA-256 `2de373921467db516976d6754a3c89ac2e9bddd4a1d0fec60ade08fcdfc35bfb`. Intermediate runs saw separate failures in the existing coven bed-visit and wolf-howl cases. Both passed in the final run with their tests unchanged. The native fixture, packages, and logs are under `build/qa-village-reputation/`.
+
 ## Enchantments in imported inventories (2026-11-25)
 
 - Witchery 0.24.1 saved a Grassper with a named Arthana carrying Sharpness III, Unbreaking II, and nine wear. A Leech Chest and a vanilla Chest each held a named Fortune II book in slot four. The preceding package left both Witchery inventories' enchantment IDs numeric. The vanilla Chest already held the named enchantment.

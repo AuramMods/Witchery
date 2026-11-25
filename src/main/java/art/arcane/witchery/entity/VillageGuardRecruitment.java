@@ -28,7 +28,7 @@ public final class VillageGuardRecruitment {
         ServerLevel world = player.serverLevel();
         var village = VampireVillages.territory(world, villager.blockPosition()).orElse(null);
         if (village == null) return;
-        if (villager.getPlayerReputation(player) < 10) {
+        if (VampireVillages.reputation(world, villager, player) < 10) {
             decline(player, "reputation");
             return;
         }

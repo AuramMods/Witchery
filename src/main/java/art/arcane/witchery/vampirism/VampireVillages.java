@@ -1,5 +1,6 @@
 package art.arcane.witchery.vampirism;
 
+import art.arcane.witchery.world.migration.LegacyVillages;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
@@ -11,6 +12,7 @@ import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiRecord;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
 import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -34,6 +36,8 @@ public final class VampireVillages {
     private static final int VISIT_RANGE = 32;
     private static final int HOME_SEARCH_RANGE = 64;
     private static final int AGGRESSION_DURATION = 300;
+    private static final int HOSTILE_GOSSIP = -100;
+    private static final int HOSTILE_LEGACY_REPUTATION = -15;
     private static final Map<ServerLevel, ArrayDeque<Aggression>> AGGRESSION = Collections.synchronizedMap(new WeakHashMap<>());
     private static final Comparator<BlockPos> HOME_ORDER = Comparator.<BlockPos>comparingInt(BlockPos::getX)
             .thenComparingInt(BlockPos::getZ).thenComparingInt(BlockPos::getY);
@@ -41,7 +45,10 @@ public final class VampireVillages {
     private VampireVillages() {}
 
     static Optional<ChunkPos> nearby(ServerLevel world, BlockPos position) {
-        return nearestGeneratedVillage(world, position).map(StructureStart::getChunkPos)
+        return LegacyVillages.nearest(world, position, VISIT_RANGE)
+                .filter(village -> hasResidents(world, village))
+                .map(village -> new ChunkPos(village.center()))
+                .or(() -> nearestGeneratedVillage(world, position).map(StructureStart::getChunkPos))
                 .or(() -> nearbyOccupiedHomes(world.getPoiManager(), position).map(ChunkPos::new));
     }
 
@@ -52,7 +59,33 @@ public final class VampireVillages {
             int radius = Math.max(VISIT_RANGE, Math.max(bounds.getXSpan(), bounds.getZSpan()) / 2);
             return new Territory(center, radius);
         }).or(() -> nearbyOccupiedHomes(world.getPoiManager(), position)
-                .map(anchor -> new Territory(anchor, VISIT_RANGE)));
+                .map(anchor -> new Territory(anchor, VISIT_RANGE)))
+                .or(() -> LegacyVillages.nearest(world, position, 0)
+                        .filter(village -> hasResidents(world, village))
+                        .map(VampireVillages::legacyTerritory));
+    }
+
+    public static int reputation(ServerLevel world, Villager resident, Player player) {
+        return resident.getPlayerReputation(player) + legacyReputation(world, resident, player);
+    }
+
+    public static boolean isHostile(ServerLevel world, Villager resident, Player player) {
+        int gossip = resident.getPlayerReputation(player);
+        int legacy = legacyReputation(world, resident, player);
+        return gossip <= HOSTILE_GOSSIP || legacy != 0 && legacy + gossip <= HOSTILE_LEGACY_REPUTATION;
+    }
+
+    private static int legacyReputation(ServerLevel world, Villager resident, Player player) {
+        return LegacyVillages.nearest(world, resident.blockPosition(), 0)
+                .map(village -> village.reputation(player.getGameProfile().getName())).orElse(0);
+    }
+
+    private static boolean hasResidents(ServerLevel world, LegacyVillages.Village village) {
+        return !world.getEntitiesOfClass(Villager.class, legacyTerritory(village).residents(), Villager::isAlive).isEmpty();
+    }
+
+    private static Territory legacyTerritory(LegacyVillages.Village village) {
+        return new Territory(village.center(), village.radius());
     }
 
     public record Territory(BlockPos center, int radius) {

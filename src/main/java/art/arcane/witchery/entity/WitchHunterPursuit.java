@@ -4,6 +4,7 @@ import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcherySounds;
 import art.arcane.witchery.vampirism.Vampirism;
+import art.arcane.witchery.world.migration.LegacyVillages;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -17,6 +18,7 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.ForgeEventFactory;
+import org.jetbrains.annotations.Nullable;
 
 public final class WitchHunterPursuit {
     private static final String TRIGGER = "WITCHunterTrigger";
@@ -53,9 +55,19 @@ public final class WitchHunterPursuit {
         if (Vampirism.level(player) < 10 || player.isCreative()
                 || player.getRandom().nextDouble() >= WitcheryServerConfig.VAMPIRE_HUNTER_SPAWN_CHANCE.get()) return false;
         ServerLevel world = player.serverLevel();
+        var legacy = LegacyVillages.nearest(world, player.blockPosition(), 128).orElse(null);
         var residents = world.getEntitiesOfClass(Villager.class, player.getBoundingBox().inflate(128, 16, 128),
-                villager -> villager.isAlive() && villager.getPlayerReputation(player) < -1 && world.isVillage(villager.blockPosition()));
+                villager -> villager.isAlive() && reportsPlayer(world, villager, player, legacy));
         return !residents.isEmpty() && world.getEntitiesOfClass(WitchHunter.class, player.getBoundingBox().inflate(64, 16, 64)).isEmpty();
+    }
+
+    private static boolean reportsPlayer(ServerLevel world, Villager resident, ServerPlayer player,
+                                         @Nullable LegacyVillages.Village legacy) {
+        int gossip = resident.getPlayerReputation(player);
+        if (legacy != null && legacy.contains(resident.blockPosition(), 0)) {
+            return gossip + legacy.reputation(player.getGameProfile().getName()) < -1;
+        }
+        return gossip < -1 && world.isVillage(resident.blockPosition());
     }
 
     private static boolean summon(ServerPlayer player) {

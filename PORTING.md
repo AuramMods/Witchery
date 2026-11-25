@@ -1789,6 +1789,7 @@
 - [x] Import original Apothecaries with the default profession ID 2435 and custom ID 3267. The earlier JAR mapped the ordinary custom-ID villager to `minecraft:none`. The new JAR retains `witchery:apothecary` and the five saved offers for the ordinary and infected villagers, and for the Wolfman's former villager. The untraded Apothecary gains the current eight-offer catalogue. The same default-ID fixture passed on copied Auram.
 - [x] Let the imported Wolfman revert at dawn on clean Forge. Its restored villager keeps the original five offers, including four of nine uses on the Wool of Bat trade. A muted background survival client bought three Wool of Bat from the ordinary merchant, crafted and placed the Apothecary Shelf, and let the merchant claim it and restock. An ordinary dedicated restart retained the merchant's UUID, job site, stock, and the player's three Wool of Bat.
 - [x] Recover vanilla enchantments in Witchery inventories on original world import and when reopening an earlier port save with its captured registry. Verify Sharpness III and Unbreaking II on the Grassper's Arthana and Fortune II on the Leech Chest's book.
+- [x] Preserve original village reputation and the recorded visit locations for the rank-seven vampire trial. Use the saved center for visit credit. The original reputation of 10 allowed guard recruitment, while 9 refused it. The Hunter fixture used the nearer village's score for dispatch.
 - [ ] Expand migration to other block and subtype data and specialized entity and block-entity fields. Add fixtures before calling the migration complete.
 
 ### Importing a copy of a legacy world
@@ -1804,6 +1805,8 @@ The first boot records the old IDs in `witchery-legacy-ids.dat` inside the copy.
 The same registry snapshot lets an earlier 1.20.1 import repair any numeric items still stored for the Rite of Prior Incarnation. The player's next login converts those items before the rite reads them.
 
 The snapshot also lets the importer recover numeric brew ingredients inside Brew Bags and Leonard's Urns. On an earlier imported world, opening the chunk containing a stored bag or urn, or loading the player carrying it, repairs that brew using the saved registry.
+
+Keep each original `data/villages.dat` file in its dimension folder. Witchery reads it on ordinary boots as well as during import, including worlds already converted by earlier port builds. Its scores use the player names stored by Witchery 0.24.1.
 
 Keep the original dimension folders' `forcedchunks.dat` files in the copy during import. Witchery reads each saved Poppet Shelf position and loads the shelf before registering its modern Forge ticking ticket. If an earlier build imported the save, run the import flag again to recover any distant shelves from those files. Subsequent launches read the modern tickets from the dimension's `data/chunks.dat`.
 

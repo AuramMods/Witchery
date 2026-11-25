@@ -64,8 +64,7 @@ public final class VillageGuard extends PathfinderMob implements RangedAttackMob
     private static final EntityDataAccessor<Byte> GUARD_TYPE = SynchedEntityData.defineId(VillageGuard.class, EntityDataSerializers.BYTE);
     private static final EntityDimensions TALL_SIZE = EntityDimensions.scalable(0.72F, 2.34F);
     private static final ResourceLocation WITCH_HUNTER = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "witchhunter");
-    private static final int HOSTILE_GOSSIP = -100;
-    private static final int TRUSTED_GOSSIP = 10;
+    private static final int TRUSTED_REPUTATION = 10;
     private int blood = BloodFeeding.MAX_MORTAL_BLOOD;
     private int patrolCheck;
     @Nullable private VampireVillages.Territory village;
@@ -248,8 +247,9 @@ public final class VillageGuard extends PathfinderMob implements RangedAttackMob
 
             var residents = world.getEntitiesOfClass(Villager.class, village.residents(), Villager::isAlive);
             targetMob = world.getPlayers(player -> threats.test(VillageGuard.this, player)).stream()
-                    .filter(player -> residents.stream().anyMatch(resident -> resident.getPlayerReputation(player) <= HOSTILE_GOSSIP
-                            || player.getLastHurtByMob() instanceof Player ally && resident.getPlayerReputation(ally) >= TRUSTED_GOSSIP))
+                    .filter(player -> residents.stream().anyMatch(resident -> VampireVillages.isHostile(world, resident, player)
+                            || player.getLastHurtByMob() instanceof Player ally
+                            && VampireVillages.reputation(world, resident, ally) >= TRUSTED_REPUTATION))
                     .min(Comparator.comparingDouble(VillageGuard.this::distanceToSqr)).orElse(null);
             return canAttack(targetMob, threats);
         }
