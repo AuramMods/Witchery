@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Ender Inhibition and Otherwhere lifts (2026-11-25)
+
+- Witchery 0.24.1 blocked the Otherwhere blink at Ender Inhibition III with all 20 charges intact. Its Infernal Enderman power passed the same effect, moved from Z 31.75 to Z 42.5, and spent one infusion charge and one creature charge. The prior packaged port spent both charges while leaving the Infernal caster in place.
+- In the native lift fixture, the caster at Y 180 had a ceiling at Y 188 and struck a pig at Y 182. The caster reached Y 184 and the pig Y 190. The prior port sent the caster to Y 186. A second cast with the pig at Y 180.25 and a ceiling at Y 182 stopped both lifts after two charges and produced no cue. The rebuilt Forge server follows those outcomes.
+- The two muted clean Forge survival clients used fixture-supplied Hands and saved powers. Their held use and attack controls repeated the native checks, including the charged failure and the four lift packets. A dedicated restart retained both infusion balances, the creature reserve, the effect and the blocked pig's position. Forge checks arrival occupancy before moving either traveler.
+- Both client launches used master volume zero and OpenAL No Output and kept desktop focus. The same JAR loaded the travel area and saved in the headless Auram copy.
+- Reobfuscation and all 397 local Forge GameTests passed on seed `5471593853027166409`. The exact candidate JAR is `build/qa-ender-inhibition/candidate.jar` with SHA-256 `448780988e82735c7d3401f6559e0cb559c7f26c9750027913d0d61c8770a479`. See `build/qa-ender-inhibition/comparison.txt`.
+
 ## Light Hand cages, projections, and shields (2026-11-25)
 
 - The Witchery 0.24.1 server lifted a pig from `(-94.25, 180.25, -100.5)` to `(-94, 184, -100)` and built its cage around that corner. Both Light cage casts now use the original integer truncation. The preceding 1.20.1 JAR landed a pig at `(-94.5, 184, -100.5)` in the same test layout.

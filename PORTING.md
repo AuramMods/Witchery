@@ -347,6 +347,7 @@
 - [x] The dedicated save retained the Hand, its cooldown tag, both recalled entities, all four legacy recall fields and 191 charge after a full restart.
 
 - [x] Restore the original Otherwhere Hand charge feedback and the teleport cues for Otherwhere and the Infernal Enderman power. The 0.24.1 server trace and Forge GameTest check the five charge sounds. The paired muted survival replay verifies portal cues at both ends and confirms that observers receive only the cue within range.
+- [x] Restore the original Ender Inhibition distinction between Otherwhere and Infernal Enderman travel. Measure both lift clearances from the target's feet and debit two charge when a ceiling stops the attempt. The packaged survival replay and two Forge GameTests checked the original travel positions and charge costs.
 
 ## Light Infusion Hand Powers (2026-11-20)
 

@@ -69,27 +69,22 @@ public final class OtherwhereInfusion {
 
     public static void attack(ServerPlayer player, LivingEntity victim) {
         if (!victim.isAlive() || victim.isSpectator()) return;
-        if (inhibited(player)) {
-            fail(player, "inhibited");
-            return;
-        }
         if (player.isShiftKeyDown()) {
-            recall(player, victim);
+            if (inhibited(player)) fail(player, "inhibited");
+            else recall(player, victim);
             return;
         }
+        if (inhibited(player) || !InfusionEnergy.spendHandCharge(player, 2)) return;
 
         ServerLevel level = player.serverLevel();
-        Vec3 playerTarget = liftTarget(level, player);
-        Vec3 victimTarget = liftTarget(level, victim);
+        // Both original ceiling rays measure headroom from the victim's feet.
+        Vec3 playerTarget = liftTarget(level, player, victim.getY());
+        Vec3 victimTarget = liftTarget(level, victim, victim.getY());
         boolean moveVictim = !inhibited(victim);
         if (playerTarget == null || victimTarget == null || !WitcheryTeleport.canArrive(player, level, playerTarget)
-                || (moveVictim && !WitcheryTeleport.canArrive(victim, level, victimTarget))) {
-            fail(player, "no_destination");
-            return;
-        }
-        if (InfusionEnergy.checkHandCharge(player, 2) && WitcheryTeleport.moveWithLegacyCues(player, level, playerTarget)) {
-            if (moveVictim) WitcheryTeleport.moveWithLegacyCues(victim, level, victimTarget);
-            InfusionEnergy.spendHandCharge(player, 2);
+                || (moveVictim && !WitcheryTeleport.canArrive(victim, level, victimTarget))) return;
+        if (WitcheryTeleport.moveWithLegacyCues(player, level, playerTarget) && moveVictim) {
+            WitcheryTeleport.moveWithLegacyCues(victim, level, victimTarget);
         }
     }
 
@@ -148,7 +143,7 @@ public final class OtherwhereInfusion {
     static boolean teleportAimed(ServerPlayer player, HitResult hit) {
         Vec3 target = destination(hit);
         ServerLevel level = player.serverLevel();
-        return target != null && !inhibited(player) && WitcheryTeleport.canArrive(player, level, target)
+        return target != null && WitcheryTeleport.canArrive(player, level, target)
                 && WitcheryTeleport.moveWithPortalCues(player, level, target);
     }
 
@@ -189,12 +184,12 @@ public final class OtherwhereInfusion {
     }
 
     @Nullable
-    private static Vec3 liftTarget(ServerLevel level, LivingEntity actor) {
+    private static Vec3 liftTarget(ServerLevel level, LivingEntity actor, double victimY) {
         Vec3 eyes = actor.getEyePosition();
         BlockHitResult ceiling = level.clip(new ClipContext(eyes, eyes.add(0, 8, 0),
                 ClipContext.Block.COLLIDER, ClipContext.Fluid.SOURCE_ONLY, actor));
         double room = ceiling.getType() == HitResult.Type.MISS ? 8
-                : Math.min(8, ceiling.getLocation().y - actor.getY() - Math.max(2, actor.getBbHeight()));
+                : Math.min(8, ceiling.getBlockPos().getY() - victimY - 2);
         return room > 0 ? actor.position().add(0, room, 0) : null;
     }
 
