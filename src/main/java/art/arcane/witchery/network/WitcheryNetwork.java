@@ -78,6 +78,7 @@ public final class WitcheryNetwork {
     private static final int LEGACY_ZOMBIE_INFECT_SOUND_ID = 24;
     private static final int LEGACY_DRAGON_GROWL_SOUND_ID = 27;
     private static final int LEGACY_LEVEL_UP_SOUND_ID = 29;
+    private static final int LEGACY_WITHER_DEATH_SOUND_ID = 40;
     private static final int LEGACY_BREATH_SOUND_ID = 41;
     private static final int LEGACY_SPECTRE_AMBIENT_SOUND_ID = 43;
     private static final int LEGACY_BLAZE_DEATH_SOUND_ID = 44;
@@ -404,6 +405,10 @@ public final class WitcheryNetwork {
 
     public static void sendHellOnEarthArrival(ServerLevel level, Vec3 arrival) {
         sendParticlesAround(level, LEGACY_LARGE_EXPLOSION_PARTICLE_ID, LEGACY_BLAZE_DEATH_SOUND_ID, arrival, 1, 2, 16);
+    }
+
+    public static void sendDreamDemonArrival(ServerLevel level, Vec3 arrival, double height) {
+        sendParticlesAround(level, LEGACY_SMOKE_PARTICLE_ID, LEGACY_WITHER_DEATH_SOUND_ID, arrival, 1, height, 16);
     }
 
     public static void sendSummoningObstruction(ServerLevel level, Vec3 center) {

@@ -30,7 +30,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.LargeFireball;
 import net.minecraft.world.entity.projectile.SmallFireball;
@@ -159,7 +159,7 @@ public final class DreamTravel {
                 || !level.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
             return;
         }
-        AABB nearby = player.getBoundingBox().inflate(18);
+        AABB nearby = new AABB(player.position(), player.position()).inflate(18);
         if (isDemonicNightmare(player)) {
             spawnDemonicHazard(player, nearby);
         }
@@ -214,17 +214,17 @@ public final class DreamTravel {
                 }
             }
         } else if (chance < 0.75) {
-            List<Mob> monsters = level.getEntitiesOfClass(Mob.class, nearby, mob -> mob.isAlive() && (mob instanceof Enemy || mob instanceof Demon));
-            if (monsters.size() < 10 && monsters.stream().filter(Demon.class::isInstance).count() < 2) {
+            // The original EntityMob query excludes demons, ghasts, and slimes.
+            if (level.getEntitiesOfClass(Monster.class, nearby).size() < 10) {
                 Demon demon = WitcheryEntities.DEMON.get().create(level);
-                if (demon != null) {
-                    spawnNear(player, demon, 4, 8);
+                if (demon != null && spawnNear(player, demon, 4, 8)) {
+                    WitcheryNetwork.sendDreamDemonArrival(level, demon.position(), demon.getBbHeight());
                 }
             }
         }
     }
 
-    private static void spawnNear(LivingEntity target, Mob mob, int minRange, int maxRange) {
+    private static boolean spawnNear(LivingEntity target, Mob mob, int minRange, int maxRange) {
         ServerLevel level = (ServerLevel) target.level();
         BlockPos near = target.blockPosition();
         int span = maxRange - minRange;
@@ -243,12 +243,10 @@ public final class DreamTravel {
         }
         if (level.isOutsideBuildHeight(floor) || floor.getY() > highestFloor || level.isEmptyBlock(floor)
                 || !level.isEmptyBlock(floor.above()) || !level.isEmptyBlock(floor.above(2))) {
-            return;
+            return false;
         }
         mob.moveTo(floor.getX() + 0.5, floor.getY() + 1.05, floor.getZ() + 0.5, 0, 0);
-        if (level.noCollision(mob) && !level.containsAnyLiquid(mob.getBoundingBox())) {
-            level.addFreshEntity(mob);
-        }
+        return level.noCollision(mob) && !level.containsAnyLiquid(mob.getBoundingBox()) && level.addFreshEntity(mob);
     }
 
     public static boolean isGhost(ServerPlayer player) {

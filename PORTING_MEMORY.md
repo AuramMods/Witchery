@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Demonic Dream hazards (2026-11-25)
+
+- In Witchery 0.24.1 both fireball sizes spawned fifteen blocks above the player with downward acceleration 0.1. The native Demon roll succeeded beside two Demons and ten Ghasts. Ten Zombies blocked the same roll. The modern census uses `Monster`, the counterpart of the original `EntityMob` query.
+- The original arrival packet sends Smoke 8 and Wither death 40 at the new Demon's feet. It uses width one, the Demon's 2.9-block height and a 16-block audience. Forge sends the cue after the entity joins, so a rejected spawn stays quiet.
+- The mute-profile survival client drank a supplied Brew of Sleeping beside a prepared Dreamweave of Nightmares, two Demon Hearts, three fires and a Flowing Spirit source. With the dreamer and body sheltered, the client observed both downward projectile types and the third Demon. The arrival produced the original packet at `(205.5, 180.05, 202.5)` and volume 0.5 with pitch 0.35942. The headless Auram copy loaded and saved Dream with the same JAR.
+- When forced chunks tick while no demonic dreamer is online, the original Demon cleanup condition applies. With the fixture's tickets removed for a normal restart, the active Dream and the next naturally summoned Demon's UUID survived. Background client launches used master volume zero and OpenAL No Output and kept desktop focus.
+- JAR reobfuscation and all 409 local Forge GameTests passed on seed `5471593853027166409`. The exact packaged candidate is `build/qa-demonic-hazards/final/candidate.jar` with SHA-256 `100f9a8ffed13108a39c6739416bc1279bc0bb2ea8af1781a633d2d3bed0d1ac`. See `build/qa-demonic-hazards/comparison.txt`.
+
 ## Waking Nightmare targets (2026-11-25)
 
 - Witchery 0.24.1 spawned an unbound apparition from a pig and assigned a personal victim when the target was a player. A personal Nightmare disappeared on its first out-of-range tick. An unbound apparition with an awake player target departed on the seventh tick of the native fixture's random sequence.
