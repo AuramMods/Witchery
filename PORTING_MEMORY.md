@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Dream inventory recovery for earlier imports (2026-11-25)
+
+- The 1.7.10 player saved both inventories inside `WITCSpiritWorld`. Each entry carried its inventory slot and legacy ID or metadata. An earlier 1.20.1 import could update the player data version while leaving those lists in the original format.
+- The previous packaged Forge build loaded the mixed record. The first Icy Needle took the player back to Dream without the four Blue Wool or two Subdued Spirits. The second needle woke the player without the Red Wool or tagged Diamond Sword. The already-converted Netherite Leggings survived.
+- The normal player load now uses the saved Forge registry for old stacks in both lists. It recognizes numeric IDs and the old top-level `Damage` field and retains modern stacks stored beside them. Initial 1.7.10 imports continue to use the original conversion path.
+- On clean Forge the first needle restored the original Dream slots. The player saved in Dream and rejoined after an ordinary restart. The second needle restored three Red Wool and the named Diamond Sword with 17 wear and its custom tag. The leggings kept 41 wear and their styled name. Both Subdued Spirits came out, four Blue Wool stayed parked, and the player woke at 14 health and 11 food.
+- Copied Auram replayed both needle uses and saved the same inventories. The repeat disabled natural regeneration in the copied world to measure the wake values of 14 health and 11 food. The test clients stayed unfocused with zero master volume and OpenAL No Output.
+- Java 17 data generation, JAR reobfuscation, and all 319 required Forge GameTests passed locally. The tests cover initial import, both needle transitions on an earlier port save, and old metadata on saved Prior Incarnation drops. The repeat run also passed the Voodoo fixture after it supplied an explicit falling velocity and verified that resistance kept that velocity. The JAR SHA-256 is `fe9336627e85915de20170f32c2952b3ab8bcc607b58c0e4e82125fc9b5b729c`. Logs and copied fixtures are in `build/qa-dream-parked-import/`.
+
 ## Sentinel guard spawning (2026-11-25)
 
 - The original Trent summoned both guards in the same column one block northwest of the pig. It found footing four blocks below or three blocks above the pig, then spawned each guard 0.05 blocks above the first open block. A column blocked through the search limit produced no guards even with open neighboring floors. Each spawned guard targeted the pig and saved 600 ticks of lifetime.

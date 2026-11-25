@@ -7,14 +7,17 @@ import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.world.DreamTravel;
 import art.arcane.witchery.world.WitcheryDimensions;
 import com.mojang.authlib.GameProfile;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.LevelResource;
@@ -32,6 +35,15 @@ import java.util.UUID;
 public final class LegacyDreamSaveImportTests {
     @GameTest(template = "qa_coven_arena")
     public static void returnedGhostCanWakeWithLegacyInventories(GameTestHelper helper) throws Exception {
+        verifyParkedInventories(helper, false);
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_earlier_dream_inventory")
+    public static void earlierPortSaveRecoversBothParkedInventories(GameTestHelper helper) throws Exception {
+        verifyParkedInventories(helper, true);
+    }
+
+    private static void verifyParkedInventories(GameTestHelper helper, boolean earlierPort) throws Exception {
         var overworld = helper.getLevel();
         var dream = overworld.getServer().getLevel(WitcheryDimensions.DREAM);
         helper.assertTrue(dream != null, "Expected Dream dimension");
@@ -66,10 +78,23 @@ public final class LegacyDreamSaveImportTests {
                      WITCSpiritWorld:{Nightmare:1b,Demonic:1b,OverworldBodyX:%d,OverworldBodyY:%d,OverworldBodyZ:%d,
                      OverworldHealth:14f,OverworldHunger:{foodLevel:11,foodSaturationLevel:2.5f,foodTickTimer:0},
                      OverworldInventory:[{Slot:0b,id:276s,Damage:17s,Count:1b,tag:{Keepsake:1b}},
-                                         {Slot:1b,id:35s,Damage:14s,Count:3b}],
+                                         {Slot:1b,id:"minecraft:wool",Damage:14s,Count:3b}],
                      SpiritInventory:[{Slot:3b,id:35s,Damage:11s,Count:4b},{Slot:4b,id:7001s,Damage:112s,Count:2b}]}}}}
                     """.formatted(anchor.getX() + 0.5, anchor.getY() + 0.05, anchor.getZ() + 0.5,
                                   anchor.getX(), anchor.getY(), anchor.getZ()));
+            if (earlierPort) {
+                legacy.putInt("DataVersion", SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+                legacy.putString("Dimension", "minecraft:overworld");
+                var needles = new ItemStack(WitcheryIngredient.ICY_NEEDLE.item(), 2).save(new CompoundTag());
+                needles.putByte("Slot", (byte) 0);
+                legacy.getList("Inventory", Tag.TAG_COMPOUND).set(0, needles);
+                var parked = legacy.getCompound("ForgeData").getCompound(Player.PERSISTED_NBT_TAG)
+                        .getCompound("WITCSpiritWorld").getList("OverworldInventory", Tag.TAG_COMPOUND);
+                parked.add(TagParser.parseTag("""
+                        {Slot:2b,id:"minecraft:netherite_leggings",Count:1b,tag:{Damage:41,
+                         display:{Name:'{"text":"Earlier port leggings","italic":false}'},Marker:"preserve"}}
+                        """));
+            }
             NbtIo.writeCompressed(legacy, access.getLevelPath(LevelResource.PLAYER_DATA_DIR).resolve(profile.getId() + ".dat").toFile());
             storage.load(player);
             WitcheryPlayerDataProvider.get(player).ifPresent(data -> DreamTravel.restoreStyle(player, data));
@@ -91,6 +116,13 @@ public final class LegacyDreamSaveImportTests {
                             && player.getInventory().countItem(WitcheryIngredient.SUBDUED_SPIRIT.item()) == 2
                             && player.getInventory().countItem(Items.BLUE_WOOL) == 0,
                     "Waking restores the body position, item wear, and Overworld slots while carrying only permitted Dream items");
+            if (earlierPort) {
+                ItemStack leggings = player.getInventory().getItem(2);
+                helper.assertTrue(leggings.is(Items.NETHERITE_LEGGINGS) && leggings.getDamageValue() == 41
+                                && leggings.getHoverName().getString().equals("Earlier port leggings")
+                                && leggings.getTag().getString("Marker").equals("preserve"),
+                        "The already converted Overworld slot keeps its wear and styled name");
+            }
             var session = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getCompound("WITCSpiritWorld");
             helper.assertTrue(player.getHealth() == 14 && player.getFoodData().getFoodLevel() == 11 && body.isRemoved()
                             && !session.contains("OverworldInventory") && session.getList("SpiritInventory", Tag.TAG_COMPOUND).size() == 1,

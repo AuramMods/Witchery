@@ -220,17 +220,15 @@ public final class LegacyWorldIds {
             }
         }
         var expiredDrops = persisted.getList("WITCPriIncInv", Tag.TAG_COMPOUND);
+        var dreamSession = persisted.getCompound("WITCSpiritWorld");
         // The pending list can keep legacy effect IDs after an earlier import updated the player version.
         effects.upgrade(persisted.getList("WITCPoSpawn", Tag.TAG_COMPOUND));
         int to = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
         if (from >= 100) {
-            // Earlier port builds could resave the player while these stacks still used legacy IDs.
-            for (Tag entry : expiredDrops) {
-                if (((CompoundTag) entry).contains("id", Tag.TAG_ANY_NUMERIC)) {
-                    upgradeItems(entry);
-                    upgradeUntypedItems(entry, fixer, -1, to);
-                }
-            }
+            // These lists are outside the player inventory schema and can outlive the first import.
+            repairLegacyInventory(expiredDrops, fixer, to);
+            repairLegacyInventory(dreamSession.getList("OverworldInventory", Tag.TAG_COMPOUND), fixer, to);
+            repairLegacyInventory(dreamSession.getList("SpiritInventory", Tag.TAG_COMPOUND), fixer, to);
             repairStoredItems(player, fixer);
             return;
         }
@@ -238,7 +236,7 @@ public final class LegacyWorldIds {
         upgradeItems(player);
         repairStoredItems(player, fixer);
         upgradeEntityEffects(player);
-        upgradeUntypedItems(persisted.getCompound("WITCSpiritWorld"), fixer, from, to);
+        upgradeUntypedItems(dreamSession, fixer, from, to);
         upgradeUntypedItems(expiredDrops, fixer, from, to);
         if (!legacy.isEmpty()) {
             if (legacy.getBoolean("CanRestoreInventory") && legacy.contains("CachedInventory2", Tag.TAG_LIST)) {
@@ -255,6 +253,16 @@ public final class LegacyWorldIds {
                 imported.put("WitcheryExtendedPlayer", legacy.copy());
                 capabilities.put(playerDataId, imported);
                 player.put("ForgeCaps", capabilities);
+            }
+        }
+    }
+
+    private void repairLegacyInventory(ListTag inventory, DataFixer fixer, int to) {
+        for (Tag entry : inventory) {
+            var stack = (CompoundTag) entry;
+            if (stack.contains("id", Tag.TAG_ANY_NUMERIC) || stack.contains("Damage", Tag.TAG_ANY_NUMERIC)) {
+                upgradeItems(stack);
+                upgradeUntypedItems(stack, fixer, -1, to);
             }
         }
     }

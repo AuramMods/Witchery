@@ -51,6 +51,7 @@ public final class LegacyPriorIncarnationImportTests {
             converted.putString("Dimension", "minecraft:overworld");
             var drops = converted.getCompound("ForgeData").getCompound(Player.PERSISTED_NBT_TAG)
                     .getList("WITCPriIncInv", Tag.TAG_COMPOUND);
+            drops.set(0, TagParser.parseTag("{id:\"minecraft:wool\",Count:4b,Damage:14s}"));
             drops.set(2, TagParser.parseTag("{id:\"witchery:soft_clay_jar\",Count:3b,tag:{LegacyKeepsake:1b}}"));
             drops.add(TagParser.parseTag("{id:\"minecraft:netherite_sword\",Count:1b,tag:{Damage:9}}"));
 

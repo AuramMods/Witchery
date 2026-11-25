@@ -45,11 +45,13 @@ public final class PoppetDamageTests {
                 String trigger = "WITCHunterTrigger";
                 var poppet = equipPoppet(caster, 0, "voodoo_poppet");
                 TaglockItem.bindSignature(poppet, target);
+                Vec3 beforePush = new Vec3(0, -0.08, 0);
+                target.setDeltaMovement(beforePush);
                 caster.getRandom().setSeed(4097); // First roll reports the action, second roll resists it.
                 poppet.use(level, caster, InteractionHand.MAIN_HAND);
                 poppet.releaseUsing(level, caster, 20);
-                helper.assertTrue(target.getDeltaMovement().equals(Vec3.ZERO) && poppet.getTag().getInt("WITCDamage") == 0,
-                        "The caster's outfit must be able to stop a push without spending ten wear");
+                helper.assertTrue(target.getDeltaMovement().equals(beforePush) && poppet.getTag().getInt("WITCDamage") == 0,
+                        "A resisted push preserves the target's movement and the poppet's wear");
                 var notice = caster.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
                 helper.assertTrue(notice.getLong(trigger) > 0, "Resisted manual voodoo still draws pursuit");
 
