@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron bottling and partial transfer (2026-11-25)
+
+- An empty bottle uses the Cauldron's last altar power sample. Hand bottling then debits the nearest altar's live base cost. Dispensing draws from the brew while leaving altar charge intact. Witchery 0.24.1 and both rebuilt profiles matched all five bottling cases. A late charge waited for the next sample, a dispenser used the last positive sample after charge dropped, and hand bottling succeeded with exactly 400 base power between samples.
+- A partial drain preserves warmup until the next ritual pulse. In the original and rebuilt profiles, both a Tongue of Dog cast and a fixed Mutandis cast advanced from pulse five to six when the borrowed bucket returned before the next check. Leaving the Tongue of Dog cast at 2,000 mB reset warmup on that check and preserved the brew.
+- The previous port started a brew through dropped offerings and sampled the altar with its normal ticker. The fixture cleared the live charge and queued a redstone-powered dispenser just before a clean dedicated shutdown. The rebuilt server processed the queued activation after restart, used one glass bottle, and ejected one brew while the altar held zero power.
+- The Java 17 reobfuscated JAR is `build/qa-cauldron-bottling/verified.jar` with SHA-256 `8a36590f0c78938a6ecf67223fc6ba1333f16ff9c13102dcce3090d831ef7e87`. All 350 local Forge GameTests passed. The native and packaged comparisons and the ordinary restart logs are under the same directory.
+- The next heat comparison drained and returned all 3,000 mB before another tile tick. Witchery 0.24.1 retained its boiling heat through the transfer and the following tick. The current port cleared heat on the drain and started heating again on the next tick. Both traces are in `build/qa-cauldron-bottling/empty-refill/`.
+
 ## Cauldron ritual timing (2026-11-25)
 
 - Witchery 0.24.1 samples Cauldron altar power at loaded ticks 7, 27, and every 20 ticks thereafter. Original brew and fixed rituals advance on ticks 8, 18, 28, and every 10 ticks thereafter. Power supplied just after the first sample waits until tick 27 and lets the next pulse advance at tick 28.
@@ -9,7 +17,6 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - The saved format retains the sampled `Powered` flag and ritual progress. Earlier Forge fixed casts still use elapsed ticks in `RitualTicks`. Each legacy pulse advances that value by up to ten. The phase starts fresh when the block entity loads. Datapack recipes outside the legacy rules use their specified per-tick duration.
 - The previous JAR started Mutandis and Taglock casts through dropped offerings and the normal fire. On ordinary restart the rebuilt JAR retained their warmups, produced six Mutandis and applied Swiftness to the tagged pig. A second restart verified both results after the pig became tracked. The console fixture supplied the water, offerings, altar charge, and bound Taglock.
 - All 349 local Forge GameTests passed. The reobfuscated JAR is `build/qa-cauldron-pulse-timing/verified.jar` with SHA-256 `139c7c69d6c263290e02f415c162d2f16be651f9d695d2f41a2ad878326a4eef`. Comparison logs and save fixtures are in the same directory.
-- A separate withdrawal comparison found that Witchery 0.24.1 uses the sampled power flag to decide whether a dispenser may bottle. It waits after charge is newly added and still bottles after charge is removed between samples. The current port checks live charge. Both cases are captured under `build/qa-cauldron-pulse-timing/withdrawal/`.
 
 ## Kettle brewing and fluid transfer (2026-11-25)
 

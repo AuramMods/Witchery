@@ -115,6 +115,30 @@ public final class LegacyCauldronRitualTests {
                 WitcheryIngredient.MUTANDIS.item(), relative.above(), 2, 6));
     }
 
+    @GameTest(template = "qa_coven_arena", batch = "witchery_cauldron_transfer_clock")
+    public static void fixedRitualChecksItsVolumeOnThePulse(GameTestHelper helper) {
+        var pos = helper.absolutePos(new BlockPos(5, 4, 5));
+        var cauldron = placeCauldron(helper, pos, originalRitual(3000, 5, true,
+                oldItem("witchery:ingredient", 22, 1), oldItem("witchery:ingredient", 31, 1),
+                oldItem("minecraft:egg", 0, 1)));
+        var tank = tank(cauldron);
+        tickCauldron(helper, cauldron, 7);
+        var portion = tank.drain(1000, IFluidHandler.FluidAction.EXECUTE);
+        helper.assertTrue(cauldron.saveWithoutMetadata().getInt("RitualTicks") == 50,
+                "A partial drain keeps five completed pulses until the next ritual check");
+        helper.assertTrue(tank.fill(portion, IFluidHandler.FluidAction.EXECUTE) == 1000, "Return the same brew portion");
+        tickCauldron(helper, cauldron, 1);
+        helper.assertTrue(cauldron.saveWithoutMetadata().getInt("RitualTicks") == 60,
+                "Refilling before the pulse allows the sixth pulse to advance");
+
+        tank.drain(1000, IFluidHandler.FluidAction.EXECUTE);
+        tickCauldron(helper, cauldron, 10);
+        helper.assertTrue(tank.getFluidInTank(0).getAmount() == 2000
+                        && cauldron.saveWithoutMetadata().getInt("RitualTicks") == 0,
+                "The next pulse resets unfinished warmup when the cauldron is still partial");
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_taglock_modifier_order")
     public static void taglockCursePassesDurationAndParticleModifiersToTheNextEffect(GameTestHelper helper) {
         var level = helper.getLevel();
@@ -422,9 +446,11 @@ public final class LegacyCauldronRitualTests {
     @GameTest(template = "qa_coven_arena")
     public static void withdrawsFromAnOriginalPartialCast(GameTestHelper helper) {
         BlockPos pos = helper.absolutePos(new BlockPos(6, 4, 5));
-        var bowl = placeCauldron(helper, pos, originalRitual(2500, 0, true,
+        var original = originalRitual(2500, 0, true,
                 oldItem("witchery:ingredient", 22, 1), oldItem("witchery:ingredient", 31, 1),
-                oldItem("minecraft:wheat", 0, 1), oldItem("minecraft:egg", 0, 1)));
+                oldItem("minecraft:wheat", 0, 1), oldItem("minecraft:egg", 0, 1));
+        original.putBoolean("Powered", true);
+        var bowl = placeCauldron(helper, pos, original);
         bowl.load(bowl.saveWithFullMetadata());
         var player = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "BottleImportedCast"));
         WitcheryPlayerDataProvider.get(player).orElseThrow(IllegalStateException::new).setPotionBottling(30);

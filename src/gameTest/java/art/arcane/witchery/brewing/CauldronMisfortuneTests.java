@@ -69,7 +69,7 @@ public final class CauldronMisfortuneTests {
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_cauldron_power_threshold")
-    public static void handBottlingChecksScaledPowerAndDebitsBaseCost(GameTestHelper helper) {
+    public static void handBottlingUsesSampledPowerAndDebitsBaseCost(GameTestHelper helper) {
         BlockPos pos = placeCauldron(helper);
         var altar = placeAltar(helper);
         setSmallCircle(helper, pos, WitcheryBlocks.getRequired("circleglyphinfernal").get());
@@ -79,12 +79,20 @@ public final class CauldronMisfortuneTests {
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.GLASS_BOTTLE));
 
         setAltarPower(altar, 2111);
+        tickCauldron(helper, cauldron, 7);
         helper.assertTrue(!cauldron.bottle(player, InteractionHand.MAIN_HAND)
                         && player.getMainHandItem().is(Items.GLASS_BOTTLE) && altar.power() == 2111,
-                "A full pending cast checks the circle's fractional threshold before taking the bottle or power");
+                "The first power sample uses the full cast's fractional circle threshold");
         setAltarPower(altar, 2111.5F);
-        helper.assertTrue(cauldron.bottle(player, InteractionHand.MAIN_HAND) && altar.power() == 61.5F,
-                "A successful hand bottling spends the 2,050 base power and leaves the circle discount to the cast");
+        helper.assertTrue(!cauldron.bottle(player, InteractionHand.MAIN_HAND) && altar.power() == 2111.5F,
+                "Charge added after the power sample waits for the next one");
+        tickCauldron(helper, cauldron, 20);
+        setAltarPower(altar, 2049);
+        helper.assertTrue(!cauldron.bottle(player, InteractionHand.MAIN_HAND) && altar.power() == 2049,
+                "The sampled connection still needs enough live charge for the base debit");
+        setAltarPower(altar, 2050);
+        helper.assertTrue(cauldron.bottle(player, InteractionHand.MAIN_HAND) && altar.power() == 0,
+                "A successful hand bottling spends the exact base cost between power samples");
         var bottle = player.getMainHandItem();
         helper.assertTrue(bottle.is(WitcheryItems.getRequired("brewbottle").get())
                         && bottle.getOrCreateTag().getString("FixedRitual").equals("witchery:golden_chalk"),
@@ -288,11 +296,14 @@ public final class CauldronMisfortuneTests {
 
     private static void finishCast(GameTestHelper helper, BlockPos pos, AltarBlockEntity altar, float power, long seed) {
         setAltarPower(altar, power);
+        helper.getLevel().getRandom().setSeed(seed);
+        tickCauldron(helper, cauldron(helper, pos), 20);
+    }
+
+    private static void tickCauldron(GameTestHelper helper, WitchesCauldronBlockEntity bowl, int ticks) {
         var level = helper.getLevel();
-        var bowl = cauldron(helper, pos);
-        level.getRandom().setSeed(seed);
-        for (int tick = 0; tick < 20; tick++) {
-            WitchesCauldronBlockEntity.serverTick(level, pos, bowl.getBlockState(), bowl);
+        for (int tick = 0; tick < ticks; tick++) {
+            WitchesCauldronBlockEntity.serverTick(level, bowl.getBlockPos(), bowl.getBlockState(), bowl);
         }
     }
 

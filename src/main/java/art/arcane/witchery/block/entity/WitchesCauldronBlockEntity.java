@@ -233,6 +233,8 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
             cauldron.advanceBrewRitual(server, pos);
         } else if (cauldron.ritual != null) {
             cauldron.advanceRitual(server, pos, ritualPulse);
+        } else if (ritualPulse && cauldron.legacyRitualPending && cauldron.tank.getFluidAmount() < CAPACITY) {
+            cauldron.pauseRitual(server, pos, cauldron.ritualTicks > RITUAL_WARMUP_PULSES);
         }
         if (oldHeat != cauldron.heatTicks || oldProgress != cauldron.ritualTicks || wasPowered != cauldron.powered) {
             level.blockEntityChanged(pos);
@@ -282,11 +284,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
             return;
         }
         if (!powered || !isBoiling() || tank.getFluidAmount() != CAPACITY) {
-            if (ritualTicks > RITUAL_WARMUP_PULSES) {
-                interruptRitual(server, pos);
-            } else {
-                ritualTicks = 0;
-            }
+            pauseRitual(server, pos, ritualTicks > RITUAL_WARMUP_PULSES);
             return;
         }
         if (++ritualTicks <= RITUAL_WARMUP_PULSES) return;
@@ -321,6 +319,11 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
     private void interruptRitual(ServerLevel server, BlockPos pos) {
         clearMixture();
         WitcheryNetwork.sendCauldronRitualFailure(server, pos, INTERRUPTED_RITUAL_COLOR);
+    }
+
+    private void pauseRitual(ServerLevel server, BlockPos pos, boolean pastWarmup) {
+        if (pastWarmup) interruptRitual(server, pos);
+        else ritualTicks = 0;
     }
 
     private void endBrewRitual(ServerLevel server, int color) {
@@ -396,8 +399,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         if (legacy && !ritualPulse) return;
         boolean attempted = ritualTicks >= recipe.time();
         if (!isBoiling() || tank.getFluidAmount() != CAPACITY || legacy && !powered) {
-            if (legacy && attempted) interruptRitual(level, pos);
-            else ritualTicks = 0;
+            pauseRitual(level, pos, legacy && attempted);
             return;
         }
         if (legacy && !attempted) {
@@ -573,7 +575,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
     }
 
     public boolean bottle(ServerPlayer player, InteractionHand hand) {
-        if (!(level instanceof ServerLevel server) || !isBoiling() || ritualTicks == RITUAL_REFUND) return false;
+        if (!(level instanceof ServerLevel server) || !isBoiling() || !powered || ritualTicks == RITUAL_REFUND) return false;
         CompoundTag bottled = bottlingTag(server);
         if (bottled == null) return false;
         BrewMixture contents = bottled.contains("FixedRitual", Tag.TAG_STRING) ? BrewMixture.from(bottled) : mixture;
@@ -584,7 +586,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         int power = bottled.getInt("Power");
         if (power > 0) {
             AltarBlockEntity altar = AltarPower.nearest(server, worldPosition);
-            if (altar == null || altar.power() < withdrawalPower(server, power) || !altar.consumePower(power)) return false;
+            if (altar == null || !altar.consumePower(power)) return false;
         }
         player.setItemInHand(hand, ItemUtils.createFilledResult(player.getItemInHand(hand), player, filledBottle(bottled), false));
         BrewBottling.learn(player, contents);
@@ -597,31 +599,25 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         if (remaining == 0) {
             clearMixture();
         } else {
-            if (ritual != null || casting() && ritualTicks <= RITUAL_WARMUP_PULSES) ritualTicks = 0;
             tank.setFluid(new FluidStack(tank.getFluid().getFluid(), remaining));
             publishTankContents();
         }
     }
 
     public ItemStack dispenseBottle() {
-        if (!(level instanceof ServerLevel server) || !isBoiling() || ritualTicks == RITUAL_REFUND) {
+        if (!(level instanceof ServerLevel server) || !isBoiling() || !powered || ritualTicks == RITUAL_REFUND) {
             return ItemStack.EMPTY;
         }
         CompoundTag bottled = bottlingTag(server);
         if (bottled == null) return ItemStack.EMPTY;
-        int power = bottled.getInt("Power");
         boolean full = tank.getFluidAmount() == CAPACITY;
-        if (power > 0) {
-            var altar = AltarPower.nearest(server, worldPosition);
-            if (altar == null || altar.power() < withdrawalPower(server, power)) return ItemStack.EMPTY;
-        }
         // The original dispenser drains the available liquid even when it has less than one full portion.
         clearMixture();
         server.playSound(null, worldPosition, SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1, 1);
         return full ? filledBottle(bottled) : ItemStack.EMPTY;
     }
 
-    private double withdrawalPower(ServerLevel server, int basePower) {
+    private double legacyPowerRequirement(ServerLevel server, int basePower) {
         return basePower > 0 && tank.getFluidAmount() == CAPACITY && casting()
                 ? basePower * CastCircles.around(server, worldPosition).powerScale() : basePower;
     }
@@ -739,10 +735,10 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         if (recipe != null) {
             int basePower = fixedBasePower(recipe);
             power = basePower;
-            if (recipe.legacy()) power = withdrawalPower(server, basePower);
+            if (recipe.legacy()) power = legacyPowerRequirement(server, basePower);
             else if (basePower != 0) power = requiredFixedPower(recipe, basePower, CastCircles.around(server, worldPosition));
         } else if (mixture != null) {
-            power = withdrawalPower(server, mixture.power());
+            power = legacyPowerRequirement(server, mixture.power());
         } else {
             return brewColor != null;
         }

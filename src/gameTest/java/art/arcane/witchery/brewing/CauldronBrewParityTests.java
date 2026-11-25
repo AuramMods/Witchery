@@ -441,7 +441,7 @@ public final class CauldronBrewParityTests {
         });
     }
 
-    @GameTest(template = "qa_coven_arena", batch = "witchery_cauldron_dispenser", timeoutTicks = 245)
+    @GameTest(template = "qa_coven_arena", batch = "witchery_cauldron_dispenser", timeoutTicks = 310)
     public static void dispenserBottlesOnlyBoilingPoweredCauldrons(GameTestHelper helper) {
         var level = helper.getLevel();
         // Keep the fire above water flowing from earlier GameTests.
@@ -455,18 +455,18 @@ public final class CauldronBrewParityTests {
         tank.fill(new FluidStack(Fluids.WATER, 3000), IFluidHandler.FluidAction.EXECUTE);
 
         pulse(helper, dispenser, true);
-        helper.runAfterDelay(6, () -> {
+        helper.startSequence().thenIdle(6).thenExecute(() -> {
             helper.assertTrue(dispenser.getItem(0).getCount() == 2 && tank.getFluidInTank(0).getAmount() == 3000,
                     "A cold adjacent cauldron holds the glass bottle and the water");
             pulse(helper, dispenser, false);
-        });
-        helper.runAfterDelay(105, () -> {
+        }).thenWaitUntil(() -> {
+            helper.assertTrue(level.getBlockState(pos).getValue(WitchesCauldronBlock.BOILING), "Boil the dispenser brew");
+        }).thenExecute(() -> {
             drop(helper, pos, Items.NETHER_WART);
             drop(helper, pos, WitcheryIngredient.WOLFSBANE.item());
             drop(helper, pos, Items.GUNPOWDER);
             pulse(helper, dispenser, true);
-        });
-        helper.runAfterDelay(111, () -> {
+        }).thenIdle(6).thenExecute(() -> {
             helper.assertTrue(dispenser.getItem(0).getCount() == 2 && tank.getFluidInTank(0).getAmount() == 3000,
                     "A prepared cauldron without altar power keeps the brew and the glass bottle");
             pulse(helper, dispenser, false);
@@ -484,9 +484,11 @@ public final class CauldronBrewParityTests {
             saved.putFloat("Power", 150);
             altar.load(saved);
             var brew = tank.getFluidInTank(0).copy();
-            cauldron.load(cauldron.saveWithFullMetadata());
-            pulse(helper, dispenser, true);
-            helper.runAfterDelay(6, () -> {
+            helper.startSequence().thenWaitUntil(() -> helper.assertTrue(sampledPower(cauldron),
+                    "The boiling cauldron samples the newly available altar power")).thenExecute(() -> {
+                cauldron.load(cauldron.saveWithFullMetadata());
+                pulse(helper, dispenser, true);
+            }).thenIdle(6).thenExecute(() -> {
                 var bottles = level.getEntitiesOfClass(ItemEntity.class, new AABB(pos.north()).inflate(4),
                         item -> item.getItem().is(WitcheryItems.getRequired("brewbottle").get()));
                 helper.assertTrue(bottles.size() == 1 && bottles.get(0).getItem().getTag().equals(brew.getTag()),
@@ -499,15 +501,14 @@ public final class CauldronBrewParityTests {
                 brew.setAmount(2000);
                 helper.assertTrue(tank.fill(brew, IFluidHandler.FluidAction.EXECUTE) == 2000,
                         "Refill the cauldron with two buckets of the saved brew");
-                helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
-                        level.getBlockState(pos).getValue(WitchesCauldronBlock.BOILING), "The refilled brew is boiling"))
-                        .thenExecute(() -> pulse(helper, dispenser, true)).thenIdle(6).thenExecute(() -> {
-                            helper.assertTrue(tank.getFluidInTank(0).isEmpty() && dispenser.getItem(0).is(Items.GLASS_BOTTLE)
-                                            && dispenser.getItem(0).getCount() == 1,
-                                    "Drain the partial hot brew without using a bottle. Remaining brew: "
-                                            + tank.getFluidInTank(0).getAmount() + ", altar power: " + altar.power());
-                        }).thenSucceed();
-            });
+            }).thenWaitUntil(() -> helper.assertTrue(
+                    level.getBlockState(pos).getValue(WitchesCauldronBlock.BOILING) && sampledPower(cauldron),
+                    "The refilled brew is boiling and has sampled power"))
+                    .thenExecute(() -> pulse(helper, dispenser, true)).thenIdle(6).thenExecute(() -> {
+                        helper.assertTrue(tank.getFluidInTank(0).isEmpty() && dispenser.getItem(0).is(Items.GLASS_BOTTLE)
+                                        && dispenser.getItem(0).getCount() == 1,
+                                "Drain the partial hot brew without using a bottle");
+                    }).thenSucceed();
         });
     }
 
@@ -552,7 +553,7 @@ public final class CauldronBrewParityTests {
         });
     }
 
-    @GameTest(template = "qa_coven_arena", timeoutTicks = 135)
+    @GameTest(template = "qa_coven_arena", timeoutTicks = 180)
     public static void dispenserBottlesFixedRitualWithItsSavedTrigger(GameTestHelper helper) {
         var level = helper.getLevel();
         var pos = helper.absolutePos(new BlockPos(5, 4, 5));
@@ -564,40 +565,42 @@ public final class CauldronBrewParityTests {
         var tank = cauldron.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
         tank.fill(new FluidStack(Fluids.WATER, 3000), IFluidHandler.FluidAction.EXECUTE);
 
-        helper.runAfterDelay(105, () -> {
+        var egg = new ItemStack(Items.EGG).setHoverName(Component.literal("Test Offering"));
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
+                level.getBlockState(pos).getValue(WitchesCauldronBlock.BOILING), "Boil the ritual's water")).thenExecute(() -> {
             drop(helper, pos, WitcheryIngredient.MANDRAKE_ROOT.item());
             drop(helper, pos, WitcheryIngredient.EXHALE_OF_THE_HORNED_ONE.item());
             drop(helper, pos, Items.WHEAT);
-            var egg = new ItemStack(Items.EGG).setHoverName(Component.literal("Test Offering"));
             drop(helper, pos, egg);
+        }).thenWaitUntil(() -> {
+            helper.assertTrue(sampledPower(cauldron), "The free ritual receives its first power sample");
+        }).thenExecute(() -> {
             var saved = cauldron.saveWithFullMetadata();
             helper.assertTrue(saved.getString("Ritual").equals("witchery:mutandis"), "The egg begins the ordinary Mutandis cast");
             cauldron.load(saved);
             pulse(helper, dispenser, true);
-            helper.runAfterDelay(6, () -> {
-                var bottles = level.getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(4),
-                        item -> item.getItem().is(WitcheryItems.getRequired("brewbottle").get()));
-                helper.assertTrue(bottles.size() == 1 && dispenser.isEmpty() && tank.getFluidInTank(0).isEmpty(),
-                        "Dispensing intercepts the pending ritual and ejects one filled bottle");
-                var bottle = bottles.get(0).getItem();
-                var tag = bottle.getTag();
-                var offerings = tag.getList("Items", Tag.TAG_COMPOUND);
-                helper.assertTrue(tag.getString("FixedRitual").equals("witchery:mutandis") && tag.getBoolean("RitualTriggered")
-                                && offerings.size() == 4 && ItemStack.matches(ItemStack.of(offerings.getCompound(3)), egg),
-                        "The bottled cast preserves the original offerings, including the named trigger after loading");
-                var pig = helper.spawn(EntityType.PIG, new BlockPos(6, 4, 6));
-                var drink = bottle.copy();
-                drink.getOrCreateTag().remove("FixedRitual");
-                drink.getOrCreateTag().putString("BrewName", "Brew of Moonshine");
-                var empty = drink.finishUsingItem(level, pig);
-                helper.assertTrue(empty.is(Items.GLASS_BOTTLE) && pig.hasEffect(WitcheryEffects.FEEL_NO_PAIN.get()),
-                        "The bottled effect is usable even when the list contains a fixed-recipe offering in the original format");
-                helper.succeed();
-            });
-        });
+        }).thenIdle(6).thenExecute(() -> {
+            var bottles = level.getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(4),
+                    item -> item.getItem().is(WitcheryItems.getRequired("brewbottle").get()));
+            helper.assertTrue(bottles.size() == 1 && dispenser.isEmpty() && tank.getFluidInTank(0).isEmpty(),
+                    "Dispensing intercepts the pending ritual and ejects one filled bottle");
+            var bottle = bottles.get(0).getItem();
+            var tag = bottle.getTag();
+            var offerings = tag.getList("Items", Tag.TAG_COMPOUND);
+            helper.assertTrue(tag.getString("FixedRitual").equals("witchery:mutandis") && tag.getBoolean("RitualTriggered")
+                            && offerings.size() == 4 && ItemStack.matches(ItemStack.of(offerings.getCompound(3)), egg),
+                    "The bottled cast preserves the original offerings, including the named trigger after loading");
+            var pig = helper.spawn(EntityType.PIG, new BlockPos(6, 4, 6));
+            var drink = bottle.copy();
+            drink.getOrCreateTag().remove("FixedRitual");
+            drink.getOrCreateTag().putString("BrewName", "Brew of Moonshine");
+            var empty = drink.finishUsingItem(level, pig);
+            helper.assertTrue(empty.is(Items.GLASS_BOTTLE) && pig.hasEffect(WitcheryEffects.FEEL_NO_PAIN.get()),
+                    "The bottled effect is usable even when the list contains a fixed-recipe offering in the original format");
+        }).thenSucceed();
     }
 
-    @GameTest(template = "qa_coven_arena", timeoutTicks = 135)
+    @GameTest(template = "qa_coven_arena", timeoutTicks = 180)
     public static void handBottlesFixedRitualAndPreservesItsRemainingBrew(GameTestHelper helper) {
         var level = helper.getLevel();
         var pos = helper.absolutePos(new BlockPos(5, 4, 5));
@@ -610,11 +613,15 @@ public final class CauldronBrewParityTests {
         var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "RitualBottler"));
         WitcheryPlayerDataProvider.get(player).orElseThrow(IllegalStateException::new).setPotionBottling(30);
 
-        helper.runAfterDelay(105, () -> {
+        var egg = new ItemStack(Items.EGG).setHoverName(Component.literal("Saved Offering"));
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
+                level.getBlockState(pos).getValue(WitchesCauldronBlock.BOILING), "Boil the ritual's water")).thenExecute(() -> {
             drop(helper, pos, WitcheryIngredient.MANDRAKE_ROOT.item());
             drop(helper, pos, WitcheryIngredient.EXHALE_OF_THE_HORNED_ONE.item());
-            var egg = new ItemStack(Items.EGG).setHoverName(Component.literal("Saved Offering"));
             drop(helper, pos, egg);
+        }).thenWaitUntil(() -> {
+            helper.assertTrue(sampledPower(cauldron), "The free ritual receives its first power sample");
+        }).thenExecute(() -> {
             player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.GLASS_BOTTLE));
             helper.assertTrue(cauldron.bottle(player, InteractionHand.MAIN_HAND), "Bottle an active fixed cast by hand");
             var bottle = player.getMainHandItem().copy();
@@ -640,8 +647,11 @@ public final class CauldronBrewParityTests {
             helper.assertTrue(cauldron.bottle(player, InteractionHand.MAIN_HAND) && tank.getFluidInTank(0).isEmpty()
                             && ItemStack.matches(bottle, player.getMainHandItem()),
                     "The remaining portion produces the same tagged bottle and clears the pending cast");
-            helper.succeed();
-        });
+        }).thenSucceed();
+    }
+
+    private static boolean sampledPower(WitchesCauldronBlockEntity cauldron) {
+        return cauldron.saveWithoutMetadata().getBoolean("Powered");
     }
 
     private static DispenserBlockEntity dispenser(GameTestHelper helper, BlockPos pos, ItemStack input) {

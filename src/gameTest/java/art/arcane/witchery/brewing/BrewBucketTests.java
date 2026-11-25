@@ -167,8 +167,8 @@ public final class BrewBucketTests {
                         && captured.getBoolean("RitualTriggered") && ItemStack.matches(taglock,
                         ItemStack.of(captured.getList("Items", Tag.TAG_COMPOUND).getCompound(2))),
                 "The Brew Bucket retains the bound Taglock and the active cast flag");
-        helper.assertTrue(from.getFluidInTank(0).getAmount() == 2000 && source.saveWithoutMetadata().getInt("RitualTicks") == 0,
-                "Scooping part of the cast resets its unfinished warmup");
+        helper.assertTrue(from.getFluidInTank(0).getAmount() == 2000 && source.saveWithoutMetadata().getInt("RitualTicks") == 12,
+                "Scooping part of the cast leaves the warmup until the next ritual pulse");
         use(helper, player, destination.getBlockPos());
         helper.assertTrue(player.getMainHandItem().is(Items.BUCKET), "The receiving cauldron accepts the cast by hand");
         destination.load(destination.saveWithFullMetadata());
@@ -368,6 +368,7 @@ public final class BrewBucketTests {
                 "The two legacy ingredient subtypes use the same hash and retain a signed color in the save");
         bowl.load(save);
         offer(helper, bowl, new ItemStack(Items.EGG));
+        sampleBottlingPower(helper, bowl);
         var bottled = bowl.dispenseBottle().getTag();
         helper.assertTrue(bottled != null && bottled.getInt("Color") == 694624844
                         && bottled.getString("FixedRitual").equals("witchery:mutandis"),
@@ -393,6 +394,7 @@ public final class BrewBucketTests {
         heated.putInt("HeatTicks", 100);
         target.load(heated);
         offer(helper, target, new ItemStack(Items.GUNPOWDER));
+        sampleBottlingPower(helper, target);
 
         var bottle = target.dispenseBottle().getTag();
         helper.assertTrue(bottle != null && bottle.getInt("Color") == 62622027
@@ -412,6 +414,16 @@ public final class BrewBucketTests {
         save.putInt("HeatTicks", 100);
         bowl.load(save);
         return bowl;
+    }
+
+    private static void sampleBottlingPower(GameTestHelper helper, WitchesCauldronBlockEntity bowl) {
+        var level = helper.getLevel();
+        var pos = bowl.getBlockPos();
+        level.setBlockAndUpdate(pos.below(2), Blocks.NETHERRACK.defaultBlockState());
+        level.setBlockAndUpdate(pos.below(), Blocks.FIRE.defaultBlockState());
+        for (int tick = 0; tick < 7; tick++) {
+            WitchesCauldronBlockEntity.serverTick(level, pos, bowl.getBlockState(), bowl);
+        }
     }
 
     private static void offer(GameTestHelper helper, WitchesCauldronBlockEntity bowl, ItemStack stack) {
