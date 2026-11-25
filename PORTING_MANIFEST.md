@@ -224,6 +224,7 @@ The runtime registry from the shipped 0.24.1 server contains 121 Witchery block 
   - Pressure plate IDs:
     - `witchery:icepressureplate`, `witchery:snowpressureplate`, `witchery:cwoodpressureplate`, `witchery:cstonepressureplate`, `witchery:csnowpressureplate`
     - blockstate property: `powered=true/false`.
+    - The legacy importer keeps the original release delay and priority for pressed ice and snow plates as well as cursed controls.
   - Button IDs:
     - `witchery:cbuttonwood`, `witchery:cbuttonstone`
     - blockstate properties: `face`, `facing`, `powered`.

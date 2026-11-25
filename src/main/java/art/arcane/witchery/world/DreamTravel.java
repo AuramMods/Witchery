@@ -385,7 +385,7 @@ public final class DreamTravel {
                     anchor.offset(RADIUS, RADIUS, RADIUS))) {
                 if (!level.hasChunkAt(pos)) continue;
                 BlockState state = level.getBlockState(pos);
-                if (state.getBlock() instanceof DreamCatcherBlock && state.getValue(DreamCatcherBlock.WEAVE) == DreamWeave.NIGHTMARES) {
+                if (state.getBlock() instanceof DreamCatcherBlock && DreamCatcherBlock.weaveAt(level, pos, state) == DreamWeave.NIGHTMARES) {
                     nightmareWeave = true;
                 } else if (state.is(cottonBlock) && cotton < 2) {
                     cotton++;

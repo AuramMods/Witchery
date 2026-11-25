@@ -1,18 +1,21 @@
 package art.arcane.witchery.block;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.entity.DreamCatcherBlockEntity;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -51,9 +54,17 @@ public final class LegacyBlockReplacementTests {
         }
 
         var pos = helper.absolutePos(new BlockPos(5, 160, 7));
-        var catcher = state("dreamcatcher").setValue(DreamCatcherBlock.WEAVE, DreamWeave.NIGHTMARES);
+        var catcher = state("dreamcatcher");
         level.setBlockAndUpdate(pos.south(), Blocks.STONE.defaultBlockState());
         level.setBlockAndUpdate(pos, catcher);
+        var imported = new CompoundTag();
+        imported.putInt("WITCWeaveID", 3);
+        var tile = (DreamCatcherBlockEntity) level.getBlockEntity(pos);
+        tile.load(imported);
+        var weave = new ItemStack(DreamWeave.NIGHTMARES.item());
+        helper.assertTrue(ItemStack.matches(catcher.getBlock().getCloneItemStack(level, pos, catcher), weave)
+                        && Block.getDrops(catcher, level, pos, tile).stream().anyMatch(drop -> ItemStack.matches(drop, weave)),
+                "An earlier port's saved weave should be available to picking and loot before the tile ticks");
         var held = new ItemStack(Items.STONE, 2);
         Consumer<BlockEvent.EntityPlaceEvent> veto = event -> {
             if (event.getEntity() == player && event.getPos().equals(pos)) event.setCanceled(true);
@@ -62,7 +73,8 @@ public final class LegacyBlockReplacementTests {
         try {
             helper.assertTrue(place(player, pos, Direction.NORTH, 0.5, held) == InteractionResult.FAIL
                             && held.getCount() == 2 && level.getBlockState(pos).equals(catcher)
-                            && level.getBlockEntity(pos) != null && drops(helper, pos).isEmpty(),
+                            && level.getBlockEntity(pos) instanceof DreamCatcherBlockEntity restored
+                            && restored.weave() == DreamWeave.NIGHTMARES && drops(helper, pos).isEmpty(),
                     "A placement veto should preserve the catcher and give no weave");
         } finally {
             MinecraftForge.EVENT_BUS.unregister(veto);
@@ -73,8 +85,8 @@ public final class LegacyBlockReplacementTests {
                 "An approved replacement should occupy the mounted catcher's cell");
         helper.succeedWhen(() -> {
             var dropped = drops(helper, pos);
-            helper.assertTrue(dropped.size() == 1 && ItemStack.matches(dropped.get(0).getItem(),
-                            new ItemStack(DreamWeave.NIGHTMARES.item())), "The old weave should drop exactly once");
+            helper.assertTrue(dropped.size() == 1 && ItemStack.matches(dropped.get(0).getItem(), weave),
+                    "The old weave should drop exactly once");
         });
     }
 

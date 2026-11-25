@@ -11,6 +11,8 @@ import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.CursedControls;
 import art.arcane.witchery.block.DaylightCollectorBlock;
 import art.arcane.witchery.block.DistilleryBlock;
+import art.arcane.witchery.block.DreamCatcherBlock;
+import art.arcane.witchery.block.DreamWeave;
 import art.arcane.witchery.block.LegacyPairingChestBlock;
 import art.arcane.witchery.block.MirrorBlock;
 import art.arcane.witchery.block.MountedSkullBlock;
@@ -30,6 +32,7 @@ import art.arcane.witchery.block.WitchLilyPadBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.block.WitchesOvenBlock;
 import art.arcane.witchery.block.WolfHeadBlock;
+import art.arcane.witchery.block.entity.DreamCatcherBlockEntity;
 import art.arcane.witchery.world.WitcheryDimensions;
 import com.mojang.datafixers.DataFixer;
 import net.minecraft.core.BlockPos;
@@ -83,13 +86,14 @@ public final class LegacyChunkUpgrade {
     private static final Set<String> CURSED_CONTROLS = Set.of("clever", "cwoodendoor", "cwoodpressureplate", "cstonepressureplate",
             "csnowpressureplate", "cbuttonwood", "cbuttonstone");
     private static final Set<String> BREW_DISPERSALS = Set.of("brewgas", "brewliquid");
-    private static final ResourceLocation GROWING_LILY_PAD = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "lilypad");
+    private static final Set<String> LEGACY_SCHEDULED_BLOCKS = Set.of("lilypad", "infinityegg", "icepressureplate", "snowpressureplate");
     private static final String LEGACY_BLOCK_TICKS = "witchery:legacy_block_ticks";
     private static final String LEGACY_FLUID_TICKS = "witchery:legacy_fluid_ticks";
     private static final int LEGACY_LEVER_ID = 69;
     private static final int LEGACY_STONE_BUTTON_ID = 77;
     private static final int SKULL_TYPE_BIT = 16;
     private static final Set<String> SKULLS = Set.of("wolfhead", "alluringskull");
+    private static final Set<String> TILE_STATE_BLOCKS = Set.of("coffinblock", "wolfhead", "alluringskull", "dreamcatcher");
     private static final Set<String> DOORS = Set.of("rowanwooddoor", "alderwooddoor", "icedoor", "cwoodendoor");
     private static final Map<String, Integer> FLUID_QUANTA = Map.of("spiritflowing", 5, "hollowtears", 5, "brew", 2, "disease", 1);
     private static final Set<String> CLASSIC_FLUID_TICKS = Set.of("brew", "disease");
@@ -256,7 +260,7 @@ public final class LegacyChunkUpgrade {
                 return true;
             }
             if (!belongsTo(name, CURSED_CONTROLS) && !belongsTo(name, BREW_DISPERSALS)
-                    && !GROWING_LILY_PAD.equals(name) && !LegacyChunkEntities.INFINITY_EGG.equals(name)) return false;
+                    && !belongsTo(name, LEGACY_SCHEDULED_BLOCKS)) return false;
             tick.putString("i", name.toString());
             saved.add(tick);
             dormantBrews.remove(savedPosition(tick), name.toString());
@@ -331,6 +335,8 @@ public final class LegacyChunkUpgrade {
             } else if (tile.getString("id").equals("witchery:coffinblock") && tile.getBoolean("Opened")) {
                 // The lid must already be open when chunk post-processing loads the block entity.
                 states.put(index, 1);
+            } else if (tile.getString("id").equals("witchery:dreamcatcher")) {
+                states.put(index, DreamCatcherBlockEntity.readWeave(tile, DreamWeave.MOVEMENT).ordinal());
             }
         }
         return states;
@@ -366,7 +372,7 @@ public final class LegacyChunkUpgrade {
                 int above = blockMetadata(legacyByHeight, sectionY, i + 256, number);
                 saved = above >= 0 && above < quanta ? 1 : 0;
             } else {
-                saved = path.equals("coffinblock") || SKULLS.contains(path)
+                saved = TILE_STATE_BLOCKS.contains(path)
                         ? tileStates.getOrDefault((sectionY << 12) | i, 0) : 0;
             }
             Optional<CompoundTag> state = states.computeIfAbsent((number << 9) | (meta << 5) | saved,
@@ -454,9 +460,11 @@ public final class LegacyChunkUpgrade {
             case "distilleryidle", "distilleryburning" -> state.setValue(BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata))
                     .setValue(DistilleryBlock.LIT, name.getPath().equals("distilleryburning"));
             case "kettle", "spinningwheel", "fumefunnel", "filteredfumefunnel", "wolfaltar", "beartrap", "wolftrap",
-                    "garlicgarland", "dreamcatcher", "decursedirected", "decurseteleport", "demonheart",
+                    "garlicgarland", "decursedirected", "decurseteleport", "demonheart",
                     "statuegoddess" ->
                     state.setValue(BlockStateProperties.HORIZONTAL_FACING, horizontalFacing(metadata));
+            case "dreamcatcher" -> state.setValue(DreamCatcherBlock.FACING, horizontalFacing(metadata))
+                    .setValue(DreamCatcherBlock.WEAVE, DreamWeave.fromLegacyId(saved));
             // Both original chest renderers drew default metadata zero facing south.
             case "leechchest", "refillingchest" -> state.setValue(LegacyPairingChestBlock.FACING,
                             metadata == 0 ? Direction.SOUTH : horizontalFacing(metadata))

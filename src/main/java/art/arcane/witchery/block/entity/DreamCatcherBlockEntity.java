@@ -19,6 +19,14 @@ public final class DreamCatcherBlockEntity extends BlockEntity {
         super(WitcheryBlockEntities.DREAM_CATCHER.get(), pos, state);
     }
 
+    public DreamWeave weave() {
+        return importedWeave != null ? importedWeave : getBlockState().getValue(DreamCatcherBlock.WEAVE);
+    }
+
+    public static DreamWeave readWeave(CompoundTag tag, DreamWeave fallback) {
+        return tag.contains(WEAVE_ID, Tag.TAG_ANY_NUMERIC) ? DreamWeave.fromLegacyId(tag.getInt(WEAVE_ID)) : fallback;
+    }
+
     public static void applyLegacyState(Level level, BlockPos pos, BlockState state, DreamCatcherBlockEntity catcher) {
         if (catcher.importedWeave != null) {
             DreamWeave weave = catcher.importedWeave;
@@ -31,18 +39,14 @@ public final class DreamCatcherBlockEntity extends BlockEntity {
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
-        if (tag.contains(WEAVE_ID, Tag.TAG_ANY_NUMERIC)) {
-            DreamWeave weave = DreamWeave.fromLegacyId(tag.getInt(WEAVE_ID));
-            importedWeave = weave == getBlockState().getValue(DreamCatcherBlock.WEAVE) ? null : weave;
-        } else {
-            importedWeave = null;
-        }
+        var stateWeave = getBlockState().getValue(DreamCatcherBlock.WEAVE);
+        var savedWeave = readWeave(tag, stateWeave);
+        importedWeave = savedWeave == stateWeave ? null : savedWeave;
     }
 
     @Override
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
-        DreamWeave weave = importedWeave != null ? importedWeave : getBlockState().getValue(DreamCatcherBlock.WEAVE);
-        tag.putInt(WEAVE_ID, weave.ordinal());
+        tag.putInt(WEAVE_ID, weave().ordinal());
     }
 }

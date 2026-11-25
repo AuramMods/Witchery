@@ -77,7 +77,8 @@ public final class WitcheryBlockPlacement {
         var previous = snapshot.getReplacedBlock();
         if (previous.getBlock() instanceof DreamCatcherBlock
                 && !snapshot.getCurrentBlock().is(previous.getBlock())) {
-            Block.popResource(level, snapshot.getPos(), new ItemStack(previous.getValue(DreamCatcherBlock.WEAVE).item()));
+            var weave = DreamCatcherBlock.weave(previous, snapshot.getBlockEntity());
+            Block.popResource(level, snapshot.getPos(), new ItemStack(weave.item()));
         }
         refundReplacedHeart(level, snapshot);
     }

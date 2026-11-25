@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Dream Catcher and frozen pressure plate imports (2026-11-25)
+
+- A Witchery 0.24.1 server saved five Dream Catcher weaves and two powered plates. The previous packaged JAR initially loaded all five as Movement and rewrote both plate release delays to zero. Replacing the Nightmare Catcher before its first tick dropped Fleet Feet.
+- The modern chunk palette now contains all five fitted weaves before the first tick. An earlier 1.20.1 save with Mining in the block state and Nightmares in the tile returned one Nightmares weave through pick, block loot, and normal survival replacement. Picking and loot keep using the fitted weave while an old tile is waiting to update its block state.
+- The original region saved 47 ticks for the ice plate and 65 for the snow plate. The rebuilt clean Forge server preserved both powered states and delays through an ordinary dedicated restart. Both released once after the chunk began ticking. A second import with the fixtures in the active spawn chunk released separately at exactly ticks 47 and 65.
+- Copied Auram loaded the same five weaves and both original delays, dropped one Nightmares weave per approved stone replacement, and released the two plates once each, 18 ticks apart. The first probe's startup fake-player click hit a WorldEdit handler exception. The replay exercised Forge's item placement transaction directly. All 340 local Forge GameTests passed.
+- The reobfuscated JAR is `build/qa-mounted-block-migration/verified.jar` with SHA-256 `9ab165291c11ef7cdd17a32e5518dacef86b4f5f07b0bcc59c314cb2aec5d4d5`. The original, baseline, and rebuilt save checks are under `build/qa-mounted-block-migration/`.
+
 ## Clicked-cell placement (2026-11-25)
 
 - The original survival interaction replaced the Heart Glyph, three chalk glyphs, Dream Catcher, two snow pressure plates, and both snow slab IDs in the clicked cell. Replacing the Dream Catcher dropped its fitted weave. The other eight left no block item. The rebuilt clean Forge and copied Auram packages match all 121 shared default placement checks and all 20 original survival-use cases, plus two placements against the modern stacked-slab state.

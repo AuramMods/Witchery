@@ -29,9 +29,13 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -97,7 +101,21 @@ public final class DreamCatcherBlock extends BaseEntityBlock {
 
     @Override
     public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
-        return new ItemStack(state.getValue(WEAVE).item());
+        return new ItemStack(weaveAt(level, pos, state).item());
+    }
+
+    public static DreamWeave weaveAt(BlockGetter level, BlockPos pos, BlockState state) {
+        return weave(state, level.getBlockEntity(pos));
+    }
+
+    public static DreamWeave weave(BlockState state, @Nullable BlockEntity tile) {
+        return tile instanceof DreamCatcherBlockEntity catcher ? catcher.weave() : state.getValue(WEAVE);
+    }
+
+    @Override
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder loot) {
+        // Earlier saves may carry the fitted weave on the tile until its first tick.
+        return super.getDrops(state.setValue(WEAVE, weave(state, loot.getOptionalParameter(LootContextParams.BLOCK_ENTITY))), loot);
     }
 
     @Override
@@ -149,7 +167,7 @@ public final class DreamCatcherBlock extends BaseEntityBlock {
                 if (!level.hasChunkAt(pos)) continue;
                 BlockState state = level.getBlockState(pos);
                 if (state.getBlock() instanceof DreamCatcherBlock) {
-                    applyNearbyWeave(level, pos, state.getValue(WEAVE), player);
+                    applyNearbyWeave(level, pos, weaveAt(level, pos, state), player);
                 }
             }
         }
@@ -164,7 +182,7 @@ public final class DreamCatcherBlock extends BaseEntityBlock {
             if (pos.equals(source) || !level.hasChunkAt(pos)) continue;
             BlockState neighbor = level.getBlockState(pos);
             if (neighbor.is(block)) {
-                DreamWeave nearby = neighbor.getValue(WEAVE);
+                DreamWeave nearby = weaveAt(level, pos, neighbor);
                 rested &= nearby != DreamWeave.NIGHTMARES;
                 intense |= nearby == DreamWeave.INTENSITY;
                 if (!rested && intense) break;
