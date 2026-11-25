@@ -35,6 +35,7 @@ public final class BrazierBlockEntity extends BlockEntity {
     private static final int INGREDIENT_SLOTS = 3;
     private static final int LEGACY_SMOKE_PARTICLE_ID = 8;
     private static final int LEGACY_FIZZ_SOUND_ID = 2;
+    private final AltarPower.WorkstationSource altarSource = new AltarPower.WorkstationSource();
     private final ItemStackHandler ingredients = new ItemStackHandler(INGREDIENT_SLOTS) {
         @Override
         public int getSlotLimit(int slot) {
@@ -67,9 +68,6 @@ public final class BrazierBlockEntity extends BlockEntity {
     private long storage;
     private Optional<BrazierRecipe> activeRecipe = Optional.empty();
     private boolean recipeResolved;
-    @Nullable
-    private AltarBlockEntity altar;
-    private long nextAltarSearch;
 
     public BrazierBlockEntity(BlockPos pos, BlockState state) {
         super(WitcheryBlockEntities.BRAZIER.get(), pos, state);
@@ -84,24 +82,24 @@ public final class BrazierBlockEntity extends BlockEntity {
 
     private void burn(ServerLevel level, BlockPos pos) {
         setFlame(ignited && hasAllIngredients());
-        if (!ignited) return;
+        if (!ignited) {
+            updatePower(altarSource.idleTick(level, pos, powered));
+            return;
+        }
         if (!recipeResolved) {
             activeRecipe = BrazierRecipe.match(ingredients);
             recipeResolved = true;
         }
         if (activeRecipe.isEmpty()) {
             clearBatch();
+            updatePower(altarSource.idleTick(level, pos, powered));
             WitcheryNetwork.sendParticlesAround(level, LEGACY_SMOKE_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID,
                     Vec3.atBottomCenterOf(pos.above()), 0.5, 0.5, 8);
             return;
         }
         BrazierRecipe recipe = activeRecipe.get();
-        boolean hasPower = !recipe.needsPower() || drawAltarPower(level, pos);
-        if (powered != hasPower) {
-            powered = hasPower;
-            setChanged();
-        }
-        if (!hasPower) return;
+        updatePower(altarSource.activeTick(level, pos, recipe.needsPower() ? 1 : 0));
+        if (!powered) return;
 
         cookTime++;
         long elapsed = cookTime - recipe.burnTicks();
@@ -114,13 +112,11 @@ public final class BrazierBlockEntity extends BlockEntity {
         }
     }
 
-    private boolean drawAltarPower(ServerLevel level, BlockPos pos) {
-        long now = level.getGameTime();
-        if (now >= nextAltarSearch || altar != null && (altar.isRemoved() || !altar.isInRange(pos) || !altar.isCore(level))) {
-            altar = AltarPower.nearest(level, pos);
-            nextAltarSearch = now + 100;
+    private void updatePower(boolean hasPower) {
+        if (powered != hasPower) {
+            powered = hasPower;
+            setChanged();
         }
-        return altar != null && altar.consumePower(1);
     }
 
     private boolean hasAllIngredients() {
@@ -161,7 +157,6 @@ public final class BrazierBlockEntity extends BlockEntity {
 
     public void clearBatch() {
         ignited = false;
-        powered = false;
         cookTime = 0;
         storage = 0;
         activeRecipe = Optional.empty();
@@ -272,13 +267,11 @@ public final class BrazierBlockEntity extends BlockEntity {
         }
         loading = false;
         cookTime = ignited ? Math.max(0, tag.getLong("CookTime")) : 0;
-        powered = ignited && tag.getInt("PowerLevel") > 0;
+        powered = tag.getInt("PowerLevel") > 0;
         storage = ignited ? Math.max(0, tag.getLong("PowerStorage")) : 0;
         redstone = tag.getBoolean("Powered");
         recipeResolved = false;
         activeRecipe = Optional.empty();
-        altar = null;
-        nextAltarSearch = 0;
     }
 
     @Override

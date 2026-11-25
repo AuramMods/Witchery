@@ -56,6 +56,7 @@ public final class DistilleryBlockEntity extends BaseContainerBlockEntity implem
     private final Map<Direction, LazyOptional<IItemHandlerModifiable>> handlers = new EnumMap<>(Direction.class);
     private final RecipeManager.CachedCheck<Container, DistillingRecipe> recipes =
             RecipeManager.createCheck(WitcheryRecipes.DISTILLING.get());
+    private final AltarPower.WorkstationSource altarSource = new AltarPower.WorkstationSource();
     private final ContainerData progress = new ContainerData() {
         @Override
         public int get(int index) {
@@ -73,8 +74,6 @@ public final class DistilleryBlockEntity extends BaseContainerBlockEntity implem
     };
     private int cookTime;
     private boolean powered;
-    @Nullable
-    private AltarBlockEntity altar;
 
     public DistilleryBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -88,11 +87,11 @@ public final class DistilleryBlockEntity extends BaseContainerBlockEntity implem
         boolean running = false;
         DistillingRecipe recipe = distillery.recipes.getRecipeFor(distillery, level).orElse(null);
         boolean ready = recipe != null && distillery.canStore(recipe);
-        distillery.refreshAltar(server, pos, ready);
         if (!ready) {
+            distillery.powered = distillery.altarSource.idleTick(server, pos, distillery.powered);
             distillery.cookTime = 0;
         } else {
-            distillery.powered = distillery.altar != null && distillery.altar.consumePower(POWER_PER_TICK);
+            distillery.powered = distillery.altarSource.activeTick(server, pos, POWER_PER_TICK);
             if (distillery.powered) {
                 running = true;
                 if (++distillery.cookTime >= COOK_TICKS) {
@@ -109,14 +108,6 @@ public final class DistilleryBlockEntity extends BaseContainerBlockEntity implem
         }
         if (oldCookTime != distillery.cookTime) {
             level.blockEntityChanged(pos);
-        }
-    }
-
-    private void refreshAltar(ServerLevel level, BlockPos pos, boolean ready) {
-        if (level.getGameTime() % 40 == 0 || ready && altar == null
-                || altar != null && (altar.isRemoved() || !altar.isInRange(pos) || !altar.isCore(level))) {
-            altar = AltarPower.nearest(level, pos);
-            if (!ready) powered = altar != null;
         }
     }
 

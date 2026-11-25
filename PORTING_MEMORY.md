@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Workstation altar switching (2026-11-25)
+
+- With the original Distillery, Spinning Wheel, and Brazier running, a newly formed closer empty altar takes over after one final draw from the previous altar. All three batches pause on the second tick and resume at their saved progress when the closer altar has charge. The previous packaged build kept drawing from the farther altar on all four measured ticks. The rebuilt clean Forge and copied Auram profiles matched all 12 original power and progress samples.
+- Each machine uses its loaded tick count for the 40-tick idle check and the 100-tick active cache refresh. The saved Brazier power flag can indicate a connection while idle. Active reuse verifies that the previous altar is still formed and in range.
+- An ordinary clean Forge restart loaded the preceding JAR's paused batches at 794, 294, and 594 ticks. They remained paused beside a charged farther altar. Adding a Dragon Egg near the closer altar let it recharge naturally. The Distillery produced two Glowstone Dust and Reek of Misfortune, the Wheel produced Cobweb, and the Brazier summoned a Spectre. The headless console fixture supplied the saved ingredients and placed the two altars.
+- All 345 local Forge GameTests passed in `build/qa-workstation-altar-switch/gametest-core8.log`. The first two runs had one existing fixture timeout each, waiting for a Lumos chunk and a Cauldron misfortune query. Both passed on the eight-core replay.
+- The reobfuscated package is `build/qa-workstation-altar-switch/verified.jar` with SHA-256 `78215cfe6723057938ff78dc87cb930fcb88d22f77af2e72068e1a9c92abc569`. Comparison and ordinary restart logs are in the same directory.
+- The next Kettle comparison found a timing gap with Brew of Ice. The original first colored the blocked brew at loaded tick 20 and paid the closer altar on tick 40. With the world clock offset by 15 ticks, the current package colored it on tick 5 and paid on tick 25. Both drew 1,000 power from the closer altar and left the farther one unchanged. The headless probes are in `build/qa-kettle-power-timing/`.
+
 ## Custom brew bottle display (2026-11-25)
 
 - The original server and muted packaged client agree on nine English cases covering Colored Water, a 20-tick drink, all four dispersals, three ordered effects, inversion, and a modifier offered after the dispersal ingredient. The display preserves the original half-duration labels for splashes and the raw modifier order. The original inverted Sugar label shows three minutes of Slowness, and its actual effect lasts 90 seconds.

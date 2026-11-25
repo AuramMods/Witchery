@@ -43,4 +43,41 @@ public final class AltarPower {
         }
         return closest;
     }
+
+    public static final class WorkstationSource {
+        private static final int IDLE_CHECK_INTERVAL = 40;
+        private static final int FORCE_LOOKUP_INTERVAL = 100;
+
+        @Nullable
+        private BlockPos cachedPos;
+        private long ticks;
+
+        public boolean idleTick(ServerLevel level, BlockPos pos, boolean powered) {
+            if (++ticks % IDLE_CHECK_INTERVAL != 0) return powered;
+            AltarBlockEntity source = find(level, pos);
+            if (source != null) cachedPos = source.getBlockPos();
+            return source != null;
+        }
+
+        public boolean activeTick(ServerLevel level, BlockPos pos, float cost) {
+            ticks++;
+            AltarBlockEntity source = find(level, pos);
+            // A burning machine keeps a newly selected altar for one more tick.
+            cachedPos = source != null && !source.getBlockPos().equals(cachedPos) ? source.getBlockPos() : null;
+            return cost == 0 || source != null && source.consumePower(cost);
+        }
+
+        @Nullable
+        private AltarBlockEntity find(ServerLevel level, BlockPos pos) {
+            if (cachedPos != null && ticks % FORCE_LOOKUP_INTERVAL != 0) {
+                LevelChunk chunk = level.getChunkSource().getChunkNow(
+                        SectionPos.blockToSectionCoord(cachedPos.getX()), SectionPos.blockToSectionCoord(cachedPos.getZ()));
+                if (chunk != null && chunk.getBlockEntity(cachedPos) instanceof AltarBlockEntity altar
+                        && !altar.isRemoved() && altar.isInRange(pos) && altar.isCore(level)) {
+                    return altar;
+                }
+            }
+            return nearest(level, pos);
+        }
+    }
 }

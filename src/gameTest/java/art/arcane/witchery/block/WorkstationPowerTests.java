@@ -2,8 +2,10 @@ package art.arcane.witchery.block;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.AltarBlockEntity;
+import art.arcane.witchery.block.entity.BrazierBlockEntity;
 import art.arcane.witchery.block.entity.DistilleryBlockEntity;
 import art.arcane.witchery.block.entity.SpinningWheelBlockEntity;
+import art.arcane.witchery.crafting.BrazierRecipe;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.menu.DistilleryMenu;
 import art.arcane.witchery.menu.SpinningWheelMenu;
@@ -14,12 +16,74 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class WorkstationPowerTests {
+    @GameTest(template = "qa_rite_terrain", batch = "witchery_workstation_altar_switch")
+    public static void burningWorkstationsSwitchToCloserAltar(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var row = helper.absolutePos(new BlockPos(6, 4, 5));
+        var wheelPos = row.east(2);
+        var brazierPos = row.east(4);
+        level.setBlockAndUpdate(row, WitcheryBlocks.getRequired("distilleryidle").get().defaultBlockState());
+        level.setBlockAndUpdate(wheelPos, WitcheryBlocks.getRequired("spinningwheel").get().defaultBlockState());
+        var distillery = (DistilleryBlockEntity) level.getBlockEntity(row);
+        var wheel = (SpinningWheelBlockEntity) level.getBlockEntity(wheelPos);
+        var brazier = placeBrazier(helper, brazierPos);
+
+        distillery.setItem(0, new ItemStack(Items.BLAZE_POWDER));
+        distillery.setItem(1, new ItemStack(Items.GUNPOWDER));
+        distillery.setItem(2, new ItemStack(WitcheryIngredient.CLAY_JAR.item()));
+        wheel.setItem(0, new ItemStack(Items.STRING, 8));
+        for (var ingredient : BrazierRecipe.MIST.ingredients()) brazier.insert(new ItemStack(ingredient));
+        brazier.ignite();
+        BlockEntity[] workshop = {distillery, wheel, brazier};
+
+        // Advance each actual ticker together so natural altar recharge cannot mask a power debit.
+        tickWorkshop(helper, 0, workshop);
+        var far = placeAltar(helper, row.west(3).south(12));
+        setAltarPower(far, 100);
+        tickWorkshop(helper, 1, workshop);
+        var near = placeAltar(helper, row.east(2).south(3));
+        tickWorkshop(helper, 2, workshop);
+        helper.assertTrue(Math.abs(far.power() - 95.6F) < 0.001F && near.power() == 0,
+                "Each batch draws from its previous altar for one more tick");
+
+        tickWorkshop(helper, 2, workshop);
+        helper.assertTrue(Math.abs(far.power() - 95.6F) < 0.001F && near.power() == 0,
+                "A closer empty altar pauses all three batches without debiting the farther one");
+        setAltarPower(near, 100);
+        tickWorkshop(helper, 3, workshop);
+        tickWorkshop(helper, 4, workshop);
+        helper.assertTrue(Math.abs(far.power() - 95.6F) < 0.001F && Math.abs(near.power() - 95.6F) < 0.001F,
+                "The same three batches resume using only the closer altar");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_idle_brazier_power")
+    public static void idleBrazierSavesItsConnectionWithoutDrawingCharge(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(5, 4, 5));
+        var brazier = placeBrazier(helper, pos);
+        var altar = placeAltar(helper, pos.south(3));
+        for (int tick = 1; tick < 40; tick++) {
+            BrazierBlockEntity.serverTick(level, pos, brazier.getBlockState(), brazier);
+        }
+        helper.assertTrue(brazier.saveWithoutMetadata().getInt("PowerLevel") == 0,
+                "The first 39 idle ticks leave the saved connection unchanged");
+        BrazierBlockEntity.serverTick(level, pos, brazier.getBlockState(), brazier);
+        var saved = brazier.saveWithoutMetadata();
+        brazier.load(saved);
+        helper.assertTrue(saved.getInt("PowerLevel") == 1 && saved.getLong("CookTime") == 0
+                        && brazier.saveWithoutMetadata().getInt("PowerLevel") == 1 && altar.power() == 0,
+                "Idle tick 40 connects to an empty altar and retains that flag across an NBT round trip");
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_workstation_power")
     public static void idlePowerAndBlockedOutputs(GameTestHelper helper) {
         var level = helper.getLevel();
@@ -143,6 +207,29 @@ public final class WorkstationPowerTests {
         }
         AltarBlockEntity.form(level, pos);
         return (AltarBlockEntity) level.getBlockEntity(pos);
+    }
+
+    private static BrazierBlockEntity placeBrazier(GameTestHelper helper, BlockPos pos) {
+        var level = helper.getLevel();
+        level.setBlockAndUpdate(pos, WitcheryBlocks.getRequired("brazier").get().defaultBlockState());
+        return (BrazierBlockEntity) level.getBlockEntity(pos);
+    }
+
+    private static void tickWorkshop(GameTestHelper helper, int progress, BlockEntity... workshop) {
+        var level = helper.getLevel();
+        for (BlockEntity machine : workshop) {
+            var pos = machine.getBlockPos();
+            var state = machine.getBlockState();
+            if (machine instanceof DistilleryBlockEntity distillery) {
+                DistilleryBlockEntity.serverTick(level, pos, state, distillery);
+            } else if (machine instanceof SpinningWheelBlockEntity wheel) {
+                SpinningWheelBlockEntity.serverTick(level, pos, state, wheel);
+            } else if (machine instanceof BrazierBlockEntity brazier) {
+                BrazierBlockEntity.serverTick(level, pos, state, brazier);
+            }
+            helper.assertTrue(machine.saveWithoutMetadata().getLong("CookTime") == progress,
+                    "Unexpected batch progress at " + pos.toShortString() + ", expected " + progress);
+        }
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_workstation_power")

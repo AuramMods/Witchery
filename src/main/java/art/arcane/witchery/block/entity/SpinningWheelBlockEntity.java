@@ -55,6 +55,7 @@ public final class SpinningWheelBlockEntity extends BaseContainerBlockEntity imp
     private final NonNullList<ItemStack> items = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
     private final Map<Direction, LazyOptional<IItemHandlerModifiable>> handlers = new EnumMap<>(Direction.class);
     private final RecipeManager.CachedCheck<Container, SpinningRecipe> recipes = RecipeManager.createCheck(WitcheryRecipes.SPINNING.get());
+    private final AltarPower.WorkstationSource altarSource = new AltarPower.WorkstationSource();
     private final ContainerData progress = new ContainerData() {
         @Override
         public int get(int index) {
@@ -72,8 +73,6 @@ public final class SpinningWheelBlockEntity extends BaseContainerBlockEntity imp
     };
     private int cookTime;
     private boolean powered;
-    @Nullable
-    private AltarBlockEntity altar;
 
     public SpinningWheelBlockEntity(BlockPos pos, BlockState state) {
         super(WitcheryBlockEntities.SPINNING_WHEEL.get(), pos, state);
@@ -90,16 +89,12 @@ public final class SpinningWheelBlockEntity extends BaseContainerBlockEntity imp
         boolean wasPowered = powered;
         SpinningRecipe recipe = items.get(FIBRE_SLOT).isEmpty() ? null : recipes.getRecipeFor(this, level).orElse(null);
         boolean ready = recipe != null && canStore(recipe.result());
-        if (level.getGameTime() % 40 == 0 || ready && altar == null
-                || altar != null && (altar.isRemoved() || !altar.isInRange(pos) || !altar.isCore(level))) {
-            altar = AltarPower.nearest(level, pos);
-            if (!ready) powered = altar != null;
-        }
         boolean spinning = false;
         if (!ready) {
+            powered = altarSource.idleTick(level, pos, powered);
             cookTime = 0;
         } else {
-            powered = altar != null && altar.consumePower(POWER_PER_TICK);
+            powered = altarSource.activeTick(level, pos, POWER_PER_TICK);
             if (powered) {
                 if (++cookTime >= COOK_TICKS) {
                     finish(recipe);
