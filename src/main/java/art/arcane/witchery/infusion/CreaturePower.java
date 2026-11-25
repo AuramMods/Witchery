@@ -22,6 +22,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.entity.projectile.LargeFireball;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.SmallFireball;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -229,7 +230,7 @@ public enum CreaturePower {
         ServerLevel level = player.serverLevel();
         ThrownBrew web = new ThrownBrew(player, level);
         web.setItem(new ItemStack(WitcheryIngredient.WEB.item()));
-        web.shootFromRotation(player, player.getXRot(), player.getYRot(), 0, 1.5F, 1);
+        launchAimed(player, web, 1.5F);
         level.addFreshEntity(web);
         float pitch = 0.4F / (level.random.nextFloat() * 0.4F + 0.8F);
         level.playSound(null, player, SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 0.5F, pitch);
@@ -240,13 +241,21 @@ public enum CreaturePower {
         float power = Math.min(1, (draw * draw + draw * 2) / 3);
         ServerLevel level = player.serverLevel();
         Arrow arrow = new Arrow(level, player);
-        arrow.shootFromRotation(player, player.getXRot(), player.getYRot(), 0, power * 3, 1);
+        launchAimed(player, arrow, power * 3);
         arrow.setCritArrow(power == 1);
         arrow.setBaseDamage(arrow.getBaseDamage() + 1);
         arrow.setKnockback(1);
         level.addFreshEntity(arrow);
         float pitch = 1 / (level.random.nextFloat() * 0.4F + 1.2F) + power * 0.5F;
         level.playSound(null, player, SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1, pitch);
+    }
+
+    private static void launchAimed(ServerPlayer player, Projectile shot, float speed) {
+        float yaw = player.getYRot() * Mth.DEG_TO_RAD;
+        shot.setPos(player.getX() - Mth.cos(yaw) * 0.16F, player.getEyeY() - 0.1,
+                player.getZ() - Mth.sin(yaw) * 0.16F);
+        Vec3 aim = player.getLookAngle();
+        shot.shoot(aim.x, aim.y, aim.z, speed, 1);
     }
 
     private static void launchFire(ServerPlayer player, boolean ghast) {

@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Infernal arrow and web projectiles (2026-11-25)
+
+- Witchery 0.24.1 fired both Spider webs and the charged Skeleton arrow from `(94.09, 181.52, 31.75)` with the caster at `(94.25, 180, 31.75)` and moving `(1.2, 0.6, -0.35)`. The webs went forward near 1.5 blocks per tick and the critical arrow near three. Both now launch from that shoulder offset and use Forge's small projectile spread independently of the caster's movement.
+- Native impacts on faces 2 through 5 offset west, east, north, and south. A hit on a full snow block replaces it, and an entity hit truncates the creature's coordinates toward zero. The rebuilt port uses those targets and posts the normal Forge terrain checks for each write.
+- Two muted clean Forge survival clients used fixture-supplied powers. They checked the three web placements, the original centered puff on the wall hit, and the charged Skeleton arrow's flight, three base damage, and pickup permission. The webs and both reserves survived a dedicated restart. The clients used master volume zero and OpenAL No Output and kept desktop focus.
+- The headless Auram copy loaded the impact area and saved its world using the same reobfuscated JAR. All 399 local Forge GameTests passed on seed `5471593853027166409`. The exact candidate is `build/qa-infernal-projectiles/candidate.jar` with SHA-256 `1b936090ebf272768869fa34e1d58aa0c5de938a87c81a0ea5284682f0d1376f`. See `build/qa-infernal-projectiles/comparison.txt`.
+
 ## Ender Inhibition and Otherwhere lifts (2026-11-25)
 
 - Witchery 0.24.1 blocked the Otherwhere blink at Ender Inhibition III with all 20 charges intact. Its Infernal Enderman power passed the same effect, moved from Z 31.75 to Z 42.5, and spent one infusion charge and one creature charge. The prior packaged port spent both charges while leaving the Infernal caster in place.

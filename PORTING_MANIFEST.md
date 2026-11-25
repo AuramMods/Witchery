@@ -1247,6 +1247,9 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 - Landing with Magma Cube, Slime or Toad power clears fall damage and sends `sound` at the landing position. It reaches the caster and players strictly within eight blocks in the same dimension. Each receiving client plays the mapped large-slime cue at half volume and picks a pitch between one-third and one-half.
 - Infernal casting feedback reaches the caster. Ordinary fizz and rejection cues use the original half volume and pitch range. Squid blindness uses its own full-volume fizz. Spider and Skeleton attacks use the original bow sound, the latter with draw-strength pitch scaling.
 
+- Spider, Cave Spider, and Skeleton shots start 0.16 blocks to the side of the caster and 0.1 below eye height. They follow the aim with a small spread independent of the caster's movement. Webs launch at 1.5 blocks per tick and a full Skeleton draw reaches 3 blocks per tick, critical damage, and one level of knockback.
+- Thrown Web uses the four original horizontal offsets. North and south impacts offset west and east, and west and east impacts offset north and south. It replaces a struck full snow block in place. An entity impact uses integer truncation at the target's feet. Forge terrain protection and placement events guard the write. A successful block impact emits the original silent puff within eight blocks.
+
 ## Infusion Registry (`Infusion.Registry`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/WitcheryRecipes.java`
 

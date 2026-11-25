@@ -1,12 +1,14 @@
 package art.arcane.witchery.entity;
 
 import art.arcane.witchery.brewing.BrewCreatureEffects;
+import art.arcane.witchery.brewing.BrewTerrain;
 import art.arcane.witchery.item.BrewBottleItem;
 import art.arcane.witchery.item.ThrowableBrewItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -177,10 +179,7 @@ public final class ThrownBrew extends ThrowableItemProjectile {
                 return;
             }
             if (getItem().is(WitcheryIngredient.WEB.item())) {
-                BlockPos pos = hit instanceof BlockHitResult block ? block.getBlockPos().relative(block.getDirection())
-                        : BlockPos.containing(impact);
-                if (hit instanceof EntityHitResult entity) pos = entity.getEntity().blockPosition();
-                if (server.getBlockState(pos).canBeReplaced()) server.setBlockAndUpdate(pos, Blocks.COBWEB.defaultBlockState());
+                impactWeb(server, hit);
                 discard();
                 return;
             }
@@ -201,6 +200,37 @@ public final class ThrownBrew extends ThrowableItemProjectile {
                     impact.x, impact.y, impact.z, 12, 0.2, 0.2, 0.2, 0.1);
             server.playSound(null, impact.x, impact.y, impact.z, SoundEvents.GLASS_BREAK, SoundSource.NEUTRAL, 1.0F, 1.0F);
             discard();
+        }
+    }
+
+    private void impactWeb(ServerLevel level, HitResult hit) {
+        var web = Blocks.COBWEB.defaultBlockState();
+        if (hit instanceof EntityHitResult entity) {
+            Entity target = entity.getEntity();
+            BlockPos pos = new BlockPos((int) target.getX(), (int) target.getY(), (int) target.getZ());
+            if (!BrewTerrain.isProtectedTerrain(level.getBlockState(pos))) {
+                BrewTerrain.setBlock(getOwner(), level, pos, web, Direction.UP);
+            }
+        } else if (hit instanceof BlockHitResult block && hit.getType() == HitResult.Type.BLOCK) {
+            BlockPos struck = block.getBlockPos();
+            Direction face = Direction.UP;
+            BlockPos pos = struck;
+            if (!level.getBlockState(struck).is(Blocks.SNOW_BLOCK)) {
+                // The original Thrown Web maps the north/south faces to X and west/east to Z.
+                face = switch (block.getDirection()) {
+                    case NORTH -> Direction.WEST;
+                    case SOUTH -> Direction.EAST;
+                    case WEST -> Direction.NORTH;
+                    case EAST -> Direction.SOUTH;
+                    default -> block.getDirection();
+                };
+                pos = struck.relative(face);
+            }
+            var previous = level.getBlockState(pos);
+            if ((!previous.blocksMotion() || previous.is(Blocks.SNOW_BLOCK))
+                    && BrewTerrain.setBlock(getOwner(), level, pos, web, face)) {
+                WitcheryNetwork.sendThrownWebImpact(level, Vec3.atCenterOf(pos));
+            }
         }
     }
 }

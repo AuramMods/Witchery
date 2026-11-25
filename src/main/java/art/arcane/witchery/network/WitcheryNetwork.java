@@ -439,6 +439,10 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_EXPLOSION_PARTICLE_ID, sound, location, size, size, 8);
     }
 
+    public static void sendThrownWebImpact(ServerLevel level, Vec3 center) {
+        sendParticlesAround(level, LEGACY_EXPLOSION_PARTICLE_ID, LEGACY_NO_SOUND_ID, center, 1, 1, 8);
+    }
+
     public static void sendParticlesAround(ServerLevel level, int particleEffectId, int soundEffectId, Vec3 center,
                                            double width, double height, double range) {
         sendParticlesAround(level, particleEffectId, soundEffectId, center, width, height, range, 0xFFFFFF);

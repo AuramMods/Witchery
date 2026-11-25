@@ -1,6 +1,8 @@
 package art.arcane.witchery.infusion;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.entity.ThrownBrew;
+import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryItems;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
@@ -12,12 +14,16 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Arrow;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.PlayLevelSoundEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -29,6 +35,46 @@ import java.util.function.Consumer;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class CreaturePowerCueTests {
+    @GameTest(template = "qa_coven_arena")
+    public static void infernalWebsAndArrowsUseTheOriginalLaunchOrigin(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "InfernalMarksman"));
+        var origin = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(3, 0, 4)).atY(200));
+        player.moveTo(origin.x, origin.y, origin.z, 0, 0);
+        player.setDeltaMovement(1.2, 0.6, -0.35);
+        InfusionEnergy.grant(player, InfernalInfusion.ID, 20);
+        var hand = new ItemStack(WitcheryItems.getRequired("witchhand").get());
+        var shots = new ArrayList<Projectile>();
+        Consumer<EntityJoinLevelEvent> capture = event -> {
+            if (event.getEntity() instanceof Projectile shot && shot.getOwner() == player) shots.add(shot);
+        };
+        MinecraftForge.EVENT_BUS.addListener(capture);
+        try {
+            for (var power : new CreaturePower[]{CreaturePower.CAVE_SPIDER, CreaturePower.SPIDER, CreaturePower.SKELETON}) {
+                power.absorb(player);
+                hand.getItem().releaseUsing(hand, level, player, hand.getUseDuration() - 20);
+            }
+            helper.assertTrue(shots.size() == 3, "All three cast powers spawn one projectile each");
+            var muzzle = new Vec3(origin.x - 0.16, player.getEyeY() - 0.1, origin.z);
+            for (var shot : shots) {
+                var motion = shot.getDeltaMovement();
+                float speed = shot instanceof Arrow ? 3 : 1.5F;
+                helper.assertTrue(shot.position().distanceToSqr(muzzle) < 0.000001
+                                && Math.abs(motion.x) < 0.08 && Math.abs(motion.y) < 0.08
+                                && Math.abs(motion.z - speed) < 0.08,
+                        "The original shoulder offset and aim exclude the caster's movement");
+            }
+            helper.assertTrue(shots.get(0) instanceof ThrownBrew caveWeb && caveWeb.getItem().is(WitcheryIngredient.WEB.item())
+                            && shots.get(1) instanceof ThrownBrew spiderWeb && spiderWeb.getItem().is(WitcheryIngredient.WEB.item())
+                            && shots.get(2) instanceof Arrow arrow && arrow.isCritArrow() && arrow.getBaseDamage() == 3,
+                    "Both spider powers fire Thrown Web and the charged Skeleton power fires its critical arrow");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(capture);
+            shots.forEach(Projectile::discard);
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void restoresOtherwhereHandChargeCues(GameTestHelper helper) {
         var level = helper.getLevel();
