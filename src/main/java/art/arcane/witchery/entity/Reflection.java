@@ -6,6 +6,7 @@ import art.arcane.witchery.item.HandBowItem;
 import art.arcane.witchery.item.MysticBranchItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.lycanthropy.Lycanthropy;
+import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcherySounds;
 import art.arcane.witchery.vampirism.Vampirism;
@@ -275,7 +276,7 @@ public final class Reflection extends Monster implements RangedAttackMob {
 
     @Override
     public boolean hurt(DamageSource source, float damage) {
-        return super.hurt(source, Math.min(6, damage));
+        return super.hurt(source, Math.min(damage, source.is(WitcheryDamageTypes.SPECTRAL_TOUCH) ? 2 : 6));
     }
 
     @Override

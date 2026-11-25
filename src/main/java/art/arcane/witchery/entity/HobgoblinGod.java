@@ -1,6 +1,7 @@
 package art.arcane.witchery.entity;
 
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcherySounds;
@@ -185,6 +186,9 @@ public final class HobgoblinGod extends Monster implements RangedAttackMob {
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
+        if (source.is(WitcheryDamageTypes.SPECTRAL_TOUCH)) {
+            return super.hurt(source, WitcheryDamageTypes.capBossDamage(source, amount, 15));
+        }
         if (source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) return super.hurt(source, amount);
         double distance = partnerDistanceSquared();
         if (distance <= 9) return false;

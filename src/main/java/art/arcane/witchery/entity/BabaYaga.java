@@ -1,6 +1,7 @@
 package art.arcane.witchery.entity;
 
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.core.particles.ParticleTypes;
@@ -212,11 +213,13 @@ public final class BabaYaga extends Monster implements RangedAttackMob {
     public boolean hurt(DamageSource source, float amount) {
         if (source.getEntity() == this || !isAlive()) return false;
         boolean magic = source.is(DamageTypes.MAGIC) || source.is(DamageTypes.INDIRECT_MAGIC) || source.is(DamageTypes.THORNS);
-        float bounded = Math.min(amount, 15);
+        float bounded = WitcheryDamageTypes.capBossDamage(source, amount, 15);
         boolean damaged = super.hurt(source, magic ? bounded * 0.15F : bounded);
         if (level() instanceof ServerLevel server && damaged && source.getEntity() instanceof LivingEntity attacker) {
             if (attacker instanceof Player player) {
-                if (!woodenSword(source, player)) player.hurt(damageSources().thorns(this), amount * 0.25F);
+                if (!source.is(WitcheryDamageTypes.SPECTRAL_TOUCH) && !woodenSword(source, player)) {
+                    player.hurt(damageSources().thorns(this), amount * 0.25F);
+                }
             } else if (attacker instanceof Mob mob && (mob.getMobType() == MobType.UNDEAD
                     || mob instanceof TamableAnimal pet && !pet.isTame())) {
                 var spider = EntityType.CAVE_SPIDER.create(server);

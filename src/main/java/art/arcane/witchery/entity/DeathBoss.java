@@ -22,7 +22,6 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -167,8 +166,7 @@ public final class DeathBoss extends Monster {
             }
         }
         if (source.is(DamageTypes.GENERIC_KILL)) return super.hurt(source, amount);
-        float cap = source.is(WitcheryDamageTypes.SPECTRAL_TOUCH) && source.getEntity() instanceof Mob ? 6 : 15;
-        return super.hurt(source, Math.min(amount, cap));
+        return super.hurt(source, WitcheryDamageTypes.capBossDamage(source, amount, 15));
     }
 
     private boolean teleportRandomly() {

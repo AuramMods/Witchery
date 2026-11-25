@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Spectral touch limits for bosses (2026-11-25)
+
+- Spectral touch leaves vampire NPCs and Leonard immune. It drains up to two health from the Reflection and five from the Lord of Torment. A mob can drain up to six from Lilith, Death, Baba Yaga, Mog, Gulg, and the Horned Huntsman. A player's limits for those targets are twelve for Lilith and fifteen for the others.
+- The touch works during Lilith's entrance and through Mog and Gulg's partner defense. Ordinary blows still respect both defenses. Baba Yaga takes the drain without reflecting it back to the player.
+- Witchery 0.24.1, packaged clean Forge, and copied Auram matched all 25 observations. In Auram, the comparison fixture neutralized Apothic Attributes critical bonuses. A separate forced critical raised Lilith's six-health drain to nine through Forge's damage events.
+- A muted, unfocused survival client deployed a supplied Death's Hand and used the attack binding against stationary targets. The Reflection fell from 100 to 98 health. The vampire stayed at 20 and unshielded Leonard stayed at 600. A dedicated restart kept all three health values and UUIDs. The comparison, client outputs, and restart are in `build/qa-spectral-targets/comparison.txt`.
+- All 367 local Forge GameTests passed on the final run. The first two runs had intermittent failures in the existing block replacement and focused Barrier tests. The tested reobfuscated JAR is `build/qa-spectral-targets/candidate.jar` with SHA-256 `08490c544ce863bbe00266b6d79567d6dbeb3835adca3e47eb40c88953ba4005`.
+- A separate native test with a tracked Spectre confirmed that Baba Yaga removed the Spectre and spawned two Cave Spiders on spectral contact. The port currently performs one transformation after damage. The original trace is in `build/qa-spectral-targets/native/retaliation/run.log`.
+
 ## Spectral touch and Banshee combat (2026-11-25)
 
 - Spectral touch drains health without spending absorption hearts. Forge still runs its damage events, and the existing armor and shield bypass remains in effect. An ordinary melee blow still spends absorption first.

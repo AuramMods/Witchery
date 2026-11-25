@@ -8,6 +8,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
@@ -32,6 +33,11 @@ public final class WitcheryDamageTypes {
     public static DamageSource spectralTouch(Entity attacker) {
         var type = attacker.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(SPECTRAL_TOUCH);
         return new DamageSource(type, attacker);
+    }
+
+    public static float capBossDamage(DamageSource source, float amount, float cap) {
+        if (source.is(SPECTRAL_TOUCH) && source.getEntity() instanceof Mob) cap = Math.min(cap, 6);
+        return Math.min(amount, cap);
     }
 
     public static DamageSource demonic(Level level, Entity projectile, @Nullable Entity attacker) {

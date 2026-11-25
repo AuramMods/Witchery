@@ -7,10 +7,13 @@ import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -44,6 +47,74 @@ public final class SpectralCombatTests {
                 "The Spectre drains three health while leaving the shield and absorption hearts intact");
         helper.succeed();
     }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_spectral_boss_caps")
+    public static void spectralTouchUsesTheOriginalTargetAndAttackerCaps(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        var player = new ShieldBearer(level, helper.absolutePos(new BlockPos(5, 5, 5)));
+        var spectre = WitcheryEntities.SPECTRE.get().create(level);
+        var mobTouch = WitcheryDamageTypes.spectralTouch(spectre);
+        var playerTouch = WitcheryDamageTypes.spectralTouch(player);
+        var caps = new TargetCap[] {
+                new TargetCap(WitcheryEntities.VAMPIRE.get(), 0, 0),
+                new TargetCap(WitcheryEntities.LEONARD.get(), 0, 0),
+                new TargetCap(WitcheryEntities.REFLECTION.get(), 2, 2),
+                new TargetCap(WitcheryEntities.LORD_OF_TORMENT.get(), 5, 5),
+                new TargetCap(WitcheryEntities.LILITH.get(), 6, 12),
+                new TargetCap(WitcheryEntities.DEATH.get(), 6, 15),
+                new TargetCap(WitcheryEntities.BABA_YAGA.get(), 6, 15),
+                new TargetCap(WitcheryEntities.MOG.get(), 6, 15),
+                new TargetCap(WitcheryEntities.GULG.get(), 6, 15),
+                new TargetCap(WitcheryEntities.HORNED_HUNTSMAN.get(), 6, 15)
+        };
+        for (TargetCap cap : caps) {
+            assertHealthLoss(helper, cap.type().create(level), mobTouch, cap.mob());
+            assertHealthLoss(helper, cap.type().create(level), playerTouch, cap.player());
+        }
+        helper.assertTrue(player.getHealth() == player.getMaxHealth(),
+                "Baba Yaga takes spectral touch without reflecting the player's health drain");
+
+        var leonard = WitcheryEntities.LEONARD.get().create(level);
+        leonard.readAdditionalSaveData(new CompoundTag());
+        helper.assertTrue(leonard.hurt(level.damageSources().playerAttack(player), 2),
+                "The unshielded Leonard still accepts a normal player attack");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_spectral_boss_defenses")
+    public static void spectralTouchPassesThroughBossEntranceAndPartnerDefense(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        var spectre = WitcheryEntities.SPECTRE.get().create(level);
+        var touch = WitcheryDamageTypes.spectralTouch(spectre);
+        var melee = level.damageSources().mobAttack(spectre);
+        var lilith = WitcheryEntities.LILITH.get().create(level);
+        CompoundTag entrance = new CompoundTag();
+        entrance.putInt("Invul", 30);
+        lilith.readAdditionalSaveData(entrance);
+        helper.assertFalse(lilith.hurt(melee, 50), "Lilith's entrance rejects ordinary melee damage");
+        assertHealthLoss(helper, lilith, touch, 6);
+        lilith.setInvulnerable(true);
+        assertHealthLoss(helper, lilith, touch, 0);
+
+        var gulg = helper.spawn(WitcheryEntities.GULG.get(), new BlockPos(4, 5, 4));
+        var mog = helper.spawn(WitcheryEntities.MOG.get(), new BlockPos(4, 5, 6));
+        helper.succeedWhen(() -> {
+            helper.assertTrue(level.getEntitiesOfClass(HobgoblinGod.class, gulg.getBoundingBox().inflate(3)).contains(mog),
+                    "Mog must be tracked within Gulg's defensive range");
+            helper.assertFalse(gulg.hurt(melee, 50), "Mog protects nearby Gulg from ordinary melee damage");
+            assertHealthLoss(helper, gulg, touch, 6);
+        });
+    }
+
+    private static void assertHealthLoss(GameTestHelper helper, LivingEntity target, DamageSource source, float expected) {
+        if (target instanceof Leonard leonard) leonard.readAdditionalSaveData(new CompoundTag());
+        target.setHealth(target.getMaxHealth());
+        boolean hit = target.hurt(source, 50);
+        helper.assertTrue(hit == (expected > 0) && target.getMaxHealth() - target.getHealth() == expected,
+                target.getType() + " should lose " + expected + " health to spectral touch from " + source.getEntity());
+    }
+
+    private record TargetCap(EntityType<? extends LivingEntity> type, float mob, float player) {}
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_spectral_mob_damage")
     public static void spectralTouchPreservesForgeDamageHooksAndMeleeEnchants(GameTestHelper helper) {

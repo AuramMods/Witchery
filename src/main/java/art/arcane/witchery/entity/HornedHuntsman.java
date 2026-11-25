@@ -1,6 +1,7 @@
 package art.arcane.witchery.entity;
 
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.core.BlockPos;
@@ -209,7 +210,7 @@ public final class HornedHuntsman extends Monster implements RangedAttackMob {
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        return super.hurt(source, Math.min(amount, 15));
+        return super.hurt(source, WitcheryDamageTypes.capBossDamage(source, amount, 15));
     }
 
     @Override

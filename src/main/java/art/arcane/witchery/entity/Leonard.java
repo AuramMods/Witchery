@@ -2,7 +2,6 @@ package art.arcane.witchery.entity;
 
 import art.arcane.witchery.infusion.SymbolSpell;
 import art.arcane.witchery.item.WitcheryIngredient;
-import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryItems;
@@ -200,9 +199,6 @@ public final class Leonard extends Monster implements RangedAttackMob {
     public boolean hurt(DamageSource source, float amount) {
         if (source.is(DamageTypes.GENERIC_KILL) || source.is(DamageTypes.FELL_OUT_OF_WORLD)) return super.hurt(source, amount);
         if (entranceTicks > 0 || shielded) return false;
-        if (source.is(WitcheryDamageTypes.SPECTRAL_TOUCH) && source.getEntity() instanceof Player) {
-            return super.hurt(source, Math.min(amount, 2));
-        }
         if (!source.is(DamageTypes.PLAYER_ATTACK)) return false;
         float cap = getHealth() < getMaxHealth() * 0.25F ? (enlarged() ? 1 : 4) : 12;
         return super.hurt(source, Math.min(amount, cap));

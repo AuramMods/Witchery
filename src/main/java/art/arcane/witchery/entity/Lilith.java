@@ -2,6 +2,7 @@ package art.arcane.witchery.entity;
 
 import art.arcane.witchery.infusion.SymbolSpell;
 import art.arcane.witchery.item.GlassGobletItem;
+import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcherySounds;
@@ -136,13 +137,13 @@ public final class Lilith extends Monster implements RangedAttackMob {
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        if (invulnerableTicks > 0) return false;
+        if (invulnerableTicks > 0 && !source.is(WitcheryDamageTypes.SPECTRAL_TOUCH)) return false;
         if (source.getDirectEntity() instanceof LargeFireball && source.getEntity() instanceof Player) {
             // The original countdown advanced on healing pulses, including the next one.
             weaknessTicks = REFLECTED_FIREBALL_HEAL_PULSES * HEAL_INTERVAL - tickCount % HEAL_INTERVAL;
         }
         if (source.is(DamageTypeTags.IS_FIRE)) return false;
-        return super.hurt(source, Math.min(12, amount));
+        return super.hurt(source, WitcheryDamageTypes.capBossDamage(source, amount, 12));
     }
 
     @Override

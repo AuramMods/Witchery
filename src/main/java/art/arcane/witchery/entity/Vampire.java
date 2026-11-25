@@ -4,6 +4,7 @@ import art.arcane.witchery.block.entity.BloodCrucibleBlockEntity;
 import art.arcane.witchery.item.VampireClothingItem;
 import art.arcane.witchery.item.VampireClothingItem.Style;
 import art.arcane.witchery.network.WitcheryNetwork;
+import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.vampirism.BloodFeeding;
 import art.arcane.witchery.vampirism.VampireVillages;
 import art.arcane.witchery.vampirism.Vampirism;
@@ -67,6 +68,11 @@ public final class Vampire extends PathfinderMob {
         return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 20)
                 .add(Attributes.MOVEMENT_SPEED, 0.4).add(Attributes.ATTACK_DAMAGE, 5)
                 .add(Attributes.FOLLOW_RANGE, 40);
+    }
+
+    @Override
+    public boolean isInvulnerableTo(DamageSource source) {
+        return source.is(WitcheryDamageTypes.SPECTRAL_TOUCH) || super.isInvulnerableTo(source);
     }
 
     @Override
