@@ -140,7 +140,7 @@ public final class WitchesOvenBlockEntity extends BaseContainerBlockEntity imple
                 if (recipe.getExperience() > 0) {
                     oven.recipesUsed.merge(recipe.getId(), 1, Integer::sum);
                 }
-                oven.collectFume(level, input, BASE_FUME_CHANCE + left + right);
+                oven.collectFume(level, input, BASE_FUME_CHANCE + (left + right));
                 input.shrink(1);
                 oven.cookTime = 0;
                 inventoryChanged = true;
@@ -202,18 +202,20 @@ public final class WitchesOvenBlockEntity extends BaseContainerBlockEntity imple
 
     private void collectFume(Level level, ItemStack input, double chance) {
         ItemStack jars = getItem(JAR_SLOT);
-        if (!jars.is(WitcheryIngredient.CLAY_JAR.item()) || level.random.nextDouble() > Math.min(1, chance)) {
+        if (level.random.nextDouble() > Math.min(1, chance) || !jars.is(WitcheryIngredient.CLAY_JAR.item())) {
             return;
         }
         WitcheryIngredient ingredient = fumeFor(input);
         if (ingredient == null) {
             return;
         }
-        ItemStack fume = new ItemStack(ingredient.item());
-        if (canStore(FUME_SLOT, fume)) {
-            store(FUME_SLOT, fume);
-            jars.shrink(1);
+        ItemStack stored = getItem(FUME_SLOT);
+        // The original by-product slot reserves the last space in a fume stack.
+        if (!stored.isEmpty() && (!stored.is(ingredient.item()) || stored.getCount() + 1 >= stored.getMaxStackSize())) {
+            return;
         }
+        store(FUME_SLOT, new ItemStack(ingredient.item()));
+        jars.shrink(1);
     }
 
     @Nullable
@@ -343,9 +345,6 @@ public final class WitchesOvenBlockEntity extends BaseContainerBlockEntity imple
     public ItemStack removeItem(int slot, int amount) {
         ItemStack removed = ContainerHelper.removeItem(items, slot, amount);
         if (!removed.isEmpty()) {
-            if (slot == INPUT_SLOT && items.get(slot).isEmpty()) {
-                cookTime = 0;
-            }
             setChanged();
         }
         return removed;
@@ -358,9 +357,6 @@ public final class WitchesOvenBlockEntity extends BaseContainerBlockEntity imple
 
     @Override
     public void setItem(int slot, ItemStack stack) {
-        if (slot == INPUT_SLOT && !ItemStack.isSameItemSameTags(items.get(slot), stack)) {
-            cookTime = 0;
-        }
         int maxCount = Math.min(getMaxStackSize(), stack.getMaxStackSize());
         if (stack.getCount() > maxCount) {
             stack.setCount(maxCount);
@@ -377,7 +373,6 @@ public final class WitchesOvenBlockEntity extends BaseContainerBlockEntity imple
     @Override
     public void clearContent() {
         items.clear();
-        cookTime = 0;
         setChanged();
     }
 

@@ -2,15 +2,27 @@ package art.arcane.witchery.block;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.WitchesOvenBlockEntity;
+import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.registry.WitcheryBlocks;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
+
+import static art.arcane.witchery.block.entity.WitchesOvenBlockEntity.FUEL_SLOT;
+import static art.arcane.witchery.block.entity.WitchesOvenBlockEntity.FUME_SLOT;
+import static art.arcane.witchery.block.entity.WitchesOvenBlockEntity.INPUT_SLOT;
+import static art.arcane.witchery.block.entity.WitchesOvenBlockEntity.JAR_SLOT;
+import static art.arcane.witchery.block.entity.WitchesOvenBlockEntity.RESULT_SLOT;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
@@ -32,6 +44,86 @@ public final class WitchesOvenFumeTests {
         helper.assertTrue(WitchesOvenBlockEntity.fumeFor(new ItemStack(Items.JUNGLE_SAPLING)) == WitcheryIngredient.FOUL_FUME,
                 "Ordinary approved saplings retain the generic fume");
         helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_oven_input_swap")
+    public static void ovenKeepsProgressUntilATickWithoutAValidInput(GameTestHelper helper) {
+        var oven = ovenWithFunnel(helper);
+        var player = helper.makeMockPlayer();
+        var menu = oven.createMenu(1, player.getInventory(), player);
+        tick(helper, oven, 80);
+
+        player.getInventory().setItem(0, new ItemStack(Items.BIRCH_SAPLING));
+        menu.clicked(INPUT_SLOT, 0, ClickType.SWAP, player);
+        helper.assertTrue(oven.getItem(INPUT_SLOT).is(Items.BIRCH_SAPLING)
+                        && player.getInventory().getItem(0).is(Items.OAK_SAPLING)
+                        && oven.saveWithoutMetadata().getInt("CookTime") == 80,
+                "A normal menu swap keeps the old progress and uses the replacement input");
+
+        var birch = oven.removeItem(INPUT_SLOT, 1);
+        oven.setItem(INPUT_SLOT, birch);
+        tick(helper, oven, 79);
+        helper.assertTrue(oven.saveWithoutMetadata().getInt("CookTime") == 159,
+                "Removing and returning the input within a tick keeps the batch progress");
+        tick(helper, oven, 1);
+        helper.assertTrue(oven.getItem(INPUT_SLOT).isEmpty() && oven.getItem(RESULT_SLOT).getCount() == 1,
+                "The original 160-tick completion consumes the replacement sapling");
+
+        oven.setItem(INPUT_SLOT, new ItemStack(Items.BIRCH_SAPLING));
+        tick(helper, oven, 80);
+        var removed = oven.removeItem(INPUT_SLOT, 1);
+        tick(helper, oven, 1);
+        oven.setItem(INPUT_SLOT, removed);
+        helper.assertTrue(oven.saveWithoutMetadata().getInt("CookTime") == 0,
+                "An actual tick with an empty input resets the batch");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_oven_fume_stack")
+    public static void ovenPreservesTheLastFumeStackSlot(GameTestHelper helper) {
+        var oven = ovenWithFunnel(helper);
+        var fume = new ItemStack(WitcheryIngredient.EXHALE_OF_THE_HORNED_ONE.item(), 62);
+        fume.setHoverName(Component.literal("Saved Fumes"));
+        oven.setItem(FUME_SLOT, fume);
+        oven.setItem(INPUT_SLOT, new ItemStack(Items.OAK_SAPLING, 2));
+        oven.setItem(JAR_SLOT, new ItemStack(WitcheryIngredient.CLAY_JAR.item(), 2));
+        var boost = WitcheryServerConfig.DOUBLE_FUME_FILTER_CHANCE;
+        boolean original = boost.get();
+        try {
+            boost.set(true);
+            tick(helper, oven, 160);
+            helper.assertTrue(oven.getItem(FUME_SLOT).getCount() == 63 && oven.getItem(FUME_SLOT).hasCustomHoverName()
+                            && oven.getItem(JAR_SLOT).getCount() == 1,
+                    "A compatible fume joins a stored named stack and consumes one jar");
+            tick(helper, oven, 160);
+            helper.assertTrue(oven.getItem(RESULT_SLOT).getCount() == 2
+                            && oven.getItem(FUME_SLOT).getCount() == 63 && oven.getItem(JAR_SLOT).getCount() == 1,
+                    "A stack of 63 fumes blocks the next fume and preserves the jar while ash still cooks");
+        } finally {
+            boost.set(original);
+        }
+        helper.succeed();
+    }
+
+    private static WitchesOvenBlockEntity ovenWithFunnel(GameTestHelper helper) {
+        var pos = new BlockPos(5, 4, 5);
+        var facing = Direction.NORTH;
+        helper.setBlock(pos, WitcheryBlocks.getRequired("witchesovenidle").get().defaultBlockState()
+                .setValue(WitchesOvenBlock.FACING, facing));
+        helper.setBlock(pos.west(), WitcheryBlocks.getRequired("filteredfumefunnel").get().defaultBlockState()
+                .setValue(WitchesOvenBlock.FACING, facing));
+        var oven = (WitchesOvenBlockEntity) helper.getBlockEntity(pos);
+        oven.setItem(INPUT_SLOT, new ItemStack(Items.OAK_SAPLING));
+        oven.setItem(FUEL_SLOT, new ItemStack(Items.COAL));
+        return oven;
+    }
+
+    private static void tick(GameTestHelper helper, WitchesOvenBlockEntity oven, int ticks) {
+        var pos = oven.getBlockPos();
+        var level = helper.getLevel();
+        for (int i = 0; i < ticks; i++) {
+            WitchesOvenBlockEntity.serverTick(level, pos, level.getBlockState(pos), oven);
+        }
     }
 
     private static ItemStack legacyTree(String species) {

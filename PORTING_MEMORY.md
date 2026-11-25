@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Witch's Oven batch swaps and fume stacks (2026-11-25)
+
+- A runnable replacement keeps the Oven's elapsed cook time. The input present at completion determines the recipe and the fume. A loaded tick with empty or uncookable input clears progress. Removing and returning the input before that tick retains progress.
+- A compatible fume can join a stored named stack, keeping its existing data. A stack of 63 blocks additional fumes while the Oven keeps cooking ash and retains the jar. The fume roll still runs for a completed batch with an empty jar slot, as on Witchery 0.24.1.
+- Clean Forge and copied Auram matched all ten original samples using one aligned, boosted Filtered Fume Funnel. Both input swaps at 80 elapsed ticks produced Birch fume at tick 160. An empty tick reset the alternate batch. The preceding JAR reset both swaps immediately, reached 64 fumes, and skipped the jarless roll.
+- The original Forge save contained Birch at 80 cook ticks and 1,521 burn ticks. The packaged import kept both counters and completed the batch in another 80 ticks. An earlier Forge save at the same counters kept its progress when the rebuild swapped in Birch after startup. Ordinary restarts kept the ash, Birch fume, and remaining jar in both profiles.
+- The muted, unfocused survival client opened the Oven and swapped the hotbar Birch into its input slot. The fixture supplied 130 ticks of existing progress, fuel, jars, and one boosted funnel. Birch fume and Wood Ash appeared after 31 burn ticks, and the original Oak returned to the hotbar.
+- All 355 local Forge GameTests passed. The reobfuscated package is `build/qa-oven-batches/candidate.jar` with SHA-256 `7d7aa0b3c5f7cec652e32fe0c1ee1b70287517239f0fd43b4dbecdd30093c077`. Native and packaged traces, restart fixtures, and the client log are in the same directory.
+
 ## Altar structure changes (2026-11-25)
 
 - Adding a seventh connected altar block clears every loaded member's formed state, core coordinates, and charge during placement. Breaking that block reforms the remaining six while starting from the broken position and visiting north, south, east, and west. The new core is the first member reached. Its initial scan uses the surrounding nature and the existing artifacts, and it starts empty.
