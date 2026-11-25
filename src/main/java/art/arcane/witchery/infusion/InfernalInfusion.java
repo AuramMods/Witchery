@@ -6,6 +6,7 @@ import art.arcane.witchery.entity.Imp;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryEntities;
+import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
@@ -87,6 +88,7 @@ public final class InfernalInfusion {
         }
         CreaturePower power = CreaturePower.forId(CreaturePower.activeId(player));
         if (power != null) power.use(player, elapsed, hit);
+        else fail(player);
     }
 
     public static void commandUndead(ServerPlayer player) {
@@ -219,8 +221,8 @@ public final class InfernalInfusion {
         }
     }
 
-    private static void fail(ServerPlayer player) {
-        player.playSound(SoundEvents.NOTE_BLOCK_SNARE.value(), 0.5F, 1);
+    static void fail(ServerPlayer player) {
+        WitcherySounds.playLegacyPlayerCue(player, SoundEvents.NOTE_BLOCK_SNARE.value(), 0.5F);
     }
 
     private static final class MoveOrder extends Goal {

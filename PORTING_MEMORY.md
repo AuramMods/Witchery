@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Infernal Creature Power Cues (2026-11-24)
+
+- The original headless server captured three `mob.slime.big` packets at the player's fractional coordinates. Magma Cube, Slime and Toad all used a radius of eight blocks with default volume and pitch and set fall distance to zero. The original recipient resolves the defaults to half volume and a pitch between one-third and one-half. Headless replay of the original activation sound helper also matched the seeded half-volume fizz.
+- The preceding Forge package sent fixed-pitch, `0.8`-volume landing sounds to the observer even at ten blocks and omitted the landing player. Two muted background clients on the rebuilt package replayed normal Witch's Hand casts and survival landings. The caster received all three landing sounds. The observer received the one at five blocks with its own pitch and none at eight or ten. The actor kept full health and nine reserve charges after each fall.
+- The same clients received the activation fizz, the bow cues for Spider and a fully charged Skeleton, and the snare when the actor had no creature power or no reserve charges. The two refusals left infusion charge intact. The GameTest covers the separate full-volume Squid cue and blindness, with the other Jump Boost and protection checks.
+- An ordinary clean Forge restart kept the Witch's Hand, 35 infusion charges, the Skeleton power and its empty reserve. Copied Auram replayed all three safe landings, activation sounds and the no-power rejection headlessly through a fixture player. Local data generation, JAR reobfuscation and all 290 required Forge GameTests passed. Logs and profiles are under `build/qa-creature-power-cues`. Candidate SHA-256 `1b94b99c0f558c654687f12d7bf15bec025a28a49020e3eeb06601b4e2848e65`.
+
 ## Hellhound Cures Beyond Player Range (2026-11-24)
 
 - The original Witchery 0.24.1 server advanced a 100-tick cure to 50 with nobody online. In the loaded spawn area it then removed the Hellhound, spawned a wolf at the same position and gave it Nausea.

@@ -2,12 +2,15 @@ package art.arcane.witchery.infusion;
 
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.network.WitcheryNetwork;
+import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageTypes;
@@ -116,7 +119,7 @@ public enum CreaturePower {
         int cost = this == CREEPER && elapsed >= 60 ? 2 : 1;
         int remaining = charges(player) - cost;
         if (remaining < 0) {
-            player.playSound(SoundEvents.NOTE_BLOCK_SNARE.value(), 0.5F, 1);
+            InfernalInfusion.fail(player);
             return;
         }
         if (!InfusionEnergy.spend(player, 1)) return;
@@ -137,7 +140,8 @@ public enum CreaturePower {
             case SQUID -> {
                 if (hit instanceof EntityHitResult entity && entity.getEntity() instanceof LivingEntity victim) {
                     victim.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 200));
-                    fizz(player);
+                    float pitch = 1 / (level.random.nextFloat() * 0.4F + 1.2F) + 0.5F;
+                    level.playSound(null, player, SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 1, pitch);
                 }
             }
             case GHAST -> launchFire(player, true);
@@ -161,7 +165,7 @@ public enum CreaturePower {
                 fizz(player);
             }
             case ENDERMAN -> {
-                if (!OtherwhereInfusion.teleportAimed(player, hit)) player.playSound(SoundEvents.NOTE_BLOCK_SNARE.value(), 0.5F, 1);
+                if (!OtherwhereInfusion.teleportAimed(player, hit)) InfernalInfusion.fail(player);
             }
             case SHEEP, COW, CHICKEN, PIG, VILLAGER, MOOSHROOM -> {
                 buff(player, MobEffects.HEAL, 10, 0);
@@ -204,7 +208,7 @@ public enum CreaturePower {
             case BAT, OWL -> event.setDistance(Math.min(event.getDistance(), 5));
             case MAGMA_CUBE, SLIME, TOAD -> {
                 event.setDistance(0);
-                player.playSound(SoundEvents.SLIME_SQUISH, 0.8F, 1);
+                WitcheryNetwork.sendSoundAround(player.serverLevel(), player.position(), 8, "mob.slime.big", -1, -1);
             }
         }
     }
@@ -218,7 +222,7 @@ public enum CreaturePower {
     }
 
     private static void fizz(ServerPlayer player) {
-        player.playSound(SoundEvents.FIRE_EXTINGUISH, 0.6F, 1);
+        WitcherySounds.playLegacyPlayerCue(player, SoundEvents.FIRE_EXTINGUISH, 0.5F);
     }
 
     private static void launchWeb(ServerPlayer player) {
@@ -227,7 +231,8 @@ public enum CreaturePower {
         web.setItem(new ItemStack(WitcheryIngredient.WEB.item()));
         web.shootFromRotation(player, player.getXRot(), player.getYRot(), 0, 1.5F, 1);
         level.addFreshEntity(web);
-        player.playSound(SoundEvents.ARROW_SHOOT, 0.5F, 1);
+        float pitch = 0.4F / (level.random.nextFloat() * 0.4F + 0.8F);
+        level.playSound(null, player, SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 0.5F, pitch);
     }
 
     private static void launchArrow(ServerPlayer player, int elapsed) {
@@ -240,7 +245,8 @@ public enum CreaturePower {
         arrow.setBaseDamage(arrow.getBaseDamage() + 1);
         arrow.setKnockback(1);
         level.addFreshEntity(arrow);
-        player.playSound(SoundEvents.ARROW_SHOOT, 1, 0.8F + power * 0.5F);
+        float pitch = 1 / (level.random.nextFloat() * 0.4F + 1.2F) + power * 0.5F;
+        level.playSound(null, player, SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1, pitch);
     }
 
     private static void launchFire(ServerPlayer player, boolean ghast) {

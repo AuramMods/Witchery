@@ -158,13 +158,14 @@ public final class WitcheryClientPacketHandlers {
 
         RandomSource random = level.getRandom();
         float volume = message.volume() < 0.0F ? 0.5F : message.volume();
-        float pitch = message.pitch() < 0.0F ? randomPitch(random) : message.pitch();
+        float pitch = message.pitch() < 0.0F ? 0.4F / ((float) random.nextDouble() * 0.4F + 0.8F) : message.pitch();
+        SoundSource source = sound == SoundEvents.SLIME_JUMP ? SoundSource.HOSTILE : SoundSource.AMBIENT;
         level.playLocalSound(
                 message.x(),
                 message.y(),
                 message.z(),
                 sound,
-                SoundSource.AMBIENT,
+                source,
                 volume,
                 pitch,
                 false

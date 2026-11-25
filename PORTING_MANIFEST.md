@@ -1224,6 +1224,9 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 24 | `CreaturePowerBat` |
 | 25 | `CreaturePowerJump` |
 
+- Landing with Magma Cube, Slime or Toad power clears fall damage and sends `sound` at the landing position. It reaches the caster and players strictly within eight blocks in the same dimension. Each receiving client plays the mapped large-slime cue at half volume and picks a pitch between one-third and one-half.
+- Infernal casting feedback reaches the caster. Ordinary fizz and rejection cues use the original half volume and pitch range. Squid blindness uses its own full-volume fizz. Spider and Skeleton attacks use the original bow sound, the latter with draw-strength pitch scaling.
+
 ## Infusion Registry (`Infusion.Registry`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/WitcheryRecipes.java`
 

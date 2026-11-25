@@ -290,6 +290,11 @@ public final class WitcheryNetwork {
         );
     }
 
+    public static void sendSoundAround(ServerLevel level, Vec3 center, double range, String soundId, float volume, float pitch) {
+        var target = PacketDistributor.TargetPoint.p(center.x, center.y, center.z, range, level.dimension());
+        CHANNEL.send(PacketDistributor.NEAR.with(target), new SoundPacket(soundId, center.x, center.y, center.z, volume, pitch));
+    }
+
     public static void sendParticles(
             ServerPlayer player,
             int particleEffectId,
