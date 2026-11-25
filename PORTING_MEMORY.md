@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Witch Hunter and Village Guard poses (2026-11-25)
+
+- The original NPC renderers hold ranged weapons in one hand during idle and combat. The Forge models use that pose for an occupied hand and apply it to either modern hand. Both use the original crouch offsets. The Witch Hunter uses the original seated leg angles.
+- The Village Guard uses half the ordinary leg stride and draws the robe separately from the turning torso. The hat layer sits 0.3 model units below the head. Both guard types share the original visual scale. Guard type one controls the larger collision box, fire immunity and flaming arrows.
+- A Java 8 probe ran the original 0.24.1 client model code for seven poses per mob. The rebuilt client matched all 756 measured angles and pivots. Both armor textures rendered on all five equipped defenders, including the three distinct Witch Hunter skins. In clean Forge survival, the ordinary guard and hunter AI fired and hit separate fixture zombies.
+- The normal dedicated restart retained all five UUIDs, their weapons, armor and appearance. All three client launches used OpenAL's No Output device and kept the original foreground app.
+- The copied Auram dedicated server loaded and saved the tall guard and all three hunter types with their supplied weapons and chestplates. Local Java 17 data generation, JAR reobfuscation and all 375 required Forge GameTests passed on seed `5471593853027166409`.
+- The exact packaged JAR is `build/qa-defender-poses/candidate.jar` with SHA-256 `9cf77d643c359012cfc252c573826e20968548535532fb894c7bb0ba8b3e3302`. The pose, combat and restart evidence is in `build/qa-defender-poses/comparison.txt`.
+
 ## Hellhound combat, cure, and animation (2026-11-25)
 
 - An original Hellhound has eight percent innate armor. Its other damage reduction reads the attacker credited by the source. A skeleton arrow for eight damage leaves 15.86 health and a player arrow leaves 12.64. A four-point player hit leaves 16.32. Earlier Forge saves migrate the two-point armor default and retain the entity UUID. The trophy roll uses the world random source.
