@@ -15,26 +15,34 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.storage.ChunkStorage;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 
-final class LegacyChunkEntities {
-    private static final String LEGACY_PREFIX = Witchery.MODID + ".";
+public final class LegacyChunkEntities {
     private static final String NAMESPACE = Witchery.MODID + ":";
     private static final String ORIGINAL_TYPE = "WitcheryLegacyEntityType";
     private static final String LEGACY_APOTHECARY = "WitcheryLegacyApothecary";
+    private static final String SPAWNER_CART = "minecraft:spawner_minecart";
+    private static final String LEGACY_CART_SPAWNER = "WitcheryLegacyCartSpawner";
 
     private LegacyChunkEntities() {
     }
 
     static void prepare(CompoundTag level, LegacyWorldIds ids, DataFixer fixer, int from) {
         for (Tag tag : level.getList("Entities", Tag.TAG_COMPOUND)) prepareEntity((CompoundTag) tag, ids, fixer, from);
+        for (Tag entry : level.getList("TileEntities", Tag.TAG_COMPOUND)) {
+            CompoundTag tile = (CompoundTag) entry;
+            if (tile.getString("id").equals("MobSpawner")) prepareSpawner(tile, ids, fixer, from);
+        }
     }
 
     @Nullable
@@ -79,11 +87,13 @@ final class LegacyChunkEntities {
         }
 
         String oldType = entity.getString("id");
+        if (oldType.equals("MinecartSpawner") || oldType.equals("Minecart") && entity.getInt("Type") == 4) {
+            prepareSpawnerCart(entity, ids, fixer, from);
+        }
         if ((oldType.equals("Villager") || oldType.equals("minecraft:villager")) && ids.isApothecary(entity, "Profession")) {
             entity.putBoolean(LEGACY_APOTHECARY, true);
         }
-        if (!oldType.startsWith(LEGACY_PREFIX) && !oldType.startsWith(NAMESPACE)) return;
-        ResourceLocation name = ResourceLocation.tryParse(NAMESPACE + oldType.substring(NAMESPACE.length()).toLowerCase(Locale.ROOT));
+        ResourceLocation name = WitcheryEntities.legacyEntityId(oldType);
         if (name == null) return;
         if ((name.getPath().equals("werevillager") && ids.isApothecary(entity, "Profession"))
                 || (name.getPath().equals("wolfman") && ids.isApothecary(entity, "FormerProfession"))) {
@@ -116,6 +126,59 @@ final class LegacyChunkEntities {
         entity.putString("id", schemaType);
     }
 
+    private static void prepareSpawner(CompoundTag spawner, LegacyWorldIds ids, DataFixer fixer, int from) {
+        prepareSpawnEntry(spawner, "EntityId", "SpawnData", ids, fixer, from);
+        for (Tag entry : spawner.getList("SpawnPotentials", Tag.TAG_COMPOUND)) {
+            prepareSpawnEntry((CompoundTag) entry, "Type", "Properties", ids, fixer, from);
+        }
+    }
+
+    private static void prepareSpawnerCart(CompoundTag cart, LegacyWorldIds ids, DataFixer fixer, int from) {
+        // Vanilla's horse split fails while walking the spawner inside a legacy minecart.
+        // Fix its spawn rules as a block spawner and its vehicle fields as a regular minecart.
+        var spawner = new CompoundTag();
+        spawner.putString("id", "MobSpawner");
+        for (String key : new String[]{"EntityId", "SpawnData", "SpawnPotentials"}) {
+            Tag value = cart.get(key);
+            if (value != null) {
+                spawner.put(key, value);
+                cart.remove(key);
+            }
+        }
+        prepareSpawner(spawner, ids, fixer, from);
+        // The old spawner fixes expect the block entity schema inside a chunk.
+        var tiles = new ListTag();
+        tiles.add(spawner);
+        var level = new CompoundTag();
+        level.put("TileEntities", tiles);
+        level.putBoolean("TerrainPopulated", true);
+        var chunk = new CompoundTag();
+        chunk.put("Level", level);
+        int flattenedVersion = 1493;
+        CompoundTag flattened = DataFixTypes.CHUNK.update(fixer, chunk, from, flattenedVersion);
+        ChunkStorage.injectDatafixingContext(flattened, Level.OVERWORLD, Optional.empty());
+        CompoundTag upgraded = DataFixTypes.CHUNK.updateToCurrentVersion(fixer, flattened, flattenedVersion);
+        CompoundTag fixed = upgraded.getList("block_entities", Tag.TAG_COMPOUND).getCompound(0);
+        fixed.remove("id");
+        cart.put(LEGACY_CART_SPAWNER, fixed);
+        cart.remove("Type");
+        cart.putString("id", "MinecartRideable");
+        cart.putString(ORIGINAL_TYPE, SPAWNER_CART);
+    }
+
+    private static void prepareSpawnEntry(CompoundTag entry, String typeKey, String dataKey,
+                                          LegacyWorldIds ids, DataFixer fixer, int from) {
+        String name = entry.getString(typeKey);
+        ResourceLocation id = WitcheryEntities.legacyEntityId(name);
+        if (id == null || !ForgeRegistries.ENTITY_TYPES.containsKey(id)) return;
+        CompoundTag entity = entry.getCompound(dataKey);
+        entity.putString("id", name);
+        prepareEntity(entity, ids, fixer, from);
+        // Vanilla copies the type field over the entity ID before it fixes the embedded entity.
+        entry.putString(typeKey, entity.getString("id"));
+        entry.put(dataKey, entity);
+    }
+
     private static ResourceLocation prepareBrewProjectile(CompoundTag entity, ResourceLocation legacyType,
                                                           LegacyWorldIds ids, DataFixer fixer, int from, int to) {
         boolean fixedRecipe = legacyType.getPath().equals("brew");
@@ -130,8 +193,22 @@ final class LegacyChunkEntities {
         return WitcheryEntities.THROWN_BREW.getId();
     }
 
-    static void restore(CompoundTag chunk) {
-        for (Tag tag : chunk.getList("entities", Tag.TAG_COMPOUND)) restoreEntity((CompoundTag) tag);
+    public static void restore(ListTag entities) {
+        for (Tag tag : entities) restoreEntity((CompoundTag) tag);
+    }
+
+    static void restoreSpawner(CompoundTag spawner) {
+        restoreSpawnEntry(spawner.getCompound("SpawnData"));
+        for (Tag entry : spawner.getList("SpawnPotentials", Tag.TAG_COMPOUND)) {
+            restoreSpawnEntry(((CompoundTag) entry).getCompound("data"));
+        }
+    }
+
+    private static void restoreSpawnEntry(CompoundTag data) {
+        if (!(data.get("entity") instanceof CompoundTag entity)) return;
+        restoreEntity(entity);
+        ResourceLocation id = WitcheryEntities.legacyEntityId(entity.getString("id"));
+        if (id != null && ForgeRegistries.ENTITY_TYPES.containsKey(id)) entity.putString("id", id.toString());
     }
 
     private static void restoreEntity(CompoundTag entity) {
@@ -162,7 +239,14 @@ final class LegacyChunkEntities {
                 restoreApothecary(entity);
             }
         }
-        for (Tag tag : entity.getList("Passengers", Tag.TAG_COMPOUND)) restoreEntity((CompoundTag) tag);
+        if (entity.getString("id").equals(SPAWNER_CART)) {
+            if (entity.get(LEGACY_CART_SPAWNER) instanceof CompoundTag spawner) {
+                entity.merge(spawner);
+                entity.remove(LEGACY_CART_SPAWNER);
+            }
+            restoreSpawner(entity);
+        }
+        restore(entity.getList("Passengers", Tag.TAG_COMPOUND));
     }
 
     private static void restoreApothecary(CompoundTag villager) {

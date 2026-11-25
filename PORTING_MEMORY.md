@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Legacy Spawner Imports (2026-11-24)
+
+- Native Forge 1.7.10 saved two Witchery spawner blocks, a vanilla Zombie control, and a spawner minecart. The weighted block selected a named Toad at six health and held a Hellhound and a Skeleton at weights seven and three. The cart selected a named Hellhound at eleven health and held a Toad and a Zombie at weights four and one.
+- The preceding packaged port opened the Witchery blocks with empty mob data and lost the weighted list. Vanilla's horse-splitting fix also failed while walking the old spawner minecart. The importer now upgrades its vehicle data as a regular minecart, converts its spawn rules through the spawner block schema, and restores the cart type and those rules together before loading the entity.
+- The rebuilt package preserved all four spawners. In a clean Forge survival session, a background client activated the block spawner while standing in range. The saved Toad spawned with six health and kept its persistence flag. The block selected the Skeleton from its weighted list, and shortening the next delay produced the named Skeleton. The fixture provided grass for the Toad and nighttime for the Skeleton. The client volume was zero, OpenAL used No Output, and macOS never activated the client process.
+- Wicker Man generation accepts the original dotted names in `strawmanSpawnerRules`. Ordinary 1.20.1 loads can repair stored entries that still carry a dotted name. Recovering entries erased by an earlier import requires the original region data.
+- An ordinary clean Forge restart kept the imported rules and corrected the dotted entries in a separate 1.20.1 block and minecart. The same JAR imported all original rules on a disposable Auram server and saved and stopped headlessly.
+- Local Java 17 data generation, JAR reobfuscation and all 294 required Forge GameTests passed. The new tests cover original spawner import, current-format repair and Wicker Man generation. Evidence is under `build/qa-spawner-import`. The tested JAR SHA-256 is `8e4616c77af2e965a7fba826c790e32b97ca5a4b5e0c1f784f54040bf0d01a71`.
+
 ## Dream Arrival Position and Motion (2026-11-24)
 
 - The original Forge server chose `(94.5, 92.1, 31.5)` when two landing spots were equally distant at 12 blocks above and below the starting point. Removing the upper platform put the next arrival at `(94.5, 68.1, 31.5)`. Both calls ignored the neighboring platform at the starting height. The original packet serializes `(0, 0.1, 0)` on sleep and wake. The two ghost transitions use the same landing search with no push.

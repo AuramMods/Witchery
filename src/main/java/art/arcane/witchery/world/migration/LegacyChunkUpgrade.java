@@ -145,7 +145,7 @@ public final class LegacyChunkUpgrade {
     }
 
     public static void finish(CompoundTag upgraded, ResourceKey<Level> dimension) {
-        LegacyChunkEntities.restore(upgraded);
+        LegacyChunkEntities.restore(upgraded.getList("entities", Tag.TAG_COMPOUND));
         restoreTicks(upgraded, LEGACY_BLOCK_TICKS, "block_ticks");
         restoreTicks(upgraded, LEGACY_FLUID_TICKS, "fluid_ticks");
         if (dimension.equals(WitcheryDimensions.TORMENT) || dimension.equals(WitcheryDimensions.MIRROR)) {
@@ -214,8 +214,9 @@ public final class LegacyChunkUpgrade {
         });
         for (Tag entry : tiles) {
             var tile = (CompoundTag) entry;
-            if (tile.getString("id").equals("witchery:wolftrap")) {
-                tile.putString("id", "witchery:beartrap");
+            switch (tile.getString("id")) {
+                case "witchery:wolftrap" -> tile.putString("id", "witchery:beartrap");
+                case "minecraft:mob_spawner" -> LegacyChunkEntities.restoreSpawner(tile);
             }
         }
     }

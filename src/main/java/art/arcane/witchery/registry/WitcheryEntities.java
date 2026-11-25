@@ -60,20 +60,24 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.event.entity.SpawnPlacementRegisterEvent;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public final class WitcheryEntities {
     public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, Witchery.MODID);
     public static final Map<String, RegistryObject<? extends EntityType<? extends Mob>>> LEGACY_ENTITIES = new LinkedHashMap<>();
+
     public static final RegistryObject<EntityType<Mandrake>> MANDRAKE =
             ENTITY_TYPES.register("mandrake", () -> EntityType.Builder.of(Mandrake::new, MobCategory.MONSTER)
                     .sized(0.6F, 0.9F).build(Witchery.MODID + ":mandrake"));
@@ -283,6 +287,14 @@ public final class WitcheryEntities {
 
     public static Map<String, RegistryObject<? extends EntityType<? extends Mob>>> all() {
         return Collections.unmodifiableMap(LEGACY_ENTITIES);
+    }
+
+    @Nullable
+    public static ResourceLocation legacyEntityId(String name) {
+        if (name.startsWith("minecraft:witchery.")) name = name.substring("minecraft:".length());
+        if (!name.startsWith("witchery.") && !name.startsWith("witchery:")) return null;
+        String path = name.substring(Witchery.MODID.length() + 1).toLowerCase(Locale.ROOT);
+        return ResourceLocation.tryParse(Witchery.MODID + ":" + path);
     }
 
     private static RegistryObject<EntityType<SpectralUndead>> spectral(String path, SpectralUndead.Kind kind, float width, float height) {

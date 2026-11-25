@@ -1,6 +1,7 @@
 package art.arcane.witchery.world;
 
 import art.arcane.witchery.config.WitcheryServerConfig;
+import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -82,7 +83,8 @@ public final class WickerManFeature extends Feature<NoneFeatureConfiguration> {
             default -> configured.contains(":") ? configured
                     : WORD_BOUNDARY.matcher(configured).replaceAll("_").toLowerCase(Locale.ROOT);
         };
-        ResourceLocation id = ResourceLocation.tryParse(name);
+        ResourceLocation id = WitcheryEntities.legacyEntityId(configured);
+        if (id == null) id = ResourceLocation.tryParse(name);
         return id == null ? EntityType.ZOMBIE : BuiltInRegistries.ENTITY_TYPE.getOptional(id).orElse(EntityType.ZOMBIE);
     }
 }

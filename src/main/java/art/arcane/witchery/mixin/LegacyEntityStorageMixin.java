@@ -1,5 +1,6 @@
 package art.arcane.witchery.mixin;
 
+import art.arcane.witchery.world.migration.LegacyChunkEntities;
 import art.arcane.witchery.world.migration.LegacyWorldIds;
 import com.mojang.datafixers.DataFixer;
 import net.minecraft.nbt.CompoundTag;
@@ -31,8 +32,10 @@ abstract class LegacyEntityStorageMixin {
 
     @Inject(method = "upgradeChunkTag", at = @At("RETURN"))
     private void witchery$repairStoredEntityItems(CompoundTag input, CallbackInfoReturnable<CompoundTag> info) {
+        var entities = info.getReturnValue().getList("Entities", Tag.TAG_COMPOUND);
+        LegacyChunkEntities.restore(entities);
         if (witchery$legacyIds != null) {
-            witchery$legacyIds.repairStoredItems(info.getReturnValue().getList("Entities", Tag.TAG_COMPOUND), fixerUpper);
+            witchery$legacyIds.repairStoredItems(entities, fixerUpper);
         }
     }
 }

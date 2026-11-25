@@ -1683,6 +1683,8 @@
 
 ## Legacy Save Fixtures (2026-11-21)
 
+- [x] Import the two block spawners and spawner minecart saved by the original Forge server. The plain Hellhound ID, named six-health Toad, named eleven-health cart Hellhound, both weighted lists, and all tested delays and ranges survive. The ordinary vanilla Zombie block remains a Zombie spawner.
+- [x] Activate the imported block from a muted background survival client. It spawns the named six-health Toad, rolls the Skeleton from the saved weighted list, and spawns that named Skeleton after the test shortens the delay. Reopen the world without the import flag and verify repairs to dotted IDs in a separate 1.20.1 block and cart. Copied Auram preserves the original records during a headless import and save.
 - [x] Audit the numeric registry captured by the original Witchery 0.24.1 Forge save. The current chunk importer returned a state for all 121 Witchery block IDs at each metadata value from 0 through 15. The stack importer resolved all 217 Witchery item IDs at metadata zero and preserved a custom marker on each stack.
 - [x] Save all 163 Ingredient and 12 Poppet subtypes in 16 chests on the original Forge server. Verify the numeric IDs and metadata from the original regions. All 175 stacks kept their mapped item IDs, slots, counts, and marker tags during import and after an ordinary restart. Both mutton subtypes became their corresponding vanilla items.
 - [x] Save a stack of two Wooden Stakes under the original numeric ingredient ID and damage 162 in a Witchery 0.24.1 chest. The packaged Forge importer kept its count and marker tag as `witchery:stake`. The same chest and tag survived an ordinary dedicated restart.
