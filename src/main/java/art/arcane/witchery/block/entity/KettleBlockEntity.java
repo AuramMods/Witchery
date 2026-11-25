@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -19,8 +20,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -202,11 +204,37 @@ public final class KettleBlockEntity extends BlockEntity {
         return bottleBrew(1, false, false);
     }
 
-    public ItemStack bottleBrew(Player player) {
-        if (!(player instanceof ServerPlayer server)) return ItemStack.EMPTY;
+    public boolean bottleBrew(ServerPlayer player, InteractionHand hand) {
+        ItemStack empty = player.getItemInHand(hand);
+        if (!empty.is(Items.GLASS_BOTTLE)) return false;
+        ItemStack serving = prepareServing(player);
+        if (serving.isEmpty()) return false;
+
+        if (empty.getCount() == 1) {
+            player.setItemInHand(hand, serving);
+        } else {
+            var inventory = player.getInventory();
+            var previous = inventory.save(new ListTag());
+            player.addItem(serving);
+            if (!serving.isEmpty()) {
+                ItemEntity overflow = new ItemEntity(player.serverLevel(), worldPosition.getX() + 0.5,
+                        worldPosition.getY() + 1.5, worldPosition.getZ() + 0.5, serving);
+                if (!player.serverLevel().addFreshEntity(overflow)) {
+                    // Inventory insertion may have merged part of a bonus serving before the spawn veto.
+                    inventory.load(previous);
+                    return false;
+                }
+            }
+            empty.shrink(1);
+        }
+        extractBrew(1, false, false);
+        return true;
+    }
+
+    private ItemStack prepareServing(ServerPlayer player) {
         KettleRecipe recipe = finishedRecipe();
-        if (recipe != null && !recipe.canBottle(server)) return ItemStack.EMPTY;
-        ItemStack bottled = extractBrew(1, false, false);
+        if (recipe != null && !recipe.canBottle(player)) return ItemStack.EMPTY;
+        ItemStack bottled = extractBrew(1, false, true);
         if (bottled.isEmpty() || recipe == null) return bottled;
         int bonus = recipe.bottlingBonus();
         if (bonus <= 0) return bottled;
@@ -219,7 +247,7 @@ public final class KettleBlockEntity extends BlockEntity {
         if (robe == (raising ? WitchClothingItem.Style.NECROMANCER_ROBE : WitchClothingItem.Style.WITCH_ROBE)) {
             primaryChance += 0.35;
         }
-        double toadChance = FamiliarBinding.hasBrewMastery(server) ? 0.05 : 0;
+        double toadChance = FamiliarBinding.hasBrewMastery(player) ? 0.05 : 0;
         primaryChance += toadChance;
         if (primaryChance > 0 && player.getRandom().nextDouble() <= primaryChance) bottled.grow(bonus);
         if (babaHat && player.getRandom().nextDouble() <= 0.25 + toadChance) bottled.grow(bonus);

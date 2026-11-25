@@ -1,8 +1,6 @@
 package art.arcane.witchery.block;
 
 import net.minecraft.core.Direction;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -61,7 +59,6 @@ final class BrewingContainers {
             }
         }
         tank.drain(portion, IFluidHandler.FluidAction.EXECUTE);
-        player.level().playSound(null, vessel.getBlockPos(), SoundEvents.GENERIC_SWIM, SoundSource.BLOCKS, 1, 1);
         return true;
     }
 

@@ -3,12 +3,13 @@ package art.arcane.witchery.block;
 import art.arcane.witchery.block.entity.KettleBlockEntity;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
+import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -102,36 +103,27 @@ public final class KettleBlock extends BaseEntityBlock {
         }
         ItemStack held = player.getItemInHand(hand);
         if (held.is(Items.GLASS_BOTTLE)) {
+            if (level.isClientSide) return kettle.isReady() || kettle.isFull() ? InteractionResult.SUCCESS : InteractionResult.PASS;
+            if (!(player instanceof ServerPlayer server)) return InteractionResult.PASS;
             if (!kettle.isReady()) {
-                if (level.isClientSide) return kettle.isFull() ? InteractionResult.SUCCESS : InteractionResult.PASS;
                 if (!BrewingContainers.fillWaterBottle(player, hand, kettle, hit.getDirection())) return InteractionResult.PASS;
                 kettle.rinse();
+            } else if (!kettle.bottleBrew(server, hand)) {
                 return InteractionResult.CONSUME;
             }
-            if (!level.isClientSide) {
-                ItemStack brew = kettle.bottleBrew(player);
-                if (!brew.isEmpty()) {
-                    held.shrink(1);
-                    if (held.isEmpty()) {
-                        player.setItemInHand(hand, brew);
-                    } else if (!player.addItem(brew)) {
-                        player.drop(brew, false);
-                    }
-                    level.playSound(null, pos, SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1.0F, 1.0F);
-                }
-            }
-            return InteractionResult.sidedSuccess(level.isClientSide);
+            WitcherySounds.playLegacyPlayerCue(server, SoundEvents.PLAYER_SWIM, 0.5F);
+            return InteractionResult.CONSUME;
         }
         boolean waterBottle = BrewingContainers.isWaterBottle(held);
         if (waterBottle || held.is(Items.WATER_BUCKET)) {
-            if (!level.isClientSide) {
+            if (player instanceof ServerPlayer server) {
                 if (waterBottle) {
                     BrewingContainers.pourWaterBottle(player, hand, kettle, hit.getDirection());
                 } else {
                     BrewingContainers.pourBucket(player, hand, kettle, hit.getDirection());
                 }
                 kettle.rinse();
-                level.playSound(null, pos, SoundEvents.GENERIC_SWIM, SoundSource.BLOCKS, 1, 1);
+                WitcherySounds.playLegacyPlayerCue(server, SoundEvents.PLAYER_SWIM, 0.5F);
             }
             return InteractionResult.sidedSuccess(level.isClientSide);
         }

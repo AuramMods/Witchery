@@ -15,6 +15,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -28,15 +29,21 @@ import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.PlayLevelSoundEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
@@ -304,10 +311,78 @@ public final class KettleDropTests {
         long seed = 0;
         while (RandomSource.create(seed).nextDouble() >= 0.35) seed++;
         player.getRandom().setSeed(seed);
-        var result = kettle.bottleBrew(player);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.GLASS_BOTTLE));
+        helper.assertTrue(kettle.bottleBrew(player, InteractionHand.MAIN_HAND), "The kettle serves a held bottle");
+        var result = player.getMainHandItem();
         helper.assertTrue(result.is(WitcheryIngredient.INFUSED_BREW_BASE.item()) && result.getCount() == 2,
                 "A successful Witch's Hat roll should add one serving to the duplicate-base recipe");
         helper.assertTrue(kettle.isReady(), "The bonus serving should leave the second base in the kettle");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void kettleServesOverflowAboveTheBasinAndHandlesASpawnVeto(GameTestHelper helper) throws Exception {
+        var level = helper.getLevel();
+        var kettle = heatedKettle(helper, new BlockPos(3, 4, 4));
+        kettle.load(TagParser.parseTag("""
+                {Items:[{Slot:6b,id:"witchery:infused_brew_base",Count:2b}],Powered:1b,
+                 Tank:{FluidName:"minecraft:water",Amount:1000},FinishedRecipe:"witchery:kettle/infused_brew_base_from_bramble"}
+                """));
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "KettleOverflow"));
+        for (int slot = 0; slot < player.getInventory().items.size(); ++slot) {
+            player.getInventory().setItem(slot, new ItemStack(Items.STONE, 64));
+        }
+        var base = new ItemStack(WitcheryIngredient.INFUSED_BREW_BASE.item());
+        int full = base.getMaxStackSize();
+        player.getInventory().setItem(1, base.copyWithCount(full - 1));
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.GLASS_BOTTLE, 2));
+        player.setItemSlot(EquipmentSlot.HEAD, new ItemStack(WitcheryItems.getRequired("witchhat").get()));
+        long seed = 0;
+        while (RandomSource.create(seed).nextDouble() >= 0.35) seed++;
+
+        BlockPos pos = kettle.getBlockPos();
+        Vec3 dropPosition = Vec3.atBottomCenterOf(pos).add(0, 1.5, 0);
+        var hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
+        var drops = new ArrayList<ItemEntity>();
+        var cues = new ArrayList<PlayLevelSoundEvent.AtEntity>();
+        AtomicBoolean reject = new AtomicBoolean(true);
+        Consumer<EntityJoinLevelEvent> capture = event -> {
+            if (!(event.getEntity() instanceof ItemEntity drop) || !drop.getItem().is(base.getItem())) return;
+            drops.add(drop);
+            if (reject.get()) event.setCanceled(true);
+        };
+        Consumer<PlayLevelSoundEvent.AtEntity> sound = event -> {
+            if (event.getEntity() == player) cues.add(event);
+        };
+        MinecraftForge.EVENT_BUS.addListener(capture);
+        MinecraftForge.EVENT_BUS.addListener(sound);
+        try {
+            var state = kettle.getBlockState();
+            player.getRandom().setSeed(seed);
+            state.getBlock().use(state, level, pos, player, InteractionHand.MAIN_HAND, hit);
+            helper.assertTrue(player.getMainHandItem().getCount() == 2
+                            && player.getInventory().getItem(1).getCount() == full - 1 && cues.isEmpty(),
+                    "A rejected overflow restores the partially merged stack and keeps the empty bottles");
+            helper.assertTrue(kettle.saveWithoutMetadata().getList("Items", Tag.TAG_COMPOUND).getCompound(0).getByte("Count") == 2,
+                    "A rejected overflow keeps both servings in the Kettle");
+            reject.set(false);
+            player.getRandom().setSeed(seed);
+            state.getBlock().use(state, level, pos, player, InteractionHand.MAIN_HAND, hit);
+            helper.assertTrue(drops.size() == 2 && drops.get(1).position().equals(dropPosition)
+                            && drops.get(1).getItem().getCount() == 1 && player.getMainHandItem().getCount() == 1
+                            && player.getInventory().getItem(1).getCount() == full,
+                    "The retry spends one bottle, fills the inventory stack and drops the remainder above the basin");
+            helper.assertTrue(cues.size() == 1 && cues.get(0).getSound() != null
+                            && cues.get(0).getSound().value() == SoundEvents.PLAYER_SWIM
+                            && cues.get(0).getNewVolume() == 0.5F && cues.get(0).getNewPitch() >= 1F / 3
+                            && cues.get(0).getNewPitch() <= 0.5F,
+                    "Successful hand bottling sends the original swim cue from the player");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(sound);
+            MinecraftForge.EVENT_BUS.unregister(capture);
+            drops.forEach(ItemEntity::discard);
+            player.discard();
+        }
         helper.succeed();
     }
 

@@ -153,6 +153,7 @@
 - [x] Restore checks on each Kettle's 20 loaded ticks. The original and both packaged profiles colored Brew of Ice on tick 20, waited for the closer altar to charge and paid it 1,000 power on tick 40. A batch saved by the previous build kept its ingredients and finished after a dedicated restart when the closer altar recharged.
 - [x] Preserve kettle batches during fluid automation. The original and both packaged profiles retained three finished servings after a 400 mB drain. The partly filled kettle yielded one serving by hand. Refilling allowed automated bottling of the other two. A dedicated restart retained a separate 600 mB fixture and its three finished servings.
 - [x] Convert a Witchery 0.24.1 save made after a partial drain and one hand bottling. The imported Kettle retained 600 mB, two Brew of Ice servings, three glass bottles, its tint and its power flag after an ordinary restart.
+- [x] Match the hand-serving overflow position and player swim cue for bottling brew, rinsing, and drawing Water Bottles. A muted survival player with a full inventory received one Brew of Vines above the basin and kept two servings in the Kettle. The restart retained that same dropped brew, both bottle buffers and the drawn water. A Forge drop veto preserves the bottle, serving and any partially filled inventory stack.
 
 ## Mirror Milestone (2026-11-19)
 

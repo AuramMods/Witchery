@@ -79,10 +79,14 @@ public final class WitchesCauldronBlock extends BaseEntityBlock {
         var held = player.getItemInHand(hand);
         if (held.is(Items.GLASS_BOTTLE)) {
             if (level.isClientSide) return state.getValue(WATER) > 0 ? InteractionResult.SUCCESS : InteractionResult.PASS;
-            if (level.getBlockEntity(pos) instanceof WitchesCauldronBlockEntity cauldron
-                    && (BrewingContainers.fillWaterBottle(player, hand, cauldron, hit.getDirection())
-                    || player instanceof ServerPlayer serverPlayer && cauldron.bottle(serverPlayer, hand))) {
-                return InteractionResult.CONSUME;
+            if (level.getBlockEntity(pos) instanceof WitchesCauldronBlockEntity cauldron) {
+                if (BrewingContainers.fillWaterBottle(player, hand, cauldron, hit.getDirection())) {
+                    level.playSound(null, pos, SoundEvents.GENERIC_SWIM, SoundSource.BLOCKS, 1, 1);
+                    return InteractionResult.CONSUME;
+                }
+                if (player instanceof ServerPlayer serverPlayer && cauldron.bottle(serverPlayer, hand)) {
+                    return InteractionResult.CONSUME;
+                }
             }
             return InteractionResult.PASS;
         }

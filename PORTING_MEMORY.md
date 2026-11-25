@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Kettle hand serving (2026-11-25)
+
+- Witchery 0.24.1 dropped the extra Brew of Vines at `(210.5, 181.5, 210.5)` when the player had two glass bottles and a full inventory. One glass bottle and two Kettle servings remained. Serving, rinsing, and drawing plain water each played `game.player.swim` at the player with volume 0.5 and the original randomized pitch.
+- The rebuilt JAR uses the player's swim cue and the original overflow coordinates. The targeted Forge GameTest partially merges a two-serving Hat bonus, rejects the overflow through the real entity join event, and confirms both inputs and the first stack are restored. The retry inserts one bonus item and spawns one overflow item above the basin.
+- Muted packaged survival clients used two prepared Kettles and full inventories to compare both builds. The rebuilt client received all three player swim cues. A dedicated restart preserved the overflow UUID, two remaining servings, both three-bottle buffers and the player's Water Bottle. Both client launches and the restart used master volume zero and OpenAL No Output and kept desktop focus.
+- JAR reobfuscation and all 410 local Forge GameTests passed on seed `5471593853027166409`. The headless Auram copy loaded and saved the serving area on the same JAR. The candidate is `build/qa-kettle-serving/candidate.jar` with SHA-256 `634ffd30ef360caeabe44d9b1915a82465d343a21835369676de08032290d617`. See `build/qa-kettle-serving/comparison.txt`.
+
 ## Demonic Dream hazards (2026-11-25)
 
 - In Witchery 0.24.1 both fireball sizes spawned fifteen blocks above the player with downward acceleration 0.1. The native Demon roll succeeded beside two Demons and ten Ghasts. Ten Zombies blocked the same roll. The modern census uses `Monster`, the counterpart of the original `EntityMob` query.
