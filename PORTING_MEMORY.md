@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Overworld infusion raised terrain, soft landings and disarm (2026-11-25)
+
+- The original top-face cast shifts six layers up three blocks, including air gaps. The original server and the copied Auram fixture cleared an overhang, kept the chiseled sandstone state and lifted the pig from Y 180 to 183 for two charges. The preceding Forge JAR kept the overhang. The moving column continues to preserve block entities and unbreakable blocks.
+- A standing soft landing on red sand spends five charges, prevents fall damage, and drops one ordinary sand at the block's integer coordinates. The original and rebuilt servers agreed on the item and spawn position. Ore conversion also uses the original block corner for its ingot drops.
+- The original 25 items determine which equipment the Hand repels and disarms and which dropped items its magnet attracts. The list includes iron and gold ingots, gold nuggets, ten vanilla tools and twelve armor pieces. The muted survival client verified that a zombie kept its Arthana and dropped its iron sword on a second cast. Each targeted cast spent two charges.
+- Chiseled and cut sandstone and petrified oak slabs restore rock sources split from old metadata. Double slab states are excluded. The standing charge orb begins at tick 40 and repeats every second. A crouched miss plays the original snare. The copied Auram server emitted both cues at volume 0.5 and the original pitch range of one-third to one-half.
+- The muted clean Forge client used the Hand and a real fall in survival with the fixture's ready infusion, Hand, blocks and mobs. A dedicated restart retained the terrain, chest, both entity UUIDs, dropped sword and 89 charge. Both launches used OpenAL's No Output device and kept the foreground app in focus.
+- All 382 required local Forge GameTests passed on seed `5471593853027166409`. The exact reobfuscated JAR is `build/qa-overworld-earth/candidate.jar` with SHA-256 `c27c8165ae7a4100ef6edd3cb880a4fdfc5eeb10ea5f0cbdb4a9a604c7a4a381`. Original, preceding Forge, clean Forge and copied Auram results are in `build/qa-overworld-earth/comparison.txt`.
+
 ## Overworld infusion shockwave and terrain rock (2026-11-25)
 
 - The shockwave truncates the caster's coordinates and centers the terrain one block below their feet. Each pulse follows the original eight ring visits and checks entity block positions in the original two-block-high hit box. It keeps the existing safeguards for block entities and unbreakable blocks.

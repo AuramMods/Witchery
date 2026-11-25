@@ -9,13 +9,19 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Pig;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.PlayLevelSoundEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -76,21 +82,117 @@ public final class OverworldTerrainTests {
     }
 
     @GameTest(template = "qa_coven_arena")
+    public static void raisesTheOriginalColumnIncludingItsGaps(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos top = helper.absolutePos(new BlockPos(5, 0, 6)).atY(179);
+        Vec3 surface = Vec3.atCenterOf(top);
+        for (int y = -9; y <= 5; y++) level.setBlockAndUpdate(top.above(y), Blocks.AIR.defaultBlockState());
+        level.setBlockAndUpdate(top.below(10), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(top, Blocks.TERRACOTTA.defaultBlockState());
+        level.setBlockAndUpdate(top.below(2), Blocks.CHISELED_SANDSTONE.defaultBlockState());
+        level.setBlockAndUpdate(top.below(3), Blocks.CHEST.defaultBlockState());
+        level.setBlockAndUpdate(top.above(2), Blocks.STONE.defaultBlockState());
+        Pig pig = target(level, top.getX() + 0.08, top.getY() + 1, surface.z);
+        FakePlayer caster = player(level, new Vec3(top.getX() + 0.85, top.getY() + 1, top.getZ() - 2.6));
+        caster.setXRot(28);
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.isPositionEntityTicking(pig.blockPosition()),
+                "Wait for the raised column to tick its entities")).thenExecute(() -> {
+            helper.assertTrue(level.addFreshEntity(pig), "The fixture pig can stand on the column");
+            try {
+                InfusionEnergy.grant(caster, OverworldInfusion.ID, 20);
+                release(caster, 5);
+                helper.assertTrue(charge(caster) == 18 && pig.getY() == top.getY() + 4,
+                        "The two-charge cast moves the standing pig three blocks");
+                helper.assertTrue(level.getBlockState(top.above(3)).is(Blocks.TERRACOTTA)
+                                && level.isEmptyBlock(top.above(2))
+                                && level.getBlockState(top.above()).is(Blocks.CHISELED_SANDSTONE),
+                        "The raised column moves both the gap and the original sandstone variant");
+                helper.assertTrue(level.getBlockState(top.below(3)).is(Blocks.CHEST),
+                        "A chest in the moving column stays intact");
+            } finally {
+                pig.discard();
+            }
+        }).thenSucceed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void softLandingDropsTheOriginalSandVariant(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos sand = helper.absolutePos(new BlockPos(6, 0, 6)).atY(178);
+        level.setBlockAndUpdate(sand.below(), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(sand, Blocks.RED_SAND.defaultBlockState());
+        FakePlayer caster = player(level, Vec3.atBottomCenterOf(sand.above()));
+        InfusionEnergy.grant(caster, OverworldInfusion.ID, 20);
+        var drops = new ArrayList<ItemEntity>();
+        Consumer<EntityJoinLevelEvent> capture = event -> {
+            if (event.getLevel() == level && event.getEntity() instanceof ItemEntity item) drops.add(item);
+        };
+        MinecraftForge.EVENT_BUS.addListener(capture);
+        try {
+            Blocks.RED_SAND.fallOn(level, Blocks.RED_SAND.defaultBlockState(), sand, caster, 12);
+            helper.assertTrue(caster.getHealth() == 20 && charge(caster) == 15 && level.isEmptyBlock(sand),
+                    "Landing on red sand removes the block and prevents damage for five charges");
+            helper.assertTrue(drops.size() == 1 && drops.get(0).getItem().is(Items.SAND)
+                            && drops.get(0).position().equals(Vec3.atLowerCornerOf(sand)),
+                    "The fall returns one metadata-zero sand at the original block coordinates");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(capture);
+            drops.forEach(ItemEntity::discard);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void handBroadcastsTheOriginalChargeAndFailureCues(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        FakePlayer caster = player(level, Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(5, 0, 6)).atY(200)));
+        caster.setXRot(-90);
+        InfusionEnergy.grant(caster, OverworldInfusion.ID, 20);
+        ItemStack hand = new ItemStack(WitcheryItems.getRequired("witchhand").get());
+        var cues = new ArrayList<PlayLevelSoundEvent.AtEntity>();
+        Consumer<PlayLevelSoundEvent.AtEntity> capture = event -> {
+            if (event.getEntity() == caster) cues.add(event);
+        };
+        MinecraftForge.EVENT_BUS.addListener(capture);
+        try {
+            hand.getItem().onUseTick(level, caster, hand, hand.getUseDuration() - 39);
+            hand.getItem().onUseTick(level, caster, hand, hand.getUseDuration() - 40);
+            hand.getItem().onUseTick(level, caster, hand, hand.getUseDuration() - 41);
+            caster.setShiftKeyDown(true);
+            release(caster, 5);
+            helper.assertTrue(charge(caster) == 20 && cues.size() == 2,
+                    "The charge and crouched miss each play one cue without spending charge");
+            helper.assertTrue(cues.get(0).getSound().value() == SoundEvents.EXPERIENCE_ORB_PICKUP
+                            && cues.get(1).getSound().value() == SoundEvents.NOTE_BLOCK_SNARE.value()
+                            && cues.stream().allMatch(cue -> cue.getNewVolume() == 0.5F
+                                && cue.getNewPitch() >= 1F / 3 && cue.getNewPitch() <= 0.5F),
+                    "The caster and nearby listeners receive the original sounds, volume and pitch range");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(capture);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
     public static void rockStartsAtTheBlockWithIndependentFlight(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos block = helper.absolutePos(new BlockPos(5, 0, 6)).atY(181);
-        level.setBlockAndUpdate(block, Blocks.STONE.defaultBlockState());
         level.setBlockAndUpdate(block.east(), Blocks.AIR.defaultBlockState());
         FakePlayer caster = player(level, Vec3.atBottomCenterOf(block.below().north(3)));
         caster.setDeltaMovement(4, 3, -3);
         InfusionEnergy.grant(caster, OverworldInfusion.ID, 20);
+        level.setBlockAndUpdate(block, Blocks.SANDSTONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.DOUBLE));
+        release(caster, 5);
+        helper.assertTrue(charge(caster) == 20 && level.getBlockState(block).getValue(SlabBlock.TYPE) == SlabType.DOUBLE,
+                "The legacy double slab is not a rock source");
+        level.setBlockAndUpdate(block, Blocks.CHISELED_SANDSTONE.defaultBlockState());
         Consumer<EntityJoinLevelEvent> veto = event -> {
             if (event.getLevel() == level && isRock(event)) event.setCanceled(true);
         };
         MinecraftForge.EVENT_BUS.addListener(veto);
         try {
             release(caster, 5);
-            helper.assertTrue(charge(caster) == 20 && level.getBlockState(block).is(Blocks.STONE),
+            helper.assertTrue(charge(caster) == 20 && level.getBlockState(block).is(Blocks.CHISELED_SANDSTONE),
                     "A rejected rock does not spend charge or remove the source block");
         } finally {
             MinecraftForge.EVENT_BUS.unregister(veto);

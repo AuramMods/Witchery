@@ -88,6 +88,10 @@ public final class OverworldInfusionTests {
         hand.getItem().onLeftClickEntity(hand, caster, target);
         helper.assertTrue(charge(caster) == 20 && target.getDeltaMovement().lengthSqr() == 0,
                 "The Witch's Hand leaves a target in leather alone");
+        target.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(WitcheryItems.getRequired("arthana").get()));
+        hand.getItem().onLeftClickEntity(hand, caster, target);
+        helper.assertTrue(charge(caster) == 20 && target.getDeltaMovement().lengthSqr() == 0,
+                "The Arthana stays outside the original list of metal items");
         target.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.CHAINMAIL_CHESTPLATE));
         hand.getItem().onLeftClickEntity(hand, caster, target);
         helper.assertTrue(charge(caster) == 18 && target.getDeltaMovement().distanceTo(new Vec3(0, 0.3, 2.4)) < 1e-6,

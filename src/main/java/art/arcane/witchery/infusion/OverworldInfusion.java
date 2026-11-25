@@ -2,6 +2,7 @@ package art.arcane.witchery.infusion;
 
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.network.WitcheryNetwork;
+import art.arcane.witchery.registry.WitcherySounds;
 import art.arcane.witchery.ritual.ProtectionRites;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -19,17 +20,15 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ArmorMaterials;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.TieredItem;
-import net.minecraft.world.item.Tiers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -50,9 +49,16 @@ public final class OverworldInfusion {
     public static final int ID = 2;
     private static final Set<Block> SOFT_LANDING = Set.of(Blocks.GRASS_BLOCK, Blocks.MYCELIUM, Blocks.GRAVEL,
             Blocks.SAND, Blocks.RED_SAND, Blocks.SNOW_BLOCK);
+    private static final Set<Item> METAL = Set.of(Items.IRON_INGOT, Items.GOLD_INGOT, Items.GOLD_NUGGET,
+            Items.IRON_AXE, Items.IRON_HOE, Items.IRON_PICKAXE, Items.IRON_SHOVEL, Items.IRON_SWORD,
+            Items.GOLDEN_AXE, Items.GOLDEN_HOE, Items.GOLDEN_PICKAXE, Items.GOLDEN_SHOVEL, Items.GOLDEN_SWORD,
+            Items.IRON_HELMET, Items.IRON_CHESTPLATE, Items.IRON_LEGGINGS, Items.IRON_BOOTS,
+            Items.GOLDEN_HELMET, Items.GOLDEN_CHESTPLATE, Items.GOLDEN_LEGGINGS, Items.GOLDEN_BOOTS,
+            Items.CHAINMAIL_HELMET, Items.CHAINMAIL_CHESTPLATE, Items.CHAINMAIL_LEGGINGS, Items.CHAINMAIL_BOOTS);
     private static final Set<Block> ROCK_SOURCE = Set.of(Blocks.DIRT, Blocks.COARSE_DIRT, Blocks.PODZOL,
             Blocks.GRASS_BLOCK, Blocks.STONE, Blocks.GRANITE, Blocks.DIORITE, Blocks.ANDESITE, Blocks.COBBLESTONE,
-            Blocks.SAND, Blocks.RED_SAND, Blocks.GRAVEL, Blocks.SANDSTONE, Blocks.RED_SANDSTONE, Blocks.STONE_SLAB,
+            Blocks.SAND, Blocks.RED_SAND, Blocks.GRAVEL, Blocks.SANDSTONE, Blocks.CHISELED_SANDSTONE,
+            Blocks.CUT_SANDSTONE, Blocks.RED_SANDSTONE, Blocks.STONE_SLAB, Blocks.PETRIFIED_OAK_SLAB,
             Blocks.SMOOTH_STONE_SLAB, Blocks.COBBLESTONE_SLAB, Blocks.STONE_BRICK_SLAB, Blocks.BRICK_SLAB,
             Blocks.NETHER_BRICK_SLAB, Blocks.SANDSTONE_SLAB, Blocks.RED_SANDSTONE_SLAB, Blocks.QUARTZ_SLAB,
             Blocks.BRICKS, Blocks.MOSSY_COBBLESTONE, Blocks.COBBLESTONE_STAIRS, Blocks.CLAY, Blocks.SOUL_SAND,
@@ -78,14 +84,14 @@ public final class OverworldInfusion {
         } else if (InfusionEnergy.canSpend(player, 5) && level.removeBlock(ground, false)) {
             InfusionEnergy.spend(player, 5);
             event.setDistance(0);
-            drop(level, ground, new ItemStack(block));
+            drop(level, ground, new ItemStack(block == Blocks.RED_SAND ? Blocks.SAND : block));
         }
     }
 
     public static void attack(ServerPlayer player, LivingEntity target) {
         if (!target.isAlive() || target.isSpectator()) return;
         for (ItemStack stack : target.getAllSlots()) {
-            if (!metal(stack)) continue;
+            if (!METAL.contains(stack.getItem())) continue;
             boolean sneak = player.isShiftKeyDown();
             if (InfusionEnergy.spend(player, sneak ? 4 : 2)) {
                 Vec3 look = player.getLookAngle();
@@ -105,7 +111,7 @@ public final class OverworldInfusion {
     public static void channel(ServerPlayer player, int elapsed) {
         if (elapsed < 40) return;
         if (!player.isShiftKeyDown()) {
-            if (elapsed % 20 == 0) player.playSound(SoundEvents.EXPERIENCE_ORB_PICKUP, 0.5F, 1);
+            if (elapsed % 20 == 0) WitcherySounds.playLegacyPlayerCue(player, SoundEvents.EXPERIENCE_ORB_PICKUP, 0.5F);
             return;
         }
         if (elapsed % 4 != 0 || !InfusionEnergy.spend(player, 1)) return;
@@ -114,7 +120,7 @@ public final class OverworldInfusion {
         Vec3 feet = player.position();
         Vec3 destination = player.getEyePosition();
         for (ItemEntity item : level.getEntitiesOfClass(ItemEntity.class, new AABB(feet, feet).inflate(6),
-                entity -> metal(entity.getItem()))) {
+                entity -> METAL.contains(entity.getItem().getItem()))) {
             Vec3 offset = destination.subtract(item.position());
             // The original makes X the one-block step. Use a bounded pull close to alignment.
             double alongX = Math.abs(offset.x);
@@ -147,22 +153,21 @@ public final class OverworldInfusion {
             blockRelease(player, block);
             return;
         }
-        if (player.isShiftKeyDown()) return;
-        if (hit instanceof EntityHitResult entityHit && entityHit.getEntity() instanceof Mob target
+        if (!player.isShiftKeyDown() && hit instanceof EntityHitResult entityHit && entityHit.getEntity() instanceof Mob target
                 && InfusionEnergy.spend(player, 2)) {
             ItemStack held = target.getMainHandItem();
-            if (metal(held) && target.spawnAtLocation(held, 2) != null) {
+            if (METAL.contains(held.getItem()) && target.spawnAtLocation(held, 2) != null) {
                 target.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
             }
             return;
         }
 
         int seconds = elapsed / 20;
-        if (seconds >= 2 && InfusionEnergy.spend(player, 6 * seconds)) {
+        if (!player.isShiftKeyDown() && seconds >= 2 && InfusionEnergy.spend(player, 6 * seconds)) {
             WAVES.computeIfAbsent(player.serverLevel(), level -> new ArrayList<>())
                     .add(new Shockwave(player, 2 * seconds + 2));
         } else {
-            player.playSound(SoundEvents.NOTE_BLOCK_SNARE.value(), 0.5F, 1);
+            WitcherySounds.playLegacyPlayerCue(player, SoundEvents.NOTE_BLOCK_SNARE.value(), 0.5F);
         }
     }
 
@@ -183,6 +188,7 @@ public final class OverworldInfusion {
             return;
         }
         if (hit.getDirection() == Direction.DOWN || !ROCK_SOURCE.contains(state.getBlock())
+                || (state.hasProperty(SlabBlock.TYPE) && state.getValue(SlabBlock.TYPE) == SlabType.DOUBLE)
                 || level.getBlockState(pos.relative(hit.getDirection().getClockWise())).blocksMotion()
                 || !InfusionEnergy.canSpend(player, 3)) return;
         ThrownBrew rock = ThrownBrew.forTerrainRock(level, player, pos);
@@ -207,10 +213,10 @@ public final class OverworldInfusion {
             BlockPos source = top.below(delta > 0 ? i : depth - i - 1);
             BlockPos destination = source.above(delta);
             BlockState moving = level.getBlockState(source);
-            if (moving.isAir() || !canMove(level, source, moving)
-                    || !canMove(level, destination, level.getBlockState(destination))) continue;
+            BlockState previous = level.getBlockState(destination);
+            if (!canMove(level, source, moving) || !canMove(level, destination, previous)) continue;
             if (level.setBlockAndUpdate(destination, moving) || moving.equals(level.getBlockState(destination))) {
-                shifted |= level.removeBlock(source, false);
+                shifted |= moving.isAir() ? !previous.isAir() : level.removeBlock(source, false);
             }
         }
         return shifted;
@@ -218,16 +224,6 @@ public final class OverworldInfusion {
 
     private static boolean canMove(ServerLevel level, BlockPos pos, BlockState state) {
         return !level.isOutsideBuildHeight(pos) && !state.hasBlockEntity() && state.getDestroySpeed(level, pos) >= 0;
-    }
-
-    private static boolean metal(ItemStack stack) {
-        Item item = stack.getItem();
-        if (item instanceof TieredItem tool) return tool.getTier() == Tiers.IRON || tool.getTier() == Tiers.GOLD;
-        if (item instanceof ArmorItem armor) {
-            return armor.getMaterial() == ArmorMaterials.CHAIN || armor.getMaterial() == ArmorMaterials.IRON
-                    || armor.getMaterial() == ArmorMaterials.GOLD;
-        }
-        return item == Items.IRON_INGOT || item == Items.GOLD_INGOT || item == Items.GOLD_NUGGET;
     }
 
     @Nullable
@@ -251,7 +247,7 @@ public final class OverworldInfusion {
     }
 
     private static void drop(ServerLevel level, BlockPos pos, ItemStack stack) {
-        level.addFreshEntity(new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.25, pos.getZ() + 0.5, stack));
+        level.addFreshEntity(new ItemEntity(level, pos.getX(), pos.getY(), pos.getZ(), stack));
     }
 
     public static void tick(ServerLevel level) {
