@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Altar capacity from settled water (2026-11-25)
+
+- The original server counted zero while the placed water awaited its first update, eight after it settled at levels 0 through 7, and zero after draining. Seven channels left 56 settled blocks and gave a formed altar 50 capacity and charge.
+- Minecraft 1.20.1 represents the original still and updating water as one block. The altar uses the loaded chunk's fluid tick queue to count standalone water after it settles. Waterlogged blocks remain under their ordinary block rules. All water levels share the original 50-point limit.
+- The preceding packaged build counted one for the same eight-block channel. An isolated survival client opened the existing altar on the rebuilt package, collected the source with a bucket, and poured it back. The menu showed capacity and charge of 8, then 0, then 8. A sealed waterlogged slab stayed in place during all three readings.
+- The ordinary dedicated restart retained the core, the refilled channel, the empty bucket, and the eight-point charge and capacity. Both client sessions ran with zero master volume and OpenAL No Output.
+- Copied Auram imported the formed 1.7.10 altar and all 56 water blocks at their original levels. The saved core charged to the original cap of 50. Draining one channel left 48 settled water blocks, and the altar updated its capacity and charge to 48. An ordinary headless restart retained the original core, all six remaining channels, and both 48-point readings.
+- Java 17 data generation, JAR reobfuscation and all 316 required Forge GameTests passed locally. The new case exercises real fluid updates, the waterlogged control and drainage. The exact package SHA-256 is `4c27a8693dfbfed4897c559bdf42825626860be89f6530c8b7432267039d5ff1`. The native fixtures and packaged logs are under `build/qa-altar-stationary-water/`.
+
 ## Cauldron ritual feedback (2026-11-25)
 
 - The original server emitted six captured packets across successful Swiftness and Mutandis casts, three rejected casts, and a cast interrupted after warmup. Success pairs spell particles with a fizz. Colored smoke and a pop indicate distance in green, missing circles in red, unresolved targets in purple, and interruption in olive.

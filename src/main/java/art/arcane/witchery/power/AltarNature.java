@@ -46,9 +46,10 @@ public final class AltarNature {
                 int chunkMaxZ = Math.min(maxZ, SectionPos.sectionToBlockCoord(chunkZ, 15));
                 for (BlockPos pos : BlockPos.betweenClosed(chunkMinX, minY, chunkMinZ, chunkMaxX, maxY, chunkMaxZ)) {
                     BlockState state = chunk.getBlockState(pos);
-                    if (!state.isAir()) {
-                        count(counts, state);
-                    }
+                    if (state.isAir()) continue;
+                    // The original still-water block included settled flow at nonzero levels.
+                    if (state.is(Blocks.WATER) && chunk.getFluidTicks().hasScheduledTick(pos, state.getFluidState().getType())) continue;
+                    count(counts, state);
                 }
             }
         }
@@ -63,9 +64,6 @@ public final class AltarNature {
 
     private static void count(Map<Source, Integer> counts, BlockState state) {
         Block block = state.getBlock();
-        if (block == Blocks.WATER && !state.getFluidState().isSource()) {
-            return;
-        }
         Source source = sources.get(block);
         if (source == null) {
             if (state.is(BlockTags.SAPLINGS)) {

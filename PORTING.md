@@ -130,7 +130,7 @@
 - [x] Match the original Forge server's measured 904 and 280 capacity in the imported wood and garden fixtures. Force a fresh scan on the packaged server. Removing the saplings reduces the first capacity to 824. Replacing the giant mushroom blocks with 26 stems sets the second to 238. Both values survived another headless restart.
 - [x] Use the original inclusive 16-block base and 32-block Arthana ranges for the Brazier, Crystal Ball, and powered rites. Check that wards and the Brazier release cached sources that fall out of range. All 160 checked-in Forge GameTests passed, including a focused barrier and Infusion Recharging beyond the base range.
 - [x] Restore the Altar's plant sparks and the original order for competing mounted artifacts. Verify the eight spark frames, formed and unformed textures, saved core, and live menu updates as artifacts and altar members are removed.
-- [ ] Restore capacity from naturally settled flowing water. A blocked channel fed by one source held water levels 0 through 7 on both versions. The original altar gained eight capacity and the 1.20.1 altar gained one. The original trace and headless comparison are in `build/qa-altar-stationary-water/`.
+- [x] Restore capacity from naturally settled flowing water. The packaged survival player used a bucket to drain and refill an eight-block channel. The altar menu showed 8, 0, and 8, and reopened at 8 after restart. Copied Auram imported the original 56-block fixture and matched its 50-point cap.
 
 ## Kettle Recipe Order (2026-11-24)
 

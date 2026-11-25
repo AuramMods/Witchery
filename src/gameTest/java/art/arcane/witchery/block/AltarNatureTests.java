@@ -5,17 +5,54 @@ import art.arcane.witchery.block.entity.AltarBlockEntity;
 import art.arcane.witchery.power.AltarNature;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.SlabBlock;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class AltarNatureTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_altar_water", timeoutTicks = 220)
+    public static void countsSettledWaterThroughItsFlowingLevels(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos source = helper.absolutePos(new BlockPos(4, 0, 8)).atY(level.getMaxBuildHeight() - 128);
+        BlockPos waterlogged = source.west(4);
+        for (BlockPos floor : BlockPos.betweenClosed(source.offset(-1, -1, -1), source.offset(8, -1, 1))) {
+            level.setBlockAndUpdate(floor, Blocks.STONE.defaultBlockState());
+        }
+        for (int offset = -1; offset <= 8; offset++) {
+            level.setBlockAndUpdate(source.east(offset).north(), Blocks.STONE.defaultBlockState());
+            level.setBlockAndUpdate(source.east(offset).south(), Blocks.STONE.defaultBlockState());
+        }
+        level.setBlockAndUpdate(source.west(), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(source.east(8), Blocks.STONE.defaultBlockState());
+        for (Direction side : Direction.Plane.HORIZONTAL) {
+            level.setBlockAndUpdate(waterlogged.relative(side), Blocks.STONE.defaultBlockState());
+        }
+        level.setBlockAndUpdate(waterlogged.below(), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(waterlogged, Blocks.STONE_SLAB.defaultBlockState().setValue(SlabBlock.WATERLOGGED, true));
+        level.setBlockAndUpdate(source, Blocks.WATER.defaultBlockState());
+        assertCapacity(helper, source, 0);
+
+        helper.startSequence().thenWaitUntil(() -> {
+            var end = level.getBlockState(source.east(7));
+            helper.assertTrue(end.is(Blocks.WATER) && end.getValue(LiquidBlock.LEVEL) == 7,
+                    "The source should spread through all eight water levels");
+            assertCapacity(helper, source, 8);
+        }).thenExecute(() -> level.setBlockAndUpdate(source, Blocks.AIR.defaultBlockState()))
+                .thenWaitUntil(() -> {
+                    helper.assertTrue(level.isEmptyBlock(source.east(7)), "The water should drain after removing the source");
+                    assertCapacity(helper, source, 0);
+                }).thenSucceed();
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_altar_nature")
     public static void sharesLegacyTreeCapsAcrossFlattenedBlocks(GameTestHelper helper) {
         var level = helper.getLevel();

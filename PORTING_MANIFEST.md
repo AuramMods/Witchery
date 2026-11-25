@@ -1716,6 +1716,7 @@ The original `AllowModIntegration` gates `ModHook.init`. On Forge 1.20.1, `allow
 - Protocol 92 removes six placeholder block-entity registrations. The Candelabra, both Fume Funnels, and Garlic Garland use their placed blocks and models. The original village wall marker kept its pending plan in memory, and its saved tile contains no plan to import. Both original and earlier 1.20.1 saves load `witchery:wolftrap` tiles through the shared `witchery:beartrap` type used by new traps.
 - The altar keeps the original `CoreX`, `CoreY`, and `CoreZ` links and the core's power and `EnhancementLevel`. A Mystic Branch mounted on any member adds one enhancement. The original source exposes that value without using it to alter spells. Existing modern altars without core links still resolve to their previously selected coordinate.
 - Altar capacity groups the modern blocks derived from the original sapling, log, leaf, dirt, tallgrass, red flower, and pumpkin IDs. Flattened mushroom stems draw on unused slots in the two original giant mushroom caps because both old stem variants load as the same block.
+- Standalone water contributes one point per block, up to 50. The altar checks the chunk's fluid tick queue to recognize settled water at every level, matching the original still-water block.
 - Manual registration found:
   - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/blocks/BlockRefillingChest.java`
 
