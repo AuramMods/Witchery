@@ -2,17 +2,19 @@ package art.arcane.witchery.item;
 
 import art.arcane.witchery.block.KettleBlock;
 import art.arcane.witchery.block.WitchesCauldronBlock;
+import art.arcane.witchery.event.WitcheryBlockBreak;
 import art.arcane.witchery.registry.WitcheryItems;
+import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.BlockSource;
 import net.minecraft.core.Direction;
-import net.minecraft.core.dispenser.OptionalDispenseItemBehavior;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -25,7 +27,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fluids.FluidStack;
@@ -53,78 +54,123 @@ public final class EndlessWaterBrewItem extends Item {
     @Override
     public InteractionResult useOn(UseOnContext context) {
         if (context.getLevel().isClientSide) return InteractionResult.SUCCESS;
-        if (!(context.getLevel() instanceof ServerLevel server) || context.getPlayer() == null) return InteractionResult.PASS;
-        Player player = context.getPlayer();
+        if (!(context.getLevel() instanceof ServerLevel level) || !(context.getPlayer() instanceof ServerPlayer player)) {
+            return InteractionResult.PASS;
+        }
         BlockPos clicked = context.getClickedPos();
         Direction face = context.getClickedFace();
-        if (fillVessel(server, clicked, player, face) || !isVessel(server, clicked)
-                && placeWater(server, clicked.relative(face), player, face, context.getItemInHand())) {
-            context.getItemInHand().hurtAndBreak(1, player, user -> user.broadcastBreakEvent(context.getHand()));
-            return InteractionResult.CONSUME;
+        ItemStack bottle = context.getItemInHand();
+        BlockState state = level.getBlockState(clicked);
+        boolean poured;
+        if (isBrewingVessel(state)) {
+            poured = fillBrewingVessel(level, clicked, state, player, face);
+        } else if (state.is(Blocks.CAULDRON) || state.is(Blocks.WATER_CAULDRON)) {
+            poured = fillVanillaCauldron(level, clicked, state, player, face);
+        } else {
+            poured = placeWater(level, clicked.relative(face), player, face, bottle, false);
         }
-        return InteractionResult.PASS;
+        if (!poured) return InteractionResult.PASS;
+        bottle.hurtAndBreak(1, player, user -> user.broadcastBreakEvent(context.getHand()));
+        return InteractionResult.CONSUME;
     }
 
     public static void registerDispenser() {
-        DispenserBlock.registerBehavior(WitcheryItems.getRequired("brew.water").get(), new OptionalDispenseItemBehavior() {
-            @Override
-            protected ItemStack execute(BlockSource source, ItemStack stack) {
-                ServerLevel level = source.getLevel();
-                Direction face = source.getBlockState().getValue(DispenserBlock.FACING);
-                BlockPos target = source.getPos().relative(face);
-                Player player = FakePlayerFactory.getMinecraft(level);
-                boolean filled = fillVessel(level, target, player, face) || !isVessel(level, target)
-                        && placeWater(level, target, player, face, stack);
-                setSuccess(filled);
-                if (filled && stack.hurt(1, level.getRandom(), null)) stack.shrink(1);
-                return stack;
-            }
+        DispenserBlock.registerBehavior(WitcheryItems.getRequired("brew.water").get(), (source, bottle) -> {
+            ServerLevel level = source.getLevel();
+            Direction face = source.getBlockState().getValue(DispenserBlock.FACING);
+            BlockPos target = source.getPos().relative(face);
+            ServerPlayer player = FakePlayerFactory.getMinecraft(level);
+            BlockState state = level.getBlockState(target);
+            boolean poured = isBrewingVessel(state) ? fillBrewingVessel(level, target, state, player, face)
+                    : placeWater(level, target, player, face, bottle, true);
+            if (poured && bottle.hurt(1, level.getRandom(), null)) bottle.shrink(1);
+            return bottle;
         });
     }
 
-    private static boolean isVessel(ServerLevel level, BlockPos pos) {
-        var state = level.getBlockState(pos);
-        return state.is(Blocks.CAULDRON) || state.is(Blocks.WATER_CAULDRON)
-                || state.getBlock() instanceof WitchesCauldronBlock || state.getBlock() instanceof KettleBlock;
+    private static boolean isBrewingVessel(BlockState state) {
+        return state.getBlock() instanceof WitchesCauldronBlock || state.getBlock() instanceof KettleBlock;
     }
 
-    private static boolean fillVessel(ServerLevel level, BlockPos pos, Player player, Direction face) {
-        var state = level.getBlockState(pos);
-        if (!level.mayInteract(player, pos)) return false;
-        boolean filled = false;
-        if (state.is(Blocks.CAULDRON)
-                || state.is(Blocks.WATER_CAULDRON) && state.getValue(LayeredCauldronBlock.LEVEL) < 3) {
-            var full = Blocks.WATER_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, 3);
-            filled = setWater(level, pos, full, player, face);
-        } else if (state.getBlock() instanceof WitchesCauldronBlock || state.getBlock() instanceof KettleBlock) {
-            var vessel = level.getBlockEntity(pos);
-            if (vessel != null) {
-                int volume = state.getBlock() instanceof WitchesCauldronBlock ? 3000 : 1000;
-                filled = vessel.getCapability(ForgeCapabilities.FLUID_HANDLER, face)
-                        .map(handler -> handler.fill(new FluidStack(Fluids.WATER, volume), IFluidHandler.FluidAction.EXECUTE) > 0)
-                        .orElse(false);
-            }
-        }
-        if (filled) waterPlaced(level, pos, player);
-        return filled;
-    }
-
-    private static boolean placeWater(ServerLevel level, BlockPos pos, Player player, Direction face, ItemStack stack) {
-        if (!level.isInWorldBounds(pos) || !level.mayInteract(player, pos) || !player.mayUseItemAt(pos, face, stack)
-                || !level.getBlockState(pos).canBeReplaced() || !level.getFluidState(pos).isEmpty()) return false;
-        if (!setWater(level, pos, Blocks.WATER.defaultBlockState(), player, face)) return false;
-        waterPlaced(level, pos, player);
+    private static boolean fillVanillaCauldron(ServerLevel level, BlockPos pos, BlockState state,
+                                               ServerPlayer player, Direction face) {
+        if (!level.mayInteract(player, pos)
+                || state.is(Blocks.WATER_CAULDRON) && state.getValue(LayeredCauldronBlock.LEVEL) == 3) return false;
+        var full = Blocks.WATER_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, 3);
+        if (!setWater(level, pos, full, player, face)) return false;
+        waterPlaced(level, pos, player, SoundEvents.GENERIC_SPLASH, true);
         return true;
     }
 
-    private static boolean setWater(ServerLevel level, BlockPos pos, BlockState state, Player player, Direction face) {
-        if (!level.getWorldBorder().isWithinBounds(pos)
-                || ForgeEventFactory.onBlockPlace(player, BlockSnapshot.create(level.dimension(), level, pos), face)) return false;
-        return level.setBlockAndUpdate(pos, state);
+    private static boolean fillBrewingVessel(ServerLevel level, BlockPos pos, BlockState state,
+                                               ServerPlayer player, Direction face) {
+        var vessel = level.getBlockEntity(pos);
+        if (vessel == null || !level.mayInteract(player, pos)) return false;
+        int volume = state.getBlock() instanceof WitchesCauldronBlock ? 3000 : 1000;
+        boolean filled = vessel.getCapability(ForgeCapabilities.FLUID_HANDLER, face)
+                .map(handler -> handler.fill(new FluidStack(Fluids.WATER, volume), IFluidHandler.FluidAction.EXECUTE) > 0)
+                .orElse(false);
+        if (filled) waterPlaced(level, pos, player, SoundEvents.GENERIC_SWIM, false);
+        return filled;
     }
 
-    private static void waterPlaced(ServerLevel level, BlockPos pos, Player player) {
-        level.playSound(null, pos, SoundEvents.GENERIC_SPLASH, SoundSource.BLOCKS, 0.8F, 1);
+    private static boolean placeWater(ServerLevel level, BlockPos pos, ServerPlayer player, Direction face,
+                                      ItemStack bottle, boolean fromDispenser) {
+        if (!level.isInWorldBounds(pos) || !level.mayInteract(player, pos) || !player.mayUseItemAt(pos, face, bottle)) return false;
+        BlockState previous = level.getBlockState(pos);
+        if (!previous.canBeReplaced()) return false;
+        var fluid = previous.getFluidState();
+        if (!fluid.isEmpty() && !fluid.is(FluidTags.LAVA) && (fromDispenser || !fluid.is(FluidTags.WATER))) return false;
+        if (WitcheryBlockBreak.isCanceled(level, pos, previous, player)) return false;
+        var water = Blocks.WATER.defaultBlockState();
+        if (previous != water && !setWater(level, pos, water, player, face)) return false;
+        waterPlaced(level, pos, player, SoundEvents.GENERIC_SPLASH, !fromDispenser);
+        return true;
+    }
+
+    private static boolean setWater(ServerLevel level, BlockPos pos, BlockState state, ServerPlayer player, Direction face) {
+        if (!level.getWorldBorder().isWithinBounds(pos)) return false;
+        // Approve the placed water before durability, sounds or fluid updates. Remove this snapshot so
+        // Forge's outer ItemStack.useOn handler does not post the same event again for a hand pour.
+        int snapshotIndex = level.capturedBlockSnapshots.size();
+        boolean capturing = level.captureBlockSnapshots;
+        level.captureBlockSnapshots = true;
+        try {
+            if (!level.setBlockAndUpdate(pos, state)) return false;
+            var snapshot = level.capturedBlockSnapshots.remove(snapshotIndex);
+            level.captureBlockSnapshots = false;
+            boolean allowed = false;
+            try {
+                allowed = !ForgeEventFactory.onBlockPlace(player, snapshot, face);
+            } finally {
+                if (!allowed) {
+                    boolean restoring = level.restoringBlockSnapshots;
+                    level.restoringBlockSnapshots = true;
+                    try {
+                        snapshot.restore(true, false);
+                    } finally {
+                        level.restoringBlockSnapshots = restoring;
+                    }
+                }
+            }
+            if (!allowed) return false;
+            var placed = level.getBlockState(pos);
+            var previous = snapshot.getReplacedBlock();
+            placed.onPlace(level, pos, previous, false);
+            level.markAndNotifyBlock(pos, level.getChunkAt(pos), previous, placed, snapshot.getFlag(), 512);
+            return true;
+        } finally {
+            level.captureBlockSnapshots = capturing;
+        }
+    }
+
+    private static void waterPlaced(ServerLevel level, BlockPos pos, ServerPlayer player, SoundEvent sound, boolean atPlayer) {
+        if (atPlayer) {
+            WitcherySounds.playLegacyPlayerCue(player, sound, 0.5F);
+        } else {
+            float pitch = 0.4F / ((float) level.getRandom().nextDouble() * 0.4F + 0.8F);
+            level.playSound(null, pos.getX(), pos.getY(), pos.getZ(), sound, SoundSource.PLAYERS, 0.5F, pitch);
+        }
         level.gameEvent(player, GameEvent.FLUID_PLACE, pos);
     }
 }

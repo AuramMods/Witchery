@@ -2,6 +2,17 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Endless Water pours (2026-11-24)
+
+- Witchery 0.24.1 spent one use when a player poured onto an empty space, an existing source, flowing water, or lava. A hand pour filled a vanilla cauldron to level three. The dispenser left both types of water and vanilla cauldrons alone. It filled a Kettle with 1,000 mB, a Witchery Cauldron with 3,000 mB, and replaced lava with source water.
+- The original hand splash came from the player. The dispenser splash came from the target block. Filling a Witchery vessel used the swim cue at the vessel. All three used half volume and a pitch between one-third and one-half.
+- The preceding 1.20.1 build posted a Grass placement event before it changed the block. Forge then posted a second event with Water. Canceling that event restored the grass and durability, but the first pour had already emitted a splash. Dispensers had no second event to catch the attempted water placement.
+- The port now submits the proposed water state to Forge before it spends a use, plays a cue, or updates neighbors. A protection veto restores the replaced block. The original inter-mod break check also applies to replaceable terrain.
+- Redstone pulses on the packaged Auram copy filled the two Witchery vessels and replaced a lava source. Each dispenser advanced from wear 95 to 96. The vanilla cauldron stayed empty at wear 95, and a second pulse into a full vessel preserved wear 96.
+- The clean Forge client repeated the redstone checks and filled a vanilla cauldron by hand. The bottle advanced from wear 95 to 96. The client received two swim cues at the vessels, a splash at the dispenser target, and a splash at the player. The client ran with zero master volume and OpenAL No Output, and the focus monitor recorded no activation.
+- An ordinary dedicated restart retained the water levels, source water, and dispenser wear. The saved player inventory held the hand-poured bottle at wear 96.
+- Local Java 17 data generation, JAR reobfuscation, and all 299 required Forge GameTests passed. The new cases verify both Forge veto paths, the original target rules, and the fifth use of a weak bottle. Logs and repeatable fixtures are under `build/qa-endless-water`. The tested JAR SHA-256 is `96dee78d1c120a0492aec97940f28561613ce2a92cd3ad45a96979c0fa02b0e3`.
+
 ## Nether and Love Forecasts (2026-11-24)
 
 - A headless Witchery 0.24.1 run with a survival player at `(94.25, 120, 31.75)` marked one portal contact. Vanilla raised the portal counter to one on the next tick and dropped it back to zero on the following tick. The player stayed in the Overworld. The same cast summoned a Blaze in the Overworld at the seeded integer ground coordinates `(90, 119, 34)`.
