@@ -289,8 +289,11 @@ public final class CauldronMisfortuneTests {
     private static void finishCast(GameTestHelper helper, BlockPos pos, AltarBlockEntity altar, float power, long seed) {
         setAltarPower(altar, power);
         var level = helper.getLevel();
+        var bowl = cauldron(helper, pos);
         level.getRandom().setSeed(seed);
-        WitchesCauldronBlockEntity.serverTick(level, pos, level.getBlockState(pos), cauldron(helper, pos));
+        for (int tick = 0; tick < 20; tick++) {
+            WitchesCauldronBlockEntity.serverTick(level, pos, bowl.getBlockState(), bowl);
+        }
     }
 
     private static void setAltarPower(AltarBlockEntity altar, float power) {

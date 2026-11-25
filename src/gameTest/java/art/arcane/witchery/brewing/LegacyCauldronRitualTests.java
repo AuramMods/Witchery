@@ -1,6 +1,7 @@
 package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.entity.AltarBlockEntity;
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.item.TaglockItem;
@@ -45,6 +46,75 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class LegacyCauldronRitualTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_cauldron_local_clock")
+    public static void brewRitualWaitsForTheNextLocalAltarSample(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(5, 4, 5));
+        var cauldron = placeCauldron(helper, pos, originalRitual(3000, 0, true,
+                oldItem("minecraft:nether_wart", 0, 1), oldItem("minecraft:sugar", 0, 1),
+                oldItem("minecraft:gunpowder", 0, 1), oldItem("witchery:dog_tongue", 0, 1)));
+        var core = pos.east(5);
+        var altarState = WitcheryBlocks.getRequired("altar").get().defaultBlockState();
+        for (var member : BlockPos.betweenClosed(core, core.offset(2, 0, 1))) {
+            level.setBlockAndUpdate(member, altarState);
+        }
+        AltarBlockEntity.form(level, core);
+        var altar = (AltarBlockEntity) level.getBlockEntity(core);
+
+        tickCauldron(helper, cauldron, 7);
+        var charged = altar.saveWithoutMetadata();
+        charged.putFloat("Power", 10_000);
+        altar.load(charged);
+        tickCauldron(helper, cauldron, 19);
+        var waiting = cauldron.saveWithoutMetadata();
+        helper.assertTrue(!waiting.getBoolean("Powered") && waiting.getInt("RitualTicks") == 0,
+                "A charge added after tick 7 leaves both intervening ritual pulses waiting");
+
+        tickCauldron(helper, cauldron, 1);
+        var sampled = cauldron.saveWithoutMetadata();
+        helper.assertTrue(sampled.getBoolean("Powered") && sampled.getInt("RitualTicks") == 0,
+                "Tick 27 saves the restored altar connection before the next ritual pulse");
+        cauldron.load(sampled);
+        tickCauldron(helper, cauldron, 10);
+        helper.assertTrue(cauldron.saveWithoutMetadata().getInt("RitualTicks") == 1 && altar.power() == 10_000,
+                "The same local clock advances once between ticks 28 and 37 without spending charge");
+        tickCauldron(helper, cauldron, 1);
+        helper.assertTrue(cauldron.saveWithoutMetadata().getInt("RitualTicks") == 2,
+                "The next loaded pulse advances on tick 38");
+
+        tickCauldron(helper, cauldron, 10);
+        var warmed = cauldron.saveWithoutMetadata();
+        warmed.putInt("RitualTicks", 20);
+        cauldron.load(warmed);
+        charged.putFloat("Power", 0);
+        altar.load(charged);
+        tickCauldron(helper, cauldron, 10);
+        helper.assertTrue(cauldron.saveWithoutMetadata().getInt("RitualTicks") == 21
+                        && tank(cauldron).getFluidInTank(0).getAmount() == 3000,
+                "The first failed altar debit keeps the warmed brew for another pulse");
+        tickCauldron(helper, cauldron, 10);
+        helper.assertTrue(tank(cauldron).getFluidInTank(0).isEmpty(),
+                "The later interruption clears the active brew");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_cauldron_fixed_clock")
+    public static void mutandisCompletesOnTheTwentyFirstLoadedPulse(GameTestHelper helper) {
+        var relative = new BlockPos(5, 4, 5);
+        var cauldron = placeCauldron(helper, helper.absolutePos(relative), originalRitual(3000, 0, true,
+                oldItem("witchery:ingredient", 22, 1), oldItem("witchery:ingredient", 31, 1),
+                oldItem("minecraft:egg", 0, 1)));
+        tickCauldron(helper, cauldron, 207);
+        helper.assertTrue(cauldron.saveWithoutMetadata().getInt("RitualTicks") == 200
+                        && tank(cauldron).getFluidInTank(0).getAmount() == 3000,
+                "The first twenty local pulses keep a full Cauldron at 200 saved warmup ticks");
+        tickCauldron(helper, cauldron, 1);
+        helper.assertTrue(tank(cauldron).getFluidInTank(0).isEmpty(),
+                "The twenty-first pulse consumes the brew at loaded tick 208");
+        helper.succeedWhen(() -> helper.assertItemEntityCountIs(
+                WitcheryIngredient.MUTANDIS.item(), relative.above(), 2, 6));
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_taglock_modifier_order")
     public static void taglockCursePassesDurationAndParticleModifiersToTheNextEffect(GameTestHelper helper) {
         var level = helper.getLevel();
@@ -463,6 +533,13 @@ public final class LegacyCauldronRitualTests {
         var cauldron = (WitchesCauldronBlockEntity) level.getBlockEntity(pos);
         cauldron.load(original);
         return cauldron;
+    }
+
+    private static void tickCauldron(GameTestHelper helper, WitchesCauldronBlockEntity cauldron, int ticks) {
+        // Advance the tile while the world clock stays still.
+        for (int tick = 0; tick < ticks; tick++) {
+            WitchesCauldronBlockEntity.serverTick(helper.getLevel(), cauldron.getBlockPos(), cauldron.getBlockState(), cauldron);
+        }
     }
 
     private static IFluidHandler tank(WitchesCauldronBlockEntity cauldron) {

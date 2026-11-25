@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron ritual timing (2026-11-25)
+
+- Witchery 0.24.1 samples Cauldron altar power at loaded ticks 7, 27, and every 20 ticks thereafter. Original brew and fixed rituals advance on ticks 8, 18, 28, and every 10 ticks thereafter. Power supplied just after the first sample waits until tick 27 and lets the next pulse advance at tick 28.
+- Clean Forge and copied Auram matched all 48 original timing, volume, and power samples with the world clock offset by 15 ticks. A fresh hot Mutandis cast reached twenty pulses at tick 198 and completed on tick 208. A warmed Dog Tongue cast kept all 3,000 mB after its first failed debit at tick 8, then cleared the mixture after another failed debit at tick 18.
+- The saved format retains the sampled `Powered` flag and ritual progress. Earlier Forge fixed casts still use elapsed ticks in `RitualTicks`. Each legacy pulse advances that value by up to ten. The phase starts fresh when the block entity loads. Datapack recipes outside the legacy rules use their specified per-tick duration.
+- The previous JAR started Mutandis and Taglock casts through dropped offerings and the normal fire. On ordinary restart the rebuilt JAR retained their warmups, produced six Mutandis and applied Swiftness to the tagged pig. A second restart verified both results after the pig became tracked. The console fixture supplied the water, offerings, altar charge, and bound Taglock.
+- All 349 local Forge GameTests passed. The reobfuscated JAR is `build/qa-cauldron-pulse-timing/verified.jar` with SHA-256 `139c7c69d6c263290e02f415c162d2f16be651f9d695d2f41a2ad878326a4eef`. Comparison logs and save fixtures are in the same directory.
+- A separate withdrawal comparison found that Witchery 0.24.1 uses the sampled power flag to decide whether a dispenser may bottle. It waits after charge is newly added and still bottles after charge is removed between samples. The current port checks live charge. Both cases are captured under `build/qa-cauldron-pulse-timing/withdrawal/`.
+
 ## Kettle brewing and fluid transfer (2026-11-25)
 
 - The Kettle uses its own 20-tick brewing interval. With the world clock offset by 15 ticks, Witchery 0.24.1 and both rebuilt headless profiles first colored Brew of Ice on loaded tick 20. The closer altar was empty. Charging it at tick 21 allowed the brew to complete at tick 40 for exactly 1,000 power. The farther altar kept all 2,400 power.
@@ -10,7 +19,6 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - A separate Witchery 0.24.1 save was stopped after a 400 mB drain and one hand bottling. The Forge 1.20.1 import and an ordinary restart kept 600 mB, two Ice servings, the original tint and power flag, and three spare glass bottles.
 - All 347 local Forge GameTests passed in `build/qa-kettle-power-timing/gametest-final.log`. Earlier runs failed on an immediate wolf lookup and a fixed delay before the Cauldron boiled. The howl fixture now observes owned wolves at spawn and the bucket transport fixture waits for the boiling block state.
 - The reobfuscated package is `build/qa-kettle-power-timing/verified.jar` with SHA-256 `46f37884459eed3917bbba0deb79db7fc7d016c0f8a48563ca269b40332bb0cc`. The native, preceding, and rebuilt headless comparisons and the restart logs are under the same directory.
-- The next Cauldron comparison used a hot, full Dog Tongue ritual with available power. The original advanced at loaded ticks 8, 18, 28, and 38. With world time offset by 15, the current package instead advanced at 3, 13, 23, and 33. Both held 3,000 mB through warmup. The traces are under `build/qa-cauldron-pulse-timing/`.
 
 ## Workstation altar switching (2026-11-25)
 

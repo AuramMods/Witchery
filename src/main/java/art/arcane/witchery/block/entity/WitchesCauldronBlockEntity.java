@@ -69,6 +69,10 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
     private static final int BUCKET = 1000;
     private static final int CAPACITY = 3 * BUCKET;
     private static final int BOIL_TICKS = 100;
+    private static final int POWER_CHECK_INTERVAL = 20;
+    private static final int POWER_CHECK_PHASE = 7;
+    private static final int RITUAL_PULSE_INTERVAL = 10;
+    private static final int RITUAL_PULSE_PHASE = 8;
     private static final int RITUAL_WARMUP_PULSES = 20;
     private static final int RITUAL_REFUND = -1;
     private static final int INTERRUPTED_RITUAL_COLOR = 0xFF888800;
@@ -83,8 +87,10 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
     private BrewMixture mixture;
     @Nullable
     private Integer brewColor;
+    private long ticks;
     private int heatTicks;
     private int ritualTicks;
+    private boolean powered;
     private boolean brewRitual;
     private boolean legacyRitualPending;
     private int comparatorSignal;
@@ -201,8 +207,10 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         if (!(level instanceof ServerLevel server)) {
             return;
         }
+        long phase = ++cauldron.ticks % POWER_CHECK_INTERVAL;
         int oldHeat = cauldron.heatTicks;
         int oldProgress = cauldron.ritualTicks;
+        boolean wasPowered = cauldron.powered;
         if (cauldron.legacyRitualPending && cauldron.tank.getFluidAmount() == CAPACITY) {
             cauldron.restoreLegacyRitual(server);
         }
@@ -216,17 +224,20 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
             cauldron.updateState();
             cauldron.setChanged();
         }
-        if (cauldron.brewRitual) {
-            if (level.getGameTime() % 10 == 8) cauldron.advanceBrewRitual(server, pos);
-        } else if (!cauldron.isBoiling()) {
-            cauldron.ritualTicks = 0;
-        } else if (cauldron.ritual != null && cauldron.tank.getFluidAmount() == CAPACITY) {
-            cauldron.advanceRitual(server, pos);
+        boolean checkPower = phase == POWER_CHECK_PHASE;
+        if (checkPower && cauldron.isBoiling()) {
+            cauldron.powered = cauldron.hasAltarPower(server, cauldron.observedFixedRecipe(server));
         }
-        if (oldHeat != cauldron.heatTicks || oldProgress != cauldron.ritualTicks) {
+        boolean ritualPulse = phase % RITUAL_PULSE_INTERVAL == RITUAL_PULSE_PHASE;
+        if (cauldron.brewRitual && ritualPulse) {
+            cauldron.advanceBrewRitual(server, pos);
+        } else if (cauldron.ritual != null) {
+            cauldron.advanceRitual(server, pos, ritualPulse);
+        }
+        if (oldHeat != cauldron.heatTicks || oldProgress != cauldron.ritualTicks || wasPowered != cauldron.powered) {
             level.blockEntityChanged(pos);
         }
-        if (oldHeat != cauldron.heatTicks || server.getGameTime() % 20 == 0
+        if (cauldron.ticks == 1 || checkPower || oldHeat != cauldron.heatTicks
                 || cauldron.ritualSparkCount(oldProgress) != cauldron.ritualSparkCount(cauldron.ritualTicks)) {
             cauldron.refreshIndicators(server, false);
         }
@@ -270,21 +281,25 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
             endBrewRitual(server, FAILED_RITUAL_COLOR);
             return;
         }
-        var circles = CastCircles.around(server, pos);
-        int basePower = mixture.power();
-        AltarBlockEntity altar = basePower > 0 ? AltarPower.nearest(server, pos) : null;
-        double cost = basePower * circles.powerScale();
-        if (!isBoiling() || tank.getFluidAmount() != CAPACITY || basePower > 0 && (altar == null || altar.power() < cost)) {
+        if (!powered || !isBoiling() || tank.getFluidAmount() != CAPACITY) {
             if (ritualTicks > RITUAL_WARMUP_PULSES) {
-                clearMixture();
-                WitcheryNetwork.sendCauldronRitualFailure(server, pos, INTERRUPTED_RITUAL_COLOR);
+                interruptRitual(server, pos);
             } else {
                 ritualTicks = 0;
             }
             return;
         }
         if (++ritualTicks <= RITUAL_WARMUP_PULSES) return;
-        if (altar != null && !altar.consumePower((int) Math.floor(cost))) return;
+        var circles = CastCircles.around(server, pos);
+        int basePower = mixture.power();
+        if (basePower > 0) {
+            AltarBlockEntity altar = AltarPower.nearest(server, pos);
+            int cost = (int) Math.floor(basePower * circles.powerScale());
+            if (altar == null || !altar.consumePower(cost)) {
+                if (ritualTicks > RITUAL_WARMUP_PULSES + 1) interruptRitual(server, pos);
+                return;
+            }
+        }
         boolean leonard = BrewRituals.leonardNearby(server, pos);
         var result = BrewRituals.pulse(server, pos, mixture, mixture.bottleTag(ingredients), lastIngredient(),
                 ritualTicks - RITUAL_WARMUP_PULSES, leonard);
@@ -301,6 +316,11 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
                 mishap(server, pos, circles.risk() + (leonard ? 1 : 0), basePower);
             }
         }
+    }
+
+    private void interruptRitual(ServerLevel server, BlockPos pos) {
+        clearMixture();
+        WitcheryNetwork.sendCauldronRitualFailure(server, pos, INTERRUPTED_RITUAL_COLOR);
     }
 
     private void endBrewRitual(ServerLevel server, int color) {
@@ -364,13 +384,26 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         }
     }
 
-    private void advanceRitual(ServerLevel level, BlockPos pos) {
+    private void advanceRitual(ServerLevel level, BlockPos pos, boolean ritualPulse) {
         if (!(level.getRecipeManager().byKey(ritual).orElse(null) instanceof CauldronRitualRecipe recipe)) {
             ritual = null;
             ritualTrigger = ItemStack.EMPTY;
             ritualTicks = 0;
             setChanged();
             return;
+        }
+        boolean legacy = recipe.legacy();
+        if (legacy && !ritualPulse) return;
+        boolean attempted = ritualTicks >= recipe.time();
+        if (!isBoiling() || tank.getFluidAmount() != CAPACITY || legacy && !powered) {
+            if (legacy && attempted) interruptRitual(level, pos);
+            else ritualTicks = 0;
+            return;
+        }
+        if (legacy && !attempted) {
+            // Keep elapsed ticks in the saved format used by earlier Forge builds.
+            ritualTicks += Math.min(RITUAL_PULSE_INTERVAL, recipe.time() - ritualTicks);
+            if (ritualTicks < recipe.time()) return;
         }
         AltarBlockEntity altar = null;
         int power = 0;
@@ -379,17 +412,18 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         if (circles != null) {
             double required = requiredFixedPower(recipe, batchPower, circles);
             altar = AltarPower.nearest(level, pos);
-            if (altar == null || altar.power() < required) {
-                ritualTicks = 0;
+            power = (int) Math.floor(required);
+            if (altar == null || altar.power() < power) {
+                if (legacy && attempted) interruptRitual(level, pos);
+                else if (!legacy) ritualTicks = 0;
                 return;
             }
-            power = (int) Math.floor(required);
         }
         if (ritualTicks < recipe.time()) {
             ritualTicks++;
         }
-        if (ritualTicks == recipe.time()) {
-            int risk = recipe.legacy() && circles != null
+        if (ritualTicks >= recipe.time()) {
+            int risk = legacy && circles != null
                     ? circles.risk() + (BrewRituals.leonardNearby(level, pos) ? 1 : 0) : 0;
             if (completeRitual(level, pos, recipe, altar, power)) {
                 mishap(level, pos, risk, batchPower);
@@ -666,12 +700,12 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
             signal = isBoiling() ? 6 : 3;
             if (isBoiling()) {
                 var recipe = observedFixedRecipe(server);
-                boolean powered = hasDisplayPower(server, recipe);
+                boolean hasPower = recipe != null && !recipe.legacy() ? hasAltarPower(server, recipe) : powered;
                 BrewMixture contents = comparatorMixture(recipe);
                 if (contents != null && contents.hasEffects()) {
-                    signal = powered ? (contents.used() == contents.capacity() ? 15 : 12) : 9;
+                    signal = hasPower ? (contents.used() == contents.capacity() ? 15 : 12) : 9;
                 }
-                if (powered) sparks = ritualSparkCount(ritualTicks);
+                if (hasPower) sparks = ritualSparkCount(ritualTicks);
             }
         }
         if (signal != comparatorSignal) {
@@ -697,7 +731,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         return ritual == null ? mixture : null;
     }
 
-    private boolean hasDisplayPower(ServerLevel server, @Nullable CauldronRitualRecipe recipe) {
+    private boolean hasAltarPower(ServerLevel server, @Nullable CauldronRitualRecipe recipe) {
         if (ritualTicks == RITUAL_REFUND || recipe == null
                 && (ritual != null || legacyRitualPending && !canCastWith(lastIngredient()))) return false;
 
@@ -818,6 +852,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         legacyRitualPending = false;
         ritualTicks = 0;
         heatTicks = 0;
+        powered = false;
         tank.setFluid(FluidStack.EMPTY);
         publishTankContents();
     }
@@ -874,6 +909,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         }
         heatTicks = Mth.clamp(tag.contains("HeatTicks", Tag.TAG_ANY_NUMERIC)
                 ? tag.getInt("HeatTicks") : tag.getInt("TicksHeated"), 0, BOIL_TICKS);
+        powered = tag.getBoolean("Powered");
         ritual = tag.contains("Ritual", Tag.TAG_STRING) ? ResourceLocation.tryParse(tag.getString("Ritual")) : null;
         ritualTrigger = ritual == null ? ItemStack.EMPTY : BrewMixture.loadIngredient(tag.getCompound("RitualTrigger"));
         brewColor = null;
@@ -904,6 +940,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         tag.put("Ingredients", stored);
         if (brewColor != null) tag.putInt("Color", brewColor);
         tag.putInt("HeatTicks", heatTicks);
+        tag.putBoolean("Powered", powered);
         if (ritual != null) {
             tag.putString("Ritual", ritual.toString());
             if (!ritualTrigger.isEmpty()) tag.put("RitualTrigger", ritualTrigger.save(new CompoundTag()));
