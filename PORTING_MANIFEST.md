@@ -1261,6 +1261,8 @@ When the world retains its captured legacy registry, loading player, block-entit
 
 Owls retain `WITCWaypoint` and their launch coordinates in `HomeX`, `HomeY` and `HomeZ` while delivering. `ReturningFromDelivery` preserves the return leg on modern saves. An Owl throws fixed Witchery brews, splash cauldron brews, and splash or lingering vanilla potions at its destination with the bow cue. Drinkable cauldron brews arrive as intact parcels.
 
+A Creature-Bound Waystone can assign an Owl to an unavailable recipient. If the recipient cannot be resolved during flight, the Owl uses its launch coordinates for the delivery. A dropped Mindrake Bulb lasts 60 ticks. A dropped Mandrake Seed uses the ordinary item lifetime.
+
 The Winged Monkey retains `FeatherColor`, `SuicideIn`, `WITCWaypoint` and the three `Home` coordinates. `MonkeyFlightReturning` identifies the return leg in new saves. An older active Waystone flight stores its destination in the `Home` coordinates. The modern goal uses Forge's flying navigation and only loads routes within the monkey's dimension. The creature identified by a Taglock rides as a passenger without taking control of the monkey.
 
 Treefyd keeps `Owner`, `SentinalPlant`, `KnownPlayers`, `KnownCreatureTypes`, and `KnownCreatures`. New bindings also save player UUIDs and the namespaced keys of groupable animal species. Legacy individual permissions use the original `CreatureMost` and `CreatureLeast` fields. Planting creates short grass and an owned Treefyd in one interaction. A Forge cancellation keeps the original block and seed.

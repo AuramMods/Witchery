@@ -1,11 +1,11 @@
 package art.arcane.witchery.entity;
 
+import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.item.BrewBottleItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.ThrowableBrewItem;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
-import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.world.WitcheryTeleport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -43,7 +43,7 @@ final class OwlDeliveryGoal extends Goal {
     }
 
     boolean assign(ItemStack stone) {
-        if (destination((ServerLevel) owl.level(), stone) == null) return false;
+        if (destination((ServerLevel) owl.level(), stone) == null && !TaglockItem.isBound(stone)) return false;
         waypoint = stone.copyWithCount(1);
         home = owl.position();
         returning = false;
@@ -85,11 +85,9 @@ final class OwlDeliveryGoal extends Goal {
     public void tick() {
         ServerLevel level = (ServerLevel) owl.level();
         if (owl.tickCount % 20 == 0) holdChunk(level, owl.chunkPosition());
-        Vec3 target = returning || owl.getMainHandItem().isEmpty() ? null : destination(level, waypoint);
-        if (target == null) {
-            returning = true;
-            target = home;
-        }
+        if (owl.getMainHandItem().isEmpty()) returning = true;
+        Vec3 target = returning ? home : destination(level, waypoint);
+        if (target == null) target = home;
         double distance = owl.distanceToSqr(target);
         if (distance <= 1) {
             owl.getNavigation().stop();
@@ -152,7 +150,7 @@ final class OwlDeliveryGoal extends Goal {
         } else {
             ItemEntity parcel = owl.spawnAtLocation(held.copy());
             if (parcel == null) return false;
-            if (held.is(WitcheryItems.getRequired("seedsmandrake").get())) parcel.lifespan = 60;
+            if (held.is(WitchCrop.MINDRAKE.seed())) parcel.lifespan = 60;
             held = ItemStack.EMPTY;
         }
         owl.setItemSlot(EquipmentSlot.MAINHAND, held.isEmpty() ? ItemStack.EMPTY : held);

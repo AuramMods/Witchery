@@ -1,6 +1,7 @@
 package art.arcane.witchery.entity;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.brewing.BrewMixture;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WaystoneItem;
@@ -122,6 +123,45 @@ public final class FlyingCompanionTests {
 
         helper.succeedWhen(() -> helper.assertTrue(pig.hasEffect(MobEffects.BLINDNESS) && owl.getMainHandItem().isEmpty(),
                 "The owl should throw its Ink at the bound pig"));
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_owl_undeliverable_parcels", timeoutTicks = 160)
+    public static void owlsDropTheSavedParcelsAtHomeWhenTheRecipientIsMissing(GameTestHelper helper) {
+        FlightRoute route = runway(helper);
+        var stone = new ItemStack(WitcheryIngredient.CREATURE_BOUND_WAYSTONE.item());
+        var absentPig = EntityType.PIG.create(helper.getLevel());
+        TaglockItem.bindSignature(stone, absentPig);
+        BlockPos mindrakeHome = route.origin();
+        BlockPos mandrakeHome = mindrakeHome.east(6);
+        WitchOwl mindrakeOwl = companion(helper, route, WitcheryEntities.OWL.get());
+        WitchOwl mandrakeOwl = companion(helper, route, WitcheryEntities.OWL.get());
+        mandrakeOwl.setPos(Vec3.atBottomCenterOf(mandrakeHome));
+
+        for (WitchOwl owl : List.of(mindrakeOwl, mandrakeOwl)) {
+            var crop = owl == mindrakeOwl ? WitchCrop.MINDRAKE : WitchCrop.MANDRAKE;
+            route.owner().setItemInHand(HAND, new ItemStack(crop.seed()));
+            owl.mobInteract(route.owner(), HAND);
+            route.owner().setItemInHand(HAND, stone.copy());
+            owl.mobInteract(route.owner(), HAND);
+            CompoundTag saved = owl.saveWithoutId(new CompoundTag());
+            helper.assertTrue(saved.contains("WITCWaypoint"), "The unavailable recipient should still give the owl a saved route");
+            owl.load(saved);
+            launchOwl(route, owl);
+        }
+
+        helper.succeedWhen(() -> {
+            var mindrake = helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(mindrakeHome).inflate(2),
+                    drop -> drop.getItem().is(WitchCrop.MINDRAKE.seed()));
+            var mandrake = helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(mandrakeHome).inflate(2),
+                    drop -> drop.getItem().is(WitchCrop.MANDRAKE.seed()));
+            helper.assertTrue(mindrake.size() == 1 && mindrake.get(0).lifespan == 60,
+                    "One Mindrake parcel should fall at home and expire after three seconds");
+            helper.assertTrue(mandrake.size() == 1 && mandrake.get(0).lifespan == 6000,
+                    "One Mandrake parcel should fall at home with the ordinary item lifetime");
+            helper.assertTrue(mindrakeOwl.isOrderedToSit() && mandrakeOwl.isOrderedToSit()
+                            && mindrakeOwl.getMainHandItem().isEmpty() && mandrakeOwl.getMainHandItem().isEmpty(),
+                    "Both owls should finish their routes without the parcels");
+        });
     }
 
     @GameTest(template = TEMPLATE, batch = "witchery_owl_custom_brews", timeoutTicks = 450)
