@@ -52,6 +52,10 @@ public final class AltarPower {
         private BlockPos cachedPos;
         private long ticks;
 
+        public long loadedTicks() {
+            return ticks;
+        }
+
         public boolean idleTick(ServerLevel level, BlockPos pos, boolean powered) {
             if (++ticks % IDLE_CHECK_INTERVAL != 0) return powered;
             AltarBlockEntity source = find(level, pos);

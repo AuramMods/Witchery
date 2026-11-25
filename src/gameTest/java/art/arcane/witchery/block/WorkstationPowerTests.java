@@ -23,6 +23,44 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class WorkstationPowerTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_distillery_glow")
+    public static void distilleryKeepsItsOriginalGlowThrottleDuringPowerChanges(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(3, 4, 3));
+        level.setBlockAndUpdate(pos, WitcheryBlocks.getRequired("distilleryidle").get().defaultBlockState());
+        var distillery = (DistilleryBlockEntity) level.getBlockEntity(pos);
+        var altar = placeAltar(helper, pos.east(3));
+        distillery.setItem(0, new ItemStack(Items.BLAZE_POWDER));
+        distillery.setItem(1, new ItemStack(Items.GUNPOWDER));
+        distillery.setItem(2, new ItemStack(WitcheryIngredient.CLAY_JAR.item()));
+        var player = helper.makeMockPlayer();
+        var menu = (DistilleryMenu) distillery.createMenu(1, player.getInventory(), player);
+
+        int progress = 0;
+        boolean lit = true;
+        for (int age = 1; age <= 44; ++age) {
+            boolean supply = age == 1 || age == 23 || age == 25 || age == 43;
+            setAltarPower(altar, supply ? 1 : 0);
+            if (age == 2) distillery.setItem(2, new ItemStack(WitcheryIngredient.CLAY_JAR.item(), 2));
+            if (age == 22) lit = false;
+            if (age == 43) lit = true;
+            if (age == 44) {
+                distillery.setItem(0, ItemStack.EMPTY);
+                progress = 0;
+                lit = false;
+            }
+            if (supply) progress++;
+            DistilleryBlockEntity.serverTick(level, pos, distillery.getBlockState(), distillery);
+            var state = level.getBlockState(pos);
+            helper.assertTrue(state.getValue(DistilleryBlock.LIT) == lit && menu.cookTime() == progress
+                            && (age == 44 || menu.powered() == supply),
+                    "Match the 0.24.1 glow, progress and power at loaded tick " + age);
+            helper.assertTrue(state.getValue(DistilleryBlock.VISIBLE_JARS) == (age == 1 ? 1 : 2),
+                    "The jar display updates while a glow transition is pending");
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_rite_terrain", batch = "witchery_workstation_altar_switch")
     public static void burningWorkstationsSwitchToCloserAltar(GameTestHelper helper) {
         var level = helper.getLevel();

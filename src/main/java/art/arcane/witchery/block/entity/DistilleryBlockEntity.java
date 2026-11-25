@@ -50,6 +50,7 @@ public final class DistilleryBlockEntity extends BaseContainerBlockEntity implem
     public static final int POWERED = 1;
 
     private static final float POWER_PER_TICK = 0.6F;
+    private static final int GLOW_UPDATE_THROTTLE = 20;
     private static final int[] INPUT_SLOTS = {FIRST_INPUT, SECOND_INPUT, JARS};
     private static final int[] SIDE_SLOTS = {FIRST_INPUT, SECOND_INPUT, JARS, 3, 4, 5, 6};
     private final NonNullList<ItemStack> items = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
@@ -74,6 +75,8 @@ public final class DistilleryBlockEntity extends BaseContainerBlockEntity implem
     };
     private int cookTime;
     private boolean powered;
+    private long lastGlowUpdate;
+    private boolean glowUpdatePending;
 
     public DistilleryBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -84,7 +87,7 @@ public final class DistilleryBlockEntity extends BaseContainerBlockEntity implem
             return;
         }
         int oldCookTime = distillery.cookTime;
-        boolean running = false;
+        boolean wasPowered = distillery.powered;
         DistillingRecipe recipe = distillery.recipes.getRecipeFor(distillery, level).orElse(null);
         boolean ready = recipe != null && distillery.canStore(recipe);
         if (!ready) {
@@ -93,21 +96,34 @@ public final class DistilleryBlockEntity extends BaseContainerBlockEntity implem
         } else {
             distillery.powered = distillery.altarSource.activeTick(server, pos, POWER_PER_TICK);
             if (distillery.powered) {
-                running = true;
                 if (++distillery.cookTime >= COOK_TICKS) {
                     distillery.finish(recipe);
                     distillery.cookTime = 0;
-                    running = false;
                 }
             }
         }
-        int visibleJars = Math.min(4, distillery.getItem(JARS).getCount());
-        if (state.getValue(DistilleryBlock.LIT) != running || state.getValue(DistilleryBlock.VISIBLE_JARS) != visibleJars) {
-            level.setBlock(pos, state.setValue(DistilleryBlock.LIT, running)
-                    .setValue(DistilleryBlock.VISIBLE_JARS, visibleJars), Block.UPDATE_ALL);
-        }
+        distillery.syncVisualState(server, pos, state, oldCookTime > 0, wasPowered);
         if (oldCookTime != distillery.cookTime) {
             level.blockEntityChanged(pos);
+        }
+    }
+
+    private void syncVisualState(ServerLevel level, BlockPos pos, BlockState state, boolean wasCooking, boolean wasPowered) {
+        long ticks = altarSource.loadedTicks();
+        boolean cooking = cookTime > 0;
+        boolean lit = state.getValue(DistilleryBlock.LIT);
+        boolean desiredGlow = cooking && powered;
+        if (wasPowered != powered) glowUpdatePending = true;
+        if (wasCooking != cooking || ticks == 1 && lit != desiredGlow
+                || glowUpdatePending && ticks - lastGlowUpdate > GLOW_UPDATE_THROTTLE) {
+            lit = desiredGlow;
+            lastGlowUpdate = ticks;
+            glowUpdatePending = false;
+        }
+        int visibleJars = Math.min(4, getItem(JARS).getCount());
+        if (state.getValue(DistilleryBlock.LIT) != lit || state.getValue(DistilleryBlock.VISIBLE_JARS) != visibleJars) {
+            level.setBlock(pos, state.setValue(DistilleryBlock.LIT, lit)
+                    .setValue(DistilleryBlock.VISIBLE_JARS, visibleJars), Block.UPDATE_ALL);
         }
     }
 

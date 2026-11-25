@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Distillery glow timing (2026-11-25)
+
+- The Witchery 0.24.1 trace kept the Distillery lit on ticks 1 through 21 after a single paid tick. The glow went out on tick 22. Two short returns of power advanced the recipe without relighting the block. The next update relit it on tick 43, and removing the input cleared both progress and glow on tick 44.
+- The port uses the workstation's loaded tick counter for that delay. Menu power and jar display still update immediately. The first loaded tick reconciles the persisted Forge block state with the batch and the current altar power. The throttle needs no extra saved fields.
+- In clean Forge, a one-tick charge left the Distillery glowing during the interruption. It later went dark and retained both jars. The fixture set the paused batch to 798 ticks for an ordinary dedicated restart. The muted survival client reopened the menu, let the resumed batch use one jar, and collected Reek of Misfortune. Both launches used master volume zero and OpenAL No Output and kept desktop focus.
+- The same JAR reproduced the glow delay and finished the recipe on the headless Auram copy, which saved and shut down normally. Reobfuscation and all 411 local Forge GameTests passed on seed `5471593853027166409`. The exact candidate is `build/qa-distillery-light/candidate.jar` with SHA-256 `c11f8c904c6bb670338785ca1c7d8294aaafc2baeb347e9b97ded6e97033fea1`. See `build/qa-distillery-light/comparison.txt` for the native and packaged traces.
+
 ## Kettle hand serving (2026-11-25)
 
 - Witchery 0.24.1 dropped the extra Brew of Vines at `(210.5, 181.5, 210.5)` when the player had two glass bottles and a full inventory. One glass bottle and two Kettle servings remained. Serving, rinsing, and drawing plain water each played `game.player.swim` at the player with volume 0.5 and the original randomized pitch.
