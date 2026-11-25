@@ -1,6 +1,7 @@
 package art.arcane.witchery.entity;
 
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcherySounds;
@@ -57,6 +58,7 @@ import java.util.List;
 import java.util.UUID;
 
 public final class BabaYaga extends Monster implements RangedAttackMob {
+    private static final int INNATE_ARMOR = 4;
     private static final AttributeModifier DRINKING_PENALTY = new AttributeModifier(
             UUID.fromString("ab0df555-0786-4951-a8df-ca61749f164e"), "Drinking speed penalty", -0.25,
             AttributeModifier.Operation.ADDITION);
@@ -81,7 +83,7 @@ public final class BabaYaga extends Monster implements RangedAttackMob {
     }
 
     public static AttributeSupplier.Builder attributes() {
-        return createMonsterAttributes().add(Attributes.MAX_HEALTH, 500).add(Attributes.ARMOR, 4)
+        return createMonsterAttributes().add(Attributes.MAX_HEALTH, 500)
                 .add(Attributes.MOVEMENT_SPEED, 0.3).add(Attributes.FOLLOW_RANGE, 32);
     }
 
@@ -212,33 +214,50 @@ public final class BabaYaga extends Monster implements RangedAttackMob {
     @Override
     public boolean hurt(DamageSource source, float amount) {
         if (source.getEntity() == this || !isAlive()) return false;
+        boolean spectral = source.is(WitcheryDamageTypes.SPECTRAL_TOUCH);
         boolean magic = source.is(DamageTypes.MAGIC) || source.is(DamageTypes.INDIRECT_MAGIC) || source.is(DamageTypes.THORNS);
         float bounded = WitcheryDamageTypes.capBossDamage(source, amount, 15);
         boolean damaged = super.hurt(source, magic ? bounded * 0.15F : bounded);
-        if (level() instanceof ServerLevel server && damaged && source.getEntity() instanceof LivingEntity attacker) {
-            if (attacker instanceof Player player) {
-                if (!source.is(WitcheryDamageTypes.SPECTRAL_TOUCH) && !woodenSword(source, player)) {
-                    player.hurt(damageSources().thorns(this), amount * 0.25F);
-                }
-            } else if (attacker instanceof Mob mob && (mob.getMobType() == MobType.UNDEAD
-                    || mob instanceof TamableAnimal pet && !pet.isTame())) {
-                var spider = EntityType.CAVE_SPIDER.create(server);
-                if (spider != null) {
-                    spider.moveTo(mob.getX(), mob.getY(), mob.getZ(), mob.getYRot(), mob.getXRot());
-                    spider.setTarget(getTarget());
-                    if (server.addFreshEntity(spider)) {
-                        server.sendParticles(ParticleTypes.WITCH, spider.getX(), spider.getY(0.5), spider.getZ(), 16, 0.3, 0.3, 0.3, 0);
-                        mob.discard();
-                    }
-                }
+        if (level() instanceof ServerLevel server) {
+            if (source.getEntity() instanceof Player player && !spectral && !woodenAttack(source)) {
+                player.hurt(damageSources().thorns(this), amount * 0.25F);
+            } else if (source.getEntity() instanceof Mob mob && !mob.isRemoved() && (!spectral || damaged)
+                    && (mob.getMobType() == MobType.UNDEAD || mob instanceof TamableAnimal pet && !pet.isTame())) {
+                // The original touch invoked the retaliation both before and after draining health.
+                transformAttacker(server, mob, spectral ? 2 : 1);
             }
         }
         return damaged;
     }
 
-    private static boolean woodenSword(DamageSource source, Player player) {
-        return source.getDirectEntity() == player && !source.is(DamageTypeTags.IS_PROJECTILE)
-                && player.getMainHandItem().getItem() instanceof SwordItem sword && sword.getTier() == Tiers.WOOD;
+    @Override
+    protected float getDamageAfterArmorAbsorb(DamageSource source, float damage) {
+        float remaining = super.getDamageAfterArmorAbsorb(source, damage);
+        return source.is(DamageTypeTags.BYPASSES_ARMOR) ? remaining : remaining * (25 - INNATE_ARMOR) / 25;
+    }
+
+    private void transformAttacker(ServerLevel level, Mob attacker, int count) {
+        LivingEntity target = getTarget();
+        boolean transformed = false;
+        for (int index = 0; index < count; index++) {
+            var spider = EntityType.CAVE_SPIDER.create(level);
+            if (spider == null) continue;
+            spider.moveTo(attacker.getX(), attacker.getY(), attacker.getZ(), attacker.getYRot(), attacker.getXRot());
+            spider.setTarget(target);
+            spider.setLastHurtByMob(target);
+            spider.setLastHurtMob(target);
+            if (level.addFreshEntity(spider)) {
+                transformed = true;
+                WitcheryNetwork.sendSpiderTransformation(level, spider.position());
+            }
+        }
+        if (transformed) attacker.discard();
+    }
+
+    private static boolean woodenAttack(DamageSource source) {
+        return source.getDirectEntity() instanceof WitcheryBolt bolt && bolt.isWoodenDamage()
+                || source.getDirectEntity() instanceof LivingEntity attacker
+                && attacker.getMainHandItem().getItem() instanceof SwordItem sword && sword.getTier() == Tiers.WOOD;
     }
 
     @Override
@@ -348,6 +367,7 @@ public final class BabaYaga extends Monster implements RangedAttackMob {
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
+        tag.putBoolean("InnateArmor", true);
         tag.putString("Owner", ownerName);
         if (ownerId != null) tag.putUUID("OwnerUUID", ownerId);
         tag.putInt("VisitTicks", visitTicks);
@@ -357,6 +377,8 @@ public final class BabaYaga extends Monster implements RangedAttackMob {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+        var armor = getAttribute(Attributes.ARMOR);
+        if (!tag.getBoolean("InnateArmor") && armor.getBaseValue() == INNATE_ARMOR) armor.setBaseValue(0);
         ownerName = tag.getString("Owner");
         ownerId = tag.hasUUID("OwnerUUID") ? tag.getUUID("OwnerUUID") : null;
         visitTicks = tag.getInt("VisitTicks");

@@ -67,10 +67,7 @@ public final class BarkBeltItem extends WitchClothingItem.Dyeable {
         if (source.getEntity() instanceof HornedHuntsman && !source.is(DamageTypeTags.IS_PROJECTILE)) return true;
         if (source.getEntity() instanceof LivingEntity attacker
                 && attacker.getMainHandItem().getItem() instanceof SwordItem sword && sword.getTier() == Tiers.WOOD) return true;
-        return source.getDirectEntity() instanceof WitcheryBolt bolt && switch (bolt.kind()) {
-            case STAKE, ANTI_MAGIC, POWERED_ANTI_MAGIC -> true;
-            case HOLY, SILVER -> false;
-        };
+        return source.getDirectEntity() instanceof WitcheryBolt bolt && bolt.isWoodenDamage();
     }
 
     private static int storedCharges(ItemStack belt) {

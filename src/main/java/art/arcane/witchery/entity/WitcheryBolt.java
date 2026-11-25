@@ -61,6 +61,13 @@ public final class WitcheryBolt extends AbstractArrow {
         return Kind.fromId(entityData.get(BOLT_TYPE));
     }
 
+    public boolean isWoodenDamage() {
+        return switch (kind()) {
+            case STAKE, ANTI_MAGIC, POWERED_ANTI_MAGIC -> true;
+            case HOLY, SILVER -> false;
+        };
+    }
+
     public static boolean poweredAntiMagic(DamageSource source) {
         return source.getDirectEntity() instanceof WitcheryBolt bolt && bolt.kind() == Kind.POWERED_ANTI_MAGIC;
     }

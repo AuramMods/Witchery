@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Baba Yaga's retaliation (2026-11-25)
+
+- Baba Yaga replaces a Spectre that touches her with two Cave Spiders. An ordinary undead or untamed attacker becomes one spider, even if her damage cooldown rejects the hit. Each spider inherits her target and sends a two-by-two mob-spell and pop cue from the attacker's feet within 16 blocks.
+- Wooden swords and wooden bolts spare the player from reflection. An iron sword or silver bolt can still trigger it during her damage cooldown. Her four innate armor points absorb a fixed 16 percent. Earlier Forge saves with the old four-point default move that protection out of the vanilla armor attribute.
+- Witchery 0.24.1, clean Forge, and copied Auram matched ten combat cases and five cue packets at Normal difficulty. The Auram fixture neutralized critical bonuses. A four-point blow took 3.68 health from Baba Yaga on the previous JAR and 3.36 on the original and rebuilt JARs.
+- The muted survival client used a supplied Necromantic Stone to command a Spectre with a saved owner. Baba Yaga lost six health and the client received both transformation packets. The previous JAR's saved Baba Yaga kept her UUID and took the original 3.36 health from an ordinary four-point hit after the update. A dedicated restart preserved both bosses' health and UUIDs and the UUIDs of the two spiders that the fixture marked persistent.
+- All 369 local Forge GameTests passed. The tested reobfuscated JAR is `build/qa-baba-retaliation/candidate.jar` with SHA-256 `40d3818037213fc03eb667bcf5a3791e8885fb78f622a28025baf9f044a7cac5`. The comparison and packaged logs are in `build/qa-baba-retaliation/`.
+
 ## Spectral touch limits for bosses (2026-11-25)
 
 - Spectral touch leaves vampire NPCs and Leonard immune. It drains up to two health from the Reflection and five from the Lord of Torment. A mob can drain up to six from Lilith, Death, Baba Yaga, Mog, Gulg, and the Horned Huntsman. A player's limits for those targets are twelve for Lilith and fifteen for the others.
@@ -9,7 +17,7 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Witchery 0.24.1, packaged clean Forge, and copied Auram matched all 25 observations. In Auram, the comparison fixture neutralized Apothic Attributes critical bonuses. A separate forced critical raised Lilith's six-health drain to nine through Forge's damage events.
 - A muted, unfocused survival client deployed a supplied Death's Hand and used the attack binding against stationary targets. The Reflection fell from 100 to 98 health. The vampire stayed at 20 and unshielded Leonard stayed at 600. A dedicated restart kept all three health values and UUIDs. The comparison, client outputs, and restart are in `build/qa-spectral-targets/comparison.txt`.
 - All 367 local Forge GameTests passed on the final run. The first two runs had intermittent failures in the existing block replacement and focused Barrier tests. The tested reobfuscated JAR is `build/qa-spectral-targets/candidate.jar` with SHA-256 `08490c544ce863bbe00266b6d79567d6dbeb3835adca3e47eb40c88953ba4005`.
-- A separate native test with a tracked Spectre confirmed that Baba Yaga removed the Spectre and spawned two Cave Spiders on spectral contact. The port currently performs one transformation after damage. The original trace is in `build/qa-spectral-targets/native/retaliation/run.log`.
+- A separate native test with a tracked Spectre confirmed that Baba Yaga removed the Spectre and spawned two Cave Spiders on spectral contact. The preceding build produced one. The original trace is in `build/qa-spectral-targets/native/retaliation/run.log`.
 
 ## Spectral touch and Banshee combat (2026-11-25)
 

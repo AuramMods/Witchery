@@ -8,21 +8,26 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.CaveSpider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
+import java.util.ArrayList;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -115,6 +120,75 @@ public final class SpectralCombatTests {
     }
 
     private record TargetCap(EntityType<? extends LivingEntity> type, float mob, float player) {}
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_baba_transforms_attackers")
+    public static void babaYagaTransformsSpectresAndUndeadOnContact(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var baba = helper.spawn(WitcheryEntities.BABA_YAGA.get(), new BlockPos(5, 5, 5));
+        var spectre = helper.spawn(WitcheryEntities.SPECTRE.get(), new BlockPos(6, 5, 5));
+        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(7, 5, 5));
+        var target = helper.spawn(EntityType.COW, new BlockPos(3, 5, 5));
+        baba.setHealth(baba.getMaxHealth());
+        baba.setTarget(target);
+        var spiders = new ArrayList<CaveSpider>();
+        Consumer<EntityJoinLevelEvent> watch = event -> {
+            if (event.getLevel() == level && event.getEntity() instanceof CaveSpider spider) spiders.add(spider);
+        };
+        MinecraftForge.EVENT_BUS.addListener(watch);
+        try {
+            helper.assertTrue(spectre.doHurtTarget(baba) && (baba.getMaxHealth() - baba.getHealth()) == 6,
+                    "Spectral touch drains six health from Baba Yaga");
+            helper.assertTrue(spectre.isRemoved() && spiders.size() == 2 && spiders.stream().allMatch(spider ->
+                            spider.position().equals(spectre.position()) && spider.getTarget() == target),
+                    "Both retaliation spiders inherit Baba Yaga's target and spawn at the Spectre's feet");
+
+            helper.assertFalse(baba.hurt(level.damageSources().mobAttack(zombie), 4),
+                    "Her regular damage cooldown rejects the weaker strike");
+            helper.assertTrue(zombie.isRemoved() && spiders.size() == 3
+                            && spiders.get(2).position().equals(zombie.position()),
+                    "Even a rejected ordinary strike transforms an undead attacker once");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(watch);
+            spiders.forEach(LivingEntity::discard);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_baba_wooden_attack")
+    public static void babaYagaReflectsSilverBoltsAndSparesWoodenAttacks(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var player = new ShieldBearer(level, helper.absolutePos(new BlockPos(6, 5, 5)));
+        var baba = WitcheryEntities.BABA_YAGA.get().create(level);
+        CompoundTag oldSave = new CompoundTag();
+        var attributes = new ListTag();
+        CompoundTag armor = new CompoundTag();
+        armor.putString("Name", "minecraft:generic.armor");
+        armor.putDouble("Base", 4);
+        attributes.add(armor);
+        oldSave.put("Attributes", attributes);
+        baba.readAdditionalSaveData(oldSave);
+        helper.assertTrue(baba.getAttributeBaseValue(Attributes.ARMOR) == 0,
+                "An older port save uses Baba Yaga's fixed protection without counting the old armor attribute twice");
+
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.WOODEN_SWORD));
+        var sword = level.damageSources().playerAttack(player);
+        baba.setHealth(baba.getMaxHealth());
+        helper.assertTrue(baba.hurt(sword, 4) && player.getHealth() == player.getMaxHealth()
+                        && Math.abs(baba.getMaxHealth() - baba.getHealth() - 3.36F) < 0.01F,
+                "The wooden sword penetrates Baba Yaga's fixed armor without hurting its wielder");
+
+        player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        var stake = new WitcheryBolt(player, WitcheryBolt.Kind.STAKE);
+        helper.assertTrue(!baba.hurt(level.damageSources().arrow(stake, player), 4)
+                        && player.getHealth() == player.getMaxHealth(),
+                "A wooden bolt is also safe when the boss rejects the hit during damage cooldown");
+
+        var silver = new WitcheryBolt(player, WitcheryBolt.Kind.SILVER);
+        helper.assertTrue(!baba.hurt(level.damageSources().arrow(silver, player), 4)
+                        && player.getHealth() < player.getMaxHealth(),
+                "A silver bolt still hurts its shooter even during the boss's damage cooldown");
+        helper.succeed();
+    }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_spectral_mob_damage")
     public static void spectralTouchPreservesForgeDamageHooksAndMeleeEnchants(GameTestHelper helper) {
