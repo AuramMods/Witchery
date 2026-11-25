@@ -1,6 +1,7 @@
 package art.arcane.witchery.world.migration;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.brewing.BrewItemCurse;
 import art.arcane.witchery.brewing.DeathBrewEffects;
 import art.arcane.witchery.capability.WitcheryCapabilities;
 import art.arcane.witchery.integration.BiomesOPlentySaplings;
@@ -294,24 +295,19 @@ public final class LegacyWorldIds {
             for (Tag entry : list) repairStoredItems(entry, fixer);
         } else if (value instanceof CompoundTag compound) {
             upgradeItemBinding(compound);
-            String item = compound.getString("id");
-            if (!item.equals("witchery:brewbag") && !item.equals("witchery:leonardsurn")) {
-                for (String key : compound.getAllKeys()) repairStoredItems(compound.get(key), fixer);
-                return;
-            }
-
-            // The item schema visits tag.Items, but the carriers put the bottles in tag.Inventory.Items.
-            var bottles = compound.getCompound("tag").getCompound("Inventory").getList("Items", Tag.TAG_COMPOUND);
-            int currentVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
-            for (Tag entry : bottles) {
-                var bottle = (CompoundTag) entry;
-                if (!bottle.getString("id").equals("witchery:brewbottle")) continue;
-                for (Tag ingredient : bottle.getCompound("tag").getList("Items", Tag.TAG_COMPOUND)) {
-                    if (((CompoundTag) ingredient).contains("id", Tag.TAG_ANY_NUMERIC)) {
-                        upgradeUntypedItems(ingredient, fixer, -1, currentVersion);
-                    }
+            if (compound.contains("Count", Tag.TAG_ANY_NUMERIC) && compound.get("tag") instanceof CompoundTag itemTag) {
+                int currentVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+                // Vanilla's fixer does not visit the recipe inside a curse attached to an arbitrary item.
+                repairLegacyInventory(BrewItemCurse.savedBrew(itemTag).getList("Items", Tag.TAG_COMPOUND), fixer, currentVersion);
+                switch (compound.getString("id")) {
+                    case "witchery:brewbottle" ->
+                            repairLegacyInventory(itemTag.getList("Items", Tag.TAG_COMPOUND), fixer, currentVersion);
+                    case "witchery:brewbag", "witchery:leonardsurn" ->
+                            repairLegacyInventory(itemTag.getCompound("Inventory").getList("Items", Tag.TAG_COMPOUND), fixer, currentVersion);
                 }
             }
+            // Descend into any recovered bottles as well as the other nested item bindings.
+            for (String key : compound.getAllKeys()) repairStoredItems(compound.get(key), fixer);
         }
     }
 

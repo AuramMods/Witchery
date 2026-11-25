@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Saved curses on inventory items (2026-11-25)
+
+- The original Forge server ran the triggered dispersal's ritual callback twice on the fixture's named iron pickaxe. It saved two charges in a vanilla chest and a separate dropped copy. Vanilla's item fixer leaves the curse's recipe in `WITCCurse.Curse.Items` outside its known item lists. The previous Forge JAR converted the pickaxe and its Witchery ingredient and left numeric Nether Wart, Spider Eye and Zombie Head in the curse.
+- The saved legacy registry now repairs those ingredient stacks before the curse is used. The same repair handles loose Brew Bottles and the saved bottle stacks inside Brew Bags and Leonard's Urns. Clean Forge and copied Auram kept the four ordered ingredients, brew color 123456, two charges, the tool's 27 wear, name and unrelated tag. Copied Auram reopened the prior Forge conversion with the ordinary launch command.
+- The original right-click trace applied Poison and left one charge with its five-second timer. The fixture includes a Wolfsbane ingredient beyond the recipe's capacity, and both versions retain the ingredient and skip its effect. The muted clean Forge client took the tool through the chest menu, applied Poison, and recovered the original cooldown and one remaining charge after an ordinary restart. The last use cleared the curse and kept the worn pickaxe.
+- All 386 required local GameTests passed on seed `5471593853027166409`. The fixture checks first import, reopening a converted chest, and dedicated player storage. Both client runs used OpenAL No Output with master volume zero and kept the foreground app in focus. The exact reobfuscated JAR tested on the servers and client is `build/qa-legacy-item-curse/candidate.jar` with SHA-256 `3a888bafd3a19aba6d5fab22bc5dcd7543f99c1732506d556a25d07de0832484`. See `build/qa-legacy-item-curse/comparison.txt`.
+
 ## Infusion charge depletion and recharge (2026-11-25)
 
 - An unaffordable Witch's Hand power removes the current charge field and keeps the infusion ID and capacity. An exact payment leaves a numeric zero. The original server and copied Auram both removed the charge field for an eleven-charge player trying a twelve-charge shockwave and on the cloak's first unaffordable pulse. The preceding Forge build left both fields in place.

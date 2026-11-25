@@ -23,6 +23,10 @@ public final class BrewItemCurse {
 
     private BrewItemCurse() {}
 
+    public static CompoundTag savedBrew(CompoundTag itemTag) {
+        return itemTag.getCompound(CURSE_KEY).getCompound(BREW_KEY);
+    }
+
     public static boolean attach(ServerLevel level, BlockPos cauldron, CompoundTag brew) {
         // The modern cauldron is hollow, so offerings can settle inside it as well as above it.
         AABB basin = new AABB(cauldron.getX() + 0.125, cauldron.getY(), cauldron.getZ() + 0.125,
