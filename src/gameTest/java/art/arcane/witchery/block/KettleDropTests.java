@@ -274,20 +274,22 @@ public final class KettleDropTests {
         vines.addDroppedStack(new ItemStack(WitcheryIngredient.DOG_TONGUE.item()));
         raising.addDroppedStack(new ItemStack(WitcheryIngredient.MUTANDIS.item()));
 
-        helper.startSequence().thenIdle(21).thenExecute(() -> {
-            helper.assertTrue(vines.isPowered() && vines.saveWithoutMetadata().getInt("LiquidColor") == -16753913,
-                    "Dog Tongue alone should show the powered, green Vines mixture without an altar");
-            helper.assertTrue(!raising.isPowered() && raising.saveWithoutMetadata().getInt("LiquidColor") == -12120505,
-                    "Mutandis alone should show the Raising mixture waiting for altar power");
-            helper.assertTrue(!vines.isReady() && !raising.isReady(), "The partial mixtures should retain their ingredients");
-            for (var ingredient : List.of(Items.VINE, Items.RED_MUSHROOM, Items.BROWN_MUSHROOM, Items.WHEAT,
-                    WitcheryIngredient.REEK_OF_MISFORTUNE.item())) {
-                vines.addDroppedStack(new ItemStack(ingredient));
-            }
-        }).thenIdle(21).thenExecute(() -> {
-            helper.assertTrue(vines.isReady() && vines.bottleBrew().is(WitcheryIngredient.BREW_OF_VINES.item()),
-                    "A complete Vines recipe should still brew and bottle without altar power");
-        }).thenSucceed();
+        tickKettle(helper, vines, 20);
+        tickKettle(helper, raising, 20);
+        helper.assertTrue(vines.isPowered() && vines.saveWithoutMetadata().getInt("LiquidColor") == -16753913,
+                "Dog Tongue alone should show the powered, green Vines mixture without an altar");
+        helper.assertTrue(!raising.isPowered() && raising.saveWithoutMetadata().getInt("LiquidColor") == -12120505,
+                "Mutandis alone should show the Raising mixture waiting for altar power");
+        helper.assertTrue(!vines.isReady() && !raising.isReady(), "The partial mixtures should retain their ingredients");
+
+        for (var ingredient : List.of(Items.VINE, Items.RED_MUSHROOM, Items.BROWN_MUSHROOM, Items.WHEAT,
+                WitcheryIngredient.REEK_OF_MISFORTUNE.item())) {
+            vines.addDroppedStack(new ItemStack(ingredient));
+        }
+        tickKettle(helper, vines, 20);
+        helper.assertTrue(vines.isReady() && vines.bottleBrew().is(WitcheryIngredient.BREW_OF_VINES.item()),
+                "A complete Vines recipe should still brew and bottle without altar power");
+        helper.succeed();
     }
 
     @GameTest(template = "qa_coven_arena")
