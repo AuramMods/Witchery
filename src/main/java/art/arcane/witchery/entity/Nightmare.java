@@ -2,12 +2,12 @@ package art.arcane.witchery.entity;
 
 import art.arcane.witchery.brewing.WakingNightmareEffect;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcherySounds;
 import art.arcane.witchery.world.DreamTravel;
 import art.arcane.witchery.world.WitcheryDimensions;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -124,7 +124,7 @@ public final class Nightmare extends Monster {
                     : WakingNightmareEffect.isHaunted(victim)) && canAttack(victim)) {
                 if (getTarget() != victim) setTarget(victim);
             } else if (tickCount > 30) {
-                level.sendParticles(ParticleTypes.POOF, getX(), getY(0.5), getZ(), 16, 0.3, 0.55, 0.3, 0.02);
+                WitcheryNetwork.sendBanishment(level, position());
                 discard();
             }
         }
@@ -157,14 +157,13 @@ public final class Nightmare extends Monster {
         if (isDefended()) {
             return false;
         }
-        boolean hit = super.hurt(source, Math.min(amount, 15));
-        if (hit && !level().isClientSide() && !level().getBlockState(blockPosition()).is(WitcheryBlocks.getRequired("spiritflowing").get())) {
+        if (!level().isClientSide() && !level().getBlockState(blockPosition()).is(WitcheryBlocks.getRequired("spiritflowing").get())) {
             boolean spear = source.getEntity() instanceof LivingEntity attacker
                     && attacker.getMainHandItem().is(WitcheryItems.getRequired("huntsmanspear").get());
             defenseTicks = level().dimension().equals(WitcheryDimensions.DREAM) ? (spear ? 40 : 80) : (spear ? 30 : 40);
             entityData.set(DEFENDED, true);
         }
-        return hit;
+        return super.hurt(source, Math.min(amount, 15));
     }
 
     public boolean isDefended() {
@@ -208,13 +207,18 @@ public final class Nightmare extends Monster {
     }
 
     @Override
+    public int getAmbientSoundInterval() {
+        return super.getAmbientSoundInterval() * 2;
+    }
+
+    @Override
     protected SoundEvent getHurtSound(DamageSource source) {
-        return WitcherySounds.NIGHTMARE_HIT.get();
+        return WitcherySounds.NIGHTMARE_DEAD.get();
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return WitcherySounds.NIGHTMARE_DEAD.get();
+        return WitcherySounds.NIGHTMARE_HIT.get();
     }
 
     @Override

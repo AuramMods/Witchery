@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Nightmare guard and cues (2026-11-25)
+
+- A Forge attack veto on Witchery 0.24.1 preserved all 100 health and still opened the guard for 40 ticks outside Dream and 80 inside. The GameTest covers that ordering and the Huntsman's Spear's shorter 30- and 40-tick durations. Accepted hits retain the original 15-point damage cap.
+- The native server selected `nightmare_dead` for hurt, `nightmare_hit` for death and a 160-tick ambient interval. The silent departure packet was at the creature's feet with particle 15, sound 0, width one, height two and a 16-block audience. The rebuilt port uses the original events with the appropriate subtitles in all five languages.
+- The clean Forge survival replay used a supplied Diamond Sword and fixture Nightmares. Normal player attacks produced the two sound events. Clearing Waking Nightmare sent the legacy burst at the bound creature's feet. A dedicated restart kept a separate survivor's UUID and 52 health. The client launches used master volume zero and OpenAL No Output and kept desktop focus.
+- JAR reobfuscation and all 405 local Forge GameTests passed on seed `5471593853027166409`. The same JAR loaded the combat area and saved a Nightmare on the headless Auram copy. The exact candidate is `build/qa-nightmare-combat/final/candidate.jar` with SHA-256 `471db60d03b0af2890b633c9472f7e133c8780ad3c2536fa403e81bfa79cc1ef`. See `build/qa-nightmare-combat/comparison.txt`.
+
 ## Nightmare placement (2026-11-25)
 
 - The 0.24.1 server drew offsets `(-2, 3)` from the victim's column for seed 34. From Y 180 it placed the Nightmare at Y 161.05 over the lower floor and Y 189.05 over raised terrain. One clear block above the raised floor prevented the spawn.

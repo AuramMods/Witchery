@@ -113,11 +113,11 @@
     "sounds": ["witchery:mob/nightmare/nightmare_live"]
   },
   "mob.nightmare.nightmare_hit": {
-    "subtitle": "subtitles.witchery.nightmare.hurt",
+    "subtitle": "subtitles.witchery.nightmare.death",
     "sounds": ["witchery:mob/nightmare/nightmare_hit"]
   },
   "mob.nightmare.nightmare_dead": {
-    "subtitle": "subtitles.witchery.nightmare.death",
+    "subtitle": "subtitles.witchery.nightmare.hurt",
     "sounds": ["witchery:mob/nightmare/nightmare_dead"]
   },
   "mob.darkmark.idle": {"sounds": ["witchery:mob/darkmark/idle"]},
