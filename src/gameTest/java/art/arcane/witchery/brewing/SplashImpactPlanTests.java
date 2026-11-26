@@ -12,6 +12,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Pig;
@@ -52,6 +53,44 @@ public final class SplashImpactPlanTests {
                 assertSpeed(helper, outside, -1, -1);
             } finally {
                 List.of(direct, glancing, edge, outside).forEach(Pig::discard);
+            }
+        });
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_splash_impact_plan")
+    public static void stealBuffsStopsAtTheFirstDonorAtTheSplashBoundary(GameTestHelper helper) {
+        inTickingChunk(helper, center -> {
+            var level = helper.getLevel();
+            var origin = Vec3.atBottomCenterOf(center);
+            var recipe = List.of(new ItemStack(WitcheryIngredient.TEAR_OF_THE_GODDESS.item()), new ItemStack(Items.NETHER_STAR),
+                    new ItemStack(Items.SKELETON_SKULL), new ItemStack(Items.GUNPOWDER));
+            record Trial(double distance, boolean weakerFirstBuff, boolean firstHasRegeneration, boolean secondKeepsRegeneration) {}
+            for (var trial : List.of(new Trial(3, false, false, true), new Trial(3, true, false, true),
+                    new Trial(2.25, false, false, false), new Trial(3, false, true, true))) {
+                var target = pig(level, origin.add(trial.distance(), 0, 0));
+                var first = pig(level, origin.add(5, 0, 0));
+                var second = pig(level, origin.add(6.5, 0, 0));
+                try {
+                    if (trial.weakerFirstBuff()) {
+                        target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 600, 1));
+                        first.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 200));
+                    }
+                    if (trial.firstHasRegeneration()) first.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 400));
+                    second.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 200));
+                    impact(level, recipe, origin, new BlockHitResult(origin, Direction.UP, center.below(), false));
+                    int expectedTicks = trial.firstHasRegeneration() ? 400 : trial.secondKeepsRegeneration() ? 0 : 200;
+                    var stolen = target.getEffect(MobEffects.REGENERATION);
+                    helper.assertTrue((expectedTicks == 0 ? stolen == null : stolen != null && stolen.getDuration() == expectedTicks)
+                                    && !first.hasEffect(MobEffects.REGENERATION)
+                                    && second.hasEffect(MobEffects.REGENERATION) == trial.secondKeepsRegeneration(),
+                            "The splash exposure controls how far the original donor scan proceeds: " + trial);
+                    if (trial.weakerFirstBuff()) {
+                        assertSpeed(helper, target, 600, 1);
+                        assertSpeed(helper, first, 200, 0);
+                    }
+                } finally {
+                    List.of(target, first, second).forEach(Pig::discard);
+                }
             }
         });
     }

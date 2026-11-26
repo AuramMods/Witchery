@@ -121,14 +121,18 @@ public final class BrewStatusActions {
             for (MobEffectInstance effect : List.copyOf(donor.getActiveEffects())) {
                 if (!eligible(effect, false, strength)) continue;
                 MobEffectInstance existing = target.getEffect(effect.getEffect());
-                if (existing != null && (existing.getAmplifier() > effect.getAmplifier()
-                        || existing.isInfiniteDuration() && !effect.isInfiniteDuration()
-                        || !effect.isInfiniteDuration() && existing.getDuration() > effect.getDuration())) continue;
+                boolean canTake = existing == null || existing.getAmplifier() <= effect.getAmplifier()
+                        && (effect.isInfiniteDuration()
+                        || !existing.isInfiniteDuration() && existing.getDuration() <= effect.getDuration());
                 // If the effect removal is vetoed, leave the donor and recipient unchanged.
-                if (!donor.removeEffect(effect.getEffect())) continue;
-                target.addEffect(new MobEffectInstance(effect));
-                if (--remaining <= 0) return;
+                if (canTake && donor.removeEffect(effect.getEffect())) {
+                    target.addEffect(new MobEffectInstance(effect));
+                    --remaining;
+                }
+                if (remaining <= 0) return;
             }
+            // The original still tries the first donor at the zero-exposure boundary.
+            if (remaining <= 0) return;
         }
     }
 
