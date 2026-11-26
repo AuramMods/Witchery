@@ -28,6 +28,7 @@ import art.arcane.witchery.block.SunlightBlock;
 import art.arcane.witchery.block.TormentPortalBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.block.WitchCropBlock;
+import art.arcane.witchery.block.WitchLeavesBlock;
 import art.arcane.witchery.block.WitchLilyPadBlock;
 import art.arcane.witchery.block.WitchLogBlock;
 import art.arcane.witchery.block.WitchWoodType;
@@ -171,6 +172,25 @@ public final class LegacyChunkUpgrade {
             ticks.addAll(savedTicks);
             upgraded.put(currentKey, ticks);
             upgraded.remove(savedKey);
+        }
+    }
+
+    public static void restorePendingLeafChecks(CompoundTag chunk) {
+        for (Tag entry : chunk.getList("sections", Tag.TAG_COMPOUND)) {
+            var section = (CompoundTag) entry;
+            for (Tag value : section.getCompound("block_states").getList("palette", Tag.TAG_COMPOUND)) {
+                var state = (CompoundTag) value;
+                if (!state.getString("Name").equals("witchery:witchleaves")) continue;
+                var properties = state.getCompound("Properties");
+                String check = WitchLeavesBlock.CHECK_DECAY.getName();
+                String distance = properties.getString("distance");
+                // Earlier 1.20.1 builds ran vanilla decay for nonpersistent leaves at distance seven.
+                if (!properties.contains(check) && !properties.getString("persistent").equals("true")
+                        && (distance.isEmpty() || distance.equals("7"))) {
+                    properties.putString(check, "true");
+                    state.put("Properties", properties);
+                }
+            }
         }
     }
 
@@ -538,9 +558,10 @@ public final class LegacyChunkUpgrade {
                     .setValue(WitchLogBlock.AXIS, pillarAxis(metadata))
                     .setValue(WitchLogBlock.BARK, (metadata & 12) == 12);
             case "witchleaves" -> state.setValue(WitchWoodType.PROPERTY, wood)
-                    // Start supported while scheduled neighbor updates rebuild the distance outward from logs.
+                    // Retain vanilla distance updates for mixed canopies.
                     .setValue(BlockStateProperties.DISTANCE, 1)
-                    .setValue(BlockStateProperties.PERSISTENT, (metadata & 4) != 0);
+                    .setValue(BlockStateProperties.PERSISTENT, (metadata & 4) != 0)
+                    .setValue(WitchLeavesBlock.CHECK_DECAY, (metadata & 8) != 0);
             case "witchsapling" -> state.setValue(WitchWoodType.PROPERTY, wood)
                     .setValue(BlockStateProperties.STAGE, (metadata & 8) == 0 ? 0 : 1);
             case "stairswoodrowan", "stairswoodalder", "stairswoodhawthorn", "icestairs", "snowstairs" -> state.setValue(StairBlock.FACING,

@@ -78,6 +78,7 @@ abstract class LegacyChunkStorageMixin {
         }
         CompoundTag updated = type.updateToCurrentVersion(fixer, chunk, version);
         if (legacy) LegacyChunkUpgrade.finish(updated, dimension);
+        else LegacyChunkUpgrade.restorePendingLeafChecks(updated);
         var tiles = updated.getList("block_entities", Tag.TAG_COMPOUND);
         LegacyChunkUpgrade.updateBlockEntityTypes(tiles);
         if (witchery$legacyIds != null) {

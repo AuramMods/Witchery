@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Witchery leaf decay and saved checks (2026-11-26)
+
+- Witchery 0.24.1 kept the fourth connected leaf and cleared its pending bit, then removed the fifth. An isolated leaf with no pending check and a player-placed leaf both survived. The preceding port imported the fifth leaf with vanilla distance five and gave the unchecked isolated leaf the same state as one pending decay.
+- The native importer now retains species, persistence and the pending check separately. A pending leaf uses four face-connected steps through the loaded canopy. Log and leaf removals mark their original local boxes. The earlier 1.20.1 palette retains its pending and supported states from the earlier distance and persistence fields. Explicit saved check states take precedence.
+- The exact JAR on clean Forge imported the native region and ran ordinary random ticks at an increased test rate. The fifth leaf decayed across the chunk boundary. After a restart, a muted background survival player mined the original log and the remaining chain and nearby unchecked leaf began to decay. The player-placed leaf stayed. Protocol 100 rejected a client on the preceding version before it received chunk palettes. OpenAL used No Output and all three test client processes stayed out of the foreground.
+- On copied Auram, the same JAR imported the original pending, unchecked, and persistent states. Removing the log marked the connected and nearby isolated leaves with zero players online. A normal dedicated restart retained both pending checks and the player-placed leaf.
+- The first hook ran during tree generation and stalled spawn generation. The final hook listens to committed Forge level writes. Fresh-world generation, Java 17 data generation, reobfuscation, and all 467 local Forge GameTests passed. The JAR is `build/qa-leaf-decay/candidate.jar` with SHA-256 `6e1f72bce404f5a45f84ff2f80596e592e06d8acdd54dd63a6f4b920247a25f2`. See `build/qa-leaf-decay/comparison.txt`.
+
 ## Mounted blocks on partial supports (2026-11-25)
 
 - Witchery 0.24.1 placed the Heart Glyph, the three colored glyphs, Candelabra, filled Chalice, and Crystal Ball through their original items on bottom slabs. The original Arthana display stayed in place when its altar was replaced with a bottom slab. A Nightmares Dream Catcher stayed attached when its slab wall changed. The preceding packaged JAR detached every one of those nine mounts when their supports changed to another bottom slab.
