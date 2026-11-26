@@ -19,6 +19,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraftforge.common.util.FakePlayerFactory;
 import org.jetbrains.annotations.Nullable;
 
 public final class BrewDroplet extends ThrowableProjectile implements ItemSupplier {
@@ -89,9 +90,10 @@ public final class BrewDroplet extends ThrowableProjectile implements ItemSuppli
         if (!(level() instanceof ServerLevel server)) return;
         if (mixture != null) {
             if (hit instanceof BlockHitResult block) {
-                mixture.applyToBlock(server, block.getBlockPos(), block.getDirection(), 1, true, null, impact);
+                mixture.applyToBlock(server, block.getBlockPos(), block.getDirection(), 1, true,
+                        FakePlayerFactory.getMinecraft(server), impact);
             } else if (hit instanceof EntityHitResult entity && entity.getEntity() instanceof LivingEntity living) {
-                mixture.applyRitualExposure(living, this, 1, impact);
+                mixture.applyRitualExposure(server, living, 1, impact);
             }
             server.levelEvent(2002, BlockPos.containing(impact), entityData.get(COLOR));
         }

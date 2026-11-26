@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron effect attribution (2026-11-26)
+
+- The headless 0.24.1 server exposed a pig to Undeadbane through a gas ritual, an ownerless liquid cell, and an ownerless gas cell. Forge's damage event identified its fake player for the first two routes and no attacker for the gas cell.
+- The port follows those caster rules. Instant terrain rituals and ritual rain also supply the fake player used by the original code. Placement and damage events in Forge receive that actor in the destination level. No saved format or network protocol changes were needed.
+- A second export of all 184 original cauldron keys confirmed that the 169 mixing keys map to 168 modern keys. The comparison covers declared base power, effect level and potion duration, plus the amplifier caps used by ordinary potion effects. Tinting uses the dye index in both versions. Tall Grass metadata zero and Dead Bush share the modern Dead Bush entry. The other 15 keys are fixed cast triggers. The evidence is in `build/qa-brewing-audit/native/server.log`, `native/casters.log`, and `compare.py` under the same QA directory.
+- Java 17 data generation, JAR reobfuscation, and all 468 Forge GameTests passed. The identical packaged JAR brought a pig from ten to nine health through an ownerless liquid cell on clean Forge and copied Auram. Clean Forge preserved nine health after a dedicated restart. Both profiles ran headless. The candidate is `build/qa-brewing-audit/candidate.jar` with SHA-256 `c95ab63801f869157de0349b51950b5c2a2b83c203c1c769c68ef083fe6af14f`.
+
 ## Witchery leaf decay and saved checks (2026-11-26)
 
 - Witchery 0.24.1 kept the fourth connected leaf and cleared its pending bit, then removed the fifth. An isolated leaf with no pending check and a player-placed leaf both survived. The preceding port imported the fifth leaf with vanilla distance five and gave the unchecked isolated leaf the same state as one pending decay.

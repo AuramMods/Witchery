@@ -2,6 +2,7 @@ package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.AltarBlockEntity;
+import art.arcane.witchery.block.entity.BrewFluidBlockEntity;
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.entity.BrewDroplet;
@@ -23,6 +24,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -40,7 +42,9 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -350,6 +354,51 @@ public final class LegacyCauldronRitualTests {
                     atTarget.discard();
                     onShelf.discard();
                 }).thenSucceed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_brew_caster")
+    public static void ownerlessLiquidAndGasRitualUseTheOriginalCaster(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(5, 4, 5));
+        var pig = helper.spawn(EntityType.PIG, new BlockPos(5, 5, 5));
+        pig.setNoAi(true);
+        var trigger = new ItemStack(WitcheryIngredient.DOG_TONGUE.item());
+        var ingredients = List.of(new ItemStack(Items.NETHER_WART), new ItemStack(Items.PUMPKIN),
+                new ItemStack(WitcheryIngredient.BAT_WOOL.item()), trigger);
+        var brew = BrewMixture.from(ingredients);
+        var payload = brew.bottleTag(ingredients);
+        var fake = FakePlayerFactory.getMinecraft(level);
+        var hits = new ArrayList<DamageSource>();
+        Consumer<LivingHurtEvent> record = event -> {
+            if (event.getEntity() == pig) hits.add(event.getSource());
+        };
+
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.getEntity(pig.getUUID()) == pig,
+                "The pig is available to the gas pulse")).thenExecute(() -> {
+            MinecraftForge.EVENT_BUS.addListener(record);
+            try {
+                level.setBlockAndUpdate(pos, Blocks.STONE.defaultBlockState());
+                pig.setPos(pos.getX() + 0.25, pos.getY() + 1, pos.getZ() + 0.25);
+                helper.assertTrue(BrewRituals.pulse(level, pos, brew, payload, trigger, 1, false)
+                        == BrewRituals.Result.ONGOING, "The first gas pulse continues the ritual");
+                helper.assertTrue(hits.size() == 1 && hits.get(0).getEntity() == fake,
+                        "The gas ritual credits the Forge fake player");
+                for (boolean gas : List.of(false, true)) {
+                    var block = WitcheryBlocks.getRequired(gas ? "brewgas" : "brewliquid").get();
+                    level.setBlockAndUpdate(pos, block.defaultBlockState());
+                    var fluid = (BrewFluidBlockEntity) level.getBlockEntity(pos);
+                    fluid.initialize(payload, brew, brew.color(), null);
+                    pig.invulnerableTime = 0;
+                    hits.clear();
+                    fluid.expose(level, pig, gas);
+                    helper.assertTrue(hits.size() == 1 && hits.get(0).getEntity() == (gas ? null : fake),
+                            "Liquid contact uses the Forge fake player and cloud contact stays ownerless");
+                }
+            } finally {
+                MinecraftForge.EVENT_BUS.unregister(record);
+            }
+            pig.discard();
+        }).thenSucceed();
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_liquid_ritual_height")

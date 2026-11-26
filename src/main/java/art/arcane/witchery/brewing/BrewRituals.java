@@ -199,7 +199,7 @@ public final class BrewRituals {
         AABB contacts = new AABB(center, center).inflate(1.5);
         for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, contacts,
                 candidate -> candidate.distanceToSqr(center.x, candidate.getY(), center.z) <= 2.25)) {
-            mixture.applyRitualExposure(target, null, coven, center);
+            mixture.applyRitualExposure(level, target, coven, center);
         }
     }
 

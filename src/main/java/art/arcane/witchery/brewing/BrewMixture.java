@@ -42,6 +42,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.util.FakePlayerFactory;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -548,12 +549,14 @@ public final class BrewMixture {
     }
 
     boolean applyRitualToBlock(ServerLevel level, BlockPos pos, int coven, int pulse, @Nullable BrewTransposition.Site destination) {
-        return applyToBlock(level, pos, Direction.UP, splashRadius(), true, null, coven, Vec3.atLowerCornerOf(pos),
+        return applyToBlock(level, pos, Direction.UP, splashRadius(), true, FakePlayerFactory.getMinecraft(level),
+                coven, Vec3.atLowerCornerOf(pos),
                 false, true, pulse, destination);
     }
 
     void applyGasRitualToBlock(ServerLevel level, BlockPos pos, int coven) {
-        applyToBlock(level, pos, Direction.UP, 1, true, null, coven, Vec3.atLowerCornerOf(pos), false, false);
+        applyToBlock(level, pos, Direction.UP, 1, true, FakePlayerFactory.getMinecraft(level),
+                coven, Vec3.atLowerCornerOf(pos), false, false);
     }
 
     private void applyToBlock(ServerLevel level, BlockPos pos, Direction face, int radius, boolean ritual,
@@ -655,8 +658,9 @@ public final class BrewMixture {
         apply(target, caster, caster, 1, 1, false, false, coven, true, target.position(), destination);
     }
 
-    public void applyRitualExposure(LivingEntity target, @Nullable Entity source, int coven, Vec3 impact) {
-        apply(target, source, null, 1, 1, false, false, coven, false, impact);
+    public void applyRitualExposure(ServerLevel level, LivingEntity target, int coven, Vec3 impact) {
+        var caster = FakePlayerFactory.getMinecraft(level);
+        apply(target, caster, caster, 1, 1, false, false, coven, false, impact);
     }
 
     private void apply(LivingEntity target, @Nullable Entity source, @Nullable LivingEntity caster,

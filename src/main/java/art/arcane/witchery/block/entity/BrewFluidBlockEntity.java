@@ -20,6 +20,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.util.FakePlayerFactory;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
@@ -97,7 +98,8 @@ public final class BrewFluidBlockEntity extends BlockEntity {
 
     public void expose(ServerLevel server, LivingEntity target, boolean gas) {
         if (mixture == null) return;
-        LivingEntity caster = resolveCaster(server);
+        LivingEntity owner = resolveCaster(server);
+        LivingEntity caster = gas || owner instanceof Player ? owner : FakePlayerFactory.getMinecraft(server);
         boolean mask = gas && target.hasEffect(WitcheryEffects.GAS_MASK.get());
         mixture.applyAt(target, caster, caster, 0.25, 0.5, mask, Vec3.atCenterOf(worldPosition));
     }
@@ -111,8 +113,9 @@ public final class BrewFluidBlockEntity extends BlockEntity {
             if (!server.isInWorldBounds(target) || !server.hasChunkAt(target)) continue;
             BlockState state = server.getBlockState(target);
             if (state.is(getBlockState().getBlock()) || state.isAir() && !server.getBlockState(target.below()).blocksMotion()) continue;
-            LivingEntity caster = resolveCaster(server);
-            mixture.applyLiquidToBlock(server, target, direction.getOpposite(), impact, caster instanceof Player player ? player : null);
+            LivingEntity owner = resolveCaster(server);
+            Player caster = owner instanceof Player player ? player : FakePlayerFactory.getMinecraft(server);
+            mixture.applyLiquidToBlock(server, target, direction.getOpposite(), impact, caster);
         }
     }
 
