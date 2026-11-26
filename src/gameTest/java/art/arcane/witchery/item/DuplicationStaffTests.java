@@ -1,6 +1,7 @@
 package art.arcane.witchery.item;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.WitchLogBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
@@ -114,7 +115,7 @@ public final class DuplicationStaffTests {
                     {n:"minecraft:wool",m:14},{n:"witchery:stairswoodalder",m:4},
                     {n:"missing:slab"},{n:"minecraft:air"},
                     {n:"witchery:witchlog",m:9},{n:"minecraft:air"},
-                    {n:"minecraft:diamond_block"},{n:"minecraft:air"}]}}}
+                    {n:"minecraft:diamond_block"},{n:"witchery:witchlog",m:14}]}}}
                 """));
         var player = player(helper);
         try {
@@ -137,12 +138,17 @@ public final class DuplicationStaffTests {
                     "The old door halves share their rotated facing and preserve open and hinge state");
             var stairs = level.getBlockState(base.south().above());
             var alder = level.getBlockState(base);
+            var bark = level.getBlockState(base.east().above());
             helper.assertTrue(stairs.is(WitcheryBlocks.getRequired("stairswoodalder").get())
                             && stairs.getValue(StairBlock.FACING) == Direction.NORTH && stairs.getValue(StairBlock.HALF) == Half.TOP
                             && alder.getValue(WitchWoodType.PROPERTY) == WitchWoodType.ALDER
                             && alder.getValue(RotatedPillarBlock.AXIS) == Direction.Axis.X
                             && level.getBlockState(base.offset(1, 0, 1)).is(Blocks.GOLD_BLOCK),
                     "Witchery metadata survives rotation and an unknown block preserves the destination");
+            helper.assertTrue(bark.is(WitcheryBlocks.getRequired("witchlog").get()) && bark.getValue(WitchLogBlock.BARK)
+                            && bark.getValue(WitchWoodType.PROPERTY) == WitchWoodType.HAWTHORN
+                            && bark.getValue(RotatedPillarBlock.AXIS) == Direction.Axis.Y,
+                    "A rotated legacy schematic keeps its all-bark log");
             helper.assertTrue(staff.getTag().getBoolean("Keepsake")
                             && staff.getTag().getCompound("SavedSchematic").contains("blocks"),
                     "Placing an older schematic preserves its original data");

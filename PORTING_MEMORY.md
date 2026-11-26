@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Witchery log metadata and fire (2026-11-25)
+
+- The original Forge server saved all twelve combinations of species and orientation. Its rotated-pillar texture lookup uses the side on every face for metadata 12–14. The previous packaged importer opened those three blocks as cut-end vertical logs. The rebuilt importer keeps bark on all faces for all three species and keeps the original axes for the other nine states. A rotated original Staff of Duplication capture keeps its bark.
+- The original server's Forge fire hooks returned one for ignition and spread on metadata 2 and five on every other Witchery log state. The GameTest checks the same values on the imported states. An ordinary Forge load of the previous port's converted world kept its existing species and axes and defaulted the new bark property to false.
+- The exact JAR reopened the migrated worlds on clean Forge and copied Auram. A muted background survival client verified the baked texture for all 72 faces and the previous protocol was rejected on a separate login. The focus monitor recorded no client activation.
+- Java 17 data generation, JAR reobfuscation, and all 463 local Forge GameTests passed on world seed `5471593853027166409`. The JAR is `build/qa-log-metadata/candidate.jar` with SHA-256 `143af8abe4b8b09789d08327964748c71fcc748be9a6af3e401c04bae851ad12`. See `build/qa-log-metadata/comparison.txt`.
+
 ## Mixed player progression and Mirror returns (2026-11-25)
 
 - Witchery 0.24.1 wrote the Wolf and Vampire fixture compounds through its original player serializer. On an ordinary clean Forge login, the preceding port dropped the Wolf's rank, trial counter and visited chunk when it found an incomplete capability alongside the original player data.

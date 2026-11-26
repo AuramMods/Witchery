@@ -66,6 +66,7 @@ import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.block.WitchCropBlock;
 import art.arcane.witchery.block.WitchLeavesBlock;
 import art.arcane.witchery.block.WitchLilyPadBlock;
+import art.arcane.witchery.block.WitchLogBlock;
 import art.arcane.witchery.block.WitchSaplingBlock;
 import art.arcane.witchery.block.WitchWoodStairBlock;
 import art.arcane.witchery.block.WitchWoodType;
@@ -75,24 +76,17 @@ import art.arcane.witchery.block.WitchesOvenBlock;
 import art.arcane.witchery.block.WolfHeadBlock;
 import art.arcane.witchery.block.WolfAltarBlock;
 import art.arcane.witchery.block.entity.AreaWardBlockEntity;
-import art.arcane.witchery.entity.Ent;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.GlassBlock;
 import net.minecraft.world.level.block.LiquidBlock;
-import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -105,7 +99,6 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -156,7 +149,7 @@ public final class WitcheryBlocks {
 
     private static Block createBlock(String path) {
         return switch (path) {
-            case "witchlog" -> new LegacyWitchLogBlock();
+            case "witchlog" -> new WitchLogBlock();
             case "witchwood" -> new LegacyWitchWoodVariantBlock(
                     BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS).explosionResistance(2));
             case "witchleaves" -> new WitchLeavesBlock(BlockBehaviour.Properties.copy(Blocks.OAK_LEAVES));
@@ -317,31 +310,6 @@ public final class WitcheryBlocks {
         @Override
         public VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
             return Shapes.empty();
-        }
-    }
-
-    private static final class LegacyWitchLogBlock extends RotatedPillarBlock {
-        private LegacyWitchLogBlock() {
-            super(BlockBehaviour.Properties.copy(Blocks.OAK_LOG));
-            registerDefaultState(defaultBlockState().setValue(WitchWoodType.PROPERTY, WitchWoodType.ROWAN));
-        }
-
-        @Override
-        public void playerDestroy(Level level, Player player, BlockPos pos, BlockState state,
-                                  @Nullable BlockEntity entity, ItemStack tool) {
-            if (level instanceof ServerLevel server) Ent.tryAwaken(server, pos, this);
-            super.playerDestroy(level, player, pos, state, entity, tool);
-        }
-
-        @Override
-        public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
-            return state.getValue(WitchWoodType.PROPERTY).stack(this);
-        }
-
-        @Override
-        protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-            super.createBlockStateDefinition(builder);
-            builder.add(WitchWoodType.PROPERTY);
         }
     }
 

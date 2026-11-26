@@ -29,6 +29,7 @@ import art.arcane.witchery.block.TormentPortalBlock;
 import art.arcane.witchery.block.WickerBundleBlock;
 import art.arcane.witchery.block.WitchCropBlock;
 import art.arcane.witchery.block.WitchLilyPadBlock;
+import art.arcane.witchery.block.WitchLogBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.block.WitchesOvenBlock;
 import art.arcane.witchery.block.WolfHeadBlock;
@@ -533,8 +534,9 @@ public final class LegacyChunkUpgrade {
             case "cwoodpressureplate", "cstonepressureplate", "csnowpressureplate" ->
                     state.setValue(BlockStateProperties.POWERED, metadata == 1);
             case "witchwood" -> state.setValue(WitchWoodType.PROPERTY, wood);
-            case "witchlog" -> state.setValue(WitchWoodType.PROPERTY, wood).setValue(BlockStateProperties.AXIS,
-                    pillarAxis(metadata));
+            case "witchlog" -> state.setValue(WitchWoodType.PROPERTY, wood)
+                    .setValue(WitchLogBlock.AXIS, pillarAxis(metadata))
+                    .setValue(WitchLogBlock.BARK, (metadata & 12) == 12);
             case "witchleaves" -> state.setValue(WitchWoodType.PROPERTY, wood)
                     // Start supported while scheduled neighbor updates rebuild the distance outward from logs.
                     .setValue(BlockStateProperties.DISTANCE, 1)
