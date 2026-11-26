@@ -3,6 +3,7 @@ package art.arcane.witchery.block;
 import art.arcane.witchery.entity.Mandrake;
 import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
@@ -16,6 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CropBlock;
@@ -65,8 +67,14 @@ public final class WitchCropBlock extends CropBlock {
         if (crop == WitchCrop.ARTICHOKE) {
             return floor.is(Blocks.WATER) && floor.getFluidState().isSource();
         }
-        return super.mayPlaceOn(floor, level, pos) || floor.is(BlockTags.DIRT)
+        return super.mayPlaceOn(floor, level, pos) || floor.is(BlockTags.DIRT) || floor.is(this)
                 || floor.getBlock() instanceof WitchCropBlock below && below.crop == WitchCrop.WORMWOOD;
+    }
+
+    @Override
+    public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+        BlockPos soil = pos.below();
+        return level.getBlockState(soil).canSustainPlant(level, soil, Direction.UP, this);
     }
 
     @Override
@@ -76,18 +84,23 @@ public final class WitchCropBlock extends CropBlock {
 
     @Override
     public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        if (crop == WitchCrop.WORMWOOD && isMaxAge(state)) {
-            if (level.getRawBrightness(pos.above(), 0) >= 9 && !level.getBlockState(pos.below()).is(this)
-                    && level.isEmptyBlock(pos.above()) && ForgeHooks.onCropsGrowPre(level, pos, state, true)) {
-                level.setBlockAndUpdate(pos.above(), defaultBlockState());
+        BlockPos above = pos.above();
+        if (level.getRawBrightness(above, 0) < 9) return;
+
+        int age = getAge(state);
+        if (age < getMaxAge()) {
+            if (!level.isAreaLoaded(pos, 1)) return;
+            float growth = getGrowthSpeed(this, level, pos);
+            if (crop == WitchCrop.MINDRAKE) growth /= 1.5F;
+            boolean grows = random.nextInt((int) (25.0F / growth) + 1) == 0;
+            if (ForgeHooks.onCropsGrowPre(level, pos, state, grows)) {
+                level.setBlock(pos, getStateForAge(age + 1), Block.UPDATE_CLIENTS);
                 ForgeHooks.onCropsGrowPost(level, pos, state);
             }
-        } else if (crop == WitchCrop.MINDRAKE) {
-            if (random.nextInt(3) != 0) {
-                super.randomTick(state, level, pos, random);
-            }
-        } else {
-            super.randomTick(state, level, pos, random);
+        } else if (crop == WitchCrop.WORMWOOD && !level.getBlockState(pos.below()).is(this)
+                && level.isEmptyBlock(above) && ForgeHooks.onCropsGrowPre(level, pos, state, true)) {
+            level.setBlockAndUpdate(above, defaultBlockState());
+            ForgeHooks.onCropsGrowPost(level, pos, state);
         }
     }
 

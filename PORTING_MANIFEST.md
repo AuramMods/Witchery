@@ -211,6 +211,7 @@ Original server records for all 55 entity IDs resolve in the packaged importer a
     - `witchery:mindrake` -> stage `0..4` (`age=5..7` mapped to stage `4`).
     - `witchery:wolfsbane` -> stage `0..7`.
     - `witchery:garlicplant` -> stage `0..5` (`age=6..7` mapped to stage `5`).
+  - Crops survive in darkness on Forge-supported substrates and use the light in the block above for natural growth. Mindrake divides its soil and crowding growth score by 1.5 before the single roll. Globe Artichoke grows on source water. Land crops also survive on the same crop or on Wormwood. Mature Wormwood grows one upper section, which can mature in place. Forge growth callbacks still govern the changes.
 - Structural model/state families (2026-02-08 breadth pass)
   - The original and packaged Forge servers agree on effective blast resistance for all 121 shared default block states. Perpetual Ice and ordinary ice constructions use resistance 3, witchwood planks and stairs use 2, Bear and Wolf Traps use 6, and both Stockades and the Statue of Worship use 12.
   - Pistons leave the Candelabra and both Fume Funnels in place, and break the Heart Glyph, chalk glyphs, Dream Catcher, Ember Moss, Garlic Garland, Glint Weed, Plant Mine, and snow slabs. Dream Catchers drop their fitted weave. Garlic Garland and Glint Weed drop one item each. Both double snow slab forms drop two slabs.

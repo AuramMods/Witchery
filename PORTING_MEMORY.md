@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Natural crop growth and dark soil (2026-11-25)
+
+- Native Witchery crops survive on supported soil in darkness and use the light in the block above for growth. A Mandrake with level 14 side light and level zero above stayed at age zero. The previous Forge JAR grew that crop through its ceiling and uprooted both a crop in darkness and a crop supported by another of its own kind.
+- Mindrake divides the original soil and crowding score by 1.5 and rolls once. Its measured original rolls were one in 19 on isolated Dirt, one in 10 on isolated hydrated farmland, one in four on a hydrated 3×3 bed, and one in eight with a diagonal neighbor. Globe Artichoke rolled one in 13 on an isolated water source and one in seven in a 3×3 pool. The Forge regressions confirm these outcomes, growth vetoes and forced growth.
+- The exact JAR naturally grew Mandrake, Mindrake, and Globe Artichoke on clean Forge. Opening the ceiling started the covered crop, while the dark crop and the stacked crop survived ordinary block updates. Wormwood's tip grew to maturity and the plant stayed two blocks tall. A normal restart retained every plot. The client was muted and stayed in the background. Copied Auram reproduced the growth with ordinary random ticks and a Poppet Shelf's ticking ticket, with zero players online.
+- Java 17 reobfuscation and all 459 local Forge GameTests passed on world seed `5471593853027166409`. The JAR is `build/qa-crop-growth/candidate.jar` with SHA-256 `69cf66db60526c47f754a33c3e39143de59a36591e30faec9522ee722ec8bcf6`. See `build/qa-crop-growth/comparison.txt`.
+
 ## Cauldron Planting and Mindrake fertilization (2026-11-25)
 
 - The original Forge registry exposed six vanilla and eight Witchery plantable items. Planting ignored loose oak saplings and poppies and used the last eligible stack within its sphere first. It consumed one item per planted block. Nether Wart used Soul Sand. Artichoke stayed in the queue when the cast could find no solid surface on which to plant it.
