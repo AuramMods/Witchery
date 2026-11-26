@@ -2,6 +2,7 @@ package art.arcane.witchery.item;
 
 import art.arcane.witchery.block.entity.FetishBlockEntity;
 import art.arcane.witchery.entity.WitchHunterPursuit;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
@@ -69,8 +70,7 @@ public final class VoodooPoppetItem extends BoundPoppetItem {
             if (warded(caster, target, stack) || HunterClothingItem.resistsMagic(caster)) return;
             Vec3 look = caster.getLookAngle();
             int strength = (USE_TICKS - remaining) / 20;
-            target.setDeltaMovement(look.multiply(0.9, 0.3, 0.9).scale(strength));
-            target.hurtMarked = true;
+            WitcheryNetwork.pushEntity(target, look.multiply(0.9, 0.3, 0.9).scale(strength));
             wear(stack, ATTACK_WEAR);
         } else {
             prick(server, caster, target, stack);

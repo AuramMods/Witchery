@@ -21,6 +21,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
@@ -298,6 +299,18 @@ public final class WitcheryNetwork {
                 PacketDistributor.PLAYER.with(() -> player),
                 new PushTargetPacket(entityId, velocityX, velocityY, velocityZ)
         );
+    }
+
+    public static void pushEntity(Entity target, Vec3 motion) {
+        target.setDeltaMovement(motion);
+        if (target instanceof ServerPlayer player) {
+            // The vanilla motion packet clamps each axis to 3.9 blocks per tick.
+            player.hasImpulse = true;
+            player.hurtMarked = false;
+            sendPushTarget(player, player.getId(), motion.x, motion.y, motion.z);
+        } else {
+            target.hurtMarked = true;
+        }
     }
 
     public static void sendSound(ServerPlayer player, String soundId, double x, double y, double z, float volume, float pitch) {

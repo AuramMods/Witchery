@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Direct movement packets for brews and Voodoo Poppets (2026-11-26)
+
+- The 0.24.1 headless reference measured `(0.024, 0.4, -5.7)` for a Frog's Tongue impact with the caster 38 blocks away. A normal survival throw on the preceding Forge package delivered about `(0.013, 0.3135, -3.1121)` to the other client's player after server movement decay. The rebuilt JAR delivered the original vector directly to that player.
+- Air Hike, both Frog Tongue variants, Knockback, Cursed Leaping, Repel Attacker, and the Voodoo Poppet use the existing Witchery motion packet for players. The client applies all three components at their original precision.
+- Two muted clean Forge survival clients exercised the three additional movement bottles, a prepared bound Voodoo Poppet, and a melee attack on a player with Repel Attacker. The splash of boosted Air Hike applied 0.8 upward velocity. Knockback pushed the target away with 0.7 upward velocity. Cursed Leaping gave Jump Boost IV and added its glancing lift. The charged Poppet sent `(0, 0.3, 1.5588)`. Repel Attacker sent `(0, 1.3, 4)`. Both clients used OpenAL No Output and stayed out of the foreground.
+- Two muted copied Auram clients replayed the six motion checks on the same JAR. The long pull, Air Hike, Poppet, and Repel Attacker vectors matched clean Forge. The Repel Attacker fixture supplied player-attributed melee damage through the server command. Both clients used OpenAL No Output and stayed in the background through JEI's recipe indexing. Before they joined, a dispenser applied Jump Boost IV and 1.437 upward motion to a paused pig. The server saved the result.
+- Local Java 17 JAR reobfuscation and all 478 Forge GameTests passed. The package is `build/qa-directed-motion/candidate.jar` with SHA-256 `4a848567c903394561bd51af02564f7ea7629196def4d0b10579d7557e38fe27`.
+
 ## Saved records in split Witchery dimensions (2026-11-26)
 
 - Two headless Witchery 0.24.1 worlds saved different Mirror villages and Poppet Shelves. The archived file recorded trust 10 and hostility -15 for the village at X 94. The two files differed at the village at X 199. The earlier Forge JAR recovered the archive terrain and residents. It read neutral scores for X 94 and started with only the live shelf loaded.

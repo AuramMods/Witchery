@@ -2,6 +2,7 @@ package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.infusion.InfusionEnergy;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEffects;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -79,8 +80,7 @@ public final class CombatBrewEffects {
     private static void repelAttacker(LivingEntity attacker, LivingEntity target, int amplifier) {
         Vec3 away = attacker.position().subtract(target.position()).normalize();
         double speed = 1 + 0.75 * amplifier;
-        attacker.setDeltaMovement(away.x * speed, Math.max(away.y, 0.5 + 0.2 * amplifier), away.z * speed);
-        attacker.hurtMarked = true;
+        WitcheryNetwork.pushEntity(attacker, new Vec3(away.x * speed, Math.max(away.y, 0.5 + 0.2 * amplifier), away.z * speed));
     }
 
     private static void spendHunger(ServerPlayer player, LivingHurtEvent event, int amplifier) {

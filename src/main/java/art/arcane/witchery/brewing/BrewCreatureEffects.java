@@ -59,7 +59,7 @@ public final class BrewCreatureEffects {
         double lift = 0.6 + 0.2 * strength;
         target.resetFallDistance();
         Vec3 horizontal = target instanceof Player ? Vec3.ZERO : target.getDeltaMovement();
-        move(target, new Vec3(horizontal.x, lift, horizontal.z));
+        WitcheryNetwork.pushEntity(target, new Vec3(horizontal.x, lift, horizontal.z));
     }
 
     static void frogTongue(Entity target, @Nullable LivingEntity caster, @Nullable Vec3 impact, int strength) {
@@ -69,7 +69,7 @@ public final class BrewCreatureEffects {
         Vec3 difference = origin.subtract(target.position());
         if (difference.lengthSqr() < 0.0001) return;
         if (target instanceof LivingEntity living) living.addEffect(new MobEffectInstance(MobEffects.JUMP, 20, 1));
-        move(target, new Vec3(difference.x * FROG_TONGUE_PULL, 0.4, difference.z * FROG_TONGUE_PULL));
+        WitcheryNetwork.pushEntity(target, new Vec3(difference.x * FROG_TONGUE_PULL, 0.4, difference.z * FROG_TONGUE_PULL));
     }
 
     static void frogTongue(ServerLevel level, Vec3 impact, int radius, @Nullable LivingEntity caster, int strength) {
@@ -102,7 +102,7 @@ public final class BrewCreatureEffects {
 
     private static void pushFrom(Entity target, Vec3 center, double horizontal, double lift) {
         Vec3 offset = target.position().subtract(center).normalize();
-        move(target, new Vec3(offset.x * horizontal, Math.max(offset.y, lift), offset.z * horizontal));
+        WitcheryNetwork.pushEntity(target, new Vec3(offset.x * horizontal, Math.max(offset.y, lift), offset.z * horizontal));
     }
 
     static void batBurst(LivingEntity target, int strength, double scale, boolean glancing) {
@@ -200,7 +200,7 @@ public final class BrewCreatureEffects {
             if (victim == thrower || !victim.isAlive() || victim.getType() == EntityType.ENDER_DRAGON
                     || victim.getType() == WitcheryEntities.all().get("hornedhuntsman").get()) continue;
             Vec3 difference = thrower.position().subtract(victim.position());
-            move(victim, new Vec3(difference.x * FROG_TONGUE_PULL, 0.4, difference.z * FROG_TONGUE_PULL));
+            WitcheryNetwork.pushEntity(victim, new Vec3(difference.x * FROG_TONGUE_PULL, 0.4, difference.z * FROG_TONGUE_PULL));
             victim.addEffect(new MobEffectInstance(MobEffects.JUMP, 20, 1), brew.getEffectSource());
         }
     }
@@ -211,7 +211,7 @@ public final class BrewCreatureEffects {
             if (!victim.isAlive()) continue;
             double lift = 1.6 * (direct(hit, victim) ? 1 : 1 - Math.sqrt(victim.distanceToSqr(brew)) / 20);
             victim.addEffect(new MobEffectInstance(MobEffects.JUMP, 200, 3), brew.getEffectSource());
-            move(victim, victim.getDeltaMovement().add(0, lift, 0));
+            WitcheryNetwork.pushEntity(victim, victim.getDeltaMovement().add(0, lift, 0));
         }
     }
 
@@ -411,10 +411,5 @@ public final class BrewCreatureEffects {
     private static int splashTicks(HitResult hit, LivingEntity victim, Vec3 impact, double radius, int base) {
         if (direct(hit, victim)) return base;
         return (int) Math.round(base * (1 - Math.sqrt(victim.distanceToSqr(impact)) / radius));
-    }
-
-    private static void move(Entity victim, Vec3 speed) {
-        victim.setDeltaMovement(speed);
-        victim.hurtMarked = true;
     }
 }
