@@ -408,6 +408,20 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_RED_DUST_PARTICLE_ID, LEGACY_DRINK_SOUND_ID, center, 0.5, 0.2, 16);
     }
 
+    public static void sendAttackBatArrival(ServerLevel level, Entity bat) {
+        sendParticlesAround(level, LEGACY_SMOKE_PARTICLE_ID, LEGACY_POOF_SOUND_ID, bat.position(), 1, bat.getBbHeight(), 16);
+    }
+
+    public static void sendAttackBatBite(ServerLevel level, Entity target) {
+        sendParticlesAround(level, LEGACY_RED_DUST_PARTICLE_ID, LEGACY_DRINK_SOUND_ID, target.position(),
+                target.getBbWidth(), target.getBbHeight(), 16);
+    }
+
+    public static void sendAttackBatExpiry(ServerLevel level, Entity bat) {
+        sendParticlesAround(level, LEGACY_SMOKE_PARTICLE_ID, LEGACY_NO_SOUND_ID, bat.position(),
+                bat.getBbWidth(), bat.getBbHeight(), 16);
+    }
+
     public static void sendSummonedCreature(ServerLevel level, Vec3 center) {
         sendParticlesAround(level, LEGACY_PORTAL_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID, center, 0.5, 1, 16);
     }

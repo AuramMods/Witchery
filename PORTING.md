@@ -1190,6 +1190,7 @@
 - [x] Offer Wool of Bat to a full Blood Crucible and obtain five uses of Bat Swarm. The muted survival client used a filled-vessel fixture after the separate nightly hunting test.
 - [x] Summon fifteen flying Attack Bats through the fifth power slot. The muted client aimed at an Iron Golem twelve blocks away. The bats lowered it from 100 to 84 health while the caster kept full health. GameTests covered four-point magic damage and expiration on contact with both vulnerable and protected targets.
 - [x] Preserve swarm ownership and expiry on a dedicated restart. All fifteen bats reloaded and the tracked bat retained its original UUID and owner. The swarm expired as the saved timers ran down. Java 17 data generation, JAR reobfuscation and all 175 required Forge GameTests passed.
+- [x] Restore the original fifteen spawn attempts, seven offsets per axis, two-block clearance, and charge use on blocked casts. A muted packaged survival client used normal hotbar controls for both open and blocked casts and rejoined with one charge. It received all fifteen smoke and poof cues, the bite's Red Dust and drink sound, and silent expiry smoke. Copied Auram retained the test bat's owner and timer through a headless restart. All 497 local Forge GameTests passed.
 
 ## Coffin and Village Travel (2026-11-20)
 

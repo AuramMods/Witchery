@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Bat Swarm placement, charge and feedback (2026-11-26)
+
+- The original headless server spawned 15 bats on an open floor and 15 more from a surface at the eight-block scan limit. A sealed arena spawned zero bats and still spent one charge. The preceding Forge build kept the charge in the sealed case and used positions offset by +1 on both axes. The recovered placement draws from the original seven positions and requires two air blocks above the destination surface.
+- The original server sent smoke and Witchery poof at each bat within 16 blocks. A cow bite dealt four magic damage, removed the bat and sent Red Dust and the Witchery drink sound. An otherwise active bat lasted through tick 300 and emitted silent smoke on tick 301. The port retains these cues and timing. Bats with an existing saved timer still resume from that value.
+- The exact reobfuscated JAR loaded the rank-ten survival player's saved Bat Swarm and three charges. The muted client selected and cast it through the hotbar on an open floor and in a sealed arena. It received all fifteen per-bat cues on the open cast, received the bite and expiry cues for prepared contacts, and logged back in with one charge. The fixture supplied the saved progression, terrain, cow and test bats. Both launches used master volume zero, OpenAL No Output and an unfocused window.
+- Copied Auram's headless test restored the same active bat UUID, caster profile and remaining timer after restarting and spent one charge on an entirely blocked cast. Java 17 reobfuscation and all 497 local Forge GameTests passed. See `comparison.txt` and `suite-final.log` in `build/qa-vampire-swarm-parity`. The candidate SHA-256 is `168e84375fd341a2a8bf36bb85cc80119de20adba6c97a720eca6f50e8d74879`.
+
 ## Potion effects in converted vanilla item stacks (2026-11-26)
 
 - The original headless server read and saved Sinking II in custom slot 120 with Fire Resistance in a splash bottle. A drinkable bottle held original slot 32 with Paralysis III. The first import into Forge 1.20.1 named both Witchery effects and retained both bottle forms.

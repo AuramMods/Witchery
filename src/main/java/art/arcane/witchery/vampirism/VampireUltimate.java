@@ -1,16 +1,16 @@
 package art.arcane.witchery.vampirism;
 
-import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.network.WitcheryNetwork;
+import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.world.WitcheryDimensions;
 import art.arcane.witchery.world.WitcheryTeleport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -40,7 +40,10 @@ public enum VampireUltimate {
     boolean activate(ServerPlayer player) {
         return switch (this) {
             case STORM -> startStorm(player);
-            case SWARM -> startSwarm(player);
+            case SWARM -> {
+                startSwarm(player);
+                yield true;
+            }
             case FARM -> travelToFeedingGrounds(player);
             default -> false;
         };
@@ -54,26 +57,25 @@ public enum VampireUltimate {
         return true;
     }
 
-    private static boolean startSwarm(ServerPlayer player) {
+    private static void startSwarm(ServerPlayer player) {
         var world = player.serverLevel();
-        int spawned = 0;
         for (int i = 0; i < 15; i++) {
-            int x = world.random.nextIntBetweenInclusive(1, 4) * (world.random.nextBoolean() ? 1 : -1);
-            int z = world.random.nextIntBetweenInclusive(1, 4) * (world.random.nextBoolean() ? 1 : -1);
-            Vec3 release = swarmRelease(world, player.blockPosition().offset(x, 3, z));
+            BlockPos start = BlockPos.containing(player.getX(), player.getY() + 3 + world.random.nextDouble(), player.getZ())
+                    .offset(swarmOffset(world.random), 0, swarmOffset(world.random));
+            Vec3 release = swarmRelease(world, start);
             if (release == null) continue;
             var bat = WitcheryEntities.ATTACK_BAT.get().create(world);
             if (bat == null) continue;
             bat.moveTo(release);
             bat.joinSwarm(player);
-            if (world.noCollision(bat) && world.addFreshEntity(bat)) {
-                spawned++;
-                world.sendParticles(ParticleTypes.SMOKE, release.x, release.y, release.z, 12, 0.35, 0.25, 0.35, 0.02);
-            }
+            if (world.addFreshEntity(bat)) WitcheryNetwork.sendAttackBatArrival(world, bat);
         }
-        if (spawned == 0) return false;
-        world.playSound(null, player.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.8F, 1);
-        return true;
+    }
+
+    private static int swarmOffset(RandomSource random) {
+        // The original draw picks -4 through -1 or +2 through +4 independently on each axis.
+        int draw = random.nextInt(7);
+        return draw - 4 + (draw > 3 ? 2 : 0);
     }
 
     private static boolean travelToFeedingGrounds(ServerPlayer player) {
@@ -139,11 +141,13 @@ public enum VampireUltimate {
     @Nullable
     private static Vec3 swarmRelease(ServerLevel world, BlockPos start) {
         BlockPos.MutableBlockPos point = start.mutable();
-        int ceiling = Math.min(world.getMaxBuildHeight() - 2, start.getY() + 8);
-        if (point.getY() > ceiling || !world.hasChunkAt(point)) return null;
+        int min = world.getMinBuildHeight();
+        int max = world.getMaxBuildHeight();
+        point.setY(Mth.clamp(point.getY(), min, max - 1));
+        int ceiling = Math.min(max - 1, point.getY() + 8);
         while (point.getY() < ceiling && !world.isEmptyBlock(point)) point.move(Direction.UP);
-        if (!world.isEmptyBlock(point)) return null;
-        while (point.getY() > world.getMinBuildHeight() && world.isEmptyBlock(point.below())) point.move(Direction.DOWN);
-        return world.isEmptyBlock(point.above()) ? Vec3.atBottomCenterOf(point).add(0, 0.05, 0) : null;
+        while (point.getY() > min && world.isEmptyBlock(point)) point.move(Direction.DOWN);
+        if (point.getY() + 2 >= max || !world.isEmptyBlock(point.above()) || !world.isEmptyBlock(point.above(2))) return null;
+        return Vec3.atBottomCenterOf(point.above()).add(0, 0.05, 0);
     }
 }

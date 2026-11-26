@@ -84,7 +84,7 @@ public final class VampireAbilities {
             data.setVampireUltimate(ultimate, charges - 1);
             Vampirism.sync(player, data);
         }
-        if (ultimate != VampireUltimate.FARM) {
+        if (ultimate == VampireUltimate.STORM) {
             player.playNotifySound(SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 1, 1);
         }
     }

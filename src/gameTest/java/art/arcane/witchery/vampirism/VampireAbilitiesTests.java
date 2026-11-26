@@ -2,6 +2,7 @@ package art.arcane.witchery.vampirism;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.entity.AttackBat;
 import art.arcane.witchery.event.WitcheryEventHooks;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEffects;
@@ -11,9 +12,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
@@ -29,6 +33,95 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class VampireAbilitiesTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_vampire_swarm_spawn")
+    public static void swarmUsesOriginalColumnsAndSpendsBlockedCharge(GameTestHelper helper) {
+        var world = helper.getLevel();
+        var origin = helper.absolutePos(new BlockPos(5, 200, 5));
+        var center = new BlockPos(Math.floorDiv(origin.getX(), 16) * 16 + 8, origin.getY(),
+                Math.floorDiv(origin.getZ(), 16) * 16 + 8);
+        var bounds = new AABB(center).inflate(15);
+        for (BlockPos point : BlockPos.betweenClosed(center.offset(-4, -1, -4), center.offset(4, -1, 4))) {
+            world.setBlockAndUpdate(point, Blocks.STONE.defaultBlockState());
+        }
+        var first = castSwarm(world, center);
+        var bats = world.getEntitiesOfClass(AttackBat.class, bounds);
+        helper.assertTrue(bats.size() == 15 && first == 2,
+                "An open cast adds 15 bats and spends one of three charges. Bats: " + bats.size() + ", charges: " + first);
+        for (AttackBat bat : bats) {
+            helper.assertTrue(isSwarmOffset(bat.blockPosition().getX() - center.getX())
+                            && isSwarmOffset(bat.blockPosition().getZ() - center.getZ())
+                            && Math.abs(bat.getY() - center.getY() - 0.05) < 1e-6,
+                    "Use the original seven offsets on each axis and release the bat just above the floor");
+            bat.discard();
+        }
+        for (BlockPos point : BlockPos.betweenClosed(center.offset(-4, 0, -4), center.offset(4, 11, 4))) {
+            world.setBlockAndUpdate(point, Blocks.STONE.defaultBlockState());
+        }
+        int raised = castSwarm(world, center);
+        var raisedBats = world.getEntitiesOfClass(AttackBat.class, bounds);
+        helper.assertTrue(raisedBats.size() == 15 && raised == 2, "The top of the eight-block scan can support the whole swarm");
+        for (AttackBat bat : raisedBats) {
+            helper.assertTrue(Math.abs(bat.getY() - center.getY() - 12.05) < 1e-6, "Release each bat above the raised floor");
+            bat.discard();
+        }
+        for (BlockPos point : BlockPos.betweenClosed(center.offset(-4, 12, -4), center.offset(4, 13, 4))) {
+            world.setBlockAndUpdate(point, Blocks.STONE.defaultBlockState());
+        }
+        int blocked = castSwarm(world, center);
+        helper.assertTrue(world.getEntitiesOfClass(AttackBat.class, bounds).isEmpty() && blocked == 2,
+                "A valid cast still spends a charge when every column lacks headroom");
+        helper.succeed();
+    }
+
+    private static int castSwarm(ServerLevel world, BlockPos center) {
+        var player = new FakePlayer(world, new GameProfile(UUID.randomUUID(), "VampireSwarm"));
+        player.setPos(Vec3.atBottomCenterOf(center));
+        var data = WitcheryPlayerDataProvider.get(player).orElseThrow(IllegalStateException::new);
+        data.setVampireLevel(10);
+        data.setVampireUltimate(VampireUltimate.SWARM, 3);
+        VampireAbilities.select(player, VampireAbilities.ULTIMATE);
+        VampireAbilities.activate(player);
+        player.discard();
+        return data.getVampireUltimateCharges();
+    }
+
+    private static boolean isSwarmOffset(int offset) {
+        return offset >= -4 && offset <= 4 && offset != 0 && offset != 1;
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_vampire_swarm_life")
+    public static void attackBatBitesAndRetainsItsRemainingOriginalLifetime(GameTestHelper helper) {
+        var world = helper.getLevel();
+        var contact = new BlockPos(5, 200, 5);
+        var target = helper.spawn(EntityType.COW, contact);
+        target.setNoAi(true);
+        target.setNoGravity(true);
+        var biter = helper.spawn(WitcheryEntities.ATTACK_BAT.get(), contact);
+        biter.setNoAi(true);
+        biter.setNoGravity(true);
+        biter.setResting(false);
+        float health = target.getHealth();
+        biter.tick();
+        helper.assertTrue(target.getHealth() == health - 4 && biter.isRemoved(),
+                "A native contact deals four magic damage and removes the bat. Health: " + target.getHealth() + ", removed: " + biter.isRemoved());
+
+        var original = WitcheryEntities.ATTACK_BAT.get().create(world);
+        original.setPos(Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(6, 3, 6))));
+        original.setNoAi(true);
+        original.setNoGravity(true);
+        var saved = original.saveWithoutId(new CompoundTag());
+        helper.assertTrue(saved.getInt("SwarmTicks") == 301, "A new bat stays active through tick 300");
+        saved.putInt("SwarmTicks", 2);
+        var loaded = WitcheryEntities.ATTACK_BAT.get().create(world);
+        loaded.load(saved);
+        loaded.tick();
+        helper.assertTrue(!loaded.isRemoved() && loaded.saveWithoutId(new CompoundTag()).getInt("SwarmTicks") == 1,
+                "Reloaded bats keep their saved timer");
+        loaded.tick();
+        helper.assertTrue(loaded.isRemoved(), "Expire on the final saved tick");
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void crouchingStrikeUsesTheOriginalPlayerAndMobMotion(GameTestHelper helper) {
         var level = helper.getLevel();

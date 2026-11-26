@@ -1,10 +1,9 @@
 package art.arcane.witchery.entity;
 
 import art.arcane.witchery.infusion.OtherwhereInfusion;
-import art.arcane.witchery.item.GlassGobletItem;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.world.migration.LegacyGameProfiles;
 import com.mojang.authlib.GameProfile;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
@@ -20,7 +19,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import org.jetbrains.annotations.Nullable;
 
 public final class AttackBat extends Bat {
-    private static final int LIFETIME = 300;
+    private static final int LIFETIME = 301;
     private GameProfile owner;
     private int remainingTicks = LIFETIME;
 
@@ -39,7 +38,7 @@ public final class AttackBat extends Bat {
         super.tick();
         if (!(level() instanceof ServerLevel world) || !isAlive()) return;
         if (--remainingTicks == 0) {
-            world.sendParticles(ParticleTypes.SMOKE, getX(), getY(), getZ(), 10, 0.3, 0.3, 0.3, 0.01);
+            WitcheryNetwork.sendAttackBatExpiry(world, this);
             discard();
             return;
         }
@@ -47,7 +46,7 @@ public final class AttackBat extends Bat {
         for (LivingEntity victim : world.getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(0.2, 0, 0.2),
                 entity -> mayBite(caster, entity) && hasLineOfSight(entity))) {
             victim.hurt(damageSources().indirectMagic(this, caster), 4);
-            GlassGobletItem.bloodParticles(world, victim);
+            WitcheryNetwork.sendAttackBatBite(world, victim);
             discard();
             return;
         }
