@@ -2,6 +2,17 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Kettle empty buckets and bounds (2026-11-26)
+
+- Witchery 0.24.1 selected the complete Kettle block and used a collision box spanning 1/16 to 15/16 on each horizontal axis and zero to 15/16 vertically. Drawing with stacked empty buckets required inventory space and 1,000 mB. The original kept the brew and water on both refusals, then played `game.player.swim` at volume 0.5 when the draw succeeded.
+- The preceding Forge package used the generic fill sound and spent an empty bucket with a full inventory. Its region file showed that the water and all three finished servings were gone. The rebuilt Kettle uses the shared vessel transfer for a held empty bucket and keeps the spare bottle buffer when the transfer rinses the batch.
+- The exact reobfuscated package matched both refusal cases and a successful draw through the ordinary use binding on clean Forge. A dropped item landed at Y 180.9375 on the empty Kettle. The dedicated restart kept the item UUID, the player's Water Bucket, and the three stored bottles. Both clients used zero master volume and OpenAL No Output without taking focus. The copied Auram headless probe matched both refusals, the draw, the original sound parameters and the bounds. Its restart kept the rinsed Kettle and three bottles.
+- Java 17 data generation, reobfuscation, and all 511 local Forge GameTests passed. The tested `build/qa-kettle-hand/candidate.jar` has SHA-256 `66474fd02c0155dbfc0047dfdf9b505ba8efde50d1d2e51710837970e96f5b38`. See `native/reference.log` and the replay logs in `clean/` and `pack/`.
+
+## Distillery matched output with a saved name (2026-11-26)
+
+- `build/qa-distillery-output/native/reference.log` records the original Distillery's last tick with seven named Glowstone Dust already in the matching output slot. The stack grew to eight and retained its name. The other Glowstone output appeared and the inputs and jar were consumed. The Forge Distillery currently requires identical tags on all occupied outputs. The Spinning Wheel already handles plain results with matching named stacks and keeps explicit recipe result data.
+
 ## Player save payloads on ordinary Forge loads (2026-11-26)
 
 - Witchery 0.24.1 writes active Mirror return coordinates, both escape timers, and the armed Keep Inventory backup in `WitcheryExtendedPlayer`. The preceding package dropped those fields from a mixed record with modern names and no captured registry. Dedicated player files and the integrated owner now share the same recovery path. Explicit current capability values and timers keep precedence.

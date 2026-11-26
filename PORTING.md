@@ -178,6 +178,7 @@
 - [x] Preserve kettle batches during fluid automation. The original and both packaged profiles retained three finished servings after a 400 mB drain. The partly filled kettle yielded one serving by hand. Refilling allowed automated bottling of the other two. A dedicated restart retained a separate 600 mB fixture and its three finished servings.
 - [x] Convert a Witchery 0.24.1 save made after a partial drain and one hand bottling. The imported Kettle retained 600 mB, two Brew of Ice servings, three glass bottles, its tint and its power flag after an ordinary restart.
 - [x] Match the hand-serving overflow position and player swim cue for bottling brew, rinsing, and drawing Water Bottles. A muted survival player with a full inventory received one Brew of Vines above the basin and kept two servings in the Kettle. The restart retained that same dropped brew, both bottle buffers and the drawn water. A Forge drop veto preserves the bottle, serving and any partially filled inventory stack.
+- [x] Restore empty-bucket draws and the original Kettle bounds. The original server refused a stacked draw without inventory space or with only 600 mB of water. Clean Forge reproduced both refusals through ordinary survival use. A successful draw gave the player one Water Bucket, cleared the brew, kept the three spare bottles, and played the original player swim cue. A dropped item landed at Y plus 15/16 on the empty Kettle.
 
 ## Mirror Milestone (2026-11-19)
 

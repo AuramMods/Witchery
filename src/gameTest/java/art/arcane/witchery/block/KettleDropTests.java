@@ -29,6 +29,7 @@ import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.FakePlayer;
@@ -147,6 +148,74 @@ public final class KettleDropTests {
         helper.assertTrue(PotionUtils.getPotion(player.getItemInHand(hand)) == Potions.WATER && !kettle.hasIngredients()
                         && tank.getFluidInTank(0).getAmount() == 1000 && kettle.bottleCount() == 3,
                 "A Water Bottle rinses a full Kettle and stays filled when no water is transferred");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_kettle_bucket")
+    public static void drawingKettleWaterByBucketRequiresRoomAndRinsesTheBatch(GameTestHelper helper) throws Exception {
+        var kettle = heatedKettle(helper, new BlockPos(5, 4, 5));
+        kettle.load(TagParser.parseTag("""
+                {Items:[{Slot:6b,id:"witchery:brew_of_vines",Count:3b},{Slot:7b,id:"minecraft:glass_bottle",Count:3b}],
+                 Powered:1b,Tank:{FluidName:"minecraft:water",Amount:1000}}
+                """));
+        var player = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "DrawKettleWater"));
+        var tank = kettle.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
+        var hand = InteractionHand.MAIN_HAND;
+        var pos = kettle.getBlockPos();
+        var hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
+        for (int slot = 0; slot < player.getInventory().items.size(); slot++) {
+            player.getInventory().setItem(slot, new ItemStack(Items.STONE, 64));
+        }
+        player.setItemInHand(hand, new ItemStack(Items.BUCKET, 2));
+        var cues = new ArrayList<PlayLevelSoundEvent.AtEntity>();
+        Consumer<PlayLevelSoundEvent.AtEntity> sound = event -> {
+            if (event.getEntity() == player) cues.add(event);
+        };
+        MinecraftForge.EVENT_BUS.addListener(sound);
+        try {
+            var state = kettle.getBlockState();
+            state.use(helper.getLevel(), player, hand, hit);
+            helper.assertTrue(player.getMainHandItem().getCount() == 2 && kettle.isReady() && kettle.isFull() && cues.isEmpty(),
+                    "A stacked draw without inventory space must leave the water and finished brew in place");
+
+            player.getInventory().setItem(1, ItemStack.EMPTY);
+            tank.drain(400, IFluidHandler.FluidAction.EXECUTE);
+            state.use(helper.getLevel(), player, hand, hit);
+            helper.assertTrue(player.getMainHandItem().getCount() == 2 && kettle.isReady() && cues.isEmpty()
+                            && tank.getFluidInTank(0).getAmount() == 600,
+                    "A partially drained Kettle cannot fill a bucket or lose its brew");
+
+            tank.fill(new FluidStack(Fluids.WATER, 400), IFluidHandler.FluidAction.EXECUTE);
+            state.use(helper.getLevel(), player, hand, hit);
+            helper.assertTrue(player.getMainHandItem().is(Items.BUCKET) && player.getMainHandItem().getCount() == 1
+                            && player.getInventory().getItem(1).is(Items.WATER_BUCKET) && tank.getFluidInTank(0).isEmpty()
+                            && !kettle.isReady() && kettle.bottleCount() == 3,
+                    "A successful draw fills one bucket, rinses the batch and keeps the stored glass bottles");
+            helper.assertTrue(cues.size() == 1 && cues.get(0).getSound() != null
+                            && cues.get(0).getSound().value() == SoundEvents.PLAYER_SWIM
+                            && cues.get(0).getNewVolume() == 0.5F && cues.get(0).getNewPitch() >= 1F / 3
+                            && cues.get(0).getNewPitch() <= 0.5F,
+                    "A successful draw plays the original swim cue at the player");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(sound);
+            player.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_kettle_shape")
+    public static void kettleUsesOriginalSelectionAndCollisionBounds(GameTestHelper helper) {
+        var kettle = heatedKettle(helper, new BlockPos(5, 4, 5));
+        var pos = kettle.getBlockPos();
+        var state = kettle.getBlockState();
+        var outline = state.getShape(helper.getLevel(), pos, CollisionContext.empty()).bounds();
+        var collision = state.getCollisionShape(helper.getLevel(), pos, CollisionContext.empty()).bounds();
+        helper.assertTrue(outline.minX == 0 && outline.minY == 0 && outline.minZ == 0
+                        && outline.maxX == 1 && outline.maxY == 1 && outline.maxZ == 1,
+                "The selection ray sees the Kettle's original full cell");
+        helper.assertTrue(collision.minX == 1 / 16.0 && collision.minY == 0 && collision.minZ == 1 / 16.0
+                        && collision.maxX == 15 / 16.0 && collision.maxY == 15 / 16.0 && collision.maxZ == 15 / 16.0,
+                "The Kettle is solid up to its original inset bounds");
         helper.succeed();
     }
 

@@ -35,16 +35,12 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.fluids.FluidUtil;
 
 public final class KettleBlock extends BaseEntityBlock {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
-    private static final VoxelShape BASIN = Shapes.or(box(3, 0, 3, 13, 1, 13),
-            box(3, 1, 3, 4, 6, 13), box(12, 1, 3, 13, 6, 13),
-            box(4, 1, 3, 12, 6, 4), box(4, 1, 12, 12, 6, 13));
-    private static final VoxelShape OUTLINE = box(1, 0, 1, 15, 15, 15);
+    private static final VoxelShape COLLISION = box(1, 0, 1, 15, 15, 15);
 
     public KettleBlock(Properties properties) {
         super(properties);
@@ -72,13 +68,8 @@ public final class KettleBlock extends BaseEntityBlock {
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return OUTLINE;
-    }
-
-    @Override
     public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return BASIN;
+        return COLLISION;
     }
 
     @Override
@@ -111,6 +102,14 @@ public final class KettleBlock extends BaseEntityBlock {
             } else if (!kettle.bottleBrew(server, hand)) {
                 return InteractionResult.CONSUME;
             }
+            WitcherySounds.playLegacyPlayerCue(server, SoundEvents.PLAYER_SWIM, 0.5F);
+            return InteractionResult.CONSUME;
+        }
+        if (held.is(Items.BUCKET)) {
+            if (level.isClientSide) return kettle.isFull() ? InteractionResult.SUCCESS : InteractionResult.PASS;
+            if (!(player instanceof ServerPlayer server)
+                    || !BrewingContainers.fillBucket(player, hand, kettle, hit.getDirection())) return InteractionResult.PASS;
+            kettle.rinse();
             WitcherySounds.playLegacyPlayerCue(server, SoundEvents.PLAYER_SWIM, 0.5F);
             return InteractionResult.CONSUME;
         }
