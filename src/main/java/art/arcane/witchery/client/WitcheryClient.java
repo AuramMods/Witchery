@@ -102,6 +102,7 @@ import art.arcane.witchery.client.renderer.VillageGuardRenderer;
 import art.arcane.witchery.client.renderer.WitcheryBoltRenderer;
 import art.arcane.witchery.client.renderer.WitchHunterRenderer;
 import art.arcane.witchery.client.renderer.HellhoundRenderer;
+import art.arcane.witchery.client.renderer.BossGlintLayer;
 import art.arcane.witchery.client.renderer.HornedHuntsmanRenderer;
 import art.arcane.witchery.client.renderer.AlluringSkullRenderer;
 import art.arcane.witchery.client.renderer.WolfHeadRenderer;
@@ -182,12 +183,18 @@ import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.client.event.RegisterDimensionSpecialEffectsEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
+import net.minecraftforge.client.event.RegisterShadersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 @Mod.EventBusSubscriber(modid = Witchery.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class WitcheryClient {
+
+    @SubscribeEvent
+    public static void registerShaders(RegisterShadersEvent event) throws java.io.IOException {
+        BossGlintLayer.registerShader(event);
+    }
     private static final ResourceLocation WOOD_TYPE_MODEL =
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "wood_type");
 
@@ -261,6 +268,8 @@ public final class WitcheryClient {
         event.registerLayerDefinition(CrystalBallRenderer.LAYER, CrystalBallRenderer::layer);
         event.registerLayerDefinition(ImpModel.LAYER, ImpModel::layer);
         event.registerLayerDefinition(HobgoblinModel.LAYER, HobgoblinModel::layer);
+        event.registerLayerDefinition(HobgoblinModel.INNER_ARMOR, HobgoblinModel::innerArmorLayer);
+        event.registerLayerDefinition(HobgoblinModel.OUTER_ARMOR, HobgoblinModel::outerArmorLayer);
         event.registerLayerDefinition(HobgoblinGodModel.MOG, () -> HobgoblinGodModel.layer(true));
         event.registerLayerDefinition(HobgoblinGodModel.GULG, () -> HobgoblinGodModel.layer(false));
         event.registerLayerDefinition(GoblinEquipmentModel.OUTER, GoblinEquipmentModel::outerLayer);

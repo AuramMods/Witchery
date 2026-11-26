@@ -5,6 +5,7 @@ import art.arcane.witchery.client.model.HobgoblinModel;
 import art.arcane.witchery.entity.Hobgoblin;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
+import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
@@ -15,6 +16,8 @@ public final class HobgoblinRenderer extends MobRenderer<Hobgoblin, HobgoblinMod
     public HobgoblinRenderer(EntityRendererProvider.Context context) {
         super(context, new HobgoblinModel(context.bakeLayer(HobgoblinModel.LAYER)), 0.35F);
         addLayer(new ItemInHandLayer<>(this, context.getItemInHandRenderer()));
+        addLayer(new HumanoidArmorLayer<>(this, new HobgoblinModel(context.bakeLayer(HobgoblinModel.INNER_ARMOR)),
+                new HobgoblinModel(context.bakeLayer(HobgoblinModel.OUTER_ARMOR)), context.getModelManager()));
     }
 
     @Override

@@ -1,12 +1,9 @@
 package art.arcane.witchery.client.renderer;
 
 import art.arcane.witchery.Witchery;
-import art.arcane.witchery.config.WitcheryClientConfig;
 import art.arcane.witchery.entity.HornedHuntsman;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.GraphicsStatus;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
@@ -15,12 +12,8 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
-import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
@@ -31,17 +24,7 @@ public final class HornedHuntsmanRenderer extends MobRenderer<HornedHuntsman, Ho
 
     public HornedHuntsmanRenderer(EntityRendererProvider.Context context) {
         super(context, new Model(context.bakeLayer(LAYER)), 0.5F);
-        addLayer(new RenderLayer<>(this) {
-            @Override
-            public void render(PoseStack pose, MultiBufferSource buffers, int light, HornedHuntsman huntsman,
-                               float swing, float amount, float partialTick, float age, float yaw, float pitch) {
-                if (!huntsman.isInvisible() && Minecraft.getInstance().options.graphicsMode().get() != GraphicsStatus.FAST
-                        && WitcheryClientConfig.RENDER_HUNTSMAN_GLINT.get()) {
-                    getParentModel().renderToBuffer(pose, buffers.getBuffer(RenderType.entityGlint()), light,
-                            OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
-                }
-            }
-        });
+        addLayer(new BossGlintLayer<>(this, BossGlintLayer.Tint.HUNTSMAN));
     }
 
     @Override

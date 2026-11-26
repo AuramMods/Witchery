@@ -6,6 +6,7 @@ import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
@@ -14,11 +15,26 @@ import net.minecraft.resources.ResourceLocation;
 public final class HobgoblinModel extends HobgoblinBipedModel<Hobgoblin> {
     public static final ModelLayerLocation LAYER =
             new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "goblin"), "main");
+    public static final ModelLayerLocation INNER_ARMOR = new ModelLayerLocation(LAYER.getModel(), "inner_armor");
+    public static final ModelLayerLocation OUTER_ARMOR = new ModelLayerLocation(LAYER.getModel(), "outer_armor");
+
     public HobgoblinModel(ModelPart root) {
         super(root);
     }
 
     public static LayerDefinition layer() {
+        return layer(CubeDeformation.NONE);
+    }
+
+    public static LayerDefinition innerArmorLayer() {
+        return layer(new CubeDeformation(0.5F));
+    }
+
+    public static LayerDefinition outerArmorLayer() {
+        return layer(new CubeDeformation(1));
+    }
+
+    private static LayerDefinition layer(CubeDeformation armor) {
         var mesh = new MeshDefinition();
         var root = mesh.getRoot();
         root.addOrReplaceChild("head", CubeListBuilder.create().mirror()
@@ -32,15 +48,15 @@ public final class HobgoblinModel extends HobgoblinBipedModel<Hobgoblin> {
                 .texOffs(46, 0).addBox(-8, -7, 0, 2, 2, 1), PartPose.offset(0, 11, 0));
         root.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.ZERO);
         root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(16, 16)
-                .addBox(-4, 0, -2, 8, 7, 4), PartPose.offset(0, 11, 0));
+                .addBox(-4, 0, -2, 8, 7, 4, armor), PartPose.offset(0, 11, 0));
         root.addOrReplaceChild("right_arm", CubeListBuilder.create().texOffs(40, 16)
-                .addBox(-3, -3, -2, 4, 12, 4), PartPose.offset(-5, 12, 0));
+                .addBox(-3, -3, -2, 4, 12, 4, armor), PartPose.offset(-5, 12, 0));
         root.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(40, 16)
-                .addBox(-1, -3, -2, 4, 12, 4), PartPose.offset(5, 12, 0));
+                .addBox(-1, -3, -2, 4, 12, 4, armor), PartPose.offset(5, 12, 0));
         root.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(0, 16)
-                .addBox(-2, 0, -2, 4, 6, 4), PartPose.offset(-2, 18, 0));
+                .addBox(-2, 0, -2, 4, 6, 4, armor), PartPose.offset(-2, 18, 0));
         root.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(0, 16)
-                .addBox(-2, 0, -2, 4, 6, 4), PartPose.offset(2, 18, 0));
+                .addBox(-2, 0, -2, 4, 6, 4, armor), PartPose.offset(2, 18, 0));
         return LayerDefinition.create(mesh, 64, 32);
     }
 
