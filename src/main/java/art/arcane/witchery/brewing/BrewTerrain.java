@@ -5,6 +5,7 @@ import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.event.WitcheryBlockBreak;
 import art.arcane.witchery.event.WitcheryBlockPlacement;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.world.WitcheryTeleport;
 import net.minecraft.core.BlockPos;
@@ -153,63 +154,76 @@ public final class BrewTerrain {
             BrewImpacts.recoverBrew(brew, hit);
             return;
         }
-        Vec3 center = hit.getLocation();
-        AABB bounds = brew.getBoundingBox().move(center.subtract(brew.position())).inflate(0, 2, 0);
-        BlockPos end = growBranch(brew.getOwner(), level, block.getBlockPos(), splashPosition(level, hit), block.getDirection(),
-                BrewImpacts.enhanced(brew) ? 20 : 15);
-        if (end != null && block.getDirection() == Direction.UP) lift(level, end.above(), bounds);
+        Direction face = block.getDirection();
+        BlockPos tip = growBranch(level, brew.getOwner(), block.getBlockPos(), face,
+                BrewImpacts.enhanced(brew) ? 20 : 15, false);
+        liftSprouting(level, face, tip, 1, brew.getBoundingBox());
     }
 
     public static void mineSprouting(ServerLevel level, BlockPos pos) {
-        BlockPos end = growBranch(null, level, pos, pos, Direction.UP, 10);
-        if (end != null) lift(level, end.above(2), new AABB(pos).inflate(0, 2, 0));
+        BlockPos tip = growBranch(level, null, pos, Direction.UP, 10, false);
+        liftSprouting(level, Direction.UP, tip, 1, new AABB(pos));
     }
 
     static void sprout(ServerLevel level, BlockPos impact, Direction face, int extent, AABB bounds, @Nullable Player caster) {
-        if (!level.isInWorldBounds(impact) || !level.hasChunkAt(impact)) return;
         Player actor = caster != null ? caster : FakePlayerFactory.getMinecraft(level);
-        var source = level.getBlockState(impact);
-        var random = level.getRandom();
-        var branch = branch(source, random);
-        Direction.Axis axis = face.getAxis();
-        BlockState log = branch.log().setValue(RotatedPillarBlock.AXIS, axis);
-        int start = face == Direction.UP && !source.blocksMotion() ? 0 : 1;
-        int offset = start;
-        for (; offset <= extent; offset++) {
-            BlockPos pos = impact.relative(face, offset);
-            if (!plantBranchBlock(level, pos, log, face, actor)) break;
-            int x = axis != Direction.Axis.X && random.nextInt(4) == 0 ? random.nextInt(3) - 1 : 0;
-            int y = axis != Direction.Axis.Y && x == 0 && random.nextInt(4) == 0 ? random.nextInt(3) - 1 : 0;
-            int z = axis != Direction.Axis.Z && x == 0 && y == 0 && random.nextInt(4) == 0 ? random.nextInt(3) - 1 : 0;
-            if (x != 0 || y != 0 || z != 0) plantBranchBlock(level, pos.offset(x, y, z), branch.leaves(), face, actor);
-        }
-        if (face == Direction.UP && offset > start && !level.getBlockState(impact.above(offset + 1)).blocksMotion()) {
-            lift(level, impact.above(offset + 2), bounds.inflate(0, 2, 0));
-        }
-    }
-
-    private static boolean plantBranchBlock(ServerLevel level, BlockPos pos, BlockState state, Direction face, Player actor) {
-        return level.isInWorldBounds(pos) && level.hasChunkAt(pos) && level.getBlockState(pos).canBeReplaced()
-                && BrewTerrain.setBlock(actor, level, pos, state, face, true);
+        BlockPos tip = growBranch(level, actor, impact, face, extent + 1, true);
+        liftSprouting(level, face, tip, 2, bounds);
     }
 
     @Nullable
-    private static BlockPos growBranch(@Nullable Entity owner, ServerLevel level, BlockPos impact, BlockPos start,
-                                       Direction direction, int limit) {
-        TargetBranch branch = branch(level.getBlockState(impact), level.getRandom());
-        BlockState log = branch.log().setValue(RotatedPillarBlock.AXIS, direction.getAxis());
-        BlockPos next = start;
-        BlockPos top = null;
-        for (int i = next.equals(impact) ? 0 : 1; i < limit; i++) {
-            if (!place(owner, level, next, log, direction)) break;
-            top = next;
-            if (level.getRandom().nextInt(4) == 0) {
-                Direction twig = Direction.getRandom(level.getRandom());
-                if (twig.getAxis() != direction.getAxis()) place(owner, level, next.relative(twig), branch.leaves(), twig);
+    private static BlockPos growBranch(ServerLevel level, @Nullable Entity owner, BlockPos impact, Direction face,
+                                       int limit, boolean replaceableOnly) {
+        if (!level.isInWorldBounds(impact) || replaceableOnly && !level.hasChunkAt(impact)) return null;
+        BlockState source = level.getBlockState(impact);
+        RandomSource random = level.getRandom();
+        TargetBranch branch = branch(source, random);
+        Direction.Axis axis = face.getAxis();
+        BlockState log = branch.log().setValue(RotatedPillarBlock.AXIS, axis);
+        BlockState leaves = branch.leaves().setValue(LeavesBlock.DISTANCE, 1)
+                .setValue(LeavesBlock.PERSISTENT, axis == Direction.Axis.X);
+        int start = face == Direction.UP && !source.blocksMotion() ? 0 : 1;
+        BlockPos next = impact.relative(face, start);
+        for (int offset = start; offset < limit; offset++, next = next.relative(face)) {
+            if (!canGrowAt(level, next, replaceableOnly)) break;
+            if (!placeBranchBlock(level, owner, next, log, face, replaceableOnly)) return null;
+
+            int x = axis == Direction.Axis.X ? 0 : twigOffset(random);
+            int y = axis == Direction.Axis.Y || x != 0 ? 0 : twigOffset(random);
+            int z = axis == Direction.Axis.Z || x != 0 || y != 0 ? 0 : twigOffset(random);
+            if (x != 0 || y != 0 || z != 0) {
+                BlockPos twig = next.offset(x, y, z);
+                if (canGrowAt(level, twig, replaceableOnly)) {
+                    placeBranchBlock(level, owner, twig, leaves, face, replaceableOnly);
+                }
             }
-            next = next.relative(direction);
         }
-        return top;
+        return next;
+    }
+
+    private static int twigOffset(RandomSource random) {
+        return random.nextInt(4) == 0 ? random.nextInt(3) - 1 : 0;
+    }
+
+    private static boolean canGrowAt(ServerLevel level, BlockPos pos, boolean replaceableOnly) {
+        if (!level.isInWorldBounds(pos) || replaceableOnly && !level.hasChunkAt(pos)) return false;
+        BlockState state = level.getBlockState(pos);
+        return replaceableOnly ? state.canBeReplaced() : !state.blocksMotion();
+    }
+
+    private static boolean placeBranchBlock(ServerLevel level, @Nullable Entity owner, BlockPos pos, BlockState state,
+                                            Direction face, boolean replaceableOnly) {
+        if (!setBlock(owner, level, pos, state, face)) return false;
+        if (!replaceableOnly) WitcheryNetwork.sendSproutingGrowth(level, pos);
+        return true;
+    }
+
+    private static void liftSprouting(ServerLevel level, Direction face, @Nullable BlockPos tip, int landingOffset,
+                                      AABB bounds) {
+        if (face == Direction.UP && tip != null && !level.getBlockState(tip.above()).blocksMotion()
+                && !level.getBlockState(tip.above(2)).blocksMotion()) {
+            lift(level, tip.above(landingOffset), bounds.inflate(0, 2, 0));
+        }
     }
 
     static void lift(ServerLevel level, BlockPos destination, AABB bounds) {
@@ -224,7 +238,8 @@ public final class BrewTerrain {
     private static TargetBranch branch(BlockState hit, RandomSource random) {
         Block witchLog = WitcheryBlocks.getRequired("witchlog").get();
         Block witchLeaves = WitcheryBlocks.getRequired("witchleaves").get();
-        if (hit.hasProperty(WitchWoodType.PROPERTY)) {
+        if (hit.is(witchLog) || hit.is(witchLeaves) || hit.is(WitcheryBlocks.getRequired("witchwood").get())
+                || hit.is(WitcheryBlocks.getRequired("witchsapling").get())) {
             var species = hit.getValue(WitchWoodType.PROPERTY);
             return new TargetBranch(witchLog.defaultBlockState().setValue(WitchWoodType.PROPERTY, species),
                     witchLeaves.defaultBlockState().setValue(WitchWoodType.PROPERTY, species));
@@ -234,7 +249,9 @@ public final class BrewTerrain {
             if (source == LOGS.get(species) || source == LEAVES.get(species)
                     || source == PLANKS.get(species) || source == SAPLINGS.get(species)) return vanillaBranch(species);
         }
-        if (random.nextBoolean()) return vanillaBranch(random.nextInt(LOGS.size()));
+        if (hit.is(Blocks.ACACIA_PLANKS) || hit.is(Blocks.ACACIA_SAPLING)) return vanillaBranch(0);
+        if (hit.is(Blocks.DARK_OAK_PLANKS) || hit.is(Blocks.DARK_OAK_SAPLING)) return vanillaBranch(1);
+        if (random.nextInt(2) == 0) return vanillaBranch(random.nextInt(LOGS.size()));
         var species = WitchWoodType.values()[random.nextInt(WitchWoodType.values().length)];
         return new TargetBranch(witchLog.defaultBlockState().setValue(WitchWoodType.PROPERTY, species),
                 witchLeaves.defaultBlockState().setValue(WitchWoodType.PROPERTY, species));
@@ -242,7 +259,7 @@ public final class BrewTerrain {
 
     private static TargetBranch vanillaBranch(int species) {
         return new TargetBranch(LOGS.get(species).defaultBlockState(),
-                LEAVES.get(species).defaultBlockState().setValue(LeavesBlock.PERSISTENT, true));
+                LEAVES.get(species).defaultBlockState());
     }
 
     static BlockPos splashPosition(ServerLevel level, HitResult hit) {

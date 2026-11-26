@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Sprouting branch growth and lift (2026-11-25)
+
+- The original fixed brew grew fourteen vertical Birch logs from a solid base and lifted the pig overlapping the projectile's pre-collision bounds. The pig beside the collision point stayed at its original height. The lifted pig's feet were two blocks above the last log. A first-cell obstruction still allowed a lift when the original two overhead cells were free. The Forge regressions reproduced the port's targeting and landing differences.
+- The original server grew an Oak branch from Acacia Planks. Its seeded X-axis branch produced persistent oak leaves on steps seven and ten. The port uses the original per-axis twig rolls and preserves the leaf persistence bit. Kettle and mine growth send the original silent explosion particles at each placed block.
+- The Cauldron creature fixture grew two Birch logs and lifted the pig two blocks above the first unfilled cell. The shared branch code retains the Cauldron's inclusive extent, replaceable-block placement, and lack of the fixed growth cue. A rejected trunk placement suppresses the lift.
+- The muted packaged survival client grew a Kettle Birch branch, lifted the intended pig, grew eight oak logs from a Cauldron splash, and used a Sprouting mine to grow ten logs and carry the player. The fixed growth particles appeared at their original positions. A dedicated restart retained all three branches and the same lifted pig. The client used master volume zero and OpenAL No Output and kept desktop focus.
+- The copied headless Auram server kept its Does It Tick settings. With zero players, a downward dispenser grew Birch logs up to the obstruction and saved the result. Java 17 reobfuscation and all 432 local Forge GameTests passed on seed `5471593853027166409`. The Magnet fixture loads its negative-Z chunks, and the warmed Cauldron risk fixture carries its saved power sample at the intended creature heights. The package is `build/qa-sprouting-parity/candidate.jar` with SHA-256 `45f4cc388ee62f597079096e552da21126b2186b35a197a9c2e5a0cb8999e1a6`. See `build/qa-sprouting-parity/comparison.txt`.
+
 ## Fixed-brew impact cues and Solidification spread (2026-11-25)
 
 - The original server sent level event 2002 at the rounded position before collision, with potion damage value 2. That damage value resolved to Speed and color `0x7CAFC6`. Forge 1.20.1 receives that color directly. The original returned ten fixed brews and Quicklime silently in the invalid-impact matrix. The shared projectile recovery path now suppresses the potion cue for all recovered bottles.

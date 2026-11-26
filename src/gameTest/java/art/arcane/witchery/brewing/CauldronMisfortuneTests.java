@@ -153,12 +153,13 @@ public final class CauldronMisfortuneTests {
 
         var area = new AABB(pos).inflate(22);
         var subjects = List.of(pig, farPig, highPig, zombie, leonard);
+        subjects.forEach(entity -> entity.setNoGravity(true));
         helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
                 level.getEntitiesOfClass(LivingEntity.class, area).containsAll(subjects),
                 "The cauldron can query all the test mobs")).thenExecute(() -> {
             leonard.setHealth(1);
             prepareGoldenChalk(helper, pos);
-            finishCast(helper, pos, altar, 4000, 512);
+            finishPoweredCast(helper, pos, altar, 4000, 512);
             assertEffect(helper, pig, MobEffects.MOVEMENT_SLOWDOWN, 1200, 1);
             helper.assertTrue(zombie.getActiveEffects().isEmpty() && farPig.getActiveEffects().isEmpty()
                             && highPig.getActiveEffects().isEmpty(),
@@ -169,13 +170,13 @@ public final class CauldronMisfortuneTests {
 
             setSmallCircle(helper, pos, WitcheryBlocks.getRequired("circleglyphritual").get());
             prepareGoldenChalk(helper, pos);
-            finishCast(helper, pos, altar, 4000, 512);
+            finishPoweredCast(helper, pos, altar, 4000, 512);
             helper.assertTrue(altar.power() == 1540 && pig.getActiveEffects().isEmpty(),
                     "A white circle removes the risk and discounts the cost to 2,460 when Leonard has one health");
 
             leonard.setHealth(2);
             prepareGoldenChalk(helper, pos);
-            finishCast(helper, pos, altar, 4000, 512);
+            finishPoweredCast(helper, pos, altar, 4000, 512);
             assertEffect(helper, pig, MobEffects.MOVEMENT_SLOWDOWN, 1200, 1);
             helper.assertTrue(leonard.getActiveEffects().isEmpty(), "A healthy nearby Leonard restores risk but is immune to the effect");
             leonard.discard();
@@ -183,7 +184,7 @@ public final class CauldronMisfortuneTests {
 
             setSmallCircle(helper, pos, WitcheryBlocks.getRequired("circleglyphinfernal").get());
             prepareGoldenChalk(helper, pos);
-            finishCast(helper, pos, altar, 4000, 3840);
+            finishPoweredCast(helper, pos, altar, 4000, 3840);
             assertEffect(helper, pig, WitcheryEffects.INSANITY.get(), 3600, 2);
             helper.assertTrue(altar.power() == 1889, "The Infernal discount lowers the cost to 2,111 and raises the misfortune roll");
         }).thenSucceed();
@@ -298,6 +299,15 @@ public final class CauldronMisfortuneTests {
         setAltarPower(altar, power);
         helper.getLevel().getRandom().setSeed(seed);
         tickCauldron(helper, cauldron(helper, pos), 20);
+    }
+
+    private static void finishPoweredCast(GameTestHelper helper, BlockPos pos, AltarBlockEntity altar, float power, long seed) {
+        // The fixture resumes after warmup, so it already has a successful power sample.
+        var cauldron = cauldron(helper, pos);
+        var saved = cauldron.saveWithFullMetadata();
+        saved.putBoolean("Powered", true);
+        cauldron.load(saved);
+        finishCast(helper, pos, altar, power, seed);
     }
 
     private static void tickCauldron(GameTestHelper helper, WitchesCauldronBlockEntity bowl, int ticks) {

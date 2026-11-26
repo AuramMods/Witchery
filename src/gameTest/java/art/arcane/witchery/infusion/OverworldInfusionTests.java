@@ -12,6 +12,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
@@ -42,6 +43,9 @@ public final class OverworldInfusionTests {
         level.setBlockAndUpdate(first, Blocks.IRON_ORE.defaultBlockState());
         level.setBlockAndUpdate(second, Blocks.GOLD_ORE.defaultBlockState());
         level.setBlockAndUpdate(edge, Blocks.IRON_ORE.defaultBlockState());
+        // The negative-Z targets must still tick when the test scheduler places the arena far from Z zero.
+        List<ChunkPos> forced = items.stream().map(ItemEntity::chunkPosition).distinct()
+                .filter(chunk -> level.setChunkForced(chunk.x, chunk.z, true)).toList();
         helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
                 items.stream().allMatch(item -> level.isPositionEntityTicking(item.blockPosition())),
                 "Wait for the magnet fixture chunks to tick entities")).thenExecute(() -> {
@@ -72,6 +76,7 @@ public final class OverworldInfusionTests {
             } finally {
                 items.forEach(ItemEntity::discard);
                 for (BlockPos pos : List.of(first, second, edge)) level.removeBlock(pos, false);
+                for (ChunkPos chunk : forced) level.setChunkForced(chunk.x, chunk.z, false);
             }
         }).thenSucceed();
     }

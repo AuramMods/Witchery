@@ -389,6 +389,10 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_NO_SOUND_ID, Vec3.atCenterOf(pos.above()), 2, 2, 16);
     }
 
+    public static void sendSproutingGrowth(ServerLevel level, BlockPos pos) {
+        sendParticlesAround(level, LEGACY_EXPLOSION_PARTICLE_ID, LEGACY_NO_SOUND_ID, Vec3.atCenterOf(pos), 1, 1, 8);
+    }
+
     public static void sendPredictionArrival(ServerLevel level, Vec3 center) {
         sendParticlesAround(level, LEGACY_SMOKE_PARTICLE_ID, LEGACY_NO_SOUND_ID, center, 0.5, 2, 16);
     }
