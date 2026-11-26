@@ -129,7 +129,7 @@ public final class Lycanthropy {
         WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
             if (data.getWerewolfLevel() == rank) return;
             data.setWerewolfLevel(rank);
-            if (data.getWerewolfLevel() == 0 && isShifted(data)) setForm(player, data, HUMAN, false);
+            if (data.getWerewolfLevel() == 0 && isShifted(data)) shiftNaturally(player, data, HUMAN, false);
             else {
                 if (isShifted(data)) updateFormAttributes(player, data);
                 sync(player, data);
@@ -153,9 +153,9 @@ public final class Lycanthropy {
             boolean hasCharm = player.getInventory().items.stream().anyMatch(stack -> stack.is(charm))
                     || player.getOffhandItem().is(charm);
             boolean canShift = !wolfsbaneActive(player, data.getWerewolfLevel()) && !hasCharm;
-            if (isShifted(data) && !fullMoon && canShift) setForm(player, data, HUMAN, false);
+            if (isShifted(data) && !fullMoon && canShift) shiftNaturally(player, data, HUMAN, false);
             if (data.getCreatureTypeOrdinal() == HUMAN && fullMoon && canShift && !player.isSleeping()) {
-                setForm(player, data, WOLF, true);
+                shiftNaturally(player, data, WOLF, true);
             }
             if (isShifted(data)) enforceShiftedEffects(player, data);
         });
@@ -164,7 +164,10 @@ public final class Lycanthropy {
     public static boolean useMoonCharm(ServerPlayer player) {
         return WitcheryPlayerDataProvider.get(player).map(data -> {
             int rank = data.getWerewolfLevel();
-            if (rank < 2 || wolfsbaneActive(player, rank) || player.isSleeping()) return false;
+            if (rank < 2 || wolfsbaneActive(player, rank) || player.isSleeping()) {
+                WitcheryNetwork.sendMoonCharmRejection(player, false);
+                return false;
+            }
             boolean chooseWolfman = rank >= 5 && player.isShiftKeyDown();
             int next = switch (data.getCreatureTypeOrdinal()) {
                 case HUMAN -> chooseWolfman ? WOLFMAN : WOLF;
@@ -172,8 +175,12 @@ public final class Lycanthropy {
                 case WOLFMAN -> chooseWolfman ? HUMAN : WOLF;
                 default -> -1;
             };
-            if (next < 0) return false;
-            setForm(player, data, next, false);
+            if (next < 0) {
+                WitcheryNetwork.sendMoonCharmRejection(player, true);
+                return false;
+            }
+            setForm(player, data, next);
+            WitcheryNetwork.sendMoonCharmShift(player);
             return true;
         }).orElse(false);
     }
@@ -187,11 +194,15 @@ public final class Lycanthropy {
         return entity.hasEffect(WitcheryEffects.WOLFSBANE.get());
     }
 
-    private static void setForm(ServerPlayer player, WitcheryPlayerData data, int form, boolean howl) {
+    private static void setForm(ServerPlayer player, WitcheryPlayerData data, int form) {
         data.setCreatureTypeOrdinal(form);
         updateFormAttributes(player, data);
         player.refreshDimensions();
         sync(player, data);
+    }
+
+    private static void shiftNaturally(ServerPlayer player, WitcheryPlayerData data, int form, boolean howl) {
+        setForm(player, data, form);
         player.serverLevel().sendParticles(ParticleTypes.POOF, player.getX(), player.getY(0.6), player.getZ(),
                 16, 0.45, 0.6, 0.45, 0.045);
         player.serverLevel().playSound(null, player, howl ? WitcherySounds.WOLFMAN_HOWL.get() : SoundEvents.FIRE_EXTINGUISH,

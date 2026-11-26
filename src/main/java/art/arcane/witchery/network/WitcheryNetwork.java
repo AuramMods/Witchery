@@ -69,6 +69,7 @@ public final class WitcheryNetwork {
     private static final int LEGACY_HEART_PARTICLE_ID = 28;
     private static final int LEGACY_COLORED_SPELL_PARTICLE_ID = 31;
     private static final int LEGACY_NO_SOUND_ID = 0;
+    private static final int LEGACY_ORB_SOUND_ID = 1;
     private static final int LEGACY_FIZZ_SOUND_ID = 2;
     private static final int LEGACY_SNARE_SOUND_ID = 3;
     private static final int LEGACY_WATER_SPLASH_SOUND_ID = 4;
@@ -399,6 +400,28 @@ public final class WitcheryNetwork {
         int particle = vampire ? LEGACY_SMOKE_PARTICLE_ID : LEGACY_PORTAL_PARTICLE_ID;
         int sound = vampire ? LEGACY_POOF_SOUND_ID : LEGACY_ENDERMAN_TELEPORT_SOUND_ID;
         sendParticlesAround(level, particle, sound, center, 0.5, 2, 16);
+    }
+
+    public static void sendMirrorDisguiseCue(ServerPlayer player, boolean success) {
+        sendMirrorSmoke(player, success ? LEGACY_POOF_SOUND_ID : LEGACY_SNARE_SOUND_ID);
+    }
+
+    public static void sendMirrorDuplicateCue(ServerPlayer player, boolean success) {
+        sendMirrorSmoke(player, success ? LEGACY_ORB_SOUND_ID : LEGACY_SNARE_SOUND_ID);
+    }
+
+    private static void sendMirrorSmoke(ServerPlayer player, int sound) {
+        sendParticlesAround(player.serverLevel(), LEGACY_SMOKE_PARTICLE_ID, sound, player.position(), 0.5, 2, 16);
+    }
+
+    public static void sendMoonCharmShift(ServerPlayer player) {
+        sendParticlesAround(player.serverLevel(), LEGACY_EXPLOSION_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID,
+                player.position(), 1.5, 1.5, 16);
+    }
+
+    public static void sendMoonCharmRejection(ServerPlayer player, boolean invalidForm) {
+        int sound = invalidForm ? LEGACY_SNARE_SOUND_ID : LEGACY_PLING_SOUND_ID;
+        sendParticlesAround(player.serverLevel(), LEGACY_SMOKE_PARTICLE_ID, sound, player.position(), 0.5, 0.5, 8);
     }
 
     public static void sendVampireHuntTravel(ServerLevel level, Vec3 center) {

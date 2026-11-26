@@ -1599,6 +1599,7 @@ Implementation anchors:
   - `howl` (serverbound)
 - Clientbound behavior:
   - `particles` now dispatches to client packet bridge with legacy `ParticleEffect`/`SoundEffect` id mapping, effect-count scaling, and colored spell particle support.
+  - The Mirror sends the original smoke and poof, snare, or orb from the user's feet to clients within 16 blocks. A Moon Charm shift sends a fizz and poof particles within 16 blocks. A completed blocked use sends smoke and a pling for unavailable control or a snare for an incompatible form within eight blocks.
   - `player_sync`, `extended_player_sync`, and `partial_extended_player_sync` apply serialized `WitcheryPlayerData` snapshots, reject stale revisions, and update the corresponding persistent tags.
   - `player_style` applies the synchronized style to the player with the matching username.
   - `sound` resolves the sound ID and plays the registered event at the transmitted position.

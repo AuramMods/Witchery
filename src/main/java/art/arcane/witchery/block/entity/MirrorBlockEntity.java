@@ -5,6 +5,7 @@ import art.arcane.witchery.item.GrenadeItem;
 import art.arcane.witchery.item.MirrorItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.power.AltarPower;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.world.MirrorDisguise;
@@ -20,7 +21,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -84,9 +84,10 @@ public final class MirrorBlockEntity extends BlockEntity {
     private void fillDuplicate(ServerLevel level, ServerPlayer player, InteractionHand hand, ItemStack sphere) {
         var altar = AltarPower.nearest(level, worldPosition);
         if (altar == null || !altar.consumePower(2_000)) {
-            MirrorDisguise.smoke(player, SoundEvents.NOTE_BLOCK_SNARE.value());
+            WitcheryNetwork.sendMirrorDuplicateCue(player, false);
             return;
         }
+        WitcheryNetwork.sendMirrorDuplicateCue(player, true);
         ItemStack grenade = GrenadeItem.duplicate(player.getGameProfile().getName());
         if (sphere.getCount() == 1) {
             player.setItemInHand(hand, grenade);
@@ -94,7 +95,6 @@ public final class MirrorBlockEntity extends BlockEntity {
             sphere.shrink(1);
             if (!player.getInventory().add(grenade)) player.drop(grenade, false);
         }
-        MirrorDisguise.smoke(player, SoundEvents.EXPERIENCE_ORB_PICKUP);
     }
 
     public static void tickMirror(Level level, BlockPos pos, BlockState state, MirrorBlockEntity mirror) {

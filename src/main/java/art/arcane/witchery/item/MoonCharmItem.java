@@ -2,8 +2,6 @@ package art.arcane.witchery.item;
 
 import art.arcane.witchery.lycanthropy.Lycanthropy;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
@@ -37,9 +35,7 @@ public final class MoonCharmItem extends Item {
         if (!(user instanceof ServerPlayer player)) return;
         int rank = Lycanthropy.rank(player);
         if (remaining != Math.max((rank - 1) * 4, 1)) return;
-        if (!Lycanthropy.useMoonCharm(player)) {
-            player.playNotifySound(SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.PLAYERS, 1, 1);
-        }
+        Lycanthropy.useMoonCharm(player);
         stack.hurtAndBreak(1, player, wearer -> wearer.broadcastBreakEvent(player.getUsedItemHand()));
     }
 
