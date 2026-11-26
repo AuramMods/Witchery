@@ -12,6 +12,7 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeType;
 
 import static art.arcane.witchery.block.entity.DistilleryBlockEntity.COOK_TICKS;
 import static art.arcane.witchery.block.entity.DistilleryBlockEntity.DATA_COUNT;
@@ -96,10 +97,12 @@ public final class DistilleryMenu extends AbstractContainerMenu {
             moved = moveItemStackTo(stack, SLOT_COUNT, INVENTORY_END, index >= FIRST_RESULT);
         } else if (stack.is(WitcheryIngredient.CLAY_JAR.item())) {
             moved = moveItemStackTo(stack, JARS, JARS + 1, false);
+        } else if (player.level().getRecipeManager().getRecipeFor(RecipeType.SMELTING, new SimpleContainer(stack),
+                player.level()).isPresent()) {
+            moved = moveItemStackTo(stack, FIRST_INPUT, SECOND_INPUT + 1, false);
         } else {
-            moved = moveItemStackTo(stack, FIRST_INPUT, SECOND_INPUT + 1, false)
-                    || (index < HOTBAR_START ? moveItemStackTo(stack, HOTBAR_START, INVENTORY_END, false)
-                    : moveItemStackTo(stack, SLOT_COUNT, HOTBAR_START, false));
+            moved = index < HOTBAR_START ? moveItemStackTo(stack, HOTBAR_START, INVENTORY_END, false)
+                    : moveItemStackTo(stack, SLOT_COUNT, HOTBAR_START, false);
         }
         if (!moved) {
             return ItemStack.EMPTY;

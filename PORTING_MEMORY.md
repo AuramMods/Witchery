@@ -2,16 +2,24 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Distillery output and workstation recipe comparison (2026-11-26)
+
+- The original server grew a stack of seven named Glowstone Dust in the first output slot to eight, left the name intact and produced the second Glowstone result. The preceding Forge package refused the batch. The Distillery now uses the Spinning Wheel's output compatibility rules, including its handling of explicit datapack result data.
+- The original Distillery menu put unsmeltable Blaze Powder between the player's inventory and hotbar on Shift-click. The Iron Ore entered the first input and the Clay Jar went to its own slot. The preceding Forge menu sent Blaze Powder into the first input. The rebuilt menu uses the loaded smelting recipes for the original routing, and the muted survival client exercised all three items through ordinary menu clicks.
+- Compared all nine distilling and four spinning entries from the running 0.24.1 registries with the exact reobfuscated JAR. Clean Forge and copied Auram each completed 18 distillations covering both input orders and all four spinning recipes. Each also refused a differently named stack for an explicitly named datapack result, then completed that recipe with a free output slot.
+- Both profiles retained the paused batch at tick 799 and completed it after a dedicated restart. The muted clean Forge player collected all eight named Glowstone Dust through the normal menu. The fixture supplied the workstation, altar charge, elapsed ticks, materials and saved stack. Both client launches used zero master volume and OpenAL No Output without taking focus.
+- Java 17 data generation, reobfuscation, and all 513 local Forge GameTests passed. The tested `build/qa-distillery-output/candidate.jar` has SHA-256 `4d458f2dad0642dd2d04cc76678a8fb29156d6b2cb4a77c497b525d2f03f87ff`. The recipe comparisons and server replays are in the same directory.
+
+## Brazier rinse reference (2026-11-26)
+
+- `build/qa-brazier-rinse/native/reference-network.log` records the original Brazier returning both empty containers and clearing the batch in survival. An empty Brazier kept the filled container and was silent. A successful rinse played `game.player.swim.splash` from the player at volume 0.5 with the original varying pitch. The current Forge path plays a fixed-pitch generic splash at the block.
+
 ## Kettle empty buckets and bounds (2026-11-26)
 
 - Witchery 0.24.1 selected the complete Kettle block and used a collision box spanning 1/16 to 15/16 on each horizontal axis and zero to 15/16 vertically. Drawing with stacked empty buckets required inventory space and 1,000 mB. The original kept the brew and water on both refusals, then played `game.player.swim` at volume 0.5 when the draw succeeded.
 - The preceding Forge package used the generic fill sound and spent an empty bucket with a full inventory. Its region file showed that the water and all three finished servings were gone. The rebuilt Kettle uses the shared vessel transfer for a held empty bucket and keeps the spare bottle buffer when the transfer rinses the batch.
 - The exact reobfuscated package matched both refusal cases and a successful draw through the ordinary use binding on clean Forge. A dropped item landed at Y 180.9375 on the empty Kettle. The dedicated restart kept the item UUID, the player's Water Bucket, and the three stored bottles. Both clients used zero master volume and OpenAL No Output without taking focus. The copied Auram headless probe matched both refusals, the draw, the original sound parameters and the bounds. Its restart kept the rinsed Kettle and three bottles.
 - Java 17 data generation, reobfuscation, and all 511 local Forge GameTests passed. The tested `build/qa-kettle-hand/candidate.jar` has SHA-256 `66474fd02c0155dbfc0047dfdf9b505ba8efde50d1d2e51710837970e96f5b38`. See `native/reference.log` and the replay logs in `clean/` and `pack/`.
-
-## Distillery matched output with a saved name (2026-11-26)
-
-- `build/qa-distillery-output/native/reference.log` records the original Distillery's last tick with seven named Glowstone Dust already in the matching output slot. The stack grew to eight and retained its name. The other Glowstone output appeared and the inputs and jar were consumed. The Forge Distillery currently requires identical tags on all occupied outputs. The Spinning Wheel already handles plain results with matching named stacks and keeps explicit recipe result data.
 
 ## Player save payloads on ordinary Forge loads (2026-11-26)
 

@@ -130,9 +130,7 @@ public final class DistilleryBlockEntity extends BaseContainerBlockEntity implem
     private boolean canStore(DistillingRecipe recipe) {
         for (int i = 0; i < DistillingRecipe.OUTPUTS; i++) {
             ItemStack output = recipe.outputs().get(i);
-            ItemStack existing = items.get(FIRST_RESULT + i);
-            if (!output.isEmpty() && (!existing.isEmpty() && !ItemStack.isSameItemSameTags(existing, output)
-                    || existing.getCount() + output.getCount() > Math.min(getMaxStackSize(), output.getMaxStackSize()))) {
+            if (!output.isEmpty() && !WorkstationOutput.fits(items.get(FIRST_RESULT + i), output, getMaxStackSize())) {
                 return false;
             }
         }

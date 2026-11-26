@@ -239,6 +239,61 @@ public final class WorkstationPowerTests {
         helper.succeed();
     }
 
+    @GameTest(template = "qa_coven_arena", batch = "witchery_distillery_inventory")
+    public static void distilleryAppendsPlainResultsToNamedStacks(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(3, 4, 3));
+        level.setBlockAndUpdate(pos, WitcheryBlocks.getRequired("distilleryidle").get().defaultBlockState());
+        var distillery = (DistilleryBlockEntity) level.getBlockEntity(pos);
+        var altar = placeAltar(helper, pos.east(3));
+        var savedGlowstone = new ItemStack(Items.GLOWSTONE_DUST, 7).setHoverName(Component.literal("Saved Glowstone"));
+        savedGlowstone.getOrCreateTag().putString("Fixture", "earlier save");
+        distillery.setItem(0, new ItemStack(Items.BLAZE_POWDER, 2));
+        distillery.setItem(1, new ItemStack(Items.GUNPOWDER, 2));
+        distillery.setItem(2, new ItemStack(WitcheryIngredient.CLAY_JAR.item(), 2));
+        distillery.setItem(3, savedGlowstone.copy());
+        var saved = distillery.saveWithoutMetadata();
+        saved.putInt("CookTime", 799);
+        distillery.load(saved);
+        setAltarPower(altar, 1);
+        DistilleryBlockEntity.serverTick(level, pos, distillery.getBlockState(), distillery);
+        helper.assertTrue(ItemStack.matches(distillery.getItem(3), savedGlowstone.copyWithCount(8))
+                        && distillery.getItem(4).is(Items.GLOWSTONE_DUST) && distillery.getItem(4).getCount() == 1
+                        && distillery.getItem(5).is(WitcheryIngredient.REEK_OF_MISFORTUNE.item())
+                        && distillery.getItem(0).getCount() == 1 && distillery.getItem(1).getCount() == 1
+                        && distillery.getItem(2).getCount() == 1 && Math.abs(altar.power() - 0.4F) < 0.001F,
+                "One paid tick grows the named stack, fills the other results, and spends one set of ingredients");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_distillery_inventory")
+    public static void distilleryQuickMoveFollowsOriginalInventoryAndJarRouting(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(3, 4, 3));
+        level.setBlockAndUpdate(pos, WitcheryBlocks.getRequired("distilleryidle").get().defaultBlockState());
+        var distillery = (DistilleryBlockEntity) level.getBlockEntity(pos);
+        var player = helper.makeMockPlayer();
+        var inventory = player.getInventory();
+        var menu = (DistilleryMenu) distillery.createMenu(1, inventory, player);
+        inventory.setItem(0, new ItemStack(Items.BLAZE_POWDER, 2));
+        inventory.setItem(1, new ItemStack(Items.IRON_ORE));
+        inventory.setItem(2, new ItemStack(WitcheryIngredient.CLAY_JAR.item(), 3));
+        menu.quickMoveStack(player, 34);
+        helper.assertTrue(distillery.getItem(0).isEmpty() && inventory.getItem(9).is(Items.BLAZE_POWDER)
+                        && inventory.getItem(9).getCount() == 2,
+                "Shift-clicking an unsmeltable ingredient moves it from the hotbar into the main inventory");
+        menu.quickMoveStack(player, 35);
+        menu.quickMoveStack(player, 36);
+        helper.assertTrue(distillery.getItem(0).is(Items.IRON_ORE) && distillery.getItem(1).isEmpty()
+                        && distillery.getItem(2).is(WitcheryIngredient.CLAY_JAR.item()) && distillery.getItem(2).getCount() == 3,
+                "Smeltable stacks use an input and clay jars use their own slot");
+        menu.quickMoveStack(player, 7);
+        helper.assertTrue(inventory.getItem(0).is(Items.BLAZE_POWDER) && inventory.getItem(9).isEmpty()
+                        && distillery.getItem(1).isEmpty(),
+                "The same unrelated-to-smelting stack can move back to the hotbar from the main inventory");
+        helper.succeed();
+    }
+
     private static AltarBlockEntity placeAltar(GameTestHelper helper, BlockPos pos) {
         var level = helper.getLevel();
         var state = WitcheryBlocks.getRequired("altar").get().defaultBlockState();
