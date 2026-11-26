@@ -20,7 +20,7 @@
         - [x] Compare direct and diluted hits for Pumpkin, Blue Orchid, Ice, Silver Dust, Garlic, Purified Milk, Reek of Misfortune, Subdued Spirit, Creeper Heart, and Creeper Head. The original server and both packaged profiles agreed on all 16 cases. A separate original Taglock sample raised all three harmful effects on the seeded rolls.
         - [x] Restore the class-name checks for other mods' werewolf and vampire mobs. In copied Auram, a Bewitchment werewolf received three raw damage tagged as silver and a glancing Garlic hit gave a Bewitchment vampire 450 ticks of Weakness.
       - [x] Compare the seven motion and summon actions, including Air Hike, Frog Tongue, Knockback, Bat Burst, Bodega, Poison Toad, and Raising. The [action comparison](#motion-and-summon-action-comparison-2026-11-26) records the runtime evidence and the copied Auram random sequence.
-      - [ ] Compare the nine weather, ice, and fire actions, including Extinguish, Cold, Ice Shell, Changing Seasons, Ice World, Snow, Inferno, Hell Gate, and Blast.
+      - [x] Compare the nine weather, ice, and fire actions, including Extinguish, Cold, Ice Shell, Changing Seasons, Ice World, Snow, Inferno, Hell Gate, and Blast. The [action comparison](#weather-ice-and-fire-action-comparison-2026-11-26) records the runtime checks and the restored Hell Gate cue.
       - [ ] Compare the 17 farming and tree actions, including the eight crop and material actions and nine tree species.
       - [ ] Compare the eight fluid and plant terrain actions, including Dissipate, Tide Hold, Lava Hold, Lilify, Webs, Vines, Thorns, and Sprouting.
       - [ ] Compare the six landscape actions, including Erosion, Levelling, Blight, Raise Land, Transpose, and Transpose Ore.
@@ -1862,6 +1862,15 @@
 - [x] Save a Waystone-targeted Hell Gate during warmup and resume it on a headless server. The ritual found the medium Infernal circle and summoned one Demon after restart. The active aura, Inferno fire, and Blast damage survived the restart.
 - [x] Reopen the summoned Demon and verify its model in the background client. Boot the packaged JAR on headless Forge with the bundled Auram development mods. The copied world loaded the saved Demon, and a ritual-rain droplet produced three Inferno fires.
 - [x] Restore Hell Gate's original two-air-block check and its vertical limits. A cobweb in the second block prevents arrival. A third-block roof allows the original summon, and the selected column can end above the last buildable layer or at the bottom of the void. Restore the original flame and growl packet at the arrival and the flame and Ghast cue at the Hellish Aura victim's feet.
+
+### Weather, ice, and fire action comparison (2026-11-26)
+
+- The [dispersal milestone](#cauldron-dispersal-and-waystone-targets-2026-11-20) covers the coal Extinguish action in `BrewTerrainEffects`, including the original scan order, Forge protection, radius and Blaze damage. The packaged replay restaged one fire cell and a Glowstone dose that dealt eight damage to a Blaze.
+- The [terrain brews](#terrain-brews-2026-11-20), [Snow](#snow-and-cauldron-targeting-modifiers-2026-11-21) and [Ice World](#witch-footwear-and-ice-world-2026-11-21) milestones cover `BrewColdEffects`, `SnowTrailEffect` and `IceWorldBrew`. Saved bottles replayed the connected water fringe, 900 glancing Chilled ticks, the direct Ice Shell, the Snow Trail and ground coverage, and the original bottom placement of a converted top slab.
+- The [Changing Seasons milestone](#brew-of-the-changing-seasons-2026-11-21) covers signed notes, warmup and Waystone targeting in `BrewTerrainEffects.changeSeasons`. The packaged replay changed one column at both sampled heights and cleared its snow layer. The adjacent column and its snow stayed intact. Minecraft 1.20.1 stores biomes in four-block columns and the port paints each column touched by the original footprint.
+- `InfernoSplatter.burst` ignites a direct victim and launches the original three base splatters. Glancing creature exposure leaves that target unlit and launches no splatters from it. `BrewFireEffects.blast` uses the modern explosion engine at the entity's feet or adjacent block face. Refined Evil's glancing creature cast gave 900 ticks of Hellish Aura. Its ordinary block splash produced no Demon.
+- The original Hell Gate sent flame and dragon growl after the spawn attempt, including a Forge veto. The rebuilt ritual matches that packet near the attempt and stays silent outside the 16-block audience. The unobstructed cast admits the Demon, a cobweb in the second air cell prevents the attempt, and the Forge veto keeps the Demon out of the world.
+- Java 17 data generation, JAR reobfuscation and all 556 required GameTests passed. Clean Forge and copied Auram passed 17 headless cases each on the same reobfuscated archive.
 
 ## Saved Rain Droplets and Inferno Splatters (2026-11-24)
 

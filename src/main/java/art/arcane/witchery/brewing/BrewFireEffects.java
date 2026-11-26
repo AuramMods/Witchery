@@ -24,7 +24,8 @@ final class BrewFireEffects {
         if (demon == null) return;
         Vec3 arrival = Vec3.atBottomCenterOf(site.above()).add(0, 0.05, 0);
         demon.moveTo(arrival);
-        if (level.addFreshEntity(demon)) WitcheryNetwork.sendHellGateArrival(level, arrival, demon.getBbHeight());
+        level.addFreshEntity(demon);
+        WitcheryNetwork.sendHellGateArrival(level, arrival, demon.getBbHeight());
     }
 
     static void blast(ServerLevel level, Vec3 center, int strength, @Nullable Entity caster) {
