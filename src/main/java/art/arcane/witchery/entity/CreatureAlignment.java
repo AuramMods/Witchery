@@ -10,9 +10,12 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.animal.AbstractGolem;
 import net.minecraftforge.common.Tags;
+
+import java.util.Locale;
 
 public final class CreatureAlignment {
     private static final TagKey<EntityType<?>> DEMONIC = TagKey.create(Registries.ENTITY_TYPE,
@@ -32,7 +35,17 @@ public final class CreatureAlignment {
     }
 
     public static boolean werewolf(LivingEntity entity) {
-        return Lycanthropy.isShifted(entity) || entity instanceof Reflection copy && copy.hasWolfmanModel();
+        return Lycanthropy.isShifted(entity) || entity instanceof Reflection copy && copy.hasWolfmanModel()
+                || mobNameContains(entity, "werewolf");
+    }
+
+    public static boolean vampire(LivingEntity entity) {
+        return Vampirism.isVampire(entity) || mobNameContains(entity, "vampire");
+    }
+
+    private static boolean mobNameContains(LivingEntity entity, String name) {
+        // Witchery 0.24.1 recognized other mods' mobs by their simple class names.
+        return entity instanceof Mob && entity.getClass().getSimpleName().toLowerCase(Locale.ROOT).contains(name);
     }
 
     public static boolean boss(LivingEntity entity) {

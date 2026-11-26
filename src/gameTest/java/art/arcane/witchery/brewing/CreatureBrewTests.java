@@ -14,6 +14,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -32,6 +33,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.living.MobEffectEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -45,6 +47,41 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class CreatureBrewTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_brew_purification")
+    public static void taglockPurificationRollsBeforeForgeRemovalHooks(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pig = stationaryPig(helper, Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(5, 4, 5))));
+        pig.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 800, 1));
+        pig.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 800, 1));
+        pig.addEffect(new MobEffectInstance(MobEffects.POISON, 800, 1));
+        var listener = new Object() {
+            @SubscribeEvent
+            public void onRemove(MobEffectEvent.Remove event) {
+                if (event.getEntity() != pig) return;
+                if (event.getEffect() == MobEffects.POISON) event.setCanceled(true);
+                level.random.setSeed(0L);
+                for (int draw = 0; draw < 7; draw++) level.random.nextDouble();
+            }
+        };
+        MinecraftForge.EVENT_BUS.register(listener);
+        try {
+            level.random.setSeed(0L);
+            BrewStatusActions.ritualCleanse(pig, 0);
+            var weakness = pig.getEffect(MobEffects.WEAKNESS);
+            var slowness = pig.getEffect(MobEffects.MOVEMENT_SLOWDOWN);
+            var poison = pig.getEffect(MobEffects.POISON);
+            helper.assertTrue(weakness != null && weakness.getAmplifier() == 2
+                            && slowness != null && slowness.getAmplifier() == 2,
+                    "Both debuffs use their rolls from before the Forge effect removals");
+            helper.assertTrue(poison != null && poison.getAmplifier() == 1,
+                    "The Forge veto preserves Poison at its original amplifier");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(listener);
+            pig.discard();
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_brew_movement")
     public static void frogsTonguePullsFromTheOriginalSplashBounds(GameTestHelper helper) {
         var level = helper.getLevel();

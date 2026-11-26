@@ -779,7 +779,7 @@ public final class BrewMixture {
                 }
             }
             case WEAKEN_VAMPIRES -> {
-                if (!Vampirism.isVampire(target)) return;
+                if (!CreatureAlignment.vampire(target)) return;
                 if (target instanceof ServerPlayer player) Vampirism.drainBloodPower(player, 50 + 20 * strength);
                 int ticks = Mth.ceil(1800 * application.durationMultiplier * durationScale);
                 target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, ticks, strength), source);

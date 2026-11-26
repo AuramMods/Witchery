@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -16,7 +17,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public final class BrewStatusActions {
@@ -49,16 +50,20 @@ public final class BrewStatusActions {
 
     static void ritualCleanse(LivingEntity target, int strength) {
         if (!(target.level() instanceof ServerLevel level)) return;
-        List<MobEffectInstance> worsened = new ArrayList<>();
-        for (MobEffectInstance effect : List.copyOf(target.getActiveEffects())) {
-            if (!harmful(effect) || !target.removeEffect(effect.getEffect())) continue;
+        var effects = target.getActiveEffects().stream().filter(BrewStatusActions::harmful).toList();
+        var worsened = new LinkedHashMap<MobEffect, MobEffectInstance>();
+        // Roll for the original set of debuffs before removals notify Forge listeners.
+        for (MobEffectInstance effect : effects) {
             int amplifier = effect.getAmplifier();
             double chance = amplifier < strength ? 0.01 : amplifier == strength ? 0.25 : 0.75;
             if (level.random.nextDouble() < chance) {
-                worsened.add(new MobEffectInstance(effect.getEffect(), effect.getDuration(), amplifier + 1));
+                worsened.put(effect.getEffect(), new MobEffectInstance(effect.getEffect(), effect.getDuration(), amplifier + 1));
             }
         }
-        worsened.forEach(target::addEffect);
+        for (MobEffectInstance effect : effects) {
+            if (!target.removeEffect(effect.getEffect())) worsened.remove(effect.getEffect());
+        }
+        worsened.values().forEach(target::addEffect);
         WitcheryNetwork.sendTaglockPurificationCue(level, target.position(), !worsened.isEmpty());
     }
 
