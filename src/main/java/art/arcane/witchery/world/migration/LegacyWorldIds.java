@@ -366,6 +366,8 @@ public final class LegacyWorldIds {
             // Vanilla's fixer does not visit the recipe inside a curse attached to an arbitrary item.
             repairLegacyInventory(BrewItemCurse.savedBrew(itemTag).getList("Items", Tag.TAG_COMPOUND), fixer, currentVersion);
             switch (id) {
+                case "minecraft:potion", "minecraft:splash_potion", "minecraft:lingering_potion", "minecraft:tipped_arrow" ->
+                        effects.repairConvertedPotion(itemTag.getList("CustomPotionEffects", Tag.TAG_COMPOUND));
                 case "witchery:brewbottle", "witchery:bucketbrew" ->
                         repairLegacyInventory(itemTag.getList("Items", Tag.TAG_COMPOUND), fixer, currentVersion);
                 case "witchery:brewbag", "witchery:leonardsurn" ->

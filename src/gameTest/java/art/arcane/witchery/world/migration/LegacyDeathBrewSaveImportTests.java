@@ -250,6 +250,64 @@ public final class LegacyDeathBrewSaveImportTests {
         helper.succeed();
     }
 
+    @GameTest(template = "qa_coven_arena", batch = "witchery_converted_potion_items")
+    public static void repairsNumericPotionEffectsInConvertedPlayerInventory(GameTestHelper helper) throws Exception {
+        var root = Files.createTempDirectory("witchery-converted-potion-test");
+        try (var access = LevelStorageSource.createDefault(root).createAccess("world")) {
+            var world = access.getLevelPath(LevelResource.ROOT);
+            var registry = TagParser.parseTag("{Potions:{\"potion.sinking\":120}}");
+            NbtIo.writeCompressed(registry, world.resolve("witchery-legacy-ids.dat").toFile());
+            var storage = access.createPlayerStorage();
+            var player = new DropTester(helper.getLevel(), "ConvertedPotions");
+            var path = access.getLevelPath(LevelResource.PLAYER_DATA_DIR).resolve(player.getStringUUID() + ".dat").toFile();
+            var converted = TagParser.parseTag("""
+                    {Health:20f,Dimension:"minecraft:overworld",Inventory:[
+                      {Slot:0b,id:"minecraft:potion",Count:1b,tag:{CustomPotionEffects:[
+                        {Id:120b,Amplifier:1b,Duration:900,Ambient:1b,ShowParticles:0b},
+                        {Id:12b,Amplifier:0b,Duration:800}]}},
+                      {Slot:1b,id:"minecraft:splash_potion",Count:1b,tag:{CustomPotionEffects:[{Id:120b,Duration:900}]}},
+                      {Slot:2b,id:"minecraft:lingering_potion",Count:1b,tag:{CustomPotionEffects:[{Id:120b,Duration:900}]}},
+                      {Slot:3b,id:"minecraft:tipped_arrow",Count:16b,tag:{CustomPotionEffects:[{Id:120b,Duration:900}]}},
+                      {Slot:4b,id:"minecraft:potion",Count:1b,tag:{CustomPotionEffects:[
+                        {Id:32b,Duration:1000},{Id:33b,Duration:200}]}},
+                      {Slot:5b,id:"minecraft:potion",Count:1b,tag:{CustomPotionEffects:[
+                        {Id:120b,"forge:id":"minecraft:fire_resistance",Duration:705},{Id:120,Duration:690}]}}
+                    ]}
+                    """);
+            converted.putInt("DataVersion", SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+            NbtIo.writeCompressed(converted, path);
+            storage.load(player);
+            var inventory = player.getInventory();
+            var forms = List.of(Items.POTION, Items.SPLASH_POTION, Items.LINGERING_POTION, Items.TIPPED_ARROW);
+            for (int slot = 0; slot < forms.size(); slot++) {
+                var stack = inventory.getItem(slot);
+                var effects = PotionUtils.getCustomEffects(stack);
+                helper.assertTrue(stack.is(forms.get(slot)) && !effects.isEmpty()
+                                && effects.get(0).getEffect() == WitcheryEffects.SINKING.get() && effects.get(0).getDuration() == 900,
+                        "Recover the captured 1.7.10 effect in item slot " + slot);
+            }
+            var drink = PotionUtils.getCustomEffects(inventory.getItem(0));
+            helper.assertTrue(drink.get(0).getAmplifier() == 1 && drink.get(0).isAmbient() && !drink.get(0).isVisible()
+                            && drink.get(1).getEffect() == MobEffects.FIRE_RESISTANCE && inventory.getItem(3).getCount() == 16,
+                    "Keep the amplifier, display flags, companion effect and arrow count");
+            var vanilla = PotionUtils.getCustomEffects(inventory.getItem(4));
+            helper.assertTrue(vanilla.size() == 2 && vanilla.get(0).getEffect() == MobEffects.HERO_OF_THE_VILLAGE
+                            && vanilla.get(1).getEffect() == MobEffects.DARKNESS,
+                    "Preserve the modern vanilla effects sharing original Witchery's numbers");
+            var originalControl = converted.getList("Inventory", Tag.TAG_COMPOUND).getCompound(5).getCompound("tag");
+            helper.assertTrue(originalControl.equals(inventory.getItem(5).getTag()),
+                    "Keep the explicit registered name and modern integer encoding unchanged");
+            var remainder = inventory.getItem(0).finishUsingItem(helper.getLevel(), player);
+            var applied = player.getEffect(WitcheryEffects.SINKING.get());
+            helper.assertTrue(remainder.is(Items.GLASS_BOTTLE) && applied != null && applied.getAmplifier() == 1
+                            && applied.getDuration() == 900 && player.hasEffect(MobEffects.FIRE_RESISTANCE),
+                    "Drinking the restored potion applies both effects and returns its glass bottle");
+        } finally {
+            FileUtils.deleteDirectory(root.toFile());
+        }
+        helper.succeed();
+    }
+
     private static final class DropTester extends FakePlayer {
         DropTester(ServerLevel level, String name) {
             super(level, new GameProfile(UUID.randomUUID(), name));

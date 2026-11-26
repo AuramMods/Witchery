@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -45,22 +46,40 @@ public final class LegacyWorldEffects {
     }
 
     void upgrade(ListTag effects) {
-        upgrade(effects, false);
+        upgrade(effects, Source.LEGACY);
     }
 
     void upgradeActive(ListTag effects) {
-        upgrade(effects, true);
+        upgrade(effects, Source.ACTIVE);
     }
 
-    private void upgrade(ListTag effects, boolean active) {
+    void repairConvertedPotion(ListTag effects) {
+        upgrade(effects, Source.CONVERTED_POTION);
+    }
+
+    private void upgrade(ListTag effects, Source source) {
         for (Tag value : effects) {
             CompoundTag effect = (CompoundTag) value;
             if (effect.contains("forge:id", Tag.TAG_STRING) || !effect.contains("Id", Tag.TAG_ANY_NUMERIC)) continue;
-            String name = names.get(effect.getByte("Id") & 255);
+            int id = Byte.toUnsignedInt(effect.getByte("Id"));
+            String name = names.get(id);
             if (name == null) continue;
+            if (source == Source.CONVERTED_POTION && !hasOriginalPotionId(effect, id)) continue;
             effect.putString("forge:id", name);
-            if (active) effect.putBoolean(RESTORE_ATTRIBUTES, true);
+            if (source == Source.ACTIVE) effect.putBoolean(RESTORE_ATTRIBUTES, true);
         }
+    }
+
+    private static boolean hasOriginalPotionId(CompoundTag effect, int id) {
+        // 1.7.10 wrote a byte. Preserve modern Forge's integer encoding and ambiguous vanilla IDs.
+        if (!effect.contains("Id", Tag.TAG_BYTE)) return false;
+        var current = MobEffect.byId(id);
+        var key = current == null ? null : ForgeRegistries.MOB_EFFECTS.getKey(current);
+        return key == null || !key.getNamespace().equals(ResourceLocation.DEFAULT_NAMESPACE);
+    }
+
+    private enum Source {
+        LEGACY, ACTIVE, CONVERTED_POTION
     }
 
     public static void restoreActiveAttributes(LivingEntity entity, CompoundTag saved) {

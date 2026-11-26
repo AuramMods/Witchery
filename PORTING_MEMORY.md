@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Potion effects in converted vanilla item stacks (2026-11-26)
+
+- The original headless server read and saved Sinking II in custom slot 120 with Fire Resistance in a splash bottle. A drinkable bottle held original slot 32 with Paralysis III. The first import into Forge 1.20.1 named both Witchery effects and retained both bottle forms.
+- A disposable converted chest restored the original unnamed Sinking byte while keeping the captured registry and the converted item IDs. The preceding JAR left that entry unnamed in all four tested item forms. Ordinary loads now restore the registered Witchery name in drinkable, splash and lingering potions and tipped arrows. They preserve explicit names, the modern integer encoding and the current vanilla effects that share the original Witchery numbers 32 and 33.
+- The exact reobfuscated JAR imported both original bottles and kept the four repaired item forms and controls across dedicated restarts on clean Forge and copied Auram. Dispensers on clean Forge applied both effects to cows using the repaired splash bottle, lingering bottle, and tipped arrow. The player inventory GameTest drank the recovered potion and received both effects and an empty bottle.
+- All 495 local Forge GameTests passed after correcting the new test's player storage setup. The Java 17 reobfuscated `build/qa-saved-potion-effects/candidate.jar` has SHA-256 `a6276b00c4305ffabb4b78aa6893518f531c8ae023a58e544d480f82314f7b2d`. The QA directory contains `comparison.txt` and `suite-final.log`.
+
 ## Mirror exit destinations in converted chunks (2026-11-26)
 
 - The original headless Forge server wrote reciprocal Mirror pairs linking Dream `-47` and Torment `-48` to rooms in Mirror `64`. The original import on the preceding JAR correctly moved all three dimensions and translated both return addresses.
