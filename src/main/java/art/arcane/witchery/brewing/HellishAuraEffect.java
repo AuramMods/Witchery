@@ -1,10 +1,8 @@
 package art.arcane.witchery.brewing;
 
-import net.minecraft.core.particles.ParticleTypes;
+import art.arcane.witchery.network.WitcheryNetwork;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -29,9 +27,7 @@ public final class HellishAuraEffect extends TrackedBrewEffect {
         for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, host.getBoundingBox().inflate(1.5, 0, 1.5),
                 entity -> entity != host && entity.isAlive())) {
             target.hurt(damage, 1);
-            level.sendParticles(ParticleTypes.FLAME, target.getX(), target.getY(0.5), target.getZ(), 16,
-                    target.getBbWidth() * 0.5, target.getBbHeight() * 0.5, target.getBbWidth() * 0.5, 0.03);
-            level.playSound(null, target.blockPosition(), SoundEvents.GHAST_SHOOT, SoundSource.PLAYERS, 1, 1);
+            WitcheryNetwork.sendHellishAuraPulse(level, target);
             if (amplifier > 0) target.setSecondsOnFire(amplifier);
         }
     }

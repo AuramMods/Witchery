@@ -1824,6 +1824,7 @@
 - [x] Verify the packaged Inferno, Blast, and Hellish Aura splashes in muted survival. Inferno lit terrain and a direct target. Blast removed wool at the impact and preserved the sample outside the explosion. The green aura rendered on its host and burned the adjacent pig.
 - [x] Save a Waystone-targeted Hell Gate during warmup and resume it on a headless server. The ritual found the medium Infernal circle and summoned one Demon after restart. The active aura, Inferno fire, and Blast damage survived the restart.
 - [x] Reopen the summoned Demon and verify its model in the background client. Boot the packaged JAR on headless Forge with the bundled Auram development mods. The copied world loaded the saved Demon, and a ritual-rain droplet produced three Inferno fires.
+- [x] Restore Hell Gate's original two-air-block check and its vertical limits. A cobweb in the second block prevents arrival. A third-block roof allows the original summon, and the selected column can end above the last buildable layer or at the bottom of the void. Restore the original flame and growl packet at the arrival and the flame and Ghast cue at the Hellish Aura victim's feet.
 
 ## Saved Rain Droplets and Inferno Splatters (2026-11-24)
 

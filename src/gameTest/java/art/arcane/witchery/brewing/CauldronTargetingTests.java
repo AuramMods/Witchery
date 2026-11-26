@@ -2,6 +2,7 @@ package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.entity.CovenWitch;
+import art.arcane.witchery.entity.Demon;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
@@ -16,20 +17,26 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
@@ -129,6 +136,76 @@ public final class CauldronTargetingTests {
                         "The missing glyph invalidates the cast in either dimension");
             }
         }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_hell_gate_clearance")
+    public static void hellGateRequiresAirInItsOriginalSummonColumn(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var origin = helper.absolutePos(CENTER).atY(250);
+        var ceiling = origin.atY(level.getMaxBuildHeight() - 1);
+        drawMediumRing(level, origin, "circleglyphinfernal");
+        drawMediumRing(level, ceiling, "circleglyphinfernal");
+        BrewRituals.loadArea(level, origin, 4);
+        long seed = 117;
+        var random = RandomSource.create(seed);
+        var column = origin.offset(random.nextInt(5) - 2, 0, random.nextInt(5) - 2);
+        var topColumn = column.atY(ceiling.getY());
+        level.setBlockAndUpdate(column, Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(column.above(2), Blocks.COBWEB.defaultBlockState());
+        level.setBlockAndUpdate(topColumn, Blocks.STONE.defaultBlockState());
+        var offerings = List.of(WitcheryIngredient.MANDRAKE_ROOT.item().getDefaultInstance(), Items.NETHER_WART.getDefaultInstance(),
+                WitcheryIngredient.TEAR_OF_THE_GODDESS.item().getDefaultInstance(), Items.GUNPOWDER.getDefaultInstance(),
+                WitcheryIngredient.REFINED_EVIL.item().getDefaultInstance(), WitcheryIngredient.DOG_TONGUE.item().getDefaultInstance());
+        List<Demon> demons = new ArrayList<>();
+        Consumer<EntityJoinLevelEvent> record = event -> {
+            if (event.getLevel() == level && event.getEntity() instanceof Demon demon) demons.add(demon);
+        };
+        MinecraftForge.EVENT_BUS.addListener(record);
+        try {
+            level.getRandom().setSeed(seed);
+            helper.assertTrue(cast(level, origin, offerings, false) == BrewRituals.Result.COMPLETE && demons.isEmpty(),
+                    "A non-solid cobweb closes the original two-air-block opening");
+
+            level.removeBlock(column.above(2), false);
+            level.setBlockAndUpdate(column.above(3), Blocks.STONE.defaultBlockState());
+            level.getRandom().setSeed(seed);
+            helper.assertTrue(cast(level, origin, offerings, false) == BrewRituals.Result.COMPLETE && demons.size() == 1
+                            && demons.get(0).position().equals(Vec3.atBottomCenterOf(column.above()).add(0, 0.05, 0)),
+                    "The Demon emerges at the original offset in a pocket with two open blocks");
+
+            level.getRandom().setSeed(seed);
+            helper.assertTrue(cast(level, ceiling, offerings, false) == BrewRituals.Result.COMPLETE && demons.size() == 2
+                            && demons.get(1).position().equals(Vec3.atBottomCenterOf(topColumn.above()).add(0, 0.05, 0)),
+                    "The final buildable layer can support a Demon in the open sky");
+
+            int bottom = level.getMinBuildHeight();
+            int update = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
+            List<BlockState> savedColumn = new ArrayList<>();
+            try {
+                for (int y = bottom; y <= column.getY(); y++) {
+                    BlockPos pos = column.atY(y);
+                    savedColumn.add(level.getBlockState(pos));
+                    level.setBlock(pos, Blocks.AIR.defaultBlockState(), update);
+                }
+                level.getRandom().setSeed(seed);
+                helper.assertTrue(cast(level, origin, offerings, false) == BrewRituals.Result.COMPLETE && demons.size() == 3
+                                && demons.get(2).position().equals(Vec3.atBottomCenterOf(column.atY(bottom + 1)).add(0, 0.05, 0)),
+                        "A clear void column uses the world's minimum build height");
+            } finally {
+                for (int i = 0; i < savedColumn.size(); i++) level.setBlock(column.atY(bottom + i), savedColumn.get(i), update);
+            }
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(record);
+            demons.forEach(Entity::discard);
+            level.removeBlock(column, false);
+            level.removeBlock(column.above(2), false);
+            level.removeBlock(column.above(3), false);
+            level.removeBlock(topColumn, false);
+            var chalk = WitcheryBlocks.getRequired("circleglyphinfernal").get();
+            RitualCircle.MEDIUM.erase(level, origin, chalk);
+            RitualCircle.MEDIUM.erase(level, ceiling, chalk);
+        }
+        helper.succeed();
     }
 
     @GameTest(template = TEMPLATE, batch = "witchery_cauldron_transpose_destination")

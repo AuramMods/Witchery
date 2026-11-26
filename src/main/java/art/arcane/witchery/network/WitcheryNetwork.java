@@ -521,6 +521,15 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_LARGE_EXPLOSION_PARTICLE_ID, LEGACY_BLAZE_DEATH_SOUND_ID, arrival, 1, 2, 16);
     }
 
+    public static void sendHellGateArrival(ServerLevel level, Vec3 arrival, double height) {
+        sendParticlesAround(level, LEGACY_FLAME_PARTICLE_ID, LEGACY_DRAGON_GROWL_SOUND_ID, arrival, 1, height, 16);
+    }
+
+    public static void sendHellishAuraPulse(ServerLevel level, LivingEntity target) {
+        sendParticlesAround(level, LEGACY_FLAME_PARTICLE_ID, LEGACY_GHAST_FIREBALL_SOUND_ID, target.position(),
+                target.getBbWidth(), target.getBbHeight(), 16);
+    }
+
     public static void sendDreamDemonArrival(ServerLevel level, Vec3 arrival, double height) {
         sendParticlesAround(level, LEGACY_SMOKE_PARTICLE_ID, LEGACY_WITHER_DEATH_SOUND_ID, arrival, 1, height, 16);
     }
