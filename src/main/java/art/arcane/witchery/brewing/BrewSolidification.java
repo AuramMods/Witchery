@@ -1,17 +1,16 @@
 package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.entity.ThrownBrew;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
@@ -28,46 +27,57 @@ public final class BrewSolidification {
     public static void impact(ThrownBrew brew, HitResult hit, Block result) {
         if (!(brew.level() instanceof ServerLevel level)) return;
         if (!(hit instanceof BlockHitResult block)) {
-            BrewImpacts.recoverBrew(brew, level, hit);
+            BrewImpacts.recoverBrew(brew, hit);
             return;
         }
         Block tears = WitcheryBlocks.getRequired("hollowtears").get();
         BlockPos pos = block.getBlockPos();
         if (!level.getBlockState(pos).is(tears)) pos = pos.relative(block.getDirection());
         if (!replaceTears(level, brew.getOwner(), pos, block.getDirection(), tears, result.defaultBlockState())) {
-            BrewImpacts.recoverBrew(brew, level, hit);
+            BrewImpacts.recoverBrew(brew, hit);
         }
     }
+
+    private record Visit(BlockPos pos, Direction side) {}
 
     private static boolean replaceTears(ServerLevel level, @Nullable Entity owner, BlockPos origin, Direction face,
                                         Block tears, BlockState result) {
-        if (!level.hasChunkAt(origin) || !level.getBlockState(origin).is(tears)
-                || !BrewTerrain.setBlock(owner, level, origin, result, face)) return false;
-        var frontier = new ArrayDeque<BlockPos>();
+        if (!level.hasChunkAt(origin) || !level.getBlockState(origin).is(tears)) return false;
+        var frontier = new ArrayDeque<Visit>();
         var visited = new HashSet<BlockPos>();
-        frontier.add(origin);
-        visited.add(origin);
+        boolean changed = false;
+        boolean rejected = false;
+        // The original visits neighbors first and only reaches the origin again through another Tears cell.
+        visitNeighbors(frontier, origin);
         while (!frontier.isEmpty()) {
-            BlockPos pos = frontier.removeFirst();
-            if (result.isAir()) erodeSupport(level, owner, pos.below(), tears, result);
-            Vec3 center = Vec3.atCenterOf(pos);
-            level.sendParticles(ParticleTypes.INSTANT_EFFECT, center.x, center.y, center.z, 4, 0.3, 0.3, 0.3, 0);
-            if (Math.abs(pos.getX() - origin.getX()) >= RANGE || Math.abs(pos.getY() - origin.getY()) >= RANGE
-                    || Math.abs(pos.getZ() - origin.getZ()) >= RANGE) continue;
-            for (Direction direction : NEIGHBORS) {
-                BlockPos next = pos.relative(direction);
-                if (visited.add(next) && level.hasChunkAt(next) && level.getBlockState(next).is(tears)
-                        && BrewTerrain.setBlock(owner, level, next, result, direction)) {
-                    frontier.addLast(next);
-                }
+            Visit visit = frontier.removeFirst();
+            BlockPos pos = visit.pos();
+            if (!visited.add(pos) || !level.hasChunkAt(pos) || !level.getBlockState(pos).is(tears)) continue;
+            if (!BrewTerrain.setBlock(owner, level, pos, result, pos.equals(origin) ? face : visit.side())) {
+                rejected = true;
+                continue;
+            }
+            changed = true;
+            if (result.isAir()) erodeSupport(level, owner, pos.below(), result);
+            WitcheryNetwork.sendSolidificationCue(level, pos);
+            if (Math.abs(pos.getX() - origin.getX()) < RANGE && Math.abs(pos.getY() - origin.getY()) < RANGE
+                    && Math.abs(pos.getZ() - origin.getZ()) < RANGE) {
+                visitNeighbors(frontier, pos);
             }
         }
-        return true;
+        return changed || !rejected;
     }
 
-    private static void erodeSupport(ServerLevel level, @Nullable Entity owner, BlockPos pos, Block tears, BlockState air) {
+    private static void visitNeighbors(ArrayDeque<Visit> frontier, BlockPos pos) {
+        for (int index = NEIGHBORS.size() - 1; index >= 0; index--) {
+            Direction side = NEIGHBORS.get(index);
+            frontier.addFirst(new Visit(pos.relative(side), side));
+        }
+    }
+
+    private static void erodeSupport(ServerLevel level, @Nullable Entity owner, BlockPos pos, BlockState air) {
         BlockState support = level.getBlockState(pos);
-        if (!support.isAir() && !support.is(tears) && !BrewTerrain.isProtectedTerrain(support)) {
+        if (!support.isAir() && !BrewTerrain.isProtectedTerrain(support)) {
             BrewTerrain.setBlock(owner, level, pos, air, Direction.UP);
         }
     }

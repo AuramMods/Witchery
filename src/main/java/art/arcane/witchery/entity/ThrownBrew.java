@@ -9,8 +9,6 @@ import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ItemParticleOption;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
@@ -20,6 +18,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
 import net.minecraft.world.item.Item;
@@ -34,7 +33,10 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 public final class ThrownBrew extends ThrowableItemProjectile {
+    private static final int FIXED_BREW_SPLASH_COLOR = 0x7CAFC6;
+
     private String legacyOwnerName = "";
+    private boolean recovered;
 
     public ThrownBrew(EntityType<? extends ThrownBrew> type, Level level) {
         super(type, level);
@@ -165,11 +167,17 @@ public final class ThrownBrew extends ThrowableItemProjectile {
         return super.canHitEntity(target);
     }
 
+    public void recoverAt(Vec3 drop) {
+        if (level() instanceof ServerLevel server) {
+            recovered = true;
+            server.addFreshEntity(new ItemEntity(server, drop.x, drop.y, drop.z, getItem().copyWithCount(1)));
+        }
+    }
+
     @Override
     protected void onHit(HitResult hit) {
         super.onHit(hit);
         if (level() instanceof ServerLevel server) {
-            Vec3 impact = hit.getLocation();
             if (getItem().is(WitcheryIngredient.ROCK.item())) {
                 if (hit instanceof EntityHitResult entity) {
                     entity.getEntity().hurt(server.damageSources().thrown(this, getOwner()), 6);
@@ -193,13 +201,13 @@ public final class ThrownBrew extends ThrowableItemProjectile {
                 discard();
                 return;
             }
-            if (getItem().getItem() instanceof ThrowableBrewItem brew && !brew.impactWithBreakCue(this, hit)) {
-                discard();
-                return;
+            if (getItem().getItem() instanceof ThrowableBrewItem brew) {
+                brew.impact(this, hit);
+                if (!recovered) {
+                    BlockPos splash = new BlockPos((int) Math.round(getX()), (int) Math.round(getY()), (int) Math.round(getZ()));
+                    server.levelEvent(2002, splash, FIXED_BREW_SPLASH_COLOR);
+                }
             }
-            server.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, getItem()),
-                    impact.x, impact.y, impact.z, 12, 0.2, 0.2, 0.2, 0.1);
-            server.playSound(null, impact.x, impact.y, impact.z, SoundEvents.GLASS_BREAK, SoundSource.NEUTRAL, 1.0F, 1.0F);
             discard();
         }
     }

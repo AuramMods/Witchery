@@ -224,7 +224,7 @@ public final class BrewCreatureEffects {
     public static void hitchcock(ThrownBrew brew, HitResult hit) {
         if (!(brew.level() instanceof ServerLevel level)) return;
         if (!(hit instanceof EntityHitResult entity) || !(entity.getEntity() instanceof LivingEntity victim)) {
-            BrewImpacts.recoverBrew(brew, level, hit);
+            BrewImpacts.recoverBrew(brew, hit);
             return;
         }
         summonOwls(level, victim, 3 + level.random.nextInt(2));
@@ -296,7 +296,7 @@ public final class BrewCreatureEffects {
             if (infested != null && BrewTerrain.setBlock(brew.getOwner(), level, pos, infested.defaultBlockState(),
                     block.getDirection())) return;
         }
-        BrewImpacts.recoverBrew(brew, level, hit);
+        BrewImpacts.recoverBrew(brew, hit);
     }
 
     public static boolean infectVillager(ServerLevel level, Villager villager) {
@@ -371,7 +371,7 @@ public final class BrewCreatureEffects {
                 target.hurt(level.damageSources().indirectMagic(shot, shot.getOwner()), damage);
             }
         } else {
-            BrewImpacts.recoverBrew(shot, level, hit);
+            BrewImpacts.recoverBrew(shot, hit);
         }
     }
 

@@ -23,7 +23,6 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.monster.ZombifiedPiglin;
 import net.minecraft.world.entity.npc.Villager;
@@ -121,7 +120,7 @@ public final class BrewImpacts {
     public static void raiseDead(ThrownBrew brew, HitResult hit) {
         if (!(brew.level() instanceof ServerLevel level)) return;
         if (!(hit instanceof BlockHitResult block) || block.getDirection() != Direction.UP) {
-            recoverBrew(brew, level, hit);
+            recoverBrew(brew, hit);
             return;
         }
 
@@ -179,15 +178,11 @@ public final class BrewImpacts {
         if (level.addFreshEntity(undead)) raisingParticles(level, landing);
     }
 
-    static void recoverBrew(ThrownBrew brew, ServerLevel level, HitResult hit) {
+    static void recoverBrew(ThrownBrew brew, HitResult hit) {
         Vec3 drop = hit instanceof BlockHitResult block
                 ? Vec3.atCenterOf(block.getBlockPos().relative(block.getDirection() == Direction.DOWN ? Direction.DOWN : Direction.UP))
                 : hit instanceof EntityHitResult entity ? entity.getEntity().position() : hit.getLocation();
-        recoverBrew(brew, level, drop);
-    }
-
-    static void recoverBrew(ThrownBrew brew, ServerLevel level, Vec3 drop) {
-        level.addFreshEntity(new ItemEntity(level, drop.x, drop.y, drop.z, brew.getItem().copyWithCount(1)));
+        brew.recoverAt(drop);
     }
 
     private static void raiseUndead(ServerLevel level, BlockPos ground, ServerPlayer owner) {

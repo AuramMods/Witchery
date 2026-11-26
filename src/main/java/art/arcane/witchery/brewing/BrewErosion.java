@@ -84,7 +84,7 @@ public final class BrewErosion {
             if (entity.getEntity() instanceof LivingEntity target) {
                 corrode(level, brew, target);
             } else {
-                BrewImpacts.recoverBrew(brew, level, hit);
+                BrewImpacts.recoverBrew(brew, hit);
             }
         }
     }

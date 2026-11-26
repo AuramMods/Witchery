@@ -72,11 +72,11 @@ public final class BrewTerrain {
         if (hit instanceof BlockHitResult block) {
             if ((block.getDirection() == Direction.UP || level.getBlockState(block.getBlockPos()).is(Blocks.CACTUS))
                     && cactus(brew.getOwner(), level, block.getBlockPos(), enhanced ? 4 : 3)) return;
-            BrewImpacts.recoverBrew(brew, level, Vec3.atCenterOf(block.getBlockPos().relative(block.getDirection())));
+            brew.recoverAt(Vec3.atCenterOf(block.getBlockPos().relative(block.getDirection())));
         } else if (hit instanceof EntityHitResult entity) {
             for (Direction side : SIDES) {
                 if (!cactus(brew.getOwner(), level, entity.getEntity().blockPosition().relative(side), enhanced ? 2 : 1)) {
-                    BrewImpacts.recoverBrew(brew, level, entity.getEntity().position());
+                    brew.recoverAt(entity.getEntity().position());
                     break;
                 }
             }
@@ -114,7 +114,7 @@ public final class BrewTerrain {
     public static void vines(ThrownBrew brew, HitResult hit) {
         if (!(brew.level() instanceof ServerLevel level)) return;
         if (!(hit instanceof BlockHitResult block) || !block.getDirection().getAxis().isHorizontal()) {
-            BrewImpacts.recoverBrew(brew, level, hit);
+            BrewImpacts.recoverBrew(brew, hit);
             return;
         }
         Direction side = block.getDirection();
@@ -150,7 +150,7 @@ public final class BrewTerrain {
     public static void sprouting(ThrownBrew brew, HitResult hit) {
         if (!(brew.level() instanceof ServerLevel level)) return;
         if (!(hit instanceof BlockHitResult block)) {
-            BrewImpacts.recoverBrew(brew, level, hit);
+            BrewImpacts.recoverBrew(brew, hit);
             return;
         }
         Vec3 center = hit.getLocation();

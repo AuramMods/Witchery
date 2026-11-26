@@ -26,33 +26,32 @@ public final class BrewSubstitution {
 
     private BrewSubstitution() {}
 
-    public static boolean impact(ThrownBrew brew, HitResult hit) {
-        if (!(brew.level() instanceof ServerLevel level)) return false;
+    public static void impact(ThrownBrew brew, HitResult hit) {
+        if (!(brew.level() instanceof ServerLevel level)) return;
         if (!(hit instanceof BlockHitResult block)) {
-            BrewImpacts.recoverBrew(brew, level, hit);
-            return false;
+            BrewImpacts.recoverBrew(brew, hit);
+            return;
         }
         BlockPos origin = block.getBlockPos();
         BlockState reference = level.getBlockState(origin);
         if (BrewTerrain.isProtectedTerrain(reference) || reference.getDestroySpeed(level, origin) < 0) {
-            BrewImpacts.recoverBrew(brew, level, hit);
-            return false;
+            BrewImpacts.recoverBrew(brew, hit);
+            return;
         }
         int radius = BrewImpacts.enhanced(brew) ? 6 : 4;
         List<ItemEntity> materials = level.getEntitiesOfClass(ItemEntity.class, brew.getBoundingBox().inflate(radius),
                 item -> item.isAlive() && item.getItem().getItem() instanceof BlockItem && item.distanceToSqr(brew) <= radius * radius);
         ItemStack returned = reference.getBlock().getCloneItemStack(level, origin, reference);
         if (materials.isEmpty() || returned.isEmpty()) {
-            BrewImpacts.recoverBrew(brew, level, hit);
-            return false;
+            BrewImpacts.recoverBrew(brew, hit);
+            return;
         }
         Exchanges exchanges = replaceSurfaces(level, brew.getOwner(), origin, reference.getBlock(), radius, materials);
         if (exchanges.replaced() == 0 && exchanges.hadSurface()) {
-            BrewImpacts.recoverBrew(brew, level, hit);
-            return false;
+            BrewImpacts.recoverBrew(brew, hit);
+            return;
         }
         dropReturns(level, origin, returned, exchanges.replaced());
-        return true;
     }
 
     private record Exchanges(int replaced, boolean hadSurface) {}

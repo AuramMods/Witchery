@@ -43,7 +43,7 @@ public final class BrewIce {
                     pos -> Math.abs(pos.getX() - center.getX()) < 3 && Math.abs(pos.getY() - center.getY()) < 3
                             && Math.abs(pos.getZ() - center.getZ()) < 3);
         } else if (hit.getDirection() == Direction.DOWN) {
-            BrewImpacts.recoverBrew(brew, level, hit);
+            BrewImpacts.recoverBrew(brew, hit);
         } else {
             BlockPos base = hit.getDirection() == Direction.UP ? center : center.relative(hit.getDirection());
             shield(level, brew.getOwner(), base, hit.getDirection());

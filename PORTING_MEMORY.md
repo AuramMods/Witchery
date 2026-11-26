@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Fixed-brew impact cues and Solidification spread (2026-11-25)
+
+- The original server sent level event 2002 at the rounded position before collision, with potion damage value 2. That damage value resolved to Speed and color `0x7CAFC6`. Forge 1.20.1 receives that color directly. The original returned ten fixed brews and Quicklime silently in the invalid-impact matrix. The shared projectile recovery path now suppresses the potion cue for all recovered bottles.
+- Original Solidification began with adjacent Hollow Tears. A valid isolated impact spent the bottle and left the fluid. A connected pair converted the neighboring cell before the anchor. Erosion against the lower of two stacked Tears cells removed the upper cell and its fluid support while keeping the stone below. Both new regressions reproduced the different behavior in the preceding port.
+- The reobfuscated clean Forge client measured the legacy color and rounded cell for Ink. It recovered Hitchcock, Raising, and Solidifying Dirt silently on invalid hits. It then spent a Solidifying Dirt brew on isolated Tears and converted a second pool, receiving two silent overhead Instant Spell cues in original order. A dedicated restart retained the two converted cells, the isolated Tears, and all three bottle UUIDs. The client used master volume zero and OpenAL No Output and kept desktop focus.
+- The copied headless Auram server used its original Does It Tick settings and ran a downward Solidification dispenser and a separate Hitchcock refund with zero players online. It saved both converted cells, the isolated Tears and the recovered Hitchcock bottle. All 429 local Forge GameTests and Java 17 reobfuscation passed on seed `5471593853027166409`. The package is `build/qa-brew-break-cues/candidate.jar` with SHA-256 `5e50761aa22dca9d23797257874965b7158b4097145944af815a09b34535e1fb`. See `build/qa-brew-break-cues/comparison.txt`.
+
 ## Substitution material radius and exchanges (2026-11-25)
 
 - The original 1.7.10 server exchanged two brick blocks dropped exactly four blocks from the projectile and spared a block item beyond its sphere that was closer to the collision point. With a valid input and enclosed stone, it spent the bottle and kept the brick. With only out-of-range materials it returned the bottle and skipped the break cue. One cast against red wool exchanged adjacent white wool and returned two red wool.
