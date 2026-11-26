@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Recovery from split dimension folders (2026-11-26)
+
+- Witchery 0.24.1 saved a Gold Block at `(145, 50, 68)`, an Emerald Block and ticketed Poppet Shelf in its neighbor, and a Redstone Block in a separate region. The 1.20.1 control saved a Diamond Block at the shared position and a Lapis Block and stocked chest in a current-only chunk. The earlier package kept both directories and the server could only see the current terrain.
+- On explicit import, the rebuilt JAR added both missing chunks to the live Mirror and kept the Diamond Block, the Lapis Block, and the current chest's three ingots. It also restored the original shelf ticket and the named Death Protection Poppet. The numeric archive's files were byte-identical after the import. A separate clean Forge fixture restored the same records using the captured custom Mirror ID `64`.
+- The ordinary clean Forge restart loaded both recovered chunks and the shelf ticket. The fixture replaced the recovered Emerald Block with Amethyst and saved. The next explicit import copied zero chunks and retained the Amethyst, the original archive, and the same ticking ticket.
+- Copied Auram passed the import and ordinary restart on the same headless JAR. The recovered ward and both older builds remained at their saved coordinates. The source archive matched the original file hashes after both boots.
+- JAR reobfuscation and all 477 local Forge GameTests passed. The new case checks a shared negative region, current-only terrain, an absent saved-data file, an existing saved-data file, and a repeated import. The candidate is `build/qa-dimension-merge/candidate.jar` with SHA-256 `af373a571b0331c76d90bad4a77dd9afc265f9010e67854a4c16cdc5279fb459`.
+
 ## Named item recovery without a registry snapshot (2026-11-26)
 
 - The fixture placed payloads from the original Forge server in the containers and player file of an earlier 1.20.1 world without a captured registry. It resolved the stacks' original IDs to their registry names and retained their metadata. The prior package lost the chest's Hawthorn variant and the dropped Urn's tier. It also left the Soft Clay Jar and an earlier wrapped Wooden Stake as generic ingredient items.

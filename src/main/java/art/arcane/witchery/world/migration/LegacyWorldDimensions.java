@@ -53,7 +53,8 @@ final class LegacyWorldDimensions {
                 Files.move(source, target);
                 Witchery.LOGGER.info("Moved legacy dimension {} to {}", source, target);
             } catch (FileAlreadyExistsException | DirectoryNotEmptyException existing) {
-                Witchery.LOGGER.warn("Preserving legacy dimension {} because {} already exists", source, target);
+                int recovered = LegacyDimensionRegions.recoverMissing(source, target);
+                Witchery.LOGGER.info("Recovered {} legacy dimension chunks from {} into {}", recovered, source, target);
             }
         }
     }
