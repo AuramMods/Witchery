@@ -21,9 +21,11 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.Set;
 
 @Mod.EventBusSubscriber(modid = Witchery.MODID)
 public final class LegacyShelfTickets {
+    private static final String SAVE_FILE = "forcedchunks.dat";
     private LegacyShelfTickets() {}
 
     @SubscribeEvent
@@ -32,11 +34,21 @@ public final class LegacyShelfTickets {
         var server = event.getServer();
         Path root = server.getWorldPath(LevelResource.ROOT);
         for (ServerLevel level : server.getAllLevels()) {
-            restore(level, DimensionType.getStorageFolder(level.dimension(), root).resolve("forcedchunks.dat"));
+            var dimension = level.dimension();
+            var shelves = new HashSet<BlockPos>();
+            read(DimensionType.getStorageFolder(dimension, root).resolve(SAVE_FILE), shelves);
+            Path archive = LegacyWorldIds.dimensionArchive(root, dimension);
+            if (archive != null) read(archive.resolve(SAVE_FILE), shelves);
+            for (BlockPos pos : shelves) {
+                if (Level.isInSpawnableBounds(pos) && !level.isOutsideBuildHeight(pos)
+                        && level.getBlockEntity(pos) instanceof PoppetShelfBlockEntity shelf) {
+                    shelf.keepChunkLoaded();
+                }
+            }
         }
     }
 
-    private static void restore(ServerLevel level, Path source) {
+    private static void read(Path source, Set<BlockPos> shelves) {
         CompoundTag data;
         try (var input = new DataInputStream(new BufferedInputStream(Files.newInputStream(source)))) {
             // Forge 1.7.10 wrote this file as uncompressed NBT.
@@ -48,7 +60,6 @@ public final class LegacyShelfTickets {
             return;
         }
 
-        var shelves = new HashSet<BlockPos>();
         for (Tag ownerEntry : data.getList("TicketList", Tag.TAG_COMPOUND)) {
             var owner = (CompoundTag) ownerEntry;
             if (!Witchery.MODID.equals(owner.getString("Owner"))) continue;
@@ -57,12 +68,6 @@ public final class LegacyShelfTickets {
                 if (!position.contains("poppetX", Tag.TAG_INT) || !position.contains("poppetY", Tag.TAG_INT)
                         || !position.contains("poppetZ", Tag.TAG_INT)) continue;
                 shelves.add(new BlockPos(position.getInt("poppetX"), position.getInt("poppetY"), position.getInt("poppetZ")));
-            }
-        }
-        for (BlockPos pos : shelves) {
-            if (Level.isInSpawnableBounds(pos) && !level.isOutsideBuildHeight(pos)
-                    && level.getBlockEntity(pos) instanceof PoppetShelfBlockEntity shelf) {
-                shelf.keepChunkLoaded();
             }
         }
     }

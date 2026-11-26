@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Saved records in split Witchery dimensions (2026-11-26)
+
+- Two headless Witchery 0.24.1 worlds saved different Mirror villages and Poppet Shelves. The archived file recorded trust 10 and hostility -15 for the village at X 94. The two files differed at the village at X 199. The earlier Forge JAR recovered the archive terrain and residents. It read neutral scores for X 94 and started with only the live shelf loaded.
+- The rebuilt package used the captured Mirror ID `64` on clean Forge. Both shelves loaded before any player joined, with the named wards from their respective worlds. The village at X 94 used its archived scores and the live records at X 199 and X 1499 kept their scores. An ordinary headless restart repeated both shelf and all three village checks.
+- A separate clean Forge boot exercised the normal leather chestplate interaction through a server test player. The archived village's trust of 10 allowed recruitment. The shared village's live trust of 8 refused it.
+- Copied Auram used the default Mirror ID and the same package. Both shelves and all three reputation readings matched on import and after an ordinary headless restart. Both Forge profiles saved the two ticking block tickets under `data/chunks.dat`.
+- The data readers keep both original `villages.dat` and `forcedchunks.dat` files intact. The imported numeric folder remains part of the save so later boots can read its village records.
+- JAR reobfuscation and all 478 local Forge GameTests passed. The new test uses a captured custom Dream ID and checks the shared village's current radius and score. The candidate is `build/qa-dimension-records/candidate.jar` with SHA-256 `ef76aa4669ad00f5fb0da0b10e75eb0e396cdc4bbbe2df37d32c80ae49fb7d77`.
+
 ## Recovery from split dimension folders (2026-11-26)
 
 - Witchery 0.24.1 saved a Gold Block at `(145, 50, 68)`, an Emerald Block and ticketed Poppet Shelf in its neighbor, and a Redstone Block in a separate region. The 1.20.1 control saved a Diamond Block at the shared position and a Lapis Block and stocked chest in a current-only chunk. The earlier package kept both directories and the server could only see the current terrain.

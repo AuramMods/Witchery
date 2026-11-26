@@ -9,19 +9,23 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.storage.LevelResource;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.WeakHashMap;
 
 public final class LegacyVillages {
+    private static final String SAVE_FILE = "data/villages.dat";
     private static final Map<ServerLevel, LegacyVillages> LOADED = Collections.synchronizedMap(new WeakHashMap<>());
     private static final LegacyVillages EMPTY = new LegacyVillages(List.of());
     private final List<Village> villages;
@@ -36,7 +40,24 @@ public final class LegacyVillages {
 
     private static LegacyVillages read(ServerLevel world) {
         var root = world.getServer().getWorldPath(LevelResource.ROOT);
-        var file = DimensionType.getStorageFolder(world.dimension(), root).resolve("data/villages.dat");
+        var dimension = world.dimension();
+        return read(DimensionType.getStorageFolder(dimension, root), LegacyWorldIds.dimensionArchive(root, dimension));
+    }
+
+    static LegacyVillages read(Path dimension, @Nullable Path archive) {
+        var current = readFile(dimension.resolve(SAVE_FILE));
+        if (archive == null) return current;
+        var original = readFile(archive.resolve(SAVE_FILE));
+        if (original.villages.isEmpty()) return current;
+        if (current.villages.isEmpty()) return original;
+
+        Map<BlockPos, Village> villages = new LinkedHashMap<>();
+        for (Village village : current.villages) villages.putIfAbsent(village.center(), village);
+        for (Village village : original.villages) villages.putIfAbsent(village.center(), village);
+        return new LegacyVillages(new ArrayList<>(villages.values()));
+    }
+
+    private static LegacyVillages readFile(Path file) {
         if (!Files.isRegularFile(file)) return EMPTY;
         try {
             return load(NbtIo.readCompressed(file.toFile()).getCompound("data"));

@@ -22,11 +22,13 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
@@ -185,6 +187,13 @@ public final class LegacyWorldIds {
             if (Files.isRegularFile(path.resolve("level.dat"))) return null;
         }
         return null;
+    }
+
+    @Nullable
+    static Path dimensionArchive(Path world, ResourceKey<Level> dimension) {
+        if (!WitcheryDimensions.levels().contains(dimension)) return null;
+        var ids = find(world);
+        return ids == null ? null : ids.dimensions.archive(world, dimension);
     }
 
     @Nullable

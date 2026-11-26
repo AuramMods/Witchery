@@ -60,6 +60,14 @@ final class LegacyWorldDimensions {
     }
 
     @Nullable
+    Path archive(Path world, ResourceKey<Level> dimension) {
+        for (var entry : dimensions.entrySet()) {
+            if (entry.getValue().equals(dimension)) return world.resolve("DIM" + entry.getKey());
+        }
+        return null;
+    }
+
+    @Nullable
     private ResourceKey<Level> resolve(int id) {
         return id >= -1 && id <= 1 ? WitcheryDimensions.fromLegacyId(id) : dimensions.get(id);
     }
