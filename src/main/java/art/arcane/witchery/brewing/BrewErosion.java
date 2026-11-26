@@ -1,12 +1,14 @@
 package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.entity.ThrownBrew;
+import art.arcane.witchery.network.WitcheryNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -17,6 +19,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -41,16 +44,18 @@ public final class BrewErosion {
     static void erodeFromCauldron(ServerLevel level, BlockPos center, int radius, @Nullable Player caster) {
         Player actor = caster != null ? caster : FakePlayerFactory.getMinecraft(level);
         var obsidian = new MutableInt();
-        BrewTerrain.forEachColumn(level, center, radius, pos -> {
-            BlockState state = level.getBlockState(pos);
-            if (state.isAir() || BrewTerrain.isProtectedTerrain(state)
-                    || !BrewTerrain.setBlock(actor, level, pos, Blocks.AIR.defaultBlockState(), Direction.UP)) return;
-            if (state.is(Blocks.OBSIDIAN)) obsidian.increment();
-            Vec3 removed = Vec3.atCenterOf(pos);
-            level.sendParticles(ParticleTypes.SPLASH, removed.x, removed.y, removed.z, 16, 0.5, 0.5, 0.5, 0);
-        });
-        level.playSound(null, center, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1, 2);
-        Vec3 impact = Vec3.atCenterOf(center);
+        // The original revisits the same layer in smaller circles, including already empty cells.
+        for (int ring = radius; ring > 0; ring--) {
+            BrewTerrain.forEachColumn(level, center, ring, pos -> {
+                BlockState state = level.getBlockState(pos);
+                if (BrewTerrain.isProtectedTerrain(state)
+                        || !BrewTerrain.setBlock(actor, level, pos, Blocks.AIR.defaultBlockState(), Direction.UP)) return;
+                if (state.is(Blocks.OBSIDIAN)) obsidian.increment();
+                WitcheryNetwork.sendErosionSplash(level, Vec3.atLowerCornerOf(pos), 0.5, 16);
+            });
+        }
+        Vec3 impact = Vec3.atLowerCornerOf(center);
+        level.playSound(null, impact.x, impact.y, impact.z, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1, 2);
         int stackSize = new ItemStack(Items.OBSIDIAN).getMaxStackSize();
         for (int remaining = obsidian.intValue(); remaining > 0; remaining -= stackSize) {
             level.addFreshEntity(new ItemEntity(level, impact.x, impact.y, impact.z,
@@ -92,41 +97,60 @@ public final class BrewErosion {
     private static void erode(ServerLevel level, ThrownBrew brew, BlockHitResult hit) {
         BlockPos center = hit.getBlockPos();
         if (!BrewTerrain.canEdit(brew.getOwner(), level, center, level.getBlockState(center))) return;
-        int removed = 0;
-        int obsidian = 0;
-        for (BlockPos pos : BlockPos.betweenClosed(center.offset(-2, -2, -2), center.offset(2, 2, 2))) {
-            int height = Math.abs(pos.getY() - center.getY());
-            int horizontal = Math.abs(pos.getX() - center.getX()) + Math.abs(pos.getZ() - center.getZ());
-            if (height == 0 ? horizontal > 3 : horizontal + height > 2) continue;
-            BlockState state = level.getBlockState(pos);
-            if (!canDissolve(state)) continue;
-            boolean changed = pos.equals(center) ? level.removeBlock(pos, false)
-                    : BrewTerrain.setBlock(brew.getOwner(), level, pos, Blocks.AIR.defaultBlockState(), hit.getDirection());
-            if (changed) {
-                removed++;
-                if (state.is(Blocks.OBSIDIAN)) obsidian++;
-            }
+        var obsidian = new MutableInt();
+        erodeLayer(level, brew, center, center, 3, obsidian);
+        for (int distance = 1; distance <= 2; distance++) {
+            erodeLayer(level, brew, center, center.above(distance), 3 - distance, obsidian);
+            erodeLayer(level, brew, center, center.below(distance), 3 - distance, obsidian);
         }
-        Vec3 impact = Vec3.atCenterOf(center);
-        if (removed > 0) level.sendParticles(ParticleTypes.SPLASH, impact.x, impact.y, impact.z, removed, 0.4, 0.4, 0.4, 0);
-        if (obsidian > 0) {
-            level.addFreshEntity(new ItemEntity(level, impact.x, impact.y, impact.z, new ItemStack(Items.OBSIDIAN, obsidian)));
+        if (obsidian.intValue() > 0) {
+            Vec3 impact = Vec3.atCenterOf(center);
+            level.addFreshEntity(new ItemEntity(level, impact.x, impact.y, impact.z,
+                    new ItemStack(Items.OBSIDIAN, obsidian.intValue())));
         }
     }
 
+    private static void erodeLayer(ServerLevel level, ThrownBrew brew, BlockPos struck, BlockPos center, int radius,
+                                   MutableInt obsidian) {
+        BrewTerrain.forEachColumn(level, center, radius, pos -> {
+            BlockState state = level.getBlockState(pos);
+            if (!canDissolve(state) || !pos.equals(struck) && !BrewTerrain.canEdit(brew.getOwner(), level, pos, state)) return;
+            // A waterlogged block leaves its fluid. A Witchery fluid block is itself eroded.
+            boolean changed = state.getBlock() instanceof LiquidBlock
+                    ? level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState())
+                    : level.removeBlock(pos, false);
+            if (!changed) return;
+            if (state.is(Blocks.OBSIDIAN)) obsidian.increment();
+            WitcheryNetwork.sendErosionSplash(level, brew.position(), 1, 8);
+        });
+    }
+
     private static boolean canDissolve(BlockState state) {
-        return !state.isAir() && state.getFluidState().isEmpty()
+        return !state.isAir() && !state.is(Blocks.WATER) && !state.is(Blocks.LAVA)
                 && !state.is(BlockTags.FIRE) && !BrewTerrain.isProtectedTerrain(state);
     }
 
     private static void corrode(ServerLevel level, ThrownBrew brew, LivingEntity target) {
-        target.hurt(level.damageSources().indirectMagic(brew, brew.getOwner()), BrewImpacts.enhanced(brew) ? 10 : 8);
+        var owner = brew.getOwner();
+        target.hurt(level.damageSources().thrown(target, owner), BrewImpacts.enhanced(brew) ? 10 : 8);
+        var random = owner instanceof LivingEntity caster ? caster.getRandom() : level.getRandom();
+        ServerPlayer player = owner instanceof ServerPlayer serverPlayer ? serverPlayer : null;
+        boolean creative = owner instanceof Player caster && caster.isCreative();
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             if (slot == EquipmentSlot.OFFHAND) continue;
             ItemStack stack = target.getItemBySlot(slot);
-            if (CORRODIBLE_GEAR.contains(stack.getItem())) {
-                stack.hurtAndBreak(100, target, wearer -> wearer.broadcastBreakEvent(slot));
+            if (!CORRODIBLE_GEAR.contains(stack.getItem()) || !stack.isDamageableItem()) continue;
+            if (!creative) {
+                stack.hurt(100, random, player);
+                // The legacy stack breaks only after exceeding its maximum damage.
+                if (stack.getDamageValue() > stack.getMaxDamage()) {
+                    target.broadcastBreakEvent(slot);
+                    if (player != null) player.awardStat(Stats.ITEM_BROKEN.get(stack.getItem()));
+                    stack.shrink(1);
+                    stack.setDamageValue(0);
+                }
             }
+            if (stack.getDamageValue() <= 0) target.setItemSlot(slot, ItemStack.EMPTY);
         }
     }
 }

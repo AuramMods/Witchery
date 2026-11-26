@@ -329,6 +329,10 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_SPLASH_PARTICLE_ID, LEGACY_WATER_SPLASH_SOUND_ID, new Vec3(x, y, z), 0.5D, 0.5D, 5);
     }
 
+    public static void sendErosionSplash(ServerLevel level, Vec3 center, double size, int range) {
+        sendParticlesAround(level, LEGACY_SPLASH_PARTICLE_ID, LEGACY_NO_SOUND_ID, center, size, size, range);
+    }
+
     public static void sendCauldronRitualComplete(ServerLevel level, BlockPos pos) {
         sendParticlesAround(level, LEGACY_SPELL_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID,
                 Vec3.atBottomCenterOf(pos).add(0, 0.6, 0), 0.5, 1, 8);
