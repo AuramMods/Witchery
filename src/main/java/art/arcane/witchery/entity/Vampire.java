@@ -224,7 +224,7 @@ public final class Vampire extends PathfinderMob {
             bites++;
             if (BloodFeeding.takeFromVillager(villager, 30) > 0) {
                 heal(4);
-                WitcheryNetwork.sendVampireHuntBite(world, new Vec3(villager.getX(), villager.getY(0.8), villager.getZ()));
+                WitcheryNetwork.sendVampireBite(world, villager, false);
             }
         }
         return true;

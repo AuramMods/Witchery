@@ -22,6 +22,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
@@ -404,8 +405,10 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_SMOKE_PARTICLE_ID, LEGACY_POOF_SOUND_ID, center, 0.8, 1.5, 16);
     }
 
-    public static void sendVampireHuntBite(ServerLevel level, Vec3 center) {
-        sendParticlesAround(level, LEGACY_RED_DUST_PARTICLE_ID, LEGACY_DRINK_SOUND_ID, center, 0.5, 0.2, 16);
+    public static void sendVampireBite(ServerLevel level, LivingEntity target, boolean werewolfBlood) {
+        Vec3 center = new Vec3(target.getX(), target.getY(0.8), target.getZ());
+        int particle = werewolfBlood ? LEGACY_FLAME_PARTICLE_ID : LEGACY_RED_DUST_PARTICLE_ID;
+        sendParticlesAround(level, particle, LEGACY_DRINK_SOUND_ID, center, 0.5, 0.2, 16);
     }
 
     public static void sendAttackBatArrival(ServerLevel level, Entity bat) {

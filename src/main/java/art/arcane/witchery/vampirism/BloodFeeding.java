@@ -2,24 +2,25 @@ package art.arcane.witchery.vampirism;
 
 import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.entity.DarkMark;
+import art.arcane.witchery.entity.MirrorFace;
 import art.arcane.witchery.entity.Reflection;
+import art.arcane.witchery.entity.SleepingBody;
+import art.arcane.witchery.entity.Vampire;
 import art.arcane.witchery.entity.VillageGuard;
-import art.arcane.witchery.item.GlassGobletItem;
+import art.arcane.witchery.entity.WitchHunter;
 import art.arcane.witchery.item.VampireClothingItem;
 import art.arcane.witchery.lycanthropy.Lycanthropy;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryEffects;
-import art.arcane.witchery.registry.WitcherySounds;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
@@ -88,10 +89,7 @@ public final class BloodFeeding {
         if (player.distanceToSqr(target) > reach * reach || !target.isAlive()) return;
         if (Lycanthropy.isWerewolf(target) || target instanceof Reflection reflection && reflection.hasWolfmanModel()) {
             player.hurt(WitcheryDamageTypes.vampireBite(player), 4);
-            ServerLevel level = player.serverLevel();
-            level.sendParticles(ParticleTypes.FLAME, target.getX(), target.getY(0.8), target.getZ(),
-                    16, 0.5, 0.2, 0.5, 0);
-            level.playSound(null, target, WitcherySounds.BLOOD_DRINK.get(), SoundSource.PLAYERS, 1, 1);
+            WitcheryNetwork.sendVampireBite(player.serverLevel(), target, true);
             return;
         }
         int normalBite = VampireClothingItem.lightPieces(player) >= 2 ? 15 : 10;
@@ -119,13 +117,19 @@ public final class BloodFeeding {
         } else if (target instanceof ServerPlayer victim) {
             if (!player.canHarmPlayer(victim)) return;
             amount = WitcheryPlayerDataProvider.get(victim).map(data -> takeFromPlayer(player, victim, data, bite)).orElse(0);
-        } else if (target instanceof Animal) {
+        } else if (hasCreatureBlood(target)) {
             target.hurt(WitcheryDamageTypes.vampireBite(player), 1);
             amount = 2;
             maximum = Mth.ceil(maximum / 4.0F);
         } else return;
         Vampirism.feed(player, vampire, amount, maximum, remainingVillagerBlood, target instanceof Villager villager ? villager : null);
-        GlassGobletItem.bloodParticles(player.serverLevel(), target);
+        WitcheryNetwork.sendVampireBite(player.serverLevel(), target, false);
+    }
+
+    private static boolean hasCreatureBlood(LivingEntity target) {
+        // IAnimals included ambient, aquatic, hostile, and golem mobs in 1.7.10.
+        return target instanceof Mob && !(target instanceof Vampire || target instanceof WitchHunter
+                || target instanceof SleepingBody || target instanceof DarkMark || target instanceof MirrorFace);
     }
 
     private static void alertGuards(ServerPlayer player, LivingEntity victim) {

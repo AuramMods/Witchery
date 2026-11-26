@@ -12,18 +12,72 @@ import net.minecraft.nbt.TagParser;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
+import java.util.List;
 import java.util.UUID;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class BloodFeedingTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_creature_feeding")
+    public static void feedsFromOriginalCreatureGroupsAndKeepsTheQuarterCap(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var vampire = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "CreatureBlood"));
+        var position = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(3, 2, 2)));
+        vampire.setPos(position);
+        var data = WitcheryPlayerDataProvider.get(vampire).orElseThrow(IllegalStateException::new);
+        data.setVampireLevel(4);
+        data.setSelectedVampirePower(VampireAbilities.DRINK);
+        try {
+            for (var type : List.of(EntityType.COW, EntityType.BAT, EntityType.SQUID, EntityType.WOLF,
+                    EntityType.ZOMBIE, EntityType.CREEPER, EntityType.IRON_GOLEM, EntityType.SNOW_GOLEM)) {
+                var target = type.create(level);
+                target.setPos(position.add(0, 0, 1));
+                target.getAttribute(Attributes.ARMOR).setBaseValue(0);
+                float health = target.getHealth();
+                data.setBloodPower(125);
+                VampireAbilities.interact(vampire, target);
+                helper.assertTrue(data.getBloodPower() == 127 && target.getHealth() == health - 1,
+                        "The original creature supplies two blood and takes one point of bite damage: " + type);
+                target.discard();
+            }
+            for (var type : List.of(WitcheryEntities.VAMPIRE.get(), WitcheryEntities.WITCH_HUNTER.get(),
+                    WitcheryEntities.SLEEPING_BODY.get(), WitcheryEntities.SCRY_EYE.get(), WitcheryEntities.DARK_MARK.get(),
+                    WitcheryEntities.MIRROR_FACE.get(), EntityType.ARMOR_STAND)) {
+                var target = type.create(level);
+                target.setPos(position.add(0, 0, 1));
+                float health = target instanceof LivingEntity living ? living.getHealth() : 0;
+                data.setBloodPower(125);
+                VampireAbilities.interact(vampire, target);
+                helper.assertTrue(data.getBloodPower() == 125
+                                && (!(target instanceof LivingEntity living) || living.getHealth() == health),
+                        "An ineligible entity loses no health and supplies no blood: " + type);
+                target.discard();
+            }
+            for (int before : new int[]{374, 375, 410}) {
+                var target = EntityType.CREEPER.create(level);
+                target.setPos(position.add(0, 0, 1));
+                data.setBloodPower(before);
+                VampireAbilities.interact(vampire, target);
+                helper.assertTrue(data.getBloodPower() == Math.max(375, before) && target.getHealth() == 19,
+                        "The quarter cap limits the transfer and preserves the bite damage");
+                target.discard();
+            }
+        } finally {
+            vampire.discard();
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_blood_sight")
     public static void sensesThroughBlocksWhileOtherCreaturesStillObstruct(GameTestHelper helper) {
         var level = helper.getLevel();
