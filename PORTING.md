@@ -1389,6 +1389,7 @@
 - [x] Restore the Hobgoblin spawn weight. It defaults to four, with one point less on plains and a minimum of one. Forests allow up to three Hobgoblins per group. Swamps and plains allow up to two.
 - [x] Verify the same two boss UUIDs, patron UUIDs, and bound statue after a dedicated restart. Java 17 data generation, JAR reobfuscation and all 361 required Forge GameTests passed.
 - [x] Exercise the automatic summon on the packaged headless server. Fourteen active worshippers granted Worship I and summoned neither boss. Adding the fifteenth granted Worship II with automatic summoning disabled. Enabling the original chance at its configured maximum and seeding the roll produced both 400-health bosses with the bound patron's UUID while all fifteen worshippers remained alive. With the spawn weight set to nine, Forge registered weights and group sizes of 9 and 1–3 in Forest, 9 and 1–2 in Swamp, and 8 and 1–2 in Plains. Desert had no Hobgoblin spawn entry.
+- [x] Match the original arrow launch point and target impulse multiplier. On Witchery 0.24.1, Mog fired one block ahead and used nominal speeds of 2.4 and 4.0 for targets without and with the jump or knockback flag. Setting ground contact independently did not change either speed. Both bosses keep their partner's protection until it finishes dying and is removed from the world. The reobfuscated JAR matched the arrow and defense cases on headless clean Forge and copied Auram. All 506 local Forge GameTests passed.
 
 ## Werewolf Hunts, Howls and Taming (2026-11-20)
 

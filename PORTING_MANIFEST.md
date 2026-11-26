@@ -910,8 +910,8 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 124 | `DARK_MARK` | `EntityDarkMark` | `darkmark` |
 | 125 | `MINDRAKE` | `EntityMindrake` | `mindrake` (Sprig mutation, three-second bulbs, owner-directed attacks and bursts) |
 | 126 | `GOBLIN` | `EntityGoblin` | `goblin` |
-| 127 | `GOBLIN_MOG` | `EntityGoblinMog` | `goblinmog` (ranged patron boss, `Invul` and `WitcheryTarget` saved) |
-| 128 | `GOBLIN_GULG` | `EntityGoblinGulg` | `goblingulg` (melee patron boss, `Invul` and `WitcheryTarget` saved) |
+| 127 | `GOBLIN_MOG` | `EntityGoblinMog` | `goblinmog` (ranged patron boss, forward arrow origin and impulse-based shot speed, `Invul` and `WitcheryTarget` saved) |
+| 128 | `GOBLIN_GULG` | `EntityGoblinGulg` | `goblingulg` (melee patron boss, distance-based partner protection through the death animation, `Invul` and `WitcheryTarget` saved) |
 | 129 | `BREW2` | `EntityBrew` | `brew2` → `witchery:thrown_brew` (saved `Brew` stack and `Spell` flight mode) |
 | 130 | `ITEM_WAYSTONE` | `EntityItemWaystone` | `item` (legacy dropped Waystone, item subtype and age) |
 | 131 | `DROPLET` | `EntityDroplet` | `droplet` |

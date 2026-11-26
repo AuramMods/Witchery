@@ -51,6 +51,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 public final class HobgoblinGod extends Monster implements RangedAttackMob {
     private static final int ENTRANCE_TICKS = 150;
@@ -165,11 +166,11 @@ public final class HobgoblinGod extends Monster implements RangedAttackMob {
     }
 
     @Nullable
-    private HobgoblinGod nearestPartner(double radius) {
+    private HobgoblinGod nearestPartner(double radius, Predicate<HobgoblinGod> eligible) {
         HobgoblinGod nearest = null;
         double best = radius * radius;
         for (HobgoblinGod candidate : level().getEntitiesOfClass(HobgoblinGod.class, getBoundingBox().inflate(radius),
-                god -> god.isAlive() && god.getType() != getType())) {
+                god -> god.getType() != getType() && eligible.test(god))) {
             double distance = distanceToSqr(candidate);
             if (distance <= best) {
                 nearest = candidate;
@@ -180,7 +181,8 @@ public final class HobgoblinGod extends Monster implements RangedAttackMob {
     }
 
     private double partnerDistanceSquared() {
-        HobgoblinGod partner = nearestPartner(16);
+        // The partner's death animation still contributes to the encounter.
+        HobgoblinGod partner = nearestPartner(16, god -> !god.isRemoved());
         return partner == null ? Double.POSITIVE_INFINITY : distanceToSqr(partner);
     }
 
@@ -215,14 +217,19 @@ public final class HobgoblinGod extends Monster implements RangedAttackMob {
     @Override
     public void performRangedAttack(LivingEntity target, float strength) {
         if (!isMog() || getMainHandItem().isEmpty()) return;
-        Arrow arrow = new Arrow(level(), this);
         double dx = target.getX() - getX();
         double dz = target.getZ() - getZ();
-        double dy = target.getY(1.0 / 3) - arrow.getY();
+        double distance = Math.hypot(dx, dz);
+        if (distance < 1.0E-7) return;
+
+        Arrow arrow = new Arrow(level(), this);
+        arrow.setPos(getX() + dx / distance, arrow.getY(), getZ() + dz / distance);
+        double dy = target.getBoundingBox().minY + target.getBbHeight() / 3.0F - arrow.getY();
         int difficulty = level().getDifficulty().getId();
-        arrow.shoot(dx, dy + Math.sqrt(dx * dx + dz * dz) * 0.2, dz, 1.6F, 14 - difficulty * 4);
-        arrow.setDeltaMovement(arrow.getDeltaMovement().scale(target.onGround() ? 1.5 : 2.5));
-        arrow.setBaseDamage(strength * 8 + random.nextGaussian() * 0.25 + difficulty * 0.11);
+        arrow.shoot(dx, dy + (float) distance * 0.2F, dz, 1.6F, 14 - difficulty * 4);
+        // The original arrow checks the target's jump or knockback impulse.
+        arrow.setDeltaMovement(arrow.getDeltaMovement().scale(target.hasImpulse ? 2.5 : 1.5));
+        arrow.setBaseDamage(strength * 8 + random.nextGaussian() * 0.25 + difficulty * 0.11F);
         playSound(SoundEvents.ARROW_SHOOT, 1, 1 / (random.nextFloat() * 0.4F + 0.8F));
         level().addFreshEntity(arrow);
     }
@@ -321,7 +328,7 @@ public final class HobgoblinGod extends Monster implements RangedAttackMob {
 
         @Override
         public boolean canUse() {
-            partner = nearestPartner(64);
+            partner = nearestPartner(64, HobgoblinGod::isAlive);
             return canContinueToUse();
         }
 
