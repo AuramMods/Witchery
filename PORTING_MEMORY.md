@@ -2,6 +2,10 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Piston GameTest terrain isolation (2026-11-26)
+
+- The failed GameTest world placed the sticky snow-slab lane inside a generated hillside. Its saved region shows a gravel deposit beside and three blocks above the failed cell at `(2265, 108, 536)`. Both piston rows now run inside a cleared stone enclosure. They still exercise the same redstone, block movement, and drop assertions. The first full local replay passed all 537 required GameTests.
+
 ## Legacy Treefyd herd labels (2026-11-26)
 
 - The original 0.24.1 server used the shipped Spanish, Russian and Simplified Chinese translations to classify `Duende`, `Хобгоблин` and `妖精` as Hobgoblin herds. It spared each herd and saved a named Treefyd with its localized `CreatureTypeName` in a region file. The trace is in `build/qa-legacy-treefyd-herds/native/reference.log`.

@@ -10,6 +10,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.piston.PistonBaseBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -59,7 +60,6 @@ public final class LegacyPistonTests {
                 dropped("snowslab"), new PistonCase(state("snowdoubleslab"), Extension.DESTROY, new ItemStack(snowSlab, 2)),
                 new PistonCase(snowSlab.defaultBlockState().setValue(BlockStateProperties.SLAB_TYPE, SlabType.DOUBLE),
                         Extension.DESTROY, new ItemStack(snowSlab, 2)));
-        // Water from earlier GameTests can reach the low arenas.
         List<BlockPos> positions = IntStream.range(0, cases.size()).mapToObj(index ->
                 helper.absolutePos(new BlockPos(4 + 5 * (index / 4), 160, 1 + 3 * (index % 4)))).toList();
 
@@ -68,6 +68,8 @@ public final class LegacyPistonTests {
                                         && level.isPositionEntityTicking(pos.east(2).south())),
                         "The piston lanes must track moving blocks and their drops"))
                 .thenExecute(() -> {
+                    encloseLanes(level, positions.get(0).offset(-3, -2, -2),
+                            positions.get(positions.size() - 1).offset(3, 11, 2));
                     for (int index = 0; index < cases.size(); index++) {
                         var pos = positions.get(index);
                         var state = cases.get(index).state();
@@ -124,6 +126,18 @@ public final class LegacyPistonTests {
     private static PistonCase dropped(String path) {
         var state = state(path);
         return new PistonCase(state, Extension.DESTROY, new ItemStack(state.getBlock()));
+    }
+
+    private static void encloseLanes(ServerLevel level, BlockPos min, BlockPos max) {
+        // Keep generated gravel and neighboring fixtures out of both rows of pistons.
+        var stone = Blocks.STONE.defaultBlockState();
+        var air = Blocks.AIR.defaultBlockState();
+        for (BlockPos pos : BlockPos.betweenClosed(min, max)) {
+            boolean wall = pos.getX() == min.getX() || pos.getX() == max.getX()
+                    || pos.getY() == min.getY() || pos.getY() == max.getY()
+                    || pos.getZ() == min.getZ() || pos.getZ() == max.getZ();
+            level.setBlock(pos, wall ? stone : air, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+        }
     }
 
     private static void placeFixture(ServerLevel level, BlockPos pos, BlockState state) {
