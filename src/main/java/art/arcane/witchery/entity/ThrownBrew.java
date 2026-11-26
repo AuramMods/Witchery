@@ -137,16 +137,17 @@ public final class ThrownBrew extends ThrowableItemProjectile {
             return;
         }
         super.tick();
-        if (level() instanceof ServerLevel level) {
-            boolean spell = isNoGravity();
-            if (tickCount >= 200 && (spell || getItem().getItem() instanceof BrewBottleItem)) discard();
-            else if (spell && !isRemoved()) {
-                int color = BrewBottleItem.color(getItem());
-                var options = new net.minecraft.core.particles.DustParticleOptions(
-                        net.minecraft.world.phys.Vec3.fromRGB24(color).toVector3f(), 1);
-                level.sendParticles(options, getX(), getY(), getZ(), 4, 0.12, 0.12, 0.12, 0);
-            }
+        if (!level().isClientSide && tickCount >= 200
+                && (isNoGravity() || getItem().getItem() instanceof BrewBottleItem)) {
+            discard();
         }
+    }
+
+    @Override
+    public boolean shouldRenderAtSqrDistance(double distanceSquared) {
+        if (!(getItem().getItem() instanceof BrewBottleItem)) return super.shouldRenderAtSqrDistance(distanceSquared);
+        double range = getBoundingBox().getSize() * 256.0;
+        return distanceSquared < range * range;
     }
 
     @Override

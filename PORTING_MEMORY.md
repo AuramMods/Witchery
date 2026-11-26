@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Thrown Cauldron bottles and Leonard's Urn spheres (2026-11-25)
+
+- Witchery 0.24.1 draws a half-block liquid quad tinted with the brew color, followed by the white splash or drinkable glass. Urn spells draw one tinted Quartz Sphere. Both start one-eighth block below the projectile and use ordinary world light and a 64-block render cutoff. All four texture files are byte-identical to the original assets.
+- The exact JAR emitted eight vertices with the original UVs for each of the two bottle variants and four for the Urn. Each drew at about two blocks on client tick one and the splash and sphere were visible again at 48 blocks. The spell uses cutout transparency, and the former airborne dust trail was removed.
+- A survival Flint throw rendered on client tick zero, consumed its bottle and converted Stone to Cobblestone. The Mystic Branch gesture drew the Urn sphere on tick one, placed Witchery Web, and spent four charges. The dedicated restart retained the Web. The saved player still had 116 charges and one stored Web brew. The isolated client used volume zero and OpenAL No Output, and the original foreground app kept focus.
+- The copied headless Auram server loaded a legacy `Brew` and `Spell` fixture with its original Does It Tick settings and zero players. The saved region retained the projectile's UUID, no-gravity flag and Web recipe. After restart the fixture set its velocity and the impact placed Witchery Web. Checking the exact UUID in the saved regions resolved a selector assertion that had matched older fixtures with the same tag.
+- Java 17 reobfuscation and all 447 local Forge GameTests passed on seed `5471593853027166409`. The JAR is `build/qa-cauldron-projectile-render/candidate.jar` with SHA-256 `63bbcf90fc798f629892afa63e0c8b340b702f68d4c67f176a93b1e6073098d6`. See `build/qa-cauldron-projectile-render/comparison.txt`.
+
 ## Rain droplet and Inferno splatter rendering and flight (2026-11-25)
 
 - The original quartz sprite is a camera-facing half-block quad. Its lower edge is one-eighth block below the projectile, and its upper edge is three-eighths above. The original render cutoff is 64 blocks for a quarter-block projectile.
