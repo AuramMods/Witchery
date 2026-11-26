@@ -21,11 +21,11 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -34,24 +34,31 @@ import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Witch;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.ThrowableProjectile;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.event.ForgeEventFactory;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
+import java.util.UUID;
 import java.util.function.Consumer;
 
-public final class SymbolProjectile extends ThrowableProjectile {
+public final class SymbolProjectile extends Projectile {
     private static final int MAX_FLIGHT_TICKS = 200;
+    private static final int MOB_SHOOTER_GRACE_TICKS = 25;
     private static final EntityDataAccessor<Integer> SPELL = SynchedEntityData.defineId(SymbolProjectile.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Vector3f> ACCELERATION = SynchedEntityData.defineId(SymbolProjectile.class, EntityDataSerializers.VECTOR3);
     private static final EntityDataAccessor<Integer> EFFECT_LEVEL = SynchedEntityData.defineId(SymbolProjectile.class, EntityDataSerializers.INT);
     private int age;
     private int ticksUntilImpact = -1;
+    @Nullable
+    private UUID initialMobShooter;
 
     public SymbolProjectile(EntityType<? extends SymbolProjectile> type, Level level) {
         super(type, level);
@@ -85,7 +92,9 @@ public final class SymbolProjectile extends ThrowableProjectile {
     static SymbolProjectile mobShot(ServerLevel level, LivingEntity caster, LivingEntity target, SymbolSpell spell,
                                     float attackStrength) {
         Vec3 origin = new Vec3(caster.getX(), caster.getY(0.5), caster.getZ());
-        return new SymbolProjectile(level, caster, spell, origin, mobAim(caster, target, attackStrength), 0.1);
+        var projectile = new SymbolProjectile(level, caster, spell, origin, mobAim(caster, target, attackStrength), 0.1);
+        projectile.initialMobShooter = caster.getUUID();
+        return projectile;
     }
 
     static Vec3 mobAim(LivingEntity caster, LivingEntity target, float attackStrength) {
@@ -100,7 +109,8 @@ public final class SymbolProjectile extends ThrowableProjectile {
     static void playMobCastSound(ServerLevel level, LivingEntity caster) {
         var random = level.getRandom();
         float pitch = 1 + (random.nextFloat() - random.nextFloat()) * 0.2F;
-        level.playSound(null, caster.blockPosition(), SoundEvents.GHAST_SHOOT, caster.getSoundSource(), 2, pitch);
+        level.playSound(null, caster.getX(), caster.getY(), caster.getZ(), SoundEvents.GHAST_SHOOT,
+                caster.getSoundSource(), 2, pitch);
     }
 
     @Override
@@ -116,6 +126,13 @@ public final class SymbolProjectile extends ThrowableProjectile {
     }
 
     @Override
+    public boolean shouldRenderAtSqrDistance(double distance) {
+        double size = getBoundingBox().getSize() * 4;
+        double range = (Double.isNaN(size) ? 4 : size) * 64;
+        return distance < range * range;
+    }
+
+    @Override
     public void tick() {
         SymbolSpell spell = spell();
         if (spell == null) {
@@ -127,6 +144,14 @@ public final class SymbolProjectile extends ThrowableProjectile {
         Vec3 velocity = getDeltaMovement();
         boolean inWater = isInWater();
         super.tick();
+
+        Vec3 next = start.add(velocity);
+        HitResult hit = level().clip(new ClipContext(start, next, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, this));
+        Vec3 entityEnd = hit.getType() == HitResult.Type.MISS ? next : hit.getLocation();
+        EntityHitResult entity = ProjectileUtil.getEntityHitResult(level(), this, start, entityEnd,
+                getBoundingBox().expandTowards(velocity).inflate(1), this::canHitEntity);
+        if (entity != null) hit = entity;
+        if (hit.getType() != HitResult.Type.MISS && !ForgeEventFactory.onProjectileImpact(this, hit)) onHit(hit);
         if (isRemoved()) return;
 
         if (level() instanceof ServerLevel server) {
@@ -138,6 +163,16 @@ public final class SymbolProjectile extends ThrowableProjectile {
             if (age >= MAX_FLIGHT_TICKS || spell.lifetime() == 0) {
                 discard();
                 return;
+            }
+        }
+
+        checkInsideBlocks();
+        updateRotation();
+        setPos(next);
+        if (inWater) {
+            Vec3 bubbles = next.subtract(velocity.scale(0.25));
+            for (int i = 0; i < 4; i++) {
+                level().addParticle(ParticleTypes.BUBBLE, bubbles.x, bubbles.y, bubbles.z, velocity.x, velocity.y, velocity.z);
             }
         }
 
@@ -158,6 +193,12 @@ public final class SymbolProjectile extends ThrowableProjectile {
     }
 
     @Override
+    protected boolean canHitEntity(Entity target) {
+        return target.canBeHitByProjectile() && (age >= MOB_SHOOTER_GRACE_TICKS
+                || target instanceof Player || !target.getUUID().equals(initialMobShooter));
+    }
+
+    @Override
     protected void onHit(HitResult hit) {
         SymbolSpell spell = spell();
         if (level() instanceof ServerLevel server && spell != null) {
@@ -171,11 +212,7 @@ public final class SymbolProjectile extends ThrowableProjectile {
         int effectLevel = effectLevel();
         LivingEntity direct = hit instanceof EntityHitResult entityHit && entityHit.getEntity() instanceof LivingEntity living
                 ? living : null;
-        boolean curse = spell.isCurse();
-        level.sendParticles(curse ? ParticleTypes.ENTITY_EFFECT : ParticleTypes.ITEM_SLIME,
-                center.x, center.y, center.z, 16, 0.6, 0.6, 0.6, 0);
-        level.playSound(null, center.x, center.y, center.z,
-                curse ? SoundEvents.ENDER_DRAGON_HURT : SoundEvents.SLIME_SQUISH_SMALL, SoundSource.PLAYERS, 0.8F, 1);
+        WitcheryNetwork.sendSymbolProjectileImpact(level, center, spell.isCurse());
         switch (spell) {
             case AVADA_KEDAVRA, CRUCIO -> damageCurse(spell, direct);
             case ENNERVATE -> applyToTargets(level, center, direct, 2, 4, target -> {
@@ -357,6 +394,7 @@ public final class SymbolProjectile extends ThrowableProjectile {
         super.addAdditionalSaveData(tag);
         tag.putInt("EffectID", entityData.get(SPELL));
         tag.putInt("Age", age);
+        if (initialMobShooter != null) tag.putUUID("InitialMobShooter", initialMobShooter);
         tag.putInt("lifetime", ticksUntilImpact);
         tag.putInt("effectLevel", effectLevel());
         tag.putBoolean("CurrentAcceleration", true);
@@ -371,6 +409,9 @@ public final class SymbolProjectile extends ThrowableProjectile {
         super.readAdditionalSaveData(tag);
         entityData.set(SPELL, tag.getInt("EffectID"));
         age = Math.max(0, tag.getInt("Age"));
+        // Earlier port saves have only the current owner, which still identifies an undeflected mob spell.
+        initialMobShooter = tag.hasUUID("InitialMobShooter") ? tag.getUUID("InitialMobShooter")
+                : tag.hasUUID("Owner") ? tag.getUUID("Owner") : null;
         entityData.set(EFFECT_LEVEL, Mth.clamp(tag.getInt("effectLevel"), 1, 3));
         SymbolSpell spell = spell();
         Vec3 acceleration = new Vec3(tag.getFloat("AccelerationX"), tag.getFloat("AccelerationY"), tag.getFloat("AccelerationZ"));

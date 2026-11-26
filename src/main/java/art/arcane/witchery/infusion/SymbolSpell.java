@@ -9,6 +9,7 @@ import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -21,6 +22,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -201,7 +203,8 @@ public enum SymbolSpell {
             }
             default -> {
                 if (!level.addFreshEntity(new SymbolProjectile(level, player, this, effectLevel))) return;
-                level.playSound(null, player.blockPosition(), SoundEvents.GHAST_SHOOT, SoundSource.PLAYERS, 0.8F, 1);
+                level.levelEvent(LevelEvent.SOUND_GHAST_FIREBALL,
+                        new BlockPos((int) player.getX(), (int) player.getY(), (int) player.getZ()), 0);
             }
         }
         if (!creative) InfusionEnergy.spend(player, charge);

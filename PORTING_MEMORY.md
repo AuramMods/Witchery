@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Mystic Branch projectile collisions and cues (2026-11-25)
+
+- The original server used the ghast-fireball level event at the truncated caster coordinates. Its Stupefy hit a non-solid tall-grass outline. Ordinary spells sent Slime and small-slime audio, and curses sent Mob Spell and dragon-hit audio. Both packets used the last flight position, width one, height one and a 16-block audience.
+- The original mob projectile skipped its shooter on tick 24 and hit it on tick 25. Forge keeps the original shooter UUID in the saved projectile so deflection can change damage ownership without changing that window. Earlier Forge saves use their current mob owner if the original shooter was never recorded. Forge can still veto an outline impact.
+- The muted clean Forge survival client drew two Stupefy gestures and one Crucio gesture. Grass stopped the first cast. After the fixture cleared the plant, the second cast gave the same pig Slowness X. Crucio dealt four damage and played the randomized dragon-hit cue at the reported impact position. The dedicated restart retained the pig UUID, the effect and the player's 185 charges. The isolated client used master volume zero and OpenAL No Output without taking desktop focus.
+- On headless Auram, the earlier candidate left the loaded projectile at age 23 and its original position. The existing Does It Tick compatibility hook now covers finite spell projectiles. With zero players and the original pack settings, the final JAR let Stupefy pass its shooter at tick 24, hit it at tick 25, and resolved the legacy-style Morsmordre countdown. Java 17 reobfuscation and all 442 local Forge GameTests passed on seed `5471593853027166409`. The package is `build/qa-symbol-projectile-parity/candidate.jar` with SHA-256 `6e3548944c723cdd10ffc597abd023dcca1c23abf133594e21383a010ec3a08b`. See `build/qa-symbol-projectile-parity/comparison.txt`.
+
 ## Frozen Heart and circle Ice Shell drainage (2026-11-25)
 
 - The native Frozen Heart shell stopped its rows at existing Perpetual Ice. At strength three it froze active Brew Gas on the three-block rim, removed interior Brew Gas and Brew Liquid, and drained open water at distance four. Water behind the ice and one cell beyond the scan survived. The Forge placement and break paths preserve vetoed brew payloads.

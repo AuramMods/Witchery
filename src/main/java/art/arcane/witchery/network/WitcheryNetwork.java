@@ -63,6 +63,7 @@ public final class WitcheryNetwork {
     private static final int LEGACY_SPLASH_PARTICLE_ID = 19;
     private static final int LEGACY_LARGE_SMOKE_PARTICLE_ID = 20;
     private static final int LEGACY_RED_DUST_PARTICLE_ID = 22;
+    private static final int LEGACY_SLIME_PARTICLE_ID = 27;
     private static final int LEGACY_HEART_PARTICLE_ID = 28;
     private static final int LEGACY_COLORED_SPELL_PARTICLE_ID = 31;
     private static final int LEGACY_NO_SOUND_ID = 0;
@@ -73,11 +74,13 @@ public final class WitcheryNetwork {
     private static final int LEGACY_PLING_SOUND_ID = 9;
     private static final int LEGACY_EXPLOSION_SOUND_ID = 10;
     private static final int LEGACY_POP_SOUND_ID = 11;
+    private static final int LEGACY_SMALL_SLIME_SOUND_ID = 14;
     private static final int LEGACY_ENDERMAN_TELEPORT_SOUND_ID = 16;
     private static final int LEGACY_GHAST_FIREBALL_SOUND_ID = 19;
     private static final int LEGACY_ZOMBIE_INFECT_SOUND_ID = 24;
     private static final int LEGACY_DRAGON_GROWL_SOUND_ID = 27;
     private static final int LEGACY_LEVEL_UP_SOUND_ID = 29;
+    private static final int LEGACY_DRAGON_HIT_SOUND_ID = 33;
     private static final int LEGACY_WITHER_DEATH_SOUND_ID = 40;
     private static final int LEGACY_BREATH_SOUND_ID = 41;
     private static final int LEGACY_SPECTRE_AMBIENT_SOUND_ID = 43;
@@ -395,6 +398,12 @@ public final class WitcheryNetwork {
 
     public static void sendBrewBlockGrowth(ServerLevel level, BlockPos pos) {
         sendParticlesAround(level, LEGACY_EXPLOSION_PARTICLE_ID, LEGACY_NO_SOUND_ID, Vec3.atCenterOf(pos), 1, 1, 8);
+    }
+
+    public static void sendSymbolProjectileImpact(ServerLevel level, Vec3 position, boolean curse) {
+        int particles = curse ? LEGACY_MOB_SPELL_PARTICLE_ID : LEGACY_SLIME_PARTICLE_ID;
+        int sound = curse ? LEGACY_DRAGON_HIT_SOUND_ID : LEGACY_SMALL_SLIME_SOUND_ID;
+        sendParticlesAround(level, particles, sound, position, 1, 1, 16);
     }
 
     public static void sendPredictionArrival(ServerLevel level, Vec3 center) {

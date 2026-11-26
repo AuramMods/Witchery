@@ -40,6 +40,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -52,6 +53,77 @@ import java.util.function.Consumer;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class SymbolSpellTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_symbol_outline")
+    public static void symbolProjectilesHitPlantOutlinesAndRespectForgeVetoes(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var caster = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "SpellOutlineCaster"));
+        var grass = new BlockPos(6, 6, 5);
+        var start = Vec3.atBottomCenterOf(helper.absolutePos(grass.west(2))).add(0, 0.3, 0);
+        var velocity = new Vec3(3, 0, 0);
+        helper.setBlock(grass.below(), Blocks.DIRT);
+        helper.setBlock(grass, Blocks.GRASS);
+        var spell = new SymbolProjectile(level, caster, SymbolSpell.STUPEFY, start, velocity);
+        spell.setDeltaMovement(velocity);
+        var intercepted = new ArrayList<BlockPos>();
+        Consumer<ProjectileImpactEvent> protection = event -> {
+            if (event.getProjectile() == spell && event.getRayTraceResult() instanceof BlockHitResult hit) {
+                intercepted.add(hit.getBlockPos());
+                event.setCanceled(true);
+            }
+        };
+        MinecraftForge.EVENT_BUS.addListener(protection);
+        try {
+            spell.tick();
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(protection);
+        }
+        helper.assertTrue(intercepted.equals(List.of(helper.absolutePos(grass))) && !spell.isRemoved(),
+                "The non-solid plant intercepts the spell and a Forge listener can veto the impact");
+        spell.setPos(start);
+        spell.setDeltaMovement(velocity);
+        spell.tick();
+        helper.assertTrue(spell.isRemoved(), "Without a veto, Stupefy stops at the grass");
+        caster.discard();
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_symbol_shooter")
+    public static void deflectedMobSpellPreservesItsOriginalShooterWindowOverSave(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var defender = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "SpellWindowDefender"));
+        defender.setItemInHand(InteractionHand.MAIN_HAND, WitcheryItems.getRequired("mysticbranch").get().getDefaultInstance());
+        var mob = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(7, 7, 5));
+        mob.setNoGravity(true);
+        var origin = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(5, 7, 5))).add(0, 1, 0);
+        var velocity = new Vec3(3, 0, 0);
+        helper.startSequence().thenWaitUntil(() ->
+                helper.assertTrue(level.getEntity(mob.getUUID()) == mob, "The original shooter is loaded"))
+                .thenExecute(() -> {
+                    try {
+                        var mobSpell = SymbolProjectile.mobShot(level, mob, defender, SymbolSpell.STUPEFY, 1);
+                        helper.assertTrue(mobSpell.hurt(defender.damageSources().playerAttack(defender), 1),
+                                "A defender takes ownership by deflecting the mob's spell");
+                        var save = mobSpell.saveWithoutId(new CompoundTag());
+                        save.putInt("Age", 23);
+                        var restored = WitcheryEntities.SYMBOL_PROJECTILE.get().create(level);
+                        restored.load(save);
+                        restored.setPos(origin);
+                        restored.setDeltaMovement(velocity);
+                        restored.tick();
+                        helper.assertTrue(!restored.isRemoved() && !mob.hasEffect(MobEffects.MOVEMENT_SLOWDOWN),
+                                "The saved original shooter is spared at tick twenty-four");
+                        restored.setPos(origin);
+                        restored.setDeltaMovement(velocity);
+                        restored.tick();
+                        helper.assertTrue(restored.isRemoved() && mob.hasEffect(MobEffects.MOVEMENT_SLOWDOWN),
+                                "The same shooter can be struck starting on tick twenty-five");
+                    } finally {
+                        defender.discard();
+                        mob.discard();
+                    }
+                }).thenSucceed();
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_spell_impact_center")
     public static void areaSpellsUseTheProjectilePositionBeforeCollision(GameTestHelper helper) {
         var level = helper.getLevel();
