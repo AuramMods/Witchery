@@ -3,7 +3,6 @@ package art.arcane.witchery.brewing;
 import art.arcane.witchery.block.BrewDispersalBlock;
 import art.arcane.witchery.block.WitchLilyPadBlock;
 import art.arcane.witchery.block.entity.SlurpBlockEntity;
-import art.arcane.witchery.event.WitcheryBlockBreak;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.world.BiomePainting;
 import net.minecraft.core.BlockPos;
@@ -47,25 +46,19 @@ final class BrewTerrainEffects {
                            @Nullable Player caster) {
         if (strength <= 1 && level.dimensionType().ultraWarm()) return;
         Player actor = caster != null ? caster : FakePlayerFactory.getMinecraft(level);
-        int reach = radius + (ritual ? 5 : 0) - 1;
         int bottom = Math.max(level.getMinBuildHeight(), center.getY() - radius);
         int top = Math.min(level.getMaxBuildHeight() - 1, center.getY() + radius);
         var cursor = new BlockPos.MutableBlockPos();
-        int[] rowWidth = circleWidths(reach);
-        for (int z = -reach; z <= reach; z++) {
-            int width = rowWidth[Math.abs(z)];
-            for (int x = -width; x <= width; x++) {
-                for (int y = bottom; y <= top; y++) {
-                    cursor.set(center.getX() + x, y, center.getZ() + z);
-                    if (!level.getWorldBorder().isWithinBounds(cursor)) continue;
-                    var state = level.getBlockState(cursor);
-                    if (state.is(Blocks.FIRE) && !WitcheryBlockBreak.isCanceled(level, cursor, state, actor)) {
-                        level.removeBlock(cursor, false);
-                        level.playSound(null, cursor, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1, 2);
-                    }
+        BrewTerrain.forEachColumn(level, center, radius + (ritual ? 5 : 0), column -> {
+            for (int y = bottom; y <= top; y++) {
+                cursor.set(column.getX(), y, column.getZ());
+                if (level.getBlockState(cursor).is(Blocks.FIRE)
+                        && BrewTerrain.setBlock(actor, level, cursor, Blocks.AIR.defaultBlockState(), Direction.UP)) {
+                    level.playSound(null, cursor.getX(), y, cursor.getZ(),
+                            SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1, 2);
                 }
             }
-        }
+        });
     }
 
     static void dissipate(ServerLevel level, BlockPos center, int radius, int strength, @Nullable Player caster) {

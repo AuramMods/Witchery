@@ -29,6 +29,8 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
@@ -54,6 +56,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.PlayLevelSoundEvent;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
@@ -355,6 +358,79 @@ public final class CauldronBrewParityTests {
             MinecraftForge.EVENT_BUS.unregister(protection);
             MinecraftForge.EVENT_BUS.unregister(sound);
             config.set(previous);
+            brewer.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void extinguishPreservesCastOrderAndBlazeDamageSource(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var center = helper.absolutePos(new BlockPos(6, 4, 5));
+        var westLow = center.west(2).below(2);
+        var westHigh = center.west(2).above();
+        var south = center.south(2);
+        var north = center.north(2);
+        var corner = center.offset(2, 0, 2);
+        var ceiling = center.east().above(4);
+        var cleared = List.of(westLow, westHigh, south, north);
+        for (var position : List.of(westLow, westHigh, south, north, center, corner, ceiling)) {
+            level.setBlockAndUpdate(position.below(), Blocks.NETHERRACK.defaultBlockState());
+            level.setBlockAndUpdate(position, Blocks.FIRE.defaultBlockState());
+        }
+
+        var brewer = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "ExtinguishTester"));
+        var blaze = EntityType.BLAZE.create(level);
+        float health = blaze.getHealth();
+        var fizz = new ArrayList<Vec3>();
+        var attempts = new ArrayList<BlockPos>();
+        var damage = new ArrayList<DamageSource>();
+        Consumer<BlockEvent.BreakEvent> protection = event -> {
+            if (event.getLevel() == level && event.getPlayer() == brewer && event.getPos().equals(center)) {
+                attempts.add(event.getPos().immutable());
+                event.setCanceled(true);
+            }
+        };
+        Consumer<PlayLevelSoundEvent.AtPosition> sound = event -> {
+            if (event.getLevel() == level && event.getSound() != null && event.getSound().value() == SoundEvents.FIRE_EXTINGUISH
+                    && event.getNewVolume() == 1 && event.getNewPitch() == 2) {
+                fizz.add(event.getPosition());
+            }
+        };
+        Consumer<LivingHurtEvent> hurt = event -> {
+            if (event.getEntity() == blaze) damage.add(event.getSource());
+        };
+        var config = WitcheryServerConfig.ALLOW_INTER_MOD_BLOCK_BREAK_EVENTS;
+        boolean previous = config.get();
+        MinecraftForge.EVENT_BUS.addListener(protection);
+        MinecraftForge.EVENT_BUS.addListener(sound);
+        MinecraftForge.EVENT_BUS.addListener(hurt);
+        try {
+            config.set(true);
+            var brew = BrewMixture.from(List.of(new ItemStack(Items.NETHER_WART), new ItemStack(Items.GUNPOWDER),
+                    new ItemStack(Items.GLOWSTONE_DUST), new ItemStack(Items.COAL)));
+            brew.applySplashToBlock(level, center, Direction.UP, Vec3.atCenterOf(center), brewer);
+            helper.assertTrue(cleared.stream().allMatch(level::isEmptyBlock)
+                            && List.of(center, corner, ceiling).stream().allMatch(pos -> level.getBlockState(pos).is(Blocks.FIRE)),
+                    "The splash clears the filled columns and preserves the protected fire, outer corner and vertical fringe");
+            helper.assertTrue(attempts.equals(List.of(center, center)), "Both center-row visits honor the break veto");
+            helper.assertTrue(fizz.equals(cleared.stream().map(Vec3::atLowerCornerOf).toList()),
+                    "Fizz follows the original column and height order at the lower cell corners");
+
+            brew.applySplash(blaze, brewer, brewer, 1, false);
+            helper.assertTrue(blaze.getHealth() == health - 8 && damage.size() == 1
+                            && damage.get(0).is(DamageTypes.INDIRECT_MAGIC)
+                            && damage.get(0).getDirectEntity() == brewer && damage.get(0).getEntity() == brewer,
+                    "Strength-one Extinguish uses indirect magic from its caster for eight Blaze damage");
+            brew.applyToBlock(level, center, Direction.UP, 3, true, brewer);
+            helper.assertTrue(level.isEmptyBlock(corner) && level.getBlockState(ceiling).is(Blocks.FIRE),
+                    "A ritual extends the horizontal circle and preserves the splash's vertical bounds");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(protection);
+            MinecraftForge.EVENT_BUS.unregister(sound);
+            MinecraftForge.EVENT_BUS.unregister(hurt);
+            config.set(previous);
+            blaze.discard();
             brewer.discard();
         }
         helper.succeed();

@@ -711,8 +711,7 @@ public final class BrewMixture {
             case EXTINGUISH -> {
                 if (strength <= 1 && target.level().dimensionType().ultraWarm()) return;
                 if (strength > 0 && target instanceof Blaze) {
-                    target.hurt(caster instanceof Player player ? target.damageSources().playerAttack(player)
-                            : target.damageSources().magic(), (strength + 1) * 4.0F);
+                    target.hurt(target.damageSources().indirectMagic(caster, caster), (strength + 1) * 4.0F);
                 }
                 target.clearFire();
             }

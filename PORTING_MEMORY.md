@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron Extinguish order and Blaze damage (2026-11-25)
+
+- The original Forge server extinguished the west column from bottom to top, then the southern and northern cells. It played a fizz at each lower block corner at volume 1 and pitch 2. A ritual reached the horizontal fringe while preserving the higher fire.
+- On the original server, strength one dealt eight damage to an Overworld Blaze. Strength two dealt twelve damage in both the Overworld and Nether. Base Extinguish and strength one in the Nether did no Blaze damage. The original Minecraft damage factory creates `indirectMagic` with the caster as both source entities.
+- The packaged muted survival client received the original four fizz cues and cleared the same cells. A second cast put out a pig's fire and left a Blaze at twelve health. The clean Forge restart retained the same Blaze, cleared cells, and three surviving fringe fires. The regression checks both visits to a protected fire, the ritual bounds, and the Glowstone cast's damage type and attribution.
+- The headless Auram copy drew the same four fizzes from an ordinary dispenser with zero players online. It saved the cleared cells and the three fires beyond the splash footprint.
+- Java 17 reobfuscation and all 448 local Forge GameTests passed on seed `5471593853027166409`. The JAR is `build/qa-extinguish-parity/candidate.jar` with SHA-256 `62e69f872739df4661675625ce92186884be75bd9ca84338d825c0b9c3c59d26`. See `build/qa-extinguish-parity/comparison.txt`.
+
 ## Fixed brew and Quicklime projectile sprites (2026-11-25)
 
 - The original fixed projectile renderer draws the vanilla splash bottle, then the ingredient icon. Quicklime draws just its own icon. Thrown rocks and spider webs use the fixed renderer. The solidification bottles use their first ingredient layer in flight. Forge takes that layer from the baked item's particle sprite and uses the current vanilla splash bottle for the glass pass.
