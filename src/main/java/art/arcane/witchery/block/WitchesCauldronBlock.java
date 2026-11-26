@@ -81,7 +81,7 @@ public final class WitchesCauldronBlock extends BaseEntityBlock {
             if (level.isClientSide) return state.getValue(WATER) > 0 ? InteractionResult.SUCCESS : InteractionResult.PASS;
             if (level.getBlockEntity(pos) instanceof WitchesCauldronBlockEntity cauldron) {
                 if (BrewingContainers.fillWaterBottle(player, hand, cauldron, hit.getDirection())) {
-                    level.playSound(null, pos, SoundEvents.GENERIC_SWIM, SoundSource.BLOCKS, 1, 1);
+                    if (player instanceof ServerPlayer server) WitcherySounds.playLegacyPlayerCue(server, SoundEvents.PLAYER_SWIM, 0.5F);
                     return InteractionResult.CONSUME;
                 }
                 if (player instanceof ServerPlayer serverPlayer && cauldron.bottle(serverPlayer, hand)) {
@@ -91,11 +91,20 @@ public final class WitchesCauldronBlock extends BaseEntityBlock {
             return InteractionResult.PASS;
         }
         boolean waterBottle = BrewingContainers.isWaterBottle(held);
-        if (waterBottle || held.is(Items.WATER_BUCKET) || held.getItem() instanceof BrewBucketItem) {
+        boolean emptyBucket = held.is(Items.BUCKET);
+        if (waterBottle || emptyBucket || held.is(Items.WATER_BUCKET) || held.getItem() instanceof BrewBucketItem) {
             if (!level.isClientSide && level.getBlockEntity(pos) instanceof WitchesCauldronBlockEntity cauldron) {
-                boolean poured = waterBottle ? BrewingContainers.pourWaterBottle(player, hand, cauldron, hit.getDirection())
-                        : BrewingContainers.pourBucket(player, hand, cauldron, hit.getDirection());
-                if (poured) level.playSound(null, pos, SoundEvents.GENERIC_SWIM, SoundSource.BLOCKS, 1, 1);
+                boolean transferred;
+                if (waterBottle) {
+                    transferred = BrewingContainers.pourWaterBottle(player, hand, cauldron, hit.getDirection());
+                } else if (emptyBucket) {
+                    transferred = BrewingContainers.fillBucket(player, hand, cauldron, hit.getDirection());
+                } else {
+                    transferred = BrewingContainers.pourBucket(player, hand, cauldron, hit.getDirection());
+                }
+                if (transferred && player instanceof ServerPlayer server) {
+                    WitcherySounds.playLegacyPlayerCue(server, SoundEvents.PLAYER_SWIM, 0.5F);
+                }
             }
             return InteractionResult.sidedSuccess(level.isClientSide);
         }

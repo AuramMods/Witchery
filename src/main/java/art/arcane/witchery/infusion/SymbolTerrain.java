@@ -9,13 +9,13 @@ import art.arcane.witchery.block.entity.BrazierBlockEntity;
 import art.arcane.witchery.event.WitcheryBlockBreak;
 import art.arcane.witchery.event.WitcheryBlockPlacement;
 import art.arcane.witchery.registry.WitcheryBlocks;
+import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageSource;
@@ -89,7 +89,7 @@ public final class SymbolTerrain {
         if (vessel != null && vessel.getCapability(ForgeCapabilities.FLUID_HANDLER)
                 .map(handler -> handler.fill(new FluidStack(Fluids.WATER, amount), IFluidHandler.FluidAction.EXECUTE) > 0)
                 .orElse(false)) {
-            level.playSound(null, pos, SoundEvents.GENERIC_SWIM, SoundSource.BLOCKS, 0.8F, 1);
+            WitcherySounds.playLegacyBlockCue(level, pos, SoundEvents.PLAYER_SWIM, 0.5F);
             level.gameEvent(caster, GameEvent.FLUID_PLACE, pos);
         }
     }

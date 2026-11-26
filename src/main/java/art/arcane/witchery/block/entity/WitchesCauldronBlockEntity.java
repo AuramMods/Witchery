@@ -21,6 +21,7 @@ import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcheryFluids;
 import art.arcane.witchery.registry.WitcheryRecipes;
+import art.arcane.witchery.registry.WitcherySounds;
 import art.arcane.witchery.ritual.RitualCircle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -592,7 +593,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         player.setItemInHand(hand, ItemUtils.createFilledResult(player.getItemInHand(hand), player, filledBottle(bottled), false));
         BrewBottling.learn(player, contents);
         retainLiquid(remaining);
-        server.playSound(null, worldPosition, SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1, 1);
+        WitcherySounds.playLegacyPlayerCue(player, SoundEvents.PLAYER_SWIM, 0.5F);
         return true;
     }
 
@@ -614,7 +615,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         boolean full = tank.getFluidAmount() == CAPACITY;
         // The original dispenser drains the available liquid even when it has less than one full portion.
         emptyTank();
-        server.playSound(null, worldPosition, SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1, 1);
+        WitcherySounds.playLegacyBlockCue(server, worldPosition, SoundEvents.PLAYER_SWIM, 0.5F);
         return full ? filledBottle(bottled) : ItemStack.EMPTY;
     }
 

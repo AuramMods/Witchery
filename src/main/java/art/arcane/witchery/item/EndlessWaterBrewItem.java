@@ -13,7 +13,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
@@ -110,7 +109,7 @@ public final class EndlessWaterBrewItem extends Item {
         boolean filled = vessel.getCapability(ForgeCapabilities.FLUID_HANDLER, face)
                 .map(handler -> handler.fill(new FluidStack(Fluids.WATER, volume), IFluidHandler.FluidAction.EXECUTE) > 0)
                 .orElse(false);
-        if (filled) waterPlaced(level, pos, player, SoundEvents.GENERIC_SWIM, false);
+        if (filled) waterPlaced(level, pos, player, SoundEvents.PLAYER_SWIM, false);
         return filled;
     }
 
@@ -137,8 +136,7 @@ public final class EndlessWaterBrewItem extends Item {
         if (atPlayer) {
             WitcherySounds.playLegacyPlayerCue(player, sound, 0.5F);
         } else {
-            float pitch = 0.4F / ((float) level.getRandom().nextDouble() * 0.4F + 0.8F);
-            level.playSound(null, pos.getX(), pos.getY(), pos.getZ(), sound, SoundSource.PLAYERS, 0.5F, pitch);
+            WitcherySounds.playLegacyBlockCue(level, pos, sound, 0.5F);
         }
         level.gameEvent(player, GameEvent.FLUID_PLACE, pos);
     }

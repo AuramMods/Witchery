@@ -1,7 +1,9 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -85,8 +87,15 @@ public final class WitcherySounds {
 
     public static void playLegacyPlayerCue(ServerPlayer player, SoundEvent sound, SoundSource source, float volume) {
         var level = player.serverLevel();
-        float pitch = 0.4F / ((float) level.random.nextDouble() * 0.4F + 0.8F);
-        level.playSound(null, player, sound, source, volume, pitch);
+        level.playSound(null, player, sound, source, volume, legacyPitch(level));
+    }
+
+    public static void playLegacyBlockCue(ServerLevel level, BlockPos pos, SoundEvent sound, float volume) {
+        level.playSound(null, pos.getX(), pos.getY(), pos.getZ(), sound, SoundSource.PLAYERS, volume, legacyPitch(level));
+    }
+
+    private static float legacyPitch(ServerLevel level) {
+        return 0.4F / ((float) level.random.nextDouble() * 0.4F + 0.8F);
     }
 
     private WitcherySounds() {

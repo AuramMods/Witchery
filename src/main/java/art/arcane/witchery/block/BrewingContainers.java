@@ -45,12 +45,24 @@ final class BrewingContainers {
         if (tank == null) return false;
         FluidStack liquid = tank.getFluidInTank(0);
         if (liquid.getFluid() != Fluids.WATER) return false;
+        return fillContainer(player, hand, tank, liquid, PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER));
+    }
+
+    static boolean fillBucket(Player player, InteractionHand hand, BlockEntity vessel, Direction side) {
+        var tank = vessel.getCapability(ForgeCapabilities.FLUID_HANDLER, side).orElse(null);
+        if (tank == null) return false;
+        FluidStack liquid = tank.getFluidInTank(0);
+        if (liquid.getAmount() < FluidType.BUCKET_VOLUME) return false;
+        return fillContainer(player, hand, tank, liquid, FluidUtil.getFilledBucket(liquid));
+    }
+
+    private static boolean fillContainer(Player player, InteractionHand hand, IFluidHandler tank, FluidStack liquid, ItemStack filled) {
+        if (filled.isEmpty()) return false;
         FluidStack portion = new FluidStack(liquid, FluidType.BUCKET_VOLUME);
         if (tank.drain(portion, IFluidHandler.FluidAction.SIMULATE).getAmount() != FluidType.BUCKET_VOLUME) return false;
 
         if (!player.getAbilities().instabuild) {
             ItemStack empty = player.getItemInHand(hand);
-            ItemStack filled = PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER);
             if (empty.getCount() == 1) {
                 player.setItemInHand(hand, filled);
             } else {
