@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Player save payloads on ordinary Forge loads (2026-11-26)
+
+- Witchery 0.24.1 writes active Mirror return coordinates, both escape timers, and the armed Keep Inventory backup in `WitcheryExtendedPlayer`. The preceding package dropped those fields from a mixed record with modern names and no captured registry. Dedicated player files and the integrated owner now share the same recovery path. Explicit current capability values and timers keep precedence.
+- The named item repair covers both parked Dream inventories, Prior Incarnation, and the pending Keep Inventory backup. A backup with an unresolved item keeps the original stack and the current inventory until the mapping is available. In the storage regression that item retained its numeric ID through a save and restored three Mandrake Roots after the historical mapping was supplied.
+- The exact package recovered the fixture's Mirror coordinates and cooldowns and restored four red wool and three Mandrake Roots on clean Forge and copied Auram. The unresolved control kept its live paper and the raw short item ID `31234` and metadata `3` in both profiles. Java 17 data generation, reobfuscation, and all 509 local Forge GameTests passed. The tested `build/qa-owner-payloads/candidate.jar` has SHA-256 `711ecaddb8887860fef700d5e1fa2dee77cce208bcc56e32e32f6401cd407393`.
+- A separate single-player copy mixed the original rank-eight vampire save with an earlier Forge owner record. It began in a prepared Mirror chamber. The rebuilt owner kept the saved current blood and second escape cooldown, recovered the original rank and reserve, restored both named stacks, and returned to the legacy entrance with the ordinary Mirror chant. A full restart kept both recovered stacks and a newly added apple. Both launches used zero master volume and OpenAL No Output without taking focus. See `build/qa-owner-payloads/local-candidate-final.log` and `local-restart-final.log`.
+
 ## Vampire melee damage and creature forms (2026-11-26)
 
 - Ordinary attacks on the original dedicated server dealt one damage as a mortal and two, three, and four damage at vampire ranks one, four, and seven with an empty hand. The Iron Sword's seven-point base became 14, 21, and 28 at those ranks. Bat form dealt zero ordinary damage. A Sharpness I sword still dealt the enchantment's 1.25 damage.

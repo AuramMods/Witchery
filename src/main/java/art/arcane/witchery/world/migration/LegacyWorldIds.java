@@ -221,20 +221,7 @@ public final class LegacyWorldIds {
 
     private void preparePlayer(CompoundTag player, DataFixer fixer, int from) {
         if (from < 100) dimensions.upgradePlayerLocation(player);
-        var legacy = captureLegacyPlayerProgress(player);
-        var forgeData = player.getCompound("ForgeData");
-        var persisted = forgeData.getCompound(Player.PERSISTED_NBT_TAG);
-        if (!legacy.isEmpty()) {
-            boolean insideMirror = WitcheryDimensions.MIRROR.location().toString().equals(player.getString("Dimension"));
-            MirrorTravel.importLegacyPlayerState(legacy, persisted, insideMirror);
-        }
-        if (legacy.getBoolean("CanRestoreInventory") && legacy.contains("CachedInventory2", Tag.TAG_LIST)) {
-            DeathBrewEffects.storeLegacyInventory(persisted, legacy.getList("CachedInventory2", Tag.TAG_COMPOUND));
-        }
-        if (!persisted.isEmpty()) {
-            forgeData.put(Player.PERSISTED_NBT_TAG, persisted);
-            player.put("ForgeData", forgeData);
-        }
+        var persisted = preparePlayerState(player);
         var retainedInventory = DeathBrewEffects.pendingLegacyInventory(persisted);
         var expiredDrops = persisted.getList("WITCPriIncInv", Tag.TAG_COMPOUND);
         var dreamSession = persisted.getCompound("WITCSpiritWorld");
@@ -261,9 +248,44 @@ public final class LegacyWorldIds {
         upgradeUntypedItems(expiredDrops, fixer, from, to);
     }
 
-    public static void repairPlayerWithoutLegacyRegistry(CompoundTag player) {
-        captureLegacyPlayerProgress(player);
+    public static void repairPlayerWithoutLegacyRegistry(CompoundTag player, DataFixer fixer, int from) {
+        var persisted = preparePlayerState(player);
         repairNamedStoredItems(player);
+        var dreamSession = persisted.getCompound("WITCSpiritWorld");
+        int currentVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+        for (ListTag inventory : List.of(DeathBrewEffects.pendingLegacyInventory(persisted),
+                persisted.getList("WITCPriIncInv", Tag.TAG_COMPOUND),
+                dreamSession.getList("OverworldInventory", Tag.TAG_COMPOUND),
+                dreamSession.getList("SpiritInventory", Tag.TAG_COMPOUND))) {
+            visitStoredCompounds(inventory, stack -> {
+                if (!stack.contains("id", Tag.TAG_STRING) || !stack.contains("Count", Tag.TAG_BYTE) || stack.getByte("Count") <= 0
+                        || from >= 100 && !hasLegacyStackEncoding(stack)) return;
+                var id = ResourceLocation.tryParse(stack.getString("id"));
+                if (id != null && !id.getPath().isEmpty() && ResourceLocation.DEFAULT_NAMESPACE.equals(id.getNamespace())) {
+                    upgradeVanillaStack(stack, id, fixer, from, currentVersion, from >= 100);
+                    upgradeStackTags(stack, from >= 100, from < 100);
+                }
+            });
+        }
+    }
+
+    private static CompoundTag preparePlayerState(CompoundTag player) {
+        var legacy = captureLegacyPlayerProgress(player);
+        var forgeData = player.getCompound("ForgeData");
+        var persisted = forgeData.getCompound(Player.PERSISTED_NBT_TAG);
+        if (!legacy.isEmpty()) {
+            boolean insideMirror = WitcheryDimensions.MIRROR.location().toString().equals(player.getString("Dimension"));
+            MirrorTravel.importLegacyPlayerState(legacy, persisted, insideMirror);
+        }
+        if (legacy.getBoolean("CanRestoreInventory") && legacy.get("CachedInventory2") instanceof ListTag cached
+                && (cached.isEmpty() || cached.getElementType() == Tag.TAG_COMPOUND)) {
+            DeathBrewEffects.storeLegacyInventory(persisted, cached);
+        }
+        if (!persisted.isEmpty()) {
+            forgeData.put(Player.PERSISTED_NBT_TAG, persisted);
+            player.put("ForgeData", forgeData);
+        }
+        return persisted;
     }
 
     private static CompoundTag captureLegacyPlayerProgress(CompoundTag player) {
@@ -459,21 +481,26 @@ public final class LegacyWorldIds {
         boolean vanillaItem = id.getNamespace().equals(ResourceLocation.DEFAULT_NAMESPACE);
         if (!vanillaItem && !witcheryItem && !mapped) return;
         if (vanillaItem && !mapped && (from < 100 || partiallyConverted)) {
-            var named = stack.copy();
-            named.putString("id", id.toString());
-            if (fixer.update(References.ITEM_STACK, new Dynamic<>(NbtOps.INSTANCE, named), partiallyConverted ? -1 : from, to)
-                    .getValue() instanceof CompoundTag fixed) {
-                if (partiallyConverted) {
-                    restoreMixedVanillaStackTags(stack.getCompound("tag"), fixed);
-                } else if (to < ITEM_LORE_COMPONENT_VERSION) {
-                    // Untyped chunk inventories receive only the first vanilla data-fixer pass.
-                    upgradeItemLore(fixed.getCompound("tag").getCompound("display"), true);
-                }
-                for (String key : Set.copyOf(stack.getAllKeys())) stack.remove(key);
-                stack.merge(fixed);
-            }
+            upgradeVanillaStack(stack, id, fixer, from, to, partiallyConverted);
         }
         upgradeStackTags(stack, witcheryItem || from >= 100, from < 100);
+    }
+
+    private static void upgradeVanillaStack(CompoundTag stack, ResourceLocation id, DataFixer fixer,
+                                            int from, int to, boolean partiallyConverted) {
+        var named = stack.copy();
+        named.putString("id", id.toString());
+        if (fixer.update(References.ITEM_STACK, new Dynamic<>(NbtOps.INSTANCE, named), partiallyConverted ? -1 : from, to)
+                .getValue() instanceof CompoundTag fixed) {
+            if (partiallyConverted) {
+                restoreMixedVanillaStackTags(stack.getCompound("tag"), fixed);
+            } else if (to < ITEM_LORE_COMPONENT_VERSION) {
+                // Untyped chunk inventories receive only the first vanilla data-fixer pass.
+                upgradeItemLore(fixed.getCompound("tag").getCompound("display"), true);
+            }
+            for (String key : Set.copyOf(stack.getAllKeys())) stack.remove(key);
+            stack.merge(fixed);
+        }
     }
 
     private static void upgradeStackTags(CompoundTag stack, boolean upgradeDisplay, boolean originalFormat) {

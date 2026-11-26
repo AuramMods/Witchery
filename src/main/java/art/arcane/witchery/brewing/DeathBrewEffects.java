@@ -22,6 +22,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.monster.Spider;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -65,7 +66,13 @@ public final class DeathBrewEffects {
         if (!player.isAlive()) return;
         CompoundTag persisted = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
         if (persisted.contains(LEGACY_RETAINED_INVENTORY, Tag.TAG_LIST)) {
-            player.getInventory().load(pendingLegacyInventory(persisted));
+            ListTag inventory = pendingLegacyInventory(persisted);
+            for (Tag entry : inventory) {
+                CompoundTag stack = (CompoundTag) entry;
+                // Keep the original snapshot available if a later load can resolve its items.
+                if (stack.getByte("Count") > 0 && ItemStack.of(stack).isEmpty()) return;
+            }
+            player.getInventory().load(inventory);
             persisted.remove(LEGACY_RETAINED_INVENTORY);
             player.inventoryMenu.broadcastChanges();
         }

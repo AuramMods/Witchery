@@ -4,6 +4,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.brewing.DeathBrewEffects;
 import art.arcane.witchery.capability.WitcheryCapabilities;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryEffects;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.SharedConstants;
@@ -35,6 +36,94 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class LegacyDeathBrewSaveImportTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_named_player_payloads")
+    public static void namedPlayerPayloadsSurviveWithoutCapturedIds(GameTestHelper helper) throws Exception {
+        var root = Files.createTempDirectory("witchery-named-player-payloads");
+        try (var access = LevelStorageSource.createDefault(root).createAccess("world")) {
+            var storage = access.createPlayerStorage();
+            var dead = new DropTester(helper.getLevel(), "NamedPayloads");
+            var record = TagParser.parseTag("""
+                    {Dimension:"witchery:mirror",Health:0f,WitcheryExtendedPlayer:{CanRestoreInventory:1b,
+                     MirrorWorldEntryPoint:{posX:-22,posY:48,posZ:39},MirrorEscape1:6412L,MirrorEscape2:9020L,
+                     CachedInventory2:[{Slot:5b,id:"minecraft:wool",Damage:14s,Count:4b},
+                                       {Slot:9b,id:"witchery:ingredient",Damage:22s,Count:3b}]},
+                     ForgeData:{PlayerPersisted:{MirrorEscape2:7200L,
+                       WITCPriIncInv:[{id:"minecraft:iron_sword",Damage:11s,Count:1b,tag:{Damage:17}}],
+                       WITCSpiritWorld:{OverworldInventory:[{Slot:7b,id:"minecraft:planks",Damage:1s,Count:2b}],
+                         SpiritInventory:[{Slot:8b,id:"minecraft:copper_ingot",Count:2b,tag:{Marker:1b}}]}}}}
+                    """);
+            record.putInt("DataVersion", SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+            var path = access.getLevelPath(LevelResource.PLAYER_DATA_DIR).resolve(dead.getStringUUID() + ".dat");
+            NbtIo.writeCompressed(record, path.toFile());
+            storage.load(dead);
+            DeathBrewEffects.restorePendingInventory(dead);
+            var persisted = dead.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
+            helper.assertTrue(persisted.getCompound("MirrorWorldEntryPoint").getInt("posY") == 48
+                            && persisted.getLong("MirrorEscape1") == 6412 && persisted.getLong("MirrorEscape2") == 7200,
+                    "Recover the saved entrance and legacy timer alongside the active current timer");
+            helper.assertTrue(dead.getInventory().isEmpty() && DeathBrewEffects.pendingLegacyInventory(persisted).size() == 2,
+                    "Keep both named inventory formats pending while the player is dead");
+            var dream = persisted.getCompound("WITCSpiritWorld");
+            helper.assertTrue(dream.getList("OverworldInventory", Tag.TAG_COMPOUND).getCompound(0).getString("id")
+                            .equals("minecraft:spruce_planks")
+                            && dream.getList("SpiritInventory", Tag.TAG_COMPOUND).getCompound(0).getCompound("tag").getBoolean("Marker")
+                            && persisted.getList("WITCPriIncInv", Tag.TAG_COMPOUND).getCompound(0).getCompound("tag").getInt("Damage") == 17,
+                    "Repair named Dream and Prior Incarnation stacks and keep saved modern data");
+
+            storage.save(dead);
+            storage.load(dead);
+            var respawned = new DropTester(helper.getLevel(), "NamedRespawn");
+            respawned.restoreFrom(dead, false);
+            DeathBrewEffects.restorePendingInventory(respawned);
+            var wool = respawned.getInventory().getItem(5);
+            var rootStack = respawned.getInventory().getItem(9);
+            helper.assertTrue(wool.is(Items.RED_WOOL) && wool.getCount() == 4
+                            && rootStack.is(WitcheryIngredient.MANDRAKE_ROOT.item()) && rootStack.getCount() == 3,
+                    "Respawn restores the rebuilt named cache from the ordinary save");
+            respawned.getInventory().clearContent();
+            DeathBrewEffects.restorePendingInventory(respawned);
+            helper.assertTrue(respawned.getInventory().isEmpty(), "A completed restore consumes the pending inventory");
+        } finally {
+            FileUtils.deleteDirectory(root.toFile());
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_unresolved_retained_inventory")
+    public static void unresolvedRetainedInventoryRemainsAvailableForRecovery(GameTestHelper helper) throws Exception {
+        var root = Files.createTempDirectory("witchery-retained-items-with-unknown-ids");
+        try (var access = LevelStorageSource.createDefault(root).createAccess("world")) {
+            var storage = access.createPlayerStorage();
+            var player = new DropTester(helper.getLevel(), "UnknownPayload");
+            var record = TagParser.parseTag("""
+                    {Dimension:"minecraft:overworld",Health:20f,Inventory:[{Slot:0b,id:"minecraft:paper",Count:1b}],
+                     ForgeData:{PlayerPersisted:{WITCLegacyRetainedInventory:[{Slot:4b,id:31234s,Damage:22s,Count:3b}]}}}
+                    """);
+            record.putInt("DataVersion", SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+            var path = access.getLevelPath(LevelResource.PLAYER_DATA_DIR).resolve(player.getStringUUID() + ".dat");
+            NbtIo.writeCompressed(record, path.toFile());
+            storage.load(player);
+            DeathBrewEffects.restorePendingInventory(player);
+            var persisted = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
+            helper.assertTrue(player.getInventory().getItem(0).is(Items.PAPER)
+                            && DeathBrewEffects.pendingLegacyInventory(persisted).getCompound(0).getInt("id") == 31234,
+                    "A cache with an unresolved stack keeps the current inventory and the original numeric record");
+            storage.save(player);
+
+            var registry = TagParser.parseTag("{ItemData:[{K:\"%switchery:ingredient\",V:31234}]}".formatted("\u0002"));
+            NbtIo.writeCompressed(registry, access.getLevelPath(LevelResource.ROOT).resolve("witchery-legacy-ids.dat").toFile());
+            access.createPlayerStorage().load(player);
+            DeathBrewEffects.restorePendingInventory(player);
+            helper.assertTrue(player.getInventory().getItem(0).isEmpty()
+                            && player.getInventory().getItem(4).is(WitcheryIngredient.MANDRAKE_ROOT.item())
+                            && player.getInventory().getItem(4).getCount() == 3,
+                    "The original cached inventory becomes restorable when the saved numeric ID can be decoded");
+        } finally {
+            FileUtils.deleteDirectory(root.toFile());
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void customLegacyEffectsAndCachedInventorySurviveDeath(GameTestHelper helper) throws Exception {
         var root = Files.createTempDirectory("witchery-death-brew-import-test");
