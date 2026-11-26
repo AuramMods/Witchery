@@ -4,6 +4,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.entity.AttackBat;
 import art.arcane.witchery.event.WitcheryEventHooks;
+import art.arcane.witchery.lycanthropy.Lycanthropy;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryEntities;
@@ -16,7 +17,12 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
@@ -36,6 +42,71 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class VampireAbilitiesTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_vampire_melee")
+    public static void vampireMeleeChangesWithRankAndCreatureForm(GameTestHelper helper) {
+        var player = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "VampireMelee")) {
+            @Override
+            public float getAttackStrengthScale(float adjustTicks) {
+                return 1;
+            }
+        };
+        try {
+            player.setPos(Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(3, 1, 3))));
+            player.setOnGround(true);
+            helper.assertTrue(meleeDamage(helper, player) == 1, "A mortal deals one damage with an empty hand");
+            Vampirism.turn(player);
+            helper.assertTrue(meleeDamage(helper, player) == 2, "Turning adds the rank-one attack multiplier");
+            for (int rank = 2; rank <= 7; rank++) {
+                Vampirism.cycleRank(player);
+                int expected = rank == 7 ? 4 : rank >= 4 ? 3 : 2;
+                helper.assertTrue(player.getAttributeValue(Attributes.ATTACK_DAMAGE) == expected,
+                        "Attack damage matches the rank " + rank + " multiplier");
+            }
+            helper.assertTrue(meleeDamage(helper, player) == 4, "Rank seven deals four damage with an empty hand");
+            var data = WitcheryPlayerDataProvider.get(player).orElseThrow(IllegalStateException::new);
+            VampireAbilities.select(player, VampireAbilities.BAT);
+            VampireAbilities.activate(player);
+            helper.assertTrue(VampireFlight.isBat(player) && meleeDamage(helper, player) == 0,
+                    "The normal Bat activation removes base melee damage");
+            var sword = new ItemStack(Items.IRON_SWORD);
+            player.setItemSlot(EquipmentSlot.MAINHAND, sword);
+            player.getAttributes().addTransientAttributeModifiers(sword.getAttributeModifiers(EquipmentSlot.MAINHAND));
+            helper.assertTrue(meleeDamage(helper, player) == 0, "The Bat suppresses an ordinary weapon's damage");
+            sword.enchant(Enchantments.SHARPNESS, 1);
+            helper.assertTrue(meleeDamage(helper, player) == 1, "The Bat can still inflict modern Sharpness damage");
+            player.getAttributes().removeAttributeModifiers(sword.getAttributeModifiers(EquipmentSlot.MAINHAND));
+            player.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+            VampireFlight.leave(player, data);
+            helper.assertTrue(meleeDamage(helper, player) == 4, "Leaving Bat form restores the vampire's damage");
+            Lycanthropy.setRank(player, 5);
+            helper.assertTrue(Lycanthropy.useMoonCharm(player) && meleeDamage(helper, player) == 3,
+                    "A hybrid uses wolf damage in Wolf form");
+            player.setShiftKeyDown(true);
+            helper.assertTrue(Lycanthropy.useMoonCharm(player) && meleeDamage(helper, player) == 5,
+                    "A hybrid uses wolfman damage in Wolfman form");
+            helper.assertTrue(Lycanthropy.useMoonCharm(player) && meleeDamage(helper, player) == 4,
+                    "Returning to human form restores the hybrid's vampire damage");
+            player.setShiftKeyDown(false);
+            Vampirism.cure(player);
+            helper.assertTrue(meleeDamage(helper, player) == 1 && Lycanthropy.rank(player) == 5,
+                    "Curing vampirism removes its damage bonus and retains the werewolf rank");
+        } finally {
+            player.discard();
+        }
+        helper.succeed();
+    }
+
+    private static float meleeDamage(GameTestHelper helper, FakePlayer player) {
+        var pig = helper.spawn(EntityType.PIG, 3, 1, 5);
+        try {
+            float before = pig.getHealth();
+            player.attack(pig);
+            return before - pig.getHealth();
+        } finally {
+            pig.discard();
+        }
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_vampire_storm_weather")
     public static void thunderstormUsesTheOriginalWeatherRulesInEveryDimension(GameTestHelper helper) {
         var server = helper.getLevel().getServer();

@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Vampire melee damage and creature forms (2026-11-26)
+
+- Ordinary attacks on the original dedicated server dealt one damage as a mortal and two, three, and four damage at vampire ranks one, four, and seven with an empty hand. The Iron Sword's seven-point base became 14, 21, and 28 at those ranks. Bat form dealt zero ordinary damage. A Sharpness I sword still dealt the enchantment's 1.25 damage.
+- The port applies the original total attack multipliers using the same modifier ID as werewolf forms. A hybrid uses the current form's stats. Entering Bat form clamps ordinary attack damage to zero and leaves the modern enchantment calculation available. Forge 1.20.1 uses a six-point Iron Sword base and one point from Sharpness I. The modifier is recalculated when the rank or form changes, and when a player logs in, respawns, or changes dimensions.
+- An ordinary punch from the preceding rank-seven package dealt one damage. The rebuilt clean Forge survival client dealt four with its fist and 24 with an Iron Sword. It used the ordinary hotbar control to enter Bat form, dealt zero with both ordinary attacks, and dealt one with Sharpness I. It rejoined in the Nether after a dedicated restart, returned to the Overworld, and repeated the enchanted hit. Returning to human form restored 24 damage with the ordinary sword. The fixture supplied the rank, arenas, targets, command travel, and equipment. Every client launch stayed unfocused at zero volume with OpenAL No Output.
+- Copied Auram passed 12 controlled melee cases on the same JAR, including both hybrid wolf forms, curing, and Bat enchantment damage. The pack's enchantment calculation returned 1.5 for Sharpness I, which matched the ordinary Bat hit at zero attack damage. Forcing the pack's 1.5 critical multiplier raised the hit to 2.25. The fixture controls the critical chance independently of Witchery.
+- Java 17 reobfuscation and all 500 local Forge GameTests passed. The exact `build/qa-vampire-melee/candidate.jar` has SHA-256 `c3fa03358d7efee24e72bf3555e257013ee421882cabc94adba17e2dd7748075`. See `comparison.txt` and `suite.log` in that directory.
+
 ## Vampire Thunderstorm across dimensions (2026-11-26)
 
 - The original dedicated server verified each caster's world using separate fake player profiles. Every clear-weather cast from the Overworld, Nether, End, Dream, Torment, and Mirror spent one charge. The Overworld cast set rain and thunder. The five secondary dimensions kept the primary weather clear. Every rainy cast preserved its charge and the existing weather flags. The preceding Forge build rejected the five clear-weather casts made outside the Overworld.
@@ -9,6 +17,11 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Two muted, unfocused clean Forge survival clients verified clear and rainy Nether casts and an accepted Overworld cast. The caster alone received the cues. Both players rejoined in the Nether with an active Overworld storm and one remaining caster charge. The fixture supplied the rank, initial charges and platforms, and froze the weather cycle to compare the persisted timers.
 - Copied Auram matched all 12 original cases, reloaded the exact storm timers, and preserved the charge and timers on a later Mirror attempt during rain. The same reobfuscated JAR was installed in both server profiles and both clean Forge clients. All 499 local Forge GameTests passed on Java 17. See `build/qa-vampire-storm-parity/comparison.txt` and `suite-dimensions.log`. The candidate SHA-256 is `2eee1bab433c5f0cfa27480e799b1d61d78b2b10e2d21d776dc66b69c7170d8b`.
 - A separate original-server comparison confirmed that Sky’s Wrath, Rain of Toads, and the Silver Dust cauldron ritual leave primary weather unchanged from secondary realms. The port already follows those rules. See `build/qa-ritual-weather-shared/native/reference-final.log`.
+
+## Original Speed and Bat activation cues (2026-11-26)
+
+- The original server sent a caster-only fizz for both successful Speed stages and for entering or leaving Bat form. It sent a caster-only snare when stacking at the rank limit, attempting Bat form with no blood, or pressing either power again within the shared ten-tick cooldown. Both packets use the default volume and pitch. The source uses the same cooldown rejection for the other triggered powers. See `build/qa-vampire-ability-cues/native/reference.log`.
+- The first rank-four Speed cast spent ten blood for Speed II and Jump Boost II for 200 ticks. Without elapsed effect ticks, the second success added 60 ticks and set Speed IV and Jump Boost III. The capped and cooldown presses left blood and effects alone. Entering Bat form spent 50 blood, leaving was free, and the two rejected presses kept the existing form. The port still needs to match the cues and cooldown rejection feedback for these paths.
 
 ## Attack Bat aim and flight clearance (2026-11-26)
 

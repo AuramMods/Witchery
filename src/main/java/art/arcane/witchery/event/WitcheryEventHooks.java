@@ -705,7 +705,7 @@ public final class WitcheryEventHooks {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onParalysedAttack(AttackEntityEvent event) {
-        if (BloodFeeding.paralysis(event.getEntity(), 4) || VampireFlight.isBat(event.getEntity())) event.setCanceled(true);
+        if (BloodFeeding.paralysis(event.getEntity(), 4)) event.setCanceled(true);
     }
 
     @SubscribeEvent

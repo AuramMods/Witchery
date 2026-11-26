@@ -2,6 +2,7 @@ package art.arcane.witchery.vampirism;
 
 import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.lycanthropy.Lycanthropy;
 import art.arcane.witchery.network.WitcheryNetwork;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
@@ -22,7 +23,7 @@ public final class VampireFlight {
         return WitcheryPlayerDataProvider.get(player).map(VampireFlight::isBat).orElse(false);
     }
 
-    private static boolean isBat(WitcheryPlayerData data) {
+    static boolean isBat(WitcheryPlayerData data) {
         return data.getCreatureTypeOrdinal() == BAT_FORM;
     }
 
@@ -93,6 +94,7 @@ public final class VampireFlight {
     }
 
     private static void updateForm(ServerPlayer player, WitcheryPlayerData data) {
+        Lycanthropy.updateFormAttributes(player, data);
         player.refreshDimensions();
         Vampirism.sync(player, data);
         WitcheryNetwork.broadcastPlayerStyle(player, data);

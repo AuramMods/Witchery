@@ -10,6 +10,7 @@ import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcherySounds;
+import art.arcane.witchery.vampirism.Vampirism;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -130,7 +131,7 @@ public final class Lycanthropy {
             data.setWerewolfLevel(rank);
             if (data.getWerewolfLevel() == 0 && isShifted(data)) setForm(player, data, HUMAN, false);
             else {
-                if (isShifted(data)) applyAttributes(player, data);
+                if (isShifted(data)) updateFormAttributes(player, data);
                 sync(player, data);
             }
         });
@@ -138,7 +139,7 @@ public final class Lycanthropy {
 
     public static void restore(ServerPlayer player) {
         WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
-            applyAttributes(player, data);
+            updateFormAttributes(player, data);
             if (isShifted(data)) player.refreshDimensions();
         });
     }
@@ -188,7 +189,7 @@ public final class Lycanthropy {
 
     private static void setForm(ServerPlayer player, WitcheryPlayerData data, int form, boolean howl) {
         data.setCreatureTypeOrdinal(form);
-        applyAttributes(player, data);
+        updateFormAttributes(player, data);
         player.refreshDimensions();
         sync(player, data);
         player.serverLevel().sendParticles(ParticleTypes.POOF, player.getX(), player.getY(0.6), player.getZ(),
@@ -230,10 +231,11 @@ public final class Lycanthropy {
         return WitcheryPlayerDataProvider.get(player).map(Lycanthropy::stats).orElse(NONE);
     }
 
-    private static void applyAttributes(ServerPlayer player, WitcheryPlayerData data) {
+    public static void updateFormAttributes(ServerPlayer player, WitcheryPlayerData data) {
         var stats = stats(data);
         replaceModifier(player, Attributes.MOVEMENT_SPEED, SPEED, stats.speed(), AttributeModifier.Operation.MULTIPLY_TOTAL);
-        replaceModifier(player, Attributes.ATTACK_DAMAGE, ATTACK, stats.attack(), AttributeModifier.Operation.MULTIPLY_TOTAL);
+        double attack = isShifted(data) ? stats.attack() : Vampirism.meleeModifier(data);
+        replaceModifier(player, Attributes.ATTACK_DAMAGE, ATTACK, attack, AttributeModifier.Operation.MULTIPLY_TOTAL);
         replaceModifier(player, Attributes.MAX_HEALTH, HEALTH, stats.health(), AttributeModifier.Operation.ADDITION);
         replaceModifier(player, ForgeMod.STEP_HEIGHT_ADDITION.get(), STEP, isShifted(data) ? 0.4 : 0,
                 AttributeModifier.Operation.ADDITION);
@@ -244,7 +246,7 @@ public final class Lycanthropy {
         var instance = player.getAttribute(attribute);
         if (instance == null) return;
         instance.removeModifier(id);
-        if (amount != 0) instance.addTransientModifier(new AttributeModifier(id, "Witchery werewolf form", amount, operation));
+        if (amount != 0) instance.addTransientModifier(new AttributeModifier(id, "Witchery creature form", amount, operation));
     }
 
     public static void jump(Player player) {

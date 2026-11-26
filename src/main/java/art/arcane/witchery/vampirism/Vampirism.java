@@ -9,6 +9,7 @@ import art.arcane.witchery.entity.VillageGuard;
 import art.arcane.witchery.entity.Vampire;
 import art.arcane.witchery.item.VampireBookItem;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.lycanthropy.Lycanthropy;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.world.WitcheryDimensions;
@@ -60,6 +61,14 @@ public final class Vampirism {
                 || entity instanceof Player player && level(player) > 0;
     }
 
+    public static double meleeModifier(WitcheryPlayerData data) {
+        int rank = data.getVampireLevel();
+        if (rank == 0) return 0;
+        if (VampireFlight.isBat(data)) return -6;
+        if (rank >= 7) return 3;
+        return rank >= 4 ? 2 : 1;
+    }
+
     public static boolean isBoss(LivingEntity entity) {
         return entity.getType().is(BOOK_BOSSES);
     }
@@ -76,6 +85,7 @@ public final class Vampirism {
         WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
             if (data.getVampireLevel() != 0) return;
             initializeVampire(data);
+            Lycanthropy.updateFormAttributes(player, data);
             sync(player, data);
             player.serverLevel().sendParticles(ParticleTypes.SMOKE, player.getX(), player.getY() + 0.9, player.getZ(),
                     16, 0.5, 0.7, 0.5, 0.04);
@@ -109,11 +119,13 @@ public final class Vampirism {
             int rank = (data.getVampireLevel() + 1) % 11;
             if (rank == 0) {
                 restoreHuman(player, data);
-            } else if (rank == 1) {
-                initializeVampire(data);
             } else {
-                data.setVampireLevel(rank);
-                data.setHumanBlood(0);
+                if (rank == 1) initializeVampire(data);
+                else {
+                    data.setVampireLevel(rank);
+                    data.setHumanBlood(0);
+                }
+                Lycanthropy.updateFormAttributes(player, data);
             }
             sync(player, data);
             return rank;
@@ -125,7 +137,8 @@ public final class Vampirism {
         data.setBloodPower(0);
         data.setHumanBlood(50);
         data.setVampireUltimate(VampireUltimate.NONE, 0);
-        VampireFlight.leave(player, data);
+        if (VampireFlight.isBat(data)) VampireFlight.leave(player, data);
+        else Lycanthropy.updateFormAttributes(player, data);
     }
 
     public static boolean drawBlood(ServerPlayer player, int amount) {
@@ -295,6 +308,7 @@ public final class Vampirism {
     private static void advance(ServerPlayer player, WitcheryPlayerData data) {
         if (data.getVampireLevel() == 0) initializeVampire(data);
         else data.setVampireLevel(data.getVampireLevel() + 1);
+        Lycanthropy.updateFormAttributes(player, data);
         player.displayClientMessage(Component.translatable("message.witchery.vampire.rank", data.getVampireLevel()), false);
         player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1, 1);
     }
