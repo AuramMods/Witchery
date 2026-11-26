@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Fixed brew and Quicklime projectile sprites (2026-11-25)
+
+- The original fixed projectile renderer draws the vanilla splash bottle, then the ingredient icon. Quicklime draws just its own icon. Thrown rocks and spider webs use the fixed renderer. The solidification bottles use their first ingredient layer in flight. Forge takes that layer from the baked item's particle sprite and uses the current vanilla splash bottle for the glass pass.
+- The packaged client measured half-block world-lit quads, with the bottom edge one-eighth block below the projectile. Legacy subtype fixtures for Webs, Solid Rock, Quicklime, Rock, and Thrown Web rendered about two blocks away on tick zero or one. Webs and Quicklime also drew at 48 blocks. The two near screenshots confirmed visible Webs and Quicklime sprites against an empty reference. A second client run confirmed both custom Cauldron bottle variants and the Urn sphere in the shared renderer.
+- The muted background survival client threw Brew of Webs and Quicklime. The wall hit placed Cobweb and the Quicklime ground hit returned the ingredient. Clean Forge retained the Cobweb and the exact Quicklime item UUID after a dedicated restart. The client used master volume zero and OpenAL No Output, and its process stayed in the background.
+- The copied headless Auram server placed Cobweb from an ordinary dispenser with zero players and the original Does It Tick settings. A legacy `witchery:brew` with `damageValue:16` loaded as Quicklime, returned the ingredient on impact, and was consumed.
+- Java 17 reobfuscation and all 447 local Forge GameTests passed on seed `5471593853027166409`. The JAR is `build/qa-fixed-brew-render/candidate.jar` with SHA-256 `40044a532ea440e1d303667f6147f54bbc588801a05b32caaf26d1e4ec5ccc36`. See `build/qa-fixed-brew-render/comparison.txt`.
+
 ## Thrown Cauldron bottles and Leonard's Urn spheres (2026-11-25)
 
 - Witchery 0.24.1 draws a half-block liquid quad tinted with the brew color, followed by the white splash or drinkable glass. Urn spells draw one tinted Quartz Sphere. Both start one-eighth block below the projectile and use ordinary world light and a 64-block render cutoff. All four texture files are byte-identical to the original assets.

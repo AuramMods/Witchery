@@ -89,9 +89,12 @@ public final class ThrownBrew extends ThrowableItemProjectile {
         ingredient.putByte("Count", (byte) 1);
         ingredient.putInt("Damage", tag.getInt("damageValue"));
         ItemStack stack = WitcheryIngredient.loadInventoryStack(ingredient);
+        return isFixedPayload(stack) ? stack : ItemStack.EMPTY;
+    }
+
+    public static boolean isFixedPayload(ItemStack stack) {
         return stack.getItem() instanceof ThrowableBrewItem || stack.is(WitcheryIngredient.QUICKLIME.item())
-                || stack.is(WitcheryIngredient.ROCK.item()) || stack.is(WitcheryIngredient.WEB.item())
-                ? stack : ItemStack.EMPTY;
+                || stack.is(WitcheryIngredient.ROCK.item()) || stack.is(WitcheryIngredient.WEB.item());
     }
 
     public static ThrownBrew forUrnSpell(ServerLevel level, Player caster, ItemStack bottle) {
@@ -145,7 +148,10 @@ public final class ThrownBrew extends ThrowableItemProjectile {
 
     @Override
     public boolean shouldRenderAtSqrDistance(double distanceSquared) {
-        if (!(getItem().getItem() instanceof BrewBottleItem)) return super.shouldRenderAtSqrDistance(distanceSquared);
+        var stack = getItem();
+        if (!(stack.getItem() instanceof BrewBottleItem) && !isFixedPayload(stack)) {
+            return super.shouldRenderAtSqrDistance(distanceSquared);
+        }
         double range = getBoundingBox().getSize() * 256.0;
         return distanceSquared < range * range;
     }
