@@ -1784,6 +1784,12 @@ Status:
 - A portable 1.7.10 Mirror can reconnect to its original room when the old exterior is gone. The room saves the new exterior position and both frames share a connection UUID. A frame already remounted by an earlier port can repair the link when first used. An existing reciprocal frame or an active modern connection keeps its room.
 - See Legacy Save Fixtures in `PORTING.md` for the imported vampire, wolf and Dream records verified in the packaged game. The broader comparison of legacy player fields and multiplayer packet behavior remains in the release checklist.
 
+### Supported save conversion paths
+
+- Use the original Forge registry from a copy of a 1.7.10 world to convert numeric block, item, and entity state. The import workflow can read that world's original config for customized dimension, potion and profession IDs. Captured numeric mappings remain in the converted world for subsequent loads.
+- An ordinary Forge 1.20.1 restart uses current names, block states and saved payloads. Earlier port records can recover named legacy variants, specialized payloads and numeric entries when the captured registry is available. Recovery of values dropped by a previous conversion requires a source record that still contains them.
+- The current installation includes the 55 original entity types and their names. All 55 loaded from original serialized records in the current package replay. The Scrying Eye is transient. The detailed fixtures in the porting plan record the active state verified beyond the base entity mapping.
+
 ## Mod Hook Integrations (`modHooks.register`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/Witchery.java`
 - `ModHookArsMagica2` maps its mana debit and suffocation exception to Ars Magica Legacy 1.5.0, the build in Auram. The modern API provides mana access for living entities. The inspected 1.5.0 build contains no identified equivalents for the Reconstructor or its Soulbound enchantment hook.
