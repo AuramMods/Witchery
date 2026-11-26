@@ -125,14 +125,11 @@ final class BrewTerrainEffects {
         var water = pos.relative(face).mutable();
         if (!level.hasChunkAt(water)) return;
         while (water.getY() < level.getMaxBuildHeight() - 1) {
-            if (level.getBlockState(water).is(Blocks.WATER) && level.isEmptyBlock(water.above())) {
+            if (BrewTerrain.isLegacyWater(level.getBlockState(water)) && level.isEmptyBlock(water.above())) {
                 BlockState lily = WitcheryBlocks.getRequired("lilypad").get().defaultBlockState()
                         .setValue(WitchLilyPadBlock.GROWTH, strength & 3);
-                BlockPos surface = water.above();
-                if (lily.canSurvive(level, surface)) {
-                    Player actor = caster != null ? caster : FakePlayerFactory.getMinecraft(level);
-                    BrewTerrain.setBlock(actor, level, surface, lily, Direction.UP);
-                }
+                Player actor = caster != null ? caster : FakePlayerFactory.getMinecraft(level);
+                BrewTerrain.setBlock(actor, level, water.above(), lily, Direction.UP);
                 return;
             }
             water.move(Direction.UP);

@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron Lilify fluids and spread (2026-11-25)
+
+- The original splash scanned upward to the first open surface of water, Hollow Tears, Flowing Spirit or Brew Liquid. It placed pads on sources and flowing cells. Only source pads survived their scheduled update. An unsupported strength-one pad spread onto neighboring Hollow Tears before falling.
+- A scheduled pad could also replace the stone above a neighboring source. Forge uses the same twelve weighted offsets and rolls growth before attempting placement. A protection veto leaves the original neighbor and the parent's growth intact.
+- The clean packaged survival client threw supplied Lilify bottles onto all four fluids. Its dedicated restart kept the vanilla water, Hollow Tears and Flowing Spirit pads. The client's foreground monitor stayed on the same process. Minecraft used master volume zero and OpenAL No Output.
+- With zero players and the original Does It Tick configuration, copied Auram dispensed Lilify over three stable sources and one flowing cell. The flowing pad disappeared on its next scheduled check. A strength-one pad replaced one of eight stones above the neighboring sources and spent its growth. Its child and all three stable pads remained after the dedicated restart.
+- Java 17 reobfuscation and all 443 local Forge GameTests passed on seed `5471593853027166409`. The package is `build/qa-lilify-parity/candidate.jar` with SHA-256 `d18785cd30d13cc902524d03e4c67e8730a3f7f5a6097575bac320dbca276877`. See `build/qa-lilify-parity/comparison.txt`.
+
 ## Mystic Branch projectile collisions and cues (2026-11-25)
 
 - The original server used the ghast-fireball level event at the truncated caster coordinates. Its Stupefy hit a non-solid tall-grass outline. Ordinary spells sent Slime and small-slime audio, and curses sent Mob Spell and dragon-hit audio. Both packets used the last flight position, width one, height one and a 16-block audience.
@@ -1339,7 +1347,7 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 ## Cauldron Web Overlap and Lilify Support (2026-11-24)
 
 - A strengthened Webs splash fills surrounding faces and edges even when a prior splash filled the center. The site still checks Forge break protection, and each replacement checks Forge placement protection. The regression keeps a chest and a vetoed cell clear of webs.
-- Witchery Lily Pads require source water, as in the original block. Lilify stops at the first free water surface and places a pad when it can survive there. The port skips the original transient placement over flowing water. Existing pads reevaluate their support on neighbor updates and during scheduled growth.
+- This milestone restored source checks on neighbor updates and during scheduled growth. See the later Cauldron Lilify fluids and spread milestone for transient placement and support over the original Witchery fluids.
 - The previous packaged build stopped Webs at the occupied center and left a Lily Pad over flowing water. The rebuilt headless Forge server dispensed supplied cauldron bottles into the same stone fixture and two-cell channel. The base splash placed one web, and the second added faces and edges while leaving the corner clear. Lilify placed a pad above the source. A dedicated restart kept the webs and the pad. Changing the support to flowing water broke the pad. The rebuilt server also reopened the preceding build's save and expanded the web it had placed there.
 - All 178 required Forge GameTests, local Java 17 reobfuscation, and the asset inventory audit passed. The tested JAR has SHA-256 `2d20e67bc4fd328d2231c7eadd5a5a8bbb5d0165c03ff3d055602ceb240d8956`. Logs and fixtures are in `build/qa-cauldron-webs`.
 

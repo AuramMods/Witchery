@@ -49,7 +49,7 @@ public final class BrewIce {
     private static void impactBlock(ServerLevel level, ThrownBrew brew, BlockHitResult hit) {
         BlockPos center = hit.getBlockPos();
         if (Arrays.stream(Direction.values()).anyMatch(side ->
-                BrewColdEffects.isLegacyWater(level.getBlockState(center.relative(side))))) {
+                BrewTerrain.isLegacyWater(level.getBlockState(center.relative(side))))) {
             BrewColdEffects.freezeConnectedWater(level, center, brew.getOwner(),
                     pos -> Math.abs(pos.getX() - center.getX()) < 3 && Math.abs(pos.getY() - center.getY()) < 3
                             && Math.abs(pos.getZ() - center.getZ()) < 3);

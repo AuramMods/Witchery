@@ -41,7 +41,7 @@ public final class WitchLilyPadBlock extends WaterlilyBlock {
 
     @Override
     protected boolean mayPlaceOn(BlockState state, BlockGetter level, BlockPos pos) {
-        return state.is(Blocks.WATER) && state.getFluidState().isSource();
+        return BrewTerrain.isLegacyWater(state) && state.getFluidState().isSource();
     }
 
     @Override
@@ -62,20 +62,25 @@ public final class WitchLilyPadBlock extends WaterlilyBlock {
 
     @Override
     public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        if (!state.canSurvive(level, pos)) {
-            level.destroyBlock(pos, true);
-            return;
-        }
+        // The original pad tries to spread before its support is checked.
         int growth = state.getValue(GROWTH);
-        if (growth == 0) return;
-        BlockPos target = pos.offset(NEIGHBORS.get(random.nextInt(NEIGHBORS.size())));
-        BlockState offspring = defaultBlockState().setValue(GROWTH, growth - 1);
-        if (level.hasChunkAt(target) && level.isEmptyBlock(target) && offspring.canSurvive(level, target)
-                && BrewTerrain.setBlock(FakePlayerFactory.getMinecraft(level), level, target, offspring, Direction.UP)
-                && random.nextInt(growth) == 0) {
-            state = state.setValue(GROWTH, growth - 1);
-            level.setBlockAndUpdate(pos, state);
+        if (growth > 0) {
+            BlockPos target = pos.offset(NEIGHBORS.get(random.nextInt(NEIGHBORS.size())));
+            BlockState offspring = defaultBlockState().setValue(GROWTH, growth - 1);
+            if (level.hasChunkAt(target) && offspring.canSurvive(level, target)) {
+                boolean spendsGrowth = random.nextInt(growth) == 0;
+                if (BrewTerrain.setBlock(FakePlayerFactory.getMinecraft(level), level, target, offspring, Direction.UP)
+                        && spendsGrowth && level.getBlockState(pos).equals(state)) {
+                    level.setBlockAndUpdate(pos, state.setValue(GROWTH, growth - 1));
+                }
+            }
         }
-        if (state.getValue(GROWTH) > 0) level.scheduleTick(pos, this, SPREAD_DELAY);
+        BlockState current = level.getBlockState(pos);
+        if (!current.is(this)) return;
+        if (!current.canSurvive(level, pos)) {
+            level.destroyBlock(pos, true);
+        } else if (growth > 0) {
+            level.scheduleTick(pos, this, SPREAD_DELAY);
+        }
     }
 }

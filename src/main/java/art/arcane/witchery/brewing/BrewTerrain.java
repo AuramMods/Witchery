@@ -1,6 +1,7 @@
 package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.block.BrewDispersalBlock;
+import art.arcane.witchery.block.SpiritFluidBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.event.WitcheryBlockBreak;
@@ -46,6 +47,11 @@ public final class BrewTerrain {
     private static final List<Block> SAPLINGS = List.of(Blocks.OAK_SAPLING, Blocks.SPRUCE_SAPLING, Blocks.BIRCH_SAPLING, Blocks.JUNGLE_SAPLING);
 
     private BrewTerrain() {}
+
+    public static boolean isLegacyWater(BlockState state) {
+        return state.is(Blocks.WATER) || state.getBlock() instanceof SpiritFluidBlock
+                || state.getBlock() instanceof BrewDispersalBlock brew && !brew.isGas();
+    }
 
     public static void webs(ThrownBrew brew, HitResult hit) {
         if (!(brew.level() instanceof ServerLevel level)) return;

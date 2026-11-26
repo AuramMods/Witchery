@@ -1,6 +1,7 @@
 package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.WitchLilyPadBlock;
 import art.arcane.witchery.block.WitchesCauldronBlock;
 import art.arcane.witchery.block.entity.AltarBlockEntity;
 import art.arcane.witchery.block.entity.BrewFluidBlockEntity;
@@ -24,6 +25,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -285,28 +287,81 @@ public final class CauldronBrewParityTests {
     }
 
     @GameTest(template = "qa_coven_arena")
-    public static void lilifyRequiresSourceWaterForStablePads(GameTestHelper helper) {
+    public static void lilifyPlantsOnLegacyWaterAndKeepsOnlySourcePads(GameTestHelper helper) {
         var level = helper.getLevel();
-        var source = helper.absolutePos(new BlockPos(4, 5, 5));
-        var flowing = source.east(3);
-        var ice = source.south(3);
-        var water = Blocks.WATER.defaultBlockState();
-        level.setBlockAndUpdate(source, water);
-        level.setBlockAndUpdate(flowing, water.setValue(LiquidBlock.LEVEL, 4));
-        level.setBlockAndUpdate(ice, Blocks.ICE.defaultBlockState());
         var lily = WitcheryBlocks.getRequired("lilypad").get();
         var recipe = BrewMixture.from(List.of(new ItemStack(Items.NETHER_WART), new ItemStack(Items.GUNPOWDER),
                 new ItemStack(Items.LILY_PAD)));
         helper.assertTrue(recipe != null, "The original Lilify recipe is valid");
-        recipe.applySplashToBlock(level, source.west(), Direction.EAST, Vec3.atCenterOf(source), null);
-        recipe.applySplashToBlock(level, flowing.west(), Direction.EAST, Vec3.atCenterOf(flowing), null);
-        helper.assertTrue(level.getBlockState(source.above()).is(lily) && level.isEmptyBlock(flowing.above()),
-                "Lilify establishes a pad on the source surface and leaves the flowing surface clear");
-        helper.assertTrue(!lily.defaultBlockState().canSurvive(level, flowing.above())
-                        && !lily.defaultBlockState().canSurvive(level, ice.above()),
-                "The original Witchery pad requires source water for support");
-        level.setBlockAndUpdate(source, water.setValue(LiquidBlock.LEVEL, 4));
-        helper.assertTrue(level.isEmptyBlock(source.above()), "An established pad breaks when its source starts flowing");
+        var source = helper.absolutePos(new BlockPos(4, 5, 3));
+        for (var fluid : List.of(Blocks.WATER, WitcheryBlocks.getRequired("hollowtears").get(),
+                WitcheryBlocks.getRequired("spiritflowing").get(), WitcheryBlocks.getRequired("brewliquid").get())) {
+            var state = fluid.defaultBlockState();
+            var flowing = source.east(3);
+            level.setBlockAndUpdate(source, state);
+            level.setBlockAndUpdate(flowing, state.setValue(LiquidBlock.LEVEL, 4));
+            for (BlockPos support : List.of(source, flowing)) {
+                var pad = support.above();
+                var impact = support.west().below();
+                recipe.applySplashToBlock(level, impact, Direction.EAST, Vec3.atCenterOf(impact), null);
+                var planted = level.getBlockState(pad);
+                helper.assertTrue(planted.is(lily) && level.getBlockTicks().hasScheduledTick(pad, lily),
+                        "Lilify finds and plants above either depth of " + fluid);
+                planted.tick(level, pad, RandomSource.create(1));
+                helper.assertTrue(support.equals(source) ? level.getBlockState(pad).is(lily) : level.isEmptyBlock(pad),
+                        "A growth tick only keeps a pad over the source of " + fluid);
+            }
+            level.setBlockAndUpdate(source, state.setValue(LiquidBlock.LEVEL, 4));
+            helper.assertTrue(level.isEmptyBlock(source.above()), "An established pad breaks when " + fluid + " starts flowing");
+            source = source.east(5);
+        }
+        source = helper.absolutePos(new BlockPos(4, 5, 8));
+        for (var invalid : List.of(Blocks.ICE, WitcheryBlocks.getRequired("brewgas").get())) {
+            level.setBlockAndUpdate(source, invalid.defaultBlockState());
+            recipe.applySplashToBlock(level, source.west(), Direction.EAST, Vec3.atCenterOf(source), null);
+            helper.assertTrue(level.isEmptyBlock(source.above()), "Lilify skips " + invalid);
+            source = source.east(3);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void lilifySpreadsBeforeCheckingSupportAndHonorsPlacementVeto(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var parent = helper.absolutePos(new BlockPos(4, 6, 5));
+        var child = parent.east();
+        var lily = WitcheryBlocks.getRequired("lilypad").get();
+        var mature = lily.defaultBlockState().setValue(WitchLilyPadBlock.GROWTH, 1);
+        var water = Blocks.WATER.defaultBlockState();
+        level.setBlockAndUpdate(parent.below(), water.setValue(LiquidBlock.LEVEL, 4));
+        level.setBlockAndUpdate(child.below(), WitcheryBlocks.getRequired("hollowtears").get().defaultBlockState());
+        BrewTerrainEffects.lilify(level, parent.below().west(), Direction.EAST, 1, null);
+        helper.assertTrue(level.getBlockState(parent).equals(mature), "The flowing surface receives the parent with its original growth");
+        // This seed chooses the east neighbor from the original weighted directions.
+        mature.tick(level, parent, RandomSource.create(1));
+        helper.assertTrue(level.isEmptyBlock(parent) && level.getBlockState(child).equals(lily.defaultBlockState()),
+                "The unsupported parent spreads onto neighboring Hollow Tears before falling");
+
+        level.setBlockAndUpdate(child, Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(parent.below(), water);
+        BrewTerrainEffects.lilify(level, parent.below().west(), Direction.EAST, 1, null);
+        Consumer<BlockEvent.EntityPlaceEvent> protection = event -> {
+            if (event.getLevel() == level && event.getPos().equals(child) && event.getPlacedBlock().is(lily)) {
+                event.setCanceled(true);
+            }
+        };
+        MinecraftForge.EVENT_BUS.addListener(protection);
+        try {
+            mature.tick(level, parent, RandomSource.create(1));
+            helper.assertTrue(level.getBlockState(parent).equals(mature) && level.getBlockState(child).is(Blocks.STONE),
+                    "A veto restores the occupied surface and leaves the parent's growth");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(protection);
+        }
+        mature.tick(level, parent, RandomSource.create(1));
+        helper.assertTrue(level.getBlockState(parent).equals(lily.defaultBlockState())
+                        && level.getBlockState(child).equals(lily.defaultBlockState()),
+                "The original spread replaces the occupied source surface and leaves both pads at growth zero");
         helper.succeed();
     }
 

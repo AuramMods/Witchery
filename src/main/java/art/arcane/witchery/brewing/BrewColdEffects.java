@@ -2,7 +2,6 @@ package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.BrewDispersalBlock;
-import art.arcane.witchery.block.SpiritFluidBlock;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.ritual.IceShell;
 import net.minecraft.core.BlockPos;
@@ -47,7 +46,7 @@ final class BrewColdEffects {
         while (!pending.isEmpty()) {
             FreezeStep step = pending.pop();
             BlockPos pos = step.pos();
-            if (visited.add(pos) && isLegacyWater(level.getBlockState(pos))
+            if (visited.add(pos) && BrewTerrain.isLegacyWater(level.getBlockState(pos))
                     && BrewTerrain.setBlock(actor, level, pos, Blocks.ICE.defaultBlockState(), step.face())
                     && canSpreadFrom.test(pos)) {
                 visitNeighbors(pending, pos);
@@ -61,11 +60,6 @@ final class BrewColdEffects {
             Direction face = FREEZE_ORDER[i];
             pending.push(new FreezeStep(pos.relative(face), face));
         }
-    }
-
-    static boolean isLegacyWater(BlockState state) {
-        return state.is(Blocks.WATER) || state.getBlock() instanceof SpiritFluidBlock
-                || state.getBlock() instanceof BrewDispersalBlock brew && !brew.isGas();
     }
 
     private record FreezeStep(BlockPos pos, Direction face) {}
