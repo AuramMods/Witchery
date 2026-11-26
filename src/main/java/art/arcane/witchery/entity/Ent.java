@@ -2,6 +2,7 @@ package art.arcane.witchery.entity;
 
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.core.BlockPos;
@@ -15,7 +16,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
@@ -59,11 +59,11 @@ public final class Ent extends Monster {
     }
 
     public static void tryAwaken(ServerLevel level, BlockPos harvested, Block witchLog) {
-        int nearbyLogs = 0;
+        double chance = 0.01;
         for (Direction direction : Direction.values()) {
-            if (level.getBlockState(harvested.relative(direction)).is(witchLog)) nearbyLogs++;
+            if (level.getBlockState(harvested.relative(direction)).is(witchLog)) chance += 0.01;
         }
-        if (level.random.nextInt(100) >= Math.min(1 + nearbyLogs, 5)) return;
+        if (level.random.nextDouble() >= Math.min(chance, 0.05)) return;
 
         int offsetX = awakeningOffset(level);
         int offsetZ = awakeningOffset(level);
@@ -85,12 +85,7 @@ public final class Ent extends Monster {
         if (ent == null) return;
         ent.moveTo(ground.getX() + 0.5, ground.getY() + 1.05, ground.getZ() + 0.5, 0, 0);
         if (!level.noCollision(ent) || !level.addFreshEntity(ent)) return;
-        level.sendParticles(ParticleTypes.INSTANT_EFFECT, harvested.getX() + 0.5, harvested.getY() + 0.5,
-                harvested.getZ() + 0.5, 8, 0.5, 0.5, 0.5, 0.04);
-        level.playSound(null, harvested, SoundEvents.NOTE_BLOCK_HARP.value(), SoundSource.BLOCKS, 1, 1);
-        level.sendParticles(ParticleTypes.LARGE_SMOKE, ent.getX(), ent.getY() + 1.5, ent.getZ(),
-                16, 0.9, 1.5, 0.9, 0.07);
-        ent.playSound(SoundEvents.SKELETON_HORSE_DEATH, 1, 1);
+        WitcheryNetwork.sendEntAwakening(level, harvested, ent.position());
     }
 
     private static int awakeningOffset(ServerLevel level) {

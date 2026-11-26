@@ -420,7 +420,7 @@
 - [x] Verify the packaged Ent in muted survival. The player harvested Hawthorn with an axe and awakened a hostile Ent, which attacked and killed the player. The respawned player defeated the same Ent with a supplied axe after it was positioned in the test arena, then picked up its Ent Branch and Alder Sapling.
 - [x] Package on Java 17 and pass all 80 required Forge GameTests. The tests cover harvesting, spawn distance, the 15-damage cap before the triple axe bonus, both drops, and legacy ownership.
 - [x] Restart the dedicated server and verify the saved branch, Alder Sapling variant and legacy Ent owner. The muted client offered the collected Ent Branch and Mystic Unguent inside two white rings at night, and the rite produced a Mystic Branch.
-- [ ] Match both original Ent awakening particle and sound cues, including their positions and delivery ranges. The Felling client trace records the current harp at the center of the harvested cell. The original sends it at the lower corner with the instant-spell particles.
+- [x] Restore the original Ent awakening roll and both cues. The log's instant-spell particles and harp originate at its lower corner with an eight-block audience. The smoke and skeletal-horse sound originate at the Ent's feet with a sixteen-block audience. Seed 5123 found the same landing offset as Witchery 0.24.1. The muted survival client received both cues nearby, only the Ent cue beyond the log's range, and neither cue beyond both ranges.
 
 ## Mutating Sprig, Grassper and Critter Snare (2026-11-20)
 

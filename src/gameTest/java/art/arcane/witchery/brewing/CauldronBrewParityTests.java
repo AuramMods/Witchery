@@ -368,7 +368,7 @@ public final class CauldronBrewParityTests {
     public static void fellingAwakensEntsOnlyFromHarvestedWitchwood(GameTestHelper helper) {
         var level = helper.getLevel();
         var center = helper.absolutePos(new BlockPos(6, 4, 5)).atY(196);
-        var landing = center.offset(10, 0, 11);
+        var landing = center.offset(-11, 0, -8);
         var protectedLog = center.west(2).below();
         var edgeLog = center.east(3);
         var outsideLog = center.east(4);
@@ -396,7 +396,7 @@ public final class CauldronBrewParityTests {
             config.set(true);
             var brew = BrewMixture.from(List.of(new ItemStack(Items.NETHER_WART), new ItemStack(Items.GUNPOWDER),
                     new ItemStack(Items.STRING)));
-            level.random.setSeed(271);
+            level.random.setSeed(5123);
             brew.applySplashToBlock(level, center, Direction.UP, Vec3.atCenterOf(center), brewer);
             helper.assertTrue(level.isEmptyBlock(center) && level.isEmptyBlock(edgeLog)
                             && level.getBlockState(outsideLog).is(Blocks.OAK_LOG),

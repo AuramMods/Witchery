@@ -77,6 +77,7 @@ public final class WitcheryNetwork {
     private static final int LEGACY_SMALL_SLIME_SOUND_ID = 14;
     private static final int LEGACY_ENDERMAN_TELEPORT_SOUND_ID = 16;
     private static final int LEGACY_GHAST_FIREBALL_SOUND_ID = 19;
+    private static final int LEGACY_SKELETON_HORSE_DEATH_SOUND_ID = 21;
     private static final int LEGACY_ZOMBIE_INFECT_SOUND_ID = 24;
     private static final int LEGACY_DRAGON_GROWL_SOUND_ID = 27;
     private static final int LEGACY_LEVEL_UP_SOUND_ID = 29;
@@ -423,6 +424,13 @@ public final class WitcheryNetwork {
         int particle = source == SpectralUndead.Summoning.STRAY ? LEGACY_MOB_SPELL_PARTICLE_ID : LEGACY_INSTANT_SPELL_PARTICLE_ID;
         int sound = source == SpectralUndead.Summoning.BRAZIER ? LEGACY_HARP_SOUND_ID : LEGACY_NO_SOUND_ID;
         sendParticlesAround(level, particle, sound, center, 1, height, 16);
+    }
+
+    public static void sendEntAwakening(ServerLevel level, BlockPos harvested, Vec3 entPosition) {
+        sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_HARP_SOUND_ID,
+                Vec3.atLowerCornerOf(harvested), 1, 1, 8);
+        sendParticlesAround(level, LEGACY_LARGE_SMOKE_PARTICLE_ID, LEGACY_SKELETON_HORSE_DEATH_SOUND_ID,
+                entPosition, 2, 4, 16);
     }
 
     public static void sendRiteItemOffering(ServerLevel level, Vec3 center, boolean rejected) {

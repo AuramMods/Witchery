@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Ent awakening cues and random roll (2026-11-25)
+
+- Native Witchery emitted `instantSpell` with `note.harp` at the lower log corner, width and height one and range eight. Its `largesmoke` and skeletal-horse death sound originated at the Ent's feet, width two, height four and range sixteen. The packaged port sends both through the existing particle and sound packet, with the original half volume and varying pitch.
+- Forge now uses the original floating-point awakening draw. Seed 5123 chose an Ent column eleven blocks west and eight north, matching the native cast. The packaged survival throw reached both audiences and decoded both sound and particle types. Normal dispenser casts reached an observer outside the harp's range with only smoke and the skeletal-horse sound. An observer outside both ranges received neither.
+- The muted client used master volume zero, OpenAL No Output, and stayed in the background. A normal headless restart retained the exact Ent and Hawthorn item when the fixture reloaded the test chunks.
+- Copied headless Auram used seed 23607 with its FasterRandom implementation to reproduce the native landing offset. An ordinary dispenser cast with zero players and saved the Ent and Hawthorn. Direct inspection of the prefixed server log verified both cue positions, widths, heights and audiences.
+- Java 17 reobfuscation and all 449 local Forge GameTests passed on seed `5471593853027166409`. The JAR is `build/qa-ent-awakening/candidate.jar` with SHA-256 `f333d6d7c5b0b2403bd2f020194e6674353fc96f6b14f61ad64e422b51828754`. See `build/qa-ent-awakening/comparison.txt`.
+
 ## Cauldron Felling and Ent awakening (2026-11-25)
 
 - The original Forge server harvested Hawthorn and an oak bark block on the inclusive radius-three boundary. It kept the farther log and nearby planks. With seed 5123 the Hawthorn harvest awakened one Ent at `(95.5, 184.05, 64.5)` and returned one Hawthorn item with metadata two.
