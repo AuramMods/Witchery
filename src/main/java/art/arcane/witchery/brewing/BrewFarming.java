@@ -26,9 +26,11 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.block.DeadBushBlock;
+import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.TallGrassBlock;
 import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -38,6 +40,7 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -93,15 +96,30 @@ final class BrewFarming {
             for (int dy = -1; dy <= 1; dy++) {
                 BlockPos pos = column.offset(0, dy, 0);
                 var state = level.getBlockState(pos);
-                if (!(state.getBlock() instanceof BushBlock) || !remove(level, pos, state, actor)) continue;
+                if (!(state.getBlock() instanceof BushBlock) || !canHarvest(level, pos, state, actor)) continue;
+                // The legacy brew uprooted double grass and ferns without producing seed drops.
+                List<ItemStack> drops = state.is(Blocks.TALL_GRASS) || state.is(Blocks.LARGE_FERN)
+                        ? List.of() : Block.getDrops(state, level, pos, null, null, tool);
+                if (!level.removeBlock(pos, false)) continue;
                 if (level.random.nextInt(changed.incrementAndGet()) == 0) level.levelEvent(2001, pos, Block.getId(state));
-                for (ItemStack drop : Block.getDrops(state, level, pos, null, null, tool)) {
+                for (ItemStack drop : drops) {
                     if (drop.isEmpty()) continue;
                     Vec3 location = Vec3.atCenterOf(pos);
                     level.addFreshEntity(new ItemEntity(level, location.x, location.y, location.z, drop));
                 }
             }
         });
+    }
+
+    private static boolean canHarvest(ServerLevel level, BlockPos pos, BlockState state, Player caster) {
+        if (!BrewTerrain.canChange(caster, level, pos, state)) return false;
+        if (!(state.getBlock() instanceof DoublePlantBlock)) return true;
+        var half = state.getValue(DoublePlantBlock.HALF);
+        var otherPos = half == DoubleBlockHalf.LOWER ? pos.above() : pos.below();
+        var other = level.getBlockState(otherPos);
+        // Removing either half can also remove its partner during the neighbor update.
+        return !other.is(state.getBlock()) || other.getValue(DoublePlantBlock.HALF) == half
+                || BrewTerrain.canChange(caster, level, otherPos, other);
     }
 
     static void till(ServerLevel level, BlockPos center, int radius, int strength, @Nullable Player caster) {

@@ -365,6 +365,67 @@ public final class CauldronBrewParityTests {
     }
 
     @GameTest(template = "qa_coven_arena")
+    public static void harvestingKeepsBothHalvesOfProtectedPlants(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var impact = helper.absolutePos(new BlockPos(6, 5, 5));
+        var upperOnly = impact.west(2).below(2);
+        var wholeFlower = impact.south(2);
+        var protectedLower = impact.east(2).below(2);
+        var protectedUpper = impact.north(2);
+        var tallGrass = impact.offset(1, 0, -1);
+        var tallFern = impact.offset(-1, 0, -1);
+        for (var pos : List.of(upperOnly, wholeFlower, protectedLower, protectedUpper)) {
+            level.setBlockAndUpdate(pos.below(), Blocks.DIRT.defaultBlockState());
+            DoublePlantBlock.placeAt(level, Blocks.SUNFLOWER.defaultBlockState(), pos, Block.UPDATE_ALL);
+        }
+        level.setBlockAndUpdate(tallGrass.below(), Blocks.DIRT.defaultBlockState());
+        level.setBlockAndUpdate(tallFern.below(), Blocks.DIRT.defaultBlockState());
+        DoublePlantBlock.placeAt(level, Blocks.TALL_GRASS.defaultBlockState(), tallGrass, Block.UPDATE_ALL);
+        DoublePlantBlock.placeAt(level, Blocks.LARGE_FERN.defaultBlockState(), tallFern, Block.UPDATE_ALL);
+
+        var brewer = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "HarvestBrewTester"));
+        var blocked = List.of(protectedLower, protectedUpper.above());
+        var vetoed = new ArrayList<BlockPos>();
+        Consumer<BlockEvent.BreakEvent> protection = event -> {
+            if (event.getLevel() == level && event.getPlayer() == brewer && blocked.contains(event.getPos())) {
+                vetoed.add(event.getPos().immutable());
+                event.setCanceled(true);
+            }
+        };
+        var config = WitcheryServerConfig.ALLOW_INTER_MOD_BLOCK_BREAK_EVENTS;
+        boolean previous = config.get();
+        MinecraftForge.EVENT_BUS.addListener(protection);
+        try {
+            config.set(true);
+            var brew = BrewMixture.from(List.of(Items.NETHER_WART.getDefaultInstance(), Items.GUNPOWDER.getDefaultInstance(),
+                    Items.APPLE.getDefaultInstance()));
+            brew.applySplashToBlock(level, impact, Direction.UP, Vec3.atCenterOf(impact), brewer);
+            for (var pos : List.of(upperOnly, wholeFlower, tallGrass, tallFern)) {
+                helper.assertTrue(level.isEmptyBlock(pos) && level.isEmptyBlock(pos.above()),
+                        "Harvesting uproots both halves of the accepted plant at " + pos);
+            }
+            for (var pos : List.of(protectedLower, protectedUpper)) {
+                helper.assertTrue(level.getBlockState(pos).is(Blocks.SUNFLOWER)
+                                && level.getBlockState(pos.above()).is(Blocks.SUNFLOWER),
+                        "A veto on either half keeps the full sunflower in place");
+            }
+            helper.assertTrue(vetoed.containsAll(blocked), "The cast checks protected halves outside its scan and within it");
+            var drops = level.getEntitiesOfClass(ItemEntity.class, new AABB(impact).inflate(4));
+            helper.assertTrue(drops.size() == 2 && drops.stream().allMatch(item -> item.getItem().is(Items.SUNFLOWER)
+                            && item.getItem().getCount() == 1),
+                    "Only the two unprotected flowers produce drops");
+            helper.assertTrue(drops.stream().anyMatch(item -> item.blockPosition().equals(upperOnly))
+                            && drops.stream().anyMatch(item -> item.position().equals(Vec3.atCenterOf(wholeFlower))),
+                    "Upper-only harvesting drops the flower at its base, and a direct cut drops at the cell center");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(protection);
+            config.set(previous);
+            brewer.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
     public static void fellingAwakensEntsOnlyFromHarvestedWitchwood(GameTestHelper helper) {
         var level = helper.getLevel();
         var center = helper.absolutePos(new BlockPos(6, 4, 5)).atY(196);

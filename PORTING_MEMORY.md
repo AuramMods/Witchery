@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron Harvesting and two-block plants (2026-11-25)
+
+- Witchery 0.24.1 collected plant loot before removing the block. In the native fixture, an upper-only hit uprooted the whole Sunflower and dropped one flower from its base. Double grass and double fern produced no seed drops in 64 trials per variant. Mature Wheat dropped its crop and seed at the cell center.
+- A real Forge break listener was configured to veto a sunflower's lower half outside the scan and a second sunflower's upper half. The previous package removed both plants by reaching the other halves. The corrected JAR checked both halves before harvesting and preserved both sunflowers while still removing the unprotected Wheat.
+- A normal survival throw in the muted background client returned both unprotected Sunflowers and one Wheat. The upper-only flower dropped from the lower cell. The same three item UUIDs and the cleared plot survived a normal Forge restart.
+- An ordinary dispenser on copied headless Auram returned the same crops with zero players online and left their soils intact. Java 17 reobfuscation and all 450 local Forge GameTests passed on seed `5471593853027166409`. The JAR is `build/qa-harvest-parity/candidate.jar` with SHA-256 `ec419c60c395e535a88a870130f66fb152651249ce4f5a02e573b4713a362487`. See `build/qa-harvest-parity/comparison.txt`.
+
 ## Ent awakening cues and random roll (2026-11-25)
 
 - Native Witchery emitted `instantSpell` with `note.harp` at the lower log corner, width and height one and range eight. Its `largesmoke` and skeletal-horse death sound originated at the Ent's feet, width two, height four and range sixteen. The packaged port sends both through the existing particle and sound packet, with the original half volume and varying pitch.
