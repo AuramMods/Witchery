@@ -1,0 +1,43 @@
+{
+  "type": "witchery:witchwood_crafting",
+  "category": "redstone",
+  "key": {
+    "P": {
+      "tag": "minecraft:planks"
+    }
+  },
+  "pattern": [
+    "PP",
+    "PP",
+    "PP"
+  ],
+  "reserved_planks": [
+    {
+      "type": "forge:difference",
+      "base": {
+        "item": "witchery:witchwood"
+      },
+      "subtracted": [
+        {
+          "type": "forge:partial_nbt",
+          "item": "witchery:witchwood",
+          "nbt": "{BlockStateTag:{wood_type:\"alder\"}}"
+        },
+        {
+          "type": "forge:partial_nbt",
+          "item": "witchery:witchwood",
+          "nbt": "{BlockStateTag:{wood_type:\"hawthorn\"}}"
+        }
+      ]
+    },
+    {
+      "type": "forge:partial_nbt",
+      "item": "witchery:witchwood",
+      "nbt": "{BlockStateTag:{wood_type:\"alder\"}}"
+    }
+  ],
+  "result": {
+    "item": "minecraft:oak_door"
+  },
+  "show_notification": true
+}

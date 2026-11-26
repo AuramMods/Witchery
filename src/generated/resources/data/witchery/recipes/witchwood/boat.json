@@ -1,0 +1,17 @@
+{
+  "type": "witchery:witchwood_crafting",
+  "category": "misc",
+  "key": {
+    "P": {
+      "tag": "minecraft:planks"
+    }
+  },
+  "pattern": [
+    "P P",
+    "PPP"
+  ],
+  "result": {
+    "item": "minecraft:oak_boat"
+  },
+  "show_notification": true
+}

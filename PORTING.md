@@ -39,6 +39,14 @@
 - [x] Replay the villager blood package with all 228 checked-in GameTests and two muted clean Forge survival clients. The observers saw the expected Resizing width through Dream travel, death, respawn and reconnect. The Crystal Ball released the target on travel and death and reused the saved Taglock after the dedicated restart. The fixture supplied the altar charge, Brew of Sleeping, Icy Needle, and positioning.
 - [x] Reopen the copied Auram save on the same package. Both Ovens retained their Wood Ash. The muted survival client drank the supplied Brew of Sleeping and used the Icy Needle to return from Dream. The local hitbox, both Witchery effects, and the previously crafted Hint of Rebirth survived both transitions. The headless restart kept the Oven outputs, fume and effects. A fresh villager record with a root blood value of 182 loaded that count on copied Auram.
 
+## Crafting Table Parity (2026-11-26)
+
+- [x] Restore the four Wood Ash bone meal yields, five Gunpowder from a Creeper Heart, one Netherrack from Infernal Blood and Gravel, and two Poisonous Potatoes from the original three ingredients.
+- [x] Match the nine meat inputs for each Mutandis variant. The original crafting table selects cooked results for all five raw Mutandis Extremis inputs. Keep the existing recipe ID for its Rotten Flesh conversion so it remains known to earlier Forge players.
+- [x] Restore Witchwood crafting for signs, fence gates, doors, trapdoors, boats, slabs, pressure plates, buttons, chests, and bookshelves. The original accepts mixed planks. Uniform Rowan and Alder still yield their own doors. Hawthorn and mixed planks containing Witchwood can make the vanilla door.
+- [x] Require the original extended splash potions in the Dreamweaves of Fleet Feet, the Iron Arm, and Nightmares. The original server's duration readings confirm both alternatives for Weakness and Slowness have the extended effect.
+- [x] Compare 317 original crafting fixtures with the same reobfuscated JAR on headless clean Forge and copied Auram. The 293 default shaped and shapeless registrations supplied representative inputs. Other cases cover Alder, Hawthorn, mixed planks, and the vanilla-only Poisonous Potato recipe. Both profiles matched 311 results after translating item IDs and potion metadata. Five results use equivalent default tags, and a white wool bed takes the modern white color. All 483 required local Forge GameTests passed.
+
 ## Witch's Oven Milestone (2026-11-19)
 
 - [x] Register all six slab item IDs as their corresponding block items while preserving the existing registry names. Single slabs use the modern double state when stacked. Legacy double blocks also drop two single slabs.

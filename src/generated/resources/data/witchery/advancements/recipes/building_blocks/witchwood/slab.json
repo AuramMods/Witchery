@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "witchery:witchwood/slab"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_witchwood": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "witchery:witchwood"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_witchwood",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "witchery:witchwood/slab"
+    ]
+  },
+  "sends_telemetry_event": false
+}

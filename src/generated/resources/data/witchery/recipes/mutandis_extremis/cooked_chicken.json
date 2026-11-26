@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "witchery:mutandis_extremis"
+    },
+    [
+      {
+        "item": "minecraft:beef"
+      },
+      {
+        "item": "minecraft:cooked_beef"
+      }
+    ]
+  ],
+  "result": {
+    "item": "minecraft:cooked_chicken"
+  }
+}

@@ -17,6 +17,7 @@ import art.arcane.witchery.item.VampireClothingItem.Style;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcheryRecipes;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -80,6 +81,7 @@ public class WitcheryRecipeProvider extends RecipeProvider {
         Ingredient rowanPlanks = DifferenceIngredient.of(Ingredient.of(witchPlanks), CompoundIngredient.of(alderPlanks, hawthornPlanks));
         door(recipeOutput, WitcheryIngredient.ROWAN_DOOR, witchPlanks, rowanPlanks);
         door(recipeOutput, WitcheryIngredient.ALDER_DOOR, witchPlanks, alderPlanks);
+        witchwoodCraftingRecipes(recipeOutput, witchPlanks, rowanPlanks, alderPlanks);
         witchWoodStairs(recipeOutput, WitchWoodType.ROWAN, witchPlanks, rowanPlanks);
         witchWoodStairs(recipeOutput, WitchWoodType.ALDER, witchPlanks, alderPlanks);
         witchWoodStairs(recipeOutput, WitchWoodType.HAWTHORN, witchPlanks, hawthornPlanks);
@@ -464,16 +466,7 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 WitcheryItems.getRequired("stew").get(), 1.0F, 200)
                 .unlockedBy("has_raw_meaty_stew", has(rawStew))
                 .save(recipeOutput);
-        ShapelessRecipeBuilder.shapeless(RecipeCategory.FOOD, WitcheryIngredient.ODD_PORKCHOP_RAW.item())
-                .requires(WitcheryIngredient.MUTANDIS.item())
-                .requires(Items.ROTTEN_FLESH)
-                .unlockedBy("has_mutandis", has(WitcheryIngredient.MUTANDIS.item()))
-                .save(recipeOutput);
-        ShapelessRecipeBuilder.shapeless(RecipeCategory.FOOD, WitcheryIngredient.ODD_PORKCHOP_RAW.item())
-                .requires(WitcheryIngredient.MUTANDIS_EXTREMIS.item())
-                .requires(Items.ROTTEN_FLESH)
-                .unlockedBy("has_mutandis_extremis", has(WitcheryIngredient.MUTANDIS_EXTREMIS.item()))
-                .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "odd_porkchop_raw_from_extremis"));
+        meatMutationRecipes(recipeOutput);
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryIngredient.CONTRACT_OF_OWNERSHIP.item())
                 .define('P', Items.PAPER)
                 .define('F', WitcheryIngredient.ODD_PORKCHOP_RAW.item())
@@ -602,6 +595,7 @@ public class WitcheryRecipeProvider extends RecipeProvider {
                 .requires(WitcheryIngredient.WOOD_ASH.item())
                 .unlockedBy("has_wood_ash", has(WitcheryIngredient.WOOD_ASH.item()))
                 .save(recipeOutput);
+        legacyMaterialRecipes(recipeOutput);
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, WitcheryItems.getRequired("chalkritual").get(), 2)
                 .define('A', WitcheryIngredient.WOOD_ASH.item())
                 .define('T', WitcheryIngredient.TEAR_OF_THE_GODDESS.item())
@@ -740,6 +734,105 @@ public class WitcheryRecipeProvider extends RecipeProvider {
         ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, stairs, 4)
                 .define('#', ingredient).pattern("#  ").pattern("## ").pattern("###")
                 .unlockedBy("has_witchwood", has(planks)).save(output);
+    }
+
+    private static void witchwoodCraftingRecipes(Consumer<FinishedRecipe> output, Block planks, Ingredient... reservedDoors) {
+        witchwoodRecipe(output, planks, "chest", ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, Blocks.CHEST)
+                .pattern("PPP").pattern("P P").pattern("PPP"));
+        witchwoodRecipe(output, planks, "bookshelf", ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, Blocks.BOOKSHELF)
+                .define('B', Items.BOOK).pattern("PPP").pattern("BBB").pattern("PPP"));
+        witchwoodRecipe(output, planks, "sign", ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, Items.OAK_SIGN, 3)
+                .define('S', Items.STICK).pattern("PPP").pattern("PPP").pattern(" S "));
+        witchwoodRecipe(output, planks, "fence_gate", ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, Blocks.OAK_FENCE_GATE)
+                .define('S', Items.STICK).pattern("SPS").pattern("SPS"));
+        witchwoodRecipe(output, planks, "door", ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, Blocks.OAK_DOOR)
+                .pattern("PP").pattern("PP").pattern("PP"), reservedDoors);
+        witchwoodRecipe(output, planks, "trapdoor", ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, Blocks.OAK_TRAPDOOR, 2)
+                .pattern("PPP").pattern("PPP"));
+        witchwoodRecipe(output, planks, "boat", ShapedRecipeBuilder.shaped(RecipeCategory.TRANSPORTATION, Items.OAK_BOAT)
+                .pattern("P P").pattern("PPP"));
+        witchwoodRecipe(output, planks, "slab", ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, Blocks.OAK_SLAB, 6)
+                .pattern("PPP"));
+        witchwoodRecipe(output, planks, "pressure_plate",
+                ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, Blocks.OAK_PRESSURE_PLATE).pattern("PP"));
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.REDSTONE, Blocks.OAK_BUTTON)
+                .requires(planks).unlockedBy("has_witchwood", has(planks)).save(output, "witchery:witchwood/button");
+    }
+
+    private static void witchwoodRecipe(Consumer<FinishedRecipe> output, Block planks, String path,
+                                        ShapedRecipeBuilder builder, Ingredient... reservedPlanks) {
+        builder.define('P', ItemTags.PLANKS).unlockedBy("has_witchwood", has(planks))
+                .save(recipe -> output.accept(new WitchwoodRecipeResult(recipe, reservedPlanks)), "witchery:witchwood/" + path);
+    }
+
+    private record WitchwoodRecipeResult(FinishedRecipe recipe, Ingredient[] reservedPlanks) implements FinishedRecipe {
+        @Override
+        public void serializeRecipeData(JsonObject json) {
+            recipe.serializeRecipeData(json);
+            if (reservedPlanks.length > 0) {
+                var reserved = new JsonArray();
+                for (Ingredient planks : reservedPlanks) reserved.add(planks.toJson());
+                json.add("reserved_planks", reserved);
+            }
+        }
+
+        @Override public ResourceLocation getId() { return recipe.getId(); }
+        @Override public RecipeSerializer<?> getType() { return WitcheryRecipes.WITCHWOOD_CRAFTING.get(); }
+        @Override public JsonObject serializeAdvancement() { return recipe.serializeAdvancement(); }
+        @Override public ResourceLocation getAdvancementId() { return recipe.getAdvancementId(); }
+    }
+
+    private static void meatMutationRecipes(Consumer<FinishedRecipe> output) {
+        var mutandis = WitcheryIngredient.MUTANDIS;
+        var extremis = WitcheryIngredient.MUTANDIS_EXTREMIS;
+        var raw = WitcheryIngredient.ODD_PORKCHOP_RAW.item();
+        var cooked = WitcheryIngredient.ODD_PORKCHOP_COOKED.item();
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.FOOD, raw)
+                .requires(mutandis.item()).requires(Items.ROTTEN_FLESH)
+                .unlockedBy("has_mutandis", has(mutandis.item())).save(output);
+        mutateMeat(output, mutandis, "mutandis/porkchop", Items.PORKCHOP, raw, Items.CHICKEN);
+        mutateMeat(output, mutandis, "mutandis/chicken", Items.CHICKEN, Items.BEEF);
+        mutateMeat(output, mutandis, "mutandis/beef", Items.BEEF, Items.PORKCHOP);
+        mutateMeat(output, mutandis, "mutandis/cooked_porkchop", Items.COOKED_PORKCHOP, cooked, Items.COOKED_CHICKEN);
+        mutateMeat(output, mutandis, "mutandis/cooked_chicken", Items.COOKED_CHICKEN, Items.COOKED_BEEF);
+        mutateMeat(output, mutandis, "mutandis/cooked_beef", Items.COOKED_BEEF, Items.COOKED_PORKCHOP);
+
+        // The original Extremis recipes that cook raw inputs won over the later uncooked duplicates.
+        // Keep the old port's recipe ID for saves and datapacks that reference it.
+        mutateMeat(output, extremis, "odd_porkchop_raw_from_extremis", cooked, Items.ROTTEN_FLESH);
+        mutateMeat(output, extremis, "mutandis_extremis/cooked_porkchop", Items.COOKED_PORKCHOP,
+                raw, cooked, Items.CHICKEN, Items.COOKED_CHICKEN);
+        mutateMeat(output, extremis, "mutandis_extremis/cooked_chicken", Items.COOKED_CHICKEN,
+                Items.BEEF, Items.COOKED_BEEF);
+        mutateMeat(output, extremis, "mutandis_extremis/cooked_beef", Items.COOKED_BEEF,
+                Items.PORKCHOP, Items.COOKED_PORKCHOP);
+    }
+
+    private static void mutateMeat(Consumer<FinishedRecipe> output, WitcheryIngredient mutagen, String path,
+                                   ItemLike result, ItemLike... inputs) {
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.FOOD, result)
+                .requires(mutagen.item()).requires(Ingredient.of(inputs))
+                .unlockedBy("has_mutagen", has(mutagen.item())).save(output, "witchery:" + path);
+    }
+
+    private static void legacyMaterialRecipes(Consumer<FinishedRecipe> output) {
+        Item ash = WitcheryIngredient.WOOD_ASH.item();
+        for (int ashCount = 2; ashCount <= 8; ashCount += 2) {
+            ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, Items.BONE_MEAL, 3 + ashCount / 2)
+                    .requires(Items.BONE).requires(ash, ashCount)
+                    .unlockedBy("has_wood_ash", has(ash)).save(output, "witchery:bone_meal_from_wood_ash/" + ashCount);
+        }
+        Item creeperHeart = WitcheryIngredient.CREEPER_HEART.item();
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, Items.GUNPOWDER, 5)
+                .requires(creeperHeart)
+                .unlockedBy("has_creeper_heart", has(creeperHeart)).save(output, "witchery:gunpowder_from_creeper_heart");
+        Item infernalBlood = WitcheryIngredient.INFERNAL_BLOOD.item();
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.BUILDING_BLOCKS, Blocks.NETHERRACK)
+                .requires(infernalBlood).requires(Blocks.GRAVEL)
+                .unlockedBy("has_infernal_blood", has(infernalBlood)).save(output, "witchery:netherrack_from_infernal_blood");
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.FOOD, Items.POISONOUS_POTATO, 2)
+                .requires(Items.POISONOUS_POTATO).requires(Items.POTATO).requires(Items.SPIDER_EYE)
+                .unlockedBy("has_poisonous_potato", has(Items.POISONOUS_POTATO)).save(output, "witchery:poisonous_potato");
     }
 
     private static void handBowRecipes(Consumer<FinishedRecipe> output) {

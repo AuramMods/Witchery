@@ -19,14 +19,14 @@
       "type": "forge:partial_nbt",
       "item": "minecraft:splash_potion",
       "nbt": {
-        "Potion": "minecraft:poison"
+        "Potion": "minecraft:long_poison"
       }
     },
     "e": {
       "type": "forge:partial_nbt",
       "item": "minecraft:splash_potion",
       "nbt": {
-        "Potion": "minecraft:night_vision"
+        "Potion": "minecraft:long_night_vision"
       }
     },
     "x": {

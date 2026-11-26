@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "minecraft:bone"
+    },
+    {
+      "item": "witchery:wood_ash"
+    },
+    {
+      "item": "witchery:wood_ash"
+    }
+  ],
+  "result": {
+    "count": 4,
+    "item": "minecraft:bone_meal"
+  }
+}

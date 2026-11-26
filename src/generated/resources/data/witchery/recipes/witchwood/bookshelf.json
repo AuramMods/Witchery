@@ -1,0 +1,21 @@
+{
+  "type": "witchery:witchwood_crafting",
+  "category": "building",
+  "key": {
+    "B": {
+      "item": "minecraft:book"
+    },
+    "P": {
+      "tag": "minecraft:planks"
+    }
+  },
+  "pattern": [
+    "PPP",
+    "BBB",
+    "PPP"
+  ],
+  "result": {
+    "item": "minecraft:bookshelf"
+  },
+  "show_notification": true
+}

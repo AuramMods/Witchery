@@ -1,0 +1,22 @@
+{
+  "type": "witchery:witchwood_crafting",
+  "category": "misc",
+  "key": {
+    "P": {
+      "tag": "minecraft:planks"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    }
+  },
+  "pattern": [
+    "PPP",
+    "PPP",
+    " S "
+  ],
+  "result": {
+    "count": 3,
+    "item": "minecraft:oak_sign"
+  },
+  "show_notification": true
+}

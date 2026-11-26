@@ -19,14 +19,14 @@
       "type": "forge:partial_nbt",
       "item": "minecraft:splash_potion",
       "nbt": {
-        "Potion": "minecraft:strength"
+        "Potion": "minecraft:long_strength"
       }
     },
     "e": {
       "type": "forge:partial_nbt",
       "item": "minecraft:splash_potion",
       "nbt": {
-        "Potion": "minecraft:weakness"
+        "Potion": "minecraft:long_weakness"
       }
     },
     "f": {

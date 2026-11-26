@@ -17,6 +17,7 @@ import art.arcane.witchery.crafting.HunterClothingUpgradeRecipe;
 import art.arcane.witchery.crafting.DistillingRecipe;
 import art.arcane.witchery.crafting.SpinningRecipe;
 import art.arcane.witchery.crafting.TaglockBindingRecipe;
+import art.arcane.witchery.crafting.WitchwoodCraftingRecipe;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -97,6 +98,8 @@ public final class WitcheryRecipes {
             SERIALIZERS.register("repair_witch_clothing", () -> new SimpleCraftingRecipeSerializer<>(ClothingRepairRecipe::new));
     public static final RegistryObject<RecipeSerializer<HunterClothingUpgradeRecipe>> HUNTER_CLOTHING_UPGRADE =
             SERIALIZERS.register("hunter_clothing_upgrade", HunterClothingUpgradeRecipe.Serializer::new);
+    public static final RegistryObject<RecipeSerializer<WitchwoodCraftingRecipe>> WITCHWOOD_CRAFTING =
+            SERIALIZERS.register("witchwood_crafting", WitchwoodCraftingRecipe.Serializer::new);
     public static final RegistryObject<RecipeSerializer<TaglockBindingRecipe>> SIGN_OWNERSHIP_CONTRACT =
             SERIALIZERS.register("sign_ownership_contract", () -> new SimpleCraftingRecipeSerializer<>(
                     (id, category) -> new TaglockBindingRecipe(id, category, TaglockBindingRecipe.Binding.OWNERSHIP)));

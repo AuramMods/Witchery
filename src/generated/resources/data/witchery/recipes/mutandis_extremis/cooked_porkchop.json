@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "witchery:mutandis_extremis"
+    },
+    [
+      {
+        "item": "witchery:odd_porkchop_raw"
+      },
+      {
+        "item": "witchery:odd_porkchop_cooked"
+      },
+      {
+        "item": "minecraft:chicken"
+      },
+      {
+        "item": "minecraft:cooked_chicken"
+      }
+    ]
+  ],
+  "result": {
+    "item": "minecraft:cooked_porkchop"
+  }
+}

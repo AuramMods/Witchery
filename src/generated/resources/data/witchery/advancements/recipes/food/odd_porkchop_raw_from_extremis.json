@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_mutandis_extremis": {
+    "has_mutagen": {
       "conditions": {
         "items": [
           {
@@ -22,7 +22,7 @@
   },
   "requirements": [
     [
-      "has_mutandis_extremis",
+      "has_mutagen",
       "has_the_recipe"
     ]
   ],

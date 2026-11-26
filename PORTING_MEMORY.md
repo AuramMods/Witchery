@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Crafting table output and ingredient audit (2026-11-26)
+
+- `build/qa-release-catalog/native/effective.log` captured the shipped 0.24.1 server's default crafting registry and actual selected output for each matching 3×3 grid. `native-effective.tsv` holds 317 cases. Choose the Witchery alternative where a recipe accepts an Ore Dictionary group. The extra cases exercise species, mixed planks and the Poisonous Potato duplication recipe.
+- The original `native/potion-effects.log` gives 7,201 ticks for splash Swiftness 16450 and 3,601 for splash Slowness 16458 and 24650. Short splash forms give 2,701 and 1,351. The extended effects explain five registered recipe cases for three Dreamweaves that failed on the preceding port.
+- The copied Auram comparison traced missing Witchwood Chests and Bookshelves to the pack's species-specific recipes. The Witchery fallbacks require at least one Witchwood plank. Vanilla generic recipes can still match first and yield the same items.
+- The modern comparator adds an empty tag before sending raw potion metadata through Minecraft's old stack converter. Alias codes on charged Lice compare by their gameplay effect. A new Vampire Journal starts at zero pages, default Rowan needs no block state tag, and upgraded empty Urns may store an explicit empty inventory.
+- Both packaged headless replays resolved the same 317 grids to 311 matching results, five equivalent default tags, and the modern white bed for white wool. The Forge recipe packet codec preserved the matched inputs and results in 26 clean Forge grids and 28 copied Auram grids. The additional Auram cases used the Witchwood Chest and Bookshelf recipes. Java 17 data generation, JAR reobfuscation, and all 483 required Forge GameTests passed. The tested `build/qa-release-catalog/candidate.jar` has SHA-256 `7dcb61f2d2938b90e022fff74db31b1e7d6cd28f62f2722b2de5d5837809da1b`.
+
 ## Vampire crouching strike in multiplayer (2026-11-26)
 
 - Witchery 0.24.1 processed a rank-three crouching strike before absorption. Its native pig fixture spent one of eight absorption points, kept all ten health, and ended the hit at `(0, 0.4, 1.3)` after the ordinary knockback. The original code sends the full vector directly to a player target.

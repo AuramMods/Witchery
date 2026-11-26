@@ -1336,6 +1336,12 @@ Treefyd keeps `Owner`, `SentinalPlant`, `KnownPlayers`, `KnownCreatureTypes`, an
 The modern datapack contains the altar's shaped recipe. Rowan logs match untagged stacks and stacks with explicit rowan state. Other Witchery wood variants and non-water potions are excluded.
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/WitcheryRecipes.java`
 
+The headless 0.24.1 server reported 293 default shaped and shapeless recipes that produce Witchery items or accept them as ingredients. The table returns the cooked Mutandis Extremis output for each raw meat input, including Rotten Flesh. Five later raw-result registrations are shadowed. Homogeneous Rowan and Alder planks make their own doors before the generic wooden-door recipe. Hawthorn and mixed planks use the generic output. The Forge port also restores the ten Witchwood routes through vanilla item types when a dedicated species recipe is unavailable. Beds use the current wool color.
+
+Fleet Feet uses extended splash Swiftness and Slowness. The Iron Arm uses extended splash Strength and Weakness. Nightmares uses extended splash Poison and Night Vision. Both old metadata encodings for extended splash Slowness and Weakness resolve to the same modern bottles.
+
+The default crafting comparison includes the vanilla-only Poisonous Potato recipe. The 77 dynamic registrations and post-registration optional Ore Dictionary recipes need separate comparisons. The original optional silver conversion consumes eight Witchery Silver Dust to produce the first registered `dustSilver` stack.
+
 The `witchery:wood_ash` smelting recipe uses `minecraft:saplings` when `addSmeltingForAllSaplingsToWoodAsh` is true in `config/witchery-common.toml`. The false branch accepts the original six vanilla species and Rowan. Both the vanilla furnace and Witch's Oven load the selected recipe through Forge. The oven saves pending experience under `RecipesUsed` and pays it out when a player takes the main result.
 
 The Witch's Oven keeps `CookTime` when its input changes between ticks. Its completion uses the current recipe and input, and an uncookable or unpowered tick resets progress. Each completed batch rolls its fume chance, including batches with an empty jar slot. Same-item fumes retain existing stack data and stop accumulating at 63. The oven still produces the main smelting result and keeps the jar when a fume cannot enter the output.

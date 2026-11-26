@@ -19,14 +19,14 @@
       "type": "forge:partial_nbt",
       "item": "minecraft:splash_potion",
       "nbt": {
-        "Potion": "minecraft:swiftness"
+        "Potion": "minecraft:long_swiftness"
       }
     },
     "e": {
       "type": "forge:partial_nbt",
       "item": "minecraft:splash_potion",
       "nbt": {
-        "Potion": "minecraft:slowness"
+        "Potion": "minecraft:long_slowness"
       }
     },
     "f": {

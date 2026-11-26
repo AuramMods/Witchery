@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    {
+      "item": "witchery:witchwood"
+    }
+  ],
+  "result": {
+    "item": "minecraft:oak_button"
+  }
+}

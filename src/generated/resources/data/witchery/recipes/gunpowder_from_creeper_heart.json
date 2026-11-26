@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "witchery:creeper_heart"
+    }
+  ],
+  "result": {
+    "count": 5,
+    "item": "minecraft:gunpowder"
+  }
+}
