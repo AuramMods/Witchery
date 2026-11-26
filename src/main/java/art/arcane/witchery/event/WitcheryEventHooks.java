@@ -329,6 +329,11 @@ public final class WitcheryEventHooks {
     }
 
     @SubscribeEvent
+    public static void checkVampireFoodBeforeEffects(LivingTickEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) Vampirism.discardExternalFood(player);
+    }
+
+    @SubscribeEvent
     public static void onVillagerTick(LivingTickEvent event) {
         if (event.getEntity() instanceof Villager villager && villager.level() instanceof ServerLevel level) {
             PredictedCourtship.tick(villager, level);
@@ -743,9 +748,11 @@ public final class WitcheryEventHooks {
         }));
     }
 
-    @SubscribeEvent
-    public static void onVampireStartEating(LivingEntityUseItemEvent.Start event) {
-        if (event.getEntity() instanceof ServerPlayer player && event.getItem().isEdible() && Vampirism.level(player) > 0) {
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onVampireFinishUsingTick(LivingEntityUseItemEvent.Tick event) {
+        // Modern item completion follows the living tick. Measure immediately before the item grants food.
+        if (event.getDuration() <= 1 && !event.getItem().useOnRelease()
+                && event.getEntity() instanceof ServerPlayer player && Vampirism.level(player) > 0) {
             WitcheryPlayerDataProvider.get(player).ifPresent(data -> data.beginEating(player.getFoodData().getFoodLevel()));
         }
     }
@@ -756,8 +763,7 @@ public final class WitcheryEventHooks {
             WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
                 var food = player.getFoodData();
                 if (data.gainedFood(food.getFoodLevel())) {
-                    food.setFoodLevel(0);
-                    food.setSaturation(0);
+                    food.eat(-food.getFoodLevel(), 0);
                 }
             });
         }

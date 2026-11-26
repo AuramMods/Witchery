@@ -347,6 +347,18 @@ public final class Vampirism {
         });
     }
 
+    public static void discardExternalFood(ServerPlayer player) {
+        if (!player.isAlive() || player.isSpectator()) return;
+        WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
+            if (data.getVampireLevel() == 0) return;
+            var hunger = player.getFoodData();
+            int previousFood = data.takePreviousVampireFoodLevel(hunger.getLastFoodLevel());
+            if (previousFood < hunger.getFoodLevel()) {
+                hunger.eat(-hunger.getFoodLevel(), 0);
+            }
+        });
+    }
+
     public static void tick(ServerPlayer player) {
         if (player.tickCount % 40 != 1 || !player.isAlive() || player.isSpectator()) return;
         WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
@@ -391,6 +403,8 @@ public final class Vampirism {
             if (feed > 0) {
                 data.setBloodPower(previousBlood - feed * 5);
                 hunger.eat(feed, 4);
+                // This pulse follows vanilla's food snapshot in 1.20.1.
+                data.recordBloodFundedFoodLevel(hunger.getFoodLevel());
             }
             if (data.getBloodPower() == 0 && hunger.getFoodLevel() == 0) weaken(player, 8, 1, true);
             if (!player.getAbilities().instabuild && isInSunlight(player)) {

@@ -77,6 +77,7 @@ public final class WitcheryPlayerData {
     private int selectedVampirePower;
     private long nextVampireAbility;
     private int foodBeforeEating = -1;
+    private int bloodFundedFoodLevel = -1;
     private int grotesqueTicks;
     private int nightmareLevel;
     private boolean ghost;
@@ -294,6 +295,16 @@ public final class WitcheryPlayerData {
         boolean gained = foodBeforeEating >= 0 && foodLevel > foodBeforeEating;
         foodBeforeEating = -1;
         return gained;
+    }
+
+    public void recordBloodFundedFoodLevel(int foodLevel) {
+        bloodFundedFoodLevel = foodLevel;
+    }
+
+    public int takePreviousVampireFoodLevel(int vanillaFoodLevel) {
+        int previous = Math.max(vanillaFoodLevel, bloodFundedFoodLevel);
+        bloodFundedFoodLevel = -1;
+        return previous;
     }
 
     public int getGrotesqueTicks() {
