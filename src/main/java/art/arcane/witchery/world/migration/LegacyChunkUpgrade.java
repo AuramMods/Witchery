@@ -98,9 +98,10 @@ public final class LegacyChunkUpgrade {
     private static final Set<String> TILE_STATE_BLOCKS = Set.of("coffinblock", "wolfhead", "alluringskull", "dreamcatcher");
     private static final Set<String> DOORS = Set.of("rowanwooddoor", "alderwooddoor", "icedoor", "cwoodendoor");
     private static final Map<String, Integer> FLUID_QUANTA = Map.of("spiritflowing", 5, "hollowtears", 5, "brew", 2, "disease", 1);
-    private static final Set<String> CLASSIC_FLUID_TICKS = Set.of("brew", "disease");
+    private static final Map<String, String> CLASSIC_FLUID_IDS = Map.of(
+            "spiritflowing", "fluidspirit", "hollowtears", "hollowtears", "brew", "brew", "disease", "fluiddisease");
     private static final Set<String> POST_PROCESSING_BLOCKS = Set.of("stockade", "icestockade", "icefence", "icefencegate", "coffinblock",
-            "tormentportal", "spiritportal", "spiritflowing", "hollowtears", "leechchest", "refillingchest", "pitdirt", "pitgrass", "witchleaves",
+            "tormentportal", "spiritportal", "leechchest", "refillingchest", "pitdirt", "pitgrass", "witchleaves",
             "stairswoodrowan", "stairswoodalder", "stairswoodhawthorn", "icestairs", "snowstairs");
 
     private LegacyChunkUpgrade() {
@@ -265,11 +266,11 @@ public final class LegacyChunkUpgrade {
             var tick = (CompoundTag) entry;
             var name = tick.contains("i", Tag.TAG_ANY_NUMERIC) ? ids.block(tick.getInt("i"))
                     : ResourceLocation.tryParse(tick.getString("i"));
-            if (belongsTo(name, CLASSIC_FLUID_TICKS)) {
+            if (belongsTo(name, CLASSIC_FLUID_IDS.keySet())) {
                 int meta = fluidMetadata(level.getList("Sections", Tag.TAG_COMPOUND), savedPosition(tick), ids, name);
                 boolean disease = name.getPath().equals("disease");
                 if (meta >= 0 && (meta < FLUID_QUANTA.get(name.getPath()) || disease && meta == 1)) {
-                    String fluidPath = disease ? "fluiddisease" : "brew";
+                    String fluidPath = CLASSIC_FLUID_IDS.get(name.getPath());
                     var fluidTick = tick.copy();
                     fluidTick.putString("i", Witchery.MODID + ":" + (meta == 0 ? "" : "flowing_") + fluidPath);
                     fluidTicks.add(fluidTick);
@@ -414,6 +415,7 @@ public final class LegacyChunkUpgrade {
                 }
             }
             packed.set(i, index);
+            // Vanilla executes fluids in this list immediately, bypassing their saved delays.
             if (POST_PROCESSING_BLOCKS.contains(path)) queueShapeUpdate(postProcessing, sectionY, i);
             if (path.equals("light")) sunlight.add(new BlockPos(i & 15, (sectionY << 4) + (i >> 8), (i >> 4) & 15));
             changed = true;

@@ -828,6 +828,8 @@ Implementation anchors:
 | `brewliquid` | `witchery:brewliquid`, `witchery:flowing_brewliquid` | `witchery:brewliquid` (`BrewDispersalBlock`) | _(none)_ |
 | `fluiddisease` | `witchery:fluiddisease`, `witchery:flowing_fluiddisease` | `witchery:disease` (`LiquidBlock`) | _(none)_ |
 
+The original world importer schedules Flowing Spirit, Hollow Tears, Brew, and Disease under their corresponding source or flowing fluid IDs. It retains saved delays and priorities when the recorded fluid is still present. Flowing Spirit and Hollow Tears use the original viscosity-derived update intervals of ten and seven ticks. Earlier port saves use their existing fluid queues. Recovering a delay lost during an earlier conversion requires the original region.
+
 ## 1.20.1 Data Generation
 Implementation anchors:
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/data/WitcheryDataGenerators.java`

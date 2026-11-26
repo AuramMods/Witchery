@@ -188,8 +188,9 @@ public final class WitcheryFluids {
                 .levelDecreasePerBlock(1);
         if (path.equals("fluiddisease")) {
             properties[0].levelDecreasePerBlock(8).tickRate(DiseaseBlock.TICK_INTERVAL);
-        } else if (brew) {
-            properties[0].levelDecreasePerBlock(4).tickRate(config.viscosity() / 200);
+        } else if (brew || path.equals("fluidspirit") || path.equals("hollowtears")) {
+            properties[0].tickRate(config.viscosity() / 200);
+            if (brew) properties[0].levelDecreasePerBlock(4);
         }
         if (brew || dispersal) {
             // Explosion rays use the larger of the block and fluid resistances.

@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Original Dream fluid update queues (2026-11-26)
+
+- Witchery 0.24.1 saved four pending updates for two sources and their neighboring flow cells. The original Forge server recorded ten ticks for Flowing Spirit and seven for Hollow Tears. A separate copy widened those four delays for observation. The preceding packaged JAR filled both empty receiving cells by game tick 20 during its first load.
+- The importer now preserves pending delays and priorities as Forge fluid ticks and drops updates whose fluid has been replaced. Both receiving cells were still empty on clean Forge at the first sample. The RCON observer saw Hollow Tears spread at tick 372 and Flowing Spirit at tick 519. An ordinary dedicated restart kept both flows and sources.
+- On copied Auram the same archive spread the two fluids at ticks 355 and 503 and retained both on an ordinary restart. Both profiles used headless dedicated servers and disposable world copies.
+- A second original server run ticked both lanes through their full spread. Each wrote metadata 0, 1, 2, 3, and 4 and left the sixth cell empty. The packaged Hollow Tears lane had already filled that sixth cell when the comparison stopped. The remaining release checklist tracks the original spread, displacement, and creature effect rules.
+- Local Java 17 `jar` reobfuscated the same archive used on both server profiles. All 470 Forge GameTests passed, including the regression for source, falling and spreading tick IDs, four priorities and delays, and a stale update. The archive is `build/qa-dream-fluid-ticks/candidate.jar` with SHA-256 `cae00131c3b34454a20ec2bc1db4f06060b3445c918fd3e00be4210a3e351978`.
+
 ## Legacy configuration diagnostics (2026-11-26)
 
 - The native headless server with `TraceRites` enabled recorded each consumed Waystone Binding ingredient and the altar step's failure and refund. With the switch off it ran the same rite without the extra trace. Forge exposes `traceRites` per world and includes the dimension and glyph position in its messages.
