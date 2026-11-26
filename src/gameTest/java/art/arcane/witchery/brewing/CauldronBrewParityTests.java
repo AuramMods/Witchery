@@ -293,6 +293,74 @@ public final class CauldronBrewParityTests {
     }
 
     @GameTest(template = "qa_coven_arena")
+    public static void dissipateVisitsNativeColumnsAndFizzesAtCellCorners(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var center = helper.absolutePos(new BlockPos(6, 4, 5));
+        var west = center.offset(-2, 1, 0);
+        var north = center.north(2);
+        var southeast = center.offset(1, 2, 1);
+        var protectedCloud = center.below();
+        var fringe = center.offset(2, 0, 2);
+        var liquid = center.east();
+        var water = center.west();
+        var gas = WitcheryBlocks.getRequired("brewgas").get();
+        var brewLiquid = WitcheryBlocks.getRequired("brewliquid").get();
+        var brewer = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "DissipateTester"));
+        var ingredients = List.of(Items.NETHER_WART.getDefaultInstance(), Items.SPIDER_EYE.getDefaultInstance(),
+                WitcheryIngredient.BAT_WOOL.item().getDefaultInstance());
+        var cloudBrew = BrewMixture.from(ingredients);
+        for (BlockPos pos : List.of(west, north, southeast, protectedCloud, fringe)) {
+            level.setBlockAndUpdate(pos, gas.defaultBlockState());
+            ((BrewFluidBlockEntity) level.getBlockEntity(pos)).initialize(cloudBrew.bottleTag(ingredients), cloudBrew, 0x556677, brewer);
+        }
+        level.setBlockAndUpdate(liquid, brewLiquid.defaultBlockState());
+        level.setBlockAndUpdate(water, Blocks.WATER.defaultBlockState());
+        var saved = level.getBlockEntity(protectedCloud).saveWithFullMetadata();
+        List<BlockPos> vetoes = new ArrayList<>();
+        List<PlayLevelSoundEvent.AtPosition> fizz = new ArrayList<>();
+        Consumer<BlockEvent.BreakEvent> protection = event -> {
+            if (event.getLevel() == level && event.getPlayer() == brewer && event.getPos().equals(protectedCloud)) {
+                vetoes.add(event.getPos());
+                event.setCanceled(true);
+            }
+        };
+        Consumer<PlayLevelSoundEvent.AtPosition> sound = event -> {
+            if (event.getLevel() == level && event.getSound() != null && event.getSound().value() == SoundEvents.FIRE_EXTINGUISH) {
+                fizz.add(event);
+            }
+        };
+        var config = WitcheryServerConfig.ALLOW_INTER_MOD_BLOCK_BREAK_EVENTS;
+        boolean previous = config.get();
+        MinecraftForge.EVENT_BUS.addListener(protection);
+        MinecraftForge.EVENT_BUS.addListener(sound);
+        try {
+            config.set(true);
+            var brew = BrewMixture.from(List.of(new ItemStack(Items.NETHER_WART),
+                    new ItemStack(Items.GUNPOWDER), new ItemStack(Items.STONE)));
+            brew.applySplashToBlock(level, center, Direction.UP, Vec3.atCenterOf(center), brewer);
+            var cleared = List.of(west, north, southeast);
+            helper.assertTrue(cleared.stream().allMatch(pos -> level.isEmptyBlock(pos) && level.getBlockEntity(pos) == null),
+                    "Dissipate removes active clouds and their tile data");
+            helper.assertTrue(level.getBlockState(fringe).is(gas) && level.getBlockState(liquid).is(brewLiquid)
+                            && level.getBlockState(water).is(Blocks.WATER),
+                    "The excluded corner and liquids remain");
+            helper.assertTrue(vetoes.equals(List.of(protectedCloud, protectedCloud))
+                            && level.getBlockEntity(protectedCloud).saveWithFullMetadata().equals(saved),
+                    "Both original passes through the center respect protection and preserve the cloud payload");
+            helper.assertTrue(fizz.stream().map(PlayLevelSoundEvent.AtPosition::getPosition).toList()
+                            .equals(cleared.stream().map(Vec3::atLowerCornerOf).toList())
+                            && fizz.stream().allMatch(cue -> cue.getNewVolume() == 1 && cue.getNewPitch() == 2),
+                    "Only cleared cells fizz, in the original column order and at the integer block corners");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(protection);
+            MinecraftForge.EVENT_BUS.unregister(sound);
+            config.set(previous);
+            brewer.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
     public static void lilifyPlantsOnLegacyWaterAndKeepsOnlySourcePads(GameTestHelper helper) {
         var level = helper.getLevel();
         var lily = WitcheryBlocks.getRequired("lilypad").get();

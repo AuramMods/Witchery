@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron Dissipate scan and fizz (2026-11-25)
+
+- In Witchery 0.24.1, strength one cleared three cells of the external Forge gas fixture and left the corner outside the disk. The first cleared column was west of the impact on the center row. The fizz played at each cleared block's lower corner with volume 1 and pitch 2. Spectres, Banshees and Poltergeists took ten damage, and a Zombie kept its health.
+- Forge uses the original overlapping circle scan and sweeps each column upward. Both visits to a protected center cloud honor a break veto and preserve its saved brew payload. The port lets Dissipate clear Witchery Brew Gas intentionally because the original cloud failed both the legacy hardness and tile checks.
+- The packaged survival client cleared a Witchery cloud and received the fizz at its original position. A supplied enhanced bottle took ten health from the Spectre and the nearby Zombie kept its health. The dedicated restart retained the cleared cell, nearby water and the same Spectre at ten health. The client used master volume zero and OpenAL No Output.
+- With zero players, the copied Auram server's base dispenser cast cleared Brew Gas and left Mekanism Steam. An enhanced cast cleared the three in-range Steam cells. All three fizz offsets, their order, volume and pitch matched the original external-gas trace. After restart, the cleared cells, water and the outer Steam source remained in their expected states.
+- Java 17 reobfuscation and all 447 local Forge GameTests passed on seed `5471593853027166409`. The JAR is `build/qa-dissipate-parity/candidate.jar` with SHA-256 `8d4833c6bec9ca64a0bdeca94f5972200cad34553f3a145988c7a6d30ce977c1`. See `build/qa-dissipate-parity/comparison.txt`.
+
 ## Cauldron Pruning materials and Dream Catchers (2026-11-25)
 
 - The original Brown Mushroom brew removed Witchery leaves, ordinary leaves, short grass, ferns, dead bushes, vanilla vines and Spanish Moss. Two-block plants, crops, mushrooms, ordinary lilies and the conjured Witchery vine stayed. The reproduced Forge baseline also removed both halves of tall grass and seagrass. The corrected Forge material selection uses the original plant families and retains ordinary loot handling.

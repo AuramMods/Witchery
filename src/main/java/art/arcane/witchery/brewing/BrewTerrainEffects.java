@@ -70,24 +70,20 @@ final class BrewTerrainEffects {
 
     static void dissipate(ServerLevel level, BlockPos center, int radius, int strength, @Nullable Player caster) {
         Player actor = caster != null ? caster : FakePlayerFactory.getMinecraft(level);
-        int reach = radius - 1;
-        int[] widths = circleWidths(reach);
         var cursor = new BlockPos.MutableBlockPos();
-        for (int z = -reach; z <= reach; z++) {
-            int width = widths[Math.abs(z)];
-            for (int x = -width; x <= width; x++) {
-                for (int y = -radius; y <= radius; y++) {
-                    cursor.setWithOffset(center, x, y, z);
-                    if (!level.isInWorldBounds(cursor) || !level.hasChunkAt(cursor)) continue;
-                    BlockState state = level.getBlockState(cursor);
-                    if ((state.getBlock() instanceof BrewDispersalBlock brew && brew.isGas()
-                            || strength > 0 && isGaseousFluid(state))
-                            && BrewTerrain.setBlock(actor, level, cursor, Blocks.AIR.defaultBlockState(), Direction.UP)) {
-                        level.playSound(null, cursor, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1, 2);
-                    }
+        BrewTerrain.forEachColumn(level, center, radius, column -> {
+            for (int y = -radius; y <= radius; y++) {
+                cursor.setWithOffset(column, 0, y, 0);
+                if (!level.isInWorldBounds(cursor)) continue;
+                BlockState state = level.getBlockState(cursor);
+                if ((state.getBlock() instanceof BrewDispersalBlock brew && brew.isGas()
+                        || strength > 0 && isGaseousFluid(state))
+                        && BrewTerrain.setBlock(actor, level, cursor, Blocks.AIR.defaultBlockState(), Direction.UP)) {
+                    level.playSound(null, cursor.getX(), cursor.getY(), cursor.getZ(),
+                            SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1, 2);
                 }
             }
-        }
+        });
     }
 
     private static boolean isGaseousFluid(BlockState state) {
