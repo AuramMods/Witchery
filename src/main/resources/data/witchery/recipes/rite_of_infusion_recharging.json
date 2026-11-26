@@ -5,7 +5,7 @@
     {"size": "medium", "glyph": "witchery:circleglyphritual"}
   ],
   "sacrifices": [
-    {"type": "forge:nbt", "item": "minecraft:potion", "nbt": {"Potion": "minecraft:regeneration"}}
+    {"type": "forge:partial_nbt", "item": "minecraft:potion", "nbt": {"Potion": "minecraft:regeneration"}}
   ],
   "power": 4000,
   "action": "recharge_infusion"

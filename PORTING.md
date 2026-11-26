@@ -721,6 +721,14 @@
 - [x] Start Waystone Binding with the survival client and shut down after payment. The saved chunk contains all three staged items and `AltarPowerOffered:1b`. A normal restart creates one Bound Waystone. Separate redstone runs verify that a canceled paid binding and a call with no familiar each return all three item offerings.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 259 local Forge GameTests. The checks cover the saved payment, completion with the altar removed, and the familiar refund. The updated ward, weather, volcano, recharge, witch, and fetish checks observe the effect on the pulse after payment.
 
+## Circle Magic Item Offerings (2026-11-26)
+
+- [x] Export the original Forge registry and compare it with the packaged recipes for all 96 rites. The 373 required items match in order, with one item per step. All 14 optional Bound Waystone steps map to the original rites.
+- [x] Restore original tool wear matching for legacy rites. Transposition, Necromantic Stone, and Manifestation require their tools at zero damage. The worn Arthana and Boline still qualify. The bound Taglock, sapling species, wicker variant, and flattened vanilla subtypes match their original offerings.
+- [x] Accept a renamed bottle of the standard drinkable Regeneration potion for Infusion Recharging.
+- [x] On clean Forge and copied Auram, activate the packaged rites with redstone. A worn iron axe marked unbreakable leaves all four offerings and the altar charge available. The undamaged axe starts the cast and transposes the same cow. The longer Regeneration control leaves the altar alone. The named standard potion is consumed, spends altar power, and starts recharge upkeep.
+- [x] Pass all 474 local Forge GameTests. The modified tests exercise a named potion and its duration and bottle controls, and the worn unbreakable axe followed by an undamaged axe and a saved, paid cast.
+
 ## Circle Magic Time and Weather (2026-11-24)
 
 - [x] Compare the day, night, thunder, and dimension restrictions for all 96 original rites. A live Witchery 0.24.1 server confirmed the End's daylight, nighttime in the Nether, Mirror, and Torment, and Overworld sky darkness during thunder. Torment followed live thunder. The Nether, End, and Mirror picked up saved thunder at level load.

@@ -32,6 +32,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -1167,6 +1168,11 @@ public final class CircleRiteTests {
         var center = helper.absolutePos(CENTER);
         var heart = heart(helper);
         var potion = PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.REGENERATION);
+        potion.setHoverName(Component.literal("Apothecary's Regeneration"));
+        var offering = rite(level, "rite_of_infusion_recharging").sacrifices().get(0);
+        helper.assertTrue(!offering.test(PotionUtils.setPotion(potion.copy(), Potions.LONG_REGENERATION))
+                        && !offering.test(PotionUtils.setPotion(new ItemStack(Items.SPLASH_POTION), Potions.REGENERATION)),
+                "Recharge requires the standard duration and drinkable form");
         waitForOfferings(helper, potion).thenExecute(() -> {
             var altar = chargedAltar(helper, CENTER.offset(20, 0, 20), false, 2);
             start(helper);
@@ -1391,10 +1397,21 @@ public final class CircleRiteTests {
         var taglock = new ItemStack(WitcheryItems.getRequired("taglockkit").get());
         TaglockItem.bindSignature(taglock, target);
         var altar = chargedAltar(helper, true);
+        var axe = new ItemStack(Items.IRON_AXE);
+        axe.setHoverName(Component.literal("Transposition Axe"));
+        var wornAxe = axe.copy();
+        wornAxe.setDamageValue(17);
+        wornAxe.getOrCreateTag().putBoolean("Unbreakable", true);
         waitForOfferings(helper, new ItemStack(WitcheryIngredient.WAYSTONE.item()), taglock,
-                new ItemStack(WitcheryIngredient.ENDER_DEW.item()), new ItemStack(Items.IRON_AXE)).thenWaitUntil(() -> {
+                new ItemStack(WitcheryIngredient.ENDER_DEW.item()), wornAxe).thenWaitUntil(() -> {
             helper.assertTrue(level.getEntity(target.getUUID()) == target, "The taglocked cow is tracked");
         }).thenExecute(() -> {
+            helper.useBlock(CENTER);
+            helper.assertTrue(!level.getBlockState(center).getValue(RiteHeartBlock.ACTIVE)
+                            && altar.power() == 10_000 && drops(helper).size() == 4,
+                    "A worn iron axe cannot start the rite, even when it is marked unbreakable");
+            var axeOffering = drops(helper).stream().filter(drop -> drop.getItem().is(Items.IRON_AXE)).findFirst().orElseThrow();
+            axeOffering.setItem(axe);
             helper.useBlock(CENTER);
             helper.assertTrue(level.getBlockState(center).getValue(RiteHeartBlock.ACTIVE),
                     "The medium Otherwhere circle begins Taglock Transposition");

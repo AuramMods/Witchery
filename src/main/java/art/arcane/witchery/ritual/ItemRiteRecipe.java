@@ -349,18 +349,29 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
 
     private List<Offering> validOfferings(ServerLevel level, BlockPos pos) {
         List<Offering> items = nearbyOfferings(level, pos);
+        boolean legacy = isLegacyRite();
+        if (legacy) {
+            // The original item comparison required damage zero, with exceptions for these two tools.
+            items.removeIf(offering -> {
+                ItemStack stack = offering.stack();
+                return stack.getMaxDamage() > 0 && stack.getDamageValue() != 0
+                        && !(stack.getItem() instanceof ArthanaItem || stack.getItem() instanceof BolineItem);
+            });
+        }
         if (action == Action.BIND_CIRCLE_TALISMAN) {
             items.removeIf(offering -> offering.stack().getItem() instanceof CircleTalismanItem
                     && CircleTalismanItem.storedPattern(offering.stack()) != 0);
         } else if (action == Action.BIND_SPECTRAL_STONE) {
             items.removeIf(offering -> offering.stack().getItem() instanceof SpectralStoneItem
                     && SpectralStoneItem.typeId(offering.stack()) != 0);
-        } else if (action.isVolcano()) {
-            items.removeIf(offering -> offering.stack().is(Items.GOLDEN_SWORD) && offering.stack().isDamaged());
-        } else if (action == Action.ICE_SHELL) {
-            items.removeIf(offering -> offering.stack().is(Items.DIAMOND_SWORD) && offering.stack().isDamaged());
-        } else if (action.callsStorm() || action == Action.ECLIPSE) {
-            items.removeIf(offering -> offering.stack().isDamaged());
+        } else if (!legacy) {
+            if (action.isVolcano()) {
+                items.removeIf(offering -> offering.stack().is(Items.GOLDEN_SWORD) && offering.stack().isDamaged());
+            } else if (action == Action.ICE_SHELL) {
+                items.removeIf(offering -> offering.stack().is(Items.DIAMOND_SWORD) && offering.stack().isDamaged());
+            } else if (action.callsStorm() || action == Action.ECLIPSE) {
+                items.removeIf(offering -> offering.stack().isDamaged());
+            }
         }
         return items;
     }

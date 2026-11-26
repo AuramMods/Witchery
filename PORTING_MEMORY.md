@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Original Circle Magic item offerings (2026-11-26)
+
+- The headless 0.24.1 registry exported all 96 rites with 373 required items and 14 optional Bound Waystone steps. The reobfuscated package matches the order, counts, flattened item IDs, and variant predicates. The Reflection accepts the portable Mirror and its earlier Forge item ID.
+- The running reference rejected worn vanilla tools and accepted renamed items. It accepted a worn Arthana and Boline, and accepted standard drinkable Regeneration with a custom name. The packaged port uses the same tool damage rule for original recipes and matches the potion's type without requiring its full tag.
+- Clean Forge and copied Auram exercised the same package on headless dedicated servers. The worn unbreakable axe and named longer potion left both circles idle with their altar power intact. The fresh axe transposed the same cow to the glyph. The named standard potion was consumed and the save held the active recharge upkeep. The clean replay waited for the upkeep state before sampling altar power.
+- Local Java 17 JAR reobfuscation and all 474 required Forge GameTests passed. The package is `build/qa-rite-offering-audit/candidate.jar` with SHA-256 `74bfd0a3b6e6d25a09d30f3801609151246e13fa4ee6f4d3573a44d2b3a36998`.
+
 ## Item descriptions and the Huntsman's Spear (2026-11-26)
 
 - The original release archive supplies 55 static tooltip keys. Seven already had Forge equivalents. The remaining 48 now describe equipment traits, crafting uses, guide controls, and the Urn. The original translations provide 23 German, 24 Spanish, 23 Russian, 23 Simplified Chinese, and 48 Italian descriptions. The Italian set also restores 47 item names. Forge supplies English for untranslated descriptions.
