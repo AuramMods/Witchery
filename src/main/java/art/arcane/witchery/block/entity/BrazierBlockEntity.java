@@ -43,11 +43,6 @@ public final class BrazierBlockEntity extends BlockEntity {
         }
 
         @Override
-        public boolean isItemValid(int slot, ItemStack stack) {
-            return !ignited;
-        }
-
-        @Override
         public ItemStack extractItem(int slot, int amount, boolean simulate) {
             return ItemStack.EMPTY;
         }
@@ -105,7 +100,8 @@ public final class BrazierBlockEntity extends BlockEntity {
         long elapsed = cookTime - recipe.burnTicks();
         if (elapsed >= 0 && elapsed / 400 >= storage) {
             recipe.finish(level, pos);
-            clearBatch();
+            // The last tick consumes the offerings and leaves ash for the next tick to clear.
+            clearOfferings();
         } else {
             storage += recipe.burn(level, pos, ticks);
             setChanged();
@@ -157,8 +153,11 @@ public final class BrazierBlockEntity extends BlockEntity {
 
     public void clearBatch() {
         ignited = false;
+        clearOfferings();
+    }
+
+    private void clearOfferings() {
         cookTime = 0;
-        storage = 0;
         activeRecipe = Optional.empty();
         recipeResolved = false;
         ingredients.setSize(INGREDIENT_SLOTS);
@@ -268,7 +267,7 @@ public final class BrazierBlockEntity extends BlockEntity {
         loading = false;
         cookTime = ignited ? Math.max(0, tag.getLong("CookTime")) : 0;
         powered = tag.getInt("PowerLevel") > 0;
-        storage = ignited ? Math.max(0, tag.getLong("PowerStorage")) : 0;
+        storage = Math.max(0, tag.getLong("PowerStorage"));
         redstone = tag.getBoolean("Powered");
         recipeResolved = false;
         activeRecipe = Optional.empty();

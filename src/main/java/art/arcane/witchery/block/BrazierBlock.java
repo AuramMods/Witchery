@@ -2,8 +2,10 @@ package art.arcane.witchery.block;
 
 import art.arcane.witchery.block.entity.BrazierBlockEntity;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
+import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -83,7 +85,9 @@ public final class BrazierBlock extends BaseEntityBlock {
                 brazier.clearBatch();
                 ItemStack empty = new ItemStack(waterBottle ? Items.GLASS_BOTTLE : Items.BUCKET);
                 player.setItemInHand(hand, ItemUtils.createFilledResult(held, player, empty, false));
-                level.playSound(null, pos, SoundEvents.GENERIC_SPLASH, SoundSource.BLOCKS, 0.7F, 1);
+                if (player instanceof ServerPlayer server) {
+                    WitcherySounds.playLegacyPlayerCue(server, SoundEvents.PLAYER_SPLASH, 0.5F);
+                }
             }
         } else if (held.is(Items.FLINT_AND_STEEL)) {
             if (brazier.isEmpty()) return InteractionResult.PASS;

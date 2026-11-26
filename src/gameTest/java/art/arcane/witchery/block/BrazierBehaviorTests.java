@@ -1,11 +1,13 @@
 package art.arcane.witchery.block;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.entity.AltarBlockEntity;
 import art.arcane.witchery.block.entity.BrazierBlockEntity;
 import art.arcane.witchery.crafting.BrazierRecipe;
 import art.arcane.witchery.entity.SpectralUndead;
 import art.arcane.witchery.infusion.InfusedBrews;
 import art.arcane.witchery.item.SpectralStoneItem;
+import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
 import com.mojang.authlib.GameProfile;
@@ -13,11 +15,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CropBlock;
@@ -26,12 +31,14 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.PlayLevelSoundEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
-import java.util.UUID;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 @GameTestHolder(Witchery.MODID)
@@ -54,6 +61,103 @@ public final class BrazierBehaviorTests {
         BrazierBlockEntity.serverTick(level, pos, brazier.getBlockState(), brazier);
         helper.assertTrue(brazier.isEmpty() && !brazier.getBlockState().getValue(BrazierBlock.LIT),
                 "An incomplete recipe should fizzle and clear the brazier");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_brazier_rinse")
+    public static void rinsingReturnsTheContainerAndSplashesAtThePlayer(GameTestHelper helper) {
+        var brazier = place(helper);
+        var level = helper.getLevel();
+        var pos = brazier.getBlockPos();
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "BrazierRinse"));
+        player.setPos(Vec3.atBottomCenterOf(pos.north(2)));
+        var hand = InteractionHand.MAIN_HAND;
+        var hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
+        var cues = new ArrayList<PlayLevelSoundEvent.AtEntity>();
+        Consumer<PlayLevelSoundEvent.AtEntity> observer = event -> {
+            if (event.getEntity() == player) cues.add(event);
+        };
+        MinecraftForge.EVENT_BUS.addListener(observer);
+        try {
+            for (var filled : List.of(new ItemStack(Items.WATER_BUCKET),
+                    PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER))) {
+                var empty = filled.is(Items.WATER_BUCKET) ? Items.BUCKET : Items.GLASS_BOTTLE;
+                player.setItemInHand(hand, filled);
+                brazier.getBlockState().use(level, player, hand, hit);
+                helper.assertTrue(player.getMainHandItem() == filled && cues.isEmpty(),
+                        "Rinsing an empty Brazier keeps the filled container and stays silent");
+
+                for (var ingredient : BrazierRecipe.MIST.ingredients()) brazier.insert(new ItemStack(ingredient));
+                brazier.ignite();
+                brazier.getBlockState().use(level, player, hand, hit);
+                helper.assertTrue(player.getMainHandItem().is(empty) && brazier.isEmpty() && brazier.comparatorSignal() == 0
+                                && !brazier.getBlockState().getValue(BrazierBlock.LIT),
+                        "Rinsing a lit Brazier returns the empty container and clears the whole batch");
+                helper.assertTrue(cues.size() == 1 && cues.get(0).getSound() != null
+                                && cues.get(0).getSound().value() == SoundEvents.PLAYER_SPLASH
+                                && cues.get(0).getNewVolume() == 0.5F && cues.get(0).getNewPitch() >= 1F / 3
+                                && cues.get(0).getNewPitch() <= 0.5F,
+                        "A successful rinse sends the original splash from the player once");
+                cues.clear();
+            }
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(observer);
+            player.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_brazier_storage")
+    public static void storedWiltingPowerExtendsLaterBatchesAfterAnIdleSave(GameTestHelper helper) {
+        var brazier = place(helper);
+        var level = helper.getLevel();
+        var pos = brazier.getBlockPos();
+        var altarPos = pos.east(3);
+        var state = WitcheryBlocks.getRequired("altar").get().defaultBlockState();
+        for (BlockPos part : BlockPos.betweenClosed(altarPos, altarPos.offset(2, 0, 1))) {
+            level.setBlockAndUpdate(part, state);
+        }
+        AltarBlockEntity.form(level, altarPos);
+        var altar = (AltarBlockEntity) level.getBlockEntity(altarPos);
+        var power = altar.saveWithoutMetadata();
+        power.putFloat("Power", 4);
+        altar.load(power);
+
+        for (var ingredient : BrazierRecipe.WILTING.ingredients()) brazier.insert(new ItemStack(ingredient));
+        brazier.ignite();
+        var savedWilting = brazier.saveWithoutMetadata();
+        savedWilting.putLong("PowerStorage", 2);
+        brazier.load(savedWilting);
+        brazier.clearBatch();
+        brazier.load(brazier.saveWithFullMetadata());
+        helper.assertTrue(brazier.isEmpty() && brazier.saveWithoutMetadata().getLong("PowerStorage") == 2,
+                "Rinsing and restoring an idle Brazier must retain stored Wilting power");
+
+        var strength = BrazierRecipe.STRENGTH.ingredients();
+        brazier.insert(new ItemStack(strength.get(0)));
+        brazier.ignite();
+        helper.assertTrue(brazier.insert(new ItemStack(strength.get(1))) && brazier.insert(new ItemStack(strength.get(2))),
+                "The last offerings can enter an already ignited Brazier before its first burn tick");
+        var batch = brazier.saveWithoutMetadata();
+        batch.putLong("CookTime", 5999);
+        brazier.load(batch);
+        BrazierBlockEntity.serverTick(level, pos, brazier.getBlockState(), brazier);
+        helper.assertTrue(brazier.saveWithoutMetadata().getLong("CookTime") == 6000 && !brazier.isEmpty() && altar.power() == 3,
+                "The later Strength batch keeps burning past its ordinary endpoint and pays for the tick");
+
+        batch.putLong("CookTime", 6799);
+        brazier.load(batch);
+        BrazierBlockEntity.serverTick(level, pos, brazier.getBlockState(), brazier);
+        var complete = brazier.saveWithoutMetadata();
+        var contents = complete.getList("Items", net.minecraft.nbt.Tag.TAG_COMPOUND);
+        helper.assertTrue(complete.getLong("CookTime") == 0 && brazier.isEmpty() && contents.size() == 1
+                        && ItemStack.of(contents.getCompound(0)).is(WitcheryIngredient.WOOD_ASH.item())
+                        && brazier.comparatorSignal() == 1 && altar.power() == 2,
+                "The extended batch consumes its ingredients at tick 6800 and leaves ash for the next tick");
+        BrazierBlockEntity.serverTick(level, pos, brazier.getBlockState(), brazier);
+        helper.assertTrue(brazier.comparatorSignal() == 0 && brazier.saveWithoutMetadata().getLong("PowerStorage") == 2
+                        && altar.power() == 2,
+                "The following tick clears the ash and retains the power credit without charging the altar");
         helper.succeed();
     }
 

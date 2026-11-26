@@ -10,9 +10,13 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - Both profiles retained the paused batch at tick 799 and completed it after a dedicated restart. The muted clean Forge player collected all eight named Glowstone Dust through the normal menu. The fixture supplied the workstation, altar charge, elapsed ticks, materials and saved stack. Both client launches used zero master volume and OpenAL No Output without taking focus.
 - Java 17 data generation, reobfuscation, and all 513 local Forge GameTests passed. The tested `build/qa-distillery-output/candidate.jar` has SHA-256 `4d458f2dad0642dd2d04cc76678a8fb29156d6b2cb4a77c497b525d2f03f87ff`. The recipe comparisons and server replays are in the same directory.
 
-## Brazier rinse reference (2026-11-26)
+## Brazier rinses, auras, and stored Wilting power (2026-11-26)
 
-- `build/qa-brazier-rinse/native/reference-network.log` records the original Brazier returning both empty containers and clearing the batch in survival. An empty Brazier kept the filled container and was silent. A successful rinse played `game.player.swim.splash` from the player at volume 0.5 with the original varying pitch. The current Forge path plays a fixed-pitch generic splash at the block.
+- `build/qa-brazier-rinse/native/matrix.log` records the original survival rinse, all eight registered recipes, all three aura pulses, and a single successful wilt. A water rinse retained both stored units after an idle NBT round trip. With that bank, Strength stayed active at tick 6,000, completed at tick 6,800 and left ash for one tick. The preceding Forge code erased the bank on a clear and discarded it again when loading an idle save.
+- Clean Forge and copied Auram matched the eight recipe ingredient sets, durations and power flags, and the four target positions and first pulse time for Strength, Resistance, and Invisibility. The exposed crop fixture let Wilting reduce one crop's age and store two units.
+- In the muted clean Forge survival client, empty controls kept their Water Bucket and Water Bottle and stayed silent. Both occupied rinses returned the empty container and sent the original player splash at volume 0.5 and varying pitch. The headless restart reopened the rinsed Brazier with two units. The later Strength batch finished at tick 6,800. The client received the smoke and fizzle at the basin when the ash cleared on the next tick.
+- Copied Auram repeated both transfers and reopened the same idle bank after a dedicated restart. Strength completed at tick 6,800 and the following tick cleared the ash without dropping the bank or taking more altar power.
+- Java 17 data generation, reobfuscation, and all 515 local Forge GameTests passed. The tested `build/qa-brazier-rinse/candidate.jar` has SHA-256 `2e5a50447bc941992acb3e220925daf1569f32344b23e9d6ed1cfde873ff9fda`. See the replay logs in `clean/` and `pack/`.
 
 ## Kettle empty buckets and bounds (2026-11-26)
 

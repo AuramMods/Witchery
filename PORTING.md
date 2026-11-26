@@ -2268,9 +2268,11 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 ## Brazier and Spectral Binding (2026-11-20)
 
 - [x] Craft the Brazier with a Necromantic Stone, iron ingots and sticks. It accepts three separate ingredients by hand or automation and ignites with flint and steel or a redstone pulse. A water bottle or bucket empties it and returns the container. Invalid offerings fizzle. The comparator reflects the occupied slots.
-- [x] Port all eight recipes. Spectres and Banshees burn for 600 ticks and Poltergeists for 900. Graveyard Mist, Strength, Resistance and Invisibility draw altar power while burning. Wilting ages crops backward, heals nearby undead and extends its own burn without drawing power. Graveyard Dust and Wormy Apples keep legacy ingredient subtypes 128 and 91. The existing Arthana drops provide Spectral Dust before the player makes a Brazier.
+- [x] Port all eight recipes. Spectres and Banshees burn for 600 ticks and Poltergeists for 900. Graveyard Mist, Strength, Resistance and Invisibility draw altar power while burning. Wilting ages crops backward, heals nearby undead and stores burn extensions without drawing power. Graveyard Dust and Wormy Apples keep legacy ingredient subtypes 128 and 91. The existing Arthana drops provide Spectral Dust before the player makes a Brazier.
 - [x] Restore one durability of Flint and Steel wear when lighting a nonempty Brazier. An incomplete batch clears and sends the fizzle to viewers within eight blocks. Graveyard Mist uses the original 16-block horizontal spread, four-block height, and 64-block recipient range.
 - [x] Restore the Brazier's effect timing from the lifetime of its loaded block entity. Wilting heals players with an active Infused Brew of the Grave in the original six-block box. The clean Forge client drank the brew, lit Wilting, gained two health from the wilt, and extended the batch by 800 ticks without using altar power.
+- [x] Compare the eight recipes' ingredients, durations, and power requirements against the running 0.24.1 registry. Check the Strength, Resistance, and Invisibility auras at tick 59 and 60. Their first pulse applies the original six-second level-I effect inside the radius and on its horizontal boundary.
+- [x] Preserve the Brazier's stored Wilting power across rinses, later batches, and idle saves. The original Strength batch with two stored units finishes at tick 6,800. Its offerings clear at completion and the ash stays for the following tick. Water Bottles and Water Buckets return the original empty containers and play the half-volume splash from the player on a successful rinse.
 - [x] Replace the three spectral entity placeholders with individual combat and haunting behaviors, translucent models and legacy sounds. Spectres drain health on contact, Earmuffs block the Banshee's scream, and a Poltergeist tosses items or attacks wall hangings. Near its summoner it can eject one item from a chest when mob griefing is permitted.
 - [x] Use a medium white chalk ring, a blank Spectral Stone, Spectral Dust, a Boline and 5,000 altar power to bind up to three creatures of one kind. Holding the charged stone for at least two seconds releases the creatures under the player's ownership. The stone becomes blank after it is emptied and preserves any charges it could not place.
 - [x] Verify the packaged Poltergeist recipe with the muted survival client. It placed the Brazier, inserted Wormwood, Refined Evil and Focused Will and lit the batch. The dedicated server saved 634 burn ticks and resumed the same batch after restart. The recipe finished and produced the creature that was then moved into the binding circle fixture.
@@ -2794,6 +2796,8 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
 - [ ] Blocks/tile entity behavior parity pass.
 - [ ] Item behavior parity pass (including metadata-subitem conversions).
 - [ ] Brewing/kettle/distillery/spinning/brazier parity.
+  - [x] Compare the fixed Kettle, Distillery, Spinning Wheel, and Brazier registries and exercise their interactions and saved state in the workstation milestones above.
+  - [ ] Complete the remaining cauldron effect, modifier, and castable ritual comparisons.
 - [ ] Ritual and circle magic parity.
 - [ ] Infusion, prediction, creature power parity.
 - [ ] Entity AI/combat/spawn tuning parity.
