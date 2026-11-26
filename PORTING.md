@@ -21,7 +21,7 @@
         - [x] Restore the class-name checks for other mods' werewolf and vampire mobs. In copied Auram, a Bewitchment werewolf received three raw damage tagged as silver and a glancing Garlic hit gave a Bewitchment vampire 450 ticks of Weakness.
       - [x] Compare the seven motion and summon actions, including Air Hike, Frog Tongue, Knockback, Bat Burst, Bodega, Poison Toad, and Raising. The [action comparison](#motion-and-summon-action-comparison-2026-11-26) records the runtime evidence and the copied Auram random sequence.
       - [x] Compare the nine weather, ice, and fire actions, including Extinguish, Cold, Ice Shell, Changing Seasons, Ice World, Snow, Inferno, Hell Gate, and Blast. The [action comparison](#weather-ice-and-fire-action-comparison-2026-11-26) records the runtime checks and the restored Hell Gate cue.
-      - [ ] Compare the 17 farming and tree actions, including the eight crop and material actions and nine tree species.
+      - [x] Compare the 17 farming and tree actions, including the eight crop and material actions and nine tree species. The [action comparison](#farming-and-tree-action-comparison-2026-11-26) records the original Witchwood canopies and the restored Forge protection checks.
       - [ ] Compare the eight fluid and plant terrain actions, including Dissipate, Tide Hold, Lava Hold, Lilify, Webs, Vines, Thorns, and Sprouting.
       - [ ] Compare the six landscape actions, including Erosion, Levelling, Blight, Raise Land, Transpose, and Transpose Ore.
     - [ ] Close the five dispersals, two general cast triggers and 15 fixed cast triggers. The delivery, targeting and workstation milestones already cover several of their shared paths and the 27 fixed recipe outcomes.
@@ -1828,6 +1828,14 @@
 - [x] Brew and cast all nine tree mixtures and both Sprouting mixtures in muted survival. Giant Spruce, giant Jungle, and Dark Oak formed four-block trunk bases. A side hit grew ten horizontal Alder logs. A pig's timed effect grew two Birch logs and lifted it four blocks. A dedicated restart preserved all eleven placements and the pig's still-active effect.
 - [x] Run the 615-case regression suite. It passed 613 cases, including all seven new cases. Spectral Familiar ore-search and zombie courtship passed in targeted reruns after failing in the full run.
 - [x] Resolve the older villager courtship failure from the eight-of-nine focused run. The corrected courtship case passed in the 640-case replay. The later courtship milestone below records the fixture changes.
+
+### Farming and tree action comparison (2026-11-26)
+
+- The [Cauldron farming milestone](#cauldron-farming-and-pulverisation-2026-11-21) records the eight farming and material recipes, their original targeting and drops, and the survival and dedicated restart checks. The packaged replay uses saved bottle impacts for the flower, fertilizer, harvest, tilling, planting, pruning, felling and pulverisation handlers.
+- The six vanilla trees use the corresponding Minecraft 1.20.1 configured features. The replay includes all six base recipes, tall Oak, both giant Spruce forms, and giant Jungle. It checks the selected form and the one- or four-block trunk base.
+- Rowan uses the original height roll and four-layer canopy. Alder and Hawthorn use the original branch paths, foliage placement and one draw from the world random source. The brewing and ordinary sapling paths share the existing configured feature IDs.
+- The Cauldron asks Forge about breaking the root cell before selecting a feature, including when that cell is air. It presents one final placement per changed block. The earlier custom growth build asked Auram to break a leaf created earlier in the same cast and lost the tree to that veto.
+- Clean Forge and copied Auram each passed 31 headless cases on the same archive. Clean Forge reproduced the original leaf and log coordinates and next world draw in all nine Witchwood samples. Copied Auram used a different random sequence and passed the species, trunk base and placement checks. Both servers also grew all three ordinary Witchwood saplings with bone meal.
 
 ## Cauldron Blight and Raise Land (2026-11-21)
 

@@ -21,6 +21,7 @@ import art.arcane.witchery.world.VillageBookshopProcessor;
 import art.arcane.witchery.world.VillageFoundation;
 import art.arcane.witchery.world.VillageWallPiece;
 import art.arcane.witchery.world.WickerManFeature;
+import art.arcane.witchery.world.WitchwoodTreeFeature;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -88,6 +89,7 @@ public final class WitcheryRegistries {
         FEATURES.register("dream_cotton", DreamCottonFeature::new);
         FEATURES.register("wicker_man", WickerManFeature::new);
         FEATURES.register("surface_structures", SurfaceStructuresFeature::new);
+        FEATURES.register("witchwood_tree", WitchwoodTreeFeature::new);
         CHUNK_GENERATORS.register("mirror", () -> MirrorChunkGenerator.CODEC);
         CHUNK_GENERATORS.register("torment", () -> TormentChunkGenerator.CODEC);
     }

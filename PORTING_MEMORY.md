@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron farming and tree action comparison (2026-11-26)
+
+- The original 0.24.1 server produced 19 tree samples on prepared flat ground. The sample contains all nine base recipes, four boosted forms and two additional seeds for each Witchwood. See `build/qa-cauldron-tree-matrix/native/standard.log`.
+- The preceding port grew Rowan, Alder and Hawthorn with generic vanilla tree algorithms. The rebuilt configured features reproduce all nine Witchwood log and leaf coordinate sets and the next random draw on clean Forge. The six vanilla species use their corresponding modern tree forms. Separate bone meal cases exercised all three ordinary Witchwood saplings on grass.
+- A protected root now blocks growth before Forge selects the feature. The copied Auram diagnostic also caught a denied break event for a Rowan leaf created by the same cast. The final feature sends each cell's final state once so Forge protection sees the original terrain. The regression covers both cases. See `build/qa-cauldron-tree-matrix/pack-diagnostic/final.log` for the denial.
+- Java 17 data generation and JAR reobfuscation succeeded. All 557 required Forge GameTests passed. Both packaged dedicated profiles passed 31 cases and saved their worlds on shutdown. Copied Auram accepted all nine Witchwood placements, each with exactly one snapshot per changed position. Its seeded world draws differ from clean Forge. The exact archive is `build/qa-cauldron-tree-matrix/coalesced.jar`, SHA-256 `9943bf846987a994b5933deb19163db421d3f520d0f86e994a36db97781ce32c`. See `gametest-coalesced.log`, `clean-coalesced/final.log`, and `pack-coalesced/final.log` in that directory. The direct and terrain comparison has closed 47 of 61 actions. Continue with the eight fluid and plant terrain actions.
+
 ## Cauldron weather, ice, and fire action comparison (2026-11-26)
 
 - The original Hell Gate trace sends flame and dragon growl even when Forge vetoes the Demon. The packet uses the attempted arrival, width 1, height 2.9 and range 16. A cobweb in the second air cell prevents the attempt and the packet. See `build/qa-hell-gate-spawn-veto/native/reference.log`. The preceding Forge package vetoed the Demon and sent no packet. See `build/qa-weather-fire/clean-baseline/final.log`.
