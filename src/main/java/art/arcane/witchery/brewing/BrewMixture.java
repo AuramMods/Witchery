@@ -316,16 +316,25 @@ public final class BrewMixture {
     @Nullable
     private static BrewMixture from(@Nullable CompoundTag tag, boolean taglock) {
         if (tag == null || !tag.contains(ITEMS, Tag.TAG_LIST)) return null;
-        List<ItemStack> stacks = loadIngredients(tag);
+        boolean fixedRitual = isFixedRitual(tag);
+        List<ItemStack> stacks = loadSavedIngredients(tag, fixedRitual);
+        if (stacks == null) return null;
         Integer color = BrewColor.saved(tag);
-        BrewMixture mixture = isFixedRitual(tag) ? fixedMixture(stacks, color) : from(stacks, color, taglock);
+        BrewMixture mixture = fixedRitual ? fixedMixture(stacks, color) : from(stacks, color, taglock);
         return mixture != null && (!tag.getBoolean("Splash") || mixture.splash()) ? mixture : null;
     }
 
-    private static List<ItemStack> loadIngredients(CompoundTag tag) {
-        List<ItemStack> stacks = new ArrayList<>();
-        for (Tag entry : tag.getList(ITEMS, Tag.TAG_COMPOUND)) stacks.add(loadIngredient((CompoundTag) entry));
-        return stacks;
+    @Nullable
+    private static List<ItemStack> loadSavedIngredients(CompoundTag tag, boolean fixedRitual) {
+        var stored = tag.getList(ITEMS, Tag.TAG_COMPOUND);
+        List<ItemStack> stacks = new ArrayList<>(stored.size());
+        for (Tag entry : stored) {
+            ItemStack stack = loadIngredient((CompoundTag) entry);
+            // The original action list skips entries without a brew action. Fixed recipes also use ordinary offerings.
+            if (fixedRitual || validIngredient(stack, id(stack)) != null) stacks.add(stack);
+        }
+        // Keep an unavailable recipe distinct from an intentionally empty colored brew.
+        return stacks.isEmpty() && !stored.isEmpty() ? null : stacks;
     }
 
     private static boolean isFixedRitual(CompoundTag tag) {
@@ -436,15 +445,14 @@ public final class BrewMixture {
     @Nullable
     public static Description describe(@Nullable CompoundTag tag) {
         if (tag == null || !tag.contains(ITEMS, Tag.TAG_LIST)) return null;
-        List<ItemStack> stacks = loadIngredients(tag);
         boolean fixedRitual = isFixedRitual(tag);
-        if (!fixedRitual && stacks.isEmpty() && BrewColor.saved(tag) == null) return null;
+        List<ItemStack> stacks = loadSavedIngredients(tag, fixedRitual);
+        if (stacks == null || !fixedRitual && stacks.isEmpty() && BrewColor.saved(tag) == null) return null;
 
         var description = new DescriptionBuilder();
         for (ItemStack stack : stacks) {
             var ingredient = validIngredient(stack, id(stack));
             if (ingredient != null) description.add(ingredient);
-            else if (!fixedRitual) return null;
         }
         if (tag.getBoolean("Splash") && description.delivery == Delivery.DRINK) return null;
         return new Description(List.copyOf(description.effects), description.delivery, description.dispersalExtent,

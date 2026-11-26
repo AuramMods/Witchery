@@ -22,6 +22,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -49,25 +50,33 @@ public final class CauldronTargetingTests {
         var level = helper.getLevel();
         var origin = helper.absolutePos(CENTER);
         var center = Vec3.atCenterOf(origin);
-        var owner = addOwner(level, center.add(-10, 0, 0));
-        var witch = addWitch(level, center, owner);
+        var ownerPosition = center.add(-10, 0, 0);
+        var chunks = List.of(ownerPosition, center, center.add(6.1, 0, 0)).stream()
+                .map(BlockPos::containing).map(ChunkPos::new).distinct().toList();
+        var forced = chunks.stream().filter(chunk -> level.setChunkForced(chunk.x, chunk.z, true)).toList();
         var offered = speedAt(level, origin.east(33));
         record Attendance(double x, double y, boolean counted) {}
         var positions = List.of(new Attendance(0, 6.4, true), new Attendance(0, 6.75, false),
                 new Attendance(0, -7.2, true), new Attendance(0, -7.6, false),
                 new Attendance(6, 0.5, true), new Attendance(6.1, 0.5, false));
-        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.getEntity(witch.getUUID()) == witch,
-                "The cauldron can see its attendant")).thenExecute(() -> {
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(chunks.stream().allMatch(chunk ->
+                level.isPositionEntityTicking(chunk.getWorldPosition())), "All attendance fixture chunks are ready for entities"))
+                .thenExecute(() -> {
+            var owner = addOwner(level, ownerPosition);
+            var witch = addWitch(level, center, owner);
             try {
                 for (var position : positions) {
                     witch.setPos(center.x + position.x(), origin.getY() + position.y(), center.z);
+                    helper.assertTrue(level.getEntitiesOfClass(CovenWitch.class, witch.getBoundingBox()).contains(witch),
+                            "The world tracks the resident at " + position);
                     var result = cast(level, origin, offered, false);
                     helper.assertTrue(result == (position.counted() ? BrewRituals.Result.COMPLETE : BrewRituals.Result.TOO_FAR),
-                            "The resident at " + position + " counts only within the original bounds");
+                            "The resident at " + position + " counts only within the original bounds, got " + result);
                 }
             } finally {
                 witch.discard();
                 level.removePlayerImmediately(owner, Entity.RemovalReason.DISCARDED);
+                forced.forEach(chunk -> level.setChunkForced(chunk.x, chunk.z, false));
             }
         }).thenSucceed();
     }
