@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Dream fluid spread and contact (2026-11-26)
+
+- The original headless Forge server filled exactly four horizontal cells with each fluid, preserved water beneath a source, replenished runoff from a diagonal above, and preferred a drop four cells away over a closed route. The port uses those rules on Forge's existing source, flowing, and falling states.
+- Original contact gave a Pig Regeneration II in Flowing Spirit and Weakness II in Hollow Tears. A Blaze and an Imp received Weakness II for 300 ticks in Flowing Spirit and Regeneration II for 100 ticks in Hollow Tears. A Nightmare received Weakness II in both fluids. The Forge cases also exercise an undead mob, a vampire player, Brew of the Grave, and an existing effect.
+- Clean packaged Forge kept both original lanes at their saved levels. The muted survival client poured both buckets above water. The new lanes stopped after four cells and matched the source and four flow levels. A moving Blaze received the expected effect in each lane. Both fluids also chose the tested drop four cells away. The first client fixture held the use key throughout its wait and spawned a stationary Blaze. The successful replay released the key after a single use and let the target move through the fluid.
+- An ordinary clean Forge restart retained both original lanes, both poured lanes, and the water below the new sources. OpenAL used No Output, and the focus monitor recorded neither client as the foreground process.
+- The copied Auram profile matched both original lanes, both new lanes over water, and both Blaze effects. Its ordinary restart retained all four lanes. Only the disposable profile's Does It Tick list exempted the test Blaze so it could receive contact effects while the server was playerless.
+- Java 17 data generation succeeded without changing the tracked generated resources. All 473 local Forge GameTests passed, including spread and recession on scheduled ticks, liquid separation, diagonal feeding of a saved 1.20.1 level, a falling column, and contact. The exact reobfuscated package is `build/qa-spirit-fluid-parity/candidate.jar` with SHA-256 `61102a85fa8618efc7ee7113e41b258f0a1532c474821f0a6586de31ac9a1c4f`.
+
 ## Original Dream fluid update queues (2026-11-26)
 
 - Witchery 0.24.1 saved four pending updates for two sources and their neighboring flow cells. The original Forge server recorded ten ticks for Flowing Spirit and seven for Hollow Tears. A separate copy widened those four delays for observation. The preceding packaged JAR filled both empty receiving cells by game tick 20 during its first load.

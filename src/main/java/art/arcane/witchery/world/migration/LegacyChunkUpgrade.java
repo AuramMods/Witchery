@@ -22,6 +22,7 @@ import art.arcane.witchery.block.RiteHeartBlock;
 import art.arcane.witchery.block.RitualGlyphBlock;
 import art.arcane.witchery.block.ShadedGlassBlock;
 import art.arcane.witchery.block.SpanishMossBlock;
+import art.arcane.witchery.block.SpiritFluid;
 import art.arcane.witchery.block.SpiritPortalBlock;
 import art.arcane.witchery.block.StockadeBlock;
 import art.arcane.witchery.block.SunlightBlock;
@@ -97,7 +98,8 @@ public final class LegacyChunkUpgrade {
     private static final Set<String> SKULLS = Set.of("wolfhead", "alluringskull");
     private static final Set<String> TILE_STATE_BLOCKS = Set.of("coffinblock", "wolfhead", "alluringskull", "dreamcatcher");
     private static final Set<String> DOORS = Set.of("rowanwooddoor", "alderwooddoor", "icedoor", "cwoodendoor");
-    private static final Map<String, Integer> FLUID_QUANTA = Map.of("spiritflowing", 5, "hollowtears", 5, "brew", 2, "disease", 1);
+    private static final Map<String, Integer> FLUID_QUANTA = Map.of(
+            "spiritflowing", SpiritFluid.QUANTA, "hollowtears", SpiritFluid.QUANTA, "brew", 2, "disease", 1);
     private static final Map<String, String> CLASSIC_FLUID_IDS = Map.of(
             "spiritflowing", "fluidspirit", "hollowtears", "hollowtears", "brew", "brew", "disease", "fluiddisease");
     private static final Set<String> POST_PROCESSING_BLOCKS = Set.of("stockade", "icestockade", "icefence", "icefencegate", "coffinblock",
@@ -529,7 +531,9 @@ public final class LegacyChunkUpgrade {
                     .setValue(FenceGateBlock.POWERED, (metadata & 8) != 0);
             case "tormentportal" -> state.setValue(TormentPortalBlock.LEGACY_ORIENTATION, true);
             case "spiritportal" -> state.setValue(SpiritPortalBlock.LEGACY_ORIENTATION, true);
-            case "spiritflowing", "hollowtears", "brew", "disease" ->
+            case "spiritflowing", "hollowtears" -> metadata >= SpiritFluid.QUANTA ? Blocks.AIR.defaultBlockState()
+                    : state.setValue(LiquidBlock.LEVEL, SpiritFluid.legacyBlockLevel(metadata, saved != 0));
+            case "brew", "disease" ->
                     restoreClassicFluid(state, metadata, FLUID_QUANTA.get(name.getPath()), saved != 0);
             case "brewgas", "brewliquid" -> state.setValue(LiquidBlock.LEVEL, metadata);
             case "light" -> state.setValue(SunlightBlock.TEMPORARY, true);

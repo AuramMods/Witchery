@@ -2,6 +2,7 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.DiseaseBlock;
+import art.arcane.witchery.block.SpiritFluid;
 import art.arcane.witchery.block.entity.BrewFluidBlockEntity;
 import art.arcane.witchery.item.BrewBucketItem;
 import net.minecraft.core.BlockPos;
@@ -110,7 +111,8 @@ public final class WitcheryFluids {
                 .density(config.density())
                 .viscosity(config.viscosity());
 
-        if (path.equals("fluidspirit") || path.equals("hollowtears")) {
+        boolean spirit = path.equals("fluidspirit") || path.equals("hollowtears");
+        if (spirit) {
             fluidProperties.lightLevel(3);
         }
         ResourceLocation still = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "block/" + config.stillTexture());
@@ -156,7 +158,7 @@ public final class WitcheryFluids {
 
         final ForgeFlowingFluid.Properties[] properties = new ForgeFlowingFluid.Properties[1];
 
-        RegistryObject<FlowingFluid> source = FLUIDS.register(path, () -> dispersal
+        RegistryObject<FlowingFluid> source = FLUIDS.register(path, () -> spirit ? new SpiritFluid.Source(properties[0]) : dispersal
                 ? new ForgeFlowingFluid.Source(properties[0]) {
                     @Override
                     public void tick(Level level, BlockPos pos, FluidState state) {
@@ -170,7 +172,7 @@ public final class WitcheryFluids {
                                 && super.canSpreadTo(level, pos, state, direction, target, targetState, existing, incoming);
                     }
                 } : new ForgeFlowingFluid.Source(properties[0]));
-        RegistryObject<FlowingFluid> flowing = FLUIDS.register("flowing_" + path, () -> dispersal
+        RegistryObject<FlowingFluid> flowing = FLUIDS.register("flowing_" + path, () -> spirit ? new SpiritFluid.Flowing(properties[0]) : dispersal
                 ? new ForgeFlowingFluid.Flowing(properties[0]) {
                     @Override
                     public void tick(Level level, BlockPos pos, FluidState state) {}
@@ -188,7 +190,7 @@ public final class WitcheryFluids {
                 .levelDecreasePerBlock(1);
         if (path.equals("fluiddisease")) {
             properties[0].levelDecreasePerBlock(8).tickRate(DiseaseBlock.TICK_INTERVAL);
-        } else if (brew || path.equals("fluidspirit") || path.equals("hollowtears")) {
+        } else if (brew || spirit) {
             properties[0].tickRate(config.viscosity() / 200);
             if (brew) properties[0].levelDecreasePerBlock(4);
         }

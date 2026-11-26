@@ -813,8 +813,9 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | `BUCKET_HOLLOWTEARS` | `witchery:buckethollowtears` | `HOLLOW_TEARS` |
 | `BUCKET_BREW` | `witchery:bucketbrew` | `BREW` |
 
-### 1.20.1 Fluid Scaffold Mapping (current)
+### 1.20.1 Fluid Mapping
 Implementation anchors:
+- `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/block/SpiritFluid.java`
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryFluids.java`
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryBlocks.java`
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/java/art/arcane/witchery/registry/WitcheryItems.java`
@@ -829,6 +830,8 @@ Implementation anchors:
 | `fluiddisease` | `witchery:fluiddisease`, `witchery:flowing_fluiddisease` | `witchery:disease` (`LiquidBlock`) | _(none)_ |
 
 The original world importer schedules Flowing Spirit, Hollow Tears, Brew, and Disease under their corresponding source or flowing fluid IDs. It retains saved delays and priorities when the recorded fluid is still present. Flowing Spirit and Hollow Tears use the original viscosity-derived update intervals of ten and seven ticks. Earlier port saves use their existing fluid queues. Recovering a delay lost during an earlier conversion requires the original region.
+
+Flowing Spirit and Hollow Tears use the original five strength levels, downward flow, diagonal feeding from above, and four-step search for a drop. Their horizontal levels use the existing Forge block states `0`, `2`, `3`, `5`, and `6`. Level `8` represents a falling column. Earlier 1.20.1 states retain their block and fluid IDs and are normalized when they next update. Flow refuses to displace other liquids. Contact uses the original undead, demonic, player vampirism, and Brew of the Grave rules. Nightmares receive Weakness for 300 ticks in Flowing Spirit and 100 ticks in Hollow Tears.
 
 ## 1.20.1 Data Generation
 Implementation anchors:
