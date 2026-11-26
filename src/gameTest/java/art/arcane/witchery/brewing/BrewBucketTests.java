@@ -39,6 +39,7 @@ import net.minecraftforge.fluids.capability.templates.FluidTank;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
+import java.util.List;
 import java.util.UUID;
 
 @GameTestHolder(Witchery.MODID)
@@ -414,6 +415,86 @@ public final class BrewBucketTests {
         save.putInt("HeatTicks", 100);
         bowl.load(save);
         return bowl;
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_saved_brew_transport")
+    public static void continuesAndTransfersAnActiveSavedBatchWithInactiveOfferings(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var source = hotCauldron(helper, new BlockPos(4, 4, 4));
+        var destination = hotCauldron(helper, new BlockPos(7, 4, 4));
+        var from = source.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
+        var to = destination.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
+        to.drain(3000, IFluidHandler.FluidAction.EXECUTE);
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "SavedBrewTransfer"));
+
+        int tint = 0x624391;
+        var recipe = BrewMixture.ingredientTag(List.of(new ItemStack(Items.NETHER_WART),
+                new ItemStack(WitcheryIngredient.TEAR_OF_THE_GODDESS.item()), new ItemStack(Items.GLOWSTONE_DUST),
+                new ItemStack(Items.DIAMOND_PICKAXE), new ItemStack(Items.SUGAR), new ItemStack(Items.REDSTONE),
+                new ItemStack(Items.FERMENTED_SPIDER_EYE), new ItemStack(Items.GHAST_TEAR)), tint);
+        var unavailable = new CompoundTag();
+        unavailable.putString("id", "witchery_missing_fixture:reagent");
+        unavailable.putByte("Count", (byte) 2);
+        unavailable.put("tag", new CompoundTag());
+        unavailable.getCompound("tag").putString("Marker", "Saved offering");
+        var entries = recipe.getList("Items", Tag.TAG_COMPOUND);
+        entries.add(4, unavailable);
+        var loaded = new CompoundTag();
+        loaded.putString("FluidName", "witchery:brew");
+        loaded.putInt("Amount", 3000);
+        loaded.putInt("TicksHeated", 100);
+        loaded.putBoolean("Powered", true);
+        loaded.put("Tag", recipe);
+        source.load(loaded);
+        source.load(source.saveWithFullMetadata());
+        helper.assertTrue(entries.equals(from.getFluidInTank(0).getTag().getList("Items", Tag.TAG_COMPOUND)),
+                "The active batch must retain both inactive entries in their saved positions");
+
+        offer(helper, source, new ItemStack(Items.GUNPOWDER));
+        entries.add(new ItemStack(Items.GUNPOWDER).save(new CompoundTag()));
+        int splashTint = BrewColor.append(tint, new ItemStack(Items.GUNPOWDER));
+        for (int bucket = 0; bucket < 3; bucket++) {
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BUCKET));
+            use(helper, player, source.getBlockPos());
+            var captured = ItemStack.of(player.getMainHandItem().save(new CompoundTag()));
+            helper.assertTrue(captured.is(WitcheryItems.getRequired("bucketbrew").get())
+                            && entries.equals(captured.getTag().getList("Items", Tag.TAG_COMPOUND)),
+                    "Each Brew Bucket must retain both inactive entries and the new dispersal");
+            if (bucket != 0) {
+                var different = new FluidStack(to.getFluidInTank(0).getFluid(), 1000, captured.getTag().copy());
+                different.getTag().getList("Items", Tag.TAG_COMPOUND).getCompound(4).putByte("Count", (byte) 1);
+                helper.assertTrue(to.fill(different, IFluidHandler.FluidAction.EXECUTE) == 0,
+                        "A bucket with different saved data must not top up the batch");
+            }
+            player.setItemInHand(InteractionHand.MAIN_HAND, captured);
+            use(helper, player, destination.getBlockPos());
+            helper.assertTrue(player.getMainHandItem().is(Items.BUCKET)
+                            && to.getFluidInTank(0).getAmount() == (bucket + 1) * 1000,
+                    "Matching buckets top up the destination by one portion each");
+        }
+        helper.assertTrue(from.getFluidInTank(0).isEmpty(), "All three portions came out of the source");
+        var heated = destination.saveWithFullMetadata();
+        heated.putInt("HeatTicks", 100);
+        heated.putBoolean("Powered", true);
+        destination.load(heated);
+        var wool = new ItemStack(WitcheryIngredient.BAT_WOOL.item());
+        offer(helper, destination, wool);
+        entries.remove(entries.size() - 1);
+        entries.add(wool.save(new CompoundTag()));
+        var bottled = destination.dispenseBottle();
+        var mixture = BrewMixture.from(bottled.getTag());
+        helper.assertTrue(mixture != null && mixture.delivery() == BrewMixture.Delivery.GAS
+                        && mixture.power() == 575
+                        && bottled.getTag().getInt("Color") == BrewColor.append(splashTint, wool)
+                        && entries.equals(bottled.getTag().getList("Items", Tag.TAG_COMPOUND))
+                        && to.getFluidInTank(0).isEmpty(),
+                "The reopened cauldron must replace Gunpowder with Bat Wool and bottle the ordered batch");
+        var effects = mixture.effects();
+        helper.assertTrue(effects.size() == 2 && effects.get(0).effect() == MobEffects.MOVEMENT_SPEED
+                        && effects.get(0).amplifier() == 1 && effects.get(0).ticks() == 3600
+                        && effects.get(1).effect() == MobEffects.POISON && effects.get(1).ticks() == 1800,
+                "The saved modifiers must affect the same potions after transport");
+        helper.succeed();
     }
 
     private static void sampleBottlingPower(GameTestHelper helper, WitchesCauldronBlockEntity bowl) {

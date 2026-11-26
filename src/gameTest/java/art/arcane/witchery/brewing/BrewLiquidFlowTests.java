@@ -15,6 +15,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.LeavesBlock;
@@ -28,6 +29,7 @@ import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
@@ -94,56 +96,67 @@ public final class BrewLiquidFlowTests {
                 new Displacement(Blocks.FLOWERING_AZALEA_LEAVES.defaultBlockState()
                         .setValue(LeavesBlock.PERSISTENT, true), true, List.of()));
 
-        for (int index = 0; index < cases.size(); index++) {
-            var test = cases.get(index);
-            var target = helper.absolutePos(new BlockPos(2 + index % 3 * 4, 2, 2 + index / 3 * 4)).atY(196);
-            var source = test.down ? target.above() : target.west();
-            level.setBlockAndUpdate(target.below(), (test.state.is(Blocks.WHEAT) ? Blocks.FARMLAND : Blocks.STONE).defaultBlockState());
-            if (test.state.is(Blocks.SUGAR_CANE)) {
-                level.setBlockAndUpdate(target.east().below(), Blocks.WATER.defaultBlockState());
-                level.setBlockAndUpdate(target.below(), Blocks.SAND.defaultBlockState());
-            }
-            if (!test.down) {
-                for (var wall : List.of(source.below(), source.west(), source.north(), source.south())) {
-                    level.setBlockAndUpdate(wall, Blocks.STONE.defaultBlockState());
-                }
-            }
-            level.setBlockAndUpdate(target, test.state);
-            if (test.state.is(Blocks.LEVER)) {
-                level.setBlockAndUpdate(target.east().below(), Blocks.STONE.defaultBlockState());
-                level.setBlockAndUpdate(target.east(), Blocks.REDSTONE_WIRE.defaultBlockState());
-                helper.assertTrue(level.getBlockState(target.east()).getValue(RedStoneWireBlock.POWER) == 15,
-                        "The lever starts with the adjacent wire powered");
-            }
+        var targets = IntStream.range(0, cases.size())
+                .mapToObj(index -> helper.absolutePos(new BlockPos(2 + index % 3 * 4, 2, 2 + index / 3 * 4)).atY(196))
+                .toList();
+        var chunks = targets.stream().map(ChunkPos::new).distinct().toList();
+        var forced = chunks.stream().filter(chunk -> level.setChunkForced(chunk.x, chunk.z, true)).toList();
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(targets.stream().allMatch(level::isPositionEntityTicking),
+                "All displacement cells are ready to track drops")).thenExecute(() -> {
+            try {
+                for (int index = 0; index < cases.size(); index++) {
+                    var test = cases.get(index);
+                    var target = targets.get(index);
+                    var source = test.down ? target.above() : target.west();
+                    level.setBlockAndUpdate(target.below(), (test.state.is(Blocks.WHEAT) ? Blocks.FARMLAND : Blocks.STONE).defaultBlockState());
+                    if (test.state.is(Blocks.SUGAR_CANE)) {
+                        level.setBlockAndUpdate(target.east().below(), Blocks.WATER.defaultBlockState());
+                        level.setBlockAndUpdate(target.below(), Blocks.SAND.defaultBlockState());
+                    }
+                    if (!test.down) {
+                        for (var wall : List.of(source.below(), source.west(), source.north(), source.south())) {
+                            level.setBlockAndUpdate(wall, Blocks.STONE.defaultBlockState());
+                        }
+                    }
+                    level.setBlockAndUpdate(target, test.state);
+                    if (test.state.is(Blocks.LEVER)) {
+                        level.setBlockAndUpdate(target.east().below(), Blocks.STONE.defaultBlockState());
+                        level.setBlockAndUpdate(target.east(), Blocks.REDSTONE_WIRE.defaultBlockState());
+                        helper.assertTrue(level.getBlockState(target.east()).getValue(RedStoneWireBlock.POWER) == 15,
+                                "The lever starts with the adjacent wire powered");
+                    }
 
-            liquid(level, block, source, 0, mixture, tag);
-            level.getBlockState(source).tick(level, source, RandomSource.create(1));
-            var state = level.getBlockState(target);
-            var drops = level.getEntitiesOfClass(ItemEntity.class, new AABB(target).inflate(1));
-            if (test.drops.isEmpty()) {
-                helper.assertTrue(state.is(test.state.getBlock()) && drops.isEmpty(),
-                        "Liquid preserves " + test.state.getBlock() + " and creates no drops");
-            } else {
-                helper.assertTrue(state.is(block) && state.getValue(LiquidBlock.LEVEL) == 1,
-                        "Liquid washes away " + test.state.getBlock());
-                var fluid = (BrewFluidBlockEntity) level.getBlockEntity(target);
-                helper.assertTrue(fluid.color() == 0x123456 && fluid.saveWithoutMetadata().getCompound("Effect").equals(tag),
-                        "The displaced cell receives the original brew and tint");
-                for (Item item : test.drops) {
-                    int count = drops.stream().filter(drop -> drop.getItem().is(item)).mapToInt(drop -> drop.getItem().getCount()).sum();
-                    helper.assertTrue(item == Items.WHEAT_SEEDS ? count >= 1 : count == 1,
-                            "The displaced block drops the expected amount of " + item);
+                    liquid(level, block, source, 0, mixture, tag);
+                    level.getBlockState(source).tick(level, source, RandomSource.create(1));
+                    var state = level.getBlockState(target);
+                    var drops = level.getEntitiesOfClass(ItemEntity.class, new AABB(target).inflate(1));
+                    if (test.drops.isEmpty()) {
+                        helper.assertTrue(state.is(test.state.getBlock()) && drops.isEmpty(),
+                                "Liquid preserves " + test.state.getBlock() + " and creates no drops");
+                    } else {
+                        helper.assertTrue(state.is(block) && state.getValue(LiquidBlock.LEVEL) == 1,
+                                "Liquid washes away " + test.state.getBlock());
+                        var fluid = (BrewFluidBlockEntity) level.getBlockEntity(target);
+                        helper.assertTrue(fluid.color() == 0x123456 && fluid.saveWithoutMetadata().getCompound("Effect").equals(tag),
+                                "The displaced cell receives the original brew and tint");
+                        for (Item item : test.drops) {
+                            int count = drops.stream().filter(drop -> drop.getItem().is(item)).mapToInt(drop -> drop.getItem().getCount()).sum();
+                            helper.assertTrue(item == Items.WHEAT_SEEDS ? count >= 1 : count == 1,
+                                    "The displaced block drops the expected amount of " + item);
+                        }
+                        helper.assertTrue(drops.stream().allMatch(drop -> test.drops.contains(drop.getItem().getItem())),
+                                "Displacement creates no unrelated drops");
+                    }
+                    if (test.state.is(Blocks.LEVER)) {
+                        helper.assertTrue(level.getBlockState(target.east()).getValue(RedStoneWireBlock.POWER) == 0,
+                                "The displaced lever immediately depowers the wire");
+                    }
+                    drops.forEach(ItemEntity::discard);
                 }
-                helper.assertTrue(drops.stream().allMatch(drop -> test.drops.contains(drop.getItem().getItem())),
-                        "Displacement creates no unrelated drops");
+            } finally {
+                forced.forEach(chunk -> level.setChunkForced(chunk.x, chunk.z, false));
             }
-            if (test.state.is(Blocks.LEVER)) {
-                helper.assertTrue(level.getBlockState(target.east()).getValue(RedStoneWireBlock.POWER) == 0,
-                        "The displaced lever immediately depowers the wire");
-            }
-            drops.forEach(ItemEntity::discard);
-        }
-        helper.succeed();
+        }).thenSucceed();
     }
 
     @GameTest(template = "qa_coven_arena")

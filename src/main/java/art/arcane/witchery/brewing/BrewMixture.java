@@ -263,27 +263,22 @@ public final class BrewMixture {
     }
 
     public static boolean canAdd(List<ItemStack> current, ItemStack offered) {
-        Mixing mixing = mix(current, false, false);
+        Mixing mixing = mix(current, true, false);
         ResourceLocation id = id(offered);
         Ingredient ingredient = INGREDIENTS.get(id);
-        return mixing != null && ingredient != null && ingredient.modifier != Modifier.RITUAL
+        return ingredient != null && ingredient.modifier != Modifier.RITUAL
                 && (ingredient.modifier != Modifier.WAYSTONE || WaystoneItem.location(offered) != null)
                 && (ingredient.action != Action.CHANGING_SEASONS || BiomeNoteItem.biomeId(offered) != null)
                 && !mixing.segment.contains(id)
                 && (!ingredient.isEffect() || mixing.used + ingredient.amount <= mixing.capacity);
     }
 
-    public static void add(List<ItemStack> current, ItemStack offered) {
-        Ingredient ingredient = INGREDIENTS.get(id(offered));
-        if (ingredient != null && ingredient.modifier == Modifier.DELIVERY) {
-            current.removeIf(stack -> {
-                // The original dispersals replace any earlier Wheat (Moonshine) action as well.
-                if (stack.is(Items.WHEAT)) return true;
-                Ingredient previous = INGREDIENTS.get(id(stack));
-                return previous != null && previous.modifier == Modifier.DELIVERY;
-            });
-        }
-        current.add(offered.copy());
+    public static boolean replaces(ItemStack offered, ItemStack previous) {
+        Ingredient addition = INGREDIENTS.get(id(offered));
+        if (addition == null || addition.modifier != Modifier.DELIVERY) return false;
+        // The original dispersals replace earlier Wheat (Moonshine) as well.
+        Ingredient existing = INGREDIENTS.get(id(previous));
+        return previous.is(Items.WHEAT) || existing != null && existing.modifier == Modifier.DELIVERY;
     }
 
     @Nullable
@@ -301,6 +296,12 @@ public final class BrewMixture {
         if (stacks.isEmpty() && savedColor == null) return null;
         Mixing mixing = mix(stacks, false, taglock);
         return mixing != null ? new BrewMixture(mixing, savedColor != null ? savedColor : BrewColor.fromIngredients(stacks)) : null;
+    }
+
+    @Nullable
+    public static BrewMixture fromStoredOfferings(List<ItemStack> stacks, @Nullable Integer savedColor) {
+        List<ItemStack> active = stacks.stream().filter(stack -> validIngredient(stack, id(stack)) != null).toList();
+        return active.isEmpty() && !stacks.isEmpty() ? null : from(active, savedColor);
     }
 
     @Nullable
@@ -403,16 +404,27 @@ public final class BrewMixture {
     }
 
     public static CompoundTag ingredientTag(List<ItemStack> stacks, @Nullable Integer color) {
-        CompoundTag tag = new CompoundTag();
         ListTag items = new ListTag();
         for (ItemStack stack : stacks) items.add(stack.save(new CompoundTag()));
+        return ingredientTag(items, color);
+    }
+
+    public static CompoundTag ingredientTag(ListTag items, @Nullable Integer color) {
+        CompoundTag tag = new CompoundTag();
         tag.put(ITEMS, items);
         if (color != null) tag.putInt("Color", color);
         return tag;
     }
 
     public CompoundTag bottleTag(List<ItemStack> stacks) {
-        CompoundTag tag = ingredientTag(stacks, color);
+        return fillBottleTag(ingredientTag(stacks, color));
+    }
+
+    public CompoundTag bottleTag(ListTag items) {
+        return fillBottleTag(ingredientTag(items, color));
+    }
+
+    private CompoundTag fillBottleTag(CompoundTag tag) {
         tag.putInt("Power", power);
         tag.putInt("EffectCount", effects.size());
         tag.putInt("UsedCapacity", used);

@@ -88,7 +88,7 @@ public final class SavedBrewExposureTests {
     private static CompoundTag recipe() {
         var items = List.of(Items.NETHER_WART, WitcheryIngredient.TEAR_OF_THE_GODDESS.item(),
                 Items.GLOWSTONE_DUST, Items.DIAMOND_PICKAXE, Items.SUGAR, Items.REDSTONE,
-                Items.FERMENTED_SPIDER_EYE, Items.SPIDER_EYE);
+                Items.FERMENTED_SPIDER_EYE, Items.GHAST_TEAR);
         var recipe = BrewMixture.ingredientTag(items.stream().map(Item::getDefaultInstance).toList(), 0x624391);
         var pending = new CompoundTag();
         pending.putString("id", "witchery_missing_fixture:reagent");

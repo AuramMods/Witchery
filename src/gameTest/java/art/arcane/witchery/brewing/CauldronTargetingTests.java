@@ -87,18 +87,25 @@ public final class CauldronTargetingTests {
         var nether = level.getServer().getLevel(Level.NETHER);
         var origin = helper.absolutePos(CENTER);
         var center = Vec3.atCenterOf(origin);
-        var owner = addOwner(level, center.add(-10, 0, 0));
-        var witches = new ArrayList<CovenWitch>();
-        for (int i = 0; i < 6; i++) witches.add(addWitch(level, center.add(i - 2, 0, 0), owner));
-        var leonard = helper.spawnWithNoFreeWill(WitcheryEntities.LEONARD.get(), CENTER.south(2));
-        leonard.setNoGravity(true);
+        var ownerPosition = center.add(-10, 0, 0);
+        var leonardPosition = CENTER.south(2);
+        var chunks = List.of(BlockPos.containing(ownerPosition), origin, origin.east(7), helper.absolutePos(leonardPosition))
+                .stream().map(ChunkPos::new).distinct().toList();
+        var forced = chunks.stream().filter(chunk -> level.setChunkForced(chunk.x, chunk.z, true)).toList();
         var acrossDimensions = speedAt(nether, origin.atY(180));
         var distant = speedAt(level, origin.east(1200));
-        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
-                level.getEntity(leonard.getUUID()) == leonard
-                        && witches.stream().allMatch(witch -> level.getEntity(witch.getUUID()) == witch),
-                "The coven and Leonard are tracked before testing range")).thenExecute(() -> {
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(chunks.stream().allMatch(chunk ->
+                level.isPositionEntityTicking(chunk.getWorldPosition())), "All coven fixture chunks are ready for entities"))
+                .thenExecute(() -> {
+            var owner = addOwner(level, ownerPosition);
+            var witches = new ArrayList<CovenWitch>();
+            var leonard = helper.spawnWithNoFreeWill(WitcheryEntities.LEONARD.get(), leonardPosition);
+            leonard.setNoGravity(true);
             try {
+                for (int i = 0; i < 6; i++) witches.add(addWitch(level, center.add(i - 2, 0, 0), owner));
+                helper.assertTrue(level.getEntity(leonard.getUUID()) == leonard
+                                && witches.stream().allMatch(witch -> level.getEntity(witch.getUUID()) == witch),
+                        "The coven and Leonard are tracked before testing range");
                 leonard.setHealth(1);
                 helper.assertTrue(cast(level, origin, distant, BrewRituals.leonardNearby(level, origin)) == BrewRituals.Result.COMPLETE,
                         "Six attendants remove the same-dimension range limit");
@@ -114,6 +121,7 @@ public final class CauldronTargetingTests {
                 witches.forEach(Entity::discard);
                 leonard.discard();
                 level.removePlayerImmediately(owner, Entity.RemovalReason.DISCARDED);
+                forced.forEach(chunk -> level.setChunkForced(chunk.x, chunk.z, false));
             }
         }).thenSucceed();
     }

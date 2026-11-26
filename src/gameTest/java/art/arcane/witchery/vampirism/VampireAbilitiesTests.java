@@ -210,37 +210,46 @@ public final class VampireAbilitiesTests {
         var center = new BlockPos(Math.floorDiv(origin.getX(), 16) * 16 + 8, origin.getY(),
                 Math.floorDiv(origin.getZ(), 16) * 16 + 8);
         var bounds = new AABB(center).inflate(15);
-        for (BlockPos point : BlockPos.betweenClosed(center.offset(-4, -1, -4), center.offset(4, -1, 4))) {
-            world.setBlockAndUpdate(point, Blocks.STONE.defaultBlockState());
-        }
-        var first = castSwarm(world, center);
-        var bats = world.getEntitiesOfClass(AttackBat.class, bounds);
-        helper.assertTrue(bats.size() == 15 && first == 2,
-                "An open cast adds 15 bats and spends one of three charges. Bats: " + bats.size() + ", charges: " + first);
-        for (AttackBat bat : bats) {
-            helper.assertTrue(isSwarmOffset(bat.blockPosition().getX() - center.getX())
-                            && isSwarmOffset(bat.blockPosition().getZ() - center.getZ())
-                            && Math.abs(bat.getY() - center.getY() - 0.05) < 1e-6,
-                    "Use the original seven offsets on each axis and release the bat just above the floor");
-            bat.discard();
-        }
-        for (BlockPos point : BlockPos.betweenClosed(center.offset(-4, 0, -4), center.offset(4, 11, 4))) {
-            world.setBlockAndUpdate(point, Blocks.STONE.defaultBlockState());
-        }
-        int raised = castSwarm(world, center);
-        var raisedBats = world.getEntitiesOfClass(AttackBat.class, bounds);
-        helper.assertTrue(raisedBats.size() == 15 && raised == 2, "The top of the eight-block scan can support the whole swarm");
-        for (AttackBat bat : raisedBats) {
-            helper.assertTrue(Math.abs(bat.getY() - center.getY() - 12.05) < 1e-6, "Release each bat above the raised floor");
-            bat.discard();
-        }
-        for (BlockPos point : BlockPos.betweenClosed(center.offset(-4, 12, -4), center.offset(4, 13, 4))) {
-            world.setBlockAndUpdate(point, Blocks.STONE.defaultBlockState());
-        }
-        int blocked = castSwarm(world, center);
-        helper.assertTrue(world.getEntitiesOfClass(AttackBat.class, bounds).isEmpty() && blocked == 2,
-                "A valid cast still spends a charge when every column lacks headroom");
-        helper.succeed();
+        var chunk = new ChunkPos(center);
+        boolean forced = world.setChunkForced(chunk.x, chunk.z, true);
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(world.isPositionEntityTicking(center),
+                "The swarm's spawn columns are ready for entities")).thenExecute(() -> {
+            try {
+                for (BlockPos point : BlockPos.betweenClosed(center.offset(-4, -1, -4), center.offset(4, -1, 4))) {
+                    world.setBlockAndUpdate(point, Blocks.STONE.defaultBlockState());
+                }
+                var first = castSwarm(world, center);
+                var bats = world.getEntitiesOfClass(AttackBat.class, bounds);
+                helper.assertTrue(bats.size() == 15 && first == 2,
+                        "An open cast adds 15 bats and spends one of three charges. Bats: " + bats.size() + ", charges: " + first);
+                for (AttackBat bat : bats) {
+                    helper.assertTrue(isSwarmOffset(bat.blockPosition().getX() - center.getX())
+                                    && isSwarmOffset(bat.blockPosition().getZ() - center.getZ())
+                                    && Math.abs(bat.getY() - center.getY() - 0.05) < 1e-6,
+                            "Use the original seven offsets on each axis and release the bat just above the floor");
+                    bat.discard();
+                }
+                for (BlockPos point : BlockPos.betweenClosed(center.offset(-4, 0, -4), center.offset(4, 11, 4))) {
+                    world.setBlockAndUpdate(point, Blocks.STONE.defaultBlockState());
+                }
+                int raised = castSwarm(world, center);
+                var raisedBats = world.getEntitiesOfClass(AttackBat.class, bounds);
+                helper.assertTrue(raisedBats.size() == 15 && raised == 2, "The top of the eight-block scan can support the whole swarm");
+                for (AttackBat bat : raisedBats) {
+                    helper.assertTrue(Math.abs(bat.getY() - center.getY() - 12.05) < 1e-6, "Release each bat above the raised floor");
+                    bat.discard();
+                }
+                for (BlockPos point : BlockPos.betweenClosed(center.offset(-4, 12, -4), center.offset(4, 13, 4))) {
+                    world.setBlockAndUpdate(point, Blocks.STONE.defaultBlockState());
+                }
+                int blocked = castSwarm(world, center);
+                helper.assertTrue(world.getEntitiesOfClass(AttackBat.class, bounds).isEmpty() && blocked == 2,
+                        "A valid cast still spends a charge when every column lacks headroom");
+            } finally {
+                world.getEntitiesOfClass(AttackBat.class, bounds).forEach(AttackBat::discard);
+                if (forced) world.setChunkForced(chunk.x, chunk.z, false);
+            }
+        }).thenSucceed();
     }
 
     private static int castSwarm(ServerLevel world, BlockPos center) {

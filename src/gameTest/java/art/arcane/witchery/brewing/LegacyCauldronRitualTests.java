@@ -667,6 +667,32 @@ public final class LegacyCauldronRitualTests {
         });
     }
 
+    @GameTest(template = "qa_coven_arena", batch = "witchery_saved_brew_transport")
+    public static void restoresTheFixedTriggerBeforeTrailingInactiveOfferings(GameTestHelper helper) {
+        BlockPos pos = helper.absolutePos(new BlockPos(6, 4, 5));
+        var original = originalRitual(3000, 19, true, oldItem("witchery:ingredient", 22, 1),
+                oldItem("witchery:ingredient", 31, 1), oldItem("minecraft:egg", 0, 4),
+                oldItem("minecraft:diamond_pickaxe", 0, 1), oldItem("witchery_missing_fixture:unknown", 3, 2));
+        var bowl = placeCauldron(helper, pos, original);
+        var tank = tank(bowl);
+        var before = tank.getFluidInTank(0).getTag();
+        tickCauldron(helper, bowl, 1);
+        var restored = bowl.saveWithFullMetadata();
+        helper.assertTrue(restored.getString("Ritual").equals("witchery:mutandis") && restored.getInt("RitualTicks") == 190
+                        && restored.getInt("RitualTriggerPosition") == 2,
+                "The original fixed trigger must select Mutandis ahead of inactive entries");
+        bowl.load(restored);
+        var withdrawal = tank.drain(1000, IFluidHandler.FluidAction.EXECUTE);
+        var after = withdrawal.getTag();
+        helper.assertTrue(after != null && after.getBoolean("RitualTriggered")
+                        && after.getList("Items", Tag.TAG_COMPOUND).equals(before.getList("Items", Tag.TAG_COMPOUND)),
+                "Saving and withdrawing the fixed brew must retain the trigger's count and original position");
+        helper.assertTrue(tank.fill(withdrawal, IFluidHandler.FluidAction.EXECUTE) == 1000
+                        && tank.getFluidInTank(0).isFluidEqual(withdrawal),
+                "The saved trigger and trailing entries must match when the same portion returns");
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void readsComparatorEffectsFromAnOriginalPartialCast(GameTestHelper helper) {
         BlockPos pos = helper.absolutePos(new BlockPos(6, 4, 5));
