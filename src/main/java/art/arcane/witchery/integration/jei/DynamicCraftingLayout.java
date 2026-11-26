@@ -36,7 +36,6 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -204,7 +203,8 @@ final class DynamicCraftingLayout implements ICraftingCategoryExtension {
         return Arrays.stream(DyeColor.values()).flatMap(current -> {
             var bag = new ItemStack(item("brewbag"));
             BrewBagItem.dye(bag, current);
-            return Arrays.stream(DyeColor.values()).map(dye -> List.of(bag, new ItemStack(DyeItem.byColor(dye))));
+            return Arrays.stream(DyeColor.values()).flatMap(dye -> DyeBrewBagRecipe.dyesFor(dye).stream())
+                    .map(dye -> List.of(bag, new ItemStack(dye)));
         });
     }
 

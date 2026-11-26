@@ -1340,7 +1340,9 @@ The headless 0.24.1 server reported 293 default shaped and shapeless recipes tha
 
 Fleet Feet uses extended splash Swiftness and Slowness. The Iron Arm uses extended splash Strength and Weakness. Nightmares uses extended splash Poison and Night Vision. Both old metadata encodings for extended splash Slowness and Weakness resolve to the same modern bottles.
 
-The default crafting comparison includes the vanilla-only Poisonous Potato recipe. The 77 dynamic registrations and post-registration optional Ore Dictionary recipes need separate comparisons. The original optional silver conversion consumes eight Witchery Silver Dust to produce the first registered `dustSilver` stack.
+The default crafting comparison includes the vanilla-only Poisonous Potato recipe. The 77 dynamic registrations cover all seven original RecipeSorter keys. The fixture compares full item data and crafting remainders. The Brew Bag accepts the original raw Ink Sac, Cocoa Beans, Lapis Lazuli and Bone Meal as well as the current dye items.
+
+The shipped 0.24.1 JAR consumes nine Witchery Silver Dust to produce the first registered `dustSilver` stack. Forge 1.20.1 uses the first external entry of `forge:dusts/silver`. Its seven silver ingot recipes still use `forge:ingots/silver`. These cover six silver bolts, the Wolf Trap, the Silver Sword, and all four Witch Hunter clothing upgrades.
 
 The `witchery:wood_ash` smelting recipe uses `minecraft:saplings` when `addSmeltingForAllSaplingsToWoodAsh` is true in `config/witchery-common.toml`. The false branch accepts the original six vanilla species and Rowan. Both the vanilla furnace and Witch's Oven load the selected recipe through Forge. The oven saves pending experience under `RecipesUsed` and pays it out when a player takes the main result.
 

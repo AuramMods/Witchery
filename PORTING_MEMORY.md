@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Data-dependent crafting and optional silver (2026-11-26)
+
+- The original server captured all 77 dynamic recipe grids in `build/qa-dynamic-crafting/native/default.log`. The fixtures use bound Taglock Kits, worn clothing, a two-charge Biting Belt, an item-data marker on the Brew Bag, actual positions in the keyring and a selected atlas page. The original atlas remainder includes its saved page. The previous package matched 73 results and failed for the four ingredients that became separate dye items in modern Minecraft.
+- The original JAR's `WitcheryRecipes.init` allocates nine inputs for the optional Silver Dust craft. The checked-in decompilation omitted one repeated argument. The headless original boots in `native/lapis.log` and `native/glowstone.log` recorded the Ore Dictionary order, no result for eight, and a single output of the first provider for nine. The two registered fixture providers are vanilla items standing in for an optional dependency.
+- The Forge conversion reads the server's item tag in order and skips Witchery's own Silver Dust. A datapack that tags only Witchery's item has no runnable conversion. The Brew Bag crafting extension gives JEI both the legacy and modern dye inputs and uses the real recipe to assemble their examples.
+- Headless clean Forge matched the original 77 dynamic crafts and all slot remainders after translating legacy IDs and equivalent potion aliases. Both provider fixtures also matched the seven ingot recipes and the nine-slot dust result. Copied Auram matched the same seven ingot recipes and produced one `occultism:silver_dust`, the first of its four external entries. The recipe packet codec preserved the nine-slot match and output in all three provider profiles.
+- Java 17 data generation, JAR reobfuscation, and all 484 required local Forge GameTests passed. The identical package ran in five headless profiles. The tested `build/qa-dynamic-crafting/candidate.jar` has SHA-256 `8a9a4f6afe3a0015544056c394a0e51349df883166e6b891f90a9e5a6892770d`.
+
 ## Crafting table output and ingredient audit (2026-11-26)
 
 - `build/qa-release-catalog/native/effective.log` captured the shipped 0.24.1 server's default crafting registry and actual selected output for each matching 3×3 grid. `native-effective.tsv` holds 317 cases. Choose the Witchery alternative where a recipe accepts an Ore Dictionary group. The extra cases exercise species, mixed planks and the Poisonous Potato duplication recipe.

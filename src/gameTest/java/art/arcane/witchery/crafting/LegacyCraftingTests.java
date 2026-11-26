@@ -2,8 +2,10 @@ package art.arcane.witchery.crafting;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.WitchWoodType;
+import art.arcane.witchery.item.BrewBagItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
+import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.player.Player;
@@ -11,6 +13,9 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.TransientCraftingContainer;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.DyeItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
@@ -112,6 +117,38 @@ public final class LegacyCraftingTests {
         grid.setItem(5, new ItemStack(WitcheryIngredient.TORMENTED_TWINE.item()));
         assertWeave(helper, grid, WitcheryIngredient.DREAMWEAVE_OF_NIGHTMARES.item(),
                 Potions.POISON, Potions.LONG_POISON, Potions.LONG_NIGHT_VISION);
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void originalBrewBagDyesPreserveContents(GameTestHelper helper) {
+        var grid = grid();
+        var bag = new ItemStack(WitcheryItems.getRequired("brewbag").get());
+        var brew = new ItemStack(WitcheryIngredient.BREW_OF_VINES.item());
+        var contents = BrewBagItem.contents(bag);
+        contents.set(3, brew);
+        BrewBagItem.saveContents(bag, contents);
+        grid.setItem(7, bag);
+
+        Item[] dyes = {Items.INK_SAC, Items.COCOA_BEANS, Items.LAPIS_LAZULI, Items.BONE_MEAL};
+        DyeColor[] colors = {DyeColor.BLACK, DyeColor.BROWN, DyeColor.BLUE, DyeColor.WHITE};
+        int[] legacyRgb = {1118481, 5057301, 2247599, 16777215};
+        var level = helper.getLevel();
+        for (int i = 0; i < dyes.length; i++) {
+            grid.setItem(0, new ItemStack(dyes[i]));
+            var recipe = level.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, grid, level).orElseThrow();
+            var dyed = recipe.assemble(grid, level.registryAccess());
+            helper.assertTrue(BrewBagItem.color(dyed) == legacyRgb[i]
+                            && ItemStack.matches(BrewBagItem.contents(dyed).get(3), brew),
+                    dyes[i] + " dyes the bag while preserving its brew");
+            grid.setItem(0, new ItemStack(DyeItem.byColor(colors[i])));
+            helper.assertTrue(recipe.matches(grid, level)
+                            && ItemStack.matches(dyed, recipe.assemble(grid, level.registryAccess())),
+                    "The modern dye gives the same result as " + dyes[i]);
+        }
+        grid.setItem(1, new ItemStack(Items.COCOA_BEANS));
+        helper.assertTrue(level.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, grid, level).isEmpty(),
+                "Two dye inputs do not craft a Brew Bag");
         helper.succeed();
     }
 
