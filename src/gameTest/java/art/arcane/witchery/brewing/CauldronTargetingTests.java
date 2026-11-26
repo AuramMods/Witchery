@@ -18,6 +18,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
@@ -153,6 +154,77 @@ public final class CauldronTargetingTests {
                         "The missing glyph invalidates the cast in either dimension");
             }
         }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_cauldron_saved_circles")
+    public static void savedTerrainCastRequiresTheCircleOfAnUnfundedAction(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var origin = helper.absolutePos(CENTER).atY(220);
+        var tongue = WitcheryIngredient.DOG_TONGUE.item().getDefaultInstance();
+        for (boolean otherwhere : List.of(true, false)) {
+            var ring = origin.east(otherwhere ? 11 : 24);
+            var action = otherwhere ? Items.ENDER_PEARL : WitcheryIngredient.REFINED_EVIL.item();
+            var offerings = List.of(Items.NETHER_WART.getDefaultInstance(), Items.COAL.getDefaultInstance(),
+                    action.getDefaultInstance(), Items.GUNPOWDER.getDefaultInstance(), stone(level, ring), tongue);
+            level.setBlockAndUpdate(ring.below(), Blocks.STONE.defaultBlockState());
+            level.setBlockAndUpdate(ring, Blocks.FIRE.defaultBlockState());
+            helper.assertTrue(cast(level, origin, offerings, false) == BrewRituals.Result.INVALID_CIRCLES
+                            && level.getBlockState(ring).is(Blocks.FIRE),
+                    "A saved terrain offering must pass its circle check before Extinguish can act");
+            drawMediumRing(level, ring, otherwhere ? "circleglyphotherwhere" : "circleglyphinfernal");
+            helper.assertTrue(cast(level, origin, offerings, false) == BrewRituals.Result.COMPLETE
+                            && level.isEmptyBlock(ring),
+                    "With the circle present, only the affordable terrain action runs");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_taglock_saved_circles")
+    public static void savedTaglockCastRequiresTheCircleOfAnUnfundedAction(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var origin = helper.absolutePos(CENTER);
+        var pig = helper.spawnWithNoFreeWill(EntityType.PIG, CENTER.east());
+        pig.setNoGravity(true);
+        var trigger = WitcheryItems.getRequired("taglockkit").get().getDefaultInstance();
+        TaglockItem.bindSignature(trigger, pig);
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.getEntity(pig.getUUID()) == pig,
+                "The Taglock can resolve its nearby target")).thenExecute(() -> {
+            var before = pig.position();
+            for (boolean otherwhere : List.of(true, false)) {
+                var ring = origin.east(otherwhere ? 11 : 24);
+                var action = otherwhere ? Items.ENDER_PEARL : WitcheryIngredient.REFINED_EVIL.item();
+                var offerings = List.of(Items.NETHER_WART.getDefaultInstance(), Items.SUGAR.getDefaultInstance(),
+                        action.getDefaultInstance(), stone(level, ring), trigger);
+                helper.assertTrue(cast(level, origin, offerings, false) == BrewRituals.Result.INVALID_CIRCLES
+                                && pig.getActiveEffects().isEmpty(),
+                        "The required circle is checked before the affordable Swiftness can apply");
+                drawMediumRing(level, ring, otherwhere ? "circleglyphotherwhere" : "circleglyphinfernal");
+                helper.assertTrue(cast(level, origin, offerings, false) == BrewRituals.Result.COMPLETE
+                                && pig.hasEffect(MobEffects.MOVEMENT_SPEED)
+                                && pig.getActiveEffects().size() == 1 && pig.position().equals(before),
+                        "With the circle present, only Swiftness applies and the target stays in place");
+                pig.removeAllEffects();
+            }
+        }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_cauldron_suppressed_destination")
+    public static void netherBrickLeavesASuppressedTransposeDestinationUnused(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var origin = helper.absolutePos(CENTER).atY(220);
+        var ring = origin.east(11);
+        var second = stone(level, ring.east(50));
+        second.getOrCreateTag().putString("Dimension", "witchery:missing_test_dimension");
+        var offerings = List.of(Items.NETHER_WART.getDefaultInstance(),
+                WitcheryIngredient.TEAR_OF_THE_GODDESS.item().getDefaultInstance(), Items.NETHER_BRICK.getDefaultInstance(),
+                Items.ENDER_PEARL.getDefaultInstance(), stone(level, ring), second, Items.GUNPOWDER.getDefaultInstance(),
+                WitcheryIngredient.DOG_TONGUE.item().getDefaultInstance());
+        drawMediumRing(level, ring, "circleglyphotherwhere");
+        level.setBlockAndUpdate(ring, Blocks.GLASS.defaultBlockState());
+        helper.assertTrue(cast(level, origin, offerings, false) == BrewRituals.Result.COMPLETE
+                        && level.getBlockState(ring).is(Blocks.GLASS),
+                "The valid ring is enough when Nether Brick has disabled the move");
+        helper.succeed();
     }
 
     @GameTest(template = TEMPLATE, batch = "witchery_hell_gate_clearance")

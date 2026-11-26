@@ -247,6 +247,8 @@ public final class BrewMixture {
     private final Delivery impactDelivery;
     private final int extent;
     private final int lifetime;
+    private final boolean requiresOtherwhereCircle;
+    private final boolean requiresInfernalCircle;
     private final List<WaystoneItem.Location> destinations;
 
     private BrewMixture(Mixing mixing, int storedColor) {
@@ -261,6 +263,8 @@ public final class BrewMixture {
         impactDelivery = delivery != Delivery.DRINK && mixing.instantImpact ? Delivery.SPLASH : delivery;
         extent = mixing.extent;
         lifetime = mixing.lifetime;
+        requiresOtherwhereCircle = mixing.requiresOtherwhereCircle;
+        requiresInfernalCircle = mixing.requiresInfernalCircle;
         destinations = List.copyOf(mixing.destinations);
     }
 
@@ -529,16 +533,17 @@ public final class BrewMixture {
     @Nullable
     WaystoneItem.Location secondDestination() { return destinations.size() < 2 ? null : destinations.get(1); }
 
-    boolean hasTransposition() {
-        return hasAction(Action.TRANSPOSE);
+    boolean transposesBlocks() {
+        return effects.stream().anyMatch(effect -> effect instanceof ActionApplication action
+                && action.action == Action.TRANSPOSE && action.affectsBlocks);
+    }
+
+    boolean requiresOtherwhereCircle() {
+        return requiresOtherwhereCircle;
     }
 
     boolean requiresInfernalCircle() {
-        return hasAction(Action.HELL_GATE);
-    }
-
-    private boolean hasAction(Action wanted) {
-        return effects.stream().anyMatch(effect -> effect instanceof ActionApplication action && action.action == wanted);
+        return requiresInfernalCircle;
     }
 
     public void applyToBlock(ServerLevel level, BlockPos pos, Direction face, int radius, boolean ritual, @Nullable Player caster) {
@@ -982,6 +987,8 @@ public final class BrewMixture {
         private int yieldModifier;
         private Delivery delivery = Delivery.DRINK;
         private boolean instantImpact;
+        private boolean requiresOtherwhereCircle;
+        private boolean requiresInfernalCircle;
         private int extent;
         private int lifetime;
         private final EffectBoost entityStrength = new EffectBoost();
@@ -1004,8 +1011,10 @@ public final class BrewMixture {
             power += ingredient.power;
             yieldModifier += ingredient.yieldModifier;
             if (ingredient.isEffect()) {
-                // Changing Seasons prepares the splash even when its action cannot spend effect capacity.
+                // The original checks targeting and prepares delivery even when an action exceeds effect capacity.
                 instantImpact |= ingredient.action == Action.CHANGING_SEASONS;
+                requiresOtherwhereCircle |= ingredient.action == Action.TRANSPOSE;
+                requiresInfernalCircle |= ingredient.action == Action.HELL_GATE;
                 applyEffect(stack, ingredient);
                 segment.clear();
             } else {

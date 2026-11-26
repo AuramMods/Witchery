@@ -75,14 +75,13 @@ public final class BrewRituals {
         if (site == null) return Result.TOO_FAR;
         ServerLevel level = site.level();
         BlockPos target = site.pos();
-        boolean transpose = mixture.hasTransposition();
         if (!hasRequiredCircles(mixture, site)) return Result.INVALID_CIRCLES;
 
         return switch (mixture.impactDelivery()) {
             case TRIGGERED -> BrewItemCurse.attach(source, origin, brew) ? Result.COMPLETE : Result.FAILED;
             case SPLASH -> {
                 BrewTransposition.Site destination = null;
-                if (transpose) {
+                if (mixture.transposesBlocks()) {
                     destination = boundedSite(source, origin, mixture.secondDestination());
                     if (destination == null || !canReachDimension(source, destination.level(), leonard, coven)) yield Result.TOO_FAR;
                     loadArea(destination.level(), destination.pos(), 3);
@@ -113,12 +112,12 @@ public final class BrewRituals {
             return Result.TOO_FAR;
         }
         BrewTransposition.Site destination = null;
-        boolean transpose = mixture.hasTransposition();
-        if (transpose || mixture.requiresInfernalCircle()) {
-            var site = transpose ? reachableSite(source, origin, mixture.destination(), coven, leonard)
+        boolean otherwhere = mixture.requiresOtherwhereCircle();
+        if (otherwhere || mixture.requiresInfernalCircle()) {
+            var site = otherwhere ? reachableSite(source, origin, mixture.destination(), coven, leonard)
                     : boundedSite(source, origin, mixture.destination());
             if (site == null || !hasRequiredCircles(mixture, site)) return Result.INVALID_CIRCLES;
-            if (transpose) destination = site;
+            if (otherwhere) destination = site;
         }
         if (!HunterClothingItem.resistsCurse(target) && !AreaWardBlockEntity.protectsBrew(target)
                 && !VoodooPoppetItem.deflectBrew(target)) {
@@ -166,7 +165,7 @@ public final class BrewRituals {
     }
 
     private static boolean hasRequiredCircles(BrewMixture mixture, BrewTransposition.Site site) {
-        boolean otherwhere = mixture.hasTransposition();
+        boolean otherwhere = mixture.requiresOtherwhereCircle();
         boolean infernal = mixture.requiresInfernalCircle();
         if (!otherwhere && !infernal) return true;
         loadArea(site.level(), site.pos(), 4);
