@@ -52,6 +52,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -1440,23 +1441,34 @@ public final class CircleRiteTests {
         var level = helper.getLevel();
         var center = helper.absolutePos(CENTER);
         var corner = Vec3.atLowerCornerOf(center);
-        var west = infusionPlayer(level, "WestToadOwner", corner.add(-6.75, 0, 0), 0);
-        var east = infusionPlayer(level, "EastToadOwner", corner.add(7.25, 0, 0), 0);
-        var near = infusionPlayer(level, "OwnerOfEastPet", corner.add(-1, 0, -0.5), 0);
-        var westToad = ownedToad(level, west, corner.add(-6.75, 0, 0.25));
-        var nearToad = ownedToad(level, east, corner.add(1, 0, 1.25));
-        var eastToad = ownedToad(level, near, corner.add(7.25, 0, -0.5));
-        var owners = List.of(west, east, near);
-        var toads = List.of(westToad, nearToad, eastToad);
+        var westOwnerPos = corner.add(-6.75, 0, 0);
+        var eastOwnerPos = corner.add(7.25, 0, 0);
+        var nearOwnerPos = corner.add(-1, 0, -0.5);
+        var westToadPos = corner.add(-6.75, 0, 0.25);
+        var nearToadPos = corner.add(1, 0, 1.25);
+        var eastToadPos = corner.add(7.25, 0, -0.5);
+        var actorChunks = List.of(westOwnerPos, eastOwnerPos, nearOwnerPos, westToadPos, nearToadPos, eastToadPos)
+                .stream().map(BlockPos::containing).map(ChunkPos::new).distinct().toList();
+        var forced = actorChunks.stream().filter(chunk -> level.setChunkForced(chunk.x, chunk.z, true)).toList();
         var area = new AABB(center).inflate(9);
         waitForOfferings(helper, new ItemStack(WitcheryIngredient.TEAR_OF_THE_GODDESS.item()),
                 new ItemStack(WitcheryIngredient.ODOUR_OF_PURITY.item()), new ItemStack(WitcheryIngredient.WHIFF_OF_MAGIC.item()),
-                new ItemStack(Items.DIAMOND), new ItemStack(WitcheryIngredient.INFERNAL_BLOOD.item())).thenWaitUntil(() -> {
-            helper.assertTrue(level.getEntitiesOfClass(ServerPlayer.class, area).containsAll(owners)
-                            && level.getEntitiesOfClass(WitchToad.class, area).containsAll(toads),
-                    "All three pairs are tracked by the world");
-        }).thenExecute(() -> {
+                new ItemStack(Items.DIAMOND), new ItemStack(WitcheryIngredient.INFERNAL_BLOOD.item()))
+                .thenWaitUntil(() -> helper.assertTrue(actorChunks.stream().allMatch(chunk ->
+                        level.isPositionEntityTicking(chunk.getWorldPosition())), "All fixture chunks are ready for entities"))
+                .thenExecute(() -> {
+            var west = infusionPlayer(level, "WestToadOwner", westOwnerPos, 0);
+            var east = infusionPlayer(level, "EastToadOwner", eastOwnerPos, 0);
+            var near = infusionPlayer(level, "OwnerOfEastPet", nearOwnerPos, 0);
+            var westToad = ownedToad(level, west, westToadPos);
+            var nearToad = ownedToad(level, east, nearToadPos);
+            var eastToad = ownedToad(level, near, eastToadPos);
+            var owners = List.of(west, east, near);
+            var toads = List.of(westToad, nearToad, eastToad);
             try {
+                helper.assertTrue(level.getEntitiesOfClass(ServerPlayer.class, area).containsAll(owners)
+                                && level.getEntitiesOfClass(WitchToad.class, area).containsAll(toads),
+                        "All three pairs are tracked by the world");
                 start(helper);
                 var heart = heart(helper);
                 tick(level, center, heart, 100);
@@ -1473,6 +1485,7 @@ public final class CircleRiteTests {
             } finally {
                 toads.forEach(Entity::discard);
                 owners.forEach(owner -> level.removePlayerImmediately(owner, Entity.RemovalReason.DISCARDED));
+                forced.forEach(chunk -> level.setChunkForced(chunk.x, chunk.z, false));
             }
         }).thenSucceed();
     }

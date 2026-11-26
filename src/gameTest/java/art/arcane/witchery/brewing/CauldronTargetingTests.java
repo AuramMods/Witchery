@@ -227,6 +227,90 @@ public final class CauldronTargetingTests {
         helper.succeed();
     }
 
+    @GameTest(template = TEMPLATE, batch = "witchery_cauldron_mixed_transpose")
+    public static void mixedTerrainTransposeRepeatsWhileOreCastIsActive(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var origin = helper.absolutePos(CENTER).atY(210);
+        var source = origin.east(12);
+        var destination = origin.east(32);
+        drawMediumRing(level, source, "circleglyphotherwhere");
+        var first = source.offset(1, 1, 0);
+        var second = source.offset(1, 1, 1);
+        var firstArrival = destination.offset(1, 1, 0);
+        var secondArrival = destination.offset(1, 1, 1);
+        var deepOre = source.below(7);
+        level.setBlockAndUpdate(first, Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(second, Blocks.AIR.defaultBlockState());
+        level.setBlockAndUpdate(deepOre, Blocks.IRON_ORE.defaultBlockState());
+        var offerings = List.of(new ItemStack(Items.NETHER_WART), new ItemStack(WitcheryIngredient.TEAR_OF_THE_GODDESS.item()),
+                new ItemStack(Items.NETHER_STAR), new ItemStack(Items.GUNPOWDER), stone(level, source),
+                new ItemStack(Items.ENDER_PEARL), new ItemStack(Items.GLOWSTONE_DUST), new ItemStack(Items.IRON_INGOT),
+                stone(level, destination), new ItemStack(WitcheryIngredient.DOG_TONGUE.item()));
+        var center = Vec3.atCenterOf(origin);
+        var owner = addOwner(level, center.add(-10, 0, 0));
+        var witch = addWitch(level, center, owner);
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.getEntity(witch.getUUID()) == witch,
+                "The mixed ritual counts one tracked coven attendant")).thenExecute(() -> {
+            try {
+                helper.assertTrue(cast(level, origin, offerings, 1, false) == BrewRituals.Result.ONGOING
+                                && level.isEmptyBlock(first) && level.getBlockState(firstArrival).is(Blocks.STONE)
+                                && level.getBlockState(deepOre).is(Blocks.IRON_ORE),
+                        "The first pulse moves terrain and leaves ore outside its depth");
+                level.setBlockAndUpdate(second, Blocks.GLASS.defaultBlockState());
+                helper.assertTrue(cast(level, origin, offerings, 2, false) == BrewRituals.Result.COMPLETE
+                                && level.isEmptyBlock(firstArrival) && level.isEmptyBlock(second)
+                                && level.getBlockState(secondArrival).is(Blocks.GLASS) && level.isEmptyBlock(deepOre),
+                        "The second pulse replaces the old arrival and extracts the deeper ore");
+            } finally {
+                witch.discard();
+                level.removePlayerImmediately(owner, Entity.RemovalReason.DISCARDED);
+            }
+        }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_cauldron_mixed_ore_order")
+    public static void lastOreActionDecidesWhetherTheRitualContinues(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var origin = helper.absolutePos(CENTER).atY(210);
+        var center = Vec3.atCenterOf(origin);
+        var owner = addOwner(level, center.add(-10, 0, 0));
+        var witch = addWitch(level, center, owner);
+        var trigger = new ItemStack(WitcheryIngredient.DOG_TONGUE.item());
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.getEntity(witch.getUUID()) == witch,
+                "The ore ritual counts one tracked coven attendant")).thenExecute(() -> {
+            try {
+                for (boolean lastStrong : List.of(false, true)) {
+                    var offerings = new ArrayList<>(List.of(new ItemStack(Items.NETHER_WART),
+                            new ItemStack(WitcheryIngredient.TEAR_OF_THE_GODDESS.item()), new ItemStack(Items.DIAMOND),
+                            new ItemStack(Items.NETHER_STAR), new ItemStack(Items.GUNPOWDER)));
+                    if (!lastStrong) offerings.add(new ItemStack(Items.GLOWSTONE_DUST));
+                    offerings.add(new ItemStack(Items.IRON_INGOT));
+                    offerings.add(new ItemStack(Items.COAL));
+                    if (lastStrong) offerings.add(new ItemStack(Items.GLOWSTONE_DUST));
+                    var lastOre = new ItemStack(Items.IRON_INGOT);
+                    helper.assertTrue(BrewMixture.canAdd(offerings, lastOre), "An intervening effect permits a second ore action");
+                    offerings.add(lastOre);
+                    offerings.add(trigger);
+                    var shallow = origin.below();
+                    var deep = origin.below(7);
+                    level.setBlockAndUpdate(shallow, Blocks.IRON_ORE.defaultBlockState());
+                    level.setBlockAndUpdate(deep, Blocks.IRON_ORE.defaultBlockState());
+                    var status = cast(level, origin, offerings, 1, false);
+                    helper.assertTrue(status == (lastStrong ? BrewRituals.Result.ONGOING : BrewRituals.Result.COMPLETE)
+                                    && level.isEmptyBlock(shallow) && level.getBlockState(deep).is(Blocks.IRON_ORE),
+                            "Both actions run, and only a stronger final action keeps the ritual active");
+                    if (lastStrong) {
+                        helper.assertTrue(cast(level, origin, offerings, 2, false) == BrewRituals.Result.COMPLETE
+                                        && level.isEmptyBlock(deep), "The continuing recipe reaches its deeper layer before completing");
+                    }
+                }
+            } finally {
+                witch.discard();
+                level.removePlayerImmediately(owner, Entity.RemovalReason.DISCARDED);
+            }
+        }).thenSucceed();
+    }
+
     private static FakePlayer addOwner(ServerLevel level, Vec3 position) {
         var owner = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "BrewCovenOwner"));
         owner.setPos(position);
@@ -260,8 +344,12 @@ public final class CauldronTargetingTests {
     }
 
     private static BrewRituals.Result cast(ServerLevel level, BlockPos origin, List<ItemStack> offerings, boolean leonard) {
+        return cast(level, origin, offerings, 1, leonard);
+    }
+
+    private static BrewRituals.Result cast(ServerLevel level, BlockPos origin, List<ItemStack> offerings, int pulse, boolean leonard) {
         var mixture = BrewMixture.from(offerings, null);
-        return BrewRituals.pulse(level, origin, mixture, mixture.bottleTag(offerings), offerings.get(offerings.size() - 1), 1, leonard);
+        return BrewRituals.pulse(level, origin, mixture, mixture.bottleTag(offerings), offerings.get(offerings.size() - 1), pulse, leonard);
     }
 
     private static void drawMediumRing(ServerLevel level, BlockPos center, String chalk) {

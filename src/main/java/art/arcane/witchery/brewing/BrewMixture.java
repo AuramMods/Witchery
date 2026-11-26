@@ -613,12 +613,13 @@ public final class BrewMixture {
                     else BrewLandscape.raiseColumn(level, pos, height, caster);
                 }
                 case TRANSPOSE -> {
-                    if (pulse == 1 && destination != null) {
+                    if (pulse > 0 && destination != null) {
                         BrewTransposition.moveTerrain(new BrewTransposition.Site(level, pos), destination);
                     }
                 }
                 case TRANSPOSE_ORE -> {
-                    if (pulse > 0) ongoing |= BrewTransposition.orePulse(level, pos, radius, strength, coven, pulse);
+                    // Each ore action replaces the ritual status in ingredient order.
+                    if (pulse > 0) ongoing = BrewTransposition.orePulse(level, pos, radius, strength, coven, pulse);
                     else BrewTransposition.extractOre(level, pos, radius, radius + application.blockStrength, strength, caster);
                 }
                 case INFERNO -> InfernoSplatter.burst(level, pos.relative(face), strength, caster);

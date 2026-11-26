@@ -82,7 +82,7 @@ public final class BrewRituals {
             case TRIGGERED -> BrewItemCurse.attach(source, origin, brew) ? Result.COMPLETE : Result.FAILED;
             case SPLASH -> {
                 BrewTransposition.Site destination = null;
-                if (transpose && pulse == 1) {
+                if (transpose) {
                     destination = boundedSite(source, origin, mixture.secondDestination());
                     if (destination == null || !canReachDimension(source, destination.level(), leonard, coven)) yield Result.TOO_FAR;
                     loadArea(destination.level(), destination.pos(), 3);
