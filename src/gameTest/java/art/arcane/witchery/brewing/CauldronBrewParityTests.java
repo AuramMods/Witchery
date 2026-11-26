@@ -47,6 +47,7 @@ import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.level.block.entity.DispenserBlockEntity;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
@@ -360,6 +361,99 @@ public final class CauldronBrewParityTests {
             MinecraftForge.EVENT_BUS.unregister(sound);
             config.set(previous);
             brewer.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void flowersRollOnlyAfterBreakPermission(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var impact = helper.absolutePos(new BlockPos(6, 5, 5)).atY(196);
+        var first = impact.west(2);
+        var second = impact.west();
+        for (var pos : List.of(first, second)) {
+            level.setBlockAndUpdate(pos.below(), Blocks.DIRT.defaultBlockState());
+        }
+        var brewer = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "FlowersBrewTester"));
+        var brew = BrewMixture.from(List.of(Items.NETHER_WART.getDefaultInstance(), Items.GUNPOWDER.getDefaultInstance(),
+                Items.DANDELION.getDefaultInstance()));
+        Consumer<BlockEvent.BreakEvent> protection = event -> {
+            if (event.getLevel() == level && event.getPlayer() == brewer && event.getPos().equals(first)) {
+                event.setCanceled(true);
+            }
+        };
+        Consumer<BlockEvent.EntityPlaceEvent> placement = event -> {
+            if (event.getLevel() == level && event.getEntity() == brewer && event.getPos().equals(second)) {
+                event.setCanceled(true);
+            }
+        };
+        var config = WitcheryServerConfig.ALLOW_INTER_MOD_BLOCK_BREAK_EVENTS;
+        boolean previous = config.get();
+        try {
+            config.set(true);
+            level.setBlockAndUpdate(first, Blocks.GRASS.defaultBlockState());
+            level.random.setSeed(4096);
+            brew.applySplashToBlock(level, impact, Direction.UP, Vec3.atCenterOf(impact), brewer);
+            helper.assertTrue(level.getBlockState(first).is(Blocks.OXEYE_DAISY) && level.isEmptyBlock(second),
+                    "The first supported cell gets the original Oxeye Daisy roll when its grass can be replaced");
+
+            level.setBlockAndUpdate(first, Blocks.GRASS.defaultBlockState());
+            MinecraftForge.EVENT_BUS.addListener(protection);
+            level.random.setSeed(4096);
+            brew.applySplashToBlock(level, impact, Direction.UP, Vec3.atCenterOf(impact), brewer);
+            helper.assertTrue(level.getBlockState(first).is(Blocks.GRASS)
+                            && level.getBlockState(second).is(Blocks.OXEYE_DAISY),
+                    "Protected grass stays and the next supported cell gets the first roll");
+
+            level.removeBlock(second, false);
+            MinecraftForge.EVENT_BUS.addListener(placement);
+            level.random.setSeed(4096);
+            brew.applySplashToBlock(level, impact, Direction.UP, Vec3.atCenterOf(impact), brewer);
+            helper.assertTrue(level.getBlockState(first).is(Blocks.GRASS) && level.isEmptyBlock(second),
+                    "Forge can still cancel the flower placement after a successful roll");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(protection);
+            MinecraftForge.EVENT_BUS.unregister(placement);
+            config.set(previous);
+            brewer.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void flowersPreserveTallPlantsAndFullSnow(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var impact = helper.absolutePos(new BlockPos(6, 5, 5)).atY(196);
+        var first = impact.west(2);
+        var second = impact.west();
+        for (var pos : List.of(first, second)) {
+            level.setBlockAndUpdate(pos.below(), Blocks.DIRT.defaultBlockState());
+        }
+        var brew = BrewMixture.from(List.of(Items.NETHER_WART.getDefaultInstance(), Items.GUNPOWDER.getDefaultInstance(),
+                Items.DANDELION.getDefaultInstance()));
+        for (var plant : List.of(Blocks.TALL_GRASS, Blocks.LARGE_FERN)) {
+            DoublePlantBlock.placeAt(level, plant.defaultBlockState(), first, Block.UPDATE_ALL);
+            level.removeBlock(second, false);
+            level.random.setSeed(4096);
+            brew.applySplashToBlock(level, impact, Direction.UP, Vec3.atCenterOf(impact), null);
+            helper.assertTrue(level.getBlockState(first).is(plant) && level.getBlockState(first.above()).is(plant)
+                            && level.getBlockState(second).is(Blocks.OXEYE_DAISY),
+                    "Both halves stay in place, and the next eligible cell gets the first roll for " + plant);
+            level.removeBlock(first, false);
+        }
+        for (int layers = 1; layers <= 8; layers++) {
+            var snow = Blocks.SNOW.defaultBlockState().setValue(SnowLayerBlock.LAYERS, layers);
+            level.setBlockAndUpdate(first, snow);
+            level.removeBlock(second, false);
+            level.random.setSeed(4096);
+            brew.applySplashToBlock(level, impact, Direction.UP, Vec3.atCenterOf(impact), null);
+            if (layers < 8) {
+                helper.assertTrue(level.getBlockState(first).is(Blocks.OXEYE_DAISY) && level.isEmptyBlock(second),
+                        "Flowers replace the original partial snow depth of " + layers);
+            } else {
+                helper.assertTrue(level.getBlockState(first).equals(snow) && level.getBlockState(second).is(Blocks.OXEYE_DAISY),
+                        "The full snow layer stays and leaves the first roll for the next cell");
+            }
         }
         helper.succeed();
     }

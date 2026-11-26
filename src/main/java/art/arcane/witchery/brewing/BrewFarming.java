@@ -2,6 +2,7 @@ package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.entity.Ent;
+import art.arcane.witchery.event.WitcheryBlockPlacement;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
@@ -27,6 +28,7 @@ import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.block.DeadBushBlock;
 import net.minecraft.world.level.block.DoublePlantBlock;
+import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.TallGrassBlock;
 import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -62,13 +64,21 @@ final class BrewFarming {
         BrewTerrain.forEachColumn(level, center, radius + strength, column -> {
             for (int dy = -1; dy <= 1; dy++) {
                 BlockPos pos = column.offset(0, dy, 0);
-                if (!level.getBlockState(pos).canBeReplaced() || !level.getFluidState(pos).isEmpty()
+                var state = level.getBlockState(pos);
+                if (!canReplaceWithFlower(state) || !state.getFluidState().isEmpty()
+                        || !BrewTerrain.canChange(actor, level, pos, state)
                         || !Blocks.DANDELION.defaultBlockState().canSurvive(level, pos)
                         || level.random.nextInt(odds) != 0) continue;
                 var flower = FLOWERS[level.random.nextInt(FLOWERS.length)].defaultBlockState();
-                if (flower.canSurvive(level, pos)) BrewTerrain.setBlock(actor, level, pos, flower, Direction.UP);
+                if (flower.canSurvive(level, pos)) WitcheryBlockPlacement.place(level, pos, flower, actor, Direction.UP);
             }
         });
+    }
+
+    private static boolean canReplaceWithFlower(BlockState state) {
+        // The original brew replaced partial snow layers, but left all double plants intact.
+        if (state.is(Blocks.SNOW)) return state.getValue(SnowLayerBlock.LAYERS) < 8;
+        return state.canBeReplaced() && !(state.getBlock() instanceof DoublePlantBlock);
     }
 
     static void fertilize(ServerLevel level, BlockPos center, int radius, int strength, @Nullable Player caster) {

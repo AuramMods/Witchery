@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron Flowers replacement and permission order (2026-11-25)
+
+- Witchery 0.24.1's Flowers cast replaces short grass and one through seven snow layers. It preserves eight-layer snow, both halves of double grass and double fern, saplings, and water. With seed `4096`, an original Forge break veto on the first grass cell moved the Oxeye Daisy roll to the next supported cell.
+- The previous reobfuscated JAR spent the roll before checking the real Forge break veto and replaced both tall grass and full-depth snow. The corrected cast checks permission before drawing and still processes Forge placement cancellation. The regression checks all eight snow depths, both double plants, and canceled placement.
+- The muted survival client threw four bottles in clean Forge. It kept the protected grass, eight-layer snow, and tall grass while replacing seven-layer snow. The client started hidden with master volume zero and OpenAL No Output, and its process never took focus. A normal dedicated restart retained both tall grass halves and the daisy. The copied Auram server reproduced the four outcomes from a dispenser with zero players online, using large fern in the double-plant plot.
+- Java 17 reobfuscation and all 452 local Forge GameTests passed on world seed `5471593853027166409`. The JAR is `build/qa-flowers-parity/candidate.jar` with SHA-256 `bc15e99c2e83f75643e781ef2bde4bb8fb1402a513168c266d439fb372fe651d`. See `build/qa-flowers-parity/comparison.txt` for the seeded casts.
+
 ## Cauldron Harvesting and two-block plants (2026-11-25)
 
 - Witchery 0.24.1 collected plant loot before removing the block. In the native fixture, an upper-only hit uprooted the whole Sunflower and dropped one flower from its base. Double grass and double fern produced no seed drops in 64 trials per variant. Mature Wheat dropped its crop and seed at the cell center.
