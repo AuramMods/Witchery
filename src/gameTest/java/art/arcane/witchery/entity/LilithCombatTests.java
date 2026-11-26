@@ -113,7 +113,8 @@ public final class LilithCombatTests {
     @GameTest(template = "qa_coven_arena", batch = "witchery_lilith", timeoutTicks = 280)
     public static void reflectedFireballSuppressesLilithHealingWithoutDealingFireDamage(GameTestHelper helper) {
         var level = helper.getLevel();
-        Lilith lilith = helper.spawnWithNoFreeWill(WitcheryEntities.LILITH.get(), new BlockPos(7, 3, 5));
+        Lilith lilith = helper.spawnWithNoFreeWill(WitcheryEntities.LILITH.get(), new BlockPos(7, 20, 5));
+        lilith.setNoGravity(true);
         var ghast = EntityType.GHAST.create(level);
         ghast.setPos(lilith.position().add(-3, 0, 0));
         var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "LilithDefender"));
@@ -125,6 +126,7 @@ public final class LilithCombatTests {
             }
         };
 
+        int[] impactTick = new int[1];
         helper.startSequence().thenWaitUntil(() -> helper.assertTrue(lilith.tickCount >= 27, "Lilith has passed a healing pulse"))
                 .thenExecute(() -> {
                     try {
@@ -136,6 +138,7 @@ public final class LilithCombatTests {
                                         && fireball.getOwner() == player && fireball.getDeltaMovement().dot(new Vec3(1, 0, 0)) > 0,
                                 "A player attack reflects the vanilla Large Fireball and takes ownership");
                         fireball.hitLilith();
+                        impactTick[0] = lilith.tickCount;
                         helper.assertTrue(lilith.getHealth() == 100 && weaknessTicks(lilith) == 200 - lilith.tickCount % 20,
                                 "A reflected Large Fireball interrupts the healing cycle without dealing fire damage");
                     } finally {
@@ -143,8 +146,11 @@ public final class LilithCombatTests {
                         player.discard();
                         fireball.discard();
                     }
-                }).thenIdle(175).thenExecute(() -> helper.assertTrue(lilith.getHealth() == 100,
-                        "The boss does not heal during the reflection window"))
+                }).thenWaitUntil(() -> helper.assertTrue(lilith.tickCount >= impactTick[0] + 175,
+                        "Lilith has advanced 175 ticks since impact"))
+                .thenExecute(() -> helper.assertTrue(lilith.getHealth() == 100 && weaknessTicks(lilith) > 0,
+                        "The boss does not heal during the reflection window, health=" + lilith.getHealth()
+                                + ", remaining=" + weaknessTicks(lilith)))
                 .thenWaitUntil(() -> helper.assertTrue(lilith.getHealth() == 105 && weaknessTicks(lilith) == 0,
                         "The next healing pulse after the window restores five health"))
                 .thenSucceed();

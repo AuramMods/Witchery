@@ -72,9 +72,8 @@ public final class DreamCatcherBlock extends BaseEntityBlock {
 
     @Override
     public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
-        Direction face = state.getValue(FACING);
-        BlockPos wall = pos.relative(face.getOpposite());
-        return level.getBlockState(wall).isFaceSturdy(level, wall, face);
+        BlockPos wall = pos.relative(state.getValue(FACING).getOpposite());
+        return level.getBlockState(wall).isSolid();
     }
 
     @Override

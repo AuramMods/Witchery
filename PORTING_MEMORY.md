@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Mounted blocks on partial supports (2026-11-25)
+
+- Witchery 0.24.1 placed the Heart Glyph, the three colored glyphs, Candelabra, filled Chalice, and Crystal Ball through their original items on bottom slabs. The original Arthana display stayed in place when its altar was replaced with a bottom slab. A Nightmares Dream Catcher stayed attached when its slab wall changed. The preceding packaged JAR detached every one of those nine mounts when their supports changed to another bottom slab.
+- The rebuilt JAR retained the mounted states, displayed Arthana and fitted weaves on clean Forge and copied Auram, including after dedicated restarts. It kept a separate original Dream Catcher on cobweb when the support changed to a slab and back. An earlier 1.20.1 conversion of the same save retained its mounts when opened with the rebuilt JAR and given the same neighbor updates.
+- A muted background survival client used the held Nightmares Dreamweave through its ordinary right-click action on the side of a bottom slab. The new catcher survived a dedicated restart. Removing the original catcher's support after reopening released exactly one fitted Nightmares weave. Both test client windows stayed in the background at master volume zero with OpenAL No Output.
+- Java 17 JAR reobfuscation and all 465 local Forge GameTests passed. The Lilith reflection fixture now isolates the boss above the arena and measures the suppression window in the boss's own ticks. The packaged JAR is `build/qa-partial-support/candidate.jar` with SHA-256 `d026c6f3f55acacfe70124bb519da9af26006c569f973a3e6c5737ed7e8cb755`. See `build/qa-partial-support/comparison.txt`.
+
 ## Witchery log metadata and fire (2026-11-25)
 
 - The original Forge server saved all twelve combinations of species and orientation. Its rotated-pillar texture lookup uses the side on every face for metadata 12–14. The previous packaged importer opened those three blocks as cut-end vertical logs. The rebuilt importer keeps bark on all faces for all three species and keeps the original axes for the other nine states. A rotated original Staff of Duplication capture keeps its bark.

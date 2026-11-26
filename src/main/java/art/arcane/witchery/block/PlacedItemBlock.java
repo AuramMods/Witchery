@@ -71,7 +71,7 @@ public final class PlacedItemBlock extends BaseEntityBlock {
 
     @Override
     public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
-        return Block.canSupportRigidBlock(level, pos.below());
+        return level.getBlockState(pos.below()).blocksMotion();
     }
 
     @Override

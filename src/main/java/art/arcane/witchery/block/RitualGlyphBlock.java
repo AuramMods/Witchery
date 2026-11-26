@@ -56,8 +56,8 @@ public final class RitualGlyphBlock extends Block {
     }
 
     public static boolean supportsGlyph(LevelReader level, BlockPos pos) {
-        BlockPos support = pos.below();
-        return level.getBlockState(support).isFaceSturdy(level, support, Direction.UP);
+        // Original chalk read the block's solid material, including bottom slabs and stairs.
+        return level.getBlockState(pos.below()).blocksMotion();
     }
 
     @Override

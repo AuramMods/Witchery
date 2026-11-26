@@ -51,7 +51,7 @@ public final class ChaliceBlock extends BaseEntityBlock {
 
     @Override
     public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
-        return canSupportCenter(level, pos.below(), Direction.UP);
+        return level.getBlockState(pos.below()).blocksMotion();
     }
 
     @Override
