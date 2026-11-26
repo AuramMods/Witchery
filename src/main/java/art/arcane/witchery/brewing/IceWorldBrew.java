@@ -1,10 +1,10 @@
 package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.block.WitchDoorBlock;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -14,13 +14,16 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
+import java.util.function.Consumer;
 
 final class IceWorldBrew {
     private static final Set<Block> SOIL = Set.of(Blocks.DIRT, Blocks.COARSE_DIRT, Blocks.PODZOL, Blocks.GRASS_BLOCK,
@@ -36,27 +39,35 @@ final class IceWorldBrew {
 
     static void freeze(ServerLevel level, BlockPos center, int radius, @Nullable Player caster) {
         int reach = Math.max(1, Mth.ceil(radius * 1.5));
-        int limit = reach * reach - 1;
-        var area = BlockPos.betweenClosed(center.offset(-reach, -reach, -reach), center.offset(reach, reach, reach));
-        for (BlockPos pos : area) {
-            if (inRange(center, pos, limit) && level.hasChunkAt(pos) && level.getBlockState(pos).is(Blocks.OAK_DOOR)) {
-                var state = level.getBlockState(pos);
-                BlockPos base = state.getValue(DoorBlock.HALF) == DoubleBlockHalf.LOWER ? pos : pos.below();
-                freezeDoor(level, base, caster);
+        forEachCell(level, center, reach, pos -> {
+            var state = level.getBlockState(pos);
+            if (state.is(Blocks.OAK_DOOR)) {
+                freezeDoor(level, WitchDoorBlock.lowerHalf(pos, state), caster);
             }
-        }
-        for (BlockPos pos : area) {
-            if (!inRange(center, pos, limit) || !level.hasChunkAt(pos)) continue;
+        });
+        forEachCell(level, center, reach, pos -> {
             BlockState replacement = replacement(level.getBlockState(pos));
-            if (replacement == null) continue;
+            if (replacement == null) return;
             replacement = Block.updateFromNeighbourShapes(replacement, level, pos);
-            if (!replacement.isAir() && BrewTerrain.setBlock(caster, level, pos, replacement, Direction.UP)) particles(level, pos);
-        }
-        level.playSound(null, center, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.BLOCKS, 0.5F, 2);
+            if (!replacement.isAir() && BrewTerrain.setBlock(caster, level, pos, replacement, Direction.UP)) {
+                WitcheryNetwork.sendBrewConversionSmoke(level, pos);
+            }
+        });
+        level.playSound(null, center.getX(), center.getY(), center.getZ(),
+                SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.BLOCKS, 0.5F, 2.0F);
     }
 
-    private static boolean inRange(BlockPos center, BlockPos pos, int limit) {
-        return limit == 0 ? pos.equals(center) : pos.distSqr(center) < limit;
+    private static void forEachCell(ServerLevel level, BlockPos center, int reach, Consumer<BlockPos> action) {
+        int limit = Math.max(1, reach * reach - 1);
+        for (int x = -reach; x <= reach; x++) {
+            for (int z = -reach; z <= reach; z++) {
+                for (int y = -reach; y <= reach; y++) {
+                    if (x * x + y * y + z * z >= limit) continue;
+                    BlockPos pos = center.offset(x, y, z);
+                    if (level.isInWorldBounds(pos) && level.hasChunkAt(pos)) action.accept(pos);
+                }
+            }
+        }
     }
 
     private static void freezeDoor(ServerLevel level, BlockPos base, @Nullable Player caster) {
@@ -67,8 +78,26 @@ final class IceWorldBrew {
                 || !topState.is(Blocks.OAK_DOOR) || topState.getValue(DoorBlock.HALF) != DoubleBlockHalf.UPPER
                 || !BrewTerrain.canChange(caster, level, base, bottomState) || !BrewTerrain.canChange(caster, level, top, topState)) return;
         Block door = block("icedoor");
-        if (WitchDoorBlock.replacePair(level, base, door.withPropertiesOf(bottomState),
-                door.withPropertiesOf(topState), caster, Direction.UP)) particles(level, base);
+        Direction facing = bottomState.getValue(DoorBlock.FACING);
+        BlockState lower = door.defaultBlockState().setValue(DoorBlock.FACING, facing)
+                .setValue(DoorBlock.HINGE, hinge(level, base, facing, door));
+        if (WitchDoorBlock.replacePair(level, base, lower, lower.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER),
+                caster, Direction.UP)) WitcheryNetwork.sendBrewConversionSmoke(level, base);
+    }
+
+    private static DoorHingeSide hinge(ServerLevel level, BlockPos base, Direction facing, Block door) {
+        BlockPos left = base.relative(facing.getCounterClockWise());
+        BlockPos right = base.relative(facing.getClockWise());
+        boolean leftDoor = level.getBlockState(left).is(door) || level.getBlockState(left.above()).is(door);
+        boolean rightDoor = level.getBlockState(right).is(door) || level.getBlockState(right.above()).is(door);
+        return leftDoor && !rightDoor || solidBlocks(level, right) > solidBlocks(level, left)
+                ? DoorHingeSide.RIGHT : DoorHingeSide.LEFT;
+    }
+
+    private static int solidBlocks(ServerLevel level, BlockPos base) {
+        BlockPos top = base.above();
+        return (level.getBlockState(base).isRedstoneConductor(level, base) ? 1 : 0)
+                + (level.getBlockState(top).isRedstoneConductor(level, top) ? 1 : 0);
     }
 
     @Nullable
@@ -89,7 +118,8 @@ final class IceWorldBrew {
             return block("icestairs").withPropertiesOf(state);
         }
         if (STONE_SLABS.contains(original) || state.is(BlockTags.WOODEN_SLABS) || state.is(block("witchwoodslab"))) {
-            return block("iceslab").withPropertiesOf(state);
+            var ice = block("iceslab").withPropertiesOf(state);
+            return ice.getValue(SlabBlock.TYPE) == SlabType.TOP ? ice.setValue(SlabBlock.TYPE, SlabType.BOTTOM) : ice;
         }
         if (state.is(block("witchwooddoubleslab"))) {
             return block("iceslab").defaultBlockState().setValue(SlabBlock.TYPE, SlabType.DOUBLE);
@@ -97,7 +127,9 @@ final class IceWorldBrew {
         if (state.is(Blocks.OAK_FENCE) || state.is(Blocks.COBBLESTONE_WALL) || state.is(Blocks.MOSSY_COBBLESTONE_WALL)) {
             return block("icefence").withPropertiesOf(state);
         }
-        if (state.is(Blocks.OAK_FENCE_GATE)) return block("icefencegate").withPropertiesOf(state);
+        if (state.is(Blocks.OAK_FENCE_GATE)) {
+            return block("icefencegate").defaultBlockState().setValue(FenceGateBlock.FACING, Direction.SOUTH);
+        }
         if (state.is(block("stockade"))) return block("icestockade").withPropertiesOf(state);
         return null;
     }
@@ -106,8 +138,4 @@ final class IceWorldBrew {
         return WitcheryBlocks.getRequired(id).get();
     }
 
-    private static void particles(ServerLevel level, BlockPos pos) {
-        level.sendParticles(ParticleTypes.SMOKE, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-                16, 0.25, 0.25, 0.25, 0);
-    }
 }

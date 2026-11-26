@@ -889,6 +889,7 @@
 - [x] Restore Ruby Slipper travel through chat and `/chant`. The muted client returned to its bed, respected the cooldown, then consumed a dropped old-format Waystone. After restart, both cooldown timestamps and the remaining infusion charge persisted. A Nether Waystone used the cross-dimension cost.
 - [x] Restore the Ice World cauldron action and its terrain conversions, including the Icy Slipper pressure plate. With the shared Forge placement helper, both door halves update together.
 - [x] Verify Ice World from a heated cauldron through bottling and throwing in the muted survival client. The cast converted both door halves and left the chest intact. Icy Slippers powered the resulting pressure plate, which switched off when the wearer left. Data generation, JAR reobfuscation, the 450-test regression suite, and five targeted Forge GameTests passed.
+- [x] Match Ice World's original placement order and converted states. Oak doors transform first, keep their facing, and choose their hinge again as they close. Open gates become closed south-facing gates. Single slabs become bottom slabs, double slabs fill the block, and stairs retain their facing and half. The GameTest covers the strict sphere boundary, Forge placement vetoes, and the orb cue's position, volume, and pitch.
 
 ## Stockades and Perpetual Ice Construction (2026-11-21)
 

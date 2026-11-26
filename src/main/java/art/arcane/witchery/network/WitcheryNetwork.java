@@ -362,7 +362,7 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_SPLASH_PARTICLE_ID, LEGACY_NO_SOUND_ID, center, size, size, range);
     }
 
-    public static void sendPulverisationSmoke(ServerLevel level, BlockPos pos) {
+    public static void sendBrewConversionSmoke(ServerLevel level, BlockPos pos) {
         sendParticlesAround(level, LEGACY_SMOKE_PARTICLE_ID, LEGACY_NO_SOUND_ID,
                 Vec3.atLowerCornerOf(pos.above()), 0.25, 0.25, 16);
     }

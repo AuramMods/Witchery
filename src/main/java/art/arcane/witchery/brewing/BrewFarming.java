@@ -293,7 +293,7 @@ final class BrewFarming {
         if (replacement == Blocks.AIR) {
             level.addFreshEntity(new ItemEntity(level, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(Items.SAND)));
         }
-        WitcheryNetwork.sendPulverisationSmoke(level, pos);
+        WitcheryNetwork.sendBrewConversionSmoke(level, pos);
     }
 
     private static void forEachBlock(ServerLevel level, BlockPos center, int reach, int limit, Consumer<BlockPos> action) {
