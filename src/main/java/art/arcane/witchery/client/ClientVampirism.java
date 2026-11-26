@@ -141,7 +141,11 @@ public final class ClientVampirism {
         if (event.phase != TickEvent.Phase.END) return;
         Minecraft client = Minecraft.getInstance();
         LocalPlayer player = client.player;
-        if (player == null || client.screen != null || player.isSpectator() || Vampirism.level(player) == 0) return;
+        if (player == null || player.isSpectator() || Vampirism.level(player) == 0) {
+            clearBloodSight();
+            return;
+        }
+        if (client.screen != null) return;
         WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
             if (player.getInventory().selected != 0 && data.getSelectedVampirePower() != 0) choose(player, 0);
         });
@@ -159,12 +163,21 @@ public final class ClientVampirism {
     }
 
     @SubscribeEvent
+    public static void onPlayerClone(ClientPlayerNetworkEvent.Clone event) {
+        clearBloodSight();
+    }
+
+    @SubscribeEvent
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event) {
+        clearBloodSight();
+        highlightedPower = 0;
+        powerNameFrames = 0;
+    }
+
+    private static void clearBloodSight() {
         aimingAt = -1;
         trackedBlood = -1;
         nextReadTick = 0;
-        highlightedPower = 0;
-        powerNameFrames = 0;
     }
 
     public static void receiveBlood(int entityId, int amount) {

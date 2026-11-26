@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Vampire blood sight after respawn (2026-11-26)
+
+- The muted clean Forge survival client looked at a villager with 180 blood for more than 120 ticks. The fixture changed that same villager to 262 while the player was on the normal death screen. The preceding package's first sample after clicking Respawn showed 180 at tick 3 and retained the old deadline at tick 123.
+- The rebuilt package requested the current reading as soon as the replacement player could see the villager. The first sample showed 262 at tick 3 with a fresh deadline of tick 11. An ordinary dedicated restart retained the villager's 262 blood, and the reconnecting vampire saw it again. The fixture supplied the two starting blood values and the respawn site.
+- Forge's local player clone and logout events clear the blood-sight state. Spectators and players without vampirism also clear it. The protocol remains 101. The original shipped class references have no external sender for packet 19, Set Client Player Facing.
+- The same package passed a two-client check of Gulg's Gurdle. A stationary target lost five health and received the original direct vector `(0, 1, 0)` from a normal unarmed attack. The unequipped control lost one health with vanilla knockback. The client launches used OpenAL No Output and stayed out of the foreground.
+- Copied Auram loaded Dream, Torment and Mirror and saved normally in a headless boot of the same JAR.
+- JAR reobfuscation and all 484 required local Forge GameTests passed. The tested `build/qa-vampire-sight-lifecycle/candidate.jar` has SHA-256 `1c8fd3f5ccbdfcbf40b474dd08ab7b6e8de069c54352e20cfa28f542c6f67c4b`.
+
 ## Current package release and save replay (2026-11-26)
 
 - The current local package from `9c25969b` is `build/qa-release-audit/candidate.jar`, SHA-256 `321d71d1df040218bf0bfbcd2c833742b17987065e325beed5c43b2cdb7a447e`. Run `./gradlew --offline runData` first, then `./gradlew --offline -I build/qa-hellhound-parity/seed.init.gradle jar runGameTestServer` with Java 17. The replay used world seed `5471593853027166409`. Both tasks succeeded and all 484 checked-in Forge GameTests passed. The generated resources had no tracked changes.
