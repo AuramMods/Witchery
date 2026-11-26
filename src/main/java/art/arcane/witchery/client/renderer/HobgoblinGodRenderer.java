@@ -16,6 +16,7 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 
 public final class HobgoblinGodRenderer extends MobRenderer<HobgoblinGod, HobgoblinGodModel> {
     private final ResourceLocation texture;
@@ -45,5 +46,11 @@ public final class HobgoblinGodRenderer extends MobRenderer<HobgoblinGod, Hobgob
     @Override
     public ResourceLocation getTextureLocation(HobgoblinGod god) {
         return texture;
+    }
+
+    @Override
+    public Vec3 getRenderOffset(HobgoblinGod god, float partialTick) {
+        Vec3 offset = super.getRenderOffset(god, partialTick);
+        return god.isShiftKeyDown() ? offset.add(0, -0.125, 0) : offset;
     }
 }

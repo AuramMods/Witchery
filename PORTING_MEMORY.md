@@ -150,6 +150,12 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - The headless copied Auram server loaded all nine test entities after a normal restart. Their in-memory UUIDs matched the first save. Their names, positions, and UUIDs matched both entity region snapshots. Clean Forge and copied Auram used byte-identical copies of the rebuilt JAR.
 - Java 17 JAR reobfuscation and all 484 required local Forge GameTests passed. The tested `build/qa-boss-poses/candidate.jar` has SHA-256 `89274e40afdddd6bb615f362dc5390693445ef8fdf122497e9767bcf00723af5`. See `build/qa-boss-poses/comparison.txt`.
 
+## Hobgoblin, Mog, and Gulg client poses (2026-11-26)
+
+- The original 0.24.1 model classes produced 231 part samples across 33 cases, including mounted limbs, ordinary and Koboldite mining, crouching, worship, and two Gulg strikes at different head angles. The preceding Forge package differed in 222 of 1,386 measured values. The rebuilt background client matched all 1,386 and the separate crouch offset of one eighth of a block.
+- A separate comparison sampled all 864 vertex positions and texture coordinates from the 36 original cubes and their equivalents in the Forge render buffers. The three models matched all samples. The client also loaded the original textures for the prepared Hobgoblin, Mog and Gulg tracking fixtures. The fixture supplied the mobs and positions. Both client stages used zero master volume and OpenAL No Output.
+- Copied Auram spawned all three named fixtures and saved every dimension on shutdown. All 504 local Forge GameTests passed. The reobfuscated JAR used in all three profiles has SHA-256 `6f656eb93d33bf166d2282a1e253e3c0851a0bb9df1381d35c23d41383f689d8`. See `build/qa-hobgoblin-poses/comparison.txt`.
+
 ## Familiar and Mandrake client rendering (2026-11-26)
 
 - The original 0.24.1 Java 8 client model probe captured 48 cases in `build/qa-familiar-poses/native/pose.log`. It includes still air, leaf and stone perches, small horizontal and vertical movements, seated flight, and an attack. The preceding Forge client differed in 89 measured angles and pivots. The rebuilt package matched all 1,872 values across six models.
