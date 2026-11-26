@@ -2,6 +2,9 @@ package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.entity.ThrownBrew;
+import art.arcane.witchery.entity.WitchOwl;
+import art.arcane.witchery.entity.WitchPet;
+import art.arcane.witchery.entity.WitchToad;
 import art.arcane.witchery.item.BrewBottleItem;
 import art.arcane.witchery.item.ThrowableBrewItem;
 import art.arcane.witchery.item.WitcheryIngredient;
@@ -18,6 +21,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ambient.Bat;
 import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -289,6 +293,94 @@ public final class CreatureBrewTests {
         helper.assertTrue(bats.size() == 10 && bats.stream().allMatch(bat -> bat.position().equals(Vec3.atLowerCornerOf(release))
                         && bat.isResting() && bat.getPersistentData().getBoolean("WITCNoDrops")),
                 "Ten bats spawn at the original block corner with vanilla rest and no drops");
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_brew_summon_colors")
+    public static void brewSummonsRollTheirOriginalColorsAndOwlPositions(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var origin = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(5, 4, 5)));
+        var victim = stationaryPig(helper, origin);
+        var shot = new ThrownBrew(WitcheryEntities.THROWN_BREW.get(), level);
+        var summons = new ArrayList<WitchPet>();
+        var listener = new Object() {
+            @SubscribeEvent
+            public void trackColoredSummon(EntityJoinLevelEvent event) {
+                if (event.getLevel() == level && event.getEntity() instanceof WitchPet pet && pet.isTemporary()) {
+                    summons.add(pet);
+                }
+            }
+        };
+        MinecraftForge.EVENT_BUS.register(listener);
+        try {
+            level.random.setSeed(3L);
+            BrewCreatureEffects.hitchcock(shot, new EntityHitResult(victim));
+            helper.assertTrue(summons.stream().map(WitchPet::color).toList().equals(List.of(1, 5, 3, 13)),
+                    "The four Hitchcock owls retain the original seeded feather colors");
+            double height = victim.getBbHeight() + 1.0;
+            helper.assertTrue(summons.stream().map(Entity::position).toList().equals(List.of(
+                            origin.add(-1, height, 0), origin.add(2, height + 1, -2),
+                            origin.add(2, height, -1), origin.add(-1, height + 1, -1)))
+                            && summons.stream().allMatch(pet -> pet instanceof WitchOwl && pet.getTarget() == victim),
+                    "The feather rolls precede each owl's position around the target");
+
+            level.random.setSeed(0L);
+            BrewCreatureEffects.poisonToad(level, origin, 1);
+            helper.assertTrue(summons.size() == 5 && summons.get(4) instanceof WitchToad toad && toad.color() == 4,
+                    "Poison Toad converts the world dye roll to the original skin index");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(listener);
+            summons.forEach(WitchPet::discard);
+            victim.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_cauldron_raising")
+    public static void raisingKeepsTheOriginalSummonRollAndAttemptsObstructedSpawns(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var ground = new BlockPos(5, 4, 5);
+        for (BlockPos floor : BlockPos.betweenClosed(ground.offset(-3, 0, -3), ground.offset(3, 0, 3))) {
+            helper.setBlock(floor, Blocks.STONE);
+            helper.setBlock(floor.above(1), Blocks.AIR);
+            helper.setBlock(floor.above(2), Blocks.AIR);
+        }
+        var mixture = BrewMixture.from(List.of(Items.NETHER_STAR.getDefaultInstance(),
+                Items.GLOWSTONE_DUST.getDefaultInstance(), Items.BONE.getDefaultInstance()));
+        var raised = new ArrayList<Mob>();
+        var listener = new Object() {
+            @SubscribeEvent
+            public void collectRaisedUndead(EntityJoinLevelEvent event) {
+                if (event.getLevel() != level || !(event.getEntity() instanceof Mob undead)
+                        || !undead.getPersistentData().getBoolean("WITCNoDrops")) return;
+                raised.add(undead);
+                if (raised.size() == 1) level.random.setSeed(0L);
+            }
+        };
+        MinecraftForge.EVENT_BUS.register(listener);
+        try {
+            var impact = helper.absolutePos(ground);
+            mixture.applySplashToBlock(level, impact, Direction.UP, Vec3.atLowerCornerOf(impact), null);
+            helper.assertTrue(raised.size() == 2
+                            && raised.get(0).position().equals(Vec3.atBottomCenterOf(impact.above()).add(0, 0.1, 0))
+                            && raised.get(1).position().equals(Vec3.atBottomCenterOf(impact.offset(3, 1, 3)).add(0, 0.1, 0)),
+                    "The first seeded draw advances the RNG and the second summons an extra undead at +3, +3");
+            raised.forEach(Mob::discard);
+            raised.clear();
+
+            helper.setBlock(ground.above(2), Blocks.STONE);
+            mixture.applyToBlock(level, impact, Direction.UP, 1, true, null);
+            var coil = raised.size() == 1 ? raised.get(0).getEffect(WitcheryEffects.MORTAL_COIL.get()) : null;
+            helper.assertTrue(coil != null && coil.getDuration() == 400 && helper.getBlockState(ground.above(2)).is(Blocks.STONE),
+                    "The ritual attempts one timed summon under the intact low roof");
+            var reference = RandomSource.create(0L);
+            reference.nextDouble();
+            helper.assertTrue(level.random.nextDouble() == reference.nextDouble(),
+                    "Ritual Raising also advances the RNG after the primary summon");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(listener);
+            raised.forEach(Mob::discard);
+        }
+        helper.succeed();
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_fear_brew")

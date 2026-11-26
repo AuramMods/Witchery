@@ -11,6 +11,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -137,6 +138,10 @@ public final class WitchOwl extends WitchPet {
         setLastHurtByMob(target);
     }
 
+    public void rollFeatherColor(RandomSource colorRandom) {
+        setColor(colorRandom.nextInt(100) == 0 ? 0 : colorRandom.nextInt(15) + 1);
+    }
+
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack held = player.getItemInHand(hand);
@@ -194,7 +199,7 @@ public final class WitchOwl extends WitchPet {
     @Override
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType cause,
                                         @Nullable SpawnGroupData group, @Nullable CompoundTag data) {
-        setColor(random.nextInt(100) == 0 ? 0 : random.nextInt(15) + 1);
+        rollFeatherColor(random);
         return super.finalizeSpawn(level, difficulty, cause, group, data);
     }
 

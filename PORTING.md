@@ -19,7 +19,7 @@
         - [x] Restore Steal Buffs at the splash boundary. Both packaged dedicated profiles matched the four original donor cases, including a named legacy Skeleton Skull inside the saved bottle.
         - [x] Compare direct and diluted hits for Pumpkin, Blue Orchid, Ice, Silver Dust, Garlic, Purified Milk, Reek of Misfortune, Subdued Spirit, Creeper Heart, and Creeper Head. The original server and both packaged profiles agreed on all 16 cases. A separate original Taglock sample raised all three harmful effects on the seeded rolls.
         - [x] Restore the class-name checks for other mods' werewolf and vampire mobs. In copied Auram, a Bewitchment werewolf received three raw damage tagged as silver and a glancing Garlic hit gave a Bewitchment vampire 450 ticks of Weakness.
-      - [ ] Compare the seven motion and summon actions, including Air Hike, Frog Tongue, Knockback, Bat Burst, Bodega, Poison Toad, and Raising.
+      - [x] Compare the seven motion and summon actions, including Air Hike, Frog Tongue, Knockback, Bat Burst, Bodega, Poison Toad, and Raising. The [action comparison](#motion-and-summon-action-comparison-2026-11-26) records the runtime evidence and the copied Auram random sequence.
       - [ ] Compare the nine weather, ice, and fire actions, including Extinguish, Cold, Ice Shell, Changing Seasons, Ice World, Snow, Inferno, Hell Gate, and Blast.
       - [ ] Compare the 17 farming and tree actions, including the eight crop and material actions and nine tree species.
       - [ ] Compare the eight fluid and plant terrain actions, including Dissipate, Tide Hold, Lava Hold, Lilify, Webs, Vines, Thorns, and Sprouting.
@@ -1706,6 +1706,13 @@
 - [x] Make all seven recipes in the muted survival client and verify movement through the normal drink and throw controls. Verify the ten-bat burst and area poison when a toad expires. Bodega created three attackers with the active-Owl fixture and none before the Owl was active.
 - [x] Verify that a thrown Raising brew binds a zombie and leaves the struck stone intact. Ritual Raising summoned a temporary skeleton with 398 ticks of Mortal Coil at the first sample. The skeleton expired, and after a dedicated server restart only the bound zombie remained with its owner and no-drop marker.
 - [x] Run Java 17 data generation and JAR reobfuscation. All 566 regression cases passed before the final Raising collision adjustment. The final revision passed 21 focused GameTests, including a spawn with another creature at the launch position and actual liquid and gas delivery.
+
+### Motion and summon action comparison (2026-11-26)
+
+- `BrewCreatureEffects` handles Air Hike, Frog Tongue and Knockback. The original action and saved-bottle cases agree on retained horizontal mob motion, fall reset, the loose-item pull on terrain impact, and glancing and drink Knockback. The earlier two-client replay covers delivery of the full velocity to a survival player.
+- The same handler matches the Bat Burst counts and release corner on a full impact and at gas terrain exposure, the Bodega mastery gate and 400-tick Owl lifetime, and Poison Toad's landing position and strength-scaled expiry. The original seeded Owl colors and positions now match the world rolls. Poison Toad converts the world dye draw to the original skin index. An Owl attempt sends its portal cue even when Forge vetoes the spawn.
+- `BrewImpacts.raiseFromCauldron` uses the original world draw after the primary attempt. In the seeded strength-one case, the second undead spawns at offset `(+3, +3)`. The ritual applies 400 ticks of Mortal Coil under the intact low roof. Both casts preserve the original silent large-smoke packet at each attempted spawn. Forge retains its spawn veto.
+- Local Java 17 data generation, JAR reobfuscation, and all 556 required GameTests passed. The exact reobfuscated JAR passed 18 headless cases in each packaged profile. Clean Forge matched the 0.24.1 seed trace. Copied Auram produced different random values and matched the same spawn bounds, count, saved state and packet dimensions. Its own seeded replay confirmed the post-ritual draw. Both profiles kept the original packet delivery on a spawn veto.
 
 ## Cauldron Love, Volatility, Fortune and Resizing (2026-11-21)
 

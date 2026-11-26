@@ -244,13 +244,13 @@ public final class BrewCreatureEffects {
         for (int i = 0; i < count; i++) {
             var owl = WitcheryEntities.OWL.get().create(level);
             if (owl == null) continue;
+            owl.rollFeatherColor(level.random);
             owl.moveTo(victim.getX() + level.random.nextInt(5) - 2,
                     victim.getY() + victim.getBbHeight() + 1 + level.random.nextInt(2),
                     victim.getZ() + level.random.nextInt(5) - 2, 0, 0);
             owl.attackTemporarily(victim, 400);
-            if (level.addFreshEntity(owl)) {
-                WitcheryNetwork.sendBrewOwlArrival(level, owl.position());
-            }
+            level.addFreshEntity(owl);
+            WitcheryNetwork.sendBrewOwlArrival(level, owl.position());
         }
     }
 

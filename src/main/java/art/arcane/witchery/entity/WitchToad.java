@@ -59,7 +59,8 @@ public final class WitchToad extends WitchPet {
     public void preparePoisonousToad(int ticks) {
         timeToLive = ticks;
         poisonous = true;
-        setColor(random.nextInt(16));
+        // The original constructor draws dye metadata and converts it to the wool color order.
+        setColor(15 - level().random.nextInt(16));
     }
 
     public static AttributeSupplier.Builder attributes() {

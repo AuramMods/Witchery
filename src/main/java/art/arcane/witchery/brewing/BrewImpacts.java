@@ -5,6 +5,7 @@ import art.arcane.witchery.event.WitcheryBlockBreak;
 import art.arcane.witchery.event.WitcheryBlockPlacement;
 import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.infusion.InfernalInfusion;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEffects;
 import net.minecraft.core.BlockPos;
@@ -146,8 +147,10 @@ public final class BrewImpacts {
                                   boolean ritual, @Nullable ServerPlayer caster) {
         BlockPos center = ground.relative(face);
         raiseCauldronUndead(level, center, caster, ritual ? 200 * (strength + 1) : 0);
-        if (ritual) return;
         RandomSource random = level.random;
+        // The original advances the world RNG once after the primary summon, even for a ritual.
+        random.nextDouble();
+        if (ritual) return;
         int extra = 0;
         if (strength >= 1 && random.nextDouble() < strength * 0.5) extra++;
         if (strength >= 2 && random.nextDouble() < strength * 0.25) extra++;
@@ -171,11 +174,12 @@ public final class BrewImpacts {
         if (undead == null) return;
         Vec3 landing = Vec3.atBottomCenterOf(feet).add(0, 0.1, 0);
         undead.moveTo(landing.x, landing.y, landing.z, 0, 0);
-        if (level.getBlockCollisions(undead, undead.getBoundingBox()).iterator().hasNext()) return;
-        finishRaisedUndead(level, feet, undead, caster);
+        prepareRaisedUndead(level, feet, undead);
         undead.getPersistentData().putBoolean("WITCNoDrops", true);
         if (lifespan > 0) undead.addEffect(new MobEffectInstance(WitcheryEffects.MORTAL_COIL.get(), lifespan));
-        if (level.addFreshEntity(undead)) raisingParticles(level, landing);
+        if (caster != null) InfernalInfusion.bind(undead, caster);
+        level.addFreshEntity(undead);
+        WitcheryNetwork.sendCauldronRaisingCue(level, undead.position());
     }
 
     static void recoverBrew(ThrownBrew brew, HitResult hit) {
@@ -197,7 +201,8 @@ public final class BrewImpacts {
         if (undead == null) return;
         Vec3 landing = Vec3.atBottomCenterOf(feet);
         undead.moveTo(landing.x, landing.y, landing.z, 1, 0);
-        finishRaisedUndead(level, feet, undead, owner);
+        prepareRaisedUndead(level, feet, undead);
+        if (owner != null) InfernalInfusion.bind(undead, owner);
         if (level.addFreshEntity(undead)) {
             level.removeBlock(feet, false);
             level.removeBlock(feet.above(), false);
@@ -213,10 +218,9 @@ public final class BrewImpacts {
         return type.create(level);
     }
 
-    private static void finishRaisedUndead(ServerLevel level, BlockPos feet, Mob undead, @Nullable ServerPlayer caster) {
+    private static void prepareRaisedUndead(ServerLevel level, BlockPos feet, Mob undead) {
         ForgeEventFactory.onFinalizeSpawn(undead, level, level.getCurrentDifficultyAt(feet), MobSpawnType.MOB_SUMMONED, null, null);
         undead.setPersistenceRequired();
-        if (caster != null) InfernalInfusion.bind(undead, caster);
     }
 
     private static void raisingParticles(ServerLevel level, Vec3 landing) {
