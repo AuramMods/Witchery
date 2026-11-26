@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
@@ -35,12 +36,86 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import org.apache.commons.io.FileUtils;
 
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.UUID;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class LegacyDemonSaveImportTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_unresolved_merchant_stock")
+    public static void keepsUnresolvedPaymentsUntilTheRegistryIsAvailable(GameTestHelper helper) throws Exception {
+        var root = Files.createTempDirectory("witchery-unresolved-merchant-stock");
+        try {
+            var directory = Files.createDirectories(root.resolve("entities"));
+            var chunk = new ChunkPos(0, 0);
+            var input = TagParser.parseTag("""
+                    {Position:[I;0,0],Entities:[
+                      {id:"witchery:demon",Pos:[4d,70d,4d],Health:100f,PlayerCreated:1b,Bargains:{Recipes:[
+                        {buy:{id:"minecraft:diamond",Count:3b},buyB:{id:32321s,Count:2b,Damage:0s,tag:{Marker:"old payment"}},
+                         sell:{id:"witchery:demon_heart",Count:1b},uses:2,maxUses:7},
+                        {buy:{id:"minecraft:emerald",Count:1b},sell:{id:"minecraft:redstone",Count:1b},uses:1,maxUses:9}]}},
+                      {id:"witchery:goblin",Pos:[5d,70d,4d],Profession:1,Offers:{Recipes:[
+                        {buy:{id:"minecraft:diamond",Count:3b},buyB:{id:32321s,Count:2b,Damage:0s},
+                         sell:{id:"witchery:koboldite_nugget",Count:1b},uses:4,maxUses:8}]}}
+                    ]}
+                    """);
+            writeTradeRegion(directory, chunk, input);
+            var saved = new ListTag();
+            try (var storage = new EntityStorage(helper.getLevel(), directory, DataFixers.getDataFixer(), true, Runnable::run)) {
+                var merchants = storage.loadEntities(chunk).join().getEntities().toList();
+                var demon = (Demon) merchants.get(0);
+                var goblin = (Hobgoblin) merchants.get(1);
+                helper.assertTrue(demon.getOffers().size() == 1 && demon.getOffers().get(0).getResult().is(Items.REDSTONE)
+                                && goblin.getOffers().isEmpty(),
+                        "An unresolved second payment never becomes a one-payment offer");
+                demon.getOffers().get(0).increaseUses();
+                saved.add(demon.saveWithoutId(new CompoundTag()));
+                saved.add(goblin.saveWithoutId(new CompoundTag()));
+            }
+            saved.getCompound(0).putString("id", "witchery:demon");
+            saved.getCompound(1).putString("id", "witchery:goblin");
+            var originals = input.getList("Entities", Tag.TAG_COMPOUND);
+            var demonRows = saved.getCompound(0).getCompound("Bargains").getList("Recipes", Tag.TAG_COMPOUND);
+            var goblinRows = saved.getCompound(1).getCompound("Offers").getList("Recipes", Tag.TAG_COMPOUND);
+            helper.assertTrue(demonRows.getCompound(0).equals(originals.getCompound(0).getCompound("Bargains")
+                                    .getList("Recipes", Tag.TAG_COMPOUND).getCompound(0))
+                            && goblinRows.equals(originals.getCompound(1).getCompound("Offers").getList("Recipes", Tag.TAG_COMPOUND))
+                            && demonRows.getCompound(1).getInt("uses") == 2,
+                    "Saving preserves both original pending rows and the use of the available row");
+
+            input.put("Entities", saved);
+            writeTradeRegion(directory, chunk, input);
+            var registry = TagParser.parseTag("{ItemData:[{V:32321}]}");
+            registry.getList("ItemData", Tag.TAG_COMPOUND).getCompound(0).putString("K", "\u0002minecraft:gold_ingot");
+            NbtIo.writeCompressed(registry, root.resolve("witchery-legacy-ids.dat").toFile());
+            try (var storage = new EntityStorage(helper.getLevel(), directory, DataFixers.getDataFixer(), true, Runnable::run)) {
+                var merchants = storage.loadEntities(chunk).join().getEntities().toList();
+                var demon = (Demon) merchants.get(0);
+                var restored = demon.getOffers().get(0);
+                var goblin = (Hobgoblin) merchants.get(1);
+                helper.assertTrue(demon.getOffers().size() == 2 && demon.getOffers().get(1).getUses() == 2
+                                && restored.getCostB().is(Items.GOLD_INGOT) && restored.getCostB().getCount() == 2
+                                && restored.getCostB().getTag().getString("Marker").equals("old payment")
+                                && restored.getUses() == 2 && restored.getMaxUses() == 7,
+                        "The restored mapping recovers the price, tag and offer order");
+                helper.assertTrue(goblin.getOffers().size() == 1 && goblin.getOffers().get(0).getCostB().is(Items.GOLD_INGOT)
+                                && goblin.getOffers().get(0).getUses() == 4,
+                        "The Goblin recovers its original only offer when both payments are available");
+            }
+        } finally {
+            FileUtils.deleteDirectory(root.toFile());
+        }
+        helper.succeed();
+    }
+
+    private static void writeTradeRegion(Path directory, ChunkPos chunk, CompoundTag input) throws Exception {
+        try (var region = new RegionFile(directory.resolve("r.0.0.mca"), directory, true);
+             var stream = region.getChunkDataOutputStream(chunk)) {
+            NbtIo.write(NbtUtils.addCurrentDataVersion(input), stream);
+        }
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_mixed_merchant_stock")
     public static void repairsTradesInExistingEntityRegions(GameTestHelper helper) throws Exception {
         var root = Files.createTempDirectory("witchery-existing-merchant-stock");

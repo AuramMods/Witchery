@@ -1846,6 +1846,7 @@
 
 ## Legacy Save Fixtures (2026-11-21)
 
+- [x] Preserve unresolved stock in mixed earlier Forge saves for Demons, Hobgoblins, and Polynesia Charm merchants. An offer with an unavailable item stays off the trade screen. Its raw recipe and usage counts survive saving alongside changes to available stock. The next ordinary load restores the offer when the missing item mapping is present.
 - [x] Import eight Poppet Shelves that Witchery 0.24.1 placed over 1,300 blocks from spawn. Clean Forge and copied Auram recovered all six directions, both power states, all eight named Death Protection Poppets, and eight original ticking tickets. Redstone changes persisted through an ordinary restart on both profiles. The muted background survival client opened the shelf through its normal use binding on clean Forge. A separately converted earlier Forge save kept all wards and tickets and used the default south and unpowered state.
 - [x] Import an original Dream Catcher with attachment metadata and `WITCWeaveID:3`. Use a dispenser to recover its Nightmares Dream Weave with Pruning, then confirm the same item after an ordinary restart.
 - [x] Import native numeric Stone ID 1 metadata 1 as Granite with the packaged JAR. Dispense the Flint brew to convert that Granite to Cobblestone, and verify the result after an ordinary restart.

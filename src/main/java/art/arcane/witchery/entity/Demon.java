@@ -4,6 +4,7 @@ import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.world.DreamTravel;
 import art.arcane.witchery.world.WitcheryDimensions;
+import art.arcane.witchery.world.migration.StoredMerchantOffers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -391,17 +392,7 @@ public final class Demon extends AbstractGolem implements RangedAttackMob, Merch
         if (summoned) setPersistenceRequired();
         escapeTicks = tag.contains("EscapeTicks", Tag.TAG_ANY_NUMERIC) ? tag.getInt("EscapeTicks") : -1;
         if (tag.contains("Bargains", Tag.TAG_COMPOUND)) {
-            CompoundTag bargains = tag.getCompound("Bargains");
-            for (Tag value : bargains.getList("Recipes", Tag.TAG_COMPOUND)) {
-                CompoundTag offer = (CompoundTag) value;
-                for (String slot : new String[]{"buy", "buyB", "sell"}) {
-                    if (offer.contains(slot, Tag.TAG_COMPOUND)) {
-                        ItemStack item = WitcheryIngredient.loadInventoryStack(offer.getCompound(slot));
-                        offer.put(slot, item.save(new CompoundTag()));
-                    }
-                }
-            }
-            offers = new MerchantOffers(bargains);
+            offers = StoredMerchantOffers.read(tag.getCompound("Bargains"));
             offers.forEach(MerchantOffer::resetSpecialPriceDiff);
         }
     }

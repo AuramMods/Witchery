@@ -2,6 +2,7 @@ package art.arcane.witchery.entity;
 
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.world.migration.StoredMerchantOffers;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.core.BlockPos;
@@ -332,6 +333,9 @@ public final class Hobgoblin extends AbstractVillager {
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
+        if (offers instanceof StoredMerchantOffers saved && saved.isEmpty() && saved.hasPending()) {
+            tag.put("Offers", saved.createTag());
+        }
         tag.putInt("Profession", profession());
         tag.putInt("Riches", riches);
         tag.putInt("RestockTicks", restockTicks);
@@ -348,19 +352,8 @@ public final class Hobgoblin extends AbstractVillager {
         preventDespawn = tag.getBoolean("PreventDespawn");
         if (worship != null) worship.load(tag);
         if (tag.contains("Offers", Tag.TAG_COMPOUND)) {
-            CompoundTag migrated = tag.getCompound("Offers").copy();
-            for (Tag entry : migrated.getList("Recipes", Tag.TAG_COMPOUND)) {
-                var trade = (CompoundTag) entry;
-                for (String slot : new String[]{"buy", "buyB", "sell"}) {
-                    if (!trade.contains(slot, Tag.TAG_COMPOUND)) continue;
-                    CompoundTag stack = trade.getCompound(slot);
-                    ItemStack item = loadTradeStack(stack);
-                    if (!item.isEmpty()) trade.put(slot, item.save(new CompoundTag()));
-                }
-            }
-            MerchantOffers loaded = new MerchantOffers(migrated);
-            loaded.removeIf(offer -> offer.getBaseCostA().isEmpty() || offer.getResult().isEmpty());
-            offers = loaded.isEmpty() ? null : loaded;
+            var loaded = StoredMerchantOffers.read(tag.getCompound("Offers"), Hobgoblin::loadTradeStack);
+            offers = loaded.isEmpty() && !loaded.hasPending() ? null : loaded;
         }
     }
 

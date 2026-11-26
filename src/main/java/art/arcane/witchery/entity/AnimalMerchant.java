@@ -1,8 +1,7 @@
 package art.arcane.witchery.entity;
 
 import art.arcane.witchery.item.WitchClothingItem;
-import art.arcane.witchery.item.WitcheryIngredient;
-import net.minecraft.nbt.CompoundTag;
+import art.arcane.witchery.world.migration.StoredMerchantOffers;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -85,33 +84,13 @@ public final class AnimalMerchant implements Merchant {
         if (offers == null) {
             var data = animal.getPersistentData();
             if (data.contains(STOCK_TAG, Tag.TAG_COMPOUND)) {
-                offers = loadOffers(data.getCompound(STOCK_TAG));
+                offers = StoredMerchantOffers.read(data.getCompound(STOCK_TAG));
             } else {
                 offers = AnimalTradeStock.generate(animal, animal.level().getRandom());
                 data.put(STOCK_TAG, offers.createTag());
             }
         }
         return offers;
-    }
-
-    private static MerchantOffers loadOffers(CompoundTag saved) {
-        var loaded = new MerchantOffers();
-        for (Tag entry : saved.getList("Recipes", Tag.TAG_COMPOUND)) {
-            CompoundTag recipe = ((CompoundTag) entry).copy();
-            ItemStack buy = WitcheryIngredient.loadInventoryStack(recipe.getCompound("buy"));
-            ItemStack sell = WitcheryIngredient.loadInventoryStack(recipe.getCompound("sell"));
-            if (buy.isEmpty() || sell.isEmpty()) continue;
-            recipe.put("buy", buy.save(new CompoundTag()));
-            recipe.put("sell", sell.save(new CompoundTag()));
-            if (recipe.contains("buyB", Tag.TAG_COMPOUND)) {
-                CompoundTag oldSecond = recipe.getCompound("buyB");
-                ItemStack second = WitcheryIngredient.loadInventoryStack(oldSecond);
-                if (oldSecond.getByte("Count") > 0 && second.isEmpty()) continue;
-                recipe.put("buyB", second.save(new CompoundTag()));
-            }
-            loaded.add(new MerchantOffer(recipe));
-        }
-        return loaded;
     }
 
     @Override

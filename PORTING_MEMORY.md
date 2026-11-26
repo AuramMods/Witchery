@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Unresolved payments in saved merchant stock (2026-11-26)
+
+- An earlier 1.20.1 entity region can retain the original short item ID in the second payment of a Demon or Hobgoblin offer. The preceding package exposed it as a one-payment trade after loading without the captured registry. The previous Polynesia Charm loader filtered unavailable offers, but rewriting the stock after a valid purchase discarded those rows.
+- Demons, Hobgoblins, and animal shops now share their saved-offer reader. Unresolved rows stay out of the menu. Their raw IDs, counts, item tags, and usage records survive alongside any purchases or restocks of valid offers. A Hobgoblin with only pending rows retains them in its entity save. The next load retries the saved rows through the normal item migration path.
+- The clean Forge fixture supplied three mixed entity records and trades. A muted background client tried the three-diamond payment, kept all three diamonds, and received no heart. The client then bought Redstone from the Demon and Wheat from the cow through ordinary trade menus. Both available offers gained a use, and the raw pending rows remained intact. After a test registry mapped ID 32321 to Gold Ingot, the ordinary restart restored all three offers and their marked stacks. The client then bought the Demon Heart for the saved three diamonds and two gold ingots. Both launches stayed unfocused at zero master volume with OpenAL No Output.
+- Copied Auram preserved the original short IDs and all three usage counts on a headless save. The ordinary restart with the captured mapping recovered the three marked two-ingot payments and kept their original limits.
+- Java 17 data generation, reobfuscation, and all 519 local Forge GameTests passed. The tested package is `build/qa-unresolved-stock/candidate.jar`, SHA-256 `d7c2e17577a74bd58fb136fff214e17bc3290a22c7c1ee7c94a9460a884e5fed`.
+
 ## Hell Gate landings and Hellish Aura feedback (2026-11-26)
 
 - The running 0.24.1 action in `build/qa-hell-gate/native/reference.log` selected X minus one and Z plus zero with seed 117. It summoned at Y 111.05 on both the open fixture and the two-air-block pocket under stone. A cobweb in the second block prevented both the Demon and the cue. It also summoned at Y 256.05 above the last buildable layer and Y 1.05 where the void column had no floor.

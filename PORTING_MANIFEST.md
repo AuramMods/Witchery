@@ -1819,6 +1819,7 @@ Status:
 
 ### Supported save conversion paths
 
+- Saved Demon bargains, Hobgoblin offers, and Polynesia Charm stock retain positive-count recipes with an unresolved payment or result. The runtime menu uses the currently available offers. Saving restores the pending recipe in the saved order, keeping its original slot tags and usage data. Ordinary entity loading can activate it after the captured item mapping becomes available.
 - Use the original Forge registry from a copy of a 1.7.10 world to convert numeric block, item, and entity state. The import workflow can read that world's original config for customized dimension, potion and profession IDs. Captured numeric mappings remain in the converted world for subsequent loads.
 - An ordinary Forge 1.20.1 restart uses current names, block states and saved payloads. Earlier port records can recover named legacy variants, specialized payloads and numeric entries when the captured registry is available. Recovery of values dropped by a previous conversion requires a source record that still contains them.
 - The current installation includes the 55 original entity types and their names. All 55 loaded from original serialized records in the current package replay. The Scrying Eye is transient. The detailed fixtures in the porting plan record the active state verified beyond the base entity mapping.
