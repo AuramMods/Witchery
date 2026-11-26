@@ -366,6 +366,77 @@ public final class CauldronBrewParityTests {
     }
 
     @GameTest(template = "qa_coven_arena")
+    public static void pulverisationRestoresNativeOrderAndStoneVariants(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var center = helper.absolutePos(new BlockPos(5, 5, 5));
+        var stone = center.offset(-1, 0, -1);
+        var granite = center.offset(-1, -1, 0);
+        var cobble = center.offset(0, 1, -1);
+        var gravel = center.offset(0, -1, 1);
+        var sandstone = center.offset(1, 0, -1);
+        var redSand = center.offset(1, 1, 0);
+        var fringe = center.offset(1, 1, 1);
+        level.setBlockAndUpdate(stone, Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(granite, Blocks.GRANITE.defaultBlockState());
+        level.setBlockAndUpdate(cobble, Blocks.COBBLESTONE.defaultBlockState());
+        level.setBlockAndUpdate(gravel, Blocks.GRAVEL.defaultBlockState());
+        level.setBlockAndUpdate(sandstone, Blocks.CUT_SANDSTONE.defaultBlockState());
+        level.setBlockAndUpdate(redSand, Blocks.RED_SAND.defaultBlockState());
+        level.setBlockAndUpdate(fringe, Blocks.POLISHED_GRANITE.defaultBlockState());
+        level.setBlockAndUpdate(center, Blocks.DIORITE.defaultBlockState());
+        var brewer = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "PulverisationTester"));
+        var recipe = BrewMixture.from(List.of(new ItemStack(Items.NETHER_WART),
+                new ItemStack(Items.GUNPOWDER), new ItemStack(Items.FLINT)));
+
+        List<BlockPos> expected = List.of(stone, granite, cobble, center, gravel, sandstone, redSand);
+        List<BlockPos> visited = new ArrayList<>();
+        List<PlayLevelSoundEvent.AtPosition> sounds = new ArrayList<>();
+        Consumer<BlockEvent.BreakEvent> protection = event -> {
+            if (event.getLevel() == level && event.getPlayer() == brewer
+                    && (expected.contains(event.getPos()) || event.getPos().equals(fringe))) {
+                visited.add(event.getPos());
+                if (event.getPos().equals(center)) event.setCanceled(true);
+            }
+        };
+        Consumer<PlayLevelSoundEvent.AtPosition> sound = event -> {
+            if (event.getLevel() == level && event.getSound() != null && event.getSound().value() == SoundEvents.GHAST_SHOOT) {
+                sounds.add(event);
+            }
+        };
+        var config = WitcheryServerConfig.ALLOW_INTER_MOD_BLOCK_BREAK_EVENTS;
+        boolean previous = config.get();
+        MinecraftForge.EVENT_BUS.addListener(protection);
+        MinecraftForge.EVENT_BUS.addListener(sound);
+        try {
+            config.set(true);
+            recipe.applySplashToBlock(level, center, Direction.UP, Vec3.atCenterOf(center), brewer);
+            helper.assertTrue(visited.equals(expected), "The open sphere visits blocks once in original X, Z, Y order");
+            helper.assertTrue(level.getBlockState(stone).is(Blocks.COBBLESTONE)
+                            && level.getBlockState(granite).is(Blocks.COBBLESTONE)
+                            && level.getBlockState(cobble).is(Blocks.GRAVEL)
+                            && level.getBlockState(gravel).is(Blocks.SAND)
+                            && level.getBlockState(sandstone).is(Blocks.SAND),
+                    "Each stone, cobblestone, gravel and sandstone advances by exactly one stage");
+            helper.assertTrue(level.getBlockState(fringe).is(Blocks.POLISHED_GRANITE)
+                            && level.getBlockState(center).is(Blocks.DIORITE),
+                    "The open fringe and protected center keep their stone");
+            var drops = level.getEntitiesOfClass(ItemEntity.class, new AABB(redSand).inflate(0.5));
+            helper.assertTrue(level.isEmptyBlock(redSand) && drops.size() == 1 && drops.get(0).getItem().is(Items.SAND)
+                            && drops.get(0).getItem().getCount() == 1 && drops.get(0).position().equals(Vec3.atLowerCornerOf(redSand)),
+                    "Red sand yields one ordinary sand item at its original coordinates");
+            helper.assertTrue(sounds.size() == 1 && sounds.get(0).getPosition().equals(Vec3.atLowerCornerOf(center))
+                            && sounds.get(0).getNewVolume() == 0.5F && sounds.get(0).getNewPitch() == 2,
+                    "The ghast cue plays once from the impact corner");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(protection);
+            MinecraftForge.EVENT_BUS.unregister(sound);
+            config.set(previous);
+            brewer.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
     public static void terrainBrewHonorsConfigurableBlockBreakVeto(GameTestHelper helper) {
         var level = helper.getLevel();
         var target = helper.absolutePos(new BlockPos(4, 4, 4));

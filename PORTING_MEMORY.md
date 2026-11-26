@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron Pulverisation terrain and cues (2026-11-25)
+
+- The original Flint action visited its open sphere in X, Z, then Y order. Stone with either zero or nonzero metadata became Cobblestone, each affected block advanced one stage, and Red Sand yielded one ordinary Sand. The squared-distance-three corner was outside the base cast. The port applies those conversions to the flattened stone variants, including granite, diorite and andesite.
+- The native trace emitted one silent Smoke cue from the lower corner one block above each conversion. Each used width and height 0.25 and a 16-block audience. It then played a ghast shot at the lower corner of the impact block at volume 0.5 and pitch 2. Forge protection still skips vetoed conversions.
+- The packaged clean Forge survival client threw a supplied Flint brew and received six ordered smoke cues and one ghast shot. The terrain edits, excluded fringe and same ordinary Sand item survived a dedicated restart. The isolated client used master volume zero and OpenAL No Output. Its process never became the foreground application.
+- A copied 1.7.10 world still held numeric Stone ID 1 with metadata 1 in its native region. The exact JAR imported that cell as Granite. A redstone dispenser running the normal Flint brew converted it to Cobblestone. A restart without import flags retained the result.
+- The headless Auram copy ran its original Does It Tick settings. With zero players online, a dispenser completed the same six conversions. The dedicated restart retained the changes, excluded cells and same Sand item.
+- All 444 local Forge GameTests and Java 17 reobfuscation passed on seed `5471593853027166409`. The package is `build/qa-pulverisation-parity/candidate.jar` with SHA-256 `8fe7d96188c5873b5a71f69ff5cc5c4a816c3d3f910d92841e7ab7f08674d362`. See `build/qa-pulverisation-parity/comparison.txt`.
+
 ## Cauldron Lilify fluids and spread (2026-11-25)
 
 - The original splash scanned upward to the first open surface of water, Hollow Tears, Flowing Spirit or Brew Liquid. It placed pads on sources and flowing cells. Only source pads survived their scheduled update. An unsupported strength-one pad spread onto neighboring Hollow Tears before falling.

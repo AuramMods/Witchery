@@ -1,8 +1,8 @@
 package art.arcane.witchery.brewing;
 
+import art.arcane.witchery.network.WitcheryNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -33,6 +33,7 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
+import java.util.Set;
 import java.util.function.Consumer;
 
 final class BrewFarming {
@@ -40,6 +41,9 @@ final class BrewFarming {
             Blocks.DANDELION, Blocks.POPPY, Blocks.BLUE_ORCHID, Blocks.ALLIUM, Blocks.AZURE_BLUET,
             Blocks.RED_TULIP, Blocks.ORANGE_TULIP, Blocks.WHITE_TULIP, Blocks.PINK_TULIP, Blocks.OXEYE_DAISY
     };
+    // States flattened from the original stone block and its metadata.
+    private static final Set<Block> LEGACY_STONE = Set.of(Blocks.STONE, Blocks.GRANITE, Blocks.POLISHED_GRANITE,
+            Blocks.DIORITE, Blocks.POLISHED_DIORITE, Blocks.ANDESITE, Blocks.POLISHED_ANDESITE);
 
     private BrewFarming() {
     }
@@ -212,23 +216,32 @@ final class BrewFarming {
     static void pulverise(ServerLevel level, BlockPos center, int radius, @Nullable Player caster) {
         Player actor = actor(level, caster);
         int reach = Math.max(radius - 1, 1);
-        forEachBlock(level, center, reach, Math.max(0, reach * reach - 2), pos -> {
-            var state = level.getBlockState(pos);
-            Block replacement;
-            if (state.is(Blocks.STONE)) replacement = Blocks.COBBLESTONE;
-            else if (state.is(Blocks.COBBLESTONE)) replacement = Blocks.GRAVEL;
-            else if (state.is(Blocks.GRAVEL) || state.is(Blocks.SANDSTONE)
-                    || state.is(Blocks.CHISELED_SANDSTONE) || state.is(Blocks.CUT_SANDSTONE)) replacement = Blocks.SAND;
-            else if (state.is(Blocks.SAND) || state.is(Blocks.RED_SAND)) replacement = Blocks.AIR;
-            else return;
-            if (!BrewTerrain.setBlock(actor, level, pos, replacement.defaultBlockState(), Direction.UP)) return;
-            if (replacement == Blocks.AIR) {
-                level.addFreshEntity(new ItemEntity(level, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(Items.SAND)));
+        int limit = Math.max(0, reach * reach - 2);
+        Consumer<BlockPos> convert = pos -> pulveriseBlock(level, pos, actor);
+        for (int x = -reach; x <= reach; x++) {
+            for (int z = -reach; z <= reach; z++) {
+                for (int y = -reach; y <= reach; y++) {
+                    if (x * x + y * y + z * z <= limit) visit(level, center.offset(x, y, z), convert);
+                }
             }
-            level.sendParticles(ParticleTypes.SMOKE, pos.getX(), pos.getY() + 1, pos.getZ(),
-                    16, 0.25, 0.25, 0.25, 0);
-        });
-        level.playSound(null, center, SoundEvents.GHAST_SHOOT, SoundSource.BLOCKS, 0.5F, 2);
+        }
+        level.playSound(null, center.getX(), center.getY(), center.getZ(), SoundEvents.GHAST_SHOOT, SoundSource.BLOCKS, 0.5F, 2);
+    }
+
+    private static void pulveriseBlock(ServerLevel level, BlockPos pos, Player caster) {
+        var state = level.getBlockState(pos);
+        Block replacement;
+        if (LEGACY_STONE.contains(state.getBlock())) replacement = Blocks.COBBLESTONE;
+        else if (state.is(Blocks.COBBLESTONE)) replacement = Blocks.GRAVEL;
+        else if (state.is(Blocks.GRAVEL) || state.is(Blocks.SANDSTONE)
+                || state.is(Blocks.CHISELED_SANDSTONE) || state.is(Blocks.CUT_SANDSTONE)) replacement = Blocks.SAND;
+        else if (state.is(Blocks.SAND) || state.is(Blocks.RED_SAND)) replacement = Blocks.AIR;
+        else return;
+        if (!BrewTerrain.setBlock(caster, level, pos, replacement.defaultBlockState(), Direction.UP)) return;
+        if (replacement == Blocks.AIR) {
+            level.addFreshEntity(new ItemEntity(level, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(Items.SAND)));
+        }
+        WitcheryNetwork.sendPulverisationSmoke(level, pos);
     }
 
     private static void forEachBlock(ServerLevel level, BlockPos center, int reach, int limit, Consumer<BlockPos> action) {
