@@ -57,7 +57,6 @@ public final class LegacyWorldIds {
     private static final int ITEM_LORE_COMPONENT_VERSION = 1803;
     private static final ResourceLocation VANILLA_POTION = new ResourceLocation("minecraft", "potion");
     private static final ResourceLocation VANILLA_SPAWN_EGG = new ResourceLocation("minecraft", "spawn_egg");
-    private static final ResourceLocation ALLURING_SKULL = new ResourceLocation(Witchery.MODID, "alluringskull");
     private final Map<Integer, ResourceLocation> blocks = new HashMap<>();
     private final Map<Integer, ResourceLocation> items = new HashMap<>();
     private final Map<Integer, ResourceLocation> vanillaItems = new HashMap<>();
@@ -296,14 +295,16 @@ public final class LegacyWorldIds {
         if (value instanceof ListTag list) {
             for (Tag entry : list) repairStoredItems(entry, fixer);
         } else if (value instanceof CompoundTag compound) {
-            upgradeItemBinding(compound);
-            String id = compound.getString("id");
-            if (compound.contains("Count", Tag.TAG_ANY_NUMERIC) && compound.contains("Damage", Tag.TAG_ANY_NUMERIC)
-                    && (ALLURING_SKULL.toString().equals(id) || compound.contains("id", Tag.TAG_ANY_NUMERIC)
-                    && ALLURING_SKULL.equals(items.get(compound.getInt("id") & 0xFFFF)))) {
-                upgradeStack(compound);
-                upgradeItemDisplay(compound.getCompound("tag").getCompound("display"), false);
+            // Both legacy and current item stacks store Count as a byte. Some tiles have their own integer Count.
+            if (compound.contains("Count", Tag.TAG_BYTE) && hasLegacyStackEncoding(compound) && upgradeStack(compound)) {
+                var tag = compound.getCompound("tag");
+                upgradeItemDisplay(tag.getCompound("display"), false);
+                upgradeEnchantments(tag, "ench", "Enchantments");
+                upgradeEnchantments(tag, "StoredEnchantments", "StoredEnchantments");
+            } else {
+                upgradeItemBinding(compound);
             }
+            String id = compound.getString("id");
             int currentVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
             upgradeMerchantItems(compound, id, fixer, currentVersion, currentVersion);
             if (compound.get("Brew") instanceof CompoundTag brew) {
@@ -472,7 +473,7 @@ public final class LegacyWorldIds {
         }
     }
 
-    private void upgradeStack(CompoundTag compound) {
+    private boolean upgradeStack(CompoundTag compound) {
         ResourceLocation name;
         boolean legacySapling;
         if (compound.contains("id", Tag.TAG_ANY_NUMERIC)) {
@@ -489,19 +490,19 @@ public final class LegacyWorldIds {
                 && compound.getByte("Count") > 0 && ForgeRegistries.ITEMS.containsKey(BiomesOPlentySaplings.FIR)) {
             compound.putString("id", BiomesOPlentySaplings.FIR.toString());
             compound.remove("Damage");
-            return;
+            return true;
         }
         if (VANILLA_POTION.equals(name)) {
             effects.upgrade(compound.getCompound("tag").getList("CustomPotionEffects", Tag.TAG_COMPOUND));
         }
         if (VANILLA_SPAWN_EGG.equals(name)) name = spawnEggs.get(compound.getInt("Damage") & 0xFFFF);
-        if (name == null || !name.getNamespace().equals(Witchery.MODID) || compound.getByte("Count") <= 0) return;
+        if (name == null || !name.getNamespace().equals(Witchery.MODID) || compound.getByte("Count") <= 0) return false;
         CompoundTag named = compound.copy();
         named.putString("id", name.toString());
         ItemStack stack = WitcheryIngredient.loadInventoryStack(named);
         if (stack.isEmpty()) {
             if (unmappedItems.add(name)) Witchery.LOGGER.warn("Legacy item {} has no Witchery world import mapping yet", name);
-            return;
+            return false;
         }
         // ItemStack.of can insert a modern Damage field into the decoded copy.
         if (stack.isDamageableItem() && stack.getDamageValue() == 0 && !compound.getCompound("tag").contains("Damage", Tag.TAG_ANY_NUMERIC)) {
@@ -512,6 +513,7 @@ public final class LegacyWorldIds {
         compound.remove("tag");
         stack.save(compound);
         upgradeItemBinding(compound);
+        return true;
     }
 
     private void upgradeItemBinding(CompoundTag stack) {

@@ -30,7 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 public final class CircleTalismanItem extends Item {
-    private static final String PATTERN_TAG = "CirclePattern";
+    static final String PATTERN_TAG = "CirclePattern";
     private static final List<RitualCircle> RINGS = List.of(RitualCircle.SMALL_RITE, RitualCircle.MEDIUM_RITE, RitualCircle.LARGE_RITE);
     private static final List<String> CHALK = List.of("circleglyphritual", "circleglyphotherwhere", "circleglyphinfernal");
 

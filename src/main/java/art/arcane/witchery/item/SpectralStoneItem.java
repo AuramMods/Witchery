@@ -31,7 +31,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public final class SpectralStoneItem extends Item {
-    private static final String CONTENTS = "SpectralContents";
+    static final String CONTENTS = "SpectralContents";
     private static final int CHARGE_TICKS = 40;
     private static final int MAX_CREATURES = 3;
 

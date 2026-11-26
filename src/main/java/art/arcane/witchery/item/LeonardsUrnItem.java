@@ -19,7 +19,7 @@ import net.minecraftforge.network.NetworkHooks;
 import java.util.List;
 
 public final class LeonardsUrnItem extends Item {
-    private static final String TIER = "UrnTier";
+    static final String TIER = "UrnTier";
 
     public LeonardsUrnItem() {
         super(new Properties().stacksTo(1).rarity(Rarity.EPIC));

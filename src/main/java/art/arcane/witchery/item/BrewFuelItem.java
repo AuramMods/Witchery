@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public final class BrewFuelItem extends Item {
-    private static final String TIER = "FuelTier";
+    static final String TIER = "FuelTier";
     private static final int[] BURN_TICKS = {2400, 5000, 10000, 50000};
     private static final int[] COLORS = {0xFFA65E, 0xFF8E38, 0xFF710C, 0xE05900};
 

@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Legacy item variants in earlier port saves (2026-11-25)
+
+- Witchery 0.24.1 saved a chest with 20 item families. The packaged importer restored their original subtypes and wear. The earlier-port fixture placed the actual legacy stack data in a 1.20.1 chest, player file, and entity region with the original registry snapshot. The previous build lost most chest variants and the dropped Urn's tier.
+- Ordinary Forge loads now resolve supported Witchery stacks that still carry numeric IDs or legacy damage. Explicit modern block states, tiers, book pages, and wear take precedence. With stale bat metadata beside a modern silverfish state, the previous Poppet Shelf loader changed the critter. The new loader retains the silverfish. Existing names and unrelated data survive the repair.
+- Clean Forge and copied Auram restored all 20 chest slots, the dropped Urn's tier and UUID, and the saved shelf state. The muted survival client recovered three items on login and placed the stocked Bat Snare from its hotbar. A normal dedicated restart retained the variants and the placed stocked snare.
+- Java 17 reobfuscation and all 461 local Forge GameTests passed on world seed `5471593853027166409`. The JAR is `build/qa-item-variant-migration/candidate.jar` with SHA-256 `55eb95ac2cbaa5a5c9d569de20203d4bb289affd7f0640632f4713dec90cf19b`. See `build/qa-item-variant-migration/comparison.txt`.
+
 ## Natural crop growth and dark soil (2026-11-25)
 
 - Native Witchery crops survive on supported soil in darkness and use the light in the block above for growth. A Mandrake with level 14 side light and level zero above stayed at age zero. The previous Forge JAR grew that crop through its ceiling and uprooted both a crop in darkness and a crop supported by another of its own kind.

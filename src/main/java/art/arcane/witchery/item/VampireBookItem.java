@@ -24,7 +24,7 @@ import java.util.List;
 public final class VampireBookItem extends Item {
     public static final int MAX_TORN_PAGES = 9;
     public static final int MAX_BOOKMARK_DEPTH = 64;
-    private static final String TORN_PAGES = "VampireBookPages";
+    static final String TORN_PAGES = "VampireBookPages";
     private static final String PAGE_STACK = "pageStack";
     private static final List<String> CHAPTERS = List.of("toc", "ritual1", "ritual2", "ritual3", "ritual4", "ritual5",
             "transfix", "knockback", "speed", "resistsun", "smashstone", "bats", "mesmerize", "maker", "maker2", "finalpowers");

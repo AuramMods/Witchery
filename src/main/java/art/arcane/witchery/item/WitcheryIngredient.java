@@ -220,77 +220,70 @@ public enum WitcheryIngredient {
             return PotionUtils.setPotion(stack, Potions.NIGHT_VISION);
         }
         if (hasLegacyDamage) {
+            int damage = stackTag.getInt("Damage");
+            var state = stack.getTagElement(BlockItem.BLOCK_STATE_TAG);
             if (stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof AlluringSkullBlock) {
-                AlluringSkullBlock.importLegacyItemState(stack, stackTag.getInt("Damage"));
+                AlluringSkullBlock.importLegacyItemState(stack, damage);
             }
-            if (stackTag.getInt("Damage") == 2 && stack.getItem() instanceof BlockItem blockItem
-                    && blockItem.getBlock() instanceof PitDirtBlock) {
-                var state = stack.getTagElement(BlockItem.BLOCK_STATE_TAG);
-                if (state == null || !state.contains(PitDirtBlock.PODZOL.getName(), Tag.TAG_STRING)) {
-                    PitDirtBlock.setPodzol(stack);
-                }
+            if (damage == 2 && stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof PitDirtBlock
+                    && (state == null || !state.contains(PitDirtBlock.PODZOL.getName(), Tag.TAG_STRING))) {
+                PitDirtBlock.setPodzol(stack);
             }
             if (stack.getItem() instanceof WitchWoodBlockItem) {
-                WitchWoodBlockItem.importLegacyMetadata(stack, stackTag.getInt("Damage"));
+                WitchWoodBlockItem.importLegacyMetadata(stack, damage);
             }
             if (stack.getItem() instanceof ShadedGlassBlock.Item) {
-                ShadedGlassBlock.Color.importLegacyMetadata(stack, stackTag.getInt("Damage"));
+                ShadedGlassBlock.Color.importLegacyMetadata(stack, damage);
             }
             if (stack.getItem() instanceof StockadeBlock.Item
-                    && (stack.getTagElement(BlockItem.BLOCK_STATE_TAG) == null
-                    || !stack.getTagElement(BlockItem.BLOCK_STATE_TAG).contains(StockadeBlock.WOOD.getName(), Tag.TAG_STRING))) {
-                StockadeBlock.Wood.importLegacyMetadata(stack, stackTag.getInt("Damage"));
+                    && (state == null || !state.contains(StockadeBlock.WOOD.getName(), Tag.TAG_STRING))) {
+                StockadeBlock.Wood.importLegacyMetadata(stack, damage);
             }
-            if (stack.getItem() instanceof ParasyticLouseItem
-                    && (!stack.hasTag() || !stack.getTag().contains(LousePotion.TAG, Tag.TAG_ANY_NUMERIC))) {
-                LousePotion.set(stack, stackTag.getInt("Damage"));
+            if (stack.getItem() instanceof ParasyticLouseItem && !hasNumericTag(stack, LousePotion.TAG)) {
+                LousePotion.set(stack, damage);
             }
-            if (stack.getItem() instanceof SpectralStoneItem && SpectralStoneItem.typeId(stack) == 0) {
-                SpectralStoneItem.applyLegacyContents(stack, stackTag.getInt("Damage"));
+            if (stack.getItem() instanceof SpectralStoneItem && !hasNumericTag(stack, SpectralStoneItem.CONTENTS)) {
+                SpectralStoneItem.applyLegacyContents(stack, damage);
             }
-            if (stack.getItem() instanceof LeonardsUrnItem) LeonardsUrnItem.setTier(stack, stackTag.getInt("Damage"));
-            if (stack.getItem() instanceof BrewFuelItem) BrewFuelItem.setTier(stack, stackTag.getInt("Damage"));
-            if (stack.getItem() instanceof BiomeNoteItem) BiomeNoteItem.importPage(stack, stackTag.getInt("Damage"));
-            if (stack.getItem() instanceof CircleTalismanItem && CircleTalismanItem.storedPattern(stack) == 0) {
-                CircleTalismanItem.setStoredPattern(stack, stackTag.getInt("Damage"));
+            if (stack.getItem() instanceof LeonardsUrnItem && !hasNumericTag(stack, LeonardsUrnItem.TIER)) {
+                LeonardsUrnItem.setTier(stack, hasNumericTag(stack, "Damage") ? LeonardsUrnItem.tier(stack) : damage);
             }
-            if (stack.getItem() instanceof EndlessWaterBrewItem) {
-                stack.setDamageValue(Math.max(0, Math.min(stackTag.getInt("Damage"), stack.getMaxDamage() - 1)));
+            if (stack.getItem() instanceof BrewFuelItem && !hasNumericTag(stack, BrewFuelItem.TIER)) {
+                BrewFuelItem.setTier(stack, damage);
             }
-            if (stack.getItem() instanceof DivinerItem && !hasModernDamage) {
-                stack.setDamageValue(Math.max(0, Math.min(stackTag.getInt("Damage"), stack.getMaxDamage())));
+            if (stack.getItem() instanceof BiomeNoteItem) BiomeNoteItem.importPage(stack, damage);
+            if (stack.getItem() instanceof CircleTalismanItem && !hasNumericTag(stack, CircleTalismanItem.PATTERN_TAG)
+                    && CircleTalismanItem.storedPattern(stack) == 0) {
+                CircleTalismanItem.setStoredPattern(stack, damage);
+            }
+            if (stack.getItem() instanceof VampireBookItem && !hasNumericTag(stack, VampireBookItem.TORN_PAGES)) {
+                VampireBookItem.setTornPages(stack, damage);
+            }
+            if (stack.getItem() instanceof EndlessWaterBrewItem && !hasModernDamage) {
+                stack.setDamageValue(Math.max(0, Math.min(damage, stack.getMaxDamage() - 1)));
+            }
+            if (!hasModernDamage && (stack.getItem() instanceof DivinerItem || stack.getItem() instanceof WitchClothingItem
+                    || stack.getItem() instanceof DeathClothingItem || stack.getItem() instanceof MoonCharmItem)) {
+                stack.setDamageValue(Math.max(0, Math.min(damage, stack.getMaxDamage())));
+            }
+            if (stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof CritterSnareBlock
+                    && (state == null || !state.contains(CritterSnareBlock.CRITTER.getName(), Tag.TAG_STRING))) {
+                CritterSnareBlock.applyLegacyMetadata(stack, damage);
+            }
+            if (stack.getItem() instanceof PlantMineBlock.Item) PlantMineBlock.Variant.applyLegacyMetadata(stack, damage);
+            if (stack.getItem() instanceof WickerBundleBlock.Item && (damage & 1) != 0
+                    && (state == null || !state.contains(WickerBundleBlock.BUNDLE_TYPE.getName(), Tag.TAG_STRING))) {
+                WickerBundleBlock.markBloodied(stack);
+            }
+            if (stack.getItem() instanceof BrambleBlock.Item
+                    && (state == null || !state.contains(BrambleBlock.WILD.getName(), Tag.TAG_STRING))) {
+                BrambleBlock.setWild(stack, damage == 1);
             }
         }
         if (!stack.isEmpty() && "witchery:wolfhead".equals(stackTag.getString("id")) && stackTag.getInt("Damage") == 1) {
             ItemStack head = new ItemStack(WitcheryItems.getRequired("hellhound_head").get(), stack.getCount());
             if (stack.hasTag()) head.setTag(stack.getTag().copy());
             return head;
-        }
-        if (!stack.isEmpty() && "witchery:crittersnare".equals(stackTag.getString("id"))) {
-            CritterSnareBlock.applyLegacyMetadata(stack, stackTag.getInt("Damage"));
-            return stack;
-        }
-        if (stack.getItem() instanceof PlantMineBlock.Item && stackTag.contains("Damage", Tag.TAG_ANY_NUMERIC)) {
-            PlantMineBlock.Variant.applyLegacyMetadata(stack, stackTag.getInt("Damage"));
-            return stack;
-        }
-        if (stack.getItem() instanceof WickerBundleBlock.Item && (stackTag.getInt("Damage") & 1) != 0) {
-            WickerBundleBlock.markBloodied(stack);
-            return stack;
-        }
-        if (stack.getItem() instanceof BrambleBlock.Item && stackTag.contains("Damage", Tag.TAG_ANY_NUMERIC)) {
-            BrambleBlock.setWild(stack, stackTag.getInt("Damage") == 1);
-            return stack;
-        }
-        if ((stack.getItem() instanceof WitchClothingItem || stack.getItem() instanceof DeathClothingItem
-                || stack.getItem() instanceof MoonCharmItem)
-                && stackTag.contains("Damage", Tag.TAG_ANY_NUMERIC)) {
-            stack.setDamageValue(Math.min(stackTag.getInt("Damage"), stack.getMaxDamage()));
-            return stack;
-        }
-        if (stack.getItem() instanceof VampireBookItem && stackTag.contains("Damage", Tag.TAG_ANY_NUMERIC)) {
-            VampireBookItem.setTornPages(stack, stackTag.getInt("Damage"));
-            return stack;
         }
         if (!stack.isEmpty() && "witchery:poppet".equals(stackTag.getString("id"))) {
             String poppet = switch (stackTag.getInt("Damage")) {
@@ -355,5 +348,9 @@ public enum WitcheryIngredient {
 
         stack.getOrCreateTag().putInt(LEGACY_DAMAGE_TAG, damage);
         return stack;
+    }
+
+    private static boolean hasNumericTag(ItemStack stack, String key) {
+        return stack.getTag() != null && stack.getTag().contains(key, Tag.TAG_ANY_NUMERIC);
     }
 }
