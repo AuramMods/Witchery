@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Bat and owl brew cues (2026-11-25)
+
+- Witchery 0.24.1 released ten resting bats with `WITCNoDrops` from the lower corners for Brew of Bats and Bat Burst. The fixed brew sent large explosion and the cauldron brew sent poof. Both packets used width and height values of three and were centered on the release cell. The fixed brew's Slowness VI uses the projectile's position before impact for its distance and vertical query.
+- Hitchcock and Bodega produced one portal packet with width and height values of one at each new owl's feet. The original Bodega test produced zero owls without active mastery and three after adding its saved Owl record. Forge sends each portal after the owl joins the level. Both bat cues and the owl cues carry the Enderman sound with a 16-block audience.
+- The muted survival client threw the four prepared brews with a saved active Owl familiar. It recorded both bat effects and their ten bats, four separate Hitchcock portals, and four Bodega portals. All ten sounds used volume 0.5 and pitch in the original range. A dedicated restart retained the four Bodega owls and their running timers. The client used master volume zero and OpenAL No Output and kept desktop focus.
+- The first headless Auram replay saved an ownerless Brew of Bats at its exact starting position and velocity after 12 seconds in a ticking chunk. The optional Does It Tick compatibility hook now lets a loaded thrown brew finish its flight. With the original pack settings and no clients connected, two dispensers fired Brew of Bats and Bat Burst, each impact produced ten marked bats, and the copied server saved its world.
+- Reobfuscation and all 415 local Forge GameTests passed on seed `5471593853027166409`. The exact candidate is `build/qa-brew-summon-cues/candidate.jar` with SHA-256 `d64653def4853c94f451b3700ec6523762d3dd309447cbfcb6cab8b3d130b74a`. See `build/qa-brew-summon-cues/comparison.txt` for the original and packaged traces.
+
 ## Alluring Skull item migration (2026-11-25)
 
 - Witchery 0.24.1 saved three Alluring Skulls in a vanilla chest under numeric ID 210 with damage values 0, 1 and 1. Normal use spent the item and placed tile type 0 or 1 respectively. The two active chest stacks lost their variant on the previous package. Their custom name and the two already placed skulls survived.

@@ -7,19 +7,17 @@ import art.arcane.witchery.entity.WitchOwl;
 import art.arcane.witchery.entity.WitchToad;
 import art.arcane.witchery.familiar.Familiar;
 import art.arcane.witchery.familiar.FamiliarBinding;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.vampirism.VampireVillages;
 import art.arcane.witchery.world.MirrorDisguise;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -235,44 +233,42 @@ public final class BrewCreatureEffects {
                     victim.getZ() + level.random.nextInt(5) - 2, 0, 0);
             owl.attackTemporarily(victim, 400);
             if (level.addFreshEntity(owl)) {
-                level.sendParticles(ParticleTypes.PORTAL, owl.getX(), owl.getY(), owl.getZ(), 16, 0.5, 0.5, 0.5, 0.1);
+                WitcheryNetwork.sendBrewOwlArrival(level, owl.position());
             }
         }
-        level.playSound(null, victim.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.NEUTRAL, 1, 1);
     }
 
     public static void bats(ThrownBrew brew, HitResult hit) {
         if (!(brew.level() instanceof ServerLevel level)) return;
         boolean enhanced = BrewImpacts.enhanced(brew);
         BlockPos release = BrewTerrain.splashPosition(level, hit);
-        spawnBats(level, Vec3.atCenterOf(release), enhanced ? 14 : 10);
-        Vec3 impact = hit.getLocation();
+        spawnBats(level, release, enhanced ? 14 : 10);
+        WitcheryNetwork.sendBrewBatBurst(level, release, true);
+        Vec3 impact = brew.position();
         double radius = enhanced ? 4 : 3;
-        for (LivingEntity victim : level.getEntitiesOfClass(LivingEntity.class, BrewImpacts.splashBounds(brew, impact, radius))) {
+        for (LivingEntity victim : level.getEntitiesOfClass(LivingEntity.class, brew.getBoundingBox().inflate(radius, 2, radius),
+                candidate -> candidate.distanceToSqr(impact) < radius * radius)) {
             int ticks = splashTicks(hit, victim, impact, radius, 100);
             if (ticks > 0) {
                 victim.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, ticks, 5), brew.getEffectSource());
-                BrewImpacts.clearTarget(victim);
             }
+            BrewImpacts.clearTarget(victim);
         }
     }
 
     static void releaseBats(ServerLevel level, BlockPos release, int count) {
-        spawnBats(level, Vec3.atLowerCornerOf(release), count);
-        Vec3 center = Vec3.atCenterOf(release);
-        level.sendParticles(ParticleTypes.POOF, center.x, center.y, center.z, 16, 1.5, 1.5, 1.5, 0.05);
+        spawnBats(level, release, count);
+        WitcheryNetwork.sendBrewBatBurst(level, release, false);
     }
 
-    private static void spawnBats(ServerLevel level, Vec3 position, int count) {
+    private static void spawnBats(ServerLevel level, BlockPos release, int count) {
         for (int i = 0; i < count; i++) {
             var bat = EntityType.BAT.create(level);
             if (bat == null) continue;
-            bat.moveTo(position.x, position.y, position.z, 0, 0);
-            bat.setResting(false);
+            bat.moveTo(release.getX(), release.getY(), release.getZ(), 0, 0);
             bat.getPersistentData().putBoolean("WITCNoDrops", true);
             level.addFreshEntity(bat);
         }
-        level.playSound(null, BlockPos.containing(position), SoundEvents.ENDERMAN_TELEPORT, SoundSource.NEUTRAL, 1, 1);
     }
 
     public static void infection(ThrownBrew brew, HitResult hit) {

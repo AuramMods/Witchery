@@ -372,6 +372,15 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_PORTAL_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID, center, 0.5, 1, 16);
     }
 
+    public static void sendBrewOwlArrival(ServerLevel level, Vec3 position) {
+        sendParticlesAround(level, LEGACY_PORTAL_PARTICLE_ID, LEGACY_ENDERMAN_TELEPORT_SOUND_ID, position, 1, 1, 16);
+    }
+
+    public static void sendBrewBatBurst(ServerLevel level, BlockPos release, boolean kettleBrew) {
+        int particle = kettleBrew ? LEGACY_LARGE_EXPLOSION_PARTICLE_ID : LEGACY_EXPLOSION_PARTICLE_ID;
+        sendParticlesAround(level, particle, LEGACY_ENDERMAN_TELEPORT_SOUND_ID, Vec3.atCenterOf(release), 3, 3, 16);
+    }
+
     public static void sendPredictionArrival(ServerLevel level, Vec3 center) {
         sendParticlesAround(level, LEGACY_SMOKE_PARTICLE_ID, LEGACY_NO_SOUND_ID, center, 0.5, 2, 16);
     }
