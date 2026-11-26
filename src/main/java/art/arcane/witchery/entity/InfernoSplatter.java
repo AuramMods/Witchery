@@ -54,9 +54,19 @@ public final class InfernoSplatter extends ThrowableProjectile implements ItemSu
         entityData.define(COLOR, FIRE_COLOR);
     }
 
+    public int color() {
+        return entityData.get(COLOR);
+    }
+
+    @Override
+    public boolean shouldRenderAtSqrDistance(double distanceSquared) {
+        double range = getBoundingBox().getSize() * 256.0;
+        return distanceSquared < range * range;
+    }
+
     @Override
     public ItemStack getItem() {
-        int color = entityData.get(COLOR);
+        int color = color();
         if (sprite.isEmpty() || sprite.getOrCreateTag().getInt(BrewDroplet.TINT_KEY) != color) {
             sprite = new ItemStack(WitcheryIngredient.QUARTZ_SPHERE.item());
             sprite.getOrCreateTag().putInt(BrewDroplet.TINT_KEY, color);

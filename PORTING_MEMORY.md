@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Rain droplet and Inferno splatter rendering and flight (2026-11-25)
+
+- The original quartz sprite is a camera-facing half-block quad. Its lower edge is one-eighth block below the projectile, and its upper edge is three-eighths above. The original render cutoff is 64 blocks for a quarter-block projectile.
+- The packaged client traced all four vertices and the original UVs for rain and Inferno. Both drew on tick one roughly two blocks away and again at 48 blocks. Hidden client screenshots confirmed cyan rain, the repaired dark red Inferno tint, and an explicitly cyan Inferno save. A normal survival Inferno throw produced rendered red splatters. Inferno uses full lighting while its flame overlay is active. The client used master volume zero and OpenAL No Output.
+- The preceding headless Auram save contained both projectiles at Y 187 with downward motion and an injured pig at four health. Does It Tick had kept both in place with zero players. The port's existing compatibility hook now keeps both finite projectile types ticking.
+- The repaired package completed both saved impacts with the original Does It Tick configuration and zero players. The isolated profile healed the pig from four to eight. The Auram world saved the pig at ten health and fire in the target cell, with both projectiles consumed. A second ordinary Auram restart confirmed both results.
+- Java 17 reobfuscation and all 447 local Forge GameTests passed on seed `5471593853027166409`. The JAR is `build/qa-quartz-projectiles/candidate.jar` with SHA-256 `09dc33fac2dda9f4c2081f5fc2b8144cc4302284aa45fa8826d5251275b4abc9`. The focus monitor, screenshots, rendering trace and saved-state evidence are listed in `build/qa-quartz-projectiles/comparison.txt`.
+
 ## Cauldron Dissipate scan and fizz (2026-11-25)
 
 - In Witchery 0.24.1, strength one cleared three cells of the external Forge gas fixture and left the corner outside the disk. The first cleared column was west of the impact on the center row. The fizz played at each cleared block's lower corner with volume 1 and pitch 2. Spectres, Banshees and Poltergeists took ten damage, and a Zombie kept its health.

@@ -48,11 +48,22 @@ public final class BrewDroplet extends ThrowableProjectile implements ItemSuppli
         }
     }
 
+    public int color() {
+        return entityData.get(COLOR);
+    }
+
+    @Override
+    public boolean shouldRenderAtSqrDistance(double distanceSquared) {
+        double range = getBoundingBox().getSize() * 256.0;
+        return distanceSquared < range * range;
+    }
+
     @Override
     public ItemStack getItem() {
-        if (sprite.isEmpty() || sprite.getTag().getInt(TINT_KEY) != entityData.get(COLOR)) {
+        int color = color();
+        if (sprite.isEmpty() || sprite.getTag().getInt(TINT_KEY) != color) {
             sprite = new ItemStack(WitcheryIngredient.QUARTZ_SPHERE.item());
-            sprite.getOrCreateTag().putInt(TINT_KEY, entityData.get(COLOR));
+            sprite.getOrCreateTag().putInt(TINT_KEY, color);
         }
         return sprite;
     }

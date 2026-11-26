@@ -1,7 +1,9 @@
 package art.arcane.witchery.mixin;
 
+import art.arcane.witchery.entity.BrewDroplet;
 import art.arcane.witchery.entity.GrenadeProjectile;
 import art.arcane.witchery.entity.Hellhound;
+import art.arcane.witchery.entity.InfernoSplatter;
 import art.arcane.witchery.entity.SymbolProjectile;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.entity.WingedMonkey;
@@ -27,6 +29,8 @@ abstract class DoesItTickActiveEntityMixin {
                 || entity instanceof GrenadeProjectile
                 || entity instanceof SymbolProjectile
                 || entity instanceof ThrownBrew
+                || entity instanceof BrewDroplet
+                || entity instanceof InfernoSplatter
                 || (entity instanceof WitcheryFollower follower && follower.isTemporaryDuplicate())) {
             result.setReturnValue(true);
         }
