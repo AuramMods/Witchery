@@ -244,6 +244,7 @@ public final class BrewMixture {
     private final int yieldModifier;
     private final int color;
     private final Delivery delivery;
+    private final Delivery impactDelivery;
     private final int extent;
     private final int lifetime;
     private final List<WaystoneItem.Location> destinations;
@@ -257,6 +258,7 @@ public final class BrewMixture {
         yieldModifier = mixing.yieldModifier;
         color = storedColor;
         delivery = mixing.delivery;
+        impactDelivery = delivery != Delivery.DRINK && mixing.instantImpact ? Delivery.SPLASH : delivery;
         extent = mixing.extent;
         lifetime = mixing.lifetime;
         destinations = List.copyOf(mixing.destinations);
@@ -512,15 +514,7 @@ public final class BrewMixture {
     public int color() { return color & 0xFFFFFF; }
     public boolean splash() { return delivery != Delivery.DRINK; }
     public Delivery delivery() { return delivery; }
-    public Delivery impactDelivery() {
-        if (!splash()) return delivery;
-        for (BrewEffect effect : effects) {
-            if (effect instanceof ActionApplication application && application.action == Action.CHANGING_SEASONS) {
-                return Delivery.SPLASH;
-            }
-        }
-        return delivery;
-    }
+    public Delivery impactDelivery() { return impactDelivery; }
     public int extent() { return extent; }
     public int lifetime() { return lifetime; }
     public int splashRadius() { return 3 + extent; }
@@ -987,6 +981,7 @@ public final class BrewMixture {
         private int drinkTicks = 32;
         private int yieldModifier;
         private Delivery delivery = Delivery.DRINK;
+        private boolean instantImpact;
         private int extent;
         private int lifetime;
         private final EffectBoost entityStrength = new EffectBoost();
@@ -1009,6 +1004,8 @@ public final class BrewMixture {
             power += ingredient.power;
             yieldModifier += ingredient.yieldModifier;
             if (ingredient.isEffect()) {
+                // Changing Seasons prepares the splash even when its action cannot spend effect capacity.
+                instantImpact |= ingredient.action == Action.CHANGING_SEASONS;
                 applyEffect(stack, ingredient);
                 segment.clear();
             } else {

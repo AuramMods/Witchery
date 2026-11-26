@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron splash planning and Biome Notes (2026-11-26)
+
+- The 0.24.1 impact trace used Wood Ash, Cocoa Beans and Wispy Cotton for radius six. An off-center direct hit gave Speed II for 3,600 ticks. The target three blocks away received 1,800 ticks, the exact boundary received a zero-duration entry, and a target at 6.125 blocks received no effect. The previous Forge package already agreed. See `build/qa-splash-impact-plan/native/reference-ritual.log` and `build/qa-splash-impact-plan/baseline/initial.log`.
+- The original prepared instant delivery for a Biome Note before evaluating effect capacity. A saved recipe with only two levels still changed a gas or liquid bottle into an instant splash. Those bottles gave 1,800 Speed ticks from Sugar and placed no fluid cell. The same note gave the Tongue of Dog cast one instant pulse with no creature exposure. The previous Forge JAR released its fluid and continued the gas ritual. The rebuilt impact plan records the note independently of its usable biome action.
+- Headless clean Forge and copied Auram matched all ten reference cases before and after restart. Four supplied bottles in a chest retained their original recipes. Java 17 data generation, reobfuscation, and all 547 required local Forge GameTests passed. The tested `build/qa-splash-impact-plan/candidate.jar` has SHA-256 `321bc27f2b5dec0c1762371ec40ac66afda58c8c1634133708c14c625105286d`.
+- The deep-water rain fixture isolated the next flight gap. From Y 210 above a stone floor at Y 40, the original droplet was still falling at tick 450 and hit the floor on tick 550. The current Forge droplet was higher during the fall and expired at tick 400 at Y 150.9. The headless traces are `build/qa-brew-droplet-lifetime/native/deep-water.log` and `build/qa-brew-droplet-lifetime/clean/initial.log`.
+
 ## Active Cauldron batches with inactive offerings (2026-11-26)
 
 - The original 0.24.1 server loaded a hot batch with a Diamond Pickaxe between Glowstone Dust and Sugar. It accepted Gunpowder, transferred all three 1,000 mB portions to another tank, and bottled nine ordered entries at color `1565185262` and 575 altar power. Its Mutandis ritual also completed when an inactive item followed the Egg trigger. See `build/qa-saved-brew-exposure/native/reference-active-complete.log`.
