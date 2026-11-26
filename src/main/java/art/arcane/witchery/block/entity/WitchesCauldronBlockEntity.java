@@ -339,7 +339,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         }
         brewRitual = false;
         ritualTicks = 0;
-        onIngredientAdded(server);
+        refreshMixture(server);
     }
 
     private boolean refundRitualTrigger(ServerLevel server) {
@@ -464,9 +464,10 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
 
         if (WitcheryIngredient.GYPSUM.matches(offered)) {
             item.discard();
+            Vec3 center = Vec3.atBottomCenterOf(worldPosition).add(0, 0.6, 0);
+            server.playSound(null, center.x, center.y, center.z, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1.0F, 2.0F);
+            WitcheryNetwork.sendCauldronReagentSmoke(server, center);
             emptyTank();
-            reagentSmoke(server);
-            server.playSound(null, worldPosition, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1.0F, 2.0F);
         } else if (WitcheryIngredient.QUICKLIME.matches(offered)) {
             detonate(server, item);
         } else {
@@ -476,6 +477,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
             if (consumed == offered.getCount()) item.discard();
             else item.setItem(offered.copyWithCount(offered.getCount() - consumed));
             if (!remainder.isEmpty()) Block.popResource(server, worldPosition.above(), remainder);
+            WitcheryNetwork.sendCauldronIngredientSplash(server, worldPosition);
         }
     }
 
@@ -497,12 +499,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         emptyTank();
         Vec3 center = Vec3.atCenterOf(worldPosition).add(0, 1, 0);
         server.explode(nearest, center.x, center.y, center.z, power, Level.ExplosionInteraction.NONE);
-        reagentSmoke(server);
-    }
-
-    private void reagentSmoke(ServerLevel server) {
-        server.sendParticles(ParticleTypes.SMOKE, worldPosition.getX() + 0.5, worldPosition.getY() + 0.6,
-                worldPosition.getZ() + 0.5, 8, 0.22, 0.16, 0.22, 0.03);
+        WitcheryNetwork.sendCauldronReagentSmoke(server, Vec3.atBottomCenterOf(worldPosition).add(0, 0.6, 0));
     }
 
     private int addIngredient(ServerLevel server, ItemStack offered) {
@@ -514,7 +511,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         int wool = BrewMixture.woolColor(offered);
         if (wool >= 0) {
             brewColor = wool;
-            onIngredientAdded(server);
+            refreshMixture(server);
             return count;
         }
         if (tank.getFluidAmount() == CAPACITY && canCastWith(offered)) {
@@ -564,16 +561,15 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
                         .thenComparingInt(recipe -> recipe.ingredients().size())).orElse(null);
     }
 
-    private void onIngredientAdded(ServerLevel server) {
+    private void refreshMixture(ServerLevel server) {
         mixture = BrewMixture.from(ingredients, brewColor);
-        splash(server);
         refreshIndicators(server, true);
         setChanged();
     }
 
     private void onIngredientAdded(ServerLevel server, ItemStack offered) {
         brewColor = BrewColor.append(brewColor == null ? 0 : brewColor, offered);
-        onIngredientAdded(server);
+        refreshMixture(server);
     }
 
     public boolean bottle(ServerPlayer player, InteractionHand hand) {
@@ -879,13 +875,6 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         updateState();
         if (level instanceof ServerLevel server) refreshIndicators(server, true);
         setChanged();
-    }
-
-    private void splash(ServerLevel server) {
-        BlockPos pos = getBlockPos();
-        server.sendParticles(ParticleTypes.SPLASH, pos.getX() + 0.5, pos.getY() + 0.7, pos.getZ() + 0.5,
-                8, 0.2, 0.06, 0.2, 0.03);
-        server.playSound(null, pos, SoundEvents.GENERIC_SPLASH, SoundSource.BLOCKS, 0.4F, 1.2F);
     }
 
     private void updateState() {

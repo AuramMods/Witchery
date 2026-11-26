@@ -10,6 +10,7 @@ import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -20,15 +21,19 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.PlayLevelSoundEvent;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
@@ -130,19 +135,31 @@ public final class CauldronReagentTests {
         helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
                 level.getEntitiesOfClass(Player.class, new AABB(pos).inflate(5)).contains(player),
                 "The cauldron can find the nearby player before testing the reagents")).thenExecute(() -> {
+            var fizz = new ArrayList<PlayLevelSoundEvent.AtPosition>();
+            Consumer<PlayLevelSoundEvent.AtPosition> capture = event -> {
+                if (event.getLevel() == level && event.getPosition().distanceToSqr(center) < 1
+                        && event.getSound() != null && event.getSound().value() == SoundEvents.FIRE_EXTINGUISH) {
+                    fizz.add(event);
+                }
+            };
+            MinecraftForge.EVENT_BUS.addListener(capture);
             try {
                 for (var fluid : List.of(Fluids.WATER, WitcheryFluids.getRequiredSource("brew").get())) {
                     tank.fill(new FluidStack(fluid, 1000), IFluidHandler.FluidAction.EXECUTE);
                     var quicklime = dropAt(helper, center, WitcheryIngredient.QUICKLIME, 4);
                     level.getBlockState(pos).entityInside(level, pos, quicklime);
                     helper.assertTrue(!quicklime.isRemoved() && quicklime.getItem().getCount() == 4
-                                    && tank.getFluidInTank(0).getAmount() == 1000,
+                                    && tank.getFluidInTank(0).getAmount() == 1000 && fizz.isEmpty(),
                             "Quicklime leaves plain water and unprepared brew alone even with a player present");
 
                     var gypsum = dropAt(helper, center, WitcheryIngredient.GYPSUM, 4);
                     level.getBlockState(pos).entityInside(level, pos, gypsum);
                     helper.assertTrue(gypsum.isRemoved() && tank.getFluidInTank(0).isEmpty(),
                             "A whole dropped stack of Gypsum clears the cold liquid");
+                    helper.assertTrue(fizz.size() == 1 && fizz.get(0).getPosition().equals(Vec3.atBottomCenterOf(pos).add(0, 0.6, 0))
+                                    && fizz.get(0).getNewVolume() == 1.0F && fizz.get(0).getNewPitch() == 2.0F,
+                            "Gypsum plays one original fizz at the liquid surface");
+                    fizz.clear();
                 }
 
                 var dyed = BrewMixture.ingredientTag(List.of(), 0xc74636);
@@ -152,6 +169,7 @@ public final class CauldronReagentTests {
                 level.getBlockState(pos).entityInside(level, pos, quicklime);
                 helper.assertTrue(quicklime.isRemoved() && tank.getFluidInTank(0).isEmpty(), "A dye-only brew still reacts");
             } finally {
+                MinecraftForge.EVENT_BUS.unregister(capture);
                 level.removePlayerImmediately(player, Entity.RemovalReason.DISCARDED);
             }
         }).thenSucceed();

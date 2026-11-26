@@ -1428,7 +1428,7 @@
 - [x] Restore ordered custom brew names and tooltips. The original Forge server and rebuilt muted client agreed on Colored Water, fast drinks, all four dispersals, the three-effect conjunction, and modifier placement around the dispersal ingredient. The original inverted Sugar bottle labels Slowness as `3:00` and applies 1,800 ticks. The port preserves both values and reads a saved positive drink time. The packaged client also rendered an unchanged bottle saved on the preceding build and displayed the new modifier lines in all five supported locales.
 - [x] Drink the fast mixture through the normal use binding on the muted packaged client. It applied Speed II and Regeneration and returned the glass bottle. The same reobfuscated JAR completed a headless Taglock cast on copied Auram. All 343 local Forge GameTests passed.
 - [ ] Finish the remaining brew actions, modifiers, and castable cauldron rituals.
-- [ ] Compare the dropped ingredient, Gypsum, and Quicklime cues with the original. Check their sound positions and the splash and smoke packets' eight-block range.
+- [x] Match the original ingredient splash and the Gypsum and Quicklime smoke at the basin. Clean Forge and copied Auram captured the exact payloads and eight-block broadcast. A rejected Hell Gate now returns its Tongue of Dog with the failure cue and no ingredient splash. Both dedicated restarts kept the cleared vessel, rejected mixture, and refund.
 
 ## Death and Armor Cauldron Brews (2026-11-21)
 
@@ -2083,6 +2083,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 
 - [x] Drop Quicklime into a prepared Witch's Cauldron, including cold, dye-only, and active ritual batches. A nearby player within the dropped item's five-block search area is required. The blast spares the nearest player and the terrain. It consumes the whole reagent stack and empties the cauldron. Each recognized action adds half a point to the base power of one, up to ten.
 - [x] Keep Quicklime and the contents intact in plain water, unprepared Brew fluid, or a prepared brew with no nearby player. Restore the original whole-stack Gypsum purge for any filled cauldron.
+- [x] Restore the original Gypsum fizz at Y plus 0.6, at volume 1 and pitch 2. The muted packaged client rendered twenty particles for each accepted splash and both kinds of smoke. It played a local splash from two blocks away. At 9.25 blocks the client received neither the splash packet nor its sound. All 492 local Forge GameTests passed.
 - [x] Pass Java 17 data generation, JAR reobfuscation, and all 47 required GameTests. Load an original Nether Wart and Sugar brew in a disposable clean Forge world. With no player present, retain the brew and four dropped Quicklime. Drop three Gypsum to remove all the brew and Gypsum. Verify the emptied tank and intact Quicklime again after restarting the headless server.
 - [x] Restore and verify in-progress fixed recipes from an original Forge save. The Fixed Cauldron Recipes and Outputs section records the import and restart checks.
 
