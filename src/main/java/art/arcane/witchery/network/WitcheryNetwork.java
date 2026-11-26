@@ -376,6 +376,14 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_EXPLOSION_PARTICLE_ID, LEGACY_WITHER_SPAWN_SOUND_ID, center, 1, height, 16);
     }
 
+    public static void sendBrewItemCharge(ServerLevel level, Vec3 center) {
+        sendParticlesAround(level, LEGACY_EXPLOSION_PARTICLE_ID, LEGACY_ORB_SOUND_ID, center, 0.5, 0.5, 16);
+    }
+
+    public static void sendTriggeredBrewCue(ServerLevel level, Vec3 center) {
+        sendParticlesAround(level, LEGACY_COLORED_SPELL_PARTICLE_ID, LEGACY_POP_SOUND_ID, center, 1, 1, 16);
+    }
+
     public static void sendCauldronRitualFailure(ServerLevel level, BlockPos pos, int color) {
         sendParticlesAround(level, LEGACY_COLORED_SPELL_PARTICLE_ID, LEGACY_POP_SOUND_ID,
                 Vec3.atBottomCenterOf(pos).add(0, 0.6, 0), 0.5, 1, 8, color);

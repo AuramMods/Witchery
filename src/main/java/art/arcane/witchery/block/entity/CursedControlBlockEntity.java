@@ -1,20 +1,19 @@
 package art.arcane.witchery.block.entity;
 
 import art.arcane.witchery.brewing.BrewMixture;
+import art.arcane.witchery.network.WitcheryNetwork;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.util.FakePlayerFactory;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3f;
 
 import java.util.UUID;
 
@@ -57,12 +56,10 @@ public final class CursedControlBlockEntity extends BlockEntity {
             Entity owner = thrower != null ? server.getEntity(thrower) : null;
             if (owner == null && thrower != null) owner = server.getServer().getPlayerList().getPlayer(thrower);
             if (owner == null && !throwerName.isEmpty()) owner = server.getServer().getPlayerList().getPlayerByName(throwerName);
-            LivingEntity caster = owner instanceof LivingEntity source ? source : null;
+            ServerPlayer caster = owner instanceof ServerPlayer player && player.serverLevel() == server
+                    ? player : FakePlayerFactory.getMinecraft(server);
             mixture.applyAt(living, caster, caster, 1, 1, false, living.position());
-            var tint = new Vector3f((color >> 16 & 255) / 255F, (color >> 8 & 255) / 255F, (color & 255) / 255F);
-            server.sendParticles(new DustParticleOptions(tint, 1), living.getX(), living.getY(0.5), living.getZ(),
-                    16, 0.3, 0.5, 0.3, 0.05);
-            server.playSound(null, living, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 0.6F, 1);
+            WitcheryNetwork.sendTriggeredBrewCue(server, living.position());
         }
         count--;
         setChanged();
