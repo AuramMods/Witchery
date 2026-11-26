@@ -217,7 +217,7 @@ public final class BrewCreatureEffects {
 
     private static List<LivingEntity> projectileSplashTargets(ServerLevel level, ThrownBrew brew, double radius) {
         // These fixed brews measure from the projectile's position before collision.
-        return level.getEntitiesOfClass(LivingEntity.class, brew.getBoundingBox().inflate(radius, 2, radius),
+        return level.getEntitiesOfClass(LivingEntity.class, BrewImpacts.splashBounds(brew, radius),
                 candidate -> candidate.distanceToSqr(brew) < radius * radius);
     }
 
@@ -381,10 +381,9 @@ public final class BrewCreatureEffects {
         Vec3 impact = hit instanceof EntityHitResult entity ? entity.getEntity().position()
                 : hit instanceof BlockHitResult block ? Vec3.atLowerCornerOf(block.getBlockPos()) : hit.getLocation();
         double radius = enhanced ? 5 : 4;
-        for (LivingEntity victim : level.getEntitiesOfClass(LivingEntity.class,
-                BrewImpacts.splashBounds(brew, hit.getLocation(), radius))) {
+        for (LivingEntity victim : level.getEntitiesOfClass(LivingEntity.class, BrewImpacts.splashBounds(brew, radius),
+                candidate -> candidate.distanceToSqr(impact) < radius * radius)) {
             int ticks = splashTicks(hit, victim, impact, radius, 400);
-            if (ticks <= 0) continue;
             if (victim instanceof Player player) {
                 int foodLoss = enhanced ? 6 : 10;
                 if (player.getFoodData().getFoodLevel() > foodLoss) player.getFoodData().eat(-foodLoss, 0);

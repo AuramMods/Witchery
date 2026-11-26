@@ -51,10 +51,9 @@ public final class BrewImpacts {
     }
 
     public static void splashInk(ThrownBrew brew, HitResult hit) {
-        Vec3 impact = hit.getLocation();
         double radius = enhanced(brew) ? 5 : SPLASH_RADIUS;
         Entity directHit = hit instanceof EntityHitResult result ? result.getEntity() : null;
-        applyInk(brew.level(), impact, splashBounds(brew, impact, radius), radius, directHit, brew.getEffectSource());
+        applyInk(brew.level(), brew.position(), splashBounds(brew, radius), radius, directHit, brew.getEffectSource());
     }
 
     public static void mineInk(ServerLevel level, BlockPos pos, Entity trigger) {
@@ -65,15 +64,11 @@ public final class BrewImpacts {
     private static void applyInk(Level level, Vec3 impact, AABB bounds, double radius,
                                  @Nullable Entity directHit, @Nullable Entity source) {
         for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, bounds)) {
-            boolean direct = entity == directHit;
             double distance = entity.distanceToSqr(impact);
-            if (direct || distance < radius * radius) {
-                int duration = direct ? 400 : (int) Math.round((1 - Math.sqrt(distance) / radius) * 400);
-                if (duration > 0) {
-                    entity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, duration), source);
-                }
-                clearTarget(entity);
-            }
+            if (distance >= radius * radius) continue;
+            int duration = entity == directHit ? 400 : (int) Math.round((1 - Math.sqrt(distance) / radius) * 400);
+            entity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, duration), source);
+            clearTarget(entity);
         }
     }
 
@@ -81,12 +76,11 @@ public final class BrewImpacts {
         if (!(brew.level() instanceof ServerLevel level)) {
             return;
         }
-        Vec3 impact = hit.getLocation();
         double radius = enhanced(brew) ? 5 : SPLASH_RADIUS;
-        AABB bounds = splashBounds(brew, impact, radius);
+        AABB bounds = splashBounds(brew, radius);
         List<Villager> villagers = new ArrayList<>();
         for (AgeableMob mob : level.getEntitiesOfClass(AgeableMob.class, bounds,
-                candidate -> candidate.getAge() >= 0 && candidate.distanceToSqr(impact) < radius * radius)) {
+                candidate -> candidate.getAge() >= 0 && candidate.distanceToSqr(brew) < radius * radius)) {
             if (mob instanceof Animal animal) {
                 animal.setAge(0);
                 animal.setInLove(null);
@@ -99,7 +93,7 @@ public final class BrewImpacts {
         }
         if (brew.getOwner() instanceof ServerPlayer player) {
             List<Zombie> zombies = level.getEntitiesOfClass(Zombie.class, bounds, candidate -> candidate.isAlive()
-                    && !candidate.isBaby() && candidate.distanceToSqr(impact) < radius * radius
+                    && !candidate.isBaby() && candidate.distanceToSqr(brew) < radius * radius
                     && InfernalInfusion.owns(candidate, player));
             for (int pair = 0; pair < Math.min(10, zombies.size() / 2); pair++) {
                 breedZombies(level, zombies.get(pair * 2), zombies.get(pair * 2 + 1), player);
@@ -109,10 +103,9 @@ public final class BrewImpacts {
 
     public static void splashRevealing(ThrownBrew brew, HitResult hit) {
         if (!(brew.level() instanceof ServerLevel level)) return;
-        Vec3 impact = hit.getLocation();
         double radius = enhanced(brew) ? 8 : 5;
-        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, new AABB(impact, impact).inflate(radius),
-                living -> living.isAlive() && living.distanceToSqr(impact) <= radius * radius)) {
+        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, brew.getBoundingBox().inflate(radius),
+                living -> living.isAlive() && living.distanceToSqr(brew) <= radius * radius)) {
             BrewCreatureEffects.reveal(target);
         }
     }
@@ -281,8 +274,8 @@ public final class BrewImpacts {
         }
     }
 
-    static AABB splashBounds(ThrownBrew brew, Vec3 impact, double radius) {
-        return brew.getBoundingBox().move(impact.subtract(brew.position())).inflate(radius, 2, radius);
+    static AABB splashBounds(ThrownBrew brew, double radius) {
+        return brew.getBoundingBox().inflate(radius, 2, radius);
     }
 
     static void breedVillagers(ServerLevel level, Villager first, Villager mate, int cooldown) {
