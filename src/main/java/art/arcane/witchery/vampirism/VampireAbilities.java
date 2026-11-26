@@ -50,10 +50,14 @@ public final class VampireAbilities {
 
     public static void activate(ServerPlayer player) {
         int power = selected(player);
-        if (power < MESMERIZE || (power == MESMERIZE && !player.isShiftKeyDown()) || BloodFeeding.paralysis(player, 4)) return;
+        if (power < MESMERIZE || BloodFeeding.paralysis(player, 4)) return;
         WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
-            if (power > maxPower(data.getVampireLevel()) || !data.beginVampireAbility(player.level().getGameTime())) return;
-            if (power == MESMERIZE) toggleVision(player, data);
+            if (power > maxPower(data.getVampireLevel())) return;
+            if (!data.beginVampireAbility(player.level().getGameTime())) {
+                playCue(player, "note.snare");
+                return;
+            }
+            if (power == MESMERIZE && player.isShiftKeyDown()) toggleVision(player, data);
             else if (power == SPEED) accelerate(player, data);
             else if (power == BAT) VampireFlight.toggle(player, data);
             else if (power == ULTIMATE) useUltimate(player, data);
@@ -73,17 +77,17 @@ public final class VampireAbilities {
         VampireUltimate ultimate = data.getVampireUltimate();
         int charges = data.getVampireUltimateCharges();
         if (charges == 0 || data.getCreatureTypeOrdinal() != 0 || !ultimate.activate(player)) {
-            playUltimateCue(player, "note.snare");
+            playCue(player, "note.snare");
             return;
         }
-        if (ultimate == VampireUltimate.STORM) playUltimateCue(player, "random.fizz");
+        if (ultimate == VampireUltimate.STORM) playCue(player, "random.fizz");
         if (!player.getAbilities().instabuild) {
             data.setVampireUltimate(ultimate, charges - 1);
             Vampirism.sync(player, data);
         }
     }
 
-    private static void playUltimateCue(ServerPlayer player, String sound) {
+    static void playCue(ServerPlayer player, String sound) {
         WitcheryNetwork.sendSound(player, sound, player.getX(), player.getY(), player.getZ(), -1, -1);
     }
 
@@ -112,7 +116,8 @@ public final class VampireAbilities {
         int clothingBonus = VampireClothingItem.lightPieces(player) >= 3 ? 3 : 0;
         int time = 20 * (5 + rank / 2 + Math.max(0, (rank - 4) / 2) + clothingBonus);
         living.addEffect(new MobEffectInstance(WitcheryEffects.PARALYSIS.get(), time, rank >= 8 ? 5 : 4), player);
-        player.playSound(WitcherySounds.HYPNOSIS.get(), 0.5F, 1);
+        player.serverLevel().playSound(null, player.getX(), player.getY(), player.getZ(),
+                WitcherySounds.HYPNOSIS.get(), SoundSource.PLAYERS, 0.5F, 1);
     }
 
     private static void toggleVision(ServerPlayer player, WitcheryPlayerData data) {
@@ -128,13 +133,13 @@ public final class VampireAbilities {
         int stages = speed == null ? 0 : Mth.ceillog2(speed.getAmplifier() + 1);
         int stackingLimit = (data.getVampireLevel() - 2) / 2;
         if (data.getCreatureTypeOrdinal() != 0 || stages > stackingLimit || !Vampirism.drawBlood(player, 10)) {
-            player.playNotifySound(SoundEvents.NOTE_BLOCK_SNARE.value(), SoundSource.PLAYERS, 1, 0.5F);
+            playCue(player, "note.snare");
             return;
         }
+        playCue(player, "random.fizz");
         int duration = speed == null ? 200 : speed.getDuration() + 60;
         int amplifier = speed == null ? 1 : 2 * (speed.getAmplifier() + 1) - 1;
         player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, duration, amplifier, true, true));
         player.addEffect(new MobEffectInstance(MobEffects.JUMP, duration, stages + 1, true, true));
-        player.playNotifySound(SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 1, 1);
     }
 }

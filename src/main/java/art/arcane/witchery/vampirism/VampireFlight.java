@@ -4,11 +4,8 @@ import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.lycanthropy.Lycanthropy;
 import art.arcane.witchery.network.WitcheryNetwork;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.player.Player;
 
@@ -28,22 +25,22 @@ public final class VampireFlight {
     }
 
     static void toggle(ServerPlayer player, WitcheryPlayerData data) {
-        if (isBat(data)) {
-            leave(player, data);
-        } else if (data.getCreatureTypeOrdinal() == 0 && !player.isSleeping() && Vampirism.drawBlood(player, 50)) {
-            var abilities = player.getAbilities();
-            data.rememberFlight(abilities.mayfly, abilities.flying);
-            data.setCreatureTypeOrdinal(BAT_FORM);
-            player.stopRiding();
-            grantFlight(player, true);
-            updateForm(player, data);
-        } else {
-            player.playNotifySound(SoundEvents.NOTE_BLOCK_SNARE.value(), SoundSource.PLAYERS, 1, 0.5F);
+        boolean leaving = isBat(data);
+        if (!leaving && (data.getCreatureTypeOrdinal() != 0 || player.isSleeping() || !Vampirism.drawBlood(player, 50))) {
+            VampireAbilities.playCue(player, "note.snare");
             return;
         }
-        player.serverLevel().sendParticles(ParticleTypes.SMOKE, player.getX(), player.getY() + player.getEyeHeight(),
-                player.getZ(), 16, 0.3, 0.4, 0.3, 0.04);
-        player.playNotifySound(SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 1, 1);
+        VampireAbilities.playCue(player, "random.fizz");
+        if (leaving) {
+            leave(player, data);
+            return;
+        }
+        var abilities = player.getAbilities();
+        data.rememberFlight(abilities.mayfly, abilities.flying);
+        data.setCreatureTypeOrdinal(BAT_FORM);
+        player.stopRiding();
+        grantFlight(player, true);
+        updateForm(player, data);
     }
 
     public static void restore(ServerPlayer player) {

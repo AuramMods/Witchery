@@ -17,6 +17,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -42,6 +43,38 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class VampireAbilitiesTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_vampire_cooldown")
+    public static void mesmerizeInTheAirSharesTheOtherPowersCooldown(GameTestHelper helper) {
+        var player = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "VampireCooldown"));
+        var data = WitcheryPlayerDataProvider.get(player).orElseThrow(IllegalStateException::new);
+        data.setVampireLevel(4);
+        data.setBloodPower(100);
+        VampireAbilities.select(player, VampireAbilities.MESMERIZE);
+        VampireAbilities.activate(player);
+        helper.assertTrue(!data.hasVampireVision(), "Standing Mesmerize leaves Night Vision unchanged");
+
+        VampireAbilities.select(player, VampireAbilities.SPEED);
+        VampireAbilities.activate(player);
+        helper.assertTrue(data.getBloodPower() == 100 && !player.hasEffect(MobEffects.MOVEMENT_SPEED),
+                "The shared cooldown blocks Speed and preserves blood");
+        VampireAbilities.select(player, VampireAbilities.MESMERIZE);
+        player.setShiftKeyDown(true);
+        VampireAbilities.activate(player);
+        helper.assertTrue(!data.hasVampireVision(), "Sneaking Mesmerize also waits out the shared cooldown");
+
+        helper.runAfterDelay(10, () -> {
+            try {
+                VampireAbilities.activate(player);
+                helper.assertTrue(data.hasVampireVision() && player.hasEffect(MobEffects.NIGHT_VISION),
+                        "Sneaking Mesmerize toggles Night Vision after ten ticks");
+                helper.assertTrue(data.getBloodPower() == 100, "Vampire Vision preserves blood");
+                helper.succeed();
+            } finally {
+                player.discard();
+            }
+        });
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_vampire_melee")
     public static void vampireMeleeChangesWithRankAndCreatureForm(GameTestHelper helper) {
         var player = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "VampireMelee")) {

@@ -128,8 +128,7 @@ public final class ClientVampirism {
         }
         int selected = VampireAbilities.selected(player);
         if (!event.isUseItem() || selected == 0 || client.hitResult != null && client.hitResult.getType() == HitResult.Type.ENTITY) return;
-        if (event.getHand() == InteractionHand.MAIN_HAND && (selected >= VampireAbilities.SPEED
-                || selected == VampireAbilities.MESMERIZE && player.isShiftKeyDown())) {
+        if (event.getHand() == InteractionHand.MAIN_HAND && selected >= VampireAbilities.MESMERIZE) {
             WitcheryNetwork.requestVampirePower(selected, true);
         }
         event.setCanceled(true);
