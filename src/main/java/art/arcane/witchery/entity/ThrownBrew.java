@@ -193,8 +193,9 @@ public final class ThrownBrew extends ThrowableItemProjectile {
                 discard();
                 return;
             }
-            if (getItem().getItem() instanceof ThrowableBrewItem brew) {
-                brew.impact(this, hit);
+            if (getItem().getItem() instanceof ThrowableBrewItem brew && !brew.impactWithBreakCue(this, hit)) {
+                discard();
+                return;
             }
             server.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, getItem()),
                     impact.x, impact.y, impact.z, 12, 0.2, 0.2, 0.2, 0.1);

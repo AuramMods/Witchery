@@ -2,13 +2,20 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Substitution material radius and exchanges (2026-11-25)
+
+- The original 1.7.10 server exchanged two brick blocks dropped exactly four blocks from the projectile and spared a block item beyond its sphere that was closer to the collision point. With a valid input and enclosed stone, it spent the bottle and kept the brick. With only out-of-range materials it returned the bottle and skipped the break cue. One cast against red wool exchanged adjacent white wool and returned two red wool.
+- The port uses the vanilla flattening data for the original metadata families. It retains the struck block variant for the return stack and honors Forge placement cancellation. If exposed surfaces exist and every placement is denied, the bottle and materials are preserved. Successful substitutions send the original silent Instant Spell cue at each exchanged block's lower corner.
+- The reobfuscated clean Forge client threw three bottles in muted survival. Red and white wool exchanged while red concrete stayed in place. The stack of two red wool, both replacements, and the recovered bottle's UUID survived a dedicated restart. The client recorded two silent Instant Spell packets, a glass break for the enclosed cast, and silence on the refund, with master volume zero, OpenAL No Output, and no desktop focus change.
+- The copied headless Auram server made the same wool exchange from a redstone dispenser with its Does It Tick settings and zero players. Java 17 reobfuscation and all 427 local Forge GameTests passed on seed `5471593853027166409`. The package is `build/qa-substitution-parity/candidate.jar` with SHA-256 `ead562086395e2095f7fee84f0c1a6f709023d2b674864a1e15ce2667a443809`. See `build/qa-substitution-parity/comparison.txt`.
+
 ## Fixed Ink, Love, Revealing, and Wasting splashes (2026-11-25)
 
 - Witchery 0.24.1 gave a direct Ink target 400 Blindness ticks and a glancing target three blocks from the projectile 100 ticks. It cleared the glancing zombie's attack target and spared the pig at exactly four blocks. Love reset the breeding cooldown of the adult inside the same sphere, left the adult on the boundary alone, and kept the piglet young. Revealing removed Invisibility at the inclusive upper edge of its five-block sphere.
 - The original Wasting measured distance from the struck block's lower corner with the two-block vertical expansion around the projectile. It applied 400 Wither ticks and 66 Poison ticks at two blocks. Near the edge, Wither rounded to zero and Poison still lasted 40 ticks. A pig above the projectile's expanded bounds received neither. The four new Forge GameTests reproduced the previous discrepancies.
 - The packaged survival client threw all four fixed Kettle brews. It recorded full and glancing Blindness, reset the nearby adult pig's breeding cooldown, revealed the nearby invisible pig, and applied Wither and Poison while clearing a poppy. A dedicated restart kept the same cow and its remaining Blindness. The client used master volume zero and OpenAL No Output and kept desktop focus.
 - The copied headless Auram server kept its Does It Tick settings and fired Ink and Wasting from separate redstone dispensers with zero players. Both brews affected nearby pigs, spared distant pigs, and saved normally. Java 17 reobfuscation and all 423 local Forge GameTests passed on seed `5471593853027166409`. The package is `build/qa-fixed-brew-splashes/candidate.jar` with SHA-256 `7c315e480664ad395c3ccc50cf46b4dfff2cd6227e3137bb89d84fb1124234e7`. See `build/qa-fixed-brew-splashes/comparison.txt`.
-- The related source comparison found that Substitution still collects dropped block materials around the collision point. Witchery 0.24.1 collects them around the projectile's position. Its terrain spiral starts on the actual struck block.
+- This comparison identified the Substitution material radius discrepancy, resolved in the pass above.
 
 ## Cauldron instant splash center and falloff (2026-11-25)
 

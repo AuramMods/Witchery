@@ -381,6 +381,10 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, particle, LEGACY_ENDERMAN_TELEPORT_SOUND_ID, Vec3.atCenterOf(release), 3, 3, 16);
     }
 
+    public static void sendSubstitutionExchange(ServerLevel level, BlockPos pos) {
+        sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_NO_SOUND_ID, Vec3.atLowerCornerOf(pos), 1, 1, 16);
+    }
+
     public static void sendPredictionArrival(ServerLevel level, Vec3 center) {
         sendParticlesAround(level, LEGACY_SMOKE_PARTICLE_ID, LEGACY_NO_SOUND_ID, center, 0.5, 2, 16);
     }

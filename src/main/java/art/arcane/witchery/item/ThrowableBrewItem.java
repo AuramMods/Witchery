@@ -11,13 +11,25 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 
 import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 
 public final class ThrowableBrewItem extends Item {
-    private final BiConsumer<ThrownBrew, HitResult> effect;
+    private final BiPredicate<ThrownBrew, HitResult> effect;
 
     public ThrowableBrewItem(BiConsumer<ThrownBrew, HitResult> effect) {
+        this((brew, hit) -> {
+            effect.accept(brew, hit);
+            return true;
+        });
+    }
+
+    private ThrowableBrewItem(BiPredicate<ThrownBrew, HitResult> effect) {
         super(new Properties());
         this.effect = effect;
+    }
+
+    public static ThrowableBrewItem withConditionalBreak(BiPredicate<ThrownBrew, HitResult> effect) {
+        return new ThrowableBrewItem(effect);
     }
 
     @Override
@@ -34,6 +46,10 @@ public final class ThrowableBrewItem extends Item {
     }
 
     public void impact(ThrownBrew brew, HitResult hit) {
-        effect.accept(brew, hit);
+        impactWithBreakCue(brew, hit);
+    }
+
+    public boolean impactWithBreakCue(ThrownBrew brew, HitResult hit) {
+        return effect.test(brew, hit);
     }
 }

@@ -416,7 +416,7 @@ public final class WitcheryItems {
             case "brew_of_solid_sand" -> new ThrowableBrewItem((brew, hit) -> BrewSolidification.impact(brew, hit, Blocks.SAND));
             case "brew_of_solid_sandstone" -> new ThrowableBrewItem((brew, hit) -> BrewSolidification.impact(brew, hit, Blocks.SANDSTONE));
             case "brew_of_solid_erosion" -> new ThrowableBrewItem((brew, hit) -> BrewSolidification.impact(brew, hit, Blocks.AIR));
-            case "brew_of_substitution" -> new ThrowableBrewItem(BrewSubstitution::impact);
+            case "brew_of_substitution" -> ThrowableBrewItem.withConditionalBreak(BrewSubstitution::impact);
             case "brew_of_soul_hunger" -> new DrinkableBrewItem(SpellKnowledge.CARNOSA_DIEM::learn);
             case "brew_of_soul_anguish" -> new DrinkableBrewItem(SpellKnowledge.IGNIANIMA::learn);
             case "brew_of_soul_fear" -> new DrinkableBrewItem(SpellKnowledge.MORSMORDRE::learn);
