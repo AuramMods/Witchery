@@ -170,7 +170,7 @@ public final class BrewBottleItem extends Item {
                     brew.getOwner());
             case DRINK -> { return; }
         }
-        level.levelEvent(2002, BlockPos.containing(hit.getLocation()), color(brew.getItem()));
+        level.levelEvent(2002, brew.blockPosition(), color(brew.getItem()));
     }
 
     private void releaseFluid(ServerLevel level, ThrownBrew brew, HitResult hit, BrewMixture mixture) {
@@ -190,18 +190,18 @@ public final class BrewBottleItem extends Item {
     }
 
     private void splash(ServerLevel level, ThrownBrew brew, HitResult hit, BrewMixture mixture) {
-        Vec3 impact = hit.getLocation();
+        Vec3 center = brew.position();
         int radius = mixture.splashRadius();
         LivingEntity caster = brew.getOwner() instanceof LivingEntity living ? living : null;
         LivingEntity direct = hit instanceof EntityHitResult entity && entity.getEntity() instanceof LivingEntity living ? living : null;
-        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, new AABB(impact, impact).inflate(radius))) {
-            double distance = target.position().distanceTo(impact);
-            if (distance >= radius && target != direct) continue;
-            double scale = target == direct ? 1 : 1 - distance / radius;
-            mixture.applySplash(target, brew, caster, scale, target != direct, impact);
+        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, new AABB(center, center).inflate(radius))) {
+            double distanceSquared = target.distanceToSqr(center);
+            if (distanceSquared > radius * radius) continue;
+            double scale = target == direct ? 1 : 1 - Math.sqrt(distanceSquared) / radius;
+            mixture.applySplash(target, brew, caster, scale, target != direct, center);
         }
         if (hit instanceof BlockHitResult block) {
-            mixture.applySplashToBlock(level, block.getBlockPos(), block.getDirection(), impact,
+            mixture.applySplashToBlock(level, block.getBlockPos(), block.getDirection(), center,
                     caster instanceof Player player ? player : null);
         }
     }

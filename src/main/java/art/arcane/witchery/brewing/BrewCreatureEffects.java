@@ -51,6 +51,7 @@ import java.util.List;
 public final class BrewCreatureEffects {
     private static final TagKey<Block> WASTING_PLANTS = TagKey.create(Registries.BLOCK,
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "wasting_plants"));
+    private static final float FROG_TONGUE_PULL = 0.15F;
 
     private BrewCreatureEffects() {}
 
@@ -68,7 +69,7 @@ public final class BrewCreatureEffects {
         Vec3 difference = origin.subtract(target.position());
         if (difference.lengthSqr() < 0.0001) return;
         if (target instanceof LivingEntity living) living.addEffect(new MobEffectInstance(MobEffects.JUMP, 20, 1));
-        move(target, new Vec3(difference.x * 0.15, 0.4, difference.z * 0.15));
+        move(target, new Vec3(difference.x * FROG_TONGUE_PULL, 0.4, difference.z * FROG_TONGUE_PULL));
     }
 
     static void frogTongue(ServerLevel level, Vec3 impact, int radius, @Nullable LivingEntity caster, int strength) {
@@ -199,7 +200,7 @@ public final class BrewCreatureEffects {
             if (victim == thrower || !victim.isAlive() || victim.getType() == EntityType.ENDER_DRAGON
                     || victim.getType() == WitcheryEntities.all().get("hornedhuntsman").get()) continue;
             Vec3 difference = thrower.position().subtract(victim.position());
-            move(victim, new Vec3(difference.x * 0.15F, 0.4, difference.z * 0.15F));
+            move(victim, new Vec3(difference.x * FROG_TONGUE_PULL, 0.4, difference.z * FROG_TONGUE_PULL));
             victim.addEffect(new MobEffectInstance(MobEffects.JUMP, 20, 1), brew.getEffectSource());
         }
     }

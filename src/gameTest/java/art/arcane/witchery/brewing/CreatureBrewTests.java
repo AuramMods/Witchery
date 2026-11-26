@@ -2,23 +2,30 @@ package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.entity.ThrownBrew;
+import art.arcane.witchery.item.BrewBottleItem;
 import art.arcane.witchery.item.ThrowableBrewItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryEntities;
+import art.arcane.witchery.registry.WitcheryItems;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ambient.Bat;
 import net.minecraft.world.entity.animal.Pig;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.common.MinecraftForge;
@@ -28,6 +35,7 @@ import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -102,6 +110,88 @@ public final class CreatureBrewTests {
                 "The pig gets Jump Boost with the original level and duration");
         helper.assertTrue(pig.getDeltaMovement().distanceToSqr(velocity) < 1.0E-12,
                 "The pig gets the original motion vector");
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_cauldron_splash")
+    public static void instantBlockSplashPullsTargetsAtTheOriginalBoundary(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var origin = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(5, 4, 5)));
+        var atRadius = stationaryPig(helper, origin.add(0, 0, -3));
+        var outside = stationaryPig(helper, origin.add(0, 0, 3.25));
+        var drop = stationaryItem(helper, origin.add(3, 0, 0));
+        var outsideDrop = stationaryItem(helper, origin.add(0, 0, 3.25));
+        List<Entity> targets = List.of(atRadius, outside, drop, outsideDrop);
+
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(targets.stream().allMatch(target -> level.getEntity(target.getUUID()) == target),
+                        "Both pigs and both dropped items are tracked by the level"))
+                .thenExecute(() -> {
+                    var hit = origin.add(0, 0, 0.5);
+                    splash(helper, origin, new BlockHitResult(hit, Direction.NORTH, BlockPos.containing(hit), false),
+                            Items.SLIME_BALL);
+                    assertJump(helper, atRadius, 1, 20, new Vec3(0, 0.4, 3 * 0.15F));
+                    helper.assertTrue(drop.getDeltaMovement().distanceToSqr(new Vec3(-3 * 0.15F, 0.4, 0)) < 1.0E-12,
+                            "A block impact pulls loose items from the same inclusive sphere");
+                    helper.assertTrue(!outside.hasEffect(MobEffects.JUMP) && outsideDrop.getDeltaMovement().equals(Vec3.ZERO),
+                            "The targets outside the original radius stay untouched");
+                    targets.forEach(Entity::discard);
+                }).thenSucceed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_cauldron_splash")
+    public static void instantEntitySplashScalesFromTheProjectile(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var origin = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(5, 4, 5)));
+        var direct = stationaryPig(helper, origin.add(0, 0, 0.5));
+        var glancing = stationaryPig(helper, origin.add(0, 0, -1.5));
+        var extended = stationaryPig(helper, origin.add(3.5, 0, 0));
+        var outside = stationaryPig(helper, origin.add(0, 0, 4.25));
+        var pigs = List.of(direct, glancing, extended, outside);
+
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(pigs.stream().allMatch(pig -> level.getEntity(pig.getUUID()) == pig),
+                        "All four pigs are tracked by the level"))
+                .thenExecute(() -> {
+                    var hit = new EntityHitResult(direct);
+                    splash(helper, origin, hit, Items.SPIDER_EYE, WitcheryIngredient.WOOD_ASH.item());
+                    helper.assertTrue(direct.getEffect(MobEffects.POISON) != null
+                                    && direct.getEffect(MobEffects.POISON).getDuration() == 450,
+                            "The directly struck pig receives the full splash duration");
+                    helper.assertTrue(glancing.getEffect(MobEffects.POISON) != null
+                                    && glancing.getEffect(MobEffects.POISON).getDuration() == 282,
+                            "The glancing pig's exposure is measured from the projectile");
+                    helper.assertTrue(extended.getEffect(MobEffects.POISON) != null
+                                    && extended.getEffect(MobEffects.POISON).getDuration() == 57,
+                            "Wood Ash extends the splash to its original four-block radius");
+                    splash(helper, origin, new EntityHitResult(outside), Items.SPIDER_EYE, WitcheryIngredient.WOOD_ASH.item());
+                    helper.assertTrue(!outside.hasEffect(MobEffects.POISON), "A direct hit still requires the target within the sphere");
+
+                    splash(helper, origin, hit, Items.GLOWSTONE_DUST, Items.STICK);
+                    helper.assertTrue(direct.getDeltaMovement().distanceToSqr(new Vec3(0, 0.7, 2)) < 1.0E-12
+                                    && glancing.getDeltaMovement().distanceToSqr(new Vec3(0, 0.7, -1.5)) < 1.0E-12,
+                            "Boosted Knockback uses the original direct and glancing push vectors");
+                    pigs.forEach(Pig::discard);
+                }).thenSucceed();
+    }
+
+    private static ItemEntity stationaryItem(GameTestHelper helper, Vec3 pos) {
+        var level = helper.getLevel();
+        var item = new ItemEntity(level, pos.x, pos.y, pos.z, new ItemStack(Items.STICK), 0, 0, 0);
+        item.setNoGravity(true);
+        level.addFreshEntity(item);
+        return item;
+    }
+
+    private static void splash(GameTestHelper helper, Vec3 origin, HitResult hit, ItemLike... ingredients) {
+        var recipe = new ArrayList<>(List.of(new ItemStack(Items.NETHER_WART), new ItemStack(Items.GUNPOWDER)));
+        Arrays.stream(ingredients).map(ItemStack::new).forEach(recipe::add);
+        var item = (BrewBottleItem) WitcheryItems.getRequired("brewbottle").get();
+        var stack = item.getDefaultInstance();
+        stack.setTag(BrewMixture.ingredientTag(recipe, 0x008000));
+        var projectile = new ThrownBrew(WitcheryEntities.THROWN_BREW.get(), helper.getLevel());
+        projectile.setItem(stack);
+        projectile.setPos(origin);
+        item.impact(helper.getLevel(), projectile, hit);
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_brew_summon_cues")

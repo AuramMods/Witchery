@@ -668,7 +668,8 @@ public final class BrewMixture {
     private void apply(LivingEntity target, @Nullable Entity source, @Nullable LivingEntity caster,
                        double strengthScale, double durationScale, boolean blocksHarmfulEffects, boolean glancing,
                        int ritualCoven, boolean taglock, @Nullable Vec3 impact, @Nullable BrewTransposition.Site destination) {
-        if (target.isDeadOrDying() || durationScale <= 0) return;
+        // The edge of an instant splash has zero exposure and can still trigger actions.
+        if (target.isDeadOrDying() || durationScale < 0) return;
         int strengthLimit = ritualCoven < 0 ? Integer.MAX_VALUE : ritualStrengthLimit(ritualCoven);
         for (BrewEffect effect : effects) {
             if (!effect.affectsEntities()) continue;
