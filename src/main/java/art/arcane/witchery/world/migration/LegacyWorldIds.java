@@ -221,19 +221,12 @@ public final class LegacyWorldIds {
 
     private void preparePlayer(CompoundTag player, DataFixer fixer, int from) {
         if (from < 100) dimensions.upgradePlayerLocation(player);
-        var capabilities = player.getCompound("ForgeCaps");
-        String playerDataId = WitcheryCapabilities.playerDataId().toString();
-        var progress = capabilities.getCompound(playerDataId);
-        var legacy = player.getCompound(WitcheryPlayerData.LEGACY_TAG).copy()
-                .merge(progress.getCompound(WitcheryPlayerData.LEGACY_TAG));
+        var legacy = captureLegacyPlayerProgress(player);
         var forgeData = player.getCompound("ForgeData");
         var persisted = forgeData.getCompound(Player.PERSISTED_NBT_TAG);
         if (!legacy.isEmpty()) {
             boolean insideMirror = WitcheryDimensions.MIRROR.location().toString().equals(player.getString("Dimension"));
             MirrorTravel.importLegacyPlayerState(legacy, persisted, insideMirror);
-            progress.put(WitcheryPlayerData.LEGACY_TAG, legacy);
-            capabilities.put(playerDataId, progress);
-            player.put("ForgeCaps", capabilities);
         }
         if (legacy.getBoolean("CanRestoreInventory") && legacy.contains("CachedInventory2", Tag.TAG_LIST)) {
             DeathBrewEffects.storeLegacyInventory(persisted, legacy.getList("CachedInventory2", Tag.TAG_COMPOUND));
@@ -266,6 +259,25 @@ public final class LegacyWorldIds {
         upgradeUntypedItems(retainedInventory, fixer, from, to);
         upgradeUntypedItems(dreamSession, fixer, from, to);
         upgradeUntypedItems(expiredDrops, fixer, from, to);
+    }
+
+    public static void repairPlayerWithoutLegacyRegistry(CompoundTag player) {
+        captureLegacyPlayerProgress(player);
+        repairNamedStoredItems(player);
+    }
+
+    private static CompoundTag captureLegacyPlayerProgress(CompoundTag player) {
+        var capabilities = player.getCompound("ForgeCaps");
+        String playerDataId = WitcheryCapabilities.playerDataId().toString();
+        var progress = capabilities.getCompound(playerDataId);
+        var legacy = player.getCompound(WitcheryPlayerData.LEGACY_TAG).copy()
+                .merge(progress.getCompound(WitcheryPlayerData.LEGACY_TAG));
+        if (!legacy.isEmpty()) {
+            progress.put(WitcheryPlayerData.LEGACY_TAG, legacy);
+            capabilities.put(playerDataId, progress);
+            player.put("ForgeCaps", capabilities);
+        }
+        return legacy;
     }
 
     private void repairLegacyInventory(ListTag inventory, DataFixer fixer, int to) {

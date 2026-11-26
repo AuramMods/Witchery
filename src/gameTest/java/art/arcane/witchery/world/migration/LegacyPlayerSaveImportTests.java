@@ -25,6 +25,54 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class LegacyPlayerSaveImportTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_player_progress_without_registry")
+    public static void recoversPlayerProgressWithoutTheNumericRegistry(GameTestHelper helper) throws Exception {
+        var root = Files.createTempDirectory("witchery-player-progress-without-registry");
+        try (var access = LevelStorageSource.createDefault(root).createAccess("world")) {
+            var storage = access.createPlayerStorage();
+            var files = access.getLevelPath(LevelResource.PLAYER_DATA_DIR);
+            var vampireProfile = new GameProfile(UUID.randomUUID(), "OriginalVampire");
+            var wolfProfile = new GameProfile(UUID.randomUUID(), "EarlierPortWolf");
+            var vampireFile = TagParser.parseTag("""
+                    {Dimension:0,WitcheryExtendedPlayer:{VampireLevel:4,VampireLevelCap:10,BloodPower:125}}
+                    """);
+            var wolfFile = TagParser.parseTag("""
+                    {Dimension:"minecraft:overworld",WitcheryExtendedPlayer:{CreatureType:2,WerewolfLevel:7,
+                     WolfmanQuestState:1,WolfmanQuestCounter:4,WolfmanQuestChunks:[{Location:33L}]},
+                     ForgeCaps:{"witchery:player_data":{CreatureTypeOrdinal:0,PotionBottling:48,
+                     WitcheryExtendedPlayer:{WolfmanQuestCounter:9}}}}
+                    """);
+            wolfFile.putInt("DataVersion", SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+            NbtIo.writeCompressed(vampireFile, files.resolve(vampireProfile.getId() + ".dat").toFile());
+            NbtIo.writeCompressed(wolfFile, files.resolve(wolfProfile.getId() + ".dat").toFile());
+
+            var vampire = new FakePlayer(helper.getLevel(), vampireProfile);
+            var wolf = new FakePlayer(helper.getLevel(), wolfProfile);
+            storage.load(vampire);
+            storage.load(wolf);
+            var vampireData = WitcheryPlayerDataProvider.get(vampire).orElseThrow(IllegalStateException::new);
+            helper.assertTrue(vampireData.getVampireLevel() == 4 && vampireData.getVampireLevelCap() == 10
+                            && vampireData.getBloodPower() == 125,
+                    "The original player file supplies rank, cap, and blood without numeric item mappings");
+            var wolfData = WitcheryPlayerDataProvider.get(wolf).orElseThrow(IllegalStateException::new);
+            helper.assertTrue(wolfData.getWerewolfLevel() == 7 && wolfData.getCreatureTypeOrdinal() == 0
+                            && wolfData.getWolfmanQuestState() == WolfmanQuestState.STARTED
+                            && wolfData.getWolfmanQuestCounter() == 9 && wolfData.getPotionBottling() == 48,
+                    "The mixed save preserves modern values and fills missing progress from both legacy records");
+            storage.save(wolf);
+            var reopenedWolf = new FakePlayer(helper.getLevel(), wolfProfile);
+            storage.load(reopenedWolf);
+            var reopened = WitcheryPlayerDataProvider.get(reopenedWolf).orElseThrow(IllegalStateException::new);
+            helper.assertTrue(reopened.getWerewolfLevel() == 7 && reopened.getWolfmanQuestCounter() == 9
+                            && reopened.serializeNBT().getList("WolfmanQuestChunks", Tag.TAG_COMPOUND)
+                            .getCompound(0).getLong("Location") == 33,
+                    "A normal save stores the recovered progress in the Forge capability");
+        } finally {
+            FileUtils.deleteDirectory(root.toFile());
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void restoresLegacyPlayerRanksAndTrials(GameTestHelper helper) throws Exception {
         var root = Files.createTempDirectory("witchery-player-import-test");

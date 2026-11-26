@@ -27,7 +27,7 @@ abstract class LegacyPlayerDataMixin {
             target = "Lnet/minecraft/util/datafix/DataFixTypes;updateToCurrentVersion(Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/nbt/CompoundTag;I)Lnet/minecraft/nbt/CompoundTag;"))
     private CompoundTag witchery$upgradeLegacyPlayer(DataFixTypes type, DataFixer fixer, CompoundTag player, int from) {
         if (witchery$legacyIds != null) return witchery$legacyIds.upgradePlayer(player, fixer, from);
-        LegacyWorldIds.repairNamedStoredItems(player);
+        LegacyWorldIds.repairPlayerWithoutLegacyRegistry(player);
         return type.updateToCurrentVersion(fixer, player, from);
     }
 }
