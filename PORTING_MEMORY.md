@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Pending villager offers through werewolf reversion (2026-11-26)
+
+- The preceding build exposed a two-currency offer after a legacy Wolfman reverted to a villager with an unresolved short item ID in its second payment. The regression exercises reversion, transformation, and cure. The villager read path now retains unresolved positive-count rows and keeps them off the active list. The save hook also writes pending-only stock when vanilla would omit an empty active list.
+- Copied Auram serialized an empty secondary payment as `minecraft:air` with a positive count and tags. A focused regression reproduced the resulting loss of the active Paper offer. The shared reader now treats an explicitly saved air item as an empty secondary payment, while a missing real currency still keeps its row pending.
+- The clean Forge fixture supplied a saved Wolfman and an Apothecary with only one pending offer. At dawn the Wolfman reverted to a librarian with its original identity. A muted background client bought Paper for one Emerald and could not buy the pending Book for diamonds alone. An ordinary restart retained both pending rows and the Paper use. After the fixture mapped ID 32321 to Gold Ingot, the next ordinary restart recovered both tagged second payments. A survival purchase of the Book consumed three Diamonds plus two Gold Ingots and advanced only that offer. The client stayed hidden and unfocused at zero master volume with OpenAL No Output.
+- Headless copied Auram loaded the fixture in Werevillager form alongside the pending-only Apothecary. The live Paper offer retained its use count and discarded the fixture's stray air tag. Both unavailable rows kept their raw short ID before the mapping was supplied and recovered the tagged two-ingot prices and original usage counts on the ordinary restart.
+- Java 17 data generation, reobfuscation, and all 520 local Forge GameTests passed. The tested package is `build/qa-werevillager-pending-stock-final/candidate.jar`, SHA-256 `623d9dfdac37ae74552dcd71c78149471171e7fc2d37181c7b651bbc1404f627`.
+
 ## Unresolved payments in saved merchant stock (2026-11-26)
 
 - An earlier 1.20.1 entity region can retain the original short item ID in the second payment of a Demon or Hobgoblin offer. The preceding package exposed it as a one-payment trade after loading without the captured registry. The previous Polynesia Charm loader filtered unavailable offers, but rewriting the stock after a valid purchase discarded those rows.

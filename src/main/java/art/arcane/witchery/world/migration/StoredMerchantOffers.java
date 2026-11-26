@@ -33,7 +33,10 @@ public final class StoredMerchantOffers extends MerchantOffers {
             if (buyTag.getInt("Count") <= 0 || sellTag.getInt("Count") <= 0) continue;
 
             ItemStack buy = loadStack.apply(buyTag.copy());
-            boolean hasSecondPayment = secondTag.getInt("Count") > 0;
+            String secondId = secondTag.getString("id");
+            // An empty payment can acquire a positive count and tags in a modded save.
+            boolean hasSecondPayment = secondTag.getInt("Count") > 0
+                    && !secondId.equals("minecraft:air") && !secondId.equals("air");
             ItemStack second = hasSecondPayment ? loadStack.apply(secondTag.copy()) : ItemStack.EMPTY;
             ItemStack sell = loadStack.apply(sellTag.copy());
             if (buy.isEmpty() || sell.isEmpty() || hasSecondPayment && second.isEmpty()) {
