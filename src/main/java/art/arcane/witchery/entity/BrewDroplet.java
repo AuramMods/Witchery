@@ -9,6 +9,8 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -19,7 +21,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.common.util.FakePlayerFactory;
+import net.minecraftforge.fluids.FluidType;
 import org.jetbrains.annotations.Nullable;
 
 public final class BrewDroplet extends ThrowableProjectile implements ItemSupplier {
@@ -31,6 +36,7 @@ public final class BrewDroplet extends ThrowableProjectile implements ItemSuppli
     @Nullable
     private BrewMixture mixture;
     private ItemStack sprite = ItemStack.EMPTY;
+    private boolean waterContact;
 
     public BrewDroplet(EntityType<? extends BrewDroplet> type, Level level) {
         super(type, level);
@@ -71,11 +77,48 @@ public final class BrewDroplet extends ThrowableProjectile implements ItemSuppli
 
     @Override
     public void tick() {
-        if (!level().isClientSide && (mixture == null || tickCount >= 400)) {
+        if (!level().isClientSide && mixture == null) {
             discard();
             return;
         }
         super.tick();
+    }
+
+    @Override
+    protected boolean updateInWaterStateAndDoFluidPushing() {
+        boolean inFluid = super.updateInWaterStateAndDoFluidPushing();
+        waterContact = false;
+
+        // The original water scan narrowed the 0.25-block droplet by 0.4F at both ends.
+        // Its inverted vertical bounds admit at most one layer of water blocks.
+        var bounds = getBoundingBox();
+        int y = Mth.floor(bounds.minY + 0.4F + 0.001D);
+        if (y >= Mth.floor(bounds.maxY - 0.4F - 0.001D + 1.0D)) return inFluid;
+        var first = new BlockPos(Mth.floor(bounds.minX + 0.001D), y, Mth.floor(bounds.minZ + 0.001D));
+        var last = new BlockPos(Mth.floor(bounds.maxX - 0.001D), y, Mth.floor(bounds.maxZ - 0.001D));
+        if (!level().hasChunksAt(first, last)) return inFluid;
+
+        Vec3 current = Vec3.ZERO;
+        for (BlockPos pos : BlockPos.betweenClosed(first, last)) {
+            var fluid = level().getFluidState(pos);
+            if (fluid.is(FluidTags.WATER)) {
+                waterContact = true;
+                current = current.add(fluid.getFlow(level(), pos));
+            }
+        }
+        if (isPushedByFluid()) setDeltaMovement(getDeltaMovement().add(current.normalize().scale(0.014D)));
+        return inFluid;
+    }
+
+    @Override
+    public boolean isInWater() {
+        return waterContact;
+    }
+
+    @Override
+    public boolean isPushedByFluid(FluidType type) {
+        // The narrowed water scan applies its own current. Other fluids retain Forge's handling.
+        return type != ForgeMod.WATER_TYPE.get() && super.isPushedByFluid(type);
     }
 
     @Override
