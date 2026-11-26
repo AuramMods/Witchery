@@ -1184,6 +1184,7 @@
 - [x] Verify that the first vessel receives the deposit even across an unloaded chunk boundary. Copied Auram replayed the clean Forge checkpoint with a muted connected client. The vampire finished four remaining bites, returned home, and filled the first vessel. With the home column blocked, a second completed hunt deposited five blood and sent both poofs from its source.
 - [x] Offer a Globe Artichoke at rank ten. The vessel emptied, one artichoke was consumed and Thunderstorm gained five uses. The muted client selected the original storm icon and cast through the gameplay controls. The world switched to rain and thunder, and four charges and 1,114 blood remained. An attempt during the storm kept all four charges.
 - [x] Restart during the active Thunderstorm. The same player logged in with four charges and 1,114 blood, the vessel stayed empty and the saved thunderstorm continued. Java 17 data generation, JAR reobfuscation and all 171 required Forge GameTests passed.
+- [x] Restore the original Thunderstorm in all six dimensions. A clear cast spends one charge, and only the Overworld starts a storm. Existing rain preserves the charge. Two muted survival clients verified the caster-only fizz and snare on clean Forge and rejoined in the Nether with the saved Overworld storm and one remaining charge. Copied Auram matched all 12 cases from the original server and kept the storm timers after restart. All 499 local Forge GameTests passed.
 
 ## Bat Swarm (2026-11-20)
 

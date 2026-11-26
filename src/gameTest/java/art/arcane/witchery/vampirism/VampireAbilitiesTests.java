@@ -7,6 +7,7 @@ import art.arcane.witchery.event.WitcheryEventHooks;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryEntities;
+import art.arcane.witchery.world.WitcheryDimensions;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -16,6 +17,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -28,11 +30,74 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
+import java.util.List;
 import java.util.UUID;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class VampireAbilitiesTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_vampire_storm_weather")
+    public static void thunderstormUsesTheOriginalWeatherRulesInEveryDimension(GameTestHelper helper) {
+        var server = helper.getLevel().getServer();
+        var overworld = server.overworld();
+        var weather = server.getWorldData().overworldData();
+        int clearTime = weather.getClearWeatherTime();
+        int rainTime = weather.getRainTime();
+        int thunderTime = weather.getThunderTime();
+        boolean raining = weather.isRaining();
+        boolean thundering = weather.isThundering();
+        try {
+            var dimensions = List.of(Level.OVERWORLD, Level.NETHER, Level.END,
+                    WitcheryDimensions.DREAM, WitcheryDimensions.TORMENT, WitcheryDimensions.MIRROR);
+            for (var dimension : dimensions) {
+                var level = server.getLevel(dimension);
+                helper.assertTrue(level != null, "The original dimension is loaded: " + dimension.location());
+                overworld.setWeatherParameters(4000, 0, false, false);
+                int remaining = castThunderstorm(level, false);
+                int duration = weather.getRainTime();
+                helper.assertTrue(remaining == 2, "A clear-weather cast always spends one charge: " + dimension.location());
+                if (dimension.equals(Level.OVERWORLD)) {
+                    helper.assertTrue(weather.isRaining() && weather.isThundering() && weather.getClearWeatherTime() == 0
+                                    && weather.getThunderTime() == duration && duration >= 6000 && duration <= 17980 && duration % 20 == 0,
+                            "The Overworld cast starts both types of weather for the original rolled duration");
+                } else {
+                    helper.assertTrue(!weather.isRaining() && !weather.isThundering()
+                                    && duration == 0 && weather.getThunderTime() == 0 && weather.getClearWeatherTime() == 4000,
+                            "The derived dimension spends the charge and leaves the Overworld weather alone: " + dimension.location());
+                }
+
+                overworld.setWeatherParameters(0, 1234, true, false);
+                weather.setThunderTime(456);
+                int kept = castThunderstorm(level, false);
+                helper.assertTrue(kept == 3 && weather.isRaining() && !weather.isThundering()
+                                && weather.getRainTime() == 1234 && weather.getThunderTime() == 456,
+                        "A cast during rain leaves the weather and charges alone: " + dimension.location());
+            }
+            overworld.setWeatherParameters(4000, 0, false, false);
+            helper.assertTrue(castThunderstorm(overworld, true) == 3 && weather.isThundering(),
+                    "Creative mode starts the Overworld storm without spending a charge");
+        } finally {
+            weather.setClearWeatherTime(clearTime);
+            weather.setRainTime(rainTime);
+            weather.setThunderTime(thunderTime);
+            weather.setRaining(raining);
+            weather.setThundering(thundering);
+        }
+        helper.succeed();
+    }
+
+    private static int castThunderstorm(ServerLevel level, boolean creative) {
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "VampireThunderstorm"));
+        var data = WitcheryPlayerDataProvider.get(player).orElseThrow(IllegalStateException::new);
+        player.getAbilities().instabuild = creative;
+        data.setVampireLevel(10);
+        data.setVampireUltimate(VampireUltimate.STORM, 3);
+        VampireAbilities.select(player, VampireAbilities.ULTIMATE);
+        VampireAbilities.activate(player);
+        player.discard();
+        return data.getVampireUltimateCharges();
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_vampire_swarm_spawn")
     public static void swarmUsesOriginalColumnsAndSpendsBlockedCharge(GameTestHelper helper) {
         var world = helper.getLevel();

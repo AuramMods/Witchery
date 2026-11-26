@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Vampire Thunderstorm across dimensions (2026-11-26)
+
+- The original dedicated server verified each caster's world using separate fake player profiles. Every clear-weather cast from the Overworld, Nether, End, Dream, Torment, and Mirror spent one charge. The Overworld cast set rain and thunder. The five secondary dimensions kept the primary weather clear. Every rainy cast preserved its charge and the existing weather flags. The preceding Forge build rejected the five clear-weather casts made outside the Overworld.
+- Thunderstorm reads the caster's world's existing rain state and applies the original weather roll to that world. The secondary dimensions use derived weather data whose setters leave the primary weather alone. A successful cast uses the original fizz, and rejected ultimate casts use the original snare through the caster's sound packet. The client applies the original half-volume default and varying pitch.
+- Two muted, unfocused clean Forge survival clients verified clear and rainy Nether casts and an accepted Overworld cast. The caster alone received the cues. Both players rejoined in the Nether with an active Overworld storm and one remaining caster charge. The fixture supplied the rank, initial charges and platforms, and froze the weather cycle to compare the persisted timers.
+- Copied Auram matched all 12 original cases, reloaded the exact storm timers, and preserved the charge and timers on a later Mirror attempt during rain. The same reobfuscated JAR was installed in both server profiles and both clean Forge clients. All 499 local Forge GameTests passed on Java 17. See `build/qa-vampire-storm-parity/comparison.txt` and `suite-dimensions.log`. The candidate SHA-256 is `2eee1bab433c5f0cfa27480e799b1d61d78b2b10e2d21d776dc66b69c7170d8b`.
+- A separate original-server comparison confirmed that Sky’s Wrath, Rain of Toads, and the Silver Dust cauldron ritual leave primary weather unchanged from secondary realms. The port already follows those rules. See `build/qa-ritual-weather-shared/native/reference-final.log`.
+
 ## Attack Bat aim and flight clearance (2026-11-26)
 
 - The original headless server traced an aimed cow through a wall on the caster's ray. The bat approached from the side. It added the original 0.1 acceleration toward the cow's position and changed motion from `(0.20, 0.02, 0.05)` to `(0.11055728, 0.02000000, 0.09472136)`. The preceding port steered away using ordinary bat flight in that case.

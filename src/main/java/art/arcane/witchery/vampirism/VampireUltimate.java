@@ -14,7 +14,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,8 +50,9 @@ public enum VampireUltimate {
 
     private static boolean startStorm(ServerPlayer player) {
         var world = player.serverLevel();
-        if (!world.dimension().equals(Level.OVERWORLD) || world.getLevelData().isRaining()) return false;
+        if (world.getLevelData().isRaining()) return false;
         int duration = 20 * (300 + world.random.nextInt(600));
+        // Secondary vanilla dimensions read the shared flags, but their derived weather setters are inert.
         world.setWeatherParameters(0, duration, true, true);
         return true;
     }

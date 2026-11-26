@@ -5,6 +5,7 @@ import art.arcane.witchery.entity.WereVillager;
 import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.item.VampireClothingItem;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.server.level.ServerPlayer;
@@ -72,21 +73,18 @@ public final class VampireAbilities {
         VampireUltimate ultimate = data.getVampireUltimate();
         int charges = data.getVampireUltimateCharges();
         if (charges == 0 || data.getCreatureTypeOrdinal() != 0 || !ultimate.activate(player)) {
-            if (ultimate == VampireUltimate.FARM) {
-                float pitch = 0.4F / ((float) player.serverLevel().getRandom().nextDouble() * 0.4F + 0.8F);
-                player.playNotifySound(SoundEvents.NOTE_BLOCK_SNARE.value(), SoundSource.PLAYERS, 0.5F, pitch);
-            } else {
-                player.playNotifySound(SoundEvents.NOTE_BLOCK_SNARE.value(), SoundSource.PLAYERS, 1, 0.5F);
-            }
+            playUltimateCue(player, "note.snare");
             return;
         }
+        if (ultimate == VampireUltimate.STORM) playUltimateCue(player, "random.fizz");
         if (!player.getAbilities().instabuild) {
             data.setVampireUltimate(ultimate, charges - 1);
             Vampirism.sync(player, data);
         }
-        if (ultimate == VampireUltimate.STORM) {
-            player.playNotifySound(SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 1, 1);
-        }
+    }
+
+    private static void playUltimateCue(ServerPlayer player, String sound) {
+        WitcheryNetwork.sendSound(player, sound, player.getX(), player.getY(), player.getZ(), -1, -1);
     }
 
     public static void interact(ServerPlayer player, Entity target) {
