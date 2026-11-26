@@ -420,6 +420,7 @@
 - [x] Verify the packaged Ent in muted survival. The player harvested Hawthorn with an axe and awakened a hostile Ent, which attacked and killed the player. The respawned player defeated the same Ent with a supplied axe after it was positioned in the test arena, then picked up its Ent Branch and Alder Sapling.
 - [x] Package on Java 17 and pass all 80 required Forge GameTests. The tests cover harvesting, spawn distance, the 15-damage cap before the triple axe bonus, both drops, and legacy ownership.
 - [x] Restart the dedicated server and verify the saved branch, Alder Sapling variant and legacy Ent owner. The muted client offered the collected Ent Branch and Mystic Unguent inside two white rings at night, and the rite produced a Mystic Branch.
+- [ ] Match both original Ent awakening particle and sound cues, including their positions and delivery ranges. The Felling client trace records the current harp at the center of the harvested cell. The original sends it at the lower corner with the instant-spell particles.
 
 ## Mutating Sprig, Grassper and Critter Snare (2026-11-20)
 
@@ -1661,6 +1662,7 @@
 - [x] Restore the original circle scan order and vertical ranges for Flowers, Fertilization, Harvesting, Tilling, and Planting. Keep repeated center visits, upward or downward scan order, and the ten original flower variants.
 - [x] Use modern bone meal and block loot for farming. Tilling expands from dirt and grass to sand, netherrack, and soul sand at strengths one, two, and three. Planting draws from dropped seeds in range and consumes a seed after successful placement.
 - [x] Restore the Pruning and Felling sphere footprints. Felling targets logs. Pulverisation converts eligible blocks one stage per cast and drops sand at the end of the chain.
+- [x] Restore Felling's Ent awakening roll for accepted Witchwood harvests. The original server awakened an Ent and dropped Hawthorn from a String cast. The packaged survival client received the awakening cue, and the Ent and its Hawthorn drop survived restart. The regression checks the inclusive bark edge, Hawthorn loot, and a protected Witchwood log. Forge preserves the two Nether fungal trunk families.
 - [x] Match Pulverisation's X, Z, Y traversal, including flattened stone variants and the open fringe. Send one silent smoke cue per conversion and the original ghast sound at the impact corner. Forge protection still vetoes individual block changes.
 - [x] Match native Pruning materials. It clears leaves, short grass, ferns, dead bushes, vanilla vines and Spanish Moss. It returns the fitted weave from a Dream Catcher and keeps tall plants, aquatic plants, crops, conjured vines and ritual glyphs in place. The original and packaged tests and the Forge protection regression are in `build/qa-pruning-parity`.
 - [x] Restore named legacy Yellow Flower and Bone Meal ingredients. Flatten nonzero Dirt metadata without turning those variants into the brewing ingredient. Pass casts through the existing protection hooks with the caster or a Forge fake player.

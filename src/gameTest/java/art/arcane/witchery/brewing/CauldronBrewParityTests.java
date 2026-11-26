@@ -3,6 +3,7 @@ package art.arcane.witchery.brewing;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.DreamWeave;
 import art.arcane.witchery.block.WitchLilyPadBlock;
+import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.block.WitchesCauldronBlock;
 import art.arcane.witchery.block.entity.AltarBlockEntity;
 import art.arcane.witchery.block.entity.BrewFluidBlockEntity;
@@ -357,6 +358,65 @@ public final class CauldronBrewParityTests {
         } finally {
             MinecraftForge.EVENT_BUS.unregister(protection);
             MinecraftForge.EVENT_BUS.unregister(sound);
+            config.set(previous);
+            brewer.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void fellingAwakensEntsOnlyFromHarvestedWitchwood(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var center = helper.absolutePos(new BlockPos(6, 4, 5)).atY(196);
+        var landing = center.offset(10, 0, 11);
+        var protectedLog = center.west(2).below();
+        var edgeLog = center.east(3);
+        var outsideLog = center.east(4);
+        var witchLog = WitcheryBlocks.getRequired("witchlog").get();
+        var hawthorn = witchLog.defaultBlockState().setValue(WitchWoodType.PROPERTY, WitchWoodType.HAWTHORN);
+        level.setBlockAndUpdate(center, hawthorn);
+        level.setBlockAndUpdate(protectedLog, hawthorn);
+        level.setBlockAndUpdate(edgeLog, Blocks.OAK_WOOD.defaultBlockState());
+        level.setBlockAndUpdate(outsideLog, Blocks.OAK_LOG.defaultBlockState());
+        level.setBlockAndUpdate(center.north(), Blocks.OAK_PLANKS.defaultBlockState());
+        level.setBlockAndUpdate(center.south(), Blocks.CRIMSON_STEM.defaultBlockState());
+        level.setBlockAndUpdate(center.west(), Blocks.STRIPPED_WARPED_HYPHAE.defaultBlockState());
+        level.setBlockAndUpdate(landing.below(), Blocks.STONE.defaultBlockState());
+
+        var brewer = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "FellingTester"));
+        Consumer<BlockEvent.BreakEvent> protection = event -> {
+            if (event.getLevel() == level && event.getPlayer() == brewer && event.getPos().equals(protectedLog)) {
+                event.setCanceled(true);
+            }
+        };
+        var config = WitcheryServerConfig.ALLOW_INTER_MOD_BLOCK_BREAK_EVENTS;
+        boolean previous = config.get();
+        MinecraftForge.EVENT_BUS.addListener(protection);
+        try {
+            config.set(true);
+            var brew = BrewMixture.from(List.of(new ItemStack(Items.NETHER_WART), new ItemStack(Items.GUNPOWDER),
+                    new ItemStack(Items.STRING)));
+            level.random.setSeed(271);
+            brew.applySplashToBlock(level, center, Direction.UP, Vec3.atCenterOf(center), brewer);
+            helper.assertTrue(level.isEmptyBlock(center) && level.isEmptyBlock(edgeLog)
+                            && level.getBlockState(outsideLog).is(Blocks.OAK_LOG),
+                    "Felling harvests both wooden log forms inside its inclusive sphere");
+            helper.assertTrue(level.getBlockState(protectedLog).equals(hawthorn)
+                            && level.getBlockState(center.north()).is(Blocks.OAK_PLANKS)
+                            && level.getBlockState(center.south()).is(Blocks.CRIMSON_STEM)
+                            && level.getBlockState(center.west()).is(Blocks.STRIPPED_WARPED_HYPHAE),
+                    "Protected Witchwood, planks and fungal trunks stay in place");
+            var ent = level.getEntities(WitcheryEntities.ENT.get(), new AABB(landing), entity -> true);
+            helper.assertTrue(ent.size() == 1 && ent.get(0).blockPosition().equals(landing),
+                    "The accepted log harvest rolls one Ent into its original landing column");
+            var drops = level.getEntitiesOfClass(ItemEntity.class, new AABB(protectedLog).inflate(4),
+                    entity -> entity.getItem().is(witchLog.asItem()));
+            helper.assertTrue(drops.size() == 1 && ItemStack.isSameItemSameTags(drops.get(0).getItem(),
+                            WitchWoodType.HAWTHORN.stack(witchLog)),
+                    "The cast drops one Hawthorn log and leaves the protected log in place");
+            ent.get(0).discard();
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(protection);
             config.set(previous);
             brewer.discard();
         }

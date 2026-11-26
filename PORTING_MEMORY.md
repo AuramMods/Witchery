@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron Felling and Ent awakening (2026-11-25)
+
+- The original Forge server harvested Hawthorn and an oak bark block on the inclusive radius-three boundary. It kept the farther log and nearby planks. With seed 5123 the Hawthorn harvest awakened one Ent at `(95.5, 184.05, 64.5)` and returned one Hawthorn item with metadata two.
+- The port now shares its existing Ent awakening roll across axe and successful brew harvests. The Forge test checks the allowed log, its variant drop and an Ent in the seeded landing column. It also keeps the protected log and the crimson and warped fungal trunk families. Forge supplies loot for the distinct modern wood states.
+- The muted packaged survival client cast Felling at Hawthorn. The fixture seeded the ordinary awakening roll at entry and the client received the harp. The same Ent, Hawthorn drop and harvested plot survived a clean Forge restart. The client used master volume zero and OpenAL No Output, and stayed in the background.
+- A normal dispenser on copied headless Auram harvested Hawthorn and oak bark with zero players online. The packaged server retained the farther log, planks, crimson stem and stripped warped hyphae and returned the Hawthorn variant.
+- Java 17 reobfuscation and all 449 local Forge GameTests passed on seed `5471593853027166409`. The JAR is `build/qa-felling-parity/candidate.jar` with SHA-256 `ce4f4780014bf2703993b6b32903df4b0bcc7a3cfa88c40c41070da5230697e1`. See `build/qa-felling-parity/comparison.txt`.
+
 ## Cauldron Extinguish order and Blaze damage (2026-11-25)
 
 - The original Forge server extinguished the west column from bottom to top, then the southern and northern cells. It played a fizz at each lower block corner at volume 1 and pitch 2. A ritual reached the horizontal fringe while preserving the higher fire.

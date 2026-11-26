@@ -1,7 +1,9 @@
 package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.block.DreamCatcherBlock;
+import art.arcane.witchery.entity.Ent;
 import art.arcane.witchery.network.WitcheryNetwork;
+import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -204,12 +206,16 @@ final class BrewFarming {
         ItemStack tool = lootTool(strength);
         forEachBlock(level, center, reach, reach * reach, pos -> {
             var state = level.getBlockState(pos);
-            if (state.is(BlockTags.LOGS)) cut(level, pos, state, tool, actor);
+            if (state.is(BlockTags.LOGS) && !state.is(BlockTags.CRIMSON_STEMS) && !state.is(BlockTags.WARPED_STEMS)) {
+                cut(level, pos, state, tool, actor);
+            }
         });
     }
 
     private static void cut(ServerLevel level, BlockPos pos, BlockState state, ItemStack tool, Player caster) {
         if (!remove(level, pos, state, caster)) return;
+        var witchLog = WitcheryBlocks.getRequired("witchlog").get();
+        if (state.is(witchLog)) Ent.tryAwaken(level, pos, witchLog);
         for (ItemStack drop : Block.getDrops(state, level, pos, null, null, tool)) Block.popResource(level, pos, drop);
     }
 
