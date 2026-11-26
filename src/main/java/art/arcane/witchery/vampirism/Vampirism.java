@@ -16,6 +16,7 @@ import art.arcane.witchery.world.WitcheryDimensions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
@@ -34,6 +35,7 @@ import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -47,6 +49,8 @@ import java.util.WeakHashMap;
 public final class Vampirism {
     private static final TagKey<EntityType<?>> BOOK_BOSSES = TagKey.create(Registries.ENTITY_TYPE,
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "vampire_book_bosses"));
+    private static final ResourceKey<Biome> OMINOUS_WOODS = ResourceKey.create(Registries.BIOME,
+            ResourceLocation.fromNamespaceAndPath("biomesoplenty", "ominous_woods"));
     private static final Map<ServerLevel, Map<UUID, Vec3>> CROUCHING_STRIKES = new WeakHashMap<>();
 
     private Vampirism() {
@@ -78,7 +82,8 @@ public final class Vampirism {
         BlockPos crown = BlockPos.containing(entity.getX(), Math.ceil(entity.getBoundingBox().maxY), entity.getZ());
         return world.isDay() && world.dimensionType().hasSkyLight() && world.dimensionType().natural()
                 && !world.dimension().equals(WitcheryDimensions.DREAM) && !world.dimension().equals(WitcheryDimensions.TORMENT)
-                && world.canSeeSky(crown) && !world.isRainingAt(crown) && !entity.isSleeping();
+                && world.canSeeSky(crown) && !world.isRainingAt(crown)
+                && !world.getBiome(entity.blockPosition()).is(OMINOUS_WOODS);
     }
 
     public static void turn(ServerPlayer player) {
@@ -387,7 +392,7 @@ public final class Vampirism {
                 data.setBloodPower(previousBlood - feed * 5);
                 hunger.eat(feed, 4);
             }
-            if (data.getBloodPower() == 0 && hunger.getFoodLevel() == 0) weaken(player, 8, 1);
+            if (data.getBloodPower() == 0 && hunger.getFoodLevel() == 0) weaken(player, 8, 1, true);
             if (!player.getAbilities().instabuild && isInSunlight(player)) {
                 if (data.getBloodPower() == 0 && player.tickCount > 400) {
                     var sunlight = WitcheryDamageTypes.sunlight(player.level());
@@ -398,7 +403,7 @@ public final class Vampirism {
                 }
                 if (rank >= 5) {
                     data.setBloodPower(data.getBloodPower() - 60);
-                    weaken(player, 3, 0);
+                    weaken(player, 3, 0, false);
                 } else {
                     data.setBloodPower(0);
                 }
@@ -408,10 +413,10 @@ public final class Vampirism {
         });
     }
 
-    private static void weaken(ServerPlayer player, int slowness, int weakness) {
-        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 200, slowness, true, false));
-        player.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 200, weakness, true, false));
-        player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, weakness, true, false));
+    private static void weaken(ServerPlayer player, int weakness, int slowdown, boolean ambientWeakness) {
+        player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, weakness, ambientWeakness, true));
+        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 200, slowdown, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 200, slowdown, true, true));
     }
 
     static void sync(ServerPlayer player, WitcheryPlayerData data) {
