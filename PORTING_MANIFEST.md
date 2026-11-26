@@ -1844,6 +1844,18 @@ Status:
 - An ordinary Forge 1.20.1 restart uses current names, block states and saved payloads. Earlier port records can recover named legacy variants, specialized payloads and numeric entries when the captured registry is available. Recovery of values dropped by a previous conversion requires a source record that still contains them.
 - The current installation includes the 55 original entity types and their names. All 55 loaded from original serialized records in the current package replay. The Scrying Eye is transient. The detailed fixtures in the porting plan record the active state verified beyond the base entity mapping.
 
+### Specialized save field audit
+
+| Original field or payload | Modern reader and disposition | Verification |
+| --- | --- | --- |
+| Treefyd `Owner`, `SentinalPlant`, `KnownPlayers`, `KnownCreatureTypes`, and `KnownCreatures` | `Treefyd` and `TreefydAllowlist` retain the owner, guard mode, player names, herd labels and individual UUIDs. Recognized herd labels acquire a stable entity type. Explicit type IDs keep precedence. | The earlier original region covers all three lists. The localized herd regression covers the Spanish, Russian, Chinese and English Hobgoblin labels. |
+| Familiar species color, `Familiar`, and `SuicideIn` | `WitchPet` owns the common read path. `WitchOwl`, `WitchToad` and `WingedMonkey` supply the species color key. | Earlier original entity saves cover nondefault colors, ownership, sitting and timers. |
+| Flying companion `WITCWaypoint` and `HomeX`, `HomeY`, `HomeZ` | `OwlDeliveryGoal` and `MonkeyFlightGoal` load the saved trip, including upgraded nested Waystones or Taglocks. | Original and earlier port flight fixtures are recorded under Legacy Save Fixtures. |
+| Broom `BrushColor` and plain `CustomName` | `WitchBroom` reads the original byte and the vanilla name, including in nested player mounts. | Original region and nested owner fixtures retained the dye and name after restart. |
+| Bolt `xTile`, `yTile`, `zTile`, `inTile`, `inData`, `shake`, `inGround`, `pickup`, and `damage` | `LegacyChunkEntities` resolves the saved impact block and vanilla's arrow conversion maps the projectile state before restoring the Witchery type. | The original stuck bolt fixture retained its mossy brick state, pickup mode, damage, position and UUID. |
+| Ground-anchor fields on Glyph projectiles, brew droplets, Inferno splatters and thrown brews | The original serializers wrote the inherited anchor fields. Their collision paths leave `inGround` false. The modern projectiles load live motion and their individual effect payloads. | Earlier original in-flight brew and droplet fixtures cover the gameplay state. |
+| Vampire mob `GuardType` | The original Vampire only uses the field in its accessor and serializer. `Vampire` restores the active coffin coordinates through `BaseX`, `BaseY` and `BaseZ`. | Source comparison. Village Guards have a separate active `GuardType` and retain it. |
+
 ## Mod Hook Integrations (`modHooks.register`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/Witchery.java`
 - `ModHookArsMagica2` maps its mana debit and suffocation exception to Ars Magica Legacy 1.5.0, the build in Auram. The modern API provides mana access for living entities. The inspected 1.5.0 build contains no identified equivalents for the Reconstructor or its Soulbound enchantment hook.

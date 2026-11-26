@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Legacy Treefyd herd labels (2026-11-26)
+
+- The original 0.24.1 server used the shipped Spanish, Russian and Simplified Chinese translations to classify `Duende`, `Хобгоблин` and `妖精` as Hobgoblin herds. It spared each herd and saved a named Treefyd with its localized `CreatureTypeName` in a region file. The trace is in `build/qa-legacy-treefyd-herds/native/reference.log`.
+- On the preceding Forge build, a localized herd remained in NBT while the guardian considered the ordinary Hobgoblin eligible to attack. Normal use of an untyped legacy Taglock also trained an individual creature in place of the herd. The updated allowlist resolves the known labels to `witchery:goblin` for both load and Taglock use. Saved labels stay visible and an explicit modern entity type takes precedence.
+- Headless clean Forge imported the original region. Its first guardian damaged the pig control and left the Hobgoblin at 20 health. Copied Auram used the ordinary loader on a name-only save seeded with the preceding port. Both dedicated restarts kept all three labels, stable herd IDs, owners, sentinel modes and UUIDs. Java 17 data generation and reobfuscation succeeded. The packaged profiles used `build/qa-legacy-treefyd-herds/candidate.jar` with SHA-256 `b931e4cbd64060a62884f6d7594b4fb4b056baca5e4371222f53ae1cad6c2eda`.
+- Both Treefyd GameTests failed on the preceding build and passed on the candidate. The full replay passed 536 of 537 required checks. The Bat Swarm contact fixture now waits for the cow to be tracked before ticking the bat. Waystone arrival passed on replay. The sticky-piston case passed the first candidate run and failed on replay with Gravel in the snow slab's expected cell. See `build/qa-legacy-treefyd-herds/suite.log` and `suite-replay.log` for the full run results.
+
 ## Bottled brew source replacement (2026-11-26)
 
 - Compared both release methods on packaged Forge against 291 original placed block defaults. The retired Wall Generator maps to air and has no live replacement case. Across the 290 mapped blocks the preceding package differed in 43 of 580 gas and liquid outcomes. The rebuilt JAR matched all 580. The logs are in `build/qa-bottled-brew-replacement/baseline-catalog/initial.log` and `clean-catalog/initial.log` under the same directory.

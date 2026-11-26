@@ -19,11 +19,13 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 final class TreefydAllowlist {
     private static final List<EntityType<?>> VANILLA_HERDS = List.of(EntityType.VILLAGER, EntityType.SHEEP, EntityType.COW,
             EntityType.MOOSHROOM, EntityType.CHICKEN, EntityType.PIG, EntityType.HORSE);
+    private static final Set<String> LEGACY_HOBGOBLIN_NAMES = Set.of("Duende", "Хобгоблин", "妖精");
     private final Map<String, UUID> players = new LinkedHashMap<>();
     private final Map<String, ResourceLocation> species = new LinkedHashMap<>();
     private final Map<UUID, String> creatures = new LinkedHashMap<>();
@@ -67,7 +69,7 @@ final class TreefydAllowlist {
             if (type.getDescription().getString().equals(name)) return type;
         }
         EntityType<?> goblin = WitcheryEntities.GOBLIN.get();
-        return goblin.getDescription().getString().equals(name) ? goblin : null;
+        return goblin.getDescription().getString().equals(name) || LEGACY_HOBGOBLIN_NAMES.contains(name) ? goblin : null;
     }
 
     private static <T> boolean updateNamed(Map<String, T> values, String name, @Nullable T id, boolean remove) {
@@ -145,7 +147,13 @@ final class TreefydAllowlist {
             CompoundTag entry = (CompoundTag) stored;
             String name = entry.getString("CreatureTypeName");
             String id = entry.getString("CreatureType");
-            if (!name.isEmpty()) species.put(name, id.isEmpty() ? null : ResourceLocation.tryParse(id));
+            if (name.isEmpty()) continue;
+            if (id.isEmpty()) {
+                EntityType<?> herd = herdFor(null, name);
+                updateNamed(species, name, herd == null ? null : BuiltInRegistries.ENTITY_TYPE.getKey(herd), false);
+            } else {
+                species.put(name, ResourceLocation.tryParse(id));
+            }
         }
         for (Tag stored : tag.getList("KnownCreatures", Tag.TAG_COMPOUND)) {
             CompoundTag entry = (CompoundTag) stored;

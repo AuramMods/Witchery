@@ -24,6 +24,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
@@ -261,18 +262,31 @@ public final class VampireAbilitiesTests {
     @GameTest(template = "qa_coven_arena", batch = "witchery_vampire_swarm_life")
     public static void attackBatBitesAndRetainsItsRemainingOriginalLifetime(GameTestHelper helper) {
         var world = helper.getLevel();
-        var contact = new BlockPos(5, 200, 5);
-        var target = helper.spawn(EntityType.COW, contact);
+        var sample = helper.absolutePos(new BlockPos(5, 200, 5));
+        var chunk = new ChunkPos(sample);
+        var contact = Vec3.atBottomCenterOf(new BlockPos(chunk.getMiddleBlockX(), sample.getY(), chunk.getMiddleBlockZ()));
+        var target = EntityType.COW.create(world);
+        target.setPos(contact);
         target.setNoAi(true);
         target.setNoGravity(true);
-        var biter = helper.spawn(WitcheryEntities.ATTACK_BAT.get(), contact);
-        biter.setNoAi(true);
-        biter.setNoGravity(true);
-        biter.setResting(false);
-        float health = target.getHealth();
-        biter.tick();
-        helper.assertTrue(target.getHealth() == health - 4 && biter.isRemoved(),
-                "A native contact deals four magic damage and removes the bat. Health: " + target.getHealth() + ", removed: " + biter.isRemoved());
+        helper.assertTrue(world.addFreshEntity(target), "Add the cow to the contact site");
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(world.getEntity(target.getUUID()) == target,
+                "The contact target is tracked before the bat ticks")).thenExecute(() -> {
+            var biter = WitcheryEntities.ATTACK_BAT.get().create(world);
+            biter.setPos(contact);
+            biter.setNoAi(true);
+            biter.setNoGravity(true);
+            biter.setResting(false);
+            try {
+                float health = target.getHealth();
+                biter.tick();
+                helper.assertTrue(target.getHealth() == health - 4 && biter.isRemoved(),
+                        "A native contact deals four magic damage and removes the bat. Health: " + target.getHealth() + ", removed: " + biter.isRemoved());
+            } finally {
+                biter.discard();
+                target.discard();
+            }
+        }).thenSucceed();
 
         var original = WitcheryEntities.ATTACK_BAT.get().create(world);
         original.setPos(Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(6, 3, 6))));
@@ -288,7 +302,6 @@ public final class VampireAbilitiesTests {
                 "Reloaded bats keep their saved timer");
         loaded.tick();
         helper.assertTrue(loaded.isRemoved(), "Expire on the final saved tick");
-        helper.succeed();
     }
 
     @GameTest(template = "qa_coven_arena")
