@@ -36,7 +36,6 @@ import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
@@ -52,6 +51,7 @@ public final class BrewCreatureEffects {
     private static final TagKey<Block> WASTING_PLANTS = TagKey.create(Registries.BLOCK,
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "wasting_plants"));
     private static final float FROG_TONGUE_PULL = 0.15F;
+    private static final int REPULSION_START_Y = 62;
 
     private BrewCreatureEffects() {}
 
@@ -179,12 +179,22 @@ public final class BrewCreatureEffects {
     }
 
     private static void driveAway(ServerLevel level, LivingEntity target, Animal animal) {
-        int x = target.getBlockX() + (6 + level.random.nextInt(6)) * (level.random.nextBoolean() ? 1 : -1);
-        int z = target.getBlockZ() + (6 + level.random.nextInt(6)) * (level.random.nextBoolean() ? 1 : -1);
+        int x = target.getBlockX() + (level.random.nextBoolean() ? 1 : -1) * (6 + level.random.nextInt(6));
+        int z = target.getBlockZ() + (level.random.nextBoolean() ? 1 : -1) * (6 + level.random.nextInt(6));
         BlockPos column = new BlockPos(x, target.getBlockY(), z);
         if (!level.hasChunkAt(column) || !level.getWorldBorder().isWithinBounds(column)) return;
-        BlockPos feet = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, column);
-        BlockPos ground = feet.below();
+
+        int minY = level.getMinBuildHeight();
+        int maxY = level.getMaxBuildHeight();
+        // The original looked for air above Y 62, so a roof must not hide a lower pocket.
+        int start = Math.min(maxY - 1, Math.max(minY, REPULSION_START_Y) + 1);
+        var ground = new BlockPos.MutableBlockPos(x, start, z);
+        while (ground.getY() < maxY && !level.isEmptyBlock(ground)) ground.move(Direction.UP);
+        if (ground.getY() == maxY) return;
+
+        // Stand on the floor of that pocket instead of inside it or above a drop.
+        while (ground.getY() > minY && level.isEmptyBlock(ground)) ground.move(Direction.DOWN);
+        BlockPos feet = ground.above();
         if (!level.isInWorldBounds(feet) || !level.getBlockState(ground).isFaceSturdy(level, ground, Direction.UP)
                 || !level.getFluidState(feet).isEmpty()) return;
         Vec3 destination = Vec3.atBottomCenterOf(feet);

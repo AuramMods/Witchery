@@ -13,6 +13,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -23,6 +24,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -36,6 +38,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -318,6 +321,72 @@ public final class CreatureBrewTests {
                                 "Repulsion releases foreign pets and preserves the actor's pet and the bound familiar");
                     } finally {
                         pets.forEach(pet -> pet.discard());
+                    }
+                }).thenSucceed();
+    }
+
+    @GameTest(template = "qa_rite_terrain", batch = "witchery_animal_repulsion_landing", setupTicks = 5)
+    public static void animalRepulsionUsesTheLowerPocketInItsOriginalRandomColumn(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var origin = helper.absolutePos(new BlockPos(6, 4, 6)).atY(250);
+        var actor = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "BrewRepulsion"));
+        actor.setPos(Vec3.atBottomCenterOf(origin));
+        var cow = EntityType.COW.create(level);
+        var start = Vec3.atBottomCenterOf(origin.east(2));
+        cow.setPos(start);
+        cow.setNoGravity(true);
+        cow.setNoAi(true);
+        helper.assertTrue(level.addFreshEntity(cow), "Place an airborne cow whose ground navigation cannot start");
+
+        var column = origin.offset(6, 0, 9);
+        var originalBlocks = new LinkedHashMap<BlockPos, BlockState>();
+        for (int y = 54; y <= 80; y++) {
+            var pos = column.atY(y);
+            originalBlocks.put(pos, level.getBlockState(pos));
+        }
+        var repulsion = BrewMixture.from(List.of(Items.NETHER_STAR.getDefaultInstance(),
+                Items.FERMENTED_SPIDER_EYE.getDefaultInstance(), WitcheryIngredient.HEART_OF_GOLD.item().getDefaultInstance()));
+
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.getEntity(cow.getUUID()) == cow, "Track the cow"))
+                .thenExecute(() -> {
+                    try {
+                        originalBlocks.keySet().forEach(pos -> level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState()));
+                        level.setBlockAndUpdate(column.atY(61), Blocks.STONE.defaultBlockState());
+                        level.setBlockAndUpdate(column.atY(80), Blocks.STONE.defaultBlockState());
+                        cow.setOnGround(false);
+                        level.getRandom().setSeed(117);
+                        repulsion.apply(actor, actor, actor, 1, 1);
+                        helper.assertTrue(cow.position().equals(Vec3.atBottomCenterOf(column.atY(62))),
+                                "The cow lands in the first clear pocket under the roof at " + column.atY(62)
+                                        + ", actual " + cow.position());
+                        var expected = RandomSource.create(117);
+                        expected.nextBoolean();
+                        expected.nextInt(6);
+                        expected.nextBoolean();
+                        expected.nextInt(6);
+                        helper.assertTrue(level.getRandom().nextInt() == expected.nextInt(),
+                                "Selecting a column spends the original four random draws");
+
+                        cow.setPos(start);
+                        cow.setOnGround(false);
+                        for (int y = 62; y <= 70; y++) level.setBlockAndUpdate(column.atY(y), Blocks.STONE.defaultBlockState());
+                        level.getRandom().setSeed(117);
+                        repulsion.apply(actor, actor, actor, 1, 1);
+                        helper.assertTrue(cow.position().equals(Vec3.atBottomCenterOf(column.atY(71))),
+                                "A solid band ends at the first open space with room for the cow above it");
+
+                        cow.setPos(start);
+                        cow.setOnGround(false);
+                        for (int y = 55; y <= 70; y++) level.setBlockAndUpdate(column.atY(y), Blocks.AIR.defaultBlockState());
+                        level.setBlockAndUpdate(column.atY(54), Blocks.STONE.defaultBlockState());
+                        level.getRandom().setSeed(117);
+                        repulsion.apply(actor, actor, actor, 1, 1);
+                        helper.assertTrue(cow.position().equals(Vec3.atBottomCenterOf(column.atY(55))),
+                                "An open column uses its actual lower floor in 1.20.1");
+                    } finally {
+                        cow.discard();
+                        actor.discard();
+                        originalBlocks.forEach(level::setBlockAndUpdate);
                     }
                 }).thenSucceed();
     }
