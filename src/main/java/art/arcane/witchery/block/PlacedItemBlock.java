@@ -1,10 +1,12 @@
 package art.arcane.witchery.block;
 
+import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.PlacedItemBlockEntity;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -26,15 +28,20 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
+import java.util.List;
+
 public final class PlacedItemBlock extends BaseEntityBlock {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final ResourceLocation CONTENTS = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "placed_item");
     private static final VoxelShape SHAPE = box(3.2, 0, 3.2, 12.8, 0.8, 12.8);
 
     public PlacedItemBlock() {
-        super(Properties.copy(Blocks.WHITE_CARPET).noCollission().noLootTable().instabreak()
+        super(Properties.copy(Blocks.WHITE_CARPET).noCollission().instabreak()
                 .pushReaction(PushReaction.BLOCK));
         registerDefaultState(defaultBlockState().setValue(FACING, Direction.NORTH));
     }
@@ -90,12 +97,12 @@ public final class PlacedItemBlock extends BaseEntityBlock {
     }
 
     @Override
-    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState replacement, boolean moving) {
-        if (!state.is(replacement.getBlock()) && !level.isClientSide
-                && level.getBlockEntity(pos) instanceof PlacedItemBlockEntity placed) {
-            popResource(level, pos, placed.stack());
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder loot) {
+        if (loot.getOptionalParameter(LootContextParams.BLOCK_ENTITY) instanceof PlacedItemBlockEntity placed
+                && !placed.stack().isEmpty()) {
+            loot.withDynamicDrop(CONTENTS, drop -> drop.accept(placed.stack().copy()));
         }
-        super.onRemove(state, level, pos, replacement, moving);
+        return super.getDrops(state, loot);
     }
 
     public static InteractionResult placeOnAltar(UseOnContext context, ItemStack stack) {
@@ -111,7 +118,7 @@ public final class PlacedItemBlock extends BaseEntityBlock {
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
-    public static boolean place(ServerLevel level, BlockPos pos, Player player, ItemStack item) {
+    private static boolean place(ServerLevel level, BlockPos pos, Player player, ItemStack item) {
         BlockState state = WitcheryBlocks.getRequired("placeditem").get().defaultBlockState()
                 .setValue(FACING, player.getDirection().getOpposite());
         if (!level.setBlockAndUpdate(pos, state)) {
@@ -123,7 +130,7 @@ public final class PlacedItemBlock extends BaseEntityBlock {
         }
         placed.place(item);
         level.updateNeighborsAt(pos, state.getBlock());
-        item.shrink(1);
+        item.setCount(0);
         return true;
     }
 }

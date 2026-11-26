@@ -8,6 +8,7 @@ import art.arcane.witchery.block.CursedControls;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.DreamWeave;
 import art.arcane.witchery.block.PitDirtBlock;
+import art.arcane.witchery.block.PlacedItemBlock;
 import art.arcane.witchery.block.ShadedGlassBlock;
 import art.arcane.witchery.block.entity.LeechSamples;
 import art.arcane.witchery.block.WitchCrop;
@@ -37,6 +38,7 @@ import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.AlternativesEntry;
+import net.minecraft.world.level.storage.loot.entries.DynamicLoot;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount;
@@ -86,6 +88,8 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                 case "alderwooddoor", "icedoor" -> add(block, createDoorTable(block));
                 case "demonheart" -> dropOther(block, WitcheryIngredient.DEMON_HEART.item());
                 case "dreamcatcher" -> dropDreamWeave(block);
+                case "placeditem" -> add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1)).add(DynamicLoot.dynamicEntry(PlacedItemBlock.CONTENTS)))));
                 case "coffinblock" -> add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool()
                         .setRolls(ConstantValue.exactly(1)).add(LootItem.lootTableItem(WitcheryItems.getRequired("coffin").get())
                                 .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)

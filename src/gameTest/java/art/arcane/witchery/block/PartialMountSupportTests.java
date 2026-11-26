@@ -13,6 +13,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -63,6 +64,64 @@ public final class PartialMountSupportTests {
     }
 
     @GameTest(template = "qa_coven_arena")
+    public static void altarMountDropsOnlyOnHarvestOrLossOfSupport(GameTestHelper helper) {
+        var pos = helper.absolutePos(new BlockPos(4, 3, 4));
+        var level = helper.getLevel();
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.isPositionEntityTicking(pos),
+                "The chunk is tracking dropped items"))
+                .thenExecute(() -> verifyArtifactDrops(helper, pos)).thenSucceed();
+    }
+
+    private static void verifyArtifactDrops(GameTestHelper helper, BlockPos pos) {
+        var level = helper.getLevel();
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "ArtifactMount"));
+        var altar = WitcheryBlocks.getRequired("altar").get();
+        var placed = WitcheryBlocks.getRequired("placeditem").get();
+        var arthana = new ItemStack(WitcheryItems.getRequired("arthana").get());
+        arthana.setDamageValue(14);
+        arthana.getOrCreateTag().putString("MountMarker", "original item");
+        for (String operation : List.of("survival", "creative", "support", "replacement")) {
+            level.setBlockAndUpdate(pos.below(), altar.defaultBlockState());
+            useOn(player, arthana.copy(), pos.below(), Direction.UP);
+            helper.assertTrue(level.getBlockState(pos).is(placed) && player.getMainHandItem().isEmpty(),
+                    "Mount the Arthana before " + operation);
+            switch (operation) {
+                case "survival" -> helper.assertTrue(player.gameMode.destroyBlock(pos), "Survival harvest removes the mount");
+                case "creative" -> {
+                    player.gameMode.changeGameModeForPlayer(GameType.CREATIVE);
+                    helper.assertTrue(player.gameMode.destroyBlock(pos), "Creative breaking removes the mount");
+                    player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
+                }
+                case "support" -> level.setBlockAndUpdate(pos.below(), Blocks.AIR.defaultBlockState());
+                case "replacement" -> level.setBlockAndUpdate(pos, Blocks.STONE.defaultBlockState());
+            }
+            helper.assertFalse(level.getBlockState(pos).is(placed), "The mount is gone after " + operation);
+            var drops = level.getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(1));
+            if (operation.equals("survival") || operation.equals("support")) {
+                helper.assertTrue(drops.size() == 1 && drops.get(0).getItem().getCount() == 1
+                                && ItemStack.isSameItemSameTags(drops.get(0).getItem(), arthana),
+                        operation + " returns exactly the mounted item with its wear and tag");
+                drops.get(0).discard();
+            } else {
+                helper.assertTrue(drops.isEmpty(), operation + " does not drop the mounted item");
+            }
+        }
+
+        level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+        var pentacles = new ItemStack(WitcheryIngredient.KOBOLDITE_PENTACLE.item(), 4);
+        pentacles.getOrCreateTag().putString("MountMarker", "original pentacles");
+        player.gameMode.changeGameModeForPlayer(GameType.CREATIVE);
+        useOn(player, pentacles.copy(), pos.below(), Direction.UP);
+        helper.assertTrue(level.getBlockState(pos).is(placed) && player.getMainHandItem().isEmpty(),
+                "Mount the full held stack, including in creative");
+        player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
+        helper.assertTrue(player.gameMode.destroyBlock(pos), "Recover the Pentacle mount in survival");
+        var drops = level.getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(1));
+        helper.assertTrue(drops.size() == 1 && ItemStack.matches(drops.get(0).getItem(), pentacles),
+                "Harvest returns the full stack with its tag");
+    }
+
+    @GameTest(template = "qa_coven_arena")
     public static void dreamCatcherKeepsItsWeaveOnPartialWallUpdates(GameTestHelper helper) {
         var level = helper.getLevel();
         var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "WeaveMount"));
@@ -91,7 +150,10 @@ public final class PartialMountSupportTests {
     }
 
     private static void useOn(FakePlayer player, Item item, BlockPos support, Direction face) {
-        var stack = new ItemStack(item);
+        useOn(player, new ItemStack(item), support, face);
+    }
+
+    private static void useOn(FakePlayer player, ItemStack stack, BlockPos support, Direction face) {
         player.setItemInHand(InteractionHand.MAIN_HAND, stack);
         var hit = new BlockHitResult(Vec3.atCenterOf(support).relative(face, 0.5), face, support, false);
         player.gameMode.useItemOn(player, player.serverLevel(), stack, InteractionHand.MAIN_HAND, hit);

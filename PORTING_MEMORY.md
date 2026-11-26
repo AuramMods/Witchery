@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Altar mount stacks and removal (2026-11-26)
+
+- The shipped headless 0.24.1 server mounted worn, marked Arthanas using the player interaction manager. Survival breaking and support removal each returned one original stack with 14 wear. Creative breaking and direct replacement produced no item. Placing a stack of four Koboldite Pentacles emptied the player's hand, and breaking the mount in survival returned one stack of four with the original tag.
+- The preceding reobfuscated JAR loaded both original Arthanas and kept their data after a dedicated restart. It dropped their mounted item on creative breaking and did the same on direct replacement for a newly placed mount. The checked-in regression reproduced the creative drop on the preceding code.
+- The mount's loot table now reads the actual saved stack and applies the normal explosion condition. The placed tile copies the whole held stack before the placement removes it from the player's hand.
+- Clean Forge and copied Auram imported two worn Arthanas and a stack of four Pentacles from the original region. After a normal restart both retained the state and tags at all three locations. All six removal checks matched the original, and a newly placed stack of four Pentacles left the creative player's hand empty and returned intact when harvested in survival. The dedicated fixtures used Forge fake players and the ordinary interaction manager. The saved entity regions contained the four expected drops with their exact wear, count and tags.
+- Java 17 data generation, JAR reobfuscation, and all 485 local Forge GameTests passed. Both headless profiles used exact copies of `build/qa-altar-mount-drops/candidate.jar`, SHA-256 `608b1a307c00f55f29059fc507aecd7692d988b139a7dd1a084daf18fc659294`.
+
 ## Vampire blood sight after respawn (2026-11-26)
 
 - The muted clean Forge survival client looked at a villager with 180 blood for more than 120 ticks. The fixture changed that same villager to 262 while the player was on the normal death screen. The preceding package's first sample after clicking Respawn showed 180 at tick 3 and retained the old deadline at tick 123.

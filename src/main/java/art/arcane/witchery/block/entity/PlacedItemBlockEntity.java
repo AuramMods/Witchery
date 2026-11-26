@@ -23,7 +23,7 @@ public final class PlacedItemBlockEntity extends BlockEntity {
     }
 
     public void place(ItemStack item) {
-        stack = item.copyWithCount(1);
+        stack = item.copy();
         setChanged();
         if (level != null && !level.isClientSide) {
             BlockState state = getBlockState();
