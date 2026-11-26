@@ -52,9 +52,9 @@ public final class DemonModel extends EntityModel<Demon> {
         root.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(32, 0).addBox(-2, 0, -2, 4, 20, 4),
                 PartPose.offset(2, 4, 0));
         root.addOrReplaceChild("right_wing", CubeListBuilder.create().texOffs(93, 0).addBox(0, 0, 0, 14, 21, 0),
-                PartPose.offsetAndRotation(1, -8, 3, 0.3047F, -0.6698F, -0.6283F));
+                PartPose.offsetAndRotation(1, -8, 3, 0.3047198F, -0.6698132F, -0.6283185F));
         root.addOrReplaceChild("left_wing", CubeListBuilder.create().texOffs(93, 0).addBox(0, 0, 0, 14, 21, 0),
-                PartPose.offsetAndRotation(-1, -8, 3, -0.3047F, 3.8114F, 0.6283F));
+                PartPose.offsetAndRotation(-1, -8, 3, -0.3047198F, 3.811406F, 0.6283185F));
         return LayerDefinition.create(mesh, 128, 32);
     }
 

@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Boss and combat model poses (2026-11-26)
+
+- The shipped 0.24.1 client models produced 740 part samples for 90 pose cases in `build/qa-boss-poses/native/pose.log`. The cases cover idle, gait, riding, swing progress, two timed attacks, positive and negative motion, a held potion, and a powered Imp. The original attack samples use negative and positive values of the attack counter minus head yaw. Baba Yaga's original nose offset is expressed in model pixels for comparison.
+- The preceding Forge build differed in 400 of the 4,440 measured angles and pivots. The rebuilt client matched all 4,440 using a tolerance of 0.000002. Death, the Ent, and the Horned Huntsman already matched. The old Demon and Huntsman left-arm poses and the Ent's arm roll were sampled after a walking frame at the same stride. The Forge renderer derives these retained poses from the current stride.
+- The clean Forge client resolved all nine boss and creature textures after joining a dedicated survival fixture. The fixture supplied the entities and test positions. The client reported a hidden, unfocused window, zero master volume, and OpenAL No Output. The desktop monitor recorded no activation of the Java process.
+- The headless copied Auram server loaded all nine test entities after a normal restart. Their in-memory UUIDs matched the first save. Their names, positions, and UUIDs matched both entity region snapshots. Clean Forge and copied Auram used byte-identical copies of the rebuilt JAR.
+- Java 17 JAR reobfuscation and all 484 required local Forge GameTests passed. The tested `build/qa-boss-poses/candidate.jar` has SHA-256 `89274e40afdddd6bb615f362dc5390693445ef8fdf122497e9767bcf00723af5`. See `build/qa-boss-poses/comparison.txt`.
+
 ## Familiar and Mandrake client rendering (2026-11-26)
 
 - The original 0.24.1 Java 8 client model probe captured 48 cases in `build/qa-familiar-poses/native/pose.log`. It includes still air, leaf and stone perches, small horizontal and vertical movements, seated flight, and an attack. The preceding Forge client differed in 89 measured angles and pivots. The rebuilt package matched all 1,872 values across six models.

@@ -61,9 +61,9 @@ public final class LeonardModel extends HierarchicalModel<Leonard> {
         root.addOrReplaceChild("leftarm", CubeListBuilder.create().texOffs(40, 16).mirror()
                 .addBox(-1, -2, -2, 4, 12, 4), PartPose.offsetAndRotation(5, 2, 0, 0, 0, 0));
         var rightleg = root.addOrReplaceChild("rightleg", CubeListBuilder.create().texOffs(0, 16).mirror()
-                .addBox(-2, 0, -2, 4, 12, 4), PartPose.offsetAndRotation(-2, 12, 0, 0, 0, 0));
+                .addBox(-2, 0, -2, 4, 12, 4), PartPose.offset(-2, 12, 0.1F));
         var leftleg = root.addOrReplaceChild("leftleg", CubeListBuilder.create().texOffs(0, 16).mirror()
-                .addBox(-2, 0, -2, 4, 12, 4), PartPose.offsetAndRotation(2, 12, 0, 0, 0, 0));
+                .addBox(-2, 0, -2, 4, 12, 4), PartPose.offset(2, 12, 0.1F));
         leftleg.addOrReplaceChild("gownLowerLeft", CubeListBuilder.create().texOffs(21, 33).mirror()
                 .addBox(0, 12, -2.5F, 5, 11, 5), PartPose.offsetAndRotation(-2, -12, 0, 0, 0, 0));
         rightleg.addOrReplaceChild("gownLowerRight", CubeListBuilder.create().texOffs(0, 33).mirror()
@@ -78,20 +78,18 @@ public final class LeonardModel extends HierarchicalModel<Leonard> {
     public void setupAnim(Leonard leonard, float walk, float stride, float age, float yaw, float pitch) {
         neck.yRot = yaw * Mth.DEG_TO_RAD;
         neck.xRot = pitch * Mth.DEG_TO_RAD;
-        float step = Mth.cos(walk * 0.6662F) * stride;
-        float sway = Mth.sin(age * 0.067F) * 0.05F;
-        float roll = Mth.cos(age * 0.09F) * 0.05F + 0.05F;
-        body.yRot = Mth.sin(Mth.sqrt(attackTime) * Mth.TWO_PI) * 0.2F;
-        rightArm.xRot = -step + sway;
-        leftArm.xRot = step - sway;
-        rightArm.yRot = body.yRot * 3;
-        leftArm.yRot = body.yRot;
-        rightArm.zRot = roll;
-        leftArm.zRot = -roll;
-        rightLeg.xRot = step * 1.4F;
-        leftLeg.xRot = -rightLeg.xRot;
+        float cycle = walk * 0.6662F;
+        rightArm.xRot = Mth.cos(cycle + Mth.PI) * stride;
+        leftArm.xRot = Mth.cos(cycle) * stride;
+        rightLeg.xRot = Mth.cos(cycle) * 1.4F * stride;
+        leftLeg.xRot = Mth.cos(cycle + Mth.PI) * 1.4F * stride;
+        rightLeg.yRot = leftLeg.yRot = 0;
+        leftArm.zRot = 0;
+        if (riding) LegacyBipedMotion.ride(rightArm, leftArm, rightLeg, leftLeg);
+        LegacyBipedMotion.swing(body, rightArm, leftArm, neck.xRot, attackTime);
+        LegacyBipedMotion.sway(rightArm, leftArm, age);
         if (leonard.attackTicks() > 0) {
-            rightArm.xRot = -2 + 1.5F * (Math.abs(leonard.attackTicks() - 5) - 2.5F) / 2.5F;
+            rightArm.xRot = -2 + 1.5F * Mth.triangleWave(leonard.attackTicks() - yaw, 10);
         }
     }
 }

@@ -91,16 +91,20 @@ public final class LilithModel extends HierarchicalModel<Lilith> {
         head.yRot = yaw * Mth.DEG_TO_RAD;
         head.xRot = pitch * Mth.DEG_TO_RAD;
         float cycle = walk * 0.6662F;
-        float stride = Mth.cos(cycle) * distance;
-        float sway = Mth.sin(age * 0.067F) * 0.05F;
-        rightArm.xRot = -stride + sway;
-        leftArm.xRot = stride - sway;
-        rightArm.zRot = Mth.cos(age * 0.09F) * 0.05F + 0.05F;
-        leftArm.zRot = -rightArm.zRot;
-        rightLeg.xRot = Math.max(stride * 1.4F - 0.273F, -0.8F);
-        leftLeg.xRot = Math.max(-stride * 1.4F - 0.273F, -0.8F);
+        float forward = Mth.cos(cycle);
+        float backward = Mth.cos(cycle + Mth.PI);
+        rightArm.xRot = backward * distance;
+        leftArm.xRot = forward * distance;
+        rightArm.zRot = leftArm.zRot = 0;
+        rightLeg.xRot = Math.max(forward * 1.4F * distance - 0.27314404F, -0.8F);
+        leftLeg.xRot = Math.max(backward * 1.4F * distance - 0.27314404F, -0.8F);
+        rightLeg.yRot = leftLeg.yRot = 0;
         frontSkirt.xRot = Math.min(rightLeg.xRot, leftLeg.xRot);
         backSkirt.xRot = Math.max(0.2F, Math.max(rightLeg.xRot, leftLeg.xRot));
-        if (entity.attackTicks() > 0) rightArm.xRot = -2 + 1.5F * Mth.triangleWave(entity.attackTicks(), 10);
+        if (riding) LegacyBipedMotion.ride(rightArm, leftArm, rightLeg, leftLeg);
+        LegacyBipedMotion.sway(rightArm, leftArm, age);
+        if (entity.attackTicks() > 0) {
+            rightArm.xRot = -2 + 1.5F * Mth.triangleWave(entity.attackTicks() - yaw, 10);
+        }
     }
 }

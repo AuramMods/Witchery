@@ -26,8 +26,6 @@ public final class LordOfTormentModel extends EntityModel<LordOfTorment> {
     private final ModelPart rightExtraArm;
     private final ModelPart leftArm;
     private final ModelPart leftExtraArm;
-    private final ModelPart rightLeg;
-    private final ModelPart leftLeg;
     private final ModelPart leftWing;
     private final ModelPart rightWing;
 
@@ -39,8 +37,6 @@ public final class LordOfTormentModel extends EntityModel<LordOfTorment> {
         rightExtraArm = root.getChild("right_extra_arm");
         leftArm = root.getChild("left_arm");
         leftExtraArm = root.getChild("left_extra_arm");
-        rightLeg = root.getChild("right_leg");
-        leftLeg = root.getChild("left_leg");
         leftWing = root.getChild("left_wing");
         rightWing = root.getChild("right_wing");
     }
@@ -84,23 +80,31 @@ public final class LordOfTormentModel extends EntityModel<LordOfTorment> {
     public void setupAnim(LordOfTorment lord, float swing, float walk, float age, float yaw, float pitch) {
         head.yRot = yaw * Mth.DEG_TO_RAD;
         head.xRot = pitch * Mth.DEG_TO_RAD;
-        float stride = Mth.cos(swing * 0.6662F) * walk;
+        float rightStep = Mth.cos(0.6662F + Mth.PI) * walk;
+        float leftStep = Mth.cos(0.6662F) * walk;
         float wingSway = Mth.cos(age * 0.09F) * 0.3F;
-        boolean moving = lord.getDeltaMovement().horizontalDistanceSqr() > 0.001;
-        leftWing.yRot = moving ? 0.4F : -stride + wingSway;
-        rightWing.yRot = moving ? -0.4F : -stride - wingSway;
+        var motion = lord.getDeltaMovement();
+        boolean moving = motion.x > 0 || motion.z > 0;
+        leftWing.yRot = moving ? 0.4F : rightStep + wingSway;
+        rightWing.yRot = moving ? -0.4F : rightStep - wingSway;
         float armSway = Mth.cos(age * 0.09F) * 0.05F + 0.05F;
-        float attack = lord.attackTicks() > 0 ? -1.85F + Mth.sin(lord.attackTicks() * 0.3F) * 0.4F : 0;
-        rightArm.xRot = attack - stride;
-        rightExtraArm.xRot = attack - stride * 0.5F;
-        leftArm.xRot = attack + stride;
-        leftExtraArm.xRot = attack + stride * 0.5F;
-        rightArm.zRot = armSway;
+        float armBob = Mth.sin(age * 0.067F) * 0.05F;
+        rightArm.xRot = rightStep + armBob;
+        rightExtraArm.xRot = rightStep * 0.5F - armBob;
+        leftArm.xRot = leftStep - armBob;
+        leftExtraArm.xRot = leftStep * 0.5F + armBob;
         rightExtraArm.zRot = -armSway;
-        leftArm.zRot = -armSway;
         leftExtraArm.zRot = armSway;
-        rightLeg.xRot = stride * 0.5F;
-        leftLeg.xRot = -rightLeg.xRot;
+        rightArm.zRot = armSway;
+        leftArm.zRot = -armSway;
+        if (lord.attackTicks() > 0) {
+            float strike = Mth.triangleWave(lord.attackTicks() - yaw, 15);
+            rightArm.xRot = leftArm.xRot = -1.5F + 0.8F * strike;
+            leftArm.zRot = -1.5F + 1.5F * strike;
+            rightArm.zRot = -leftArm.zRot;
+            leftExtraArm.zRot = -1 + 1.5F * strike;
+            rightExtraArm.zRot = -leftExtraArm.zRot;
+        }
     }
 
     @Override

@@ -79,7 +79,7 @@ public final class BabaYagaModel extends HierarchicalModel<BabaYaga> {
         root.getAllParts().forEach(ModelPart::resetPose);
         head.yRot = yaw * Mth.DEG_TO_RAD;
         head.xRot = pitch * Mth.DEG_TO_RAD;
-        float phase = age * 0.01F * (baba.getId() % 10);
+        float phase = baba.tickCount * (0.01F * (baba.getId() % 10));
         float sway = Mth.sin(phase) * 4.5F * Mth.DEG_TO_RAD;
         float wobble = Mth.cos(phase) * 2.5F * Mth.DEG_TO_RAD;
         nose.xRot = sway;

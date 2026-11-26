@@ -40,11 +40,11 @@ public final class ImpModel extends HierarchicalModel<Imp> {
         PartDefinition head = root.addOrReplaceChild("head",
                 CubeListBuilder.create().texOffs(0, 0).addBox(-5, -8, -4, 10, 8, 10), PartPose.offset(0, 8, 0));
         head.addOrReplaceChild("left_horn", CubeListBuilder.create().texOffs(0, 21).addBox(-1, -5, -1, 2, 5, 2),
-                PartPose.offsetAndRotation(4, -5, 0, 0.409F, 0, 0.744F));
+                PartPose.offsetAndRotation(4, -5, 0, 0.4089647F, 0, 0.7435722F));
         head.addOrReplaceChild("right_horn", CubeListBuilder.create().texOffs(0, 21).addBox(-1, -5, -1, 2, 5, 2),
-                PartPose.offsetAndRotation(-4, -5, 0, 0.409F, 0, -0.744F));
+                PartPose.offsetAndRotation(-4, -5, 0, 0.4089647F, 0, -0.7435722F));
         head.addOrReplaceChild("nose", CubeListBuilder.create().texOffs(9, 21).addBox(-1, 0, -1, 2, 4, 2),
-                PartPose.offsetAndRotation(0, -4, -3, -0.967F, 0, 0));
+                PartPose.offsetAndRotation(0, -4, -3, -0.9666439F, 0, 0));
         root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 48).addBox(-4, 0, -4, 8, 9, 7),
                 PartPose.offset(0, 9, 0));
         root.addOrReplaceChild("chest", CubeListBuilder.create().texOffs(4, 41).addBox(-4, 0, -2, 6, 2, 4),
@@ -58,9 +58,9 @@ public final class ImpModel extends HierarchicalModel<Imp> {
         root.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(33, 48).addBox(-1.5F, 0, -1.5F, 3, 6, 3),
                 PartPose.offset(1.5F, 18, 0));
         root.addOrReplaceChild("right_wing", CubeListBuilder.create().texOffs(23, 21).addBox(0, 0, 0, 14, 21, 0),
-                PartPose.offsetAndRotation(-2, 10, -1, 0.305F, -0.670F, -0.628F));
+                PartPose.offsetAndRotation(-2, 10, -1, 0.3047198F, -0.6698132F, -0.6283185F));
         root.addOrReplaceChild("left_wing", CubeListBuilder.create().texOffs(23, 21).addBox(0, 0, 0, 14, 21, 0),
-                PartPose.offsetAndRotation(2, 10, -1, -0.305F, 3.811F, 0.628F));
+                PartPose.offsetAndRotation(2, 10, -1, -0.3047198F, 3.811406F, 0.6283185F));
         return LayerDefinition.create(mesh, 64, 64);
     }
 
@@ -74,24 +74,13 @@ public final class ImpModel extends HierarchicalModel<Imp> {
         root.getAllParts().forEach(ModelPart::resetPose);
         head.xRot = headPitch * Mth.DEG_TO_RAD;
         head.yRot = headYaw * Mth.DEG_TO_RAD;
-        float stride = Mth.cos(limbSwing * 0.6662F) * strength;
-        rightArm.xRot = -stride;
-        leftArm.xRot = stride;
-        rightLeg.xRot = 1.4F * stride;
-        leftLeg.xRot = -1.4F * stride;
-        if (attackTime > 0) {
-            body.yRot = Mth.sin(Mth.sqrt(attackTime) * Mth.TWO_PI) * 0.2F;
-            rightArm.yRot = body.yRot * 3;
-            leftArm.yRot = body.yRot;
-            float windup = 1.0F - (float) Math.pow(1.0F - attackTime, 4);
-            rightArm.xRot -= Mth.sin(windup * Mth.PI) * 1.2F;
-            rightArm.zRot = -0.4F * Mth.sin(attackTime * Mth.PI);
-        }
-        float sway = Mth.cos(age * 0.09F) * 0.05F + 0.05F;
-        rightArm.zRot += sway;
-        leftArm.zRot -= sway;
-        float bob = Mth.sin(age * 0.067F) * 0.05F;
-        rightArm.xRot += bob;
-        leftArm.xRot -= bob;
+        float cycle = limbSwing * 0.6662F;
+        rightArm.xRot = Mth.cos(cycle + Mth.PI) * strength;
+        leftArm.xRot = Mth.cos(cycle) * strength;
+        rightLeg.xRot = Mth.cos(cycle) * 1.4F * strength;
+        leftLeg.xRot = Mth.cos(cycle + Mth.PI) * 1.4F * strength;
+        if (riding) LegacyBipedMotion.ride(rightArm, leftArm, rightLeg, leftLeg);
+        LegacyBipedMotion.swing(body, rightArm, leftArm, head.xRot, attackTime);
+        LegacyBipedMotion.sway(rightArm, leftArm, age);
     }
 }
