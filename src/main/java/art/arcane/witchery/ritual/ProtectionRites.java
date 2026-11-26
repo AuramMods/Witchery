@@ -83,6 +83,10 @@ public final class ProtectionRites {
             this(kind, boundTarget, coven, 0, 0);
         }
 
+        public Kind kind() {
+            return kind;
+        }
+
         private Upkeep(Kind kind, @Nullable BlockPos boundTarget, int coven, int ticks, int resumeTicks) {
             this.kind = kind;
             this.boundTarget = boundTarget == null ? null : boundTarget.immutable();

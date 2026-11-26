@@ -954,6 +954,7 @@
    "item.witchery.mindrake_spawn_egg": "矿德拉草刷怪蛋",
    "item.witchery.mirror": "镜子",
    "item.witchery.mirror.bridge": "镜子已成为一道门户。",
+   "item.witchery.mirror.destination": "目的地 %s（%s、%s、%s）",
    "item.witchery.mirror.inhabited": "镜面之后似乎有什么在动。",
    "item.witchery.mirrorblock": "镜子",
    "item.witchery.mirrorface_spawn_egg": "镜中面孔刷怪蛋",

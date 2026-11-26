@@ -5,6 +5,7 @@ import net.minecraftforge.common.ForgeConfigSpec;
 public final class WitcheryClientConfig {
     public static final ForgeConfigSpec SPEC;
     public static final ForgeConfigSpec.BooleanValue ALLOW_MOD_JEI;
+    public static final ForgeConfigSpec.BooleanValue SHOW_MIRROR_DEBUG_LOCATION;
     public static final ForgeConfigSpec.BooleanValue GUI_ON_LEFT;
     public static final ForgeConfigSpec.BooleanValue SHOW_VAMPIRE_TARGET_BLOOD_TEXT;
     public static final ForgeConfigSpec.ConfigValue<Integer> BRANCH_GLYPH_SET;
@@ -17,6 +18,8 @@ public final class WitcheryClientConfig {
         ALLOW_MOD_JEI = builder
                 .comment("Add Witchery's machine recipes, crafting layouts, and item variants to JEI.")
                 .define("allowModJEI", true);
+        SHOW_MIRROR_DEBUG_LOCATION = builder.comment("Show the saved dimension and destination coordinates in Mirror item tooltips.")
+                .define("debugging", false);
         GUI_ON_LEFT = builder
                 .comment("Show the infusion charge meter on the left side of the screen.")
                 .define("guiOnLeft", true);

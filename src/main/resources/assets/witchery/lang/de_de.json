@@ -954,6 +954,7 @@
    "item.witchery.mindrake_spawn_egg": "Spawn-Ei: Minedrake",
    "item.witchery.mirror": "Spiegel",
    "item.witchery.mirror.bridge": "Der Spiegel ist zu einem Tor geworden.",
+   "item.witchery.mirror.destination": "Ziel %s (%s, %s, %s)",
    "item.witchery.mirror.inhabited": "Hinter dem Glas regt sich etwas.",
    "item.witchery.mirrorblock": "Spiegel",
    "item.witchery.mirrorface_spawn_egg": "Spawn-Ei: Spiegelgesicht",

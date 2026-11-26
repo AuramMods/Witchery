@@ -954,6 +954,7 @@
    "item.witchery.mindrake_spawn_egg": "Huevo generador: Minedrágora",
    "item.witchery.mirror": "Espejo",
    "item.witchery.mirror.bridge": "El espejo se ha convertido en un portal.",
+   "item.witchery.mirror.destination": "Destino %s (%s, %s, %s)",
    "item.witchery.mirror.inhabited": "Algo se mueve tras el cristal.",
    "item.witchery.mirrorblock": "Espejo",
    "item.witchery.mirrorface_spawn_egg": "Huevo generador: Rostro del espejo",

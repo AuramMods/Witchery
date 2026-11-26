@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Legacy configuration diagnostics (2026-11-26)
+
+- The native headless server with `TraceRites` enabled recorded each consumed Waystone Binding ingredient and the altar step's failure and refund. With the switch off it ran the same rite without the extra trace. Forge exposes `traceRites` per world and includes the dimension and glyph position in its messages.
+- Packaged clean Forge logged the offerings, 500-power debit, and completion for a bound Waystone. A second circle refunded the ingredients after the missing altar abort. A third cast of Rite of Protection entered upkeep and logged its end after the altar was removed. With the default configuration, a separate profile completed one binding and refunded another with no rite trace.
+- In isolated survival, a muted background client read the Mirror's saved `witchery:mirror` destination at `(21, 72, -42)` with `debugging` on. The default client showed the gateway text. OpenAL reported No Output in both sessions, and the focus logs never recorded either game as the foreground process.
+- Copied Auram passed the binding, refund, and upkeep checks on the same headless package. The first run stopped while setting up the altar. The successful replay explicitly cleared and rebuilt the altar and recorded its 1,000 base capacity before casting.
+- All 469 local Forge GameTests passed. The reobfuscated archive used for these checks is `build/qa-config-diagnostics/candidate.jar` with SHA-256 `4be5c8314b983631742313547712f88c7fcd698c9ae6b674c232f976f1fa458d`.
+
 ## Vanilla stacks in earlier converted saves (2026-11-26)
 
 - An earlier converted region retained a numeric Iron Sword and named Wool metadata 14 beside a current Stone stack. The previous packaged JAR loaded only the Stone from that vanilla chest. The fixture used the captured Forge item table and old-format stack data in the chest, a dropped item, and a player file.

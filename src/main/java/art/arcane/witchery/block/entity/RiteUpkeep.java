@@ -26,9 +26,16 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 interface RiteUpkeep {
+    String traceName();
+
     boolean tick(ServerLevel level, BlockPos heart, Consumer<Runnable> terrainChanges);
 
     record Ward(ProtectionRites.Upkeep progress) implements RiteUpkeep {
+        @Override
+        public String traceName() {
+            return progress.kind().name();
+        }
+
         @Override
         public boolean tick(ServerLevel level, BlockPos heart, Consumer<Runnable> terrainChanges) {
             return progress.tick(level, heart);
@@ -103,6 +110,11 @@ interface RiteUpkeep {
 
         void restoreInitiatorName(String name) {
             initiatorName = name;
+        }
+
+        @Override
+        public String traceName() {
+            return rite.toString();
         }
 
         @Override

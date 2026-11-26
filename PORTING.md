@@ -2497,6 +2497,13 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Run the packaged JAR with Industrial Foregoing and Thaumaturge. Restart the same world after switching integrations off and on. Check the Sower's sapling variant, all three protected mob tags, Thaumaturge's aspect values, and the base Witchery recipe. Upgrade a copy of the preceding build's save and verify its Brazier and Crystal Ball state.
 - [x] Verify both switches with JEI and Jade in an isolated muted client. Disable just JEI to remove Witchery's recipe views while Jade still shows cover blocks. Disable the master switch to remove the views and reveal normal Jade inspection. Re-enable both and check all five machine categories.
 
+## Legacy Configuration Diagnostics (2026-11-26)
+
+- [x] Restore `TraceRites` as `traceRites` in the world's `serverconfig/witchery-server.toml`. Compare the 0.24.1 headless trace with the packaged Forge trace for Circle Magic offerings, altar payment, completion, and refund after abort. The Forge trace identifies the dimension and Heart Glyph position. Verify that protection upkeep reports its end when the altar is removed.
+- [x] Restore the Mirror item destination tooltip under `debugging` in `config/witchery-client.toml`. Verify that the default shows the normal gateway line and that enabling the setting shows the saved dimension and three coordinates. The packaged survival clients ran with master volume zero, OpenAL No Output, and no foreground activation.
+- [x] Verify that a successful and an aborted Circle Magic cast produce no extra trace at the default setting. Run the local Java 17 reobfuscated `jar` task and all 469 Forge GameTests.
+- [x] Replay the successful binding, abort with refund, and protection upkeep on copied Auram using the same JAR and a headless dedicated server.
+
 ## Morph and Resizing Compatibility (2026-11-23)
 
 - [x] Replace the old Morph renderer exception with an optional Woodwalkers bridge. Synchronize the active shape's model, eye height, and collision when Resizing changes. Reapply the geometry when a transformed player switches shapes or returns to normal.

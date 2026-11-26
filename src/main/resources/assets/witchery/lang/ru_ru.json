@@ -954,6 +954,7 @@
    "item.witchery.mindrake_spawn_egg": "Яйцо призыва: Майндрейк",
    "item.witchery.mirror": "Зеркало",
    "item.witchery.mirror.bridge": "Зеркало превратилось в проход.",
+   "item.witchery.mirror.destination": "Назначение %s (%s, %s, %s)",
    "item.witchery.mirror.inhabited": "За стеклом что-то шевелится.",
    "item.witchery.mirrorblock": "Зеркало",
    "item.witchery.mirrorface_spawn_egg": "Яйцо призыва: Лицо в зеркале",

@@ -50,6 +50,7 @@ import art.arcane.witchery.world.WaystoneTravel;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -142,12 +143,17 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         heart.updateRedstone(server, state);
         heart.updateActiveState(server);
         if (!heart.upkeep.isEmpty()) {
-            if (heart.upkeep.removeIf(rite -> !rite.tick(server, pos, heart.terrainChanges::add))) heart.updateActiveState(server);
+            if (heart.upkeep.removeIf(rite -> {
+                if (rite.tick(server, pos, heart.terrainChanges::add)) return false;
+                heart.traceRite(server, rite.traceName(), "upkeep", "ENDED");
+                return true;
+            })) heart.updateActiveState(server);
             level.blockEntityChanged(pos);
         }
         if (heart.activeRite != null) {
+            ResourceLocation cast = heart.activeRite;
             heart.tickCast(server);
-            if (heart.cancellationPending) heart.finishCancellation(server);
+            if (heart.cancellationPending) heart.finishCancellation(server, cast);
             level.blockEntityChanged(pos);
         }
         // Moving Earth can relocate this block entity. Finish bookkeeping before it copies the heart's state.
@@ -245,6 +251,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             nextCast(level);
             return;
         }
+        traceRite(level, "unmatched", "activation", selection.failure());
         if (player != null) showRiteError(player, selection.failure());
         if (player instanceof ServerPlayer caster && selection.failure().equals(RiteActivation.NULL_FIELD_FAILURE)) {
             WitcherySounds.playLegacyPlayerCue(caster, SoundEvents.NOTE_BLOCK_SNARE.value(), SoundSource.BLOCKS, 0.5F);
@@ -291,6 +298,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         else if (!dropOffering(level, origin, returned)) return;
         offering.consume().run();
         offeringStep++;
+        traceOffering(level, stack, offering.position());
         itemOfferingEffect(level, offering.position(), usesGlyphClock());
     }
 
@@ -320,6 +328,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                     abort(level, "message.witchery.rite.missing_power");
                 } else {
                     altarPowerOffered = true;
+                    traceRite(level, activeRite, "altar power offered", rite.power());
                 }
             }
             case EFFECT -> finish(level, rite);
@@ -519,6 +528,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             abort(level, "message.witchery.rite.missing_power");
             return;
         }
+        if (altar != null) traceRite(level, activeRite, "altar power offered", rite.power());
         var directedCurse = action.directedCurse();
         if (directedCurse != null) {
             ServerPlayer caster = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
@@ -545,6 +555,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             }
             PriorIncarnation.recover(level, pos);
             sacrificed.clear();
+            traceCompletion(level);
             nextCast(level);
             return;
         }
@@ -651,6 +662,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             var recharge = RiteUpkeep.Timed.recharge(rite.id(), covenSize, initiator);
             if (!legacy || recharge.rechargeNearby(level, pos)) upkeep.add(recharge);
         }
+        traceCompletion(level);
         if (talismanPattern == 0) nextCast(level);
         if (legacy && (manifestation || infusionType > 0)) {
             WitcheryNetwork.sendInfusionRite(level, Vec3.atLowerCornerOf(pos), manifestation);
@@ -667,7 +679,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         }
     }
 
-    private static void sacrificeLiving(ServerLevel level, Mob living, boolean legacy) {
+    private void sacrificeLiving(ServerLevel level, Mob living, boolean legacy) {
         if (legacy) {
             WitcheryNetwork.sendRiteLivingOffering(level, living.position());
         } else {
@@ -675,6 +687,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             playOfferingPop(level, living.position());
         }
         living.discard();
+        traceRite(level, activeRite, "living offering", BuiltInRegistries.ENTITY_TYPE.getKey(living.getType()));
     }
 
     private static void itemOfferingEffect(ServerLevel level, Vec3 location, boolean legacy) {
@@ -740,8 +753,10 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             return;
         }
         waystoneTarget = location.position();
-        sacrificed.add(new Sacrifice(stone.stack().copyWithCount(1), BlockPos.containing(stone.position())));
+        var offered = stone.stack().copyWithCount(1);
+        sacrificed.add(new Sacrifice(offered, BlockPos.containing(origin)));
         stone.consume().run();
+        traceOffering(level, offered, origin);
         itemOfferingEffect(level, origin, usesGlyphClock());
     }
 
@@ -749,6 +764,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         storm = storm.pulse(level);
         if (storm == null) {
             sacrificed.clear();
+            traceCompletion(level);
             nextCast(level);
         }
     }
@@ -767,6 +783,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         var progress = LandscapeRites.pulse(level, heart, ready, covenSize, null, terrainChanges::add);
         if (progress != null) upkeep.add(RiteUpkeep.Timed.landscape(activeRite, covenSize, initiator, progress));
         sacrificed.clear();
+        traceCompletion(level);
         nextCast(level);
     }
 
@@ -929,6 +946,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     private void abort(ServerLevel level, String message, boolean originalSound) {
         ServerPlayer player = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
         if (player != null && player.level() == level) showRiteError(player, message);
+        if (!cancellationPending) traceRite(level, activeRite, "cast aborted", message);
         refundSacrifices(level);
         nextCast(level);
         if (cancellationPending) return;
@@ -939,10 +957,11 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         }
     }
 
-    private void finishCancellation(ServerLevel level) {
+    private void finishCancellation(ServerLevel level, ResourceLocation cast) {
         cancellationPending = false;
         // A last step may have launched upkeep. Its first pulse already ran, but it must not keep ticking.
         upkeep.clear();
+        traceRite(level, cast, "cast", "CANCELLED");
         refundSacrifices(level);
         nextCast(level);
         playOriginalRiteSound(level, getBlockPos(), SoundEvents.NOTE_BLOCK_SNARE.value());
@@ -989,6 +1008,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             initiator = null;
             covenSize = 0;
             covenSummoned = 0;
+        } else {
+            traceRite(level, activeRite, "cast", "STARTED");
         }
         stepTicks = 0;
         resumeRelativePulse = false;
@@ -1002,6 +1023,23 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         toadRainStage = -1;
         updateActiveState(level);
         setChanged();
+    }
+
+    private void traceOffering(ServerLevel level, ItemStack stack, Vec3 origin) {
+        if (!WitcheryServerConfig.TRACE_RITES.get()) return;
+        Witchery.LOGGER.info("Circle rite {} in {} at {} item offering {} distance {}",
+                activeRite, level.dimension().location(), getBlockPos().toShortString(),
+                BuiltInRegistries.ITEM.getKey(stack.getItem()), origin.distanceTo(Vec3.atLowerCornerOf(getBlockPos())));
+    }
+
+    private void traceCompletion(ServerLevel level) {
+        if (!cancellationPending) traceRite(level, activeRite, "cast", "COMPLETED");
+    }
+
+    private void traceRite(ServerLevel level, Object rite, String step, Object result) {
+        if (!WitcheryServerConfig.TRACE_RITES.get()) return;
+        Witchery.LOGGER.info("Circle rite {} in {} at {} {} {}", rite, level.dimension().location(),
+                getBlockPos().toShortString(), step, result);
     }
 
     private void updateActiveState(ServerLevel level) {

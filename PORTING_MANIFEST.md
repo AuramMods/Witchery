@@ -1775,6 +1775,12 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 
 The original `AllowModIntegration` gates `ModHook.init`. On Forge 1.20.1, `allowModIntegration` in `config/witchery-common.toml` controls the corresponding hooks as well as their contributed Thaumaturge aspect maps and Industrial Foregoing tags. The built-in `witchery:mod_integration` pack keeps a stable ID across restarts and exposes its data when integration is enabled. The client also honors `allowModJEI` in `config/witchery-client.toml` as the counterpart of `AllowModNEI`. Both options default to true. The other legacy per-mod settings have no readers outside the original configuration class. Forge's vanilla tags and cross-mod crash fixes operate independently of the switches.
 
+## Legacy Configuration
+
+The original `Config.java` has 90 individually named keys. Of these, 68 have a case-insensitive name match in the Forge configuration, nine village biome switches are generated, and `AllowModNEI` maps to `allowModJEI`. Legacy migration reads the five numeric potion, profession, and dimension settings. The six unused per-mod flags and unused `HobgoblinSpawnChance` have no gameplay readers in 0.24.1. `HobgoblinSpawnWeight` controls the spawn weight. The ten dynamically named village building groups retain their original group count, weight, and placement bounds by default.
+
+`TraceRites` maps to the world setting `traceRites`. The server records actual Circle Magic offerings and cast outcomes with the glyph position and dimension. The original `Debugging` option's Mirror tooltip maps to the client setting `debugging` and displays destinations with modern dimension IDs. Both settings default to false. See Legacy Configuration Diagnostics in `PORTING.md` for the original and packaged runtime checks.
+
 ## Worldgen Registry Touchpoints
 - World generator root: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/worldgen/WitcheryWorldGenerator.java`
 - Overworld structure handlers used by generator:

@@ -887,6 +887,7 @@
    "item.witchery.mirrorblock" : "Mirror",
    "item.witchery.mirror.inhabited" : "Something stirs behind the glass.",
    "item.witchery.mirror.bridge" : "The mirror has become a gateway.",
+   "item.witchery.mirror.destination" : "Destination %s (%s, %s, %s)",
    "message.witchery.mirror.escape_cooldown" : "The Mirror will answer again in %s seconds.",
    "message.witchery.ruby_slippers.cooldown" : "Nothing happens. Wait %s minute(s).",
    "message.witchery.chant.unknown" : "Unknown chant.",

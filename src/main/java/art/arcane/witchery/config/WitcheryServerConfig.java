@@ -9,6 +9,7 @@ import java.util.Map;
 
 public final class WitcheryServerConfig {
     public static final ForgeConfigSpec SPEC;
+    public static final ForgeConfigSpec.BooleanValue TRACE_RITES;
     public static final ForgeConfigSpec.BooleanValue ALLOW_DEATHS_HOOD_TO_FREEZE_VICTIMS;
     public static final ForgeConfigSpec.BooleanValue DOUBLE_FUME_FILTER_CHANCE;
     public static final ForgeConfigSpec.IntValue DISEASE_REMOVAL_CHANCE;
@@ -82,6 +83,8 @@ public final class WitcheryServerConfig {
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        TRACE_RITES = builder.comment("Log Circle Magic offerings, completions, and failures to the server log.")
+                .define("traceRites", false);
         DOUBLE_FUME_FILTER_CHANCE = builder
                 .comment("Increase the chance bonus from an aligned filtered fume funnel from 30% to 80%.")
                 .define("doubleFumeFilterChance", false);

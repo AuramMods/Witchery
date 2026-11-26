@@ -153,7 +153,11 @@ public final class MirrorBlockEntity extends BlockEntity {
     public static boolean carriesLink(ItemStack stack, GlobalPos room, @Nullable UUID connection) {
         return !stack.isEmpty() && stack.getItem() instanceof MirrorItem && stack.hasTag()
                 && (connection == null || stack.getTag().hasUUID("Connection") && connection.equals(stack.getTag().getUUID("Connection")))
-                && room.equals(readPosition(stack.getTag(), WitcheryDimensions.MIRROR));
+                && room.equals(itemDestination(stack));
+    }
+
+    public static @Nullable GlobalPos itemDestination(ItemStack stack) {
+        return stack.hasTag() ? readPosition(stack.getTag(), WitcheryDimensions.MIRROR) : null;
     }
 
     private static @Nullable GlobalPos readPosition(CompoundTag root, ResourceKey<Level> fallback) {

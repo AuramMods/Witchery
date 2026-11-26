@@ -2,6 +2,7 @@ package art.arcane.witchery.item;
 
 import art.arcane.witchery.block.MirrorBlock;
 import art.arcane.witchery.block.entity.MirrorBlockEntity;
+import art.arcane.witchery.config.WitcheryClientConfig;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.world.MirrorTravel;
 import net.minecraft.core.BlockPos;
@@ -55,6 +56,19 @@ public final class MirrorItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flags) {
         boolean slain = stack.hasTag() && stack.getTag().getBoolean("DemonSlain");
-        tooltip.add(Component.translatable(slain ? "item.witchery.mirror.bridge" : "item.witchery.mirror.inhabited"));
+        boolean debugging = WitcheryClientConfig.SHOW_MIRROR_DEBUG_LOCATION.get();
+        if (!slain) {
+            tooltip.add(Component.translatable("item.witchery.mirror.inhabited"));
+        } else if (!debugging) {
+            tooltip.add(Component.translatable("item.witchery.mirror.bridge"));
+        }
+        if (debugging) {
+            var destination = MirrorBlockEntity.itemDestination(stack);
+            if (destination != null) {
+                var pos = destination.pos();
+                tooltip.add(Component.translatable("item.witchery.mirror.destination",
+                        destination.dimension().location().toString(), pos.getX(), pos.getY(), pos.getZ()));
+            }
+        }
     }
 }
