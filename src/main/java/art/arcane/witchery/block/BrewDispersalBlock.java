@@ -42,6 +42,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 
 public final class BrewDispersalBlock extends LiquidBlock implements EntityBlock {
+    public static final TagKey<Block> SOURCE_REPLACEABLE =
+            TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "brew_source_replaceable"));
     public static final TagKey<Block> LIQUID_DISPLACEABLE =
             TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "brew_liquid_displaceable"));
     private static final int TICK_DELAY = 5;
@@ -128,9 +130,13 @@ public final class BrewDispersalBlock extends LiquidBlock implements EntityBlock
 
     public void release(ServerLevel level, BlockPos pos, Direction face, CompoundTag tag, BrewMixture mixture, int color,
                         @Nullable Entity caster) {
-        if (!canReplace(level, pos, false)) return;
-        if (caster instanceof Player player && WitcheryBlockBreak.isCanceled(level, pos, level.getBlockState(pos), player)) return;
-        if (WitcheryBlockPlacement.place(level, pos, defaultBlockState(), caster, face)
+        if (level.isOutsideBuildHeight(pos) || !level.hasChunkAt(pos)) return;
+        BlockState previous = level.getBlockState(pos);
+        if (caster instanceof Player player && (previous.getDestroySpeed(level, pos) < 0
+                || WitcheryBlockBreak.isCanceled(level, pos, previous, player))) return;
+        if (!previous.isAir() && !previous.is(SOURCE_REPLACEABLE)) return;
+        BlockState source = defaultBlockState();
+        if ((previous.equals(source) || WitcheryBlockPlacement.place(level, pos, source, caster, face))
                 && level.getBlockEntity(pos) instanceof BrewFluidBlockEntity fluid) {
             fluid.initialize(tag, mixture, color, caster);
         }
@@ -249,12 +255,13 @@ public final class BrewDispersalBlock extends LiquidBlock implements EntityBlock
     private boolean canFlowThrough(ServerLevel level, BlockPos pos, boolean downward) {
         if (level.isOutsideBuildHeight(pos) || !level.hasChunkAt(pos)) return false;
         BlockState state = level.getBlockState(pos);
-        return state.is(this) ? downward || state.getValue(LEVEL) > 0 : canReplace(state, true);
+        return state.is(this) ? downward || state.getValue(LEVEL) > 0 : canSpreadInto(state);
     }
 
     private boolean flowInto(ServerLevel level, BlockPos pos, int depth, BrewFluidBlockEntity source) {
-        if (!canReplace(level, pos, true)) return false;
+        if (level.isOutsideBuildHeight(pos) || !level.hasChunkAt(pos)) return false;
         BlockState displaced = level.getBlockState(pos);
+        if (!canSpreadInto(displaced)) return false;
         BlockEntity displacedEntity = displaced.hasBlockEntity() ? level.getBlockEntity(pos) : null;
         if (!level.setBlockAndUpdate(pos, defaultBlockState().setValue(LEVEL, depth))) {
             return false;
@@ -271,19 +278,14 @@ public final class BrewDispersalBlock extends LiquidBlock implements EntityBlock
         return false;
     }
 
-    private boolean canReplace(ServerLevel level, BlockPos pos, boolean spreading) {
-        if (level.isOutsideBuildHeight(pos) || !level.hasChunkAt(pos)) return false;
-        return canReplace(level.getBlockState(pos), spreading);
-    }
-
-    private boolean canReplace(BlockState state, boolean spreading) {
+    private boolean canSpreadInto(BlockState state) {
         if (gas) return state.isAir() || state.is(Blocks.SNOW);
         if (state.is(this)) return false;
         if (!state.getFluidState().isEmpty()) {
             // Disease was a displaceable block in the original, before it had a modern fluid state.
-            return spreading && state.is(WitcheryBlocks.getRequired("disease").get());
+            return state.is(WitcheryBlocks.getRequired("disease").get());
         }
-        return state.canBeReplaced() || spreading && state.is(LIQUID_DISPLACEABLE);
+        return state.canBeReplaced() || state.is(LIQUID_DISPLACEABLE);
     }
 
     private static boolean evaporates(BrewFluidBlockEntity fluid, RandomSource random) {

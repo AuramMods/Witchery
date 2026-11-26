@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Bottled brew source replacement (2026-11-26)
+
+- Compared both release methods on packaged Forge against 291 original placed block defaults. The retired Wall Generator maps to air and has no live replacement case. Across the 290 mapped blocks the preceding package differed in 43 of 580 gas and liquid outcomes. The rebuilt JAR matched all 580. The logs are in `build/qa-bottled-brew-replacement/baseline-catalog/initial.log` and `clean-catalog/initial.log` under the same directory.
+- The original server refreshed Brew Liquid at the same coordinates with a new recipe and preserved the existing tile and age. Gas could replace that liquid and created a new tile. Forge now uses a separate source-placement tag for both bottles, retains the running age on refresh, and keeps the previous recipe and state on either protection veto. Modern Soul Fire uses the Fire placement rule. Later gas and liquid spreading continue to use their existing material checks.
+- The original and rebuilt servers both spread an open gas cell east, west and north on the first update with seed 1. A Forge GameTest also checks that spreading gas fills air and snow while preserving water and grass beside it.
+- Headless clean Forge and copied Auram used redstone dispensers with supplied bottles. Gas replaced water and grass without dropping items. Liquid replaced lava, a second bottle changed its recipe and tint, and another shot preserved mature wheat. Both restarts kept those outcomes, the ordered recipes and caster. Java 17 data generation, reobfuscation, and all 535 required Forge GameTests passed. The tested `build/qa-bottled-brew-replacement/candidate.jar` has SHA-256 `8e9df0c1ed5286d3246d91d02cf908a3257e3cce7219e686b6af8eed69dc02b5`.
+
 ## Splash and bottled fluid casters (2026-11-26)
 
 - Witchery 0.24.1 credited `[Minecraft]` in both damage fields for ownerless direct and creature-thrown glancing Harm Demons. The original gas and liquid impacts called break protection and saved the same name when allowed. Gas contact had no caster when the named player was absent. Liquid contact used the world fake player. The headless reference trace is in `build/qa-bottled-brew-casters/native/verified.log`.

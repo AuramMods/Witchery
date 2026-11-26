@@ -1,0 +1,29 @@
+{
+  "values": [
+    "minecraft:water",
+    "minecraft:lava",
+    "minecraft:grass",
+    "minecraft:fern",
+    "minecraft:dead_bush",
+    "minecraft:fire",
+    "minecraft:soul_fire",
+    "minecraft:snow",
+    "minecraft:vine",
+    "witchery:spanishmoss",
+    "witchery:snowpressureplate",
+    "witchery:snowslab",
+    "witchery:snowdoubleslab",
+    "witchery:dreamcatcher",
+    "witchery:light",
+    "witchery:circle",
+    "witchery:circleglyphritual",
+    "witchery:circleglyphotherwhere",
+    "witchery:circleglyphinfernal",
+    "witchery:spiritflowing",
+    "witchery:hollowtears",
+    "witchery:disease",
+    "witchery:brew",
+    "witchery:brewliquid",
+    "witchery:csnowpressureplate"
+  ]
+}

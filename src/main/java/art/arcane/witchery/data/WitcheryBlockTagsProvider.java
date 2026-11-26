@@ -51,6 +51,7 @@ public class WitcheryBlockTagsProvider extends BlockTagsProvider {
         for (WitchCrop crop : WitchCrop.values()) {
             tag(BlockTags.CROPS).add(crop.block());
         }
+        addBrewSourceReplacements();
         addBrewLiquidDisplacements();
         Block coffin = WitcheryBlocks.getRequired("coffinblock").get();
         tag(BlockTags.BEDS).add(coffin);
@@ -92,6 +93,17 @@ public class WitcheryBlockTagsProvider extends BlockTagsProvider {
                 WitcheryBlocks.getRequired("candelabra").get(), WitcheryBlocks.getRequired("chalice").get(),
                 WitcheryBlocks.getRequired("crystalball").get(), WitcheryBlocks.getRequired("daylightcollector").get(),
                 WitcheryBlocks.getRequired("cstonepressureplate").get(), WitcheryBlocks.getRequired("shadedglass_active").get());
+    }
+
+    private void addBrewSourceReplacements() {
+        var replaceable = tag(BrewDispersalBlock.SOURCE_REPLACEABLE);
+        replaceable.add(Blocks.WATER, Blocks.LAVA, Blocks.GRASS, Blocks.FERN, Blocks.DEAD_BUSH,
+                Blocks.FIRE, Blocks.SOUL_FIRE, Blocks.SNOW, Blocks.VINE);
+        for (String id : new String[]{"spanishmoss", "snowpressureplate", "snowslab", "snowdoubleslab",
+                "dreamcatcher", "light", "circle", "circleglyphritual", "circleglyphotherwhere", "circleglyphinfernal",
+                "spiritflowing", "hollowtears", "disease", "brew", "brewliquid", "csnowpressureplate"}) {
+            replaceable.add(WitcheryBlocks.getRequired(id).get());
+        }
     }
 
     private void addBrewLiquidDisplacements() {
