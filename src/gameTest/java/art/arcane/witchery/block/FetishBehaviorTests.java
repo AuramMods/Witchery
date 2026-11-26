@@ -62,11 +62,20 @@ public final class FetishBehaviorTests {
         creatures.add(pigGroup);
         data.put("KnownCreatureTypes", creatures);
         fetish.load(data);
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
+                level.isPositionEntityTicking(helper.absolutePos(CENTER.south(3)))
+                        && level.isPositionEntityTicking(helper.absolutePos(CENTER.north(3))),
+                "The two alarm fixture positions accept ticking entities"))
+                .thenExecute(() -> exerciseScreamer(helper, fetish));
+    }
+
+    private static void exerciseScreamer(GameTestHelper helper, FetishBlockEntity fetish) {
+        var level = helper.getLevel();
         var pig = placeMob(helper, EntityType.PIG, CENTER.south(3));
         var player = actor(helper, "FetishTester");
 
-        helper.startSequence().thenIdle(24).thenExecute(() -> {
-            helper.assertTrue(level.getEntity(pig.getUUID()) == pig, "The alarm can query the trusted pig");
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.getEntity(pig.getUUID()) == pig,
+                "The alarm can query the trusted pig")).thenIdle(24).thenExecute(() -> {
             helper.assertFalse(lampLit(helper), "The legacy Pig group keeps the lamp off");
         }).thenExecute(() -> placeMob(helper, EntityType.SHEEP, CENTER.north(3)))
                 .thenWaitUntil(() -> helper.assertTrue(lampLit(helper), "The unlisted sheep lights the lamp"))

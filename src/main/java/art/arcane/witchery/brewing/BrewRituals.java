@@ -83,8 +83,8 @@ public final class BrewRituals {
             case SPLASH -> {
                 BrewTransposition.Site destination = null;
                 if (transpose && pulse == 1) {
-                    destination = reachableSite(source, origin, mixture.secondDestination(), coven, leonard);
-                    if (destination == null) yield Result.TOO_FAR;
+                    destination = boundedSite(source, origin, mixture.secondDestination());
+                    if (destination == null || !canReachDimension(source, destination.level(), leonard, coven)) yield Result.TOO_FAR;
                     loadArea(destination.level(), destination.pos(), 3);
                 }
                 yield mixture.applyRitualToBlock(level, target, coven, pulse, destination) ? Result.ONGOING : Result.COMPLETE;
@@ -113,10 +113,12 @@ public final class BrewRituals {
             return Result.TOO_FAR;
         }
         BrewTransposition.Site destination = null;
-        if (mixture.hasTransposition() || mixture.requiresInfernalCircle()) {
-            var site = reachableSite(source, origin, mixture.destination(), coven, leonard);
+        boolean transpose = mixture.hasTransposition();
+        if (transpose || mixture.requiresInfernalCircle()) {
+            var site = transpose ? reachableSite(source, origin, mixture.destination(), coven, leonard)
+                    : boundedSite(source, origin, mixture.destination());
             if (site == null || !hasRequiredCircles(mixture, site)) return Result.INVALID_CIRCLES;
-            if (mixture.hasTransposition()) destination = site;
+            if (transpose) destination = site;
         }
         if (!HunterClothingItem.resistsCurse(target) && !AreaWardBlockEntity.protectsBrew(target)
                 && !VoodooPoppetItem.deflectBrew(target)) {
@@ -127,8 +129,8 @@ public final class BrewRituals {
     }
 
     private static int nearbyCoven(ServerLevel source, BlockPos origin) {
-        AABB covenArea = new AABB(origin).inflate(6);
         Vec3 center = Vec3.atCenterOf(origin);
+        AABB covenArea = AABB.ofSize(center, 12, 12, 12);
         int coven = source.getEntitiesOfClass(CovenWitch.class, covenArea, witch -> witch.hasCovenOwner()
                 && witch.distanceToSqr(center.x, witch.getY(), center.z) <= 36).size();
         int otherPlayers = source.getEntitiesOfClass(ServerPlayer.class, covenArea, player -> !player.isSpectator()
@@ -137,20 +139,29 @@ public final class BrewRituals {
     }
 
     private static boolean canReach(ServerLevel source, ServerLevel level, double distanceSquared, boolean leonard, int coven) {
-        if (source != level) return coven >= 6 && leonard;
+        if (source != level) return canReachDimension(source, level, leonard, coven);
         if (coven >= 6) return true;
         int scale = (1 + coven) * 4;
         int distance = 2 * scale * scale;
         return distanceSquared <= (double) distance * distance;
     }
 
+    private static boolean canReachDimension(ServerLevel source, ServerLevel level, boolean leonard, int coven) {
+        return source == level || coven >= 6 && leonard;
+    }
+
     @Nullable
     private static BrewTransposition.Site reachableSite(ServerLevel source, BlockPos origin, @Nullable WaystoneItem.Location location,
                                                         int coven, boolean leonard) {
+        var site = boundedSite(source, origin, location);
+        return site != null && canReach(source, site.level(), site.pos().distSqr(origin), leonard, coven) ? site : null;
+    }
+
+    @Nullable
+    private static BrewTransposition.Site boundedSite(ServerLevel source, BlockPos origin, @Nullable WaystoneItem.Location location) {
         ServerLevel level = location == null ? source : source.getServer().getLevel(location.dimension());
         BlockPos pos = location == null ? origin : location.position();
-        if (level == null || !level.isInWorldBounds(pos) || !level.getWorldBorder().isWithinBounds(pos)
-                || !canReach(source, level, pos.distSqr(origin), leonard, coven)) return null;
+        if (level == null || !level.isInWorldBounds(pos) || !level.getWorldBorder().isWithinBounds(pos)) return null;
         return new BrewTransposition.Site(level, pos);
     }
 
