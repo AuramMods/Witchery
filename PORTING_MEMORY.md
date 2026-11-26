@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Frog's Tongue and Cursed Leaping impacts (2026-11-25)
+
+- The Witchery 0.24.1 runtime measured both Kettle splashes from the bottle's position before collision. Frog's Tongue pulled the pig inside four blocks toward the thrower with 0.4 vertical velocity and Jump Boost II for 20 ticks. The owner, a pig exactly four blocks away, and a pig above the vertical search bounds were untouched. Cursed Leaping added 1.6 vertical velocity on a direct hit and 1.28 to a glancing target four blocks away, preserving the targets' existing motion. Both received Jump Boost IV for 200 ticks. The pig at exactly five blocks was untouched.
+- The two new GameTests reproduced the displaced splash center on the previous code and passed with the correction. The muted background survival client threw both Kettle bottles. Frog's Tongue pulled the pig over one block toward the player, and Cursed Leaping lifted a cow over eight blocks and boosted a glancing pig. The cow kept its running Jump Boost IV after a dedicated restart. The client used master volume zero and OpenAL No Output and kept desktop focus.
+- The copied headless Auram server used the original Does It Tick settings and zero players. A redstone dispenser fired Cursed Leaping, applied Jump Boost IV to the nearby pig, spared the distant pig, and saved the world. Java 17 reobfuscation and all 417 local Forge GameTests passed on seed `5471593853027166409`. The package is `build/qa-movement-brew-impact/candidate.jar` with SHA-256 `d0a59e143fce1fc03e632c37e04a4de76ab9cbf8fb5988d9ef4fe394b4e361e2`. See `build/qa-movement-brew-impact/comparison.txt`.
+- The shared Cauldron splash dispatcher still uses the collision point. The original `DispersalInstant` receives the pre-collision projectile position. This also affects the Cauldron's Slimeball action and other movement recipes using that dispersal.
+
 ## Bat and owl brew cues (2026-11-25)
 
 - Witchery 0.24.1 released ten resting bats with `WITCNoDrops` from the lower corners for Brew of Bats and Bat Burst. The fixed brew sent large explosion and the cauldron brew sent poof. Both packets used width and height values of three and were centered on the release cell. The fixed brew's Slowness VI uses the projectile's position before impact for its distance and vertical query.

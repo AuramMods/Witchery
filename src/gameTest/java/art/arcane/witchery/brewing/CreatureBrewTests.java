@@ -2,6 +2,7 @@ package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.entity.ThrownBrew;
+import art.arcane.witchery.item.ThrowableBrewItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryEntities;
@@ -13,8 +14,10 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ambient.Bat;
+import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
@@ -31,6 +34,76 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class CreatureBrewTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_brew_movement")
+    public static void frogsTonguePullsFromTheOriginalSplashBounds(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var origin = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(5, 4, 5)));
+        var owner = stationaryPig(helper, origin.add(0, 0, -2));
+        var near = stationaryPig(helper, origin.add(1, 0, -3.5));
+        var atRadius = stationaryPig(helper, origin.add(0, 0, 4));
+        var above = stationaryPig(helper, origin.add(1, 2.5, 0));
+        var pigs = List.of(owner, near, atRadius, above);
+
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(pigs.stream().allMatch(pig -> level.getEntity(pig.getUUID()) == pig),
+                        "All four pigs are tracked by the level"))
+                .thenExecute(() -> {
+                    var brew = new ThrownBrew(WitcheryEntities.THROWN_BREW.get(), level);
+                    brew.setOwner(owner);
+                    brew.setPos(origin);
+                    var hit = origin.add(0, 0, 1.5);
+                    var item = (ThrowableBrewItem) WitcheryIngredient.BREW_OF_FROGS_TONGUE.item();
+                    item.impact(brew, new BlockHitResult(hit, Direction.UP, BlockPos.containing(hit).below(), false));
+                    assertJump(helper, near, 1, 20, new Vec3(-0.15F, 0.4, 1.5 * 0.15F));
+                    helper.assertTrue(List.of(owner, atRadius, above).stream()
+                                    .noneMatch(pig -> pig.hasEffect(MobEffects.JUMP)),
+                            "The owner, the radius boundary and the pig above the splash remain untouched");
+                    pigs.forEach(Pig::discard);
+                }).thenSucceed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_brew_movement")
+    public static void cursedLeapingAddsLiftFromTheOriginalSplashCenter(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var origin = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(5, 4, 5)));
+        var direct = stationaryPig(helper, origin.add(0, 0, 1.5));
+        var glancing = stationaryPig(helper, origin.add(0, 0, -4));
+        var atRadius = stationaryPig(helper, origin.add(0, 0, 5));
+        var pigs = List.of(direct, glancing, atRadius);
+        var motion = new Vec3(0.125, 0.25, -0.2);
+
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(pigs.stream().allMatch(pig -> level.getEntity(pig.getUUID()) == pig),
+                        "All three pigs are tracked by the level"))
+                .thenExecute(() -> {
+                    var brew = new ThrownBrew(WitcheryEntities.THROWN_BREW.get(), level);
+                    brew.setPos(origin);
+                    direct.setDeltaMovement(motion);
+                    glancing.setDeltaMovement(motion);
+                    var item = (ThrowableBrewItem) WitcheryIngredient.BREW_OF_CURSED_LEAPING.item();
+                    item.impact(brew, new EntityHitResult(direct));
+                    assertJump(helper, direct, 3, 200, motion.add(0, 1.6, 0));
+                    assertJump(helper, glancing, 3, 200, motion.add(0, 1.28, 0));
+                    helper.assertTrue(!atRadius.hasEffect(MobEffects.JUMP), "The radius boundary is excluded");
+                    pigs.forEach(Pig::discard);
+                }).thenSucceed();
+    }
+
+    private static Pig stationaryPig(GameTestHelper helper, Vec3 pos) {
+        var pig = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(5, 4, 5));
+        pig.setNoGravity(true);
+        pig.setPos(pos);
+        return pig;
+    }
+
+    private static void assertJump(GameTestHelper helper, Pig pig, int amplifier, int ticks, Vec3 velocity) {
+        var jump = pig.getEffect(MobEffects.JUMP);
+        helper.assertTrue(jump != null && jump.getAmplifier() == amplifier && jump.getDuration() == ticks,
+                "The pig gets Jump Boost with the original level and duration");
+        helper.assertTrue(pig.getDeltaMovement().distanceToSqr(velocity) < 1.0E-12,
+                "The pig gets the original motion vector");
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_brew_summon_cues")
     public static void batBrewsUseTheOriginalReleaseCornerAndSlownessOrigin(GameTestHelper helper) {
         var level = helper.getLevel();

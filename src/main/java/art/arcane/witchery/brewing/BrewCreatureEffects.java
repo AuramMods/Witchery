@@ -46,6 +46,8 @@ import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.common.util.FakePlayer;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 public final class BrewCreatureEffects {
     private static final TagKey<Block> WASTING_PLANTS = TagKey.create(Registries.BLOCK,
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "wasting_plants"));
@@ -193,26 +195,29 @@ public final class BrewCreatureEffects {
 
     public static void frogsTongue(ThrownBrew brew, HitResult hit) {
         if (!(brew.level() instanceof ServerLevel level) || !(brew.getOwner() instanceof LivingEntity thrower)) return;
-        Vec3 impact = hit.getLocation();
-        for (LivingEntity victim : level.getEntitiesOfClass(LivingEntity.class, BrewImpacts.splashBounds(brew, impact, 4),
-                entity -> entity != thrower && entity.isAlive() && entity.distanceToSqr(impact) < 16
-                        && entity.getType() != EntityType.ENDER_DRAGON
-                        && entity.getType() != WitcheryEntities.all().get("hornedhuntsman").get())) {
+        for (LivingEntity victim : projectileSplashTargets(level, brew, 4)) {
+            if (victim == thrower || !victim.isAlive() || victim.getType() == EntityType.ENDER_DRAGON
+                    || victim.getType() == WitcheryEntities.all().get("hornedhuntsman").get()) continue;
             Vec3 difference = thrower.position().subtract(victim.position());
-            move(victim, new Vec3(difference.x * 0.15, 0.4, difference.z * 0.15));
+            move(victim, new Vec3(difference.x * 0.15F, 0.4, difference.z * 0.15F));
             victim.addEffect(new MobEffectInstance(MobEffects.JUMP, 20, 1), brew.getEffectSource());
         }
     }
 
     public static void cursedLeaping(ThrownBrew brew, HitResult hit) {
         if (!(brew.level() instanceof ServerLevel level)) return;
-        Vec3 impact = hit.getLocation();
-        for (LivingEntity victim : level.getEntitiesOfClass(LivingEntity.class, BrewImpacts.splashBounds(brew, impact, 5),
-                entity -> entity.isAlive() && entity.distanceToSqr(impact) < 25)) {
-            double lift = 1.6 * (direct(hit, victim) ? 1 : 1 - Math.sqrt(victim.distanceToSqr(impact)) / 20);
+        for (LivingEntity victim : projectileSplashTargets(level, brew, 5)) {
+            if (!victim.isAlive()) continue;
+            double lift = 1.6 * (direct(hit, victim) ? 1 : 1 - Math.sqrt(victim.distanceToSqr(brew)) / 20);
             victim.addEffect(new MobEffectInstance(MobEffects.JUMP, 200, 3), brew.getEffectSource());
             move(victim, victim.getDeltaMovement().add(0, lift, 0));
         }
+    }
+
+    private static List<LivingEntity> projectileSplashTargets(ServerLevel level, ThrownBrew brew, double radius) {
+        // These fixed brews measure from the projectile's position before collision.
+        return level.getEntitiesOfClass(LivingEntity.class, brew.getBoundingBox().inflate(radius, 2, radius),
+                candidate -> candidate.distanceToSqr(brew) < radius * radius);
     }
 
     public static void hitchcock(ThrownBrew brew, HitResult hit) {
@@ -246,8 +251,7 @@ public final class BrewCreatureEffects {
         WitcheryNetwork.sendBrewBatBurst(level, release, true);
         Vec3 impact = brew.position();
         double radius = enhanced ? 4 : 3;
-        for (LivingEntity victim : level.getEntitiesOfClass(LivingEntity.class, brew.getBoundingBox().inflate(radius, 2, radius),
-                candidate -> candidate.distanceToSqr(impact) < radius * radius)) {
+        for (LivingEntity victim : projectileSplashTargets(level, brew, radius)) {
             int ticks = splashTicks(hit, victim, impact, radius, 100);
             if (ticks > 0) {
                 victim.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, ticks, 5), brew.getEffectSource());
