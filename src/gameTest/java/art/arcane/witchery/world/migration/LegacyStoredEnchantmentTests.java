@@ -86,12 +86,59 @@ public final class LegacyStoredEnchantmentTests {
         helper.succeed();
     }
 
+    @GameTest(template = "qa_coven_arena")
+    public static void earlierPortChestsRepairVanillaStacksWithoutReplacingModernData(GameTestHelper helper) throws Exception {
+        var oldPort = TagParser.parseTag("""
+                {xPos:0,zPos:0,block_entities:[{id:"minecraft:chest",x:1,y:4,z:1,Items:[
+                  {id:267s,Damage:27s,Slot:0b,Count:1b,tag:{Fixture:"numeric",
+                    display:{Name:"Legacy blade",Lore:["Forged before the port"]},ench:[{id:16s,lvl:3s}]}},
+                  {id:"minecraft:iron_sword",Damage:27s,Slot:4b,Count:1b,tag:{Damage:8,Fixture:"mixed",
+                    display:{Name:'{"text":"Modern blade","color":"aqua"}',Lore:['{"text":"Still blue","color":"aqua"}']},
+                    Enchantments:[{id:"minecraft:sharpness",lvl:3s}],ench:[{id:16s,lvl:1s},{id:34s,lvl:2s}]}},
+                  {id:"minecraft:wool",Damage:14s,Slot:8b,Count:3b},
+                  {id:"minecraft:netherite_sword",Slot:12b,Count:1b,tag:{Damage:7,Fixture:"current"}}]}]}
+                """);
+        oldPort.putInt("DataVersion", SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+        var currentItem = oldPort.getList("block_entities", Tag.TAG_COMPOUND).getCompound(0)
+                .getList("Items", Tag.TAG_COMPOUND).getCompound(3).copy();
+        var repaired = upgrade(helper, oldPort);
+        var items = repaired.getList("block_entities", Tag.TAG_COMPOUND).getCompound(0).getList("Items", Tag.TAG_COMPOUND);
+        var original = ItemStack.of(items.getCompound(0));
+        helper.assertTrue(original.is(Items.IRON_SWORD) && original.getDamageValue() == 27
+                        && original.getHoverName().getString().equals("Legacy blade")
+                        && original.getTag().getString("Fixture").equals("numeric")
+                        && EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SHARPNESS, original) == 3
+                        && original.getTag().getCompound("display").getList("Lore", Tag.TAG_STRING).getString(0)
+                            .contains("Forged before the port"),
+                "Recover a worn, named and enchanted vanilla sword from its original numeric stack");
+        var mixed = ItemStack.of(items.getCompound(1));
+        helper.assertTrue(mixed.is(Items.IRON_SWORD) && mixed.getDamageValue() == 8
+                        && mixed.getTag().getString("Fixture").equals("mixed")
+                        && "{\"text\":\"Modern blade\",\"color\":\"aqua\"}".equals(
+                            mixed.getTag().getCompound("display").getString("Name"))
+                        && "{\"text\":\"Still blue\",\"color\":\"aqua\"}".equals(
+                            mixed.getTag().getCompound("display").getList("Lore", Tag.TAG_STRING).getString(0))
+                        && EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SHARPNESS, mixed) == 3
+                        && EnchantmentHelper.getItemEnchantmentLevel(Enchantments.UNBREAKING, mixed) == 2,
+                "Keep explicit current wear, styled text and enchantments when the original fields are also present");
+        helper.assertTrue(ItemStack.of(items.getCompound(2)).is(Items.RED_WOOL)
+                        && items.getCompound(2).getByte("Count") == 3
+                        && items.getCompound(2).getByte("Slot") == 8
+                        && currentItem.equals(items.getCompound(3)),
+                "Flatten a legacy wool subtype while preserving its count, slot and adjacent current stack");
+        var reopened = upgrade(helper, repaired);
+        helper.assertTrue(items.equals(reopened.getList("block_entities", Tag.TAG_COMPOUND)
+                .getCompound(0).getList("Items", Tag.TAG_COMPOUND)), "Repeated repair leaves the inventory stable");
+        helper.succeed();
+    }
+
     private static CompoundTag upgrade(GameTestHelper helper, CompoundTag chunk) throws Exception {
         var root = Files.createTempDirectory("witchery-stored-enchantments");
         var level = helper.getLevel();
         try {
             var snapshot = TagParser.parseTag("""
-                    {ItemData:[{K:"\u0002witchery:arthana",V:4096},{K:"\u0002minecraft:enchanted_book",V:403}]}
+                    {ItemData:[{K:"\u0002witchery:arthana",V:4096},{K:"\u0002minecraft:enchanted_book",V:403},
+                    {K:"\u0002minecraft:iron_sword",V:267},{K:"\u0002minecraft:wool",V:35}]}
                     """);
             NbtIo.writeCompressed(snapshot, root.resolve("witchery-legacy-ids.dat").toFile());
             try (var storage = new ChunkStorage(root.resolve("region"), level.getServer().getFixerUpper(), true)) {

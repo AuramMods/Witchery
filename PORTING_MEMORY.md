@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Vanilla stacks in earlier converted saves (2026-11-26)
+
+- An earlier converted region retained a numeric Iron Sword and named Wool metadata 14 beside a current Stone stack. The previous packaged JAR loaded only the Stone from that vanilla chest. The fixture used the captured Forge item table and old-format stack data in the chest, a dropped item, and a player file.
+- Normal loads now use vanilla's item data fixer for residual vanilla stacks, as well as the existing Witchery item mappings. Current nested wear, formatted display text and enchantment levels take precedence in mixed records. The same repair applies to parked Dream inventories and pending death recovery.
+- The rebuilt JAR retained the sword's wear, name, lore, Sharpness III and marker, and the wool's subtype, quantity, and slot. A muted background survival client logged in holding the recovered sword. After a dedicated restart the client rejoined with both player stacks and picked up the separate recovered sword through ordinary player contact.
+- The first implementation applied the vanilla fixer twice to first-time player imports and erased wear in four fixtures. Native player loading now keeps the original fields for the later vanilla pass. A separate packaged profile imported a native Forge region with the same sword and wool and retained both after an ordinary headless restart.
+- Copied Auram recovered the chest and dropped sword. It also converted the named original-format Biomes O' Plenty Fir stack to two modern Fir Saplings with the same name. Both survival client processes used OpenAL No Output and stayed in the background. The tested reobfuscated JAR is `build/qa-mixed-vanilla/candidate.jar` with SHA-256 `8e799866389d5d171a364db6d0537c00d4bde802d3f077cd35d97820367858e3`.
+- All 469 local Forge GameTests passed. The new case verifies that a copied chest retains mixed-format item wear, styled text and current enchantments, converts the old wool subtype, and stays stable on a second load. The existing native Dream, retained inventory, Prior Incarnation and cursed item cases all passed again.
+
 ## Cauldron effect attribution (2026-11-26)
 
 - The headless 0.24.1 server exposed a pig to Undeadbane through a gas ritual, an ownerless liquid cell, and an ownerless gas cell. Forge's damage event identified its fake player for the first two routes and no attacker for the gas cell.

@@ -251,7 +251,8 @@ public final class LegacyWorldIds {
         }
 
         upgradeItems(player);
-        repairStoredItems(player, fixer);
+        // The native player and standalone inventory fixes still need their original vanilla fields.
+        repairStoredItems(player, fixer, false);
         upgradeUntypedItems(retainedInventory, fixer, from, to);
         upgradeUntypedItems(dreamSession, fixer, from, to);
         upgradeUntypedItems(expiredDrops, fixer, from, to);
@@ -261,8 +262,7 @@ public final class LegacyWorldIds {
         for (Tag entry : inventory) {
             var stack = (CompoundTag) entry;
             if (hasLegacyStackEncoding(stack)) {
-                upgradeItems(stack);
-                upgradeUntypedItems(stack, fixer, -1, to);
+                upgradeUntypedItems(stack, fixer, to, to);
             }
         }
     }
@@ -290,20 +290,25 @@ public final class LegacyWorldIds {
     }
 
     public void repairStoredItems(Tag value, DataFixer fixer) {
+        repairStoredItems(value, fixer, true);
+    }
+
+    private void repairStoredItems(Tag value, DataFixer fixer, boolean repairVanilla) {
         if (value instanceof ListTag list) {
-            for (Tag entry : list) repairStoredItems(entry, fixer);
+            for (Tag entry : list) repairStoredItems(entry, fixer, repairVanilla);
         } else if (value instanceof CompoundTag compound) {
+            int currentVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
             // Both legacy and current item stacks store Count as a byte. Some tiles have their own integer Count.
-            if (compound.contains("Count", Tag.TAG_BYTE) && hasLegacyStackEncoding(compound) && upgradeStack(compound)) {
-                var tag = compound.getCompound("tag");
-                upgradeItemDisplay(tag.getCompound("display"), false);
-                upgradeEnchantments(tag, "ench", "Enchantments");
-                upgradeEnchantments(tag, "StoredEnchantments", "StoredEnchantments");
+            if (compound.contains("Count", Tag.TAG_BYTE) && hasLegacyStackEncoding(compound)) {
+                if (repairVanilla) {
+                    upgradeUntypedStack(compound, fixer, currentVersion, currentVersion);
+                } else if (upgradeStack(compound)) {
+                    upgradeStackTags(compound, true, false);
+                }
             } else {
                 upgradeItemBinding(compound);
             }
             String id = compound.getString("id");
-            int currentVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
             upgradeMerchantItems(compound, id, fixer, currentVersion, currentVersion);
             if (compound.get("Brew") instanceof CompoundTag brew) {
                 if (id.equals("witchery:droplet")) {
@@ -324,7 +329,7 @@ public final class LegacyWorldIds {
                 }
             }
             // Descend into any recovered bottles as well as the other nested item bindings.
-            for (String key : compound.getAllKeys()) repairStoredItems(compound.get(key), fixer);
+            for (String key : compound.getAllKeys()) repairStoredItems(compound.get(key), fixer, repairVanilla);
         }
     }
 
@@ -378,37 +383,60 @@ public final class LegacyWorldIds {
     void upgradeUntypedItems(Tag value, DataFixer fixer, int from, int to) {
         if (value instanceof CompoundTag compound) {
             for (String key : compound.getAllKeys()) upgradeUntypedItems(compound.get(key), fixer, from, to);
-            if (!compound.contains("Count", Tag.TAG_ANY_NUMERIC)) return;
-            // A converted chunk can still contain an original stack in a Witchery-only field.
-            boolean partiallyConverted = from >= 100 && hasLegacyStackEncoding(compound);
-            if (partiallyConverted) upgradeStack(compound);
-            ResourceLocation id = compound.contains("id", Tag.TAG_ANY_NUMERIC)
-                    ? vanillaItems.get(compound.getInt("id") & 0xFFFF) : ResourceLocation.tryParse(compound.getString("id"));
-            if (id == null) return;
-            boolean witcheryItem = id.getNamespace().equals(Witchery.MODID);
-            if (!witcheryItem && !id.getNamespace().equals(ResourceLocation.DEFAULT_NAMESPACE)) return;
-            if (!witcheryItem && (from < 100 || partiallyConverted)) {
-                // Vanilla's chunk fixer cannot see containers outside its typed schema.
-                var named = compound.copy();
-                named.putString("id", id.toString());
-                if (fixer.update(References.ITEM_STACK, new Dynamic<>(NbtOps.INSTANCE, named), partiallyConverted ? -1 : from, to)
-                        .getValue() instanceof CompoundTag fixed) {
-                    // Untyped chunk inventories receive only the first vanilla data-fixer pass.
-                    if (to < ITEM_LORE_COMPONENT_VERSION) {
-                        upgradeItemLore(fixed.getCompound("tag").getCompound("display"), true);
-                    }
-                    // Keep the slot and remaining custom data when an item fix removes or moves a field.
-                    for (String key : Set.copyOf(compound.getAllKeys())) compound.remove(key);
-                    compound.merge(fixed);
-                }
-            }
-            var tag = compound.getCompound("tag");
-            if (witcheryItem || from >= 100) upgradeItemDisplay(tag.getCompound("display"), from < 100);
-            upgradeEnchantments(tag, "ench", "Enchantments");
-            upgradeEnchantments(tag, "StoredEnchantments", "StoredEnchantments");
+            if (compound.contains("Count", Tag.TAG_ANY_NUMERIC)) upgradeUntypedStack(compound, fixer, from, to);
         } else if (value instanceof ListTag list) {
             for (Tag entry : list) upgradeUntypedItems(entry, fixer, from, to);
         }
+    }
+
+    private void upgradeUntypedStack(CompoundTag stack, DataFixer fixer, int from, int to) {
+        // Full chunk and entity migrations skip old stacks once their containing records have a modern version.
+        boolean partiallyConverted = from >= 100 && hasLegacyStackEncoding(stack);
+        boolean mapped = partiallyConverted && upgradeStack(stack);
+        ResourceLocation id = stack.contains("id", Tag.TAG_ANY_NUMERIC)
+                ? vanillaItems.get(stack.getInt("id") & 0xFFFF) : ResourceLocation.tryParse(stack.getString("id"));
+        if (id == null) return;
+        boolean witcheryItem = id.getNamespace().equals(Witchery.MODID);
+        boolean vanillaItem = id.getNamespace().equals(ResourceLocation.DEFAULT_NAMESPACE);
+        if (!vanillaItem && !witcheryItem && !mapped) return;
+        if (vanillaItem && !mapped && (from < 100 || partiallyConverted)) {
+            var named = stack.copy();
+            named.putString("id", id.toString());
+            if (fixer.update(References.ITEM_STACK, new Dynamic<>(NbtOps.INSTANCE, named), partiallyConverted ? -1 : from, to)
+                    .getValue() instanceof CompoundTag fixed) {
+                if (partiallyConverted) {
+                    restoreMixedVanillaStackTags(stack.getCompound("tag"), fixed);
+                } else if (to < ITEM_LORE_COMPONENT_VERSION) {
+                    // Untyped chunk inventories receive only the first vanilla data-fixer pass.
+                    upgradeItemLore(fixed.getCompound("tag").getCompound("display"), true);
+                }
+                for (String key : Set.copyOf(stack.getAllKeys())) stack.remove(key);
+                stack.merge(fixed);
+            }
+        }
+        upgradeStackTags(stack, witcheryItem || from >= 100, from < 100);
+    }
+
+    private static void upgradeStackTags(CompoundTag stack, boolean upgradeDisplay, boolean originalFormat) {
+        var tag = stack.getCompound("tag");
+        if (upgradeDisplay) upgradeItemDisplay(tag.getCompound("display"), originalFormat);
+        upgradeEnchantments(tag, "ench", "Enchantments");
+        upgradeEnchantments(tag, "StoredEnchantments", "StoredEnchantments");
+    }
+
+    private static void restoreMixedVanillaStackTags(CompoundTag original, CompoundTag fixed) {
+        if (original.isEmpty()) return;
+        var tag = fixed.getCompound("tag");
+        // The old fixer assumes top-level Damage and plain display text are the only sources.
+        if (original.contains("Damage", Tag.TAG_ANY_NUMERIC)) tag.put("Damage", original.get("Damage").copy());
+        if (original.contains("display", Tag.TAG_COMPOUND)) tag.put("display", original.getCompound("display").copy());
+        var enchantments = original.copy();
+        upgradeEnchantments(enchantments, "ench", "Enchantments");
+        upgradeEnchantments(enchantments, "StoredEnchantments", "StoredEnchantments");
+        for (String key : List.of("ench", "Enchantments", "StoredEnchantments")) {
+            if (enchantments.contains(key, Tag.TAG_LIST)) tag.put(key, enchantments.get(key));
+        }
+        fixed.put("tag", tag);
     }
 
     private static boolean hasLegacyStackEncoding(CompoundTag stack) {
