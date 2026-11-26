@@ -354,7 +354,7 @@ public final class BrewTerrain {
         boolean replacingDispersal = old.getBlock() instanceof BrewDispersalBlock brew && (state.isAir()
                 || state.is(WitcheryBlocks.getRequired("perpetualice").get())
                 || !brew.isGas() && state.is(Blocks.ICE));
-        if ((old.hasBlockEntity() && !replacingDispersal) || !canEdit(owner, level, pos, old)) return false;
+        if ((old.hasBlockEntity() && !replacingDispersal) || !canEdit(owner, level, pos, old, replacingDispersal)) return false;
         boolean changed = state.isAir() ? level.setBlockAndUpdate(pos, state)
                 : WitcheryBlockPlacement.place(level, pos, state, owner, face);
         if (!changed) return false;
@@ -376,8 +376,13 @@ public final class BrewTerrain {
     }
 
     static boolean canEdit(@Nullable Entity owner, ServerLevel level, BlockPos pos, BlockState old) {
+        return canEdit(owner, level, pos, old, false);
+    }
+
+    private static boolean canEdit(@Nullable Entity owner, ServerLevel level, BlockPos pos, BlockState old,
+                                   boolean replacingDispersal) {
         if (!level.isInWorldBounds(pos) || !level.getWorldBorder().isWithinBounds(pos)
-                || old.getDestroySpeed(level, pos) < 0) return false;
+                || !replacingDispersal && old.getDestroySpeed(level, pos) < 0) return false;
         return !(owner instanceof Player player) || level.mayInteract(player, pos)
                 && (old.isAir() || !WitcheryBlockBreak.isCanceled(level, pos, old, player));
     }

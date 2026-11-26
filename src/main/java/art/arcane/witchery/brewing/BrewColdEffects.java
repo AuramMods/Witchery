@@ -93,21 +93,18 @@ final class BrewColdEffects {
 
     static void shell(ServerLevel level, BlockPos center, int strength, @Nullable Player caster) {
         Player actor = caster == null ? FakePlayerFactory.getMinecraft(level) : caster;
-        int radius = strength + (strength > 3 ? 1 : 0);
+        int radius = strength + (strength > 3 ? 2 : 1);
         BlockState ice = WitcheryBlocks.getRequired("perpetualice").get().defaultBlockState();
-        for (BlockPos offset : IceShell.outline(radius)) {
+        for (BlockPos offset : IceShell.outline(radius - 1)) {
             BlockPos pos = center.offset(offset);
             if (level.getBlockState(pos).canBeReplaced()) BrewTerrain.setBlock(actor, level, pos, ice, Direction.UP);
         }
-        var gas = WitcheryBlocks.getRequired("brewgas").get();
-        var liquid = WitcheryBlocks.getRequired("brewliquid").get();
-        for (BlockPos pos : BlockPos.betweenClosed(center.offset(-radius, -radius, -radius), center.offset(radius, radius, radius))) {
-            if (pos.distSqr(center) >= radius * radius) continue;
+        IceShell.forEachDrainCell(level, center, radius, ice, pos -> {
             BlockState state = level.getBlockState(pos);
-            if (state.is(Blocks.WATER) || state.is(gas) || state.is(liquid)) {
+            if (state.is(Blocks.WATER) || state.getBlock() instanceof BrewDispersalBlock) {
                 BrewTerrain.setBlock(actor, level, pos, Blocks.AIR.defaultBlockState(), Direction.UP);
             }
-        }
+        });
     }
 
     static void wetResistantTarget(ServerLevel level, BlockPos pos, @Nullable Player caster) {

@@ -3,16 +3,19 @@ package art.arcane.witchery.ritual;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public final class IceShell {
+    private static final int[] SCAN_DIRECTIONS = {1, -1};
+
     private IceShell() {}
 
     static int radius(int coven) {
@@ -25,7 +28,13 @@ public final class IceShell {
         BlockState ice = WitcheryBlocks.getRequired("perpetualice").get().defaultBlockState();
         draw(level, center, radius, ice, ice, caster);
         draw(level, center, radius - 2, Blocks.AIR.defaultBlockState(), ice, caster);
-        if (radius == radius(coven)) drain(level, center, radius, caster);
+        if (radius == radius(coven)) {
+            forEachDrainCell(level, center, radius, ice, pos -> {
+                if (level.getBlockState(pos).is(Blocks.WATER)) {
+                    LandscapeRites.replace(level, pos, Blocks.AIR.defaultBlockState(), caster);
+                }
+            });
+        }
     }
 
     private static void draw(ServerLevel level, BlockPos center, int radius, BlockState output,
@@ -37,7 +46,7 @@ public final class IceShell {
     }
 
     public static Set<BlockPos> outline(int radius) {
-        Set<BlockPos> points = new HashSet<>();
+        Set<BlockPos> points = new LinkedHashSet<>();
         int error = 1 - radius;
         for (int x = radius, y = 0; x >= y; y++) {
             int circleError = error;
@@ -56,9 +65,9 @@ public final class IceShell {
     }
 
     private static void addSigns(Set<BlockPos> points, int x, int y, int z) {
-        for (int signX : new int[]{-1, 1}) {
-            for (int signY : new int[]{-1, 1}) {
-                for (int signZ : new int[]{-1, 1}) {
+        for (int signZ : SCAN_DIRECTIONS) {
+            for (int signY : SCAN_DIRECTIONS) {
+                for (int signX : SCAN_DIRECTIONS) {
                     points.add(new BlockPos(signX * x, signY * y, signZ * z));
                 }
             }
@@ -71,11 +80,34 @@ public final class IceShell {
                 || state.is(BlockTags.SMALL_FLOWERS) || state.is(Blocks.CACTUS) || state.is(Blocks.DEAD_BUSH) || state.is(shell.getBlock());
     }
 
-    private static void drain(ServerLevel level, BlockPos center, int radius, @Nullable ServerPlayer caster) {
-        BlockPos offset = new BlockPos(radius, radius, radius);
-        for (BlockPos point : BlockPos.betweenClosed(center.subtract(offset), center.offset(offset))) {
-            if (point.distSqr(center) < radius * radius && level.getBlockState(point).is(Blocks.WATER)) {
-                LandscapeRites.replace(level, point, Blocks.AIR.defaultBlockState(), caster);
+    public static void forEachDrainCell(ServerLevel level, BlockPos center, int radius, BlockState shell,
+                                        Consumer<BlockPos> drain) {
+        for (int dy : SCAN_DIRECTIONS) {
+            for (int step = 0, y = center.getY() + Math.min(dy, 0); step <= radius; step++, y += dy) {
+                if (level.getBlockState(new BlockPos(center.getX(), y, center.getZ())).is(shell.getBlock())) break;
+                drainSlice(level, center, radius, shell, drain, y);
+            }
+        }
+    }
+
+    private static void drainSlice(ServerLevel level, BlockPos center, int radius, BlockState shell,
+                                   Consumer<BlockPos> drain, int y) {
+        for (int dx : SCAN_DIRECTIONS) {
+            for (int step = 0, x = center.getX() + Math.min(dx, 0); step <= radius; step++, x += dx) {
+                // The original uses the X step as the absolute Y of this stop check.
+                if (level.getBlockState(new BlockPos(x, step, center.getZ())).is(shell.getBlock())) break;
+                drainRow(level, center.getZ(), radius, shell, drain, x, y);
+            }
+        }
+    }
+
+    private static void drainRow(ServerLevel level, int centerZ, int radius, BlockState shell,
+                                 Consumer<BlockPos> drain, int x, int y) {
+        for (int dz : SCAN_DIRECTIONS) {
+            for (int step = 0, z = centerZ + Math.min(dz, 0); step <= radius; step++, z += dz) {
+                BlockPos pos = new BlockPos(x, y, z);
+                if (level.getBlockState(pos).is(shell.getBlock())) break;
+                drain.accept(pos);
             }
         }
     }

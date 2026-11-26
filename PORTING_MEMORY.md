@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Frozen Heart and circle Ice Shell drainage (2026-11-25)
+
+- The native Frozen Heart shell stopped its rows at existing Perpetual Ice. At strength three it froze active Brew Gas on the three-block rim, removed interior Brew Gas and Brew Liquid, and drained open water at distance four. Water behind the ice and one cell beyond the scan survived. The Forge placement and break paths preserve vetoed brew payloads.
+- The native radius-eight rite drained water from the west edge at distance nine, left the east edge at distance nine, and stopped at the planted Perpetual Ice in the south row. Native snow blocks on the rim froze and a separate supported snow layer stayed intact. The original X scan also stopped at ice placed at absolute Y 1 on its second east column. The rite drains vanilla water and preserves active Brew Gas.
+- The reobfuscated clean Forge client threw a supplied strength-three Frozen Heart brew at a pig and activated the circle with the Seer Stone, three supplied offerings and two fixture coven records. The circle preserved the contained brew cloud. The following dedicated restart retained both shells, the original water boundaries, the snow layer and the emerald in the chest. The client stayed hidden and unfocused with master volume zero and OpenAL No Output.
+- Copied Auram resumed a stage-three legacy Ice Shell with zero players, drained the exposed west water, preserved the protected water and active gas, and saved. Java 17 reobfuscation and all 440 local Forge GameTests passed on seed `5471593853027166409`. The package is `build/qa-ice-shell-drain/candidate.jar` with SHA-256 `e21820db8c5e129be081fd45c6ebeae93bcdcdf6b67ae7914ed1cf5eb73dab6a`. See `build/qa-ice-shell-drain/comparison.txt`.
+
 ## Brew of Ice and Cauldron Cold (2026-11-25)
 
 - The Witchery 0.24.1 fixed brew froze Hollow Tears, Flowing Spirit and Brew Liquid in a connected line through distance three. Vanilla water at distance four, Disease and Brew Gas survived. The Icy Needle used its separate strength-scaled sphere and froze one adjacent cell beyond a source within that sphere. Forge uses the shared original depth-first order. A placement veto preserves the active Brew Liquid block entity and its saved payload and stops that branch.
