@@ -78,6 +78,7 @@ public final class WitcheryNetwork {
     private static final int LEGACY_SMALL_SLIME_SOUND_ID = 14;
     private static final int LEGACY_ENDERMAN_TELEPORT_SOUND_ID = 16;
     private static final int LEGACY_GHAST_FIREBALL_SOUND_ID = 19;
+    private static final int LEGACY_WITHER_SPAWN_SOUND_ID = 20;
     private static final int LEGACY_SKELETON_HORSE_DEATH_SOUND_ID = 21;
     private static final int LEGACY_ZOMBIE_INFECT_SOUND_ID = 24;
     private static final int LEGACY_DRAGON_GROWL_SOUND_ID = 27;
@@ -358,6 +359,10 @@ public final class WitcheryNetwork {
     public static void sendCauldronRitualComplete(ServerLevel level, BlockPos pos) {
         sendParticlesAround(level, LEGACY_SPELL_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID,
                 Vec3.atBottomCenterOf(pos).add(0, 0.6, 0), 0.5, 1, 8);
+    }
+
+    public static void sendCauldronSummon(ServerLevel level, Vec3 center, double height) {
+        sendParticlesAround(level, LEGACY_EXPLOSION_PARTICLE_ID, LEGACY_WITHER_SPAWN_SOUND_ID, center, 1, height, 16);
     }
 
     public static void sendCauldronRitualFailure(ServerLevel level, BlockPos pos, int color) {

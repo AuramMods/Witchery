@@ -806,6 +806,27 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
 
     private boolean completeRitual(ServerLevel server, BlockPos pos, CauldronRitualRecipe recipe,
                                    @Nullable AltarBlockEntity altar, int power) {
+        if (recipe.legacy() && recipe.summon() != null) {
+            if (altar != null && !altar.consumePower(power)) return false;
+            BrewRituals.summonFromCauldron(server, pos, recipe.summon());
+        } else if (!produceRitualResult(server, pos, recipe, altar, power)) {
+            return false;
+        }
+        clearMixture();
+        if (recipe.legacy()) {
+            WitcheryNetwork.sendCauldronRitualComplete(server, pos);
+        } else {
+            boolean summoned = recipe.summon() != null;
+            server.sendParticles(summoned ? ParticleTypes.EXPLOSION : ParticleTypes.POOF,
+                    pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 8, 0.25, 0.2, 0.25, 0.02);
+            server.playSound(null, pos, summoned ? SoundEvents.WITHER_SPAWN : SoundEvents.FIRE_EXTINGUISH,
+                    SoundSource.BLOCKS, 0.7F, summoned ? 1 : 1.3F);
+        }
+        return true;
+    }
+
+    private boolean produceRitualResult(ServerLevel server, BlockPos pos, CauldronRitualRecipe recipe,
+                                        @Nullable AltarBlockEntity altar, int power) {
         Entity result;
         if (recipe.summon() != null) {
             var summon = recipe.summon().create(server);
@@ -826,16 +847,6 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
             result.discard();
             return false;
         }
-        clearMixture();
-        if (recipe.legacy()) {
-            WitcheryNetwork.sendCauldronRitualComplete(server, pos);
-            return true;
-        }
-        boolean summoned = recipe.summon() != null;
-        server.sendParticles(summoned ? ParticleTypes.EXPLOSION : ParticleTypes.POOF,
-                pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 8, 0.25, 0.2, 0.25, 0.02);
-        server.playSound(null, pos, summoned ? SoundEvents.WITHER_SPAWN : SoundEvents.FIRE_EXTINGUISH,
-                SoundSource.BLOCKS, 0.7F, summoned ? 1 : 1.3F);
         return true;
     }
 

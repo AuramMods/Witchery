@@ -17,7 +17,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -41,6 +43,25 @@ public final class BrewRituals {
     public static boolean leonardNearby(ServerLevel level, BlockPos cauldron) {
         return !level.getEntitiesOfClass(Leonard.class, AABB.ofSize(Vec3.atLowerCornerOf(cauldron), 32, 32, 32),
                 entity -> entity.isAlive() && entity.getHealth() > 1).isEmpty();
+    }
+
+    public static void summonFromCauldron(ServerLevel level, BlockPos cauldron, EntityType<?> type) {
+        // The original zero-range summon still consumes two draws before checking clearance.
+        level.getRandom().nextInt(1);
+        level.getRandom().nextInt(1);
+        var surface = cauldron.above().mutable();
+        int ceiling = Math.min(surface.getY() + 8, level.getMaxBuildHeight() - 1);
+        while (surface.getY() < ceiling && !level.isEmptyBlock(surface)) surface.move(Direction.UP);
+        while (surface.getY() > level.getMinBuildHeight() && level.isEmptyBlock(surface)) surface.move(Direction.DOWN);
+        if (surface.getY() + 2 >= level.getMaxBuildHeight()
+                || !level.isEmptyBlock(surface.above()) || !level.isEmptyBlock(surface.above(2))) return;
+
+        var summon = type.create(level);
+        if (summon == null) return;
+        summon.moveTo(Vec3.atBottomCenterOf(surface.above()).add(0, 0.05, 0));
+        if (summon instanceof Mob mob) mob.setPersistenceRequired();
+        if (summon instanceof Leonard leonard) leonard.beginSummoning();
+        if (level.addFreshEntity(summon)) WitcheryNetwork.sendCauldronSummon(level, summon.position(), summon.getBbHeight());
     }
 
     public static Result pulse(ServerLevel source, BlockPos origin, BrewMixture mixture, CompoundTag brew,

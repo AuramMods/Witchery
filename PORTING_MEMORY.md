@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Leonard's cauldron clearance and fixed recipe registry (2026-11-26)
+
+- The original server exported all 27 fixed recipes. The reobfuscated JAR matches every trigger, listed offering, base power, result quantity and variant, and recipe precedence. The comparison translates renamed vanilla items, old Witchery ingredient subtypes, Brew Fuel tiers and Endless Water wear.
+- The original headless cauldron ran six casts. Leonard appeared at offsets of 1.05 with open air and under a two-block gap, 3.05 above a short obstruction, and 10.05 at the search limit. A one-block gap and a taller obstruction produced no boss. All six casts spent 14,839 altar power without chalk circles and left the cauldron empty. Each successful arrival had 150 health and 150 entrance ticks.
+- The preceding package spawned at offset 1.00 and sent only the common cauldron fizz. It left the four obstructed batches pending. The rebuilt package matched all six casts and the ten original cue payloads on clean Forge and copied Auram. Ordinary dedicated restarts retained four Leonard UUIDs and all six empty cauldrons on each profile.
+- Java 17 JAR reobfuscation and all 486 local Forge GameTests passed. The tested `build/qa-leonard-cauldron/candidate.jar` has SHA-256 `6df9c179e2ce663172976de679aee5db0a3d8c3b650a8e099d29f463d6ee0267`. The headless fixture supplied the water, altar charge and offerings, ran the normal cauldron offering and tick methods, and traced outgoing cue construction on the server.
+
 ## Altar mount stacks and removal (2026-11-26)
 
 - The shipped headless 0.24.1 server mounted worn, marked Arthanas using the player interaction manager. Survival breaking and support removal each returned one original stack with 14 wear. Creative breaking and direct replacement produced no item. Placing a stack of four Koboldite Pentacles emptied the player's hand, and breaking the mount in survival returned one stack of four with the original tag.

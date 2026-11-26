@@ -1,6 +1,7 @@
 package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.WitchesCauldronBlock;
 import art.arcane.witchery.block.entity.AltarBlockEntity;
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
 import art.arcane.witchery.entity.Leonard;
@@ -232,9 +233,7 @@ public final class CauldronMisfortuneTests {
         var altar = placeAltar(helper);
         var pig = helper.spawn(EntityType.PIG, CAULDRON.south());
         setSmallCircle(helper, pos, WitcheryBlocks.getRequired("circleglyphritual").get());
-        prepareCast(helper, pos, "summon_leonard", new ItemStack(Items.NETHER_WART),
-                WitcheryIngredient.TEAR_OF_THE_GODDESS.item().getDefaultInstance(),
-                WitcheryIngredient.DIAMOND_VAPOUR.item().getDefaultInstance(), new ItemStack(Items.DIAMOND), new ItemStack(Items.NETHER_STAR));
+        prepareLeonard(helper, pos);
         var level = helper.getLevel();
         var surroundings = new AABB(pos).inflate(2);
         helper.startSequence().thenWaitUntil(() -> {
@@ -246,6 +245,48 @@ public final class CauldronMisfortuneTests {
                     "Risk is based on Leonard's presence before the ritual produces its result");
             summoned.forEach(Entity::discard);
         }).thenSucceed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_cauldron_summon_clearance")
+    public static void leonardCastUsesTheOriginalColumnAndSpendsPowerWhenBlocked(GameTestHelper helper) {
+        BlockPos pos = placeCauldron(helper);
+        var altar = placeAltar(helper);
+        var level = helper.getLevel();
+        var area = new AABB(pos).inflate(1, 12, 1);
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.isPositionEntityTicking(pos),
+                "The summoning chunk is tracking bosses")).thenExecute(() -> {
+            for (var fixture : List.of(new SummonColumn(0, 0, 1), new SummonColumn(0, 3, 1),
+                    new SummonColumn(2, 5, 3), new SummonColumn(0, 2, 0),
+                    new SummonColumn(9, 0, 10), new SummonColumn(10, 0, 0))) {
+                for (int height = 1; height <= 11; height++) {
+                    var block = height <= fixture.tower() || height == fixture.roof() ? Blocks.STONE : Blocks.AIR;
+                    level.setBlockAndUpdate(pos.above(height), block.defaultBlockState());
+                }
+                prepareLeonard(helper, pos);
+                finishCast(helper, pos, altar, 20_000, 512);
+                helper.assertTrue(altar.power() == 5_161 && !cauldron(helper, pos).saveWithFullMetadata().contains("Ritual")
+                                && level.getBlockState(pos).getValue(WitchesCauldronBlock.WATER) == 0,
+                        "A completed Leonard cast spends 14,839 and empties the cauldron for " + fixture);
+                var summoned = level.getEntitiesOfClass(Leonard.class, area);
+                helper.assertTrue(summoned.size() == (fixture.spawnHeight() == 0 ? 0 : 1),
+                        "The original clearance determines whether Leonard appears for " + fixture);
+                for (var boss : summoned) {
+                    helper.assertTrue(Math.abs(boss.getY() - pos.getY() - fixture.spawnHeight() - 0.05) < 1.0E-6
+                                    && boss.getHealth() == 150 && boss.saveWithoutId(new CompoundTag()).getInt("Invul") == 150,
+                            "Leonard starts at the original height, health and entrance duration for " + fixture);
+                    boss.discard();
+                }
+            }
+        }).thenSucceed();
+    }
+
+    private record SummonColumn(int tower, int roof, int spawnHeight) {}
+
+    private static void prepareLeonard(GameTestHelper helper, BlockPos pos) {
+        prepareCast(helper, pos, "summon_leonard", new ItemStack(Items.NETHER_WART),
+                WitcheryIngredient.TEAR_OF_THE_GODDESS.item().getDefaultInstance(),
+                WitcheryIngredient.DIAMOND_VAPOUR.item().getDefaultInstance(), new ItemStack(Items.DIAMOND),
+                new ItemStack(Items.NETHER_STAR));
     }
 
     private static BlockPos placeCauldron(GameTestHelper helper) {
