@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Dispenser curse attribution and protection (2026-11-26)
+
+- Witchery 0.24.1 launched an ownerless triggered brew from a downward-facing dispenser. Its impact posted a break check for `[Minecraft]` at the cell above the plate. A veto kept the ordinary plate. An accepted dispenser shot and a separate creature-owned shot both armed the plate and saved `Thrower: "[Minecraft]"`. The exact trace is in `build/qa-dispenser-curse-caster/native/verified.log`.
+- Both new regressions failed on the preceding Forge build. The modern arming path now resolves a player or Forge's world fake player when the projectile hits. The redstone fixture vetoes one conversion in the break event and another in the placement event. It verifies an ordinary plate after either veto and checks the saved actor and original mixture on success. The dedicated fixture also exercises the existing modern spawn protection with a disposable operator record.
+- Headless clean Forge and copied Auram both dispensed supplied brew bottles on redstone pulses. The protected plate stayed ordinary and the unprotected one saved two charges, ordered ingredients, `[Minecraft]`, and its canonical UUID through dedicated restarts. Java 17 data generation, reobfuscation, and all 530 required Forge GameTests passed locally. The tested `build/qa-dispenser-curse-caster/candidate.jar` has SHA-256 `d0689259e667c5308005a2fd70ee193bba01457fed1d7e3577922f298501112d`.
+
 ## Thrown brew control arming (2026-11-26)
 
 - The original Witchery 0.24.1 server ray found the pressure plate's top outline. A directly struck plain lever and a plate beside the hit stayed ordinary. A new adjacent lever took the first impact while the struck plate stayed ordinary. A repeat increased the lever's charges to two and armed the plate with one. An entity impact in the cursed plate's cell increased its count from one to three. Bedrock at the first position prevented the conversion. See `build/qa-thrown-curse-arming/native/reference.log`.

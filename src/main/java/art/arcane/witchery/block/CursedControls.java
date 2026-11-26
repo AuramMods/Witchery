@@ -33,6 +33,7 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraftforge.common.util.FakePlayerFactory;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
@@ -79,26 +80,27 @@ public final class CursedControls {
 
     public static void impact(ServerLevel level, HitResult hit, CompoundTag brew, BrewMixture mixture, int color,
                               @Nullable Entity thrower) {
+        Player caster = thrower instanceof Player player ? player : FakePlayerFactory.getMinecraft(level);
         if (hit.getType() == HitResult.Type.BLOCK && hit instanceof BlockHitResult block) {
             Direction face = block.getDirection();
             BlockPos direct = block.getBlockPos();
-            arm(level, direct.relative(face), direct, face, brew, mixture, color, thrower);
+            arm(level, direct.relative(face), direct, face, brew, mixture, color, caster);
         } else if (hit instanceof EntityHitResult entity) {
             BlockPos pos = entity.getEntity().blockPosition();
-            arm(level, pos, pos, Direction.UP, brew, mixture, color, thrower);
+            arm(level, pos, pos, Direction.UP, brew, mixture, color, caster);
         }
     }
 
     private static void arm(ServerLevel level, BlockPos adjacent, BlockPos direct, Direction face, CompoundTag brew,
-                            BrewMixture mixture, int color, @Nullable Entity thrower) {
-        if (!canChange(level, adjacent, thrower)) return;
+                            BrewMixture mixture, int color, Player caster) {
+        if (!canChange(level, adjacent, caster)) return;
 
         BlockState neighbor = level.getBlockState(adjacent);
         Kind neighborKind = kindOf(neighbor);
         if (neighbor.getBlock() instanceof Control) {
-            charge(level, adjacent, brew, mixture, color, thrower);
+            charge(level, adjacent, brew, mixture, color, caster);
         } else if (neighborKind != null && neighborKind.armsBesideImpact()) {
-            replace(level, adjacent, face, neighbor, neighborKind, brew, mixture, color, thrower);
+            replace(level, adjacent, face, neighbor, neighborKind, brew, mixture, color, caster);
             return;
         }
 
@@ -108,38 +110,38 @@ public final class CursedControls {
         if (kind == null || kind.armsBesideImpact() && !cursed) return;
         boolean door = kind == Kind.WOODEN_DOOR;
         BlockPos base = door ? lowerDoor(direct, state) : direct;
-        if (!base.equals(adjacent) && !canChange(level, base, thrower)) return;
-        if (door && !base.above().equals(adjacent) && !canChange(level, base.above(), thrower)) return;
+        if (!base.equals(adjacent) && !canChange(level, base, caster)) return;
+        if (door && !base.above().equals(adjacent) && !canChange(level, base.above(), caster)) return;
         if (cursed) {
-            charge(level, base, brew, mixture, color, thrower);
+            charge(level, base, brew, mixture, color, caster);
         } else {
-            replace(level, base, face, state, kind, brew, mixture, color, thrower);
+            replace(level, base, face, state, kind, brew, mixture, color, caster);
         }
     }
 
     private static void replace(ServerLevel level, BlockPos pos, Direction face, BlockState state, Kind kind,
-                                CompoundTag brew, BrewMixture mixture, int color, @Nullable Entity thrower) {
+                                CompoundTag brew, BrewMixture mixture, int color, Player caster) {
         Block changed = kind.cursed();
         if (kind == Kind.WOODEN_DOOR) {
-            if (!swapDoor(level, pos, kind.original(), changed, thrower, face)) return;
+            if (!swapDoor(level, pos, kind.original(), changed, caster, face)) return;
         } else {
             BlockState matching = changed.withPropertiesOf(state);
             BlockState replacement = kind == Kind.STONE_BUTTON || kind == Kind.WOODEN_BUTTON
                     ? matching.setValue(BlockStateProperties.POWERED, false) : matching;
             // A powered control's normal removal notifies its support even while Forge captures snapshots.
             int flags = Block.UPDATE_ALL | Block.UPDATE_MOVE_BY_PISTON;
-            if (!WitcheryBlockPlacement.placeTogether(level, thrower, face,
+            if (!WitcheryBlockPlacement.placeTogether(level, caster, face,
                     () -> level.setBlock(pos, replacement, flags))) return;
             state.onRemove(level, pos, replacement, false);
             scheduleRelease(level, pos, replacement, kind);
         }
-        charge(level, pos, brew, mixture, color, thrower);
+        charge(level, pos, brew, mixture, color, caster);
     }
 
     private static void charge(ServerLevel level, BlockPos pos, CompoundTag brew, BrewMixture mixture, int color,
-                               @Nullable Entity thrower) {
+                               Player caster) {
         if (level.getBlockEntity(pos) instanceof CursedControlBlockEntity control) {
-            control.charge(brew, mixture, color, thrower);
+            control.charge(brew, mixture, color, caster);
         }
     }
 
@@ -152,11 +154,11 @@ public final class CursedControls {
         return null;
     }
 
-    private static boolean canChange(ServerLevel level, BlockPos pos, @Nullable Entity thrower) {
-        return level.isInWorldBounds(pos) && level.getWorldBorder().isWithinBounds(pos)
-                && level.getBlockState(pos).getDestroySpeed(level, pos) >= 0
-                && (!(thrower instanceof Player player) || level.mayInteract(player, pos)
-                && !WitcheryBlockBreak.isCanceled(level, pos, level.getBlockState(pos), player));
+    private static boolean canChange(ServerLevel level, BlockPos pos, Player caster) {
+        if (!level.isInWorldBounds(pos) || !level.getWorldBorder().isWithinBounds(pos)) return false;
+        BlockState state = level.getBlockState(pos);
+        return state.getDestroySpeed(level, pos) >= 0 && level.mayInteract(caster, pos)
+                && !WitcheryBlockBreak.isCanceled(level, pos, state, caster);
     }
 
     private static void activated(Level level, BlockPos pos, Entity target, Kind kind) {

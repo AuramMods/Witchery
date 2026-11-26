@@ -3,6 +3,7 @@ package art.arcane.witchery.brewing;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.CursedControls;
 import art.arcane.witchery.block.entity.CursedControlBlockEntity;
+import art.arcane.witchery.item.BrewBottleItem;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryItems;
@@ -21,6 +22,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.block.entity.DispenserBlockEntity;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.BlockHitResult;
@@ -211,6 +214,88 @@ public final class TriggeredBrewTests {
         helper.startSequence().thenWaitUntil(() -> helper.assertTrue(bottle.isRemoved(), "The thrown bottle lands"))
                 .thenExecute(() -> helper.assertTrue(curseCount(helper, pos) == 1,
                         "The blow strikes the plate's outline above the support")).thenSucceed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_triggered_brew_dispenser")
+    public static void dispenserUsesTheWorldFakePlayerForProtectionAndTheSavedCurse(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var breakVeto = helper.absolutePos(new BlockPos(3, 7, 5));
+        var placementVeto = helper.absolutePos(new BlockPos(5, 7, 5));
+        var allowed = helper.absolutePos(new BlockPos(7, 7, 5));
+        var targets = List.of(breakVeto, placementVeto, allowed);
+        var actor = FakePlayerFactory.getMinecraft(level);
+        var breaks = new ArrayList<BlockEvent.BreakEvent>();
+        var placements = new ArrayList<BlockEvent.EntityPlaceEvent>();
+        Consumer<BlockEvent.BreakEvent> protectBreak = event -> {
+            if (event.getLevel() != level || !targets.contains(event.getPos())
+                    && !targets.contains(event.getPos().below())) return;
+            breaks.add(event);
+            if (event.getPos().equals(breakVeto.above())) event.setCanceled(true);
+        };
+        Consumer<BlockEvent.EntityPlaceEvent> protectPlacement = event -> {
+            if (event.getLevel() != level || !targets.contains(event.getPos())) return;
+            placements.add(event);
+            if (event.getPos().equals(placementVeto)) event.setCanceled(true);
+        };
+        var brew = new ItemStack(WitcheryItems.getRequired("brewbottle").get());
+        brew.setTag(brewTag());
+        MinecraftForge.EVENT_BUS.addListener(protectBreak);
+        MinecraftForge.EVENT_BUS.addListener(protectPlacement);
+        for (var target : targets) {
+            var outlet = target.above(2);
+            level.setBlockAndUpdate(target.below(), Blocks.STONE.defaultBlockState());
+            level.setBlockAndUpdate(target, Blocks.STONE_PRESSURE_PLATE.defaultBlockState());
+            level.setBlockAndUpdate(outlet, Blocks.DISPENSER.defaultBlockState().setValue(DispenserBlock.FACING, Direction.DOWN));
+            ((DispenserBlockEntity) level.getBlockEntity(outlet)).setItem(0, brew.copy());
+            level.setBlockAndUpdate(outlet.above(), Blocks.REDSTONE_BLOCK.defaultBlockState());
+        }
+        helper.runAfterDelay(14, () -> {
+            MinecraftForge.EVENT_BUS.unregister(protectBreak);
+            MinecraftForge.EVENT_BUS.unregister(protectPlacement);
+            helper.assertTrue(targets.stream().allMatch(target -> level.getBlockEntity(target.above(2))
+                            instanceof DispenserBlockEntity dispenser && dispenser.getItem(0).isEmpty()),
+                    "Redstone launches one supplied bottle from each dispenser");
+            helper.assertTrue(breaks.size() == 5 && breaks.stream().allMatch(event -> event.getPlayer() == actor),
+                    "The world fake player checks the struck face and each eligible plate");
+            helper.assertTrue(placements.size() == 2 && placements.stream().allMatch(event -> event.getEntity() == actor
+                            && event.getPlacedBlock().is(CursedControls.Kind.STONE_PLATE.cursed())),
+                    "The world fake player submits the attempted placements");
+            helper.assertTrue(level.getBlockState(breakVeto).is(Blocks.STONE_PRESSURE_PLATE)
+                            && level.getBlockState(placementVeto).is(Blocks.STONE_PRESSURE_PLATE)
+                            && level.getBlockEntity(breakVeto) == null && level.getBlockEntity(placementVeto) == null,
+                    "Both vetoes leave ordinary plates without curse data");
+            var control = (CursedControlBlockEntity) level.getBlockEntity(allowed);
+            var saved = control.saveWithoutMetadata();
+            helper.assertTrue(saved.getInt("Count") == 1 && saved.getUUID("ThrowerUUID").equals(actor.getUUID())
+                            && saved.getString("Thrower").equals(actor.getScoreboardName()) && saved.getCompound("Effect").equals(brewTag()),
+                    "The accepted plate saves its recipe and the world's canonical fake player");
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_triggered_brew_nonplayer")
+    public static void triggeredBottleFromACreatureCreditsTheWorldFakePlayer(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(5, 6, 5));
+        level.setBlockAndUpdate(pos.below(), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(pos, Blocks.STONE_PRESSURE_PLATE.defaultBlockState());
+        var creature = EntityType.PIG.create(level);
+        var bottle = WitcheryEntities.THROWN_BREW.get().create(level);
+        bottle.setOwner(creature);
+        var item = new ItemStack(WitcheryItems.getRequired("brewbottle").get());
+        item.setTag(brewTag());
+        bottle.setItem(item);
+        try {
+            ((BrewBottleItem) item.getItem()).impact(level, bottle,
+                    new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false));
+            var control = (CursedControlBlockEntity) level.getBlockEntity(pos);
+            helper.assertTrue(control.saveWithoutMetadata().getUUID("ThrowerUUID").equals(FakePlayerFactory.getMinecraft(level).getUUID()),
+                    "A creature's triggered curse saves the world's fake player");
+        } finally {
+            bottle.discard();
+            creature.discard();
+        }
+        helper.succeed();
     }
 
     private static int curseCount(GameTestHelper helper, BlockPos pos) {
