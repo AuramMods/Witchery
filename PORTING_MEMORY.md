@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Brew Liquid displacement and drops (2026-11-26)
+
+- The original 0.24.1 server reported displacement for 291 placed default blocks across vanilla and Witchery. All 290 mapped live defaults match on packaged Forge. The retired Wall Generator maps to air. The native active Shaded Glass reverted before it could be sampled. The raw registry comparison is in `build/qa-brew-liquid-displacement-final/native/catalog.log` and `clean-qualified-catalog/initial.log` under the same directory.
+- The original and rebuilt servers washed out a Torch, mature Wheat, Cobweb, planted Flower Pot and powered Lever. They produced the corresponding items and the wire beside the Lever fell from 15 to 0. Wheat seed counts follow the respective version's loot rolls. Drops use the modern block loot table with an empty tool, with the original one-String Cobweb drop supplied directly. The grouped displacement tag keeps solid flowering leaves out of the flower families. Spreading Brew Liquid can also replace Disease.
+- The native and packaged route checks choose the shorter path through an existing flowing cell without rewriting it. The adjacent source is excluded from lateral path selection. Direct releases continue to check source placement separately.
+- Both original flow and catalog evidence used headless servers. The packaged fixtures forced a test chunk and advanced one ordinary block update per input before restarting. The projectile flight regression now starts above the surrounding terrain so its enhanced projectile can travel beyond the GameTest structure.
+- Local Java 17 data generation, JAR reobfuscation, and all 523 required Forge GameTests passed. The exact JAR passed headless clean Forge and copied Auram. Both restarts kept the marked Torch and String drops, the two liquid cells and their color and recipe data, and the unpowered wire. The tested `build/qa-brew-liquid-displacement-final/candidate-final.jar` has SHA-256 `5c1bed911070efd21979bacc620106bee2a7efca45cf131667d94d604c63482c`.
+
 ## Cauldron action inventory and liquid terrain contact (2026-11-26)
 
 - The running 0.24.1 registry classified all 184 brew keys. The 169 mixing keys map to 168 modern inputs with the established Dead Bush and Tall Grass overlap. The existing comparison still matches the declared costs, capacities and effect durations. The manifest identifies the modern path for each action family. The broader runtime comparisons remain in the release checklist.

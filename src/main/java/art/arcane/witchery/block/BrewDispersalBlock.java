@@ -1,19 +1,25 @@
 package art.arcane.witchery.block;
 
+import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.BrewFluidBlockEntity;
 import art.arcane.witchery.brewing.BrewMixture;
 import art.arcane.witchery.event.WitcheryBlockPlacement;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
+import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryFluids;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -34,6 +40,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 
 public final class BrewDispersalBlock extends LiquidBlock implements EntityBlock {
+    public static final TagKey<Block> LIQUID_DISPLACEABLE =
+            TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "brew_liquid_displaceable"));
     private static final int TICK_DELAY = 5;
     // The original liquid used six quanta, with level zero reserved for the source.
     private static final int MAX_LIQUID_LEVEL = 5;
@@ -118,7 +126,7 @@ public final class BrewDispersalBlock extends LiquidBlock implements EntityBlock
 
     public void release(ServerLevel level, BlockPos pos, Direction face, CompoundTag tag, BrewMixture mixture, int color,
                         @Nullable Entity caster) {
-        if (!canReplace(level, pos)) return;
+        if (!canReplace(level, pos, false)) return;
         if (WitcheryBlockPlacement.place(level, pos, defaultBlockState(), caster, face)
                 && level.getBlockEntity(pos) instanceof BrewFluidBlockEntity fluid) {
             fluid.initialize(tag, mixture, color, caster);
@@ -199,7 +207,7 @@ public final class BrewDispersalBlock extends LiquidBlock implements EntityBlock
         for (int i = 0; i < HORIZONTAL.length; i++) {
             Direction direction = HORIZONTAL[i];
             BlockPos next = pos.relative(direction);
-            costs[i] = canReplace(level, next) ? distanceToDrop(level, next, direction.getOpposite(), 0) : NO_DROP_FOUND;
+            costs[i] = canFlowThrough(level, next, false) ? distanceToDrop(level, next, direction.getOpposite(), 0) : NO_DROP_FOUND;
             best = Math.min(best, costs[i]);
         }
         for (int i = 0; i < HORIZONTAL.length; i++) {
@@ -222,41 +230,57 @@ public final class BrewDispersalBlock extends LiquidBlock implements EntityBlock
     }
 
     private int distanceToDrop(ServerLevel level, BlockPos pos, Direction cameFrom, int steps) {
-        if (canFlowThrough(level, pos.below())) return steps;
+        if (canFlowThrough(level, pos.below(), true)) return steps;
         if (steps == 4) return NO_DROP_FOUND;
         int best = NO_DROP_FOUND;
         for (Direction direction : HORIZONTAL) {
             if (direction == cameFrom) continue;
             BlockPos next = pos.relative(direction);
-            if (canFlowThrough(level, next)) {
+            if (canFlowThrough(level, next, false)) {
                 best = Math.min(best, distanceToDrop(level, next, direction.getOpposite(), steps + 1));
             }
         }
         return best;
     }
 
-    private boolean canFlowThrough(ServerLevel level, BlockPos pos) {
-        if (!level.hasChunkAt(pos)) return false;
+    private boolean canFlowThrough(ServerLevel level, BlockPos pos, boolean downward) {
+        if (level.isOutsideBuildHeight(pos) || !level.hasChunkAt(pos)) return false;
         BlockState state = level.getBlockState(pos);
-        return state.is(this) ? state.getValue(LEVEL) > 0 : canReplace(level, pos);
+        return state.is(this) ? downward || state.getValue(LEVEL) > 0 : canReplace(state, true);
     }
 
     private boolean flowInto(ServerLevel level, BlockPos pos, int depth, BrewFluidBlockEntity source) {
-        if (!canReplace(level, pos) || !level.setBlockAndUpdate(pos, defaultBlockState().setValue(LEVEL, depth))) {
+        if (!canReplace(level, pos, true)) return false;
+        BlockState displaced = level.getBlockState(pos);
+        BlockEntity displacedEntity = displaced.hasBlockEntity() ? level.getBlockEntity(pos) : null;
+        if (!level.setBlockAndUpdate(pos, defaultBlockState().setValue(LEVEL, depth))) {
             return false;
         }
         if (level.getBlockEntity(pos) instanceof BrewFluidBlockEntity fluid) {
             fluid.spreadFrom(source);
+            if (!gas && !displaced.isAir()) {
+                // The original cobweb dropped string without a cutting tool.
+                if (displaced.is(Blocks.COBWEB)) Block.popResource(level, pos, new ItemStack(Items.STRING));
+                else Block.dropResources(displaced, level, pos, displacedEntity);
+            }
             return true;
         }
         return false;
     }
 
-    private boolean canReplace(ServerLevel level, BlockPos pos) {
+    private boolean canReplace(ServerLevel level, BlockPos pos, boolean spreading) {
         if (level.isOutsideBuildHeight(pos) || !level.hasChunkAt(pos)) return false;
-        BlockState state = level.getBlockState(pos);
+        return canReplace(level.getBlockState(pos), spreading);
+    }
+
+    private boolean canReplace(BlockState state, boolean spreading) {
         if (gas) return state.isAir() || state.is(Blocks.SNOW);
-        return !state.is(this) && state.canBeReplaced() && state.getFluidState().isEmpty();
+        if (state.is(this)) return false;
+        if (!state.getFluidState().isEmpty()) {
+            // Disease was a displaceable block in the original, before it had a modern fluid state.
+            return spreading && state.is(WitcheryBlocks.getRequired("disease").get());
+        }
+        return state.canBeReplaced() || spreading && state.is(LIQUID_DISPLACEABLE);
     }
 
     private static boolean evaporates(BrewFluidBlockEntity fluid, RandomSource random) {

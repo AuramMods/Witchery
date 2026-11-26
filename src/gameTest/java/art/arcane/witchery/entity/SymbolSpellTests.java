@@ -179,7 +179,8 @@ public final class SymbolSpellTests {
         var level = helper.getLevel();
         var caster = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "ProjectileCaster"));
         var defender = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "ProjectileDefender"));
-        caster.setPos(Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(7, 16, 5))));
+        // The enhanced shot travels past the arena, so give it open air above the surrounding terrain.
+        caster.setPos(Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(7, 0, 5)).atY(196)));
         caster.setYRot(180);
         defender.setItemInHand(InteractionHand.MAIN_HAND, WitcheryItems.getRequired("mysticbranch").get().getDefaultInstance());
 

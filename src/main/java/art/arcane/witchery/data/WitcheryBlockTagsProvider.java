@@ -1,6 +1,7 @@
 package art.arcane.witchery.data;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.BrewDispersalBlock;
 import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.HolderLookup;
@@ -10,6 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.data.BlockTagsProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.registries.RegistryObject;
@@ -49,6 +51,7 @@ public class WitcheryBlockTagsProvider extends BlockTagsProvider {
         for (WitchCrop crop : WitchCrop.values()) {
             tag(BlockTags.CROPS).add(crop.block());
         }
+        addBrewLiquidDisplacements();
         Block coffin = WitcheryBlocks.getRequired("coffinblock").get();
         tag(BlockTags.BEDS).add(coffin);
         tag(BlockTags.MINEABLE_WITH_AXE).add(log, planks, coffin,
@@ -89,5 +92,25 @@ public class WitcheryBlockTagsProvider extends BlockTagsProvider {
                 WitcheryBlocks.getRequired("candelabra").get(), WitcheryBlocks.getRequired("chalice").get(),
                 WitcheryBlocks.getRequired("crystalball").get(), WitcheryBlocks.getRequired("daylightcollector").get(),
                 WitcheryBlocks.getRequired("cstonepressureplate").get(), WitcheryBlocks.getRequired("shadedglass_active").get());
+    }
+
+    private void addBrewLiquidDisplacements() {
+        var displaceable = tag(BrewDispersalBlock.LIQUID_DISPLACEABLE);
+        displaceable.addTags(BlockTags.SAPLINGS, BlockTags.SMALL_FLOWERS, BlockTags.TALL_FLOWERS, BlockTags.CROPS, BlockTags.RAILS,
+                BlockTags.BUTTONS, BlockTags.WOOL_CARPETS, BlockTags.FLOWER_POTS);
+        displaceable.add(Blocks.BROWN_MUSHROOM, Blocks.RED_MUSHROOM, Blocks.COBWEB, Blocks.TORCH, Blocks.WALL_TORCH,
+                Blocks.REDSTONE_TORCH, Blocks.REDSTONE_WALL_TORCH, Blocks.REDSTONE_WIRE, Blocks.REPEATER, Blocks.COMPARATOR,
+                Blocks.LEVER, Blocks.LADDER, Blocks.LILY_PAD, Blocks.NETHER_WART, Blocks.COCOA, Blocks.ATTACHED_MELON_STEM,
+                Blocks.ATTACHED_PUMPKIN_STEM, Blocks.TRIPWIRE, Blocks.TRIPWIRE_HOOK, Blocks.SKELETON_SKULL,
+                Blocks.SKELETON_WALL_SKULL, Blocks.WITHER_SKELETON_SKULL, Blocks.WITHER_SKELETON_WALL_SKULL,
+                Blocks.ZOMBIE_HEAD, Blocks.ZOMBIE_WALL_HEAD, Blocks.CREEPER_HEAD, Blocks.CREEPER_WALL_HEAD,
+                Blocks.PLAYER_HEAD, Blocks.PLAYER_WALL_HEAD);
+        for (String id : new String[]{"alluringskull", "bloodrose", "bramble", "brewgas", "cbuttonstone",
+                "cbuttonwood", "circle", "circleglyphinfernal", "circleglyphotherwhere", "circleglyphritual", "clever",
+                "crittersnare", "csnowpressureplate", "dreamcatcher", "embermoss", "garlicgarland", "glintweed",
+                "grassper", "leapinglily", "light", "lilypad", "plantmine", "snowdoubleslab", "snowpressureplate",
+                "snowslab", "somniancotton", "spanishmoss", "voidbramble", "wolfhead"}) {
+            displaceable.add(WitcheryBlocks.getRequired(id).get());
+        }
     }
 }
