@@ -1,5 +1,6 @@
 package art.arcane.witchery.brewing;
 
+import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.network.WitcheryNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -22,6 +23,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.BushBlock;
+import net.minecraft.world.level.block.DeadBushBlock;
+import net.minecraft.world.level.block.TallGrassBlock;
 import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -176,11 +179,23 @@ final class BrewFarming {
         ItemStack tool = lootTool(strength);
         forEachBlock(level, center, reach, reach * reach, pos -> {
             var state = level.getBlockState(pos);
-            if (state.is(BlockTags.LEAVES) || state.canBeReplaced()
-                    && (state.getBlock() instanceof BushBlock || state.getBlock() instanceof VineBlock)) {
+            Block block = state.getBlock();
+            if (block instanceof DreamCatcherBlock) {
+                pruneDreamCatcher(level, pos, state, actor);
+            } else if (state.is(BlockTags.LEAVES) || state.canBeReplaced()
+                    && (block instanceof TallGrassBlock || block instanceof DeadBushBlock || block instanceof VineBlock)) {
                 cut(level, pos, state, tool, actor);
             }
         });
+    }
+
+    private static void pruneDreamCatcher(ServerLevel level, BlockPos pos, BlockState state, Player caster) {
+        // Dream Catchers shared the original vine material even though they carried a tile.
+        if (!BrewTerrain.canEdit(caster, level, pos, state)) return;
+        var weave = DreamCatcherBlock.weaveAt(level, pos, state);
+        if (level.removeBlock(pos, false)) {
+            level.addFreshEntity(new ItemEntity(level, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(weave.item())));
+        }
     }
 
     static void fell(ServerLevel level, BlockPos center, int radius, int strength, @Nullable Player caster) {

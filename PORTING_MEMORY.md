@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron Pruning materials and Dream Catchers (2026-11-25)
+
+- The original Brown Mushroom brew removed Witchery leaves, ordinary leaves, short grass, ferns, dead bushes, vanilla vines and Spanish Moss. Two-block plants, crops, mushrooms, ordinary lilies and the conjured Witchery vine stayed. The reproduced Forge baseline also removed both halves of tall grass and seagrass. The corrected Forge material selection uses the original plant families and retains ordinary loot handling.
+- Native Pruning removed a fitted Dream Catcher and returned one Nightmares Dream Weave from its block corner. The nearby Heart Glyph survived. Forge checks its break event before removing the catcher. The regression preserves the old fitted weave on a veto and returns it once when pruning succeeds, even before old tile data has synced to the block state.
+- The muted background survival client threw a supplied Pruning brew and recovered the fitted weave. A dedicated restart retained the same dropped item, the vegetation left in the plot and the ritual glyph. The client used master volume zero and OpenAL No Output.
+- A separate Witchery 0.24.1 region saved a North-facing Dream Catcher with `WITCWeaveID:3`. The exact packaged JAR imported the attachment and fitted weave, dispensed the original Pruning recipe and recovered the Nightmares Dream Weave. Restarting without the import flag retained the same item.
+- The headless Auram copy used the original Does It Tick settings. A dispenser pruned the original vegetation and returned the fitted weave with zero players online. The tall grass, seagrass, outer leaf, conjured vine and Heart Glyph stayed intact, and the dedicated restart retained the same item.
+- Java 17 reobfuscation and all 446 local Forge GameTests passed on seed `5471593853027166409`. The package is `build/qa-pruning-parity/candidate.jar` with SHA-256 `7cc5be95a75c8194e3b66bb46797577f450b6f4b35572725a06166403068bff8`. See `build/qa-pruning-parity/comparison.txt`.
+
 ## Cauldron Pulverisation terrain and cues (2026-11-25)
 
 - The original Flint action visited its open sphere in X, Z, then Y order. Stone with either zero or nonzero metadata became Cobblestone, each affected block advanced one stage, and Red Sand yielded one ordinary Sand. The squared-distance-three corner was outside the base cast. The port applies those conversions to the flattened stone variants, including granite, diorite and andesite.

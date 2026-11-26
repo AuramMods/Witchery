@@ -1,6 +1,7 @@
 package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.DreamWeave;
 import art.arcane.witchery.block.WitchLilyPadBlock;
 import art.arcane.witchery.block.WitchesCauldronBlock;
 import art.arcane.witchery.block.entity.AltarBlockEntity;
@@ -21,6 +22,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
@@ -38,9 +40,13 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.level.block.entity.DispenserBlockEntity;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -363,6 +369,111 @@ public final class CauldronBrewParityTests {
                         && level.getBlockState(child).equals(lily.defaultBlockState()),
                 "The original spread replaces the occupied source surface and leaves both pads at growth zero");
         helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void pruningKeepsTheOriginalPlantSelection(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var center = helper.absolutePos(new BlockPos(7, 4, 5));
+        var grass = center.east();
+        var fern = center.west();
+        var tallGrass = center.north();
+        var seagrass = center.south().east();
+        var deadBush = center.south();
+        var vine = center.west().south();
+        var moss = center.west().north();
+        var brewVine = center.east().north();
+        var boundaryLeaf = center.above(2);
+        var outerLeaf = center.east(3);
+        var crop = center.below();
+
+        for (BlockPos pos : List.of(grass, fern, tallGrass, seagrass)) {
+            level.setBlockAndUpdate(pos.below(), Blocks.DIRT.defaultBlockState());
+        }
+        level.setBlockAndUpdate(deadBush.below(), Blocks.SAND.defaultBlockState());
+        level.setBlockAndUpdate(crop.below(), Blocks.FARMLAND.defaultBlockState());
+        for (BlockPos pos : List.of(vine, moss)) {
+            level.setBlockAndUpdate(pos.relative(Direction.WEST), Blocks.STONE.defaultBlockState());
+        }
+        level.setBlockAndUpdate(brewVine.east(), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(grass, Blocks.GRASS.defaultBlockState());
+        level.setBlockAndUpdate(fern, Blocks.FERN.defaultBlockState());
+        level.setBlockAndUpdate(deadBush, Blocks.DEAD_BUSH.defaultBlockState());
+        level.setBlockAndUpdate(tallGrass, Blocks.TALL_GRASS.defaultBlockState());
+        level.setBlockAndUpdate(tallGrass.above(), Blocks.TALL_GRASS.defaultBlockState().setValue(DoublePlantBlock.HALF, DoubleBlockHalf.UPPER));
+        level.setBlockAndUpdate(seagrass, Blocks.SEAGRASS.defaultBlockState());
+        level.setBlockAndUpdate(crop, Blocks.WHEAT.defaultBlockState());
+        level.setBlockAndUpdate(vine, Blocks.VINE.defaultBlockState().setValue(VineBlock.WEST, true));
+        var spanishMoss = WitcheryBlocks.getRequired("spanishmoss").get();
+        level.setBlockAndUpdate(moss, spanishMoss.defaultBlockState().setValue(VineBlock.WEST, true));
+        var witchVine = WitcheryBlocks.getRequired("vine").get();
+        level.setBlockAndUpdate(brewVine, witchVine.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.WEST));
+        var witchLeaves = WitcheryBlocks.getRequired("witchleaves").get();
+        var leaves = witchLeaves.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true);
+        level.setBlockAndUpdate(boundaryLeaf, leaves);
+        level.setBlockAndUpdate(outerLeaf, leaves);
+
+        pruningBrew().applySplashToBlock(level, center, Direction.UP, Vec3.atCenterOf(center), null);
+        helper.assertTrue(List.of(grass, fern, deadBush, vine, moss, boundaryLeaf).stream().allMatch(level::isEmptyBlock),
+                "Pruning clears native vine materials and leaf blocks up to the inclusive sphere boundary");
+        helper.assertTrue(level.getBlockState(tallGrass).is(Blocks.TALL_GRASS)
+                        && level.getBlockState(tallGrass.above()).is(Blocks.TALL_GRASS)
+                        && level.getBlockState(seagrass).is(Blocks.SEAGRASS) && level.getBlockState(crop).is(Blocks.WHEAT)
+                        && level.getBlockState(brewVine).is(witchVine) && level.getBlockState(outerLeaf).is(witchLeaves),
+                "Two-block grass, aquatic plants, crops, conjured vines and the outer leaf survive");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void pruningReturnsTheSavedDreamWeaveAndHonorsProtection(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var center = helper.absolutePos(new BlockPos(7, 4, 5));
+        var glyph = center.east();
+        var catcher = WitcheryBlocks.getRequired("dreamcatcher").get();
+        var heart = WitcheryBlocks.getRequired("circle").get();
+        level.setBlockAndUpdate(center.south(), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(center, catcher.defaultBlockState());
+        level.setBlockAndUpdate(glyph.below(), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(glyph, heart.defaultBlockState());
+        var legacy = new CompoundTag();
+        legacy.putInt("WITCWeaveID", DreamWeave.NIGHTMARES.ordinal());
+        level.getBlockEntity(center).load(legacy);
+        var brewer = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "PruningTester"));
+        var brew = pruningBrew();
+        var drops = new AABB(center).inflate(0.5);
+        var config = WitcheryServerConfig.ALLOW_INTER_MOD_BLOCK_BREAK_EVENTS;
+        boolean previous = config.get();
+        Consumer<BlockEvent.BreakEvent> veto = event -> {
+            if (event.getLevel() == level && event.getPlayer() == brewer && event.getPos().equals(center)) event.setCanceled(true);
+        };
+        try {
+            config.set(true);
+            MinecraftForge.EVENT_BUS.addListener(veto);
+            try {
+                brew.applySplashToBlock(level, center, Direction.UP, Vec3.atCenterOf(center), brewer);
+                helper.assertTrue(level.getBlockState(center).is(catcher)
+                                && level.getBlockEntity(center).saveWithoutMetadata().getInt("WITCWeaveID") == DreamWeave.NIGHTMARES.ordinal()
+                                && level.getEntitiesOfClass(ItemEntity.class, drops).isEmpty(),
+                        "A Forge veto preserves the fitted weave and produces no drop");
+            } finally {
+                MinecraftForge.EVENT_BUS.unregister(veto);
+            }
+            brew.applySplashToBlock(level, center, Direction.UP, Vec3.atCenterOf(center), brewer);
+            var result = level.getEntitiesOfClass(ItemEntity.class, drops);
+            helper.assertTrue(level.isEmptyBlock(center) && level.getBlockState(glyph).is(heart)
+                            && result.size() == 1 && result.get(0).getItem().is(DreamWeave.NIGHTMARES.item())
+                            && result.get(0).getItem().getCount() == 1 && result.get(0).position().equals(Vec3.atLowerCornerOf(center)),
+                    "Pruning releases the original saved weave at its block corner and preserves the Heart Glyph");
+        } finally {
+            config.set(previous);
+            brewer.discard();
+        }
+        helper.succeed();
+    }
+
+    private static BrewMixture pruningBrew() {
+        return BrewMixture.from(List.of(new ItemStack(Items.NETHER_WART),
+                new ItemStack(Items.GUNPOWDER), new ItemStack(Items.BROWN_MUSHROOM)));
     }
 
     @GameTest(template = "qa_coven_arena")
