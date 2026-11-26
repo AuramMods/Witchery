@@ -324,6 +324,7 @@ public final class WitcheryEventHooks {
             TormentTravel.tickEncounters(level);
             OverworldInfusion.tick(level);
             DreamCatcherBlock.tickSleep(level);
+            Vampirism.finishCrouchingStrikes(level);
         }
     }
 
@@ -522,6 +523,15 @@ public final class WitcheryEventHooks {
         }
     }
 
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void queueVampireCrouchingStrike(LivingHurtEvent event) {
+        var source = event.getSource();
+        if (event.getAmount() > 0 && source.is(net.minecraft.world.damagesource.DamageTypes.PLAYER_ATTACK)
+                && source.getDirectEntity() instanceof ServerPlayer player) {
+            Vampirism.queueCrouchingStrike(player, event.getEntity());
+        }
+    }
+
     @SubscribeEvent
     public static void rechargeBarkBelt(LivingTickEvent event) {
         BarkBeltItem.recharge(event.getEntity());
@@ -585,10 +595,6 @@ public final class WitcheryEventHooks {
             VampireVillages.recordAggressor(world, villager, attacker);
         }
         WolfCombat.onDamage(event);
-        if (event.isCanceled()) return;
-        if (source.is(net.minecraft.world.damagesource.DamageTypes.PLAYER_ATTACK) && source.getDirectEntity() instanceof ServerPlayer player) {
-            Vampirism.knockBack(player, event.getEntity());
-        }
     }
 
     @SubscribeEvent

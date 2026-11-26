@@ -35,12 +35,18 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.WeakHashMap;
 
 public final class Vampirism {
     private static final TagKey<EntityType<?>> BOOK_BOSSES = TagKey.create(Registries.ENTITY_TYPE,
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "vampire_book_bosses"));
+    private static final Map<ServerLevel, Map<UUID, Vec3>> CROUCHING_STRIKES = new WeakHashMap<>();
 
     private Vampirism() {
     }
@@ -233,14 +239,29 @@ public final class Vampirism {
                         && data.getCreatureTypeOrdinal() == 0).orElse(false);
     }
 
-    public static void knockBack(ServerPlayer player, LivingEntity victim) {
-        if (!player.isShiftKeyDown()) return;
+    public static void queueCrouchingStrike(ServerPlayer player, LivingEntity victim) {
+        if (!player.isShiftKeyDown() || !(victim.level() instanceof ServerLevel level)) return;
         WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
             if (data.getVampireLevel() < 3 || data.getCreatureTypeOrdinal() != 0) return;
             var look = player.getLookAngle();
-            victim.setDeltaMovement(look.x * 1.8, 0.9, look.z * 1.8);
-            victim.hurtMarked = true;
+            var motion = new Vec3(look.x * 1.8, 0.9, look.z * 1.8);
+            if (victim instanceof ServerPlayer) {
+                CROUCHING_STRIKES.computeIfAbsent(level, ignored -> new HashMap<>()).put(victim.getUUID(), motion);
+            } else {
+                WitcheryNetwork.pushEntity(victim, motion);
+            }
         });
+    }
+
+    public static void finishCrouchingStrikes(ServerLevel level) {
+        var strikes = CROUCHING_STRIKES.remove(level);
+        if (strikes == null) return;
+        // Vanilla applies melee knockback and sends its motion packet after the damage events.
+        for (var strike : strikes.entrySet()) {
+            if (level.getEntity(strike.getKey()) instanceof ServerPlayer victim && victim.isAlive()) {
+                WitcheryNetwork.pushEntity(victim, strike.getValue());
+            }
+        }
     }
 
     static void feed(ServerPlayer player, WitcheryPlayerData data, int amount, int limit, int remainingVillagerBlood,

@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Vampire crouching strike in multiplayer (2026-11-26)
+
+- Witchery 0.24.1 processed a rank-three crouching strike before absorption. Its native pig fixture spent one of eight absorption points, kept all ten health, and ended the hit at `(0, 0.4, 1.3)` after the ordinary knockback. The original code sends the full vector directly to a player target.
+- Two muted clean Forge survival clients punched through the ordinary attack key. On the previous JAR a crouching hit gave the other client `(0, 0.4, 1.3)`. When absorption covered the damage, the client received a normal melee shove. On the rebuilt JAR the rank-three attacker sent `(0, 0.9, 1.8)` in both cases. The shield spent absorption and kept the target's full pre-hit health. A standing attack used normal melee knockback on both packages.
+- The server queues player launches through the end of the current level tick, after vanilla sends its melee motion. The original timing for mob motion is preserved. The GameTest checks the absorbed mob strike and the player launch after ordinary knockback.
+- The same JAR passed a headless copied Auram replay against two pigs with an active Absorption effect. Both kept ten health and spent one absorption point. The crouching hit ended at `(0, 0.4, 1.3)` and the standing hit ended at `(0, 0.4, 0.4)`.
+- Both clean Forge clients used OpenAL No Output and stayed out of the foreground. JAR reobfuscation and all 479 local Forge GameTests passed. The tested package is `build/qa-vampire-strike/candidate.jar` with SHA-256 `8e61cf12fa0455fc8cf2ef301582b95e145513b24914f915ecb29329a94ddba7`.
+
 ## Direct movement packets for brews and Voodoo Poppets (2026-11-26)
 
 - The 0.24.1 headless reference measured `(0.024, 0.4, -5.7)` for a Frog's Tongue impact with the caster 38 blocks away. A normal survival throw on the preceding Forge package delivered about `(0.013, 0.3135, -3.1121)` to the other client's player after server movement decay. The rebuilt JAR delivered the original vector directly to that player.

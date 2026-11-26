@@ -2,6 +2,7 @@ package art.arcane.witchery.vampirism;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.event.WitcheryEventHooks;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryEntities;
@@ -17,6 +18,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.gametest.GameTestHolder;
@@ -27,6 +29,42 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class VampireAbilitiesTests {
+    @GameTest(template = "qa_coven_arena")
+    public static void crouchingStrikeUsesTheOriginalPlayerAndMobMotion(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var attacker = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "CrouchingStrike"));
+        WitcheryPlayerDataProvider.get(attacker).orElseThrow(IllegalStateException::new).setVampireLevel(3);
+        attacker.setPos(Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(2, 2, 1))));
+        attacker.setYRot(0);
+        attacker.setShiftKeyDown(true);
+        var target = helper.spawn(EntityType.PIG, new BlockPos(2, 2, 3));
+        target.setOnGround(true);
+        target.setAbsorptionAmount(8);
+
+        float health = target.getHealth();
+        var strike = level.damageSources().playerAttack(attacker);
+        target.hurt(strike, 1);
+        helper.assertTrue(target.getHealth() == health && target.getAbsorptionAmount() == 7,
+                "The strike spends absorption before damage reaches health");
+        var ordinaryKnockback = new Vec3(0, 0.4, 1.3);
+        helper.assertTrue(target.getDeltaMovement().distanceToSqr(ordinaryKnockback) < 1e-10,
+                "Vanilla modifies the mob's launch as it did in Witchery 0.24.1");
+
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "StrikeTarget"));
+        player.setPos(target.position().add(1, 0, 0));
+        level.addNewPlayer(player);
+        try {
+            WitcheryEventHooks.queueVampireCrouchingStrike(new LivingHurtEvent(player, strike, 1));
+            player.setDeltaMovement(ordinaryKnockback);
+            Vampirism.finishCrouchingStrikes(level);
+            helper.assertTrue(player.getDeltaMovement().distanceToSqr(new Vec3(0, 0.9, 1.8)) < 1e-10,
+                    "The player's full launch follows vanilla knockback");
+        } finally {
+            player.discard();
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_legacy_village_travel")
     public static void travelChecksTheOriginalVillageColumn(GameTestHelper helper) {
         var level = helper.getLevel();

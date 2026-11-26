@@ -1579,6 +1579,7 @@ Implementation anchors:
   - `sound` resolves the sound ID and plays the registered event at the transmitted position.
   - `push_target` now dispatches to client packet bridge to apply motion vectors to client entities.
   - Air Hike, Frog Tongue, Knockback, Cursed Leaping, Repel Attacker, and the Voodoo Poppet use `push_target` for the affected player. The packet sends the full three-axis velocity. Creatures and dropped items follow the normal Forge motion update.
+  - An untransformed vampire at rank three or above launches targets struck while crouching. The strike starts before absorption. The player target receives the original 1.8 horizontal scale and 0.9 lift after Forge applies its melee knockback. Mobs use the same motion calculation with ordinary melee knockback applied afterward, as in the original game.
   - The Overworld infusion sends the original repulsion vector directly to the affected player. A standing cast lifts the player by 0.3 blocks per tick and a crouched cast uses 1.5. Both use the caster's look direction for the 2.4 horizontal multiplier.
   - Terrain rocks use the legacy brew launch spread and speed. The `particles` packet sends the starting explosion cue with sound from the source block and a silent impact cue from the projectile's previous position.
   - The Overworld Hand broadcasts its standing charge orb and rejected-cast snare as entity sounds at volume 0.5 and pitch between one-third and one-half.
