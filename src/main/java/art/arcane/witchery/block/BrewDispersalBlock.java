@@ -3,6 +3,7 @@ package art.arcane.witchery.block;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.BrewFluidBlockEntity;
 import art.arcane.witchery.brewing.BrewMixture;
+import art.arcane.witchery.event.WitcheryBlockBreak;
 import art.arcane.witchery.event.WitcheryBlockPlacement;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryBlocks;
@@ -18,6 +19,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
@@ -127,6 +129,7 @@ public final class BrewDispersalBlock extends LiquidBlock implements EntityBlock
     public void release(ServerLevel level, BlockPos pos, Direction face, CompoundTag tag, BrewMixture mixture, int color,
                         @Nullable Entity caster) {
         if (!canReplace(level, pos, false)) return;
+        if (caster instanceof Player player && WitcheryBlockBreak.isCanceled(level, pos, level.getBlockState(pos), player)) return;
         if (WitcheryBlockPlacement.place(level, pos, defaultBlockState(), caster, face)
                 && level.getBlockEntity(pos) instanceof BrewFluidBlockEntity fluid) {
             fluid.initialize(tag, mixture, color, caster);

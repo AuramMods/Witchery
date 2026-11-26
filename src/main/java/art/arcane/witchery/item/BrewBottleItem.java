@@ -32,6 +32,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.util.FakePlayerFactory;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -163,17 +164,17 @@ public final class BrewBottleItem extends Item {
     public void impact(ServerLevel level, ThrownBrew brew, HitResult hit) {
         BrewMixture mixture = BrewMixture.from(brew.getItem().getTag());
         if (mixture == null || !mixture.splash()) return;
+        Player caster = brew.getOwner() instanceof Player player ? player : FakePlayerFactory.getMinecraft(level);
         switch (mixture.impactDelivery()) {
-            case SPLASH -> splash(level, brew, hit, mixture);
-            case GAS, LIQUID -> releaseFluid(level, brew, hit, mixture);
-            case TRIGGERED -> CursedControls.impact(level, hit, brew.getItem().getTag(), mixture, color(brew.getItem()),
-                    brew.getOwner());
+            case SPLASH -> splash(level, hit, mixture, brew.position(), caster);
+            case GAS, LIQUID -> releaseFluid(level, brew.getItem(), hit, mixture, caster);
+            case TRIGGERED -> CursedControls.impact(level, hit, brew.getItem().getTag(), mixture, color(brew.getItem()), caster);
             case DRINK -> { return; }
         }
         level.levelEvent(2002, brew.blockPosition(), color(brew.getItem()));
     }
 
-    private void releaseFluid(ServerLevel level, ThrownBrew brew, HitResult hit, BrewMixture mixture) {
+    private void releaseFluid(ServerLevel level, ItemStack bottle, HitResult hit, BrewMixture mixture, Player caster) {
         String id = mixture.delivery() == BrewMixture.Delivery.GAS ? "brewgas" : "brewliquid";
         var cloud = (BrewDispersalBlock) WitcheryBlocks.getRequired(id).get();
         BlockPos pos;
@@ -186,23 +187,20 @@ public final class BrewBottleItem extends Item {
         } else {
             pos = BlockPos.containing(hit.getLocation());
         }
-        cloud.release(level, pos, face, brew.getItem().getTag(), mixture, color(brew.getItem()), brew.getOwner());
+        cloud.release(level, pos, face, bottle.getTag(), mixture, color(bottle), caster);
     }
 
-    private void splash(ServerLevel level, ThrownBrew brew, HitResult hit, BrewMixture mixture) {
-        Vec3 center = brew.position();
+    private void splash(ServerLevel level, HitResult hit, BrewMixture mixture, Vec3 center, Player caster) {
         int radius = mixture.splashRadius();
-        LivingEntity caster = brew.getOwner() instanceof LivingEntity living ? living : null;
         LivingEntity direct = hit instanceof EntityHitResult entity && entity.getEntity() instanceof LivingEntity living ? living : null;
         for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, new AABB(center, center).inflate(radius))) {
             double distanceSquared = target.distanceToSqr(center);
             if (distanceSquared > radius * radius) continue;
             double scale = target == direct ? 1 : 1 - Math.sqrt(distanceSquared) / radius;
-            mixture.applySplash(target, brew, caster, scale, target != direct, center);
+            mixture.applySplash(target, caster, caster, scale, target != direct, center);
         }
         if (hit instanceof BlockHitResult block) {
-            mixture.applySplashToBlock(level, block.getBlockPos(), block.getDirection(), center,
-                    caster instanceof Player player ? player : null);
+            mixture.applySplashToBlock(level, block.getBlockPos(), block.getDirection(), center, caster);
         }
     }
 }

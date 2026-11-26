@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Splash and bottled fluid casters (2026-11-26)
+
+- Witchery 0.24.1 credited `[Minecraft]` in both damage fields for ownerless direct and creature-thrown glancing Harm Demons. The original gas and liquid impacts called break protection and saved the same name when allowed. Gas contact had no caster when the named player was absent. Liquid contact used the world fake player. The headless reference trace is in `build/qa-bottled-brew-casters/native/verified.log`.
+- Thrown bottles now resolve their actor before selecting dispersal. Forge break and placement hooks see that actor when the first fluid cell is created. A saved named caster is resolved within the current level. A gas exposure with no matching player stays unattributed, while the same liquid exposure uses the canonical fake player. The preceding Forge build allowed a fluid impact through the regression's break veto.
+- Both dedicated profiles dispensed supplied bottles by redstone with `--nogui`. The direct splash reduced the test pig from ten to seven health. The gas and liquid sources were enclosed after release. Both restarts retained their ordered ingredients, 50-update lifetime, `[Minecraft]` name and canonical UUID. Java 17 data generation, reobfuscation, and all 532 required Forge GameTests passed locally. The tested `build/qa-bottled-brew-casters/candidate.jar` has SHA-256 `e4aac5b70215ce9db36d97fbd37a050a2dbf2e1435d3634991b0bf4b85a1782e`.
+- The original initial-placement matrix admits water, flowing water, lava, tall grass, dead bushes, fire, snow layers and vines for both dispersals. Both kept Cobweb, Stone, Torch, Redstone Wire and Wheat. The original replacement predicate accepted 26 of 291 placed block defaults. Those results apply to the first cell created by the bottle. See `build/qa-bottled-brew-casters/replacement/reference.log` and `catalog.log` in the same directory.
+
 ## Dispenser curse attribution and protection (2026-11-26)
 
 - Witchery 0.24.1 launched an ownerless triggered brew from a downward-facing dispenser. Its impact posted a break check for `[Minecraft]` at the cell above the plate. A veto kept the ordinary plate. An accepted dispenser shot and a separate creature-owned shot both armed the plate and saved `Thrower: "[Minecraft]"`. The exact trace is in `build/qa-dispenser-curse-caster/native/verified.log`.

@@ -9,7 +9,6 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -98,8 +97,8 @@ public final class BrewFluidBlockEntity extends BlockEntity {
 
     public void expose(ServerLevel server, LivingEntity target, boolean gas) {
         if (mixture == null) return;
-        LivingEntity owner = resolveCaster(server);
-        LivingEntity caster = gas || owner instanceof Player ? owner : FakePlayerFactory.getMinecraft(server);
+        Player owner = resolveCaster(server);
+        Player caster = gas || owner != null ? owner : FakePlayerFactory.getMinecraft(server);
         boolean mask = gas && target.hasEffect(WitcheryEffects.GAS_MASK.get());
         mixture.applyAt(target, caster, caster, 0.25, 0.5, mask, Vec3.atCenterOf(worldPosition));
     }
@@ -113,18 +112,20 @@ public final class BrewFluidBlockEntity extends BlockEntity {
             if (!server.isInWorldBounds(target) || !server.hasChunkAt(target)) continue;
             BlockState state = server.getBlockState(target);
             if (state.is(getBlockState().getBlock()) || state.isAir() && !server.getBlockState(target.below()).blocksMotion()) continue;
-            LivingEntity owner = resolveCaster(server);
-            Player caster = owner instanceof Player player ? player : FakePlayerFactory.getMinecraft(server);
+            Player owner = resolveCaster(server);
+            Player caster = owner != null ? owner : FakePlayerFactory.getMinecraft(server);
             mixture.applyLiquidToBlock(server, target, direction.getOpposite(), impact, caster);
         }
     }
 
     @Nullable
-    private LivingEntity resolveCaster(ServerLevel server) {
-        Entity owner = thrower != null ? server.getEntity(thrower) : null;
-        if (owner == null && thrower != null) owner = server.getServer().getPlayerList().getPlayer(thrower);
-        if (owner == null && !throwerName.isEmpty()) owner = server.getServer().getPlayerList().getPlayerByName(throwerName);
-        return owner instanceof LivingEntity living ? living : null;
+    private Player resolveCaster(ServerLevel server) {
+        Player owner = thrower != null ? server.getPlayerByUUID(thrower) : null;
+        if (owner != null || throwerName.isEmpty()) return owner;
+        for (var player : server.players()) {
+            if (player.getGameProfile().getName().equalsIgnoreCase(throwerName)) return player;
+        }
+        return null;
     }
 
     private void sync() {
