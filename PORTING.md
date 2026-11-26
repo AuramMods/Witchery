@@ -397,6 +397,7 @@
 - [x] Use Forge ticking tickets to keep shelves available at a distance. A shelf 480 blocks away consumed its Fire Protection Poppet to absorb lethal fire. After a dedicated restart, the same shelf and its two remaining wards were available before any player logged in. Its Death Protection Poppet absorbed lethal damage while the owner was in the Nether.
 - [x] Keep the original dimension restriction by default. Restore legacy inventory and owner data. The 68 required Forge GameTests covered the recipe, legacy ward subtype, inventory priority, comparator and ticket removal. Java 17 data generation and reobfuscation succeeded.
 - [x] Cast with a Voodoo Poppet in the muted client and verify that the remote ward reflected it. Both poppets took 350 wear. The survival client broke the shelf with an axe, collected the shelf and the worn ward, and the chunk unloaded after the player left. A packaged restart retained a real shelf ticket and removed an injected stale ticket at an empty location.
+- [x] Restore the original six placement directions and redstone latch. A neighbor update checks both the shelf and the space above it. The GameTest covers the original vertical placement threshold and keeps the ward inventory while the power state changes.
 
 ## Specialized Protection Poppets (2026-11-20)
 
@@ -1801,6 +1802,7 @@
 
 ## Legacy Save Fixtures (2026-11-21)
 
+- [x] Import eight Poppet Shelves that Witchery 0.24.1 placed over 1,300 blocks from spawn. Clean Forge and copied Auram recovered all six directions, both power states, all eight named Death Protection Poppets, and eight original ticking tickets. Redstone changes persisted through an ordinary restart on both profiles. The muted background survival client opened the shelf through its normal use binding on clean Forge. A separately converted earlier Forge save kept all wards and tickets and used the default south and unpowered state.
 - [x] Import an original Dream Catcher with attachment metadata and `WITCWeaveID:3`. Use a dispenser to recover its Nightmares Dream Weave with Pruning, then confirm the same item after an ordinary restart.
 - [x] Import native numeric Stone ID 1 metadata 1 as Granite with the packaged JAR. Dispense the Flint brew to convert that Granite to Cobblestone, and verify the result after an ordinary restart.
 - [x] Serialize all 55 entity types with the original Forge server. The packaged importer loaded every type at its saved position and kept its UUID in clean Forge and copied Auram. All 54 persistent types retained both fields on save and reload. The transient Scrying Eye expired on tick 201 in the original and rebuilt JARs. Specialized state remains covered by the individual fixtures below.

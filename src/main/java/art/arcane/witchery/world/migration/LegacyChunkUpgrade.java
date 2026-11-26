@@ -17,6 +17,7 @@ import art.arcane.witchery.block.LegacyPairingChestBlock;
 import art.arcane.witchery.block.MirrorBlock;
 import art.arcane.witchery.block.MountedSkullBlock;
 import art.arcane.witchery.block.PitDirtBlock;
+import art.arcane.witchery.block.PoppetShelfBlock;
 import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.block.RiteHeartBlock;
 import art.arcane.witchery.block.RitualGlyphBlock;
@@ -547,7 +548,10 @@ public final class LegacyChunkUpgrade {
                 default -> Direction.EAST;
             }).setValue(MirrorBlock.HALF, (metadata & 4) == 0 ? DoubleBlockHalf.LOWER : DoubleBlockHalf.UPPER);
             case "pitdirt" -> state.setValue(PitDirtBlock.PODZOL, metadata == 2);
-            case "poppetshelf", "bloodedwool", "pitgrass", "mirrorwall",
+            case "poppetshelf" -> state.setValue(PoppetShelfBlock.FACING,
+                            (metadata & 7) < 6 ? Direction.from3DDataValue(metadata & 7) : Direction.SOUTH)
+                    .setValue(PoppetShelfBlock.POWERED, (metadata & 8) != 0);
+            case "bloodedwool", "pitgrass", "mirrorwall",
                     "tormentstone", "embermoss", "glintweed", "infinityegg", "icedoubleslab", "snowdoubleslab",
                     "cauldron", "brazier", "candelabra", "perpetualice", "icestockade", "icefence", "bloodcrucible", "silvervat",
                     "force", "barrier", "slurp", "somniancotton", "web", "cactus", "glowglobe", "leapinglily", "crystalball",

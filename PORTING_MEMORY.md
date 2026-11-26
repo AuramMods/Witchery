@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Poppet Shelf placement and redstone saves (2026-11-26)
+
+- The original headless server placed eight shelves with six directions, exercised direct power and power at the space above, and saved named wards and Forge tickets. The previous port's import kept the wards and tickets and flattened every shelf to the same state.
+- The rebuilt package decoded the original block metadata in clean Forge over 1,300 blocks from spawn. All eight shelves were loaded before the client joined. The archive retained the original `forcedchunks.dat` and wrote eight modern Forge ticking block tickets. Direct power and a neighbor notification after removing the above-space source changed only the power bit.
+- Ordinary restarts on clean Forge and copied Auram retained the directions, changed power states, and eight named wards. Both copies saved eight ticking tickets with the original positions. The muted clean Forge survival client opened the nine-slot Poppet Shelf with its normal use binding. OpenAL used No Output and neither QA client became the foreground process. The earlier Forge save opened normally with the wards and tickets and the default south and unpowered state.
+- Java 17 data generation, JAR reobfuscation, and all 475 required local Forge GameTests passed. Protocol 101 synchronizes the new shelf palette. The preceding muted client was rejected by `witchery:main` before receiving chunks and stayed out of the foreground. The candidate is `build/qa-save-schema-audit/candidate.jar` with SHA-256 `984db2db56b301b1bdcd4a8d21464c50005d97079730b4c649fbde9c9dce5612`.
+
 ## Original Circle Magic item offerings (2026-11-26)
 
 - The headless 0.24.1 registry exported all 96 rites with 373 required items and 14 optional Bound Waystone steps. The reobfuscated package matches the order, counts, flattened item IDs, and variant predicates. The Reflection accepts the portable Mirror and its earlier Forge item ID.
