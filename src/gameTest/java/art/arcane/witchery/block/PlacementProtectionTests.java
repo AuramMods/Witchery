@@ -91,7 +91,8 @@ public final class PlacementProtectionTests {
                 ordered.add("neighbors");
             }
         };
-        var hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
+        var struck = original.hasProperty(BlockStateProperties.ATTACH_FACE) ? support : pos;
+        var hit = new BlockHitResult(Vec3.atCenterOf(struck), Direction.UP, struck, false);
         MinecraftForge.EVENT_BUS.addListener(protect);
         MinecraftForge.EVENT_BUS.addListener(notify);
         try {

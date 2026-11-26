@@ -62,6 +62,10 @@ public final class CursedControls {
         public String path() { return path; }
         public Block original() { return original.get(); }
         public Block cursed() { return WitcheryBlocks.getRequired(path).get(); }
+
+        private boolean armsBesideImpact() {
+            return this == STONE_BUTTON || this == WOODEN_BUTTON || this == LEVER;
+        }
     }
 
     public interface Control extends EntityBlock {
@@ -75,46 +79,68 @@ public final class CursedControls {
 
     public static void impact(ServerLevel level, HitResult hit, CompoundTag brew, BrewMixture mixture, int color,
                               @Nullable Entity thrower) {
-        if (hit instanceof BlockHitResult block) {
+        if (hit.getType() == HitResult.Type.BLOCK && hit instanceof BlockHitResult block) {
             Direction face = block.getDirection();
             BlockPos direct = block.getBlockPos();
-            if (install(level, direct.relative(face), face, brew, mixture, color, thrower)) return;
-            install(level, direct, face, brew, mixture, color, thrower);
+            arm(level, direct.relative(face), direct, face, brew, mixture, color, thrower);
         } else if (hit instanceof EntityHitResult entity) {
-            install(level, entity.getEntity().blockPosition(), Direction.UP, brew, mixture, color, thrower);
+            BlockPos pos = entity.getEntity().blockPosition();
+            arm(level, pos, pos, Direction.UP, brew, mixture, color, thrower);
         }
     }
 
-    private static boolean install(ServerLevel level, BlockPos pos, Direction face, CompoundTag brew, BrewMixture mixture,
-                                   int color, @Nullable Entity thrower) {
-        BlockState state = level.getBlockState(pos);
+    private static void arm(ServerLevel level, BlockPos adjacent, BlockPos direct, Direction face, CompoundTag brew,
+                            BrewMixture mixture, int color, @Nullable Entity thrower) {
+        if (!canChange(level, adjacent, thrower)) return;
+
+        BlockState neighbor = level.getBlockState(adjacent);
+        Kind neighborKind = kindOf(neighbor);
+        if (neighbor.getBlock() instanceof Control) {
+            charge(level, adjacent, brew, mixture, color, thrower);
+        } else if (neighborKind != null && neighborKind.armsBesideImpact()) {
+            replace(level, adjacent, face, neighbor, neighborKind, brew, mixture, color, thrower);
+            return;
+        }
+
+        BlockState state = level.getBlockState(direct);
         Kind kind = kindOf(state);
-        if (kind == null) return false;
+        boolean cursed = state.getBlock() instanceof Control;
+        if (kind == null || kind.armsBesideImpact() && !cursed) return;
         boolean door = kind == Kind.WOODEN_DOOR;
-        BlockPos base = door ? lowerDoor(pos, state) : pos;
-        if (!canChange(level, base, thrower) || door && !canChange(level, base.above(), thrower)) {
-            return true;
+        BlockPos base = door ? lowerDoor(direct, state) : direct;
+        if (!base.equals(adjacent) && !canChange(level, base, thrower)) return;
+        if (door && !base.above().equals(adjacent) && !canChange(level, base.above(), thrower)) return;
+        if (cursed) {
+            charge(level, base, brew, mixture, color, thrower);
+        } else {
+            replace(level, base, face, state, kind, brew, mixture, color, thrower);
         }
-        if (!(state.getBlock() instanceof Control)) {
-            Block changed = kind.cursed();
-            if (door) {
-                if (!swapDoor(level, base, kind.original(), changed, thrower, face)) return true;
-            } else {
-                BlockState matching = changed.withPropertiesOf(state);
-                BlockState replacement = kind == Kind.STONE_BUTTON || kind == Kind.WOODEN_BUTTON
-                        ? matching.setValue(BlockStateProperties.POWERED, false) : matching;
-                // A powered control's normal removal notifies its support even while Forge captures snapshots.
-                int flags = Block.UPDATE_ALL | Block.UPDATE_MOVE_BY_PISTON;
-                if (!WitcheryBlockPlacement.placeTogether(level, thrower, face,
-                        () -> level.setBlock(pos, replacement, flags))) return true;
-                state.onRemove(level, pos, replacement, false);
-                scheduleRelease(level, pos, replacement, kind);
-            }
+    }
+
+    private static void replace(ServerLevel level, BlockPos pos, Direction face, BlockState state, Kind kind,
+                                CompoundTag brew, BrewMixture mixture, int color, @Nullable Entity thrower) {
+        Block changed = kind.cursed();
+        if (kind == Kind.WOODEN_DOOR) {
+            if (!swapDoor(level, pos, kind.original(), changed, thrower, face)) return;
+        } else {
+            BlockState matching = changed.withPropertiesOf(state);
+            BlockState replacement = kind == Kind.STONE_BUTTON || kind == Kind.WOODEN_BUTTON
+                    ? matching.setValue(BlockStateProperties.POWERED, false) : matching;
+            // A powered control's normal removal notifies its support even while Forge captures snapshots.
+            int flags = Block.UPDATE_ALL | Block.UPDATE_MOVE_BY_PISTON;
+            if (!WitcheryBlockPlacement.placeTogether(level, thrower, face,
+                    () -> level.setBlock(pos, replacement, flags))) return;
+            state.onRemove(level, pos, replacement, false);
+            scheduleRelease(level, pos, replacement, kind);
         }
-        if (level.getBlockEntity(base) instanceof CursedControlBlockEntity control) {
+        charge(level, pos, brew, mixture, color, thrower);
+    }
+
+    private static void charge(ServerLevel level, BlockPos pos, CompoundTag brew, BrewMixture mixture, int color,
+                               @Nullable Entity thrower) {
+        if (level.getBlockEntity(pos) instanceof CursedControlBlockEntity control) {
             control.charge(brew, mixture, color, thrower);
         }
-        return true;
     }
 
     @Nullable
@@ -128,6 +154,7 @@ public final class CursedControls {
 
     private static boolean canChange(ServerLevel level, BlockPos pos, @Nullable Entity thrower) {
         return level.isInWorldBounds(pos) && level.getWorldBorder().isWithinBounds(pos)
+                && level.getBlockState(pos).getDestroySpeed(level, pos) >= 0
                 && (!(thrower instanceof Player player) || level.mayInteract(player, pos)
                 && !WitcheryBlockBreak.isCanceled(level, pos, level.getBlockState(pos), player));
     }
