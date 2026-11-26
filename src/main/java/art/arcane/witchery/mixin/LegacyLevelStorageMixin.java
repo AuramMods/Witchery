@@ -36,7 +36,10 @@ abstract class LegacyLevelStorageMixin {
         if (raw == null) return;
         var access = (LevelStorageSource.LevelStorageAccess) (Object) this;
         var ids = LegacyWorldIds.find(access.getLevelPath(LevelResource.ROOT));
-        if (ids == null) return;
+        if (ids == null) {
+            LegacyWorldIds.repairNamedStoredItems(raw);
+            return;
+        }
         player.witchery$setPlayerTag(ids.upgradePlayer(raw, DataFixers.getDataFixer(), player.witchery$getPlayerDataVersion()));
         player.witchery$setPlayerTagUpgraded(true);
     }

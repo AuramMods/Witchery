@@ -1886,6 +1886,7 @@
 - [x] Import the active Alluring Skull item variant from a chest saved by Witchery 0.24.1. Preserve the custom name and the dormant control. An ordinary boot also recovers the variant from numeric or named records with legacy `Damage` in an earlier 1.20.1 save that retains its registry snapshot. Existing item block-state data takes precedence.
 - [x] Recover residual Witchery item variants on ordinary loads of earlier 1.20.1 saves that retain the original registry snapshot. A native chest provided 20 item families. The earlier save fixture preserved their original numeric IDs or names and wear or subtype data. Verify all 20 in the chest, the original tier and UUID of a dropped Leonard's Urn, and three restored variants on survival login. The player placed the stocked Critter Snare normally and both worlds saved the recovered data again.
 - [x] Preserve explicit current item state alongside stale legacy metadata. A mixed Poppet Shelf retained its Silverfish Snare, and the recovered chest kept the plain Wicker Bundle, the current Urn tier, the dormant skull and the current hat wear.
+- [x] Recover named legacy stacks in 1.20.1 saves without an original registry snapshot. Clean Forge and copied Auram retained 20 original item variants and the dropped Urn's tier and UUID across dedicated restarts. The muted clean Forge client placed the recovered stocked Bat Snare and rejoined with two Wooden Stakes. The single-player owner loaded and resaved both stakes.
 - [x] Import a Void Bramble column and two Statue of the Goddess blocks from the original server. Preserve all four original owner records and both statue orientations after a headless reload.
 - [x] Open an earlier 1.20.1 save containing both decorative placeholders and repeat the checks after a dedicated restart. The missing block entities were created without inventing owners, and both blocks retained their recovery flag.
 - [x] Import a Brew Bucket and the remaining two buckets in an original Witch's Cauldron. Preserve the color and order of Nether Wart and Sugar. Match six standing, spreading, and falling Brew and Disease fluid cells, ten pending flow updates, and two pending decay updates from the original regions.
@@ -1939,6 +1940,8 @@ java -Dwitchery.importLegacyWorld=true @user_jvm_args.txt @libraries/net/minecra
 ```
 
 The first boot records the old IDs in `witchery-legacy-ids.dat` inside the copy. Keep that file with the save so old dedicated player files can convert when their owners log in. Subsequent boots use the normal launch command. To import a single-player copy, add `-Dwitchery.importLegacyWorld=true` to the Java arguments for its first launch.
+
+Ordinary loads also repair stacks that already carry a Witchery namespaced ID and retain old item metadata. Recovering a numeric registry ID or custom dimension number still uses the original world's captured table.
 
 The same registry snapshot lets an earlier 1.20.1 import repair any numeric items still stored for the Rite of Prior Incarnation. The player's next login converts those items before the rite reads them.
 

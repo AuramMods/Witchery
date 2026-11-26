@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 public final class LegacyWorldIds {
@@ -293,43 +294,61 @@ public final class LegacyWorldIds {
         repairStoredItems(value, fixer, true);
     }
 
+    public static void repairNamedStoredItems(Tag value) {
+        visitStoredCompounds(value, stack -> {
+            String name = stack.getString("id");
+            if (name.startsWith(Witchery.MODID + ":") && stack.contains("Count", Tag.TAG_BYTE)
+                    && stack.getByte("Count") > 0 && hasLegacyStackEncoding(stack) && upgradeWitcheryStack(stack, name)) {
+                upgradeStackTags(stack, true, false);
+            }
+        });
+    }
+
     private void repairStoredItems(Tag value, DataFixer fixer, boolean repairVanilla) {
-        if (value instanceof ListTag list) {
-            for (Tag entry : list) repairStoredItems(entry, fixer, repairVanilla);
-        } else if (value instanceof CompoundTag compound) {
-            int currentVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
-            // Both legacy and current item stacks store Count as a byte. Some tiles have their own integer Count.
-            if (compound.contains("Count", Tag.TAG_BYTE) && hasLegacyStackEncoding(compound)) {
-                if (repairVanilla) {
-                    upgradeUntypedStack(compound, fixer, currentVersion, currentVersion);
-                } else if (upgradeStack(compound)) {
-                    upgradeStackTags(compound, true, false);
-                }
-            } else {
-                upgradeItemBinding(compound);
+        int currentVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+        visitStoredCompounds(value, compound -> repairStoredCompound(compound, fixer, currentVersion, repairVanilla));
+    }
+
+    private static void visitStoredCompounds(Tag value, Consumer<CompoundTag> repair) {
+        if (value instanceof CompoundTag compound) {
+            repair.accept(compound);
+            // Descend into the current children after replacing a saved stack or bottle.
+            for (String key : compound.getAllKeys()) visitStoredCompounds(compound.get(key), repair);
+        } else if (value instanceof ListTag list) {
+            for (Tag entry : list) visitStoredCompounds(entry, repair);
+        }
+    }
+
+    private void repairStoredCompound(CompoundTag compound, DataFixer fixer, int currentVersion, boolean repairVanilla) {
+        // Both legacy and current item stacks store Count as a byte. Some tiles have their own integer Count.
+        if (compound.contains("Count", Tag.TAG_BYTE) && hasLegacyStackEncoding(compound)) {
+            if (repairVanilla) {
+                upgradeUntypedStack(compound, fixer, currentVersion, currentVersion);
+            } else if (upgradeStack(compound)) {
+                upgradeStackTags(compound, true, false);
             }
-            String id = compound.getString("id");
-            upgradeMerchantItems(compound, id, fixer, currentVersion, currentVersion);
-            if (compound.get("Brew") instanceof CompoundTag brew) {
-                if (id.equals("witchery:droplet")) {
-                    repairLegacyInventory(brew.getList("Items", Tag.TAG_COMPOUND), fixer, currentVersion);
-                } else if (id.equals("witchery:brew2") && hasLegacyStackEncoding(brew)) {
-                    // Converted projectiles can retain the original bottle outside the vanilla Item field.
-                    upgradeStack(brew);
-                }
+        } else {
+            upgradeItemBinding(compound);
+        }
+        String id = compound.getString("id");
+        upgradeMerchantItems(compound, id, fixer, currentVersion, currentVersion);
+        if (compound.get("Brew") instanceof CompoundTag brew) {
+            if (id.equals("witchery:droplet")) {
+                repairLegacyInventory(brew.getList("Items", Tag.TAG_COMPOUND), fixer, currentVersion);
+            } else if (id.equals("witchery:brew2") && hasLegacyStackEncoding(brew)) {
+                // Converted projectiles can retain the original bottle outside the vanilla Item field.
+                upgradeStack(brew);
             }
-            if (compound.contains("Count", Tag.TAG_ANY_NUMERIC) && compound.get("tag") instanceof CompoundTag itemTag) {
-                // Vanilla's fixer does not visit the recipe inside a curse attached to an arbitrary item.
-                repairLegacyInventory(BrewItemCurse.savedBrew(itemTag).getList("Items", Tag.TAG_COMPOUND), fixer, currentVersion);
-                switch (id) {
-                    case "witchery:brewbottle", "witchery:bucketbrew" ->
-                            repairLegacyInventory(itemTag.getList("Items", Tag.TAG_COMPOUND), fixer, currentVersion);
-                    case "witchery:brewbag", "witchery:leonardsurn" ->
-                            repairLegacyInventory(itemTag.getCompound("Inventory").getList("Items", Tag.TAG_COMPOUND), fixer, currentVersion);
-                }
+        }
+        if (compound.contains("Count", Tag.TAG_ANY_NUMERIC) && compound.get("tag") instanceof CompoundTag itemTag) {
+            // Vanilla's fixer does not visit the recipe inside a curse attached to an arbitrary item.
+            repairLegacyInventory(BrewItemCurse.savedBrew(itemTag).getList("Items", Tag.TAG_COMPOUND), fixer, currentVersion);
+            switch (id) {
+                case "witchery:brewbottle", "witchery:bucketbrew" ->
+                        repairLegacyInventory(itemTag.getList("Items", Tag.TAG_COMPOUND), fixer, currentVersion);
+                case "witchery:brewbag", "witchery:leonardsurn" ->
+                        repairLegacyInventory(itemTag.getCompound("Inventory").getList("Items", Tag.TAG_COMPOUND), fixer, currentVersion);
             }
-            // Descend into any recovered bottles as well as the other nested item bindings.
-            for (String key : compound.getAllKeys()) repairStoredItems(compound.get(key), fixer, repairVanilla);
         }
     }
 
@@ -440,7 +459,8 @@ public final class LegacyWorldIds {
     }
 
     private static boolean hasLegacyStackEncoding(CompoundTag stack) {
-        return stack.contains("id", Tag.TAG_ANY_NUMERIC) || stack.contains("Damage", Tag.TAG_ANY_NUMERIC);
+        return stack.contains("id", Tag.TAG_ANY_NUMERIC) || stack.contains("Damage", Tag.TAG_ANY_NUMERIC)
+                || WitcheryIngredient.hasLegacyIngredientDamage(stack);
     }
 
     private static void upgradeEnchantments(CompoundTag tag, String originalKey, String currentKey) {
@@ -523,13 +543,19 @@ public final class LegacyWorldIds {
         }
         if (VANILLA_SPAWN_EGG.equals(name)) name = spawnEggs.get(compound.getInt("Damage") & 0xFFFF);
         if (name == null || !name.getNamespace().equals(Witchery.MODID) || compound.getByte("Count") <= 0) return false;
-        CompoundTag named = compound.copy();
-        named.putString("id", name.toString());
-        ItemStack stack = WitcheryIngredient.loadInventoryStack(named);
-        if (stack.isEmpty()) {
+        if (!upgradeWitcheryStack(compound, name.toString())) {
             if (unmappedItems.add(name)) Witchery.LOGGER.warn("Legacy item {} has no Witchery world import mapping yet", name);
             return false;
         }
+        upgradeItemBinding(compound);
+        return true;
+    }
+
+    private static boolean upgradeWitcheryStack(CompoundTag compound, String name) {
+        CompoundTag named = compound.copy();
+        named.putString("id", name);
+        ItemStack stack = WitcheryIngredient.loadInventoryStack(named);
+        if (stack.isEmpty()) return false;
         // ItemStack.of can insert a modern Damage field into the decoded copy.
         if (stack.isDamageableItem() && stack.getDamageValue() == 0 && !compound.getCompound("tag").contains("Damage", Tag.TAG_ANY_NUMERIC)) {
             int damage = compound.getInt("Damage");
@@ -538,7 +564,6 @@ public final class LegacyWorldIds {
         compound.remove("Damage");
         compound.remove("tag");
         stack.save(compound);
-        upgradeItemBinding(compound);
         return true;
     }
 

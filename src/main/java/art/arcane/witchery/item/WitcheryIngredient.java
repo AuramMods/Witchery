@@ -209,6 +209,11 @@ public enum WitcheryIngredient {
                 && tag.contains(LEGACY_DAMAGE_TAG, Tag.TAG_ANY_NUMERIC) && tag.getInt(LEGACY_DAMAGE_TAG) == legacyDamage;
     }
 
+    public static boolean hasLegacyIngredientDamage(CompoundTag stack) {
+        return LEGACY_ID.equals(stack.getString("id"))
+                && stack.getCompound("tag").contains(LEGACY_DAMAGE_TAG, Tag.TAG_ANY_NUMERIC);
+    }
+
     /** Loads an inventory stack after upgrading the legacy Witchery subtype, when present. */
     public static ItemStack loadInventoryStack(CompoundTag stackTag) {
         boolean hasLegacyDamage = stackTag.contains("Damage", Tag.TAG_ANY_NUMERIC);

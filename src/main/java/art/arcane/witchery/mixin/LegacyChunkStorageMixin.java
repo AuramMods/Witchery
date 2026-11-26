@@ -85,6 +85,8 @@ abstract class LegacyChunkStorageMixin {
             if (!legacy) witchery$legacyIds.repairConvertedTileItems(tiles, fixer, version);
             witchery$legacyIds.repairStoredItems(tiles, fixer);
             if (legacy) witchery$legacyIds.repairStoredItems(updated.getList("entities", Tag.TAG_COMPOUND), fixer);
+        } else {
+            LegacyWorldIds.repairNamedStoredItems(tiles);
         }
         return updated;
     }

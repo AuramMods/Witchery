@@ -103,4 +103,44 @@ public final class LegacyItemVariantTests {
         }
         helper.succeed();
     }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void repairsNamedStacksWithoutInventingNumericMappings(GameTestHelper helper) throws Exception {
+        var record = TagParser.parseTag("""
+                {Items:[
+                  {id:"witchery:ingredient",Slot:0b,Count:2b,tag:{LegacyIngredientDamage:162,display:{Name:"Wooden stake"}}},
+                  {id:"witchery:ingredient",Slot:1b,Count:1b,tag:{LegacyIngredientDamage:200,Marker:"unknown"}},
+                  {id:1201s,Slot:2b,Count:1b,Damage:2s},
+                  {id:"witchery:brewbag",Slot:3b,Count:1b,tag:{Inventory:{Items:[
+                    {id:"witchery:ingredient",Slot:0b,Count:1b,Damage:57s}
+                  ]}}},
+                  {id:"witchery:bound_waystone",Slot:4b,Count:1b,Damage:0s,tag:{PosD:-77,PosX:1,PosY:57,PosZ:4}},
+                  {id:"witchery:witchhat",Slot:5b,Count:1b,Damage:7s,tag:{Damage:3,display:{Name:'{"text":"Hat","color":"aqua"}'}}}
+                ]}
+                """);
+        var items = record.getList("Items", Tag.TAG_COMPOUND);
+        var unresolved = items.getCompound(1).copy();
+        var numeric = items.getCompound(2).copy();
+        var location = items.getCompound(4).getCompound("tag").copy();
+        var hat = items.getCompound(5).getCompound("tag").copy();
+        LegacyWorldIds.repairNamedStoredItems(record);
+
+        var restored = ItemStack.of(items.getCompound(0));
+        helper.assertTrue(restored.is(WitcheryIngredient.WOODEN_STAKE.item()) && restored.getCount() == 2
+                        && restored.getHoverName().getString().equals("Wooden stake"),
+                "Recover the named fallback subtype and its literal name and count");
+        helper.assertTrue(items.getCompound(1).equals(unresolved) && items.getCompound(2).equals(numeric)
+                        && items.getCompound(4).getCompound("tag").equals(location),
+                "Keep unknown subtypes, numeric registry IDs and numeric destinations for the captured table");
+        var contents = items.getCompound(3).getCompound("tag").getCompound("Inventory")
+                .getList("Items", Tag.TAG_COMPOUND).getCompound(0);
+        helper.assertTrue(ItemStack.of(contents).is(WitcheryIngredient.BREW_OF_VINES.item()),
+                "Repair named stacks inside a bag item");
+        helper.assertTrue(items.getCompound(5).getCompound("tag").equals(hat),
+                "Keep explicit current wear and styled text");
+        var saved = record.copy();
+        LegacyWorldIds.repairNamedStoredItems(record);
+        helper.assertTrue(record.equals(saved), "A second load preserves the resulting item data");
+        helper.succeed();
+    }
 }

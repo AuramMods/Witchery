@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Named item recovery without a registry snapshot (2026-11-26)
+
+- The fixture placed payloads from the original Forge server in the containers and player file of an earlier 1.20.1 world without a captured registry. It resolved the stacks' original IDs to their registry names and retained their metadata. The prior package lost the chest's Hawthorn variant and the dropped Urn's tier. It also left the Soft Clay Jar and an earlier wrapped Wooden Stake as generic ingredient items.
+- The rebuilt package recovered all 20 named original variants, their display names, and the Urn's UUID and tier. It restored two Wooden Stakes from the `LegacyIngredientDamage` entry. Current formatted text, explicit armor wear, a current Silverfish Snare, an unknown ingredient subtype, and the unmapped numeric Waystone destination all kept their saved values.
+- On clean Forge the muted background survival client joined with the stocked Bat Snare, two Wooden Stakes, and a Hawthorn sapling. The normal use binding placed the stocked snare. An ordinary restart retained the placement, dropped Urn, and the rest of the hotbar.
+- The copied Auram dedicated server recovered the same chest, dropped Urn, and control records on ordinary load. A second headless boot retained the upgraded items and their saved values.
+- A separate single-player copy loaded the owner from `level.dat`. The muted background client held two `witchery:stake` items by their saved name and wrote the mapped stack back on exit. OpenAL used No Output and the monitored test clients stayed out of the foreground.
+- A headless control with the captured registry reopened the same fixture with alternating numeric and named stack IDs. It retained all 20 variants and recovered the wrapped Wooden Stakes. JAR reobfuscation and all 476 local Forge GameTests passed. The candidate is `build/qa-saved-item-audit/candidate.jar` with SHA-256 `d7b3bf08128002a592f7660326383c9360cd46b8d64f36fe33fe60b3913dae9b`.
+
 ## Poppet Shelf placement and redstone saves (2026-11-26)
 
 - The original headless server placed eight shelves with six directions, exercised direct power and power at the space above, and saved named wards and Forge tickets. The previous port's import kept the wards and tickets and flattened every shelf to the same state.
