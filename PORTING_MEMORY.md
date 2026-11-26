@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Item descriptions and the Huntsman's Spear (2026-11-26)
+
+- The original release archive supplies 55 static tooltip keys. Seven already had Forge equivalents. The remaining 48 now describe equipment traits, crafting uses, guide controls, and the Urn. The original translations provide 23 German, 24 Spanish, 23 Russian, 23 Simplified Chinese, and 48 Italian descriptions. The Italian set also restores 47 item names. Forge supplies English for untranslated descriptions.
+- The packaged clean client validated all 48 descriptions in each of the six locales, including line order and the Cowl's blue emphasis. It showed the Cowl hint before login and honored `HideFlags:32` on a held stack. The client also used and released the Huntsman's Spear through the ordinary use binding.
+- After a dedicated restart with the Cowl's gaze disabled, the client lost the gaze hint on joining and kept the Robes' fire-resistance hint. The isolated clients used OpenAL No Output and never took foreground focus.
+- The muted copied Auram client verified the Cowl and Robes hints, the additional-tooltip hide flag, and the same 10 and 14.5 health measurements. The replay waited for the receiving screen and recipe load to finish before inspecting the actual held stack. The pack client also stayed out of the foreground.
+- The original headless 0.24.1 reference left an unguarded player at 10 health and a guarding player at 14.5 after a ten-point hit. The packaged Forge client reproduced both values. All 474 local Forge GameTests passed, including the seeded wolf retaliation and armor-bypassing damage checks. Java 17 data generation and JAR reobfuscation passed. The candidate archive is `build/qa-item-tooltips/candidate.jar` with SHA-256 `21604c8d4f6109bf531222928d083752f7b8543f2bc5af7dbc86eb2e8bb1e347`.
+
 ## Dream fluid spread and contact (2026-11-26)
 
 - The original headless Forge server filled exactly four horizontal cells with each fluid, preserved water beneath a source, replenished runoff from a diagonal above, and preferred a drop four cells away over a closed route. The port uses those rules on Forge's existing source, flowing, and falling states.

@@ -142,6 +142,12 @@ Original server records for all 55 entity IDs resolve in the packaged importer a
 - The original Apothecary texture uses Forge's villager profession layer with full-hat metadata. Native villager sleeping uses the 1.20.1 bed position and render pose in place of the original custom villager bed rendering.
 - Dark Marks still laugh with the original `mob.torment.laugh` event. The separate original `mob.darkmark.idle` event and clip are available in the sound registry. The Love forecast broadcasts `random.loved` at half volume in the neutral category. Both the Love and Torment death samples come from the full 0.24.1 release JAR, which contains two clips missing from the extracted reference tree.
 
+## Item Descriptions
+
+The 0.24.1 language archive contains 55 item tips in English. Forge already had equivalents for seven, including the Goblet, Cane Sword, Wolf Token, and Earmuffs. The remaining 48 resolve through the normal item tooltip event, preserving their line breaks and color emphasis. The Biomes and Climate book keeps the selected biome above its static instructions. The Cowl shows its gaze description under the server's `allowDeathsHoodToFreezeVictims` setting and uses the original enabled default before joining a world. All these descriptions honor Forge's additional-tooltip hide flag.
+
+The port includes the original localized versions where present in German, Spanish, Russian, Simplified Chinese, and Italian. It also recovers 47 associated Italian item names. Missing keys use the game's English fallback. The Huntsman's Spear describes the use action that now restores its original sword guard and wolf retaliation.
+
 ## Block Model Parity Anchors (current focus)
 - `witchery:altar`
   - The ordinary cube and the formed cube use the original side, top and underside textures. Formed members draw green sparks from nearby plants using the first eight frames of `textures/particle/power.png`. The Forge particle atlas extracts the frames from the original sheet.

@@ -515,7 +515,7 @@ public final class WitcheryEventHooks {
             if (!event.isCanceled() && !ignoreWards) VampiricPoppetItem.transferDamage(player, event);
             if (!event.isCanceled()) FamiliarBinding.shareDamage(player, event);
             if (!event.isCanceled()) {
-                HuntsmanSpearItem.defend(player, event.getSource());
+                HuntsmanSpearItem.defend(player, event);
                 Predictions.onHurt(player, event.getSource());
             }
             DeathProtectionPoppetItem.repairArmor(player);
