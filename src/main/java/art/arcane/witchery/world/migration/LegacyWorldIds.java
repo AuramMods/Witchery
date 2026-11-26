@@ -4,6 +4,7 @@ import art.arcane.witchery.Witchery;
 import art.arcane.witchery.brewing.BrewItemCurse;
 import art.arcane.witchery.brewing.DeathBrewEffects;
 import art.arcane.witchery.capability.WitcheryCapabilities;
+import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.entity.AnimalMerchant;
 import art.arcane.witchery.integration.BiomesOPlentySaplings;
 import art.arcane.witchery.item.WitcheryIngredient;
@@ -210,22 +211,19 @@ public final class LegacyWorldIds {
 
     private void preparePlayer(CompoundTag player, DataFixer fixer, int from) {
         if (from < 100) dimensions.upgradePlayerLocation(player);
-        var legacy = player.getCompound("WitcheryExtendedPlayer");
         var capabilities = player.getCompound("ForgeCaps");
         String playerDataId = WitcheryCapabilities.playerDataId().toString();
+        var progress = capabilities.getCompound(playerDataId);
+        var legacy = player.getCompound(WitcheryPlayerData.LEGACY_TAG).copy()
+                .merge(progress.getCompound(WitcheryPlayerData.LEGACY_TAG));
         var forgeData = player.getCompound("ForgeData");
         var persisted = forgeData.getCompound(Player.PERSISTED_NBT_TAG);
         if (!legacy.isEmpty()) {
             boolean insideMirror = WitcheryDimensions.MIRROR.location().toString().equals(player.getString("Dimension"));
             MirrorTravel.importLegacyPlayerState(legacy, persisted, insideMirror);
-            if (!capabilities.contains(playerDataId, Tag.TAG_COMPOUND)) {
-                var imported = new CompoundTag();
-                imported.put("WitcheryExtendedPlayer", legacy.copy());
-                capabilities.put(playerDataId, imported);
-                player.put("ForgeCaps", capabilities);
-            }
-        } else {
-            legacy = capabilities.getCompound(playerDataId).getCompound("WitcheryExtendedPlayer");
+            progress.put(WitcheryPlayerData.LEGACY_TAG, legacy);
+            capabilities.put(playerDataId, progress);
+            player.put("ForgeCaps", capabilities);
         }
         if (legacy.getBoolean("CanRestoreInventory") && legacy.contains("CachedInventory2", Tag.TAG_LIST)) {
             DeathBrewEffects.storeLegacyInventory(persisted, legacy.getList("CachedInventory2", Tag.TAG_COMPOUND));

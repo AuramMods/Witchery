@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Mixed player progression and Mirror returns (2026-11-25)
+
+- Witchery 0.24.1 wrote the Wolf and Vampire fixture compounds through its original player serializer. On an ordinary clean Forge login, the preceding port dropped the Wolf's rank, trial counter and visited chunk when it found an incomplete capability alongside the original player data.
+- The player loader reads the original root, embedded legacy capability and current fields in that order. The rebuilt JAR kept explicit current zero and empty values, respected the newer game-tick howl timer and restored the missing trial progress and bone-finding timestamp. The clean Forge survival client checked the same data after a dedicated restart.
+- A copied Auram survival login saved the embedded Vampire's restored blood stores, trial counter, Mirror entry coordinates, and both escape timers. It also kept the current rank, blood power, disabled vision and cleared visits. The Mirror home phrase through `/chant` returned the player to the saved coordinates and started a new cooldown. The clients used master volume zero and OpenAL No Output, and their process IDs never appeared in the foreground monitor.
+- Java 17 reobfuscation and all 462 local Forge GameTests passed on world seed `5471593853027166409`. The JAR is `build/qa-player-progress-migration/candidate.jar` with SHA-256 `0f9a65d2e41952f637128127533a348f5b79c5f419691c7ff89a752182f8f40a`. See `build/qa-player-progress-migration/comparison.txt`.
+
 ## Legacy item variants in earlier port saves (2026-11-25)
 
 - Witchery 0.24.1 saved a chest with 20 item families. The packaged importer restored their original subtypes and wear. The earlier-port fixture placed the actual legacy stack data in a 1.20.1 chest, player file, and entity region with the original registry snapshot. The previous build lost most chest variants and the dropped Urn's tier.

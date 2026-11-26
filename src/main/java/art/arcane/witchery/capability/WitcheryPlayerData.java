@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 
 public final class WitcheryPlayerData {
+    public static final String LEGACY_TAG = "WitcheryExtendedPlayer";
     private static final String KEY_INITIALIZED = "Initialized";
     private static final String KEY_SYNC_REVISION = "SyncRevision";
     private static final String KEY_CREATURE_TYPE_ORDINAL = "CreatureTypeOrdinal";
@@ -511,8 +512,8 @@ public final class WitcheryPlayerData {
     public void deserializeNBT(CompoundTag tag) {
         initialized = tag.getBoolean(KEY_INITIALIZED);
         syncRevision = tag.getInt(KEY_SYNC_REVISION);
-        CompoundTag bloodData = tag.contains("WitcheryExtendedPlayer", Tag.TAG_COMPOUND)
-                ? tag.getCompound("WitcheryExtendedPlayer") : tag;
+        CompoundTag bloodData = tag.contains(LEGACY_TAG, Tag.TAG_COMPOUND)
+                ? tag.getCompound(LEGACY_TAG).copy().merge(tag) : tag;
         setCreatureTypeOrdinal(tag.contains(KEY_CREATURE_TYPE_ORDINAL, Tag.TAG_ANY_NUMERIC)
                 ? tag.getInt(KEY_CREATURE_TYPE_ORDINAL) : bloodData.getInt("CreatureType"));
         setHumanBlood(bloodData.getInt(KEY_HUMAN_BLOOD));
@@ -566,8 +567,11 @@ public final class WitcheryPlayerData {
                 ? tag.getLong(KEY_LAST_HOWL_GAME_TIME) : Long.MIN_VALUE;
         lastBoneFindGameTime = tag.contains(KEY_LAST_BONE_FIND_GAME_TIME, Tag.TAG_LONG)
                 ? tag.getLong(KEY_LAST_BONE_FIND_GAME_TIME) : Long.MIN_VALUE;
-        lastHowl = bloodData.getLong(KEY_LAST_HOWL);
-        lastBoneFind = bloodData.getLong(KEY_LAST_BONE_FIND);
+        // An existing game-tick timer supersedes the corresponding legacy wall-clock timestamp.
+        lastHowl = lastHowlGameTime != Long.MIN_VALUE && !tag.contains(KEY_LAST_HOWL, Tag.TAG_LONG)
+                ? 0 : bloodData.getLong(KEY_LAST_HOWL);
+        lastBoneFind = lastBoneFindGameTime != Long.MIN_VALUE && !tag.contains(KEY_LAST_BONE_FIND, Tag.TAG_LONG)
+                ? 0 : bloodData.getLong(KEY_LAST_BONE_FIND);
     }
 
     private record VampireVillage(String dimension, long location) {}

@@ -9,6 +9,7 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.storage.LevelResource;
@@ -78,6 +79,76 @@ public final class LegacyPlayerSaveImportTests {
                             && data.serializeNBT().getLong("LastHowl") == now
                             && data.serializeNBT().getLong("LastBoneFind") == now - 61_000).orElse(false),
                     "The modern save must keep the next trial step and original form and visited chunk");
+        } finally {
+            FileUtils.deleteDirectory(root.toFile());
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void restoresProgressInMixedPlayerSaves(GameTestHelper helper) throws Exception {
+        var root = Files.createTempDirectory("witchery-mixed-player-progress");
+        try (var access = LevelStorageSource.createDefault(root).createAccess("world")) {
+            var world = access.getLevelPath(LevelResource.ROOT);
+            NbtIo.writeCompressed(new CompoundTag(), world.resolve("witchery-legacy-ids.dat").toFile());
+            var storage = access.createPlayerStorage();
+            var files = access.getLevelPath(LevelResource.PLAYER_DATA_DIR);
+            var wolfProfile = new GameProfile(UUID.randomUUID(), "MixedWolf");
+            var vampireProfile = new GameProfile(UUID.randomUUID(), "MixedVampire");
+            int version = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+            long now = System.currentTimeMillis();
+            long visitedChunk = ((long) -3 << 32) | 4;
+            var wolfFile = TagParser.parseTag("""
+                    {Dimension:"minecraft:overworld",WitcheryExtendedPlayer:{CreatureType:1,WerewolfLevel:6,
+                     WolfmanQuestState:1,WolfmanQuestCounter:9,WolfmanQuestChunks:[{Location:%dL}],
+                     PotionBottling:32,PotionThrowing:57,LastHowl:%dL,LastBoneFind:%dL},
+                     ForgeCaps:{"witchery:player_data":{CreatureTypeOrdinal:0,PotionThrowing:0,LastHowlGameTime:500L,
+                     WitcheryExtendedPlayer:{PotionBottling:48}}}}
+                    """.formatted(visitedChunk, now, now - 61_000));
+            var vampireFile = TagParser.parseTag("""
+                    {Dimension:"witchery:mirror",ForgeCaps:{"witchery:player_data":{VampireLevel:7,
+                     VampireVision:0b,VampireQuestChunks:[],OtherPlayerSkin:"",WitcheryExtendedPlayer:{
+                     CreatureType:3,VampireLevel:8,BloodPower:1000,HumanBlood:21,BloodReserve:34,VampireVision:1b,
+                     VampireLevelCap:10,VampireQuestCounter:5,VampireQuestChunks:[{Location:%dL}],LastPlayerSkin:"LegacySkin",
+                     MirrorEscape1:8420L,MirrorWorldEntryPoint:{posX:-22,posY:48,posZ:39}}}}}
+                    """.formatted(visitedChunk));
+            wolfFile.putInt("DataVersion", version);
+            vampireFile.putInt("DataVersion", version);
+            NbtIo.writeCompressed(wolfFile, files.resolve(wolfProfile.getId() + ".dat").toFile());
+            NbtIo.writeCompressed(vampireFile, files.resolve(vampireProfile.getId() + ".dat").toFile());
+
+            var wolf = new FakePlayer(helper.getLevel(), wolfProfile);
+            storage.load(wolf);
+            var wolfData = WitcheryPlayerDataProvider.get(wolf).orElseThrow(IllegalStateException::new);
+            helper.assertTrue(wolfData.getWerewolfLevel() == 6 && wolfData.getWolfmanQuestState() == WolfmanQuestState.STARTED
+                            && wolfData.getWolfmanQuestCounter() == 9 && !wolfData.markWolfmanQuestChunk(-3, 4),
+                    "A partial port capability recovers the rank, trial and visited chunk from the original record");
+            helper.assertTrue(wolfData.getCreatureTypeOrdinal() == 0 && wolfData.getPotionBottling() == 48
+                            && wolfData.serializeNBT().getInt("PotionThrowing") == 0,
+                    "Current zero values take precedence, followed by the embedded legacy skills");
+            helper.assertTrue(wolfData.howlCoolingDown(1699) && !wolfData.howlCoolingDown(1700)
+                            && wolfData.serializeNBT().getLong("LastBoneFind") == now - 61_000,
+                    "A current tick timer takes precedence over the imported wall clock for the same ability");
+
+            var vampire = new FakePlayer(helper.getLevel(), vampireProfile);
+            storage.load(vampire);
+            var vampireData = WitcheryPlayerDataProvider.get(vampire).orElseThrow(IllegalStateException::new);
+            var persisted = vampire.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
+            helper.assertTrue(vampireData.getVampireLevel() == 7 && vampireData.getVampireLevelCap() == 10
+                            && vampireData.getBloodReserve() == 34 && vampireData.getHumanBlood() == 21
+                            && vampireData.getVampireQuestCounter() == 5 && !vampireData.hasVampireVision(),
+                    "Current Vampire values and restored blood and trial progress coexist");
+            helper.assertTrue(vampireData.serializeNBT().getList("VampireQuestChunks", Tag.TAG_COMPOUND).isEmpty()
+                            && vampireData.getOtherPlayerSkin().isEmpty() && persisted.getLong("MirrorEscape1") == 8420
+                            && persisted.getCompound("MirrorWorldEntryPoint").getInt("posY") == 48,
+                    "Explicitly cleared fields stay clear and an embedded legacy record restores the former room");
+            storage.save(vampire);
+            var restored = new FakePlayer(helper.getLevel(), vampireProfile);
+            storage.load(restored);
+            helper.assertTrue(WitcheryPlayerDataProvider.get(restored).map(data -> data.serializeNBT()
+                            .equals(vampireData.serializeNBT())).orElse(false)
+                            && persisted.equals(restored.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG)),
+                    "The combined progress and active Mirror record survive an ordinary reload");
         } finally {
             FileUtils.deleteDirectory(root.toFile());
         }
