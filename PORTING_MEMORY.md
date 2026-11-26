@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron Planting and Mindrake fertilization (2026-11-25)
+
+- The original Forge registry exposed six vanilla and eight Witchery plantable items. Planting ignored loose oak saplings and poppies and used the last eligible stack within its sphere first. It consumed one item per planted block. Nether Wart used Soul Sand. Artichoke stayed in the queue when the cast could find no solid surface on which to plant it.
+- The previous reobfuscated JAR put loose poppies and oak saplings ahead of wheat and skipped Mindrake stages. Planting now uses the item-side Forge interface, named seed items that point to a plantable block, and the retained Artichoke seed. Mindrake uses the original one-stage increase for both direct bone meal and Fertilization. A base cast advances the crop twice on a repeated row and once at the fringe.
+- Ordinary throws and a direct bone meal click passed in the muted background survival client. A restart retained the two crop states, the exact one-seed stack UUID, and the three wheat seeds outside the sphere. The copied Auram server reproduced Planting and Fertilization through a dispenser with zero players online. Its Farmer's Delight Cabbage Seeds planted and consumed normally.
+- Java 17 reobfuscation and all 455 local Forge GameTests passed on world seed `5471593853027166409`. The JAR is `build/qa-planting-parity/candidate.jar` with SHA-256 `8866e001ad0eeaa537efe0fccfe149ee0cb64bcb175a3ed7e2fe1d996113d16f`. See `build/qa-planting-parity/comparison.txt`.
+
 ## Cauldron Flowers replacement and permission order (2026-11-25)
 
 - Witchery 0.24.1's Flowers cast replaces short grass and one through seven snow layers. It preserves eight-layer snow, both halves of double grass and double fern, saplings, and water. With seed `4096`, an original Forge break veto on the first grass cell moved the Oxeye Daisy roll to the next supported cell.

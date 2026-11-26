@@ -93,7 +93,8 @@ public final class WitchCropBlock extends CropBlock {
 
     @Override
     protected int getBonemealAgeIncrease(Level level) {
-        return crop == WitchCrop.WOLFSBANE ? 1 : Mth.nextInt(level.random, 2, getMaxAge());
+        return crop == WitchCrop.WOLFSBANE || crop == WitchCrop.MINDRAKE
+                ? 1 : Mth.nextInt(level.random, 2, getMaxAge());
     }
 
     @Override

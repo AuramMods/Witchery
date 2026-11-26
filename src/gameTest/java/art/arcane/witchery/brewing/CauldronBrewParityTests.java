@@ -2,6 +2,7 @@ package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.DreamWeave;
+import art.arcane.witchery.block.WitchCrop;
 import art.arcane.witchery.block.WitchLilyPadBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.block.WitchesCauldronBlock;
@@ -37,11 +38,13 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.BoneMealItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -360,6 +363,135 @@ public final class CauldronBrewParityTests {
             MinecraftForge.EVENT_BUS.unregister(protection);
             MinecraftForge.EVENT_BUS.unregister(sound);
             config.set(previous);
+            brewer.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void plantingIgnoresDroppedSaplingsAndFlowers(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var impact = helper.absolutePos(new BlockPos(6, 5, 5)).atY(196);
+        var dirt = impact.west(2);
+        var farm = impact.west();
+        level.setBlockAndUpdate(dirt.below(), Blocks.DIRT.defaultBlockState());
+        level.setBlockAndUpdate(farm.below(), Blocks.FARMLAND.defaultBlockState());
+        var brew = plantingBrew();
+
+        for (var decoration : List.of(Items.POPPY, Items.OAK_SAPLING)) {
+            var seed = spawnLooseItem(helper, impact, Items.WHEAT_SEEDS, 1);
+            var plant = spawnLooseItem(helper, impact, decoration, 2);
+            try {
+                brew.applySplashToBlock(level, impact, Direction.UP, Vec3.atCenterOf(impact), null);
+                helper.assertTrue(level.isEmptyBlock(dirt) && level.getBlockState(farm).is(Blocks.WHEAT),
+                        "The dropped " + decoration + " must not displace seeds in the original planting queue");
+                helper.assertTrue(seed.isRemoved() && plant.getItem().getCount() == 2,
+                        "Planting consumes the wheat seed and leaves the decorative stack intact");
+            } finally {
+                seed.discard();
+                plant.discard();
+                level.removeBlock(dirt, false);
+                level.removeBlock(farm, false);
+            }
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void plantingKeepsOriginalSeedOrderAndSoils(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var impact = helper.absolutePos(new BlockPos(6, 5, 5)).atY(196);
+        var first = impact.west(2);
+        var second = impact.west();
+        for (var pos : List.of(first, second)) {
+            level.setBlockAndUpdate(pos.below(), Blocks.FARMLAND.defaultBlockState());
+        }
+        var brew = plantingBrew();
+        var wheat = spawnLooseItem(helper, impact, Items.WHEAT_SEEDS, 2);
+        var potato = spawnLooseItem(helper, impact, Items.POTATO, 1);
+        var distant = spawnLooseItem(helper, impact.offset(2, 0, 2), Items.WHEAT_SEEDS, 3);
+        try {
+            brew.applySplashToBlock(level, impact, Direction.UP, Vec3.atCenterOf(impact), null);
+            helper.assertTrue(level.getBlockState(first).is(Blocks.POTATOES) && level.getBlockState(second).is(Blocks.WHEAT),
+                    "The original scan uses the last in-range plantable stack first");
+            helper.assertTrue(potato.isRemoved() && wheat.getItem().getCount() == 1 && distant.getItem().getCount() == 3,
+                    "Each planting consumes one seed and the corner stack stays outside the sphere");
+
+            level.removeBlock(first, false);
+            level.setBlockAndUpdate(first.below(), Blocks.SOUL_SAND.defaultBlockState());
+            var wart = spawnLooseItem(helper, impact, Items.NETHER_WART, 2);
+            try {
+                brew.applySplashToBlock(level, impact, Direction.UP, Vec3.atCenterOf(impact), null);
+                helper.assertTrue(level.getBlockState(first).is(Blocks.NETHER_WART) && wart.getItem().getCount() == 1,
+                        "Nether Wart still uses Soul Sand and consumes one Wart");
+            } finally {
+                wart.discard();
+            }
+
+            level.removeBlock(first, false);
+            level.removeBlock(second, false);
+            level.setBlockAndUpdate(first.below(), Blocks.WATER.defaultBlockState());
+            var artichoke = spawnLooseItem(helper, impact, WitchCrop.ARTICHOKE.seed(), 2);
+            try {
+                brew.applySplashToBlock(level, impact, Direction.UP, Vec3.atCenterOf(impact), null);
+                helper.assertTrue(level.isEmptyBlock(first) && level.isEmptyBlock(second)
+                                && artichoke.getItem().getCount() == 2 && wheat.getItem().getCount() == 1,
+                        "The original Artichoke seed stays queued and Planting only sows from solid surfaces");
+            } finally {
+                artichoke.discard();
+                level.removeBlock(first.below(), false);
+            }
+        } finally {
+            wheat.discard();
+            potato.discard();
+            distant.discard();
+        }
+        helper.succeed();
+    }
+
+    private static BrewMixture plantingBrew() {
+        return BrewMixture.from(List.of(Items.NETHER_WART.getDefaultInstance(), Items.GUNPOWDER.getDefaultInstance(),
+                Items.WHEAT_SEEDS.getDefaultInstance()));
+    }
+
+    private static ItemEntity spawnLooseItem(GameTestHelper helper, BlockPos pos, Item item, int count) {
+        var level = helper.getLevel();
+        var center = Vec3.atCenterOf(pos);
+        var drop = new ItemEntity(level, center.x, center.y, center.z, new ItemStack(item, count));
+        level.addFreshEntity(drop);
+        return drop;
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void fertilizationAdvancesMindrakeOneStagePerVisit(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var impact = helper.absolutePos(new BlockPos(6, 5, 5)).atY(196);
+        var middle = impact.west(2);
+        var fringe = middle.north();
+        var wolfsbane = fringe.east();
+        for (var pos : List.of(middle, fringe, wolfsbane)) {
+            level.setBlockAndUpdate(pos.below(), Blocks.FARMLAND.defaultBlockState());
+        }
+        var mindrake = WitchCrop.MINDRAKE.block().defaultBlockState();
+        level.setBlockAndUpdate(middle, mindrake);
+        level.setBlockAndUpdate(fringe, mindrake);
+        level.setBlockAndUpdate(wolfsbane, WitchCrop.WOLFSBANE.block().defaultBlockState());
+
+        var brew = BrewMixture.from(List.of(Items.NETHER_WART.getDefaultInstance(), Items.GUNPOWDER.getDefaultInstance(),
+                Items.BONE_MEAL.getDefaultInstance()));
+        var brewer = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "CropMealTester"));
+        try {
+            brew.applySplashToBlock(level, impact, Direction.UP, Vec3.atCenterOf(impact), brewer);
+            helper.assertTrue(level.getBlockState(middle).getValue(CropBlock.AGE) == 2
+                            && level.getBlockState(fringe).getValue(CropBlock.AGE) == 1
+                            && level.getBlockState(wolfsbane).getValue(CropBlock.AGE) == 1,
+                    "Mindrake and Wolfsbane each grow one stage per original column visit");
+
+            level.setBlockAndUpdate(fringe, mindrake);
+            helper.assertTrue(BoneMealItem.applyBonemeal(Items.BONE_MEAL.getDefaultInstance(), level, fringe, brewer)
+                            && level.getBlockState(fringe).getValue(CropBlock.AGE) == 1,
+                    "Using bone meal directly also advances Mindrake by one stage");
+        } finally {
             brewer.discard();
         }
         helper.succeed();

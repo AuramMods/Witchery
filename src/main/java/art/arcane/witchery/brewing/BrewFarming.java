@@ -3,6 +3,7 @@ package art.arcane.witchery.brewing;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.entity.Ent;
 import art.arcane.witchery.event.WitcheryBlockPlacement;
+import art.arcane.witchery.item.WitchSeedsItem;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
@@ -187,8 +188,10 @@ final class BrewFarming {
     }
 
     private static boolean isPlantable(ItemStack stack) {
-        return stack.getItem() instanceof IPlantable
-                || stack.getItem() instanceof BlockItem item && item.getBlock() instanceof IPlantable;
+        var item = stack.getItem();
+        // Modern Forge exposes the planted block through a distinct seed item such as Wheat Seeds.
+        return item instanceof IPlantable || item instanceof WitchSeedsItem.WaterSeeds
+                || item instanceof ItemNameBlockItem seed && seed.getBlock() instanceof IPlantable;
     }
 
     private static boolean plantSeed(ServerLevel level, BlockPos soil, BlockPos site, ItemStack stack, Player actor) {
