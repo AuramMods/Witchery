@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Mirror exit destinations in converted chunks (2026-11-26)
+
+- The original headless Forge server wrote reciprocal Mirror pairs linking Dream `-47` and Torment `-48` to rooms in Mirror `64`. The original import on the preceding JAR correctly moved all three dimensions and translated both return addresses.
+- A disposable 1.20.1 copy put the two original numeric return addresses back into its converted room chunks. It kept the captured dimension registry. The preceding JAR loaded both exits as Overworld links. The rebuilt JAR translates them before loading the block entities. A separate exit with a namespaced Nether address and a stale Dream number retained the Nether address.
+- The muted background survival client exercised the exact reobfuscated JAR. It completed all six crossings via the original panels, including round trips through both Dream and Torment. The fixture supplied the original stone platforms and positioned the player at each panel. The client used zero master volume and OpenAL No Output and its process never took focus.
+- Clean Forge and copied Auram kept both restored return addresses, the explicit Nether address, the visitor lists and the defeated Reflection state through ordinary dedicated restarts.
+- Java 17 reobfuscation and all 494 local Forge GameTests passed. The exact `build/qa-mirror-exit-dimensions/candidate.jar` has SHA-256 `264394747b31b71d20cf145768ba74e3b8bf377ae9d81e657915335f904c1502`. The QA directory also contains `comparison.txt`, `suite.log`, and `viewer/check.log`.
+
 ## Witchery state inside vanilla spawner templates (2026-11-26)
 
 - Forge 1.7.10 wrote an Apothecary as the selected block spawn and a second Apothecary as a weighted cart spawn. The block stored numeric Paralysis III on the selected villager and Sinking II on a weighted Zombie. The cart stored Sinking I on the selected pig. The records also held a vanilla Fire Resistance control, a Witchery Toad control, and delays of 60 and 65 ticks.

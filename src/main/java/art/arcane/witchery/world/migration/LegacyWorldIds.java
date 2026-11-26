@@ -352,6 +352,7 @@ public final class LegacyWorldIds {
             upgradeItemBinding(compound);
         }
         String id = compound.getString("id");
+        upgradeMirrorExit(compound, id);
         upgradeMerchantItems(compound, id, fixer, currentVersion, currentVersion);
         if (compound.get("Brew") instanceof CompoundTag brew) {
             if (id.equals("witchery:droplet")) {
@@ -381,15 +382,19 @@ public final class LegacyWorldIds {
             CompoundTag tile = (CompoundTag) entry;
             var id = ResourceLocation.tryParse(tile.getString("id"));
             boolean witcheryTile = id != null && id.getNamespace().equals(Witchery.MODID);
-            if (witcheryTile && id.getPath().equals("mirrorblock2") && tile.contains("DimCoords", Tag.TAG_COMPOUND)) {
-                dimensions.upgradeReference(tile.getCompound("DimCoords"), "Dimension", "DimensionId");
-            }
+            upgradeMirrorExit(tile, tile.getString("id"));
             // A cursed control has an item-like ID and its own integer Count at the tile root.
             for (String key : tile.getAllKeys()) {
                 Tag value = tile.get(key);
                 upgradeItems(value);
                 if (witcheryTile) upgradeUntypedItems(value, fixer, from, to);
             }
+        }
+    }
+
+    private void upgradeMirrorExit(CompoundTag tile, String id) {
+        if (id.equals("witchery:mirrorblock2") && tile.get("DimCoords") instanceof CompoundTag coords) {
+            dimensions.upgradeReference(coords, "Dimension", "DimensionId");
         }
     }
 

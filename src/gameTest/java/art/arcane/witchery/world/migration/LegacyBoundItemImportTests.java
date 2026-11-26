@@ -1,15 +1,20 @@
 package art.arcane.witchery.world.migration;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.MirrorBlock;
+import art.arcane.witchery.block.entity.MirrorBlockEntity;
 import art.arcane.witchery.item.DoorKeyItem;
 import art.arcane.witchery.item.WaystoneItem;
+import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.world.WitcheryDimensions;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.world.item.ItemStack;
@@ -71,6 +76,45 @@ public final class LegacyBoundItemImportTests {
                                 .equals(WaystoneItem.location(stack)) && item.getByte("Slot") == 3 && stack.getCount() == 2
                                 && stack.getTag().getString("Label").equals("Original stone"),
                         "A vanilla chest repairs the Waystone location and retains the original stack and slot");
+            }
+        } finally {
+            FileUtils.deleteDirectory(root.toFile());
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_mirror_exit_dimensions")
+    public static void repairsMirrorExitsWithOriginalDimensionNumbers(GameTestHelper helper) throws Exception {
+        var root = Files.createTempDirectory("witchery-mirror-exit-dimensions");
+        try {
+            var snapshot = TagParser.parseTag("{Dimensions:{dream:-47,torment:-48,mirror:64}}");
+            NbtIo.writeCompressed(snapshot, root.resolve("witchery-legacy-ids.dat").toFile());
+            var saved = NbtUtils.addCurrentDataVersion(TagParser.parseTag("""
+                    {xPos:0,zPos:0,block_entities:[
+                      {id:"witchery:mirrorblock2",x:4,y:64,z:4,DemonSlain:1b,PlayersSeen:["Traveler"],
+                       DimCoords:{posX:94,posY:121,posZ:31,Dimension:-47}},
+                      {id:"witchery:mirrorblock2",x:8,y:64,z:4,
+                       DimCoords:{posX:102,posY:121,posZ:31,Dimension:-48}},
+                      {id:"witchery:mirrorblock2",x:4,y:64,z:8,
+                       DimCoords:{posX:42,posY:50,posZ:43,Dimension:-47,DimensionId:"minecraft:the_nether"}}]}
+                    """));
+            var level = helper.getLevel();
+            try (var storage = new ChunkStorage(root.resolve("region"), level.getServer().getFixerUpper(), true)) {
+                var loaded = storage.upgradeChunkTag(WitcheryDimensions.MIRROR, level::getDataStorage, saved, Optional.empty());
+                var tiles = loaded.getList("block_entities", Tag.TAG_COMPOUND);
+                var block = (MirrorBlock) WitcheryBlocks.getRequired("mirrorblock2").get();
+                var frame = (MirrorBlockEntity) block.newBlockEntity(new BlockPos(4, 64, 4), block.defaultBlockState());
+                frame.load(tiles.getCompound(0));
+                helper.assertTrue(GlobalPos.of(WitcheryDimensions.DREAM, new BlockPos(94, 121, 31)).equals(frame.counterpart())
+                                && frame.demonSlain()
+                                && frame.saveWithoutMetadata().getList("PlayersSeen", Tag.TAG_STRING).getString(0).equals("Traveler"),
+                        "Restore the Dream address and keep the conversation and defeated Reflection state");
+                frame.load(tiles.getCompound(1));
+                helper.assertTrue(GlobalPos.of(WitcheryDimensions.TORMENT, new BlockPos(102, 121, 31)).equals(frame.counterpart()),
+                        "Restore the Torment address from its captured original number");
+                frame.load(tiles.getCompound(2));
+                helper.assertTrue(GlobalPos.of(Level.NETHER, new BlockPos(42, 50, 43)).equals(frame.counterpart()),
+                        "Keep an explicitly saved current dimension");
             }
         } finally {
             FileUtils.deleteDirectory(root.toFile());
