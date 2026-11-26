@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Attack Bat aim and flight clearance (2026-11-26)
+
+- The original headless server traced an aimed cow through a wall on the caster's ray. The bat approached from the side. It added the original 0.1 acceleration toward the cow's position and changed motion from `(0.20, 0.02, 0.05)` to `(0.11055728, 0.02000000, 0.09472136)`. The preceding port steered away using ordinary bat flight in that case.
+- The port uses the original 32-block entity aim and checks the bat's collision box along its own approach. The first hit controls pursuit. A nearer bat prevents pursuit of a cow behind it. A low overhang can block the bat's body even when its eye trace reaches the target.
+- The muted clean Forge survival client aimed through a wall. An owned bat from the prepared side approach flew to the cow and bit it for four damage. The client received the Red Dust and drink cue on both sides of a dedicated restart. The fixture supplied the caster's save, terrain, cow, and bat placement.
+- Copied Auram matched all three original velocity components and blocked the low overhang before and after a headless restart. Java 17 reobfuscation and all 498 local Forge GameTests passed. The exact `build/qa-vampire-swarm-aim/candidate.jar` has SHA-256 `d6a17beded70da04eed4a36b5e3e8d497b48739f2e10eebaff6f2fce3f634f4d`. See `comparison.txt` and `suite.log` in that directory.
+
 ## Bat Swarm placement, charge and feedback (2026-11-26)
 
 - The original headless server spawned 15 bats on an open floor and 15 more from a surface at the eight-block scan limit. A sealed arena spawned zero bats and still spent one charge. The preceding Forge build kept the charge in the sealed case and used positions offset by +1 on both axes. The recovered placement draws from the original seven positions and requires two air blocks above the destination surface.

@@ -1,6 +1,5 @@
 package art.arcane.witchery.entity;
 
-import art.arcane.witchery.infusion.OtherwhereInfusion;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.world.migration.LegacyGameProfiles;
 import com.mojang.authlib.GameProfile;
@@ -14,12 +13,14 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ambient.Bat;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 public final class AttackBat extends Bat {
     private static final int LIFETIME = 301;
+    private static final double AIM_RANGE = 32;
     private GameProfile owner;
     private int remainingTicks = LIFETIME;
 
@@ -55,20 +56,39 @@ public final class AttackBat extends Bat {
     @Override
     protected void customServerAiStep() {
         ServerPlayer caster = level() instanceof ServerLevel world ? caster(world) : null;
-        if (caster != null
-                && OtherwhereInfusion.rayTrace(caster, 32,
-                        entity -> entity instanceof LivingEntity living && mayBite(caster, living)) instanceof EntityHitResult aim
-                && hasLineOfSight(aim.getEntity())) {
-            setResting(false);
-            var velocity = getDeltaMovement().scale(0.82).add(aim.getEntity().getBoundingBox().getCenter()
-                    .subtract(getBoundingBox().getCenter()).normalize().scale(0.1));
-            setDeltaMovement(velocity);
-            float yaw = (float) (Mth.atan2(velocity.z, velocity.x) * Mth.RAD_TO_DEG) - 90;
-            setYRot(yaw);
-            yBodyRot = yaw;
-        } else {
-            super.customServerAiStep();
+        if (caster == null || !pursueAim(caster)) super.customServerAiStep();
+    }
+
+    private boolean pursueAim(ServerPlayer caster) {
+        Vec3 eye = caster.getEyePosition();
+        Vec3 look = caster.getLookAngle().scale(AIM_RANGE);
+        // The original aim considers entities along the whole ray. The bat checks its own flight path.
+        var aim = ProjectileUtil.getEntityHitResult(caster, eye, eye.add(look),
+                caster.getBoundingBox().expandTowards(look).inflate(1),
+                entity -> entity.isPickable() && !entity.isSpectator(), AIM_RANGE * AIM_RANGE);
+        if (aim == null || !(aim.getEntity() instanceof LivingEntity target) || target instanceof Bat) return false;
+
+        Vec3 displacement = target.position().subtract(position());
+        double distance = displacement.length();
+        if (distance < 1e-5) return false;
+        Vec3 direction = displacement.scale(1 / distance);
+        if (!canFlyTo(direction, distance)) return false;
+
+        setResting(false);
+        Vec3 velocity = getDeltaMovement().add(direction.scale(0.1));
+        setDeltaMovement(velocity);
+        float yaw = (float) (-Mth.atan2(velocity.x, velocity.z) * Mth.RAD_TO_DEG);
+        setYRot(yaw);
+        yBodyRot = yaw;
+        return true;
+    }
+
+    private boolean canFlyTo(Vec3 direction, double distance) {
+        var bounds = getBoundingBox();
+        for (int step = 1; step < distance; step++) {
+            if (!level().noCollision(this, bounds.move(direction.scale(step)))) return false;
         }
+        return true;
     }
 
     @Nullable
