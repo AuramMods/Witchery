@@ -58,17 +58,12 @@ final class BrewLandscape {
                 || state.is(Blocks.LARGE_FERN) || state.is(Blocks.ROSE_BUSH) || state.is(Blocks.PEONY);
     }
 
-    static void raise(ServerLevel level, BlockPos impact, int strength, boolean ritual, @Nullable Player caster) {
+    static void raiseArea(ServerLevel level, BlockPos impact, int radius, @Nullable Player caster) {
         Player actor = caster != null ? caster : FakePlayerFactory.getMinecraft(level);
-        if (!ritual) {
-            raiseColumn(level, impact, (strength + 1) * 3, actor);
-            return;
-        }
-        int radius = (strength + 1) * 2;
         for (int dx = -radius; dx <= radius; dx++) {
             for (int dz = -radius; dz <= radius; dz++) {
                 if (dx * dx + dz * dz < radius * radius) {
-                    raiseColumn(level, impact.offset(dx, 0, dz), (strength + 1) * 2, actor);
+                    raiseColumn(level, impact.offset(dx, 0, dz), radius, actor);
                 }
             }
         }

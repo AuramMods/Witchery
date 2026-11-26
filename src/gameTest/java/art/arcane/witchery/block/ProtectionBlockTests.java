@@ -185,7 +185,8 @@ public final class ProtectionBlockTests {
         BlockPos support = new BlockPos(5, 1, 4);
         helper.setBlock(support, Blocks.STONE);
         helper.setBlock(support.above(), Blocks.AIR);
-        for (String id : List.of("statuegoddess", "decursedirected", "decurseteleport", "wolfaltar", "statueofworship")) {
+        var statues = List.of("statuegoddess", "decursedirected", "decurseteleport", "wolfaltar", "statueofworship");
+        for (String id : statues) {
             Block statue = WitcheryBlocks.getRequired(id).get();
             BlockPos pos = place(helper, owner, support, new ItemStack(statue));
             BlockState state = level.getBlockState(pos);
@@ -199,9 +200,12 @@ public final class ProtectionBlockTests {
             helper.assertTrue(visitor.hasCorrectToolForDrops(state) && state.getDestroyProgress(visitor, level, pos) > bareHandProgress,
                     "A pickaxe harvests " + id + " at the original faster rate");
             helper.assertTrue(visitor.gameMode.destroyBlock(pos) && level.isEmptyBlock(pos), "A visitor can harvest " + id);
-            helper.assertItemEntityCountIs(statue.asItem(), support.above(), 2, 1);
         }
-        helper.succeed();
+        helper.succeedWhen(() -> {
+            for (String id : statues) {
+                helper.assertItemEntityCountIs(WitcheryBlocks.getRequired(id).get().asItem(), support.above(), 2, 1);
+            }
+        });
     }
 
     private static BlockPos place(GameTestHelper helper, Player player, BlockPos support, ItemStack stack) {

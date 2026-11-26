@@ -35,6 +35,10 @@ public final class SpiritFluidTests {
         BlockPos source = helper.absolutePos(new BlockPos(3, 3, 3));
         BlockPos second = source.south(4);
         for (BlockPos start : new BlockPos[]{source, second}) {
+            // Keep falling terrain from replacing either source while the fluid ticks.
+            for (int distance = 0; distance <= 5; distance++) {
+                level.setBlockAndUpdate(start.east(distance).above(), Blocks.STONE.defaultBlockState());
+            }
             for (int distance = 0; distance <= 5; distance++) {
                 var cell = start.east(distance);
                 level.setBlockAndUpdate(cell.below(), Blocks.STONE.defaultBlockState());
@@ -67,9 +71,10 @@ public final class SpiritFluidTests {
         var level = helper.getLevel();
         int[] levels = {0, 2, 3, 5, 6};
         for (int distance = 0; distance < levels.length; distance++) {
-            var state = level.getBlockState(source.east(distance));
+            var pos = source.east(distance);
+            var state = level.getBlockState(pos);
             helper.assertTrue(state.is(fluid) && state.getValue(LiquidBlock.LEVEL) == levels[distance],
-                    "Each original step must use its mapped Forge level at distance " + distance);
+                    "Expected " + fluid + " at level " + levels[distance] + " at " + pos + ", found " + state);
         }
         helper.assertTrue(level.isEmptyBlock(source.east(5)), "The fifth cell beyond the source must remain dry");
     }

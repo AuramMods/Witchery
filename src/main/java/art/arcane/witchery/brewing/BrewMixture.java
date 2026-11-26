@@ -577,10 +577,10 @@ public final class BrewMixture {
                 case COLD -> BrewColdEffects.freezeWater(level, pos, strength, caster);
                 case ICE_SHELL -> BrewColdEffects.shellOnImpact(level, pos, face, strength, caster);
                 case ICE_WORLD -> IceWorldBrew.freeze(level, pos, radius, caster);
-                case CHANGING_SEASONS -> BrewTerrainEffects.changeSeasons(level, pos, application.biome, strength, ritual, caster);
+                case CHANGING_SEASONS -> BrewTerrainEffects.changeSeasons(level, pos, application.biome, strength, pulse > 0, caster);
                 case SNOW -> SnowTrailEffect.cover(level, pos, 2 + 2 * strength, caster);
                 case HARM_WEREWOLVES -> {
-                    if (ritual && fullExposure) BrewTerrainEffects.summonRain(level, strength);
+                    if (pulse > 0) BrewTerrainEffects.summonRain(level, strength);
                 }
                 case BAT_BURST -> BrewCreatureEffects.releaseBats(level, pos.relative(face), (fullExposure ? 10 : 1) + strength);
                 case FROG_TONGUE -> BrewCreatureEffects.frogTongue(level, impact, radius, caster, strength);
@@ -606,7 +606,12 @@ public final class BrewMixture {
                 case THORNS -> BrewPlantEffects.thorns(level, pos, face, strength, caster);
                 case SPROUTING -> BrewTerrain.sprout(level, pos, face, 8 + 2 * strength, new AABB(pos), caster);
                 case BLIGHT -> BrewLandscape.blight(level, pos, radius, caster);
-                case RAISE_LAND -> BrewLandscape.raise(level, pos, strength, ritual, caster);
+                case RAISE_LAND -> {
+                    int height = (strength + 1) * (ritual ? 2 : 3);
+                    // Only an instant cauldron pulse takes the ritual block-action path.
+                    if (pulse > 0) BrewLandscape.raiseArea(level, pos, height, caster);
+                    else BrewLandscape.raiseColumn(level, pos, height, caster);
+                }
                 case TRANSPOSE -> {
                     if (pulse == 1 && destination != null) {
                         BrewTransposition.moveTerrain(new BrewTransposition.Site(level, pos), destination);

@@ -2,9 +2,18 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
-## Piston GameTest terrain isolation (2026-11-26)
+## Cauldron gas and rain block actions (2026-11-26)
+
+- The 0.24.1 server ran Raise Land on prepared stone columns. At strength one, a successful first gas roll lifted one column by four blocks, a missed roll lifted none, and an instant cast lifted 45 columns by four blocks. A droplet carrying strength-two Raise Land and Silver Dust lifted one column by four blocks and kept the weather clear. See `build/qa-raise-land-gas/native/reference-rain.log`.
+- The preceding Forge JAR lifted 45 columns during a successful gas roll and on droplet impact. The droplet also started rain. The port now uses instant cauldron pulses to select the original ritual block overrides and keeps the original strength restriction for gas and rain. This also keeps the ordinary Changing Seasons radius on a droplet.
+- Headless clean Forge and copied Auram matched the original four prepared cases. A hit and a miss were controlled in Auram for the one-percent gas roll. Both ordinary restarts retained the four terrain footprints. Java 17 data generation and reobfuscation succeeded. Both installed copies matched `build/qa-raise-land-gas/verified.jar` with SHA-256 `67c334045152b1bd81ebbecf0fa749908401a32fbc14e247c22f0106d103e6c3`.
+
+## GameTest terrain isolation (2026-11-26)
 
 - The failed GameTest world placed the sticky snow-slab lane inside a generated hillside. Its saved region shows a gravel deposit beside and three blocks above the failed cell at `(2265, 108, 536)`. Both piston rows now run inside a cleared stone enclosure. They still exercise the same redstone, block movement, and drop assertions. The first full local replay passed all 537 required GameTests.
+- A later replay left Gravel in the Flowing Spirit source at `(320, -57, 471)`, while Hollow Tears reached all four runoff levels in its neighboring lane. Both lanes now have stone roofs. The spread, idle, and recession assertions still run on scheduled fluid ticks.
+- The first replay with the roof passed both fluid lanes and found a separate timing failure in the statue fixture. Its saved entity chunk contained exactly one Statue of the Goddess item at the mined position even though the immediate entity query returned zero. The mining assertions still run synchronously. The drop assertions now wait for all five items to become visible to the world query.
+- The final local replay passed all 539 required Forge GameTests, including both new Cauldron cases, both piston checks, Dream fluid recession, and statue drops. See `build/qa-raise-land-gas/suite-complete.log`.
 
 ## Legacy Treefyd herd labels (2026-11-26)
 

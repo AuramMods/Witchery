@@ -11,6 +11,7 @@ import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEffects;
+import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcheryRecipes;
 import com.mojang.authlib.GameProfile;
@@ -36,6 +37,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.storage.ServerLevelData;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -354,6 +356,79 @@ public final class LegacyCauldronRitualTests {
                     atTarget.discard();
                     onShelf.discard();
                 }).thenSucceed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_raise_land_gas")
+    public static void raiseLandGasOnlyMovesTheColumnThatRollsTerrainContact(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos target = helper.absolutePos(new BlockPos(7, 0, 7)).atY(196);
+        var trigger = new ItemStack(WitcheryIngredient.DOG_TONGUE.item());
+        for (var delivery : List.of(WitcheryIngredient.BAT_WOOL.item(), Items.GUNPOWDER)) {
+            boolean gas = delivery != Items.GUNPOWDER;
+            var offerings = List.of(new ItemStack(Items.NETHER_WART),
+                    new ItemStack(WitcheryIngredient.TEAR_OF_THE_GODDESS.item()), new ItemStack(Items.GLOWSTONE_DUST),
+                    new ItemStack(Items.QUARTZ), new ItemStack(delivery), trigger);
+            var mixture = BrewMixture.from(offerings);
+            for (BlockPos pos : BlockPos.betweenClosed(target.offset(-4, -3, -4), target.offset(4, 4, 4))) {
+                level.setBlockAndUpdate(pos, pos.getY() <= target.getY() ? Blocks.STONE.defaultBlockState() : Blocks.AIR.defaultBlockState());
+            }
+            level.getRandom().setSeed(5120); // The first gas terrain roll succeeds.
+            var status = BrewRituals.pulse(level, target, mixture, mixture.bottleTag(offerings), trigger, 1, false);
+            helper.assertTrue(status == (gas ? BrewRituals.Result.ONGOING : BrewRituals.Result.COMPLETE),
+                    "The gas wave continues while the instant cast completes");
+            for (int dx = -4; dx <= 4; dx++) {
+                for (int dz = -4; dz <= 4; dz++) {
+                    var column = target.offset(dx, 0, dz);
+                    boolean raised = gas ? dx == 0 && dz == 0 : dx * dx + dz * dz < 16;
+                    helper.assertTrue(raised ? level.getBlockState(column.above(4)).is(Blocks.STONE) && level.isEmptyBlock(column)
+                                    : level.getBlockState(column).is(Blocks.STONE) && level.isEmptyBlock(column.above(4)),
+                            "Only the selected columns move four blocks for " + delivery + " at offset " + dx + ", " + dz);
+                }
+            }
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_rain_block_actions")
+    public static void rainImpactUsesOrdinaryBlockActionsWithinRitualStrength(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos ground = helper.absolutePos(new BlockPos(7, 0, 7)).atY(196);
+        for (BlockPos pos : BlockPos.betweenClosed(ground.offset(-4, -3, -4), ground.offset(4, 4, 4))) {
+            level.setBlockAndUpdate(pos, pos.getY() <= ground.getY() ? Blocks.STONE.defaultBlockState() : Blocks.AIR.defaultBlockState());
+        }
+        var ingredients = List.of(new ItemStack(Items.NETHER_WART), new ItemStack(WitcheryIngredient.TEAR_OF_THE_GODDESS.item()),
+                new ItemStack(Items.NETHER_STAR), new ItemStack(Items.GLOWSTONE_DUST), new ItemStack(Items.BLAZE_ROD),
+                new ItemStack(Items.QUARTZ), new ItemStack(WitcheryIngredient.SILVER_DUST.item()),
+                new ItemStack(WitcheryIngredient.WORMWOOD.item()));
+        var mixture = BrewMixture.from(ingredients);
+        var droplet = WitcheryEntities.BREW_DROPLET.get().create(level);
+        droplet.setBrew(mixture.bottleTag(ingredients));
+        droplet.setPos(Vec3.atBottomCenterOf(ground).add(0, 1.25, 0));
+        droplet.setDeltaMovement(0, -0.75, 0);
+
+        var weather = (ServerLevelData) level.getLevelData();
+        int clear = weather.getClearWeatherTime();
+        int rain = weather.getRainTime();
+        int thunder = weather.getThunderTime();
+        boolean raining = weather.isRaining();
+        boolean thundering = weather.isThundering();
+        try {
+            level.setWeatherParameters(4000, 0, false, false);
+            droplet.tick();
+            helper.assertTrue(droplet.isRemoved() && level.getBlockState(ground.above(4)).is(Blocks.STONE)
+                            && level.isEmptyBlock(ground) && level.getBlockState(ground.east()).is(Blocks.STONE),
+                    "Rain lifts one column and caps a strength-two recipe at strength one");
+            helper.assertTrue(!weather.isRaining() && !weather.isThundering() && weather.getClearWeatherTime() == 4000,
+                    "Silver Dust in a droplet keeps the current weather");
+        } finally {
+            weather.setClearWeatherTime(clear);
+            weather.setRainTime(rain);
+            weather.setThunderTime(thunder);
+            weather.setRaining(raining);
+            weather.setThundering(thundering);
+            droplet.discard();
+        }
+        helper.succeed();
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_brew_caster")
