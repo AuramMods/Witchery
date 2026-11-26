@@ -136,7 +136,6 @@ public final class BrewDispersalBlock extends LiquidBlock implements EntityBlock
                 : tickLiquid(level, pos, state, fluid, depth, random);
         if (remains) {
             fluid.sampleStationaryContacts(level, gas);
-            if (!gas) fluid.sampleTerrainContacts(level);
             level.scheduleTick(pos, this, TICK_DELAY);
         }
     }
@@ -184,8 +183,16 @@ public final class BrewDispersalBlock extends LiquidBlock implements EntityBlock
             }
         }
         BlockPos below = pos.below();
-        if (flowInto(level, below, 1, fluid)) return true;
-        if (depth >= MAX_LIQUID_LEVEL || depth > 0 && level.getBlockState(below).is(this)) return true;
+        if (flowInto(level, below, 1, fluid) || depth >= MAX_LIQUID_LEVEL) return true;
+        if (depth == 0 || !level.getBlockState(below).is(this)) {
+            spreadLiquidHorizontally(level, pos, fluid, depth);
+        }
+        // An existing lower cell suppresses lateral spread but still allows terrain contact.
+        fluid.sampleTerrainContacts(level);
+        return true;
+    }
+
+    private void spreadLiquidHorizontally(ServerLevel level, BlockPos pos, BrewFluidBlockEntity fluid, int depth) {
         int nextDepth = level.getBlockState(pos.above()).is(this) ? 1 : depth + 1;
         int[] costs = new int[HORIZONTAL.length];
         int best = NO_DROP_FOUND;
@@ -198,7 +205,6 @@ public final class BrewDispersalBlock extends LiquidBlock implements EntityBlock
         for (int i = 0; i < HORIZONTAL.length; i++) {
             if (costs[i] == best) flowInto(level, pos.relative(HORIZONTAL[i]), nextDepth, fluid);
         }
-        return true;
     }
 
     private int suppliedDepth(ServerLevel level, BlockPos pos) {

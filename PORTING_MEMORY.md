@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron action inventory and liquid terrain contact (2026-11-26)
+
+- The running 0.24.1 registry classified all 184 brew keys. The 169 mixing keys map to 168 modern inputs with the established Dead Bush and Tall Grass overlap. The existing comparison still matches the declared costs, capacities and effect durations. The manifest identifies the modern path for each action family. The broader runtime comparisons remain in the release checklist.
+- The original liquid update skips adjacent terrain when it flows into the cell below or reaches depth five. The same seeded roll tills beside a supported pool and an established column. The preceding Forge build tilled while entering the lower cell. The regression uses all four layouts and keeps the original one-strength terrain penalty.
+- The exact JAR matched the four outcomes on headless clean Forge and copied Auram. The clean fixture and the original runtime use seed 1. Copied Auram uses its installed FasterRandom provider, so its fixture uses seed 110 for the equivalent east-neighbor roll. The two successful casts passed Forge break and placement checks in Auram. Both profiles retained all four soil states after a dedicated restart. The fixture removes its remaining Brew Liquid after sampling so subsequent flow cannot change the recorded soil.
+- A separate runtime comparison of 18 block states identified eleven displacement differences. The reference accepts several supported plants, mechanisms and decorations that the modern replacement predicate rejects. The porting plan tracks the remaining flow and drop behavior. The comparison logs are in `build/qa-brew-liquid-terrain/displacement/reference.log` and `build/qa-brew-liquid-displacement/clean/initial.log`.
+- Java 17 data generation, JAR reobfuscation, and all 521 local Forge GameTests passed. The tested `build/qa-brew-liquid-terrain/candidate.jar` has SHA-256 `5fe62dff0b41e196ef3e8d5541b09d3b883e10c9cfe3fef4502b0dd09989fdc1`.
+
 ## Pending villager offers through werewolf reversion (2026-11-26)
 
 - The preceding build exposed a two-currency offer after a legacy Wolfman reverted to a villager with an unresolved short item ID in its second payment. The regression exercises reversion, transformation, and cure. The villager read path now retains unresolved positive-count rows and keeps them off the active list. The save hook also writes pending-only stock when vanilla would omit an empty active list.

@@ -1399,6 +1399,18 @@ The Witch's Oven keeps `CookTime` when its input changes between ticks. Its comp
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/brewing/WitcheryBrewRegistry.java`
 
 - Forge 1.7.10 reports 184 registered brew keys across 88 base items. It has 169 mixing keys and 15 fixed cast keys. The mixing keys map to 168 modern entries because Tall Grass metadata zero and Dead Bush share one item. Base altar power, effect capacity, potion durations and the amplifier limits used by ordinary potion effects match the native entries. Tinting uses the dye index in both versions.
+
+The running 0.24.1 registry classified all 184 keys by their most specific action family. The table identifies the corresponding Forge paths for the remaining behavior comparisons.
+
+| Original action family | Keys | Forge path |
+| --- | ---: | --- |
+| Potion and curse effects | 57 | `BrewMixture.Application`, potion application and Taglock modifiers |
+| Direct actions and block circles | 61 | `BrewMixture.ActionApplication`, creature and terrain handlers |
+| Ordinary modifiers, impact modifiers, and wool coloring | 44 | `BrewMixture.Mixing`, ordered modifiers and stored tint |
+| Dispersals | 5 | `BrewMixture.Delivery`, falling brews, gas, liquid, and cursed controls |
+| Tongue of Dog and Taglock cast triggers | 2 | `BrewRituals` |
+| Fixed recipe and Leonard summon triggers | 15 | `CauldronRitualRecipe` and `BrewRituals`, including the 27 fixed recipe outcomes |
+
 - Newly mixed brews use the captured base item translation keys, including one shared hash across each legacy metadata family. The combined Dead Bush entry uses the original Dead Bush hash. An explicit saved color survives import with all 32 bits, and rendering takes its low 24 bits.
 - `witchery:brewbottle` uses an ordered `Items` list for drinkable and instant splash effects. Ingredient stacks inside `Items` support the named legacy `witchery:ingredient` plus `Damage` format. The `Splash` flag can be derived from known dispersal ingredients when absent. Native numeric 1.7.10 item IDs still require the save conversion workflow.
 - When a converted world retains its captured legacy registry, ordinary loads also repair original item stacks still inside Witchery Cauldrons, Kettles, cursed controls and brew droplets. The same stacks resolve to the variants used on first import. The repair keeps recipe order and the saved color, charge count and timers.
@@ -1415,6 +1427,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 - Infernal Blood subtype 80 adds Fear as the curable `witchery:potion.grotesque` effect. Its four-block pulse runs every fifth world tick and can repel ordinary witches. The mask renders on affected creatures using the original Demon texture. Player mask updates for the fixed brew use the existing player style packet.
 - An empty glass bottle in a dispenser can draw a full boiling Witch's Cauldron from any of the five sides other than the outlet. The dispenser uses the saved result of the Cauldron's last power sample and leaves altar charge intact. Fixed throwable brews, splash-format brews, and Sun and Duplicate Grenades leave the outlet ownerless at 1.375 blocks per tick with the original Gaussian spread. Grenades thrown by hand start beside the player's eyes at 0.75 blocks per tick, independent of player movement.
 - Bat Wool and Wormwood select gas or liquid dispersal. Both original block entity IDs resolve to brew fluid cells and can read legacy effect, tint, duration, expansion and thrower data. Current saves also retain their age.
+- Brew Liquid skips the adjacent terrain roll when the update flows into the block below or the cell already has maximum horizontal depth. A supported pool and a column with an established liquid cell below still roll for terrain contact. The retained roll uses the existing one-strength penalty.
 - A cauldron's expanding gas wave looks for open footing up to seven blocks above or below each column. A qualifying column applies creature effects and the one-percent terrain roll at the original target height. The silent Spell packet appears one block above that height and reaches viewers within 16 blocks.
 - Terrain brews and initial dispersal cells submit captured writes to Forge placement listeners. The snapshot carries the previous block and its data. A veto restores it before Witchery sends placement updates or initializes a cloud.
 - Gunpowder, Globe Artichoke, Bat Wool, Wormwood and Zombie Head remove the earlier dispersal and all earlier Wheat actions when added. This frees the Wheat action's one capacity and removes its Moonshine effect. Later Wheat remains eligible as an ordinary brew ingredient.
