@@ -82,6 +82,7 @@ abstract class LegacyChunkStorageMixin {
         var tiles = updated.getList("block_entities", Tag.TAG_COMPOUND);
         LegacyChunkUpgrade.updateBlockEntityTypes(tiles);
         if (witchery$legacyIds != null) {
+            witchery$legacyIds.repairBlockSpawnerEffects(tiles);
             if (!legacy) witchery$legacyIds.repairConvertedTileItems(tiles, fixer, version);
             witchery$legacyIds.repairStoredItems(tiles, fixer);
             if (legacy) witchery$legacyIds.repairStoredItems(updated.getList("entities", Tag.TAG_COMPOUND), fixer);

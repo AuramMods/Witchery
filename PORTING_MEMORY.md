@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Witchery state inside vanilla spawner templates (2026-11-26)
+
+- Forge 1.7.10 wrote an Apothecary as the selected block spawn and a second Apothecary as a weighted cart spawn. The block stored numeric Paralysis III on the selected villager and Sinking II on a weighted Zombie. The cart stored Sinking I on the selected pig. The records also held a vanilla Fire Resistance control, a Witchery Toad control, and delays of 60 and 65 ticks.
+- The preceding port converted both villager professions to `minecraft:none` and left all three Witchery effects as numeric bytes. The rebuilt package runs vanilla templates through the same entity preparation as free-standing mobs. It also repairs still-numeric effects in converted spawn templates on ordinary chunk or entity loads. Both ordinary boots recovered the three effects from a copy of the preceding conversion. The original region is required to recover its erased professions.
+- The exact reobfuscated JAR preserved both Apothecary professions, all three Witchery effects, the named templates, delays, weighted entries, and original cart UUID on clean Forge and copied Auram. The dedicated restarts matched the first import in both profiles.
+- A headless clean Forge replay activated both spawners after the restart. The named Apothecary spawned with 16 health, zero movement speed, Paralysis III and Fire Resistance. The cart spawned the original eight-health pig with Sinking I. Selecting the weighted Zombie entry and shortening the delay spawned it with Sinking II. The fixture placed a server-side test player in range and supplied grass and daylight for the pig.
+- Java 17 reobfuscation and all 493 local Forge GameTests passed. The exact `build/qa-spawn-template-migration/candidate.jar` has SHA-256 `28d9c30dd94cbde654d448bd0806e5a5954e92578d3aa455369559a92d3ab491`. See the native trace, headless runtime checks, and `suite.log` in the same QA directory.
+
 ## Cauldron ingredient and reagent feedback (2026-11-26)
 
 - The headless 0.24.1 trace captured accepted ingredient splash with effect 19, sound 4, width 0.5 and height 0.5. Gypsum and Quicklime each sent smoke with effect 8, no sound, width 0.5 and height 1. All three packets used the basin center at Y plus 0.6 and an eight-block range. Gypsum separately played the original fizz from that point at volume 1 and pitch 2.

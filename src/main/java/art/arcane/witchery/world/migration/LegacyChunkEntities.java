@@ -25,12 +25,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public final class LegacyChunkEntities {
     private static final String NAMESPACE = Witchery.MODID + ":";
     private static final String ORIGINAL_TYPE = "WitcheryLegacyEntityType";
     private static final String LEGACY_APOTHECARY = "WitcheryLegacyApothecary";
-    private static final String SPAWNER_CART = "minecraft:spawner_minecart";
+    static final String SPAWNER_CART = "minecraft:spawner_minecart";
     private static final String LEGACY_CART_SPAWNER = "WitcheryLegacyCartSpawner";
     static final ResourceLocation INFINITY_EGG = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "infinityegg");
     private static final String FALLING_INFINITY_EGG = "WitcheryLegacyFallingInfinityEgg";
@@ -175,10 +176,14 @@ public final class LegacyChunkEntities {
     private static void prepareSpawnEntry(CompoundTag entry, String typeKey, String dataKey,
                                           LegacyWorldIds ids, DataFixer fixer, int from) {
         String name = entry.getString(typeKey);
-        ResourceLocation id = WitcheryEntities.legacyEntityId(name);
-        if (id == null || !ForgeRegistries.ENTITY_TYPES.containsKey(id)) return;
+        if (name.isEmpty()) return;
+        if (!entry.contains(dataKey, Tag.TAG_COMPOUND)) {
+            ResourceLocation id = WitcheryEntities.legacyEntityId(name);
+            if (id == null || !ForgeRegistries.ENTITY_TYPES.containsKey(id)) return;
+        }
         CompoundTag entity = entry.getCompound(dataKey);
         entity.putString("id", name);
+        // A vanilla mob template can also carry a Witchery effect or an Apothecary profession.
         prepareEntity(entity, ids, fixer, from);
         // Vanilla copies the type field over the entity ID before it fixes the embedded entity.
         entry.putString(typeKey, entity.getString("id"));
@@ -204,17 +209,22 @@ public final class LegacyChunkEntities {
     }
 
     static void restoreSpawner(CompoundTag spawner) {
-        restoreSpawnEntry(spawner.getCompound("SpawnData"));
+        forEachSpawnerEntity(spawner, entity -> {
+            restoreEntity(entity);
+            ResourceLocation id = WitcheryEntities.legacyEntityId(entity.getString("id"));
+            if (id != null && ForgeRegistries.ENTITY_TYPES.containsKey(id)) entity.putString("id", id.toString());
+        });
+    }
+
+    static void forEachSpawnerEntity(CompoundTag spawner, Consumer<CompoundTag> visitor) {
+        visitSpawnEntry(spawner.getCompound("SpawnData"), visitor);
         for (Tag entry : spawner.getList("SpawnPotentials", Tag.TAG_COMPOUND)) {
-            restoreSpawnEntry(((CompoundTag) entry).getCompound("data"));
+            visitSpawnEntry(((CompoundTag) entry).getCompound("data"), visitor);
         }
     }
 
-    private static void restoreSpawnEntry(CompoundTag data) {
-        if (!(data.get("entity") instanceof CompoundTag entity)) return;
-        restoreEntity(entity);
-        ResourceLocation id = WitcheryEntities.legacyEntityId(entity.getString("id"));
-        if (id != null && ForgeRegistries.ENTITY_TYPES.containsKey(id)) entity.putString("id", id.toString());
+    private static void visitSpawnEntry(CompoundTag data, Consumer<CompoundTag> visitor) {
+        if (data.get("entity") instanceof CompoundTag entity) visitor.accept(entity);
     }
 
     private static void restoreEntity(CompoundTag entity) {

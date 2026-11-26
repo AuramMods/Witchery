@@ -285,8 +285,20 @@ public final class LegacyWorldIds {
         for (Tag entry : entities) repairEntityEffects((CompoundTag) entry);
     }
 
+    public void repairBlockSpawnerEffects(ListTag tiles) {
+        for (Tag entry : tiles) {
+            var tile = (CompoundTag) entry;
+            if (tile.getString("id").equals("minecraft:mob_spawner")) {
+                LegacyChunkEntities.forEachSpawnerEntity(tile, this::repairEntityEffects);
+            }
+        }
+    }
+
     private void repairEntityEffects(CompoundTag entity) {
         upgradeEntityEffects(entity);
+        if (entity.getString("id").equals(LegacyChunkEntities.SPAWNER_CART)) {
+            LegacyChunkEntities.forEachSpawnerEntity(entity, this::repairEntityEffects);
+        }
         repairEntityEffects(entity.getList("Passengers", Tag.TAG_COMPOUND));
     }
 
