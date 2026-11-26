@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Brew of Ice and Cauldron Cold (2026-11-25)
+
+- The Witchery 0.24.1 fixed brew froze Hollow Tears, Flowing Spirit and Brew Liquid in a connected line through distance three. Vanilla water at distance four, Disease and Brew Gas survived. The Icy Needle used its separate strength-scaled sphere and froze one adjacent cell beyond a source within that sphere. Forge uses the shared original depth-first order. A placement veto preserves the active Brew Liquid block entity and its saved payload and stops that branch.
+- The native dry shield placed nine blocks in order, starting with the center column. A creature hit placed 48 perimeter blocks, a bottom plug and four roof cells at rounded horizontal coordinates. A resistant Blaze received water even in the Nether. The muted survival client reproduced the nine shield cues, all 53 cage cues and the Nether water cue at the corresponding positions.
+- The packaged survival client threw supplied fixed Ice and Cauldron Cold bottles through ordinary input. It froze the active Brew Liquid and both spirit fluids, preserved the boundary water, and verified the Cauldron fringe separately. The client stayed hidden and unfocused with master volume zero and OpenAL No Output.
+- A dedicated restart retained the frozen channels, shield and cage, the same pig UUID and the Nether water source. The headless Auram copy used its original Does It Tick configuration and a dispenser froze the same three legacy fluids with zero players online. Java 17 reobfuscation and all 438 local Forge GameTests passed on seed `5471593853027166409`. The package is `build/qa-ice-parity/candidate.jar` with SHA-256 `efb004ecf4ff5980243e1a8433d6218840257e3f787af56669acc872ab7e65b7`. See `build/qa-ice-parity/comparison.txt`.
+
 ## Erosion terrain, corrosion and splash cues (2026-11-25)
 
 - The original fixed brew removed 33 blocks from a solid cube in five scanline layers of 1, 5, 21, 5 and 1 cells. It sent one silent Splash at the pre-collision projectile for each removal. Native water, lava, fire and a chest survived. Forge retains container and break-event protection, erodes Hollow Tears and leaves water behind when a waterlogged slab dissolves.

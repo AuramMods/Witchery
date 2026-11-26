@@ -214,7 +214,7 @@ public final class BrewTerrain {
     private static boolean placeBranchBlock(ServerLevel level, @Nullable Entity owner, BlockPos pos, BlockState state,
                                             Direction face, boolean replaceableOnly) {
         if (!setBlock(owner, level, pos, state, face)) return false;
-        if (!replaceableOnly) WitcheryNetwork.sendSproutingGrowth(level, pos);
+        if (!replaceableOnly) WitcheryNetwork.sendBrewBlockGrowth(level, pos);
         return true;
     }
 
@@ -351,8 +351,9 @@ public final class BrewTerrain {
                                     Direction face, boolean particles) {
         BlockState old = level.getBlockState(pos);
         if (old.equals(state)) return true;
-        boolean replacingDispersal = old.getBlock() instanceof BrewDispersalBlock && (state.isAir()
-                || state.is(WitcheryBlocks.getRequired("perpetualice").get()));
+        boolean replacingDispersal = old.getBlock() instanceof BrewDispersalBlock brew && (state.isAir()
+                || state.is(WitcheryBlocks.getRequired("perpetualice").get())
+                || !brew.isGas() && state.is(Blocks.ICE));
         if ((old.hasBlockEntity() && !replacingDispersal) || !canEdit(owner, level, pos, old)) return false;
         boolean changed = state.isAir() ? level.setBlockAndUpdate(pos, state)
                 : WitcheryBlockPlacement.place(level, pos, state, owner, face);

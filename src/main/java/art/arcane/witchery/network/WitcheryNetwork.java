@@ -393,7 +393,7 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_NO_SOUND_ID, Vec3.atCenterOf(pos.above()), 2, 2, 16);
     }
 
-    public static void sendSproutingGrowth(ServerLevel level, BlockPos pos) {
+    public static void sendBrewBlockGrowth(ServerLevel level, BlockPos pos) {
         sendParticlesAround(level, LEGACY_EXPLOSION_PARTICLE_ID, LEGACY_NO_SOUND_ID, Vec3.atCenterOf(pos), 1, 1, 8);
     }
 

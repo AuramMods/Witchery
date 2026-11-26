@@ -1,6 +1,8 @@
 package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.BrewDispersalBlock;
+import art.arcane.witchery.block.SpiritFluidBlock;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.ritual.IceShell;
 import net.minecraft.core.BlockPos;
@@ -24,6 +26,9 @@ import java.util.function.Predicate;
 final class BrewColdEffects {
     static final TagKey<EntityType<?>> SHELL_RESISTANT = TagKey.create(Registries.ENTITY_TYPE,
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "ice_shell_resistant"));
+    private static final Direction[] FREEZE_ORDER = {
+            Direction.EAST, Direction.WEST, Direction.SOUTH, Direction.NORTH, Direction.UP, Direction.DOWN
+    };
 
     private BrewColdEffects() {}
 
@@ -36,21 +41,34 @@ final class BrewColdEffects {
 
     static void freezeConnectedWater(ServerLevel level, BlockPos center, @Nullable Entity actor,
                                      Predicate<BlockPos> canSpreadFrom) {
-        var queue = new ArrayDeque<BlockPos>();
+        var pending = new ArrayDeque<FreezeStep>();
         var visited = new HashSet<BlockPos>();
-        queue.add(center);
-        while (!queue.isEmpty()) {
-            BlockPos current = queue.removeFirst();
-            if (!canSpreadFrom.test(current)) continue;
-            for (Direction direction : Direction.values()) {
-                BlockPos next = current.relative(direction);
-                if (visited.add(next) && level.getBlockState(next).is(Blocks.WATER)
-                        && BrewTerrain.setBlock(actor, level, next, Blocks.ICE.defaultBlockState(), direction)) {
-                    queue.addLast(next);
-                }
+        if (canSpreadFrom.test(center)) visitNeighbors(pending, center);
+        while (!pending.isEmpty()) {
+            FreezeStep step = pending.pop();
+            BlockPos pos = step.pos();
+            if (visited.add(pos) && isLegacyWater(level.getBlockState(pos))
+                    && BrewTerrain.setBlock(actor, level, pos, Blocks.ICE.defaultBlockState(), step.face())
+                    && canSpreadFrom.test(pos)) {
+                visitNeighbors(pending, pos);
             }
         }
     }
+
+    private static void visitNeighbors(ArrayDeque<FreezeStep> pending, BlockPos pos) {
+        // Reverse the pushes so the stack visits the same depth-first path as the original recursion.
+        for (int i = FREEZE_ORDER.length - 1; i >= 0; i--) {
+            Direction face = FREEZE_ORDER[i];
+            pending.push(new FreezeStep(pos.relative(face), face));
+        }
+    }
+
+    static boolean isLegacyWater(BlockState state) {
+        return state.is(Blocks.WATER) || state.getBlock() instanceof SpiritFluidBlock
+                || state.getBlock() instanceof BrewDispersalBlock brew && !brew.isGas();
+    }
+
+    private record FreezeStep(BlockPos pos, Direction face) {}
 
     static void shellOnImpact(ServerLevel level, BlockPos impact, Direction face, int strength, @Nullable Player caster) {
         BlockPos base = impact;
@@ -94,10 +112,6 @@ final class BrewColdEffects {
 
     static void wetResistantTarget(ServerLevel level, BlockPos pos, @Nullable Player caster) {
         Entity actor = caster == null ? FakePlayerFactory.getMinecraft(level) : caster;
-        wetTarget(level, pos, actor);
-    }
-
-    static void wetTarget(ServerLevel level, BlockPos pos, @Nullable Entity actor) {
         if (!level.dimensionType().ultraWarm() && level.getBlockState(pos).canBeReplaced()) {
             BrewTerrain.setBlock(actor, level, pos, Blocks.WATER.defaultBlockState(), Direction.UP);
         }
