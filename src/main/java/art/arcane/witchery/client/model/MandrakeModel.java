@@ -18,15 +18,11 @@ public final class MandrakeModel extends HierarchicalModel<Mandrake> {
     private final ModelPart root;
     private final ModelPart rightArm;
     private final ModelPart leftArm;
-    private final ModelPart rightLeg;
-    private final ModelPart leftLeg;
 
     public MandrakeModel(ModelPart root) {
         this.root = root;
         rightArm = root.getChild("right_arm");
         leftArm = root.getChild("left_arm");
-        rightLeg = root.getChild("right_leg");
-        leftLeg = root.getChild("left_leg");
     }
 
     public static LayerDefinition layer() {
@@ -63,7 +59,5 @@ public final class MandrakeModel extends HierarchicalModel<Mandrake> {
         float armSwing = Mth.triangleWave(limbSwing, 13.0F);
         rightArm.xRot = (-0.2F + 1.5F * armSwing) * amount;
         leftArm.xRot = (-0.2F - 1.5F * armSwing) * amount;
-        rightLeg.xRot = Mth.cos(limbSwing * 0.6662F) * 0.7F * amount;
-        leftLeg.xRot = -rightLeg.xRot;
     }
 }

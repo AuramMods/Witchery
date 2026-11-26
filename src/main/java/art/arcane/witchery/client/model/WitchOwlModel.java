@@ -2,7 +2,7 @@ package art.arcane.witchery.client.model;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.entity.WitchOwl;
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.core.BlockPos;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -10,7 +10,9 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 
 import java.util.List;
 
@@ -56,7 +58,7 @@ public final class WitchOwlModel extends WitchPetModel<WitchOwl> {
 
     @Override
     public void setupAnim(WitchOwl owl, float swing, float walk, float age, float yaw, float pitch) {
-        boolean perched = owl.onGround() && owl.getDeltaMovement().horizontalDistanceSqr() < 0.001;
+        boolean perched = isPerched(owl);
         body.xRot = perched ? 0 : Mth.PI / 4 + Mth.cos(age * 0.1F) * 0.15F;
         rightFoot.xRot = leftFoot.xRot = body.xRot;
         rightWing.zRot = perched ? 0 : Mth.cos(age * 0.5F) * Mth.PI * 0.4F + 1.4F;
@@ -67,12 +69,13 @@ public final class WitchOwlModel extends WitchPetModel<WitchOwl> {
         head.xRot = pitch * Mth.DEG_TO_RAD;
     }
 
-    public void translateToBeak(PoseStack pose) {
-        if (young) {
-            pose.scale(0.75F, 0.75F, 0.75F);
-            pose.translate(0, 11 / 16.0, 0);
-        }
-        head.translateAndRotate(pose);
-        pose.translate(0, -0.05, -0.25);
+    public static boolean isPerched(Entity flyer) {
+        var motion = flyer.getDeltaMovement();
+        return motion.x == 0 && motion.y == 0 && motion.z == 0 && hasLandingSurface(flyer);
+    }
+
+    public static boolean hasLandingSurface(Entity flyer) {
+        var below = flyer.level().getBlockState(BlockPos.containing(flyer.getX(), flyer.getY() - 0.01, flyer.getZ()));
+        return below.is(BlockTags.LEAVES) || below.blocksMotion();
     }
 }

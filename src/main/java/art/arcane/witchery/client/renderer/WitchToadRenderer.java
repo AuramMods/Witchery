@@ -12,7 +12,7 @@ public final class WitchToadRenderer extends MobRenderer<WitchToad, WitchToadMod
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "textures/entities/toad.png");
 
     public WitchToadRenderer(EntityRendererProvider.Context context) {
-        super(context, new WitchToadModel(context.bakeLayer(WitchToadModel.LAYER)), 0.3F);
+        super(context, new WitchToadModel(context.bakeLayer(WitchToadModel.LAYER)), 0.5F);
     }
 
     @Override

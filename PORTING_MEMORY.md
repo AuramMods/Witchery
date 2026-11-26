@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Familiar and Mandrake client rendering (2026-11-26)
+
+- The original 0.24.1 Java 8 client model probe captured 48 cases in `build/qa-familiar-poses/native/pose.log`. It includes still air, leaf and stone perches, small horizontal and vertical movements, seated flight, and an attack. The preceding Forge client differed in 89 measured angles and pivots. The rebuilt package matched all 1,872 values across six models.
+- The original Owl renderer submitted different transforms for flat and three-dimensional parcels. All eight adult, juvenile, airborne, and landed combinations match the packaged Forge layer's matrix before item drawing. The captured Mandrake and Mindrake body rolls both measured -5.42 degrees in the moving fixture. The original Witch Cat coat loads from Witchery's texture for a live tabby save, and its renderer scales a tame cat to 0.8 and an untamed cat to 1.0.
+- The clean Forge client checked eight named fixture appearances after a survival login. Its fixtures supplied the animals, parcels and positions. Each background launch reported master volume zero, OpenAL No Output, and a fixed foreground application. Copied Auram loaded and saved the eight fixture entities on the same package, retaining the UUIDs, one Paper, one Oak Plank, and the saved tabby variant.
+- JAR reobfuscation and all 484 required local Forge GameTests passed. The tested `build/qa-familiar-poses/candidate.jar` has SHA-256 `d883b7e9905ff010bb0ac900effcc228cf742a4724a2d746187cc6d23d734358`. Recorded model and focus comparisons are in `build/qa-familiar-poses/comparison.txt`.
+
 ## Data-dependent crafting and optional silver (2026-11-26)
 
 - The original server captured all 77 dynamic recipe grids in `build/qa-dynamic-crafting/native/default.log`. The fixtures use bound Taglock Kits, worn clothing, a two-charge Biting Belt, an item-data marker on the Brew Bag, actual positions in the keyring and a selected atlas page. The original atlas remainder includes its saved page. The previous package matched 73 results and failed for the four ingredients that became separate dye items in modern Minecraft.

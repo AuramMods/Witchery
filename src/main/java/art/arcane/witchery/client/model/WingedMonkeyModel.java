@@ -17,11 +17,6 @@ import net.minecraft.util.Mth;
 public final class WingedMonkeyModel extends HierarchicalModel<WingedMonkey> {
     public static final ModelLayerLocation LAYER = new ModelLayerLocation(
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "wingedmonkey"), "main");
-    private static final float[][] DYES = {
-            {1, 1, 1}, {.85F, .5F, .2F}, {.7F, .3F, .85F}, {.4F, .6F, .85F}, {.9F, .9F, .2F}, {.5F, .8F, .1F},
-            {.95F, .5F, .65F}, {.3F, .3F, .3F}, {.6F, .6F, .6F}, {.3F, .5F, .6F}, {.5F, .25F, .7F}, {.2F, .3F, .7F},
-            {.4F, .3F, .2F}, {.4F, .5F, .2F}, {.6F, .2F, .2F}, {.1F, .1F, .1F}
-    };
     private final ModelPart root;
     private final ModelPart head;
     private final ModelPart body;
@@ -85,7 +80,7 @@ public final class WingedMonkeyModel extends HierarchicalModel<WingedMonkey> {
     public void setupAnim(WingedMonkey monkey, float swing, float amount, float age, float yaw, float pitch) {
         root.getAllParts().forEach(ModelPart::resetPose);
         color = monkey.color();
-        boolean landed = monkey.onGround() && monkey.getDeltaMovement().horizontalDistanceSqr() < 0.0025;
+        boolean landed = WitchOwlModel.isPerched(monkey);
         boolean sitting = monkey.isInSittingPose();
         float sway = Mth.sin(age * .067F) * .05F;
         float rock = Mth.cos(age * .09F) * .05F + .05F;
@@ -97,10 +92,11 @@ public final class WingedMonkeyModel extends HierarchicalModel<WingedMonkey> {
             rightArm.xRot = leftArm.xRot = .2F;
         }
         if (sitting || !landed) {
-            rightArm.zRot = rock;
-            leftArm.zRot = -rock;
-            rightArm.xRot += sway;
-            leftArm.xRot -= sway;
+            float cycles = sitting && !landed ? 2 : 1;
+            rightArm.zRot = rock * cycles;
+            leftArm.zRot = -rightArm.zRot;
+            rightArm.xRot += sway * cycles;
+            leftArm.xRot -= sway * cycles;
         }
         if (sitting) {
             rightLeg.xRot = leftLeg.xRot = landed ? -1.3F : 0;
@@ -122,7 +118,7 @@ public final class WingedMonkeyModel extends HierarchicalModel<WingedMonkey> {
     @Override
     public void renderToBuffer(PoseStack pose, VertexConsumer buffer, int light, int overlay, float r, float g, float b, float alpha) {
         if (color != 0) {
-            float[] dye = DYES[color];
+            float[] dye = LegacyDyeColors.components(color);
             r *= .41568628F + dye[0] * .15686274F;
             g *= .3137255F + dye[1] * .15686274F;
             b *= .24313726F + dye[2] * .15686274F;

@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 
 public final class SpectralFamiliarRenderer extends MobRenderer<SpectralFamiliar, PigModel<SpectralFamiliar>> {
@@ -41,7 +42,7 @@ public final class SpectralFamiliarRenderer extends MobRenderer<SpectralFamiliar
         @Override
         public void setupAnim(SpectralFamiliar familiar, float walk, float speed, float age, float yaw, float pitch) {
             bodyParts().forEach(ModelPart::resetPose);
-            super.setupAnim(familiar, walk, speed / 1.4F, age, yaw, pitch);
+            super.setupAnim(familiar, walk, 0, age, yaw, pitch);
             searching = familiar.isSearching();
             if (familiar.isInSittingPose()) {
                 body.xRot = (float) Math.PI / 4;
@@ -50,6 +51,10 @@ public final class SpectralFamiliarRenderer extends MobRenderer<SpectralFamiliar
                 poseLeg(leftHindLeg, 15.8F, -7, -(float) Math.PI / 20);
                 poseLeg(rightFrontLeg, 21, 1, -(float) Math.PI / 2);
                 poseLeg(leftFrontLeg, 21, 1, -(float) Math.PI / 2);
+            } else {
+                float step = walk * 0.6662F;
+                rightFrontLeg.xRot = leftHindLeg.xRot = Mth.cos(step) * speed;
+                rightHindLeg.xRot = leftFrontLeg.xRot = Mth.cos(step + Mth.PI) * speed;
             }
         }
 
