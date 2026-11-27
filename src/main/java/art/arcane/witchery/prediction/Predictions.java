@@ -19,20 +19,22 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.monster.ZombifiedPiglin;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -41,9 +43,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public final class Predictions {
     private static final String SKILL = "WITCFTeller";
@@ -153,22 +158,20 @@ public final class Predictions {
     }
 
     public static void onHurt(ServerPlayer player, DamageSource source) {
-        ListTag readings = readings(player);
-        for (int index = readings.size() - 1; index >= 0; index--) {
-            Kind kind = Kind.byId(readings.getCompound(index).getInt(ID));
-            if (kind == null) continue;
-            boolean fulfilled = switch (kind) {
-                case ZOMBIE -> source.getEntity() instanceof Zombie;
-                case ARROW -> source.getDirectEntity() instanceof AbstractArrow;
+        fulfillInSavedOrder(readings(player), reading -> {
+            Kind kind = Kind.byId(reading.getInt(ID));
+            if (kind == null) return false;
+            return switch (kind) {
+                case ZOMBIE -> source.getEntity() instanceof Zombie || source.getEntity() instanceof ZombifiedPiglin;
+                case ARROW -> source.is(DamageTypes.ARROW);
                 case ENT -> source.getEntity() instanceof Ent;
-                case FALL -> source.is(DamageTypeTags.IS_FALL);
+                case FALL -> source.is(DamageTypes.FALL);
                 case BABA_HOSTILE, BABA_ALLY -> source.getEntity() instanceof BabaYaga;
                 case FRIEND -> source.getEntity() instanceof Wolf;
                 case OWL_RESCUE, WOLF_RESCUE -> rescue(kind, player, source);
                 default -> false;
             };
-            if (fulfilled) readings.remove(index);
-        }
+        });
     }
 
     public static void onNetherVisit(ServerPlayer player) {
@@ -183,21 +186,28 @@ public final class Predictions {
         if (player.isCreative() || player.isSpectator() || level.getBlockState(pos).is(state.getBlock())
                 || !level.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)) return;
 
-        ListTag readings = readings(player);
-        for (int index = readings.size() - 1; index >= 0; index--) {
-            CompoundTag reading = readings.getCompound(index);
+        fulfillInSavedOrder(readings(player), reading -> {
             Kind kind = Kind.byId(reading.getInt(ID));
-            if (kind == null) continue;
+            if (kind == null) return false;
             long elapsed = timeInTicks() - reading.getLong(TIME);
             double chance = elapsed > kind.dueAfter ? 0.05 : 0.01;
-            boolean fulfilled = switch (kind) {
+            return switch (kind) {
                 case IRON, DIAMOND, EMERALD, COAL -> MiningPredictions.addOre(kind, level.getRandom(), state, drops,
                         chance, elapsed > 36_000);
                 case TREASURE -> MiningPredictions.buryChest(player, pos, state, chance);
                 default -> false;
             };
-            if (fulfilled) readings.remove(index);
+        });
+    }
+
+    private static void fulfillInSavedOrder(ListTag readings, Predicate<CompoundTag> fulfill) {
+        if (readings.isEmpty()) return;
+        // Identical saved records can roll independently, so remove the actual entries after evaluating them in order.
+        var fulfilled = Collections.newSetFromMap(new IdentityHashMap<Tag, Boolean>());
+        for (Tag pending : List.copyOf(readings)) {
+            if (fulfill.test((CompoundTag) pending)) fulfilled.add(pending);
         }
+        readings.removeIf(fulfilled::contains);
     }
 
     public static void tick(ServerPlayer player) {
@@ -256,7 +266,7 @@ public final class Predictions {
     }
 
     private static boolean rescue(Kind kind, ServerPlayer player, DamageSource source) {
-        if (!(source.getEntity() instanceof LivingEntity attacker) || attacker == player || !attacker.isAlive()) return false;
+        if (!(source.getEntity() instanceof LivingEntity attacker)) return false;
         if (kind == Kind.OWL_RESCUE) {
             return encounter(player, WitcheryEntities.OWL.get(), 4, owl -> owl.attackTemporarily(attacker, 300));
         }
@@ -286,6 +296,7 @@ public final class Predictions {
         if (type == EntityType.VILLAGER && !level.getBlockState(ground.below()).isSolidRender(level, ground.below())) return false;
         T mob = type.create(level);
         if (mob == null || mob instanceof Monster && level.getDifficulty() == Difficulty.PEACEFUL) return false;
+        if (mob instanceof WitchOwl owl) owl.rollFeatherColor(random);
         int requiredAir = Mth.ceil(mob.getBbHeight());
         if (requiredAir > 6) return false;
         for (int y = 0; y < requiredAir; y++) {
@@ -295,7 +306,13 @@ public final class Predictions {
         Vec3 arrival = Vec3.atBottomCenterOf(feet).add(0, 0.05, 0);
         mob.moveTo(arrival.x, arrival.y, arrival.z, 0, 0);
         if (!level.noCollision(mob)) return false;
-        mob.finalizeSpawn(level, level.getCurrentDifficultyAt(feet), MobSpawnType.EVENT, null, null);
+        if (mob instanceof Wolf || mob instanceof WitchOwl) {
+            // The original companions use their own random source for this bonus, independent of the next forecast's column.
+            mob.getAttribute(Attributes.FOLLOW_RANGE).addPermanentModifier(new AttributeModifier("Random spawn bonus",
+                    mob.getRandom().nextGaussian() * 0.05, AttributeModifier.Operation.MULTIPLY_BASE));
+        } else {
+            mob.finalizeSpawn(level, level.getCurrentDifficultyAt(feet), MobSpawnType.EVENT, null, null);
+        }
         setup.accept(mob);
         if (!level.addFreshEntity(mob)) return false;
         WitcheryNetwork.sendPredictionArrival(level, mob.position());

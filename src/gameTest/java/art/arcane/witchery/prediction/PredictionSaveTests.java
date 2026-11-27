@@ -1,6 +1,8 @@
 package art.arcane.witchery.prediction;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.entity.WitchOwl;
+import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcherySounds;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
@@ -14,8 +16,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.monster.Blaze;
 import net.minecraft.world.entity.monster.Zombie;
@@ -31,6 +35,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.PlayLevelSoundEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -213,6 +218,132 @@ public final class PredictionSaveTests {
                         && Math.abs(spawned.get(0).getY() - (ground.getY() + 1.05)) < 0.0001,
                 "The rescue starts above the slab block with the recorded attacker as its target");
         spawned.get(0).discard();
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void hurtForecastsMatchTheOriginalDamageTypes(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "ForecastHurt"));
+        var entries = store(player, forecast(2, 0), forecast(4, 0), forecast(1, 0));
+        var archer = EntityType.SKELETON.create(level);
+        var arrow = level.damageSources().arrow(EntityType.ARROW.create(level), archer);
+        var trident = level.damageSources().trident(EntityType.TRIDENT.create(level), archer);
+        var canceled = new LivingHurtEvent(player, arrow, 4);
+        canceled.setCanceled(true);
+        MinecraftForge.EVENT_BUS.post(canceled);
+        forecastHurt(player, trident);
+        forecastHurt(player, level.damageSources().stalagmite());
+        helper.assertTrue(entries.size() == 3, "Canceled hits, tridents and stalagmites keep the original forecasts");
+
+        forecastHurt(player, arrow);
+        helper.assertTrue(entries.size() == 2 && entries.getCompound(0).getInt("WITCPreID") == 4,
+                "An ordinary arrow clears the arrow forecast only");
+        entries.add(forecast(2, 0));
+        forecastHurt(player, level.damageSources().arrow(WitcheryEntities.BOLT.get().create(level), archer));
+        helper.assertTrue(entries.size() == 2 && entries.getCompound(1).getInt("WITCPreID") == 1,
+                "Witchery bolts also fulfill the original arrow forecast");
+        forecastHurt(player, level.damageSources().fall());
+        forecastHurt(player, level.damageSources().mobAttack(EntityType.ZOMBIFIED_PIGLIN.create(level)));
+        helper.assertTrue(entries.isEmpty(), "A vanilla fall and a zombified piglin fulfill their own forecasts");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_prediction_rescue_order")
+    public static void rescueCompanionsArriveInSavedOrder(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var ground = prepareEncounterFloor(helper);
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "ForecastPair"));
+        player.setPos(Vec3.atBottomCenterOf(ground.above()));
+        var attacker = EntityType.ZOMBIE.create(level);
+        var owl = forecast(13, 0);
+        var wolf = forecast(14, 0);
+        List<Mob> arrivals = new ArrayList<>();
+        Consumer<EntityJoinLevelEvent> listener = event -> {
+            if (event.getEntity() instanceof WitchOwl owlEntity) arrivals.add(owlEntity);
+            if (event.getEntity() instanceof Wolf wolfEntity) arrivals.add(wolfEntity);
+        };
+        MinecraftForge.EVENT_BUS.addListener(listener);
+        try {
+            var entries = store(player, owl, wolf);
+            level.getRandom().setSeed(17);
+            forecastHurt(player, level.damageSources().mobAttack(attacker));
+            helper.assertTrue(entries.isEmpty() && arrivals.size() == 2
+                            && arrivals.get(0) instanceof WitchOwl && arrivals.get(1) instanceof Wolf
+                            && arrivals.get(0).blockPosition().equals(ground.above().offset(-3, 0, -4))
+                            && arrivals.get(1).blockPosition().equals(ground.above().offset(-2, 0, 3))
+                            && arrivals.get(0).getTarget() == attacker && arrivals.get(1).getTarget() == attacker
+                            && level.getRandom().nextInt(1000) == 404,
+                    "The first owl color roll determines the following wolf's column");
+            arrivals.forEach(Entity::discard);
+            arrivals.clear();
+
+            entries = store(player, wolf, owl);
+            level.getRandom().setSeed(17);
+            forecastHurt(player, level.damageSources().mobAttack(attacker));
+            helper.assertTrue(entries.isEmpty() && arrivals.size() == 2
+                            && arrivals.get(0) instanceof Wolf && arrivals.get(1) instanceof WitchOwl
+                            && arrivals.get(0).blockPosition().equals(ground.above().offset(-3, 0, -4))
+                            && arrivals.get(1).blockPosition().equals(ground.above().offset(4, 0, -3))
+                            && level.getRandom().nextInt(1000) == 404,
+                    "Reversing the saved order keeps each companion's original random draw");
+            arrivals.forEach(Entity::discard);
+            arrivals.clear();
+
+            entries = store(player, wolf);
+            level.getRandom().setSeed(17);
+            forecastHurt(player, level.damageSources().arrow(EntityType.ARROW.create(level), player));
+            helper.assertTrue(entries.isEmpty() && arrivals.size() == 1 && arrivals.get(0).getTarget() == player,
+                    "A self-inflicted arrow hit can summon its forecast wolf");
+            arrivals.forEach(Entity::discard);
+            arrivals.clear();
+
+            entries = store(player, wolf);
+            attacker.setHealth(0);
+            level.getRandom().setSeed(17);
+            forecastHurt(player, level.damageSources().mobAttack(attacker));
+            helper.assertTrue(entries.isEmpty() && arrivals.size() == 1 && arrivals.get(0).getTarget() == attacker,
+                    "A dying attacker can trigger the same rescue");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(listener);
+            arrivals.forEach(Entity::discard);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_prediction_harvest_order")
+    public static void miningRollsFollowTheSavedForecastOrder(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "ForecastMining"));
+        var pos = helper.absolutePos(new BlockPos(8, 11, 8));
+        level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+        var iron = forecast(5, 0);
+        var emerald = forecast(7, 0);
+        List<ItemStack> drops = new ArrayList<>();
+
+        var entries = store(player, emerald, iron);
+        level.getRandom().setSeed(4641);
+        Predictions.onHarvest(player, pos, Blocks.STONE.defaultBlockState(), drops);
+        helper.assertTrue(List.copyOf(entries).equals(List.of(iron)) && drops.size() == 1
+                        && drops.get(0).is(Items.EMERALD) && level.getRandom().nextInt(1000) == 36,
+                "Emerald first grants one emerald and leaves the iron forecast");
+
+        drops.clear();
+        entries = store(player, iron, emerald);
+        level.getRandom().setSeed(4641);
+        Predictions.onHarvest(player, pos, Blocks.STONE.defaultBlockState(), drops);
+        helper.assertTrue(List.copyOf(entries).equals(List.of(emerald)) && drops.size() == 1
+                        && drops.get(0).is(Items.IRON_ORE) && drops.get(0).getCount() == 17
+                        && level.getRandom().nextInt(1000) == 629,
+                "Iron first grants the original seventeen ores and leaves the emerald forecast");
+
+        drops.clear();
+        entries = store(player, emerald, forecast(4, 0), emerald.copy());
+        level.getRandom().setSeed(23);
+        Predictions.onHarvest(player, pos, Blocks.STONE.defaultBlockState(), drops);
+        helper.assertTrue(entries.size() == 2 && entries.get(0) == emerald && drops.size() == 1
+                        && drops.get(0).is(Items.EMERALD),
+                "When only the second identical forecast succeeds, retain the first in its original slot");
         helper.succeed();
     }
 
@@ -436,6 +567,10 @@ public final class PredictionSaveTests {
     private static void rollOverdueForecast(FakePlayer player) {
         player.level().getRandom().setSeed(5120);
         tickAtWorldTime(player, 100);
+    }
+
+    private static void forecastHurt(FakePlayer player, DamageSource source) {
+        MinecraftForge.EVENT_BUS.post(new LivingHurtEvent(player, source, 4));
     }
 
     private static void tickAtWorldTime(FakePlayer player, long time) {

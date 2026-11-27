@@ -582,6 +582,13 @@
 - [x] Restore the old gravity setting when Forge replaces the local player. On clean dedicated Forge, transferring the cow and then transferring the viewer during a Waystone view both returned normal sight and gravity. The same client reopened a view after respawning and after disconnecting and reconnecting.
 - [x] Stop the dedicated server while the Waystone view is active and reload the same save. The muted client returned with its original Waystone and normal camera. The Eye was gone, and the stone opened and released a fresh view through the Crystal Ball.
 
+## Hurt and harvest predictions (2026-11-26)
+
+- [x] Compare the actual original hurt events. An ordinary arrow and a Witchery bolt fulfilled the arrow reading. A canceled arrow, a different projectile, and an unrelated fall-like source kept their readings. The port matches those distinctions with Forge damage types and restores the original Pigman match for Zombified Piglins.
+- [x] Compare both rescue orders with the same seed. With Owl first, the Wolf arrived at the original second column after the Owl's feather roll. With Wolf first, the Owl used the next column before rolling feathers. Both orders left the same next random draw as 0.24.1. An arrow fired by the player and a hit from a dying attacker also fulfilled a rescue.
+- [x] Replay mining in survival through Forge's block destruction and loot modifier. The original Emerald-first order dropped one emerald and kept Iron. Switching the order dropped 17 Iron Ore and kept Emerald. A second seed fulfilled both. Individual successful records are removed after the event, so an unsuccessful duplicate retains its position.
+- [x] Verify the same reobfuscated JAR on clean Forge and copied Auram. Both passed all 12 packaged cases and three restart checks. Auram consumes eight random draws in other loot conditions before Witchery. With the original seed supplied at Witchery's entry point, all three mining cases matched. Both profiles reopened the pending Iron reading with its original fixture data and fulfilled it on the next sampled harvest. Local data generation, reobfuscation, and all 594 Forge GameTests passed.
+
 ## Witch Clothing and Raising (2026-11-20)
 
 - [x] Restore Impregnated Leather, the Witch's Hat and Robes, the Necromancer's Robes, and the original worn models and sprites. The muted client crafted the leather and all three pieces and wore both hats and the Necromancer's Robes. At the crafting table a dyed robe lost its 37 damage and kept its enchantment, color and name. Imported legacy robe wear and color passed a fixture check.
@@ -2987,6 +2994,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Compare [Hell on Earth terrain and fire](#hell-on-earth-terrain-comparison-2026-11-26), including fire support, soil rolls, and Forge protections.
   - [x] Compare [Rain of Toads](#rain-of-toads-action-comparison-2026-11-26), including the shower's coordinates and ordering, the coven refund, and expiration and poison.
 - [ ] Infusion, prediction, creature power parity.
+  - [x] Compare [hurt and harvest predictions](#hurt-and-harvest-predictions-2026-11-26), including saved order, damage sources, companion placement, and unfinished forecasts.
 - [ ] Entity AI/combat/spawn tuning parity.
   - [x] Compare [Horned Huntsman archery, teleport, wolves, and Horn summons](#horned-huntsman-trial-2026-11-20).
   - [x] Compare [Mog and Gulg's paired combat, navigation, statue summons, and rewards](#mog-and-gulg-2026-11-20).

@@ -1248,7 +1248,11 @@ Prediction ticks and Crystal Ball readings remove IDs outside the registry. If a
 
 Periodic readings run every 100 ticks on the world clock in saved-list order. The world random source supplies the weighted reading and fulfillment rolls. Entering the Nether records eligibility for future Nether forecasts. An active reading is fulfilled during the next world pulse while the player is there.
 
+Hurt and harvest events also evaluate forecasts in saved-list order, then remove the individual successes. Arrow damage includes Witchery bolts. Falls use vanilla fall damage, and the undead encounter includes Zombified Piglins. A rescue requires a living-entity attacker as its source. It accepts the player who owns their own arrow and attackers that are still in their death animation.
+
 Fight, rescue and Love arrivals search up to eight blocks upward and then down to the first non-air block. A continuous column of air above that block must fit the creature. A slab can support a rescue. Love also requires opaque support below the landing block. Arrivals start 0.05 blocks above the center of the first air cell and send silent smoke to players within 16 blocks. Forge world bounds, collision, Peaceful difficulty and canceled mob spawns still govern whether the forecast succeeds.
+
+Forecast owls draw their color from the world before the next forecast chooses a column. Forecast owls and wolves use their own random source for the permanent follow-range bonus. The Owl keeps its 300-tick lifetime. See the [hurt and harvest comparison](PORTING.md#hurt-and-harvest-predictions-2026-11-26).
 
 Fall and Wet can force their original three-by-three gravel roof over dirt or farmland. Airborne players use the original block below their feet. Grounded players use the supporting block's height, including the shorter modern farmland surface. Fall clears five layers, and Wet places two layers of water sources outside ultra-warm dimensions. The original minimum heights are relative to the dimension floor. The roof honors Forge group protection, and individual protected blocks below it remain in place.
 

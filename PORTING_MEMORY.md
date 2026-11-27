@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Hurt and harvest predictions (2026-11-26)
+
+- The original hurt fixture distinguishes arrows and Witchery bolts from other projectile sources. Actual fall damage clears Fall, and a Pigman attack clears the undead forecast. Both Owl and Wolf arrive in saved-list order, including a Wolf for a self-inflicted arrow hit or a dying attacker. The seed-17 replay captures both arrival coordinates and the next world draw. See `build/qa-prediction-order/native/reference-verified.log`.
+- Mining applies the original roll to each saved reading in order. Seed 4641 gives one Emerald when Emerald comes first, or 17 Iron Ore when Iron comes first. Each result leaves the other forecast active. Seed 4640 fulfills both in the Emerald-first order. The regression also verifies the first of two identical records stays active when only the second succeeds.
+- Local Java 17 data generation, JAR reobfuscation, and all 594 required Forge GameTests passed. The reobfuscated `build/qa-prediction-order/release.jar` has SHA-256 `e2b8b85193562aec4baca385696e2bc046bb9c25dc6cf610d637e51a2e231f97`. Clean Forge passed all 12 packaged cases and three restart cases. The preceding JAR failed eight of the same 12 comparisons. The surviving Iron forecast kept its fixture marker through the regular player data store and fulfilled during a survival harvest after restart.
+- Copied Auram passed all 12 packaged cases and three restart cases with the same JAR. In an unadjusted pack harvest, eight other loot conditions consumed world random draws before the Witchery modifier. The fixture traced both Witchery rolls at that point. Supplying the original seed as Witchery's modifier entered reproduced all three original outcomes through the survival harvest path. The reloaded Iron forecast kept its marker and produced 17 Iron Ore. See `pack-release/traced.log` and `pack-release/restart.log`.
+
 ## Spectre spawn equipment (2026-11-26)
 
 - The original Forge server captured 600 complete spawns across easy, normal, and hard, with full and partial chunk habitation and different moon phases. Each record includes both armor slots, the enchantments, and the Gaussian follow-range bonus. See `build/qa-spectre-armor/native/reference-spawn.log`.
