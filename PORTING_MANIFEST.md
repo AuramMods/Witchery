@@ -152,6 +152,10 @@ The 0.24.1 language archive contains 55 item tips in English. Forge already had 
 The port includes the original localized versions where present in German, Spanish, Russian, Simplified Chinese, and Italian. It also recovers 47 associated Italian item names. Missing keys use the game's English fallback. The Huntsman's Spear describes the use action that now restores its original sword guard and wolf retaliation.
 
 ## Block Model Parity Anchors (current focus)
+- `witchery:poppetshelf`, `witchery:bloodcrucible`, and `witchery:candelabra`
+  - Each item shares its placed model. The Poppet Shelf draws its saved stacks and rotates them in Fancy and Fabulous graphics. The Blood Crucible draws its surface from the saved blood level with the original liquid texture orientation, tint and light. The Candelabra checks the five wicks in the original order and emits flame and smoke at each selected wick.
+- `witchery:dreamcatcher`
+  - One frame and five fitted nets use the original model geometry. The entire model sits one hundredth of a block toward the supporting wall in each facing.
 - `witchery:altar`
   - The ordinary cube and the formed cube use the original side, top and underside textures. Formed members draw green sparks from nearby plants using the first eight frames of `textures/particle/power.png`. The Forge particle atlas extracts the frames from the original sheet.
   - The Altar searches for mounted upgrades from the saved core in north, south, east and west order. Among competing skulls, lights and chalices, each first match supplies its own bonus.

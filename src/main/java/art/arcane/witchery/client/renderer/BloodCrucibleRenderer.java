@@ -16,6 +16,7 @@ public final class BloodCrucibleRenderer implements BlockEntityRenderer<BloodCru
     private static final RenderType SURFACE = RenderType.entityTranslucent(InventoryMenu.BLOCK_ATLAS);
     private static final float NEAR_EDGE = 5 / 16F;
     private static final float FAR_EDGE = 11 / 16F;
+    private static final int SURFACE_LIGHT = 200;
 
     public BloodCrucibleRenderer(BlockEntityRendererProvider.Context context) {}
 
@@ -28,15 +29,15 @@ public final class BloodCrucibleRenderer implements BlockEntityRenderer<BloodCru
         var sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(LIQUID);
         var pose = stack.last();
         var vertices = buffers.getBuffer(SURFACE);
-        vertex(pose, vertices, NEAR_EDGE, surfaceY, FAR_EDGE, sprite.getU0(), sprite.getV1(), light, overlay);
-        vertex(pose, vertices, FAR_EDGE, surfaceY, FAR_EDGE, sprite.getU1(), sprite.getV1(), light, overlay);
-        vertex(pose, vertices, FAR_EDGE, surfaceY, NEAR_EDGE, sprite.getU1(), sprite.getV0(), light, overlay);
-        vertex(pose, vertices, NEAR_EDGE, surfaceY, NEAR_EDGE, sprite.getU0(), sprite.getV0(), light, overlay);
+        vertex(pose, vertices, FAR_EDGE, surfaceY, NEAR_EDGE, sprite.getU0(), sprite.getV1(), overlay);
+        vertex(pose, vertices, NEAR_EDGE, surfaceY, NEAR_EDGE, sprite.getU1(), sprite.getV1(), overlay);
+        vertex(pose, vertices, NEAR_EDGE, surfaceY, FAR_EDGE, sprite.getU1(), sprite.getV0(), overlay);
+        vertex(pose, vertices, FAR_EDGE, surfaceY, FAR_EDGE, sprite.getU0(), sprite.getV0(), overlay);
     }
 
     private static void vertex(PoseStack.Pose pose, VertexConsumer vertices, float x, float y, float z,
-                               float u, float v, int light, int overlay) {
-        vertices.vertex(pose.pose(), x, y, z).color(255, 0, 0, 230)
-                .uv(u, v).overlayCoords(overlay).uv2(light).normal(pose.normal(), 0, 1, 0).endVertex();
+                               float u, float v, int overlay) {
+        vertices.vertex(pose.pose(), x, y, z).color(255 / 256F, 0, 0, 0.9F)
+                .uv(u, v).overlayCoords(overlay).uv2(SURFACE_LIGHT).normal(pose.normal(), 0, 1, 0).endVertex();
     }
 }

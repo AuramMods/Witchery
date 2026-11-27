@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Poppet Shelf, Blood Crucible, Candelabra, and Dream Catcher rendering (2026-11-27)
+
+- The Poppet Shelf, Blood Crucible and Candelabra use the original cuboids and texture coordinates in the world and as items. The Candelabra replaces its flat item sprite with the five-wick model and checks its wicks in the original order. The Blood Crucible draws its surface with the original texture orientation, tint and light. The Dream Catcher places all five nets at the original depth and offsets the entire model toward its supporting wall.
+- The original model capture and packaged Forge client matched all 848 nondegenerate quads, including all 20 Dream Catcher states. The client also matched the five Blood Crucible fill samples and eight seeded Candelabra wick sequences. Forge's atlas padding and the vanilla flame particle's positional jitter were accounted for in the comparison.
+- An ordinary dedicated restart reopened the preceding package's world with three Poppet Shelf stacks, 15 Blood Crucible units, and a north-facing Hunger Dream Catcher. The shelf items stayed still in Fast graphics and rotated in Fancy graphics. The blood surface drew at one quarter of a block. The isolated survival client stayed hidden and unfocused with zero master volume and OpenAL's No Output device.
+- Local Java 17 data generation, JAR reobfuscation, and all 597 required Forge GameTests passed. The tested JAR is `build/qa-ritual-block-models/release.jar`, SHA-256 `a1feda62811a742292ad462069f92c81255684e775da823265b062632592ffba`. See `verified.log` and `survival/check-verified.log` in the same directory.
+
 ## Vampire, Follower, Reflection, Coven Witch, and Huntsman rendering (2026-11-27)
 
 - The original client models supplied 264 poses and 36 meshes. The preceding package differed on 217 of the 1,584 pose values. The original biped poses now drive the Vampire, fixed-skin Followers and the fallback Reflection. Copied player skins keep modern wide and slim geometry and show the held-item pose on the correct side. The Vampire's hat sits 0.3 model pixels below its original head pivot. Texture lookups on a Wolfman Reflection report the texture that the renderer uses.

@@ -41,11 +41,11 @@ public final class CandelabraBlock extends Block {
         double x = pos.getX() + 0.5;
         double y = pos.getY() + 0.9;
         double z = pos.getZ() + 0.5;
-        flame(level, random, x, y + 0.15, z);
-        flame(level, random, x - 0.3, y, z);
+        flame(level, random, x, pos.getY() + 1.05, z);
         flame(level, random, x + 0.3, y, z);
-        flame(level, random, x, y, z - 0.3);
+        flame(level, random, x - 0.3, y, z);
         flame(level, random, x, y, z + 0.3);
+        flame(level, random, x, y, z - 0.3);
     }
 
     private static void flame(Level level, RandomSource random, double x, double y, double z) {

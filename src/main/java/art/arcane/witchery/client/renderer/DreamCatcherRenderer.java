@@ -46,7 +46,7 @@ public final class DreamCatcherRenderer implements BlockEntityRenderer<DreamCatc
         PartDefinition nets = root.addOrReplaceChild("nets", CubeListBuilder.create(), PartPose.ZERO);
         for (DreamWeave weave : DreamWeave.values()) {
             nets.addOrReplaceChild(weave.getSerializedName(),
-                    CubeListBuilder.create().texOffs(weave.textureX(), weave.textureY()).addBox(-3, 11, 7.85F, 6, 6, 0),
+                    CubeListBuilder.create().texOffs(weave.textureX(), weave.textureY()).addBox(-3, 11, 8, 6, 6, 0),
                     PartPose.ZERO);
         }
         return LayerDefinition.create(mesh, 32, 32);
@@ -60,6 +60,7 @@ public final class DreamCatcherRenderer implements BlockEntityRenderer<DreamCatc
         pose.translate(0.5, 1.5, 0.5);
         pose.mulPose(Axis.YP.rotationDegrees(180 - state.getValue(DreamCatcherBlock.FACING).toYRot()));
         pose.mulPose(Axis.ZP.rotationDegrees(180));
+        pose.translate(0, 0, -0.01);
         VertexConsumer vertices = buffers.getBuffer(TEXTURE);
         frame.render(pose, vertices, light, overlay);
         nets.getChild(state.getValue(DreamCatcherBlock.WEAVE).getSerializedName()).render(pose, vertices, light, overlay);
