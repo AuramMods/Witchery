@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Daylight Collector detector order and pickup (2026-11-27)
+
+- The released 0.24.1 server matched twelve horizontal detector tests across six ordered pairs and charged after an update from above. Creative insertion left one of two Quartz Spheres. A charge of seven yielded a sphere and charge fifteen yielded one Sun Grenade at the player's position plus one block, both with zero pickup delay. Read `build/qa-daylight-collector/native/default.log`.
+- Forge reads the first normal detector in north, south, east, west order on every neighbor update. The packaged baseline matched two of 17 block cases. Clean Forge and copied Auram matched 17 cases and three restart checks each. A saved charge of 14 finished after the next valid signal and stayed at 15 as power fell. Read `build/qa-daylight-collector/baseline/first.log` and `build/qa-daylight-collector/{clean,pack}/{first,restart}.log`.
+- Local Java 17 packaging, JAR reobfuscation, and all 642 required Forge GameTests passed. The headless package at `build/qa-daylight-collector/candidate.jar` has SHA-256 `3e71c5aef09a758d5d7213b275df0fdb7937c8a071695e9af2c8efb9f6562899`. Read `build/qa-daylight-collector/{package,gametest}.log`.
+
 ## Effect IDs in native and converted saves (2026-11-27)
 
 - The released 0.24.1 server saved a persistent pig with byte IDs 32, 33, 43, and 119 for Queasy, Gas Mask, Paralysis, and Sinking. Clean Forge imported the real region with the original configuration and loaded all four at amplifier two with zero movement speed. The same pig kept those effects after an ordinary restart. Read `build/qa-effect-save-formats/native/region.log` and `build/qa-effect-save-formats/imported/{import,restart}.log`.

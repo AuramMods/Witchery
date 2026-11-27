@@ -426,7 +426,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | `WALLGEN` | `witchery:wallgen` |
 | `COFFIN` | `witchery:coffinblock` |
 | `LIGHT` | `witchery:light` (invisible level-15 light, with a temporary state for moving sources) |
-| `DAYLIGHT_COLLECTOR` | `witchery:daylightcollector` (`charge` 0–15 in block state) |
+| `DAYLIGHT_COLLECTOR` | `witchery:daylightcollector` (`charge` 0–15 in block state). Any neighbor update reads the first ordinary detector in north, south, east, west order. Only detector strength `charge + 1` advances the sphere. The item output has no pickup delay. |
 | `BLOOD_CRUCIBLE` | `witchery:bloodcrucible` |
 | `MIRROR` | `witchery:mirrorblock` |
 | `MIRROR_UNBREAKABLE` | `witchery:mirrorblock2` |

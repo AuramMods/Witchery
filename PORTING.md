@@ -1418,6 +1418,13 @@ On clean Forge, the player selected and activated Bat form through ordinary cont
 - [x] Complete rank five's Blaze trial. The muted client added two more Torn Pages to the journal and learned the rank-six cap. It reached rank six after twenty sword kills against weakened test Blazes. The GameTests also verified that ranged kills do not count.
 - [x] Restore rank-six stone shattering. After a restart with the final package, the muted client crouched and broke stone, cobblestone and netherrack with an empty hand. The drops and exhaustion appeared in the server state. Deepslate stayed intact. Data generation, JAR reobfuscation and all 155 required Forge GameTests passed.
 
+### Daylight Collector detector order and pickup (2026-11-27)
+
+- The released 0.24.1 server checked all six pairs of horizontal detector positions with matching and mismatched signals. Each neighbor update reads the first detector in north, south, east, west order, even when the update comes from another direction. The collector advances only when the detector is one strength above its charge. Modern inverted detectors are excluded because 0.24.1 used the ordinary daylight detector.
+- The original Creative interaction consumed one Quartz Sphere from a stack of two. At charge seven, harvesting ejected one Quartz Sphere. At charge 15, it ejected one Sun Grenade. Both items spawned one block above the player with zero pickup delay. The port restores the same consumption, output position, pickup delay, and order of spawn and reset.
+- The previous packaged Forge build passed two of 17 block cases. The rebuilt JAR passed all 17 and all three restart checks on clean Forge and copied Auram. The saved stand reopened at charge 14, reached 15 on the next matching signal, and stayed full as the detector dropped to eight.
+- Local Java 17 packaging and JAR reobfuscation succeeded. All 642 required Forge GameTests passed, including the complete detector-order fixture and the Forge interaction that verifies Creative consumption and both outputs.
+
 ## Poppy Trial and Bat Form (2026-11-20)
 
 - [x] Complete the rank-six poppy exchange. The muted client offered Lilith a poppy with a learned cap of six and kept the flower after she declined. It collected another Torn Page from a weakened Wither, crafted the page into the journal and read it to learn the rank-seven cap. Lilith then accepted the same poppy and raised the vampire to rank seven. This exchange used a defeated Lilith fixture. The original summoning ritual and fight were verified in the earlier rank-one milestone.
@@ -3376,6 +3383,8 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare [crop maturation, harvest drops, and stage models](#witchery-crop-harvesting-and-models-2026-11-27) across the eight legacy crops.
   - [x] Compare [live Mandrake emergence](#mandrake-emergence-2026-11-27) through player harvest, lost support, direct destruction, harvest magic, and blasts.
   - [x] Compare [Leaping Lily placement and the local jump cue](#player-movement-and-lily-placement-2026-11-27), including the ordinary shallow-water interaction in clean Forge and copied Auram.
+  - [x] Compare [Daylight Collector detector priority and output pickup](#daylight-collector-detector-order-and-pickup-2026-11-27), including all six detector pairs, a vertical update, Creative consumption and saved charge.
+  - [ ] Restore Bramble spread when Wild Bramble is harvested without shears. The released 0.24.1 harvest callback spread into all eight tested columns, while shears and the Ender variant left them clear. Also compare support and Ender particles with the packaged port. The original probe is in `build/qa-bramble-harvest/native/callback.log`.
 - [ ] Item behavior parity pass (including metadata-subitem conversions).
   - [x] Compare melee modifiers, sword guards, and Boline harvest against the [melee tool measurements](#melee-tools-and-boline-harvesting-2026-11-26).
   - [x] Restore the Crossbow's [launch position, velocity, spread, and firing cue](#crossbow-launch-physics-2026-11-27). The seeded original replay covers four draw durations and the three Splitting trajectories with a moving shooter.
