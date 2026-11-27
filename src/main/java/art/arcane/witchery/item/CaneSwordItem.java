@@ -17,18 +17,15 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.Tiers;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.ToolAction;
-import net.minecraftforge.common.ToolActions;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public final class CaneSwordItem extends SwordItem {
+public final class CaneSwordItem extends GuardingSwordItem {
     private static final String BLADE_DEPLOYED = "WITCBladeDeployed";
     private static final float ATTACK_SPEED = -2.4F;
     private static final Multimap<Attribute, AttributeModifier> SHEATHED_MODIFIERS = ImmutableMultimap.of(
@@ -83,11 +80,6 @@ public final class CaneSwordItem extends SwordItem {
     @Override
     public int getUseDuration(ItemStack stack) {
         return isDrawn(stack) ? 72_000 : 0;
-    }
-
-    @Override
-    public boolean canPerformAction(ItemStack stack, ToolAction action) {
-        return action == ToolActions.SHIELD_BLOCK ? isDrawn(stack) : super.canPerformAction(stack, action);
     }
 
     @Override

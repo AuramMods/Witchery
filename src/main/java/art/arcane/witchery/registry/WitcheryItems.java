@@ -52,6 +52,7 @@ import art.arcane.witchery.item.BrewBottleItem;
 import art.arcane.witchery.item.DoorKeyItem;
 import art.arcane.witchery.item.BroomItem;
 import art.arcane.witchery.item.CaneSwordItem;
+import art.arcane.witchery.item.GuardingSwordItem;
 import art.arcane.witchery.item.CircleTalismanItem;
 import art.arcane.witchery.item.HandBowItem;
 import art.arcane.witchery.item.HornOfTheHuntItem;
@@ -123,7 +124,6 @@ import net.minecraft.world.item.ArmorItem.Type;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.PlaceOnWaterBlockItem;
 import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.PickaxeItem;
 import net.minecraft.world.item.Tiers;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -333,12 +333,12 @@ public final class WitcheryItems {
             case "huntercoatgarlicked" -> new HunterClothingItem(Piece.COAT, Upgrade.GARLICKED);
             case "hunterlegsgarlicked" -> new HunterClothingItem(Piece.LEGS, Upgrade.GARLICKED);
             case "hunterbootsgarlicked" -> new HunterClothingItem(Piece.BOOTS, Upgrade.GARLICKED);
-            case "kobolditepickaxe" -> new PickaxeItem(Tiers.DIAMOND, 1, -2.8F, new Item.Properties()) {};
+            case "kobolditepickaxe" -> new PickaxeItem(Tiers.DIAMOND, 2, -2.8F, new Item.Properties()) {};
             case "quiverofmog" -> new GoblinEquipmentItem(GoblinEquipmentItem.Piece.QUIVER);
             case "gurdleofgulg" -> new GoblinEquipmentItem(GoblinEquipmentItem.Piece.GURDLE);
             case "kobolditehelm" -> new GoblinEquipmentItem(GoblinEquipmentItem.Piece.HELM);
             case "koboldite_pentacle" -> new KobolditePentacleItem();
-            case "silversword" -> new SwordItem(Tiers.GOLD, 4, -2.4F, new Item.Properties()) {
+            case "silversword" -> new GuardingSwordItem(Tiers.GOLD, 4, -2.4F, new Item.Properties()) {
                 @Override
                 public int getEnchantmentValue() {
                     return Tiers.IRON.getEnchantmentValue();

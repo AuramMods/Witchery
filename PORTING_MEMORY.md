@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Melee tools and Boline harvesting (2026-11-26)
+
+- The original 0.24.1 server measured attack modifiers of four for the Arthana, Boline, and Silver Sword, seven for the drawn Cane Sword, eight for the Huntsman's Spear, and five for the Koboldite Pickaxe. All five blade weapons used the guard and left 14.5 health after a ten-point hit. The pickaxe left ten. The original Boline used zero durability for Cobweb and Blood Rose, one when shearing a leaf or vine, and two for Plant Mine metadata seven. See `build/qa-melee-tools/native/native-final.log`.
+- The rebuilt package passed all 28 checks in clean Forge survival. The fixture supplied the six tools, cleared armor, and applied controlled hits from behind. Ordinary use raised each blade and left 14.5 health on its guard. Ordinary attack recovered Cobweb, Blood Rose, a Dandelion Sprouting Plant Mine and Oak Leaves. The four durability costs were zero, zero, two and one. The client was hidden, unfocused, and muted on OpenAL's No Output device. See `survival/check-final.log` and `survival/focus-final.log` in the same directory.
+- The older package differed in 15 measurements after the disposable arena was cleared of previous drops. It lacked three guard gestures and the original Cane Sword rear-hit reduction. The Arthana, Boline and pickaxe each showed one point less damage. Mining failed to recover all four intended cuttings, and the Oak Leaves cost zero durability. See `survival/check-baseline-isolated.log`.
+- Java 17 local data generation, JAR reobfuscation, and all 566 required Forge GameTests passed. The new tests cover the six original weapon figures, blockable and armor-bypassing damage, the sheathed Cane Sword, mining drops, and the protected Plant Mine. The exact reobfuscated `build/qa-melee-tools/candidate.jar` has SHA-256 `3c941d3faf41c2de0e61dff1b72f5071c788364a0aa3ab734f6b8b54db038097`.
+
 ## Carried gear and flight route saves (2026-11-26)
 
 - A synthetic region based on entities saved by Witchery 0.24.1 supplied a Witch Hunter and a Follower with complete equipment and distinct drop chances, a saddled Binky with the Follower riding it, an Owl with named red wool and a Waystone, and a Winged Monkey with a Taglock. The preceding package passed 52 of 56 checks. The four failures were the two route names and lore lists, which still contained raw 1.7.10 strings. Both route bindings stayed intact.

@@ -1258,6 +1258,11 @@
 - [x] Restore the crafting recipe, the drawn and sheathed models, the original sound clips and the guard. The muted survival client crafted the sword from five Dark Cloth, a gold ingot and a diamond sword. Sneak-use changed the attack damage from two to eight. The drawn guard reduced an incoming hit without wearing the sword.
 - [x] Fill, save and use the blood reserve. A sheathed kill left the reserve empty. Two weakened villager fixtures with 180 and 140 blood filled it to 180 and then the 250 cap when killed with the drawn sword. After a dedicated restart, the player retained the drawn blade and saw 250 in its tooltip. The client sheathed and used it, moving all 250 into blood power to reach 654. Java 17 data generation, JAR reobfuscation and all 193 required Forge GameTests passed.
 
+## Melee tools and Boline harvesting (2026-11-26)
+
+- [x] Compare the Arthana, Boline, Silver Sword, Cane Sword, Huntsman's Spear and Koboldite Pickaxe against the running 0.24.1 server. Restore the one-point attack modifier gaps on the Arthana, Boline and pickaxe. All six match their original durability. The five blade weapons guard through their normal use binding and use modern attack cooldowns. The drawn Cane Sword uses the original guard formula and the spear can call a retaliating wolf.
+- [x] Restore Boline cutting through ordinary mining. Cobweb and Blood Rose return an item without wear. A plant mine returns its exact variant and spends two durability. Vanilla leaves return a cutting for one durability. A Forge break veto leaves the plant mine intact. Right-click harvesting also cuts these blocks.
+
 ## Silver Vat and Silver Sword (2026-11-20)
 
 - [x] Craft and place the original Silver Vat in survival. Four neighboring blast furnaces produced gold and the first two dust from raw-gold and coal fixtures. The vat kept a separate count for each output, and all produced gold remained available in the furnaces.
@@ -2897,6 +2902,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
 ### Phase 4 - Feature Behavior Pass (depth)
 - [ ] Blocks/tile entity behavior parity pass.
 - [ ] Item behavior parity pass (including metadata-subitem conversions).
+  - [x] Compare melee modifiers, sword guards, and Boline harvest against the [melee tool measurements](#melee-tools-and-boline-harvesting-2026-11-26).
 - [x] Brewing, Kettle, Distillery, Spinning Wheel, and Brazier parity.
   - [x] Compare the fixed Kettle, Distillery, Spinning Wheel, and Brazier registries and exercise their interactions and saved state in the workstation milestones above.
   - [x] Complete the Cauldron effect, modifier, and cast comparisons in the release checklist.

@@ -38,7 +38,7 @@ import art.arcane.witchery.item.SpiritOfferingItem;
 import art.arcane.witchery.item.VampiricPoppetItem;
 import art.arcane.witchery.item.GlassGobletItem;
 import art.arcane.witchery.item.HunterClothingItem;
-import art.arcane.witchery.item.HuntsmanSpearItem;
+import art.arcane.witchery.item.GuardingSwordItem;
 import art.arcane.witchery.item.ParasyticLouseItem;
 import art.arcane.witchery.item.BarkBeltItem;
 import art.arcane.witchery.item.WitchFootwear;
@@ -109,7 +109,6 @@ import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.event.entity.living.ShieldBlockEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingTickEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingJumpEvent;
@@ -460,14 +459,6 @@ public final class WitcheryEventHooks {
     }
 
     @SubscribeEvent
-    public static void blockWithCaneSword(ShieldBlockEvent event) {
-        if (CaneSwordItem.isDrawn(event.getEntity().getUseItem())) {
-            event.setBlockedDamage(event.getBlockedDamage() * 0.5F);
-            event.setShieldTakesDamage(false);
-        }
-    }
-
-    @SubscribeEvent
     public static void restoreLegacyBinkyDrop(LivingDropsEvent event) {
         if (event.getEntity() instanceof AbstractHorse horse && !(horse instanceof DeathHorse)
                 && horse.getPersistentData().getBoolean("WITCIsBinky")) {
@@ -521,7 +512,7 @@ public final class WitcheryEventHooks {
             if (!event.isCanceled() && !ignoreWards) VampiricPoppetItem.transferDamage(player, event);
             if (!event.isCanceled()) FamiliarBinding.shareDamage(player, event);
             if (!event.isCanceled()) {
-                HuntsmanSpearItem.defend(player, event);
+                GuardingSwordItem.defend(player, event);
                 Predictions.onHurt(player, event.getSource());
             }
             DeathProtectionPoppetItem.repairArmor(player);

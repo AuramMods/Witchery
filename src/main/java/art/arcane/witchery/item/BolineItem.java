@@ -5,6 +5,7 @@ import art.arcane.witchery.block.PlantMineBlock;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -13,7 +14,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.Tiers;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -27,9 +27,9 @@ import net.minecraftforge.common.ToolActions;
 
 import java.util.List;
 
-public final class BolineItem extends SwordItem {
+public final class BolineItem extends GuardingSwordItem {
     public BolineItem() {
-        super(Tiers.IRON, 1, -2.4F, new Properties().rarity(Rarity.UNCOMMON));
+        super(Tiers.IRON, 2, -2.4F, new Properties().rarity(Rarity.UNCOMMON));
     }
 
     @Override
@@ -38,32 +38,51 @@ public final class BolineItem extends SwordItem {
         BlockPos pos = context.getClickedPos();
         BlockState state = level.getBlockState(pos);
         Player player = context.getPlayer();
-        boolean rose = state.getBlock() instanceof BloodRoseBlock;
-        boolean noWear = rose || state.is(Blocks.COBWEB);
-        boolean mine = state.getBlock() instanceof PlantMineBlock;
-        boolean harvest = noWear || mine || state.is(BlockTags.LEAVES) || state.is(Blocks.GRASS) || state.is(Blocks.FERN)
-                || state.is(Blocks.VINE) || state.is(Blocks.DEAD_BUSH);
-        if (!harvest && !(state.getBlock() instanceof IForgeShearable)) return InteractionResult.PASS;
         if (player == null || !level.mayInteract(player, pos)) return InteractionResult.PASS;
         if (level instanceof ServerLevel server) {
-            ItemStack tool = context.getItemInHand();
-            List<ItemStack> cuttings;
-            if (rose) {
-                cuttings = List.of(new ItemStack(state.getBlock()));
-            } else if (mine) {
-                cuttings = List.of(state.getBlock().getCloneItemStack(server, pos, state));
-            } else if (harvest) {
-                cuttings = Block.getDrops(state, server, pos, level.getBlockEntity(pos), player, new ItemStack(Items.SHEARS));
-            } else if (state.getBlock() instanceof IForgeShearable shearable && shearable.isShearable(tool, level, pos)) {
-                cuttings = shearable.onSheared(player, tool, level, pos, tool.getEnchantmentLevel(Enchantments.BLOCK_FORTUNE));
-            } else {
-                return InteractionResult.PASS;
-            }
-            if (!server.destroyBlock(pos, false, player)) return InteractionResult.PASS;
-            cuttings.forEach(cutting -> Block.popResource(server, pos, cutting));
-            if (!noWear) tool.hurtAndBreak(1, player, owner -> owner.broadcastBreakEvent(context.getHand()));
+            return cutBlock(server, pos, state, player, context.getHand(), false)
+                    ? InteractionResult.CONSUME : InteractionResult.PASS;
         }
-        return InteractionResult.sidedSuccess(level.isClientSide);
+        return hasCuttings(state) || state.getBlock() instanceof IForgeShearable
+                ? InteractionResult.SUCCESS : InteractionResult.PASS;
+    }
+
+    @Override
+    public boolean onBlockStartBreak(ItemStack stack, BlockPos pos, Player player) {
+        if (!(player instanceof ServerPlayer serverPlayer)) return false;
+        ServerLevel level = serverPlayer.serverLevel();
+        if (serverPlayer.blockActionRestricted(level, pos, serverPlayer.gameMode.getGameModeForPlayer())) return false;
+        return cutBlock(level, pos, level.getBlockState(pos), player, InteractionHand.MAIN_HAND, true);
+    }
+
+    private static boolean hasCuttings(BlockState state) {
+        return state.getBlock() instanceof BloodRoseBlock || state.getBlock() instanceof PlantMineBlock
+                || state.is(Blocks.COBWEB) || state.is(BlockTags.LEAVES) || state.is(Blocks.GRASS)
+                || state.is(Blocks.FERN) || state.is(Blocks.VINE) || state.is(Blocks.DEAD_BUSH);
+    }
+
+    private static boolean cutBlock(ServerLevel level, BlockPos pos, BlockState state, Player player,
+                                    InteractionHand hand, boolean mining) {
+        ItemStack tool = player.getItemInHand(hand);
+        boolean rose = state.getBlock() instanceof BloodRoseBlock;
+        boolean web = state.is(Blocks.COBWEB);
+        boolean mine = state.getBlock() instanceof PlantMineBlock;
+        List<ItemStack> cuttings;
+        if (rose || web) {
+            cuttings = List.of(new ItemStack(state.getBlock()));
+        } else if (mine) {
+            cuttings = List.of(state.getBlock().getCloneItemStack(level, pos, state));
+        } else if (hasCuttings(state)) {
+            cuttings = Block.getDrops(state, level, pos, level.getBlockEntity(pos), player, new ItemStack(Items.SHEARS));
+        } else if (state.getBlock() instanceof IForgeShearable shearable && shearable.isShearable(tool, level, pos)) {
+            cuttings = shearable.onSheared(player, tool, level, pos, tool.getEnchantmentLevel(Enchantments.BLOCK_FORTUNE));
+        } else {
+            return false;
+        }
+        if (!level.destroyBlock(pos, false, player)) return false;
+        cuttings.forEach(cutting -> Block.popResource(level, pos, cutting));
+        if (!rose && !web) tool.hurtAndBreak(mining && mine ? 2 : 1, player, owner -> owner.broadcastBreakEvent(hand));
+        return true;
     }
 
     @Override
@@ -87,6 +106,7 @@ public final class BolineItem extends SwordItem {
     public float getDestroySpeed(ItemStack stack, BlockState state) {
         if (state.is(WitcheryBlocks.getRequired("web").get())) return 15;
         if (state.is(WitcheryBlocks.getRequired("plantmine").get())) return 5;
+        if (state.is(Blocks.VINE) || state.getBlock() instanceof BloodRoseBlock) return 1.5F;
         return Math.max(super.getDestroySpeed(stack, state), Items.SHEARS.getDestroySpeed(stack, state));
     }
 

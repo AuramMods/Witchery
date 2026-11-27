@@ -448,6 +448,10 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 The original `witchhat`, `witchrobe`, `necromancerrobe`, and `babashat` IDs equip the modeled clothing. The corresponding ingredient mapping uses `impregnated_leather` for 72 and `brew_of_raising` for 65. `necromantic_stone` issues commands to owned undead.
 Witch clothing models hide on invisible wearers and remain visible on armor stands. Vanilla armor visibility and crouching scale the legacy mob search for nearby invisible players. The existing `VampireLevel` data also controls whether zombies target a visible player at rank ten.
 
+The Arthana, Boline, Silver Sword, drawn Cane Sword, and Huntsman's Spear restore the original use-to-guard interaction and its `(damage + 1) / 2` rule for blockable damage. They use Forge's hurt event with the modern item-use animation. The Arthana, Boline, and Silver Sword add four attack damage. The drawn Cane Sword adds seven, the spear adds eight, and the Koboldite Pickaxe adds five. These figures are item modifiers before the player's base attack damage and modern attack cooldown.
+
+The Boline cuts a Blood Rose or a vanilla Cobweb without wear, recovers the exact Plant Mine variant for two durability when mined, and shears vanilla leaves for one. Normal mining enters through Forge's break event. Right-click harvesting spends one durability on a Plant Mine.
+
 | Field | Legacy Name |
 |---|---|
 | `GENERIC` | `witchery:ingredient` |
