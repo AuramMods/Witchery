@@ -482,6 +482,13 @@
 - [x] Match the original damage exemptions. Vampires skip damage transfer and ordinary lethal poppet protection. Werewolves in wolf or wolfman form keep the low-health starvation exception for Hunger Protection. A Vampiric Poppet can transfer explosion damage even when it has no attacker. The existing Witch Hunter full-set exclusion and Enhanced Poppets checks apply to bound wards, and a powered Anti-Magic Bolt requires an enhanced carried Death Protection Poppet.
 - [x] Verify the reobfuscated JAR with a muted survival client on dedicated Forge. An unattributed explosion transferred four damage and added 66 wear. After restarting with the fixture player's vampire rank set to one, an attributed hit damaged the player and left the recipient and poppet wear unchanged. Lethal fire killed that player without consuming either Fire or Death Protection. Java 17 data generation and all 20 checked-in GameTests passed.
 
+### Corrupting Voodoo Protection completion (2026-11-27)
+
+- [x] Compare ten original completion cases. Poppet Protection reflects lightning after taking 350 wear, including on its last use. An unprotected target loses up to ten wards. The original also acts on a named player in another dimension or on the death screen. A filled kit with no target still completes, while an invalid first offering or a caster without local cat mastery refunds the held items.
+- [x] Restore the single Flame and dragon growl packet at the glyph center plus 0.1 blocks. Its width is one, height is two, and audience extends 16 blocks. A packaged survival player activated the rite with supplied offerings and altar power. The other player stayed on the death screen until completion, then respawned with the tagged quartz but without either ward. Both muted clients received the packet. The normal dedicated restart kept the resulting inventory.
+- [x] Compare the original cases and the normal Heart Glyph and Nether shelf fixtures on packaged clean Forge and copied Auram. Both passed 115 checks across 14 trials. The preceding JAR failed 25 checks in the clean profile.
+- [x] Import an original chest with an empty Taglock, a filled Taglock with no signature, and a signed Taglock. All three states survived regular dedicated reload. The unsigned filled kit triggers the original recipe when used as the first offering, and the empty kit does not match.
+
 ## Ent and Ent Branch (2026-11-20)
 
 - [x] Restore the Ent at `witchery:ent`. Harvesting Witchwood can awaken one in the surrounding forest. The rate starts at 1% and increases with adjacent Witchwood logs up to 5%. Awakening needs supported space in a loaded chunk.
@@ -3025,6 +3032,8 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Verify all five [Sky's Wrath and Total Eclipse recipes](#skys-wrath-and-total-eclipse-2026-11-21). The [clock and realm checks](#heart-glyph-cast-timing-2026-11-24) cover the first strike, restart cadence, and resumed Eclipse.
   - [x] Compare [powered and portable Cooking](#portable-volcano-and-cooking-rites-2026-11-21), including seeded burning, food boundaries, cue and result placement, and a saved offering sequence.
   - [x] Compare the [ten directed Taglock curses and cures](#directed-curse-and-cure-completion-2026-11-26), including protection, a remote target, and completion cues.
+  - [x] Compare familiar binding and recall. The original and packaged tests cover the west and east binding boundaries, diagonal recall, a dismissed familiar's recreation point, and a cross-dimension recall. [Familiars and Covens](#familiars-and-covens-2026-11-19)
+  - [x] Compare the Corrupting Voodoo Protection rite, including its first offering, cat mastery, lightning, ward cap, death-screen target, and completion packet. [Completion comparison](#corrupting-voodoo-protection-completion-2026-11-27)
   - [x] Compare [Blight and Blindness actions](#blight-and-blindness-action-comparison-2026-11-26), including terrain and creature conversion.
   - [x] Compare [Hell on Earth terrain and fire](#hell-on-earth-terrain-comparison-2026-11-26), including fire support, soil rolls, and Forge protections.
   - [x] Compare [Rain of Toads](#rain-of-toads-action-comparison-2026-11-26), including the shower's coordinates and ordering, the coven refund, and expiration and poison.

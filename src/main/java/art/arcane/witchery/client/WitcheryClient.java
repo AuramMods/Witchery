@@ -475,7 +475,7 @@ public final class WitcheryClient {
                     (stack, level, entity, seed) -> CircleTalismanItem.model(stack));
             ItemProperties.register(WitcheryItems.getRequired("taglockkit").get(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "bound"),
-                    (stack, level, entity, seed) -> TaglockItem.isBound(stack) ? 1 : 0);
+                    (stack, level, entity, seed) -> TaglockItem.isFilledKit(stack) ? 1 : 0);
             ItemProperties.register(WitcheryItems.getRequired("glassgoblet").get(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "filled"),
                     (stack, level, entity, seed) -> GlassGobletItem.filled(stack) ? 1 : 0);

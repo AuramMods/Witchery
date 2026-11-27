@@ -227,6 +227,7 @@ public enum WitcheryIngredient {
         if (hasLegacyDamage) {
             int damage = stackTag.getInt("Damage");
             var state = stack.getTagElement(BlockItem.BLOCK_STATE_TAG);
+            if (damage == 1 && stack.getItem() instanceof TaglockItem) TaglockItem.importLegacyFill(stack);
             if (stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof AlluringSkullBlock) {
                 AlluringSkullBlock.importLegacyItemState(stack, damage);
             }

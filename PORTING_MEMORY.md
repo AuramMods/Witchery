@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Corrupting Voodoo Protection and saved Taglock kits (2026-11-27)
+
+- The original server completed ten cases in `build/qa-corruption-rite/native/reference.log`. It reflected a single lightning strike on both fresh and nearly exhausted Poppet Protection, stopped after ten unprotected wards, and reached named players across dimensions or on the death screen. A filled kit with an unavailable target still completed. The source also required the filled kit to be the first offering and the caster with cat mastery to be present in the glyph's dimension.
+- The Forge rite uses the first offered kit and sends the original combined Flame and growl packet. The shared item reader preserves old filled-kit metadata when a signature is missing. It copies the stack tag before converting its fill state. An original chest with empty, unsigned filled, and signed kits kept all three in separate slots through import and ordinary restart.
+- Clean Forge and copied Auram passed all 115 comparisons on the same reobfuscated JAR. The preceding JAR failed 25 checks. The fixtures cover the original completion cases, normal activation with all five offerings and the altar payment, and removal from a Nether shelf. See `clean-verified/verify.log`, `pack-verified/verify.log`, and `legacy-kit/check-restart.log`.
+- Two muted survival clients used a prepared ring, supplied offerings and keep-inventory. The caster activated it while the target was alive. The fixture killed the target before completion. Both clients recorded the Flame and growl on the death screen run. Respawn and a headless restart kept the unrelated tagged quartz and neither removed ward returned. All four client launches used OpenAL No Output and kept the same foreground application. See `play/check.log` and `play/restart.log`.
+- Local Java 17 data generation, JAR reobfuscation and all 599 required Forge GameTests passed. The packaged archive `build/qa-corruption-rite/verified.jar` has SHA-256 `f5858af5895ce07908d00a49c5790ae028d8d25bf3b3888323e2fd67900919ce`.
+
 ## Packet intent replay on the Coven loot package (2026-11-27)
 
 - The same reobfuscated JAR from `5c7b7a66` was installed throughout `build/qa-multiplayer-current/`. Its SHA-256 is `ece534a9696168307d542391d26e324f29b0af8e5451ffa5264f7adc973a0a55`. It previously passed all 598 required Forge GameTests, data generation and reobfuscation.

@@ -1,6 +1,7 @@
 package art.arcane.witchery.world.migration;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -105,6 +106,22 @@ public final class LegacyItemVariantTests {
                     "The shared inventory loader keeps the current variant of " + encoded.getString("id") + " "
                             + expected.getTagElement(BlockItem.BLOCK_STATE_TAG));
         }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void restoresFilledLegacyTaglockWithoutASignature(GameTestHelper helper) throws Exception {
+        var oldKit = TagParser.parseTag("{id:\"witchery:taglockkit\",Count:1b,Damage:1s,tag:{Marker:\"kept\"}}");
+        var restored = WitcheryIngredient.loadInventoryStack(oldKit);
+        var reopened = ItemStack.of(restored.save(new CompoundTag()));
+        helper.assertTrue(TaglockItem.isFilledKit(reopened) && !TaglockItem.isBound(reopened)
+                        && "kept".equals(reopened.getOrCreateTag().getString("Marker")),
+                "A legacy filled kit keeps its subtype without adding a signature");
+        oldKit.putShort("Damage", (short) 0);
+        helper.assertFalse(TaglockItem.isFilledKit(WitcheryIngredient.loadInventoryStack(oldKit)),
+                "The original empty kit stays empty");
+        TaglockItem.clearBinding(reopened, 1);
+        helper.assertFalse(TaglockItem.isFilledKit(reopened), "Clearing the kit also clears the imported fill state");
         helper.succeed();
     }
 

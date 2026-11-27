@@ -446,7 +446,16 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 abort(level, "message.witchery.rite.requires_curse_mastery");
                 return;
             }
-            curseTarget = boundOffering(level);
+            if (legacy) {
+                ItemStack first = sacrificed.isEmpty() ? ItemStack.EMPTY : sacrificed.get(0).stack();
+                if (!TaglockItem.isFilledKit(first)) {
+                    abort(level, null);
+                    return;
+                }
+                curseTarget = TaglockItem.resolveTarget(level, first);
+            } else {
+                curseTarget = boundOffering(level);
+            }
         } else if (rite.action() == ItemRiteRecipe.Action.CURE_VAMPIRISM) {
             ServerPlayer caster = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
             if (caster == null || caster.level() != level || !FamiliarBinding.hasCurseMastery(caster)) {
@@ -638,9 +647,13 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (living != null) sacrificeLiving(level, living, legacy);
         if (corruptionCaster != null) {
             if (curseTarget != null) PoppetProtectionItem.corrupt(corruptionCaster, curseTarget);
-            level.sendParticles(ParticleTypes.FLAME, pos.getX() + 0.5, pos.getY() + 0.2, pos.getZ() + 0.5,
-                    16, 0.45, 0.5, 0.45, 0.04);
-            level.playSound(null, pos, SoundEvents.ENDER_DRAGON_GROWL, SoundSource.BLOCKS, 0.7F, 1);
+            if (legacy) {
+                WitcheryNetwork.sendDirectedCurseRite(level, pos, true);
+            } else {
+                level.sendParticles(ParticleTypes.FLAME, pos.getX() + 0.5, pos.getY() + 0.2, pos.getZ() + 0.5,
+                        16, 0.45, 0.5, 0.45, 0.04);
+                level.playSound(null, pos, SoundEvents.ENDER_DRAGON_GROWL, SoundSource.BLOCKS, 0.7F, 1);
+            }
         }
         if (vampireCureTarget != null) finishVampireCure(level, pos, vampireCureTarget);
         if (wolfRiteTarget != null && !finishWolfRite(level, pos, wolfRiteTarget,
@@ -687,7 +700,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             WitcheryNetwork.sendSummonedCreature(level, result.position());
         } else if (legacy && familiarRite) {
             WitcheryNetwork.sendFamiliarRite(level, Vec3.atLowerCornerOf(pos), action == ItemRiteRecipe.Action.BIND_FAMILIAR);
-        } else if (!firstExpansionCue && !legacyItemOutput && (!legacy || (directedCurse == null
+        } else if (!firstExpansionCue && !legacyItemOutput && (!legacy || (directedCurse == null && corruptionCaster == null
                 && action != ItemRiteRecipe.Action.RECHARGE_INFUSION
                 && action != ItemRiteRecipe.Action.TRAVEL_WAYSTONE && action != ItemRiteRecipe.Action.TRANSPOSE_CREATURE
                 && action != ItemRiteRecipe.Action.BIND_SPECTRAL_STONE && action != ItemRiteRecipe.Action.BIND_FETISH
@@ -965,13 +978,13 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         return false;
     }
 
-    private void abort(ServerLevel level, String message) {
+    private void abort(ServerLevel level, @Nullable String message) {
         abort(level, message, usesGlyphClock());
     }
 
-    private void abort(ServerLevel level, String message, boolean originalSound) {
+    private void abort(ServerLevel level, @Nullable String message, boolean originalSound) {
         ServerPlayer player = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
-        if (player != null && player.level() == level) showRiteError(player, message);
+        if (message != null && player != null && player.level() == level) showRiteError(player, message);
         if (!cancellationPending) traceRite(level, activeRite, "cast aborted", message);
         refundSacrifices(level);
         nextCast(level);

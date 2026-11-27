@@ -37,7 +37,7 @@ public final class BoundTaglockIngredient extends AbstractIngredient {
 
     @Override
     public boolean test(@Nullable ItemStack stack) {
-        return stack != null && stack.getItem() instanceof TaglockItem && TaglockItem.isBound(stack);
+        return stack != null && TaglockItem.isFilledKit(stack);
     }
 
     @Override

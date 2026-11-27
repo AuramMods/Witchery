@@ -46,6 +46,7 @@ public final class TaglockItem extends Item {
     private static final String CREATURE_MOST = "WITCEntityIDm1";
     private static final String CREATURE_LEAST = "WITCEntityIDl1";
     private static final String CREATURE_TYPE = "WITCCreatureType1";
+    private static final String LEGACY_FILLED = "WITCLegacyFilled";
     private static final List<String> SIGNATURE_KEYS = List.of(PLAYER_NAME, PLAYER_UUID, CREATURE_NAME, CREATURE_MOST,
             CREATURE_LEAST, CREATURE_TYPE);
 
@@ -60,6 +61,19 @@ public final class TaglockItem extends Item {
 
     public static boolean isBound(ItemStack stack) {
         return isBound(stack, 1);
+    }
+
+    public static boolean isFilledKit(ItemStack stack) {
+        return stack.getItem() instanceof TaglockItem
+                && (isBound(stack) || stack.hasTag() && stack.getTag().getBoolean(LEGACY_FILLED));
+    }
+
+    static void importLegacyFill(ItemStack stack) {
+        if (!isBound(stack)) {
+            CompoundTag tag = stack.getOrCreateTag().copy();
+            tag.putBoolean(LEGACY_FILLED, true);
+            stack.setTag(tag);
+        }
     }
 
     public static boolean isBound(ItemStack stack, int index) {
@@ -171,6 +185,7 @@ public final class TaglockItem extends Item {
     public static void clearBinding(ItemStack stack, int index) {
         CompoundTag tag = stack.getTag();
         if (tag == null) return;
+        if (index == 1) tag.remove(LEGACY_FILLED);
         for (String key : SIGNATURE_KEYS) {
             tag.remove(indexed(key, index));
         }
