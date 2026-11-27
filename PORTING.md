@@ -2539,6 +2539,14 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Restore the original wolf and mandrake models for placed statues and items. Preserve the four facings, original atlas textures, stone particles, and legacy collision box. Import and restart with all eight combinations of statue and facing, retaining their original owners and killer lists.
 - [x] Verify both placed statues in a muted client. The packaged game rendered the wolf for Broken Curses and the stationary Mandrake for Occluded Summons. The preceding mesh checks covered their four directions and inventory transforms.
 
+### Area ward attribution and column recovery (2026-11-27)
+
+- The original 0.24.1 dedicated server measured recovery for Void Bramble, the Goddess statue, Broken Curses, and Occluded Summons. A standing owner reclaimed Bramble, and a crouching owner reclaimed each statue. A guest's click returned nothing. Each column returned one item per block at its center with no pickup delay and an initial vertical speed of 0.2.
+- The same server measured protection at the configured 32-block horizontal boundary, at a different height, and just beyond the boundary. A lethal arrow left both protections available to its shooter. A direct kill removed both protections for the nearby attacker. Someone who killed outside the radius kept protection on returning to it.
+- The rebuilt recovery checks the configured Forge break hook at each cell and leaves an unreturned block in place after a protection or item-spawn veto. The normal creative break handles the clicked block. Recovery of the rest of the column uses the same checks as survival.
+- The same reobfuscated JAR matched all ten original-server cases on clean Forge and copied Auram. Two muted survival clients used a bow, a sword, standing and crouched attacks, and item pickup. The fixture prepared the plot and ownership, supplied weapons, lowered the target's health, and moved the owner to the drops. Both ward killer lists and the checked statue owner survived the restart. The recovered brambles and ward statues were still in the owner's inventory. See `build/qa-ward-recovery/`.
+- Local Java 17 data generation, JAR reobfuscation, and all 616 required Forge GameTests passed. The Felling test now runs in its own arena batch, and the Greater Storm test waits for the server to track its offerings before building and activating the glyph.
+
 ## Rites of Transposition (2026-11-20)
 
 - [x] Use the medium Otherwhere circle, Waystone, bound Taglock Kit, Ender Dew, Iron Axe and 3,000 altar power to summon a creature or player. The muted survival client captured a pig's taglock. After the fixture moved that pig to the Nether and dropped the offerings, the client activated the circle and recovered the same pig at its center. The nearby pig stayed in place.
@@ -3117,6 +3125,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
 - [ ] Blocks/tile entity behavior parity pass.
   - [x] Compare [Leech Chest access and redstone](#leech-chests-blood-roses-and-the-boline-2026-11-20) and the [Refilling Chest clock and loot placement](#torment-milestone-2026-11-19).
   - [x] Compare [Silver Vat observations and Grassper offering release](#silver-vat-and-silver-sword-2026-11-20).
+  - [x] Compare [area ward attribution and column recovery](#area-ward-attribution-and-column-recovery-2026-11-27) for Void Bramble and the three owner-recoverable statues.
 - [ ] Item behavior parity pass (including metadata-subitem conversions).
   - [x] Compare melee modifiers, sword guards, and Boline harvest against the [melee tool measurements](#melee-tools-and-boline-harvesting-2026-11-26).
 - [x] Brewing, Kettle, Distillery, Spinning Wheel, and Brazier parity.

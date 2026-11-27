@@ -1363,63 +1363,65 @@ public final class CircleRiteTests {
 
     @GameTest(template = TEMPLATE, batch = "witchery_weather_rite_waystone", setupTicks = 5)
     public static void greaterStormAcceptsAnOptionalRemoteWaystoneAndRejectsDistantBindings(GameTestHelper helper) {
-        ring(helper, RitualCircle.SMALL_RITE, "circleglyphritual");
-        var altar = chargedAltar(helper, false);
         var level = helper.getLevel();
         var center = helper.absolutePos(CENTER);
-        var heart = heart(helper);
         var tooFar = bound(level, center.east(51));
-        start(helper, new ItemStack(Items.STONE_SWORD), new ItemStack(WitcheryIngredient.WOOD_ASH.item()), tooFar);
-        tick(level, center, heart, TWO_OFFERING_CAST - 20);
-        var pending = heart.saveWithoutMetadata();
-        helper.assertTrue(BlockPos.of(pending.getLong("WaystoneTarget")).equals(center.east(51))
-                        && altar.power() == 10_000 && drops(helper).isEmpty(),
-                "The Waystone is consumed before the altar charge and range check");
-        tick(level, center, heart, 20);
-        var paid = heart.saveWithoutMetadata();
-        helper.assertTrue(paid.getBoolean("AltarPowerOffered") && altar.power() == 8000
-                        && drops(helper).isEmpty(), "The altar is charged before the storm resolves the remote target");
-        heart.load(paid);
-        tick(level, center, heart, 1);
-        helper.assertTrue(!heart.getBlockState().getValue(RiteHeartBlock.ACTIVE) && altar.power() == 8000
-                        && drops(helper).size() == 3 && drops(helper).stream().anyMatch(item -> ItemStack.matches(item.getItem(), tooFar)),
-                "The first loaded tick after payment rejects the distant Waystone and returns all three offerings");
-        drops(helper).forEach(ItemEntity::discard);
+        waitForOfferings(helper, new ItemStack(Items.STONE_SWORD), new ItemStack(WitcheryIngredient.WOOD_ASH.item()),
+                tooFar).thenExecute(() -> {
+            ring(helper, RitualCircle.SMALL_RITE, "circleglyphritual");
+            var altar = chargedAltar(helper, false);
+            var heart = heart(helper);
+            start(helper);
+            tick(level, center, heart, TWO_OFFERING_CAST - 20);
+            var pending = heart.saveWithoutMetadata();
+            helper.assertTrue(BlockPos.of(pending.getLong("WaystoneTarget")).equals(center.east(51))
+                            && altar.power() == 10_000 && drops(helper).isEmpty(),
+                    "The Waystone is consumed before the altar charge and range check");
+            tick(level, center, heart, 20);
+            var paid = heart.saveWithoutMetadata();
+            helper.assertTrue(paid.getBoolean("AltarPowerOffered") && altar.power() == 8000
+                            && drops(helper).isEmpty(), "The altar is charged before the storm resolves the remote target");
+            heart.load(paid);
+            tick(level, center, heart, 1);
+            helper.assertTrue(!heart.getBlockState().getValue(RiteHeartBlock.ACTIVE) && altar.power() == 8000
+                            && drops(helper).size() == 3 && drops(helper).stream().anyMatch(item -> ItemStack.matches(item.getItem(), tooFar)),
+                    "The first loaded tick after payment rejects the distant Waystone and returns all three offerings");
+            drops(helper).forEach(ItemEntity::discard);
 
-        tick(level, center, heart, 9);
-        var target = center.east(40).above(3);
-        start(helper, new ItemStack(Items.STONE_SWORD), new ItemStack(WitcheryIngredient.WOOD_ASH.item()), bound(level, target));
-        var strikes = new ArrayList<LightningBolt>();
-        var area = new AABB(target).inflate(9);
-        Consumer<EntityJoinLevelEvent> observe = event -> {
-            if (event.getLevel() == level && event.getEntity() instanceof LightningBolt bolt && area.contains(bolt.position())) {
-                strikes.add(bolt);
+            tick(level, center, heart, 9);
+            var target = center.east(40).above(3);
+            start(helper, new ItemStack(Items.STONE_SWORD), new ItemStack(WitcheryIngredient.WOOD_ASH.item()), bound(level, target));
+            var strikes = new ArrayList<LightningBolt>();
+            var area = new AABB(target).inflate(9);
+            Consumer<EntityJoinLevelEvent> observe = event -> {
+                if (event.getLevel() == level && event.getEntity() instanceof LightningBolt bolt && area.contains(bolt.position())) {
+                    strikes.add(bolt);
+                }
+            };
+            MinecraftForge.EVENT_BUS.addListener(observe);
+            try {
+                tick(level, center, heart, 89);
+                helper.assertTrue(strikes.isEmpty(), "The storm waits until the glyph's thirty-tick phase after payment");
+                tick(level, center, heart, 1);
+                var saved = heart.saveWithoutMetadata();
+                var storm = saved.getCompound("Storm");
+                helper.assertTrue(storm.getInt("Stage") == 1 && storm.getBoolean("Greater")
+                                && BlockPos.of(storm.getLong("Target")).equals(target) && altar.power() == 6000,
+                        "The valid Waystone relocates the first strike on the same pulse that launches the storm");
+                helper.assertTrue(strikes.size() == 1 && strikes.get(0).getY() == target.getY(),
+                        "The actual strike arrives in the remote chunk");
+                heart.load(saved);
+                tick(level, center, heart, 29);
+                helper.assertTrue(strikes.size() == 1, "The saved storm waits until its original next phase");
+                tick(level, center, heart, 1);
+                helper.assertTrue(strikes.size() == 2, "The second storm strike comes thirty glyph ticks after the first");
+            } finally {
+                strikes.forEach(LightningBolt::discard);
+                MinecraftForge.EVENT_BUS.unregister(observe);
             }
-        };
-        MinecraftForge.EVENT_BUS.addListener(observe);
-        try {
-            tick(level, center, heart, 89);
-            helper.assertTrue(strikes.isEmpty(), "The storm waits until the glyph's thirty-tick phase after payment");
-            tick(level, center, heart, 1);
-            var saved = heart.saveWithoutMetadata();
-            var storm = saved.getCompound("Storm");
-            helper.assertTrue(storm.getInt("Stage") == 1 && storm.getBoolean("Greater")
-                            && BlockPos.of(storm.getLong("Target")).equals(target) && altar.power() == 6000,
-                    "The valid Waystone relocates the first strike on the same pulse that launches the storm");
-            helper.assertTrue(strikes.size() == 1 && strikes.get(0).getY() == target.getY(),
-                    "The actual strike arrives in the remote chunk");
-            heart.load(saved);
-            tick(level, center, heart, 29);
-            helper.assertTrue(strikes.size() == 1, "The saved storm waits until its original next phase");
-            tick(level, center, heart, 1);
-            helper.assertTrue(strikes.size() == 2, "The second storm strike comes thirty glyph ticks after the first");
-        } finally {
-            strikes.forEach(LightningBolt::discard);
-            MinecraftForge.EVENT_BUS.unregister(observe);
-        }
-        helper.useBlock(CENTER);
-        drops(helper).forEach(ItemEntity::discard);
-        helper.succeed();
+            helper.useBlock(CENTER);
+            drops(helper).forEach(ItemEntity::discard);
+        }).thenSucceed();
     }
 
     @GameTest(template = TEMPLATE, batch = "witchery_ward_barrier", setupTicks = 5)

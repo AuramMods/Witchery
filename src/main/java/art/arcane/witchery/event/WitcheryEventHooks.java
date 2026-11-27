@@ -453,8 +453,11 @@ public final class WitcheryEventHooks {
         if (event.getEntity() instanceof ServerPlayer player) BrewOfTheDepths.clearOnDeath(player);
         DeathBrewEffects.onDeath(event.getEntity());
         if (event.getEntity() instanceof ServerPlayer player) ImpContractEffects.clear(player);
+        if (event.getEntity() instanceof ServerPlayer victim
+                && event.getSource().getDirectEntity() instanceof ServerPlayer attacker && attacker != victim) {
+            AreaWardBlockEntity.recordKiller(attacker);
+        }
         if (event.getSource().getEntity() instanceof ServerPlayer killer) {
-            if (event.getEntity() instanceof ServerPlayer victim && killer != victim) AreaWardBlockEntity.recordKiller(killer);
             Vampirism.onKilled(event.getEntity(), killer, event.getSource());
             WolfTrials.onKilled(event.getEntity(), killer, event.getSource());
         }

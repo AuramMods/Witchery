@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Area ward attribution and column recovery (2026-11-27)
+
+- The original Forge server measured four owner-recoverable columns and six ward protection cases. Void Bramble recovers on a standing attack. The Goddess statue and both area wards require the owner to crouch. Recovered items appear at each block's center with immediate pickup. A shooter keeps ward protection after a lethal arrow hit. A direct kill removes protection for the nearby attacker. See `build/qa-ward-recovery/native/reference-final.log`.
+- The port keeps the Witchery attacks and the ordinary Forge harvest paths. Survival recovery consults Forge for each cell and leaves the affected cell in place after a veto. Direct player kills populate the ward's original `Killers` field. That check uses the direct attacker and the horizontal radius in the player's dimension.
+- Clean Forge and copied Auram matched all ten original cases on `build/qa-ward-recovery/release.jar`, SHA-256 `7dfefb8535d170cdaf7a80a2b98f42a84f2af72267ef5319278ed6c66db20a56`. The two muted survival clients verified bow and sword deaths and owner recovery with ordinary block drops disabled. The fixture supplied weapons, a plot and placed blocks, lowered the target's health, and moved the owner to the dropped items for pickup. A dedicated restart retained both killer lists, the checked owner, and all four recovered blocks. See `build/qa-ward-recovery/live-verified/`.
+- Local Java 17 data generation and reobfuscation passed. All 616 required Forge GameTests passed after isolating the seeded Felling arena and waiting for Greater Storm's first offerings to become visible to the glyph. See `build/qa-ward-recovery/gametest-final.log`.
+
 ## Kettle bottling bonuses and cues (2026-11-27)
 
 - The original dedicated server sampled twelve hand-bottling cases. The gear and active Toad bonuses draw from the world, followed by the swim pitch. Redstone Soup spends two Baba's Hat rolls and yields one portion. Both Infused Brew Base recipes get the original one-bottle bonus from the first matching output. The original traces are in `build/qa-kettle-bottling-parity/native/reference-final.log`.

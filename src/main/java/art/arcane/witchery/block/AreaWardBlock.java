@@ -3,6 +3,7 @@ package art.arcane.witchery.block;
 import art.arcane.witchery.block.entity.AreaWardBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -75,24 +76,18 @@ public final class AreaWardBlock extends HorizontalDirectionalBlock implements E
 
     @Override
     public void attack(BlockState state, Level level, BlockPos pos, Player player) {
-        if (!level.isClientSide && player.isShiftKeyDown()
+        if (level instanceof ServerLevel server && !player.isCreative() && player.isShiftKeyDown()
                 && level.getBlockEntity(pos) instanceof AreaWardBlockEntity ward && ward.ownedBy(player)) {
-            removeColumn(level, pos);
+            OwnedColumnBlock.recoverColumn(server, pos, this, player);
         }
     }
 
     @Override
     public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
-        if (!level.isClientSide && player.isCreative()) {
-            popResource(level, pos, new ItemStack(this));
-            removeColumn(level, pos.above());
+        if (level instanceof ServerLevel server && player.isCreative()) {
+            server.addFreshEntity(OwnedColumnBlock.recoveryItem(server, pos, this));
+            OwnedColumnBlock.recoverColumn(server, pos.above(), this, player);
         }
         super.playerWillDestroy(level, pos, state, player);
-    }
-
-    private void removeColumn(Level level, BlockPos pos) {
-        for (BlockPos next = pos; level.getBlockState(next).is(this); next = next.above()) {
-            if (level.removeBlock(next, false)) popResource(level, next, new ItemStack(this));
-        }
     }
 }

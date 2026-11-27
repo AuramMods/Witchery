@@ -1,9 +1,11 @@
 package art.arcane.witchery.block;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.entity.AreaWardBlockEntity;
 import art.arcane.witchery.block.entity.PlacedOwnerBlockEntity;
 import art.arcane.witchery.block.entity.VoidBrambleBlockEntity;
 import art.arcane.witchery.config.WitcheryCommonConfig;
+import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.crafting.ProtectionRecipeCondition;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
@@ -15,10 +17,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -29,23 +34,126 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.crafting.conditions.ICondition;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class ProtectionBlockTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_owned_ward_recovery")
+    public static void recoveryPreservesVetoedStatuesAndDropsEachAllowedBlock(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var owner = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "ColumnOwner"));
+        owner.setShiftKeyDown(true);
+        Block ward = WitcheryBlocks.getRequired("decursedirected").get();
+        BlockPos lower = helper.absolutePos(new BlockPos(5, 3, 5));
+        BlockPos upper = lower.above();
+        for (BlockPos pos : List.of(lower, upper)) {
+            level.setBlockAndUpdate(pos, ward.defaultBlockState());
+            ward.setPlacedBy(level, pos, ward.defaultBlockState(), owner, new ItemStack(ward));
+        }
+        var rejectBreak = new AtomicBoolean(true);
+        var rejectSpawn = new AtomicBoolean(false);
+        List<ItemEntity> drops = new ArrayList<>();
+        Consumer<BlockEvent.BreakEvent> protect = event -> {
+            if (event.getPlayer() == owner && event.getPos().equals(upper) && rejectBreak.get()) event.setCanceled(true);
+        };
+        Consumer<EntityJoinLevelEvent> capture = event -> {
+            if (!(event.getEntity() instanceof ItemEntity drop) || !drop.getItem().is(ward.asItem())) return;
+            if (rejectSpawn.get()) event.setCanceled(true);
+            else drops.add(drop);
+        };
+        var interModBreaks = WitcheryServerConfig.ALLOW_INTER_MOD_BLOCK_BREAK_EVENTS;
+        boolean originalBreaks = interModBreaks.get();
+        var tileDrops = level.getGameRules().getRule(GameRules.RULE_DOBLOCKDROPS);
+        boolean originalDrops = tileDrops.get();
+        MinecraftForge.EVENT_BUS.addListener(protect);
+        MinecraftForge.EVENT_BUS.addListener(capture);
+        try {
+            interModBreaks.set(true);
+            tileDrops.set(false, level.getServer());
+            level.getBlockState(lower).attack(level, lower, owner);
+            helper.assertTrue(level.isEmptyBlock(lower) && level.getBlockState(upper).is(ward) && drops.size() == 1,
+                    "Recovery returns the allowed block and stops at the Forge-protected part of the column");
+            rejectBreak.set(false);
+            rejectSpawn.set(true);
+            level.getBlockState(upper).attack(level, upper, owner);
+            helper.assertTrue(level.getBlockEntity(upper) instanceof AreaWardBlockEntity intact && intact.ownedBy(owner)
+                            && drops.size() == 1, "A rejected drop preserves the block and its saved owner");
+            rejectSpawn.set(false);
+            level.getBlockState(upper).attack(level, upper, owner);
+            helper.assertTrue(level.isEmptyBlock(upper) && drops.size() == 2
+                            && drops.get(0).position().equals(Vec3.atCenterOf(lower))
+                            && drops.get(1).position().equals(Vec3.atCenterOf(upper))
+                            && drops.stream().allMatch(drop -> drop.saveWithoutId(new CompoundTag()).getShort("PickupDelay") == 0
+                                    && drop.getDeltaMovement().y == 0.2F),
+                    "Each allowed block returns exactly one item at its original center with immediate pickup");
+        } finally {
+            tileDrops.set(originalDrops, level.getServer());
+            interModBreaks.set(originalBreaks);
+            MinecraftForge.EVENT_BUS.unregister(capture);
+            MinecraftForge.EVENT_BUS.unregister(protect);
+            drops.forEach(ItemEntity::discard);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_area_ward_pvp")
+    public static void wardExcludesDirectKillersAndKeepsArcherProtection(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var attacker = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "WardAttacker"));
+        var victim = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "WardVictim"));
+        var pos = helper.absolutePos(new BlockPos(5, 3, 5));
+        level.setBlockAndUpdate(pos, WitcheryBlocks.getRequired("decursedirected").get().defaultBlockState());
+        level.setBlockAndUpdate(pos.above(), WitcheryBlocks.getRequired("decurseteleport").get().defaultBlockState());
+        attacker.setPos(pos.getX() + 32, pos.getY() + 24, pos.getZ());
+        victim.setPos(pos.getX() + 40, pos.getY(), pos.getZ());
+        var curse = WitcheryServerConfig.DECURSE_DIRECTED_ENABLED;
+        var teleport = WitcheryServerConfig.DECURSE_TELEPORT_ENABLED;
+        boolean curseWasEnabled = curse.get(), teleportWasEnabled = teleport.get();
+        try {
+            curse.set(true);
+            teleport.set(true);
+            var arrow = EntityType.ARROW.create(level);
+            MinecraftForge.EVENT_BUS.post(new LivingDeathEvent(victim, level.damageSources().arrow(arrow, attacker)));
+            helper.assertTrue(AreaWardBlockEntity.protectsDirectedCurse(attacker)
+                            && AreaWardBlockEntity.protectsSummoning(attacker),
+                    "An arrow kill keeps both protections at the inclusive horizontal boundary");
+            MinecraftForge.EVENT_BUS.post(new LivingDeathEvent(victim, level.damageSources().playerAttack(attacker)));
+            helper.assertFalse(AreaWardBlockEntity.protectsBrew(attacker), "Direct player damage excludes the attacker from both wards");
+            for (BlockPos block : List.of(pos, pos.above())) {
+                var killers = level.getBlockEntity(block).saveWithFullMetadata().getList("Killers", Tag.TAG_STRING);
+                helper.assertTrue(killers.size() == 1 && killers.getString(0).equals("WardAttacker"),
+                        "Both wards save the directly attributed attacker by name");
+            }
+        } finally {
+            curse.set(curseWasEnabled);
+            teleport.set(teleportWasEnabled);
+            level.removeBlock(pos, false);
+            level.removeBlock(pos.above(), false);
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void brambleSuppressesNewRitesUntilItsOwnerRecoversIt(GameTestHelper helper) {
         var level = helper.getLevel();

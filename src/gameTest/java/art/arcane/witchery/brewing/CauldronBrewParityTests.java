@@ -651,7 +651,7 @@ public final class CauldronBrewParityTests {
         helper.succeed();
     }
 
-    @GameTest(template = "qa_coven_arena")
+    @GameTest(template = "qa_coven_arena", batch = "witchery_felling_ent", setupTicks = 5)
     public static void fellingAwakensEntsOnlyFromHarvestedWitchwood(GameTestHelper helper) {
         var level = helper.getLevel();
         var center = helper.absolutePos(new BlockPos(6, 4, 5)).atY(196);
