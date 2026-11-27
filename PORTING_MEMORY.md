@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Curse of the Wolf and transformation cures (2026-11-27)
+
+- The original 0.24.1 server measured 36 cases for rites 92–94. It accepted named players on the death screen, used the first filled Taglock, and measured the eight-block cure boundary by coordinates across dimensions. The wolf cure at rank one had no range check. See `build/qa-curse-and-cure/native/reference-verified.log` and `nightmare-verified.log`.
+- The packaged rites now use the target world's original Hunter clothing roll, the glyph world's moon phase, and the original normal Dream and nightmare daylight rules. The original allowed the wolf rite in the Nether at full moon. A feral Wolfman can be cured to a villager. Saved former-villager data still supplies profession and trades. The port intentionally infects ordinary villagers where the original spawned a second ordinary villager.
+- Clean Forge and copied Auram matched all 388 packaged checks across 38 trials. The preceding JAR failed 63 in clean Forge. The comparisons include the original results, both packet audiences, a distant rank-one cure, and a saved first Taglock whose signed player is unavailable. See `clean-final/verify.log`, `pack-final/verify.log` and `clean-final-baseline/verify.log`.
+- Two muted survival clients replayed all three casts on the packaged dedicated server. The Overworld caster used the Seer Stone with the fixture's six-member coven, cat mastery, altar and offerings. The target remained in the Nether, received the wolf curse message and kept vampire rank four. Both cures reset their respective ranks and both zero ranks survived restart. The receiving client recorded no local completion effect from the Overworld glyphs. See `play/check.log` and `play/restart.log`.
+- Java 17 data generation, JAR reobfuscation and all 599 required Forge GameTests passed. The tested archive `build/qa-curse-and-cure/verified.jar` has SHA-256 `349f01afeb0311d891fe611eb689fb2f03548ef3dd7e8f3b51b30cb91ed3506d`.
+
 ## Corrupting Voodoo Protection and saved Taglock kits (2026-11-27)
 
 - The original server completed ten cases in `build/qa-corruption-rite/native/reference.log`. It reflected a single lightning strike on both fresh and nearly exhausted Poppet Protection, stopped after ten unprotected wards, and reached named players across dimensions or on the death screen. A filled kit with an unavailable target still completed. The source also required the filled kit to be the first offering and the caster with cat mastery to be present in the glyph's dimension.

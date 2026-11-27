@@ -1355,7 +1355,7 @@
 ## Rite of Removing Vampirism (2026-11-20)
 
 - [x] Restore the original small white circle and six offerings. The muted survival client sampled its coffin with a Taglock Kit and offered the Silver Sword it crafted from vat dust.
-- [x] Require an active cat familiar, a six-member coven called with a Seer Stone, and the tagged vampire within eight blocks in the same world. The muted client recovered all six offerings without an active cat, with one coven member, and when twelve blocks away. It bound a cat through the familiar rite and used a saved six-member coven fixture for the full-coven test.
+- [x] Require an active cat familiar, a six-member coven called with a Seer Stone, and a tagged vampire within eight blocks of the glyph's coordinates. The muted client recovered all six offerings without an active cat, with one coven member, and when twelve blocks away. It bound a cat through the familiar rite and used a saved six-member coven fixture for the full-coven test.
 - [x] Spend 10,000 altar power on an eligible attempt. GameTests exercised the one-in-four failure and the cure, and confirmed that both consume the offerings and power. The dedicated survival attempt cured the rank-ten vampire, cleared its blood, vision and remaining ultimate charge, and gave it 50 human blood. It stood in daylight without taking damage and remained human after a dedicated restart. Java 17 data generation, JAR reobfuscation and all 198 required Forge GameTests passed.
 
 ## Garlic Garland (2026-11-20)
@@ -1428,6 +1428,13 @@
 - [x] Reconnect after a dedicated-server restart, then collect another Taglock and perform the cure while still in wolf form. The save retained rank one, wolf form and speed. The successful cure consumed all six offerings, restored normal movement and kept vampire rank ten. Java 17 data generation, JAR reobfuscation and all 226 required Forge GameTests passed.
 - [x] Restore Wolfsbane identification. The muted survival client used up one flower on an unshifted werevillager and saw the flame burst. A distant attempt left the stack unchanged. A nearby healthy villager used up one flower without flames. Java 17 data generation, JAR reobfuscation and all 248 required Forge GameTests passed.
 - [x] Restore the Wolfsbane effect in drinkable and splash brews. A basic drink suppresses rank-one transformation for 60 seconds. The original strength modifiers raise the supported rank. The splash retains the direct-hit and proximity duration rules.
+
+### Wolf curse and transformation cures (2026-11-27)
+
+- [x] Compare 36 cases on the original dedicated server. Both cures can affect a player in another dimension. The vampire cure and the cure of a rank-two or higher werewolf require the target's coordinates within eight blocks of the glyph center. A rank-one werewolf is exempt from the range check. The original used the first filled Taglock and could affect a player on the death screen.
+- [x] Restore the original full-moon check for the two wolf rites. The Nether permits a full-moon cast. Dream counts as daytime until a nightmare is active. The curse uses the target world's Hunter clothing roll, the original three-strike protection sequence, and the configured hybrid rule. The Statue of Broken Curses serves the separate directed curse rites.
+- [x] Restore feral Wolfman cures and the original success and failed-roll packets. A successful cure sends Instant Spell and the level-up sound. Infliction and a failed cure roll send Flame and the dragon growl. The port infects ordinary villagers by creating a Werevillager. The original 0.24.1 rite replaced an ordinary villager with another ordinary villager.
+- [x] Pass all 388 packaged comparisons on clean Forge and copied Auram. The previous JAR missed 63 checks. The muted survival caster called six fixture coven members with a Seer Stone, used all three rites and captured their completion cues. The Nether recipient took the wolf curse while retaining vampire rank four. Both cures succeeded, and the recipient rejoined the Nether after the dedicated restart with both ranks at zero. The fixture supplied the saved cat mastery, coven roster, offerings, altar charge, and arena.
 
 ## Werevillagers and Wolfmen (2026-11-20)
 
@@ -3034,6 +3041,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Compare the [ten directed Taglock curses and cures](#directed-curse-and-cure-completion-2026-11-26), including protection, a remote target, and completion cues.
   - [x] Compare familiar binding and recall. The original and packaged tests cover the west and east binding boundaries, diagonal recall, a dismissed familiar's recreation point, and a cross-dimension recall. [Familiars and Covens](#familiars-and-covens-2026-11-19)
   - [x] Compare the Corrupting Voodoo Protection rite, including its first offering, cat mastery, lightning, ward cap, death-screen target, and completion packet. [Completion comparison](#corrupting-voodoo-protection-completion-2026-11-27)
+  - [x] Compare the wolf curse and both transformation cures, including the realm and moon rules, original ward sequence, coordinates, and completion packets. [Wolf curse and transformation cures](#wolf-curse-and-transformation-cures-2026-11-27)
   - [x] Compare [Blight and Blindness actions](#blight-and-blindness-action-comparison-2026-11-26), including terrain and creature conversion.
   - [x] Compare [Hell on Earth terrain and fire](#hell-on-earth-terrain-comparison-2026-11-26), including fire support, soil rolls, and Forge protections.
   - [x] Compare [Rain of Toads](#rain-of-toads-action-comparison-2026-11-26), including the shower's coordinates and ordering, the coven refund, and expiration and poison.

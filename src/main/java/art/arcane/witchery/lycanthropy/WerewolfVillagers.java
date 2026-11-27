@@ -106,14 +106,21 @@ public final class WerewolfVillagers {
     }
 
     public static boolean revert(Wolfman wolfman, boolean keepCurse) {
-        if (!(wolfman.level() instanceof ServerLevel level) || !wolfman.hasFormerVillager()) return false;
+        if (!(wolfman.level() instanceof ServerLevel level) || keepCurse && !wolfman.hasFormerVillager()) return false;
         EntityType<? extends Villager> type = keepCurse ? WitcheryEntities.WERE_VILLAGER.get() : EntityType.VILLAGER;
         if (!ForgeEventFactory.canLivingConvert(wolfman, type, ticks -> {})) return false;
         var villager = type.create(level);
         if (villager == null) return false;
-        var data = wolfman.formerVillagerData();
-        data.putBoolean("Infectious", keepCurse && wolfman.isInfectious());
-        villager.load(data);
+        if (wolfman.hasFormerVillager()) {
+            var data = wolfman.formerVillagerData();
+            data.putBoolean("Infectious", keepCurse && wolfman.isInfectious());
+            villager.load(data);
+        } else {
+            villager.setCustomName(wolfman.getCustomName());
+            villager.setCustomNameVisible(wolfman.isCustomNameVisible());
+            villager.setInvulnerable(wolfman.isInvulnerable());
+            villager.setNoAi(wolfman.isNoAi());
+        }
         return replace(level, wolfman, villager);
     }
 

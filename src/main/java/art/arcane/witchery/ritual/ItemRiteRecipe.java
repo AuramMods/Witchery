@@ -8,6 +8,7 @@ import art.arcane.witchery.item.CircleTalismanItem;
 import art.arcane.witchery.item.SpectralStoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryRecipes;
+import art.arcane.witchery.world.DreamTravel;
 import art.arcane.witchery.world.WitcheryDimensions;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -285,10 +286,15 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         return null;
     }
 
+    public static boolean legacyFullMoon(ServerLevel level) {
+        return !legacyDaytime(level) && level.getMoonPhase() == 0;
+    }
+
     private static boolean legacyDaytime(ServerLevel level) {
         var dimension = level.dimension();
         // The original providers supplied a constant day or night in these realms.
         if (dimension.equals(Level.END)) return true;
+        if (dimension.equals(WitcheryDimensions.DREAM)) return !DreamTravel.isNightmare(level);
         if (dimension.equals(Level.NETHER) || dimension.equals(WitcheryDimensions.MIRROR)
                 || dimension.equals(WitcheryDimensions.TORMENT)) return false;
         return level.getSkyDarken() < 4;

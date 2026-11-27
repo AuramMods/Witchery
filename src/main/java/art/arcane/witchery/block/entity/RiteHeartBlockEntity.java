@@ -466,11 +466,16 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 abort(level, "message.witchery.rite.requires_full_coven");
                 return;
             }
-            if (!(boundOffering(level) instanceof ServerPlayer vampire) || Vampirism.level(vampire) == 0) {
+            LivingEntity target = legacy ? firstFilledTaglockTarget(level) : boundOffering(level);
+            if (target == null && legacy) {
+                abort(level, null);
+                return;
+            }
+            if (!(target instanceof ServerPlayer vampire) || Vampirism.level(vampire) == 0) {
                 abort(level, "message.witchery.rite.cure_vampirism.no_vampire");
                 return;
             }
-            if (vampire.level() != level
+            if ((!legacy && vampire.level() != level)
                     || vampire.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) > VAMPIRE_CURE_RANGE * VAMPIRE_CURE_RANGE) {
                 abort(level, "message.witchery.rite.cure_vampirism.too_far");
                 return;
@@ -478,10 +483,12 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             vampireCureTarget = vampire;
         } else if (rite.action() == ItemRiteRecipe.Action.CURSE_OF_THE_WOLF || rite.action() == ItemRiteRecipe.Action.CURE_LYCANTHROPY) {
             boolean inflict = rite.action() == ItemRiteRecipe.Action.CURSE_OF_THE_WOLF;
-            LivingEntity target = boundOffering(level);
-            String failure = wolfRiteFailure(level, pos, target, inflict);
+            LivingEntity target = legacy ? firstFilledTaglockTarget(level) : boundOffering(level);
+            String failure = wolfRiteFailure(level, pos, target, inflict, legacy);
             if (failure != null) {
-                abort(level, failure);
+                boolean silent = legacy && (failure.equals("message.witchery.rite.no_taglock_target")
+                        || failure.equals("message.witchery.rite.wolf.warded"));
+                abort(level, silent ? null : failure);
                 return;
             }
             wolfRiteTarget = target;
@@ -655,9 +662,9 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 level.playSound(null, pos, SoundEvents.ENDER_DRAGON_GROWL, SoundSource.BLOCKS, 0.7F, 1);
             }
         }
-        if (vampireCureTarget != null) finishVampireCure(level, pos, vampireCureTarget);
+        if (vampireCureTarget != null) finishVampireCure(level, pos, vampireCureTarget, legacy);
         if (wolfRiteTarget != null && !finishWolfRite(level, pos, wolfRiteTarget,
-                rite.action() == ItemRiteRecipe.Action.CURSE_OF_THE_WOLF)) {
+                rite.action() == ItemRiteRecipe.Action.CURSE_OF_THE_WOLF, legacy)) {
             if (altar != null) altar.refundPower(rite.power());
             abort(level, "message.witchery.rite.wolf.conversion_failed");
             return;
@@ -701,6 +708,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         } else if (legacy && familiarRite) {
             WitcheryNetwork.sendFamiliarRite(level, Vec3.atLowerCornerOf(pos), action == ItemRiteRecipe.Action.BIND_FAMILIAR);
         } else if (!firstExpansionCue && !legacyItemOutput && (!legacy || (directedCurse == null && corruptionCaster == null
+                && vampireCureTarget == null && wolfRiteTarget == null
                 && action != ItemRiteRecipe.Action.RECHARGE_INFUSION
                 && action != ItemRiteRecipe.Action.TRAVEL_WAYSTONE && action != ItemRiteRecipe.Action.TRANSPOSE_CREATURE
                 && action != ItemRiteRecipe.Action.BIND_SPECTRAL_STONE && action != ItemRiteRecipe.Action.BIND_FETISH
@@ -867,18 +875,17 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 waystoneTarget == null && rite.action().raisedEarthRadius() > 0, hellSpawnOffset);
     }
 
-    private static void finishVampireCure(ServerLevel level, BlockPos pos, ServerPlayer vampire) {
+    private static void finishVampireCure(ServerLevel level, BlockPos pos, ServerPlayer vampire, boolean legacy) {
         boolean cured = level.random.nextInt(4) != 0;
         if (cured) Vampirism.cure(vampire);
-        level.sendParticles(cured ? ParticleTypes.INSTANT_EFFECT : ParticleTypes.FLAME,
-                pos.getX() + 0.5, pos.getY() + 0.1, pos.getZ() + 0.5, 24, 0.5, 0.6, 0.5, 0.035);
-        level.playSound(null, pos, cured ? SoundEvents.PLAYER_LEVELUP : SoundEvents.ENDER_DRAGON_GROWL,
-                SoundSource.BLOCKS, 1, 1);
+        playTransformationRiteCue(level, pos, !cured, legacy, 24);
     }
 
     @Nullable
-    private String wolfRiteFailure(ServerLevel level, BlockPos pos, @Nullable LivingEntity target, boolean inflict) {
-        if (!Lycanthropy.isFullMoon(level)) return "message.witchery.rite.wolf.requires_full_moon";
+    private String wolfRiteFailure(ServerLevel level, BlockPos pos, @Nullable LivingEntity target, boolean inflict, boolean legacy) {
+        if (!(legacy ? ItemRiteRecipe.legacyFullMoon(level) : Lycanthropy.isFullMoon(level))) {
+            return "message.witchery.rite.wolf.requires_full_moon";
+        }
         ServerPlayer caster = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
         if (caster == null || caster.level() != level || !FamiliarBinding.hasCurseMastery(caster)) {
             return "message.witchery.rite.requires_curse_mastery";
@@ -887,7 +894,9 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         if (target == null) return "message.witchery.rite.no_taglock_target";
         if (inflict) {
             WitchHunterPursuit.noticeBlackMagic(caster);
-            if (HunterClothingItem.resistsCurse(target)) return "message.witchery.rite.hunter_curse_protection";
+            if (legacy ? HunterClothingItem.resistsOriginalCurse(target) : HunterClothingItem.resistsCurse(target)) {
+                return "message.witchery.rite.hunter_curse_protection";
+            }
             if (target instanceof WereVillager || target instanceof Wolfman) return "message.witchery.rite.wolf.already_affected";
             if (target instanceof Villager) return null;
             if (!(target instanceof ServerPlayer victim)) return "message.witchery.rite.wolf.human_required";
@@ -897,11 +906,13 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             }
             if (Lycanthropy.rank(victim) > 0) return "message.witchery.rite.wolf.already_affected";
         } else {
-            if (target instanceof WereVillager || target instanceof Wolfman wolfman && wolfman.hasFormerVillager()) return null;
+            if (target instanceof WereVillager || target instanceof Wolfman wolfman && (legacy || wolfman.hasFormerVillager())) {
+                return null;
+            }
             if (!(target instanceof ServerPlayer victim) || Lycanthropy.rank(victim) == 0) {
                 return "message.witchery.rite.wolf.unaffected";
             }
-            if (Lycanthropy.rank(victim) > 1 && (victim.level() != level
+            if (Lycanthropy.rank(victim) > 1 && ((!legacy && victim.level() != level)
                     || victim.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) > WOLF_CURE_RANGE * WOLF_CURE_RANGE)) {
                 return "message.witchery.rite.wolf.too_far";
             }
@@ -909,22 +920,45 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         return null;
     }
 
-    private static boolean finishWolfRite(ServerLevel level, BlockPos pos, LivingEntity target, boolean inflict) {
+    private static boolean finishWolfRite(ServerLevel level, BlockPos pos, LivingEntity target, boolean inflict, boolean legacy) {
         boolean cursed = inflict;
         if (target instanceof ServerPlayer player) {
-            if (inflict) Lycanthropy.infect(player);
-            else if (level.random.nextInt(4) == 0) cursed = true;
-            else Lycanthropy.setRank(player, 0);
+            if (inflict) {
+                if (legacy) {
+                    Lycanthropy.setRank(player, 1);
+                    player.sendSystemMessage(Component.translatable("message.witchery.werewolf.infection").withStyle(ChatFormatting.DARK_PURPLE));
+                } else {
+                    Lycanthropy.infect(player);
+                }
+            } else if (level.random.nextInt(4) == 0) {
+                cursed = true;
+            } else {
+                Lycanthropy.setRank(player, 0);
+            }
         } else if (inflict && target instanceof Villager villager) {
             if (!WerewolfVillagers.infect(villager, false)) return false;
         } else if (target instanceof WereVillager villager) {
             if (!WerewolfVillagers.cleanse(villager)) return false;
         } else if (target instanceof Wolfman wolfman && !WerewolfVillagers.revert(wolfman, false)) return false;
+        playTransformationRiteCue(level, pos, cursed, legacy, 16);
+        return true;
+    }
+
+    private static void playTransformationRiteCue(ServerLevel level, BlockPos pos, boolean cursed, boolean legacy, int particles) {
+        if (legacy) {
+            WitcheryNetwork.sendDirectedCurseRite(level, pos, cursed);
+            return;
+        }
         level.sendParticles(cursed ? ParticleTypes.FLAME : ParticleTypes.INSTANT_EFFECT,
-                pos.getX() + 0.5, pos.getY() + 0.1, pos.getZ() + 0.5, 16, 0.5, 0.6, 0.5, 0.035);
+                pos.getX() + 0.5, pos.getY() + 0.1, pos.getZ() + 0.5, particles, 0.5, 0.6, 0.5, 0.035);
         level.playSound(null, pos, cursed ? SoundEvents.ENDER_DRAGON_GROWL : SoundEvents.PLAYER_LEVELUP,
                 SoundSource.BLOCKS, 1, 1);
-        return true;
+    }
+
+    @Nullable
+    private LivingEntity firstFilledTaglockTarget(ServerLevel level) {
+        return sacrificed.stream().map(Sacrifice::stack).filter(TaglockItem::isFilledKit).findFirst()
+                .map(stack -> TaglockItem.resolveTarget(level, stack)).orElse(null);
     }
 
     @Nullable
