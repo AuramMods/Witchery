@@ -1,6 +1,7 @@
 package art.arcane.witchery.prediction;
 
 import art.arcane.witchery.brewing.BrewTerrain;
+import art.arcane.witchery.data.LegacyLootSlots;
 import art.arcane.witchery.data.WitcheryLootTables;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -51,21 +52,22 @@ final class MiningPredictions {
 
         ServerLevel level = player.serverLevel();
         BlockPos below = pos.below();
-        if (pos.getY() <= level.getMinBuildHeight() + 6 || BrewTerrain.isProtectedTerrain(level.getBlockState(below))
+        if (pos.getY() <= level.getMinBuildHeight() + 6) return false;
+        RandomSource random = level.getRandom();
+        if (random.nextDouble() >= chance || BrewTerrain.isProtectedTerrain(level.getBlockState(below))
                 || level.isEmptyBlock(below.below())) return false;
         for (Direction side : Direction.Plane.HORIZONTAL) {
             if (level.isEmptyBlock(below.relative(side))) return false;
         }
-        RandomSource random = level.getRandom();
-        if (random.nextDouble() >= chance || !BrewTerrain.placeGroup(level, player, Direction.UP,
+        if (!BrewTerrain.placeGroup(level, player, Direction.UP,
                 () -> level.setBlockAndUpdate(below, Blocks.CHEST.defaultBlockState())
                         && level.getBlockEntity(below) instanceof ChestBlockEntity)
                 || !(level.getBlockEntity(below) instanceof ChestBlockEntity chest)) return false;
 
         var params = new LootParams.Builder(level).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(below))
                 .create(LootContextParamSets.CHEST);
-        level.getServer().getLootData().getLootTable(WitcheryLootTables.MINESHAFT_CORRIDOR)
-                .fill(chest, params, random.nextLong());
+        var table = level.getServer().getLootData().getLootTable(WitcheryLootTables.MINESHAFT_CORRIDOR);
+        LegacyLootSlots.fillUsingRandom(table, chest, params, random);
         chest.setChanged();
         return true;
     }

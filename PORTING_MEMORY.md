@@ -2,6 +2,16 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Coven dispenser and Buried Treasure loot (2026-11-27)
+
+- The shipped 0.24.1 server ran the original `mineshaftCorridor` hook for nine-slot dispensers and 27-slot chests. It prepared one level-30 book before drawing the number of rolls. Each roll then selected a weighted item, drew its quantity and chose a slot, including occupied slots. The preceding package matched none of the 320 seeded inventories.
+- The port restores that order and the original 24-enchantment catalogue, weights, costs and compatibility for the prepared book. Each selected copy uses the same prepared enchantments. Modern containers still resolve the saved table and seed on first access. Buried Treasure fills immediately from the world random source after the activation and site checks. Forge placement protections and the ordinary mod loot pipeline remain active.
+- Clean Forge matched all 320 inventories, including the enchantments on all 17 books that appeared. A packaged comparison also matched all 160 prepared books and roll counts, and the next random value after each of the 320 fills. A copy of the earlier package's world retained all 320 already-filled inventories. See `build/qa-mineshaft-loot/rng-final/` and `filled-final/`.
+- Clean Forge and the normal copied Auram profile both retained the 320 final inventories across a headless restart, including every saved stack tag. Auram used its configured FasterRandom source, which produces different results for the same numeric seed. See `build/qa-mineshaft-loot/auram-final/`.
+- The earlier package generated the natural Coven dispenser at `392 69 344`. The final package reopened it before first access with its saved table and seed, then drew the same four stacks as the original server with that seed. The dedicated restart retained the four stacks, a second unopened dispenser with the vanilla table and its original seed, and a filled dispenser with two Golden Apples. See `build/qa-mineshaft-loot/natural-final/`.
+- The muted survival client dug the supplied soil in a prepared pocket until its saved forecast fulfilled. It opened the new chest through the ordinary interaction. The forecast was spent, and the chest contents survived the dedicated restart. The client stayed hidden and unfocused at zero master volume with OpenAL No Output. See `build/qa-mineshaft-loot/survival-final/`.
+- Local Java 17 data generation, JAR reobfuscation and all 598 required Forge GameTests passed. The tested `build/qa-mineshaft-loot/final.jar` has SHA-256 `ece534a9696168307d542391d26e324f29b0af8e5451ffa5264f7adc973a0a55`.
+
 ## Witch's Shack, Apothecary, Keep, and Watchtower chest loot (2026-11-27)
 
 - The shipped 0.24.1 server reported all 52 entries with the same weights and quantity ranges as the Forge data. Across 128 seeded inventories, the original chest generator replaced a previously chosen slot in 29 cases. The preceding Forge JAR matched three inventories. It split stacks and chose from the remaining empty slots.

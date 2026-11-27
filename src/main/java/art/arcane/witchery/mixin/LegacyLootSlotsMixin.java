@@ -25,6 +25,16 @@ public abstract class LegacyLootSlotsMixin {
         throw new AssertionError();
     }
 
+    @Redirect(method = "fill", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/world/level/storage/loot/LootContext$Builder;withOptionalRandomSeed(J)Lnet/minecraft/world/level/storage/loot/LootContext$Builder;"))
+    private LootContext.Builder witchery$useFillRandom(LootContext.Builder builder, long seed,
+                                                       Container container, LootParams params, long originalSeed) {
+        var random = LegacyLootSlots.takeFillRandom(params);
+        if (random == null) return builder.withOptionalRandomSeed(seed);
+        ((LootContextBuilderAccessor) builder).witchery$setRandom(random);
+        return builder;
+    }
+
     @Inject(method = "fill", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/level/storage/loot/LootTable;getRandomItems(Lnet/minecraft/world/level/storage/loot/LootContext;)Lit/unimi/dsi/fastutil/objects/ObjectArrayList;"),
             locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true)
@@ -32,16 +42,11 @@ public abstract class LegacyLootSlotsMixin {
                                            LootContext context) {
         var table = (LootTable) (Object) this;
         var id = table.getLootTableId();
-        boolean mineshaft = WitcheryLootTables.MINESHAFT_CORRIDOR.equals(id);
-        if (!mineshaft && (id == null || !WitcheryLootTables.LEGACY_STRUCTURE_CHESTS.contains(id))) return;
+        if (id == null || !WitcheryLootTables.LEGACY_CONTAINER_TABLES.contains(id)) return;
         int size = container.getContainerSize();
         if (size == 0) return;
 
-        if (mineshaft) {
-            table.getRandomItems(context, stack -> container.setItem(context.getRandom().nextInt(size), stack));
-        } else {
-            LegacyLootSlots.fill(table, container, context, size);
-        }
+        LegacyLootSlots.fill(table, container, context, size);
         callback.cancel();
     }
 

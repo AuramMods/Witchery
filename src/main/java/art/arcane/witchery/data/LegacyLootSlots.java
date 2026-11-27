@@ -1,15 +1,19 @@
 package art.arcane.witchery.data;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
 public final class LegacyLootSlots {
     private static final ThreadLocal<LegacyLootSlots> ACTIVE = new ThreadLocal<>();
+    private static final ThreadLocal<FillRandom> FILL_RANDOM = new ThreadLocal<>();
 
     private final LootContext context;
     private final int size;
@@ -19,6 +23,25 @@ public final class LegacyLootSlots {
     private LegacyLootSlots(LootContext context, int size) {
         this.context = context;
         this.size = size;
+    }
+
+    public static void fillUsingRandom(LootTable table, Container container, LootParams params, RandomSource random) {
+        var previous = FILL_RANDOM.get();
+        FILL_RANDOM.set(new FillRandom(params, random));
+        try {
+            table.fill(container, params, 0L);
+        } finally {
+            if (previous == null) FILL_RANDOM.remove();
+            else FILL_RANDOM.set(previous);
+        }
+    }
+
+    @Nullable
+    public static RandomSource takeFillRandom(LootParams params) {
+        var fill = FILL_RANDOM.get();
+        if (fill == null || fill.params() != params) return null;
+        FILL_RANDOM.remove();
+        return fill.random();
     }
 
     public static void fill(LootTable table, Container container, LootContext context, int size) {
@@ -52,4 +75,6 @@ public final class LegacyLootSlots {
     private int next() {
         return consumed < slots.size() ? slots.getInt(consumed++) : randomSlot();
     }
+
+    private record FillRandom(LootParams params, RandomSource random) {}
 }

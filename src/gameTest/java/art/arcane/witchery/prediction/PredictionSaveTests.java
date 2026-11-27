@@ -455,6 +455,13 @@ public final class PredictionSaveTests {
         helper.assertTrue(!data.contains("LootTable") && !contents.isEmpty() && contents.size() <= 6
                         && contents.stream().allMatch(tag -> originalLoot.contains(((CompoundTag) tag).getString("id"))),
                 "The chest immediately saves loot from the original mineshaft pool");
+        var chest = (ChestBlockEntity) level.getBlockEntity(chestPos);
+        helper.assertTrue(contents.size() == 3 && chest.getItem(0).is(Items.PUMPKIN_SEEDS) && chest.getItem(0).getCount() == 2
+                        && chest.getItem(4).is(Items.GOLD_INGOT) && chest.getItem(4).getCount() == 2
+                        && chest.getItem(23).is(Items.MELON_SEEDS) && chest.getItem(23).getCount() == 2,
+                "Seed 5120 produces the same slots as the original Buried Treasure harvest");
+        helper.assertTrue(level.getRandom().nextLong() == -8752557157944875801L,
+                "The treasure chest consumes the original draws on the world's random source");
         helper.assertTrue(drops.size() == 1 && drops.get(0).is(Items.DIRT), "The dirt harvest keeps its normal drop");
         helper.succeed();
     }

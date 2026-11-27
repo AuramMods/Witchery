@@ -10,7 +10,7 @@ public final class WitcheryLootTables {
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "chests/mineshaft_corridor");
     public static final ResourceLocation WITCH_SHACK =
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "chests/witch_shack");
-    public static final Set<ResourceLocation> LEGACY_STRUCTURE_CHESTS = Set.of(WITCH_SHACK,
+    public static final Set<ResourceLocation> LEGACY_CONTAINER_TABLES = Set.of(MINESHAFT_CORRIDOR, WITCH_SHACK,
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "chests/village_apothecary"),
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "chests/village/keep"),
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "chests/village/watchtower"));

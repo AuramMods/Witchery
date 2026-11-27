@@ -3,6 +3,7 @@ package art.arcane.witchery.registry;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.data.GrassSeedLootModifier;
 import art.arcane.witchery.data.LegacyFixedLootCount;
+import art.arcane.witchery.data.LegacyMineshaftLoot;
 import art.arcane.witchery.data.LootingBonus;
 import art.arcane.witchery.data.PredictionLootModifier;
 import art.arcane.witchery.data.SmeltingTouchLootModifier;
@@ -31,6 +32,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
+import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.providers.number.LootNumberProviderType;
 import net.minecraftforge.common.loot.IGlobalLootModifier;
 import net.minecraftforge.common.world.BiomeModifier;
@@ -45,6 +47,8 @@ public final class WitcheryRegistries {
             DeferredRegister.create(ForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, Witchery.MODID);
     private static final DeferredRegister<LootNumberProviderType> LOOT_NUMBER_PROVIDERS =
             DeferredRegister.create(Registries.LOOT_NUMBER_PROVIDER_TYPE, Witchery.MODID);
+    private static final DeferredRegister<LootItemFunctionType> LOOT_FUNCTIONS =
+            DeferredRegister.create(Registries.LOOT_FUNCTION_TYPE, Witchery.MODID);
     private static final DeferredRegister<Feature<?>> FEATURES = DeferredRegister.create(Registries.FEATURE, Witchery.MODID);
     private static final DeferredRegister<Codec<? extends ChunkGenerator>> CHUNK_GENERATORS =
             DeferredRegister.create(Registries.CHUNK_GENERATOR, Witchery.MODID);
@@ -66,6 +70,10 @@ public final class WitcheryRegistries {
             LOOT_NUMBER_PROVIDERS.register("looting_bonus", () -> new LootNumberProviderType(new LootingBonus.Serializer()));
     public static final RegistryObject<LootNumberProviderType> LEGACY_FIXED_LOOT_COUNT =
             LOOT_NUMBER_PROVIDERS.register("legacy_fixed_count", () -> new LootNumberProviderType(new LegacyFixedLootCount.Serializer()));
+    public static final RegistryObject<LootNumberProviderType> LEGACY_MINESHAFT_ROLLS =
+            LOOT_NUMBER_PROVIDERS.register("legacy_mineshaft_rolls", () -> new LootNumberProviderType(new LegacyMineshaftLoot.Rolls.Serializer()));
+    public static final RegistryObject<LootItemFunctionType> LEGACY_MINESHAFT_BOOK =
+            LOOT_FUNCTIONS.register("legacy_mineshaft_book", () -> new LootItemFunctionType(new LegacyMineshaftLoot.Book.Serializer()));
     public static final RegistryObject<Codec<HobgoblinSpawnModifier>> HOBGOBLIN_SPAWNS =
             BIOME_MODIFIERS.register("hobgoblin_spawns", () -> HobgoblinSpawnModifier.CODEC);
     public static final RegistryObject<Codec<DreamSpiritSpawnModifier>> DREAM_SPIRIT_SPAWNS =
@@ -114,6 +122,7 @@ public final class WitcheryRegistries {
         WitcherySounds.register(eventBus);
         LOOT_MODIFIERS.register(eventBus);
         LOOT_NUMBER_PROVIDERS.register(eventBus);
+        LOOT_FUNCTIONS.register(eventBus);
         FEATURES.register(eventBus);
         CHUNK_GENERATORS.register(eventBus);
         BIOME_MODIFIERS.register(eventBus);
