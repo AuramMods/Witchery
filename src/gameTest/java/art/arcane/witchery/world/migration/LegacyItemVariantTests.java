@@ -9,13 +9,17 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.storage.ChunkStorage;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Optional;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
@@ -142,5 +146,61 @@ public final class LegacyItemVariantTests {
         LegacyWorldIds.repairNamedStoredItems(record);
         helper.assertTrue(record.equals(saved), "A second load preserves the resulting item data");
         helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void restoresTextInsideSavedFlightRoutes(GameTestHelper helper) throws Exception {
+        var original = TagParser.parseTag("""
+                {Level:{xPos:5,zPos:1,TerrainPopulated:1b,Entities:[
+                  {id:"witchery.owl",WITCWaypoint:{id:"witchery:ingredient",Count:1b,Damage:13s,
+                    tag:{PosD:0,PosX:45,PosY:67,PosZ:72,display:{Name:'{"text":"Literal"}',Lore:["Old route"]}}}}
+                ]}}
+                """);
+        var folder = Files.createTempDirectory("witchery-legacy-flight-route");
+        var snapshot = folder.resolve("witchery-legacy-ids.dat");
+        var level = helper.getLevel();
+        var fixer = level.getServer().getFixerUpper();
+        try {
+            NbtIo.writeCompressed(new CompoundTag(), snapshot.toFile());
+            var ids = LegacyWorldIds.find(folder);
+            CompoundTag route;
+            try (var storage = new ChunkStorage(folder.resolve("region"), fixer, true)) {
+                var saved = storage.upgradeChunkTag(Level.OVERWORLD, level::getDataStorage, original, Optional.empty());
+                route = saved.getList("entities", Tag.TAG_COMPOUND).getCompound(0).getCompound("WITCWaypoint");
+            }
+            helper.assertTrue(route.getString("id").equals("witchery:bound_waystone")
+                            && ItemStack.of(route).getHoverName().getString().equals("{\"text\":\"Literal\"}")
+                            && route.getCompound("tag").getInt("PosX") == 45,
+                    "The original Waystone keeps its destination and the literal, component-shaped name");
+            helper.assertTrue(routeLore(route).equals("Old route"), "Convert the original route lore to text components");
+
+            var record = TagParser.parseTag("""
+                    {id:"minecraft:boat",Passengers:[{id:"witchery:wingedmonkey",
+                      WITCWaypoint:{id:"witchery:taglockkit",Count:1b,tag:{WITCPlayer1:"Owner",
+                        display:{Name:'{"text":"Taglock","color":"aqua"}',Lore:["Old route"]}}}}]}
+                    """);
+            var withoutRegistry = record.copy();
+            ids.repairStoredItems(record, fixer);
+            LegacyWorldIds.repairNamedStoredItems(withoutRegistry);
+            var nested = record.getList("Passengers", Tag.TAG_COMPOUND).getCompound(0).getCompound("WITCWaypoint");
+            helper.assertTrue(record.equals(withoutRegistry) && routeLore(nested).equals("Old route")
+                            && nested.getCompound("tag").getString("WITCPlayer1").equals("Owner")
+                            && nested.getCompound("tag").getCompound("display").getString("Name")
+                            .equals("{\"text\":\"Taglock\",\"color\":\"aqua\"}"),
+                    "Ordinary loads restore the nested lore and keep the current name and target with or without a registry");
+            var converted = record.copy();
+            ids.repairStoredItems(record, fixer);
+            helper.assertTrue(record.equals(converted), "Reopening the saved journey preserves its repaired text");
+        } finally {
+            Files.deleteIfExists(snapshot);
+            Files.deleteIfExists(folder);
+        }
+        helper.succeed();
+    }
+
+    private static String routeLore(CompoundTag route) {
+        var lore = route.getCompound("tag").getCompound("display").getList("Lore", Tag.TAG_STRING);
+        var text = Component.Serializer.fromJson(lore.getString(0));
+        return text == null ? "" : text.getString();
     }
 }

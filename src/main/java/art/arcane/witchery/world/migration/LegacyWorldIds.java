@@ -351,6 +351,7 @@ public final class LegacyWorldIds {
 
     public static void repairNamedStoredItems(Tag value) {
         visitStoredCompounds(value, stack -> {
+            repairWaypointTags(stack, false);
             String name = stack.getString("id");
             if (name.startsWith(Witchery.MODID + ":") && stack.contains("Count", Tag.TAG_BYTE)
                     && stack.getByte("Count") > 0 && hasLegacyStackEncoding(stack) && upgradeWitcheryStack(stack, name)) {
@@ -375,6 +376,7 @@ public final class LegacyWorldIds {
     }
 
     private void repairStoredCompound(CompoundTag compound, DataFixer fixer, int currentVersion, boolean repairVanilla) {
+        repairWaypointTags(compound, false);
         // Both legacy and current item stacks store Count as a byte. Some tiles have their own integer Count.
         if (compound.contains("Count", Tag.TAG_BYTE) && hasLegacyStackEncoding(compound)) {
             if (repairVanilla) {
@@ -508,6 +510,13 @@ public final class LegacyWorldIds {
         if (upgradeDisplay) upgradeItemDisplay(tag.getCompound("display"), originalFormat);
         upgradeEnchantments(tag, "ench", "Enchantments");
         upgradeEnchantments(tag, "StoredEnchantments", "StoredEnchantments");
+    }
+
+    static void repairWaypointTags(CompoundTag entity, boolean originalFormat) {
+        // Vanilla's entity schema visits the carried parcel, but the route is a separate Witchery stack.
+        if (entity.get("WITCWaypoint") instanceof CompoundTag waypoint && waypoint.getByte("Count") > 0) {
+            upgradeStackTags(waypoint, true, originalFormat);
+        }
     }
 
     private static void restoreMixedVanillaStackTags(CompoundTag original, CompoundTag fixed) {

@@ -97,6 +97,7 @@ public final class LegacyChunkEntities {
         ResourceLocation name = WitcheryEntities.legacyEntityId(oldType);
         ids.upgradeMerchantItems(entity, name == null ? oldType : name.toString(), fixer, from, targetVersion);
         if (name == null) return;
+        LegacyWorldIds.repairWaypointTags(entity, true);
         if ((name.getPath().equals("werevillager") && ids.isApothecary(entity, "Profession"))
                 || (name.getPath().equals("wolfman") && ids.isApothecary(entity, "FormerProfession"))) {
             entity.putBoolean(LEGACY_APOTHECARY, true);

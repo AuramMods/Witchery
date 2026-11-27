@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Carried gear and flight route saves (2026-11-26)
+
+- A synthetic region based on entities saved by Witchery 0.24.1 supplied a Witch Hunter and a Follower with complete equipment and distinct drop chances, a saddled Binky with the Follower riding it, an Owl with named red wool and a Waystone, and a Winged Monkey with a Taglock. The preceding package passed 52 of 56 checks. The four failures were the two route names and lore lists, which still contained raw 1.7.10 strings. Both route bindings stayed intact.
+- The original import now converts literal names and lore on `WITCWaypoint` stacks. Ordinary loads also repair old text on already mapped stacks with or without the captured registry. The checked-in regression verifies literal text that resembles JSON on first import and keeps an explicit aqua component on an ordinary load. Numeric IDs and custom dimensions still use the captured registry.
+- Headless clean Forge passed all 56 checks on the original import, its ordinary restart, and both earlier converted copies. After the restart the fixture enabled the Owl's AI. It delivered the named parcel with both lore lines and returned home. The exact reobfuscated archive is `build/qa-nested-entity-saves/candidate.jar`, SHA-256 `df7a4c2c06a110e8e5dc2398568a5e7a17838b2ad3bd0e4843950ed88909eba2`. The `checks.log` files in `baseline`, `import`, `restart`, `older`, and `older-no-registry` record the comparisons.
+- Local Java 17 data generation, reobfuscation and all 564 required Forge GameTests passed. See `datagen.log`, `package.log`, and `suite.log` in the same directory.
+
 ## Nightmare and spectral undead poses (2026-11-26)
 
 - The original 0.24.1 models supplied 312 part poses across eight cases per creature. The preceding Forge package differed in 258 of the 1,872 sampled values. The largest differences were the Spectre and Banshee's two-pixel robe and arm offsets and the Poltergeist's four-arm throw. The Nightmare tendrils used render age instead of the whole entity tick and its left index finger followed the little finger's angle.
