@@ -383,6 +383,7 @@ public final class LegacyWorldIds {
 
     private static void visitStoredCompounds(Tag value, Consumer<CompoundTag> repair) {
         if (value instanceof CompoundTag compound) {
+            restoreItemAttributeModifiers(compound);
             repair.accept(compound);
             // Descend into the current children after replacing a saved stack or bottle.
             for (String key : compound.getAllKeys()) visitStoredCompounds(compound.get(key), repair);
@@ -492,6 +493,7 @@ public final class LegacyWorldIds {
     }
 
     private void upgradeUntypedStack(CompoundTag stack, DataFixer fixer, int from, int to) {
+        restoreItemAttributeModifiers(stack);
         // Full chunk and entity migrations skip old stacks once their containing records have a modern version.
         boolean partiallyConverted = from >= 100 && hasLegacyStackEncoding(stack);
         boolean mapped = partiallyConverted && upgradeStack(stack, false);
@@ -529,6 +531,18 @@ public final class LegacyWorldIds {
         if (upgradeDisplay) upgradeItemDisplay(tag.getCompound("display"), originalFormat);
         upgradeEnchantments(tag, "ench", "Enchantments");
         upgradeEnchantments(tag, "StoredEnchantments", "StoredEnchantments");
+    }
+
+    private static void restoreItemAttributeModifiers(CompoundTag stack) {
+        if (stack.getInt("Count") <= 0 || !(stack.get("tag") instanceof CompoundTag tag)
+                || !(stack.contains("id", Tag.TAG_STRING) || stack.contains("id", Tag.TAG_ANY_NUMERIC))) return;
+        for (Tag entry : tag.getList("AttributeModifiers", Tag.TAG_COMPOUND)) {
+            var modifier = (CompoundTag) entry;
+            String path = LegacyChunkEntities.originalAttributePath(modifier.getString("AttributeName"));
+            if (path != null) modifier.putString("AttributeName", "minecraft:" + path);
+            // Normalize before the old data fixer can replace a current UUID with the historical pair.
+            LegacyChunkEntities.restoreOriginalUuid(modifier);
+        }
     }
 
     static void repairWaypointTags(CompoundTag entity, boolean originalFormat) {

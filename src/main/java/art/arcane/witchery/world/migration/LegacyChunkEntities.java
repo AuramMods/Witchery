@@ -320,7 +320,7 @@ public final class LegacyChunkEntities {
         }
     }
 
-    private static void restoreOriginalUuid(CompoundTag data) {
+    static void restoreOriginalUuid(CompoundTag data) {
         if (!data.contains("UUIDMost", Tag.TAG_LONG) || !data.contains("UUIDLeast", Tag.TAG_LONG)) return;
         if (!data.hasUUID("UUID")) data.putUUID("UUID", new UUID(data.getLong("UUIDMost"), data.getLong("UUIDLeast")));
         data.remove("UUIDMost");
@@ -356,8 +356,8 @@ public final class LegacyChunkEntities {
     }
 
     @Nullable
-    private static String originalAttributePath(String name) {
-        return switch (name) {
+    static String originalAttributePath(String name) {
+        return switch (name.startsWith("minecraft:") ? name.substring("minecraft:".length()) : name) {
             case "generic.maxHealth" -> "generic.max_health";
             case "generic.followRange" -> "generic.follow_range";
             case "generic.knockbackResistance" -> "generic.knockback_resistance";

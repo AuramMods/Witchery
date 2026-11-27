@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Equipment modifiers in converted saves (2026-11-27)
+
+- The original server used the vanilla modifier serializer on a worn Witchery Arthana and a worn Iron Sword, then confirmed their original stack reader activated three modifiers. It saved both in a native Chest. Read `build/qa-legacy-equipment-modifiers/native/originals-final.log`.
+- The previous package passed 4/14 on the mixed region. It preserved item wear and the offhand slot but lost the original attack, health and speed bonuses, and the modern UUID was replaced by stale halves. The current loader normalizes the payload before any standalone item data fix so that the current UUID wins. It uses the same name map as saved creature attributes. Clean Forge passed 7/7 on native import and 14/14 on the mixed region, both on first load and ordinary restart. Read `build/qa-legacy-equipment-modifiers/{baseline-mixed,native-confirmed-original,clean-mixed}`.
+- The muted background client started with the supplied items and selected each through the hotbar. The Arthana and offhand gave nine total attack. The Iron Sword gave 24 maximum health and 0.125 movement speed. Both sessions used OpenAL No Output with master volume zero and kept desktop focus on the existing app. The clean server, client, and copied Auram used the same JAR with SHA-256 `f24bb81a95f6836dc8c1545bc5e3d9322984aefdcc8b48b8f2d06b1f5adfc720`. Read `build/qa-legacy-equipment-modifiers/live-player/{first,restart}.log`.
+- Copied Auram passed 14/14 before and after restart with its captured registry. Its disposable Does It Tick whitelist let the test zombies update their equipped modifiers without a player nearby. All 653 local Forge GameTests passed. Read `build/qa-legacy-equipment-modifiers/{pack-ticking/first.log,pack-ticking/restart.log,gametest.log}`.
+
 ## Health and attributes in converted saves (2026-11-27)
 
 - The original server exercised both Treefyd heart upgrades and wrote three live creatures. The Demon Treefyd saved `HealF:127.75f`, `Health:128s`, 150 base maximum, and an original split-UUID additive modifier worth 10 health. Binky saved the dedicated jump attribute and an original speed multiplier. Read `build/qa-legacy-living-stats/native/native-final.log`.
