@@ -118,7 +118,8 @@ public final class WitchCropGrowthTests {
         var crop = (WitchCropBlock) WitchCrop.MANDRAKE.block();
         for (var pos : List.of(dark, lit)) {
             for (var shell : BlockPos.betweenClosed(pos.offset(-2, -2, -2), pos.offset(2, 1, 2))) {
-                if (!shell.equals(pos)) level.setBlockAndUpdate(shell, Blocks.STONE.defaultBlockState());
+                var block = shell.equals(pos) ? Blocks.AIR : Blocks.STONE;
+                level.setBlockAndUpdate(shell, block.defaultBlockState());
             }
             level.setBlockAndUpdate(pos.below(), Blocks.FARMLAND.defaultBlockState());
         }

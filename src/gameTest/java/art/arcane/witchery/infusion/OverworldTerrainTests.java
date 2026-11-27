@@ -145,7 +145,11 @@ public final class OverworldTerrainTests {
     @GameTest(template = "qa_coven_arena")
     public static void handBroadcastsTheOriginalChargeAndFailureCues(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        FakePlayer caster = player(level, Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(5, 0, 6)).atY(200)));
+        BlockPos feet = helper.absolutePos(new BlockPos(5, 0, 6)).atY(200);
+        for (BlockPos cell : BlockPos.betweenClosed(feet, feet.above(6))) {
+            level.setBlockAndUpdate(cell, Blocks.AIR.defaultBlockState());
+        }
+        FakePlayer caster = player(level, Vec3.atBottomCenterOf(feet));
         caster.setXRot(-90);
         InfusionEnergy.grant(caster, OverworldInfusion.ID, 20);
         ItemStack hand = new ItemStack(WitcheryItems.getRequired("witchhand").get());

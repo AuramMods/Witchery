@@ -71,6 +71,9 @@ public final class DemonicDreamTests {
         dreamer.getPersistentData().put(Player.PERSISTED_NBT_TAG, persistent);
         DreamTravel.markNightmareKilled(dreamer);
         dream.setBlockAndUpdate(landing.below(), Blocks.STONE.defaultBlockState());
+        for (BlockPos cell : BlockPos.betweenClosed(landing, landing.above(2))) {
+            dream.setBlockAndUpdate(cell, Blocks.AIR.defaultBlockState());
+        }
 
         var fixtures = new ArrayList<Entity>();
         var spawned = new ArrayList<Entity>();

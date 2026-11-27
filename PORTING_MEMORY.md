@@ -7,6 +7,7 @@ Use Java 17 and the local Gradle cache. When resources change, run `runData` bef
 - The released 0.24.1 renderer emitted 324 vertices across 18 cases. The preceding Forge package matched only the fully enclosed cell. The rebuilt clean Forge and copied Auram clients matched all cases, including corner heights, texture coordinates, tint, and light. Read `build/qa-brew-liquid-mesh/{native/reference.log,comparison.log}`.
 - The Brew Liquid mesh uses Forge's chunk renderer and active atlas. Embeddium's fluid tag selects that path for both the source and flowing fluid. Both muted survival clients watched a dispenser release a supplied tinted splash brew. Removing the temporary support exposed the falling cell and runoff with the retained tint. The pack's `WorldSlice` and `SinkingVertexBuilder` passed the actual cells to Forge after JEI finished initializing. Read `build/qa-brew-liquid-mesh/{clean/live.log,pack/replay.log}`.
 - Local Java 17 data generation and JAR reobfuscation passed. The tested archive at `build/qa-brew-liquid-mesh/candidate.jar` has SHA-256 `54f671d160221066f8afd0e6c4a8f2ab3ed82bd690805aaba9d107dbd9d19353`.
+- The first headless suite failed four tests whose saved plots showed generated stone or snow in the web target, Hand sightline, demon landing, and crop chambers. The fixtures now set those spaces to air. All 635 required GameTests passed on the isolated rerun. Read `build/qa-brew-liquid-mesh/{failed-plots.log,gametest-serial.log}`.
 
 ## Named vanilla stacks with original metadata and wear (2026-11-27)
 

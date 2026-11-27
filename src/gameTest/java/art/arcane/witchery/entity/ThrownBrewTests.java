@@ -33,6 +33,8 @@ public final class ThrownBrewTests {
         var placements = new Direction[]{Direction.WEST, Direction.EAST, Direction.NORTH, Direction.SOUTH};
         for (int index = 0; index < directions.length; index++) {
             var struck = north.east(index * 4);
+            level.setBlockAndUpdate(struck.relative(placements[index]), Blocks.AIR.defaultBlockState());
+            level.setBlockAndUpdate(struck.relative(directions[index]), Blocks.AIR.defaultBlockState());
             level.setBlockAndUpdate(struck, Blocks.STONE.defaultBlockState());
             hitWeb(helper, struck, directions[index]);
             helper.assertTrue(level.getBlockState(struck.relative(placements[index])).is(Blocks.COBWEB)
@@ -43,6 +45,7 @@ public final class ThrownBrewTests {
         var snow = north.south(4);
         level.setBlockAndUpdate(snow.below(), Blocks.STONE.defaultBlockState());
         level.setBlockAndUpdate(snow, Blocks.SNOW_BLOCK.defaultBlockState());
+        level.setBlockAndUpdate(snow.above(), Blocks.AIR.defaultBlockState());
         hitWeb(helper, snow, Direction.UP);
         helper.assertTrue(level.getBlockState(snow).is(Blocks.COBWEB) && level.isEmptyBlock(snow.above()),
                 "The web takes the full snow block's cell");
