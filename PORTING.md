@@ -439,6 +439,11 @@
 - [x] Restore the Infernal Spider, Cave Spider, and Skeleton launch origin and aim while moving. The native trace and Forge test verify the original shoulder offset and speed. The muted packaged clients fired a recoverable Skeleton arrow and matched the original Thrown Web impacts against a wall, a full snow block, and a creature at negative coordinates.
 - [x] Restore the original binding, attack, and movement cues, including Imperio's shorter range. The bound zombie kept its assigned pig target and landed successive attacks after its AI attempted to target its owner. Sacrifices grant creature power before applying damage and carry no player kill credit. Two muted clean Forge survival clients exercised the Witch's Hand and Mystic Branch. After restart, the server retained all three surviving creature bindings, two Pig charges, and the protected pig's ten health. All 402 local Forge GameTests passed.
 
+### Infernal creature variants (2026-11-26)
+
+- [x] Invoke the original Witch's Hand binding and sacrifice for all 25 power IDs. Verify the seven vanilla creature variants that now have separate entity IDs. In 0.24.1 a Wither Skeleton, a Zombie Villager, a tamed cat, a Donkey, a Mule, a Zombie Horse, and a Skeleton Horse all granted their original species' power. The witch cat, spectral familiar, and Binky each returned zero reserve charges for a fresh caster.
+- [x] Compare all 25 original powers, the seven split IDs, and five related controls through the packaged Hand. Import nine named creatures from an original region and verify their identities and sacrifice outcomes. A damage veto keeps the nine imported creatures available for the restart. Clean Forge and copied Auram each passed 55 checks before restart and 20 afterward, retaining all nine actors, their new bindings, and the player's 20 Horse charges. Local data generation, reobfuscation, and all 595 Forge GameTests passed.
+
 ## Poppet Shelf (2026-11-20)
 
 - [x] Restore the recipe with four Attuned Stones, four Nether Brick blocks, and green wool. The muted client crafted and placed a shelf, opened its nine slots, inserted three bound wards and rendered all three on the shelf. A comparator responded to its contents.
@@ -2134,6 +2139,7 @@
 - [x] Import player progression on an ordinary login to a world without a captured numeric registry. The earlier package lost both fixture ranks. The rebuilt package kept the original vampire rank four, rank cap ten and 125 blood. An earlier Forge-format Wolfman record kept rank seven and its original form alongside the current bottling skill of 48. A storage regression also covers keeping an explicit current human form and preferring embedded trial progress over the original root record.
 - [x] Recover the saved Mirror entrance and escape timers and the named contents of the armed Keep Inventory backup on ordinary player loads. The same reobfuscated JAR loaded, saved and reopened the mixed record on clean Forge and copied Auram. Restoring the backup yielded four red wool and three Mandrake Roots. An unresolved item kept its original numeric ID and metadata, and the player's live inventory remained intact. The storage regressions verify one-time restoration, resume the pending backup after adding the captured ID mapping, and check named items in the Dream and Prior Incarnation records. Java 17 data generation, reobfuscation and all 509 Forge GameTests passed.
 - [x] Open a single-player copy with a mixed owner record inside Mirror. The muted background client recovered the original vampire rank eight and blood reserve 34, kept the current 888 blood and second cooldown, and used the chat chant to return to the saved entrance. A full client restart kept the recovered inventory alongside an apple added after the first save, confirming the backup did not replay.
+- [x] Import and reopen nine [Infernal creature variants](#infernal-creature-variants-2026-11-26). Both packaged profiles preserved their names, UUIDs, vanilla or Witchery identities, and new bindings. The player reopened with the shared Horse reserve.
 - [ ] Expand migration to other block and subtype data and specialized entity and block-entity fields. Add fixtures before calling the migration complete.
 
 ### Importing a copy of a legacy world
@@ -2995,6 +3001,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Compare [Rain of Toads](#rain-of-toads-action-comparison-2026-11-26), including the shower's coordinates and ordering, the coven refund, and expiration and poison.
 - [ ] Infusion, prediction, creature power parity.
   - [x] Compare [hurt and harvest predictions](#hurt-and-harvest-predictions-2026-11-26), including saved order, damage sources, companion placement, and unfinished forecasts.
+  - [x] Compare [Infernal creature acquisition](#infernal-creature-variants-2026-11-26) for all 25 original power IDs and modern entity splits.
 - [ ] Entity AI/combat/spawn tuning parity.
   - [x] Compare [Horned Huntsman archery, teleport, wolves, and Horn summons](#horned-huntsman-trial-2026-11-20).
   - [x] Compare [Mog and Gulg's paired combat, navigation, statue summons, and rewards](#mog-and-gulg-2026-11-20).

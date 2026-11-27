@@ -33,8 +33,8 @@ import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -47,41 +47,42 @@ public enum CreaturePower {
     GHAST(6, "ghast"),
     BLAZE(7, "blaze"),
     ZOMBIFIED_PIGLIN(8, "zombified_piglin"),
-    ZOMBIE(9, "zombie"),
-    SKELETON(10, "skeleton"),
+    ZOMBIE(9, "zombie", "zombie_villager"),
+    SKELETON(10, "skeleton", "wither_skeleton"),
     MAGMA_CUBE(11, "magma_cube"),
     SLIME(12, "slime"),
     SILVERFISH(13, "silverfish"),
-    OCELOT(14, "ocelot"),
+    OCELOT(14, "ocelot", "cat"),
     WOLF(15, "wolf"),
-    HORSE(16, "horse"),
+    HORSE(16, "horse", "donkey", "mule", "zombie_horse", "skeleton_horse"),
     ENDERMAN(17, "enderman"),
-    SHEEP(18, "sheep", 1),
-    COW(19, "cow", 1),
-    CHICKEN(20, "chicken", 1),
-    PIG(21, "pig", 1),
-    VILLAGER(22, "villager", 2),
-    MOOSHROOM(23, "mooshroom", 2),
-    OWL(24, "witchery:owl", 10),
-    TOAD(25, "witchery:toad", 10);
+    SHEEP(18, 1, "sheep"),
+    COW(19, 1, "cow"),
+    CHICKEN(20, 1, "chicken"),
+    PIG(21, 1, "pig"),
+    VILLAGER(22, 2, "villager"),
+    MOOSHROOM(23, 2, "mooshroom"),
+    OWL(24, "witchery:owl"),
+    TOAD(25, "witchery:toad");
 
     public static final int MAX_CHARGES = 20;
     private static final String POWER = "WITCBeastPower";
     private static final String CHARGES = "WITCBeastPowerCharges";
     private static final CreaturePower[] BY_ID = values();
     private static final Map<ResourceLocation, CreaturePower> BY_ENTITY = Stream.of(BY_ID)
-            .collect(Collectors.toUnmodifiableMap(power -> power.creature, Function.identity()));
+            .flatMap(power -> power.creatures.stream().map(creature -> Map.entry(creature, power)))
+            .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
     private final int id;
-    private final ResourceLocation creature;
+    private final List<ResourceLocation> creatures;
     private final int perSacrifice;
 
-    CreaturePower(int id, String creature) {
-        this(id, creature, 10);
+    CreaturePower(int id, String... creatures) {
+        this(id, 10, creatures);
     }
 
-    CreaturePower(int id, String creature, int perSacrifice) {
+    CreaturePower(int id, int perSacrifice, String... creatures) {
         this.id = id;
-        this.creature = ResourceLocation.parse(creature);
+        this.creatures = Stream.of(creatures).map(ResourceLocation::parse).toList();
         this.perSacrifice = perSacrifice;
     }
 

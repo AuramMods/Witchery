@@ -23,6 +23,7 @@ import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -76,6 +77,48 @@ public final class InfernalMinionTests {
         } finally {
             MinecraftForge.EVENT_BUS.unregister(cancel);
             pig.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void splitVanillaCreaturesGrantTheirLegacyPowers(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var caster = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "InfernalVariants"));
+        caster.setShiftKeyDown(true);
+        int energy = 80;
+        InfusionEnergy.grant(caster, InfernalInfusion.ID, energy);
+        var hand = WitcheryItems.getRequired("witchhand").get().getDefaultInstance();
+        var variants = List.of(
+                Map.entry(EntityType.WITHER_SKELETON, CreaturePower.SKELETON),
+                Map.entry(EntityType.ZOMBIE_VILLAGER, CreaturePower.ZOMBIE),
+                Map.entry(EntityType.CAT, CreaturePower.OCELOT),
+                Map.entry(EntityType.DONKEY, CreaturePower.HORSE),
+                Map.entry(EntityType.MULE, CreaturePower.HORSE),
+                Map.entry(EntityType.ZOMBIE_HORSE, CreaturePower.HORSE),
+                Map.entry(EntityType.SKELETON_HORSE, CreaturePower.HORSE));
+        CreaturePower previous = null;
+        var data = caster.getPersistentData().getCompound(FakePlayer.PERSISTED_NBT_TAG);
+        for (var variant : variants) {
+            var creature = variant.getKey().create(level);
+            var power = variant.getValue();
+            hand.getItem().onLeftClickEntity(hand, caster, creature);
+            helper.assertTrue(InfernalInfusion.owns(creature, caster)
+                            && data.getInt("witcheryInfusionCharges") == energy - 5,
+                    "The Infernal Hand binds " + creature.getType().toShortString() + " for five charges");
+            hand.getItem().onLeftClickEntity(hand, caster, creature);
+            energy -= 6;
+            helper.assertTrue(CreaturePower.forId(CreaturePower.activeId(caster)) == power
+                            && CreaturePower.charges(caster) == (previous == power ? 20 : 10)
+                            && data.getInt("witcheryInfusionCharges") == energy && !creature.isAlive(),
+                    "The sacrifice grants the original reserve and shares its cap across variants");
+            creature.discard();
+            previous = power;
+        }
+        for (var type : List.of(WitcheryEntities.WITCH_CAT.get(), WitcheryEntities.DEATH_HORSE.get(),
+                WitcheryEntities.SPECTRAL_FAMILIAR.get(), EntityType.STRAY, EntityType.HUSK)) {
+            helper.assertTrue(CreaturePower.forCreature(type) == null,
+                    "Distinct species do not inherit the power from a related vanilla creature");
         }
         helper.succeed();
     }

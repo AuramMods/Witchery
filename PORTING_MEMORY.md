@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Infernal creature variants (2026-11-26)
+
+- The original server bound and sacrificed the base creature for each of the 25 IDs. Wither Skeleton, Zombie Villager, tamed cat, Donkey, Mule, Zombie Horse and Skeleton Horse accepted their original powers and ten reserve charges. Witchery's cat, Binky and the Spectral Familiar were the no-power controls. See `build/qa-creature-variants/native/reference-saved.log`.
+- The modern lookup now associates each split entity with its original power ID. Repeated Horse variants share the same 20-charge cap. Distinct Witchery IDs and the later Husk and Stray retain the same no-power behavior.
+- The reobfuscated `build/qa-creature-variants/release.jar` has SHA-256 `2175902f6a27f9b5617e7d67f8cd3adf1410e097770329bb6a050935fd906512`. The preceding JAR failed the seven split cases in the 37-case modern acquisition replay. Local Java 17 data generation, JAR reobfuscation, and all 595 required Forge GameTests passed.
+- Clean Forge and copied Auram each passed all 55 packaged checks and 20 restart checks with the same JAR. The fixture imported nine named creatures from the original region and used the Witch's Hand to bind and sacrifice them, with a test damage veto to keep the imported actors available. The same UUIDs, owners, player energy and 20 Horse charges survived an ordinary dedicated restart. See `clean-import/` and `pack-import/` under `build/qa-creature-variants/`.
+
 ## Hurt and harvest predictions (2026-11-26)
 
 - The original hurt fixture distinguishes arrows and Witchery bolts from other projectile sources. Actual fall damage clears Fall, and a Pigman attack clears the undead forecast. Both Owl and Wolf arrive in saved-list order, including a Wolf for a self-inflicted arrow hit or a dying attacker. The seed-17 replay captures both arrival coordinates and the next world draw. See `build/qa-prediction-order/native/reference-verified.log`.
