@@ -89,20 +89,25 @@ public final class WitcherySounds {
         playLegacyPlayerCue(player, sound, SoundSource.PLAYERS, volume);
     }
 
-    public static void playLegacyPlayerCue(ServerPlayer player, SoundEvent sound, SoundSource source, float volume) {
+    public static void playLegacyPlayerCue(ServerPlayer player, SoundEvent sound, SoundSource fallbackSource, float volume) {
+        playPlayerCue(player, sound, fallbackSource, volume, legacyPitch(player.serverLevel()));
+    }
+
+    public static void playPlayerCue(ServerPlayer player, SoundEvent sound, SoundSource fallbackSource, float volume, float pitch) {
         var level = player.serverLevel();
         // Modern playback needs a sample seed in addition to the original pitch roll.
         level.playSeededSound(null, player, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound),
-                source, volume, legacyPitch(level), ThreadLocalRandom.current().nextLong());
+                LegacySoundEffect.sourceFor(sound, fallbackSource), volume, pitch, ThreadLocalRandom.current().nextLong());
     }
 
     public static void playLegacyBlockCue(ServerLevel level, BlockPos pos, SoundEvent sound, float volume) {
         playLegacyBlockCue(level, pos, sound, SoundSource.PLAYERS, volume);
     }
 
-    public static void playLegacyBlockCue(ServerLevel level, BlockPos pos, SoundEvent sound, SoundSource source, float volume) {
+    public static void playLegacyBlockCue(ServerLevel level, BlockPos pos, SoundEvent sound, SoundSource fallbackSource, float volume) {
         // The original world random source only selected the pitch.
-        level.playSeededSound(null, pos.getX(), pos.getY(), pos.getZ(), sound, source, volume,
+        level.playSeededSound(null, pos.getX(), pos.getY(), pos.getZ(), sound,
+                LegacySoundEffect.sourceFor(sound, fallbackSource), volume,
                 legacyPitch(level), ThreadLocalRandom.current().nextLong());
     }
 

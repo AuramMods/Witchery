@@ -128,7 +128,8 @@ public final class CritterSnareBlock extends Block {
         Critter critter = state.getValue(CRITTER);
         if (critter != Critter.EMPTY) {
             float pitch = 0.4F / ((float) level.random.nextDouble() * 0.4F + 0.8F);
-            ClientWitcherySounds.playLocal(level, pos.getX(), pos.getY(), pos.getZ(), critter.sound, SoundSource.NEUTRAL, 0.5F, pitch);
+            var source = critter == Critter.BAT ? SoundSource.NEUTRAL : SoundSource.HOSTILE;
+            ClientWitcherySounds.playLocal(level, pos.getX(), pos.getY(), pos.getZ(), critter.sound, source, 0.5F, pitch);
         }
     }
 

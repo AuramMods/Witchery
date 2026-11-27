@@ -8,7 +8,7 @@ import art.arcane.witchery.client.event.WitcheryClientCameraHooks;
 import art.arcane.witchery.client.particle.LegacySmokeParticle;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryRegistries;
-import art.arcane.witchery.registry.WitcherySounds;
+import art.arcane.witchery.registry.LegacySoundEffect;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.nbt.CompoundTag;
@@ -55,10 +55,10 @@ public final class WitcheryClientPacketHandlers {
         LegacySoundEffect legacySound = LegacySoundEffect.byId(message.soundEffectId());
         if (legacySound != LegacySoundEffect.NONE) {
             float pitch = randomPitch(random);
-            SoundEvent sound = resolveSoundEvent(legacySound.soundId());
+            SoundEvent sound = legacySound.sound();
             if (sound != null) {
                 ClientWitcherySounds.playLocal(level, message.x(), message.y(), message.z(),
-                        sound, SoundSource.AMBIENT, 0.5F, pitch);
+                        sound, legacySound.source(), 0.5F, pitch);
             }
         }
 
@@ -154,7 +154,10 @@ public final class WitcheryClientPacketHandlers {
             return;
         }
 
-        SoundEvent sound = resolveSoundEvent(soundId);
+        ResourceLocation id = ResourceLocation.tryParse(soundId);
+        if (id == null) return;
+        LegacySoundEffect legacySound = LegacySoundEffect.byName(id);
+        SoundEvent sound = legacySound == null ? BuiltInRegistries.SOUND_EVENT.getOptional(id).orElse(null) : legacySound.sound();
         RandomSource random = level.getRandom();
         float volume = message.volume() == -1.0F ? 0.5F : message.volume();
         float pitch = message.pitch();
@@ -164,7 +167,7 @@ public final class WitcheryClientPacketHandlers {
                     : randomPitch(random);
         }
         if (sound == null) return;
-        SoundSource source = sound == SoundEvents.SLIME_JUMP || ghastFireball ? SoundSource.HOSTILE : SoundSource.AMBIENT;
+        SoundSource source = legacySound == null ? SoundSource.AMBIENT : legacySound.source();
         ClientWitcherySounds.playLocal(level, message.x(), message.y(), message.z(), sound, source, volume, pitch);
     }
 
@@ -298,53 +301,6 @@ public final class WitcheryClientPacketHandlers {
         };
     }
 
-    private static SoundEvent resolveSoundEvent(String soundId) {
-        ResourceLocation direct = ResourceLocation.tryParse(soundId);
-        if (direct != null) {
-            SoundEvent event = BuiltInRegistries.SOUND_EVENT.getOptional(direct).orElse(null);
-            if (event != null) {
-                return event;
-            }
-        }
-
-        return switch (soundId) {
-            case "random.orb" -> SoundEvents.EXPERIENCE_ORB_PICKUP;
-            case "random.fizz" -> SoundEvents.FIRE_EXTINGUISH;
-            case "note.snare" -> SoundEvents.NOTE_BLOCK_SNARE.value();
-            case "game.player.swim.splash" -> SoundEvents.PLAYER_SPLASH;
-            case "fireworks.blast" -> SoundEvents.FIREWORK_ROCKET_BLAST;
-            case "game.player.swim" -> SoundEvents.GENERIC_SWIM;
-            case "note.harp" -> WitcherySounds.LEGACY_HARP.get();
-            case "note.pling" -> SoundEvents.NOTE_BLOCK_PLING.value();
-            case "random.explode" -> SoundEvents.GENERIC_EXPLODE;
-            case "random.pop" -> SoundEvents.ITEM_PICKUP;
-            case "dig.cloth" -> SoundEvents.WOOL_BREAK;
-            case "mob.slime.big" -> SoundEvents.SLIME_JUMP;
-            case "mob.slime.small" -> SoundEvents.SLIME_SQUISH_SMALL;
-            case "mob.zombie.death" -> SoundEvents.ZOMBIE_DEATH;
-            case "mob.endermen.portal" -> SoundEvents.ENDERMAN_TELEPORT;
-            case "fire.fire" -> SoundEvents.FIRE_AMBIENT;
-            case "fire.ignite" -> SoundEvents.FLINTANDSTEEL_USE;
-            case "mob.ghast.fireball" -> SoundEvents.GHAST_SHOOT;
-            case "mob.wither.spawn" -> SoundEvents.WITHER_SPAWN;
-            case "mob.horse.skeleton.death" -> SoundEvents.SKELETON_HORSE_DEATH;
-            case "mob.silverfish.kill" -> SoundEvents.SILVERFISH_DEATH;
-            case "mob.zombie.infect" -> SoundEvents.ZOMBIE_INFECT;
-            case "mob.wolf.death" -> SoundEvents.WOLF_DEATH;
-            case "mob.enderdragon.growl" -> SoundEvents.ENDER_DRAGON_GROWL;
-            case "mob.horse.skeleton.hit" -> SoundEvents.SKELETON_HORSE_HURT;
-            case "random.levelup" -> SoundEvents.PLAYER_LEVELUP;
-            case "mob.spider.say" -> SoundEvents.SPIDER_AMBIENT;
-            case "mob.zombie.say" -> SoundEvents.ZOMBIE_AMBIENT;
-            case "mob.enderdragon.hit" -> SoundEvents.ENDER_DRAGON_HURT;
-            case "mob.wither.death" -> SoundEvents.WITHER_DEATH;
-            case "mob.blaze.death" -> SoundEvents.BLAZE_DEATH;
-            case "mob.ghast.death" -> SoundEvents.GHAST_DEATH;
-            case "mob.creeper.death" -> SoundEvents.CREEPER_DEATH;
-            default -> null;
-        };
-    }
-
     private static float randomPitch(RandomSource random) {
         return 0.4F / ((float) random.nextDouble() * 0.4F + 0.8F);
     }
@@ -388,89 +344,6 @@ public final class WitcheryClientPacketHandlers {
         static LegacyParticleEffect byId(int id) {
             if (id < 0 || id >= VALUES.length) {
                 return SMOKE;
-            }
-            return VALUES[id];
-        }
-    }
-
-    private enum LegacySoundEffect {
-        NONE(""),
-        RANDOM_ORB("random.orb"),
-        RANDOM_FIZZ("random.fizz"),
-        NOTE_SNARE("note.snare"),
-        WATER_SPLASH("game.player.swim.splash"),
-        DAMAGE_HIT("damage.hit"),
-        FIREWORKS_BLAST1("fireworks.blast"),
-        WATER_SWIM("game.player.swim"),
-        NOTE_HARP("note.harp"),
-        NOTE_PLING("note.pling"),
-        RANDOM_EXPLODE("random.explode"),
-        RANDOM_POP("random.pop"),
-        DIG_CLOTH("dig.cloth"),
-        MOB_SLIME_BIG("mob.slime.big"),
-        MOB_SLIME_SMALL("mob.slime.small"),
-        MOB_ZOMBIE_DEATH("mob.zombie.death"),
-        MOB_ENDERMEN_PORTAL("mob.endermen.portal"),
-        FIRE_FIRE("fire.fire"),
-        FIRE_IGNITE("fire.ignite"),
-        MOB_GHAST_FIREBALL("mob.ghast.fireball"),
-        MOB_WITHER_SPAWN("mob.wither.spawn"),
-        MOB_HORSE_SKELETON_DEATH("mob.horse.skeleton.death"),
-        RANDOM_SPLASH("witchery:random.splash"),
-        MOB_SILVERFISH_KILL("mob.silverfish.kill"),
-        MOB_ZOMBIE_INFECT("mob.zombie.infect"),
-        MOB_WOLF_DEATH("mob.wolf.death"),
-        MOB_OCELOT_DEATH("mob.ocelot.death"),
-        MOB_ENDERDRAGON_GROWL("mob.enderdragon.growl"),
-        MOB_HORSE_SKELETON_HIT("mob.horse.skeleton.hit"),
-        RANDOM_LEVELUP("random.levelup"),
-        MOB_SPIDER_SAY("mob.spider.say"),
-        MOB_ZOMBIE_SAY("mob.zombie.say"),
-        WITCHERY_RANDOM_THEYCOME("witchery:random.theycome"),
-        MOB_ENDERDRAGON_HIT("mob.enderdragon.hit"),
-        WITCHERY_MOB_BABA_DEATH("witchery:mob.baba.baba_death"),
-        WITCHERY_MOB_BABA_LIVING("witchery:mob.baba.baba_living"),
-        WITCHERY_RANDOM_CLICK("witchery:random.click"),
-        WITCHERY_RANDOM_WINDUP("witchery:random.wind_up"),
-        WITCHERY_RANDOM_LOVED("witchery:random.loved"),
-        MOB_ENDERMAN_IDLE("mob.enderman.idle"),
-        MOB_WITHER_DEATH("mob.wither.death"),
-        RANDOM_BREATH("random.breath"),
-        WITCHERY_MOB_SPECTRE_SPECTRE_HIT("witchery:mob.spectre.spectre_hit"),
-        WITCHERY_MOB_SPECTRE_SPECTRE_SAY("witchery:mob.spectre.spectre_say"),
-        MOB_BLAZE_DEATH("mob.blaze.death"),
-        WITCHERY_MOB_IMP_LAUGH("witchery:mob.imp.laugh"),
-        MOB_GHAST_DEATH("mob.ghast.death"),
-        MOB_CREEPER_DEATH("mob.creeper.death"),
-        WITCHERY_RANDOM_CHALK("witchery:random.chalk"),
-        WITCHERY_MOB_WOLFMAN_HOWL("witchery:mob.wolfman.howl"),
-        WITCHERY_MOB_WOLFMAN_EAT("witchery:mob.wolfman.eat"),
-        WITCHERY_MOB_WOLFMAN_LORD("witchery:mob.wolfman.lord"),
-        WITCHERY_RANDOM_HORN("witchery:random.horn"),
-        WITCHERY_RANDOM_MANTRAP("witchery:random.mantrap"),
-        WITCHERY_MOB_WOLFMAN_TALK("witchery:mob.wolfman.say"),
-        WITCHERY_RANDOM_HYPNOSIS("witchery:random.hypnosis"),
-        WITCHERY_RANDOM_DRINK("witchery:random.drink"),
-        WITCHERY_RANDOM_POOF("witchery:random.poof"),
-        WITCHERY_MOB_LILITH_TALK("witchery:mob.lilith.say"),
-        WITCHERY_RANDOM_SWORD_DRAW("witchery:random.sworddraw"),
-        WITCHERY_RANDOM_SWORD_SHEATHE("witchery:random.swordsheathe"),
-        WITCHERY_MOB_REFLECTION_SPEECH("witchery:mob.reflection.speech");
-
-        private static final LegacySoundEffect[] VALUES = values();
-        private final String soundId;
-
-        LegacySoundEffect(String soundId) {
-            this.soundId = soundId;
-        }
-
-        String soundId() {
-            return soundId;
-        }
-
-        static LegacySoundEffect byId(int id) {
-            if (id < 0 || id >= VALUES.length) {
-                return NONE;
             }
             return VALUES[id];
         }

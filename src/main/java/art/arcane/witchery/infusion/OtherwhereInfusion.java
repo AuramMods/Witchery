@@ -14,7 +14,9 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -41,13 +43,13 @@ public final class OtherwhereInfusion {
     public static void channel(ServerPlayer player, int elapsed) {
         if (player.isShiftKeyDown() && elapsed == SET_RECALL_TICKS) {
             player.displayClientMessage(Component.translatable(MESSAGE + "remember_ready"), true);
-            WitcherySounds.playLegacyPlayerCue(player, SoundEvents.NOTE_BLOCK_PLING.value(), 0.5F);
+            playHandCue(player, SoundEvents.NOTE_BLOCK_PLING.value());
         } else if (!player.isShiftKeyDown() && elapsed > 0 && elapsed % 20 == 0) {
             if (blinkTarget(player, elapsed) != null) {
-                WitcherySounds.playLegacyPlayerCue(player, SoundEvents.EXPERIENCE_ORB_PICKUP, 0.5F);
+                playHandCue(player, SoundEvents.EXPERIENCE_ORB_PICKUP);
                 player.displayClientMessage(Component.translatable(MESSAGE + "blink_ready"), true);
             } else {
-                WitcherySounds.playLegacyPlayerCue(player, SoundEvents.ITEM_PICKUP, 0.5F);
+                playHandCue(player, SoundEvents.ITEM_PICKUP);
             }
         }
     }
@@ -205,7 +207,12 @@ public final class OtherwhereInfusion {
 
     private static boolean fail(ServerPlayer player, String message) {
         player.displayClientMessage(Component.translatable(MESSAGE + message).withStyle(ChatFormatting.RED), true);
-        WitcherySounds.playLegacyPlayerCue(player, SoundEvents.NOTE_BLOCK_SNARE.value(), 0.5F);
+        playHandCue(player, SoundEvents.NOTE_BLOCK_SNARE.value());
         return false;
+    }
+
+    private static void playHandCue(ServerPlayer player, SoundEvent sound) {
+        float pitch = 0.4F / ((float) Math.random() * 0.4F + 0.8F);
+        WitcherySounds.playPlayerCue(player, sound, SoundSource.PLAYERS, 0.5F, pitch);
     }
 }

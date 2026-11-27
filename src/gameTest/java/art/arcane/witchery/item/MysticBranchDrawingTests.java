@@ -101,7 +101,8 @@ public final class MysticBranchDrawingTests {
             PlayLevelSoundEvent.AtEntity cue = sounds.get(index);
             SoundEvent sound = expected.get(index);
             float volume = sound == SoundEvents.NOTE_BLOCK_SNARE.value() ? 0.5F : 1;
-            helper.assertTrue(cue.getSound().value() == sound && cue.getSource() == SoundSource.PLAYERS
+            SoundSource source = sound == SoundEvents.ITEM_PICKUP ? SoundSource.PLAYERS : SoundSource.RECORDS;
+            helper.assertTrue(cue.getSound().value() == sound && cue.getSource() == source
                             && cue.getNewVolume() == volume && cue.getNewPitch() >= 1F / 3 && cue.getNewPitch() <= 0.5F,
                     "The caster's cue keeps the original sound, category, volume and pitch range");
         }

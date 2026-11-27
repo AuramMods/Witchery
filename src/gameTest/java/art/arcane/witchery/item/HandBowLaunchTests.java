@@ -109,7 +109,7 @@ public final class HandBowLaunchTests {
                     helper.assertTrue(stack.getDamageValue() == 2 && HandBowItem.loaded(stack) == null,
                             "A normal shot spends the ammo and two durability");
                     helper.assertTrue(sounds.size() == 1 && sounds.get(0).getPosition().equals(origin)
-                                    && sounds.get(0).getSource() == SoundSource.PLAYERS && sounds.get(0).getNewVolume() == 1,
+                                    && sounds.get(0).getSource() == SoundSource.NEUTRAL && sounds.get(0).getNewVolume() == 1,
                             "The launch cue plays once at the shooter's exact position");
                 }
             }

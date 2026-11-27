@@ -181,7 +181,7 @@ public final class HandBowItem extends BowItem {
         if (!retained) bow.getOrCreateTag().remove(CURRENT);
         bow.hurtAndBreak(2, player, shooter -> shooter.broadcastBreakEvent(shooter.getUsedItemHand()));
         player.getInventory().setChanged();
-        world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1,
+        world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ARROW_SHOOT, SoundSource.NEUTRAL, 1,
                 1 / (SHOT_SOUND_RANDOM.nextFloat() * 0.4F + 1.2F) + power * 0.5F);
     }
 

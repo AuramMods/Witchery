@@ -110,23 +110,34 @@ public final class CreaturePowerCueTests {
         };
         MinecraftForge.EVENT_BUS.addListener(capture);
         try {
+            var worldRandom = level.getRandom();
+            worldRandom.setSeed(42);
             item.onUseTick(level, player, hand, duration - 19);
             helper.assertTrue(cues.isEmpty(), "Aiming stays quiet between the original twenty-tick samples");
             item.onUseTick(level, player, hand, duration - 20);
             assertCue(helper, cues.remove(0), SoundEvents.EXPERIENCE_ORB_PICKUP, 0.5F, 1F / 3, 0.5F);
+            helper.assertTrue(worldRandom.nextInt(1000) == 130, "A clear aim cue leaves the world random source alone");
 
             player.moveTo(player.getX(), level.getMaxBuildHeight() + 2, player.getZ(), 0, -90);
+            worldRandom.setSeed(42);
             item.onUseTick(level, player, hand, duration - 40);
             assertCue(helper, cues.remove(0), SoundEvents.ITEM_PICKUP, 0.5F, 1F / 3, 0.5F);
+            helper.assertTrue(worldRandom.nextInt(1000) == 130, "A missed aim cue leaves the world random source alone");
+            worldRandom.setSeed(42);
             item.releaseUsing(hand, level, player, duration - 40);
             assertCue(helper, cues.remove(0), SoundEvents.NOTE_BLOCK_SNARE.value(), 0.5F, 1F / 3, 0.5F);
+            helper.assertTrue(worldRandom.nextInt(1000) == 130, "Release rejection leaves the world random source alone");
 
             player.moveTo(origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5, 0, 0);
             player.setShiftKeyDown(true);
+            worldRandom.setSeed(42);
             item.onUseTick(level, player, hand, duration - 60);
             assertCue(helper, cues.remove(0), SoundEvents.NOTE_BLOCK_PLING.value(), 0.5F, 1F / 3, 0.5F);
+            helper.assertTrue(worldRandom.nextInt(1000) == 130, "The recall-ready cue leaves the world random source alone");
+            worldRandom.setSeed(42);
             item.releaseUsing(hand, level, player, duration - 60);
             assertCue(helper, cues.remove(0), SoundEvents.FIRE_EXTINGUISH, 0.5F, 1F / 3, 0.5F);
+            helper.assertTrue(worldRandom.nextInt(1000) == 248, "The recall confirmation takes its original double draw");
             var data = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
             helper.assertTrue(cues.isEmpty() && data.getDouble("WITCRecallY") == origin.getY()
                             && data.getInt("witcheryInfusionCharges") == 20,
@@ -231,8 +242,13 @@ public final class CreaturePowerCueTests {
 
     private static void assertCue(GameTestHelper helper, PlayLevelSoundEvent.AtEntity cue, SoundEvent sound, float volume,
                                   float minPitch, float maxPitch) {
-        helper.assertTrue(cue.getSound().value() == sound && cue.getSource() == SoundSource.PLAYERS
+        SoundSource source = SoundSource.PLAYERS;
+        if (sound == SoundEvents.FIRE_EXTINGUISH) source = SoundSource.BLOCKS;
+        else if (sound == SoundEvents.NOTE_BLOCK_SNARE.value() || sound == SoundEvents.NOTE_BLOCK_PLING.value()) {
+            source = SoundSource.RECORDS;
+        }
+        helper.assertTrue(cue.getSound().value() == sound && cue.getSource() == source
                         && cue.getNewVolume() == volume && cue.getNewPitch() >= minPitch && cue.getNewPitch() <= maxPitch,
-                "Expected the original sound, volume and pitch range for " + sound.getLocation());
+                "Expected the original sound, category, volume and pitch range for " + sound.getLocation());
     }
 }

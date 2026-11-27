@@ -145,7 +145,7 @@ public enum CreaturePower {
             case SQUID -> {
                 if (hit instanceof EntityHitResult entity && entity.getEntity() instanceof LivingEntity victim) {
                     float pitch = 1 / (level.random.nextFloat() * 0.4F + 1.2F) + 0.5F;
-                    level.playSound(null, player, SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 1, pitch);
+                    level.playSound(null, player, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1, pitch);
                     victim.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 200));
                 }
             }
@@ -257,7 +257,7 @@ public enum CreaturePower {
     private static void playBowCue(ServerPlayer player, float volume, float pitch) {
         // The modern packet also needs a sample seed. Keep it independent of the world roll for the pitch.
         player.serverLevel().playSeededSound(null, player, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.ARROW_SHOOT),
-                SoundSource.PLAYERS, volume, pitch, ThreadLocalRandom.current().nextLong());
+                SoundSource.NEUTRAL, volume, pitch, ThreadLocalRandom.current().nextLong());
     }
 
     private static void launchAimed(ServerPlayer player, Projectile shot, float speed) {
