@@ -1,10 +1,9 @@
 package art.arcane.witchery.item;
 
-import art.arcane.witchery.ritual.DirectedCurse;
 import art.arcane.witchery.client.model.DeathClothingModel;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.infusion.OtherwhereInfusion;
-import art.arcane.witchery.registry.WitcheryEffects;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -57,16 +56,17 @@ public final class DeathClothingItem extends ArmorItem {
 
     @Override
     public void onArmorTick(ItemStack stack, Level level, Player wearer) {
-        if (getEquipmentSlot() == EquipmentSlot.FEET) {
-            var motion = wearer.getDeltaMovement();
-            if (motion.y < 0 && (wearer.isInWater() || wearer.isInLava())
-                    && !wearer.hasEffect(WitcheryEffects.SINKING.get())
-                    && DirectedCurse.SINKING.strength(wearer) <= 0) {
-                wearer.setDeltaMovement(motion.add(0, 0.1, 0));
-            }
-        } else if (getEquipmentSlot() == EquipmentSlot.HEAD && wearer instanceof ServerPlayer player) {
+        if (getEquipmentSlot() == EquipmentSlot.HEAD && wearer instanceof ServerPlayer player) {
             tickCowl(level, player);
         }
+    }
+
+    public static void liftInLiquid(Player wearer) {
+        var motion = wearer.getDeltaMovement();
+        if (motion.y >= 0 || !wears(wearer, EquipmentSlot.FEET)) return;
+        var feet = BlockPos.containing(wearer.getX(), wearer.getBoundingBox().minY, wearer.getZ());
+        var state = wearer.level().getBlockState(feet);
+        if (state.liquid() && !state.getFluidState().isEmpty()) wearer.setDeltaMovement(motion.add(0, 0.1, 0));
     }
 
     private static void tickCowl(Level level, ServerPlayer wearer) {

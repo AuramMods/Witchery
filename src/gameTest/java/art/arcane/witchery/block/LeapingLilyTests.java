@@ -23,6 +23,7 @@ import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
@@ -66,9 +67,37 @@ public final class LeapingLilyTests {
         level.setBlockAndUpdate(water.below(), Blocks.STONE.defaultBlockState());
         level.setBlockAndUpdate(water, Blocks.WATER.defaultBlockState());
         player.moveTo(water.getX() + 0.5, water.getY() + 2, water.getZ() + 0.5, 0, 90);
+        var floorHit = new BlockHitResult(Vec3.atBottomCenterOf(water), Direction.UP, water.below(), false);
+        helper.assertTrue(stack.getItem().useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, floorHit)).consumesAction()
+                        && level.getBlockState(water.above()).is(lily) && level.getFluidState(water).isSource()
+                        && stack.getCount() == 3,
+                "A block hit through shallow water places one lily above the source and keeps the water");
+
+        BlockPos deepWater = water.south(3);
+        level.setBlockAndUpdate(deepWater, Blocks.WATER.defaultBlockState());
+        player.moveTo(deepWater.getX() + 0.5, deepWater.getY() + 2, deepWater.getZ() + 0.5, 0, 90);
         helper.assertTrue(stack.getItem().use(level, player, InteractionHand.MAIN_HAND).getResult().consumesAction()
-                        && level.getBlockState(water.above()).is(lily) && stack.getCount() == 3,
-                "Use a second lily on source water and spend one item per placement");
+                        && level.getBlockState(deepWater.above()).is(lily) && stack.getCount() == 2,
+                "An ordinary item use can also place a single lily over source water");
+
+        BlockPos flowing = water.east(3);
+        level.setBlockAndUpdate(flowing.below(), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(flowing, Blocks.WATER.defaultBlockState().setValue(LiquidBlock.LEVEL, 1));
+        player.moveTo(flowing.getX() + 0.5, flowing.getY() + 2, flowing.getZ() + 0.5, 0, 90);
+        var flowingHit = new BlockHitResult(Vec3.atBottomCenterOf(flowing), Direction.UP, flowing.below(), false);
+        helper.assertTrue(!stack.getItem().useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, flowingHit)).consumesAction()
+                        && level.getBlockState(flowing).is(Blocks.WATER) && !level.getFluidState(flowing).isSource()
+                        && level.isEmptyBlock(flowing.above()) && stack.getCount() == 2,
+                "Flowing water remains in place and no lily is spent");
+
+        BlockPos gas = flowing.south(3);
+        level.setBlockAndUpdate(gas.below(), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(gas, WitcheryBlocks.getRequired("brewgas").get().defaultBlockState());
+        player.moveTo(gas.getX() + 0.5, gas.getY() + 2, gas.getZ() + 0.5, 0, 90);
+        var gasFloor = new BlockHitResult(Vec3.atBottomCenterOf(gas), Direction.UP, gas.below(), false);
+        helper.assertTrue(stack.getItem().useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, gasFloor)).consumesAction()
+                        && level.getBlockState(gas).is(lily) && stack.getCount() == 1,
+                "The lily can displace gas over a solid block");
         helper.assertTrue(level.getBlockState(dry.above()).getLightEmission() == 6, "Leaping Lilies emit the original light level");
 
         var pig = helper.spawn(EntityType.PIG, new BlockPos(4, 5, 4));

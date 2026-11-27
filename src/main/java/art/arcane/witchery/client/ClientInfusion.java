@@ -2,12 +2,15 @@ package art.arcane.witchery.client;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.BrewPlantBlocks;
+import art.arcane.witchery.block.LeapingLilyBlock;
+import art.arcane.witchery.brewing.EnvironmentalCurseEffect;
 import art.arcane.witchery.config.WitcheryClientConfig;
 import art.arcane.witchery.infusion.CreaturePower;
 import art.arcane.witchery.infusion.InfusedBrews;
 import art.arcane.witchery.infusion.InfernalInfusion;
 import art.arcane.witchery.infusion.LightInfusion;
 import art.arcane.witchery.item.BrewBagItem;
+import art.arcane.witchery.item.DeathClothingItem;
 import art.arcane.witchery.item.MysticBranchItem;
 import art.arcane.witchery.item.WitchHandItem;
 import art.arcane.witchery.ritual.DirectedCurse;
@@ -17,15 +20,19 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.client.event.MovementInputUpdateEvent;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
@@ -73,11 +80,6 @@ public final class ClientInfusion {
     }
 
     @SubscribeEvent
-    public static void onMovementInput(MovementInputUpdateEvent event) {
-        if (event.getEntity() instanceof LocalPlayer player && !player.isPassenger()) DirectedCurse.tickSinkingPlayer(player);
-    }
-
-    @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.START) return;
         var client = Minecraft.getInstance();
@@ -86,6 +88,7 @@ public final class ClientInfusion {
 
         var controls = client.options;
         CreaturePower power = CreaturePower.forId(powerId);
+        boolean speedPower = false;
         if (power != null) {
             Vec3 motion = player.getDeltaMovement();
             switch (power) {
@@ -111,20 +114,39 @@ public final class ClientInfusion {
                     if (controls.keyJump.isDown() && motion.y > 0) player.setDeltaMovement(motion.x, motion.y + 0.06, motion.z);
                 }
                 case SILVERFISH, OCELOT, WOLF, HORSE -> {
+                    speedPower = true;
                     if (controls.keyUp.isDown() || controls.keyDown.isDown() || controls.keyLeft.isDown() || controls.keyRight.isDown()) {
                         if (isOverIce(player)) scaleHorizontalMotion(player, 1.1F);
                         else if (player.onGround() && !player.isInWater()) scaleHorizontalMotion(player, 1.45F);
                     }
-                    // These powers take precedence over the Branch and Brew Bag movement.
-                    return;
                 }
             }
         }
 
         var item = player.getUseItem().getItem();
-        if (player.isUsingItem() && (item instanceof MysticBranchItem || item instanceof BrewBagItem)) {
+        if (!speedPower && player.isUsingItem() && (item instanceof MysticBranchItem || item instanceof BrewBagItem)) {
             Vec3 motion = player.getDeltaMovement();
             if (Math.abs(motion.x) <= 0.1 && Math.abs(motion.z) <= 0.1) applyHeldItemMovement(player);
+        }
+
+        int sinking = DirectedCurse.SINKING.strength(player);
+        if (sinking > 0) {
+            EnvironmentalCurseEffect.sinkPlayer(player, sinking - 1);
+        } else {
+            var slowness = player.getEffect(MobEffects.MOVEMENT_SLOWDOWN);
+            if (slowness != null && slowness.getAmplifier() > 4) EnvironmentalCurseEffect.sinkFlight(player);
+            if (sinking == 0) DeathClothingItem.liftInLiquid(player);
+        }
+
+        if (player.onGround() && controls.keyJump.isDown()) {
+            var pad = BlockPos.containing(player.getX(), player.getY() + LEGACY_PLAYER_Y_OFFSET, player.getZ()).below();
+            if (player.level().getBlockState(pad).getBlock() instanceof LeapingLilyBlock) {
+                float pitch = 0.4F / ((float) player.level().random.nextDouble() * 0.4F + 0.8F);
+                // Draw the playback seed separately from the original pitch roll.
+                player.level().playSeededSound(player, player.getX(), player.getY(), player.getZ(),
+                        BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.ARROW_HIT), SoundSource.PLAYERS, 1, pitch,
+                        SoundInstance.createUnseededRandom().nextLong());
+            }
         }
     }
 

@@ -618,6 +618,7 @@ Clean Forge and copied Auram match all 42 cases measured from the original handl
 - [x] Brew the Infused Brew Base in the Kettle and offer it with a Broom, Feather, Arthana and a wild Owl. The muted player received an Infused Brew of Soaring. Forge GameTests verified that the Owl and Soaring bonuses stack and that Soaring expires after two hours.
 - [x] Restart the packaged server after drinking Soaring. The same blue broom and brew timestamp survived. The muted client flew again with both bonuses, dismounted and recovered the dyed item with an axe. All 91 required GameTests, data generation and JAR reobfuscation passed.
 - [x] Restore the Wild Bramble recipe for a second Infused Brew Base. Restore the HUD icons and remaining-time display for Soaring and the Grave.
+- [ ] Compare mounted and unmounted motion tick by tick, including living passengers, the original acceleration ceiling, nearby Broom pushes, and when Owl and Soaring bonuses refresh. The original runtime trace records eleven cases and one nearby-Broom push. In the five-case Forge sample, a Cow passenger triggers the empty-Broom descent and a grounded empty Broom resets positive vertical motion. Read `build/qa-broom-motion/{native/reference.log,current.log}`.
 
 ## Waystone rites (2026-11-20)
 
@@ -1129,6 +1130,16 @@ Clean Forge and copied Auram match all 42 cases measured from the original handl
 - [x] Restore the original recipe. Five Lily Pads, two Glowstone Dust, one Potion of Swiftness, and Breath of the Goddess produce five Leaping Lilies. The regular potion is required.
 - [x] Place Leaping Lilies on solid ground and on source water. On contact they give Speed I and Jump Boost V for ten ticks and leave an active effect of either kind in place. The lily emits light level six.
 - [x] Run Java 17 data generation, reobfuscate the JAR, and pass all 36 checked-in GameTests. The snare test also placed a legacy stocked Bat Snare from a stack and released a bat with its original trade stock marker.
+
+### Player movement and Lily placement (2026-11-27)
+
+An ordinary block hit through shallow water now places the Lily above the source and leaves the water in place. Direct use on source water and ordinary placement on dry ground still work. Flowing water stays in place. The local player's jump plays the original Arrow Hit cue from the pad with the legacy pitch. The sound sample takes a separate random seed so the cue keeps the original world draw order.
+
+Directed Sinking runs at client tick start after the creature powers and held-item boosts. Its underwater descent multiplier retains the original threshold, strength cap, and grounded exemption. Outside water, it forces permitted noncreative flight downward. Slowness VI and higher supply the original fallback when Directed Sinking is absent. Death's Boots then lift a descending wearer whose feet occupy a liquid block with a nonempty fluid state. Directed Sinking suppresses the lift, while a brewed Sinking effect can still alter the motion later in the tick.
+
+Clean Forge and copied Auram matched 29 original client tick cases and four Forge liquid controls. Both muted background clients placed the Lily above the original source, jumped with the local cue, and equipped the Boots through ordinary use. Both recorded the Boots lifting the player at the liquid surface and directed Sinking taking precedence during underwater descent. The fixture supplied the Lily, Boots, rank and blood, and applied the test effects. Read `build/qa-player-motion/{native/reference.log,clean/candidate.log,pack/candidate.log}`.
+
+On clean Forge, the player selected and activated Bat form through ordinary controls. Slowness VI and directed Sinking forced descent. An ordinary dedicated restart kept the flight, curse, Boots, Lily, and its water source. The copied Auram player successfully transformed, then PlayerAbilityLib reset the flight permission granted by Witchery and the Bat stayed grounded. The deterministic flight motion cases match in that profile. The normal packed takeoff still needs the ability integration. Local Java 17 packaging, reobfuscation and all 636 required GameTests passed. Read `build/qa-player-motion/{clean/restart-candidate.log,pack/server-candidate.log,gametest-candidate.log}`.
 
 ## Spreading Herbs and Spanish Moss (2026-11-22)
 
@@ -3295,7 +3306,8 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
 - [x] Attach and clone Witchery player data through Forge and sync gameplay state on load, respawn and dimension changes. Dedicated milestones cover infusion, coven, familiar, vampire, werewolf and Mirror state.
 - [x] Verify the guide page and Vampire Journal bookmark updates, the wolf howl and saved cooldown, the Crystal Ball camera release through travel and death, and the local Resizing hitbox after dimension loading. Dedicated client results are recorded in the book, howl, and tracked-effect milestones.
 - [ ] Compare the remaining original extended player fields and packet intents against their current gameplay paths and test any gaps.
-  - [ ] Compare directed Sinking and high-amplifier Slowness during noncreative flight. The original `PlayerRender` sets downward motion at client tick start when either rule applies. The existing directed Sinking replay covers water entry.
+  - [x] Compare [directed Sinking and high-amplifier Slowness](#player-movement-and-lily-placement-2026-11-27) during noncreative flight. Both packages match the original motion cases. Clean Forge also verified normal Bat flight before and after restart.
+  - [ ] Grant Bat flight through PlayerAbilityLib in copied Auram. Bewitchment supplies PlayerAbilityLib 1.8.0, which restores the tracked `minecraft:mayfly` status when Witchery changes it directly. Verify takeoff, landing, reboot, leaving Bat form, and an independent mod's flight grant.
   - [x] Account for all 19 original packet registrations. Seventeen entries have a modern handler or an explicit disposition in the manifest. Brew Bag preparation (1) and Mystic Branch preparation (9) now derive their gestures on the server. Facing (19) had no sender in the original release, and vanilla sends ordinary player rotation.
   - [x] Replay the held-item and movement inputs with two survival clients on the packaged player-progress build. The server recognized Brew Bag and Mystic Branch preparation (1, 9), saved the guide page and journal trail (4, 12), granted exactly two extra Double Jump II lifts (10), accepted a Wolfman howl and blocked its repeat (14), and applied vampire Speed and returned the target villager's 267 blood (15–17). Both muted background clients rejoined after a dedicated restart. The consumed brew, both book bookmarks, the active Double Jump effect, the howl timer, and the blood values persisted. The final package replay remains part of Remaining Release Verification.
   - [x] Replay the held-item inputs and tracked state on the same `5c7b7a66` package. Check the original particle and sound audiences, Crystal Ball release, late observers of the Mirror disguise and wolf form, Gulg's Gurdle motion, and player state through Dream travel, death, respawn, a live reconnect, and a headless restart. See [Current multiplayer replay](#current-multiplayer-replay-2026-11-27).
@@ -3321,14 +3333,14 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare [area ward attribution and column recovery](#area-ward-attribution-and-column-recovery-2026-11-27) for Void Bramble and the three owner-recoverable statues.
   - [x] Compare [crop maturation, harvest drops, and stage models](#witchery-crop-harvesting-and-models-2026-11-27) across the eight legacy crops.
   - [x] Compare [live Mandrake emergence](#mandrake-emergence-2026-11-27) through player harvest, lost support, direct destruction, harvest magic, and blasts.
-  - [ ] Restore and compare the Leaping Lily's local jump cue. The original `PlayerRender` checks the pad at tick start and plays `random.bowhit` when grounded with jump held.
+  - [x] Compare [Leaping Lily placement and the local jump cue](#player-movement-and-lily-placement-2026-11-27), including the ordinary shallow-water interaction in clean Forge and copied Auram.
 - [ ] Item behavior parity pass (including metadata-subitem conversions).
   - [x] Compare melee modifiers, sword guards, and Boline harvest against the [melee tool measurements](#melee-tools-and-boline-harvesting-2026-11-26).
   - [x] Restore the Crossbow's [launch position, velocity, spread, and firing cue](#crossbow-launch-physics-2026-11-27). The seeded original replay covers four draw durations and the three Splitting trajectories with a moving shooter.
   - [x] Compare [Bolt flight in air and water](#crossbow-bolt-flight-in-water-2026-11-27), including the original wet cell bounds, water drag, current, water entry and exit, and stone impact.
   - [x] Compare [Bolt damage and ricochets](#crossbow-bolt-entity-impacts-2026-11-27), including two hits inside one damage cooldown, Holy damage, Flame on rejection, and Enderman deflections.
   - [x] Compare [Punch and player-hit confirmation](#crossbow-punch-and-player-hit-cue-2026-11-27), including a fully resistant mob, the inclusive 128-block audience, and a vanilla Arrow control.
-  - [ ] Compare Death's Boots at the water and lava surface. The original tests fluid at the wearer's feet during the client tick, whereas the Forge armor tick uses the entity's fluid flags.
+  - [x] Compare [Death's Boots at the water and lava surface](#player-movement-and-lily-placement-2026-11-27). Both packages match the feet-cell checks and the order of persistent and brewed Sinking. Both recorded the lift during ordinary water entry.
 - [x] Brewing, Kettle, Distillery, Spinning Wheel, and Brazier parity.
   - [x] Compare the fixed Kettle, Distillery, Spinning Wheel, and Brazier registries and exercise their interactions and saved state in the workstation milestones above.
   - [x] Compare [Kettle bottling bonuses and cues](#kettle-bottling-bonuses-and-cues-2026-11-27) with the original world rolls and saved servings.

@@ -54,10 +54,20 @@ public final class EnvironmentalCurseEffect extends MobEffect {
 
     public static void sinkPlayer(Player player, int amplifier) {
         var motion = player.getDeltaMovement();
-        if (player.isInWater() && !player.onGround() && motion.y < -0.03) {
-            player.setDeltaMovement(motion.multiply(1, 1.5 + Math.min(0.05 * amplifier, 0.2), 1));
-        } else if (!player.isInWater() && !player.getAbilities().instabuild && player.getAbilities().flying) {
-            player.setDeltaMovement(motion.x, -0.2, motion.z);
+        if (player.isInWater()) {
+            if (!player.onGround() && motion.y < -0.03) {
+                player.setDeltaMovement(motion.multiply(1, 1.5 + Math.min(0.05 * amplifier, 0.2), 1));
+            }
+        } else {
+            sinkFlight(player);
+        }
+    }
+
+    public static void sinkFlight(Player player) {
+        var abilities = player.getAbilities();
+        if (!abilities.instabuild && abilities.mayfly && abilities.flying) {
+            var motion = player.getDeltaMovement();
+            player.setDeltaMovement(motion.x, -0.2F, motion.z);
         }
     }
 
