@@ -1493,6 +1493,13 @@
 - The Bolt now uses the original water cell bounds and 0.8 drag on wet ticks. The original cell rounding can leave an empty sample in the upper part of a block, even within a full tank. The port applies the current before drag, uses Forge fluid states for the current vector, and keeps Forge handling for other fluid types. The rebuilt clean Forge package matched all 40 position, velocity, water contact, and shake checkpoints.
 - Copied Auram matched all 40 checkpoints on the same JAR. A player fired a Wooden Bolt in a submerged range while a second player watched. It lodged 10.45 blocks downrange, and the observer saw the original wood texture and mesh. The same Bolt stayed embedded and rendered after the dedicated restart. Both survival clients ran muted in the background. The fixture supplied the range, Crossbow, Bolt and Water Breathing.
 
+### Crossbow Bolt entity impacts (2026-11-27)
+
+- In the original 0.24.1 test, two Wooden Bolts hit a pig for three each on the same tick. A Holy Bolt supplied six raw damage to an undead target and dealt two more damage when the preceding attack had already dealt four. The same Bolt supplied four raw damage to a living animal. The previous Forge package blocked the second Wooden shot, checked the Holy attack at four before applying its bonus, and rejected the shot during the four-point hit cooldown.
+- A rejected flaming Bolt left five seconds of fire. A very slow rejected Bolt stayed in flight. An Enderman's accepted teleport kept the Bolt in flight and added one embedded arrow to the mob's count. The rebuilt package applies the Holy bonus before the Forge attack event, clears the cooldown on acceptance, and restores both ricochets and the Enderman hit response. Clean Forge matched all eight hit traces, including damage, raw attack values, cooldown, fire, arrow count and surviving Bolt motion.
+- Copied Auram matched seven original traces with a valid Enderman landing and Forge vetoes on the two rejected attacks. The pack's `guns1-20-0.1.2-dp.zip` adds `minecraft:arrow` to the cooldown-bypass tag. A vanilla Arrow control dealt its full four damage during an existing cooldown, and the Holy Bolt dealt its full six under the same pack rule.
+- Two muted background survival clients fired supplied Wooden Bolts at the fixture's pig one server tick apart. Both took six health, reducing the pig from 40 to 28. A dedicated restart preserved the same pig and its remaining health. The fixture supplied the Crossbows and ammunition and held the pig in place.
+
 ### Crossbow Bolt rendering (2026-11-27)
 
 - The original release's `RenderBolt` emitted six quads for each of five projectile kinds in three poses. The trace covered flight, a shaking impact, and a stationary Bolt. It recorded the texture, transformed vertices, texture coordinates, and normal directions at the Tessellator calls.
@@ -3191,6 +3198,8 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Compare melee modifiers, sword guards, and Boline harvest against the [melee tool measurements](#melee-tools-and-boline-harvesting-2026-11-26).
   - [x] Restore the Crossbow's [launch position, velocity, spread, and firing cue](#crossbow-launch-physics-2026-11-27). The seeded original replay covers four draw durations and the three Splitting trajectories with a moving shooter.
   - [x] Compare [Bolt flight in air and water](#crossbow-bolt-flight-in-water-2026-11-27), including the original wet cell bounds, water drag, current, water entry and exit, and stone impact.
+  - [x] Compare [Bolt damage and ricochets](#crossbow-bolt-entity-impacts-2026-11-27), including two hits inside one damage cooldown, Holy damage, Flame on rejection, and Enderman deflections.
+  - [ ] Compare Punch against knockback-resistant targets and reproduce the original player-hit feedback audience. The original Punch II test added 1.2 horizontal and 0.1 vertical velocity to a fully resistant pig. The original player-hit cue reached players within 128 blocks of the shooter.
 - [x] Brewing, Kettle, Distillery, Spinning Wheel, and Brazier parity.
   - [x] Compare the fixed Kettle, Distillery, Spinning Wheel, and Brazier registries and exercise their interactions and saved state in the workstation milestones above.
   - [x] Compare [Kettle bottling bonuses and cues](#kettle-bottling-bonuses-and-cues-2026-11-27) with the original world rolls and saved servings.

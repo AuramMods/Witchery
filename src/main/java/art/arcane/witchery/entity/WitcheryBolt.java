@@ -249,9 +249,26 @@ public final class WitcheryBolt extends AbstractArrow {
         super.onHitEntity(hit);
     }
 
-    public float modifyDamage(LivingEntity target, float amount) {
+    public float hitDamage(LivingEntity target, float amount) {
         if (kind() != Kind.HOLY) return amount;
-        return CreatureAlignment.undead(target) || CreatureAlignment.demonic(target) ? Mth.floor(amount * 1.5F) : amount;
+        return CreatureAlignment.undead(target) || CreatureAlignment.demonic(target) ? (int) (amount * 1.5D) : amount;
+    }
+
+    @Override
+    protected void doPostHurtEffects(LivingEntity target) {
+        target.invulnerableTime = 0;
+    }
+
+    public void completeAcceptedEndermanHit(LivingEntity target) {
+        if (!level().isClientSide) {
+            if (getPierceLevel() <= 0) target.setArrowCount(target.getArrowCount() + 1);
+            if (getOwner() instanceof LivingEntity shooter) {
+                EnchantmentHelper.doPostHurtEffects(target, shooter);
+                EnchantmentHelper.doPostDamageEffects(shooter, target);
+            }
+        }
+        doPostHurtEffects(target);
+        playSound(getHitGroundSoundEvent(), 1, 1.2F / (random.nextFloat() * 0.2F + 0.9F));
     }
 
     public void applyBowEnchantments(ItemStack bow) {

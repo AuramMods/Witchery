@@ -488,9 +488,6 @@ public final class WitcheryEventHooks {
             event.setCanceled(true);
             return;
         }
-        if (event.getSource().getDirectEntity() instanceof WitcheryBolt bolt) {
-            event.setAmount(bolt.modifyDamage(event.getEntity(), event.getAmount()));
-        }
         ChilledEffect.reduceFireDamage(event);
         PlantBrewEffect.amplifyFireDamage(event);
         Lycanthropy.adjustDamage(event);
