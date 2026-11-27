@@ -2503,6 +2503,14 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Run Java 17 data generation, JAR reobfuscation and all 284 required Forge GameTests. Coverage includes Nether summoning, the Ender Inhibition threshold, refunds, both area and carried defenses, and the legacy six-member ore rite.
 - [x] Restore the spirit-binding rites that make enhanced fetishes in survival.
 
+### Ore Transposition layer comparison (2026-11-27)
+
+- The original headless server measured 11 cases, including solo, five- and six-member covens, the 30th and 60th layers, and the first pulse when the glyph starts one block above the world floor. The rite processes the lowest valid layer once in that last case. It scans X before Z, uses two world-random coordinate rolls per ore, adds independent horizontal motion, and leaves the default pickup delay at zero.
+- The rebuilt rite restores those rules. Gold is eligible with exactly six coven members. Modern deepslate ore drops its own block. A Forge break or item-spawn veto leaves the ore in place. The same applies when a listener replaces the source during the transfer.
+- The previous clean JAR passed 43 of 65 checks. Clean Forge and copied Auram passed all 65 with the same rebuilt archive. The Auram fixture supplied the original seeded random stream. See `build/qa-ore-transposition/native/reference-final.log` and the three `verify.log` files under `clean-baseline`, `clean-release`, and `pack-release`.
+- The survival caster activated the Heart Glyph with a prepared ring and the five supplied offerings, discharged the Attuned Stone, and saved after layer four. The headless server resumed that layer and stopped after layer 30. The caster picked up three Iron Ore and two Deepslate Iron Ore. The gold, diamond, layer-31, and out-of-range controls stayed in place. Both clients stayed hidden and unfocused with zero master volume and OpenAL No Output. See `build/qa-ore-transposition/live-release/`.
+- Local Java 17 data generation, JAR reobfuscation and all 605 required Forge GameTests passed.
+
 ## Dream Spirits and the Spectral Stone (2026-11-20)
 
 - [x] Restore the flying Dream Spirit, its original model and translucent effects, Focused Will attraction, and groups of two to five natural spawns. A defeated Spirit yields a glinting Subdued Spirit that carries through waking. Using the item on a block releases a Spirit again.
@@ -3064,7 +3072,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Compare the fixed Kettle, Distillery, Spinning Wheel, and Brazier registries and exercise their interactions and saved state in the workstation milestones above.
   - [x] Complete the Cauldron effect, modifier, and cast comparisons in the release checklist.
 - [ ] Ritual and circle magic parity.
-  - Compare the 39 original completion classes across the 96 registered rites. The [manifest](PORTING_MANIFEST.md#ritual-registry-riteregistry) records the rings and offering sequences.
+  - [x] Map the 39 original completion classes across all 96 registered rites to their modern handlers and recorded evidence. The [manifest](PORTING_MANIFEST.md#circle-magic-completion-classes) also records the rings and offering sequences.
   - [x] Compare the [19 standard and talisman item results](#circle-magic-item-results-2026-11-26) after the last offering.
   - [x] Compare [Spectral Stone and Fetish spirit binding](#circle-magic-spirit-binding-2026-11-26), including the hidden Death combination.
   - [x] Verify ward upkeep, creature motion, barrier collision, and saved wards for [Protection, Imprisonment, and the three barriers](#protection-imprisonment-and-barrier-rites-2026-11-21).
@@ -3078,6 +3086,8 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Compare Glyphic Transformation and the shared dropped-offering search, including stack order, height boundaries, partial rings and per-glyph cues. [Glyphic Transformation and loose offerings](#glyphic-transformation-and-loose-offerings-2026-11-27)
   - [x] Compare [all seven Forestation rites](#forestation-pulse-comparison-2026-11-27), including candidate selection, original growth cues and bonemeal identity, coven ranges, and local and Waystone upkeep across restart.
   - [x] Compare [both Fertility rites and Nature's Power](#fertility-and-natures-power-comparison-2026-11-27), including cure boundaries, repeated terrain rolls, and saved upkeep.
+  - [x] Compare [Ore Transposition](#ore-transposition-layer-comparison-2026-11-27), including layer order, seeded drops, the world floor, Forge vetoes, and resumed extraction.
+  - [ ] Compare all thirteen Climate Change foci and mixed focus order against the original registry and runtime.
   - [x] Compare [Blight and Blindness actions](#blight-and-blindness-action-comparison-2026-11-26), including terrain and creature conversion.
   - [x] Compare [Hell on Earth terrain and fire](#hell-on-earth-terrain-comparison-2026-11-26), including fire support, soil rolls, and Forge protections.
   - [x] Compare [Rain of Toads](#rain-of-toads-action-comparison-2026-11-26), including the shower's coordinates and ordering, the coven refund, and expiration and poison.

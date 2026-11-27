@@ -131,7 +131,7 @@ interface RiteUpkeep {
                         RiteActivation.legacyId(rite) != Integer.MAX_VALUE);
                 return landscape != null;
             }
-            if (oreDepth > 0) return RiteOfTransposition.transposeOreLayer(level, heart, ++oreDepth, coven);
+            if (oreDepth > 0) return RiteOfTransposition.transposeOreLayer(level, heart, ++oreDepth, coven, caster(level));
             return rechargeNearby(level, heart);
         }
 

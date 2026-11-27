@@ -687,7 +687,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         }
         boolean firstExpansionCue = action.usesExpansionClock();
         if (rite.action() == ItemRiteRecipe.Action.TRANSPOSE_ORES) {
-            if (RiteOfTransposition.transposeOreLayer(level, pos, 1, covenSize)) {
+            ServerPlayer caster = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
+            if (RiteOfTransposition.transposeOreLayer(level, pos, 1, covenSize, caster)) {
                 upkeep.add(RiteUpkeep.Timed.transposeOres(rite.id(), covenSize, initiator, 1));
             }
         } else if (landscape != null) {

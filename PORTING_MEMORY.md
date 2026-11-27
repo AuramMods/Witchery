@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Ore Transposition layer comparison (2026-11-27)
+
+- The original 0.24.1 server measured 11 cases for rite 7. The Forge handler restores X-major scan order, two world-random draws per extracted ore, independent item motion, and the first valid layer below the normal floor threshold. A Forge break or item-spawn veto leaves the ore intact. See `build/qa-ore-transposition/native/reference-final.log`.
+- Both clean Forge and copied Auram passed all 65 packaged checks. The preceding clean JAR passed 43. The Auram fixture supplied the original seeded world random stream. Local Java 17 data generation, JAR reobfuscation, and all 605 required Forge GameTests passed. `build/qa-ore-transposition/release.jar` has SHA-256 `bf2a937cfb80d5de0f225301e94b8af72e38bd9d9af0037ca00d9d3f505a3b24`.
+- A survival caster used a prepared ring and five supplied offerings to activate the rite normally. The dedicated server resumed at layer four and finished after layer 30. The caster collected three Iron Ore and two Deepslate Iron Ore, and the five control blocks stayed in place. Both clients stayed hidden and unfocused at zero master volume with OpenAL No Output. See `build/qa-ore-transposition/live-release/{cast,restart,collect}.log`.
+- The manifest now maps all 96 Circle Magic registrations to their 39 original completion classes, their modern handlers, and the relevant behavior comparisons. The remaining parity rows are tracked in Phase 4 of `PORTING.md`.
+
 ## Fertility and Nature's Power comparison (2026-11-27)
 
 - The original headless server recorded 61 Nature's Power pulses and three Fertility cases. Fertility matched both recipes' inner and outer boundaries, the baby Zombie Villager cure and its nausea, the exact bonemeal positions, and the absent-caster case. In both versions the empty caster keeps the entity cures while the block action skips bonemeal.

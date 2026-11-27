@@ -1174,6 +1174,54 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 95 | 35 | `witchery.rite.infusionmirror` |
 | 96 | 28 | `witchery.rite.summonreflection` |
 
+### Circle Magic completion classes
+
+The class and ID columns follow the 96 registrations in the original `WitcheryRecipes`. The evidence column links to the behavior checked for each handler.
+
+| 0.24.1 completion class | Rite IDs | Forge handler | Evidence |
+|---|---|---|---|
+| `RiteBindCircleToTalisman` | 1, 45 | `RiteHeartBlockEntity`, `CircleTalismanItem` | [Capture and placement](PORTING.md#circle-talisman-2026-11-21) and [completion results](PORTING.md#circle-magic-item-results-2026-11-26) |
+| `RiteSummonItem` | 2, 3, 31, 32, 34, 41, 42, 50, 57, 61, 80–82, 88–90, 95 | `RiteHeartBlockEntity.finish` | [Item results and failed spawns](PORTING.md#circle-magic-item-results-2026-11-26) |
+| `RiteInfusionRecharge` | 4 | `RiteUpkeep.Timed.rechargeNearby` | [Upkeep range, charge, and restart](PORTING.md#infusion-and-manifestation-rite-recipients-2026-11-24) |
+| `RiteTeleportToWaystone` | 5, 91 | `WaystoneTravel.teleportCircle` | [Circle travel and binding](PORTING.md#circle-waystone-travel-and-binding-2026-11-24) |
+| `RiteTeleportEntity` | 6 | `RiteOfTransposition.summon` | [Taglock destination, protection, and cues](PORTING.md#rites-of-transposition-2026-11-20) |
+| `RiteTransposeOres` | 7 | `RiteOfTransposition.transposeOreLayer` | [Layer order, drops, bottom boundary, and resumed extraction](PORTING.md#ore-transposition-layer-comparison-2026-11-27) |
+| `RiteProtectionCircleRepulsive` | 8 | `ProtectionRites` protection upkeep | [Creature movement, range, and saved wards](PORTING.md#protection-imprisonment-and-barrier-rites-2026-11-21) |
+| `RiteProtectionCircleAttractive` | 9 | `ProtectionRites` imprisonment upkeep | [Creature movement and upkeep](PORTING.md#protection-imprisonment-and-barrier-rites-2026-11-21) |
+| `RiteProtectionCircleBarrier` | 10–12 | `ProtectionRites` barrier upkeep | [Collision, lifetime, and saved wards](PORTING.md#protection-imprisonment-and-barrier-rites-2026-11-21) |
+| `RiteRaiseVolcano` | 13, 77 | `LandscapeRites.volcanoPulse` | [Both eruptions, terrain, lift, and cues](PORTING.md#volcano-eruption-comparison-2026-11-27) |
+| `RiteWeatherCallStorm` | 14–16 | `WeatherRites`, `RiteHeartBlockEntity` storm upkeep | [Lightning stages, weather, and saved target](PORTING.md#skys-wrath-and-total-eclipse-2026-11-21) |
+| `RiteEclipse` | 17, 18 | `WeatherRites` eclipse action | [Midnight, cooldown, and dimension cases](PORTING.md#skys-wrath-and-total-eclipse-2026-11-21) |
+| `RitePartEarth` | 19 | `EarthRites.Fissure` | [Heading, registered terrain, and resumed path](PORTING.md#rites-of-broken-earth-and-moving-earth-2026-11-21) |
+| `RiteRaiseColumn` | 20, 46, 47 | `EarthRites.raise` | [All three sizes, moved entities, and saved terrain](PORTING.md#rites-of-broken-earth-and-moving-earth-2026-11-21) |
+| `RiteBanishDemon` | 21, 22 | `Banishment.perform` | [Range, supported creatures, and cues](PORTING.md#banishment-and-creature-summoning-2026-11-21) |
+| `RiteSummonCreature` | 23–26, 33, 40, 87, 96 | `RiteHeartBlockEntity.finish` creature results | [Summoning clearance and Wither variants](PORTING.md#banishment-and-creature-summoning-2026-11-21), [familiars and covens](PORTING.md#familiars-and-covens-2026-11-19), and [Reflection](PORTING.md#mirror-milestone-2026-11-19) |
+| `RiteInfusePlayers` | 27–30 | `RiteHeartBlockEntity.finish`, `InfusionEnergy` | [Recipient scan, effects, and cues](PORTING.md#infusion-and-manifestation-rite-recipients-2026-11-24) |
+| `RiteFertility` | 35, 36 | `GrowthRites.fertility` | [Wave boundaries, growth, and cures](PORTING.md#fertility-and-natures-power-comparison-2026-11-27) |
+| `RiteBlight` | 37 | `AreaCurses` and `ExpandingWave` | [Terrain, conversion, and cues](PORTING.md#blight-and-blindness-action-comparison-2026-11-26) |
+| `RiteBlindness` | 38 | `AreaCurses` and `ExpandingWave` | [Target effects and surface cues](PORTING.md#blight-and-blindness-action-comparison-2026-11-26) |
+| `RiteHellOnEarth` | 39 | `AreaCurses` and `LandscapeRites` | [Terrain, payments, and entity arrival](PORTING.md#hell-on-earth-terrain-comparison-2026-11-26) |
+| `RiteNaturesPower` | 43 | `GrowthRites.naturesPower` | [Terrain sequence, plant pool, and saved upkeep](PORTING.md#fertility-and-natures-power-comparison-2026-11-27) |
+| `RitePriorIncarnation` | 44 | `PriorIncarnation` | [Death records and recovery](PORTING.md#rite-of-prior-incarnation-2026-11-21) and [saved item conversion](PORTING.md#legacy-save-fixtures-2026-11-21) |
+| `RiteCurseCreature` | 48, 49, 52, 53, 59, 60, 62, 63, 78, 79 | `DirectedCurse.perform` | [Ten directed actions, protection, and target roll](PORTING.md#directed-curse-and-cure-completion-2026-11-26) |
+| `RiteCookItem` | 51, 58 | `CookingRite` | [Original burn rates, outputs, and resumed cooking](PORTING.md#portable-volcano-and-cooking-rites-2026-11-21) |
+| `RiteBindFamiliar` | 54 | `FamiliarBinding.bindNear` | [Binding reach and creature requirements](PORTING.md#familiars-and-covens-2026-11-19) |
+| `RiteCallFamiliar` | 55 | `FamiliarBinding.callNear` | [Dismissed, distant, and cross-dimension recall](PORTING.md#familiars-and-covens-2026-11-19) |
+| `RiteCursePoppets` | 56 | `RiteHeartBlockEntity.finish`, `PoppetProtectionItem.corrupt` | [Original targeting, strikes, and cues](PORTING.md#corrupting-voodoo-protection-completion-2026-11-27) |
+| `RiteClimateChange` | 64 | `ClimateChange` | [Live changes and weather](PORTING.md#forestation-and-terrain-rites) and [imported prelude and caster name](PORTING.md#legacy-save-fixtures-2026-11-21) |
+| `RiteSphereEffect` | 65 | `IceShell` | [Coven-dependent shell, draining, and resume](PORTING.md#forestation-and-terrain-rites) |
+| `RiteRainOfToads` | 66 | `RainOfToads` and `RiteHeartBlockEntity` prelude | [Prelude, shower, poisoning, and expiration](PORTING.md#rain-of-toads-action-comparison-2026-11-26) |
+| `RiteGlyphicTransformation` | 67 | `GlyphicTransformation` | [Chalk selection, order, and pattern retention](PORTING.md#glyphic-transformation-and-loose-offerings-2026-11-27) |
+| `RiteCallCreatures` | 68 | `CallOfTheBeasts.pulse` | [Animal order, arrival, and resumed search](PORTING.md#fertility-natures-power-and-calling-the-beasts-2026-11-21) |
+| `RiteSetNBT` | 69 | `RiteHeartBlockEntity.finish` manifestation | [Recipient boundary, coven duration, and packets](PORTING.md#infusion-and-manifestation-rite-recipients-2026-11-24) |
+| `RiteForestation` | 70–76 | `LandscapeRites.forestPulse` | [Seven species, column draws, and bonemeal](PORTING.md#forestation-pulse-comparison-2026-11-27) |
+| `RiteSummonSpectralStone` | 83 | `SpectralStoneItem.bindFromCircle` | [Creature selection and bound result](PORTING.md#circle-magic-spirit-binding-2026-11-26) |
+| `RiteBindSpiritsToFetish` | 84–86 | `FetishBinding.bind` | [Three fetish recipes and the hidden Death outcome](PORTING.md#circle-magic-spirit-binding-2026-11-26) |
+| `RiteCurseOfTheWolf` | 92, 93 | `RiteHeartBlockEntity` wolf rite handlers | [Curse, cure, and original target rules](PORTING.md#wolf-curse-and-transformation-cures-2026-11-27) |
+| `RiteRemoveVampirism` | 94 | `RiteHeartBlockEntity.finishVampireCure` | [Original target and completion cues](PORTING.md#wolf-curse-and-transformation-cures-2026-11-27) |
+
+### Shared Circle Magic behavior
+
 - Original power lookup uses distance from the altar core. The base range is 16 blocks, or 32 with an Arthana mounted on a member of the altar. The same range applies to powered machines, Crystal Ball readings and scrying, rite activation, and any altar-powered upkeep.
 - The Heart Glyph uses the registration IDs to match and queue recipes from distinct offering sources. It saves the pending recipe IDs in `QueuedRites` and tracks the order of independent upkeep in `ProtectionRites` and `UpkeepRites`. IDs 5 and 91 select the location-bound and creature-bound travel recipes independently.
 - Canceling a registered rite immediately hides the glyph and clears the queue and upkeep. The foreground rite gets its next loaded tick at the existing phase. A scheduled offering or altar debit can still run before the held items return. If the last step succeeds, its result keeps its spent inputs. `CancellationPending` saves this single remaining tick across a restart.

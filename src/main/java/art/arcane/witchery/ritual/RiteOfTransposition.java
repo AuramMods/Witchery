@@ -3,6 +3,7 @@ package art.arcane.witchery.ritual;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.AreaWardBlockEntity;
 import art.arcane.witchery.entity.CovenWitch;
+import art.arcane.witchery.event.WitcheryBlockBreak;
 import art.arcane.witchery.item.HunterClothingItem;
 import art.arcane.witchery.item.VoodooPoppetItem;
 import art.arcane.witchery.registry.WitcheryEffects;
@@ -17,7 +18,10 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.util.FakePlayerFactory;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.concurrent.ThreadLocalRandom;
 
 public final class RiteOfTransposition {
     public static final ResourceLocation ORE_RECIPE =
@@ -48,22 +52,39 @@ public final class RiteOfTransposition {
         return 30 + 5 * covenSize;
     }
 
-    public static boolean transposeOreLayer(ServerLevel level, BlockPos circle, int depth, int covenSize) {
+    public static boolean transposeOreLayer(ServerLevel level, BlockPos circle, int depth, int covenSize,
+                                            @Nullable ServerPlayer caster) {
         BlockPos center = circle.below(depth);
         int minimumY = level.getMinBuildHeight() + 2;
-        if (depth > oreDepthLimit(covenSize) || center.getY() < minimumY) return false;
+        if (depth > oreDepthLimit(covenSize) || level.isOutsideBuildHeight(center)) return false;
 
         boolean gold = covenSize == CovenWitch.MAX_MEMBERS;
-        for (BlockPos pos : BlockPos.betweenClosed(center.offset(-ORE_RADIUS, 0, -ORE_RADIUS),
-                center.offset(ORE_RADIUS, 0, ORE_RADIUS))) {
-            var state = level.getBlockState(pos);
-            if (!state.is(BlockTags.IRON_ORES) && !(gold && state.is(BlockTags.GOLD_ORES))) continue;
-            var stack = new ItemStack(state.getBlock());
-            if (stack.isEmpty()) continue;
-            var item = new ItemEntity(level, circle.getX() + level.random.nextIntBetweenInclusive(-ORE_RADIUS, ORE_RADIUS),
-                    circle.getY() + 2, circle.getZ() + level.random.nextIntBetweenInclusive(-ORE_RADIUS, ORE_RADIUS), stack);
-            if (level.addFreshEntity(item) && !level.removeBlock(pos, false)) item.discard();
+        ServerPlayer actor = caster != null && caster.level() == level ? caster : FakePlayerFactory.getMinecraft(level);
+        for (int x = -ORE_RADIUS; x <= ORE_RADIUS; x++) {
+            for (int z = -ORE_RADIUS; z <= ORE_RADIUS; z++) {
+                extractOre(level, circle, center.offset(x, 0, z), gold, actor);
+            }
         }
         return depth < oreDepthLimit(covenSize) && center.getY() > minimumY;
+    }
+
+    private static void extractOre(ServerLevel level, BlockPos circle, BlockPos pos, boolean gold, ServerPlayer actor) {
+        var state = level.getBlockState(pos);
+        if (!state.is(BlockTags.IRON_ORES) && !(gold && state.is(BlockTags.GOLD_ORES))) return;
+        var stack = new ItemStack(state.getBlock());
+        if (stack.isEmpty() || state.hasBlockEntity() || state.getDestroySpeed(level, pos) < 0
+                || !level.getWorldBorder().isWithinBounds(pos) || !level.mayInteract(actor, pos)
+                || WitcheryBlockBreak.isCanceled(level, pos, state, actor)
+                || !level.getBlockState(pos).equals(state)) return;
+
+        int x = circle.getX() + level.getRandom().nextIntBetweenInclusive(-ORE_RADIUS, ORE_RADIUS);
+        int z = circle.getZ() + level.getRandom().nextIntBetweenInclusive(-ORE_RADIUS, ORE_RADIUS);
+        // The original consumes world randomness for position only. Item motion uses a separate source.
+        var motion = ThreadLocalRandom.current();
+        var item = new ItemEntity(level, x, circle.getY() + 2, z, stack,
+                motion.nextDouble(-0.1, 0.1), 0.2, motion.nextDouble(-0.1, 0.1));
+        if (level.addFreshEntity(item) && (!level.getBlockState(pos).equals(state) || !level.removeBlock(pos, false))) {
+            item.discard();
+        }
     }
 }
