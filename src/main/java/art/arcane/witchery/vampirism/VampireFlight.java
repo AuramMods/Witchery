@@ -2,6 +2,7 @@ package art.arcane.witchery.vampirism;
 
 import art.arcane.witchery.capability.WitcheryPlayerData;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.integration.PlayerAbilityLibCompat;
 import art.arcane.witchery.lycanthropy.Lycanthropy;
 import art.arcane.witchery.network.WitcheryNetwork;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
@@ -45,8 +46,8 @@ public final class VampireFlight {
 
     public static void restore(ServerPlayer player) {
         WitcheryPlayerDataProvider.get(player).ifPresent(data -> {
-            if (!isBat(data)) return;
-            if (data.getVampireLevel() < 7) leave(player, data);
+            if (!isBat(data)) PlayerAbilityLibCompat.setBatFlight(player, false);
+            else if (data.getVampireLevel() < 7) leave(player, data);
             else {
                 grantFlight(player, true);
                 player.refreshDimensions();
@@ -63,10 +64,11 @@ public final class VampireFlight {
     static void leave(ServerPlayer player, WitcheryPlayerData data) {
         if (!isBat(data)) return;
         data.setCreatureTypeOrdinal(0);
+        boolean managed = PlayerAbilityLibCompat.setBatFlight(player, false);
         if (!player.isCreative() && !player.isSpectator()) {
             var abilities = player.getAbilities();
-            abilities.mayfly = data.previouslyAllowedToFly();
-            abilities.flying = abilities.mayfly && data.previouslyFlying();
+            if (!managed) abilities.mayfly = data.previouslyAllowedToFly();
+            abilities.flying = abilities.mayfly && (data.previouslyFlying() || managed && abilities.flying);
             if (player.connection != null) player.onUpdateAbilities();
         }
         player.fallDistance = 0;
@@ -77,9 +79,13 @@ public final class VampireFlight {
     private static void grantFlight(ServerPlayer player, boolean startFlying) {
         if (player.isCreative() || player.isSpectator()) return;
         var abilities = player.getAbilities();
-        if (!abilities.mayfly || startFlying && !abilities.flying) {
-            abilities.flying = startFlying || abilities.flying;
+        boolean alreadyAllowed = abilities.mayfly;
+        // Register our own grant even when a second source already lets this player fly.
+        if ((startFlying || !alreadyAllowed) && !PlayerAbilityLibCompat.setBatFlight(player, true)) {
             abilities.mayfly = true;
+        }
+        if (abilities.mayfly && (!alreadyAllowed || startFlying && !abilities.flying)) {
+            abilities.flying = startFlying || abilities.flying;
             if (startFlying && player.onGround()) {
                 var velocity = player.getDeltaMovement();
                 player.setDeltaMovement(velocity.x, Math.max(velocity.y, 0.2), velocity.z);
