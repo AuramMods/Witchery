@@ -637,6 +637,16 @@
 - [x] In fresh survival on the packaged server, craft Dandelions of Webs, plant one, recover it with the Boline, and walk into a second armed plant to release cobwebs.
 - [x] Restore the Rite of Glyphic Transformation. Gypsum, an Arthana, and 1,000 power recolor the chosen ring while preserving its glyph patterns. One, two, or three unused chalk sticks of one color select the small, medium, or large ring. The rite consumes one stick.
 - [x] Save the active rite after its first offering. On restart, all 28 glyphs in the medium ring changed to Otherwhere Chalk and kept their patterns. The separate white glyph, the second chalk stick, and the armed Dandelion of Webs survived. Data generation, JAR reobfuscation, and all 323 required Forge GameTests passed.
+
+### Glyphic Transformation and loose offerings (2026-11-27)
+
+- [x] Compare the original dropped-item lookup. The ordinary offering layer tests a 0.25-block item hitbox centered on the drop's saved height, then applies the existing distance from the glyph. The search walks signed chunk X, chunk Z, and vertical sections in that order. This selects the negative-Z Gypsum first across zero and accepts a drop whose original hitbox overlaps the top of the layer.
+- [x] Compare color selection, wear, amount, partial rings, and the 30-tick completion pulse. The first fresh chalk color controls the cast. The rite counts that color's sticks before consuming one. It recolors only glyphs of other colors on the selected outline and keeps their patterns. A missing fresh chalk drop refunds the staged offering and plays the original snare.
+- [x] Restore Smoke and Pop for each accepted stack and a separate Smoke packet one block above each recolored glyph. Both use a 16-block audience from the packet position. The original processed glyphs north to south, stepping east within each row.
+- [x] Pass all 150 packaged comparisons on clean Forge and copied Auram. The previous JAR missed 51. A muted survival caster used the Heart Glyph with supplied drops and altar charge. The nearby caster received both chalk packets and all 28 glyph packets. The far client received none of them. An ordinary restart kept the finished ring and resumed a second cast after its first Gypsum offering. Both rings retained their patterns and returned the worn Arthana.
+
+### Forestation and terrain rites
+
 - [x] Restore plain and Bloodied Wicker Bundle crafting, fire behavior, saved item variants, and drops that preserve the bloodied state.
 - [x] Restore the seven Rites of Forestation. The medium white ring uses one of the seven original saplings, plain Wicker Bundle, Brew of Sprouting, an Ent Branch, and 4,000 altar power. It plants and grows the chosen species with the original coven range and duration bonuses.
 - [x] Restore the Rite of Raising a Volcano. The small Infernal ring uses Cobblestone, Magma Cream, an unworn Golden Sword, and 2,000 altar power. A lava reservoir enables a staged cone and eruption. The rite preserves containers and unbreakable blocks.
@@ -3042,6 +3052,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Compare familiar binding and recall. The original and packaged tests cover the west and east binding boundaries, diagonal recall, a dismissed familiar's recreation point, and a cross-dimension recall. [Familiars and Covens](#familiars-and-covens-2026-11-19)
   - [x] Compare the Corrupting Voodoo Protection rite, including its first offering, cat mastery, lightning, ward cap, death-screen target, and completion packet. [Completion comparison](#corrupting-voodoo-protection-completion-2026-11-27)
   - [x] Compare the wolf curse and both transformation cures, including the realm and moon rules, original ward sequence, coordinates, and completion packets. [Wolf curse and transformation cures](#wolf-curse-and-transformation-cures-2026-11-27)
+  - [x] Compare Glyphic Transformation and the shared dropped-offering search, including stack order, height boundaries, partial rings and per-glyph cues. [Glyphic Transformation and loose offerings](#glyphic-transformation-and-loose-offerings-2026-11-27)
   - [x] Compare [Blight and Blindness actions](#blight-and-blindness-action-comparison-2026-11-26), including terrain and creature conversion.
   - [x] Compare [Hell on Earth terrain and fire](#hell-on-earth-terrain-comparison-2026-11-26), including fire support, soil rolls, and Forge protections.
   - [x] Compare [Rain of Toads](#rain-of-toads-action-comparison-2026-11-26), including the shower's coordinates and ordering, the coven refund, and expiration and poison.

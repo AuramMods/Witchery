@@ -615,8 +615,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             abort(level, "message.witchery.rite.no_spectral_creature");
             return;
         }
-        if (rite.action() == ItemRiteRecipe.Action.GLYPHIC_TRANSFORMATION && !GlyphicTransformation.transform(level, pos)) {
-            abort(level, "message.witchery.rite.missing_chalk");
+        if (action == ItemRiteRecipe.Action.GLYPHIC_TRANSFORMATION && !GlyphicTransformation.transform(level, pos, legacy)) {
+            abort(level, legacy ? null : "message.witchery.rite.missing_chalk");
             return;
         }
         if (action == ItemRiteRecipe.Action.BIND_FETISH) {
@@ -709,6 +709,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             WitcheryNetwork.sendFamiliarRite(level, Vec3.atLowerCornerOf(pos), action == ItemRiteRecipe.Action.BIND_FAMILIAR);
         } else if (!firstExpansionCue && !legacyItemOutput && (!legacy || (directedCurse == null && corruptionCaster == null
                 && vampireCureTarget == null && wolfRiteTarget == null
+                && action != ItemRiteRecipe.Action.GLYPHIC_TRANSFORMATION
                 && action != ItemRiteRecipe.Action.RECHARGE_INFUSION
                 && action != ItemRiteRecipe.Action.TRAVEL_WAYSTONE && action != ItemRiteRecipe.Action.TRANSPOSE_CREATURE
                 && action != ItemRiteRecipe.Action.BIND_SPECTRAL_STONE && action != ItemRiteRecipe.Action.BIND_FETISH

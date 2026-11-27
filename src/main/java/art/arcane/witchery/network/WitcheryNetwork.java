@@ -595,6 +595,11 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_PORTAL_PARTICLE_ID, LEGACY_POP_SOUND_ID, center, 1, 2, 16);
     }
 
+    public static void sendGlyphicSmoke(ServerLevel level, Vec3 center, boolean chalk) {
+        sendParticlesAround(level, LEGACY_SMOKE_PARTICLE_ID, chalk ? LEGACY_POP_SOUND_ID : LEGACY_NO_SOUND_ID,
+                center, chalk ? 1 : 0.5, 1, 16);
+    }
+
     public static void sendSpiderTransformation(ServerLevel level, Vec3 center) {
         sendParticlesAround(level, LEGACY_MOB_SPELL_PARTICLE_ID, LEGACY_POP_SOUND_ID, center, 2, 2, 16);
     }

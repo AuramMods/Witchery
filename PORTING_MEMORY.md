@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Glyphic Transformation and loose offerings (2026-11-27)
+
+- The original dedicated server recorded 14 transformation cases and three ordinary item selections. It measured the item hitbox from −0.125 to +0.125 around the saved Y. At the chunk boundary it selected the negative-Z Gypsum first. It also accepted a drop just above the offering layer when its hitbox overlapped the layer. See `build/qa-glyphic-transformation/native/reference-verified.log`.
+- Legacy rites now use the measured height and signed chunk order for dropped offerings, preserving insertion order within a section. Glyphic Transformation uses the same search and tests raw chalk wear. The first eligible color determines the ring. Each stack of that color sends Smoke and Pop from its position, then each changed glyph sends one Smoke packet from its lower X/Z corner one block up.
+- Clean Forge and copied Auram passed all 150 comparisons across 18 trials. The preceding JAR failed 51 in clean Forge. The exact archive `build/qa-glyphic-transformation/verified.jar` has SHA-256 `535d3e5f9b2dc6413d7e677d9caa6b4a1877cbe9e2eb43795cc773a1e6f7547d`. See `clean-final/verify.log`, `pack-final/verify.log` and `clean-final-baseline/verify.log`.
+- Two muted background clients exercised ordinary Heart Glyph activation using supplied drops, rings and altar charge. The caster got two chalk packets and all 28 glyph packets at the first ring. The far observer received none. A normal dedicated restart kept the completed ring and resumed a second cast from its saved first Gypsum offering. Both rings kept their patterns, the unrelated glyph, the unused chalk and the returned worn Arthana. See `play/check.log` and `play/restart.log`.
+- Java 17 data generation, JAR reobfuscation and all 600 required Forge GameTests passed locally. The added regression verifies that the original centered item hitbox admits a drop overlapping the top of the offering layer.
+
 ## Curse of the Wolf and transformation cures (2026-11-27)
 
 - The original 0.24.1 server measured 36 cases for rites 92–94. It accepted named players on the death screen, used the first filled Taglock, and measured the eight-block cure boundary by coordinates across dimensions. The wolf cure at rank one had no range check. See `build/qa-curse-and-cure/native/reference-verified.log` and `nightmare-verified.log`.

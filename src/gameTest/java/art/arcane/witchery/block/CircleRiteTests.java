@@ -91,6 +91,33 @@ public final class CircleRiteTests {
     private static final int THREE_OFFERING_CAST = 100;
     private static final int ALTAR_STEP_TICKS = 20;
 
+    @GameTest(template = TEMPLATE, batch = "witchery_legacy_offering_height")
+    public static void looseOfferingsUseTheOriginalCenteredItemBounds(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos center = helper.absolutePos(CENTER);
+        var recipe = (ItemRiteRecipe) level.getRecipeManager().byKey(RiteActivation.legacyRecipeId(67)).orElseThrow();
+        var gypsum = new ItemStack(WitcheryIngredient.GYPSUM.item());
+        var above = new ItemEntity(level, center.getX() + 0.4, center.getY() + 1.2, center.getZ() + 0.3,
+                gypsum.copy(), 0, 0, 0);
+        var overlapping = new ItemEntity(level, center.getX() + 0.4, center.getY() + 1.05, center.getZ() + 0.6,
+                gypsum.copy(), 0, 0, 0);
+        for (ItemEntity drop : List.of(above, overlapping)) {
+            drop.setNoGravity(true);
+            drop.setNeverPickUp();
+            drop.setUnlimitedLifetime();
+            level.addFreshEntity(drop);
+        }
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.getEntity(above.getUUID()) == above
+                        && level.getEntity(overlapping.getUUID()) == overlapping, "Both offerings are tracked"))
+                .thenExecute(() -> {
+                    var offering = recipe.findNextOffering(level, center, 0);
+                    helper.assertTrue(offering != null && offering.position().equals(overlapping.position()),
+                            "The drop overlapping the top of the original offering layer is eligible");
+                    above.discard();
+                    overlapping.discard();
+                }).thenSucceed();
+    }
+
     @GameTest(template = TEMPLATE, batch = "witchery_replace_active_heart")
     public static void onlyApprovedPlacementRefundsAReplacedHeartsOffering(GameTestHelper helper) {
         floor(helper);

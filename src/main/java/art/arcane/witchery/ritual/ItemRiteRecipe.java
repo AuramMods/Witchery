@@ -15,6 +15,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -41,6 +42,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -427,7 +429,7 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
         AABB area = legacy ? legacyOfferingBounds(pos) : new AABB(pos).inflate(radius, 0, radius);
         Vec3 origin = legacy ? Vec3.atLowerCornerOf(pos) : Vec3.atBottomCenterOf(pos);
         List<Offering> items = new ArrayList<>();
-        for (ItemEntity entity : level.getEntitiesOfClass(ItemEntity.class, area, item -> item.isAlive()
+        for (ItemEntity entity : droppedItems(level, area, legacy, item -> item.isAlive()
                 && item.distanceToSqr(origin.x, legacy ? origin.y : item.getY(), origin.z) <= radius * radius)) {
             ItemStack stack = entity.getItem();
             items.add(new Offering(stack, entity.position(), new OfferingSource(entity.getUUID(), null), () -> {
@@ -445,6 +447,19 @@ public record ItemRiteRecipe(ResourceLocation id, List<Ingredient> sacrifices, L
                             new OfferingSource(null, grassper.getBlockPos()), () -> grassper.removeItem(0, 1)));
                 }
             }
+        }
+        return items;
+    }
+
+    static List<ItemEntity> droppedItems(ServerLevel level, AABB bounds, boolean legacy, Predicate<ItemEntity> matches) {
+        // The original item's 0.25-block hitbox was centered on its saved Y position.
+        AABB area = legacy ? bounds.move(0, 0.125, 0) : bounds;
+        var items = level.getEntitiesOfClass(ItemEntity.class, area, matches);
+        if (legacy) {
+            // The original search walked signed chunk X, chunk Z, then vertical sections.
+            items.sort(Comparator.comparingInt((ItemEntity item) -> SectionPos.blockToSectionCoord(item.getBlockX()))
+                    .thenComparingInt(item -> SectionPos.blockToSectionCoord(item.getBlockZ()))
+                    .thenComparingInt(item -> SectionPos.blockToSectionCoord(item.getBlockY())));
         }
         return items;
     }
