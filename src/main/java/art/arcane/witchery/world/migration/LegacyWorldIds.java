@@ -221,7 +221,7 @@ public final class LegacyWorldIds {
 
     private void preparePlayer(CompoundTag player, DataFixer fixer, int from) {
         dimensions.upgradePlayerLocation(player);
-        var persisted = preparePlayerState(player);
+        var persisted = preparePlayerState(player, from);
         var retainedInventory = DeathBrewEffects.pendingLegacyInventory(persisted);
         var expiredDrops = persisted.getList("WITCPriIncInv", Tag.TAG_COMPOUND);
         var dreamSession = persisted.getCompound("WITCSpiritWorld");
@@ -251,7 +251,7 @@ public final class LegacyWorldIds {
 
     public static void repairPlayerWithoutLegacyRegistry(CompoundTag player, DataFixer fixer, int from) {
         LegacyWorldDimensions.DEFAULTS.upgradePlayerLocation(player);
-        var persisted = preparePlayerState(player);
+        var persisted = preparePlayerState(player, from);
         repairNamedStoredItems(player, fixer, from >= 100);
         // Native player inventories still go through the vanilla player data fixer.
         if (from >= 100) return;
@@ -275,7 +275,8 @@ public final class LegacyWorldIds {
         }
     }
 
-    private static CompoundTag preparePlayerState(CompoundTag player) {
+    private static CompoundTag preparePlayerState(CompoundTag player, int from) {
+        if (from >= 100) LegacyChunkEntities.restoreOriginalLivingData(player);
         if (player.getCompound("RootVehicle").get("Entity") instanceof CompoundTag vehicle) {
             LegacyChunkEntities.restoreEntity(vehicle);
         }

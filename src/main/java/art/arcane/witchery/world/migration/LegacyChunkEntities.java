@@ -278,6 +278,7 @@ public final class LegacyChunkEntities {
             restoreOriginalIdentity(entity);
             restoreOriginalEquipment(entity);
         }
+        restoreOriginalLivingData(entity);
         if (type.equals(SPAWNER_CART)) {
             if (entity.get(LEGACY_CART_SPAWNER) instanceof CompoundTag spawner) {
                 entity.merge(spawner);
@@ -324,6 +325,48 @@ public final class LegacyChunkEntities {
         if (!data.hasUUID("UUID")) data.putUUID("UUID", new UUID(data.getLong("UUIDMost"), data.getLong("UUIDLeast")));
         data.remove("UUIDMost");
         data.remove("UUIDLeast");
+    }
+
+    static void restoreOriginalLivingData(CompoundTag entity) {
+        if (entity.contains("HealF", Tag.TAG_ANY_NUMERIC)) {
+            // The original writer stored both exact health and a rounded short for older readers.
+            if (!entity.contains("Health", Tag.TAG_ANY_NUMERIC) || entity.contains("Health", Tag.TAG_SHORT)) {
+                entity.putFloat("Health", entity.getFloat("HealF"));
+            }
+            entity.remove("HealF");
+        }
+        ListTag attributes = entity.getList("Attributes", Tag.TAG_COMPOUND);
+        for (var iterator = attributes.listIterator(); iterator.hasNext();) {
+            var attribute = (CompoundTag) iterator.next();
+            String path = originalAttributePath(attribute.getString("Name"));
+            if (path != null) {
+                String current = "minecraft:" + path;
+                boolean alreadyConverted = attributes.stream().map(tag -> ((CompoundTag) tag).getString("Name"))
+                        .anyMatch(name -> name.equals(current) || name.equals(path));
+                if (alreadyConverted) {
+                    iterator.remove();
+                    continue;
+                }
+                attribute.putString("Name", current);
+            }
+            for (Tag modifier : attribute.getList("Modifiers", Tag.TAG_COMPOUND)) {
+                restoreOriginalUuid((CompoundTag) modifier);
+            }
+        }
+    }
+
+    @Nullable
+    private static String originalAttributePath(String name) {
+        return switch (name) {
+            case "generic.maxHealth" -> "generic.max_health";
+            case "generic.followRange" -> "generic.follow_range";
+            case "generic.knockbackResistance" -> "generic.knockback_resistance";
+            case "generic.movementSpeed" -> "generic.movement_speed";
+            case "generic.attackDamage" -> "generic.attack_damage";
+            case "horse.jumpStrength" -> "horse.jump_strength";
+            case "zombie.spawnReinforcements" -> "zombie.spawn_reinforcements";
+            default -> null;
+        };
     }
 
     private static void restoreOriginalEquipment(CompoundTag entity) {
