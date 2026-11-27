@@ -86,8 +86,9 @@ public final class GrassperBlock extends BaseEntityBlock {
             } else {
                 ItemStack released = grassper.removeItem(0, 1);
                 ItemEntity drop = new ItemEntity(server, pos.getX() + 0.5, pos.getY() + 0.8, pos.getZ() + 0.5, released);
-                drop.setDefaultPickUpDelay();
-                server.addFreshEntity(drop);
+                if (!server.addFreshEntity(drop) && grassper.isEmpty()) {
+                    grassper.setItem(0, released);
+                }
             }
         }
         return InteractionResult.sidedSuccess(level.isClientSide);

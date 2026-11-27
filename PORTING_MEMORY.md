@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Silver Vat and Grassper collection (2026-11-26)
+
+- On the original Forge server one furnace showed counts four, empty, one, two, and three while an independent furnace produced one. The old vat ignored the empty reading, recorded the lower nonempty reading without rolling, and rolled once for each later increase. A failed draw still updated the side's count. The full vat also took a random draw. A freshly loaded vat rolled when the furnace next notified it. See `build/qa-silver-vat-collection/native/reference-harvest.log`.
+- Stored dust remains in the `Items` slot through restart. The earlier Forge-only `ObservedGold` tag is no longer used. The current vat grows the existing dust stack so the name and other tags survive. Mining yields the vat block and clicking it drops its saved dust at the player's position. The original Grassper's dropped offering had zero pickup delay. Forge spawn cancellation now leaves the offering available to try again.
+- Local Java 17 data generation, JAR reobfuscation, and all 575 required Forge GameTests passed. `build/qa-silver-vat-collection/final.jar` has SHA-256 `0c3fa67f4759abdb224a8493a7b75bfee338dba803e5ec133c0bd9752f5ce34b`. Both dedicated profiles passed all 26 checks with that archive. The preceding JAR failed ten of those checks on clean Forge.
+- Both dedicated profiles passed all six ordinary restart checks. The clean Forge upgrade replay ran the same six checks after copying the earlier JAR's saved world. The tagged dust and Grassper offering stayed intact, and the vat could roll on its first observation of gold after reopening. See `clean-verified/`, `pack-verified/`, and `clean-upgrade/` under `build/qa-silver-vat-collection/`.
+
 ## Leech Chest and Torment cache parity (2026-11-26)
 
 - The original dedicated server opened 27 slots per Leech Chest, even when they touched. One diamond gave comparator strength one and a full adjacent inventory gave 15. Two openers gave weak power two and direct power on the `UP` side only. The other chest stayed at zero. Solid stone and eight layers of snow blocked both menus, while glass, panes, slabs, stairs, water and one snow layer left them usable. Hopper access was independent even with the lids blocked. See `build/qa-chest-parity/native/native-lids.log`.
@@ -3982,7 +3989,7 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 
 ### Silver Vat and Silver Sword (2026-11-20)
 
-- The original `witchery:silvervat` recipe takes four iron ingots, a water bucket and a furnace. The vat rolls a one-in-five chance when one of its four side neighbors produces gold in an output-only slot. The gold stays in the machine. The original `Items` list stores silver, and the modern `ObservedGold` tracks output counts across saves. Dust from legacy ingredient damage 157 maps to `witchery:silver_dust`. The vat can be emptied by hand or hopper. Protocol 37 includes the restored block entity and ingredient.
+- The original `witchery:silvervat` recipe takes four iron ingots, a water bucket and a furnace. The vat rolls a one-in-five chance when one of its four side neighbors increases its observed gold in an output-only slot. The gold stays in the machine. The original `Items` list stores silver. The last observed nonempty output counts reset when the vat reloads. Dust from legacy ingredient damage 157 maps to `witchery:silver_dust`. The vat can be emptied by hand or hopper. Protocol 37 includes the restored block entity and ingredient.
 - The muted survival client crafted and placed the vat. Its four blast furnaces saved with two dust stored and an active batch at 55 ticks. The restarted server finished more gold, and the client collected eight dust and crafted the Silver Sword. The sword has gold durability and iron enchantability. A separate test datapack populated `forge:ingots/silver` with a fixture ingredient and the client crafted the optional recipe. The datapack was disabled after that test. All 196 required Forge GameTests passed, along with data generation and JAR reobfuscation.
 
 ### Rite of Removing Vampirism (2026-11-20)

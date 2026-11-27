@@ -1313,6 +1313,9 @@
 - [x] Craft and place the original Silver Vat in survival. Four neighboring blast furnaces produced gold and the first two dust from raw-gold and coal fixtures. The vat kept a separate count for each output, and all produced gold remained available in the furnaces.
 - [x] Restart with two dust stored and a blast furnace at 55 of 100 cooking ticks. The vat resumed producing dust from the same batches. The muted client saw its connected spouts and silver in the water and collected eight dust with a click.
 - [x] Craft the Silver Sword with the recovered dust and a gold sword. The client equipped it with five attack damage. A separate tag fixture verified the recipe for two mod-provided silver ingots. All 196 required GameTests passed, including ordinary furnace output, the legacy dust mapping, comparators and hopper extraction. Data generation and JAR reobfuscation succeeded.
+- [x] Compare Silver Vat collection with original Forge 0.24.1. An empty furnace leaves its last observed count in place. The next nonempty count replaces that memory and only an increase rolls for dust, even with a full vat. Reopening the vat begins a new series of observations. Saved Silver Dust retains its tags as the stack grows. Collect the dust by hand or hopper before breaking the vat. Mining returns the vat itself.
+- [x] Compare Grassper offering release with original Forge 0.24.1. The player places one item and a second use drops that item with immediate pickup. If Forge blocks the drop from spawning, the offering remains in the Grassper.
+- [x] Replay both blocks on the same reobfuscated JAR on headless clean Forge and copied Auram. Each passed 26 checks and six ordinary restart checks. Clean Forge also passed the six restart checks when reopening a world saved by the preceding JAR. Local data generation and all 575 required Forge GameTests passed.
 
 ## Rite of Removing Vampirism (2026-11-20)
 
@@ -2952,6 +2955,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
 ### Phase 4 - Feature Behavior Pass (depth)
 - [ ] Blocks/tile entity behavior parity pass.
   - [x] Compare [Leech Chest access and redstone](#leech-chests-blood-roses-and-the-boline-2026-11-20) and the [Refilling Chest clock and loot placement](#torment-milestone-2026-11-19).
+  - [x] Compare [Silver Vat observations and Grassper offering release](#silver-vat-and-silver-sword-2026-11-20).
 - [ ] Item behavior parity pass (including metadata-subitem conversions).
   - [x] Compare melee modifiers, sword guards, and Boline harvest against the [melee tool measurements](#melee-tools-and-boline-harvesting-2026-11-26).
 - [x] Brewing, Kettle, Distillery, Spinning Wheel, and Brazier parity.

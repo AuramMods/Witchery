@@ -19,42 +19,30 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.Arrays;
-
 public final class SilverVatBlockEntity extends BlockEntity implements Container {
     private final NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
     private final int[] observedGold = new int[4];
 
     public SilverVatBlockEntity(BlockPos pos, BlockState state) {
         super(WitcheryBlockEntities.SILVER_VAT.get(), pos, state);
-        Arrays.fill(observedGold, -1);
-    }
-
-    @Override
-    public void onLoad() {
-        super.onLoad();
-        if (level instanceof ServerLevel world) {
-            for (Direction side : Direction.Plane.HORIZONTAL) {
-                int index = side.get2DDataValue();
-                if (observedGold[index] < 0 && world.hasChunkAt(worldPosition.relative(side))) {
-                    observedGold[index] = furnaceOutput(world, side);
-                }
-            }
-        }
     }
 
     public void observeGold(ServerLevel world, Direction side) {
         int index = side.get2DDataValue();
         int current = furnaceOutput(world, side);
-        int previous = observedGold[index];
-        if (current == previous) return;
+        if (current == 0) return;
 
+        // The original vat remembers only nonempty observations during this load.
+        int previous = observedGold[index];
         observedGold[index] = current;
-        ItemStack stored = getItem(0);
-        if (previous >= 0 && current > previous && stored.getCount() < getMaxStackSize() && world.random.nextInt(5) == 0) {
-            setItem(0, new ItemStack(WitcheryIngredient.SILVER_DUST.item(), stored.getCount() + 1));
-        } else {
-            super.setChanged();
+        if (current > previous && world.random.nextInt(5) == 0) {
+            ItemStack stored = getItem(0);
+            if (stored.isEmpty()) {
+                setItem(0, new ItemStack(WitcheryIngredient.SILVER_DUST.item()));
+            } else if (stored.getCount() < stored.getMaxStackSize()) {
+                stored.grow(1);
+                setChanged();
+            }
         }
     }
 
@@ -141,16 +129,12 @@ public final class SilverVatBlockEntity extends BlockEntity implements Container
                 break;
             }
         }
-        Arrays.fill(observedGold, -1);
-        int[] savedOutput = tag.getIntArray("ObservedGold");
-        System.arraycopy(savedOutput, 0, observedGold, 0, Math.min(savedOutput.length, observedGold.length));
     }
 
     @Override
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         ContainerHelper.saveAllItems(tag, items);
-        tag.putIntArray("ObservedGold", observedGold);
     }
 
     @Override

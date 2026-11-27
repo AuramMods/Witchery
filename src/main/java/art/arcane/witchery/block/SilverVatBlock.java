@@ -4,7 +4,6 @@ import art.arcane.witchery.block.entity.SilverVatBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -75,8 +74,7 @@ public final class SilverVatBlock extends BaseEntityBlock {
 
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState replacement, boolean moving) {
-        if (!state.is(replacement.getBlock()) && level.getBlockEntity(pos) instanceof SilverVatBlockEntity vat) {
-            Containers.dropContents(level, pos, vat);
+        if (!state.is(replacement.getBlock()) && !level.isClientSide) {
             level.updateNeighbourForOutputSignal(pos, this);
         }
         super.onRemove(state, level, pos, replacement, moving);
