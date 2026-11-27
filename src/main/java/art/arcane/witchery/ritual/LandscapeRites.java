@@ -218,7 +218,7 @@ public final class LandscapeRites {
                     volcanoPulse(level, heart, progress.target(), stage, coven, caster, legacy);
             case ICE_SHELL -> IceShell.pulse(level, progress.target(), stage, coven, caster);
             case CLIMATE_CHANGE -> {
-                if (!ClimateChange.pulse(level, progress.target(), stage, coven, caster)) return null;
+                if (!ClimateChange.pulse(level, progress.target(), stage, coven, caster, legacy)) return null;
             }
             case PART_EARTH -> progress.fissure().cut(level, progress.target(), stage, coven, caster);
             case RAISE_EARTH, RAISE_EARTH_MEDIUM, RAISE_EARTH_LARGE -> {

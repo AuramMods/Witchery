@@ -19,14 +19,6 @@ public final class BiomePainting {
 
     private BiomePainting() {}
 
-    public static void paint(ServerLevel level, BlockPos center, int radius, Holder<Biome> biome) {
-        paint(level, center, radius, biome, (minX, minZ) -> {
-            int x = minX + QUART_BLOCKS / 2;
-            int z = minZ + QUART_BLOCKS / 2;
-            return insideCircle(center, radius, x, z) && level.getWorldBorder().isWithinBounds(x, z);
-        });
-    }
-
     public static void paint(ServerLevel level, BlockPos center, int[] rowWidths, Holder<Biome> biome) {
         int radius = rowWidths.length - 1;
         paint(level, center, radius, biome, (minX, minZ) -> {
@@ -81,10 +73,23 @@ public final class BiomePainting {
         return Math.floorMod(quartZ, QUART_WIDTH) * QUART_WIDTH + Math.floorMod(quartX, QUART_WIDTH);
     }
 
-    public static boolean insideCircle(BlockPos center, int radius, int x, int z) {
-        int dx = x - center.getX();
-        int dz = z - center.getZ();
-        return dx * dx + dz * dz <= radius * radius;
+    public static int[] circleWidths(int reach) {
+        int[] rowWidth = new int[reach + 1];
+        int circleX = reach;
+        int circleZ = 0;
+        int error = 1 - reach;
+        while (circleX >= circleZ) {
+            rowWidth[circleZ] = Math.max(rowWidth[circleZ], circleX);
+            rowWidth[circleX] = Math.max(rowWidth[circleX], circleZ);
+            circleZ++;
+            if (error < 0) {
+                error += 2 * circleZ + 1;
+            } else {
+                circleX--;
+                error += 2 * (circleZ - circleX + 1);
+            }
+        }
+        return rowWidth;
     }
 
     private interface QuartMask {

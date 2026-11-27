@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Climate Change focus and weather comparison (2026-11-27)
+
+- The original 0.24.1 server enumerated all thirteen focus families and ran 29 cases. The Forge rite restores the signed chunk order, centered hitbox, original Glowstone Dust slots, independent weather focus, midpoint footprint, and effect cues. Netherrack selects Snowy Plains on one dust. The modern Water, Desert and Frozen families provide destinations for their empty stock 1.7.10 categories. Magical destinations require a registered tagged biome.
+- Clean Forge and copied Auram each passed 323 packaged checks, up from 216 on the preceding clean JAR. Copied Auram used the original seeded random stream and kept its tagged modded choices. See `build/qa-climate-focus/{native/reference-glyph.log,clean-canonical/verify.log,pack-canonical/verify.log}`. The reobfuscated `build/qa-climate-focus/canonical.jar` has SHA-256 `bb7dd150de25c22ab130e2cf512059e757b9751b74a7b78bcd3a432e7470f358`.
+- The packaged survival cast used a Seer Stone with a prepared ring, saved six-member coven, offerings and focus stacks. It resumed after a dedicated restart, consumed four recognized stacks, selected Snowy Plains and started precipitation. The observer received the biome update while outside the final effect and focus cue ranges. Both clients stayed hidden and unfocused with zero master volume and OpenAL No Output. See `build/qa-climate-focus/live-canonical/`.
+- The packaged import restored stage one, four coven members, and the caster name from an original 1.7.10 region. It finished from Netherrack and one Glowstone Dust, then reopened both changed heights and the untouched Plains control after a dedicated restart. Local Java 17 data generation, JAR reobfuscation, and all 607 required Forge GameTests passed.
+
 ## Ore Transposition layer comparison (2026-11-27)
 
 - The original 0.24.1 server measured 11 cases for rite 7. The Forge handler restores X-major scan order, two world-random draws per extracted ore, independent item motion, and the first valid layer below the normal floor threshold. A Forge break or item-spawn veto leaves the ore intact. See `build/qa-ore-transposition/native/reference-final.log`.

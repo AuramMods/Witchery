@@ -604,6 +604,17 @@ public final class WitcheryNetwork {
                 center, chalk ? 1 : 0.5, 1, 16);
     }
 
+    public static void sendClimatePulse(ServerLevel level, BlockPos heart, int stage, boolean completion) {
+        int particle = completion ? LEGACY_HUGE_EXPLOSION_PARTICLE_ID : LEGACY_INSTANT_SPELL_PARTICLE_ID;
+        Vec3 center = Vec3.atBottomCenterOf(heart).add(0, 1, 0);
+        sendParticlesAround(level, particle, LEGACY_NO_SOUND_ID, center,
+                stage * (completion ? 2F : 1.5F), stage * (completion ? 1.5F : 1.1F), 16);
+    }
+
+    public static void sendClimateFocus(ServerLevel level, Vec3 center) {
+        sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_POP_SOUND_ID, center, 0.5, 1, 16);
+    }
+
     public static void sendSpiderTransformation(ServerLevel level, Vec3 center) {
         sendParticlesAround(level, LEGACY_MOB_SPELL_PARTICLE_ID, LEGACY_POP_SOUND_ID, center, 2, 2, 16);
     }

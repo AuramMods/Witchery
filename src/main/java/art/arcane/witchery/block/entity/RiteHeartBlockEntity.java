@@ -842,8 +842,11 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             return null;
         }
         if (rite.action() == ItemRiteRecipe.Action.CLIMATE_CHANGE) {
+            boolean legacy = usesGlyphClock();
+            if (legacy) ClimateChange.playStartCue(level, heart);
             String failure = ClimateChange.failure(level, heart, covenSize);
             if (failure != null) {
+                if (legacy) ClimateChange.playInitialFailureCue(level, heart);
                 abort(level, failure);
                 return null;
             }

@@ -132,7 +132,7 @@ final class BrewTerrainEffects {
         if (biome == null || !level.getWorldBorder().isWithinBounds(center)) return;
 
         int reach = ritual ? 15 + strength * 16 : strength;
-        int[] rows = circleWidths(reach);
+        int[] rows = BiomePainting.circleWidths(reach);
         BiomePainting.paint(level, center, rows, biome);
         if (biome.value().getModifiedClimateSettings().downfall() == 0) {
             Player actor = caster == null ? FakePlayerFactory.getMinecraft(level) : caster;
@@ -154,24 +154,5 @@ final class BrewTerrainEffects {
                 }
             }
         }
-    }
-
-    static int[] circleWidths(int reach) {
-        int[] rowWidth = new int[reach + 1];
-        int circleX = reach;
-        int circleZ = 0;
-        int error = 1 - reach;
-        while (circleX >= circleZ) {
-            rowWidth[circleZ] = Math.max(rowWidth[circleZ], circleX);
-            rowWidth[circleX] = Math.max(rowWidth[circleX], circleZ);
-            circleZ++;
-            if (error < 0) {
-                error += 2 * circleZ + 1;
-            } else {
-                circleX--;
-                error += 2 * (circleZ - circleX + 1);
-            }
-        }
-        return rowWidth;
     }
 }

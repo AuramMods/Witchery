@@ -1,5 +1,6 @@
 package art.arcane.witchery.brewing;
 
+import art.arcane.witchery.world.BiomePainting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -52,7 +53,7 @@ public final class SnowTrailEffect extends MobEffect {
         Player actor = caster == null ? FakePlayerFactory.getMinecraft(level) : caster;
         if (!BrewTerrain.canEdit(actor, level, center, level.getBlockState(center))) return;
         int reach = radius - 1;
-        int[] widths = BrewTerrainEffects.circleWidths(reach);
+        int[] widths = BiomePainting.circleWidths(reach);
         for (int z = -reach; z <= reach; z++) {
             int width = widths[Math.abs(z)];
             for (int x = -width; x <= width; x++) {

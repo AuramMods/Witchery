@@ -4,6 +4,7 @@ import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.power.AltarPower;
+import art.arcane.witchery.ritual.ClimateChange;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
 import art.arcane.witchery.ritual.LandscapeRites;
 import art.arcane.witchery.ritual.ProtectionRites;
@@ -90,8 +91,13 @@ interface RiteUpkeep {
             return landscape != null && landscape.action().usesExpansionClock();
         }
 
+        private boolean isLegacyClimate() {
+            return landscape != null && landscape.action() == ItemRiteRecipe.Action.CLIMATE_CHANGE
+                    && RiteActivation.legacyId(rite) == 64;
+        }
+
         void waitForLegacyWave() {
-            if (!hasLegacyWaveGate()) return;
+            if (!hasLegacyWaveGate() && !isLegacyClimate()) return;
             ticks = interval() - LEGACY_ACTIVATION_TICKS;
             resumingLegacyWave = true;
         }
@@ -124,7 +130,8 @@ interface RiteUpkeep {
             ticks = 0;
             if (landscape != null) {
                 if (resumingLegacyWave) {
-                    RiteHeartBlockEntity.playOriginalRiteSound(level, landscape.target(), SoundEvents.FIRE_EXTINGUISH);
+                    if (isLegacyClimate()) ClimateChange.playStartCue(level, landscape.target());
+                    else RiteHeartBlockEntity.playOriginalRiteSound(level, landscape.target(), SoundEvents.FIRE_EXTINGUISH);
                     resumingLegacyWave = false;
                 }
                 landscape = LandscapeRites.pulse(level, heart, landscape, coven, caster(level), terrainChanges,
@@ -195,7 +202,8 @@ interface RiteUpkeep {
             upkeep.restoreInitiatorName(tag.getString("InitiatorName"));
             if (tag.getBoolean("FissurePerTick")) upkeep.restoreTicks(tag.getInt("StepTicks"));
             else upkeep.restorePreviousForgeTicks(tag.getInt("StepTicks"));
-            upkeep.resumingLegacyWave = tag.getBoolean("ResumingLegacyWave") && upkeep.hasLegacyWaveGate();
+            upkeep.resumingLegacyWave = upkeep.isLegacyClimate()
+                    || tag.getBoolean("ResumingLegacyWave") && upkeep.hasLegacyWaveGate();
             return upkeep;
         }
     }
