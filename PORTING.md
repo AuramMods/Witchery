@@ -1080,6 +1080,14 @@ Clean Forge and copied Auram matched 11 original server motion cases and four cl
 - [x] Verify Ender Bramble travel through actual player movement. Stepping inside moved the muted client from the test platform to safe terrain roughly 370 blocks away. Waiting until the next server tick kept the vanilla movement handler from reverting the teleport.
 - [x] Verify the Grave across a dedicated restart. The remaining-time HUD resumed at 117 minutes and the zombie kept its UUID and owner. The start time, cooldown timestamp, and 158 infusion charge persisted. Data generation, the reobfuscated build, and 129 required Forge GameTests passed.
 
+### Bramble harvest, support and portal particles (2026-11-27)
+
+- The released 0.24.1 harvest callback visits eight columns in a fixed order, from one block below the harvest to one above it. The seeded sample planted one Wild Bramble in each column, replacing full snow and short grass and using water as support without replacing it. Shears and Ender Bramble skipped the spread and its random draws. The Forge implementation uses the same order and stop rolls. A Forge placement veto preserves the previous block and the original random sequence.
+- Both variants need a non-air block beneath them. The Forge support update removes an unsupported plant and the ordinary loot and pick paths keep its variant. GameTests exercise harvesting, the Forge placement veto, continued spread up a column, and losing support under both variants.
+- The packaged clean Forge and copied Auram servers matched the original seeded offsets and both harvest controls. Their dedicated restarts kept both display variants and the saved spread samples. The preceding Forge JAR spread to none of the eight columns and left the unsupported Ender plant in place.
+- In an isolated survival client, breaking Wild Bramble by hand produced four new plants. Shears produced zero in the second plot. The saved region held the same counts after a dedicated restart. The fixture supplied the plot and Haste. The client observed ordinary portal emissions from Ender Bramble and matched eight original animation samples across both variants, including emission, position, velocity, and the next random draw. Minecraft master volume was zero, OpenAL reported No Output, and the game window stayed hidden and unfocused.
+- Local Java 17 packaging and reobfuscation passed. All 644 required Forge GameTests passed.
+
 ## Leech Chests, Blood Roses and the Boline (2026-11-20)
 
 - [x] Restore original adjacent Leech Chest behavior. Each half keeps 27 slots, its own comparator strength, its own lid and sound, and its own trapped-chest signal. An obstruction above either lid blocks both player menus and comparator outputs. A hopper keeps access to the chest directly above it.
@@ -3384,7 +3392,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare [live Mandrake emergence](#mandrake-emergence-2026-11-27) through player harvest, lost support, direct destruction, harvest magic, and blasts.
   - [x] Compare [Leaping Lily placement and the local jump cue](#player-movement-and-lily-placement-2026-11-27), including the ordinary shallow-water interaction in clean Forge and copied Auram.
   - [x] Compare [Daylight Collector detector priority and output pickup](#daylight-collector-detector-order-and-pickup-2026-11-27), including all six detector pairs, a vertical update, Creative consumption and saved charge.
-  - [ ] Restore Bramble spread when Wild Bramble is harvested without shears. The released 0.24.1 harvest callback spread into all eight tested columns, while shears and the Ender variant left them clear. Also compare support and Ender particles with the packaged port. The original probe is in `build/qa-bramble-harvest/native/callback.log`.
+  - [x] Compare [Bramble harvest, support and portal particles](#bramble-harvest-support-and-portal-particles-2026-11-27), including the original spread rolls, shear harvest, and both picked variants.
 - [ ] Item behavior parity pass (including metadata-subitem conversions).
   - [x] Compare melee modifiers, sword guards, and Boline harvest against the [melee tool measurements](#melee-tools-and-boline-harvesting-2026-11-26).
   - [x] Restore the Crossbow's [launch position, velocity, spread, and firing cue](#crossbow-launch-physics-2026-11-27). The seeded original replay covers four draw durations and the three Splitting trajectories with a moving shooter.

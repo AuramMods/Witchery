@@ -338,7 +338,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | `LOG` | `witchery:witchlog` |
 | `LEAVES` | `witchery:witchleaves` |
 | `VOID_BRAMBLE` | `witchery:voidbramble` (owner in tile `WITCPlacer`, 32-block circle rite suppression) |
-| `BRAMBLE` | `witchery:bramble` |
+| `BRAMBLE` | `witchery:bramble` (`wild=true` is original metadata one, `wild=false` is Ender and was metadata zero). The Wild variant spreads on survival harvest without shears, using eight ordered columns and three possible heights. Both require non-air support and preserve the picked variant. Ender emits the original local portal particle. |
 | `GLINT_WEED` | `witchery:glintweed` (light 14, local spreading limit) |
 | `SPANISH_MOSS` | `witchery:spanishmoss` (wall bits south 1, west 2, north 4, east 8, ceiling 0) |
 | `LEAPING_LILY` | `witchery:leapinglily` |
