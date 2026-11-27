@@ -8,6 +8,7 @@ import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcherySounds;
 import art.arcane.witchery.world.WitcheryDimensions;
+import art.arcane.witchery.world.migration.LegacyGameProfiles;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -560,6 +561,7 @@ public final class CovenWitch extends PathfinderMob implements RangedAttackMob {
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
+        tag = LegacyGameProfiles.withTameOwner(tag);
         super.readAdditionalSaveData(tag);
         entityData.set(SKIN, Mth.clamp(tag.getInt("SkinType"), 0, 4));
         offeredTo = tag.getString("QuestOffered");

@@ -4,6 +4,7 @@ import art.arcane.witchery.item.GlassGobletItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcherySounds;
+import art.arcane.witchery.world.migration.LegacyGameProfiles;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -36,7 +37,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.UUID;
 
 public final class WitcheryFollower extends TamableAnimal {
     private static final String[] FAIREST_MALE_NAMES = {
@@ -307,19 +307,11 @@ public final class WitcheryFollower extends TamableAnimal {
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
-        super.readAdditionalSaveData(tag);
+        super.readAdditionalSaveData(LegacyGameProfiles.withTameOwner(tag));
         entityData.set(TYPE, tag.getInt("FollowerType"));
         entityData.set(SKIN, tag.getString("Skin"));
         lifetime = tag.contains("TicksToLive", Tag.TAG_ANY_NUMERIC) ? tag.getInt("TicksToLive") : -1;
         lavaPool = tag.contains("LavaPool", Tag.TAG_LONG) ? BlockPos.of(tag.getLong("LavaPool")) : null;
         transformationTicks = tag.getInt("TransformTicks");
-        if (getOwnerUUID() == null && tag.contains("OwnerUUID", Tag.TAG_STRING)) {
-            try {
-                setOwnerUUID(UUID.fromString(tag.getString("OwnerUUID")));
-                setTame(true);
-            } catch (IllegalArgumentException ignored) {
-                setTame(false);
-            }
-        }
     }
 }

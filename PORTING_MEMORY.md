@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Legacy companion and projectile ownership (2026-11-26)
+
+- The fixture starts with entity records from the original dedicated server and exercises ten owned creature types. An earlier Forge-format copy preserves the original string `OwnerUUID` and several old entity names. The previous JAR lost eight owner associations, the Coven Witch's summoned seat, the Witch Cat's Siamese coat, an entity stored under its original dotted name, and a Holy Bolt's pickup flag. See `build/qa-owner-state-import/ordinary-baseline/checks-first.log`.
+- Before the vanilla creature reader runs, Witchery translates the original owner string to a UUID. The same path serves the Spectral Familiar and Follower. An explicit current owner or cat variant wins. The importer already converts the bolt's historical boolean through vanilla's Arrow schema. The Witchery Bolt recovers the same flag on ordinary loads that still carry it.
+- Region files and saved player vehicles restore known original entity names. The new player storage fixture retains the Winged Monkey's attachment, owner and color without a captured registry. The region fixture also lets an Owl fly after reopening its saved owner and route. It delivers one red wool parcel and returns to its saved seat.
+- The final archive `build/qa-owner-state-import/final.jar` passed local Java 17 data generation, reobfuscation, and all 572 Forge GameTests. Its SHA-256 is `37712c6138836f14b589119300206e2cb92b842580c9363d945d92511866b6d1`. See `original-verified/` for the direct import and `ordinary-verified/` for the earlier Forge save without a captured registry.
+- Copied Auram preserved all 57 initial checks and the same saved fields and Waystone on ordinary restart. The first flight fixture left the Owl in open air. On a prepared platform with the nearby fixtures moved aside, the same restored Owl delivered its saved parcel and returned to its seat without a client connected. See `pack-verified/checks-flight-confirmed.log`.
+
 ## Rain of Toads action comparison (2026-11-26)
 
 - The original dedicated server logged the four lightning stages, the fourth pulse during existing rain, and 75 toad arrivals across seven seeded showers. One checked a floating canopy, one selected occupied leaves, and one ran the final upkeep at stage 200. The clear-weather fixture set 16,520 rain ticks. The previous JAR drew drop height before skin color and started from the water surface. The Forge port now scans from the solid floor and ignores leaves above it. See `build/qa-rain-of-toads-actions/native/native-canopy.log` and `clean-baseline/final.log`.

@@ -2,10 +2,13 @@ package art.arcane.witchery.world.migration;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.entity.WitchBroom;
+import art.arcane.witchery.entity.WingedMonkey;
 import com.mojang.authlib.GameProfile;
+import net.minecraft.SharedConstants;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.storage.LevelResource;
@@ -22,6 +25,38 @@ import java.util.function.Function;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class LegacyPlayerVehicleImportTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_earlier_saved_mount")
+    public static void restoresAnEarlierPlayersWingedMonkeyMount(GameTestHelper helper) throws Exception {
+        var root = Files.createTempDirectory("witchery-earlier-mount");
+        try (var access = LevelStorageSource.createDefault(root).createAccess("world")) {
+            var owner = new GameProfile(UUID.randomUUID(), "MountedLegacyOwner");
+            var player = new FakePlayer(helper.getLevel(), owner);
+            var mountId = UUID.randomUUID();
+            var mount = TagParser.parseTag("""
+                    {id:"witchery.wingedmonkey",Pos:[5.5d,4.0d,5.5d],OwnerUUID:"%s",FeatherColor:9b}
+                    """.formatted(owner.getId()));
+            mount.putUUID("UUID", mountId);
+            var vehicle = new CompoundTag();
+            vehicle.putUUID("Attach", mountId);
+            vehicle.put("Entity", mount);
+            var saved = new CompoundTag();
+            saved.putInt("DataVersion", SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+            saved.put("RootVehicle", vehicle);
+            var storage = access.createPlayerStorage();
+            var path = access.getLevelPath(LevelResource.PLAYER_DATA_DIR).resolve(player.getStringUUID() + ".dat");
+            NbtIo.writeCompressed(saved, path.toFile());
+
+            var loaded = storage.load(player).getCompound("RootVehicle");
+            var entity = EntityType.loadEntityRecursive(loaded.getCompound("Entity"), helper.getLevel(), Function.identity());
+            helper.assertTrue(entity instanceof WingedMonkey monkey && monkey.getUUID().equals(loaded.getUUID("Attach"))
+                            && monkey.isTame() && owner.getId().equals(monkey.getOwnerUUID()) && monkey.color() == 9,
+                    "The player storage restores the mount type, attachment, owner, and color without a captured registry");
+        } finally {
+            FileUtils.deleteDirectory(root.toFile());
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void convertsOriginalPlayerRidingChain(GameTestHelper helper) throws Exception {
         var root = Files.createTempDirectory("witchery-player-vehicle-import");

@@ -5,6 +5,7 @@ import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcherySounds;
 import art.arcane.witchery.util.WitcheryTime;
+import art.arcane.witchery.world.migration.LegacyGameProfiles;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -348,7 +349,7 @@ public final class Imp extends TamableAnimal {
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
-        super.readAdditionalSaveData(tag);
+        super.readAdditionalSaveData(LegacyGameProfiles.withTameOwner(tag));
         affection = Math.max(0, tag.getInt("Affection"));
         secretsShared = Mth.clamp(tag.getInt("SecretsShared"), 0, SECRETS.length);
         long now = WitcheryTime.epochTicks();

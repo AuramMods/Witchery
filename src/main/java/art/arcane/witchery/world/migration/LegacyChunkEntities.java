@@ -210,11 +210,7 @@ public final class LegacyChunkEntities {
     }
 
     static void restoreSpawner(CompoundTag spawner) {
-        forEachSpawnerEntity(spawner, entity -> {
-            restoreEntity(entity);
-            ResourceLocation id = WitcheryEntities.legacyEntityId(entity.getString("id"));
-            if (id != null && ForgeRegistries.ENTITY_TYPES.containsKey(id)) entity.putString("id", id.toString());
-        });
+        forEachSpawnerEntity(spawner, LegacyChunkEntities::restoreEntity);
     }
 
     static void forEachSpawnerEntity(CompoundTag spawner, Consumer<CompoundTag> visitor) {
@@ -228,7 +224,7 @@ public final class LegacyChunkEntities {
         if (data.get("entity") instanceof CompoundTag entity) visitor.accept(entity);
     }
 
-    private static void restoreEntity(CompoundTag entity) {
+    static void restoreEntity(CompoundTag entity) {
         if (entity.getBoolean(FALLING_INFINITY_EGG)) {
             var state = new CompoundTag();
             state.putString("Name", INFINITY_EGG.toString());
@@ -246,6 +242,12 @@ public final class LegacyChunkEntities {
                     && !entity.getCompound("Offers").getList("Recipes", Tag.TAG_COMPOUND).isEmpty()) {
                 // Legacy villagers kept their profession even without a modern job site.
                 entity.putInt("Xp", 1);
+            }
+        } else {
+            String type = entity.getString("id");
+            ResourceLocation legacy = WitcheryEntities.legacyEntityId(type);
+            if (legacy != null && !legacy.toString().equals(type) && ForgeRegistries.ENTITY_TYPES.containsKey(legacy)) {
+                entity.putString("id", legacy.toString());
             }
         }
         if (entity.getBoolean(LEGACY_APOTHECARY)) {

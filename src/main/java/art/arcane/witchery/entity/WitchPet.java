@@ -2,6 +2,7 @@ package art.arcane.witchery.entity;
 
 import art.arcane.witchery.familiar.Familiar;
 import art.arcane.witchery.familiar.FamiliarBinding;
+import art.arcane.witchery.world.migration.LegacyGameProfiles;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -178,7 +179,7 @@ public abstract class WitchPet extends TamableAnimal implements Familiar {
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
-        super.readAdditionalSaveData(tag);
+        super.readAdditionalSaveData(LegacyGameProfiles.withTameOwner(tag));
         if (tag.contains(colorKey())) setColor(tag.getByte(colorKey()));
         applyFamiliar(tag.getBoolean("Familiar"));
         timeToLive = tag.contains("SuicideIn") ? tag.getInt("SuicideIn") : -1;

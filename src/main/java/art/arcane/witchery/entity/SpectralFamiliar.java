@@ -1,6 +1,7 @@
 package art.arcane.witchery.entity;
 
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.world.migration.LegacyGameProfiles;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -45,7 +46,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
-import java.util.UUID;
 
 public final class SpectralFamiliar extends TamableAnimal {
     private static final EntityDataAccessor<Integer> ORE = SynchedEntityData.defineId(SpectralFamiliar.class, EntityDataSerializers.INT);
@@ -144,18 +144,10 @@ public final class SpectralFamiliar extends TamableAnimal {
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
-        super.readAdditionalSaveData(tag);
+        super.readAdditionalSaveData(LegacyGameProfiles.withTameOwner(tag));
         int id = tag.contains("ItemToFind", Tag.TAG_ANY_NUMERIC) ? tag.getInt("ItemToFind") : -1;
         entityData.set(ORE, id >= 0 && id < Ore.VALUES.length ? id : -1);
         searches = Math.max(0, Math.min(tag.getInt("Searches"), DEPARTURE_CHANCES.length));
-        if (getOwnerUUID() == null && tag.contains("OwnerUUID", Tag.TAG_STRING)) {
-            try {
-                setOwnerUUID(UUID.fromString(tag.getString("OwnerUUID")));
-                setTame(true);
-            } catch (IllegalArgumentException ignored) {
-                setTame(false);
-            }
-        }
         if (isTame()) setPersistenceRequired();
     }
 

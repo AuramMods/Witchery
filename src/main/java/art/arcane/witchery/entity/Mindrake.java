@@ -1,6 +1,8 @@
 package art.arcane.witchery.entity;
 
+import art.arcane.witchery.world.migration.LegacyGameProfiles;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -33,6 +35,11 @@ public final class Mindrake extends TamableAnimal {
 
     public static AttributeSupplier.Builder attributes() {
         return createMobAttributes().add(Attributes.MAX_HEALTH, 4).add(Attributes.MOVEMENT_SPEED, 0.4);
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(LegacyGameProfiles.withTameOwner(tag));
     }
 
     @Override

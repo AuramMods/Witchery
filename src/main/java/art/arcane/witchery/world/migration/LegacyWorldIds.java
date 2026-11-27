@@ -270,6 +270,9 @@ public final class LegacyWorldIds {
     }
 
     private static CompoundTag preparePlayerState(CompoundTag player) {
+        if (player.getCompound("RootVehicle").get("Entity") instanceof CompoundTag vehicle) {
+            LegacyChunkEntities.restoreEntity(vehicle);
+        }
         var legacy = captureLegacyPlayerProgress(player);
         var forgeData = player.getCompound("ForgeData");
         var persisted = forgeData.getCompound(Player.PERSISTED_NBT_TAG);

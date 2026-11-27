@@ -5,6 +5,7 @@ import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcherySounds;
+import art.arcane.witchery.world.migration.LegacyGameProfiles;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -309,7 +310,7 @@ public final class WingedMonkey extends TamableAnimal {
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
-        super.readAdditionalSaveData(tag);
+        super.readAdditionalSaveData(LegacyGameProfiles.withTameOwner(tag));
         setColor(tag.getByte("FeatherColor"));
         timeToLive = tag.contains("SuicideIn", Tag.TAG_ANY_NUMERIC) ? tag.getInt("SuicideIn") : -1;
         flight.load(tag);

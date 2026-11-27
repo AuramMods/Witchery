@@ -4,6 +4,7 @@ import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -79,6 +80,9 @@ public final class WitcheryBolt extends AbstractArrow {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+        if (!tag.contains("pickup") && tag.contains("player", Tag.TAG_ANY_NUMERIC)) {
+            pickup = tag.getBoolean("player") ? Pickup.ALLOWED : Pickup.DISALLOWED;
+        }
         setKind(Kind.fromId(tag.getInt("boltType")));
     }
 

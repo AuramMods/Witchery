@@ -2,8 +2,10 @@ package art.arcane.witchery.entity;
 
 import art.arcane.witchery.familiar.Familiar;
 import art.arcane.witchery.familiar.FamiliarBinding;
+import art.arcane.witchery.world.migration.LegacyGameProfiles;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -93,7 +95,16 @@ public final class WitchCat extends Cat implements Familiar {
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
-        super.readAdditionalSaveData(tag);
+        super.readAdditionalSaveData(LegacyGameProfiles.withTameOwner(tag));
+        if (!tag.contains("variant", Tag.TAG_STRING) && tag.contains("CatType", Tag.TAG_ANY_NUMERIC)) {
+            var coat = switch (tag.getInt("CatType")) {
+                case 1 -> CatVariant.BLACK;
+                case 2 -> CatVariant.RED;
+                case 3 -> CatVariant.SIAMESE;
+                default -> CatVariant.TABBY;
+            };
+            setVariant(BuiltInRegistries.CAT_VARIANT.getOrThrow(coat));
+        }
         if (tag.contains("Familiar")) applyFamiliar(tag.getBoolean("Familiar"));
     }
 }

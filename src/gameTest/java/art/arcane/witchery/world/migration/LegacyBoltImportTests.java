@@ -30,9 +30,9 @@ public final class LegacyBoltImportTests {
                 {Level:{xPos:-14,zPos:-68,TerrainPopulated:1b,Entities:[
                   {id:"witchery.bolt",UUIDMost:6391217800094107146L,UUIDLeast:-8683977079136577233L,
                    Pos:[-216.015d,12.5d,-1079.5d],Motion:[0.2d,0.0d,0.0d],Rotation:[90.0f,0.0f],
-                   xTile:-216s,yTile:12s,zTile:-1080s,inTile:98b,inData:1b,inGround:1b,pickup:1b,damage:3.75d,boltType:3},
+                   xTile:-216s,yTile:12s,zTile:-1080s,inTile:98b,inData:1b,inGround:1b,player:1b,damage:3.75d,boltType:3},
                   {id:"witchery.bolt",Pos:[-215.015d,12.5d,-1079.5d],Motion:[0.2d,0.0d,0.0d],Rotation:[90.0f,0.0f],
-                   xTile:-215s,yTile:12s,zTile:-1080s,inTile:-97b,inData:14b,inGround:1b,pickup:0b,boltType:1}]}}
+                   xTile:-215s,yTile:12s,zTile:-1080s,inTile:-97b,inData:14b,inGround:1b,pickup:0b,player:1b,boltType:1}]}}
                 """);
         var root = Files.createTempDirectory("witchery-legacy-bolts");
         var snapshot = root.resolve("witchery-legacy-ids.dat");
@@ -63,8 +63,14 @@ public final class LegacyBoltImportTests {
                         && bolt.getUUID().equals(new UUID(6391217800094107146L, -8683977079136577233L))
                         && bolt.getDeltaMovement().equals(new Vec3(0.2, 0, 0)),
                 "A saved Holy Bolt must keep its original block variant, UUID, damage, movement and pickup mode");
-        helper.assertTrue(entities.getCompound(1).getCompound("inBlockState").getString("Name").equals("minecraft:red_terracotta"),
-                "The saved block byte must be unsigned so IDs above 127 retain their metadata");
+        var restricted = WitcheryEntities.BOLT.get().create(level);
+        restricted.load(entities.getCompound(1));
+        helper.assertTrue(entities.getCompound(1).getCompound("inBlockState").getString("Name").equals("minecraft:red_terracotta")
+                        && restricted.pickup == AbstractArrow.Pickup.DISALLOWED,
+                "Unsigned block IDs retain their metadata and an explicit pickup mode takes precedence");
+        restricted.load(TagParser.parseTag("{player:1b}"));
+        helper.assertTrue(restricted.pickup == AbstractArrow.Pickup.ALLOWED,
+                "Ordinary loading also honors the older pickup flag");
         helper.succeed();
     }
 }

@@ -1,6 +1,8 @@
 package art.arcane.witchery.entity;
 
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.world.migration.LegacyGameProfiles;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -16,6 +18,11 @@ public final class DeathHorse extends SkeletonHorse {
 
     public static AttributeSupplier.Builder attributes() {
         return SkeletonHorse.createAttributes().add(Attributes.MOVEMENT_SPEED, 0.3);
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(LegacyGameProfiles.withTameOwner(tag));
     }
 
     @Override
