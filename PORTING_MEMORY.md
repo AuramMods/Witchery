@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Death, Hellhound, Treefyd, Broom, and spirit rendering (2026-11-27)
+
+- The original executable models supplied 276 part poses, 56 meshes, and 17 rotation matrices for the Hellhound's head and tail and the Treefyd's walk transitions. The preceding Forge JAR differed on 18 meshes, four Hellhound rotations, and three Treefyd transitions. Dream Spirit and Lost Soul both drew one tenth of a block below their expected height.
+- Death's body and robe and the Broom's handle and bristles use their original texture orientation. Death and Death's Hand share the two-sided scythe blade. The Hellhound applies head and tail roll after yaw and pitch. The Treefyd starts and stops its roll according to the current tick's walk speed and uses the interpolated stride for the angle. Both spirits apply the original model translation before scaling, with the modern vanilla living-renderer origin.
+- The packaged client matched all 1,656 pose values, 1,264 vertices and UVs, 17 rotation matrices, and seven spirit bounds and tint samples. The Louse's geometry and motion already matched the reference and passed again. The probe used the registered Death's Hand item renderer and verified that deploying the scythe adds the 32 shaft and blade vertices in both first and third person.
+- A survival client connected to the dedicated server and resolved the textures of all seven tracked entity types in the fixture. Client and server ran byte-identical copies of `build/qa-remaining-creature-poses/release.jar`, SHA-256 `7dcc929597c1869c0aafc2f4657d6bb711b1008e1a0b71288c34ede595080b56`. The isolated client started hidden and unfocused with master volume zero and OpenAL's No Output device. The foreground monitor recorded one application throughout. See `verified-poses.log`, `survival/check-verified.log`, and `survival/focus-verified.log` in the same directory.
+- Local Java 17 data generation, JAR reobfuscation, and all 597 required Forge GameTests passed.
+
 ## Witchery item text and enchantments in converted saves (2026-11-27)
 
 - The original Brew Bag and Urn inventory writers save a plain `display.Name` and complete bottle stacks under `Inventory.Items`. The earlier Forge fixture already uses modern stack IDs and durability. The preceding JAR failed ten of 20 checks in both clean Forge replays. The chest and player inventory each lost the stored bottle text, the Urn's title, and the Arthana's numeric Unbreaking level.

@@ -21,7 +21,7 @@ public final class TreefydRenderer extends MobRenderer<Treefyd, TreefydModel> {
     @Override
     protected void setupRotations(Treefyd treefyd, PoseStack pose, float age, float yaw, float partialTick) {
         super.setupRotations(treefyd, pose, age, yaw, partialTick);
-        if (treefyd.walkAnimation.speed(partialTick) >= 0.01F) {
+        if (treefyd.walkAnimation.speed() >= 0.01) {
             float cycle = treefyd.walkAnimation.position(partialTick) + 6;
             pose.mulPose(Axis.ZP.rotationDegrees(5 * Mth.triangleWave(cycle, 13)));
         }

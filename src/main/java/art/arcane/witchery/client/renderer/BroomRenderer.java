@@ -38,7 +38,7 @@ public final class BroomRenderer extends EntityRenderer<WitchBroom> {
     public static LayerDefinition layer() {
         var mesh = new MeshDefinition();
         var root = mesh.getRoot();
-        root.addOrReplaceChild("handle", CubeListBuilder.create().texOffs(24, 0).mirror()
+        root.addOrReplaceChild("handle", CubeListBuilder.create().texOffs(24, 0)
                 .addBox(-1, -10, -1, 2, 24, 2), PartPose.offsetAndRotation(0, 11, -5, (float) (Math.PI / 2), 0, 0));
         var brush = root.addOrReplaceChild("bristles", CubeListBuilder.create(), PartPose.ZERO);
         bristle(brush, "upper_left", -1, 10, 0.1858931F, -0.1487144F, 10);
@@ -49,12 +49,13 @@ public final class BroomRenderer extends EntityRenderer<WitchBroom> {
         bristle(brush, "center", 0, 11, -0.0371786F, 0.0743572F, 10);
         bristle(brush, "right", 1, 11, -0.0371786F, 0.2230717F, 10);
         bristle(brush, "left", -1, 11, -0.0743572F, -0.1487144F, 9);
-        bristle(brush, "lower_center", 0, 12, -0.1858931F, 0, 9);
+        brush.addOrReplaceChild("lower_center", CubeListBuilder.create().texOffs(0, 12)
+                .addBox(-0.5333334F, -0.5F, 0, 1, 1, 9), PartPose.offsetAndRotation(0, 12, 9, -0.1858931F, 0, 0));
         return LayerDefinition.create(mesh, 32, 32);
     }
 
     private static void bristle(PartDefinition brush, String name, float x, float y, float pitch, float yaw, int length) {
-        brush.addOrReplaceChild(name, CubeListBuilder.create().texOffs(0, length == 10 ? 0 : 12).mirror()
+        brush.addOrReplaceChild(name, CubeListBuilder.create().texOffs(0, length == 10 ? 0 : 12)
                 .addBox(-0.5F, -0.5F, 0, 1, 1, length), PartPose.offsetAndRotation(x, y, 9, pitch, yaw, 0));
     }
 

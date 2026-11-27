@@ -52,7 +52,11 @@ public final class DreamSpiritModel<T extends Mob> extends HierarchicalModel<T> 
     @Override
     public void renderToBuffer(PoseStack pose, VertexConsumer vertices, int light, int overlay,
                                float red, float green, float blue, float alpha) {
+        pose.pushPose();
+        pose.translate(0, 0.65F, 0);
+        pose.scale(0.5F, 0.5F, 0.5F);
         root.render(pose, vertices, light, overlay, red * (color >> 16 & 255) / 255,
                 green * (color >> 8 & 255) / 255, blue * (color & 255) / 255, alpha * 0.6F);
+        pose.popPose();
     }
 }

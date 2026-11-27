@@ -68,8 +68,8 @@ public final class TreefydModel extends HierarchicalModel<Treefyd> {
     public void setupAnim(Treefyd treefyd, float swing, float amount, float age, float yaw, float pitch) {
         head.yRot = yaw * Mth.DEG_TO_RAD;
         head.xRot = pitch * Mth.DEG_TO_RAD;
-        float step = Mth.cos(swing * 0.6662F) * 1.4F * amount;
-        leftBack.xRot = rightFront.xRot = step;
-        leftFront.xRot = rightBack.xRot = -step;
+        float phase = swing * 0.6662F;
+        leftBack.xRot = rightFront.xRot = Mth.cos(phase) * 1.4F * amount;
+        leftFront.xRot = rightBack.xRot = Mth.cos(phase + Mth.PI) * 1.4F * amount;
     }
 }

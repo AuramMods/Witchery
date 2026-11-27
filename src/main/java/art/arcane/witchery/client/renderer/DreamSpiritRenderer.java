@@ -2,7 +2,6 @@ package art.arcane.witchery.client.renderer;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.client.model.DreamSpiritModel;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
@@ -23,11 +22,6 @@ public final class DreamSpiritRenderer<T extends Mob> extends MobRenderer<T, Dre
     @Override
     public ResourceLocation getTextureLocation(T spirit) {
         return TEXTURE;
-    }
-
-    @Override
-    protected void scale(T spirit, PoseStack pose, float partialTick) {
-        pose.scale(0.5F, 0.5F, 0.5F);
     }
 
     @Nullable

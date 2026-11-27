@@ -34,11 +34,13 @@ public final class HellhoundRenderer extends MobRenderer<Hellhound, HellhoundRen
                 PartPose.offsetAndRotation(0, 12.5F, 2, 1.1838568F, 0, 0));
         root.addOrReplaceChild("mane", CubeListBuilder.create().texOffs(22, 0).addBox(-4, -3, -3, 8, 8, 9),
                 PartPose.offsetAndRotation(-1, 14, -3, Mth.HALF_PI, 0, 0));
-        root.addOrReplaceChild("tail", CubeListBuilder.create().texOffs(9, 19).addBox(-1, 0, -1, 2, 6, 2),
-                PartPose.offset(-1, 13, 8));
-        root.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-3, -3, -2, 6, 6, 4)
-                        .texOffs(16, 14).addBox(-3, -5, 1, 2, 2, 1).addBox(1, -5, 1, 2, 2, 1)
-                        .texOffs(0, 10).addBox(-1.5F, 0, -5, 3, 3, 4), PartPose.offset(-1, 10.6F, -7.5F));
+        // The old model rotated these parts around Y, X, then Z. Put the shake roll on the child geometry.
+        var tail = root.addOrReplaceChild("tail", CubeListBuilder.create(), PartPose.offset(-1, 13, 8));
+        tail.addOrReplaceChild("tip", CubeListBuilder.create().texOffs(9, 19).addBox(-1, 0, -1, 2, 6, 2), PartPose.ZERO);
+        var head = root.addOrReplaceChild("head", CubeListBuilder.create(), PartPose.offset(-1, 10.6F, -7.5F));
+        head.addOrReplaceChild("features", CubeListBuilder.create().texOffs(0, 0).addBox(-3, -3, -2, 6, 6, 4)
+                .texOffs(16, 14).addBox(-3, -5, 1, 2, 2, 1).addBox(1, -5, 1, 2, 2, 1)
+                .texOffs(0, 10).addBox(-1.5F, 0, -5, 3, 3, 4), PartPose.ZERO);
         addLeg(root, "left_hind_leg", 0.5F, 7);
         addLeg(root, "right_hind_leg", -2.5F, 7);
         addLeg(root, "left_front_leg", 0.5F, -4);
@@ -54,9 +56,11 @@ public final class HellhoundRenderer extends MobRenderer<Hellhound, HellhoundRen
     static final class Model extends HierarchicalModel<Hellhound> {
         private final ModelPart root;
         private final ModelPart head;
+        private final ModelPart headFeatures;
         private final ModelPart mane;
         private final ModelPart body;
         private final ModelPart tail;
+        private final ModelPart tailTip;
         private final ModelPart leftHindLeg;
         private final ModelPart rightHindLeg;
         private final ModelPart leftFrontLeg;
@@ -65,9 +69,11 @@ public final class HellhoundRenderer extends MobRenderer<Hellhound, HellhoundRen
         Model(ModelPart root) {
             this.root = root;
             head = root.getChild("head");
+            headFeatures = head.getChild("features");
             mane = root.getChild("mane");
             body = root.getChild("body");
             tail = root.getChild("tail");
+            tailTip = tail.getChild("tip");
             leftHindLeg = root.getChild("left_hind_leg");
             rightHindLeg = root.getChild("right_hind_leg");
             leftFrontLeg = root.getChild("left_front_leg");
@@ -87,10 +93,10 @@ public final class HellhoundRenderer extends MobRenderer<Hellhound, HellhoundRen
             leftHindLeg.xRot = rightFrontLeg.xRot = Mth.cos(stride + Mth.PI) * 1.4F * amount;
             rightHindLeg.xRot = leftFrontLeg.xRot = Mth.cos(stride) * 1.4F * amount;
             float partialTick = age - hound.tickCount;
-            head.zRot = hound.shakeAngle(partialTick, 0);
+            headFeatures.zRot = hound.shakeAngle(partialTick, 0);
             mane.zRot = hound.shakeAngle(partialTick, -0.08F);
             body.zRot = hound.shakeAngle(partialTick, -0.16F);
-            tail.zRot = hound.shakeAngle(partialTick, -0.2F);
+            tailTip.zRot = hound.shakeAngle(partialTick, -0.2F);
         }
     }
 }
