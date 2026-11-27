@@ -696,18 +696,19 @@ public final class CauldronBrewParityTests {
             var ent = level.getEntities(WitcheryEntities.ENT.get(), new AABB(landing), entity -> true);
             helper.assertTrue(ent.size() == 1 && ent.get(0).blockPosition().equals(landing),
                     "The accepted log harvest rolls one Ent into its original landing column");
-            var drops = level.getEntitiesOfClass(ItemEntity.class, new AABB(protectedLog).inflate(4),
-                    entity -> entity.getItem().is(witchLog.asItem()));
-            helper.assertTrue(drops.size() == 1 && ItemStack.isSameItemSameTags(drops.get(0).getItem(),
-                            WitchWoodType.HAWTHORN.stack(witchLog)),
-                    "The cast drops one Hawthorn log and leaves the protected log in place");
             ent.get(0).discard();
         } finally {
             MinecraftForge.EVENT_BUS.unregister(protection);
             config.set(previous);
             brewer.discard();
         }
-        helper.succeed();
+        helper.succeedWhen(() -> {
+            var drops = level.getEntitiesOfClass(ItemEntity.class, new AABB(protectedLog).inflate(4),
+                    entity -> entity.getItem().is(witchLog.asItem()));
+            helper.assertTrue(drops.size() == 1 && ItemStack.isSameItemSameTags(drops.get(0).getItem(),
+                            WitchWoodType.HAWTHORN.stack(witchLog)),
+                    "The cast drops one Hawthorn log and leaves the protected log in place");
+        });
     }
 
     @GameTest(template = "qa_coven_arena")

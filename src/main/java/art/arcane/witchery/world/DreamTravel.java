@@ -172,7 +172,7 @@ public final class DreamTravel {
         Nightmare nightmare = WitcheryEntities.NIGHTMARE.get().create(level);
         if (nightmare != null) {
             nightmare.assignVictim(player);
-            spawnNear(player, nightmare, 2, 6);
+            WitcheryCreatureSpawns.spawnNear(level, player.blockPosition(), nightmare, 2, 6, player.getRandom());
         }
     }
 
@@ -192,7 +192,7 @@ public final class DreamTravel {
         Nightmare nightmare = WitcheryEntities.NIGHTMARE.get().create(level);
         if (nightmare != null) {
             if (victim instanceof Player player) nightmare.assignVictim(player);
-            spawnNear(victim, nightmare, 2, 6);
+            WitcheryCreatureSpawns.spawnNear(level, victim.blockPosition(), nightmare, 2, 6, victim.getRandom());
         }
     }
 
@@ -217,36 +217,12 @@ public final class DreamTravel {
             // The original EntityMob query excludes demons, ghasts, and slimes.
             if (level.getEntitiesOfClass(Monster.class, nearby).size() < 10) {
                 Demon demon = WitcheryEntities.DEMON.get().create(level);
-                if (demon != null && spawnNear(player, demon, 4, 8)) {
+                if (demon != null && WitcheryCreatureSpawns.spawnNear(level, player.blockPosition(), demon, 4, 8,
+                        player.getRandom())) {
                     WitcheryNetwork.sendDreamDemonArrival(level, demon.position(), demon.getBbHeight());
                 }
             }
         }
-    }
-
-    private static boolean spawnNear(LivingEntity target, Mob mob, int minRange, int maxRange) {
-        ServerLevel level = (ServerLevel) target.level();
-        BlockPos near = target.blockPosition();
-        int span = maxRange - minRange;
-        int dx = target.getRandom().nextInt(span * 2 + 1);
-        int dz = target.getRandom().nextInt(span * 2 + 1);
-        // The middle draw belongs to the negative range on each axis.
-        if (dx > span) dx += 2 * minRange;
-        if (dz > span) dz += 2 * minRange;
-        BlockPos.MutableBlockPos floor = near.offset(dx - maxRange, 0, dz - maxRange).mutable();
-        int highestFloor = Math.min(near.getY() + 8, level.getMaxBuildHeight() - 3);
-        while (floor.getY() < highestFloor && !level.isEmptyBlock(floor)) {
-            floor.move(Direction.UP);
-        }
-        while (floor.getY() > level.getMinBuildHeight() && level.isEmptyBlock(floor)) {
-            floor.move(Direction.DOWN);
-        }
-        if (level.isOutsideBuildHeight(floor) || floor.getY() > highestFloor || level.isEmptyBlock(floor)
-                || !level.isEmptyBlock(floor.above()) || !level.isEmptyBlock(floor.above(2))) {
-            return false;
-        }
-        mob.moveTo(floor.getX() + 0.5, floor.getY() + 1.05, floor.getZ() + 0.5, 0, 0);
-        return level.noCollision(mob) && !level.containsAnyLiquid(mob.getBoundingBox()) && level.addFreshEntity(mob);
     }
 
     public static boolean isGhost(ServerPlayer player) {

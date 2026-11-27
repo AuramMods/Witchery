@@ -2,6 +2,16 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Insanity apparition behavior (2026-11-27)
+
+- The original server trace covers three selected variants, two obstructed columns, a missed potion pulse, the rank-four decoy roll, and the two independent lifetime rolls. Read `build/qa-illusion-parity/native/server-reference.log`. The shared column search in `WitcheryCreatureSpawns` also serves the existing Dream and demonic spawns.
+- The muted background clean Forge clients drank a fixture-supplied potion and exercised a persistent curse loaded from original player data. The victim alone drew both apparitions and received the Spider cue and the missed-pulse Enderman decoy. The dedicated restart retained both entity UUIDs, the signed type `-1`, curse rank four, and the visible and hidden render results. See `build/qa-illusion-parity/clean-exact/{live.log,restart.log}`.
+- In copied Auram, a Creeper apparition with two health expired in an entity-ticking chunk with zero players online. The Does It Tick hook allows this lifetime to run in loaded chunks. See `build/qa-illusion-parity/auram-final/loaded-age.log`.
+- The muted copied Auram survival client replayed the same supplied drink and imported curse. Both meshes, the Spider cue, the Enderman decoy and all 20 player health matched clean Forge. The isolated test waited for the pack's JEI search to finish on login. See `build/qa-illusion-parity/auram-final/play.log`. All five successful client launches used master volume zero and OpenAL No Output and stayed out of the foreground.
+- A regression replay reported the Felling Hawthorn drop missing on the cast tick. Its saved entity region contained one correctly tagged Hawthorn log at the cut. The Felling fixture now waits for the drop to become visible to the entity query.
+- Local Java 17 data generation, JAR reobfuscation, and all 632 required Forge GameTests passed. The exact package at `build/qa-illusion-parity/release.jar` has SHA-256 `3c9fd4dd47ae440d2e92bf744e9f2fbcdb4f7843fd0e919f2a58311589b1217c`.
+- The original timed potion rotates its seven inventory effect labels every 60 duration ticks and draws the ordinary duration below them. That display is still open in the visual pass.
+
 ## Mystic Branch projectile rendering (2026-11-27)
 
 - The original renderer exposed the Minecraft snowball item as its sprite. The 1.20.1 snowball matches all 256 of the original transparency bytes. Its palette is the current Minecraft art, and resource packs can override it. The preceding Witchery texture region matched 102 of the original transparency bytes.

@@ -188,9 +188,9 @@ public final class WitcheryEntities {
     public static final RegistryObject<EntityType<WitcheryFollower>> FOLLOWER =
             ENTITY_TYPES.register("follower", () -> EntityType.Builder.of(WitcheryFollower::new, MobCategory.CREATURE)
                     .sized(0.6F, 1.8F).clientTrackingRange(8).build(Witchery.MODID + ":follower"));
-    public static final RegistryObject<EntityType<Illusion>> ILLUSION_CREEPER = illusion("illusioncreeper", Illusion.Kind.CREEPER, 0.6F, 1.7F);
-    public static final RegistryObject<EntityType<Illusion>> ILLUSION_SPIDER = illusion("illusionspider", Illusion.Kind.SPIDER, 1.4F, 0.9F);
-    public static final RegistryObject<EntityType<Illusion>> ILLUSION_ZOMBIE = illusion("illusionzombie", Illusion.Kind.ZOMBIE, 0.6F, 1.95F);
+    public static final RegistryObject<EntityType<Illusion>> ILLUSION_CREEPER = illusion("illusioncreeper", Illusion.Kind.CREEPER);
+    public static final RegistryObject<EntityType<Illusion>> ILLUSION_SPIDER = illusion("illusionspider", Illusion.Kind.SPIDER);
+    public static final RegistryObject<EntityType<Illusion>> ILLUSION_ZOMBIE = illusion("illusionzombie", Illusion.Kind.ZOMBIE);
     public static final RegistryObject<EntityType<Leonard>> LEONARD =
             ENTITY_TYPES.register("leonard", () -> EntityType.Builder.of(Leonard::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.8F).fireImmune().clientTrackingRange(8).build(Witchery.MODID + ":leonard"));
@@ -303,10 +303,10 @@ public final class WitcheryEntities {
                 .sized(width, height).build(Witchery.MODID + ":" + path));
     }
 
-    private static RegistryObject<EntityType<Illusion>> illusion(String path, Illusion.Kind kind, float width, float height) {
+    private static RegistryObject<EntityType<Illusion>> illusion(String path, Illusion.Kind kind) {
         return ENTITY_TYPES.register(path, () -> EntityType.Builder.<Illusion>of(
                 (type, level) -> new Illusion(type, level, kind), MobCategory.MONSTER)
-                .sized(width, height).build(Witchery.MODID + ":" + path));
+                .sized(0.6F, 1.8F).fireImmune().clientTrackingRange(5).build(Witchery.MODID + ":" + path));
     }
 
     private static RegistryObject<EntityType<HobgoblinGod>> goblinGod(String path) {

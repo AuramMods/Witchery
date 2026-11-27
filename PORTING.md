@@ -7,7 +7,9 @@
 - Check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before hunting for source details.
 - Run `./gradlew runData` before a separate `./gradlew jar` invocation when generated resources change. The data run can stage the previous resources before writing the new files. The `jar` invocation reprocesses them and reobfuscates without deploying into Auram.
 
-## Remaining Release Verification (2026-11-22)
+## Remaining Release Verification (2026-11-27)
+
+The copied Auram survival replay reached both rank-ten transformations and completed Torment, Mirror, Leonard, and Death using the fixture assistance recorded in each milestone. The November 27 multiplayer replay covers the original packet intents on an earlier package. The open work below tracks behavior and visuals against 0.24.1, specialized save fields, and the replay on the final JAR.
 
 - [ ] Close the behavior rows under Phase 4 against the 0.24.1 inventory. For each open row, list the legacy actions and the matching modern handlers, cite the existing comparisons, and record any missing behavior or explicit adaptation. Fix the uncovered cases and verify their normal gameplay entry points. The crafting grids, Circle Magic offerings, and fixed workstation registry comparisons are recorded below.
   - [x] Account for the 169 Cauldron mixing keys and 15 fixed cast keys. The running 0.24.1 registry assigned all 184 entries to the action families listed in the manifest. The identity and cost comparison still matches all 168 flattened mixing entries.
@@ -2757,6 +2759,15 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Restore the original curse rolls and brew clearing boundary. The 40-block horizontal hex uses the original Mortal Coil, buff removal, Sinking, Insanity and Overheating selections and cues. The smaller dispel replaces both brew gas and liquid with air within its original sphere. Forge's mob griefing rule still controls the block changes.
 - [x] Replay the same packaged JAR on headless clean Forge and copied Auram. Clean Forge passed 87 checks and Auram passed 83. Both dedicated restarts recovered a saved entrance and a temporary Lost Soul. The entrance completed and the Soul expired, including on copied Auram with no players online. Local data generation, JAR reobfuscation, and all 582 Forge GameTests passed.
 
+### Insanity apparition behavior (2026-11-27)
+
+- The original dedicated server traced three successful columns, two blocked columns, a missed pulse, and the rank-four sound roll after a missed pulse. The timed potion pulses at duration 13 modulo 20. The persistent curse uses the same world random draws at its world tick interval.
+- The port uses the original single column with independent offsets and the original two-block clearance. The search follows Forge build heights and respects collision and liquid checks. All three variants use the original 0.6 by 1.8 bounds, are pushable and fire immune, and chase their named victim without dealing health damage.
+- The original lifetime uses independent one-in-15 health and one-in-40 sound rolls, even on the last tick. Spider and zombie cues reach the named victim strictly within eight blocks. The creeper is silent. The rank-four decoy plays at the victim's feet after a missed spawn roll.
+- Two muted background clean Forge survival clients verified the supplied drink and the persistent curse from legacy player data. The victim's client drew 264 Spider vertices and 168 Zombie vertices. The observer drew zero and heard neither private cue. The Spider cue was silent at eight blocks and played at 7.75 with volume and pitch one. The target kept all 20 health.
+- The clean Forge restart retained both UUIDs, the named victim, and the Spider's signed type. In copied Auram, a force-loaded Creeper with two health completed its lifetime with zero players online.
+- The muted copied Auram survival client replayed both pulses on the same JAR. Both apparition meshes and both cues matched clean Forge. Local data generation, JAR reobfuscation and all 632 required Forge GameTests passed.
+
 ## Auram Pack Validation (2026-11-20)
 
 - [x] Reproduce the Evolved Mekanism 1.2.1-fix3 startup crash in the matched Auram profile before adding Witchery. Both pack runs reported the null `QIODriveTier` during Evolved Mekanism construction.
@@ -3185,6 +3196,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
 - [x] Restore the 48 missing static item descriptions from the original release. The muted packaged client validated all 48 in English, German, Spanish, Russian, Simplified Chinese, and Italian, using English fallback where the release supplied no localized text. It verified the Cowl's original color, its default before login, Forge's additional-tooltip hide flag, and the dedicated setting that hides its gaze hint after a restart.
 - [x] Restore Hobgoblin mining, worship, crouch, riding, and attack poses. Mog carries her bow in one hand and her skirt and chest stay independent of the torso. Gulg's strike uses the original attack counter and head yaw. The muted packaged client matched 1,386 pose values and all 864 vertex and texture coordinate samples across the three models.
 - [ ] Complete the source and runtime comparison for the remaining models, less common block states, and entity and armor poses.
+  - [ ] Compare the rotating inventory text for the timed Insanity potion.
   - [x] Compare the [Mystic Branch projectile sprite, tints, scale, and camera poses](#mystic-branch-projectile-rendering-2026-11-27) along with normal survival casting and a saved projectile.
   - [x] Restore the [Dark Mark's original skull placement and smoke](#dark-mark-rendering-and-creature-response-2026-11-27), with a comparison of six native poses.
   - [x] Restore the [Mirror apparition's original head pivot, scale, and opacity](#mirror-apparition-parity-2026-11-27), with measured vertex positions during head and body rotation.
@@ -3272,6 +3284,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Compare [Infernal creature acquisition](#infernal-creature-variants-2026-11-26) for all 25 original power IDs and modern entity splits.
   - [x] Compare [Infernal combat cues and defenses](#infernal-combat-cues-and-defenses-2026-11-26), including fireball launches, bow cue order, Fire Resistance, and Water Breathing.
 - [ ] Entity AI/combat/spawn tuning parity.
+  - [x] Compare [Insanity apparition columns, pursuit, lifetime, rendering, and private cues](#insanity-apparition-behavior-2026-11-27).
   - [x] Compare [Horned Huntsman archery, teleport, wolves, and Horn summons](#horned-huntsman-trial-2026-11-20).
   - [x] Compare [Mog and Gulg's paired combat, navigation, statue summons, and rewards](#mog-and-gulg-2026-11-20).
   - [x] Compare [Leonard's entrance, hexes, dispel, and Lost Soul waves](#leonard-lost-souls-and-the-urn-2026-11-20).

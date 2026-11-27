@@ -6,6 +6,7 @@ import art.arcane.witchery.entity.GrenadeProjectile;
 import art.arcane.witchery.entity.Hellhound;
 import art.arcane.witchery.entity.HobgoblinGod;
 import art.arcane.witchery.entity.HornedHuntsman;
+import art.arcane.witchery.entity.Illusion;
 import art.arcane.witchery.entity.InfernoSplatter;
 import art.arcane.witchery.entity.Leonard;
 import art.arcane.witchery.entity.LostSoul;
@@ -38,6 +39,7 @@ abstract class DoesItTickActiveEntityMixin {
                 || (entity instanceof Leonard leonard && leonard.hasActiveEntrance())
                 || (entity instanceof LostSoul soul && soul.hasTimedLife())
                 || entity instanceof DarkMark
+                || entity instanceof Illusion
                 || entity instanceof MirrorFace
                 || (entity instanceof WitcheryBolt bolt && bolt.canResolveLegacyBoundaryAnchor())
                 || entity instanceof GrenadeProjectile

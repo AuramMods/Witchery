@@ -1,9 +1,8 @@
 package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.entity.Illusion;
+import art.arcane.witchery.network.WitcheryNetwork;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
@@ -81,12 +80,12 @@ public final class EnvironmentalCurseEffect extends MobEffect {
     }
 
     public static void spreadInsanity(ServerPlayer player, int level) {
-        var random = player.getRandom();
+        var random = player.serverLevel().getRandom();
         if (random.nextInt(level > 2 ? 25 : level > 1 ? 30 : 35) == 0) {
             Illusion.spawnNear(player);
         } else if (level >= 4 && random.nextInt(20) == 0) {
-            player.playNotifySound(random.nextInt(3) == 1 ? SoundEvents.ENDERMAN_AMBIENT : SoundEvents.GENERIC_EXPLODE,
-                    SoundSource.HOSTILE, 1, 1);
+            String sound = random.nextInt(3) == 1 ? "mob.enderman.idle" : "random.explode";
+            WitcheryNetwork.sendSound(player, sound, player.getX(), player.getY(), player.getZ(), 1, 1);
         }
     }
 
