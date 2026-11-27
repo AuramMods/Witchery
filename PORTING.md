@@ -1423,6 +1423,10 @@
 - [x] Land a real sword hit on the packaged Huntsman and turn in the trial. The test arena used Strength and a stationary boss prepared at 12 health for the final strike. It dropped three Wither Skeleton Skulls, an enchanted book and Infernal Blood. The survival client returned to the altar, advanced to rank five and used a crouching Moon Charm to become a Wolfman with 40 maximum health.
 - [x] Restore the Huntsman's Spear and its 3D held model, knockback resistance, retaliating wolves and Nightmare vulnerability. Java 17 data generation, JAR reobfuscation and all 234 required Forge GameTests passed, including the legacy Moon Charm wear and wolf trial imports.
 - [x] Restore the Huntsman's Spear guard to the normal use binding. The original headless 0.24.1 player and rebuilt Forge survival client both retained 10 health after an unguarded ten-point hit and 14.5 while guarding. The GameTest also verifies wolf retaliation while guarding, armor-bypassing damage, and release of the guard.
+- [x] Compare the original Huntsman's extra bow shot at four, 18, 38, and 48 blocks. The extra shot scales with actual distance, including beyond the ordinary 30-block bow range. Both bow paths launch one block toward the target, just below eye height, with two levels of knockback. Arrow spread uses the modern vanilla projectile implementation.
+- [x] Compare the original stalled-path teleport and wolf summon. The first teleport attempt can occur on tick 201 and the next on tick 402. A successful teleport plays both departure and arrival sounds. The wolf uses the original world-random offsets, resists damage for 20,000 ticks at level II, and attacks the Huntsman's target.
+- [x] Compare the Horn's summon against the original server. It samples one column using world randomness, can spawn above raised terrain, and stays usable when that column has insufficient room. The modern placement checks full boss collision and liquid clearance. Both summons keep the 150-tick entrance, and only the Horn's entrance explodes.
+- [x] Replay 31 encounter checks on headless clean Forge and copied Auram. Both saved entrances resumed in the clean Forge restart. The rebuilt JAR also reopened the stalled Auram save without changing the pack's Does It Tick settings. Both bosses reached 400 health with no players online, only the Horn boss exploded, and finished bosses returned to the pack's normal distance rules.
 
 ## Coven Circles and Witches' Shacks (2026-11-20)
 
@@ -2970,6 +2974,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Compare [Rain of Toads](#rain-of-toads-action-comparison-2026-11-26), including the shower's coordinates and ordering, the coven refund, and expiration and poison.
 - [ ] Infusion, prediction, creature power parity.
 - [ ] Entity AI/combat/spawn tuning parity.
+  - [x] Compare [Horned Huntsman archery, teleport, wolves, and Horn summons](#horned-huntsman-trial-2026-11-20).
 
 ### Phase 5 - Integration + Stabilization
 - [x] Record the modern counterparts, empty hooks, and retired APIs for the original mod integrations. The manifest records their behavior and the release checklist tracks the packaged matrix.

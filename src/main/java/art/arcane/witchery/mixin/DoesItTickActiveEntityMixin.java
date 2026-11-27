@@ -3,6 +3,7 @@ package art.arcane.witchery.mixin;
 import art.arcane.witchery.entity.BrewDroplet;
 import art.arcane.witchery.entity.GrenadeProjectile;
 import art.arcane.witchery.entity.Hellhound;
+import art.arcane.witchery.entity.HornedHuntsman;
 import art.arcane.witchery.entity.InfernoSplatter;
 import art.arcane.witchery.entity.SymbolProjectile;
 import art.arcane.witchery.entity.ThrownBrew;
@@ -26,6 +27,7 @@ abstract class DoesItTickActiveEntityMixin {
         if ((entity instanceof WitchOwl owl && owl.hasActiveDelivery())
                 || (entity instanceof WingedMonkey monkey && monkey.hasActiveFlight())
                 || (entity instanceof Hellhound hound && hound.isConverting())
+                || (entity instanceof HornedHuntsman huntsman && huntsman.hasActiveEntrance())
                 || entity instanceof GrenadeProjectile
                 || entity instanceof SymbolProjectile
                 || entity instanceof ThrownBrew

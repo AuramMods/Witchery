@@ -489,6 +489,14 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_WITHER_SPAWN_SOUND_ID, arrival, 0.5, 1.5, 16);
     }
 
+    public static void sendHuntsmanArrival(ServerLevel level, Vec3 center, double height) {
+        sendParticlesAround(level, LEGACY_EXPLOSION_PARTICLE_ID, LEGACY_WITHER_SPAWN_SOUND_ID, center, 1, height, 16);
+    }
+
+    public static void sendHuntsmanWolf(ServerLevel level, Vec3 center) {
+        sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID, center, 2, 2, 10);
+    }
+
     public static void sendBrewOwlArrival(ServerLevel level, Vec3 position) {
         sendParticlesAround(level, LEGACY_PORTAL_PARTICLE_ID, LEGACY_ENDERMAN_TELEPORT_SOUND_ID, position, 1, 1, 16);
     }

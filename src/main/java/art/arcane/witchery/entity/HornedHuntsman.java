@@ -1,12 +1,12 @@
 package art.arcane.witchery.entity;
 
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerBossEvent;
@@ -16,6 +16,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -53,7 +54,7 @@ public final class HornedHuntsman extends Monster implements RangedAttackMob {
             BossEvent.BossBarOverlay.PROGRESS);
     private int entranceTicks;
     private int attackTicks;
-    private int teleportCooldown;
+    private int lastTeleportTick;
     private boolean explosiveEntrance;
     private boolean playerCreated;
 
@@ -83,32 +84,28 @@ public final class HornedHuntsman extends Monster implements RangedAttackMob {
 
     public static boolean summon(ServerPlayer caller) {
         ServerLevel world = caller.serverLevel();
+        BlockPos origin = new BlockPos((int) caller.getX(), (int) caller.getY(), (int) caller.getZ());
+        var at = origin.offset(huntOffset(world.random), 0, huntOffset(world.random)).mutable();
+        if (!world.hasChunkAt(at) || !world.getWorldBorder().isWithinBounds(at)) return false;
+        while (!world.isEmptyBlock(at) && at.getY() < Math.min(origin.getY() + 8, world.getMaxBuildHeight() - 4)) {
+            at.move(Direction.UP);
+        }
+        while (at.getY() > world.getMinBuildHeight() && world.isEmptyBlock(at)) at.move(Direction.DOWN);
+        at.move(Direction.UP);
+        var floor = at.below();
+        if (!world.getBlockState(floor).isFaceSturdy(world, floor, Direction.UP)) return false;
         var huntsman = WitcheryEntities.HORNED_HUNTSMAN.get().create(world);
         if (huntsman == null) return false;
-        BlockPos origin = caller.blockPosition();
-        for (int i = 0; i < 8; i++) {
-            var at = origin.offset(huntOffset(caller), 0, huntOffset(caller)).mutable();
-            if (!world.hasChunkAt(at) || !world.getWorldBorder().isWithinBounds(at)) continue;
-            while (!world.isEmptyBlock(at) && at.getY() < Math.min(origin.getY() + 8, world.getMaxBuildHeight() - 4)) {
-                at.move(Direction.UP);
-            }
-            while (at.getY() > world.getMinBuildHeight() && world.isEmptyBlock(at.below())) at.move(Direction.DOWN);
-            var floor = at.below();
-            if (!world.getBlockState(floor).isFaceSturdy(world, floor, Direction.UP)) continue;
-            huntsman.moveTo(at.getX() + 0.5, at.getY() + 0.05, at.getZ() + 0.5, 0, 0);
-            if (!world.noCollision(huntsman) || world.containsAnyLiquid(huntsman.getBoundingBox())) continue;
-            huntsman.beginEntrance(true);
-            if (!world.addFreshEntity(huntsman)) return false;
-            world.sendParticles(ParticleTypes.POOF, huntsman.getX(), huntsman.getY(0.5), huntsman.getZ(),
-                    16, 0.5, 1, 0.5, 0.05);
-            world.playSound(null, at, SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 1, 1);
-            return true;
-        }
-        return false;
+        huntsman.moveTo(at.getX() + 0.5, at.getY() + 0.05, at.getZ() + 0.5, 0, 0);
+        if (!world.noCollision(huntsman) || world.containsAnyLiquid(huntsman.getBoundingBox())) return false;
+        huntsman.beginEntrance(true);
+        if (!world.addFreshEntity(huntsman)) return false;
+        WitcheryNetwork.sendHuntsmanArrival(world, huntsman.position(), huntsman.getBbHeight());
+        return true;
     }
 
-    private static int huntOffset(Player caller) {
-        int offset = caller.getRandom().nextInt(13) - 8;
+    private static int huntOffset(RandomSource random) {
+        int offset = random.nextInt(13) - 8;
         return offset > -2 ? offset + 4 : offset;
     }
 
@@ -137,50 +134,51 @@ public final class HornedHuntsman extends Monster implements RangedAttackMob {
         bossBar.setName(getDisplayName());
         bossBar.setProgress(getHealth() / getMaxHealth());
         if (entranceTicks > 0) {
-            if (entranceTicks % 10 == 0) heal(20);
             if (--entranceTicks == 0) {
                 setNoAi(false);
                 if (explosiveEntrance) world.explode(this, getX(), getEyeY(), getZ(), 6, false, Level.ExplosionInteraction.MOB);
-                world.levelEvent(1023, blockPosition(), 0);
+                world.globalLevelEvent(1023, blockPosition(), 0);
             }
+            if (tickCount % 10 == 0) heal(20);
             return;
         }
         if (isNoAi()) return;
         if (tickCount % 20 == 0) heal(1);
-        if (teleportCooldown > 0) teleportCooldown--;
         LivingEntity target = getTarget();
-        if (target == null) return;
-        boolean visible = getSensing().hasLineOfSight(target);
-        if (visible && tickCount % 20 == 0 && random.nextInt(5) == 0) {
+        if (tickCount % 20 == 0 && world.random.nextInt(5) == 0 && target != null && getSensing().hasLineOfSight(target)) {
             getLookControl().setLookAt(target, 30, 30);
-            performRangedAttack(target, Mth.clamp((float) distanceToSqr(target) / 30, 0.1F, 1));
+            performRangedAttack(target, distanceTo(target) / 30.0F);
         }
-        if (visible && distanceToSqr(target) <= 256 && tickCount % (200 + random.nextInt(4) * 100) == 0) {
+        if (tickCount % (200 + world.random.nextInt(4) * 100) == 0 && target != null
+                && distanceToSqr(target) <= 256 && getSensing().hasLineOfSight(target)) {
             summonWolf(world, target);
         }
-        if (getNavigation().isDone() && teleportCooldown == 0) {
-            teleportCooldown = 200;
-            Vec3 toward = target.getEyePosition().subtract(getEyePosition()).normalize().scale(8);
+        if (target != null && getNavigation().isDone() && tickCount - lastTeleportTick > 200) {
+            lastTeleportTick = tickCount;
+            Vec3 toward = new Vec3(target.getX() - getX(), target.getY() - target.getEyeHeight() - getY(0.5),
+                    target.getZ() - getZ()).normalize().scale(8);
+            Vec3 origin = position();
             Vec3 destination = position().add(toward).add(random.nextDouble() * 8 - 4, random.nextInt(16) - 8,
                     random.nextDouble() * 8 - 4);
             if (randomTeleport(destination.x, destination.y, destination.z, true)) {
+                world.playSound(null, origin.x, origin.y, origin.z, SoundEvents.ENDERMAN_TELEPORT, SoundSource.HOSTILE, 1, 1);
                 playSound(SoundEvents.ENDERMAN_TELEPORT, 1, 1);
             }
         }
     }
 
     private void summonWolf(ServerLevel world, LivingEntity target) {
+        double x = getX() - 0.5 + world.random.nextDouble();
+        double z = getZ() - 0.5 + world.random.nextDouble();
         Wolf wolf = EntityType.WOLF.create(world);
         if (wolf == null) return;
-        wolf.moveTo(getX() + random.nextDouble() - 0.5, getY(), getZ() + random.nextDouble() - 0.5, getYRot(), 0);
+        wolf.moveTo(x, getY(), z, yBodyRot, getXRot());
         wolf.setTarget(target);
         wolf.startPersistentAngerTimer();
         wolf.setPersistentAngerTarget(target.getUUID());
         wolf.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 20_000, 1));
         if (world.addFreshEntity(wolf)) {
-            world.sendParticles(ParticleTypes.INSTANT_EFFECT, wolf.getX(), wolf.getY(0.5), wolf.getZ(),
-                    10, 0.5, 0.5, 0.5, 0.02);
-            wolf.playSound(SoundEvents.FIRE_EXTINGUISH, 1, 1);
+            WitcheryNetwork.sendHuntsmanWolf(world, wolf.position());
         }
     }
 
@@ -199,9 +197,14 @@ public final class HornedHuntsman extends Monster implements RangedAttackMob {
         Arrow arrow = new Arrow(level(), this);
         double dx = target.getX() - getX();
         double dz = target.getZ() - getZ();
+        double horizontal = Math.sqrt(dx * dx + dz * dz);
+        double launchY = getEyeY() - 0.1;
+        if (horizontal >= 1.0E-7) {
+            arrow.setPos(getX() + dx / horizontal, launchY, getZ() + dz / horizontal);
+        }
         double dy = target.getY(1.0 / 3) - arrow.getY();
         int difficulty = level().getDifficulty().getId();
-        arrow.shoot(dx, dy + Math.sqrt(dx * dx + dz * dz) * 0.2, dz, 1.6F, 14 - difficulty * 4);
+        arrow.shoot(dx, dy + horizontal * 0.2, dz, 1.6F, 14 - difficulty * 4);
         arrow.setBaseDamage(strength * 8 + random.nextGaussian() * 0.25 + difficulty * 0.11);
         arrow.setKnockback(2);
         playSound(SoundEvents.ARROW_SHOOT, 1, 1 / (random.nextFloat() * 0.4F + 0.8F));
@@ -251,6 +254,8 @@ public final class HornedHuntsman extends Monster implements RangedAttackMob {
     }
 
     public int attackTicks() { return attackTicks; }
+
+    public boolean hasActiveEntrance() { return entranceTicks > 0; }
 
     @Override
     public void startSeenByPlayer(ServerPlayer player) {
