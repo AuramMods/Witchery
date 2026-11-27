@@ -740,6 +740,13 @@
 - [x] Restart the packaged dedicated server while Nature's Power and Calling the Beasts are active. Both advanced from their saved stages and the resumed Calling the Beasts summoned an ocelot from the next search region.
 - [x] Run Java 17 data generation, JAR reobfuscation, and the full 481-case Forge GameTest suite. All 481 passed. Eight cases cover the recipe codec, cure data, Forge event cancellation, cat bonuses, portable resumption, surface conversion, legacy stage import, and coven and octant behavior.
 
+### Fertility and Nature's Power comparison (2026-11-27)
+
+- [x] Compare both Fertility recipes against the original expanding wave. The inner edge is excluded and the outer edge is included. The wave clears Nausea, Blindness, and Poison, leaves Weakness, and immediately cures a baby Zombie Villager. With the caster absent, the cures still run and the block action skips bonemeal. The original and packaged servers agree on these cases.
+- [x] Restore Nature's Power's overlapping rows, two end trims per pass, and repeated growth attempts from the rite's fake player. The lower scan accepts full snow blocks over the candidate soil. Ground next to a still source has the original higher chance of turning to water. A placement during the patch can take a neighboring source out of that test until the next pulse. The original seven short-grass slots and seven fern slots stay in the 29-entry plant pool.
+- [x] In survival, activate Nature's Power with six distinct saplings and cast both Fertility recipes. The fixture supplied the offerings, rings, altar charge, and targets. Both casts grew wheat and cured a baby Zombie Villager. Two muted background clients rejoined after the dedicated restart. Nature's Power reopened at stage 17 and increased the grass count from 350 to 475. Both villagers kept their names and persisted.
+- [x] Compare 323 observations on each packaged profile. Both match 322. In the remaining case, water over clay gives brightness 12 in 0.24.1 and 15 in Forge 1.20.1. The modern placement rule keeps the water cell at that brightness. The preceding clean Forge JAR matched 150 observations.
+
 ## Taglock Curses and Cures (2026-11-21)
 
 - [x] Restore the original curses and cures for Misfortune, Insanity, Sinking and Overheating. All eight take a filled Taglock Kit and 2,000 altar power. The curses use a medium Infernal ring in a thunderstorm, and the cures use a small white ring.
@@ -3070,6 +3077,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Compare the wolf curse and both transformation cures, including the realm and moon rules, original ward sequence, coordinates, and completion packets. [Wolf curse and transformation cures](#wolf-curse-and-transformation-cures-2026-11-27)
   - [x] Compare Glyphic Transformation and the shared dropped-offering search, including stack order, height boundaries, partial rings and per-glyph cues. [Glyphic Transformation and loose offerings](#glyphic-transformation-and-loose-offerings-2026-11-27)
   - [x] Compare [all seven Forestation rites](#forestation-pulse-comparison-2026-11-27), including candidate selection, original growth cues and bonemeal identity, coven ranges, and local and Waystone upkeep across restart.
+  - [x] Compare [both Fertility rites and Nature's Power](#fertility-and-natures-power-comparison-2026-11-27), including cure boundaries, repeated terrain rolls, and saved upkeep.
   - [x] Compare [Blight and Blindness actions](#blight-and-blindness-action-comparison-2026-11-26), including terrain and creature conversion.
   - [x] Compare [Hell on Earth terrain and fire](#hell-on-earth-terrain-comparison-2026-11-26), including fire support, soil rolls, and Forge protections.
   - [x] Compare [Rain of Toads](#rain-of-toads-action-comparison-2026-11-26), including the shower's coordinates and ordering, the coven refund, and expiration and poison.

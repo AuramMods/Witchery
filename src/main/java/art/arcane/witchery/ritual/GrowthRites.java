@@ -1,6 +1,7 @@
 package art.arcane.witchery.ritual;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.RiteHeartBlock;
 import art.arcane.witchery.block.RitualGlyphBlock;
 import art.arcane.witchery.config.ConfiguredBlockState;
@@ -27,8 +28,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.SaplingBlock;
-import net.minecraft.world.level.block.VineBlock;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -44,6 +44,7 @@ final class GrowthRites {
     private static final TagKey<Block> SOIL = TagKey.create(Registries.BLOCK,
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "natures_power_replaceable"));
     private static final LandscapeRites.Species[] TREES = LandscapeRites.Species.values();
+    private static final int PATCH_RADIUS = 3;
 
     private GrowthRites() {}
 
@@ -84,20 +85,34 @@ final class GrowthRites {
         int reach = 14 + 2 * coven;
         RandomSource random = level.getRandom();
         BlockPos column = heart.offset(random.nextInt(2 * reach) - reach, -1, random.nextInt(2 * reach) - reach);
-        level.levelEvent(2005, heart.above(), 0);
-        if (!level.hasChunkAt(column)) return;
+        level.levelEvent(LevelEvent.PARTICLES_PLANT_GROWTH, heart.above(), 0);
+        if (!level.getWorldBorder().isWithinBounds(column)) return;
         BlockPos surface = exposedSurface(level, column);
         if (surface == null) return;
-        level.levelEvent(2005, surface.above(), 0);
+        level.levelEvent(LevelEvent.PARTICLES_PLANT_GROWTH, surface.above(), 0);
 
-        // The midpoint circle of radius three has rows with half-widths 1, 2, 3, 3, 3, 2, 1.
         ServerPlayer grower = FakePlayerFactory.getMinecraft(level);
         var replaceableSoil = replaceableSoil();
-        for (int z = -3; z <= 3; z++) {
-            int halfWidth = Math.min(3, 4 - Math.abs(z));
-            int left = -halfWidth + (random.nextInt(5) == 0 ? 1 : 0);
-            int right = halfWidth - (random.nextInt(5) == 0 ? 1 : 0);
-            for (int x = left; x <= right; x++) naturalize(level, surface.offset(x, 0, z), grower, replaceableSoil);
+        Set<BlockPos> unsettledSources = new HashSet<>();
+        int error = 1 - PATCH_RADIUS;
+        for (int x = PATCH_RADIUS, z = 0; x >= z; z++) {
+            // Each pass can change the water neighbors and plants seen by the next overlapping span.
+            naturalizeSpan(level, surface, x, z, grower, replaceableSoil, unsettledSources);
+            naturalizeSpan(level, surface, z, x, grower, replaceableSoil, unsettledSources);
+            naturalizeSpan(level, surface, x, -z, grower, replaceableSoil, unsettledSources);
+            naturalizeSpan(level, surface, z, -x, grower, replaceableSoil, unsettledSources);
+            if (error < 0) error += 2 * (z + 1) + 1;
+            else error += 2 * (z - --x + 2);
+        }
+    }
+
+    private static void naturalizeSpan(ServerLevel level, BlockPos center, int halfWidth, int z, ServerPlayer grower,
+                                       Predicate<BlockState> replaceableSoil, Set<BlockPos> unsettledSources) {
+        RandomSource random = level.getRandom();
+        int left = -halfWidth + (random.nextInt(5) == 0 ? 1 : 0);
+        int right = halfWidth - (random.nextInt(5) == 0 ? 1 : 0);
+        for (int x = left; x <= right; x++) {
+            naturalize(level, center.offset(x, 0, z), grower, replaceableSoil, unsettledSources);
         }
     }
 
@@ -138,50 +153,67 @@ final class GrowthRites {
             if (height > 0) {
                 BlockPos below = column.below(height);
                 var cover = level.getBlockState(below.above());
-                if (level.getBlockState(below).blocksMotion() && (cover.isAir() || cover.is(Blocks.SNOW))) return below;
+                if (level.getBlockState(below).blocksMotion() && (cover.isAir() || cover.is(Blocks.SNOW_BLOCK))) return below;
             }
         }
         return null;
     }
 
     private static void naturalize(ServerLevel level, BlockPos ground, ServerPlayer grower,
-                                   Predicate<BlockState> replaceableSoil) {
-        if (!level.hasChunkAt(ground) || !level.getWorldBorder().isWithinBounds(ground)) return;
+                                   Predicate<BlockState> replaceableSoil, Set<BlockPos> unsettledSources) {
+        if (!level.getWorldBorder().isWithinBounds(ground)) return;
         BlockPos top = ground.above();
         BlockState cover = level.getBlockState(top);
         if (cover.blocksMotion()) return;
         BlockState soil = level.getBlockState(ground);
         RandomSource random = level.getRandom();
-        boolean vinesOrChalk = cover.getBlock() instanceof VineBlock || cover.getBlock() instanceof RitualGlyphBlock
-                || cover.getBlock() instanceof RiteHeartBlock
-                || cover.is(Blocks.GRASS) || cover.is(Blocks.FERN) || cover.is(Blocks.TALL_GRASS) || cover.is(Blocks.LARGE_FERN);
+        boolean vineMaterial = cover.is(Blocks.VINE) || cover.is(Blocks.GRASS) || cover.is(Blocks.FERN)
+                || cover.getBlock() instanceof RitualGlyphBlock || cover.getBlock() instanceof RiteHeartBlock
+                || cover.getBlock() instanceof DreamCatcherBlock;
         if (replaceableSoil.test(soil) && random.nextInt(8) != 0) {
-            BlockState replacement = !vinesOrChalk && random.nextDouble() <= (adjacentWater(level, ground) ? 0.7 : 0.02)
+            BlockState replacement = !vineMaterial && random.nextDouble() <= (adjacentWater(level, ground, unsettledSources) ? 0.7 : 0.02)
                     ? Blocks.WATER.defaultBlockState() : Blocks.GRASS_BLOCK.defaultBlockState();
-            LandscapeRites.replace(level, ground, replacement, grower);
+            if (placeNaturalBlock(level, ground, replacement, grower, unsettledSources)) soil = replacement;
         }
-        if (!soil.isAir() && !soil.is(BlockTags.LEAVES) && (cover.isAir() || cover.is(Blocks.SNOW)) && random.nextInt(4) == 0) {
+        boolean excludedLeaves = soil.is(BlockTags.LEAVES) && !soil.is(Blocks.ACACIA_LEAVES) && !soil.is(Blocks.DARK_OAK_LEAVES);
+        if (!vineMaterial && !soil.isAir() && !excludedLeaves && random.nextInt(4) == 0) {
             BlockState plant = randomPlant(random);
-            if (plant.canSurvive(level, top)) LandscapeRites.replace(level, top, plant, grower);
+            if (level.getBlockState(top).canBeReplaced() && plant.canSurvive(level, top)
+                    && (!plant.is(Blocks.PUMPKIN) || soil.isFaceSturdy(level, ground, Direction.UP))) {
+                placeNaturalBlock(level, top, plant, grower, unsettledSources);
+            }
         }
         if (random.nextInt(3) == 0 && level.mayInteract(grower, top)) {
             BoneMealItem.applyBonemeal(new ItemStack(Items.BONE_MEAL), level, top, grower);
-            for (int attempt = 0; attempt < 8 && level.getBlockState(top).getBlock() instanceof SaplingBlock; attempt++) {
+            for (int attempt = 0; attempt < 8 && LandscapeRites.isLegacySapling(level.getBlockState(top)); attempt++) {
                 BoneMealItem.applyBonemeal(new ItemStack(Items.BONE_MEAL), level, top, grower);
             }
         }
     }
 
-    private static boolean adjacentWater(ServerLevel level, BlockPos pos) {
+    private static boolean placeNaturalBlock(ServerLevel level, BlockPos pos, BlockState replacement, ServerPlayer grower,
+                                             Set<BlockPos> unsettledSources) {
+        BlockState previous = level.getBlockState(pos);
+        if (!LandscapeRites.replace(level, pos, replacement, grower)) return false;
+        if (!previous.equals(replacement)) {
+            // A neighboring write switched stationary water to flowing water in 1.7.10, even at level zero.
+            unsettledSources.remove(pos);
+            for (Direction direction : Direction.values()) unsettledSources.add(pos.relative(direction));
+        }
+        return true;
+    }
+
+    private static boolean adjacentWater(ServerLevel level, BlockPos pos, Set<BlockPos> unsettledSources) {
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             BlockPos neighbor = pos.relative(direction);
-            if (level.hasChunkAt(neighbor) && level.getBlockState(neighbor).is(Blocks.WATER)) return true;
+            var state = level.getBlockState(neighbor);
+            if (state.is(Blocks.WATER) && state.getFluidState().isSource() && !unsettledSources.contains(neighbor)) return true;
         }
         return false;
     }
 
     private static BlockState randomPlant(RandomSource random) {
-        // The 1.7.10 pool weights short grass and ferns six times each.
+        // Seven slots each produce short grass and ferns.
         int choice = random.nextInt(29);
         if (choice < TREES.length) return TREES[choice].saplingState();
         return switch (choice) {

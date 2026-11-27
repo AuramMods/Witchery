@@ -273,12 +273,14 @@ public final class LandscapeRites {
         for (int attempt = 0; attempt < 11; attempt++) {
             // The original invokes Forge's bonemeal hook once even when the soil cannot grow a sapling.
             BlockState current = level.getBlockState(site);
-            boolean stillSapling = legacy
-                    ? LEGACY_VANILLA_SAPLINGS.contains(current.getBlock()) || current.is(WitcheryBlocks.getRequired("witchsapling").get())
-                    : current.is(sapling.getBlock());
+            boolean stillSapling = legacy ? isLegacySapling(current) : current.is(sapling.getBlock());
             if (!stillSapling && (!legacy || attempt != 0)) break;
             BoneMealItem.applyBonemeal(new ItemStack(Items.BONE_MEAL), level, site, grower);
         }
+    }
+
+    static boolean isLegacySapling(BlockState state) {
+        return LEGACY_VANILLA_SAPLINGS.contains(state.getBlock()) || state.is(WitcheryBlocks.getRequired("witchsapling").get());
     }
 
     @Nullable
