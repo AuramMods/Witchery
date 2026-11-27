@@ -451,9 +451,12 @@ public final class LegacyChunkUpgrade {
         return (blocks[index] & 0xFF) | (nibble(highBits, index) << 8);
     }
 
+    static boolean isOriginalChunkAt(CompoundTag level, BlockPos pos) {
+        return level.contains("xPos", Tag.TAG_ANY_NUMERIC) && level.contains("zPos", Tag.TAG_ANY_NUMERIC)
+                && (pos.getX() >> 4) == level.getInt("xPos") && (pos.getZ() >> 4) == level.getInt("zPos");
+    }
+
     static int savedBlockIdAndMetadata(CompoundTag level, BlockPos pos) {
-        if (!level.contains("xPos", Tag.TAG_ANY_NUMERIC) || !level.contains("zPos", Tag.TAG_ANY_NUMERIC)
-                || (pos.getX() >> 4) != level.getInt("xPos") || (pos.getZ() >> 4) != level.getInt("zPos")) return -1;
         for (Tag value : level.getList("Sections", Tag.TAG_COMPOUND)) {
             CompoundTag section = (CompoundTag) value;
             if (section.getInt("Y") != pos.getY() >> 4) continue;

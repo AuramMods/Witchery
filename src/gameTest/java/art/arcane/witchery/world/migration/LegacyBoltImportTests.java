@@ -15,7 +15,9 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.storage.ChunkStorage;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.gametest.GameTestHolder;
@@ -23,6 +25,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -66,7 +69,7 @@ public final class LegacyBoltImportTests {
         var level = helper.getLevel();
         CompoundTag imported;
         try {
-            writeWitchLogMapping(snapshot);
+            writeBlockMapping(snapshot, "witchlog", WITCH_LOG_ID);
             var fixer = level.getServer().getFixerUpper();
             var intermediate = LegacyChunkUpgrade.upgrade(DataFixTypes.CHUNK, fixer, original, -1, 1493,
                     LegacyWorldIds.find(root));
@@ -141,7 +144,7 @@ public final class LegacyBoltImportTests {
         var root = Files.createTempDirectory("witchery-bolt-anchor-registry");
         var snapshot = root.resolve("witchery-legacy-ids.dat");
         try {
-            writeWitchLogMapping(snapshot);
+            writeBlockMapping(snapshot, "witchlog", WITCH_LOG_ID);
             LegacyWorldIds.find(root).repairStoredItems(reopened, level.getServer().getFixerUpper());
             helper.assertTrue(reopened.getCompound("inBlockState").getString("Name").equals("witchery:witchlog")
                             && !reopened.contains(LegacyBoltAnchors.PENDING),
@@ -186,10 +189,77 @@ public final class LegacyBoltImportTests {
         helper.succeed();
     }
 
-    private static void writeWitchLogMapping(Path target) throws Exception {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_boundary_bolt_anchor", setupTicks = 5)
+    public static void usesTheLoadedImpactCellToResolveAByteSharedAcrossChunks(GameTestHelper helper) throws Exception {
+        var level = helper.getLevel();
+        var inside = helper.absolutePos(new BlockPos(6, 4, 5));
+        var chunk = new ChunkPos(inside);
+        var impact = new BlockPos(chunk.getMinBlockX(), inside.getY(), inside.getZ());
+        var outside = Vec3.atLowerCornerOf(impact).add(-0.05, 0.48, 0.5);
+        var source = new ChunkPos(BlockPos.containing(outside));
+        var original = TagParser.parseTag("""
+                {Level:{xPos:%d,zPos:%d,TerrainPopulated:1b,Entities:[
+                  {id:"witchery.bolt",xTile:%d,yTile:%d,zTile:%d,inTile:-97b,inData:3b,inGround:1b,
+                   Pos:[%sd,%sd,%sd], Motion:[0.792d,-0.05d,0.0d]}
+                ]}}
+                """.formatted(source.x, source.z, impact.getX(), impact.getY(), impact.getZ(), outside.x, outside.y, outside.z));
+        var root = Files.createTempDirectory("witchery-boundary-bolt");
+        var snapshot = root.resolve("witchery-legacy-ids.dat");
+        CompoundTag saved;
+        try {
+            writeBlockMapping(snapshot, "statueofworship", 415);
+            var ids = LegacyWorldIds.find(root);
+            var fixer = level.getServer().getFixerUpper();
+            var intermediate = LegacyChunkUpgrade.upgrade(DataFixTypes.CHUNK, fixer, original, -1, 1493, ids);
+            ChunkStorage.injectDatafixingContext(intermediate, Level.OVERWORLD, Optional.empty());
+            var imported = DataFixTypes.CHUNK.updateToCurrentVersion(fixer, intermediate, 1493);
+            LegacyChunkUpgrade.finish(imported, Level.OVERWORLD);
+            var entry = imported.getList("entities", Tag.TAG_COMPOUND).getCompound(0);
+            var bolt = WitcheryEntities.BOLT.get().create(level);
+            bolt.load(entry);
+            saved = bolt.saveWithoutId(new CompoundTag());
+            ids.repairStoredItems(saved, fixer);
+        } finally {
+            Files.deleteIfExists(snapshot);
+            Files.deleteIfExists(root);
+        }
+        var candidates = saved.getCompound(LegacyBoltAnchors.PENDING)
+                .getList(LegacyBoltAnchors.BOUNDARY_STATES, Tag.TAG_COMPOUND);
+        var terracotta = Blocks.LIGHT_BLUE_TERRACOTTA.defaultBlockState();
+        var statue = LegacySchematicBlocks.read("witchery:statueofworship", 3, 0);
+        helper.assertTrue(candidates.size() == 2 && candidates.contains(NbtUtils.writeBlockState(terracotta))
+                        && candidates.contains(NbtUtils.writeBlockState(statue)) && !saved.contains("inBlockState"),
+                "The original and saved Bolt keep both possible mappings without choosing by numeric ID alone");
+        var previous = level.getBlockState(impact);
+        try {
+            for (var state : List.of(statue, terracotta, Blocks.STONE.defaultBlockState())) {
+                level.setBlockAndUpdate(impact, state);
+                var bolt = WitcheryEntities.BOLT.get().create(level);
+                bolt.load(saved);
+                helper.assertTrue(bolt.canResolveLegacyBoundaryAnchor(), "The loaded impact cell lets the pending Bolt tick");
+                bolt.tick();
+                var resolved = bolt.saveWithoutId(new CompoundTag());
+                helper.assertTrue(!resolved.contains(LegacyBoltAnchors.PENDING) && !bolt.canResolveLegacyBoundaryAnchor(),
+                        "The checked impact cell clears the pending match and its tick exemption");
+                if (state.is(Blocks.STONE)) {
+                    helper.assertTrue(!resolved.getBoolean("inGround") && !resolved.contains(LegacyBoltAnchors.POSITION),
+                            "A different block releases the saved Bolt");
+                } else {
+                    helper.assertTrue(resolved.getBoolean("inGround") && bolt.position().equals(outside)
+                                    && resolved.getCompound("inBlockState").equals(NbtUtils.writeBlockState(state)),
+                            "The saved Bolt stays at its original position and records the matching impact state");
+                }
+            }
+        } finally {
+            level.setBlockAndUpdate(impact, previous);
+        }
+        helper.succeed();
+    }
+
+    private static void writeBlockMapping(Path target, String name, int id) throws Exception {
         var entry = new CompoundTag();
-        entry.putString("K", "\u0001witchery:witchlog");
-        entry.putInt("V", WITCH_LOG_ID);
+        entry.putString("K", "\u0001witchery:" + name);
+        entry.putInt("V", id);
         var entries = new ListTag();
         entries.add(entry);
         var snapshot = new CompoundTag();

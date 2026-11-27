@@ -11,6 +11,7 @@ import art.arcane.witchery.entity.LostSoul;
 import art.arcane.witchery.entity.SymbolProjectile;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.entity.WingedMonkey;
+import art.arcane.witchery.entity.WitcheryBolt;
 import art.arcane.witchery.entity.WitcheryFollower;
 import art.arcane.witchery.entity.WitchOwl;
 import net.minecraft.world.entity.Entity;
@@ -34,6 +35,7 @@ abstract class DoesItTickActiveEntityMixin {
                 || (entity instanceof HobgoblinGod god && god.hasActiveEntrance())
                 || (entity instanceof Leonard leonard && leonard.hasActiveEntrance())
                 || (entity instanceof LostSoul soul && soul.hasTimedLife())
+                || (entity instanceof WitcheryBolt bolt && bolt.canResolveLegacyBoundaryAnchor())
                 || entity instanceof GrenadeProjectile
                 || entity instanceof SymbolProjectile
                 || entity instanceof ThrownBrew

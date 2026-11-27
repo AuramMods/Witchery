@@ -4,6 +4,7 @@ import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.ByteTag;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.NumericTag;
 import net.minecraft.nbt.Tag;
@@ -14,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 public final class LegacyBoltAnchors {
     public static final String PENDING = "WITCBoltAnchor";
     public static final String POSITION = "WITCBoltPosition";
+    public static final String BOUNDARY_STATES = "BoundaryStates";
     private static final String SAVED_STATE = "WitcheryLegacyBoltState";
 
     private LegacyBoltAnchors() {}
@@ -24,9 +26,12 @@ public final class LegacyBoltAnchors {
             int id = Byte.toUnsignedInt(number.getAsByte());
             var pos = savedPosition(bolt);
             if (originalChunk != null && bolt.getBoolean("inGround") && pos != null) {
-                int saved = LegacyChunkUpgrade.savedBlockIdAndMetadata(originalChunk, pos);
-                if (saved >= 0 && ((saved >> 4) & 255) == id && (saved & 15) == (bolt.getInt("inData") & 15)) {
-                    id = saved >> 4;
+                int metadata = bolt.getInt("inData") & 15;
+                if (LegacyChunkUpgrade.isOriginalChunkAt(originalChunk, pos)) {
+                    int saved = LegacyChunkUpgrade.savedBlockIdAndMetadata(originalChunk, pos);
+                    if (saved >= 0 && ((saved >> 4) & 255) == id && (saved & 15) == metadata) id = saved >> 4;
+                } else if (!bolt.contains("inBlockState", Tag.TAG_COMPOUND)) {
+                    deferBoundaryAnchor(bolt, ids, pos, id, metadata);
                 }
             }
             bolt.putInt("inTile", id);
@@ -61,6 +66,7 @@ public final class LegacyBoltAnchors {
         }
 
         CompoundTag saved = bolt.getCompound(PENDING);
+        if (saved.contains(BOUNDARY_STATES, Tag.TAG_LIST)) return;
         Tag block = saved.get("Block");
         if (block == null) block = bolt.get("inTile");
         if (block == null) return;
@@ -78,6 +84,26 @@ public final class LegacyBoltAnchors {
         }
     }
 
+    private static void deferBoundaryAnchor(CompoundTag bolt, LegacyWorldIds ids, BlockPos pos, int id, int metadata) {
+        // Only the impact cell can disambiguate the old byte across the chunk boundary.
+        ListTag states = new ListTag();
+        BlockState low = read(id, metadata, ids);
+        if (low != null && !low.isAir()) states.add(NbtUtils.writeBlockState(low));
+        for (int candidate = id + 256; candidate < 4096; candidate += 256) {
+            ResourceLocation name = ids.block(candidate);
+            if (name == null) continue;
+            BlockState state = LegacySchematicBlocks.read(name.toString(), metadata, 0);
+            if (state != null && !state.isAir()) states.add(NbtUtils.writeBlockState(state));
+        }
+        if (states.isEmpty()) return;
+        var pending = new CompoundTag();
+        pending.putInt("Block", id);
+        pending.putInt("Metadata", metadata);
+        pending.put(BOUNDARY_STATES, states);
+        bolt.put(PENDING, pending);
+        bolt.putLong(POSITION, pos.asLong());
+    }
+
     @Nullable
     private static BlockPos savedPosition(CompoundTag bolt) {
         return bolt.contains("xTile", Tag.TAG_ANY_NUMERIC) && bolt.contains("yTile", Tag.TAG_ANY_NUMERIC)
@@ -90,6 +116,11 @@ public final class LegacyBoltAnchors {
         if (block.getId() == Tag.TAG_STRING) return LegacySchematicBlocks.read(block.getAsString(), metadata, 0);
         if (!(block instanceof NumericTag numeric)) return null;
         int id = block instanceof ByteTag ? Byte.toUnsignedInt(numeric.getAsByte()) : numeric.getAsInt();
+        return read(id, metadata, ids);
+    }
+
+    @Nullable
+    private static BlockState read(int id, int metadata, @Nullable LegacyWorldIds ids) {
         ResourceLocation name = ids == null ? null : ids.block(id);
         if (name != null) return LegacySchematicBlocks.read(name.toString(), metadata, 0);
         if (id < 0 || id > 255) return null;

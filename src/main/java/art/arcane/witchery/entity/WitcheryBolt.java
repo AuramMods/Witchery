@@ -105,7 +105,8 @@ public final class WitcheryBolt extends AbstractArrow {
                 ? BlockPos.of(tag.getLong(LegacyBoltAnchors.POSITION)) : null;
         savedAnchorState = savedAnchorPosition != null && tag.get("inBlockState") instanceof CompoundTag state
                 ? NbtUtils.readBlockState(level().holderLookup(Registries.BLOCK), state) : null;
-        entityData.set(LEGACY_ATTACHMENT, inGround && savedAnchorState != null);
+        entityData.set(LEGACY_ATTACHMENT, inGround && savedAnchorPosition != null
+                && (savedAnchorState != null || hasPendingLegacyBoundaryAnchor()));
         if (!tag.contains("pickup") && tag.contains("player", Tag.TAG_ANY_NUMERIC)) {
             pickup = tag.getBoolean("player") ? Pickup.ALLOWED : Pickup.DISALLOWED;
         }
@@ -116,17 +117,34 @@ public final class WitcheryBolt extends AbstractArrow {
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         if (inGround && pendingAnchor != null) tag.put(LegacyBoltAnchors.PENDING, pendingAnchor.copy());
-        if (inGround && savedAnchorPosition != null) tag.putLong(LegacyBoltAnchors.POSITION, savedAnchorPosition.asLong());
+        if (inGround && savedAnchorPosition != null) {
+            tag.putLong(LegacyBoltAnchors.POSITION, savedAnchorPosition.asLong());
+            if (savedAnchorState != null) tag.put("inBlockState", NbtUtils.writeBlockState(savedAnchorState));
+        }
         tag.putInt("boltType", kind().ordinal());
+    }
+
+    private boolean hasPendingLegacyBoundaryAnchor() {
+        return inGround && pendingAnchor != null && pendingAnchor.contains(LegacyBoltAnchors.BOUNDARY_STATES, Tag.TAG_LIST);
+    }
+
+    public boolean canResolveLegacyBoundaryAnchor() {
+        return hasPendingLegacyBoundaryAnchor() && savedAnchorPosition != null && level().hasChunkAt(savedAnchorPosition);
     }
 
     @Nullable
     public Boolean shouldFallFromSavedAnchor() {
         if (!inGround || !entityData.get(LEGACY_ATTACHMENT)) return null;
         if (level().isClientSide) return false;
-        if (savedAnchorPosition == null || savedAnchorState == null) return null;
+        if (savedAnchorPosition == null) return null;
         if (!level().hasChunkAt(savedAnchorPosition)) return false;
-        if (level().getBlockState(savedAnchorPosition).equals(savedAnchorState)) return false;
+        BlockState current = level().getBlockState(savedAnchorPosition);
+        if (savedAnchorState == null && pendingAnchor != null && pendingAnchor
+                .getList(LegacyBoltAnchors.BOUNDARY_STATES, Tag.TAG_COMPOUND).contains(NbtUtils.writeBlockState(current))) {
+            savedAnchorState = current;
+            pendingAnchor = null;
+        }
+        if (current.equals(savedAnchorState)) return false;
         clearSavedAnchor();
         hasImpulse = true;
         return true;
