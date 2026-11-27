@@ -2,6 +2,18 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Placed Brew Gas rendering (2026-11-27)
+
+- The original runtime emitted 44 vertices per cell and 572 across 13 cases. The previous packaged renderer emitted 24. The rebuilt Forge mesh matches the positions, UVs, flat tint, face light and both opacity values for open cells, every neighbor direction, opaque walls, glass, the default tint, an emitting block and the dark slab fallback. See `build/qa-brew-gas-mesh/native/reference.log`.
+- The initial block shader pass submitted gas before Fabulous cleared its terrain transparency buffer. The final layer uses the same shader in the entity transparency buffer. The normal dispenser released the supplied tinted brew, and muted frame captures show gas inside and outside in Fancy and Fabulous. The Overworld check recorded a dispatch 70 blocks from the source. See `build/qa-brew-gas-mesh/{clean,fabulous,distant}/final.log`.
+- Copied Auram matched all 13 cases and rendered the live dispersal from both views after JEI startup. The inside frame's particle occluded part of the view, so the comparison samples unobstructed wall pixels. Read `build/qa-brew-gas-mesh/{comparison.log,frames.log,pack/final.log}`.
+- Local Java 17 data generation, JAR reobfuscation and all 635 required Forge GameTests passed. The archive at `build/qa-brew-gas-mesh/candidate.jar` has SHA-256 `41239dd3b7fa858296777e243702ac270f507609092472791dceb26768eb265c`. See `build/qa-brew-gas-mesh/gametest-final.log`.
+
+## Original creature-power activation reference (2026-11-27)
+
+- The released dedicated server recorded 24 activations in `build/qa-creature-power-actions/native/reference.log`. With seed 42 the Squid living hit plays the 1.0-volume cue at pitch 1.1706793 before applying 200 ticks of Blindness, then returns 763 as the next world draw. A miss and Minecart hit play no cue, apply no effect and return 130. Both Creeper strengths trigger at the caster's recorded location, with the reserve cost doubling at tick 60. The game rule controls block destruction. Replay the casts and the movement inputs in the current port.
+- Packaged Forge matched all three Squid outcomes, pitches and world draws. It debited one infusion charge and one reserve charge in each case. The living-hit cue observed Blindness already applied. Read `build/qa-creature-power-actions/forge-baseline.log` for the measured ordering difference.
+
 ## Placed Brew Liquid rendering (2026-11-27)
 
 - The released 0.24.1 renderer emitted 324 vertices across 18 cases. The preceding Forge package matched only the fully enclosed cell. The rebuilt clean Forge and copied Auram clients matched all cases, including corner heights, texture coordinates, tint, and light. Read `build/qa-brew-liquid-mesh/{native/reference.log,comparison.log}`.

@@ -2577,6 +2577,14 @@ The released 0.24.1 client renderer emitted 324 vertices across 18 cases, includ
 
 Both packaged survival clients saw a dispenser create a tinted source from the fixture-supplied splash brew. Removing its support exposed the falling cell and runoff. The clean Forge chunk builder drew all four sampled cells. Copied Auram routed the same cells through Forge from Embeddium's chunk worker. The copied profile finished building its JEI ingredient filter before the timed release. Both clients ran hidden and unfocused, with master volume zero and the OpenAL No Output device. Read `build/qa-brew-liquid-mesh/clean/live.log` and `build/qa-brew-liquid-mesh/pack/replay.log`.
 
+### Placed Brew Gas rendering (2026-11-27)
+
+The released gas renderer emits 44 vertices per cell. The top uses the central half of the sprite, the walls use the left half, and the bottom uses the whole frame. The top and walls have both windings. A same-cloud or opaque neighbor gives the face 20% opacity. A transparent neighbor gives it 40%. The top samples light at the cell and the other faces sample their adjacent blocks, with the original fallback through an unlit slab. The modern block entity submits those vertices to Minecraft's translucent block shader. Fabulous composites the gas through its entity transparency buffer. Both atlas names use the original 32-frame strip.
+
+The prior packaged Forge renderer emitted 24 vertices. The rebuilt clean Forge client matched all 572 reference vertices across 13 original runtime cases, including each adjoining direction, a fully enclosed cell, glass, light-emitting neighbors and the slab fallback. A real dispenser released a fixture-supplied tinted brew. Frame captures confirmed visible gas inside and outside the cloud in Fancy and Fabulous. The Overworld distance test dispatched the cloud from 70 blocks with render distance set to eight chunks. Read `build/qa-brew-gas-mesh/{native/reference.log,clean/final.log,fabulous/final.log,distant/final.log}`.
+
+Copied Auram matched all 572 reference vertices on the same archive. The survival client replayed the cast after JEI built its ingredient filter and rendered the cloud from both views. The inside frame comparison sampled 4,799 unobstructed wall pixels around an opaque potion particle. Both launch profiles kept the window hidden and unfocused, with master volume zero and OpenAL No Output. Read `build/qa-brew-gas-mesh/{comparison.log,frames.log,pack/final.log}`.
+
 ## Triggered Brews and Cursed Controls (2026-11-20)
 
 - [x] Restore Zombie Head as the zero-power triggered dispersal ingredient. Thrown brews arm the original seven controls. An identical recipe adds a charge, and a different recipe replaces the saved mixture.
@@ -3244,7 +3252,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
 - [x] Restore Hobgoblin mining, worship, crouch, riding, and attack poses. Mog carries her bow in one hand and her skirt and chest stay independent of the torso. Gulg's strike uses the original attack counter and head yaw. The muted packaged client matched 1,386 pose values and all 864 vertex and texture coordinate samples across the three models.
 - [ ] Complete the source and runtime comparison for the remaining models, less common block states, and entity and armor poses.
   - [x] Compare [placed Brew Liquid surfaces and edges](#placed-brew-liquid-rendering-2026-11-27), including all six levels, falling and adjoining cells, the original flow textures, and light and tint per face.
-  - [ ] Compare placed Brew Gas. The original emits two-sided top and wall faces, with the top sampling the central half of the texture and the walls sampling its left half. The modern renderer draws six quads with full sprite coordinates. Compare inner and outer opacity, face lighting, and visibility from inside a cloud.
+  - [x] Compare [placed Brew Gas](#placed-brew-gas-rendering-2026-11-27), including the original texture coordinates, inside and outside visibility, and neighbor opacity and light.
   - [x] Compare the [rotating inventory text for the timed Insanity potion](#insanity-inventory-text-2026-11-27) in both inventory layouts and after restart.
   - [x] Compare [status-effect icons and names](#status-effect-icons-and-names-2026-11-27) in the inventory and HUD.
   - [x] Compare the [Mystic Branch projectile sprite, tints, scale, and camera poses](#mystic-branch-projectile-rendering-2026-11-27) along with normal survival casting and a saved projectile.
@@ -3333,6 +3341,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare [Crystal Ball selection and periodic forecasts](#prediction-reading-and-courtship-comparison-2026-11-27), including Nether eligibility, duplicate saved readings, and repeated suitor courtship.
   - [x] Compare [Infernal creature acquisition](#infernal-creature-variants-2026-11-26) for all 25 original power IDs and modern entity splits.
   - [x] Compare [Infernal combat cues and defenses](#infernal-combat-cues-and-defenses-2026-11-26), including fireball launches, bow cue order, Fire Resistance, and Water Breathing.
+  - [ ] Compare the other creature power casts and their client movement. The original dedicated server trace in `build/qa-creature-power-actions/native/reference.log` covers 24 buff, Squid and Creeper cases. Squid plays its cue before applying Blindness and uses the world random source for the pitch. Compare the effect, cue, random sequence and costs on a living hit, a miss, and a Minecart. Verify the remaining buffs, both Creeper powers and the client movement cases.
 - [ ] Entity AI/combat/spawn tuning parity.
   - [x] Compare [Insanity apparition columns, pursuit, lifetime, rendering, and private cues](#insanity-apparition-behavior-2026-11-27).
   - [x] Compare [Horned Huntsman archery, teleport, wolves, and Horn summons](#horned-huntsman-trial-2026-11-20).
