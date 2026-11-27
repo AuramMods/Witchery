@@ -55,6 +55,7 @@ public final class WitcheryNetwork {
     private static final int LEGACY_HUGE_EXPLOSION_PARTICLE_ID = 0;
     private static final int LEGACY_LARGE_EXPLOSION_PARTICLE_ID = 1;
     private static final int LEGACY_CRIT_PARTICLE_ID = 6;
+    private static final int LEGACY_MAGIC_CRIT_PARTICLE_ID = 7;
     private static final int LEGACY_SMOKE_PARTICLE_ID = 8;
     private static final int LEGACY_MOB_SPELL_PARTICLE_ID = 9;
     private static final int LEGACY_SPELL_PARTICLE_ID = 10;
@@ -498,6 +499,11 @@ public final class WitcheryNetwork {
 
     public static void sendHuntingTrapCatch(ServerLevel level, BlockPos pos) {
         sendParticlesAround(level, LEGACY_RED_DUST_PARTICLE_ID, LEGACY_MANTRAP_SOUND_ID, Vec3.atCenterOf(pos), 0.25, 0.5, 16);
+    }
+
+    public static void sendPlantMineTrigger(ServerLevel level, BlockPos pos) {
+        sendParticlesAround(level, LEGACY_MAGIC_CRIT_PARTICLE_ID, LEGACY_EXPLOSION_SOUND_ID,
+                Vec3.atBottomCenterOf(pos).add(0, 0.05, 0), 0.5, 1, 16);
     }
 
     public static void sendWolfTrapLure(ServerLevel level, LivingEntity wolf) {

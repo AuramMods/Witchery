@@ -2,12 +2,10 @@ package art.arcane.witchery.block;
 
 import art.arcane.witchery.brewing.BrewImpacts;
 import art.arcane.witchery.brewing.BrewTerrain;
+import art.arcane.witchery.network.WitcheryNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
@@ -29,12 +27,14 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraftforge.common.IPlantable;
+import net.minecraftforge.common.PlantType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 import java.util.Optional;
 
-public final class PlantMineBlock extends Block {
+public final class PlantMineBlock extends Block implements IPlantable {
     public static final EnumProperty<Variant> VARIANT = EnumProperty.create("variant", Variant.class);
     private static final VoxelShape SHAPE = box(5.8, 0, 5.8, 10.2, 8.6, 10.2);
 
@@ -61,9 +61,21 @@ public final class PlantMineBlock extends Block {
 
     @Override
     public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
-        BlockState soil = level.getBlockState(pos.below());
+        BlockPos support = pos.below();
+        BlockState soil = level.getBlockState(support);
         return (level.getMaxLocalRawBrightness(pos) >= 8 || level.canSeeSky(pos))
-                && (soil.is(BlockTags.DIRT) || soil.is(BlockTags.SAND) || soil.is(Blocks.FARMLAND));
+                && (soil.canSustainPlant(level, support, Direction.UP, this) || soil.is(BlockTags.SAND) || soil.is(Blocks.MYCELIUM));
+    }
+
+    @Override
+    public PlantType getPlantType(BlockGetter level, BlockPos pos) {
+        return PlantType.PLAINS;
+    }
+
+    @Override
+    public BlockState getPlant(BlockGetter level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        return state.is(this) ? state : defaultBlockState();
     }
 
     @Override
@@ -81,9 +93,7 @@ public final class PlantMineBlock extends Block {
     @Override
     public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         if (!(level instanceof ServerLevel server) || !level.removeBlock(pos, false)) return;
-        server.sendParticles(ParticleTypes.ENCHANTED_HIT, pos.getX() + 0.5, pos.getY() + 0.05, pos.getZ() + 0.5,
-                16, 0.25, 0.4, 0.25, 0.08);
-        server.playSound(null, pos, SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS, 0.5F, 1);
+        WitcheryNetwork.sendPlantMineTrigger(server, pos);
         switch (state.getValue(VARIANT).effect) {
             case WEBS -> BrewTerrain.mineWebs(server, pos);
             case INK -> BrewImpacts.mineInk(server, pos, entity);

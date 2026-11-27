@@ -1,5 +1,6 @@
 package art.arcane.witchery.block;
 
+import art.arcane.witchery.client.ClientWitcherySounds;
 import art.arcane.witchery.entity.AnimalMerchant;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -15,10 +16,15 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ambient.Bat;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.MagmaCube;
+import net.minecraft.world.entity.monster.Silverfish;
 import net.minecraft.world.entity.monster.Slime;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -39,7 +45,7 @@ public final class CritterSnareBlock extends Block {
     private static final VoxelShape SHAPE = box(0.8, 0, 0.8, 15.2, 16, 15.2);
 
     public CritterSnareBlock() {
-        super(Properties.copy(Blocks.DANDELION).noCollission());
+        super(Properties.copy(Blocks.DANDELION).noCollission().randomTicks());
         registerDefaultState(defaultBlockState().setValue(CRITTER, Critter.EMPTY).setValue(STOCKED, false));
     }
 
@@ -55,14 +61,19 @@ public final class CritterSnareBlock extends Block {
 
     @Override
     public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
-        return level.getBlockState(pos.below()).isFaceSturdy(level, pos.below(), Direction.UP);
+        return level.getBlockState(pos.below()).blocksMotion();
     }
 
     @Override
     public BlockState updateShape(BlockState state, Direction side, BlockState neighbor, LevelAccessor level,
                                   BlockPos pos, BlockPos neighborPos) {
-        if (side == Direction.DOWN && !canSurvive(state, level, pos)) return Blocks.AIR.defaultBlockState();
+        if (!state.canSurvive(level, pos)) return Blocks.AIR.defaultBlockState();
         return super.updateShape(state, side, neighbor, level, pos, neighborPos);
+    }
+
+    @Override
+    public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        if (!state.canSurvive(level, pos)) level.destroyBlock(pos, true);
     }
 
     @Override
@@ -81,7 +92,6 @@ public final class CritterSnareBlock extends Block {
         if (level instanceof ServerLevel server && critter != Critter.EMPTY && player.isShiftKeyDown()) {
             Mob mob = critter.type.create(server);
             if (mob == null) return InteractionResult.FAIL;
-            if (mob instanceof Slime slime) slime.setSize(1, true);
             if (state.getValue(STOCKED) && critter == Critter.BAT) {
                 mob.getPersistentData().put(AnimalMerchant.STOCK_TAG, new CompoundTag());
             }
@@ -91,17 +101,34 @@ public final class CritterSnareBlock extends Block {
                 mob.moveTo(pos.getX() + (player.getX() < pos.getX() ? -0.5 : 1.5), player.getY() + 0.5,
                         pos.getZ() + (player.getZ() < pos.getZ() ? -0.5 : 1.5), 0, 0);
             }
-            if (server.addFreshEntity(mob)) level.setBlockAndUpdate(pos, defaultBlockState());
+            Entity released = mob instanceof Slime slime ? resolveSlimeRelease(slime, pos) : mob;
+            BlockState empty = defaultBlockState();
+            if (!server.setBlockAndUpdate(pos, empty)) return InteractionResult.FAIL;
+            if (!server.addFreshEntity(released) && server.getBlockState(pos).equals(empty)) {
+                server.setBlockAndUpdate(pos, state);
+            }
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
+    static Entity resolveSlimeRelease(Slime slime, BlockPos pos) {
+        // The original tried twenty independent constructor sizes of one, two or four.
+        for (int attempt = 0; attempt < 20; attempt++) {
+            if (slime.getRandom().nextInt(3) != 0) continue;
+            slime.setSize(1, true);
+            return slime;
+        }
+        var fallback = slime instanceof MagmaCube ? Items.MAGMA_CREAM : Items.SLIME_BALL;
+        return new ItemEntity(slime.level(), pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5, new ItemStack(fallback));
+    }
+
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        if (random.nextInt(24) != 0) return;
         Critter critter = state.getValue(CRITTER);
-        if (critter != Critter.EMPTY && random.nextInt(24) == 0) {
-            level.playLocalSound(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, critter.sound, SoundSource.NEUTRAL,
-                    0.5F, 0.4F / (0.8F + random.nextFloat() * 0.4F), false);
+        if (critter != Critter.EMPTY) {
+            float pitch = 0.4F / ((float) level.random.nextDouble() * 0.4F + 0.8F);
+            ClientWitcherySounds.playLocal(level, pos.getX(), pos.getY(), pos.getZ(), critter.sound, SoundSource.NEUTRAL, 0.5F, pitch);
         }
     }
 
@@ -158,9 +185,10 @@ public final class CritterSnareBlock extends Block {
         }
 
         private static Critter forEntity(Entity entity) {
-            if (entity instanceof Slime slime && !slime.isTiny()) return EMPTY;
-            for (Critter critter : values()) {
-                if (entity.getType() == critter.type) return critter;
+            if (entity instanceof Bat) return BAT;
+            if (entity instanceof Silverfish) return SILVERFISH;
+            if (entity instanceof Slime slime && slime.isTiny()) {
+                return slime instanceof MagmaCube ? MAGMA_CUBE : SLIME;
             }
             return EMPTY;
         }
