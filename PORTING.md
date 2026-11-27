@@ -444,6 +444,13 @@
 - [x] Invoke the original Witch's Hand binding and sacrifice for all 25 power IDs. Verify the seven vanilla creature variants that now have separate entity IDs. In 0.24.1 a Wither Skeleton, a Zombie Villager, a tamed cat, a Donkey, a Mule, a Zombie Horse, and a Skeleton Horse all granted their original species' power. The witch cat, spectral familiar, and Binky each returned zero reserve charges for a fresh caster.
 - [x] Compare all 25 original powers, the seven split IDs, and five related controls through the packaged Hand. Import nine named creatures from an original region and verify their identities and sacrifice outcomes. A damage veto keeps the nine imported creatures available for the restart. Clean Forge and copied Auram each passed 55 checks before restart and 20 afterward, retaining all nine actors, their new bindings, and the player's 20 Horse charges. Local data generation, reobfuscation, and all 595 Forge GameTests passed.
 
+### Infernal combat cues and defenses (2026-11-26)
+
+- [x] Compare Ghast and Blaze casts while moving, at a level aim and a pitched diagonal. The two packaged server profiles matched the original fireball counts, starting positions and acceleration within the measured tolerance. The original seed left the same next world draw in each profile.
+- [x] Restore the Spider, Cave Spider, and Skeleton bow cue ahead of projectile admission. The modern sound seed preserves the world's next draw after the original pitch. The preceding JAR failed all three order and random checks.
+- [x] Replay the nine original Ghast, Blaze, Pigman, Squid, and Skeleton defense cases. Clean Forge and copied Auram matched charge, hit cancellation, air supply and effect duration and amplifier, including earlier Fire Resistance and unaffordable defenses.
+- [x] Use the ordinary Witch's Hand release on two muted background clients with fixture-supplied powers. Both clients received the Ghast sound at the original volume of 2 for Blaze and 10 for Ghast, from the correct block centers at negative coordinates. The observer beyond 64 blocks received no launch cue. The two players kept their Infusion and creature reserves through a dedicated restart. [Minecraft 1.7.10 client metadata](https://piston-meta.mojang.com/v1/packages/ed5d8789ed29872ea2ef1c348302b0c55e3f3468/1.7.10.json)
+
 ## Poppet Shelf (2026-11-20)
 
 - [x] Restore the recipe with four Attuned Stones, four Nether Brick blocks, and green wool. The muted client crafted and placed a shelf, opened its nine slots, inserted three bound wards and rendered all three on the shelf. A comparator responded to its contents.
@@ -3002,6 +3009,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
 - [ ] Infusion, prediction, creature power parity.
   - [x] Compare [hurt and harvest predictions](#hurt-and-harvest-predictions-2026-11-26), including saved order, damage sources, companion placement, and unfinished forecasts.
   - [x] Compare [Infernal creature acquisition](#infernal-creature-variants-2026-11-26) for all 25 original power IDs and modern entity splits.
+  - [x] Compare [Infernal combat cues and defenses](#infernal-combat-cues-and-defenses-2026-11-26), including fireball launches, bow cue order, Fire Resistance, and Water Breathing.
 - [ ] Entity AI/combat/spawn tuning parity.
   - [x] Compare [Horned Huntsman archery, teleport, wolves, and Horn summons](#horned-huntsman-trial-2026-11-20).
   - [x] Compare [Mog and Gulg's paired combat, navigation, statue summons, and rewards](#mog-and-gulg-2026-11-20).

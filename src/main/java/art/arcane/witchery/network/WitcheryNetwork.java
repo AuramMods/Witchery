@@ -330,6 +330,12 @@ public final class WitcheryNetwork {
         CHANNEL.send(PacketDistributor.NEAR.with(target), new SoundPacket(soundId, center.x, center.y, center.z, volume, pitch));
     }
 
+    public static void sendInfernalBlazeCue(ServerLevel level, BlockPos pos) {
+        var target = PacketDistributor.TargetPoint.p(pos.getX(), pos.getY(), pos.getZ(), 64, level.dimension());
+        Vec3 center = Vec3.atCenterOf(pos);
+        CHANNEL.send(PacketDistributor.NEAR.with(target), new SoundPacket("mob.ghast.fireball", center.x, center.y, center.z, 2, -1));
+    }
+
     public static void sendParticles(
             ServerPlayer player,
             int particleEffectId,

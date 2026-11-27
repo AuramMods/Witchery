@@ -161,8 +161,13 @@ public final class WitcheryClientPacketHandlers {
 
         RandomSource random = level.getRandom();
         float volume = message.volume() < 0.0F ? 0.5F : message.volume();
-        float pitch = message.pitch() < 0.0F ? 0.4F / ((float) random.nextDouble() * 0.4F + 0.8F) : message.pitch();
-        SoundSource source = sound == SoundEvents.SLIME_JUMP ? SoundSource.HOSTILE : SoundSource.AMBIENT;
+        float pitch = message.pitch();
+        boolean ghastFireball = sound == SoundEvents.GHAST_SHOOT;
+        if (pitch < 0) {
+            pitch = ghastFireball ? 1 + (random.nextFloat() - random.nextFloat()) * 0.2F
+                    : 0.4F / ((float) random.nextDouble() * 0.4F + 0.8F);
+        }
+        SoundSource source = sound == SoundEvents.SLIME_JUMP || ghastFireball ? SoundSource.HOSTILE : SoundSource.AMBIENT;
         level.playLocalSound(
                 message.x(),
                 message.y(),

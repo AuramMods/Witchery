@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Infernal combat cues and defenses (2026-11-26)
+
+- The original server emitted both fireball cues before adding shots, with truncated block coordinates even on the negative side of the map. The original client plays the Ghast shooting sound for both events at volume 10 for Ghast and 2 for Blaze, with two client-random pitch draws. See `build/qa-infernal-combat/native/reference-connected.log` and `native/render-global.txt` in the same directory.
+- The port retains the standard Ghast level event and carries the Blaze variation through the existing sound packet. The smaller cue retains the original 64-block audience and uses its block center for playback. Web and Skeleton cues now precede their projectile. The modern sound seed uses a separate random source, leaving the next world draw after the original pitch intact.
+- Clean Forge and copied Auram each passed all 16 headless comparisons with the exact reobfuscated `build/qa-infernal-combat/release.jar`. Its SHA-256 is `80f5a70e15d016f420f1fef9398474cdf4164d70b5ff1cc7070bb8c0cebd6d27`. The preceding JAR failed three, each a bow-cue order and world-random comparison. The Auram fixture supplied the original random source for the seeded cases. Java 17 data generation, JAR reobfuscation, and all 595 required GameTests passed locally.
+- Two muted, hidden survival clients received the Blaze and Ghast sounds at the original volumes, coordinates and pitch range. The observer 64.25 blocks from the cue did not receive it. Both players rejoined after restart with their exact Infusion and creature reserves. The client logs record the No Output audio device, and focus monitors recorded the same foreground application throughout. See `clean/check-check.log` and `clean/check-restart.log`.
+
 ## Infernal creature variants (2026-11-26)
 
 - The original server bound and sacrificed the base creature for each of the 25 IDs. Wither Skeleton, Zombie Villager, tamed cat, Donkey, Mule, Zombie Horse and Skeleton Horse accepted their original powers and ten reserve charges. Witchery's cat, Binky and the Spectral Familiar were the no-power controls. See `build/qa-creature-variants/native/reference-saved.log`.

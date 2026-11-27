@@ -1296,6 +1296,8 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 - Infernal casting feedback reaches the caster. Ordinary fizz and rejection cues use the original half volume and pitch range. Squid blindness uses its own full-volume fizz. Spider and Skeleton attacks use the original bow sound, the latter with draw-strength pitch scaling.
 
 - Spider, Cave Spider, and Skeleton shots start 0.16 blocks to the side of the caster and 0.1 below eye height. They follow the aim with a small spread independent of the caster's movement. Webs launch at 1.5 blocks per tick and a full Skeleton draw reaches 3 blocks per tick, critical damage, and one level of knockback.
+- The bow cue precedes projectile admission for both web powers and Skeleton. Its pitch consumes one world-random float. The modern sound packet gets its sample seed separately.
+- Ghast sends one large fireball and Blaze sends three small fireballs. Both use the original Ghast sound before projectile admission, at volume 10 and 2 respectively. The cue starts at the center of the caster's truncated block coordinates and goes to players within 64 blocks. The client picks the pitch from two independent float draws. The fireballs start with zero velocity and accelerate along the aim, with Blaze adding its six world-random spread draws.
 - Thrown Web uses the four original horizontal offsets. North and south impacts offset west and east, and west and east impacts offset north and south. It replaces a struck full snow block in place. An entity impact uses integer truncation at the target's feet. Forge terrain protection and placement events guard the write. A successful block impact emits the original silent puff within eight blocks.
 
 ## Infusion Registry (`Infusion.Registry`)

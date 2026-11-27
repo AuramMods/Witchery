@@ -29,6 +29,7 @@ import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -45,16 +46,29 @@ public final class CreaturePowerCueTests {
         InfusionEnergy.grant(player, InfernalInfusion.ID, 20);
         var hand = new ItemStack(WitcheryItems.getRequired("witchhand").get());
         var shots = new ArrayList<Projectile>();
+        var sequence = new ArrayList<String>();
         Consumer<EntityJoinLevelEvent> capture = event -> {
-            if (event.getEntity() instanceof Projectile shot && shot.getOwner() == player) shots.add(shot);
+            if (event.getEntity() instanceof Projectile shot && shot.getOwner() == player) {
+                shots.add(shot);
+                sequence.add("projectile");
+            }
+        };
+        Consumer<PlayLevelSoundEvent.AtEntity> sound = event -> {
+            if (event.getEntity() == player && event.getSound().value() == SoundEvents.ARROW_SHOOT) sequence.add("bow");
         };
         MinecraftForge.EVENT_BUS.addListener(capture);
+        MinecraftForge.EVENT_BUS.addListener(sound);
         try {
             for (var power : new CreaturePower[]{CreaturePower.CAVE_SPIDER, CreaturePower.SPIDER, CreaturePower.SKELETON}) {
                 power.absorb(player);
+                level.getRandom().setSeed(42);
                 hand.getItem().releaseUsing(hand, level, player, hand.getUseDuration() - 20);
+                helper.assertTrue(level.getRandom().nextInt(1000) == 763,
+                        "The bow pitch advances the world's random source by one float");
             }
             helper.assertTrue(shots.size() == 3, "All three cast powers spawn one projectile each");
+            helper.assertTrue(sequence.equals(List.of("bow", "projectile", "bow", "projectile", "bow", "projectile")),
+                    "Each bow cue plays before the corresponding projectile spawns");
             var muzzle = new Vec3(origin.x - 0.16, player.getEyeY() - 0.1, origin.z);
             for (var shot : shots) {
                 var motion = shot.getDeltaMovement();
@@ -70,6 +84,7 @@ public final class CreaturePowerCueTests {
                     "Both spider powers fire Thrown Web and the charged Skeleton power fires its critical arrow");
         } finally {
             MinecraftForge.EVENT_BUS.unregister(capture);
+            MinecraftForge.EVENT_BUS.unregister(sound);
             shots.forEach(Projectile::discard);
         }
         helper.succeed();

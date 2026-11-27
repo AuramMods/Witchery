@@ -4,6 +4,7 @@ import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcherySounds;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -26,6 +27,7 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.SmallFireball;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -35,6 +37,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -229,26 +232,32 @@ public enum CreaturePower {
 
     private static void launchWeb(ServerPlayer player) {
         ServerLevel level = player.serverLevel();
+        float pitch = 0.4F / (level.random.nextFloat() * 0.4F + 0.8F);
+        playBowCue(player, 0.5F, pitch);
         ThrownBrew web = new ThrownBrew(player, level);
         web.setItem(new ItemStack(WitcheryIngredient.WEB.item()));
         launchAimed(player, web, 1.5F);
         level.addFreshEntity(web);
-        float pitch = 0.4F / (level.random.nextFloat() * 0.4F + 0.8F);
-        level.playSound(null, player, SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 0.5F, pitch);
     }
 
     private static void launchArrow(ServerPlayer player, int elapsed) {
         float draw = elapsed / 20F;
         float power = Math.min(1, (draw * draw + draw * 2) / 3);
         ServerLevel level = player.serverLevel();
+        float pitch = 1 / (level.random.nextFloat() * 0.4F + 1.2F) + power * 0.5F;
+        playBowCue(player, 1, pitch);
         Arrow arrow = new Arrow(level, player);
         launchAimed(player, arrow, power * 3);
         arrow.setCritArrow(power == 1);
         arrow.setBaseDamage(arrow.getBaseDamage() + 1);
         arrow.setKnockback(1);
         level.addFreshEntity(arrow);
-        float pitch = 1 / (level.random.nextFloat() * 0.4F + 1.2F) + power * 0.5F;
-        level.playSound(null, player, SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1, pitch);
+    }
+
+    private static void playBowCue(ServerPlayer player, float volume, float pitch) {
+        // The modern packet also needs a sample seed. Keep it independent of the world roll for the pitch.
+        player.serverLevel().playSeededSound(null, player, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.ARROW_SHOOT),
+                SoundSource.PLAYERS, volume, pitch, ThreadLocalRandom.current().nextLong());
     }
 
     private static void launchAimed(ServerPlayer player, Projectile shot, float speed) {
@@ -261,15 +270,17 @@ public enum CreaturePower {
 
     private static void launchFire(ServerPlayer player, boolean ghast) {
         ServerLevel level = player.serverLevel();
+        BlockPos cue = new BlockPos((int) player.getX(), (int) player.getY(), (int) player.getZ());
         Vec3 aim = player.getLookAngle();
         Vec3 start = player.position().add(aim.x, player.getBbHeight() / 2 + 0.5, aim.z);
         if (ghast) {
+            level.levelEvent(null, LevelEvent.SOUND_GHAST_FIREBALL, cue, 0);
             var projectile = new LargeFireball(level, player, aim.x, aim.y, aim.z, 1);
             projectile.setPos(start);
             level.addFreshEntity(projectile);
-            level.levelEvent(null, 1016, player.blockPosition(), 0);
             return;
         }
+        WitcheryNetwork.sendInfernalBlazeCue(level, cue);
         for (int i = 0; i < 3; i++) {
             double x = aim.x + level.random.nextDouble() * 0.2;
             double z = aim.z + level.random.nextDouble() * 0.2;
@@ -277,6 +288,5 @@ public enum CreaturePower {
             projectile.setPos(start);
             level.addFreshEntity(projectile);
         }
-        level.levelEvent(null, 1018, player.blockPosition(), 0);
     }
 }
