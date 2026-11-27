@@ -410,7 +410,6 @@ public final class WitcheryClient {
         event.registerBlockEntityRenderer(WitcheryBlockEntities.DISTILLERY.get(), DistilleryRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.LEGACY_BURNING_DISTILLERY.get(), DistilleryRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.BREW_GAS.get(), BrewGasRenderer::new);
-        event.registerBlockEntityRenderer(WitcheryBlockEntities.BREW_LIQUID.get(), BrewGasRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.SPINNING_WHEEL.get(), SpinningWheelRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.WOLF_HEAD.get(), WolfHeadRenderer::new);
         event.registerBlockEntityRenderer(WitcheryBlockEntities.ALLURING_SKULL.get(), AlluringSkullRenderer::new);

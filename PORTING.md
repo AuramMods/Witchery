@@ -2569,6 +2569,14 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Recover the usable effects of a finished brew with an inactive saved ingredient. The original drink, gas and liquid handlers kept the surrounding effects and their modifiers. Verify that gas and liquid keep their distinct Gas Mask rules and that saving preserves the complete recipe. The same reader supports earlier Forge records with an unavailable item between usable ingredients.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 256 required Forge GameTests. The new tests check dispersal precedence, gas expansion and expiry, Gas Mask, and liquid flow and recession.
 
+### Placed Brew Liquid rendering (2026-11-27)
+
+The original renderer samples a source at 0.875 and uses the six flow levels and an eight-unit divisor for the corners of shallow cells. It omits faces against the same liquid and culls the sides and bottom against opaque blocks. Its flat tint and packed light vary by face. The restored chunk renderer uses the active atlas for the original still and flow textures. Embeddium receives both fluid IDs in its tag for fluids rendered by Forge.
+
+The released 0.24.1 client renderer emitted 324 vertices across 18 cases, including six levels, joined and falling cells, glass, an adjacent or covering liquid, and a fully enclosed cell. The previous JAR matched the enclosed case. The rebuilt clean Forge and copied Auram clients matched every case, including positions, normalized UVs, vertex colors and packed light. The largest differences were 0.000000013 blocks and 0.00001407 in normalized UVs. Read `build/qa-brew-liquid-mesh/native/reference.log` and `build/qa-brew-liquid-mesh/comparison.log`.
+
+Both packaged survival clients saw a dispenser create a tinted source from the fixture-supplied splash brew. Removing its support exposed the falling cell and runoff. The clean Forge chunk builder drew all four sampled cells. Copied Auram routed the same cells through Forge from Embeddium's chunk worker. The copied profile finished building its JEI ingredient filter before the timed release. Both clients ran hidden and unfocused, with master volume zero and the OpenAL No Output device. Read `build/qa-brew-liquid-mesh/clean/live.log` and `build/qa-brew-liquid-mesh/pack/replay.log`.
+
 ## Triggered Brews and Cursed Controls (2026-11-20)
 
 - [x] Restore Zombie Head as the zero-power triggered dispersal ingredient. Thrown brews arm the original seven controls. An identical recipe adds a charge, and a different recipe replaces the saved mixture.
@@ -3235,7 +3243,8 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
 - [x] Restore the 48 missing static item descriptions from the original release. The muted packaged client validated all 48 in English, German, Spanish, Russian, Simplified Chinese, and Italian, using English fallback where the release supplied no localized text. It verified the Cowl's original color, its default before login, Forge's additional-tooltip hide flag, and the dedicated setting that hides its gaze hint after a restart.
 - [x] Restore Hobgoblin mining, worship, crouch, riding, and attack poses. Mog carries her bow in one hand and her skirt and chest stay independent of the torso. Gulg's strike uses the original attack counter and head yaw. The muted packaged client matched 1,386 pose values and all 864 vertex and texture coordinate samples across the three models.
 - [ ] Complete the source and runtime comparison for the remaining models, less common block states, and entity and armor poses.
-  - [ ] Compare placed Brew Liquid surfaces and edges. The original `RenderBrewLiquid` samples a source at 0.875 and uses the original six-quanta levels to choose corner heights. The Forge port delegates its surface to the vanilla fluid renderer. Measure isolated, adjacent, and falling cells with the original tint and flow textures.
+  - [x] Compare [placed Brew Liquid surfaces and edges](#placed-brew-liquid-rendering-2026-11-27), including all six levels, falling and adjoining cells, the original flow textures, and light and tint per face.
+  - [ ] Compare placed Brew Gas. The original emits two-sided top and wall faces, with the top sampling the central half of the texture and the walls sampling its left half. The modern renderer draws six quads with full sprite coordinates. Compare inner and outer opacity, face lighting, and visibility from inside a cloud.
   - [x] Compare the [rotating inventory text for the timed Insanity potion](#insanity-inventory-text-2026-11-27) in both inventory layouts and after restart.
   - [x] Compare [status-effect icons and names](#status-effect-icons-and-names-2026-11-27) in the inventory and HUD.
   - [x] Compare the [Mystic Branch projectile sprite, tints, scale, and camera poses](#mystic-branch-projectile-rendering-2026-11-27) along with normal survival casting and a saved projectile.

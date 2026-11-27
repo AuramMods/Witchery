@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Placed Brew Liquid rendering (2026-11-27)
+
+- The released 0.24.1 renderer emitted 324 vertices across 18 cases. The preceding Forge package matched only the fully enclosed cell. The rebuilt clean Forge and copied Auram clients matched all cases, including corner heights, texture coordinates, tint, and light. Read `build/qa-brew-liquid-mesh/{native/reference.log,comparison.log}`.
+- The Brew Liquid mesh uses Forge's chunk renderer and active atlas. Embeddium's fluid tag selects that path for both the source and flowing fluid. Both muted survival clients watched a dispenser release a supplied tinted splash brew. Removing the temporary support exposed the falling cell and runoff with the retained tint. The pack's `WorldSlice` and `SinkingVertexBuilder` passed the actual cells to Forge after JEI finished initializing. Read `build/qa-brew-liquid-mesh/{clean/live.log,pack/replay.log}`.
+- Local Java 17 data generation and JAR reobfuscation passed. The tested archive at `build/qa-brew-liquid-mesh/candidate.jar` has SHA-256 `54f671d160221066f8afd0e6c4a8f2ab3ed82bd690805aaba9d107dbd9d19353`.
+
 ## Named vanilla stacks with original metadata and wear (2026-11-27)
 
 - The current-version fixture has no captured registry. The preceding JAR dropped the legacy red and blue Wool and the loose yellow Wool, reduced the legacy sword to zero wear, and left Stone and Planks under their pre-flattening IDs. Read `build/qa-vanilla-stack-recovery/baseline-checked/live.log`.
