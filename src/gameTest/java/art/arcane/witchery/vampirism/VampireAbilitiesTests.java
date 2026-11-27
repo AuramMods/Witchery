@@ -273,7 +273,10 @@ public final class VampireAbilitiesTests {
         var world = helper.getLevel();
         var sample = helper.absolutePos(new BlockPos(5, 200, 5));
         var chunk = new ChunkPos(sample);
-        var contact = Vec3.atBottomCenterOf(new BlockPos(chunk.getMiddleBlockX(), sample.getY(), chunk.getMiddleBlockZ()));
+        var contactPos = new BlockPos(chunk.getMiddleBlockX(), sample.getY(), chunk.getMiddleBlockZ());
+        world.setBlockAndUpdate(contactPos, Blocks.AIR.defaultBlockState());
+        world.setBlockAndUpdate(contactPos.above(), Blocks.AIR.defaultBlockState());
+        var contact = Vec3.atBottomCenterOf(contactPos);
         var target = EntityType.COW.create(world);
         target.setPos(contact);
         target.setNoAi(true);
