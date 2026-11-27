@@ -44,22 +44,20 @@ public final class OptionalWaystoneRiteTests {
         WaystoneItem.bindLocation(stone, level, target);
         stone.setHoverName(Component.literal("Western Boundary"));
         grassper.setItem(0, stone);
-        startBarrier(helper, heart -> {
-            helper.runAfterDelay(64, () -> {
-                helper.assertTrue(grassper.isEmpty(), "The rite takes the optional stone before checking altar power");
-                var saved = heart.saveWithFullMetadata();
-                helper.assertTrue(BlockPos.of(saved.getLong("WaystoneTarget")).equals(target), "The offering step saves its target");
-                heart.load(saved);
-            });
-            helper.runAfterDelay(85, () -> {
-                var items = level.getEntitiesOfClass(ItemEntity.class, new AABB(origin).inflate(1),
-                        item -> item.getItem().is(WitcheryIngredient.BOUND_WAYSTONE.item()));
-                helper.assertTrue(items.size() == 1 && ItemStack.matches(items.get(0).getItem(), stone),
-                        "An underpowered rite returns the original named Waystone where the Grassper held it");
-                helper.assertFalse(heart.getBlockState().getValue(RiteHeartBlock.ACTIVE), "The failed rite has ended");
-                helper.succeed();
-            });
-        });
+        startBarrier(helper, heart -> helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(grassper.isEmpty(),
+                        "The rite takes the optional stone before checking altar power"))
+                .thenExecute(() -> {
+                    var saved = heart.saveWithFullMetadata();
+                    helper.assertTrue(BlockPos.of(saved.getLong("WaystoneTarget")).equals(target), "The offering step saves its target");
+                    heart.load(saved);
+                }).thenWaitUntil(() -> {
+                    var items = level.getEntitiesOfClass(ItemEntity.class, new AABB(origin).inflate(1),
+                            item -> item.getItem().is(WitcheryIngredient.BOUND_WAYSTONE.item()));
+                    helper.assertTrue(items.size() == 1 && ItemStack.matches(items.get(0).getItem(), stone),
+                            "An underpowered rite returns the original named Waystone where the Grassper held it");
+                    helper.assertFalse(heart.getBlockState().getValue(RiteHeartBlock.ACTIVE), "The failed rite has ended");
+                }).thenSucceed());
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_waystone_target", timeoutTicks = 160, setupTicks = 5)

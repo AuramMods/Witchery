@@ -46,7 +46,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
 
 public final class HornedHuntsman extends Monster implements RangedAttackMob {
     private static final int ENTRANCE_TICKS = 150;
@@ -155,15 +154,7 @@ public final class HornedHuntsman extends Monster implements RangedAttackMob {
         }
         if (target != null && getNavigation().isDone() && tickCount - lastTeleportTick > 200) {
             lastTeleportTick = tickCount;
-            Vec3 toward = new Vec3(target.getX() - getX(), target.getY() - target.getEyeHeight() - getY(0.5),
-                    target.getZ() - getZ()).normalize().scale(8);
-            Vec3 origin = position();
-            Vec3 destination = position().add(toward).add(random.nextDouble() * 8 - 4, random.nextInt(16) - 8,
-                    random.nextDouble() * 8 - 4);
-            if (randomTeleport(destination.x, destination.y, destination.z, true)) {
-                world.playSound(null, origin.x, origin.y, origin.z, SoundEvents.ENDERMAN_TELEPORT, SoundSource.HOSTILE, 1, 1);
-                playSound(SoundEvents.ENDERMAN_TELEPORT, 1, 1);
-            }
+            BossTeleport.toward(world, this, target, 8);
         }
     }
 

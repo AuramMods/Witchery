@@ -1,15 +1,14 @@
 package art.arcane.witchery.entity;
 
 import art.arcane.witchery.registry.WitcheryEntities;
+import art.arcane.witchery.network.WitcheryNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.ForgeEventFactory;
 
 public final class HobgoblinGodEncounter {
@@ -17,7 +16,8 @@ public final class HobgoblinGodEncounter {
 
     public static boolean summon(ServerLevel level, BlockPos statue, ServerPlayer patron, int detection, int radius) {
         if (patron.level() != level || !patron.isAlive()
-                || !level.getEntitiesOfClass(HobgoblinGod.class, new AABB(statue).inflate(detection), HobgoblinGod::isAlive).isEmpty()) {
+                || !level.getEntitiesOfClass(HobgoblinGod.class,
+                AABB.ofSize(Vec3.atCenterOf(statue), detection * 2, detection * 2, detection * 2), god -> !god.isRemoved()).isEmpty()) {
             return false;
         }
         var random = level.getRandom();
@@ -26,7 +26,8 @@ public final class HobgoblinGodEncounter {
         if (!level.hasChunkAt(spawn) || !level.getWorldBorder().isWithinBounds(spawn)) return false;
         int limit = Math.min(statue.getY() + 8, level.getMaxBuildHeight() - 2);
         while (!level.isEmptyBlock(spawn) && spawn.getY() < limit) spawn.move(Direction.UP);
-        while (spawn.getY() > level.getMinBuildHeight() && level.isEmptyBlock(spawn.below())) spawn.move(Direction.DOWN);
+        while (spawn.getY() > level.getMinBuildHeight() && level.isEmptyBlock(spawn)) spawn.move(Direction.DOWN);
+        spawn.move(Direction.UP);
         BlockPos floor = spawn.below();
         if (!level.getBlockState(floor).isFaceSturdy(level, floor, Direction.UP)) return false;
 
@@ -41,8 +42,7 @@ public final class HobgoblinGodEncounter {
             mog.discard();
             return false;
         }
-        level.sendParticles(ParticleTypes.FLAME, mog.getX(), mog.getY(0.5), mog.getZ(), 16, 1, 0.9, 1, 0.02);
-        level.playSound(null, spawn, SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 1, 1);
+        WitcheryNetwork.sendPatronGodArrival(level, mog.position(), mog.getBbHeight());
         return true;
     }
 

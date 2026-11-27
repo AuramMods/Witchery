@@ -1,6 +1,7 @@
 package art.arcane.witchery.entity;
 
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryItems;
@@ -35,6 +36,7 @@ import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.RangedAttackMob;
@@ -58,7 +60,7 @@ public final class HobgoblinGod extends Monster implements RangedAttackMob {
     private final ServerBossEvent bossBar = new ServerBossEvent(getDisplayName(), BossEvent.BossBarColor.PURPLE,
             BossEvent.BossBarOverlay.PROGRESS);
     private int entranceTicks;
-    private int teleportDelay;
+    private int nextTeleportTick;
     private int attackTicks;
     @Nullable
     private UUID patronId;
@@ -67,6 +69,7 @@ public final class HobgoblinGod extends Monster implements RangedAttackMob {
         super(type, level);
         xpReward = 35;
         setPersistenceRequired();
+        nextTeleportTick = teleportInterval();
     }
 
     public static AttributeSupplier.Builder attributes(boolean mog) {
@@ -101,7 +104,6 @@ public final class HobgoblinGod extends Monster implements RangedAttackMob {
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason,
                                         @Nullable SpawnGroupData group, @Nullable CompoundTag tag) {
         if (isMog() && getMainHandItem().isEmpty()) setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
-        teleportDelay = teleportInterval();
         return super.finalizeSpawn(level, difficulty, reason, group, tag);
     }
 
@@ -128,12 +130,12 @@ public final class HobgoblinGod extends Monster implements RangedAttackMob {
         if (!(level() instanceof ServerLevel level) || !isAlive()) return;
         bossBar.setName(getDisplayName());
         bossBar.setProgress(getHealth() / getMaxHealth());
-        if (entranceTicks > 0) {
-            if (entranceTicks % 10 == 0) heal(20);
+        if (hasActiveEntrance()) {
             if (--entranceTicks == 0) {
                 setNoAi(false);
-                level.levelEvent(1023, blockPosition(), 0);
+                level.globalLevelEvent(1023, blockPosition(), 0);
             }
+            if (tickCount % 10 == 0) heal(20);
             return;
         }
         if (isNoAi()) return;
@@ -143,26 +145,19 @@ public final class HobgoblinGod extends Monster implements RangedAttackMob {
                 && distanceToSqr(target) <= followRange * followRange && canAttack(target)) {
             setTarget(target);
         }
-        if (teleportDelay > 0) teleportDelay--;
-        if (getTarget() != null && teleportDelay == 0 && getNavigation().isDone()) {
-            teleportDelay = teleportInterval();
-            teleportToward(getTarget());
+        LivingEntity target = getTarget();
+        if (target != null && tickCount >= nextTeleportTick && getNavigation().isDone()) {
+            nextTeleportTick = tickCount + teleportInterval();
+            BossTeleport.toward(level, this, target, 16);
         }
         if (isMog() && getMainHandItem().isEmpty() && random.nextInt(100) == 0) {
             setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
-            playSound(SoundEvents.EXPERIENCE_ORB_PICKUP, 1, 1);
+            WitcheryNetwork.sendMogNewBow(level, position());
         }
     }
 
     private int teleportInterval() {
-        return isMog() ? 300 : 200;
-    }
-
-    private void teleportToward(LivingEntity target) {
-        Vec3 toward = target.getEyePosition().subtract(getEyePosition()).normalize().scale(16);
-        Vec3 destination = position().add(toward).add(random.nextDouble() * 8 - 4, random.nextInt(16) - 8,
-                random.nextDouble() * 8 - 4);
-        if (randomTeleport(destination.x, destination.y, destination.z, true)) playSound(SoundEvents.ENDERMAN_TELEPORT, 1, 1);
+        return isMog() ? 301 : 201;
     }
 
     @Nullable
@@ -237,15 +232,22 @@ public final class HobgoblinGod extends Monster implements RangedAttackMob {
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean playerKill) {
         super.dropCustomDeathLoot(source, looting, playerKill);
-        spawnAtLocation(new ItemStack(WitcheryIngredient.KOBOLDITE_NUGGET.item(), random.nextInt(3) + 1));
+        int nuggets = random.nextInt(3) + 1;
         ItemStack armor = new ItemStack(switch (random.nextInt(4)) {
             case 0 -> Items.CHAINMAIL_BOOTS;
             case 1 -> Items.CHAINMAIL_LEGGINGS;
             case 2 -> Items.CHAINMAIL_CHESTPLATE;
             default -> Items.CHAINMAIL_HELMET;
         });
-        spawnAtLocation(EnchantmentHelper.enchantItem(random, armor, 30, false));
-        if (random.nextBoolean()) spawnAtLocation(WitcheryItems.getRequired(isMog() ? "quiverofmog" : "gurdleofgulg").get());
+        var worldRandom = level().getRandom();
+        ItemStack enchantedArmor = EnchantmentHelper.enchantItem(worldRandom, armor, 30, false);
+        // Vanilla's item entities draw from the world random source for their initial motion.
+        boolean uniqueReward = worldRandom.nextInt(2) == 0;
+        spawnAtLocation(new ItemStack(WitcheryIngredient.KOBOLDITE_NUGGET.item(), nuggets));
+        spawnAtLocation(enchantedArmor);
+        if (uniqueReward) {
+            spawnAtLocation(WitcheryItems.getRequired(isMog() ? "quiverofmog" : "gurdleofgulg").get());
+        }
     }
 
     @Override
@@ -262,6 +264,8 @@ public final class HobgoblinGod extends Monster implements RangedAttackMob {
     public int attackTicks() {
         return attackTicks;
     }
+
+    public boolean hasActiveEntrance() { return entranceTicks > 0; }
 
     @Override
     public void handleEntityEvent(byte event) {
@@ -305,7 +309,7 @@ public final class HobgoblinGod extends Monster implements RangedAttackMob {
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("Invul", entranceTicks);
-        tag.putInt("TeleportDelay", teleportDelay);
+        tag.putInt("TeleportDelay", Math.max(0, nextTeleportTick - tickCount));
         if (patronId != null) tag.putUUID("WitcheryTarget", patronId);
     }
 
@@ -313,14 +317,19 @@ public final class HobgoblinGod extends Monster implements RangedAttackMob {
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         entranceTicks = Mth.clamp(tag.getInt("Invul"), 0, ENTRANCE_TICKS);
-        if (entranceTicks > 0) setNoAi(true);
-        teleportDelay = tag.contains("TeleportDelay") ? Mth.clamp(tag.getInt("TeleportDelay"), 0, teleportInterval()) : teleportInterval();
+        if (hasActiveEntrance()) setNoAi(true);
+        int remaining = tag.contains("TeleportDelay") ? Mth.clamp(tag.getInt("TeleportDelay"), 0, teleportInterval()) : teleportInterval();
+        nextTeleportTick = tickCount + remaining;
         patronId = tag.hasUUID("WitcheryTarget") ? tag.getUUID("WitcheryTarget") : null;
     }
 
     private final class FollowMogGoal extends Goal {
+        private static final int MAX_DISTANCE = 64;
+        private static final int MIN_DISTANCE = 6;
         @Nullable
         private HobgoblinGod partner;
+        @Nullable
+        private Vec3 destination;
 
         private FollowMogGoal() {
             setFlags(EnumSet.of(Flag.MOVE));
@@ -328,26 +337,28 @@ public final class HobgoblinGod extends Monster implements RangedAttackMob {
 
         @Override
         public boolean canUse() {
-            partner = nearestPartner(64, HobgoblinGod::isAlive);
-            return canContinueToUse();
+            if (level().getRandom().nextInt(20) != 0) return false;
+            partner = nearestPartner(MAX_DISTANCE, god -> !god.isRemoved());
+            if (partner == null || distanceToSqr(partner) < MIN_DISTANCE * MIN_DISTANCE) return false;
+            destination = DefaultRandomPos.getPosTowards(HobgoblinGod.this, 16, 7, partner.position(), Math.PI / 2);
+            return destination != null;
         }
 
         @Override
         public boolean canContinueToUse() {
-            if (partner == null || !partner.isAlive()) return false;
-            double distance = distanceToSqr(partner);
-            return distance > 36 && distance <= 4096;
+            return !getNavigation().isDone() && partner != null && partner.isAlive()
+                    && distanceToSqr(partner) < MAX_DISTANCE * MAX_DISTANCE;
         }
 
         @Override
-        public void tick() {
-            if (partner != null) getNavigation().moveTo(partner, 1);
+        public void start() {
+            if (destination != null) getNavigation().moveTo(destination.x, destination.y, destination.z, 1);
         }
 
         @Override
         public void stop() {
             partner = null;
-            getNavigation().stop();
+            destination = null;
         }
     }
 }

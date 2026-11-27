@@ -2,20 +2,26 @@ package art.arcane.witchery.entity;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.registry.WitcheryEntities;
+import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.util.ArrayList;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 @GameTestHolder(Witchery.MODID)
@@ -81,6 +87,67 @@ public final class PatronCombatTests {
             helper.assertTrue(mog.hurt(level.damageSources().magic(), 10) && mog.getHealth() == 390,
                     "Mog becomes vulnerable after the partner leaves the world");
             mog.discard();
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_patron_teleport")
+    public static void patronStalledPathTeleportUsesOriginalCadence(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos base = helper.absolutePos(new BlockPos(3, 8, 8));
+        Vec3 origin = Vec3.atBottomCenterOf(base);
+        var target = EntityType.PIG.create(level);
+        target.setPos(origin.add(30, 16, 0));
+        for (int x = 0; x <= 21; x++) {
+            for (int z = -5; z <= 5; z++) level.setBlockAndUpdate(base.offset(x, -1, z), Blocks.STONE.defaultBlockState());
+        }
+
+        for (var type : new EntityType<?>[] {WitcheryEntities.MOG.get(), WitcheryEntities.GULG.get()}) {
+            var god = (HobgoblinGod) type.create(level);
+            god.goalSelector.removeAllGoals(goal -> true);
+            god.targetSelector.removeAllGoals(goal -> true);
+            god.setNoGravity(true);
+            god.setTarget(target);
+            int interval = god.isMog() ? 301 : 201;
+            for (int age : new int[] {1, interval - 1, interval, interval * 2 - 1, interval * 2}) {
+                checkTravel(helper, god, origin, age, age % interval == 0);
+            }
+            var save = new CompoundTag();
+            god.addAdditionalSaveData(save);
+            save.putInt("TeleportDelay", 2);
+            god.readAdditionalSaveData(save);
+            god.setTarget(target);
+            checkTravel(helper, god, origin, interval * 2 + 1, false);
+            checkTravel(helper, god, origin, interval * 2 + 2, true);
+        }
+        helper.succeed();
+    }
+
+    private static void checkTravel(GameTestHelper helper, HobgoblinGod god, Vec3 origin, int age, boolean expected) {
+        god.setPos(origin);
+        god.getNavigation().stop();
+        god.getRandom().setSeed(23);
+        god.tickCount = age;
+        god.aiStep();
+        helper.assertTrue((god.position().distanceTo(origin) > 1) == expected,
+                "The stalled boss should teleport on its original schedule at tick " + age);
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_patron_statue")
+    public static void statueWaitsForThePreviousGodToFinishDying(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var base = helper.absolutePos(new BlockPos(5, 5, 5));
+        level.setBlockAndUpdate(base.below(), Blocks.STONE.defaultBlockState());
+        var patron = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "PatronTest"));
+        var mog = helper.spawn(WitcheryEntities.MOG.get(), new BlockPos(9, 5, 5));
+        mog.setNoAi(true);
+        helper.runAfterDelay(2, () -> {
+            mog.setHealth(0);
+            helper.assertFalse(HobgoblinGodEncounter.summon(level, base, patron, 16, 0),
+                    "A dying boss should keep the statue's summon unavailable");
+            mog.discard();
+            helper.assertTrue(HobgoblinGodEncounter.summon(level, base, patron, 16, 0),
+                    "The statue should summon its pair after the previous boss is removed");
             helper.succeed();
         });
     }
