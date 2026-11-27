@@ -772,6 +772,14 @@
 - [x] Save the portable volcano at stage ten and portable cooking after two offerings in the same packaged world. After the headless restart, verify a lava source at the summit, an open shaft, the four diamonds in the preserved chest, and the nearby bedrock. Portable cooking converts its stack of 64 Potatoes into 56 Baked Potatoes and eight Charcoal and leaves one discharged stone.
 - [x] Run Java 17 data generation, JAR reobfuscation and all nine new Forge GameTests. The cases cover both burn rates, spawn cancellation, recipe matching, dry refunds, reloads, and legacy volcano migration. The latest broad run passed 497 of 498. The older Death summoning case passed in a separate batch alongside the nine new cases and the legacy offering return check.
 
+### Volcano eruption comparison (2026-11-27)
+
+- [x] Compare both original volcano recipes at every no-coven pulse, with sampled three- and six-coven construction, all eight vent rolls, and five entity positions. Restore the original overlapping rows and the four below-ground rings that are filled during each layer of the final construction pulse. Preserve its grass edge rolls, rising lava, and east, south, west, and north vent order.
+- [x] Lift an entity one block when its hitbox intersects the plane above the new layer, its position is within the fractional radius, and it stands in solid terrain. Retain the original horizontal coordinate lookup and use modern block Y below zero. Nearby entities outside that plane or radius stay put.
+- [x] Send Portal and Fizz from the destination's integer coordinates within 16 blocks. A dry target plays its own snare, followed by the Heart Glyph's abort snare. The original reservoir scan still passes an isolated source, rejects flowing lava and stops at bedrock.
+- [x] Pass 217 packaged comparisons each on clean Forge and copied Auram. The preceding clean JAR missed 75. The deterministic pack probe supplied the original random stream for comparison. Data generation, JAR reobfuscation, and all 603 local Forge GameTests passed.
+- [x] Activate both recipes through the Heart Glyph in survival with supplied offerings, rings, and reservoirs. Two muted background clients verified that the single startup packet reached only the player near each eruption. A dry Waystone target returned four offerings after the 2,000-power debit and played both snares in order. After a dedicated restart both active volcanoes finished, opened their shafts, and retained their summit sources, stocked chests, and bedrock.
+
 ## Area Curses and Rain of Toads (2026-11-21)
 
 - [x] Restore Blight and Blindness with their original Infernal rings, offerings, five-tick wave and coven-scaled radius. Blight causes Nausea II, withers crops, and can harm or transform animals and villagers. An active cat extends Blindness from two to five minutes. Voodoo Protection can stop the wave.
@@ -3055,6 +3063,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Verify ward upkeep, creature motion, barrier collision, and saved wards for [Protection, Imprisonment, and the three barriers](#protection-imprisonment-and-barrier-rites-2026-11-21).
   - [x] Verify all five [Sky's Wrath and Total Eclipse recipes](#skys-wrath-and-total-eclipse-2026-11-21). The [clock and realm checks](#heart-glyph-cast-timing-2026-11-24) cover the first strike, restart cadence, and resumed Eclipse.
   - [x] Compare [powered and portable Cooking](#portable-volcano-and-cooking-rites-2026-11-21), including seeded burning, food boundaries, cue and result placement, and a saved offering sequence.
+  - [x] Compare [powered and portable volcano eruptions](#volcano-eruption-comparison-2026-11-27), including the complete no-coven stage sequence, maximum foundation, summit rolls, creature lift, and early failure.
   - [x] Compare the [ten directed Taglock curses and cures](#directed-curse-and-cure-completion-2026-11-26), including protection, a remote target, and completion cues.
   - [x] Compare familiar binding and recall. The original and packaged tests cover the west and east binding boundaries, diagonal recall, a dismissed familiar's recreation point, and a cross-dimension recall. [Familiars and Covens](#familiars-and-covens-2026-11-19)
   - [x] Compare the Corrupting Voodoo Protection rite, including its first offering, cat mastery, lightning, ward cap, death-screen target, and completion packet. [Completion comparison](#corrupting-voodoo-protection-completion-2026-11-27)

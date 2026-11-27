@@ -862,10 +862,12 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             }
         } else if (rite.action().isVolcano()) {
             if (!LandscapeRites.hasLavaBelow(level, target)) {
+                if (usesGlyphClock()) playOriginalRiteSound(level, target, SoundEvents.NOTE_BLOCK_SNARE.value());
                 abort(level, "message.witchery.rite.missing_lava");
                 return null;
             }
-            LandscapeRites.playRiteStart(level, target);
+            if (usesGlyphClock()) WitcheryNetwork.sendVolcanoStart(level, target);
+            else LandscapeRites.playRiteStart(level, target);
         }
         BlockPos firstOffering = sacrificed.isEmpty() ? heart.north() : sacrificed.get(0).origin();
         var fissure = rite.action() == ItemRiteRecipe.Action.PART_EARTH

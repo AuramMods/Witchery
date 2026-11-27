@@ -482,6 +482,10 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_PORTAL_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID, center, 0.5, 1, 16);
     }
 
+    public static void sendVolcanoStart(ServerLevel level, BlockPos target) {
+        sendParticlesAround(level, LEGACY_PORTAL_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID, Vec3.atLowerCornerOf(target), 0.5, 1, 16);
+    }
+
     public static void sendRiteItemResult(ServerLevel level, Vec3 center, boolean circleTalisman) {
         if (circleTalisman) sendParticlesAround(level, LEGACY_PORTAL_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID, center, 0.5, 1, 16);
         else sendRiteSpellResult(level, center, 0.5);

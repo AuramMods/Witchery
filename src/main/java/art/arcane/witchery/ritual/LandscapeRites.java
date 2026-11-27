@@ -40,6 +40,7 @@ public final class LandscapeRites {
             Blocks.BIRCH_SAPLING, Blocks.JUNGLE_SAPLING, Blocks.ACACIA_SAPLING, Blocks.DARK_OAK_SAPLING);
     private static final int VOLCANO_RADIUS = 8;
     private static final List<Direction> SHAFT_SIDES = List.of(Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST);
+    private static final List<Direction> LEGACY_VENT_SIDES = List.of(Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.NORTH);
     private static final List<BlockPos> RESERVOIR_NEIGHBORS = List.of(
             new BlockPos(0, -1, 0), new BlockPos(-1, 0, 0), new BlockPos(1, -1, 0),
             new BlockPos(0, 0, -1), new BlockPos(0, 0, 1), new BlockPos(0, 1, 1));
@@ -213,7 +214,8 @@ public final class LandscapeRites {
                     forestPulse(level, progress.target(), progress.species(), coven, caster, legacy);
                 }
             }
-            case RAISE_VOLCANO, RAISE_PORTABLE_VOLCANO -> volcanoPulse(level, heart, progress.target(), stage, coven, caster);
+            case RAISE_VOLCANO, RAISE_PORTABLE_VOLCANO ->
+                    volcanoPulse(level, heart, progress.target(), stage, coven, caster, legacy);
             case ICE_SHELL -> IceShell.pulse(level, progress.target(), stage, coven, caster);
             case CLIMATE_CHANGE -> {
                 if (!ClimateChange.pulse(level, progress.target(), stage, coven, caster)) return null;
@@ -301,21 +303,23 @@ public final class LandscapeRites {
     }
 
     private static void volcanoPulse(ServerLevel level, BlockPos heart, BlockPos target, int stage, int coven,
-                                     @Nullable ServerPlayer caster) {
+                                     @Nullable ServerPlayer caster, boolean legacy) {
         int height = volcanoHeight(coven);
         int radius = VOLCANO_RADIUS + 2 * coven;
         if (stage <= height) {
             for (int layer = 1; layer <= stage; layer++) {
-                int width = Math.max(1, (radius * (stage + 1 - layer) + height - 1) / height);
+                float reach = radius - (float) (height - stage - 1 + layer) * radius / height;
+                int width = Math.max(1, (int) Math.ceil(reach));
                 BlockPos center = target.above(layer - 1);
-                fillLayer(level, center, width, layer < 3, true, caster);
-                liftBuriedEntities(level, center, width);
-            }
-            if (stage == height) {
-                for (int depth = 1; depth <= 4; depth++) {
-                    fillLayer(level, target.below(depth), Math.max(radius - depth + 1, 2), true, false, caster);
+                fillLayer(level, center, width, layer < 3, true, caster, legacy);
+                if (legacy) {
+                    if (stage == height) fillVolcanoFoundation(level, target, radius, layer < 3, caster, true);
+                    liftVolcanoLayer(level, center, reach);
+                } else {
+                    liftBuriedEntities(level, center, width);
                 }
             }
+            if (!legacy && stage == height) fillVolcanoFoundation(level, target, radius, true, caster, false);
         } else if (stage < 2 * height - 1) {
             replace(level, target.above(), STONE, caster);
             replace(level, target.above(stage - height), Blocks.LAVA.defaultBlockState(), caster);
@@ -324,21 +328,31 @@ public final class LandscapeRites {
             replace(level, summit, Blocks.LAVA.defaultBlockState(), caster);
             replace(level, target.above(), Blocks.LAVA.defaultBlockState(), caster);
             int vent = level.getRandom().nextInt(8);
-            if (vent < SHAFT_SIDES.size()) replace(level, summit.relative(SHAFT_SIDES.get(vent)), AIR, caster);
+            var sides = legacy ? LEGACY_VENT_SIDES : SHAFT_SIDES;
+            if (vent < sides.size()) replace(level, summit.relative(sides.get(vent)), AIR, caster);
         } else {
             openShaft(level, heart, target, caster);
         }
     }
 
+    private static void fillVolcanoFoundation(ServerLevel level, BlockPos target, int radius, boolean grassEdge,
+                                              @Nullable ServerPlayer caster, boolean legacy) {
+        for (int depth = 1; depth <= 4; depth++) {
+            fillLayer(level, target.below(depth), Math.max(radius - depth + 1, 2), grassEdge, false, caster, legacy);
+        }
+    }
+
     private static void fillLayer(ServerLevel level, BlockPos center, int radius, boolean grassEdge,
-                                  boolean replaceExisting, @Nullable ServerPlayer caster) {
+                                  boolean replaceExisting, @Nullable ServerPlayer caster, boolean legacy) {
         int error = 1 - radius;
         for (int x = radius, z = 0; x >= z; z++) {
-            drawSpan(level, center, x, z, radius, grassEdge, replaceExisting, caster);
-            if (z != 0) drawSpan(level, center, x, -z, radius, grassEdge, replaceExisting, caster);
-            if (x != z) {
-                drawSpan(level, center, z, x, radius, grassEdge, replaceExisting, caster);
-                drawSpan(level, center, z, -x, radius, grassEdge, replaceExisting, caster);
+            drawSpan(level, center, x, z, radius, grassEdge, replaceExisting, caster, legacy);
+            // The original redraws overlapping spans and takes a new set of edge rolls each time.
+            if (legacy) drawSpan(level, center, z, x, radius, grassEdge, replaceExisting, caster, true);
+            if (legacy || z != 0) drawSpan(level, center, x, -z, radius, grassEdge, replaceExisting, caster, legacy);
+            if (!legacy && x != z) drawSpan(level, center, z, x, radius, grassEdge, replaceExisting, caster, false);
+            if (legacy || x != z) {
+                drawSpan(level, center, z, -x, radius, grassEdge, replaceExisting, caster, legacy);
             }
             if (error < 0) error += 2 * (z + 1) + 1;
             else error += 2 * (z - --x + 2);
@@ -346,16 +360,32 @@ public final class LandscapeRites {
     }
 
     private static void drawSpan(ServerLevel level, BlockPos center, int halfWidth, int z, int radius, boolean grassEdge,
-                                 boolean replaceExisting, @Nullable ServerPlayer caster) {
+                                 boolean replaceExisting, @Nullable ServerPlayer caster, boolean legacy) {
         RandomSource random = level.getRandom();
         int min = -halfWidth + (radius > 1 && random.nextInt(5) == 0 ? 1 : 0);
         int max = halfWidth - (radius > 1 && random.nextInt(5) == 0 ? 1 : 0);
         for (int x = min; x <= max; x++) {
             if (x == 0 && z == 0) continue;
             BlockPos pos = center.offset(x, 0, z);
-            if (!replaceExisting && !level.isEmptyBlock(pos)) continue;
+            BlockState state = level.getBlockState(pos);
+            if ((!replaceExisting && !state.isAir()) || (legacy && protectedTerrain(level, pos, state))) continue;
             boolean edge = grassEdge && (x == min || x == max || Math.abs(z) == radius);
             replace(level, pos, edge && random.nextInt(5) != 0 ? Blocks.GRASS_BLOCK.defaultBlockState() : STONE, caster);
+        }
+    }
+
+    private static void liftVolcanoLayer(ServerLevel level, BlockPos center, float radius) {
+        float x = center.getX();
+        int y = center.getY() + 1;
+        float z = center.getZ();
+        var bounds = new AABB(x - radius, y, z - radius, x + radius, y, z + radius);
+        for (Entity entity : level.getEntitiesOfClass(Entity.class, bounds)) {
+            if (entity.distanceToSqr(x, y, z) > (double) radius * radius) continue;
+            // Keep the original horizontal lookup and find the block at the feet below modern Y zero.
+            var feet = new BlockPos((int) entity.getX(), entity.getBlockY(), (int) entity.getZ());
+            if (level.getBlockState(feet).blocksMotion()) {
+                entity.teleportTo(entity.getX(), entity.getY() + 1, entity.getZ());
+            }
         }
     }
 
@@ -392,13 +422,17 @@ public final class LandscapeRites {
         if (!level.isInWorldBounds(pos) || !level.getWorldBorder().isWithinBounds(pos)) return false;
         BlockState existing = level.getBlockState(pos);
         if (existing.equals(replacement)) return true;
-        if (existing.hasBlockEntity() || existing.getDestroySpeed(level, pos) < 0) return false;
+        if (protectedTerrain(level, pos, existing)) return false;
         if (caster != null && (!level.mayInteract(caster, pos)
                 || !existing.isAir() && WitcheryBlockBreak.isCanceled(level, pos, existing, caster))) {
             return false;
         }
         return replacement.isAir() ? level.setBlockAndUpdate(pos, replacement)
                 : WitcheryBlockPlacement.place(level, pos, replacement, caster, Direction.UP);
+    }
+
+    private static boolean protectedTerrain(ServerLevel level, BlockPos pos, BlockState state) {
+        return state.hasBlockEntity() || state.getDestroySpeed(level, pos) < 0;
     }
 
     public static void playRiteStart(ServerLevel level, BlockPos target) {
