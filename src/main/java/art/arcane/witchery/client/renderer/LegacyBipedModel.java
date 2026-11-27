@@ -13,13 +13,17 @@ class LegacyBipedModel<T extends Mob> extends HumanoidModel<T> {
 
     @Override
     public void prepareMobModel(T mob, float swing, float amount, float partialTick) {
+        prepareHeldItemPose(this, mob);
+        super.prepareMobModel(mob, swing, amount, partialTick);
+    }
+
+    static void prepareHeldItemPose(HumanoidModel<?> model, Mob mob) {
         ArmPose main = mob.getMainHandItem().isEmpty() ? ArmPose.EMPTY : ArmPose.ITEM;
         ArmPose off = mob.getOffhandItem().isEmpty() ? ArmPose.EMPTY : ArmPose.ITEM;
         boolean rightHanded = mob.getMainArm() == HumanoidArm.RIGHT;
-        rightArmPose = rightHanded ? main : off;
-        leftArmPose = rightHanded ? off : main;
-        crouching = mob.isShiftKeyDown();
-        super.prepareMobModel(mob, swing, amount, partialTick);
+        model.rightArmPose = rightHanded ? main : off;
+        model.leftArmPose = rightHanded ? off : main;
+        model.crouching = mob.isShiftKeyDown();
     }
 
     @Override

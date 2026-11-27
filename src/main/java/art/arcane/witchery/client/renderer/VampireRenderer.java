@@ -5,6 +5,7 @@ import art.arcane.witchery.entity.Vampire;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
@@ -21,7 +22,7 @@ public final class VampireRenderer extends HumanoidMobRenderer<Vampire, Humanoid
             Witchery.MODID, "textures/entities/vampire.png");
 
     public VampireRenderer(EntityRendererProvider.Context context) {
-        super(context, new HumanoidModel<>(context.bakeLayer(LAYER)), 0.5F);
+        super(context, new Model(context.bakeLayer(LAYER)), 0.5F);
         addLayer(new HumanoidArmorLayer<>(this,
                 new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER_INNER_ARMOR)),
                 new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER_OUTER_ARMOR)), context.getModelManager()));
@@ -39,5 +40,17 @@ public final class VampireRenderer extends HumanoidMobRenderer<Vampire, Humanoid
     @Override
     public ResourceLocation getTextureLocation(Vampire vampire) {
         return TEXTURE;
+    }
+
+    private static final class Model extends LegacyBipedModel<Vampire> {
+        private Model(ModelPart root) {
+            super(root);
+        }
+
+        @Override
+        public void setupAnim(Vampire vampire, float swing, float amount, float age, float yaw, float pitch) {
+            super.setupAnim(vampire, swing, amount, age, yaw, pitch);
+            hat.y += 0.3F;
+        }
     }
 }

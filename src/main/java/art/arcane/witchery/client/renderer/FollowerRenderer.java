@@ -30,7 +30,7 @@ public final class FollowerRenderer extends HumanoidMobRenderer<WitcheryFollower
     private final HumanoidModel<WitcheryFollower> slim;
 
     public FollowerRenderer(EntityRendererProvider.Context context) {
-        super(context, new HumanoidModel<>(context.bakeLayer(LAYER)), 0.4F);
+        super(context, new LegacyBipedModel<>(context.bakeLayer(LAYER)), 0.5F);
         normal = new PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER), false);
         slim = new PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER_SLIM), true);
         addLayer(new HumanoidArmorLayer<>(this, new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER_INNER_ARMOR)),
@@ -55,6 +55,7 @@ public final class FollowerRenderer extends HumanoidMobRenderer<WitcheryFollower
         HumanoidModel<WitcheryFollower> previous = model;
         if (follower.followerType() == 5) {
             model = "slim".equals(ClientPlayerAppearance.of(follower.playerSkin()).model()) ? slim : normal;
+            LegacyBipedModel.prepareHeldItemPose(model, follower);
         }
         try {
             super.render(follower, yaw, partialTick, pose, buffers, light);

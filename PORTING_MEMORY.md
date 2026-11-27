@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Vampire, Follower, Reflection, Coven Witch, and Huntsman rendering (2026-11-27)
+
+- The original client models supplied 264 poses and 36 meshes. The preceding package differed on 217 of the 1,584 pose values. The original biped poses now drive the Vampire, fixed-skin Followers and the fallback Reflection. Copied player skins keep modern wide and slim geometry and show the held-item pose on the correct side. The Vampire's hat sits 0.3 model pixels below its original head pivot. Texture lookups on a Wolfman Reflection report the texture that the renderer uses.
+- The Coven Witch uses the original crossed sleeves, 18-pixel robe and sculpted hat. The drinking bottle follows the nose rotation at the original pivot with modern baked-item coordinates. The Huntsman starts and stops rolling from the current walk speed while keeping the interpolated stride for the angle. The preceding package matched two of the 12 bottle and Huntsman matrices.
+- The packaged Forge client matched all 1,584 pose values, 864 vertices and UV coordinates, and 12 matrices. It resolved all five witch skins, checked both Vampire armor layers, and rendered a held item on wide and slim copies for both the Follower and Reflection. The fixture verified regular and splash potion geometry and the Wolfman Reflection texture.
+- The survival client saw a Coven Witch select and hold Fire Resistance after the fixture set her on fire. The server confirmed that she drank it and gained the effect. The clean Forge client and dedicated server used byte-identical copies of `build/qa-humanoid-renderers/release-final.jar`, SHA-256 `f5214ea134b79943872a1264cc7e254a7da4903ae5efa4406df803ce6ea06049`. The isolated client stayed hidden and unfocused with zero master volume and OpenAL No Output. See `release-poses.log` and `survival/check-verified-final.log` in the same directory.
+- Local Java 17 data generation, JAR reobfuscation, and all 597 required Forge GameTests passed. See `gametest-release.log`.
+
 ## Death, Hellhound, Treefyd, Broom, and spirit rendering (2026-11-27)
 
 - The original executable models supplied 276 part poses, 56 meshes, and 17 rotation matrices for the Hellhound's head and tail and the Treefyd's walk transitions. The preceding Forge JAR differed on 18 meshes, four Hellhound rotations, and three Treefyd transitions. Dream Spirit and Lost Soul both drew one tenth of a block below their expected height.

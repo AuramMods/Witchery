@@ -33,7 +33,7 @@ public final class HornedHuntsmanRenderer extends MobRenderer<HornedHuntsman, Ho
     @Override
     protected void setupRotations(HornedHuntsman huntsman, PoseStack pose, float age, float yaw, float partialTick) {
         super.setupRotations(huntsman, pose, age, yaw, partialTick);
-        if (huntsman.walkAnimation.speed(partialTick) >= 0.01F) {
+        if (huntsman.walkAnimation.speed() >= 0.01) {
             pose.mulPose(Axis.ZP.rotationDegrees(5.5F * Mth.triangleWave(huntsman.walkAnimation.position(partialTick) + 6, 13)));
         }
     }

@@ -950,6 +950,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 - The Spectre rolls a Gaussian follow-range bonus and head and chest armor based on the original local difficulty. The armor enchantments use the original enabled candidates, weights, and power ranges. The same initialization runs for an ordinary Forge spawn, a Brazier, a Spectral Stone, or a Sentinel. Spectres restored from a save retain their equipment and follow range.
 
 - Death and the Broom use the original UV orientation. Death and Death's Hand share the shaft and double-sided blade. The Hellhound rotates its head and tail before applying the wet-fur roll. The Treefyd uses the current walk speed to start or stop its roll. Dream Spirit and Lost Soul use the same model offset, half-scale geometry and 60% opacity with their own colors.
+- The Vampire, fixed-skin Followers and fallback Reflection use the original biped poses. Wide and slim player copies retain modern skin geometry and use the mob's held-item pose. Wolfman Reflections expose their Wolfman texture. Coven Witches use the legacy sleeve and robe geometry and the original defensive bottle grip. The Huntsman uses the same current-speed roll threshold as the Treefyd.
 
 The modern registry also keeps `witchery:brew` and `witchery:brew2` as working projectile types for earlier 1.20.1 saves. Their fixed and custom payload decoding is shared with the 1.7.10 importer. The older port's two spawn egg item IDs remain readable. Protocol 89 covers the changed entity data.
 

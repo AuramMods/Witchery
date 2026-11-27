@@ -22,7 +22,7 @@ public final class ReflectionRenderer extends HumanoidMobRenderer<Reflection, Hu
 
     public ReflectionRenderer(EntityRendererProvider.Context context) {
         super(context, new PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER), false), 0.5F);
-        classic = new HumanoidModel<>(context.bakeLayer(FollowerRenderer.LAYER));
+        classic = new LegacyBipedModel<>(context.bakeLayer(FollowerRenderer.LAYER));
         slim = new PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER_SLIM), true);
         addLayer(new HumanoidArmorLayer<>(this, new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER_INNER_ARMOR)),
                 new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER_OUTER_ARMOR)), context.getModelManager()));
@@ -31,6 +31,7 @@ public final class ReflectionRenderer extends HumanoidMobRenderer<Reflection, Hu
 
     @Override
     public ResourceLocation getTextureLocation(Reflection reflection) {
+        if (reflection.hasWolfmanModel()) return wolfman.getTextureLocation(reflection);
         return reflection.ownerSkin().isEmpty() ? TEXTURE : ClientPlayerAppearance.of(reflection.ownerSkin()).texture();
     }
 
@@ -43,6 +44,7 @@ public final class ReflectionRenderer extends HumanoidMobRenderer<Reflection, Hu
         HumanoidModel<Reflection> previous = model;
         if (reflection.ownerSkin().isEmpty()) model = classic;
         else if ("slim".equals(ClientPlayerAppearance.of(reflection.ownerSkin()).model())) model = slim;
+        if (model != classic) LegacyBipedModel.prepareHeldItemPose(model, reflection);
         try {
             super.render(reflection, yaw, partialTick, pose, buffers, light);
         } finally {
