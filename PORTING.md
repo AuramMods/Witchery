@@ -1760,6 +1760,15 @@ The muted Auram client rejoined after the headless dedicated-server restart and 
 - [x] Verify the original loot and saved-tag formats. GameTests checked timed arming, the legacy owner UUID string, bait gating, capture and the absence of a Wolf Trap item drop. Java 17 data generation, JAR reobfuscation and all 246 required Forge GameTests passed.
 - [x] Restart the packaged dedicated server. Both placed traps retained their owner and sprung state. The Wolf Trap retained its specific Wolfman's UUID, that Wolfman remained infectious, and the sheep kept its fence leash.
 
+### Hunting trap bait timing, landing and cues (2026-11-27)
+
+- A released 0.24.1 Bear Trap ignored a pig at game tick 20 after arming and caught it at 21. Its click played at the user with volume 0.5 and pitch `0.36662757` with seed 42. The next world roll was 248. Forge uses the original pitch draw, and catch sends the original red dust and mantrap packet at the trap's center.
+- The original Wolf Trap polled at loaded tile tick 200. It kept its recorded bait time through disarm and rearm, and a second poll only required the world clock to be later than that sample. Forge uses the tile clock and preserves the bait timestamp, owner, summoned UUID, and modern `ArmedAt` field. A fresh block entity starts a new polling interval on load.
+- The original looked for two clear blocks above the landing floor, including on a column that remained solid through the eight-block climb limit. With the two fixed rolls, open ground produced `(240.5, 180.05, 176.5)`, the one-cell gap failed, and the tall column produced `(240.5, 189.05, 176.5)`. Forge follows that search and keeps its world border, collision, spawn approval, and Peaceful guards. The Peaceful guard leaves the trap available after a difficulty change. The original assigned a Wolfman UUID in Peaceful even though the hostile summon could despawn on its next tick.
+- The original midnight reference allowed baiting in Overworld, Nether, Torment, and Mirror. End and ordinary Dream reported daylight. The trap now uses the same realm and moon rule as original Circle Magic.
+- On packaged clean Forge, a survival player armed, disarmed, and rearmed the Wolf Trap at the same bait timestamp. The summoned Wolfman sprang it and became infectious. The nearby muted client received the original red dust and mantrap packet and the client 17.2 blocks away did not. Both received it for the Bear Trap after the observer moved closer. The Bear Trap left six health and Paralysis III on its pig. The fixture supplied the fenced platform and bait, and nudged the animals into the jaws. Copied Auram passed the same live capture and effect checks headlessly with the three test entities allowed to tick in the disposable configuration.
+- Dedicated restarts on both profiles retained the sprung flags, bait timestamp, selected Wolfman UUID, infection, sheep leash, and pig health. Java 17 packaging and local JAR reobfuscation succeeded. All 646 required Forge GameTests passed after isolating the older planting fixture from terrain and waiting for its item tracking.
+
 ## General Cauldron Brewing (2026-11-20)
 
 - [x] Restore ordered ingredients, capacity, per-effect strength and duration, inversion, instant splash, altar costs, bottling yields and comparator output. The existing Mutandis ritual still uses its original trigger and output.
@@ -3393,6 +3402,8 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare [Leaping Lily placement and the local jump cue](#player-movement-and-lily-placement-2026-11-27), including the ordinary shallow-water interaction in clean Forge and copied Auram.
   - [x] Compare [Daylight Collector detector priority and output pickup](#daylight-collector-detector-order-and-pickup-2026-11-27), including all six detector pairs, a vertical update, Creative consumption and saved charge.
   - [x] Compare [Bramble harvest, support and portal particles](#bramble-harvest-support-and-portal-particles-2026-11-27), including the original spread rolls, shear harvest, and both picked variants.
+  - [x] Compare [Bear and Wolf Trap baiting and capture](#hunting-trap-bait-timing-landing-and-cues-2026-11-27), including the loaded tile clock, retained timestamp, landing search, and arming grace.
+  - [ ] Compare Plant Mine supporting blocks and the activation packet, and compare Critter Snare capture of species subclasses, release outcomes, and local sound.
 - [ ] Item behavior parity pass (including metadata-subitem conversions).
   - [x] Compare melee modifiers, sword guards, and Boline harvest against the [melee tool measurements](#melee-tools-and-boline-harvesting-2026-11-26).
   - [x] Restore the Crossbow's [launch position, velocity, spread, and firing cue](#crossbow-launch-physics-2026-11-27). The seeded original replay covers four draw durations and the three Splitting trajectories with a moving shooter.

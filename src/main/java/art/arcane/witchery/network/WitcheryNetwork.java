@@ -92,6 +92,8 @@ public final class WitcheryNetwork {
     private static final int LEGACY_BREATH_SOUND_ID = 41;
     private static final int LEGACY_SPECTRE_AMBIENT_SOUND_ID = 43;
     private static final int LEGACY_BLAZE_DEATH_SOUND_ID = 44;
+    private static final int LEGACY_MANTRAP_SOUND_ID = 53;
+    private static final int LEGACY_WOLFMAN_TALK_SOUND_ID = 54;
     private static final int LEGACY_DRINK_SOUND_ID = 56;
     private static final int LEGACY_POOF_SOUND_ID = 57;
     private static final int LEGACY_MIRROR_SPEECH_SOUND_ID = 61;
@@ -492,6 +494,15 @@ public final class WitcheryNetwork {
 
     public static void sendSummonedCreature(ServerLevel level, Vec3 center) {
         sendParticlesAround(level, LEGACY_PORTAL_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID, center, 0.5, 1, 16);
+    }
+
+    public static void sendHuntingTrapCatch(ServerLevel level, BlockPos pos) {
+        sendParticlesAround(level, LEGACY_RED_DUST_PARTICLE_ID, LEGACY_MANTRAP_SOUND_ID, Vec3.atCenterOf(pos), 0.25, 0.5, 16);
+    }
+
+    public static void sendWolfTrapLure(ServerLevel level, LivingEntity wolf) {
+        sendParticlesAround(level, LEGACY_SMOKE_PARTICLE_ID, LEGACY_WOLFMAN_TALK_SOUND_ID,
+                wolf.position(), 1, wolf.getBbHeight(), 16);
     }
 
     public static void sendVolcanoStart(ServerLevel level, BlockPos target) {

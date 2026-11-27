@@ -370,10 +370,19 @@ public final class CauldronBrewParityTests {
 
     @GameTest(template = "qa_coven_arena")
     public static void plantingIgnoresDroppedSaplingsAndFlowers(GameTestHelper helper) {
-        var level = helper.getLevel();
         var impact = helper.absolutePos(new BlockPos(6, 5, 5)).atY(196);
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(helper.getLevel().isPositionEntityTicking(impact), "The planting arena tracks its drops"))
+                .thenExecute(() -> verifyPlantingIgnoresDecorations(helper, impact)).thenSucceed();
+    }
+
+    private static void verifyPlantingIgnoresDecorations(GameTestHelper helper, BlockPos impact) {
+        var level = helper.getLevel();
         var dirt = impact.west(2);
         var farm = impact.west();
+        for (BlockPos cell : BlockPos.betweenClosed(impact.offset(-2, -2, -2), impact.offset(2, 3, 2))) {
+            level.setBlockAndUpdate(cell, Blocks.AIR.defaultBlockState());
+        }
         level.setBlockAndUpdate(dirt.below(), Blocks.DIRT.defaultBlockState());
         level.setBlockAndUpdate(farm.below(), Blocks.FARMLAND.defaultBlockState());
         var brew = plantingBrew();
@@ -394,7 +403,6 @@ public final class CauldronBrewParityTests {
                 level.removeBlock(farm, false);
             }
         }
-        helper.succeed();
     }
 
     @GameTest(template = "qa_coven_arena")

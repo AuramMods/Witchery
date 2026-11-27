@@ -421,8 +421,8 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | `CAULDRON` | `witchery:cauldron` |
 | `WOLF_ALTAR` | `witchery:wolfaltar` |
 | `SILVER_VAT` | `witchery:silvervat` |
-| `BEARTRAP` | `witchery:beartrap` |
-| `WOLFTRAP` | `witchery:wolftrap` |
+| `BEARTRAP` | `witchery:beartrap`. First catches after 20 elapsed ticks, using the original jaw bounds, four damage, and 30 seconds of Paralysis III. |
+| `WOLFTRAP` | `witchery:wolftrap`. Polls bait every 200 loaded tile ticks. The saved bait time survives disarming, rearming, and capture. Only the Wolfman with the saved lure UUID can spring it. |
 | `WALLGEN` | `witchery:wallgen` |
 | `COFFIN` | `witchery:coffinblock` |
 | `LIGHT` | `witchery:light` (invisible level-15 light, with a temporary state for moving sources) |
