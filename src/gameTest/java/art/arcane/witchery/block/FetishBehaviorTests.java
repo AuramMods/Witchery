@@ -155,10 +155,11 @@ public final class FetishBehaviorTests {
 
             tickHeart(heart, 20);
             var items = level.getEntitiesOfClass(ItemEntity.class, new AABB(center).inflate(6));
-            var bound = items.stream().map(ItemEntity::getItem).filter(item -> item.is(ladder)).findFirst().orElseThrow();
+            var drop = items.stream().filter(item -> item.getItem().is(ladder)).findFirst().orElseThrow();
+            var bound = drop.getItem();
             helper.assertTrue(FetishBlockEntity.itemEffect(bound) == FetishEffect.SCREAMER.id
-                            && FetishBlockEntity.itemColor(bound) == 14,
-                    "The saved binding rite returns the dyed Witch's Ladder as a Screamer");
+                            && FetishBlockEntity.itemColor(bound) == 14 && !drop.hasPickUpDelay(),
+                    "The saved rite returns the dyed Screamer Ladder with immediate pickup");
             helper.assertTrue(altar.power() == beforeCharge - 6_000, "The binding uses the earlier payment");
             helper.assertTrue(needed.stream().allMatch(Mob::isRemoved) && unrelated.isAlive(),
                     "The rite consumes the three Dream Spirits and two Banshees and leaves the Poltergeist");

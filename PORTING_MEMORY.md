@@ -2,13 +2,21 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Circle Magic spirit binding (2026-11-26)
+
+- The original dedicated server measured 16 scenarios across rites 83 through 86. It captured the first spectral kind with a limit of three. A Banshee 5.37 blocks from the glyph's lower X coordinate survived despite being inside the centered five-block sphere. Both the stone and a Witch's Ladder accepted a creature still in its death animation. The Fetish overlap chose Enhanced Poppets before Sentinel, Screamer, Twister, and Ghost Walker.
+- The original removed the selected creatures before attempting a result. Cancelling the Spectral Stone, bound Witch's Ladder, or Death admission still completed the rite. The armed Death wearer moved to the glyph's lower corner and received the original departure, arrival, and Wither cues. See `build/qa-rite-spirit-output/native/native-selection.log`.
+- The preceding JAR failed 61 of 187 observations. The matrix includes 16 paid Heart Glyph fixtures, plus fresh redstone activations of the stone and Witch's Ladder. It checks the ordered cues near the glyph and silence outside their range. The fixture supplies each spirit population, the full offerings, and charged altars for the redstone casts. See `build/qa-rite-spirit-output/clean-baseline-verified/baseline.log`.
+- Both rebuilt headless profiles passed all 187 observations. See `clean-verified/final.log` and `pack-verified/final.log` in the same directory.
+- Local Java 17 data generation, JAR reobfuscation, and all 568 required Forge GameTests passed. The exact `build/qa-rite-spirit-output/final.jar` has SHA-256 `1f5bdbe25088d3fb98d88fc8a5b5658db16685f84cc5e2a545b71f128e8ad4fc`.
+- The next comparison has original results for all ten directed curses and cures, plus equal and weaker cure rolls, coven bonuses, an existing stronger curse, and a missing Taglock. See `build/qa-directed-rite-completions/native/run.log`.
+
 ## Circle Magic item results (2026-11-26)
 
 - The original dedicated server measured all 19 standard and talisman item outputs. The two talisman rites stored the small white ring and erased it before attempting their drop. The 17 other results launched from the center with immediate pickup. The local Crystal Ball caster learned fortune telling before admission, even when Forge vetoed the item. A caster in the Nether received no skill from the overworld rite. The creature Waystone and worship statue both returned an abort when no player witnessed the cast. See `build/qa-rite-item-output/native/native-ring.log` and `native-training-final.log` in the same directory.
 - The preceding package failed 69 of 218 observations. The replay covers all 19 registered results on the Heart Glyph's final pulse, fresh redstone activations of the portable Waystone and Talisman, both vetoes, a remote caster, and two missing witnesses. The packet listeners sit 15 and 17 blocks from the glyph. See `clean-baseline/compared.log` in the same directory.
 - The rebuilt package passed all 218 observations on both headless servers. See `clean-network/final.log` and `pack-network/final.log` in the same directory.
 - Local Java 17 data generation and reobfuscation passed. All 567 required Forge GameTests passed, including the original drop position and pickup delay after restoring a paid Waystone cast and the vetoed Talisman regression. The exact reobfuscated `build/qa-rite-item-output/candidate.jar` has SHA-256 `865f96656f0f902667a10379aa02716837cabfdbd7677d54c6a553e73ddeb59c`.
-- The original server also ran the next four rite IDs in `build/qa-rite-spirit-output/native/run.log`. It consumed the selected spirits before attempting each drop or admitting Death. One Banshee within the five-block sphere but outside the original integer-aligned search box survived an aborted Spectral Stone cast. Use these cases for the Spectral Stone and Fetish behavior comparison.
 
 ## Melee tools and Boline harvesting (2026-11-26)
 

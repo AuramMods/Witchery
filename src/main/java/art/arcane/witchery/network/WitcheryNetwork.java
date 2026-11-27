@@ -470,8 +470,16 @@ public final class WitcheryNetwork {
     }
 
     public static void sendRiteItemResult(ServerLevel level, Vec3 center, boolean circleTalisman) {
-        int particle = circleTalisman ? LEGACY_PORTAL_PARTICLE_ID : LEGACY_SPELL_PARTICLE_ID;
-        sendParticlesAround(level, particle, LEGACY_FIZZ_SOUND_ID, center, 0.5, circleTalisman ? 1 : 0.5, 16);
+        if (circleTalisman) sendParticlesAround(level, LEGACY_PORTAL_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID, center, 0.5, 1, 16);
+        else sendRiteSpellResult(level, center, 0.5);
+    }
+
+    public static void sendRiteSpellResult(ServerLevel level, Vec3 center, double height) {
+        sendParticlesAround(level, LEGACY_SPELL_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID, center, 0.5, height, 16);
+    }
+
+    public static void sendRiteDeathCall(ServerLevel level, Vec3 arrival) {
+        sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_WITHER_SPAWN_SOUND_ID, arrival, 0.5, 1.5, 16);
     }
 
     public static void sendBrewOwlArrival(ServerLevel level, Vec3 position) {

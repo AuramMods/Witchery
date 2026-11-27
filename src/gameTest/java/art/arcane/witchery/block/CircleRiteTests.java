@@ -9,6 +9,7 @@ import art.arcane.witchery.entity.WitchToad;
 import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.item.CircleTalismanItem;
+import art.arcane.witchery.item.SpectralStoneItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
@@ -349,6 +350,36 @@ public final class CircleRiteTests {
                         .allMatch(offset -> level.isEmptyBlock(center.offset(offset))),
                 "The completed cast erases its captured glyphs even when Forge vetoes the drop");
         helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_spectral_stone_search_box", setupTicks = 5)
+    public static void spectralStoneNeedsBothTheOriginalBoxAndSphere(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.MEDIUM_RITE, "circleglyphritual");
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var corner = Vec3.atLowerCornerOf(center);
+        var edge = corner.add(5.37, 0, 0.5);
+        var banshee = WitcheryEntities.BANSHEE.get().create(level);
+        banshee.setPos(edge);
+        banshee.setNoAi(true);
+        banshee.setNoGravity(true);
+        level.addFreshEntity(banshee);
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.getEntity(banshee.getUUID()) == banshee,
+                "The circle can query the Banshee")).thenExecute(() -> {
+            var heart = heart(helper);
+            finishOriginalBinding(level, center, heart, 83, 3);
+            helper.assertTrue(banshee.isAlive() && drops(helper).isEmpty(),
+                    "A Banshee inside the sphere but outside the original box survives the failed cast");
+
+            banshee.setPos(corner.add(2.5, 0, 0.5));
+            banshee.setHealth(0);
+            finishOriginalBinding(level, center, heart, 83, 3);
+            var items = drops(helper);
+            helper.assertTrue(banshee.isRemoved() && items.size() == 1 && !items.get(0).hasPickUpDelay()
+                            && SpectralStoneItem.creatureCount(items.get(0).getItem()) == 1,
+                    "An in-range Banshee still in its death animation fills the stone for immediate pickup");
+        }).thenSucceed();
     }
 
     @GameTest(template = TEMPLATE, batch = "witchery_cancel_waystone_payment", setupTicks = 5)

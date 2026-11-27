@@ -864,6 +864,13 @@
 - The production Heart Glyph finishes these item rites after one drop attempt. The original Crystal Ball trained its caster in the glyph's dimension before asking Forge to admit the item. The creature Waystones and Statue of Worship kept their existing witness requirement. The original headless comparisons are in `build/qa-rite-item-output/native/native-ring.log` and `native-training-final.log`.
 - The exact packaged JAR passed all 218 checks on headless clean Forge and copied Auram. Nineteen fixtures resumed a cast at its paid completion pulse. The portable Waystone and Talisman also ran from fresh offerings and a rising redstone edge. The replay includes the two Forge spawn vetoes and observes the completion packets inside and outside their range.
 
+## Circle Magic spirit binding (2026-11-26)
+
+- The original Spectral Stone queries the integer-aligned box within five blocks of the glyph, then checks the five-block sphere centered on the bottom of the glyph. It selects the first eligible kind and binds up to three of that kind. Both the stone and Fetish binding accept a dying creature until it leaves the world.
+- The three Fetish rites use the first qualifying spirit effect in registry order, including the hidden Death combination. Both binding paths consume the selected creatures before attempting to deliver the result. Each removed creature sends Portal and Pop from its feet. The drops are available for immediate pickup and send Spell and Fizz with a height of 0.5 for the stone and 1.5 for a fetish.
+- Death appears at the centered glyph plus 0.1 blocks in height, or the first equipped player in the dimension teleports to the glyph's lower corner with the original departure and arrival cues. Both play the same Wither and Instant Spell cue at the result. A Forge admission veto leaves the original cast complete, and an empty or out-of-range cast refunds its held offering.
+- The reobfuscated package passed all 187 observations on headless clean Forge and copied Auram. Sixteen casts resumed at the paid effect step. The Spectral Stone and Screamer Witch's Ladder also ran from dropped offerings and a redstone edge, with the spirits and charged altars supplied by the fixture.
+
 ## Familiar Brews and Baba Yaga (2026-11-20)
 
 - [x] Restore the recipes and effects for Frog's Tongue, Cursed Leaping, Hitchcock, Bats and Wasting. The muted client pulled a cow over two blocks, gained roughly eleven blocks of height with Jump Boost IV, and sent four temporary owls at a cow with Hitchcock. Bats released ten marked bats and applied Slowness VI to a nearby chicken. Wasting cut food from twenty to ten, applied Hunger and Poison, and cleared a nearby poppy.
@@ -2915,6 +2922,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Complete the Cauldron effect, modifier, and cast comparisons in the release checklist.
 - [ ] Ritual and circle magic parity.
   - [x] Compare the [19 standard and talisman item results](#circle-magic-item-results-2026-11-26) after the last offering.
+  - [x] Compare [Spectral Stone and Fetish spirit binding](#circle-magic-spirit-binding-2026-11-26), including the hidden Death combination.
 - [ ] Infusion, prediction, creature power parity.
 - [ ] Entity AI/combat/spawn tuning parity.
 

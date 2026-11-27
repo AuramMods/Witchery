@@ -2,6 +2,7 @@ package art.arcane.witchery.item;
 
 import art.arcane.witchery.entity.SpectralUndead;
 import art.arcane.witchery.infusion.OtherwhereInfusion;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -34,6 +35,7 @@ public final class SpectralStoneItem extends Item {
     static final String CONTENTS = "SpectralContents";
     private static final int CHARGE_TICKS = 40;
     private static final int MAX_CREATURES = 3;
+    private static final int BIND_RADIUS = 5;
 
     public SpectralStoneItem() {
         super(new Properties().stacksTo(16).rarity(Rarity.RARE));
@@ -63,10 +65,12 @@ public final class SpectralStoneItem extends Item {
         else stack.getOrCreateTag().putInt(CONTENTS, metadata & 127);
     }
 
-    public static boolean bindFromCircle(ServerLevel level, BlockPos pos) {
+    public static boolean bindFromCircle(ServerLevel level, BlockPos pos, boolean legacy) {
         Vec3 center = Vec3.atBottomCenterOf(pos);
-        List<SpectralUndead> creatures = level.getEntitiesOfClass(SpectralUndead.class, new AABB(center, center).inflate(5),
-                entity -> entity.isAlive() && entity.distanceToSqr(center) <= 25);
+        Vec3 searchOrigin = legacy ? Vec3.atLowerCornerOf(pos) : center;
+        AABB area = new AABB(searchOrigin, searchOrigin).inflate(BIND_RADIUS);
+        List<SpectralUndead> creatures = level.getEntitiesOfClass(SpectralUndead.class, area,
+                entity -> (legacy || entity.isAlive()) && entity.distanceToSqr(center) <= BIND_RADIUS * BIND_RADIUS);
         if (creatures.isEmpty()) return false;
         SpectralUndead.Kind kind = creatures.get(0).kind();
         List<SpectralUndead> selected = creatures.stream().filter(entity -> entity.kind() == kind).limit(MAX_CREATURES).toList();
@@ -74,12 +78,24 @@ public final class SpectralStoneItem extends Item {
         ItemStack stone = new ItemStack(WitcheryItems.getRequired("spectralstone").get());
         applyLegacyContents(stone, kind.legacyId() | selected.size() << 4);
         ItemEntity drop = new ItemEntity(level, center.x, center.y + 1.5, center.z, stone, 0, 0.3, 0);
-        drop.setDefaultPickUpDelay();
-        if (!level.addFreshEntity(drop)) return false;
+        if (!legacy) {
+            drop.setDefaultPickUpDelay();
+            if (!level.addFreshEntity(drop)) return false;
+        }
         for (SpectralUndead mob : selected) {
-            level.sendParticles(ParticleTypes.PORTAL, mob.getX(), mob.getY(0.5), mob.getZ(), 16, 0.45, 0.7, 0.45, 0.1);
-            level.playSound(null, mob.blockPosition(), SoundEvents.CHICKEN_EGG, SoundSource.BLOCKS, 0.7F, 1);
-            mob.discard();
+            if (legacy) {
+                mob.discard();
+                WitcheryNetwork.sendRiteLivingOffering(level, mob.position());
+            } else {
+                level.sendParticles(ParticleTypes.PORTAL, mob.getX(), mob.getY(0.5), mob.getZ(), 16, 0.45, 0.7, 0.45, 0.1);
+                level.playSound(null, mob.blockPosition(), SoundEvents.CHICKEN_EGG, SoundSource.BLOCKS, 0.7F, 1);
+                mob.discard();
+            }
+        }
+        if (legacy) {
+            drop.setNoPickUpDelay();
+            level.addFreshEntity(drop);
+            WitcheryNetwork.sendRiteSpellResult(level, drop.position(), 0.5);
         }
         return true;
     }
