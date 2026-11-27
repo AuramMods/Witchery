@@ -618,7 +618,15 @@ Clean Forge and copied Auram match all 42 cases measured from the original handl
 - [x] Brew the Infused Brew Base in the Kettle and offer it with a Broom, Feather, Arthana and a wild Owl. The muted player received an Infused Brew of Soaring. Forge GameTests verified that the Owl and Soaring bonuses stack and that Soaring expires after two hours.
 - [x] Restart the packaged server after drinking Soaring. The same blue broom and brew timestamp survived. The muted client flew again with both bonuses, dismounted and recovered the dyed item with an axe. All 91 required GameTests, data generation and JAR reobfuscation passed.
 - [x] Restore the Wild Bramble recipe for a second Infused Brew Base. Restore the HUD icons and remaining-time display for Soaring and the Grave.
-- [ ] Compare mounted and unmounted motion tick by tick, including living passengers, the original acceleration ceiling, nearby Broom pushes, and when Owl and Soaring bonuses refresh. The original runtime trace records eleven cases and one nearby-Broom push. In the five-case Forge sample, a Cow passenger triggers the empty-Broom descent and a grounded empty Broom resets positive vertical motion. Read `build/qa-broom-motion/{native/reference.log,current.log}`.
+- [x] Compare [mounted and unmounted motion](#broom-movement-and-collisions-2026-11-27), including living passengers, acceleration, Broom pushes, Owl and Soaring timing, and client interpolation.
+
+### Broom movement and collisions (2026-11-27)
+
+Living passengers can steer a Broom with forward input and aim. An empty airborne Broom descends, and a grounded one retains vertical motion. The speed cap, acceleration ceiling, aim thresholds, and drag use the original values. Brooms exchange horizontal pushes even when occupied. A player aboard a Broom lands with zero fall distance.
+
+Owl mastery is sampled when the player mounts. Soaring is sampled on mount and every 100 Broom ticks during the ride. The client interpolates using the original five additional ticks, then continues along the last received velocity. Forge teleports are applied immediately. The port retains the existing renderer's heading convention and translates the original heading when importing a dotted-ID Broom or an original riding chain.
+
+Clean Forge and copied Auram matched 11 original server motion cases and four client interpolation samples on the same JAR. The survival player placed and dyed the supplied Enchanted Broom, drank Soaring in the saddle, and used forward input and aim to climb, turn, descend, and brake. Soaring took effect at the next check and supplied Owl mastery took effect on remount. Rejoining each profile after a headless restart restored the mounted Broom's UUID, dye, and both bonuses. All 638 required local Forge GameTests passed, including occupied Broom contact, Forge fall handling, and the imported heading in a nested mount.
 
 ## Waystone rites (2026-11-20)
 
@@ -3385,6 +3393,8 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare the [remaining creature-power casts](#remaining-creature-power-casts-2026-11-27). The original dedicated trace covers 24 buff, Squid and Creeper cases.
   - [x] Compare [passive creature-power and held-item movement](#passive-creature-powers-and-held-item-movement-2026-11-27). Clean Forge and copied Auram match all 42 original runtime cases and ten Branch and Brew Bag cases derived from the original code.
 - [ ] Entity AI/combat/spawn tuning parity.
+  - [ ] Compare the spawn eligibility for the four original natural spawners. The Coven Witch's inherited path weight accepts grass in darkness and sufficiently bright ground of other kinds. The current Forge predicate requires both the animal substrate tag and raw light above eight. The [Coven Witch](#familiars-and-covens-2026-11-19), [Hobgoblin](#hobgoblin-worship-and-breeding-2026-11-20), Hellhound and Dream milestones cover the registered group and weight rules.
+  - [x] Compare [Broom steering, bonus timing, contact, and client interpolation](#broom-movement-and-collisions-2026-11-27).
   - [x] Compare [Insanity apparition columns, pursuit, lifetime, rendering, and private cues](#insanity-apparition-behavior-2026-11-27).
   - [x] Compare [Horned Huntsman archery, teleport, wolves, and Horn summons](#horned-huntsman-trial-2026-11-20).
   - [x] Compare [Mog and Gulg's paired combat, navigation, statue summons, and rewards](#mog-and-gulg-2026-11-20).

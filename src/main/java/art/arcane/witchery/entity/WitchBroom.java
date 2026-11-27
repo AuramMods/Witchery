@@ -17,6 +17,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeItem;
@@ -32,14 +33,21 @@ public final class WitchBroom extends Entity {
     private static final EntityDataAccessor<Float> DAMAGE = SynchedEntityData.defineId(WitchBroom.class, EntityDataSerializers.FLOAT);
     private static final double INITIAL_ACCELERATION = 0.07;
     private static final double MAX_ACCELERATION = 0.35;
+    private static final double DRAG = 0.99F;
     private double acceleration = INITIAL_ACCELERATION;
+    private boolean owlRider;
+    private boolean soaringRider;
     private int interpolationTicks;
     private Vec3 interpolationPos;
     private float interpolationYaw;
+    private float interpolationPitch;
+    private Vec3 receivedMotion = Vec3.ZERO;
 
     public WitchBroom(EntityType<? extends WitchBroom> type, Level level) {
         super(type, level);
         blocksBuilding = true;
+        // The modern renderer uses a heading 90 degrees above the legacy entity yaw.
+        setYRot(90);
     }
 
     @Override
@@ -82,6 +90,15 @@ public final class WitchBroom extends Entity {
     @Override
     public double getPassengersRidingOffset() {
         return getBbHeight() * 0.55;
+    }
+
+    @Override
+    protected void addPassenger(Entity passenger) {
+        super.addPassenger(passenger);
+        if (passenger instanceof ServerPlayer rider) {
+            owlRider = FamiliarBinding.hasBroomMastery(rider);
+            soaringRider = InfusedBrews.hasSoaring(rider);
+        }
     }
 
     @Override
@@ -132,12 +149,21 @@ public final class WitchBroom extends Entity {
     public void lerpTo(double x, double y, double z, float yaw, float pitch, int ticks, boolean teleport) {
         if (teleport) {
             interpolationTicks = 0;
+            interpolationPos = null;
             super.lerpTo(x, y, z, yaw, pitch, ticks, true);
             return;
         }
         interpolationPos = new Vec3(x, y, z);
         interpolationYaw = yaw;
-        interpolationTicks = Math.max(1, ticks);
+        interpolationPitch = pitch;
+        interpolationTicks = Math.max(1, ticks) + 5;
+        setDeltaMovement(receivedMotion);
+    }
+
+    @Override
+    public void lerpMotion(double x, double y, double z) {
+        receivedMotion = new Vec3(x, y, z);
+        setDeltaMovement(receivedMotion);
     }
 
     @Override
@@ -148,6 +174,13 @@ public final class WitchBroom extends Entity {
                 double step = 1D / interpolationTicks--;
                 setPos(position().lerp(interpolationPos, step));
                 setYRot(Mth.rotLerp((float) step, getYRot(), interpolationYaw));
+                setXRot(Mth.lerp((float) step, getXRot(), interpolationPitch));
+            } else if (interpolationPos != null) {
+                var motion = getDeltaMovement();
+                setPos(position().add(motion));
+                setYRot(interpolationYaw);
+                setXRot(interpolationPitch);
+                setDeltaMovement(motion.multiply(DRAG, 1, DRAG));
             }
             return;
         }
@@ -156,46 +189,72 @@ public final class WitchBroom extends Entity {
         if (hitTicks > 0) entityData.set(HIT_TICKS, hitTicks - 1);
         float damage = entityData.get(DAMAGE);
         if (damage > 0) entityData.set(DAMAGE, Math.max(0, damage - 1));
-        fly();
+        var passenger = getFirstPassenger();
+        if (tickCount % 100 == 0 && passenger instanceof ServerPlayer rider) soaringRider = InfusedBrews.hasSoaring(rider);
+        fly(passenger);
+        pushNearbyBrooms(passenger);
     }
 
-    private void fly() {
+    private void fly(Entity passenger) {
         Vec3 velocity = getDeltaMovement();
         double previousSpeed = velocity.horizontalDistance();
-        double speedLimit = 0.9;
-        if (getFirstPassenger() instanceof ServerPlayer rider) {
-            boolean owl = FamiliarBinding.hasBroomMastery(rider);
-            boolean soaring = InfusedBrews.hasSoaring(rider);
-            speedLimit += (owl ? 0.3 : 0) + (soaring ? 0.3 : 0);
+        if (passenger instanceof LivingEntity rider) {
             if (rider.zza > 0) {
-                double yaw = rider.getYRot() * Mth.DEG_TO_RAD;
-                double thrust = acceleration * (0.1 + (owl ? 0.2 : 0) + (soaring ? 0.1 : 0));
-                double climb = -Math.sin(rider.getXRot() * Mth.DEG_TO_RAD);
+                double yaw = rider.getYRot() * Mth.PI / 180F;
+                double thrust = acceleration * (0.1 + (soaringRider ? 0.1 : 0) + (owlRider ? 0.2 : 0));
+                double climb = -Math.sin(rider.getXRot() * Mth.PI / 180F);
                 if (climb > -0.5 && climb < 0.2) climb = 0;
                 else if (climb < 0) climb *= 0.5;
                 velocity = new Vec3(velocity.x - Math.sin(yaw) * thrust, climb * acceleration * 2,
                         velocity.z + Math.cos(yaw) * thrust);
-            } else if (rider.zza == 0 && (owl || soaring)) {
+            } else if (rider.zza == 0 && (owlRider || soaringRider)) {
                 velocity = velocity.multiply(0.9, 1, 0.9);
             }
-        } else {
-            velocity = new Vec3(settle(velocity.x), onGround() ? 0 : -0.2, settle(velocity.z));
+        } else if (passenger == null) {
+            owlRider = false;
+            velocity = new Vec3(settle(velocity.x), onGround() ? velocity.y : -0.2, settle(velocity.z));
         }
+        double speedLimit = 0.9 + (owlRider ? 0.3 : 0) + (soaringRider ? 0.3 : 0);
         double speed = velocity.horizontalDistance();
         if (speed > speedLimit) {
             velocity = velocity.scale(speedLimit / speed);
             speed = speedLimit;
         }
-        double targetAcceleration = speed > previousSpeed ? MAX_ACCELERATION : INITIAL_ACCELERATION;
-        acceleration += (targetAcceleration - acceleration) / (MAX_ACCELERATION * 100);
+        if (speed > previousSpeed && acceleration < MAX_ACCELERATION) {
+            acceleration = Math.min(MAX_ACCELERATION, acceleration + (MAX_ACCELERATION - acceleration) / (MAX_ACCELERATION * 100));
+        } else {
+            acceleration = Math.max(INITIAL_ACCELERATION, acceleration - (acceleration - INITIAL_ACCELERATION) / (MAX_ACCELERATION * 100));
+        }
         Vec3 origin = position();
+        setDeltaMovement(velocity);
         move(MoverType.SELF, velocity);
         Vec3 traveled = position().subtract(origin);
         if (traveled.horizontalDistanceSqr() > 0.001) {
-            setYRot((float) (Math.atan2(-traveled.x, traveled.z) * Mth.RAD_TO_DEG));
+            float heading = (float) (Math.atan2(-traveled.z, -traveled.x) * 180D / Math.PI) + 90;
+            setYRot(getYRot() + Mth.wrapDegrees(heading - getYRot()));
         }
-        setDeltaMovement(velocity.multiply(
-                traveled.x == 0 ? 0 : 0.99, traveled.y == 0 ? 0 : 0.99, traveled.z == 0 ? 0 : 0.99));
+        setXRot(0);
+        setDeltaMovement(getDeltaMovement().scale(DRAG));
+    }
+
+    private void pushNearbyBrooms(Entity passenger) {
+        if (noPhysics) return;
+        var bounds = getBoundingBox().inflate(0.2F, 0, 0.2F);
+        for (var other : level().getEntitiesOfClass(WitchBroom.class, bounds,
+                broom -> broom != this && broom != passenger && broom.isAlive() && !broom.noPhysics
+                        && !isPassengerOfSameVehicle(broom))) {
+            double x = getX() - other.getX();
+            double z = getZ() - other.getZ();
+            double separation = Mth.absMax(x, z);
+            if (separation < 0.01F) continue;
+            double distance = (float) Math.sqrt(separation);
+            double weight = Math.min(1 / distance, 1);
+            double pushX = x / distance * weight * 0.05F;
+            double pushZ = z / distance * weight * 0.05F;
+            // In 0.24.1 a collision also pushed occupied brooms.
+            other.push(-pushX, 0, -pushZ);
+            push(pushX, 0, pushZ);
+        }
     }
 
     private static double settle(double speed) {

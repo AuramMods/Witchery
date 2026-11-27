@@ -110,6 +110,12 @@ public final class LegacyChunkEntities {
         switch (name.getPath()) {
             case "droplet" -> ids.upgradeUntypedItems(entity.getCompound("Brew"), fixer, from, targetVersion);
             case "brew", "brew2" -> name = prepareBrewProjectile(entity, name, ids, fixer, from, targetVersion);
+            case "broom" -> {
+                if (oldType.startsWith("witchery.") || oldType.startsWith("minecraft:witchery.")) {
+                    var rotation = entity.getList("Rotation", Tag.TAG_FLOAT);
+                    if (!rotation.isEmpty()) rotation.set(0, FloatTag.valueOf(rotation.getFloat(0) + 90));
+                }
+            }
         }
         if (!ForgeRegistries.ENTITY_TYPES.containsKey(name)) return;
         if (name.getPath().equals("bolt")) LegacyBoltAnchors.prepare(entity, ids, originalChunk);

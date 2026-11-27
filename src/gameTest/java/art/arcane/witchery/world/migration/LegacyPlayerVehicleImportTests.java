@@ -85,7 +85,8 @@ public final class LegacyPlayerVehicleImportTests {
             var original = TagParser.parseTag("""
                     {Health:20f,Dimension:0,Riding:{
                       id:"witchery.broom",UUIDMost:1L,UUIDLeast:2L,CustomName:"Legacy Sky Rider",BrushColor:6b,
-                      Pos:[5.5d,4.0d,5.5d],Riding:{id:"Boat",UUIDMost:3L,UUIDLeast:4L,Pos:[5.5d,4.0d,5.5d]}}}
+                      Pos:[5.5d,4.0d,5.5d],Rotation:[43f,0f],
+                      Riding:{id:"Boat",UUIDMost:3L,UUIDLeast:4L,Pos:[5.5d,4.0d,5.5d]}}}
                     """);
             var player = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "MountedImport"));
             var storage = access.createPlayerStorage();
@@ -104,6 +105,8 @@ public final class LegacyPlayerVehicleImportTests {
             helper.assertTrue(boat.getFirstPassenger() instanceof WitchBroom broom && broom.getUUID().equals(attachment)
                             && broom.brushColor() == 6 && broom.getName().getString().equals("Legacy Sky Rider"),
                     "The inner broom must retain its dye, custom name and identity");
+            helper.assertTrue(boat.getFirstPassenger().getYRot() == 133,
+                    "The modern renderer's heading offset preserves the imported broom's direction");
         } finally {
             FileUtils.deleteDirectory(root.toFile());
         }

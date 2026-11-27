@@ -21,6 +21,7 @@ import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.entity.DeathHorse;
 import art.arcane.witchery.entity.VillageGuard;
 import art.arcane.witchery.entity.VillageGuardRecruitment;
+import art.arcane.witchery.entity.WitchBroom;
 import art.arcane.witchery.entity.WitcheryBolt;
 import art.arcane.witchery.entity.WitchHunterPursuit;
 import art.arcane.witchery.infusion.CreaturePower;
@@ -350,6 +351,7 @@ public final class WitcheryEventHooks {
 
     @SubscribeEvent
     public static void onLivingFall(LivingFallEvent event) {
+        if (event.getEntity() instanceof Player player && player.getVehicle() instanceof WitchBroom) event.setDistance(0);
         if (event.getEntity() instanceof ServerPlayer player) {
             if (VampireFlight.isBat(player)) {
                 event.setCanceled(true);

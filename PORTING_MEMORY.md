@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Broom movement and collisions (2026-11-27)
+
+- The 0.24.1 runtime trace includes eleven clear-air server cases, four client interpolation and extrapolation samples, and an equal and opposite push between two ridden Brooms. The previous Forge build treated a Cow rider like an empty seat and cleared vertical motion on a grounded empty Broom. Read `build/qa-broom-motion/{native/reference.log,current.log}`.
+- The Forge implementation restores living rider thrust, empty Broom momentum, acceleration easing and caps, and contact between occupied Brooms. Owl mastery is sampled on mount. Soaring refreshes on mount and every 100 Broom ticks. The legacy import adds 90 degrees to the original yaw so the Forge renderer preserves the Broom's heading. Coverage includes an original nested riding chain, normal Forge fall handling, and occupied Broom contact.
+- Clean Forge and copied Auram matched all eleven server motion cases and all four client samples. In survival the player placed a supplied named Broom, dyed and mounted it, drank Soaring in the saddle, and saw it activate at the next 100-tick check. Supplied Owl mastery took effect on remount. Normal forward input and aim controlled climb, descent and turning, and releasing forward braked the Broom. The same mounted UUID, dye and both bonuses recovered on reconnect after each dedicated restart. Both background clients used master volume zero and OpenAL No Output, and the focus monitors recorded zero activations. Read `build/qa-broom-motion/{clean,pack}/{live.log,restart.log,focus-live.log}`.
+- Local Java 17 packaging, reobfuscation, and all 638 required Forge GameTests passed. The archive at `build/qa-broom-motion/candidate.jar` has SHA-256 `27a52baa023a72d5d4c943fe04a23b4a6d5a7cca32d05137f38187141c58b84c`. Read `build/qa-broom-motion/{package.log,gametest.log}`.
+
 ## Bat flight with PlayerAbilityLib (2026-11-27)
 
 - Bat form uses the named `witchery:vampire_bat` flight source for PlayerAbilityLib 1.8.0 when the library is present. Witchery registers its source even when flight is already allowed. Leaving the form revokes that source. Clean Forge uses the previous vanilla ability state. The adapter uses the installed public API and works independently of the optional gameplay integration toggle.
@@ -18,11 +25,6 @@ Use Java 17 and the local Gradle cache. When resources change, run `runData` bef
 - The first headless run found the Attack Bat test's contact site at `(2824, 140, 8)` inside generated terracotta. The fixture now clears its two contact cells before introducing the cow and bat. Read `build/qa-player-motion/{gametest.log,failed-marker.log,failed-plot.log}`.
 - Copied Auram matched all 33 cases after the probe waited for the destination plot and checked the placed test blocks. It passed the ordinary Lily and Boots inputs. The ordinary vampire cast reached Bat form but stayed grounded. Bewitchment's bundled PlayerAbilityLib rejected the direct write to `minecraft:mayfly` during `VampireFlight.grantFlight`. The remapped library in the disposable server's `mods/.connector` exposes `Pal.getAbilitySource(String, String)`, `VanillaAbilities.ALLOW_FLYING`, and `AbilitySource.grantTo/revokeFrom` with Minecraft's `Player` type. Its consistency check exempts `FLYING`. Read `build/qa-player-motion/pack/{candidate.log,server-candidate.log}`.
 - Java 17 packaging, reobfuscation and all 636 required local GameTests passed. The tested archive at `build/qa-player-motion/candidate.jar` has SHA-256 `12a3644ee542af8341e5a7cda834abfddbe7462dca6fd8c9779f8d38e7beaa02`. Both clients stayed hidden and unfocused with master volume zero and OpenAL No Output. Read `build/qa-player-motion/{package-candidate.log,gametest-candidate.log}`.
-
-## Original Broom motion reference (2026-11-27)
-
-- The original tick ran eleven motion samples with a fixed living rider and clear-air movement. It applied thrust to the Cow's forward input and retained vertical motion for a grounded empty Broom. The current packaged Forge trace shows the Cow taking the empty-Broom descent and shows zero vertical motion in the grounded empty case. The native trace also records the acceleration ceiling, idle braking with the two bonuses, 100 ticks of flight, and a push directed at a neighboring Broom.
-- Read `build/qa-broom-motion/{native/reference.log,current.log}`. Extend the Forge comparison to ordinary player input, bonus timing, and physical Broom contact before changing the flight formulas.
 
 ## Passive creature powers and held-item movement (2026-11-27)
 
