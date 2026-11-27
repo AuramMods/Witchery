@@ -1,5 +1,7 @@
 {
   "type": "witchery:hobgoblin_spawns",
   "biomes": "#forge:is_swamp",
-  "max_count": 2
+  "max_count": 2,
+  "forest_overlap": "#witchery:forested_spawn_biomes",
+  "plains_overlap": "#witchery:open_spawn_biomes"
 }

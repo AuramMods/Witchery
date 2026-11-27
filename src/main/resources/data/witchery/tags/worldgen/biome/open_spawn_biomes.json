@@ -1,0 +1,12 @@
+{
+  "values": [
+    "#forge:is_plains",
+    "#minecraft:is_savanna"
+  ],
+  "remove": [
+    "minecraft:meadow",
+    "minecraft:snowy_plains",
+    "minecraft:sunflower_plains",
+    "minecraft:windswept_savanna"
+  ]
+}

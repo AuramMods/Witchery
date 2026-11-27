@@ -4,11 +4,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.random.WeightedRandom;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraftforge.common.world.MobSpawnSettingsBuilder;
 
 public final class WitcheryCreatureSpawns {
     private WitcheryCreatureSpawns() {
@@ -23,6 +26,13 @@ public final class WitcheryCreatureSpawns {
         var bounds = type.getAABB(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
         return level.isUnobstructed(null, Shapes.create(bounds)) && level.noCollision(bounds)
                 && !level.containsAnyLiquid(bounds);
+    }
+
+    static void addWeightedSpawn(MobSpawnSettingsBuilder spawns, EntityType<?> type, long weight, int min, int max) {
+        var category = type.getCategory();
+        int available = Integer.MAX_VALUE - WeightedRandom.getTotalWeight(spawns.getSpawner(category));
+        int appliedWeight = (int) Math.min(available, weight);
+        if (appliedWeight > 0) spawns.addSpawn(category, new MobSpawnSettings.SpawnerData(type, appliedWeight, min, max));
     }
 
     public static boolean spawnNear(ServerLevel level, BlockPos near, Mob mob, int minRange, int maxRange,

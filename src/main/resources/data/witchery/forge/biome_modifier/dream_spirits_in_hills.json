@@ -1,0 +1,16 @@
+{
+  "type": "witchery:dream_spirit_spawns",
+  "biomes": [
+    "minecraft:badlands",
+    "minecraft:frozen_peaks",
+    "minecraft:jagged_peaks",
+    "minecraft:snowy_plains",
+    "minecraft:snowy_slopes",
+    "minecraft:snowy_taiga",
+    "minecraft:stony_peaks",
+    "minecraft:windswept_forest",
+    "minecraft:windswept_hills",
+    "minecraft:wooded_badlands"
+  ],
+  "weight_multiplier": 2
+}

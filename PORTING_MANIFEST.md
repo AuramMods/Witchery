@@ -965,6 +965,11 @@ The modern registry also keeps `witchery:brew` and `witchery:brew2` as working p
 - Coven Witch and Dream Spirit placement share the original tameable path-light rule and check the registered creature's bounds before drawing from the world random source. Clearance includes occupied space, solid collisions, and liquids. Coven Witches skip the configured roll at weight one. Dream Spirits roll one in ten before checking grass or sand and the raw light threshold. Both map other ground's original brightness boundary of 0.5 to a sky-adjusted light level of 12.
 - Forge applies the existing any-light placement check to Hellhounds. Their entity-level check uses the original Peaceful exclusion, leaving pathfinding's inherited preference for darkness independent of spawn eligibility. Hobgoblins retain the original grass and raw-light-above-eight check. See [Natural spawn eligibility](PORTING.md#natural-spawn-eligibility-2026-11-27) for the four-creature comparison.
 
+### Natural biome spawn weights
+
+- The `witchery:dream_spirit_spawns` biome modifier accepts `biomes` and an optional `weight_multiplier` that defaults to one. `modded_habitats` counts matches against a list of biome sets for non-vanilla biome keys. The built-in modifiers use the loaded Badlands, Forest and Taiga, Plains and Savanna, Mountain, Hill, Swamp, Sandy, Snowy, and Wasteland classifications. Forge selects one ambient entry with the total weight and the original group range of two to five. Spirit eligibility still uses the Dream dimension.
+- `witchery:forested_spawn_biomes` and `witchery:open_spawn_biomes` provide the shared witch and Hobgoblin biome membership. The three Hobgoblin modifiers encode the original overlap order through `forest_overlap`, `plains_overlap` and `earlier_habitats`. The weighted registration helper bounds individual additions by the available capacity of the Forge weighted list. See [Natural biome spawn weights](PORTING.md#natural-biome-spawn-weights-2026-11-27) for the legacy biome adaptations and verification.
+
 ## Potions / Effects (`WitcheryPotions`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/brewing/potions/WitcheryPotions.java`
 

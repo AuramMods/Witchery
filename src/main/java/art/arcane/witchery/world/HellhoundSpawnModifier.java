@@ -6,9 +6,7 @@ import art.arcane.witchery.registry.WitcheryRegistries;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.util.random.WeightedRandom;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraftforge.common.world.BiomeModifier;
 import net.minecraftforge.common.world.ModifiableBiomeInfo;
 
@@ -19,12 +17,8 @@ public record HellhoundSpawnModifier(HolderSet<Biome> biomes) implements BiomeMo
     @Override
     public void modify(Holder<Biome> biome, Phase phase, ModifiableBiomeInfo.BiomeInfo.Builder builder) {
         if (phase != Phase.ADD || !biomes.contains(biome)) return;
-        var hellhound = WitcheryEntities.HELLHOUND.get();
-        var category = hellhound.getCategory();
-        var spawns = builder.getMobSpawnSettings();
-        int available = Integer.MAX_VALUE - WeightedRandom.getTotalWeight(spawns.getSpawner(category));
-        int weight = Math.min(available, WitcheryServerConfig.HELLHOUND_SPAWN_WEIGHT.get());
-        if (weight > 0) spawns.addSpawn(category, new MobSpawnSettings.SpawnerData(hellhound, weight, 1, 3));
+        WitcheryCreatureSpawns.addWeightedSpawn(builder.getMobSpawnSettings(), WitcheryEntities.HELLHOUND.get(),
+                WitcheryServerConfig.HELLHOUND_SPAWN_WEIGHT.get(), 1, 3);
     }
 
     @Override

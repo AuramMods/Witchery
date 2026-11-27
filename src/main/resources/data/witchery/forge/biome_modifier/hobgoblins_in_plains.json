@@ -1,6 +1,6 @@
 {
   "type": "witchery:hobgoblin_spawns",
-  "biomes": "#forge:is_plains",
+  "biomes": "#witchery:open_spawn_biomes",
   "max_count": 2,
   "plains_weight": true
 }

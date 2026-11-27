@@ -1,0 +1,15 @@
+{
+  "type": "witchery:dream_spirit_spawns",
+  "biomes": "#minecraft:is_overworld",
+  "modded_habitats": [
+    "#minecraft:is_badlands",
+    "#witchery:forested_spawn_biomes",
+    "#witchery:open_spawn_biomes",
+    "#forge:is_mountain",
+    "#witchery:hill_spawn_biomes",
+    "#forge:is_swamp",
+    "#forge:is_sandy",
+    "#forge:is_snowy",
+    "#forge:is_wasteland"
+  ]
+}

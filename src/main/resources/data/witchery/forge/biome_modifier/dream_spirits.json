@@ -1,4 +1,23 @@
 {
   "type": "witchery:dream_spirit_spawns",
-  "biomes": "#minecraft:is_overworld"
+  "biomes": [
+    "minecraft:birch_forest",
+    "minecraft:cherry_grove",
+    "minecraft:dark_forest",
+    "minecraft:deep_frozen_ocean",
+    "minecraft:desert",
+    "minecraft:forest",
+    "minecraft:frozen_ocean",
+    "minecraft:frozen_river",
+    "minecraft:mangrove_swamp",
+    "minecraft:meadow",
+    "minecraft:old_growth_pine_taiga",
+    "minecraft:plains",
+    "minecraft:savanna",
+    "minecraft:savanna_plateau",
+    "minecraft:snowy_beach",
+    "minecraft:sparse_jungle",
+    "minecraft:swamp",
+    "minecraft:taiga"
+  ]
 }
