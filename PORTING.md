@@ -857,6 +857,13 @@
 - [x] Block the destination with Obsidian and verify all glyph positions stay empty. Remove the obstruction and use the same bound talisman to place the Heart Glyph and all 84 chalk glyphs. Use the returned blank in the powered rite and verify the restored rings can be captured again.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 419 required Forge GameTests. The new cases cover crafting and legacy metadata, mixed rings, a resumed portable rite, stacked talisman reuse, and rollback when Forge cancels placement.
 
+## Circle Magic item results (2026-11-26)
+
+- The original 0.24.1 server produced the 17 `RiteSummonItem` results at the center plus 1.5 blocks in height, with an upward launch of 0.3 and immediate pickup. The Spell and Fizz cue originates at the item, with a width and height of 0.5 and a 16-block range.
+- Both Circle Talisman rites erase the chalk before attempting the drop, toss the bound talisman from the lower corner of the Heart Glyph plus 0.05 blocks in height, and send Portal and Fizz from that point. The cue uses a width of 0.5, a height of 1, and the same 16-block range. A complete captured ring still removes the Heart Glyph.
+- The production Heart Glyph finishes these item rites after one drop attempt. The original Crystal Ball trained its caster in the glyph's dimension before asking Forge to admit the item. The creature Waystones and Statue of Worship kept their existing witness requirement. The original headless comparisons are in `build/qa-rite-item-output/native/native-ring.log` and `native-training-final.log`.
+- The exact packaged JAR passed all 218 checks on headless clean Forge and copied Auram. Nineteen fixtures resumed a cast at its paid completion pulse. The portable Waystone and Talisman also ran from fresh offerings and a rising redstone edge. The replay includes the two Forge spawn vetoes and observes the completion packets inside and outside their range.
+
 ## Familiar Brews and Baba Yaga (2026-11-20)
 
 - [x] Restore the recipes and effects for Frog's Tongue, Cursed Leaping, Hitchcock, Bats and Wasting. The muted client pulled a cow over two blocks, gained roughly eleven blocks of height with Jump Boost IV, and sent four temporary owls at a cow with Hitchcock. Bats released ten marked bats and applied Slowness VI to a nearby chicken. Wasting cut food from twenty to ten, applied Hunger and Poison, and cleared a nearby poppy.
@@ -2907,6 +2914,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Compare the fixed Kettle, Distillery, Spinning Wheel, and Brazier registries and exercise their interactions and saved state in the workstation milestones above.
   - [x] Complete the Cauldron effect, modifier, and cast comparisons in the release checklist.
 - [ ] Ritual and circle magic parity.
+  - [x] Compare the [19 standard and talisman item results](#circle-magic-item-results-2026-11-26) after the last offering.
 - [ ] Infusion, prediction, creature power parity.
 - [ ] Entity AI/combat/spawn tuning parity.
 

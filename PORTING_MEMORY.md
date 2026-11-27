@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Circle Magic item results (2026-11-26)
+
+- The original dedicated server measured all 19 standard and talisman item outputs. The two talisman rites stored the small white ring and erased it before attempting their drop. The 17 other results launched from the center with immediate pickup. The local Crystal Ball caster learned fortune telling before admission, even when Forge vetoed the item. A caster in the Nether received no skill from the overworld rite. The creature Waystone and worship statue both returned an abort when no player witnessed the cast. See `build/qa-rite-item-output/native/native-ring.log` and `native-training-final.log` in the same directory.
+- The preceding package failed 69 of 218 observations. The replay covers all 19 registered results on the Heart Glyph's final pulse, fresh redstone activations of the portable Waystone and Talisman, both vetoes, a remote caster, and two missing witnesses. The packet listeners sit 15 and 17 blocks from the glyph. See `clean-baseline/compared.log` in the same directory.
+- The rebuilt package passed all 218 observations on both headless servers. See `clean-network/final.log` and `pack-network/final.log` in the same directory.
+- Local Java 17 data generation and reobfuscation passed. All 567 required Forge GameTests passed, including the original drop position and pickup delay after restoring a paid Waystone cast and the vetoed Talisman regression. The exact reobfuscated `build/qa-rite-item-output/candidate.jar` has SHA-256 `865f96656f0f902667a10379aa02716837cabfdbd7677d54c6a553e73ddeb59c`.
+- The original server also ran the next four rite IDs in `build/qa-rite-spirit-output/native/run.log`. It consumed the selected spirits before attempting each drop or admitting Death. One Banshee within the five-block sphere but outside the original integer-aligned search box survived an aborted Spectral Stone cast. Use these cases for the Spectral Stone and Fetish behavior comparison.
+
 ## Melee tools and Boline harvesting (2026-11-26)
 
 - The original 0.24.1 server measured attack modifiers of four for the Arthana, Boline, and Silver Sword, seven for the drawn Cane Sword, eight for the Huntsman's Spear, and five for the Koboldite Pickaxe. All five blade weapons used the guard and left 14.5 health after a ten-point hit. The pickaxe left ten. The original Boline used zero durability for Cobweb and Blood Rose, one when shearing a leaf or vine, and two for Plant Mine metadata seven. See `build/qa-melee-tools/native/native-final.log`.

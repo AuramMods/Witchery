@@ -469,6 +469,11 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_PORTAL_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID, center, 0.5, 1, 16);
     }
 
+    public static void sendRiteItemResult(ServerLevel level, Vec3 center, boolean circleTalisman) {
+        int particle = circleTalisman ? LEGACY_PORTAL_PARTICLE_ID : LEGACY_SPELL_PARTICLE_ID;
+        sendParticlesAround(level, particle, LEGACY_FIZZ_SOUND_ID, center, 0.5, circleTalisman ? 1 : 0.5, 16);
+    }
+
     public static void sendBrewOwlArrival(ServerLevel level, Vec3 position) {
         sendParticlesAround(level, LEGACY_PORTAL_PARTICLE_ID, LEGACY_ENDERMAN_TELEPORT_SOUND_ID, position, 1, 1, 16);
     }

@@ -515,11 +515,27 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 output = new ItemStack(WitcheryBlocks.getRequired("statueofworship").get());
                 StatueOfWorshipBlockEntity.bindItem(output, owner);
             }
-            ItemEntity drop = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5, output, 0, 0.3, 0);
-            drop.setDefaultPickUpDelay();
+            boolean capturesCircle = legacy && action == ItemRiteRecipe.Action.BIND_CIRCLE_TALISMAN;
+            ItemEntity drop;
+            if (capturesCircle) {
+                CircleTalismanItem.eraseCapturedGlyphs(level, pos);
+                drop = new ItemEntity(level, pos.getX(), pos.getY() + 0.05, pos.getZ(), output);
+            } else {
+                drop = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5, output, 0, 0.3, 0);
+            }
+            if (legacy) drop.setNoPickUpDelay();
+            else drop.setDefaultPickUpDelay();
             result = drop;
         }
-        if (result != null && !level.addFreshEntity(result)) {
+        ServerPlayer fortuneTeller = null;
+        if (initiator != null && result instanceof ItemEntity drop
+                && drop.getItem().is(WitcheryBlocks.getRequired("crystalball").get().asItem())) {
+            fortuneTeller = level.getServer().getPlayerList().getPlayer(initiator);
+            if (legacy && fortuneTeller != null && fortuneTeller.level() == level) Predictions.attune(fortuneTeller);
+        }
+        boolean legacyItemOutput = legacy && result instanceof ItemEntity;
+        // The original item rites finish after one drop attempt, even if Forge rejects it.
+        if (result != null && !level.addFreshEntity(result) && !legacyItemOutput) {
             if (finalizeSummon) abort(level, "message.witchery.rite.summon_cancelled", legacy);
             return;
         }
@@ -616,11 +632,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
                 return;
             }
         }
-        if (initiator != null && result instanceof ItemEntity drop
-                && drop.getItem().is(WitcheryBlocks.getRequired("crystalball").get().asItem())) {
-            ServerPlayer caster = level.getServer().getPlayerList().getPlayer(initiator);
-            if (caster != null) Predictions.attune(caster);
-        }
+        if (!legacy && fortuneTeller != null) Predictions.attune(fortuneTeller);
         if (living != null) sacrificeLiving(level, living, legacy);
         if (corruptionCaster != null) {
             if (curseTarget != null) PoppetProtectionItem.corrupt(corruptionCaster, curseTarget);
@@ -644,8 +656,11 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             }
         }
         sacrificed.clear();
-        if (rite.action() == ItemRiteRecipe.Action.BIND_CIRCLE_TALISMAN) {
-            CircleTalismanItem.eraseCapturedGlyphs(level, pos);
+        if (legacyItemOutput) {
+            WitcheryNetwork.sendRiteItemResult(level, result.position(), action == ItemRiteRecipe.Action.BIND_CIRCLE_TALISMAN);
+        }
+        if (action == ItemRiteRecipe.Action.BIND_CIRCLE_TALISMAN) {
+            if (!legacy) CircleTalismanItem.eraseCapturedGlyphs(level, pos);
             if (talismanPattern != 0) level.removeBlock(pos, false);
         }
         boolean firstExpansionCue = action.usesExpansionClock();
@@ -670,7 +685,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             WitcheryNetwork.sendSummonedCreature(level, result.position());
         } else if (legacy && familiarRite) {
             WitcheryNetwork.sendFamiliarRite(level, Vec3.atLowerCornerOf(pos), action == ItemRiteRecipe.Action.BIND_FAMILIAR);
-        } else if (!firstExpansionCue && (!legacy || (action != ItemRiteRecipe.Action.RECHARGE_INFUSION
+        } else if (!firstExpansionCue && !legacyItemOutput && (!legacy || (action != ItemRiteRecipe.Action.RECHARGE_INFUSION
                 && action != ItemRiteRecipe.Action.TRAVEL_WAYSTONE && action != ItemRiteRecipe.Action.TRANSPOSE_CREATURE
                 && action != ItemRiteRecipe.Action.BANISH_DEMON && action != ItemRiteRecipe.Action.CALL_BEASTS))) {
             level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,

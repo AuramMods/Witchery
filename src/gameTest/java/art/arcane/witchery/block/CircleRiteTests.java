@@ -8,6 +8,7 @@ import art.arcane.witchery.block.entity.RiteHeartBlockEntity;
 import art.arcane.witchery.entity.WitchToad;
 import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.infusion.InfusionEnergy;
+import art.arcane.witchery.item.CircleTalismanItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
@@ -309,7 +310,45 @@ public final class CircleRiteTests {
             helper.assertTrue(!heart.getBlockState().getValue(RiteHeartBlock.ACTIVE) && results.size() == 1
                             && results.get(0).getItem().is(WitcheryIngredient.BOUND_WAYSTONE.item()),
                     "The resumed binding uses the saved payment and creates one stone even if the altar is gone");
+            ItemEntity stone = results.get(0);
+            helper.assertTrue(stone.position().equals(Vec3.atBottomCenterOf(center).add(0, 1.5, 0))
+                            && stone.getDeltaMovement().equals(new Vec3(0, 0.3, 0)) && !stone.hasPickUpDelay(),
+                    "The bound stone rises from the original position and can be collected immediately");
         }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, setupTicks = 5)
+    public static void vetoedOriginalTalismanDropFinishesTheCastOnce(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.SMALL_RITE, "circleglyphritual");
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var heart = heart(helper);
+        var attempted = new ArrayList<ItemEntity>();
+        Consumer<EntityJoinLevelEvent> veto = event -> {
+            if (event.getLevel() != level || !(event.getEntity() instanceof ItemEntity drop)
+                    || !new AABB(center).inflate(2).contains(drop.position())
+                    || !drop.getItem().is(WitcheryItems.getRequired("circletalisman").get())) return;
+            attempted.add(drop);
+            event.setCanceled(true);
+        };
+        MinecraftForge.EVENT_BUS.addListener(veto);
+        try {
+            finishOriginalBinding(level, center, heart, 45, 3);
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(veto);
+        }
+        helper.assertTrue(attempted.size() == 1 && drops(helper).isEmpty(),
+                "Forge's veto prevents the one attempt to drop a talisman");
+        ItemEntity drop = attempted.get(0);
+        helper.assertTrue(CircleTalismanItem.storedPattern(drop.getItem()) == 1
+                        && drop.position().equals(Vec3.atLowerCornerOf(center).add(0, 0.05, 0))
+                        && Math.abs(drop.getDeltaMovement().y - 0.2) < 0.000001 && !drop.hasPickUpDelay(),
+                "The captured ring comes from the lower glyph corner with the original toss");
+        helper.assertTrue(level.isEmptyBlock(center) && RitualCircle.SMALL_RITE.offsets().stream()
+                        .allMatch(offset -> level.isEmptyBlock(center.offset(offset))),
+                "The completed cast erases its captured glyphs even when Forge vetoes the drop");
+        helper.succeed();
     }
 
     @GameTest(template = TEMPLATE, batch = "witchery_cancel_waystone_payment", setupTicks = 5)
