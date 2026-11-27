@@ -2,12 +2,12 @@ package art.arcane.witchery.entity;
 
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcherySounds;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
@@ -15,10 +15,11 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-public final class DarkMark extends PathfinderMob {
+public final class DarkMark extends Mob {
     private static final int LIFETIME = 5 * 60 * 20;
     private static final double RADIUS = 6;
     private long age;
@@ -47,30 +48,36 @@ public final class DarkMark extends PathfinderMob {
     @Override
     public void tick() {
         super.tick();
-        if (level().isClientSide) {
-            for (int i = 0; i < 5; i++) {
-                level().addParticle(ParticleTypes.LARGE_SMOKE, getRandomX(1.4), getRandomY(), getRandomZ(1.4), 0, 0, 0);
-            }
-            return;
-        }
-        if (++age > LIFETIME) {
+        Vec3 movement = getDeltaMovement();
+        setDeltaMovement(movement.x, 0, movement.z);
+        age = Math.max(tickCount, ++age);
+        if (level().isClientSide()) {
+            if (age <= LIFETIME && age % 4 == 0) repelCreatures();
+            emitSmoke();
+        } else if (age > LIFETIME) {
             discard();
-        } else if (age % 4 == 0) {
-            AABB bounds = new AABB(getX() - RADIUS, level().getMinBuildHeight(), getZ() - RADIUS,
-                    getX() + RADIUS, level().getMaxBuildHeight(), getZ() + RADIUS);
-            for (PathfinderMob mob : level().getEntitiesOfClass(PathfinderMob.class, bounds, mob -> mob != this && mob.isPushable())) {
-                double x = mob.getX() - getX();
-                double z = mob.getZ() - getZ();
-                if (x * x + z * z <= RADIUS * RADIUS) {
-                    mob.push(Math.signum(x) * 0.22, 0, Math.signum(z) * 0.22);
-                }
+        }
+    }
+
+    private void repelCreatures() {
+        AABB bounds = new AABB(getX() - RADIUS, level().getMinBuildHeight(), getZ() - RADIUS,
+                getX() + RADIUS, level().getMaxBuildHeight(), getZ() + RADIUS);
+        for (PathfinderMob creature : level().getEntitiesOfClass(PathfinderMob.class, bounds)) {
+            double x = creature.getX() - getX();
+            double z = creature.getZ() - getZ();
+            double distance = x * x + z * z;
+            if (distance > 0 && distance <= RADIUS * RADIUS) {
+                creature.setDeltaMovement(creature.getDeltaMovement().add(Math.signum(x) * 0.22, 0, Math.signum(z) * 0.22));
             }
         }
     }
 
-    @Override
-    public void travel(Vec3 input) {
-        setDeltaMovement(Vec3.ZERO);
+    private void emitSmoke() {
+        var random = level().getRandom();
+        for (int i = 0; i < 5; i++) {
+            level().addParticle(ParticleTypes.LARGE_SMOKE, getX() - 1.4 + random.nextDouble() * 2.8,
+                    getY() + random.nextDouble() * 2, getZ() - 1.4 + random.nextDouble() * 2.8, 0, 0, 0);
+        }
     }
 
     @Override
@@ -79,7 +86,30 @@ public final class DarkMark extends PathfinderMob {
     }
 
     @Override
-    protected void doPush(Entity entity) { }
+    protected void pushEntities() { }
+
+    @Override
+    protected int decreaseAirSupply(int air) {
+        return air;
+    }
+
+    @Override
+    public boolean onClimbable() {
+        return false;
+    }
+
+    @Override
+    public boolean isIgnoringBlockTriggers() {
+        return true;
+    }
+
+    @Override
+    protected void checkFallDamage(double movement, boolean onGround, BlockState state, BlockPos pos) { }
+
+    @Override
+    public boolean causeFallDamage(float distance, float multiplier, DamageSource source) {
+        return false;
+    }
 
     @Override
     public boolean hurt(DamageSource source, float damage) {
@@ -97,6 +127,16 @@ public final class DarkMark extends PathfinderMob {
     }
 
     @Override
+    protected float getSoundVolume() {
+        return 0.8F;
+    }
+
+    @Override
+    public float getVoicePitch() {
+        return 1;
+    }
+
+    @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putLong("WITCTicksAlive", age);
@@ -105,6 +145,7 @@ public final class DarkMark extends PathfinderMob {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+        setNoGravity(true);
         age = tag.getLong("WITCTicksAlive");
     }
 }

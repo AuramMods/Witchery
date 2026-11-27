@@ -37,26 +37,32 @@ public final class MirrorFaceTests {
         var stray = WitcheryEntities.MIRROR_FACE.get().create(level);
         stray.setPos(upper.getX() + 0.5, upper.getY() + 0.1, upper.getZ() + 0.2);
         level.addFreshEntity(stray);
-        var upperHit = new BlockHitResult(Vec3.atCenterOf(upper), Direction.NORTH, upper, false);
-        level.getBlockState(upper).use(level, player, InteractionHand.MAIN_HAND, upperHit);
+        AABB frame = new AABB(upper);
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(level.getEntitiesOfClass(MirrorFace.class, frame).contains(stray),
+                        "The fixture's stray face is tracked"))
+                .thenExecute(() -> {
+                    var upperHit = new BlockHitResult(Vec3.atCenterOf(upper), Direction.NORTH, upper, false);
+                    level.getBlockState(upper).use(level, player, InteractionHand.MAIN_HAND, upperHit);
 
-        var panel = level.getBlockState(upper).getCollisionShape(level, upper).bounds().move(upper);
-        var faces = level.getEntitiesOfClass(MirrorFace.class, panel);
-        helper.assertTrue(faces.size() == 1 && faces.get(0) != stray,
-                "A stray face inside the block but outside its panel does not prevent a conversation");
-        var face = faces.get(0);
-        helper.assertTrue(face.position().distanceTo(Vec3.atLowerCornerOf(upper).add(0.5, 0.1, 0.5 + 0.4F)) < 1.0E-8,
-                "The original position uses the upper panel's center and offsets");
-        helper.assertTrue(face.getYRot() >= 0 && face.getYRot() < Mth.TWO_PI,
-                "The face gets the inherited original yaw range");
+                    var panel = level.getBlockState(upper).getCollisionShape(level, upper).bounds().move(upper);
+                    var faces = level.getEntitiesOfClass(MirrorFace.class, panel);
+                    helper.assertTrue(faces.size() == 1 && faces.get(0) != stray,
+                            "A stray face inside the block but outside its panel does not prevent a conversation");
+                    var face = faces.get(0);
+                    helper.assertTrue(face.position().distanceTo(Vec3.atLowerCornerOf(upper).add(0.5, 0.1, 0.5 + 0.4F)) < 1.0E-8,
+                            "The original position uses the upper panel's center and offsets");
+                    helper.assertTrue(face.getYRot() >= 0 && face.getYRot() < Mth.TWO_PI,
+                            "The face gets the inherited original yaw range");
 
-        var lowerHit = new BlockHitResult(Vec3.atCenterOf(lower), Direction.NORTH, lower, false);
-        level.getBlockState(lower).use(level, player, InteractionHand.MAIN_HAND, lowerHit);
-        helper.assertTrue(level.getEntitiesOfClass(MirrorFace.class, new AABB(upper)).size() == 2,
-                "Using the other half keeps the same apparition while it overlaps the upper panel");
-        face.discard();
-        stray.discard();
-        helper.succeed();
+                    var lowerHit = new BlockHitResult(Vec3.atCenterOf(lower), Direction.NORTH, lower, false);
+                    level.getBlockState(lower).use(level, player, InteractionHand.MAIN_HAND, lowerHit);
+                    helper.assertTrue(level.getEntitiesOfClass(MirrorFace.class, frame).size() == 2,
+                            "Using the other half keeps the same apparition while it overlaps the upper panel");
+                    face.discard();
+                    stray.discard();
+                })
+                .thenSucceed();
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_mirror_face")

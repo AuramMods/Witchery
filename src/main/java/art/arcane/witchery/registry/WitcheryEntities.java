@@ -227,7 +227,7 @@ public final class WitcheryEntities {
                     .sized(1, 1).clientTrackingRange(4).updateInterval(1).build(Witchery.MODID + ":spelleffect"));
     public static final RegistryObject<EntityType<DarkMark>> DARK_MARK =
             ENTITY_TYPES.register("darkmark", () -> EntityType.Builder.of(DarkMark::new, MobCategory.MISC)
-                    .sized(2, 2).clientTrackingRange(4).build(Witchery.MODID + ":darkmark"));
+                    .sized(2, 2).fireImmune().clientTrackingRange(4).build(Witchery.MODID + ":darkmark"));
 
     static {
         LEGACY_ENTITIES.put("mandrake", MANDRAKE);

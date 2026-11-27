@@ -371,6 +371,14 @@
 - [x] Draw the recorded strokes around the crosshair using the two original glyph sets and show the recognized spell name. Set `branchGlyphSet` to 1 for the alternate set. The muted clean Forge client drew both styles, confirmed that an out-of-range value uses the default, and released Lumos for one charge. Cancellation clears the preview and starts the next gesture empty.
 - [x] Restore `render3dGlintEffect`, on by default, for held Mystic Branches, Huntsman Spears, and enchanted Cane Swords. A muted packaged client confirmed that disabling and reenabling it changed all three held models. The item icons and the enchanted vanilla Diamond Sword retained their glint.
 
+### Dark Mark rendering and creature response (2026-11-27)
+
+- Restore the mirrored skull's original height and pivot. The original model draws 48 vertices per pose. The preceding Forge renderer offset the skull by about half a block. Clean Forge and copied Auram match all 288 positions, texture coordinates and opacity values across six poses on the same JAR.
+- The original mark releases five large smoke particles per client tick. The horizontal offsets are at most 1.4 blocks on each axis, and the vertical range starts at the mark and rises two blocks. The seeded clean Forge trace matches all 15 samples. The ordinary ambient laugh has volume 0.8 and pitch one.
+- The original four-tick repulsion changes nearby creature motion on the client. At six blocks the pulse still applies, including when the creature is far below the mark. The authoritative server does not push the creature. The port extends the vertical search to the world build bounds and skips zero horizontal distance to keep the velocity finite.
+- The mark keeps horizontal drift, clears vertical motion after its tick, and retains air when submerged. A saved mark remains at age 6,000 and disappears on the next tick. Copied Auram now resumes this expiry in a loaded chunk with nobody online.
+- Muted background survival clients cast Morsmordre on both profiles with the supplied Branch and spell knowledge. The server pig stayed still, the caster spent 20 charge, and the same mark reopened after the clean Forge restart. All 630 local Forge GameTests passed.
+
 ## Mystic Branch terrain spells (2026-11-21)
 
 - [x] Restore Incendio, Aguamenti, Lumos, Nox, and Meteolojinx Recanto under their original IDs. Their gestures and base costs appear in Symbology. Worship enables the enhanced Incendio and Aguamenti gestures, which cost two or four infusion charges.
@@ -3169,6 +3177,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
 - [x] Restore the 48 missing static item descriptions from the original release. The muted packaged client validated all 48 in English, German, Spanish, Russian, Simplified Chinese, and Italian, using English fallback where the release supplied no localized text. It verified the Cowl's original color, its default before login, Forge's additional-tooltip hide flag, and the dedicated setting that hides its gaze hint after a restart.
 - [x] Restore Hobgoblin mining, worship, crouch, riding, and attack poses. Mog carries her bow in one hand and her skirt and chest stay independent of the torso. Gulg's strike uses the original attack counter and head yaw. The muted packaged client matched 1,386 pose values and all 864 vertex and texture coordinate samples across the three models.
 - [ ] Complete the source and runtime comparison for the remaining models, less common block states, and entity and armor poses.
+  - [x] Restore the [Dark Mark's original skull placement and smoke](#dark-mark-rendering-and-creature-response-2026-11-27), with a comparison of six native poses.
   - [x] Restore the [Mirror apparition's original head pivot, scale, and opacity](#mirror-apparition-parity-2026-11-27), with measured vertex positions during head and body rotation.
   - [x] Restore the [sleeping body's fixed pose and death rotation](#sleeping-body-pose-and-anchor-2026-11-27). Compare the original skin coordinates and verify the actual parked body.
   - [x] Restore the [Crossbow Bolt's geometry, texture coordinates, and normals](#crossbow-bolt-rendering-2026-11-27). Compare the muted packaged client in flight and at impact.

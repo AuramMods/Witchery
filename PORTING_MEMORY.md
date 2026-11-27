@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Dark Mark rendering and creature response (2026-11-27)
+
+- The original release emits 48 model vertices in each pose. The original server trace measured six creature positions, 15 smoke samples, horizontal drift after loaded motion, air retention, and the 6,000-tick age boundary. The ambient sound trace reported volume 0.8 and pitch one. See `build/qa-dark-mark-parity/native/{reference.log,server-reference.log}`.
+- Clean Forge and copied Auram matched all 288 positions, texture coordinate pairs and opacity values and all 15 client motion cases inside the original build height. Both passed the modern height and zero-distance controls. The seeded clean Forge test sink matched the 15 original smoke samples. Normal casts on both profiles produced smoke within the original envelope. See `build/qa-dark-mark-parity/{comparison.log,behavior.log}`.
+- Two muted background clients used the original Mystic Branch glyph in survival. The fixture supplied a branch, learned spell, infusion charge and plot. The cast spent 20 charge, placed the mark at X 111.510452 and played the original ambient sound. The nearby stationary pig stayed at its server position. The dedicated restart loaded the same mark and left the charge at 180. See `build/qa-dark-mark-parity/clean-exact/`.
+- The copied Auram caster drew the original glyph and placed the same skull. The ambient sound retained its volume and pitch. Auram's Sound Physics Remastered applies its vertical offset to entity sounds. The separate headless check advanced a mark from 5,990 through 6,000 and it expired with zero players online. See `build/qa-dark-mark-parity/auram-exact/{play.log,loaded-age.log}`.
+- Local Java 17 data generation, JAR reobfuscation and all 630 required Forge GameTests passed. The Mirror fixture waits until its stray face is tracked before invoking either half. The package at `build/qa-dark-mark-parity/release.jar` has SHA-256 `2ca630c8a7940ef51313772d5738f0e63c759de2a01d9ea9fcd159f576e8ae47`.
+
 ## Mirror apparition parity (2026-11-27)
 
 - The original server traced all four spawn positions, six movement samples, two remaining active ticks at age 198, and unchanged air when submerged. The original face can be selected and ignores pressure plates. See `build/qa-mirror-face/native/server-reference.log`. The Forge regressions exercise loaded motion, age, air, and reusing an active face through the lower half.
