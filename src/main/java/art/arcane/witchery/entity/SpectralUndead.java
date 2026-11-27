@@ -276,6 +276,11 @@ public final class SpectralUndead extends Monster {
     }
 
     @Override
+    protected int decreaseAirSupply(int air) {
+        return air;
+    }
+
+    @Override
     public boolean canAttack(LivingEntity target) {
         return !InfernalInfusion.owns(this, target) && super.canAttack(target);
     }
@@ -349,26 +354,27 @@ public final class SpectralUndead extends Monster {
     }
 
     private void haunt(ServerLevel level) {
-        AABB area = getBoundingBox().inflate(HAUNT_RADIUS);
+        AABB area = AABB.ofSize(position(), 2 * HAUNT_RADIUS, 2 * HAUNT_RADIUS, 2 * HAUNT_RADIUS);
         boolean grief = ForgeEventFactory.getMobGriefingEvent(level, this);
         if (grief) {
             for (HangingEntity hanging : level.getEntitiesOfClass(HangingEntity.class, area, target -> distanceToSqr(target) <= 256)) {
                 if (approach(hanging.position())) {
                     hanging.hurt(damageSources().mobAttack(this), 3);
-                    level.broadcastEntityEvent(this, (byte) 4);
+                    beginThrow(level);
                 }
                 return;
             }
 
-            Player owner = summoner.isEmpty() ? null : level.getServer().getPlayerList().getPlayerByName(summoner);
-            if (owner != null && owner.level() == level && distanceToSqr(owner) <= 64 && hauntContainer(level)) return;
+            if (!summoner.isEmpty() && level.players().stream().anyMatch(player ->
+                    player.getGameProfile().getName().equals(summoner) && distanceToSqr(player) <= 64)
+                    && hauntContainer(level)) return;
         }
 
         for (ItemEntity dropped : level.getEntitiesOfClass(ItemEntity.class, area, target -> distanceToSqr(target) <= 256)) {
             if (approach(dropped.position())) {
-                dropped.setDeltaMovement(throwVelocity());
+                dropped.setDeltaMovement(throwVelocity(level));
                 dropped.hurtMarked = true;
-                level.broadcastEntityEvent(this, (byte) 4);
+                beginThrow(level);
             }
             return;
         }
@@ -376,7 +382,7 @@ public final class SpectralUndead extends Monster {
 
     private boolean hauntContainer(ServerLevel level) {
         BlockEntity closest = null;
-        double nearest = HAUNT_RADIUS * HAUNT_RADIUS;
+        double nearest = Double.POSITIVE_INFINITY;
         for (int cx = SectionPos.blockToSectionCoord(getBlockX() - HAUNT_RADIUS);
              cx <= SectionPos.blockToSectionCoord(getBlockX() + HAUNT_RADIUS); cx++) {
             for (int cz = SectionPos.blockToSectionCoord(getBlockZ() - HAUNT_RADIUS);
@@ -386,7 +392,7 @@ public final class SpectralUndead extends Monster {
                 for (BlockEntity blockEntity : chunk.getBlockEntities().values()) {
                     if (!(blockEntity instanceof Container inventory) || inventory.isEmpty() || blockEntity.isRemoved()) continue;
                     double distance = distanceToSqr(Vec3.atCenterOf(blockEntity.getBlockPos()));
-                    if (distance <= nearest) {
+                    if (distance <= HAUNT_RADIUS * HAUNT_RADIUS && distance < nearest) {
                         nearest = distance;
                         closest = blockEntity;
                     }
@@ -402,10 +408,12 @@ public final class SpectralUndead extends Monster {
             if (!inventory.getItem(slot).isEmpty()) slots.add(slot);
         }
         if (slots.isEmpty()) return false;
-        int slot = slots.get(random.nextInt(slots.size()));
+        int slot = slots.get(level.getRandom().nextInt(slots.size()));
         ItemStack original = inventory.getItem(slot).copy();
-        ItemEntity dropped = new ItemEntity(level, position.x, position.y, position.z, original.copyWithCount(1));
-        dropped.setDeltaMovement(throwVelocity());
+        Vec3 motion = throwVelocity(level);
+        // An explicit velocity avoids the item constructor's two world-random throws.
+        ItemEntity dropped = new ItemEntity(level, position.x, position.y, position.z, original.copyWithCount(1),
+                motion.x, motion.y, motion.z);
         dropped.lifespan = 18000;
         if (!level.addFreshEntity(dropped)) return true;
         if (closest.isRemoved() || !ItemStack.matches(inventory.getItem(slot), original)) {
@@ -414,7 +422,7 @@ public final class SpectralUndead extends Monster {
         }
         inventory.removeItem(slot, 1);
         inventory.setChanged();
-        level.broadcastEntityEvent(this, (byte) 4);
+        beginThrow(level);
         return true;
     }
 
@@ -424,9 +432,15 @@ public final class SpectralUndead extends Monster {
         return false;
     }
 
-    private Vec3 throwVelocity() {
+    private static Vec3 throwVelocity(ServerLevel level) {
+        var random = level.getRandom();
         return new Vec3(random.nextDouble() * 0.6 - 0.3, random.nextDouble() * 0.2 + 0.1,
                 random.nextDouble() * 0.6 - 0.3);
+    }
+
+    private void beginThrow(ServerLevel level) {
+        throwAnimation = 15;
+        level.broadcastEntityEvent(this, (byte) 4);
     }
 
     @Override

@@ -232,16 +232,27 @@ public final class ImpContractTests {
             MinecraftForge.EVENT_BUS.unregister(listen);
         }
 
-        BlockPos water = helper.absolutePos(CENTER.west());
+        BlockPos evaporationCenter = helper.absolutePos(CENTER.above(7));
+        player.setPos(Vec3.atBottomCenterOf(evaporationCenter));
+        BlockPos water = evaporationCenter.west();
+        level.setBlockAndUpdate(water.below(), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(water.above(2), Blocks.AIR.defaultBlockState());
         for (int height = 0; height <= 1; height++) {
             BlockPos layer = water.above(height);
             for (Direction side : Direction.Plane.HORIZONTAL) level.setBlockAndUpdate(layer.relative(side), Blocks.STONE.defaultBlockState());
             level.setBlockAndUpdate(layer, Blocks.WATER.defaultBlockState());
         }
-        BlockPos covered = helper.absolutePos(CENTER.south());
+        BlockPos covered = evaporationCenter.south();
+        level.setBlockAndUpdate(covered.below(), Blocks.STONE.defaultBlockState());
         level.setBlockAndUpdate(covered.above(), Blocks.STONE.defaultBlockState());
+        for (Direction side : Direction.Plane.HORIZONTAL) {
+            level.setBlockAndUpdate(covered.relative(side), Blocks.STONE.defaultBlockState());
+        }
         level.setBlockAndUpdate(covered, Blocks.WATER.defaultBlockState());
-        helper.onEachTick(() -> MinecraftForge.EVENT_BUS.post(new TickEvent.PlayerTickEvent(TickEvent.Phase.END, player)));
+        helper.onEachTick(() -> {
+            if (level.getGameTime() % 20 == 3) player.getRandom().setSeed(0);
+            MinecraftForge.EVENT_BUS.post(new TickEvent.PlayerTickEvent(TickEvent.Phase.END, player));
+        });
         helper.succeedWhen(() -> {
             int remaining = effects.getInt("witchery.imp.evaporation");
             helper.assertTrue(remaining < 12_000, "The saved duration should elapse while active");
