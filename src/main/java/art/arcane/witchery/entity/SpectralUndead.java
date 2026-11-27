@@ -169,7 +169,7 @@ public final class SpectralUndead extends Monster {
         mob.moveTo(feet.getX() + 0.5, feet.getY() + 0.05, feet.getZ() + 0.5, 0, 0);
         if (level.getBlockCollisions(mob, mob.getBoundingBox()).iterator().hasNext()) return null;
         // Preserve the brazier's next world roll. Vanilla's spawn finalization also draws from that random source.
-        mob.initializeAppearance();
+        mob.initializeSpectralSpawn();
         mob.setPersistenceRequired();
         if (!level.addFreshEntity(mob)) return null;
         WitcheryNetwork.sendSpectralSummon(level, mob.position(), mob.getBbHeight(), source);
@@ -185,7 +185,7 @@ public final class SpectralUndead extends Monster {
         SpectralUndead guard = Kind.SPECTRE.type().create(level);
         if (guard == null) return;
         guard.moveTo(feet.getX() + 0.5, feet.getY() + 0.05, feet.getZ() + 0.5, 0, 0);
-        guard.initializeAppearance();
+        guard.initializeSpectralSpawn();
         guard.setPersistenceRequired();
         guard.lifeTicks = 600;
         guard.sentinelTarget = intruder.getUUID();
@@ -223,12 +223,15 @@ public final class SpectralUndead extends Monster {
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason,
                                         @Nullable SpawnGroupData group, @Nullable CompoundTag tag) {
         var result = super.finalizeSpawn(level, difficulty, reason, group, tag);
-        initializeAppearance();
+        initializeSpectralSpawn();
         return result;
     }
 
-    private void initializeAppearance() {
-        if (kind == Kind.SPECTRE) entityData.set(OBSCURED, true);
+    private void initializeSpectralSpawn() {
+        if (kind == Kind.SPECTRE) {
+            SpectreSpawnEquipment.initialize(this);
+            entityData.set(OBSCURED, true);
+        }
         if (kind == Kind.POLTERGEIST) addEffect(new MobEffectInstance(MobEffects.INVISIBILITY,
                 MobEffectInstance.INFINITE_DURATION, 0, false, false));
     }

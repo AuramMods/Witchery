@@ -13,6 +13,7 @@ import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
@@ -141,14 +142,16 @@ public final class PatronCombatTests {
         var patron = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "PatronTest"));
         var mog = helper.spawn(WitcheryEntities.MOG.get(), new BlockPos(9, 5, 5));
         mog.setNoAi(true);
-        helper.runAfterDelay(2, () -> {
+        var encounterArea = AABB.ofSize(Vec3.atCenterOf(base), 32, 32, 32);
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
+                level.getEntitiesOfClass(HobgoblinGod.class, encounterArea).contains(mog),
+                "The previous boss is present in the statue's encounter area")).thenExecute(() -> {
             mog.setHealth(0);
             helper.assertFalse(HobgoblinGodEncounter.summon(level, base, patron, 16, 0),
                     "A dying boss should keep the statue's summon unavailable");
             mog.discard();
             helper.assertTrue(HobgoblinGodEncounter.summon(level, base, patron, 16, 0),
                     "The statue should summon its pair after the previous boss is removed");
-            helper.succeed();
-        });
+        }).thenSucceed();
     }
 }
