@@ -501,6 +501,14 @@ The muted clean Forge survival client used the supplied Hand and charge pools. I
 
 The copied Auram survival client replayed the three casts after JEI initialized, with the same effect, charge balances and wool results. Mods Optimizer initially classified the temporary probe as client-only. The copied server's override classified it as server-only for the successful replay. Both client profiles ran muted and unfocused. Read `build/qa-creature-power-actions/{clean/live.log,clean/restart.log,pack/replay.log,gametest.log}`.
 
+### Passive creature powers and held-item movement (2026-11-27)
+
+Passive movement runs at the start of the client tick and reads the configured Forge gameplay bindings. The legacy ice and Spider ceiling checks sample from the original local player's Y offset above the feet. Both vanilla and Witchery webs count as solid for the ceiling check. The bat, jump, and swim powers use their original motion constants. Passive movement also runs while riding, while the Light Hand skips riders and applies its boost during the item use tick.
+
+The Mystic Branch and Brew Bag restore horizontal motion during use only when neither horizontal component exceeds 0.1 in magnitude. They use the Light Hand's ground, water, and ice rules. The four speed powers take precedence even while idle. The Branch follows the active hand used by Forge.
+
+Clean Forge and copied Auram match all 42 cases measured from the original handlers, including both webs, negative and fractional positions, and riding. Both also match ten Branch and Brew Bag cases derived from the original source. The muted background survival clients exercised ground and ice movement, Spider climbing and crouching, Bat flight, Squid swimming, and normal use of each of the three items. The server fixture supplied the items, powers, and charges. Local JAR reobfuscation and all 636 required GameTests passed. Read `build/qa-creature-movement/{native/reference.log,comparison.log,clean/final.log,pack/live.log,gametest.log}`.
+
 ## Poppet Shelf (2026-11-20)
 
 - [x] Restore the recipe with four Attuned Stones, four Nether Brick blocks, and green wool. The muted client crafted and placed a shelf, opened its nine slots, inserted three bound wards and rendered all three on the shelf. A comparator responded to its contents.
@@ -3287,6 +3295,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
 - [x] Attach and clone Witchery player data through Forge and sync gameplay state on load, respawn and dimension changes. Dedicated milestones cover infusion, coven, familiar, vampire, werewolf and Mirror state.
 - [x] Verify the guide page and Vampire Journal bookmark updates, the wolf howl and saved cooldown, the Crystal Ball camera release through travel and death, and the local Resizing hitbox after dimension loading. Dedicated client results are recorded in the book, howl, and tracked-effect milestones.
 - [ ] Compare the remaining original extended player fields and packet intents against their current gameplay paths and test any gaps.
+  - [ ] Compare directed Sinking and high-amplifier Slowness during noncreative flight. The original `PlayerRender` sets downward motion at client tick start when either rule applies. The existing directed Sinking replay covers water entry.
   - [x] Account for all 19 original packet registrations. Seventeen entries have a modern handler or an explicit disposition in the manifest. Brew Bag preparation (1) and Mystic Branch preparation (9) now derive their gestures on the server. Facing (19) had no sender in the original release, and vanilla sends ordinary player rotation.
   - [x] Replay the held-item and movement inputs with two survival clients on the packaged player-progress build. The server recognized Brew Bag and Mystic Branch preparation (1, 9), saved the guide page and journal trail (4, 12), granted exactly two extra Double Jump II lifts (10), accepted a Wolfman howl and blocked its repeat (14), and applied vampire Speed and returned the target villager's 267 blood (15–17). Both muted background clients rejoined after a dedicated restart. The consumed brew, both book bookmarks, the active Double Jump effect, the howl timer, and the blood values persisted. The final package replay remains part of Remaining Release Verification.
   - [x] Replay the held-item inputs and tracked state on the same `5c7b7a66` package. Check the original particle and sound audiences, Crystal Ball release, late observers of the Mirror disguise and wolf form, Gulg's Gurdle motion, and player state through Dream travel, death, respawn, a live reconnect, and a headless restart. See [Current multiplayer replay](#current-multiplayer-replay-2026-11-27).
@@ -3312,12 +3321,14 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare [area ward attribution and column recovery](#area-ward-attribution-and-column-recovery-2026-11-27) for Void Bramble and the three owner-recoverable statues.
   - [x] Compare [crop maturation, harvest drops, and stage models](#witchery-crop-harvesting-and-models-2026-11-27) across the eight legacy crops.
   - [x] Compare [live Mandrake emergence](#mandrake-emergence-2026-11-27) through player harvest, lost support, direct destruction, harvest magic, and blasts.
+  - [ ] Restore and compare the Leaping Lily's local jump cue. The original `PlayerRender` checks the pad at tick start and plays `random.bowhit` when grounded with jump held.
 - [ ] Item behavior parity pass (including metadata-subitem conversions).
   - [x] Compare melee modifiers, sword guards, and Boline harvest against the [melee tool measurements](#melee-tools-and-boline-harvesting-2026-11-26).
   - [x] Restore the Crossbow's [launch position, velocity, spread, and firing cue](#crossbow-launch-physics-2026-11-27). The seeded original replay covers four draw durations and the three Splitting trajectories with a moving shooter.
   - [x] Compare [Bolt flight in air and water](#crossbow-bolt-flight-in-water-2026-11-27), including the original wet cell bounds, water drag, current, water entry and exit, and stone impact.
   - [x] Compare [Bolt damage and ricochets](#crossbow-bolt-entity-impacts-2026-11-27), including two hits inside one damage cooldown, Holy damage, Flame on rejection, and Enderman deflections.
   - [x] Compare [Punch and player-hit confirmation](#crossbow-punch-and-player-hit-cue-2026-11-27), including a fully resistant mob, the inclusive 128-block audience, and a vanilla Arrow control.
+  - [ ] Compare Death's Boots at the water and lava surface. The original tests fluid at the wearer's feet during the client tick, whereas the Forge armor tick uses the entity's fluid flags.
 - [x] Brewing, Kettle, Distillery, Spinning Wheel, and Brazier parity.
   - [x] Compare the fixed Kettle, Distillery, Spinning Wheel, and Brazier registries and exercise their interactions and saved state in the workstation milestones above.
   - [x] Compare [Kettle bottling bonuses and cues](#kettle-bottling-bonuses-and-cues-2026-11-27) with the original world rolls and saved servings.
@@ -3350,7 +3361,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare [Infernal creature acquisition](#infernal-creature-variants-2026-11-26) for all 25 original power IDs and modern entity splits.
   - [x] Compare [Infernal combat cues and defenses](#infernal-combat-cues-and-defenses-2026-11-26), including fireball launches, bow cue order, Fire Resistance, and Water Breathing.
   - [x] Compare the [remaining creature-power casts](#remaining-creature-power-casts-2026-11-27). The original dedicated trace covers 24 buff, Squid and Creeper cases.
-  - [ ] Compare passive creature-power movement and the Light Hand's movement during use. The original client handlers recorded 28 cases in `build/qa-creature-movement/native/reference.log`. Include step height over ice, ceilings, wall climbing, flight, water input, held jump, riding and the order of the client tick.
+  - [x] Compare [passive creature-power and held-item movement](#passive-creature-powers-and-held-item-movement-2026-11-27). Clean Forge and copied Auram match all 42 original runtime cases and ten Branch and Brew Bag cases derived from the original code.
 - [ ] Entity AI/combat/spawn tuning parity.
   - [x] Compare [Insanity apparition columns, pursuit, lifetime, rendering, and private cues](#insanity-apparition-behavior-2026-11-27).
   - [x] Compare [Horned Huntsman archery, teleport, wolves, and Horn summons](#horned-huntsman-trial-2026-11-20).

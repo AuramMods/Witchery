@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Passive creature powers and held-item movement (2026-11-27)
+
+- The original client handlers produced 42 motion cases. The preceding Forge package missed six of the first 25 nonriding cases because it sampled the ice and ceiling too low. The current package matches the expanded original set, including both webs, riding, and fractional and negative coordinates. It also matches ten source-derived Mystic Branch and Brew Bag cases, including speed-power priority and the inclusive 0.1 per-axis threshold. Read `build/qa-creature-movement/{native/reference.log,comparison-baseline.log}`.
+- The clean Forge survival client replayed ground and ice movement, Spider climbing and crouching, Bat flight, forward swimming with Squid, and right-click usage of the Light Hand, Mystic Branch, and Brew Bag on the packaged JAR. Capture Light after its item use subscriber. Measure the other cases at client tick start. The probe waits for the terrain download screen to close before testing Forge key mappings. The game window stayed hidden and unfocused with master volume zero and OpenAL No Output. Read `build/qa-creature-movement/clean/{final.log,client-probe/replies.txt}`.
+- Copied Auram matched all 52 movement cases and replayed the same ordinary survival controls on the exact candidate after JEI completed indexing. Its client also stayed hidden and unfocused with master volume zero and OpenAL No Output. Read `build/qa-creature-movement/{comparison.log,pack/live.log}`.
+- Offline Java 17 packaging and JAR reobfuscation succeeded. All 636 required Forge GameTests passed. The archive at `build/qa-creature-movement/candidate.jar` has SHA-256 `a76436dae62592c858b98aacbc76dc3626350d8316b20e841e7f4d51c946bfd0`. Read `build/qa-creature-movement/{package-final.log,gametest.log}`.
+
 ## Remaining creature-power casts (2026-11-27)
 
 - The new Squid regression records the full-volume fizz before the Blindness event. Pitch and the next world random draw match the original. A miss and Minecart hit stay quiet, and each attempted cast debits one infusion charge and one reserve charge.
@@ -9,11 +16,6 @@ Use Java 17 and the local Gradle cache. When resources change, run `runData` bef
 - The clean Forge background client rejoined after a dedicated restart with the Hand, Creeper power, 18 infusion charges, seven reserve charges and the final mob griefing setting. See `build/qa-creature-power-actions/clean/restart.log`.
 - Copied Auram matched all 24 seeded cases and all three normal casts. The disposable server marks its temporary probe server-only in the Mods Optimizer override. The client waited for JEI's ingredient index before casting. See `build/qa-creature-power-actions/{comparison.log,pack/replay.log}`.
 - JAR reobfuscation and all 636 required local GameTests passed. The exact archive at `build/qa-creature-power-actions/candidate.jar` has SHA-256 `fc20648f31cf6a8e9b2ab60a44839efecaef450b942d80d4eee1f1110201750e`. See `build/qa-creature-power-actions/gametest.log`.
-
-## Creature-power movement reference (2026-11-27)
-
-- The original client handlers produced 28 deterministic motion and block-query cases in `build/qa-creature-movement/native/reference.log`. The original `PlayerRender` applies passive creature movement at client tick start. Light Hand movement runs from the original item use tick.
-- The packaged Forge movement event matched 19 of 25 nonriding cases within 0.000001. Speed and Light missed the ice at the original sampled height, and the Spider sampled one block below the original stone and glass ceilings. The packaged event's block positions and motion are in `build/qa-creature-movement/baseline/client-probe/replies.txt` and the comparison is in `build/qa-creature-movement/comparison-baseline.log`. The three riding cases and tick order still need live comparisons.
 
 ## Placed Brew Gas rendering (2026-11-27)
 

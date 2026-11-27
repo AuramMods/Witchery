@@ -1,11 +1,14 @@
 package art.arcane.witchery.client;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.BrewPlantBlocks;
 import art.arcane.witchery.config.WitcheryClientConfig;
 import art.arcane.witchery.infusion.CreaturePower;
 import art.arcane.witchery.infusion.InfusedBrews;
 import art.arcane.witchery.infusion.InfernalInfusion;
 import art.arcane.witchery.infusion.LightInfusion;
+import art.arcane.witchery.item.BrewBagItem;
+import art.arcane.witchery.item.MysticBranchItem;
 import art.arcane.witchery.item.WitchHandItem;
 import art.arcane.witchery.ritual.DirectedCurse;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -14,6 +17,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Block;
@@ -23,6 +27,9 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.MovementInputUpdateEvent;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -35,6 +42,9 @@ public final class ClientInfusion {
     private static final ResourceLocation CLAY = ResourceLocation.withDefaultNamespace("textures/block/clay.png");
     private static final int WIDTH = 8;
     private static final int HEIGHT = 32;
+    private static final float LEGACY_PLAYER_Y_OFFSET = 1.62F;
+    private static final double LEGACY_BAT_LIFT = 0.06699999910593032D;
+    private static final double LEGACY_HELD_ITEM_SPEED = 1.6500000476837158D;
     private static int infusion;
     private static int charge;
     private static int capacity;
@@ -64,43 +74,82 @@ public final class ClientInfusion {
 
     @SubscribeEvent
     public static void onMovementInput(MovementInputUpdateEvent event) {
-        if (!(event.getEntity() instanceof LocalPlayer player) || player.isPassenger()) return;
-        DirectedCurse.tickSinkingPlayer(player);
+        if (event.getEntity() instanceof LocalPlayer player && !player.isPassenger()) DirectedCurse.tickSinkingPlayer(player);
+    }
+
+    @SubscribeEvent
+    public static void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) return;
+        var client = Minecraft.getInstance();
+        var player = client.player;
+        if (player == null) return;
+
+        var controls = client.options;
         CreaturePower power = CreaturePower.forId(powerId);
-        boolean light = infusion == LightInfusion.ID && player.isUsingItem() && player.getUseItem().getItem() instanceof WitchHandItem;
-        if (!light && power == null) return;
-        boolean onIce = player.level().getBlockState(player.getOnPos()).is(Blocks.ICE);
-        if (light && (player.onGround() || onIce)) {
-            double speed = onIce || player.isInWater() ? 1.1 : 1.65;
+        if (power != null) {
             Vec3 motion = player.getDeltaMovement();
-            player.setDeltaMovement(motion.x * speed, motion.y, motion.z * speed);
-        }
-        if (power == null) return;
-        Vec3 motion = player.getDeltaMovement();
-        var input = event.getInput();
-        switch (power) {
-            case CAVE_SPIDER, SPIDER -> {
-                double y = player.level().getBlockState(player.blockPosition().above()).blocksMotion() ? motion.y * 0.6 : motion.y;
-                if (player.horizontalCollision) y = input.shiftKeyDown ? 0 : 0.3;
-                player.setDeltaMovement(motion.x, y, motion.z);
-            }
-            case BAT, OWL -> {
-                if (input.jumping && !player.onGround()) player.setDeltaMovement(motion.x, 0.42, motion.z);
-                else if (input.jumping && motion.y > 0) player.setDeltaMovement(motion.x, motion.y + 0.067, motion.z);
-            }
-            case SQUID -> {
-                if (player.isInWater() && input.up) player.setDeltaMovement(motion.x * 1.15, motion.y, motion.z * 1.15);
-            }
-            case MAGMA_CUBE, SLIME, TOAD -> {
-                if (input.jumping && motion.y > 0) player.setDeltaMovement(motion.x, motion.y + 0.06, motion.z);
-            }
-            case SILVERFISH, OCELOT, WOLF, HORSE -> {
-                if ((input.up || input.down || input.left || input.right) && (onIce || (player.onGround() && !player.isInWater()))) {
-                    double speed = onIce ? 1.1 : 1.45;
-                    player.setDeltaMovement(motion.x * speed, motion.y, motion.z * speed);
+            switch (power) {
+                case CAVE_SPIDER, SPIDER -> {
+                    var overhead = BlockPos.containing(player.getX(), player.getY() + LEGACY_PLAYER_Y_OFFSET + 1, player.getZ());
+                    var state = player.level().getBlockState(overhead);
+                    // Both original webs used solid materials for the ceiling check.
+                    boolean solid = state.blocksMotion() || state.is(Blocks.COBWEB) || state.getBlock() instanceof BrewPlantBlocks.Web;
+                    double y = solid ? motion.y * 0.6 : motion.y;
+                    if (player.horizontalCollision) y = player.isShiftKeyDown() ? 0 : 0.3;
+                    player.setDeltaMovement(motion.x, y, motion.z);
+                }
+                case BAT, OWL -> {
+                    if (controls.keyJump.isDown()) {
+                        if (!player.onGround()) player.setDeltaMovement(motion.x, 0.42F, motion.z);
+                        else if (motion.y > 0) player.setDeltaMovement(motion.x, motion.y + LEGACY_BAT_LIFT, motion.z);
+                    }
+                }
+                case SQUID -> {
+                    if (player.isInWater() && controls.keyUp.isDown()) scaleHorizontalMotion(player, 1.15F);
+                }
+                case MAGMA_CUBE, SLIME, TOAD -> {
+                    if (controls.keyJump.isDown() && motion.y > 0) player.setDeltaMovement(motion.x, motion.y + 0.06, motion.z);
+                }
+                case SILVERFISH, OCELOT, WOLF, HORSE -> {
+                    if (controls.keyUp.isDown() || controls.keyDown.isDown() || controls.keyLeft.isDown() || controls.keyRight.isDown()) {
+                        if (isOverIce(player)) scaleHorizontalMotion(player, 1.1F);
+                        else if (player.onGround() && !player.isInWater()) scaleHorizontalMotion(player, 1.45F);
+                    }
+                    // These powers take precedence over the Branch and Brew Bag movement.
+                    return;
                 }
             }
         }
+
+        var item = player.getUseItem().getItem();
+        if (player.isUsingItem() && (item instanceof MysticBranchItem || item instanceof BrewBagItem)) {
+            Vec3 motion = player.getDeltaMovement();
+            if (Math.abs(motion.x) <= 0.1 && Math.abs(motion.z) <= 0.1) applyHeldItemMovement(player);
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onLightHandUseTick(LivingEntityUseItemEvent.Tick event) {
+        if (infusion == LightInfusion.ID && event.getDuration() > 0 && event.getItem().getItem() instanceof WitchHandItem
+                && event.getEntity() instanceof LocalPlayer player && !player.isPassenger()) {
+            applyHeldItemMovement(player);
+        }
+    }
+
+    private static void applyHeldItemMovement(LocalPlayer player) {
+        if (isOverIce(player)) scaleHorizontalMotion(player, 1.1F);
+        else if (player.onGround()) scaleHorizontalMotion(player, player.isInWater() ? 1.1F : LEGACY_HELD_ITEM_SPEED);
+    }
+
+    private static boolean isOverIce(LocalPlayer player) {
+        // The original local player's Y coordinate included its 1.62-block offset from the feet.
+        var sampled = BlockPos.containing(player.getX(), player.getY() + LEGACY_PLAYER_Y_OFFSET - 2, player.getZ());
+        return player.level().getBlockState(sampled).is(Blocks.ICE);
+    }
+
+    private static void scaleHorizontalMotion(LocalPlayer player, double speed) {
+        Vec3 motion = player.getDeltaMovement();
+        player.setDeltaMovement(motion.x * speed, motion.y, motion.z * speed);
     }
 
     public static void render(ForgeGui gui, GuiGraphics graphics, float partialTick, int width, int height) {
