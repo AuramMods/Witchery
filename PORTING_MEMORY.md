@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Packet intent replay on the Coven loot package (2026-11-27)
+
+- The same reobfuscated JAR from `5c7b7a66` was installed throughout `build/qa-multiplayer-current/`. Its SHA-256 is `ece534a9696168307d542391d26e324f29b0af8e5451ffa5264f7adc973a0a55`. It previously passed all 598 required Forge GameTests, data generation and reobfuscation.
+- Two clean Forge survival clients verified Brew Bag and Mystic Branch gestures, guide and journal saves, exactly two extra Double Jump II lifts, Wolfman howl and repeat denial, vampire Speed, and the villager's 267 blood. Both players kept their saved state on restart. See `inputs/clean/check-normal.log` and `inputs/clean/check-restart.log`.
+- The tracking pair verified the Mirror smoke and Infernal Slime sound audiences, the disguise and wolf appearances for a new observer, the Moon Charm's forms and wear, and Gulg's Gurdle's five damage and vertical motion of 1.0. Both players saw the saved disguise after restart. See `tracking/clean/check-normal.log` and `tracking/clean/check-restart.log`.
+- The lifecycle pair checked Resizing and Colorful on the first playable frame in Dream and after waking. The Crystal Ball released the subject on dimension change, death and live disconnect. Both clients saw the size change on respawn and the reapplied effect after the subject rejoined the running server. The marked inventory survived under keep-inventory and both clients reopened the same saved state after a dedicated restart. See `lifecycle/verify.log` and `lifecycle/restart.log`.
+- All 13 clean Forge client launches used zero master volume and OpenAL No Output. The focus logs recorded the same foreground application throughout.
+- The copied Auram workshop replay opened with the same JAR. The muted survival client drank a supplied Brew of Sleeping, used the Icy Needle to wake, and retained the crafted Hint of Rebirth. Both transitions showed Colorful and Resizing when the loading screen cleared. The client used OpenAL No Output and the focus log recorded the same foreground application. After a headless restart, both ovens still held one Wood Ash and the saved player still had the fume and both effects. See `auram/verify.log` and `auram/restart.log`.
+
 ## Coven dispenser and Buried Treasure loot (2026-11-27)
 
 - The shipped 0.24.1 server ran the original `mineshaftCorridor` hook for nine-slot dispensers and 27-slot chests. It prepared one level-30 book before drawing the number of rolls. Each roll then selected a weighted item, drew its quantity and chose a slot, including occupied slots. The preceding package matched none of the 320 seeded inventories.
