@@ -5,6 +5,7 @@ import art.arcane.witchery.world.WitcheryDimensions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
 import org.jetbrains.annotations.Nullable;
@@ -21,6 +22,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 final class LegacyWorldDimensions {
+    static final LegacyWorldDimensions DEFAULTS = new LegacyWorldDimensions(new CompoundTag());
     private static final Pattern CONFIG_ID = Pattern.compile("\\s*I:(Dream|Torment|Mirror)DimensionID\\s*=\\s*(-?\\d+)\\s*");
     private final Map<Integer, ResourceKey<Level>> dimensions = new LinkedHashMap<>();
 
@@ -73,23 +75,24 @@ final class LegacyWorldDimensions {
     }
 
     void upgradePlayerLocation(CompoundTag player) {
-        if (!player.contains("SpawnDimension") && player.contains("Dimension", Tag.TAG_ANY_NUMERIC)) {
-            int current = player.getInt("Dimension");
-            var dimension = resolve(current);
-            if (dimension != null && current != 0) upgradeForgeSpawn(player, current, dimension);
-        }
         upgradeReference(player, "Dimension", "Dimension");
         upgradeReference(player, "SpawnDimension", "SpawnDimension");
+        if (!player.contains("SpawnDimension") && player.contains("Spawns", Tag.TAG_LIST)) {
+            var dimension = ResourceLocation.tryParse(player.getString("Dimension"));
+            if (dimension != null && !dimension.equals(Level.OVERWORLD.location())) upgradeForgeSpawn(player, dimension);
+        }
     }
 
-    private static void upgradeForgeSpawn(CompoundTag player, int current, ResourceKey<Level> dimension) {
+    private void upgradeForgeSpawn(CompoundTag player, ResourceLocation dimension) {
         // Forge saved one bed per dimension. Prefer the bed in the saved dimension, then the original Overworld spawn.
         for (Tag entry : player.getList("Spawns", Tag.TAG_COMPOUND)) {
             CompoundTag spawn = (CompoundTag) entry;
-            if (!spawn.contains("Dim", Tag.TAG_ANY_NUMERIC) || spawn.getInt("Dim") != current
+            if (!spawn.contains("Dim", Tag.TAG_ANY_NUMERIC)) continue;
+            var originalDimension = resolve(spawn.getInt("Dim"));
+            if (originalDimension == null || !originalDimension.location().equals(dimension)
                     || !spawn.contains("SpawnX", Tag.TAG_ANY_NUMERIC) || !spawn.contains("SpawnY", Tag.TAG_ANY_NUMERIC)
                     || !spawn.contains("SpawnZ", Tag.TAG_ANY_NUMERIC)) continue;
-            player.putString("SpawnDimension", dimension.location().toString());
+            player.putString("SpawnDimension", dimension.toString());
             player.putInt("SpawnX", spawn.getInt("SpawnX"));
             player.putInt("SpawnY", spawn.getInt("SpawnY"));
             player.putInt("SpawnZ", spawn.getInt("SpawnZ"));

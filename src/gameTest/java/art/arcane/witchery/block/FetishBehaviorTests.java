@@ -245,6 +245,9 @@ public final class FetishBehaviorTests {
         for (int index = 0; index < bases.size(); index++) {
             BlockPos pigPos = bases.get(index);
             BlockPos column = pigPos.north().west();
+            for (BlockPos pos : BlockPos.betweenClosed(column.below(4), column.above(12))) {
+                helper.setBlock(pos, Blocks.AIR);
+            }
             for (BlockPos pos : BlockPos.betweenClosed(pigPos.offset(-1, -1, -1), pigPos.offset(1, -1, 1))) {
                 helper.setBlock(pos, Blocks.STONE);
             }

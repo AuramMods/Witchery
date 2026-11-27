@@ -220,7 +220,7 @@ public final class LegacyWorldIds {
     }
 
     private void preparePlayer(CompoundTag player, DataFixer fixer, int from) {
-        if (from < 100) dimensions.upgradePlayerLocation(player);
+        dimensions.upgradePlayerLocation(player);
         var persisted = preparePlayerState(player);
         var retainedInventory = DeathBrewEffects.pendingLegacyInventory(persisted);
         var expiredDrops = persisted.getList("WITCPriIncInv", Tag.TAG_COMPOUND);
@@ -249,6 +249,7 @@ public final class LegacyWorldIds {
     }
 
     public static void repairPlayerWithoutLegacyRegistry(CompoundTag player, DataFixer fixer, int from) {
+        LegacyWorldDimensions.DEFAULTS.upgradePlayerLocation(player);
         var persisted = preparePlayerState(player);
         repairNamedStoredItems(player);
         var dreamSession = persisted.getCompound("WITCSpiritWorld");

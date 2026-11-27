@@ -3,8 +3,10 @@ package art.arcane.witchery.world.migration;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.capability.WitcheryPlayerData.WolfmanQuestState;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.world.WitcheryDimensions;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.SharedConstants;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -12,6 +14,7 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraftforge.common.util.FakePlayer;
@@ -25,6 +28,58 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class LegacyPlayerSaveImportTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_saved_player_dimensions")
+    public static void repairsNumericDimensionsAndForgeBedsInEarlierPlayerSaves(GameTestHelper helper) throws Exception {
+        var root = Files.createTempDirectory("witchery-player-dimension-import");
+        try (var access = LevelStorageSource.createDefault(root).createAccess("world")) {
+            var registry = access.getLevelPath(LevelResource.ROOT).resolve("witchery-legacy-ids.dat");
+            NbtIo.writeCompressed(TagParser.parseTag("{Dimensions:{mirror:64}}"), registry.toFile());
+            var profile = new GameProfile(UUID.randomUUID(), "SavedMirrorPlayer");
+            var file = access.getLevelPath(LevelResource.PLAYER_DATA_DIR).resolve(profile.getId() + ".dat").toFile();
+            var earlier = TagParser.parseTag("""
+                    {Dimension:64,SpawnX:100,SpawnY:140,SpawnZ:95,SpawnForced:1b,Spawns:[
+                      {Dim:-1,SpawnX:13,SpawnY:83,SpawnZ:14,SpawnForced:1b},
+                      {Dim:64,SpawnX:98,SpawnY:140,SpawnZ:95,SpawnForced:0b}]}
+                    """);
+            earlier.putInt("DataVersion", SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+            var storage = access.createPlayerStorage();
+            NbtIo.writeCompressed(earlier, file);
+            var player = new FakePlayer(helper.getLevel(), profile);
+            var login = storage.load(player);
+            helper.assertTrue(login != null && login.getString("Dimension").equals("witchery:mirror"),
+                    "The record used for login keeps its original dimension");
+            helper.assertTrue(player.getRespawnDimension().equals(WitcheryDimensions.MIRROR)
+                            && new BlockPos(98, 140, 95).equals(player.getRespawnPosition()) && !player.isRespawnForced(),
+                    "The Forge bed in the saved dimension takes precedence over the old Overworld bed");
+
+            earlier.putString("Dimension", "witchery:mirror");
+            NbtIo.writeCompressed(earlier, file);
+            storage.load(player);
+            helper.assertTrue(player.getRespawnDimension().equals(WitcheryDimensions.MIRROR)
+                            && new BlockPos(98, 140, 95).equals(player.getRespawnPosition()),
+                    "A previous conversion of the current dimension still allows recovery of a Forge bed");
+
+            earlier.putString("SpawnDimension", "minecraft:the_nether");
+            NbtIo.writeCompressed(earlier, file);
+            storage.load(player);
+            helper.assertTrue(player.getRespawnDimension().equals(Level.NETHER)
+                            && new BlockPos(100, 140, 95).equals(player.getRespawnPosition()) && player.isRespawnForced(),
+                    "Keep the current respawn tuple when it already has a named dimension");
+
+            Files.delete(registry);
+            earlier.putInt("Dimension", -39);
+            earlier.putInt("SpawnDimension", -39);
+            NbtIo.writeCompressed(earlier, file);
+            login = access.createPlayerStorage().load(player);
+            helper.assertTrue(login != null && login.getString("Dimension").equals("witchery:mirror")
+                            && player.getRespawnDimension().equals(WitcheryDimensions.MIRROR),
+                    "Default original dimension IDs resolve in an ordinary world without a registry snapshot");
+        } finally {
+            FileUtils.deleteDirectory(root.toFile());
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_player_progress_without_registry")
     public static void recoversPlayerProgressWithoutTheNumericRegistry(GameTestHelper helper) throws Exception {
         var root = Files.createTempDirectory("witchery-player-progress-without-registry");
