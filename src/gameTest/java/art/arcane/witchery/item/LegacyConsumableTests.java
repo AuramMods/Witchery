@@ -234,11 +234,12 @@ public final class LegacyConsumableTests {
         pig.setPos(Vec3.atBottomCenterOf(center.north()));
         pig.setNoAi(true);
         pig.setNoGravity(true);
-        level.addFreshEntity(pig);
+        pig.setPersistenceRequired();
+        helper.assertTrue(level.addFreshEntity(pig), "The Creeper Heart fixture adds its pig to the test world");
         var heart = WitcheryIngredient.CREEPER_HEART.item();
         var setting = WitcheryServerConfig.CREEPER_HEART_TERRAIN_DAMAGE;
         helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.getEntity(pig.getUUID()) == pig,
-                "The explosion can query the pig in the test chunk")).thenExecute(() -> {
+                "The explosion can query the pig in the test chunk. Removal reason: " + pig.getRemovalReason())).thenExecute(() -> {
             boolean original = setting.get();
             try {
                 setting.set(false);

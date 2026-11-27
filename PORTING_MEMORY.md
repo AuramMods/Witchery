@@ -1,6 +1,14 @@
 # READ THIS FIRST EVERY SESSION
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
-Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
+Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
+
+## Insanity inventory text (2026-11-27)
+
+- The original release's `PotionInsanity.renderInventoryEffect` selects one of seven labels from remaining duration divided by 60, modulo seven. The localized asset provides English and Italian strings. See `build/qa-insanity-inventory/{native-bytecode.txt,reference.json}`.
+- The existing Colorful inventory hook now also supplies the Insanity label to Forge's full-width panel and compact hover tooltip. Forge draws both layouts and formats their timers. The inventory label omits the amplifier suffix.
+- The muted clean Forge client matched all 132 label cases, including the German fallback. The previous package matched none. The client drank the fixture-supplied Witchery Brew of Insanity, saw the label change in the inventory, and reopened the same effect after a dedicated restart. See `build/qa-insanity-inventory/clean/{live.log,restart.log,restart-replies.txt.previous}`.
+- Copied Auram used Big Inventory's BackpackScreen with the JEI overlay open. The JEED 2.2.5 compatibility hook supplies the same rotating label and Colorful dye name to the inventory tooltip. JEED keeps its timer, color, category and attribute lines. All 66 duration and language combinations matched at both tested widths, and the label changed on the live effect. See `build/qa-insanity-inventory/auram/{live.log,client-probe/replies.txt}`.
+- The first regression run could not query the Creeper Heart fixture's pig. The test now marks it persistent like Forge's normal GameTest spawn helper. Data generation, JAR reobfuscation and all 632 required GameTests passed. The exact archive at `build/qa-insanity-inventory/release.jar` has SHA-256 `3f898ac37a0fdacaebfecdbc9dfc46198c43ebabbefe5c937f44730ebdbc1b03`. The clean and copied Auram launches used master volume zero and OpenAL No Output and recorded no focus activation.
 
 ## Insanity apparition behavior (2026-11-27)
 
@@ -10,7 +18,6 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - The muted copied Auram survival client replayed the same supplied drink and imported curse. Both meshes, the Spider cue, the Enderman decoy and all 20 player health matched clean Forge. The isolated test waited for the pack's JEI search to finish on login. See `build/qa-illusion-parity/auram-final/play.log`. All five successful client launches used master volume zero and OpenAL No Output and stayed out of the foreground.
 - A regression replay reported the Felling Hawthorn drop missing on the cast tick. Its saved entity region contained one correctly tagged Hawthorn log at the cut. The Felling fixture now waits for the drop to become visible to the entity query.
 - Local Java 17 data generation, JAR reobfuscation, and all 632 required Forge GameTests passed. The exact package at `build/qa-illusion-parity/release.jar` has SHA-256 `3c9fd4dd47ae440d2e92bf744e9f2fbcdb4f7843fd0e919f2a58311589b1217c`.
-- The original timed potion rotates its seven inventory effect labels every 60 duration ticks and draws the ordinary duration below them. That display is still open in the visual pass.
 
 ## Mystic Branch projectile rendering (2026-11-27)
 

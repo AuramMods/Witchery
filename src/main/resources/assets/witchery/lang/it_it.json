@@ -1,4 +1,11 @@
 {
+   "effect.witchery.potion.insane.0": "Sapor di Formaggio",
+   "effect.witchery.potion.insane.1": "Finemente strigliato",
+   "effect.witchery.potion.insane.2": "Tendente ai Wafer",
+   "effect.witchery.potion.insane.3": "Gambe Pelose",
+   "effect.witchery.potion.insane.4": "Tonsura di Rapa",
+   "effect.witchery.potion.insane.5": "Capitan Incredibile",
+   "effect.witchery.potion.insane.6": "Torta cinguettante",
    "item.witchery.babashat": "Cappello di Baba Yaga",
    "item.witchery.babashat.tooltip": "§5I giocatori infusi hanno una possibilita' di essere§0|§5teletrasportati invece di venire colpiti§0||§9+25% probabilita' di secondo filtro§0|§9+25% probabilita' di terzo filtro§0",
    "item.witchery.barkbelt": "Cintura di Corteccia",

@@ -2768,6 +2768,14 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - The clean Forge restart retained both UUIDs, the named victim, and the Spider's signed type. In copied Auram, a force-loaded Creeper with two health completed its lifetime with zero players online.
 - The muted copied Auram survival client replayed both pulses on the same JAR. Both apparition meshes and both cues matched clean Forge. Local data generation, JAR reobfuscation and all 632 required Forge GameTests passed.
 
+### Insanity inventory text (2026-11-27)
+
+- Restore the original seven labels and advance them every 60 ticks of remaining duration. The 0.24.1 release supplies English and Italian labels. Other shipped languages use the English fallback.
+- Forge uses the same label for the full inventory panel and its compact hover view. It keeps the ordinary timer below the label, including the current two-digit minute format and the infinity marker for an indefinite effect.
+- The earlier package matched none of the 132 sampled labels. Clean Forge matched all 132 across 22 durations, both layouts, English, Italian and German fallback. The test also checked the full panel's two line positions and colors, the timer, Colorful and Speed II.
+- A muted background survival client drank a supplied Witchery Brew of Insanity made from the original ingredient sequence and opened the inventory with the normal key. The label changed at the duration boundary and resumed from the saved timer after a dedicated restart.
+- Copied Auram opened Big Inventory's BackpackScreen with JEI running. JEED's compact tooltip matched all 66 duration and language combinations at both tested widths. The label changed as the survival player waited, and the tooltip retained its timer, color and harmful-effect details. All 632 local Forge GameTests passed on the exact JAR.
+
 ## Auram Pack Validation (2026-11-20)
 
 - [x] Reproduce the Evolved Mekanism 1.2.1-fix3 startup crash in the matched Auram profile before adding Witchery. Both pack runs reported the null `QIODriveTier` during Evolved Mekanism construction.
@@ -3196,7 +3204,8 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
 - [x] Restore the 48 missing static item descriptions from the original release. The muted packaged client validated all 48 in English, German, Spanish, Russian, Simplified Chinese, and Italian, using English fallback where the release supplied no localized text. It verified the Cowl's original color, its default before login, Forge's additional-tooltip hide flag, and the dedicated setting that hides its gaze hint after a restart.
 - [x] Restore Hobgoblin mining, worship, crouch, riding, and attack poses. Mog carries her bow in one hand and her skirt and chest stay independent of the torso. Gulg's strike uses the original attack counter and head yaw. The muted packaged client matched 1,386 pose values and all 864 vertex and texture coordinate samples across the three models.
 - [ ] Complete the source and runtime comparison for the remaining models, less common block states, and entity and armor poses.
-  - [ ] Compare the rotating inventory text for the timed Insanity potion.
+  - [x] Compare the [rotating inventory text for the timed Insanity potion](#insanity-inventory-text-2026-11-27) in both inventory layouts and after restart.
+  - [ ] Compare status-effect icons in the inventory and HUD. Check the original effects without icons and the port's existing atlas sprites.
   - [x] Compare the [Mystic Branch projectile sprite, tints, scale, and camera poses](#mystic-branch-projectile-rendering-2026-11-27) along with normal survival casting and a saved projectile.
   - [x] Restore the [Dark Mark's original skull placement and smoke](#dark-mark-rendering-and-creature-response-2026-11-27), with a comparison of six native poses.
   - [x] Restore the [Mirror apparition's original head pivot, scale, and opacity](#mirror-apparition-parity-2026-11-27), with measured vertex positions during head and body rotation.
@@ -3300,4 +3309,4 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
 
 ## Immediate Next Actions
 
-The active progression, migration and release checks are listed under [Remaining Release Verification](#remaining-release-verification-2026-11-22).
+The active progression, migration and release checks are listed under [Remaining Release Verification](#remaining-release-verification-2026-11-27).
