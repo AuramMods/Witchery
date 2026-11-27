@@ -823,6 +823,12 @@
 - [x] Reproduce the one-tick Storm range failure on the packaged headless server. Load an original 1.7.10 glyph's saved wave fields and confirm the restored spawn boundary. Load an earlier Forge-format wave and confirm it retains its stage-based schedule.
 - [x] Repeat Hell on Earth in copied Auram. Verify its alternate starting phase waits until stage 21, charges the distant altar by 200, and ends after that altar is removed.
 
+### Hell on Earth terrain comparison (2026-11-26)
+
+- Rite 39 ignites the original flowers and crops only with an active cat familiar and the fire setting enabled. Supported fire schedules its first tick before the soil roll. The original removes a crop when its fire has no support and leaves the soil roll next. The Forge port uses the same order, including over Wheat on Farmland.
+- Dirt, Grass Block, Mycelium, Farmland and Sand can become Netherrack. The chances are one in two through radius five, one in four from radius six through nine, and one in six from radius ten onward. A valid soil block under water can still change. Forge protections can refuse the plant change and keep the soil under it intact.
+- The reobfuscated JAR passed 56 terrain cases and 47 random sequence checks on each headless profile. The cases compare 53 original measurements and check a modern flower and two Forge protection events. A fresh redstone cast in clean Forge used prepared rings, offerings and charged altars. It saved at stage one, resumed after a dedicated restart and spent 200 power to spawn a Magma Cube at the Waystone on stage 17. Removing the destination altar ended the next attempt.
+
 ## Ward and Wave Resumption (2026-11-24)
 
 - [x] Trace the original save path for wards, expanding waves and Broken Earth. Wards and imported waves take their first step on tick 20. Broken Earth resumes each tick after the first cut.
@@ -2939,6 +2945,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Compare [Spectral Stone and Fetish spirit binding](#circle-magic-spirit-binding-2026-11-26), including the hidden Death combination.
   - [x] Compare the [ten directed Taglock curses and cures](#directed-curse-and-cure-completion-2026-11-26), including protection, a remote target, and completion cues.
   - [x] Compare [Blight and Blindness actions](#blight-and-blindness-action-comparison-2026-11-26), including terrain and creature conversion.
+  - [x] Compare [Hell on Earth terrain and fire](#hell-on-earth-terrain-comparison-2026-11-26), including fire support, soil rolls, and Forge protections.
 - [ ] Infusion, prediction, creature power parity.
 - [ ] Entity AI/combat/spawn tuning parity.
 

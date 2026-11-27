@@ -58,7 +58,7 @@ final class AreaCurses {
         boolean enhanced = caster != null && FamiliarBinding.hasCurseMastery(caster);
         ServerPlayer terrainActor = caster == null ? FakePlayerFactory.getMinecraft(level) : caster;
         if (action == ItemRiteRecipe.Action.HELL_ON_EARTH) {
-            return hellOnEarth(level, heart, target, stage, coven, radius, enhanced, terrainActor, summon);
+            return hellOnEarth(level, heart, target, stage, coven, radius, enhanced, terrainActor, summon, legacy);
         }
         boolean blind = action == ItemRiteRecipe.Action.AREA_BLINDNESS;
         Vec3 center = Vec3.atCenterOf(target);
@@ -130,6 +130,8 @@ final class AreaCurses {
             BlockState replacement = hell ? Blocks.FIRE.defaultBlockState()
                     : (grass ? Blocks.AIR : Blocks.DEAD_BUSH).defaultBlockState();
             if (!hell || enhanced && WitcheryServerConfig.ALLOW_HELL_ON_EARTH_FIRES.get()) {
+                // The original removes unsupported fire before scheduling its tick or drawing the soil roll.
+                if (hell && legacy && !replacement.canSurvive(level, surface)) replacement = Blocks.AIR.defaultBlockState();
                 if (!LandscapeRites.replace(level, surface, replacement, caster) && legacy) return;
             }
             soil = surface.below();
@@ -161,7 +163,7 @@ final class AreaCurses {
     }
 
     private static boolean hellOnEarth(ServerLevel level, BlockPos heart, BlockPos target, int stage, int coven,
-                                       int radius, boolean enhanced, ServerPlayer caster, boolean summon) {
+                                       int radius, boolean enhanced, ServerPlayer caster, boolean summon, boolean legacy) {
         int maxRadius = 20 + 2 * coven;
         if (!target.equals(heart)) {
             level.getChunkSource().addRegionTicket(HELL_SITE, new ChunkPos(target), 2 + maxRadius / 16, target);
@@ -169,7 +171,7 @@ final class AreaCurses {
         }
         if (radius <= maxRadius) {
             ExpandingWave.visitSurface(level, target, radius, true,
-                    pos -> alterSurface(level, pos, radius, true, enhanced, caster, false));
+                    pos -> alterSurface(level, pos, radius, true, enhanced, caster, legacy));
         }
         if (radius >= maxRadius && stage <= 250 && summon) {
             var altar = AltarPower.nearest(level, target);

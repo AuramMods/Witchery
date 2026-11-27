@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Hell on Earth terrain and upkeep (2026-11-26)
+
+- The original dedicated server measured 53 surface cases, including ordinary and cat-enhanced casts, both fire settings, and the soil chance boundaries at radii six and ten. It removed fire over Wheat before scheduling a tick, so the next draw turned Farmland into Netherrack. In the preceding Forge package an extinguished fire still drew its tick delay and left the Farmland unchanged. See `build/qa-hell-on-earth-surfaces/native/run-final.log` and `modern-baseline/run.log`.
+- On headless clean Forge and copied Auram, the same reobfuscated JAR passed all 56 cases and 47 random sequence checks on each profile. The fixture includes Cornflower and canceled Forge break and placement events. Its Auram seeds match the original roll sequence under the pack's random source. See `clean-final/final.log` and `pack-final/final.log` in the same directory.
+- A clean Forge redstone cast completed the offerings, paid the source altar, and saved the Waystone wave at stage one. An ordinary dedicated restart resumed it and spent 200 at stage 17, spawning a Magma Cube at the remote altar's destination. Removing that altar ended the next attempt. The fixture supplied both altars, the rings and the offerings. See `clean-resume/check-cast.log` and `clean-resume/check-restart.log`.
+- Local Java 17 data generation, reobfuscation, and all 570 required Forge GameTests passed. The exact archive `build/qa-hell-on-earth-surfaces/final.jar` has SHA-256 `f4cc510ae612933f465c73526b3a4df92d61529ef53640f24b2140f4ea0b5bdd`.
+
 ## Blight and Blindness action comparison (2026-11-26)
 
 - The original dedicated server compared 40 terrain cases, then measured creature effects, the initial state of converted mobs, a canceled Mooshroom spawn, and mixed target ordering. It finished the mixed pulse in the order zombie, Mooshroom, magic damage. A named baby villager became an unnamed baby zombie, and a named calf became an unnamed adult Mooshroom. See `build/qa-area-curse-actions/native/native-settling.log`.
@@ -9,7 +16,6 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - The package comparison exercises 42 terrain cases, 12 creature cases and a live redstone Blight cast. The fixture supplies the glyphs, required offerings and arena. The test waits through the modern scheduled tick for unsupported Sugar Cane and checks independently that water-supported cane survives.
 - The exact package passed all 102 observations on both headless profiles. On copied Auram the baby zombie villager acquired the source's name and disabled AI by admission. A separate copy-position and initialization control kept the fresh defaults in both profiles. See `clean-confirmed/final.log` and `pack-confirmed/final.log` for the conversion and admission traces.
 - Local Java 17 data generation, reobfuscation and all 570 required Forge GameTests passed. The exact archive `build/qa-area-curse-actions/final.jar` has SHA-256 `a831c748a8d16db3fa2e86bad65934a620c9b174e8568cb0fc74e0af6617ed9b`.
-- The next Hell on Earth comparison has 53 original surface measurements. They include fires enabled and disabled, enhanced and ordinary casts, and the soil roll changes at radii six and ten. See `build/qa-hell-on-earth-surfaces/native/run-final.log`.
 
 ## Directed curse and cure completion (2026-11-26)
 
