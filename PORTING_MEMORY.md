@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Forestation pulse comparison (2026-11-27)
+
+- The headless 0.24.1 server measured 41 cases across rite IDs 70–76. Stone, clay, leaves, and fences emit both cues and receive one bonemeal attempt even though they cannot grow a sapling. All seven planted saplings receive eleven attempts when the Forge listener denies bonemeal. The retry continues if the listener replaces Oak with Dark Oak. Both cues are absent when both columns miss the radius. See `build/qa-forestation-rites/native/run-final.log`.
+- Legacy Forestation now sends the second cue before attempting placement and uses Forge's `[Minecraft]` fake player for growth. A Forge placement veto prevents planting and growth at the protected position. Clean Forge and copied Auram passed 285 checks with the same reobfuscated archive. The preceding clean JAR passed 219. The Auram fixture supplied equivalent column draws from its configured FasterRandom provider. See `clean-release/verify.log`, `pack-release/verify.log`, and `clean-baseline-final/verify.log`.
+- The two isolated background clients rejoined at volume zero with OpenAL No Output, and the foreground monitor stayed on the same process. The survival caster activated the Rowan and Alder rites with supplied rings, offerings and altar charge. The normal headless restart reopened Alder at stage 10 with the same Waystone target. Both rites finished and produced 55 Rowan and 59 Alder trunk bases in the prepared plots. See `release-play/cast.log` and `release-play/restart.log`.
+- Local Java 17 data generation, JAR reobfuscation, and all 601 required Forge GameTests passed. The first full run on the final sources reported a fluid-hold test failure. The unchanged rerun passed, including the new Forestation regression. See `gametest-release.log` and `gametest-release-retry.log`. The tested JAR is `build/qa-forestation-rites/release.jar`, SHA-256 `d0f09a7e50b785bf8322576ed2ce428997ec3dad7404ec33fe8aa99fc5109e2e`.
+
 ## Glyphic Transformation and loose offerings (2026-11-27)
 
 - The original dedicated server recorded 14 transformation cases and three ordinary item selections. It measured the item hitbox from −0.125 to +0.125 around the saved Y. At the chunk boundary it selected the negative-Z Gypsum first. It also accepted a drop just above the offering layer when its hitbox overlapped the layer. See `build/qa-glyphic-transformation/native/reference-verified.log`.

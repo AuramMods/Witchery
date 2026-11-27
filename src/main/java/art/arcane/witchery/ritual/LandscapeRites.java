@@ -22,6 +22,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.util.FakePlayerFactory;
@@ -29,11 +30,14 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public final class LandscapeRites {
     private static final int FOREST_RADIUS = 20;
     private static final int FOREST_HEIGHT = 8;
+    private static final Set<Block> LEGACY_VANILLA_SAPLINGS = Set.of(Blocks.OAK_SAPLING, Blocks.SPRUCE_SAPLING,
+            Blocks.BIRCH_SAPLING, Blocks.JUNGLE_SAPLING, Blocks.ACACIA_SAPLING, Blocks.DARK_OAK_SAPLING);
     private static final int VOLCANO_RADIUS = 8;
     private static final List<Direction> SHAFT_SIDES = List.of(Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST);
     private static final List<BlockPos> RESERVOIR_NEIGHBORS = List.of(
@@ -205,7 +209,9 @@ public final class LandscapeRites {
         int stage = progress.stage() + 1;
         switch (progress.action()) {
             case FORESTATION -> {
-                if (stage < progress.lastStage(coven)) forestPulse(level, progress.target(), progress.species(), coven, caster);
+                if (stage < progress.lastStage(coven)) {
+                    forestPulse(level, progress.target(), progress.species(), coven, caster, legacy);
+                }
             }
             case RAISE_VOLCANO, RAISE_PORTABLE_VOLCANO -> volcanoPulse(level, heart, progress.target(), stage, coven, caster);
             case ICE_SHELL -> IceShell.pulse(level, progress.target(), stage, coven, caster);
@@ -236,7 +242,8 @@ public final class LandscapeRites {
                         progress.followsHeart(), progress.hellSpawnOffset());
     }
 
-    private static void forestPulse(ServerLevel level, BlockPos origin, Species species, int coven, @Nullable ServerPlayer caster) {
+    private static void forestPulse(ServerLevel level, BlockPos origin, Species species, int coven,
+                                    @Nullable ServerPlayer caster, boolean legacy) {
         RandomSource random = level.getRandom();
         int radius = FOREST_RADIUS + 2 * coven;
         BlockPos column = null;
@@ -249,14 +256,25 @@ public final class LandscapeRites {
             }
         }
         if (column == null) return;
-        level.levelEvent(2005, origin.above(), 0);
+        level.levelEvent(LevelEvent.PARTICLES_PLANT_GROWTH, origin.above(), 0);
         BlockPos site = plantingSite(level, column);
         if (site == null) return;
+        if (legacy) level.levelEvent(LevelEvent.PARTICLES_PLANT_GROWTH, site, 0);
         BlockState sapling = species.saplingState();
-        if (!sapling.canSurvive(level, site) || !replace(level, site, sapling, caster)) return;
-        level.levelEvent(2005, site, 0);
-        ServerPlayer grower = caster == null ? FakePlayerFactory.getMinecraft(level) : caster;
-        for (int attempt = 0; attempt < 11 && level.getBlockState(site).is(sapling.getBlock()); attempt++) {
+        if (sapling.canSurvive(level, site)) {
+            if (!replace(level, site, sapling, caster)) return;
+        } else if (!legacy) {
+            return;
+        }
+        if (!legacy) level.levelEvent(LevelEvent.PARTICLES_PLANT_GROWTH, site, 0);
+        ServerPlayer grower = legacy || caster == null ? FakePlayerFactory.getMinecraft(level) : caster;
+        for (int attempt = 0; attempt < 11; attempt++) {
+            // The original invokes Forge's bonemeal hook once even when the soil cannot grow a sapling.
+            BlockState current = level.getBlockState(site);
+            boolean stillSapling = legacy
+                    ? LEGACY_VANILLA_SAPLINGS.contains(current.getBlock()) || current.is(WitcheryBlocks.getRequired("witchsapling").get())
+                    : current.is(sapling.getBlock());
+            if (!stillSapling && (!legacy || attempt != 0)) break;
             BoneMealItem.applyBonemeal(new ItemStack(Items.BONE_MEAL), level, site, grower);
         }
     }

@@ -668,6 +668,13 @@
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 344 required Forge GameTests. New cases cover the original Chilled attribute and damage rules, migrated ingredients, glancing hits, the radius boundary, resistant entities, and preserving a container while clearing brew gas inside a shell.
 - [x] Restore the original circle rite actions and map all 96 legacy registration IDs, including the Rite of Prior Incarnation.
 
+### Forestation pulse comparison (2026-11-27)
+
+- [x] Measure all seven original rites, including the two random column draws, nearest support within seven blocks, above-first ties, coven range and duration, and Waystone boundaries. An accepted column sends a growth cue above its destination. A selected planting position sends a second cue, including on stone, clay, leaves, and fences that cannot support its sapling.
+- [x] Use Forge's `[Minecraft]` fake player for the original first bonemeal attempt and up to ten retries while an original sapling remains. The retry also covers an Acacia or Dark Oak sapling placed by a Forge listener. Placement goes through the caster's Forge hooks. A veto retains the original cue and prevents fertilizing the protected site.
+- [x] Pass 285 packaged comparisons on clean Forge and copied Auram. The previous package missed 66 on clean Forge. For the Auram replay, the fixture uses seeds that select the measured columns with the installed FasterRandom generator. Vanilla trees grow with the modern Minecraft generators. Witchwood uses Witchery's ported feature for each species.
+- [x] Activate Rowan locally and Alder through a Waystone 50 blocks away with two muted background clients connected. The survival caster used supplied rings, offerings, and altar charge. The server saved Alder at pulse 10. Both casts completed after an ordinary dedicated restart and left 55 Rowan and 59 Alder trunk bases in their respective plots.
+
 ## Sky’s Wrath and Total Eclipse (2026-11-21)
 
 - [x] Restore all five recipes with small white chalk circles. A wooden sword and Wood Ash call the focused storm for 1,000 power. A stone sword and Wood Ash call the greater storm for 2,000 power. The portable greater storm uses an iron sword, Wood Ash, and a Charged Attuned Stone.
@@ -3053,6 +3060,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Compare the Corrupting Voodoo Protection rite, including its first offering, cat mastery, lightning, ward cap, death-screen target, and completion packet. [Completion comparison](#corrupting-voodoo-protection-completion-2026-11-27)
   - [x] Compare the wolf curse and both transformation cures, including the realm and moon rules, original ward sequence, coordinates, and completion packets. [Wolf curse and transformation cures](#wolf-curse-and-transformation-cures-2026-11-27)
   - [x] Compare Glyphic Transformation and the shared dropped-offering search, including stack order, height boundaries, partial rings and per-glyph cues. [Glyphic Transformation and loose offerings](#glyphic-transformation-and-loose-offerings-2026-11-27)
+  - [x] Compare [all seven Forestation rites](#forestation-pulse-comparison-2026-11-27), including candidate selection, original growth cues and bonemeal identity, coven ranges, and local and Waystone upkeep across restart.
   - [x] Compare [Blight and Blindness actions](#blight-and-blindness-action-comparison-2026-11-26), including terrain and creature conversion.
   - [x] Compare [Hell on Earth terrain and fire](#hell-on-earth-terrain-comparison-2026-11-26), including fire support, soil rolls, and Forge protections.
   - [x] Compare [Rain of Toads](#rain-of-toads-action-comparison-2026-11-26), including the shower's coordinates and ordering, the coven refund, and expiration and poison.
