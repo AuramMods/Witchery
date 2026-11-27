@@ -103,14 +103,6 @@ public final class Predictions {
             }
             return null;
         }
-
-        double tickChance(long elapsed) {
-            return switch (this) {
-                case LOVE -> elapsed > dueAfter ? 0.05 : 0.01;
-                case ZOMBIE, ARROW, ENT, FALL, BABA_HOSTILE, BABA_ALLY, FRIEND, WET, NETHER -> elapsed > dueAfter ? 0.05 : 0;
-                default -> 0;
-            };
-        }
     }
 
     private Predictions() {}
@@ -216,32 +208,43 @@ public final class Predictions {
         long now = timeInTicks();
         for (Tag pending : List.copyOf(readings)) {
             var reading = (CompoundTag) pending;
-            int index = readings.lastIndexOf(reading);
-            if (index < 0) continue;
+            int index = 0;
+            while (index < readings.size() && readings.get(index) != reading) index++;
+            if (index == readings.size()) continue;
             Kind kind = Kind.byId(reading.getInt(ID));
             if (kind == null || kind == Kind.WET && player.isInWaterRainOrBubble()
                     || kind == Kind.NETHER && player.level().dimension().equals(Level.NETHER)) {
                 readings.remove(index);
                 continue;
             }
-            double chance = kind.tickChance(now - reading.getLong(TIME));
-            if (chance > 0 && player.level().getRandom().nextDouble() < chance) {
-                // Remove the reading before effects that can post another player event.
-                readings.remove(index);
-                if (!fulfill(kind, player)) readings.add(Math.min(index, readings.size()), reading);
+            // Effects can post player events. Keep the current reading out of those events.
+            readings.remove(index);
+            if (!fulfillOnPulse(kind, player, now - reading.getLong(TIME) > kind.dueAfter)) {
+                readings.add(Math.min(index, readings.size()), reading);
             }
         }
+    }
+
+    private static boolean fulfillOnPulse(Kind kind, ServerPlayer player, boolean overdue) {
+        RandomSource random = player.level().getRandom();
+        if (kind == Kind.LOVE && random.nextDouble() < (overdue ? 0.05 : 0.01) && startCourtship(player)) return true;
+        // An overdue reading also rolls for forced fulfillment. Treasure opts out, and Love,
+        // mining and rescues have no forced action even if this roll succeeds.
+        return overdue && kind != Kind.TREASURE && random.nextDouble() < 0.05 && fulfill(kind, player);
     }
 
     @Nullable
     private static Kind choose(ServerPlayer subject) {
         boolean canPredictNether = !subject.level().dimension().equals(Level.NETHER) && persisted(subject).getBoolean(VISITED_NETHER);
+        Kind[] kinds = Kind.values();
         int weight = 0;
-        for (Kind kind : Kind.values()) {
+        for (Kind kind : kinds) {
             if (kind != Kind.NETHER || canPredictNether) weight += kind.weight;
         }
         int choice = subject.level().getRandom().nextInt(weight);
-        for (Kind kind : Kind.values()) {
+        // The original registry's Hashtable enumerates the 17 IDs from highest to lowest.
+        for (int index = kinds.length - 1; index >= 0; index--) {
+            Kind kind = kinds[index];
             if (kind == Kind.NETHER && !canPredictNether) continue;
             choice -= kind.weight;
             if (choice < 0) return kind;
@@ -255,7 +258,6 @@ public final class Predictions {
             case ARROW -> hostileEncounter(player, EntityType.SKELETON);
             case ENT -> hostileEncounter(player, WitcheryEntities.ENT.get());
             case FALL -> sinkGround(player, false);
-            case LOVE -> startCourtship(player);
             case BABA_HOSTILE -> hostileEncounter(player, WitcheryEntities.BABA_YAGA.get());
             case BABA_ALLY -> encounter(player, WitcheryEntities.BABA_YAGA.get(), 4, baba -> baba.bind(player));
             case FRIEND -> encounter(player, EntityType.WOLF, 4, wolf -> wolf.tame(player));

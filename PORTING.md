@@ -614,6 +614,13 @@
 - [x] Replay mining in survival through Forge's block destruction and loot modifier. The original Emerald-first order dropped one emerald and kept Iron. Switching the order dropped 17 Iron Ore and kept Emerald. A second seed fulfilled both. Individual successful records are removed after the event, so an unsuccessful duplicate retains its position.
 - [x] Verify the same reobfuscated JAR on clean Forge and copied Auram. Both passed all 12 packaged cases and three restart checks. Auram consumes eight random draws in other loot conditions before Witchery. With the original seed supplied at Witchery's entry point, all three mining cases matched. Both profiles reopened the pending Iron reading with its original fixture data and fulfilled it on the next sampled harvest. Local data generation, reobfuscation, and all 594 Forge GameTests passed.
 
+## Prediction reading and courtship comparison (2026-11-27)
+
+- The original dedicated server enumerated the Crystal Ball's 119 and 122 weighted slots and verified that the registry reads from ID 17 to ID 1. It measured the periodic rolls for all 17 forecasts. Overdue mining and rescues can advance the random stream without consuming their readings. Buried Treasure skips that roll. An overdue Love forecast that cannot place a suitor takes the original second roll. Duplicate saved entries retain their relative order.
+- A suitor in the original server produced a child, began its 6,000-tick cooldown, and used the same courtship goal with a second nearby player after the fixture cleared the cooldown. Forge now keeps this behavior in the suitor's saved data, including the original 1-in-500 idle check every three ticks, the search box, and the 1.5-block birth range. An expired approach returns to idle. Earlier Forge suitors whose marker was cleared are ordinary villagers.
+- A muted survival client used the placed Crystal Ball and reopened the same Love forecast and timestamp after a dedicated restart. The forecast spawned its suitor on the scheduled world pulse and cleared. The suitor produced one child with each of two survival players, with a dedicated restart between births. A further restart retained the suitor, both children, and the fulfilled reading. The fixture supplied the plot, altar charge, and fortune-teller training, set the random rolls, and ended the adult cooldown for the second courtship. Both clients stayed hidden and unfocused with master volume zero and OpenAL No Output.
+- The preceding clean Forge package passed 6 of 366 weighted-slot and periodic checks. The same rebuilt JAR passed all 366 on clean Forge and copied Auram. Both fixtures supplied the original weighted slots and periodic rolls. Local Java 17 data generation, JAR reobfuscation, and all 612 required Forge GameTests passed. See `build/qa-divination-parity/`.
+
 ## Witch Clothing and Raising (2026-11-20)
 
 - [x] Restore Impregnated Leather, the Witch's Hat and Robes, the Necromancer's Robes, and the original worn models and sprites. The muted client crafted the leather and all three pieces and wore both hats and the Necromancer's Robes. At the crafting table a dyed robe lost its 37 damage and kept its enchantment, color and name. Imported legacy robe wear and color passed a fixture check.
@@ -3123,6 +3130,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Compare [Rain of Toads](#rain-of-toads-action-comparison-2026-11-26), including the shower's coordinates and ordering, the coven refund, and expiration and poison.
 - [ ] Infusion, prediction, creature power parity.
   - [x] Compare [hurt and harvest predictions](#hurt-and-harvest-predictions-2026-11-26), including saved order, damage sources, companion placement, and unfinished forecasts.
+  - [x] Compare [Crystal Ball selection and periodic forecasts](#prediction-reading-and-courtship-comparison-2026-11-27), including Nether eligibility, duplicate saved readings, and repeated suitor courtship.
   - [x] Compare [Infernal creature acquisition](#infernal-creature-variants-2026-11-26) for all 25 original power IDs and modern entity splits.
   - [x] Compare [Infernal combat cues and defenses](#infernal-combat-cues-and-defenses-2026-11-26), including fireball launches, bow cue order, Fire Resistance, and Water Breathing.
 - [ ] Entity AI/combat/spawn tuning parity.

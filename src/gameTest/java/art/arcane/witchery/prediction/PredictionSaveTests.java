@@ -30,6 +30,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.levelgen.LegacyRandomSource;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
@@ -92,6 +93,45 @@ public final class PredictionSaveTests {
         helper.assertTrue(entries.size() == 1 && Predictions.Kind.byId(entries.getCompound(0).getInt("WITCPreID")) != null
                         && entries.getCompound(0).getLong("WITCPreTime") > 1_000L,
                 "An obsolete forecast cannot occupy the Crystal Ball's reading slot");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void readingUsesTheOriginalWeightedOrder(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "WeightedFortune"));
+        var entries = store(player);
+        Predictions.attune(player);
+        // These slots fall in different readings at the same seed, depending on Nether eligibility.
+        level.getRandom().setSeed(204);
+        Predictions.read(player, player);
+        helper.assertTrue(entries.size() == 1 && entries.getCompound(0).getInt("WITCPreID") == 4,
+                "An ordinary reading uses the descending legacy weights");
+        entries.clear();
+        Predictions.onNetherVisit(player);
+        level.getRandom().setSeed(204);
+        Predictions.read(player, player);
+        helper.assertTrue(entries.size() == 1 && entries.getCompound(0).getInt("WITCPreID") == 16,
+                "The old Nether visitation flag restores the original Nether slot");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void overduePulseKeepsTheOriginalRollsAndSavedRecords(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "PulseFortune"));
+        var love = forecast(9, 1_000);
+        var entries = store(player, forecast(5, 1_000), love, forecast(8, 1_000), love.copy(), forecast(14, 1_000));
+        var expected = new LegacyRandomSource(17);
+        for (int i = 0; i < 6; i++) expected.nextDouble();
+        level.getRandom().setSeed(17);
+
+        tickAtWorldTime(player, 100);
+
+        helper.assertTrue(entries.size() == 5 && entries.get(1) == love && entries.get(3) != love,
+                "Individual identical forecasts stay in the original order when they do not fulfill");
+        helper.assertTrue(level.getRandom().nextLong() == expected.nextLong(),
+                "Overdue mining and rescue roll once, Love rolls twice, and Treasure skips the pulse");
         helper.succeed();
     }
 
