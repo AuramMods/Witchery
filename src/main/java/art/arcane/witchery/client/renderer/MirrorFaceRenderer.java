@@ -33,17 +33,22 @@ public final class MirrorFaceRenderer extends EntityRenderer<MirrorFace> {
     public static LayerDefinition layer() {
         MeshDefinition mesh = new MeshDefinition();
         mesh.getRoot().addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0)
-                .addBox(-4, -8, -4, 8, 8, 8), PartPose.ZERO);
+                .addBox(-4, -8, -4, 8, 8, 8), PartPose.offset(0, 24, 0));
         return LayerDefinition.create(mesh, 64, 32);
     }
 
     @Override
     public void render(MirrorFace face, float yaw, float partialTick, PoseStack pose, MultiBufferSource buffers, int light) {
+        float bodyYaw = Mth.rotLerp(partialTick, face.yBodyRotO, face.yBodyRot);
+        float headYaw = Mth.rotLerp(partialTick, face.yHeadRotO, face.yHeadRot);
+        head.yRot = (headYaw - bodyYaw) * Mth.DEG_TO_RAD;
+        head.xRot = Mth.lerp(partialTick, face.xRotO, face.getXRot()) * Mth.DEG_TO_RAD;
         pose.pushPose();
-        pose.translate(0, 0.3, 0);
-        pose.mulPose(Axis.YP.rotationDegrees(180 - Mth.rotLerp(partialTick, face.yHeadRotO, face.yHeadRot)));
-        pose.scale(-0.75F, -0.75F, 0.75F);
-        pose.mulPose(Axis.XP.rotationDegrees(Mth.lerp(partialTick, face.xRotO, face.getXRot())));
+        pose.mulPose(Axis.YP.rotationDegrees(180 - bodyYaw));
+        pose.scale(-1, -1, 1);
+        pose.translate(0, -1.5078125F, 0);
+        pose.scale(0.75F, 0.75F, 0.75F);
+        pose.translate(0, 0.4F, 0);
         head.render(pose, buffers.getBuffer(RenderType.entityTranslucent(TEXTURE)), light,
                 OverlayTexture.NO_OVERLAY, 1, 1, 1, 0.8F);
         pose.popPose();

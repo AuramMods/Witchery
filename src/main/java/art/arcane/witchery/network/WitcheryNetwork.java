@@ -94,6 +94,7 @@ public final class WitcheryNetwork {
     private static final int LEGACY_BLAZE_DEATH_SOUND_ID = 44;
     private static final int LEGACY_DRINK_SOUND_ID = 56;
     private static final int LEGACY_POOF_SOUND_ID = 57;
+    private static final int LEGACY_MIRROR_SPEECH_SOUND_ID = 61;
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             ResourceLocation.parse(Witchery.MODID + ":main"),
             () -> PROTOCOL_VERSION,
@@ -442,6 +443,13 @@ public final class WitcheryNetwork {
 
     public static void sendMirrorDuplicateCue(ServerPlayer player, boolean success) {
         sendMirrorSmoke(player, success ? LEGACY_ORB_SOUND_ID : LEGACY_SNARE_SOUND_ID);
+    }
+
+    public static void sendMirrorConversationCue(ServerLevel level, BlockPos pos) {
+        Vec3 center = Vec3.atCenterOf(pos);
+        var target = PacketDistributor.TargetPoint.p(pos.getX(), pos.getY(), pos.getZ(), 16, level.dimension());
+        CHANNEL.send(PacketDistributor.NEAR.with(target), new ParticlesPacket(LEGACY_COLORED_SPELL_PARTICLE_ID,
+                LEGACY_MIRROR_SPEECH_SOUND_ID, center.x, center.y, center.z, 0.5, 0.5, 0x7777FF));
     }
 
     private static void sendMirrorSmoke(ServerPlayer player, int sound) {

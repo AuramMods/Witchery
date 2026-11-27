@@ -1,6 +1,7 @@
 package art.arcane.witchery.entity;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -18,6 +19,9 @@ public final class MirrorFace extends Mob {
         noPhysics = true;
         setNoGravity(true);
         setPersistenceRequired();
+        float yaw = random.nextFloat() * Mth.TWO_PI;
+        setYRot(yaw);
+        setYHeadRot(yaw);
     }
 
     @Override
@@ -27,9 +31,11 @@ public final class MirrorFace extends Mob {
 
     @Override
     public void tick() {
-        setDeltaMovement(Vec3.ZERO);
         super.tick();
-        if (!level().isClientSide && ++ticksAlive > 200) discard();
+        Vec3 movement = getDeltaMovement();
+        setDeltaMovement(movement.x, 0, movement.z);
+        ticksAlive = Math.max(tickCount, ++ticksAlive);
+        if (!level().isClientSide && ticksAlive > 200) discard();
     }
 
     @Override
@@ -38,8 +44,13 @@ public final class MirrorFace extends Mob {
     }
 
     @Override
-    public boolean isPickable() {
-        return false;
+    public boolean isIgnoringBlockTriggers() {
+        return true;
+    }
+
+    @Override
+    protected int decreaseAirSupply(int air) {
+        return air;
     }
 
     @Override
@@ -61,6 +72,6 @@ public final class MirrorFace extends Mob {
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         setNoGravity(true);
-        ticksAlive = Math.min(200, Math.max(0, tag.getLong("WITCTicksAlive")));
+        ticksAlive = tag.getLong("WITCTicksAlive");
     }
 }

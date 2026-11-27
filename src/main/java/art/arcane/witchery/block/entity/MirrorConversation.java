@@ -3,14 +3,13 @@ package art.arcane.witchery.block.entity;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.entity.MirrorFace;
 import art.arcane.witchery.entity.WitcheryFollower;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEntities;
-import art.arcane.witchery.registry.WitcherySounds;
 import art.arcane.witchery.world.migration.LegacyGameProfiles;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -19,7 +18,6 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -52,9 +50,9 @@ final class MirrorConversation {
     boolean ask(ServerLevel level, BlockPos pos, Direction front, ServerPlayer player) {
         if (!showFace(level, pos, front)) return false;
         Vec3 center = Vec3.atCenterOf(pos);
-        Component prompt = Component.translatable(MESSAGE + "prompt", player.getGameProfile().getName());
-        for (ServerPlayer viewer : level.players()) {
-            if (viewer.distanceToSqr(center) <= 64 * 64) viewer.sendSystemMessage(prompt);
+        if (player.distanceToSqr(Vec3.atLowerCornerOf(pos)) <= 64 * 64) {
+            Component prompt = Component.translatable(MESSAGE + "prompt", player.getGameProfile().getName());
+            for (ServerPlayer viewer : level.players()) viewer.sendSystemMessage(prompt);
         }
 
         WitcheryFollower subject = nearbyFairest(level, pos);
@@ -105,23 +103,16 @@ final class MirrorConversation {
     }
 
     private static boolean showFace(ServerLevel level, BlockPos pos, Direction front) {
-        if (!level.getEntitiesOfClass(MirrorFace.class, new AABB(pos)).isEmpty()) return false;
+        AABB panel = level.getBlockState(pos).getCollisionShape(level, pos).bounds().move(pos);
+        if (!level.getEntitiesOfClass(MirrorFace.class, panel).isEmpty()) return false;
         MirrorFace face = WitcheryEntities.MIRROR_FACE.get().create(level);
         if (face == null) return false;
-        double x = pos.getX() + 0.5 - front.getStepX() * 0.4;
+        double x = pos.getX() + 0.5 - front.getStepX() * 0.4F;
         double y = pos.getY() + 0.1;
-        double z = pos.getZ() + 0.5 - front.getStepZ() * 0.4;
-        float yaw = front.toYRot();
-        face.moveTo(x, y, z, yaw, 0);
-        face.setYBodyRot(yaw);
-        face.setYHeadRot(yaw);
+        double z = pos.getZ() + 0.5 - front.getStepZ() * 0.4F;
+        face.setPos(x, y, z);
         if (!level.addFreshEntity(face)) return false;
-        level.playSound(null, pos, WitcherySounds.MIRROR_SPEECH.get(), SoundSource.NEUTRAL, 1, 1);
-        for (int i = 0; i < 16; i++) {
-            level.sendParticles(ParticleTypes.ENTITY_EFFECT, x + (level.random.nextDouble() - 0.5) * 0.5,
-                    y + level.random.nextDouble() * 0.5, z + (level.random.nextDouble() - 0.5) * 0.5,
-                    0, 119 / 255.0, 119 / 255.0, 1, 1);
-        }
+        WitcheryNetwork.sendMirrorConversationCue(level, pos);
         return true;
     }
 

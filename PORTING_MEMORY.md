@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Mirror apparition parity (2026-11-27)
+
+- The original server traced all four spawn positions, six movement samples, two remaining active ticks at age 198, and unchanged air when submerged. The original face can be selected and ignores pressure plates. See `build/qa-mirror-face/native/server-reference.log`. The Forge regressions exercise loaded motion, age, air, and reusing an active face through the lower half.
+- The original model trace draws 24 translucent vertices for each pose. The preceding clean package matched none of the 144 positions. Clean Forge and copied Auram matched all 144 positions, UV pairs and opacity values on the rebuilt JAR. See `build/qa-mirror-face/{native/reference.log,comparison.log}`.
+- Two muted background survival clients mounted the fixture-supplied Mirror on a stone backing. Both halves worked through ordinary use. A viewer 74 blocks away received the prompt alone. A viewer 14 blocks away received the original half-volume speech and colored smoke parameters. The headless restart reopened the same face at age 13 and it expired on schedule. See `build/qa-mirror-face/clean-exact/`.
+- Copied Auram's Does It Tick optimization froze a remote face at 190 while no players were online. The compatibility hook lets the face finish aging in an entity-ticking chunk. The rebuilt package advanced to age 200 and removed the face. See `build/qa-mirror-face/auram-exact/loaded-age.log`.
+- The copied Auram survival client mounted the supplied Mirror and used it normally. The logger wrapped the cue probe's output, and the completed log verification confirms the face, the prompt, the half-volume speech and the original colored smoke packet. The isolated launch allowed the pack's JEI login sync to finish. See `build/qa-mirror-face/pack-runtime-verified.log`. All five client launches for the final JAR used zero master volume and OpenAL No Output and stayed out of the foreground.
+- Local Java 17 data generation, JAR reobfuscation and all 628 required Forge GameTests passed. The package at `build/qa-mirror-face/release.jar` has SHA-256 `a12531b1d63aaacd5278179e227de812f08091c2f3198223de1b73cdb8975287`.
+
 ## Sleeping body pose and anchor (2026-11-27)
 
 - The old renderer and biped emitted 168 vertices per pose. The six original cases cover rest, turning, motion input, early and late death, and the `Dinnerbone` name. Clean Forge and copied Auram matched all 1,008 positions and skin coordinate pairs after mapping the 64×32 legacy skin to the modern canvas. The previous Forge model emitted 288 vertices per case and matched the position of none at a precision of two millionths of a block. See `build/qa-sleeping-body/native/reference.log` and `comparison.log` in the same directory.
