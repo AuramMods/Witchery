@@ -36,6 +36,7 @@ import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
@@ -310,7 +311,12 @@ public final class BrewCreatureEffects {
     }
 
     public static boolean infectVillager(ServerLevel level, Villager villager) {
-        if (!villager.isAlive() || !ForgeEventFactory.canLivingConvert(villager, EntityType.ZOMBIE_VILLAGER, ignored -> {})) {
+        return infectVillager(level, villager, false);
+    }
+
+    public static boolean infectVillager(ServerLevel level, Villager villager, boolean fromOriginalBlight) {
+        if ((fromOriginalBlight ? villager.isRemoved() : !villager.isAlive())
+                || !ForgeEventFactory.canLivingConvert(villager, EntityType.ZOMBIE_VILLAGER, ignored -> {})) {
             return false;
         }
         var zombie = EntityType.ZOMBIE_VILLAGER.create(level);
@@ -319,15 +325,19 @@ public final class BrewCreatureEffects {
         zombie.finalizeSpawn(level, level.getCurrentDifficultyAt(zombie.blockPosition()), MobSpawnType.CONVERSION,
                 new Zombie.ZombieGroupData(false, true), null);
         zombie.setBaby(villager.isBaby());
+        zombie.setVillagerData(villager.getVillagerData());
+        zombie.setGossips(villager.getGossips().store(NbtOps.INSTANCE));
+        zombie.setTradeOffers(villager.getOffers().createTag());
+        zombie.setVillagerXp(villager.getVillagerXp());
+        if (fromOriginalBlight) {
+            VampireVillages.releaseResidentClaims(villager);
+            return finishBlightConversion(level, villager, zombie);
+        }
         zombie.setNoAi(villager.isNoAi());
         zombie.setInvulnerable(villager.isInvulnerable());
         zombie.setCustomName(villager.getCustomName());
         zombie.setCustomNameVisible(villager.isCustomNameVisible());
         if (villager.isPersistenceRequired()) zombie.setPersistenceRequired();
-        zombie.setVillagerData(villager.getVillagerData());
-        zombie.setGossips(villager.getGossips().store(NbtOps.INSTANCE));
-        zombie.setTradeOffers(villager.getOffers().createTag());
-        zombie.setVillagerXp(villager.getVillagerXp());
         if (!level.addFreshEntity(zombie)) return false;
         if (villager.isPassenger()) {
             var vehicle = villager.getVehicle();
@@ -337,7 +347,7 @@ public final class BrewCreatureEffects {
         VampireVillages.releaseResidentClaims(villager);
         ForgeEventFactory.onLivingConvert(villager, zombie);
         villager.discard();
-        level.levelEvent(null, 1026, zombie.blockPosition(), 0);
+        level.levelEvent(null, LevelEvent.SOUND_ZOMBIE_INFECTED, zombie.blockPosition(), 0);
         return true;
     }
 
@@ -353,10 +363,21 @@ public final class BrewCreatureEffects {
     }
 
     public static void turnIntoMooshroom(ServerLevel level, Cow cow) {
-        if (!ForgeEventFactory.canLivingConvert(cow, EntityType.MOOSHROOM, delay -> {}) || !cow.isAlive()) return;
+        turnIntoMooshroom(level, cow, false);
+    }
+
+    public static void turnIntoMooshroom(ServerLevel level, Cow cow, boolean fromOriginalBlight) {
+        if (!ForgeEventFactory.canLivingConvert(cow, EntityType.MOOSHROOM, delay -> {})
+                || (fromOriginalBlight ? cow.isRemoved() : !cow.isAlive())) return;
         var mooshroom = EntityType.MOOSHROOM.create(level);
         if (mooshroom == null) return;
         mooshroom.copyPosition(cow);
+        if (fromOriginalBlight) {
+            mooshroom.finalizeSpawn(level, level.getCurrentDifficultyAt(mooshroom.blockPosition()), MobSpawnType.CONVERSION,
+                    null, null);
+            finishBlightConversion(level, cow, mooshroom);
+            return;
+        }
         mooshroom.setAge(cow.getAge());
         mooshroom.setNoAi(cow.isNoAi());
         mooshroom.setInvulnerable(cow.isInvulnerable());
@@ -367,7 +388,17 @@ public final class BrewCreatureEffects {
         if (cow.isPassenger()) mooshroom.startRiding(cow.getVehicle(), true);
         ForgeEventFactory.onLivingConvert(cow, mooshroom);
         cow.discard();
-        level.levelEvent(null, 1026, mooshroom.blockPosition(), 0);
+        level.levelEvent(null, LevelEvent.SOUND_ZOMBIE_INFECTED, mooshroom.blockPosition(), 0);
+    }
+
+    private static boolean finishBlightConversion(ServerLevel level, LivingEntity source, LivingEntity replacement) {
+        // The original Blight removes its source before attempting to spawn the replacement.
+        source.discard();
+        boolean admitted = level.addFreshEntity(replacement);
+        if (admitted) ForgeEventFactory.onLivingConvert(source, replacement);
+        var cuePos = new BlockPos((int) replacement.getX(), (int) replacement.getY(), (int) replacement.getZ());
+        level.levelEvent(null, LevelEvent.SOUND_ZOMBIE_INFECTED, cuePos, 0);
+        return admitted;
     }
 
     public static void quicklime(ThrownBrew shot, HitResult hit) {

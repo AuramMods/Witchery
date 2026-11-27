@@ -729,6 +729,13 @@
 - [x] Restart the dedicated server after the first lightning pulse of Rain of Toads. The cast resumed from stage one, started rain, and spawned poisonous temporary toads as it entered stage five upkeep.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 502 required Forge GameTests. The four new cases cover Blight terrain, Blindness boundaries and existing effects, toad lifespan and poison, and legacy stage migration.
 
+### Blight and Blindness action comparison (2026-11-26)
+
+- Blight rolls over the loaded creatures before processing its results. It infects villagers first, converts cows second, and applies 20 magic damage to the selected animals last. A baby villager becomes a baby zombie villager, while a calf becomes an adult Mooshroom. Clean Forge uses the original replacement's name and behavior defaults. The zombie villager keeps the modern profession and trades for curing. Copied Auram also carried the fixture villager's custom name and disabled AI at admission.
+- A Forge conversion veto preserves the source creature. After conversion is approved, Blight removes the source before attempting to admit the replacement and sends the conversion cue even if admission is vetoed. Blindness reaches dying creatures still present in the wave and preserves an existing Blindness effect.
+- Blight recognizes the original tall grass, flowers, crops and soil. A refused plant change leaves the soil untouched. Unsupported Sugar Cane drops on Forge's scheduled block tick, and cane beside water survives the change from Dirt to Sand.
+- The reobfuscated JAR passed all 102 observations on headless clean Forge and copied Auram. The test includes 42 terrain cases, 12 creature cases, and a fresh redstone cast that converted Farmland to Sand and entered upkeep.
+
 ## Rite of Prior Incarnation (2026-11-21)
 
 - [x] Restore the small Infernal ring with Necromantic Stone, Tongue of Dog, a bone, Spectral Dust, and a Charged Attuned Stone. Return the Necromantic Stone and discharge the Attuned Stone. Keep the Spirit World restriction.
@@ -2931,6 +2938,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Compare the [19 standard and talisman item results](#circle-magic-item-results-2026-11-26) after the last offering.
   - [x] Compare [Spectral Stone and Fetish spirit binding](#circle-magic-spirit-binding-2026-11-26), including the hidden Death combination.
   - [x] Compare the [ten directed Taglock curses and cures](#directed-curse-and-cure-completion-2026-11-26), including protection, a remote target, and completion cues.
+  - [x] Compare [Blight and Blindness actions](#blight-and-blindness-action-comparison-2026-11-26), including terrain and creature conversion.
 - [ ] Infusion, prediction, creature power parity.
 - [ ] Entity AI/combat/spawn tuning parity.
 

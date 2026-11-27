@@ -673,7 +673,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         } else if (landscape != null) {
             ServerPlayer caster = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
             if (firstExpansionCue) playOriginalRiteSound(level, landscape.target(), SoundEvents.FIRE_EXTINGUISH);
-            var progress = LandscapeRites.pulse(level, pos, landscape, covenSize, caster, terrainChanges::add);
+            var progress = LandscapeRites.pulse(level, pos, landscape, covenSize, caster, terrainChanges::add, legacy);
             if (progress != null) upkeep.add(RiteUpkeep.Timed.landscape(rite.id(), covenSize, initiator, progress));
         } else if (rite.action() == ItemRiteRecipe.Action.RECHARGE_INFUSION) {
             var recharge = RiteUpkeep.Timed.recharge(rite.id(), covenSize, initiator);

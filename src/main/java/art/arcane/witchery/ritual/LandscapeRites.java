@@ -196,6 +196,12 @@ public final class LandscapeRites {
     @Nullable
     public static Progress pulse(ServerLevel level, BlockPos heart, Progress progress, int coven,
                                  @Nullable ServerPlayer caster, Consumer<Runnable> terrainChanges) {
+        return pulse(level, heart, progress, coven, caster, terrainChanges, false);
+    }
+
+    @Nullable
+    public static Progress pulse(ServerLevel level, BlockPos heart, Progress progress, int coven,
+                                 @Nullable ServerPlayer caster, Consumer<Runnable> terrainChanges, boolean legacy) {
         int stage = progress.stage() + 1;
         switch (progress.action()) {
             case FORESTATION -> {
@@ -218,7 +224,9 @@ public final class LandscapeRites {
             case CALL_BEASTS -> CallOfTheBeasts.pulse(level, progress.target(), stage);
             case BLIGHT, AREA_BLINDNESS, HELL_ON_EARTH -> {
                 boolean summon = (stage - 1) % HELL_SPAWN_STAGES == progress.hellSpawnOffset();
-                if (!AreaCurses.pulse(level, heart, progress.target(), stage, coven, progress.action(), caster, summon)) return null;
+                if (!AreaCurses.pulse(level, heart, progress.target(), stage, coven, progress.action(), caster, summon, legacy)) {
+                    return null;
+                }
             }
             case RAIN_TOADS -> RainOfToads.shower(level, progress.target());
             default -> throw new IllegalStateException("Unexpected landscape rite " + progress.action());

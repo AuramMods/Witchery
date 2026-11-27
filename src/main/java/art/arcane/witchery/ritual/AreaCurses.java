@@ -23,6 +23,7 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.Cow;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -31,11 +32,17 @@ import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.event.ForgeEventFactory;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
 final class AreaCurses {
     private static final TicketType<BlockPos> HELL_SITE =
             TicketType.create("witchery_hell_on_earth", Comparator.comparingLong(BlockPos::asLong), 60);
+    private static final Set<Block> ORIGINAL_FLOWERS = Set.of(Blocks.DANDELION, Blocks.POPPY, Blocks.BLUE_ORCHID,
+            Blocks.ALLIUM, Blocks.AZURE_BLUET, Blocks.RED_TULIP, Blocks.ORANGE_TULIP, Blocks.WHITE_TULIP,
+            Blocks.PINK_TULIP, Blocks.OXEYE_DAISY);
 
     private AreaCurses() {}
 
@@ -44,7 +51,7 @@ final class AreaCurses {
     }
 
     static boolean pulse(ServerLevel level, BlockPos heart, BlockPos target, int stage, int coven,
-                         ItemRiteRecipe.Action action, @Nullable ServerPlayer initiator, boolean summon) {
+                         ItemRiteRecipe.Action action, @Nullable ServerPlayer initiator, boolean summon, boolean legacy) {
         ServerPlayer caster = initiator != null && initiator.level() == level ? initiator : null;
         if (stage == 1 && caster != null) WitchHunterPursuit.noticeBlackMagic(caster);
         int radius = stage + 3;
@@ -63,10 +70,19 @@ final class AreaCurses {
             if (!player.hasEffect(effect)) player.addEffect(new MobEffectInstance(effect, duration, blind ? 0 : 1));
         }
 
+        if (legacy) originalCreatureActions(level, center, radius, blind, duration);
+        else creatureActions(level, target, radius, center, blind, duration);
+        ExpandingWave.visitSurface(level, target, radius, true, pos -> {
+            if (!blind) alterSurface(level, pos, radius, false, enhanced, terrainActor, legacy);
+        });
+        return true;
+    }
+
+    private static void creatureActions(ServerLevel level, BlockPos target, int radius, Vec3 center, boolean blind, int duration) {
         for (Mob mob : level.getEntitiesOfClass(Mob.class, new AABB(target).inflate(radius),
                 candidate -> candidate.isAlive() && ExpandingWave.contains(candidate, center, radius))) {
             if (blind) {
-                if (!mob.hasEffect(effect)) mob.addEffect(new MobEffectInstance(effect, duration));
+                if (!mob.hasEffect(MobEffects.BLINDNESS)) mob.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, duration));
             } else if (mob instanceof Villager villager) {
                 if (level.random.nextInt(10) == 0) BrewCreatureEffects.infectVillager(level, villager);
             } else if (mob instanceof Cow cow && level.random.nextInt(20) == 0) {
@@ -75,22 +91,46 @@ final class AreaCurses {
                 mob.hurt(level.damageSources().magic(), 20);
             }
         }
-        ExpandingWave.visitSurface(level, target, radius, true, pos -> {
-            if (!blind) alterSurface(level, pos, radius, false, enhanced, terrainActor);
-        });
-        return true;
+    }
+
+    private static void originalCreatureActions(ServerLevel level, Vec3 center, int radius, boolean blind, int duration) {
+        if (blind) {
+            for (var entity : level.getAllEntities()) {
+                if (entity instanceof Mob mob && ExpandingWave.contains(mob, center, radius) && !mob.hasEffect(MobEffects.BLINDNESS)) {
+                    mob.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, duration));
+                }
+            }
+            return;
+        }
+
+        List<Villager> villagers = new ArrayList<>();
+        List<Cow> cows = new ArrayList<>();
+        List<Animal> animals = new ArrayList<>();
+        for (var entity : level.getAllEntities()) {
+            if (!ExpandingWave.contains(entity, center, radius)) continue;
+            if (entity instanceof Villager villager) {
+                if (level.random.nextInt(10) == 0) villagers.add(villager);
+            } else if (entity instanceof Cow cow && level.random.nextInt(20) == 0) {
+                cows.add(cow);
+            } else if (entity instanceof Animal animal && level.random.nextInt(3) == 0) {
+                animals.add(animal);
+            }
+        }
+        villagers.forEach(villager -> BrewCreatureEffects.infectVillager(level, villager, true));
+        cows.forEach(cow -> BrewCreatureEffects.turnIntoMooshroom(level, cow, true));
+        animals.forEach(animal -> animal.hurt(level.damageSources().magic(), 20));
     }
 
     private static void alterSurface(ServerLevel level, BlockPos surface, int radius, boolean hell,
-                                     boolean enhanced, ServerPlayer caster) {
+                                     boolean enhanced, ServerPlayer caster, boolean legacy) {
         BlockState state = level.getBlockState(surface);
         BlockPos soil = surface;
         boolean grass = state.is(Blocks.GRASS) || state.is(Blocks.FERN);
-        if (grass || isCrop(state)) {
+        if (grass || isCrop(state, legacy)) {
             BlockState replacement = hell ? Blocks.FIRE.defaultBlockState()
                     : (grass ? Blocks.AIR : Blocks.DEAD_BUSH).defaultBlockState();
             if (!hell || enhanced && WitcheryServerConfig.ALLOW_HELL_ON_EARTH_FIRES.get()) {
-                LandscapeRites.replace(level, surface, replacement, caster);
+                if (!LandscapeRites.replace(level, surface, replacement, caster) && legacy) return;
             }
             soil = surface.below();
         } else if (!hell && state.is(Blocks.FARMLAND)) {
@@ -112,8 +152,9 @@ final class AreaCurses {
         }
     }
 
-    private static boolean isCrop(BlockState state) {
-        return state.is(BlockTags.SMALL_FLOWERS) || state.is(Blocks.CARROTS) || state.is(Blocks.WHEAT)
+    private static boolean isCrop(BlockState state, boolean legacy) {
+        return (legacy ? ORIGINAL_FLOWERS.contains(state.getBlock()) : state.is(BlockTags.SMALL_FLOWERS))
+                || state.is(Blocks.CARROTS) || state.is(Blocks.WHEAT)
                 || state.is(Blocks.POTATOES) || state.is(Blocks.PUMPKIN_STEM) || state.is(Blocks.MELON_STEM)
                 || state.is(Blocks.ATTACHED_PUMPKIN_STEM) || state.is(Blocks.ATTACHED_MELON_STEM)
                 || state.is(Blocks.MELON) || state.is(Blocks.PUMPKIN) || state.is(Blocks.CARVED_PUMPKIN);
@@ -128,7 +169,7 @@ final class AreaCurses {
         }
         if (radius <= maxRadius) {
             ExpandingWave.visitSurface(level, target, radius, true,
-                    pos -> alterSurface(level, pos, radius, true, enhanced, caster));
+                    pos -> alterSurface(level, pos, radius, true, enhanced, caster, false));
         }
         if (radius >= maxRadius && stage <= 250 && summon) {
             var altar = AltarPower.nearest(level, target);

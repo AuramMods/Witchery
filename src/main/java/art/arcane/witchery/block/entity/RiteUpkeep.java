@@ -127,7 +127,8 @@ interface RiteUpkeep {
                     RiteHeartBlockEntity.playOriginalRiteSound(level, landscape.target(), SoundEvents.FIRE_EXTINGUISH);
                     resumingLegacyWave = false;
                 }
-                landscape = LandscapeRites.pulse(level, heart, landscape, coven, caster(level), terrainChanges);
+                landscape = LandscapeRites.pulse(level, heart, landscape, coven, caster(level), terrainChanges,
+                        RiteActivation.legacyId(rite) != Integer.MAX_VALUE);
                 return landscape != null;
             }
             if (oreDepth > 0) return RiteOfTransposition.transposeOreLayer(level, heart, ++oreDepth, coven);

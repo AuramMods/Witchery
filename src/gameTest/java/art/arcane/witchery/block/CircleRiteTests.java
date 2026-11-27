@@ -424,6 +424,23 @@ public final class CircleRiteTests {
         }).thenSucceed();
     }
 
+    @GameTest(template = TEMPLATE, batch = "witchery_blindness_dying_target", setupTicks = 5)
+    public static void originalBlindnessReachesADyingCreature(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.SMALL_RITE, "circleglyphinfernal");
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var target = stationaryPig(level, Vec3.atCenterOf(center).add(3.5, 0, 0));
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.getEntity(target.getUUID()) == target,
+                "The creature is tracked at the first wave's perimeter")).thenExecute(() -> {
+            target.setHealth(0);
+            finishOriginalBinding(level, center, heart(helper), 38, 8);
+            var blindness = target.getEffect(net.minecraft.world.effect.MobEffects.BLINDNESS);
+            helper.assertTrue(blindness != null && blindness.getDuration() == 2400 && blindness.getAmplifier() == 0,
+                    "The original wave affects a dying creature that remains in the world");
+        }).thenSucceed();
+    }
+
     @GameTest(template = TEMPLATE, batch = "witchery_cancel_waystone_payment", setupTicks = 5)
     public static void pendingCancellationRunsTheAltarPulseAfterReload(GameTestHelper helper) {
         floor(helper);

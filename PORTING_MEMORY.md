@@ -2,13 +2,21 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Blight and Blindness action comparison (2026-11-26)
+
+- The original dedicated server compared 40 terrain cases, then measured creature effects, the initial state of converted mobs, a canceled Mooshroom spawn, and mixed target ordering. It finished the mixed pulse in the order zombie, Mooshroom, magic damage. A named baby villager became an unnamed baby zombie, and a named calf became an unnamed adult Mooshroom. See `build/qa-area-curse-actions/native/native-settling.log`.
+- The earlier JAR failed 16 of 102 observations. Among the differences were the treatment of a later-version flower, soil changes under a protected poppy, Blindness during the death animation, the mixed conversion order, and the source and sound on an admission veto. See `clean-measured-baseline/final.log` in the same directory.
+- The package comparison exercises 42 terrain cases, 12 creature cases and a live redstone Blight cast. The fixture supplies the glyphs, required offerings and arena. The test waits through the modern scheduled tick for unsupported Sugar Cane and checks independently that water-supported cane survives.
+- The exact package passed all 102 observations on both headless profiles. On copied Auram the baby zombie villager acquired the source's name and disabled AI by admission. A separate copy-position and initialization control kept the fresh defaults in both profiles. See `clean-confirmed/final.log` and `pack-confirmed/final.log` for the conversion and admission traces.
+- Local Java 17 data generation, reobfuscation and all 570 required Forge GameTests passed. The exact archive `build/qa-area-curse-actions/final.jar` has SHA-256 `a831c748a8d16db3fa2e86bad65934a620c9b174e8568cb0fc74e0af6617ed9b`.
+- The next Hell on Earth comparison has 53 original surface measurements. They include fires enabled and disabled, enhanced and ordinary casts, and the soil roll changes at radii six and ten. See `build/qa-hell-on-earth-surfaces/native/run-final.log`.
+
 ## Directed curse and cure completion (2026-11-26)
 
 - The original dedicated server ran 32 cases covering all ten directed rites, all three cure-strength comparisons, exact ailments, coven and familiar bonuses, a stronger existing curse, Hunter clothing, three ward configurations, remote and dying targets, and three poppet outcomes. See `build/qa-directed-rite-completions/native/native-final.log`.
 - The earlier JAR failed 65 of 243 comparisons. It sent none of the original completion packets, broadcast two generic sounds for successful casts, counted the Nether caster's cat, refunded the Taglock on an online dead player, and used the target's entity RNG for Hunter clothing. See `clean-baseline/baseline.log` in the same directory.
 - Headless clean Forge and copied Auram both passed all 243 comparisons. The fixture resumed 32 paid casts, ran two fresh redstone casts with supplied offerings and altar charge, and checked recipient range at 15 and 17 blocks. Auram's `FasterRandom` returned 2 and 7 for the two legacy seeds that should exercise a worsened cure. The replay used seeds 4097 and 35 to obtain the original zero rolls. See `clean-verified/final.log` and `pack-verified/final.log`.
 - Local Java 17 data generation, reobfuscation and all 569 required Forge GameTests passed. The exact archive `build/qa-directed-rite-completions/candidate.jar` has SHA-256 `51ad42a29e6ecee19dd2102387b4ecaa37fee5ae3fe090812494853c5d6bc3ac`.
-- The original Blight and Blindness action samples are in `build/qa-area-curse-actions/native/run.log`. They cover terrain and its random draw, a baby Villager and a Cow conversion, magic damage to a pig, and Blindness through the death animation.
 
 ## Circle Magic spirit binding (2026-11-26)
 
