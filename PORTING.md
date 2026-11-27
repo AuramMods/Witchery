@@ -1128,7 +1128,15 @@
 - The original crop renderer uses crossed sprites for Snowbell, Wolfsbane, and Wormwood. The muted Forge client checked the baked geometry and stage texture for all 64 registered age states across the eight crops. See `build/qa-crop-harvest/`.
 - Two hidden background clients connected at zero master volume using OpenAL No Output. The survival player planted a supplied Snowbell seed on farmland and grew it with bone meal. A dedicated restart preserved it at age four and a fixture Snowbell at age seven. The player broke both normally with a Fortune III pickaxe, collected both Snowballs, and kept the enchantment. The fixture supplied the plot, seed, bone meal, and pickaxe.
 - Local Java 17 data generation, JAR reobfuscation, and all 617 required Forge GameTests passed.
-- The harvest comparison used Peaceful difficulty to measure the Mandrake's ordinary root and seed drops. The shared crop pass still needs to verify the live Mandrake's spawn paths when it is disturbed by harvest magic or destruction without a player.
+- The crop material comparison used Peaceful difficulty to measure the ordinary Mandrake root and seed drops. The separate emergence comparison covers the living creature on other difficulties.
+
+### Mandrake emergence (2026-11-27)
+
+- The running 0.24.1 server compared the day and night thresholds, ordinary breaks, lost support, destruction with and without loot, Harvesting brews, and blasts. Mature plants attempt to release one Mandrake on rolls up to and including 0.9 by day and 0.1 by night. Immature and Peaceful harvests use plant loot directly. The creature's feet start at the original crop center and 0.05 blocks above its base.
+- Block item drops can be disabled independently of the creature. A successful emergence roll spends the plant's normal crop loot even when Forge rejects the entity spawn. Destruction with the drop path disabled removes the plant directly. Forge loot previews can inspect the material table separately from those real harvest paths.
+- The port sends the original silent explosion-particle cue at the Mandrake's feet. The cloud is 0.5 blocks wide and 1 block high. The 16-block packet audience is measured from that position.
+- The same reobfuscated JAR matched all 20 native cases in clean Forge and copied Auram. The previous clean Forge build matched seven. The comparison supplied the requested emergence rolls and measured the creature admission, position, crop removal, and material fallback. All 618 required Forge GameTests passed locally after data generation and reobfuscation.
+- Two hidden clients at zero master volume used a normal block attack and a thrown Harvesting brew with tile drops off. The silent cue reached the observer at 15 blocks and was absent at 17 blocks. Both released creatures kept their UUIDs across restart and both crop plots stayed clear. The fixture supplied the mature plants and brew, then disabled creature AI to hold them for the save check. See `build/qa-mandrake-emergence/live-verified/`.
 
 ## Creative pick-block (2026-11-25)
 
@@ -3136,7 +3144,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Compare [Silver Vat observations and Grassper offering release](#silver-vat-and-silver-sword-2026-11-20).
   - [x] Compare [area ward attribution and column recovery](#area-ward-attribution-and-column-recovery-2026-11-27) for Void Bramble and the three owner-recoverable statues.
   - [x] Compare [crop maturation, harvest drops, and stage models](#witchery-crop-harvesting-and-models-2026-11-27) across the eight legacy crops.
-  - [ ] Compare the live Mandrake's spawn paths when severed by harvest magic or destroyed without a player.
+  - [x] Compare [live Mandrake emergence](#mandrake-emergence-2026-11-27) through player harvest, lost support, direct destruction, harvest magic, and blasts.
 - [ ] Item behavior parity pass (including metadata-subitem conversions).
   - [x] Compare melee modifiers, sword guards, and Boline harvest against the [melee tool measurements](#melee-tools-and-boline-harvesting-2026-11-26).
 - [x] Brewing, Kettle, Distillery, Spinning Wheel, and Brazier parity.

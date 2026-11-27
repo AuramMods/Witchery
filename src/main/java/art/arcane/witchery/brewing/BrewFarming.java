@@ -1,6 +1,8 @@
 package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.block.DreamCatcherBlock;
+import art.arcane.witchery.block.WitchCrop;
+import art.arcane.witchery.block.WitchCropBlock;
 import art.arcane.witchery.entity.Ent;
 import art.arcane.witchery.event.WitcheryBlockPlacement;
 import art.arcane.witchery.item.WitchSeedsItem;
@@ -113,9 +115,13 @@ final class BrewFarming {
                 var state = level.getBlockState(pos);
                 if (!(state.getBlock() instanceof BushBlock) || !canHarvest(level, pos, state, actor)) continue;
                 // The legacy brew uprooted double grass and ferns without producing seed drops.
-                List<ItemStack> drops = state.is(Blocks.TALL_GRASS) || state.is(Blocks.LARGE_FERN)
+                boolean mandrake = state.is(WitchCrop.MANDRAKE.block());
+                List<ItemStack> drops = mandrake || state.is(Blocks.TALL_GRASS) || state.is(Blocks.LARGE_FERN)
                         ? List.of() : Block.getDrops(state, level, pos, null, null, tool);
                 if (!level.removeBlock(pos, false)) continue;
+                if (mandrake && !WitchCropBlock.awakenMandrake(level, pos, state)) {
+                    drops = Block.getDrops(state, level, pos, null, null, tool);
+                }
                 if (level.random.nextInt(changed.incrementAndGet()) == 0) level.levelEvent(2001, pos, Block.getId(state));
                 for (ItemStack drop : drops) {
                     if (drop.isEmpty()) continue;

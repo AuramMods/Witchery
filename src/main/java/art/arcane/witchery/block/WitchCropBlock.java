@@ -1,12 +1,11 @@
 package art.arcane.witchery.block;
 
 import art.arcane.witchery.entity.Mandrake;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -17,8 +16,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -114,25 +113,25 @@ public final class WitchCropBlock extends CropBlock {
                 ? 1 : Mth.nextInt(level.random, 2, getMaxAge());
     }
 
+    /** Returns whether the emergence roll replaces this harvest's crop drops. */
+    public static boolean awakenMandrake(LevelAccessor level, BlockPos pos, BlockState state) {
+        if (!(state.getBlock() instanceof WitchCropBlock plant) || plant.crop != WitchCrop.MANDRAKE
+                || !plant.isMaxAge(state) || !(level instanceof ServerLevel server)
+                || server.getDifficulty() == Difficulty.PEACEFUL
+                || server.random.nextDouble() > (server.isDay() ? 0.9D : 0.1D)) return false;
+
+        Mandrake mandrake = WitcheryEntities.MANDRAKE.get().create(server);
+        if (mandrake == null) return false;
+        mandrake.moveTo(pos.getX() + 0.5, pos.getY() + 0.05, pos.getZ() + 0.5, 0, 0);
+        // An emergence attempt consumes the drop even when Forge denies the creature.
+        server.addFreshEntity(mandrake);
+        WitcheryNetwork.sendMandrakeEmergence(server, mandrake.position());
+        return true;
+    }
+
     @Override
     public void playerDestroy(Level level, Player player, BlockPos pos, BlockState state,
                               @Nullable BlockEntity blockEntity, ItemStack tool) {
-        if (crop == WitchCrop.MANDRAKE && isMaxAge(state) && level instanceof ServerLevel server
-                && server.getDifficulty() != Difficulty.PEACEFUL
-                && server.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)
-                && server.random.nextDouble() <= (server.isDay() ? 0.9D : 0.1D)) {
-            Mandrake mandrake = WitcheryEntities.MANDRAKE.get().create(server);
-            if (mandrake != null) {
-                mandrake.moveTo(pos.getX() + 0.5, pos.getY() + 0.05, pos.getZ() + 0.5, 0, 0);
-                if (server.addFreshEntity(mandrake)) {
-                    player.awardStat(Stats.BLOCK_MINED.get(this));
-                    player.causeFoodExhaustion(0.005F);
-                    server.sendParticles(ParticleTypes.POOF, mandrake.getX(), mandrake.getY(0.5), mandrake.getZ(),
-                            8, 0.2, 0.3, 0.2, 0.02);
-                    return;
-                }
-            }
-        }
         // Crop harvest ignores the tool's Fortune. Direct loot queries can still request the brew's bonus.
         if (tool.getEnchantmentLevel(Enchantments.BLOCK_FORTUNE) > 0) {
             tool = tool.copy();

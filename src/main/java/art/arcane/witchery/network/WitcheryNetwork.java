@@ -383,6 +383,10 @@ public final class WitcheryNetwork {
                 Vec3.atLowerCornerOf(pos.above()), 0.25, 0.25, 16);
     }
 
+    public static void sendMandrakeEmergence(ServerLevel level, Vec3 position) {
+        sendParticlesAround(level, LEGACY_EXPLOSION_PARTICLE_ID, LEGACY_NO_SOUND_ID, position, 0.5, 1, 16);
+    }
+
     public static void sendCauldronRitualComplete(ServerLevel level, BlockPos pos) {
         sendParticlesAround(level, LEGACY_SPELL_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID,
                 Vec3.atBottomCenterOf(pos).add(0, 0.6, 0), 0.5, 1, 8);
