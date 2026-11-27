@@ -652,7 +652,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         player.setItemInHand(hand, ItemUtils.createFilledResult(player.getItemInHand(hand), player, filledBottle(bottled), false));
         BrewBottling.learn(player, contents);
         retainLiquid(remaining);
-        WitcherySounds.playLegacyPlayerCue(player, SoundEvents.PLAYER_SWIM, 0.5F);
+        WitcherySounds.playLegacyPlayerCue(player, SoundEvents.GENERIC_SWIM, 0.5F);
         return true;
     }
 
@@ -674,7 +674,7 @@ public final class WitchesCauldronBlockEntity extends BlockEntity {
         boolean full = tank.getFluidAmount() == CAPACITY;
         // The original dispenser drains the available liquid even when it has less than one full portion.
         emptyTank();
-        WitcherySounds.playLegacyBlockCue(server, worldPosition, SoundEvents.PLAYER_SWIM, 0.5F);
+        WitcherySounds.playLegacyBlockCue(server, worldPosition, SoundEvents.GENERIC_SWIM, 0.5F);
         return full ? filledBottle(bottled) : ItemStack.EMPTY;
     }
 

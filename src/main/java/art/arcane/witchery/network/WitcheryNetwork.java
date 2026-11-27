@@ -408,6 +408,11 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_COLORED_SPELL_PARTICLE_ID, LEGACY_POP_SOUND_ID, center, 1, 1, 16);
     }
 
+    public static void sendDuplicationStaffCue(ServerLevel level, BlockPos pos, boolean success) {
+        sendParticlesAround(level, success ? LEGACY_INSTANT_SPELL_PARTICLE_ID : LEGACY_SMOKE_PARTICLE_ID,
+                success ? LEGACY_POP_SOUND_ID : LEGACY_SNARE_SOUND_ID, Vec3.atBottomCenterOf(pos), 1, 1, 16);
+    }
+
     public static void sendCauldronRitualFailure(ServerLevel level, BlockPos pos, int color) {
         sendParticlesAround(level, LEGACY_COLORED_SPELL_PARTICLE_ID, LEGACY_POP_SOUND_ID,
                 Vec3.atBottomCenterOf(pos).add(0, 0.6, 0), 0.5, 1, 8, color);
@@ -550,6 +555,10 @@ public final class WitcheryNetwork {
 
     public static void sendLeonardHexCast(ServerLevel level, Vec3 center, int color) {
         sendParticlesAround(level, LEGACY_COLORED_SPELL_PARTICLE_ID, LEGACY_HARP_SOUND_ID, center, 1, 1, 40, color);
+    }
+
+    public static void sendImpGiftCue(ServerLevel level, Vec3 center) {
+        sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_HARP_SOUND_ID, center, 1, 1, 16);
     }
 
     public static void sendLostSoulArrival(ServerLevel level, Vec3 center, double height) {

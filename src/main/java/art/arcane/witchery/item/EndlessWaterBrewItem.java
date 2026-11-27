@@ -109,7 +109,7 @@ public final class EndlessWaterBrewItem extends Item {
         boolean filled = vessel.getCapability(ForgeCapabilities.FLUID_HANDLER, face)
                 .map(handler -> handler.fill(new FluidStack(Fluids.WATER, volume), IFluidHandler.FluidAction.EXECUTE) > 0)
                 .orElse(false);
-        if (filled) waterPlaced(level, pos, player, SoundEvents.PLAYER_SWIM, false);
+        if (filled) waterPlaced(level, pos, player, SoundEvents.GENERIC_SWIM, false);
         return filled;
     }
 

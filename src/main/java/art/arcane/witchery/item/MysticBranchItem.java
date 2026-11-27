@@ -7,7 +7,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -107,7 +106,7 @@ public final class MysticBranchItem extends Item {
         if (spell != null) {
             drawing.putInt("Prepared", spell.id());
             if (player instanceof ServerPlayer server) {
-                WitcherySounds.playLegacyPlayerCue(server, SoundEvents.NOTE_BLOCK_HARP.value(), 1);
+                WitcherySounds.playLegacyPlayerCue(server, WitcherySounds.LEGACY_HARP.get(), 1);
             }
         }
     }

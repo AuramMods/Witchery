@@ -8,6 +8,7 @@ import art.arcane.witchery.client.event.WitcheryClientCameraHooks;
 import art.arcane.witchery.client.particle.LegacySmokeParticle;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryRegistries;
+import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.nbt.CompoundTag;
@@ -51,10 +52,14 @@ public final class WitcheryClientPacketHandlers {
         double height = message.height();
         int effectCount = Math.min(Mth.ceil(Math.max(width, 1.0D) * 20.0D), 300);
 
-        SoundEvent sound = resolveLegacySound(message.soundEffectId());
-        if (sound != null) {
-            ClientWitcherySounds.playLocal(level, message.x(), message.y(), message.z(),
-                    sound, SoundSource.AMBIENT, 0.5F, randomPitch(random));
+        LegacySoundEffect legacySound = LegacySoundEffect.byId(message.soundEffectId());
+        if (legacySound != LegacySoundEffect.NONE) {
+            float pitch = randomPitch(random);
+            SoundEvent sound = resolveSoundEvent(legacySound.soundId());
+            if (sound != null) {
+                ClientWitcherySounds.playLocal(level, message.x(), message.y(), message.z(),
+                        sound, SoundSource.AMBIENT, 0.5F, pitch);
+            }
         }
 
         for (int i = 0; i < effectCount; i++) {
@@ -150,11 +155,6 @@ public final class WitcheryClientPacketHandlers {
         }
 
         SoundEvent sound = resolveSoundEvent(soundId);
-        if (sound == null) {
-            Witchery.LOGGER.debug("No mapped sound for client packet id '{}'", soundId);
-            sound = SoundEvents.AMETHYST_BLOCK_CHIME;
-        }
-
         RandomSource random = level.getRandom();
         float volume = message.volume() == -1.0F ? 0.5F : message.volume();
         float pitch = message.pitch();
@@ -163,6 +163,7 @@ public final class WitcheryClientPacketHandlers {
             pitch = ghastFireball ? 1 + (random.nextFloat() - random.nextFloat()) * 0.2F
                     : randomPitch(random);
         }
+        if (sound == null) return;
         SoundSource source = sound == SoundEvents.SLIME_JUMP || ghastFireball ? SoundSource.HOSTILE : SoundSource.AMBIENT;
         ClientWitcherySounds.playLocal(level, message.x(), message.y(), message.z(), sound, source, volume, pitch);
     }
@@ -297,15 +298,6 @@ public final class WitcheryClientPacketHandlers {
         };
     }
 
-    private static SoundEvent resolveLegacySound(int soundEffectId) {
-        LegacySoundEffect legacySound = LegacySoundEffect.byId(soundEffectId);
-        if (legacySound == LegacySoundEffect.NONE) {
-            return null;
-        }
-        SoundEvent mapped = resolveSoundEvent(legacySound.soundId());
-        return mapped != null ? mapped : SoundEvents.AMETHYST_BLOCK_CHIME;
-    }
-
     private static SoundEvent resolveSoundEvent(String soundId) {
         ResourceLocation direct = ResourceLocation.tryParse(soundId);
         if (direct != null) {
@@ -315,28 +307,17 @@ public final class WitcheryClientPacketHandlers {
             }
         }
 
-        if (!soundId.contains(":")) {
-            ResourceLocation defaultNamespace = ResourceLocation.tryParse("minecraft:" + soundId);
-            if (defaultNamespace != null) {
-                SoundEvent event = BuiltInRegistries.SOUND_EVENT.getOptional(defaultNamespace).orElse(null);
-                if (event != null) {
-                    return event;
-                }
-            }
-        }
-
         return switch (soundId) {
             case "random.orb" -> SoundEvents.EXPERIENCE_ORB_PICKUP;
             case "random.fizz" -> SoundEvents.FIRE_EXTINGUISH;
             case "note.snare" -> SoundEvents.NOTE_BLOCK_SNARE.value();
             case "game.player.swim.splash" -> SoundEvents.PLAYER_SPLASH;
-            case "damage.hit" -> SoundEvents.PLAYER_HURT;
             case "fireworks.blast" -> SoundEvents.FIREWORK_ROCKET_BLAST;
-            case "game.player.swim" -> SoundEvents.PLAYER_SWIM;
-            case "note.harp" -> SoundEvents.NOTE_BLOCK_HARP.value();
+            case "game.player.swim" -> SoundEvents.GENERIC_SWIM;
+            case "note.harp" -> WitcherySounds.LEGACY_HARP.get();
             case "note.pling" -> SoundEvents.NOTE_BLOCK_PLING.value();
             case "random.explode" -> SoundEvents.GENERIC_EXPLODE;
-            case "random.pop" -> SoundEvents.BUBBLE_COLUMN_BUBBLE_POP;
+            case "random.pop" -> SoundEvents.ITEM_PICKUP;
             case "dig.cloth" -> SoundEvents.WOOL_BREAK;
             case "mob.slime.big" -> SoundEvents.SLIME_JUMP;
             case "mob.slime.small" -> SoundEvents.SLIME_SQUISH_SMALL;
@@ -350,16 +331,13 @@ public final class WitcheryClientPacketHandlers {
             case "mob.silverfish.kill" -> SoundEvents.SILVERFISH_DEATH;
             case "mob.zombie.infect" -> SoundEvents.ZOMBIE_INFECT;
             case "mob.wolf.death" -> SoundEvents.WOLF_DEATH;
-            case "mob.ocelot.death" -> SoundEvents.CAT_DEATH;
             case "mob.enderdragon.growl" -> SoundEvents.ENDER_DRAGON_GROWL;
             case "mob.horse.skeleton.hit" -> SoundEvents.SKELETON_HORSE_HURT;
             case "random.levelup" -> SoundEvents.PLAYER_LEVELUP;
             case "mob.spider.say" -> SoundEvents.SPIDER_AMBIENT;
             case "mob.zombie.say" -> SoundEvents.ZOMBIE_AMBIENT;
             case "mob.enderdragon.hit" -> SoundEvents.ENDER_DRAGON_HURT;
-            case "mob.enderman.idle" -> SoundEvents.ENDERMAN_AMBIENT;
             case "mob.wither.death" -> SoundEvents.WITHER_DEATH;
-            case "random.breath" -> SoundEvents.PLAYER_BREATH;
             case "mob.blaze.death" -> SoundEvents.BLAZE_DEATH;
             case "mob.ghast.death" -> SoundEvents.GHAST_DEATH;
             case "mob.creeper.death" -> SoundEvents.CREEPER_DEATH;

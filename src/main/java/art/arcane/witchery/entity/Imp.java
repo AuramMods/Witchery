@@ -3,6 +3,7 @@ package art.arcane.witchery.entity;
 import art.arcane.witchery.item.ImpSpellContractItem;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcherySounds;
 import art.arcane.witchery.util.WitcheryTime;
 import art.arcane.witchery.world.migration.LegacyGameProfiles;
@@ -18,7 +19,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -262,9 +262,7 @@ public final class Imp extends TamableAnimal {
         lastGiftTime = now;
         affection = 0;
         say(player, "reward");
-        ServerLevel level = player.serverLevel();
-        level.sendParticles(ParticleTypes.INSTANT_EFFECT, getX(), getY(0.6), getZ(), 16, 0.4, 0.4, 0.4, 0);
-        playSound(SoundEvents.NOTE_BLOCK_HARP.value(), 1, 1);
+        WitcheryNetwork.sendImpGiftCue(player.serverLevel(), position());
     }
 
     private static void consume(ServerPlayer player, ItemStack stack) {

@@ -188,7 +188,7 @@ public final class CauldronLiquidCueTests {
     private static void assertCue(GameTestHelper helper, List<? extends PlayLevelSoundEvent> cues, String action) {
         helper.assertTrue(cues.size() == 1, "Expected exactly one cue to " + action + ", got " + cues.size());
         PlayLevelSoundEvent cue = cues.remove(0);
-        helper.assertTrue(cue.getSound() != null && cue.getSound().value() == SoundEvents.PLAYER_SWIM
+        helper.assertTrue(cue.getSound() != null && cue.getSound().value() == SoundEvents.GENERIC_SWIM
                         && cue.getNewVolume() == 0.5F && cue.getNewPitch() >= 0.3333333F && cue.getNewPitch() <= 0.5F,
                 "Expected the original quiet swim cue to " + action);
     }

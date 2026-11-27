@@ -102,7 +102,7 @@ public final class KettleBlock extends BaseEntityBlock {
             } else if (!kettle.bottleBrew(server, hand)) {
                 return InteractionResult.CONSUME;
             }
-            WitcherySounds.playLegacyPlayerCue(server, SoundEvents.PLAYER_SWIM, 0.5F);
+            WitcherySounds.playLegacyPlayerCue(server, SoundEvents.GENERIC_SWIM, 0.5F);
             return InteractionResult.CONSUME;
         }
         if (held.is(Items.BUCKET)) {
@@ -110,7 +110,7 @@ public final class KettleBlock extends BaseEntityBlock {
             if (!(player instanceof ServerPlayer server)
                     || !BrewingContainers.fillBucket(player, hand, kettle, hit.getDirection())) return InteractionResult.PASS;
             kettle.rinse();
-            WitcherySounds.playLegacyPlayerCue(server, SoundEvents.PLAYER_SWIM, 0.5F);
+            WitcherySounds.playLegacyPlayerCue(server, SoundEvents.GENERIC_SWIM, 0.5F);
             return InteractionResult.CONSUME;
         }
         boolean waterBottle = BrewingContainers.isWaterBottle(held);
@@ -122,7 +122,7 @@ public final class KettleBlock extends BaseEntityBlock {
                     BrewingContainers.pourBucket(player, hand, kettle, hit.getDirection());
                 }
                 kettle.rinse();
-                WitcherySounds.playLegacyPlayerCue(server, SoundEvents.PLAYER_SWIM, 0.5F);
+                WitcherySounds.playLegacyPlayerCue(server, SoundEvents.GENERIC_SWIM, 0.5F);
             }
             return InteractionResult.sidedSuccess(level.isClientSide);
         }

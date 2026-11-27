@@ -1,4 +1,8 @@
 {
+  "note.harp": {
+    "subtitle": "subtitles.block.note_block.note",
+    "sounds": ["minecraft:note/harp"]
+  },
   "random.poof": {"sounds": ["witchery:random/poof"]},
   "random.blop": {
     "subtitle": "subtitles.witchery.cauldron_bubble",

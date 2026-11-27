@@ -745,7 +745,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
 
     private static void playOfferingPop(ServerLevel level, Vec3 location) {
         float pitch = 0.4F / (level.getRandom().nextFloat() * 0.4F + 0.8F);
-        level.playSound(null, location.x, location.y, location.z, SoundEvents.BUBBLE_COLUMN_BUBBLE_POP, SoundSource.BLOCKS, 0.5F, pitch);
+        level.playSound(null, location.x, location.y, location.z, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 0.5F, pitch);
     }
 
     private boolean offerLiving(ServerLevel level, ItemRiteRecipe rite, BlockPos heart) {

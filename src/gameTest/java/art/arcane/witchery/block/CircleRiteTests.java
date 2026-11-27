@@ -392,8 +392,10 @@ public final class CircleRiteTests {
         banshee.setPos(edge);
         banshee.setNoAi(true);
         banshee.setNoGravity(true);
-        level.addFreshEntity(banshee);
-        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.getEntity(banshee.getUUID()) == banshee,
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.isPositionEntityTicking(BlockPos.containing(edge))
+                        && level.isPositionEntityTicking(center), "Both spectral stone positions can track entities"))
+                .thenExecute(() -> helper.assertTrue(level.addFreshEntity(banshee), "Spawn the Banshee at the outer boundary"))
+                .thenWaitUntil(() -> helper.assertTrue(level.getEntity(banshee.getUUID()) == banshee,
                 "The circle can query the Banshee")).thenExecute(() -> {
             var heart = heart(helper);
             finishOriginalBinding(level, center, heart, 83, 3);

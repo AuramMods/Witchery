@@ -117,7 +117,7 @@ public final class CreaturePowerCueTests {
 
             player.moveTo(player.getX(), level.getMaxBuildHeight() + 2, player.getZ(), 0, -90);
             item.onUseTick(level, player, hand, duration - 40);
-            assertCue(helper, cues.remove(0), SoundEvents.BUBBLE_COLUMN_BUBBLE_POP, 0.5F, 1F / 3, 0.5F);
+            assertCue(helper, cues.remove(0), SoundEvents.ITEM_PICKUP, 0.5F, 1F / 3, 0.5F);
             item.releaseUsing(hand, level, player, duration - 40);
             assertCue(helper, cues.remove(0), SoundEvents.NOTE_BLOCK_SNARE.value(), 0.5F, 1F / 3, 0.5F);
 

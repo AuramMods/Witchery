@@ -2,6 +2,7 @@ package art.arcane.witchery.item;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.registry.WitcheryItems;
+import art.arcane.witchery.registry.WitcherySounds;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.NonNullList;
 import net.minecraft.gametest.framework.GameTest;
@@ -93,7 +94,7 @@ public final class MysticBranchDrawingTests {
         } finally {
             MinecraftForge.EVENT_BUS.unregister(listener);
         }
-        var expected = List.of(SoundEvents.NOTE_BLOCK_HARP.value(), SoundEvents.NOTE_BLOCK_SNARE.value(),
+        var expected = List.of(WitcherySounds.LEGACY_HARP.get(), SoundEvents.NOTE_BLOCK_SNARE.value(),
                 SoundEvents.NOTE_BLOCK_SNARE.value(), SoundEvents.ITEM_PICKUP);
         helper.assertTrue(sounds.size() == expected.size(), "Each accepted preparation or rejected cast plays one cue");
         for (int index = 0; index < expected.size(); index++) {

@@ -47,7 +47,7 @@ public final class OtherwhereInfusion {
                 WitcherySounds.playLegacyPlayerCue(player, SoundEvents.EXPERIENCE_ORB_PICKUP, 0.5F);
                 player.displayClientMessage(Component.translatable(MESSAGE + "blink_ready"), true);
             } else {
-                WitcherySounds.playLegacyPlayerCue(player, SoundEvents.BUBBLE_COLUMN_BUBBLE_POP, 0.5F);
+                WitcherySounds.playLegacyPlayerCue(player, SoundEvents.ITEM_PICKUP, 0.5F);
             }
         }
     }

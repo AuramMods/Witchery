@@ -89,7 +89,7 @@ public final class SymbolTerrain {
         if (vessel != null && vessel.getCapability(ForgeCapabilities.FLUID_HANDLER)
                 .map(handler -> handler.fill(new FluidStack(Fluids.WATER, amount), IFluidHandler.FluidAction.EXECUTE) > 0)
                 .orElse(false)) {
-            WitcherySounds.playLegacyBlockCue(level, pos, SoundEvents.PLAYER_SWIM, 0.5F);
+            WitcherySounds.playLegacyBlockCue(level, pos, SoundEvents.GENERIC_SWIM, 0.5F);
             level.gameEvent(caster, GameEvent.FLUID_PLACE, pos);
         }
     }

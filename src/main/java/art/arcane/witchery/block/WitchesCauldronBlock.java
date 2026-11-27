@@ -81,7 +81,7 @@ public final class WitchesCauldronBlock extends BaseEntityBlock {
             if (level.isClientSide) return state.getValue(WATER) > 0 ? InteractionResult.SUCCESS : InteractionResult.PASS;
             if (level.getBlockEntity(pos) instanceof WitchesCauldronBlockEntity cauldron) {
                 if (BrewingContainers.fillWaterBottle(player, hand, cauldron, hit.getDirection())) {
-                    if (player instanceof ServerPlayer server) WitcherySounds.playLegacyPlayerCue(server, SoundEvents.PLAYER_SWIM, 0.5F);
+                    if (player instanceof ServerPlayer server) WitcherySounds.playLegacyPlayerCue(server, SoundEvents.GENERIC_SWIM, 0.5F);
                     return InteractionResult.CONSUME;
                 }
                 if (player instanceof ServerPlayer serverPlayer && cauldron.bottle(serverPlayer, hand)) {
@@ -103,7 +103,7 @@ public final class WitchesCauldronBlock extends BaseEntityBlock {
                     transferred = BrewingContainers.pourBucket(player, hand, cauldron, hit.getDirection());
                 }
                 if (transferred && player instanceof ServerPlayer server) {
-                    WitcherySounds.playLegacyPlayerCue(server, SoundEvents.PLAYER_SWIM, 0.5F);
+                    WitcherySounds.playLegacyPlayerCue(server, SoundEvents.GENERIC_SWIM, 0.5F);
                 }
             }
             return InteractionResult.sidedSuccess(level.isClientSide);

@@ -192,7 +192,7 @@ public final class KettleDropTests {
                             && !kettle.isReady() && kettle.bottleCount() == 3,
                     "A successful draw fills one bucket, rinses the batch and keeps the stored glass bottles");
             helper.assertTrue(cues.size() == 1 && cues.get(0).getSound() != null
-                            && cues.get(0).getSound().value() == SoundEvents.PLAYER_SWIM
+                            && cues.get(0).getSound().value() == SoundEvents.GENERIC_SWIM
                             && cues.get(0).getNewVolume() == 0.5F && cues.get(0).getNewPitch() >= 1F / 3
                             && cues.get(0).getNewPitch() <= 0.5F,
                     "A successful draw plays the original swim cue at the player");
@@ -483,7 +483,7 @@ public final class KettleDropTests {
                             && player.getInventory().getItem(1).getCount() == full,
                     "The retry spends one bottle, fills the inventory stack and drops the remainder above the basin");
             helper.assertTrue(cues.size() == 1 && cues.get(0).getSound() != null
-                            && cues.get(0).getSound().value() == SoundEvents.PLAYER_SWIM
+                            && cues.get(0).getSound().value() == SoundEvents.GENERIC_SWIM
                             && cues.get(0).getNewVolume() == 0.5F && cues.get(0).getNewPitch() >= 1F / 3
                             && cues.get(0).getNewPitch() <= 0.5F,
                     "Successful hand bottling sends the original swim cue from the player");
