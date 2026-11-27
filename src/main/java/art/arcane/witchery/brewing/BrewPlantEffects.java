@@ -11,7 +11,16 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.FakePlayerFactory;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 final class BrewPlantEffects {
+    private static final List<Direction> WEB_FACES = List.of(Direction.EAST, Direction.WEST, Direction.SOUTH,
+            Direction.NORTH, Direction.UP, Direction.DOWN);
+    private static final List<BlockPos> WEB_EDGES = List.of(
+            new BlockPos(1, 0, 1), new BlockPos(-1, 0, 1), new BlockPos(1, 0, -1), new BlockPos(-1, 0, -1),
+            new BlockPos(1, 1, 0), new BlockPos(-1, 1, 0), new BlockPos(0, 1, 1), new BlockPos(0, 1, -1),
+            new BlockPos(0, -1, 1), new BlockPos(0, -1, -1), new BlockPos(1, -1, 0), new BlockPos(-1, -1, 0));
+
     private BrewPlantEffects() {}
 
     static void webs(ServerLevel level, BlockPos impact, @Nullable Direction face, int strength, @Nullable Player caster) {
@@ -22,20 +31,12 @@ final class BrewPlantEffects {
         BlockState existing = level.getBlockState(center);
         // The original cast checks the site even when only the surrounding cells will change.
         boolean allowed = existing.canBeReplaced()
-                ? BrewTerrain.setBlock(actor, level, center, web, Direction.UP)
-                : BrewTerrain.canEdit(actor, level, center, existing);
+                ? BrewTerrain.setPlantRoot(actor, level, center, web, Direction.UP)
+                : BrewTerrain.canEditRoot(actor, level, center, existing);
         if (!allowed || strength == 0) return;
-        for (Direction direction : Direction.values()) place(level, center.relative(direction), web, direction, actor);
+        for (Direction direction : WEB_FACES) place(level, center.relative(direction), web, direction, actor);
         if (strength == 1) return;
-        for (int x = -1; x <= 1; x++) {
-            for (int y = -1; y <= 1; y++) {
-                for (int z = -1; z <= 1; z++) {
-                    if (Math.abs(x) + Math.abs(y) + Math.abs(z) == 2) {
-                        place(level, center.offset(x, y, z), web, Direction.UP, actor);
-                    }
-                }
-            }
-        }
+        for (BlockPos offset : WEB_EDGES) place(level, center.offset(offset), web, Direction.UP, actor);
     }
 
     static void vines(ServerLevel level, BlockPos impact, Direction face, int strength, @Nullable Player caster) {
@@ -62,7 +63,8 @@ final class BrewPlantEffects {
         Player actor = caster != null ? caster : FakePlayerFactory.getMinecraft(level);
         BlockState cactus = WitcheryBlocks.getRequired("cactus").get().defaultBlockState();
         BlockPos pos;
-        if (level.getBlockState(impact).is(cactus.getBlock())) {
+        boolean extending = level.getBlockState(impact).is(cactus.getBlock());
+        if (extending) {
             pos = impact.above();
             while (available(level, pos) && level.getBlockState(pos).is(cactus.getBlock())) pos = pos.above();
         } else {
@@ -70,7 +72,11 @@ final class BrewPlantEffects {
         }
         if (pos == null) return;
         for (int height = 0; height < 3 + strength; height++, pos = pos.above()) {
-            if (!available(level, pos) || !cactus.canSurvive(level, pos) || !place(level, pos, cactus, Direction.UP, actor)) break;
+            if (!available(level, pos) || !cactus.canSurvive(level, pos) || !level.getBlockState(pos).canBeReplaced()) break;
+            boolean placed = height == 0 && !extending
+                    ? BrewTerrain.setPlantRoot(actor, level, pos, cactus, Direction.UP)
+                    : BrewTerrain.setBlock(actor, level, pos, cactus, Direction.UP);
+            if (!placed) break;
         }
     }
 

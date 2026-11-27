@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron fluid and plant action comparison (2026-11-26)
+
+- The original 0.24.1 server vetoed protected air for Webs, Thorns, and Lilify. The preceding Forge package posted no break events for those three roots and grew all three anyway. The rebuilt package checks the planting cell in those casts and restores the original Webs face and edge sequence. See `build/qa-cauldron-fluid-plants/native/targets.log` and `clean-baseline3/baseline.log` under the same directory.
+- The original runtime also measured the 400-tick water hold at level 10, 200-tick lava hold at level 4, the three Webs footprints, two Vines strengths, Thorns extension, and an eight-log horizontal Sprouting branch. Wrapped in Vine and Spiked applied amplifier two for 900 ticks. Base Sprouting applied for 150 ticks. The packaged casts matched those readings.
+- Java 17 data generation and JAR reobfuscation succeeded. All 559 required local Forge GameTests passed. The packaged build `build/qa-cauldron-fluid-plants/candidate.jar` has SHA-256 `d229d97cfd1ddb6f396f276df6bf3c17abf17d5b67c6447622ccdd6ce60ce41f`. Clean Forge passed 23 headless cases and copied Auram passed 25. The two extra Auram cases show base Dissipate leaving Mekanism Steam alone and the enhanced cast removing the in-range Steam cell.
+- Both ordinary dedicated restarts passed four checks. The saved water and lava held their remaining durations and returned at the original levels. See `clean-final/restart.log` and `pack-final/restart.log` under `build/qa-cauldron-fluid-plants`. The direct and terrain comparison has closed 55 of 61 actions. Next are the six landscape actions.
+
 ## Cauldron farming and tree action comparison (2026-11-26)
 
 - The original 0.24.1 server produced 19 tree samples on prepared flat ground. The sample contains all nine base recipes, four boosted forms and two additional seeds for each Witchwood. See `build/qa-cauldron-tree-matrix/native/standard.log`.

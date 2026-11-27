@@ -22,7 +22,7 @@
       - [x] Compare the seven motion and summon actions, including Air Hike, Frog Tongue, Knockback, Bat Burst, Bodega, Poison Toad, and Raising. The [action comparison](#motion-and-summon-action-comparison-2026-11-26) records the runtime evidence and the copied Auram random sequence.
       - [x] Compare the nine weather, ice, and fire actions, including Extinguish, Cold, Ice Shell, Changing Seasons, Ice World, Snow, Inferno, Hell Gate, and Blast. The [action comparison](#weather-ice-and-fire-action-comparison-2026-11-26) records the runtime checks and the restored Hell Gate cue.
       - [x] Compare the 17 farming and tree actions, including the eight crop and material actions and nine tree species. The [action comparison](#farming-and-tree-action-comparison-2026-11-26) records the original Witchwood canopies and the restored Forge protection checks.
-      - [ ] Compare the eight fluid and plant terrain actions, including Dissipate, Tide Hold, Lava Hold, Lilify, Webs, Vines, Thorns, and Sprouting.
+      - [x] Compare the eight fluid and plant terrain actions, including Dissipate, Tide Hold, Lava Hold, Lilify, Webs, Vines, Thorns, and Sprouting. The [action comparison](#fluid-and-plant-action-comparison-2026-11-26) records the restored planting checks and the packaged fluid restart results.
       - [ ] Compare the six landscape actions, including Erosion, Levelling, Blight, Raise Land, Transpose, and Transpose Ore.
     - [ ] Close the five dispersals, two general cast triggers and 15 fixed cast triggers. The delivery, targeting and workstation milestones already cover several of their shared paths and the 27 fixed recipe outcomes.
     - [x] Verify circle checks before effect capacity on saved Tongue of Dog and Taglock casts. Both dedicated profiles reopened nine pending casts. Four missing rings caused trigger refunds and preserved the batches. Five valid casts completed, including the Nether Brick case with an unused Waystone.
@@ -1816,6 +1816,15 @@
 - [x] Cast the targeted effects and verify the overlays in the background client. Wrapped in Vine turned one fire damage into three. Spiked removed three health from a nearby pig and left its host at full health. Reopen the dedicated world and confirm all three placed blocks and both still-active effects.
 - [x] Run Java 17 data generation, JAR reobfuscation, and seven focused Forge GameTests covering the three recipes, metadata, web movement, block protection, climbing, cactus support, and the two effects.
 - [x] Follow up the 605-of-608 run. Hobgoblin worship recruitment, villager courtship, and gas dispersal all passed the 18-case rerun. The courtship case passed with the birth fix in the 640-case replay, and the controlled gas chamber passed the 657-case replay. The combined 698-case replay passed on the later integration build.
+
+### Fluid and plant action comparison (2026-11-26)
+
+- The [fluid milestone](#cauldron-fluid-holds-lilify-and-dissipate-2026-11-21) covers Dissipate's gas scan and Spectral Undead damage, the two fluid holds, and Lilify's source and flowing surfaces. The packaged port intentionally lets Dissipate remove its own Brew Gas. The original external gas scan and its damage to spectral creatures still apply.
+- The original server held a falling water cell at level 10 for 400 ticks and a lava cell at level 4 for 200 ticks. The squared-distance-24 sample was outside both holds. The Forge saves preserve the remaining loaded ticks and restore the exact fluid state after restart.
+- Webs checks the planting cell first, including air, then visits its original faces and edges in order. The original and packaged casts grew one, six and eighteen webs on the stone-supported fixture. Vines grew up the east wall through an existing leaf and extended below it only with a strength boost. Thorns grew three blocks and added four more to the existing column after a boost.
+- Thorns and Lilify also honor the original break event on an empty planting cell. When the first Lilify surface is vetoed, the cast leaves the higher water surface alone.
+- Ordinary Sprouting grew eight Birch logs east from the struck planks. The original and packaged splash applied base Sprouting for 150 ticks. A strength-two splash applied Wrapped in Vine and Spiked at amplifier two for 900 ticks. The [Sprouting milestone](#cauldron-sprouting-and-tree-growth-2026-11-21) records the live branch effects and dedicated restart.
+- The same reobfuscated JAR passed 23 headless cast cases on clean Forge and 25 on copied Auram, including Auram's two Steam controls. Both dedicated restarts reopened the holds with time remaining and restored the original water and lava levels. All 559 required local Forge GameTests passed.
 
 ## Cauldron Sprouting and Tree Growth (2026-11-21)
 

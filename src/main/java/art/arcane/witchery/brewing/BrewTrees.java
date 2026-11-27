@@ -2,7 +2,6 @@ package art.arcane.witchery.brewing;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.WitchWoodType;
-import art.arcane.witchery.event.WitcheryBlockBreak;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -81,9 +80,7 @@ final class BrewTrees {
         BlockItem sapling = (BlockItem) species.ingredient().getItem();
         if (!sapling.getBlock().defaultBlockState().canSurvive(level, pos)) return;
         Player actor = caster != null ? caster : FakePlayerFactory.getMinecraft(level);
-        var root = level.getBlockState(pos);
-        if (!level.mayInteract(actor, pos) || root.getDestroySpeed(level, pos) < 0
-                || WitcheryBlockBreak.isCanceled(level, pos, root, actor)) return;
+        if (!BrewTerrain.canEditRoot(actor, level, pos, level.getBlockState(pos))) return;
         var random = level.getRandom();
         var features = level.registryAccess().registryOrThrow(Registries.CONFIGURED_FEATURE);
         var feature = features.getHolder(species.feature(strength, random)).orElse(null);
