@@ -78,6 +78,7 @@ public final class WitcheryNetwork {
     private static final int LEGACY_PLING_SOUND_ID = 9;
     private static final int LEGACY_EXPLOSION_SOUND_ID = 10;
     private static final int LEGACY_POP_SOUND_ID = 11;
+    private static final int LEGACY_BIG_SLIME_SOUND_ID = 13;
     private static final int LEGACY_SMALL_SLIME_SOUND_ID = 14;
     private static final int LEGACY_ENDERMAN_TELEPORT_SOUND_ID = 16;
     private static final int LEGACY_GHAST_FIREBALL_SOUND_ID = 19;
@@ -517,6 +518,13 @@ public final class WitcheryNetwork {
         int particles = curse ? LEGACY_MOB_SPELL_PARTICLE_ID : LEGACY_SLIME_PARTICLE_ID;
         int sound = curse ? LEGACY_DRAGON_HIT_SOUND_ID : LEGACY_SMALL_SLIME_SOUND_ID;
         sendParticlesAround(level, particles, sound, position, 1, 1, 16);
+    }
+
+    public static void sendToadExpiration(ServerLevel level, Vec3 position, boolean poisonous) {
+        if (poisonous) {
+            sendParticlesAround(level, LEGACY_SLIME_PARTICLE_ID, LEGACY_BIG_SLIME_SOUND_ID, position, 1, 1, 16);
+        }
+        sendParticlesAround(level, LEGACY_MOB_SPELL_PARTICLE_ID, LEGACY_NO_SOUND_ID, position, 0.5, 0.5, 16);
     }
 
     public static void sendPredictionArrival(ServerLevel level, Vec3 center) {

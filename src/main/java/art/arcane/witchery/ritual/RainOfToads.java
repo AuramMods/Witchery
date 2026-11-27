@@ -5,6 +5,7 @@ import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.storage.ServerLevelData;
 
@@ -33,12 +34,20 @@ public final class RainOfToads {
             BlockPos column = sample(level, heart);
             if (!level.getWorldBorder().isWithinBounds(column)) continue;
             WeatherRites.keepWeatherSiteLoaded(level, column);
-            BlockPos surface = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, column);
+            // The original searches for solid ground below water and through leaves.
+            BlockPos ground = level.getHeightmapPos(Heightmap.Types.OCEAN_FLOOR, column).below();
+            while (ground.getY() >= level.getMinBuildHeight()) {
+                var state = level.getBlockState(ground);
+                if (state.blocksMotion() && !state.is(BlockTags.LEAVES)) break;
+                ground = ground.below();
+            }
+            if (ground.getY() < level.getMinBuildHeight()) continue;
+            BlockPos surface = ground.above();
             if (!level.isEmptyBlock(surface)) continue;
             var toad = WitcheryEntities.TOAD.get().create(level);
             if (toad != null) {
-                toad.setPos(surface.getX(), surface.getY() + 8 + level.random.nextInt(7), surface.getZ());
                 toad.prepareRainToad();
+                toad.setPos(surface.getX(), surface.getY() + 8 + level.random.nextInt(7), surface.getZ());
                 level.addFreshEntity(toad);
             }
         }

@@ -729,6 +729,13 @@
 - [x] Restart the dedicated server after the first lightning pulse of Rain of Toads. The cast resumed from stage one, started rain, and spawned poisonous temporary toads as it entered stage five upkeep.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 502 required Forge GameTests. The four new cases cover Blight terrain, Blindness boundaries and existing effects, toad lifespan and poison, and legacy stage migration.
 
+### Rain of Toads action comparison (2026-11-26)
+
+- The original runs four lightning pulses at the glyph's height. On the fourth pulse it starts rain if the world is clear and preserves an existing rain timer. The first shower runs at stage five and the last at stage 200. A cast without a coven plays two snares at the glyph and refunds the held offerings once.
+- The shower samples both axes outside the inner area. It uses the solid ground beneath water and leaves, skipping a column when the selected space above that ground is occupied. A floating canopy leaves an open column eligible. Each temporary toad draws its color before its drop height and starts with a 30-tick lifespan.
+- Expiration sends the original Mob Spell cue at the toad's feet. A poisonous toad first sends Slime with the large slime sound. Both cues have 16-block reach. Poison lasts 60 ticks and requires both the expanded bounding box and a distance strictly below three blocks.
+- The exact reobfuscated JAR passed 50 packaged checks on clean Forge and 40 on copied Auram. Both headless profiles reopened the stage-one fixture, fired the remaining three lightning pulses, started rain and entered upkeep at stage five. The first shower spawned nine temporary toads on clean Forge and 12 on copied Auram.
+
 ### Blight and Blindness action comparison (2026-11-26)
 
 - Blight rolls over the loaded creatures before processing its results. It infects villagers first, converts cows second, and applies 20 magic damage to the selected animals last. A baby villager becomes a baby zombie villager, while a calf becomes an adult Mooshroom. Clean Forge uses the original replacement's name and behavior defaults. The zombie villager keeps the modern profession and trades for curing. Copied Auram also carried the fixture villager's custom name and disabled AI at admission.
@@ -2946,6 +2953,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Compare the [ten directed Taglock curses and cures](#directed-curse-and-cure-completion-2026-11-26), including protection, a remote target, and completion cues.
   - [x] Compare [Blight and Blindness actions](#blight-and-blindness-action-comparison-2026-11-26), including terrain and creature conversion.
   - [x] Compare [Hell on Earth terrain and fire](#hell-on-earth-terrain-comparison-2026-11-26), including fire support, soil rolls, and Forge protections.
+  - [x] Compare [Rain of Toads](#rain-of-toads-action-comparison-2026-11-26), including the shower's coordinates and ordering, the coven refund, and expiration and poison.
 - [ ] Infusion, prediction, creature power parity.
 - [ ] Entity AI/combat/spawn tuning parity.
 

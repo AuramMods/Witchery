@@ -1,9 +1,9 @@
 package art.arcane.witchery.entity;
 
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -177,10 +177,8 @@ public final class WitchToad extends WitchPet {
                     entity -> entity != this && distanceToSqr(entity) < 9)) {
                 target.addEffect(new MobEffectInstance(MobEffects.POISON, 60));
             }
-            server.sendParticles(ParticleTypes.ITEM_SLIME, getX(), getY(0.5), getZ(), 16, 0.4, 0.4, 0.4, 0.04);
-            playSound(SoundEvents.SLIME_SQUISH, 1, 1);
         }
-        server.sendParticles(ParticleTypes.ENTITY_EFFECT, getX(), getY(0.5), getZ(), 16, 0.4, 0.4, 0.4, 0.04);
+        WitcheryNetwork.sendToadExpiration(server, position(), poisonous);
     }
 
     @Override

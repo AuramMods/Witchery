@@ -982,6 +982,45 @@ public final class CircleRiteTests {
         return stages;
     }
 
+    @GameTest(template = TEMPLATE, batch = "witchery_toad_rain_refund")
+    public static void toadRainWithoutACovenRefundsWithBothSnares(GameTestHelper helper) {
+        floor(helper);
+        helper.setBlock(CENTER, block("circle"));
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var heart = heart(helper);
+        var pending = new CompoundTag();
+        pending.putString("Rite", "witchery:rite_of_rain_of_toads");
+        pending.putInt("OfferingStep", 6);
+        pending.putInt("ToadRainStage", 0);
+        pending.putInt("GlyphPhase", 28);
+        var soup = new ItemStack(WitcheryIngredient.REDSTONE_SOUP.item());
+        var offerings = new ListTag();
+        offerings.add(soup.save(new CompoundTag()));
+        pending.put("Sacrifices", offerings);
+        heart.load(pending);
+        var sounds = new ArrayList<PlayLevelSoundEvent.AtPosition>();
+        Consumer<PlayLevelSoundEvent.AtPosition> listener = event -> {
+            if (event.getLevel() == level && event.getPosition().equals(Vec3.atLowerCornerOf(center))) sounds.add(event);
+        };
+        MinecraftForge.EVENT_BUS.addListener(listener);
+        try {
+            tick(level, center, heart, 1);
+            helper.assertTrue(sounds.isEmpty() && drops(helper).isEmpty(), "The rite waits for its 30-tick pulse");
+            tick(level, center, heart, 1);
+            helper.assertTrue(sounds.size() == 2 && sounds.stream().allMatch(event -> event.getSound() != null
+                            && event.getSound().value() == SoundEvents.NOTE_BLOCK_SNARE.value() && event.getNewVolume() == 0.5F
+                            && event.getNewPitch() >= 1F / 3 && event.getNewPitch() <= 0.5F),
+                    "The coven check and the Heart Glyph each play the original snare");
+            helper.assertTrue(drops(helper).size() == 1 && ItemStack.matches(drops(helper).get(0).getItem(), soup)
+                            && !heart.saveWithoutMetadata().contains("Rite", Tag.TAG_STRING),
+                    "The aborted rite refunds the held offering once and ends");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(listener);
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = TEMPLATE, batch = "witchery_legacy_ward_gate")
     public static void legacyGreaterBarrierWaitsBeforeChargingAndKeepsItsCovenRange(GameTestHelper helper) {
         floor(helper);

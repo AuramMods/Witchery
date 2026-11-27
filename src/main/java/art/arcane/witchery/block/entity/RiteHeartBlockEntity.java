@@ -790,6 +790,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
 
     private void advanceToadRain(ServerLevel level) {
         if (covenSize < 1) {
+            if (usesGlyphClock()) playOriginalRiteSound(level, getBlockPos(), SoundEvents.NOTE_BLOCK_SNARE.value());
             abort(level, "message.witchery.rite.toad_rain_coven");
             return;
         }
