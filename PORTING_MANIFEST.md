@@ -352,7 +352,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | `VINE` | `witchery:vine` |
 | `CACTUS` | `cactus` |
 | `LILY` | `lilypad` |
-| `DEMON_HEART` | `witchery:demonheart` |
+| `DEMON_HEART` | `witchery:demonheart` (horizontal facing, 25-tick client heartbeat and pulse, and the original paired ember and smoke cue). Crouch-use places it. Eating it gives the seven original effects, fire timer, and completion cue. |
 | `WOLFHEAD` | `witchery:wolfhead` |
 | `PLANKS` | `witchery:witchwood` |
 | `STAIRS_ROWAN` | `witchery:stairswoodrowan` |
@@ -364,7 +364,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | `DOOR_ALDER` | `witchery:alderwooddoor` (emits redstone when open) |
 | `CHALICE` | `witchery:chalice` |
 | `CANDELABRA` | `witchery:candelabra` |
-| `PLACED_ITEMSTACK` | `witchery:placeditem` |
+| `PLACED_ITEMSTACK` | `witchery:placeditem` (Arthana, Mystic Branch, and Koboldite Pentacle). Keeps the full stack under `WITCPlacedItem` and uses the original shallow collision and flat item sprite. A canceled Forge placement leaves the item in hand. |
 | `ALLURING_SKULL` | `witchery:alluringskull` (placed mount in block metadata, active state in tile `SkullType`, floor rotation in `Rot`). Inventory damage `1` becomes the item block state `active=true`, which selects the active sprite and starts the skull active on placement. |
 | `WICKER_BUNDLE` | `witchery:wickerbundle` |
 | `GLOW_GLOBE` | `witchery:glowglobe` |

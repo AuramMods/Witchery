@@ -2,6 +2,7 @@ package art.arcane.witchery.block;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.entity.PlacedItemBlockEntity;
+import art.arcane.witchery.event.WitcheryBlockPlacement;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.core.BlockPos;
@@ -41,7 +42,7 @@ public final class PlacedItemBlock extends BaseEntityBlock {
     private static final VoxelShape SHAPE = box(3.2, 0, 3.2, 12.8, 0.8, 12.8);
 
     public PlacedItemBlock() {
-        super(Properties.copy(Blocks.WHITE_CARPET).noCollission().instabreak()
+        super(Properties.copy(Blocks.WHITE_CARPET).noOcclusion().instabreak()
                 .pushReaction(PushReaction.BLOCK));
         registerDefaultState(defaultBlockState().setValue(FACING, Direction.NORTH));
     }
@@ -121,7 +122,7 @@ public final class PlacedItemBlock extends BaseEntityBlock {
     private static boolean place(ServerLevel level, BlockPos pos, Player player, ItemStack item) {
         BlockState state = WitcheryBlocks.getRequired("placeditem").get().defaultBlockState()
                 .setValue(FACING, player.getDirection().getOpposite());
-        if (!level.setBlockAndUpdate(pos, state)) {
+        if (!WitcheryBlockPlacement.place(level, pos, state, player, Direction.UP)) {
             return false;
         }
         if (!(level.getBlockEntity(pos) instanceof PlacedItemBlockEntity placed)) {

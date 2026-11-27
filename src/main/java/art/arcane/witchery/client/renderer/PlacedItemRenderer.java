@@ -24,10 +24,13 @@ public final class PlacedItemRenderer implements BlockEntityRenderer<PlacedItemB
             return;
         }
         pose.pushPose();
-        pose.translate(0.5, 0.08, 0.5);
-        pose.mulPose(Axis.YP.rotationDegrees(-placed.getBlockState().getValue(PlacedItemBlock.FACING).toYRot()));
+        pose.translate(0.5, 0.05, 0.5);
+        pose.mulPose(Axis.YP.rotationDegrees(180 - placed.getBlockState().getValue(PlacedItemBlock.FACING).toYRot()));
         pose.mulPose(Axis.XP.rotationDegrees(90));
-        renderer.renderStatic(placed.stack(), ItemDisplayContext.FIXED, light, overlay, pose, buffers,
+        // The original laid the centered, half-size dropped sprite just off the center of the mount.
+        pose.translate(0, 0.025, 0.00546875);
+        pose.scale(0.5F, 0.5F, 0.5F);
+        renderer.renderStatic(placed.stack(), ItemDisplayContext.NONE, light, overlay, pose, buffers,
                 placed.getLevel(), (int) placed.getBlockPos().asLong());
         pose.popPose();
     }

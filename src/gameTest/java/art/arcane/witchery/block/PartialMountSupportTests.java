@@ -1,6 +1,7 @@
 package art.arcane.witchery.block;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.entity.PlacedItemBlockEntity;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
@@ -10,6 +11,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -18,12 +20,15 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
@@ -70,6 +75,39 @@ public final class PartialMountSupportTests {
         helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.isPositionEntityTicking(pos),
                 "The chunk is tracking dropped items"))
                 .thenExecute(() -> verifyArtifactDrops(helper, pos)).thenSucceed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void protectedAltarMountRetainsTheHeldStack(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "AltarMountVeto"));
+        var support = helper.absolutePos(new BlockPos(4, 3, 4));
+        var pos = support.above();
+        level.setBlockAndUpdate(support, WitcheryBlocks.getRequired("altar").get().defaultBlockState());
+        level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+        var stack = new ItemStack(WitcheryIngredient.KOBOLDITE_PENTACLE.item(), 4);
+        stack.getOrCreateTag().putInt("MountMarker", 42);
+        var original = stack.copy();
+        Consumer<BlockEvent.EntityPlaceEvent> veto = event -> {
+            if (event.getEntity() == player && event.getPos().equals(pos)) event.setCanceled(true);
+        };
+        MinecraftForge.EVENT_BUS.addListener(veto);
+        try {
+            helper.assertTrue(useOn(player, stack, support, Direction.UP) == InteractionResult.FAIL
+                            && ItemStack.matches(player.getMainHandItem(), original)
+                            && level.isEmptyBlock(pos) && level.getBlockEntity(pos) == null,
+                    "A Forge placement veto keeps the full tagged hand stack and leaves no block entity");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(veto);
+        }
+        helper.assertTrue(useOn(player, stack, support, Direction.UP).consumesAction()
+                        && stack.isEmpty() && level.getBlockEntity(pos) instanceof PlacedItemBlockEntity placed
+                        && ItemStack.matches(placed.stack(), original),
+                "Retrying the original interaction transfers the tagged stack into the mount");
+        var shape = level.getBlockState(pos).getCollisionShape(level, pos);
+        helper.assertTrue(!shape.isEmpty() && Math.abs(shape.bounds().maxY - 0.05) < 1.0E-6,
+                "The display retains the original shallow collision surface");
+        helper.succeed();
     }
 
     private static void verifyArtifactDrops(GameTestHelper helper, BlockPos pos) {
@@ -153,10 +191,10 @@ public final class PartialMountSupportTests {
         useOn(player, new ItemStack(item), support, face);
     }
 
-    private static void useOn(FakePlayer player, ItemStack stack, BlockPos support, Direction face) {
+    private static InteractionResult useOn(FakePlayer player, ItemStack stack, BlockPos support, Direction face) {
         player.setItemInHand(InteractionHand.MAIN_HAND, stack);
         var hit = new BlockHitResult(Vec3.atCenterOf(support).relative(face, 0.5), face, support, false);
-        player.gameMode.useItemOn(player, player.serverLevel(), stack, InteractionHand.MAIN_HAND, hit);
+        return player.gameMode.useItemOn(player, player.serverLevel(), stack, InteractionHand.MAIN_HAND, hit);
     }
 
     private record Mount(String block, Item item) {}

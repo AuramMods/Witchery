@@ -3,6 +3,7 @@ package art.arcane.witchery.block;
 import art.arcane.witchery.block.entity.DemonHeartBlockEntity;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
+import art.arcane.witchery.registry.WitcheryRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -76,12 +77,12 @@ public final class DemonHeartBlock extends BaseEntityBlock {
 
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        double x = pos.getX() + 0.35 + random.nextDouble() * 0.3;
+        double z = pos.getZ() + 0.35 + random.nextDouble() * 0.3;
         if (random.nextInt(10) == 0) {
-            double x = pos.getX() + 0.35 + random.nextDouble() * 0.3;
-            double z = pos.getZ() + 0.35 + random.nextDouble() * 0.3;
             double y = pos.getY() + 0.8;
             level.addParticle(ParticleTypes.FLAME, x, y, z, 0, 0, 0);
-            level.addParticle(ParticleTypes.SMOKE, x, y, z, 0, 0, 0);
+            level.addParticle(WitcheryRegistries.LEGACY_SMOKE.get(), x, y, z, 0, 0, 0);
         }
     }
 }

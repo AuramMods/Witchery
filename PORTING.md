@@ -223,6 +223,13 @@ The copied Auram survival replay reached both rank-ten transformations and compl
 - [x] Open the Altar's read-only menu with Adapt 2.2.7 installed. The muted Auram survival client formed the altar and reopened it from another member after each change to its surroundings. The copied save retained its mounted Arthana and 32-block range.
 - [x] Discharge the altar immediately when adding a seventh connected block. Witchery 0.24.1, clean Forge, and copied Auram agreed on all four samples across a chunk boundary. Removing the extra block in the same tick reformed an empty altar with the original neighboring core selection. The muted survival client placed and mined the extra block, and the mounted Arthana kept its range. Both save formats preserved the rebuilt core across dedicated restarts. All 353 local Forge GameTests passed.
 
+### Demon Heart and mounted altar items (2026-11-27)
+
+- The original Demon Heart callback draws both offsets before the one-in-ten flame and smoke decision. It uses a 25-tick client heartbeat at the block center with volume 0.8, pitch 1, and the Blocks slider. The vessels keep their exact original angles and the ventricles scale on the loaded tick. The packaged client matched 24,000 original vertices and texture coordinates across four facings and all 25 ticks. It also matched six particle requests and the next random draw for each of 40 seeds.
+- The Arthana, Mystic Branch, and Koboldite Pentacle still mount through their original item interactions. The placed items use the original flat half-size sprite and shallow collision. Forge placement cancellation preserves the full held stack. An allowed retry moves the stack, including its count and tags. Survival harvest recovers those values.
+- Two muted background survival clients verified the original heartbeat and the eating completion sound on the Players slider. A supplied Demon Heart placed when crouching and consumed one from the held stack when eaten. The server applied the seven original effects. The dedicated restart kept all three mounted implements and the original heart facing. Mining the Arthana returned its marked stack with the original wear. All 651 local Forge GameTests passed.
+- Copied Auram used the same reobfuscated JAR. Its headless replay exercised the Forge veto and allowed retry, mounted the heart with crouch-use, checked the original fire timer and eating cue, and retained the heart facing and four marked Pentacles on restart.
+
 ## Kettle Recipe Order (2026-11-24)
 
 - [x] Compare all 39 Kettle recipe positions, output subtypes, costs, and tints with the running 0.24.1 registry. Restore its first matching recipe for incomplete mixtures. Dog Tongue alone selects Vines, which needs no altar. Mutandis previews Raising at 500 power, and Redstone Soup previews Flying Ointment at 3,000.
@@ -3442,6 +3449,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare [Bear and Wolf Trap baiting and capture](#hunting-trap-bait-timing-landing-and-cues-2026-11-27), including the loaded tile clock, retained timestamp, landing search, and arming grace.
   - [x] Compare [Plant Mine supporting blocks and activation packets and Critter Snare capture, release, and local sound](#critter-snare-and-plant-mine-parity-2026-11-27).
   - [x] Verify a covered Plant Mine's [light threshold and side-neighbor update](#critter-snare-and-plant-mine-parity-2026-11-27) with random ticking disabled.
+  - [x] Compare [Demon Heart animation, particles and heartbeat and the three altar displays](#demon-heart-and-mounted-altar-items-2026-11-27), including collision, Forge placement protection, and recovery after restart.
 - [ ] Item behavior parity pass (including metadata-subitem conversions).
   - [x] Compare melee modifiers, sword guards, and Boline harvest against the [melee tool measurements](#melee-tools-and-boline-harvesting-2026-11-26).
   - [x] Restore the Crossbow's [launch position, velocity, spread, and firing cue](#crossbow-launch-physics-2026-11-27). The seeded original replay covers four draw durations and the three Splitting trajectories with a moving shooter.
@@ -3449,6 +3457,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare [Bolt damage and ricochets](#crossbow-bolt-entity-impacts-2026-11-27), including two hits inside one damage cooldown, Holy damage, Flame on rejection, and Enderman deflections.
   - [x] Compare [Punch and player-hit confirmation](#crossbow-punch-and-player-hit-cue-2026-11-27), including a fully resistant mob, the inclusive 128-block audience, and a vanilla Arrow control.
   - [x] Compare [Death's Boots at the water and lava surface](#player-movement-and-lily-placement-2026-11-27). Both packages match the feet-cell checks and the order of persistent and brewed Sinking. Both recorded the lift during ordinary water entry.
+  - [x] Compare crouch placement and the effects and completion cue from eating a [Demon Heart](#demon-heart-and-mounted-altar-items-2026-11-27).
 - [x] Brewing, Kettle, Distillery, Spinning Wheel, and Brazier parity.
   - [x] Compare the fixed Kettle, Distillery, Spinning Wheel, and Brazier registries and exercise their interactions and saved state in the workstation milestones above.
   - [x] Compare [Kettle bottling bonuses and cues](#kettle-bottling-bonuses-and-cues-2026-11-27) with the original world rolls and saved servings.
