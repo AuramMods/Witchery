@@ -90,6 +90,7 @@ public final class LegacyChunkUpgrade {
     private static final Set<String> CURSED_CONTROLS = Set.of("clever", "cwoodendoor", "cwoodpressureplate", "cstonepressureplate",
             "csnowpressureplate", "cbuttonwood", "cbuttonstone");
     private static final Set<String> BREW_DISPERSALS = Set.of("brewgas", "brewliquid");
+    private static final List<Set<String>> SHARED_TILE_TYPES = List.of(MIRRORS, FETISHES, BREW_DISPERSALS, CURSED_CONTROLS);
     private static final Set<String> LEGACY_SCHEDULED_BLOCKS = Set.of("lilypad", "infinityegg", "icepressureplate", "snowpressureplate");
     private static final String LEGACY_BLOCK_TICKS = "witchery:legacy_block_ticks";
     private static final String LEGACY_FLUID_TICKS = "witchery:legacy_fluid_ticks";
@@ -209,12 +210,7 @@ public final class LegacyChunkUpgrade {
                     && tile.contains("CustomName", Tag.TAG_STRING)) {
                 tile.putString("CustomName", Component.Serializer.toJson(Component.literal(tile.getString("CustomName"))));
             }
-            Set<String> family = switch (tile.getString("id")) {
-                case "witchery:mirrorblock", "witchery:mirrorblock2" -> MIRRORS;
-                case "witchery:scarecrow", "witchery:trent", "witchery:witchsladder" -> FETISHES;
-                case "witchery:brewgas", "witchery:brewliquid" -> BREW_DISPERSALS;
-                default -> belongsTo(ResourceLocation.tryParse(tile.getString("id")), CURSED_CONTROLS) ? CURSED_CONTROLS : Set.of();
-            };
+            Set<String> family = sharedTileFamily(tileId);
             if (family.isEmpty()) continue;
 
             // Each family registered one tile class for several different blocks.
@@ -226,12 +222,25 @@ public final class LegacyChunkUpgrade {
                 byte[] blocks = section.getByteArray("Blocks");
                 if (blocks.length != SECTION_SIZE) break;
                 var block = ids.block(blockNumber(blocks, section.getByteArray("Add"), index));
-                if (block != null && family.contains(block.getPath())) {
+                if (belongsTo(block, family)) {
                     tile.putString("id", block.toString());
                 }
                 break;
             }
         }
+    }
+
+    public static String restoreSharedTileType(String savedType, ResourceLocation block) {
+        return belongsTo(block, sharedTileFamily(savedType)) ? block.toString() : savedType;
+    }
+
+    private static Set<String> sharedTileFamily(String savedType) {
+        if (!savedType.startsWith(Witchery.MODID + ":")) return Set.of();
+        String path = savedType.substring(Witchery.MODID.length() + 1);
+        for (Set<String> family : SHARED_TILE_TYPES) {
+            if (family.contains(path)) return family;
+        }
+        return Set.of();
     }
 
     public static void updateBlockEntityTypes(ListTag tiles) {

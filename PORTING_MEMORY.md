@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Shared block entity IDs and legacy placement matrix (2026-11-26)
+
+- The original server enumerated 121 blocks, placed the 54 blocks with tile entities, and wrote 40 distinct tile IDs. The saved region covers both oven and distillery states, both mirrors, seven cursed controls, three fetishes, both brew fluids, and both hunting traps. The four decorative blocks keep their placements and omit the original empty tiles. The village wall marker becomes air. A supplied Grassper name was absent from the original writer, and the Coffin's world data carried `Opened` while its angles belonged to the update packet. See `build/qa-tile-save-matrix/native/reference-colored.log`.
+- An earlier-format Forge copy retained ten original shared IDs under the correct flattened blocks. The previous JAR loaded those ten tiles under the shared ID. The rebuilt JAR selects the matching registered type within the same Witchery family. Independent types and callers' original tag data retain their original identity.
+- The reobfuscated `build/qa-tile-save-matrix/release.jar` has SHA-256 `fb7ac9c2fd750eb8a8dc41dec34c267d4370b172fa3eac7e153fc7d2b2d069b5`. Java 17 data generation, JAR reobfuscation and all 596 required Forge GameTests passed locally. Clean Forge passed all 54 native imports, all 55 converted-world checks, and all 64 restart checks. The restart probe read the ten canonical IDs from the region file before reopening the tiles.
+- The converted-world fixture adds Nether Wart before Spider Eye so the saved button has enough brew capacity for Poison. Both clean versions applied Poison and spent one charge using that recipe. The preceding JAR still failed the ten type checks. The clean candidate also passed the 55 recovery and 64 restart checks after removing the captured registry from a disposable copy.
+- Copied Auram passed the 54 native import checks and all 55 converted-save checks with the same JAR. It applied Poison through the repaired wooden button and saved the two remaining charges. The ordinary restart matrix reads the ten canonical IDs directly from the saved chunk entries. See `pack-fixed-import/` and `pack-repair-fixed/`.
+
 ## Infernal combat cues and defenses (2026-11-26)
 
 - The original server emitted both fireball cues before adding shots, with truncated block coordinates even on the negative side of the map. The original client plays the Ghast shooting sound for both events at volume 10 for Ghast and 2 for Blaze, with two client-random pitch draws. See `build/qa-infernal-combat/native/reference-connected.log` and `native/render-global.txt` in the same directory.
