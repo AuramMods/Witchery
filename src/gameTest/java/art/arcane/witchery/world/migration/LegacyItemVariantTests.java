@@ -144,7 +144,7 @@ public final class LegacyItemVariantTests {
         var numeric = items.getCompound(2).copy();
         var location = items.getCompound(4).getCompound("tag").copy();
         var hat = items.getCompound(5).getCompound("tag").copy();
-        LegacyWorldIds.repairNamedStoredItems(record);
+        LegacyWorldIds.repairNamedStoredItems(record, helper.getLevel().getServer().getFixerUpper(), true);
 
         var restored = ItemStack.of(items.getCompound(0));
         helper.assertTrue(restored.is(WitcheryIngredient.WOODEN_STAKE.item()) && restored.getCount() == 2
@@ -160,7 +160,7 @@ public final class LegacyItemVariantTests {
         helper.assertTrue(items.getCompound(5).getCompound("tag").equals(hat),
                 "Keep explicit current wear and styled text");
         var saved = record.copy();
-        LegacyWorldIds.repairNamedStoredItems(record);
+        LegacyWorldIds.repairNamedStoredItems(record, helper.getLevel().getServer().getFixerUpper(), true);
         helper.assertTrue(record.equals(saved), "A second load preserves the resulting item data");
         helper.succeed();
     }
@@ -198,7 +198,7 @@ public final class LegacyItemVariantTests {
                     """);
             var withoutRegistry = record.copy();
             ids.repairStoredItems(record, fixer);
-            LegacyWorldIds.repairNamedStoredItems(withoutRegistry);
+            LegacyWorldIds.repairNamedStoredItems(withoutRegistry, fixer, true);
             var nested = record.getList("Passengers", Tag.TAG_COMPOUND).getCompound(0).getCompound("WITCWaypoint");
             helper.assertTrue(record.equals(withoutRegistry) && routeLore(nested).equals("Old route")
                             && nested.getCompound("tag").getString("WITCPlayer1").equals("Owner")

@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Named vanilla stacks with original metadata and wear (2026-11-27)
+
+- The current-version fixture has no captured registry. The preceding JAR dropped the legacy red and blue Wool and the loose yellow Wool, reduced the legacy sword to zero wear, and left Stone and Planks under their pre-flattening IDs. Read `build/qa-vanilla-stack-recovery/baseline-checked/live.log`.
+- The ordinary player, chunk, and entity paths now run the named vanilla items with retained top-level `Damage` through the existing item conversion. The current sword keeps its explicit wear, styled title and Sharpness III. The old sword recovers its 29 wear, original name and Unbreaking II.
+- The exact clean Forge package restored the loose Wool, Chest Andesite, nested Birch Planks and both player inventories. A muted background survival client picked up the yellow Wool and opened the Chest. The restart retained the resulting items. Read `build/qa-vanilla-stack-recovery/clean/{live,restart}.log`.
+- Copied Auram matched the initial records, picked up the recovered Yellow Wool, and retained the resulting inventories and Chest after restart. Both launches were muted and unfocused. Read `build/qa-vanilla-stack-recovery/pack/{live,restart}.log`.
+- Local Java 17 data generation, reobfuscation, and all 635 required GameTests passed on the candidate with SHA-256 `82936deeea45696ca2e9e7d347aee6dd53f49fcebea83697714fb78b46194016`. The player test opens the test storage before writing the first save. Read `build/qa-vanilla-stack-recovery/gametest-final.log`.
+
 ## Stored player dimension and respawn point (2026-11-27)
 
 - The original server wrote a player in custom Mirror dimension 64 with distinct Nether, Overworld, and Mirror respawn points. The preceding Forge package read the original number in a current-version player file as an Overworld login. See `build/qa-player-dimension-recovery/{native/reference.log,baseline/live.log}`.

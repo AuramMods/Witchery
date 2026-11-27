@@ -38,7 +38,7 @@ abstract class LegacyEntityStorageMixin {
             witchery$legacyIds.repairEntityEffects(entities);
             witchery$legacyIds.repairStoredItems(entities, fixerUpper);
         } else {
-            LegacyWorldIds.repairNamedStoredItems(entities);
+            LegacyWorldIds.repairNamedStoredItems(entities, fixerUpper, true);
         }
     }
 }

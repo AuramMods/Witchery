@@ -251,7 +251,9 @@ public final class LegacyWorldIds {
     public static void repairPlayerWithoutLegacyRegistry(CompoundTag player, DataFixer fixer, int from) {
         LegacyWorldDimensions.DEFAULTS.upgradePlayerLocation(player);
         var persisted = preparePlayerState(player);
-        repairNamedStoredItems(player);
+        repairNamedStoredItems(player, fixer, from >= 100);
+        // Native player inventories still go through the vanilla player data fixer.
+        if (from >= 100) return;
         var dreamSession = persisted.getCompound("WITCSpiritWorld");
         int currentVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
         for (ListTag inventory : List.of(DeathBrewEffects.pendingLegacyInventory(persisted),
@@ -355,12 +357,17 @@ public final class LegacyWorldIds {
         repairStoredItems(value, fixer, true);
     }
 
-    public static void repairNamedStoredItems(Tag value) {
+    public static void repairNamedStoredItems(Tag value, DataFixer fixer, boolean repairVanilla) {
+        int version = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
         visitStoredCompounds(value, stack -> {
             LegacyBoltAnchors.repairStored(stack, null);
             repairWaypointTags(stack, false);
-            if (isNamedWitcheryStack(stack) && (!hasLegacyStackEncoding(stack) || upgradeWitcheryStack(stack, stack.getString("id")))) {
-                upgradeStackTags(stack, true, false);
+            if (isNamedWitcheryStack(stack)) {
+                if (!hasLegacyStackEncoding(stack) || upgradeWitcheryStack(stack, stack.getString("id"))) {
+                    upgradeStackTags(stack, true, false);
+                }
+            } else if (repairVanilla) {
+                repairNamedVanillaStack(stack, fixer, version, version);
             }
         });
     }

@@ -120,7 +120,7 @@ public final class LegacyBoltImportTests {
                 ]}
                 """).getList("Entities", Tag.TAG_COMPOUND);
         LegacyChunkEntities.restore(entries);
-        LegacyWorldIds.repairNamedStoredItems(entries);
+        LegacyWorldIds.repairNamedStoredItems(entries, helper.getLevel().getServer().getFixerUpper(), true);
 
         var level = helper.getLevel();
         var log = WitcheryEntities.BOLT.get().create(level);
@@ -165,7 +165,7 @@ public final class LegacyBoltImportTests {
                 {id:"witchery:bolt",inTile:"witchery:statueofworship",inData:3b,inGround:1b,pickup:1b,
                  xTile:%d,yTile:%d,zTile:%d,Motion:[0.792d,-0.05d,0.0d]}
                 """.formatted(impact.getX(), impact.getY(), impact.getZ()));
-        LegacyWorldIds.repairNamedStoredItems(tag);
+        LegacyWorldIds.repairNamedStoredItems(tag, level.getServer().getFixerUpper(), true);
         var state = NbtUtils.readBlockState(level.holderLookup(Registries.BLOCK), tag.getCompound("inBlockState"));
         level.setBlockAndUpdate(impact, state);
         var bolt = WitcheryEntities.BOLT.get().create(level);
