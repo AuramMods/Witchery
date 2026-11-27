@@ -1,15 +1,25 @@
 package art.arcane.witchery.block;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.item.WitcheryIngredient;
+import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FarmBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.gametest.GameTestHolder;
@@ -18,11 +28,59 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class WitchCropGrowthTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_snowbell_harvest", setupTicks = 5)
+    public static void snowbellsLimitNeedlesAndIgnoreToolFortuneWhenPlayerHarvests(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(5, 3, 5));
+        var crop = (WitchCropBlock) WitchCrop.SNOWBELL.block();
+        var miner = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "SnowbellHarvester"));
+        var pick = new ItemStack(Items.DIAMOND_PICKAXE);
+        pick.enchant(Enchantments.BLOCK_FORTUNE, 3);
+        miner.getInventory().setItem(0, pick);
+        level.setBlockAndUpdate(pos.below(), Blocks.FARMLAND.defaultBlockState());
+        var area = new AABB(pos).inflate(1);
+        var needle = WitcheryIngredient.ICY_NEEDLE.item();
+        int needles = 0;
+        for (int sample = 0; sample < 128; sample++) {
+            // Early port worlds can contain ages above the crop's maturity threshold.
+            var state = crop.getStateForAge(crop.getMaxAge() + sample % 4);
+            level.setBlockAndUpdate(pos, state);
+            helper.assertTrue(miner.gameMode.destroyBlock(pos), "The survival player can harvest a mature Snowbell");
+            var entities = level.getEntitiesOfClass(ItemEntity.class, area);
+            var drops = entities.stream().map(ItemEntity::getItem).toList();
+            helper.assertTrue(count(drops, Items.SNOWBALL) == 1 && count(drops, crop.crop().seed()) <= 3,
+                    "Every mature Snowbell yields one Snowball and up to three seeds even with a Fortune III tool");
+            int needleCount = count(drops, needle);
+            helper.assertTrue(needleCount <= 1, "A mature Snowbell can yield at most one Icy Needle");
+            needles += needleCount;
+            entities.forEach(ItemEntity::discard);
+        }
+        helper.assertTrue(needles > 0 && pick.getEnchantmentLevel(Enchantments.BLOCK_FORTUNE) == 3,
+                "Normal harvests can yield Icy Needles and leave the player's Fortune enchantment intact");
+        var immature = Block.getDrops(crop.getStateForAge(3), level, pos, null);
+        helper.assertTrue(immature.size() == 1 && count(immature, crop.crop().seed()) == 1,
+                "An immature Snowbell drops one seed");
+
+        // Harvesting brew explicitly queries the drops with its bonus, as in the original port target.
+        boolean brewBonus = false;
+        for (int sample = 0; sample < 128 && !brewBonus; sample++) {
+            var brewDrops = Block.getDrops(crop.getStateForAge(crop.getMaxAge()), level, pos, null, null, pick);
+            brewBonus = count(brewDrops, crop.crop().seed()) > 3;
+        }
+        helper.assertTrue(brewBonus, "The explicit Harvesting brew loot query can still return more than three seeds");
+        helper.succeed();
+    }
+
+    private static int count(List<ItemStack> drops, Item item) {
+        return drops.stream().filter(stack -> stack.is(item)).mapToInt(ItemStack::getCount).sum();
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void witchCropsUseOriginalNaturalGrowthRolls(GameTestHelper helper) {
         var level = helper.getLevel();

@@ -16,11 +16,30 @@
               "type": "minecraft:item",
               "conditions": [
                 {
-                  "block": "witchery:garlicplant",
-                  "condition": "minecraft:block_state_property",
-                  "properties": {
-                    "age": "5"
-                  }
+                  "condition": "minecraft:any_of",
+                  "terms": [
+                    {
+                      "block": "witchery:garlicplant",
+                      "condition": "minecraft:block_state_property",
+                      "properties": {
+                        "age": "5"
+                      }
+                    },
+                    {
+                      "block": "witchery:garlicplant",
+                      "condition": "minecraft:block_state_property",
+                      "properties": {
+                        "age": "6"
+                      }
+                    },
+                    {
+                      "block": "witchery:garlicplant",
+                      "condition": "minecraft:block_state_property",
+                      "properties": {
+                        "age": "7"
+                      }
+                    }
+                  ]
                 }
               ],
               "name": "witchery:garlic"
@@ -38,11 +57,30 @@
       "bonus_rolls": 0.0,
       "conditions": [
         {
-          "block": "witchery:garlicplant",
-          "condition": "minecraft:block_state_property",
-          "properties": {
-            "age": "5"
-          }
+          "condition": "minecraft:any_of",
+          "terms": [
+            {
+              "block": "witchery:garlicplant",
+              "condition": "minecraft:block_state_property",
+              "properties": {
+                "age": "5"
+              }
+            },
+            {
+              "block": "witchery:garlicplant",
+              "condition": "minecraft:block_state_property",
+              "properties": {
+                "age": "6"
+              }
+            },
+            {
+              "block": "witchery:garlicplant",
+              "condition": "minecraft:block_state_property",
+              "properties": {
+                "age": "7"
+              }
+            }
+          ]
         }
       ],
       "entries": [

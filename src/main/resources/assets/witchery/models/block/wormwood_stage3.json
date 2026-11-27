@@ -1,6 +1,6 @@
 {
-  "parent": "minecraft:block/crop",
+  "parent": "minecraft:block/cross",
   "textures": {
-    "crop": "witchery:block/wormwood_stage_3"
+    "cross": "witchery:block/wormwood_stage_3"
   }
 }

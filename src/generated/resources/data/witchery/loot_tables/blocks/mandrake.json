@@ -16,11 +16,37 @@
               "type": "minecraft:item",
               "conditions": [
                 {
-                  "block": "witchery:mandrake",
-                  "condition": "minecraft:block_state_property",
-                  "properties": {
-                    "age": "4"
-                  }
+                  "condition": "minecraft:any_of",
+                  "terms": [
+                    {
+                      "block": "witchery:mandrake",
+                      "condition": "minecraft:block_state_property",
+                      "properties": {
+                        "age": "4"
+                      }
+                    },
+                    {
+                      "block": "witchery:mandrake",
+                      "condition": "minecraft:block_state_property",
+                      "properties": {
+                        "age": "5"
+                      }
+                    },
+                    {
+                      "block": "witchery:mandrake",
+                      "condition": "minecraft:block_state_property",
+                      "properties": {
+                        "age": "6"
+                      }
+                    },
+                    {
+                      "block": "witchery:mandrake",
+                      "condition": "minecraft:block_state_property",
+                      "properties": {
+                        "age": "7"
+                      }
+                    }
+                  ]
                 }
               ],
               "name": "witchery:mandrake_root"
@@ -38,11 +64,37 @@
       "bonus_rolls": 0.0,
       "conditions": [
         {
-          "block": "witchery:mandrake",
-          "condition": "minecraft:block_state_property",
-          "properties": {
-            "age": "4"
-          }
+          "condition": "minecraft:any_of",
+          "terms": [
+            {
+              "block": "witchery:mandrake",
+              "condition": "minecraft:block_state_property",
+              "properties": {
+                "age": "4"
+              }
+            },
+            {
+              "block": "witchery:mandrake",
+              "condition": "minecraft:block_state_property",
+              "properties": {
+                "age": "5"
+              }
+            },
+            {
+              "block": "witchery:mandrake",
+              "condition": "minecraft:block_state_property",
+              "properties": {
+                "age": "6"
+              }
+            },
+            {
+              "block": "witchery:mandrake",
+              "condition": "minecraft:block_state_property",
+              "properties": {
+                "age": "7"
+              }
+            }
+          ]
         }
       ],
       "entries": [

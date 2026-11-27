@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Witchery crop harvesting and models (2026-11-27)
+
+- The 0.24.1 server checked ordinary and Fortune III harvests across eight crops. It sampled 84 Icy Needles in 400 mature Snowbell harvests and saw at most one per plant. Direct Snowbell drops with explicitly requested Fortune bonuses of zero through three reached three, four, five, and six seeds. See `build/qa-crop-harvest/native/reference-complete.log`.
+- The port removes only tool Fortune during ordinary crop harvesting, so the Fortune potion and Harvesting brew still supply their original bonus rolls. The generator rolls once for the needle and treats age values at or above maturity as ripe. Clean Forge and copied Auram passed 64 of 64 packaged checks on the same JAR. The preceding clean Forge build passed 45. The Mandrake material samples were on Peaceful. Its spawn path under magical and unassisted destruction remains in the checklist.
+- The hidden, muted client verified crossed quads for Snowbell, Wolfsbane, and Wormwood and four-plane quads for the other five crops. The probe checked all 64 states and the matching sprites. The survival player planted the supplied seed, matured it with bone meal, and harvested it and the fixture's age-seven Snowbell after a dedicated restart. Both yielded Snowballs and the pickaxe kept Fortune III. See `build/qa-crop-harvest/live-verified/`.
+- Local Java 17 data generation, JAR reobfuscation, and all 617 required Forge GameTests passed. The archive in `build/qa-crop-harvest/release.jar` has SHA-256 `2dc64a387f2251f32b7f06a9cc36ebe2b6be65dba8d243f8abf94ccff897cf25`.
+
 ## Area ward attribution and column recovery (2026-11-27)
 
 - The original Forge server measured four owner-recoverable columns and six ward protection cases. Void Bramble recovers on a standing attack. The Goddess statue and both area wards require the owner to crouch. Recovered items appear at each block's center with immediate pickup. A shooter keeps ward protection after a lethal arrow hit. A direct kill removes protection for the nearby attacker. See `build/qa-ward-recovery/native/reference-final.log`.

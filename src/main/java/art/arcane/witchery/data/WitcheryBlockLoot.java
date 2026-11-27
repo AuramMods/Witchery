@@ -45,6 +45,7 @@ import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount;
 import net.minecraft.world.level.storage.loot.functions.CopyBlockState;
 import net.minecraft.world.level.storage.loot.functions.CopyNbtFunction;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
+import net.minecraft.world.level.storage.loot.predicates.AnyOfCondition;
 import net.minecraft.world.level.storage.loot.predicates.BonusLevelTableCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -185,9 +186,13 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
     private void dropWitchCrop(WitchCropBlock block) {
         WitchCrop crop = block.crop();
         ItemLike seed = crop.seed();
-        LootItemCondition.Builder mature = LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
-                .setProperties(StatePropertiesPredicate.Builder.properties()
-                        .hasProperty(CropBlock.AGE, crop.maxAge()));
+        var matureAges = CropBlock.AGE.getPossibleValues().stream()
+                .filter(age -> age >= crop.maxAge())
+                .sorted()
+                .map(age -> LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
+                        .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(CropBlock.AGE, age)))
+                .toArray(LootItemCondition.Builder[]::new);
+        LootItemCondition.Builder mature = matureAges.length == 1 ? matureAges[0] : AnyOfCondition.anyOf(matureAges);
         if (crop == WitchCrop.MINDRAKE) {
             add(block, applyExplosionDecay(block, LootTable.lootTable()
                     .withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1)).add(LootItem.lootTableItem(seed)))
@@ -213,11 +218,6 @@ public class WitcheryBlockLoot extends BlockLootSubProvider {
                         .add(LootItem.lootTableItem(seed)
                                 .apply(SetItemCountFunction.setCount(BinomialDistributionGenerator.binomial(3, seedChance)))
                                 .apply(ApplyBonusCount.addBonusBinomialDistributionCount(Enchantments.BLOCK_FORTUNE, seedChance, 0))));
-        if (crop == WitchCrop.SNOWBELL) {
-            table.withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1)).when(mature)
-                    .when(LootItemRandomChanceCondition.randomChance(0.2F))
-                    .add(LootItem.lootTableItem(WitcheryIngredient.ICY_NEEDLE.item())));
-        }
         if (crop == WitchCrop.SNOWBELL) {
             table.withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1)).when(mature)
                     .when(LootItemRandomChanceCondition.randomChance(0.2F))

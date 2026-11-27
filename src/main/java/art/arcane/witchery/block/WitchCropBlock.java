@@ -14,6 +14,8 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -28,6 +30,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.PlantType;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.LinkedHashMap;
 
 public final class WitchCropBlock extends CropBlock {
     private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 4, 16);
@@ -128,6 +132,13 @@ public final class WitchCropBlock extends CropBlock {
                     return;
                 }
             }
+        }
+        // Crop harvest ignores the tool's Fortune. Direct loot queries can still request the brew's bonus.
+        if (tool.getEnchantmentLevel(Enchantments.BLOCK_FORTUNE) > 0) {
+            tool = tool.copy();
+            var enchantments = new LinkedHashMap<>(tool.getAllEnchantments());
+            enchantments.remove(Enchantments.BLOCK_FORTUNE);
+            EnchantmentHelper.setEnchantments(enchantments, tool);
         }
         super.playerDestroy(level, player, pos, state, blockEntity, tool);
     }

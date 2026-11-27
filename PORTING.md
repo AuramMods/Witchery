@@ -1121,6 +1121,15 @@
 - [x] Restore legacy immovability for the 28 blocks that Quark made piston-movable in Auram. The previous JAR let a piston break a formed altar and discharge its core, and let push and pull carry stocked Poppet Shelves across a chunk boundary. The original and rebuilt servers kept the altar charged and both shelves stocked in their original cells. Clean Forge and copied Auram kept the same state and shelf tickets across dedicated restarts. Copied Auram matched all 121 original default push and pull rules with Quark enabled, and a vanilla chest still moved in both directions with its named item.
 - [x] Restore clicked-cell replacement for the Heart Glyph, three chalk glyphs, Dream Catcher, both snow pressure plates, and both snow slab IDs. The original, packaged clean Forge, and copied Auram survival interactions matched the nine replacements and their drops. Snow slabs retain the original face-dependent merge, flip, and no-op outcomes, including a merge with an adjacent half. Both double-slab forms can be replaced by one slab. The muted client used the normal placement binding to replace a Heart Glyph and mounted Dream Catcher and to place a second and third snow slab. All 339 local Forge GameTests passed.
 
+### Witchery crop harvesting and models (2026-11-27)
+
+- The running 0.24.1 server sampled all eight shared crops at immature, mature, and high saved ages with an ordinary and a Fortune III pickaxe. It found equivalent ordinary and enchanted harvests. Snowbell yielded one Snowball and up to three seeds, with one optional Icy Needle. The original mature Snowbell yielded 84 needles in 400 samples. The original direct drop query can apply the extra seed rolls used by the Harvesting brew.
+- The rebuilt tables treat supported ages above the original maturity threshold as mature and roll once for the Snowbell needle. Ordinary player harvesting ignores tool Fortune. The Fortune potion and a strengthened Harvesting brew still add seed rolls through the explicit loot paths. Clean Forge and copied Auram passed all 64 checks with the same reobfuscated JAR. The previous clean Forge package passed 45.
+- The original crop renderer uses crossed sprites for Snowbell, Wolfsbane, and Wormwood. The muted Forge client checked the baked geometry and stage texture for all 64 registered age states across the eight crops. See `build/qa-crop-harvest/`.
+- Two hidden background clients connected at zero master volume using OpenAL No Output. The survival player planted a supplied Snowbell seed on farmland and grew it with bone meal. A dedicated restart preserved it at age four and a fixture Snowbell at age seven. The player broke both normally with a Fortune III pickaxe, collected both Snowballs, and kept the enchantment. The fixture supplied the plot, seed, bone meal, and pickaxe.
+- Local Java 17 data generation, JAR reobfuscation, and all 617 required Forge GameTests passed.
+- The harvest comparison used Peaceful difficulty to measure the Mandrake's ordinary root and seed drops. The shared crop pass still needs to verify the live Mandrake's spawn paths when it is disturbed by harvest magic or destruction without a player.
+
 ## Creative pick-block (2026-11-25)
 
 - [x] Restore empty picks for Force, both portals, and both temporary brew dispersals. Force keeps its solid collision and all five retain their registered items for saved inventories and commands.
@@ -3126,6 +3135,8 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Compare [Leech Chest access and redstone](#leech-chests-blood-roses-and-the-boline-2026-11-20) and the [Refilling Chest clock and loot placement](#torment-milestone-2026-11-19).
   - [x] Compare [Silver Vat observations and Grassper offering release](#silver-vat-and-silver-sword-2026-11-20).
   - [x] Compare [area ward attribution and column recovery](#area-ward-attribution-and-column-recovery-2026-11-27) for Void Bramble and the three owner-recoverable statues.
+  - [x] Compare [crop maturation, harvest drops, and stage models](#witchery-crop-harvesting-and-models-2026-11-27) across the eight legacy crops.
+  - [ ] Compare the live Mandrake's spawn paths when severed by harvest magic or destroyed without a player.
 - [ ] Item behavior parity pass (including metadata-subitem conversions).
   - [x] Compare melee modifiers, sword guards, and Boline harvest against the [melee tool measurements](#melee-tools-and-boline-harvesting-2026-11-26).
 - [x] Brewing, Kettle, Distillery, Spinning Wheel, and Brazier parity.
