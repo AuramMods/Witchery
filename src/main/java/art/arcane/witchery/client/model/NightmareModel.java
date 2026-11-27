@@ -66,8 +66,9 @@ public final class NightmareModel extends EntityModel<Nightmare> {
         PartDefinition arm = root.addOrReplaceChild(name,
                 CubeListBuilder.create().texOffs(40, 16).addBox(-1, -2, -1, 2, 16, 2),
                 PartPose.offset(x, -4, 0));
-        arm.addOrReplaceChild("index", CubeListBuilder.create().texOffs(4, textureY).addBox(0, 0, -1, 1, 6, 1),
-                PartPose.offsetAndRotation(0, 12, 0, -0.148353F, 0, -0.1134464F));
+        arm.addOrReplaceChild("index", CubeListBuilder.create().texOffs(4, textureY)
+                        .addBox(left ? -1 : 0, 0, -1, 1, 6, 1),
+                PartPose.offsetAndRotation(0, 12, 0, -0.148353F, 0, left ? 0.1134464F : -0.1134464F));
         arm.addOrReplaceChild("little", CubeListBuilder.create().texOffs(left ? 8 : 0, textureY)
                         .addBox(left ? 0 : -1, 0, -1, 1, 6, 1),
                 PartPose.offsetAndRotation(0, 12, 0, -0.148353F, 0, left ? -0.1134464F : 0.1134464F));
@@ -86,7 +87,8 @@ public final class NightmareModel extends EntityModel<Nightmare> {
         head.yRot = headYaw * Mth.DEG_TO_RAD;
         head.xRot = headPitch * Mth.DEG_TO_RAD;
         for (int index = 0; index < tendrils.length; index++) {
-            float motion = age * (nightmare.getId() % MOTION_PERIODS[index]) * 0.01F;
+            float frequency = 0.01F * (nightmare.getId() % MOTION_PERIODS[index]);
+            float motion = nightmare.tickCount * frequency;
             ModelPart tendril = tendrils[index];
             tendril.xRot = -1.8F + Mth.sin(motion) * 4.5F * Mth.DEG_TO_RAD;
             tendril.yRot = -1.7F;
@@ -94,7 +96,7 @@ public final class NightmareModel extends EntityModel<Nightmare> {
         }
         int remaining = nightmare.swipeTicks();
         if (remaining > 0) {
-            float phase = (Math.abs((remaining - partialTick) - 7.5F) - 3.75F) / 3.75F;
+            float phase = Mth.triangleWave(remaining - partialTick, 15);
             leftArm.xRot = rightArm.xRot = -1.5F + 0.8F * phase;
             leftArm.zRot = -1.5F + 1.5F * phase;
             rightArm.zRot = -leftArm.zRot;

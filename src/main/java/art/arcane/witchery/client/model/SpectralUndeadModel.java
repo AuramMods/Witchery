@@ -41,13 +41,13 @@ public final class SpectralUndeadModel extends HierarchicalModel<SpectralUndead>
     public static LayerDefinition robedLayer() {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
-        PartDefinition head = part(root, "head", 0, 16, -4, -8, -4, 8, 8, 8, 0, 2, 0);
+        PartDefinition head = part(root, "head", 0, 16, -4, -8, -4, 8, 8, 8, 0, 0, 0);
         part(head, "mouth", 56, 0, 0, 0, 0, 4, 5, 0, -2, -4, -4.02F);
-        part(root, "body", 16, 0, -4, 0, -2, 8, 10, 4, 0, 2, 0);
-        part(root, "right_arm", 0, 0, -3, -2, -2, 4, 12, 4, -5, 4, 0);
-        part(root, "left_arm", 0, 0, -1, -2, -2, 4, 12, 4, 5, 4, 0);
-        part(root, "robe_upper", 38, 9, -4, 0, -2, 8, 6, 5, 0, 12, 0);
-        part(root, "robe_lower", 32, 20, -5, 0, -2, 10, 6, 6, 0, 18, 0);
+        part(root, "body", 16, 0, -4, 0, -2, 8, 10, 4, 0, 0, 0);
+        part(root, "right_arm", 0, 0, -3, -2, -2, 4, 12, 4, -5, 2, 0);
+        part(root, "left_arm", 0, 0, -1, -2, -2, 4, 12, 4, 5, 2, 0);
+        part(root, "robe_upper", 38, 9, -4, 0, -2, 8, 6, 5, 0, 10, 0);
+        part(root, "robe_lower", 32, 20, -5, 0, -2, 10, 6, 6, 0, 16, 0);
         return LayerDefinition.create(mesh, 64, 32);
     }
 
@@ -60,14 +60,14 @@ public final class SpectralUndeadModel extends HierarchicalModel<SpectralUndead>
         part(root, "left_arm", 40, 0, -1, -2, -1, 2, 18, 2, 5, 2, 0);
         part(root, "right_second_arm", 40, 0, -1, -2, -1, 2, 18, 2, -5, 2, 0);
         part(root, "left_second_arm", 40, 0, -1, -2, -1, 2, 18, 2, 5, 2, 0);
-        part(root, "right_leg", 0, 16, -1, 0, -1, 2, 13, 2, -2, 11, 0.1F);
-        part(root, "left_leg", 0, 16, -1, 0, -1, 2, 13, 2, 2, 11, 0.1F);
+        part(root, "right_leg", 0, 16, -1, 0, -1, 2, 13, 2, -2, 12, 0.1F);
+        part(root, "left_leg", 0, 16, -1, 0, -1, 2, 13, 2, 2, 12, 0.1F);
         return LayerDefinition.create(mesh, 64, 32);
     }
 
     private static PartDefinition part(PartDefinition parent, String name, int u, int v, float x, float y, float z,
                                        int width, int height, int depth, float anchorX, float anchorY, float anchorZ) {
-        return parent.addOrReplaceChild(name, CubeListBuilder.create().texOffs(u, v).mirror().addBox(x, y, z, width, height, depth),
+        return parent.addOrReplaceChild(name, CubeListBuilder.create().texOffs(u, v).addBox(x, y, z, width, height, depth),
                 PartPose.offset(anchorX, anchorY, anchorZ));
     }
 
@@ -87,34 +87,37 @@ public final class SpectralUndeadModel extends HierarchicalModel<SpectralUndead>
         };
         float idle = Mth.sin(age * 0.067F) * 0.05F;
         if (poltergeist) {
-            animatePoltergeist(mob, walk, speed, age, idle);
+            animatePoltergeist(mob, walk, speed, age, idle, yaw);
         } else {
             boolean screaming = mob.screaming();
-            float reach = mob.kind() == SpectralUndead.Kind.SPECTRE ? -1.5F : -0.2F;
+            boolean reaching = mob.kind() == SpectralUndead.Kind.SPECTRE;
+            float reach = reaching ? -1.5F : -0.2F;
             rightArm.xRot = reach + idle;
             leftArm.xRot = reach - idle;
-            rightArm.zRot = screaming ? 1 : 0;
+            rightArm.zRot = screaming && !reaching ? 1 : 0;
             leftArm.zRot = -rightArm.zRot;
             head.getChild("mouth").visible = screaming;
         }
     }
 
-    private void animatePoltergeist(SpectralUndead mob, float walk, float speed, float age, float idle) {
-        float swing = Mth.cos(walk * 0.6662F) * speed;
+    private void animatePoltergeist(SpectralUndead mob, float walk, float speed, float age, float idle, float headYaw) {
+        float stride = walk * 0.6662F;
+        float leftSwing = Mth.cos(stride) * speed;
+        float rightSwing = Mth.cos(stride + Mth.PI) * speed;
         float sway = Mth.cos(age * 0.09F) * 0.05F + 0.05F;
         ModelPart rightSecond = root.getChild("right_second_arm");
         ModelPart leftSecond = root.getChild("left_second_arm");
-        rightArm.xRot = -swing + idle;
-        leftArm.xRot = swing - idle;
-        rightSecond.xRot = -swing * 0.5F - idle;
-        leftSecond.xRot = swing * 0.5F + idle;
+        rightArm.xRot = rightSwing + idle;
+        leftArm.xRot = leftSwing - idle;
+        rightSecond.xRot = rightSwing * 0.5F - idle;
+        leftSecond.xRot = leftSwing * 0.5F + idle;
         rightArm.zRot = leftSecond.zRot = sway;
         leftArm.zRot = rightSecond.zRot = -sway;
-        root.getChild("right_leg").xRot = swing * 1.4F;
-        root.getChild("left_leg").xRot = -swing * 1.4F;
+        root.getChild("right_leg").xRot = leftSwing * 1.4F;
+        root.getChild("left_leg").xRot = rightSwing * 1.4F;
         if (mob.throwAnimation() > 0) {
-            float partial = age - mob.tickCount;
-            float wave = (Math.abs((mob.throwAnimation() - partial) % 15 - 7.5F) - 3.75F) / 3.75F;
+            // The original throw pose depends on the head turn as well as the attack timer.
+            float wave = Mth.triangleWave(mob.throwAnimation() - headYaw, 15);
             rightArm.xRot = leftArm.xRot = rightSecond.xRot = leftSecond.xRot = -1.5F + 0.8F * wave;
             rightArm.zRot = 1.5F - 1.5F * wave;
             leftArm.zRot = -rightArm.zRot;

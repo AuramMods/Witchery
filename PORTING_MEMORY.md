@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Nightmare and spectral undead poses (2026-11-26)
+
+- The original 0.24.1 models supplied 312 part poses across eight cases per creature. The preceding Forge package differed in 258 of the 1,872 sampled values. The largest differences were the Spectre and Banshee's two-pixel robe and arm offsets and the Poltergeist's four-arm throw. The Nightmare tendrils used render age instead of the whole entity tick and its left index finger followed the little finger's angle.
+- The rebuilt package matched all 1,872 sampled values within `0.000002`. The cases include idle, walking, the beginning and end of the attack window, two head turns, screaming, and the obscured or defended state. All 16 mouth states, 32 opacity observations, and the four tracked entity textures passed. The scripted fixture supplied the render state and summoned the four creatures in a copied dedicated world.
+- The exact reobfuscated `build/qa-spirit-poses/candidate.jar` has SHA-256 `de8f77e8d72e893c1d6b2890ecc2df1ddf3734f557b1549ded586b414963699d`. The dedicated server and client copies matched. The client started hidden and unfocused with master volume zero and OpenAL's No Output device. The foreground monitor recorded one unchanged application. See `native/pose.log`, `baseline-comparison.txt`, `final-comparison.txt`, and `survival/client-final.log` in the same directory.
+- Local Java 17 data generation and JAR reobfuscation passed. An overlapping packaging run replaced compiled classes during the first GameTest run. The sequential rerun passed all 563 required Forge GameTests. See `gametest-final.log` in the same directory.
+
 ## Cauldron dispersal and cast trigger comparison (2026-11-26)
 
 - The original dedicated server completed all 26 fixed item casts at the normal final pulse. The recorded result includes item ID, metadata, count, exact altar debit and an empty cauldron. The original Witch Hat cast admitted Leonard at Y plus 1.05 and spent 14,839 power without chalk. A Forge veto prevented admission and still sent the same explosion and Wither sound from that position within 16 blocks. See `build/qa-cauldron-cast-matrix/native/runtime.log`.

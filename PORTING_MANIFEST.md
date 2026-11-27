@@ -941,6 +941,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 - The Witch Cat uses Witchery's black coat for every saved variant, with the original 0.8 scale when tamed and no modern collar layer. The port uses the current cat animation model.
 - The Demon and Imp use the original wing angles. The Imp and Leonard pivot their shoulders on a swing and use the original mounted limbs. Leonard and Lilith time their casting strikes from the attack counter and relative head yaw. Lilith's skirt follows the walking pose before the mounted override.
 - The Lord of Torment keeps its feet stationary, opens its wings on positive X or Z movement, and uses the original upper-arm strike and four-arm spread. Baba Yaga's pestle and nose animate from whole entity ticks. Her bottle pose keeps the original nose offset.
+- The Nightmare uses whole entity ticks for all seven tendrils and partial ticks for its swipe. The Spectre and Banshee share the original robe pivots. The Spectre reaches straight ahead when its mouth opens, while the Banshee spreads its arms. The Poltergeist's four-arm throw uses the original attack countdown and relative head yaw. Its leg pivots sit at twelve model pixels.
 
 The modern registry also keeps `witchery:brew` and `witchery:brew2` as working projectile types for earlier 1.20.1 saves. Their fixed and custom payload decoding is shared with the 1.7.10 importer. The older port's two spawn egg item IDs remain readable. Protocol 89 covers the changed entity data.
 
