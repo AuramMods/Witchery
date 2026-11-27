@@ -257,15 +257,17 @@ public final class LegacyWorldIds {
                 persisted.getList("WITCPriIncInv", Tag.TAG_COMPOUND),
                 dreamSession.getList("OverworldInventory", Tag.TAG_COMPOUND),
                 dreamSession.getList("SpiritInventory", Tag.TAG_COMPOUND))) {
-            visitStoredCompounds(inventory, stack -> {
-                if (!stack.contains("id", Tag.TAG_STRING) || !stack.contains("Count", Tag.TAG_BYTE) || stack.getByte("Count") <= 0
-                        || from >= 100 && !hasLegacyStackEncoding(stack)) return;
-                var id = ResourceLocation.tryParse(stack.getString("id"));
-                if (id != null && !id.getPath().isEmpty() && ResourceLocation.DEFAULT_NAMESPACE.equals(id.getNamespace())) {
-                    upgradeVanillaStack(stack, id, fixer, from, currentVersion, from >= 100);
-                    upgradeStackTags(stack, from >= 100, from < 100);
-                }
-            });
+            visitStoredCompounds(inventory, stack -> repairNamedVanillaStack(stack, fixer, from, currentVersion));
+        }
+    }
+
+    static void repairNamedVanillaStack(CompoundTag stack, DataFixer fixer, int from, int to) {
+        if (!stack.contains("id", Tag.TAG_STRING) || !stack.contains("Count", Tag.TAG_BYTE) || stack.getByte("Count") <= 0
+                || from >= 100 && !hasLegacyStackEncoding(stack)) return;
+        var id = ResourceLocation.tryParse(stack.getString("id"));
+        if (id != null && !id.getPath().isEmpty() && ResourceLocation.DEFAULT_NAMESPACE.equals(id.getNamespace())) {
+            upgradeVanillaStack(stack, id, fixer, from, to, from >= 100);
+            upgradeStackTags(stack, from >= 100, from < 100);
         }
     }
 

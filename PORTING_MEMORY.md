@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Living equipment in earlier converted saves (2026-11-27)
+
+- The original living entities save the main hand, boots, leggings, chest and head in `Equipment` and the corresponding probabilities in `DropChances`. A Forge-format fixture retaining those fields passed eight of 20 checks on the preceding package. The Witch Hunter and mounted Follower lost their gear and the Owl lost its parcel.
+- Ordinary world and player-vehicle loading now move the surviving fields into the current slots. Explicit modern lists take precedence independently. Restored named vanilla items retain their damage and display text even without the original registry. The captured registry still resolves numeric IDs. Missing entries keep the current equipment and drop defaults.
+- Clean Forge passed all 20 first-load and 20 restart checks with named stacks and again with numeric stacks and a captured registry. The reloaded Owl delivered its Arthana with its name and wear intact after the fixture prepared a platform and assigned a Waystone. It returned to its saved home and sat. See `build/qa-converted-equipment/clean/checks-delivery.log`.
+- Copied Auram passed the same 20 first-load and 20 restart checks with numeric stacks. Reading the saved region confirmed modern equipment slot lists on all six fixture entities in all three profiles. The original 0.24.1 import fixture passed 56 checks at first load and 58 on restart with the same JAR, including delivery of its saved red wool parcel. See `build/qa-equipment-native-replay/`.
+- Local Java 17 data generation, JAR reobfuscation, and all 597 required Forge GameTests passed, including the earlier player-mount regression. The dedicated runs used `--nogui`. The reobfuscated archive is `build/qa-converted-equipment/release.jar`, SHA-256 `2b08e909f6502b43211993a66e9870442ad7ffe0dbccd4583bf32ea1add4c4f7`.
+
 ## Poppet Shelf, Blood Crucible, Candelabra, and Dream Catcher rendering (2026-11-27)
 
 - The Poppet Shelf, Blood Crucible and Candelabra use the original cuboids and texture coordinates in the world and as items. The Candelabra replaces its flat item sprite with the five-wick model and checks its wicks in the original order. The Blood Crucible draws its surface with the original texture orientation, tint and light. The Dream Catcher places all five nets at the original depth and offsets the entire model toward its supporting wall.

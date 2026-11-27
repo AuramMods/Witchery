@@ -9,14 +9,17 @@ import com.mojang.datafixers.DataFixer;
 import com.mojang.serialization.Dynamic;
 import net.minecraft.SharedConstants;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.FloatTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.datafix.DataFixTypes;
+import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.storage.ChunkStorage;
@@ -264,7 +267,9 @@ public final class LegacyChunkEntities {
                 restoreApothecary(entity);
             }
         }
-        if (entity.getString("id").equals(SPAWNER_CART)) {
+        String type = entity.getString("id");
+        if (type.startsWith(NAMESPACE)) restoreOriginalEquipment(entity);
+        if (type.equals(SPAWNER_CART)) {
             if (entity.get(LEGACY_CART_SPAWNER) instanceof CompoundTag spawner) {
                 entity.merge(spawner);
                 entity.remove(LEGACY_CART_SPAWNER);
@@ -293,5 +298,46 @@ public final class LegacyChunkEntities {
             entity.put("HandItems", armor);
             entity.put("ArmorItems", hands);
         }
+    }
+
+    private static void restoreOriginalEquipment(CompoundTag entity) {
+        // Earlier conversions can leave the original main hand, boots, leggings, chest and head list.
+        ListTag equipment = entity.getList("Equipment", Tag.TAG_COMPOUND);
+        if (!equipment.isEmpty()) {
+            restoreOriginalEquipmentSlots(entity, equipment, "HandItems", 0, 1);
+            restoreOriginalEquipmentSlots(entity, equipment, "ArmorItems", 1, 4);
+            entity.remove("Equipment");
+        }
+        ListTag chances = entity.getList("DropChances", Tag.TAG_FLOAT);
+        if (!chances.isEmpty()) {
+            var defaultChance = FloatTag.valueOf(Mob.DEFAULT_EQUIPMENT_DROP_CHANCE);
+            if (!entity.contains("HandDropChances", Tag.TAG_LIST)) {
+                var hand = new ListTag();
+                hand.add(chances.get(0));
+                hand.add(defaultChance);
+                entity.put("HandDropChances", hand);
+            }
+            if (!entity.contains("ArmorDropChances", Tag.TAG_LIST)) {
+                var armor = new ListTag();
+                for (int i = 1; i <= 4; i++) armor.add(i < chances.size() ? chances.get(i) : defaultChance);
+                entity.put("ArmorDropChances", armor);
+            }
+            entity.remove("DropChances");
+        }
+    }
+
+    private static void restoreOriginalEquipmentSlots(CompoundTag entity, ListTag equipment, String key,
+                                                      int start, int count) {
+        if (entity.contains(key, Tag.TAG_LIST)) return;
+        int version = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+        var slots = new ListTag();
+        for (int i = start; i < start + count; i++) {
+            CompoundTag stack = equipment.getCompound(i);
+            LegacyWorldIds.repairNamedVanillaStack(stack, DataFixers.getDataFixer(), version, version);
+            slots.add(stack);
+        }
+        // The original list has no offhand slot.
+        if (start == 0) slots.add(new CompoundTag());
+        entity.put(key, slots);
     }
 }

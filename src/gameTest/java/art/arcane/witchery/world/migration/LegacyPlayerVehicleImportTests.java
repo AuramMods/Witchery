@@ -9,8 +9,12 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraftforge.common.util.FakePlayer;
@@ -33,7 +37,9 @@ public final class LegacyPlayerVehicleImportTests {
             var player = new FakePlayer(helper.getLevel(), owner);
             var mountId = UUID.randomUUID();
             var mount = TagParser.parseTag("""
-                    {id:"witchery.wingedmonkey",Pos:[5.5d,4.0d,5.5d],OwnerUUID:"%s",FeatherColor:9b}
+                    {id:"witchery.wingedmonkey",Pos:[5.5d,4.0d,5.5d],OwnerUUID:"%s",FeatherColor:9b,
+                      Equipment:[{id:"minecraft:wooden_sword",Count:1b,Damage:7s},{id:"minecraft:leather_boots",Count:1b,Damage:6s}],
+                      DropChances:[1.1f,1.2f],HandItems:[{},{id:"minecraft:shield",Count:1b}]}
                     """.formatted(owner.getId()));
             mount.putUUID("UUID", mountId);
             var vehicle = new CompoundTag();
@@ -51,6 +57,18 @@ public final class LegacyPlayerVehicleImportTests {
             helper.assertTrue(entity instanceof WingedMonkey monkey && monkey.getUUID().equals(loaded.getUUID("Attach"))
                             && monkey.isTame() && owner.getId().equals(monkey.getOwnerUUID()) && monkey.color() == 9,
                     "The player storage restores the mount type, attachment, owner, and color without a captured registry");
+            var monkey = (WingedMonkey) entity;
+            var boots = monkey.getItemBySlot(EquipmentSlot.FEET);
+            helper.assertTrue(boots.is(Items.LEATHER_BOOTS) && boots.getDamageValue() == 6,
+                    "The legacy boots must keep their type and wear in the restored armor slots");
+            helper.assertTrue(monkey.getMainHandItem().isEmpty() && monkey.getOffhandItem().is(Items.SHIELD),
+                    "Explicit modern hand slots must keep the empty main hand and shield");
+            var equipment = monkey.saveWithoutId(new CompoundTag());
+            var hand = equipment.getList("HandDropChances", Tag.TAG_FLOAT);
+            var armor = equipment.getList("ArmorDropChances", Tag.TAG_FLOAT);
+            helper.assertTrue(hand.getFloat(0) == 1.1F && hand.getFloat(1) == Mob.DEFAULT_EQUIPMENT_DROP_CHANCE
+                            && armor.getFloat(0) == 1.2F && armor.getFloat(3) == Mob.DEFAULT_EQUIPMENT_DROP_CHANCE,
+                    "The original drop chances must keep their slot order and missing slots use the modern default");
         } finally {
             FileUtils.deleteDirectory(root.toFile());
         }
