@@ -38,10 +38,10 @@ public final class LegacyPlayerVehicleImportTests {
             var mountId = UUID.randomUUID();
             var mount = TagParser.parseTag("""
                     {id:"witchery.wingedmonkey",Pos:[5.5d,4.0d,5.5d],OwnerUUID:"%s",FeatherColor:9b,
+                      CustomName:"Morrow Carrier",UUIDMost:%dL,UUIDLeast:%dL,
                       Equipment:[{id:"minecraft:wooden_sword",Count:1b,Damage:7s},{id:"minecraft:leather_boots",Count:1b,Damage:6s}],
                       DropChances:[1.1f,1.2f],HandItems:[{},{id:"minecraft:shield",Count:1b}]}
-                    """.formatted(owner.getId()));
-            mount.putUUID("UUID", mountId);
+                    """.formatted(owner.getId(), mountId.getMostSignificantBits(), mountId.getLeastSignificantBits()));
             var vehicle = new CompoundTag();
             vehicle.putUUID("Attach", mountId);
             vehicle.put("Entity", mount);
@@ -55,8 +55,9 @@ public final class LegacyPlayerVehicleImportTests {
             var loaded = storage.load(player).getCompound("RootVehicle");
             var entity = EntityType.loadEntityRecursive(loaded.getCompound("Entity"), helper.getLevel(), Function.identity());
             helper.assertTrue(entity instanceof WingedMonkey monkey && monkey.getUUID().equals(loaded.getUUID("Attach"))
+                            && monkey.getName().getString().equals("Morrow Carrier")
                             && monkey.isTame() && owner.getId().equals(monkey.getOwnerUUID()) && monkey.color() == 9,
-                    "The player storage restores the mount type, attachment, owner, and color without a captured registry");
+                    "The player storage restores the mount type, attachment, name, owner, and color without a captured registry");
             var monkey = (WingedMonkey) entity;
             var boots = monkey.getItemBySlot(EquipmentSlot.FEET);
             helper.assertTrue(boots.is(Items.LEATHER_BOOTS) && boots.getDamageValue() == 6,

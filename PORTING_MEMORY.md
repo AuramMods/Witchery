@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Creature identity and leash recovery (2026-11-27)
+
+- Witchery 0.24.1 serialized a named Toad, Hobgoblin, Owl and Coven Witch. The Hobgoblin's lead used the Toad's UUID halves. The Owl's lead used the fence at `39, 220, 54`. Agatha Rowan's accepted Bones quest had two bones left. See `build/qa-creature-identity/native/reference-final.log`.
+- Ordinary Forge loads recover literal creature names and split UUIDs, including in nested player mounts. Current styled names, UUIDs and fence coordinates keep their precedence. The preceding mixed Forge package passed 7 of 14 checks. The same source records passed 13 original-import and 14 native-region restart checks on clean Forge. The rebuilt package passed 14 mixed-record checks and all 15 restart checks. Both restart checks released the restored Hobgoblin lead when its Toad died.
+- Copied Auram also passed 14 mixed-record checks and all 15 restart checks. The isolated Does It Tick configuration allowed Witchery mobs to tick with no players connected. See `build/qa-creature-identity/pack-mixed/{ticked,restart}.log`.
+- The muted background survival player turned in both Bones through normal interactions. A dedicated restart retained Agatha Rowan, skin four and quest four in the coven. An ordinary login from an earlier mount record reattached the player to the named Winged Monkey. The next player save kept the mount's UUID, owner, name and coat alongside the coven member. The fixture supplied the accepted quest, plot, two Bones and earlier mount record. Both clients used OpenAL No Output at master volume zero. See `build/qa-creature-identity/play/`.
+- Local Java 17 data generation, JAR reobfuscation and all 613 required Forge GameTests passed. The package at `build/qa-creature-identity/release.jar` has SHA-256 `70dbabf700536c48caf454fa386bcf98e537571ae2d27df234b306ff5619575f`.
+
 ## Prediction reading and courtship (2026-11-27)
 
 - The original server enumerated all 17 prediction IDs with 119 slots without Nether eligibility and 122 with it. Crystal Ball rolls traverse the registry in descending ID order. The overdue mining and rescue cases each advance the world random stream without fulfilling the forecast. Buried Treasure skips the pulse, and an overdue Love attempt consumes the inherited roll if the selected landing site cannot support the suitor. See `build/qa-divination-parity/native/reference-final.log`.

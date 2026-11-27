@@ -268,7 +268,10 @@ public final class LegacyChunkEntities {
             }
         }
         String type = entity.getString("id");
-        if (type.startsWith(NAMESPACE)) restoreOriginalEquipment(entity);
+        if (type.startsWith(NAMESPACE)) {
+            restoreOriginalIdentity(entity);
+            restoreOriginalEquipment(entity);
+        }
         if (type.equals(SPAWNER_CART)) {
             if (entity.get(LEGACY_CART_SPAWNER) instanceof CompoundTag spawner) {
                 entity.merge(spawner);
@@ -298,6 +301,23 @@ public final class LegacyChunkEntities {
             entity.put("HandItems", armor);
             entity.put("ArmorItems", hands);
         }
+    }
+
+    private static void restoreOriginalIdentity(CompoundTag entity) {
+        LegacyWorldIds.upgradeStoredName(entity, "CustomName", false);
+        restoreOriginalUuid(entity);
+        if (entity.get("Leash") instanceof CompoundTag leash
+                && !(leash.contains("X", Tag.TAG_ANY_NUMERIC) && leash.contains("Y", Tag.TAG_ANY_NUMERIC)
+                && leash.contains("Z", Tag.TAG_ANY_NUMERIC))) {
+            restoreOriginalUuid(leash);
+        }
+    }
+
+    private static void restoreOriginalUuid(CompoundTag data) {
+        if (!data.contains("UUIDMost", Tag.TAG_LONG) || !data.contains("UUIDLeast", Tag.TAG_LONG)) return;
+        if (!data.hasUUID("UUID")) data.putUUID("UUID", new UUID(data.getLong("UUIDMost"), data.getLong("UUIDLeast")));
+        data.remove("UUIDMost");
+        data.remove("UUIDLeast");
     }
 
     private static void restoreOriginalEquipment(CompoundTag entity) {

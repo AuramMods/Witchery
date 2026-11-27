@@ -578,13 +578,15 @@ public final class LegacyWorldIds {
     }
 
     private static void upgradeItemDisplay(CompoundTag display, boolean originalFormat) {
-        if (display.contains("Name", Tag.TAG_STRING)) {
-            String name = display.getString("Name");
-            if (!name.isEmpty() && (originalFormat || !isComponent(name))) {
-                display.putString("Name", Component.Serializer.toJson(Component.literal(name)));
-            }
-        }
+        upgradeStoredName(display, "Name", originalFormat);
         upgradeItemLore(display, originalFormat);
+    }
+
+    static void upgradeStoredName(CompoundTag data, String key, boolean originalFormat) {
+        String name = data.getString(key);
+        if (!name.isEmpty() && (originalFormat || !isComponent(name))) {
+            data.putString(key, Component.Serializer.toJson(Component.literal(name)));
+        }
     }
 
     private static void upgradeItemLore(CompoundTag display, boolean originalFormat) {
