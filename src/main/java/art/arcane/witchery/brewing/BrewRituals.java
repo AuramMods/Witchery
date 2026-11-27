@@ -61,7 +61,8 @@ public final class BrewRituals {
         summon.moveTo(Vec3.atBottomCenterOf(surface.above()).add(0, 0.05, 0));
         if (summon instanceof Mob mob) mob.setPersistenceRequired();
         if (summon instanceof Leonard leonard) leonard.beginSummoning();
-        if (level.addFreshEntity(summon)) WitcheryNetwork.sendCauldronSummon(level, summon.position(), summon.getBbHeight());
+        level.addFreshEntity(summon);
+        WitcheryNetwork.sendCauldronSummon(level, summon.position(), summon.getBbHeight());
     }
 
     public static Result pulse(ServerLevel source, BlockPos origin, BrewMixture mixture, CompoundTag brew,

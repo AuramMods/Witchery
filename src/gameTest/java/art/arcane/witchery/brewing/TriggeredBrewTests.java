@@ -122,6 +122,33 @@ public final class TriggeredBrewTests {
         }).thenSucceed();
     }
 
+    @GameTest(template = "qa_coven_arena", batch = "witchery_triggered_brew_offering")
+    public static void itemCursePrefersTheUpperRimToTheBasin(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(7, 2, 7)).atY(196);
+        var basin = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.3, pos.getZ() + 0.5, new ItemStack(Items.PAPER));
+        var above = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 1.3, pos.getZ() + 0.5, new ItemStack(Items.STICK));
+        for (var offering : List.of(basin, above)) {
+            offering.setNoGravity(true);
+            level.addFreshEntity(offering);
+        }
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
+                level.getEntity(basin.getUUID()) == basin && level.getEntity(above.getUUID()) == above,
+                "Both offerings are tracked")).thenExecute(() -> {
+            try {
+                var brew = brewTag();
+                helper.assertTrue(BrewItemCurse.attach(level, pos, brew) && above.getItem().hasTag() && !basin.getItem().hasTag(),
+                        "The original upper offering gets the charge even when the basin item arrived first");
+                above.discard();
+                helper.assertTrue(BrewItemCurse.attach(level, pos, brew) && basin.getItem().hasTag(),
+                        "The basin still admits a charge when there is no offering above it");
+            } finally {
+                above.discard();
+                basin.discard();
+            }
+        }).thenSucceed();
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_triggered_brew_impact")
     public static void thrownCurseDistinguishesTheStruckCellAndItsNeighbor(GameTestHelper helper) {
         var level = helper.getLevel();

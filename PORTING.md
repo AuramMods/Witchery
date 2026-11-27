@@ -11,7 +11,7 @@
 
 - [ ] Close the behavior rows under Phase 4 against the 0.24.1 inventory. For each open row, list the legacy actions and the matching modern handlers, cite the existing comparisons, and record any missing behavior or explicit adaptation. Fix the uncovered cases and verify their normal gameplay entry points. The crafting grids, Circle Magic offerings, and fixed workstation registry comparisons are recorded below.
   - [x] Account for the 169 Cauldron mixing keys and 15 fixed cast keys. The running 0.24.1 registry assigned all 184 entries to the action families listed in the manifest. The identity and cost comparison still matches all 168 flattened mixing entries.
-  - [ ] Close the remaining Cauldron behavior cases against those action families. Compare modifier order, direct and diluted exposure, and each ritual delivery path using the existing runtime milestones and the original action implementations.
+  - [x] Compare Cauldron behavior against the action families. The recorded checks cover modifier order, direct and diluted exposure, and each ritual delivery path.
     - [x] Compare the application of all 57 potion and curse keys across base drinks, inversion, ordered boosts, liquid contact, masked gas contact, the splash boundary, and Taglock effect application. Clean Forge matched all 399 observations. Copied Auram matched 397 directly. Its vanilla Instant Health control reproduced the same Ars Elemental healing bonus as the two diluted Witchery samples.
     - [x] Compare all 44 modifier inputs, including the 22 ordinary modifiers, six impact modifiers, and 16 wool colors. All 105 recipes matched on clean Forge and copied Auram, including 25 live offering sequences. The three Instant Health controls account for Auram's verified Ars Elemental healing multiplier.
     - [x] Compare all 61 direct and terrain inputs against their shared handlers. The six action groups below record the original measurements, Forge adaptations, and packaged checks.
@@ -24,7 +24,7 @@
       - [x] Compare the 17 farming and tree actions, including the eight crop and material actions and nine tree species. The [action comparison](#farming-and-tree-action-comparison-2026-11-26) records the original Witchwood canopies and the restored Forge protection checks.
       - [x] Compare the eight fluid and plant terrain actions, including Dissipate, Tide Hold, Lava Hold, Lilify, Webs, Vines, Thorns, and Sprouting. The [action comparison](#fluid-and-plant-action-comparison-2026-11-26) records the restored planting checks and the packaged fluid restart results.
       - [x] Compare the six landscape actions, including Erosion, Levelling, Blight, Raise Land, Transpose, and Transpose Ore. The [action comparison](#landscape-action-comparison-2026-11-26) records the protection, movement and cue checks.
-    - [ ] Close the five dispersals, two general cast triggers and 15 fixed cast triggers. The delivery, targeting and workstation milestones already cover several of their shared paths and the 27 fixed recipe outcomes.
+    - [x] Compare the five dispersals, two general cast triggers and 15 fixed cast triggers. The [cast comparison](#dispersal-and-cast-trigger-comparison-2026-11-26) covers all 27 fixed outcomes, release cues, and the original altar debits.
     - [x] Verify circle checks before effect capacity on saved Tongue of Dog and Taglock casts. Both dedicated profiles reopened nine pending casts. Four missing rings caused trigger refunds and preserved the batches. Five valid casts completed, including the Nether Brick case with an unused Waystone.
     - [x] Restore active Cauldron batches with inactive entries. The original accepted Gunpowder, transferred three portions, and bottled the full list. Clean Forge and copied Auram match the recipe order, tint, and altar power after restart. The Forge tests also cover replacement of an existing dispersal, matching bucket top-ups, and the position of the trigger in a resumed Mutandis cast.
     - [x] Restore rain droplet descent and impact through deep water. Clean Forge and copied Auram matched both original current samples and the flight checkpoints. The saved Cold droplet reopened at tick 400 and froze both bottom water cells on flight tick 550, as in 0.24.1.
@@ -1462,7 +1462,7 @@
 - [x] Restore cauldron casting feedback from the original runtime. A completed Swiftness cast or Mutandis recipe sends the spell and fizz cue within eight blocks. The three rejected casts return their final offering and show separate colors. Removing altar power during an active gas cast empties the cauldron with the original interruption cue.
 - [x] Restore ordered custom brew names and tooltips. The original Forge server and rebuilt muted client agreed on Colored Water, fast drinks, all four dispersals, the three-effect conjunction, and modifier placement around the dispersal ingredient. The original inverted Sugar bottle labels Slowness as `3:00` and applies 1,800 ticks. The port preserves both values and reads a saved positive drink time. The packaged client also rendered an unchanged bottle saved on the preceding build and displayed the new modifier lines in all five supported locales.
 - [x] Drink the fast mixture through the normal use binding on the muted packaged client. It applied Speed II and Regeneration and returned the glass bottle. The same reobfuscated JAR completed a headless Taglock cast on copied Auram. All 343 local Forge GameTests passed.
-- [ ] Finish the remaining brew actions, modifiers, and castable cauldron rituals.
+- [x] Complete the brew action, modifier, and cast comparisons. The [release checklist](#remaining-release-verification-2026-11-22) links the original and packaged runtime evidence.
 - [x] Match the original ingredient splash and the Gypsum and Quicklime smoke at the basin. Clean Forge and copied Auram captured the exact payloads and eight-block broadcast. A rejected Hell Gate now returns its Tongue of Dog with the failure cue and no ingredient splash. Both dedicated restarts kept the cleared vessel, rejected mixture, and refund.
 
 ## Death and Armor Cauldron Brews (2026-11-21)
@@ -2316,6 +2316,15 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Preserve the fractional power threshold for legacy fixed recipes. Golden Chalk with one Infernal ring waits for 2,111.5 altar power and spends 2,111. The brewing indicator uses the same threshold. Java 17 data generation, JAR reobfuscation, and all 213 required local Forge GameTests passed.
 - [x] Verify the rebuilt JAR on a headless Forge server. The cauldron left Refined Evil outside when empty or underprepared, then brewed Drop of Luck in the original order with a charged altar. Restart to confirm that output, then complete the Rite of Charging with a powered Heart Glyph and the same altar. The Charged Attuned Stone persisted through a second restart.
 
+### Dispersal and cast trigger comparison (2026-11-26)
+
+- The [dispersal milestones](#cauldron-dispersal-and-waystone-targets-2026-11-20) cover replacement, impact attribution, contact scaling, gas wave footing and rain flight. Packaged saved bottles replay Gunpowder and Globe Artichoke as separate instant inputs, Bat Wool and Wormwood as separate fluid cells, and the Zombie Head as a cursed control.
+- The [Taglock milestones](#taglock-cauldron-casts-and-protection-statues-2026-11-20) cover missing and moved targets, protection checks and dedicated restarts. The packaged replay restores Swiftness for 3,600 ticks at the unaided 32-block boundary and refuses the same target one block farther away. Tongue of Dog completes a bound instant cast and preserves the original gas and liquid pulse lengths.
+- The original item curse selects an offering above the cauldron. The rebuilt handler keeps that choice when a second item has settled in the modern basin. The basin alone remains a valid offering location. The [item curse milestones](#cauldron-item-curses-2026-11-20) cover splitting stacks, cat mastery and saved charges.
+- The original runtime completed all 26 fixed item casts. It recorded output IDs, variants, sizes and altar debits. The packaged comparison passes real dropped offerings into each recipe and starts the final pulse from the recorded warmup. Both versions empty the vessel on completion.
+- The original Witch Hat cast pays 14,839 power without chalk and sends the same explosion and Wither cue on both an admitted summon and a Forge veto. A veto leaves the cauldron empty and adds no Leonard to the world.
+- All 41 cases passed on clean Forge and copied Auram with the same reobfuscated JAR. Local Java 17 data generation, reobfuscation and all 563 required GameTests passed.
+
 ## Taglock Cauldron Casts and Protection Statues (2026-11-20)
 
 - [x] Trigger a full cauldron with a Taglock Kit and 1,000 base altar power. The cast can use a drinking brew. It resolves the tagged creature or player at release, applies the full effect to that target, and refunds the original kit and preserves the brew if the target is missing or too far away.
@@ -2886,9 +2895,9 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
 ### Phase 4 - Feature Behavior Pass (depth)
 - [ ] Blocks/tile entity behavior parity pass.
 - [ ] Item behavior parity pass (including metadata-subitem conversions).
-- [ ] Brewing/kettle/distillery/spinning/brazier parity.
+- [x] Brewing, Kettle, Distillery, Spinning Wheel, and Brazier parity.
   - [x] Compare the fixed Kettle, Distillery, Spinning Wheel, and Brazier registries and exercise their interactions and saved state in the workstation milestones above.
-  - [ ] Complete the remaining cauldron effect, modifier, and castable ritual comparisons.
+  - [x] Complete the Cauldron effect, modifier, and cast comparisons in the release checklist.
 - [ ] Ritual and circle magic parity.
 - [ ] Infusion, prediction, creature power parity.
 - [ ] Entity AI/combat/spawn tuning parity.

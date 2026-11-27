@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron dispersal and cast trigger comparison (2026-11-26)
+
+- The original dedicated server completed all 26 fixed item casts at the normal final pulse. The recorded result includes item ID, metadata, count, exact altar debit and an empty cauldron. The original Witch Hat cast admitted Leonard at Y plus 1.05 and spent 14,839 power without chalk. A Forge veto prevented admission and still sent the same explosion and Wither sound from that position within 16 blocks. See `build/qa-cauldron-cast-matrix/native/runtime.log`.
+- The original triggered ritual cursed the offering above the rim even when the item below it arrived first. The rebuilt port searches the original space first and uses the modern basin when that space has no offering. It also sends Leonard's cue when Forge vetoes the spawn. The previous package failed those two cases in the 41-case replay. See `clean-baseline-final/baseline.log` in the same directory.
+- The replay feeds dropped ingredients into all 27 fixed casts, with the final warmup supplied by the fixture. It also verifies the five saved-bottle dispersals, both triggered item locations, Taglock distance, and instant, gas and liquid Tongue of Dog paths. The earlier milestones preserve the original dedicated restart and survival checks.
+- Java 17 data generation, reobfuscation and all 563 required local Forge GameTests passed. The exact archive is `build/qa-cauldron-cast-matrix/candidate.jar`, SHA-256 `65478d65ac891fcea22aab3bfaf96e833a54acb6424e95e4b20588ed8e95374f`.
+- Headless clean Forge and copied Auram both passed the 41-case replay. See `clean-candidate/final.log` and `pack-candidate/final.log` in the same directory. This closes the Cauldron comparisons and the brewing workstation row in Phase 4. The remaining behavior, visual, save and release validation rows are still open.
+
 ## Cauldron landscape action comparison (2026-11-26)
 
 - Witchery 0.24.1 checked empty cells for Blight, Levelling, Erosion, and the changed destinations of Transpose. A denied Blight surface preserved the protected soil and its random draw. A denied Levelling fill left the stone available to the next cell. The original Raise Land raised a pig three blocks even over an empty column. See `build/qa-cauldron-landscape-matrix/native/cues.log`.

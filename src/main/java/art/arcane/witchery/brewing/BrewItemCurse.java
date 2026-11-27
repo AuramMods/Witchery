@@ -28,11 +28,12 @@ public final class BrewItemCurse {
         AABB above = new AABB(cauldron.above());
         // The original offering area is above the rim. Items can also settle inside the modern hollow basin.
         AABB interior = new AABB(cauldron).deflate(0.125, 0, 0.125);
-        ItemEntity offering = level.getEntitiesOfClass(ItemEntity.class, above.minmax(interior),
+        var offerings = level.getEntitiesOfClass(ItemEntity.class, above.minmax(interior),
                 item -> item.isAlive() && !item.getItem().isEmpty()
-                        && (above.intersects(item.getBoundingBox()) || interior.intersects(item.getBoundingBox())))
-                .stream().findFirst().orElse(null);
-        if (offering == null) return false;
+                        && (above.intersects(item.getBoundingBox()) || interior.intersects(item.getBoundingBox())));
+        if (offerings.isEmpty()) return false;
+        ItemEntity offering = offerings.stream().filter(item -> above.intersects(item.getBoundingBox()))
+                .findFirst().orElse(offerings.get(0));
 
         AABB players = above.inflate(3);
         int charges = level.getEntitiesOfClass(ServerPlayer.class, players, FamiliarBinding::hasCurseMastery).isEmpty() ? 1 : 2;
