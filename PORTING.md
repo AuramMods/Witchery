@@ -963,6 +963,14 @@
 - [x] Restart the dedicated server after staging two of five portable copy offerings. Verify two named copies with the original Nether coordinates and one discharged stone. Verify the powered copy draws 500 altar power, and cancellation after an Arthana returns refunds the Gypsum.
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 414 required Forge GameTests. The five new cases cover portable binding, both copy recipes, reusable blade tags, legacy pending returns, and the Spectral Stone exception.
 
+### Offering launches and spawn vetoes (2026-11-27)
+
+- The original server measured discharged Attuned Stones, Arthana, Boline, Necromantic Stone reuse and consumption, and both refunds from a rejected Ice Shell. Legacy returns launch at the center of the recorded offering block, including negative coordinates. They use immediate pickup, independent horizontal motion within 0.1 blocks per tick, and the original `0.2F` vertical launch. Wear and item tags remain on reused tools and refunds.
+- A fresh reusable offering remains at its source if Forge vetoes the return spawn. Already-consumed offerings and reusable items staged in early Forge saves move to a per-dimension saved refund list if their spawn is vetoed. The server retries in entity-ticking chunks and removes each record after admission. The list survives the Heart Glyph being removed and keeps the original stack and offering position.
+- In a prepared survival ring, the no-coven Ice Shell refunded a marked Diamond Sword and Frozen Heart. A test Forge listener vetoed both returns, and the survival client saw the discharged Attuned Stone. The saved refund list retained both negative source coordinates after the fixture removed the glyph. Once the listener allowed delivery, the survival player collected both items. A second dedicated restart retained one of each in the inventory, with no duplicate drops and an empty refund list. Both clients stayed hidden and unfocused with zero master volume and OpenAL No Output. See `build/qa-circle-refunds/live-verified/`.
+- Clean Forge and copied Auram both passed all 60 packaged comparisons. The preceding clean JAR passed 43. The copied Auram fixture used the original seeded world random stream. See `build/qa-circle-refunds/{native/reference.log,clean-release/verify.log,pack-verified/verify.log}`.
+- Local Java 17 data generation, JAR reobfuscation, and all 610 required Forge GameTests passed. The new regression removes a Heart Glyph while Forge vetoes its refund, verifies the original launch physics, and checks that the item appears once after the veto lifts.
+
 ## Circle Talisman (2026-11-21)
 
 - [x] Restore the original blank Circle Talisman recipe and both binding rites. Use four gold ingots, four gold nuggets, and a diamond. The powered rite uses Redstone and 1,000 altar power. The portable rite uses Glowstone Dust and a Charged Attuned Stone.
@@ -3109,6 +3117,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Compare [Ore Transposition](#ore-transposition-layer-comparison-2026-11-27), including layer order, seeded drops, the world floor, Forge vetoes, and resumed extraction.
   - [x] Compare [all thirteen Climate Change foci and mixed focus order](#climate-change-focus-and-weather-comparison-2026-11-27) against the original registry and runtime.
   - [x] Compare [Ice Shell expansion, block variants, and rejection cues](#ice-shell-expansion-and-protection-comparison-2026-11-27), including Forge protection for a resumed cast with an absent caster.
+  - [x] Compare [Circle Magic offering returns and refund launches](#offering-launches-and-spawn-vetoes-2026-11-27), including spawn vetoes and saved recovery.
   - [x] Compare [Blight and Blindness actions](#blight-and-blindness-action-comparison-2026-11-26), including terrain and creature conversion.
   - [x] Compare [Hell on Earth terrain and fire](#hell-on-earth-terrain-comparison-2026-11-26), including fire support, soil rolls, and Forge protections.
   - [x] Compare [Rain of Toads](#rain-of-toads-action-comparison-2026-11-26), including the shower's coordinates and ordering, the coven refund, and expiration and poison.

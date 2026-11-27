@@ -523,6 +523,63 @@ public final class CircleRiteTests {
         }).thenSucceed();
     }
 
+    @GameTest(template = TEMPLATE, batch = "witchery_refund_after_glyph_removal", setupTicks = 5)
+    public static void vetoedRefundReturnsOnceAfterTheHeartIsGone(GameTestHelper helper) {
+        floor(helper);
+        helper.setBlock(CENTER, block("circle"));
+        var level = helper.getLevel();
+        var source = helper.absolutePos(CENTER.west(2).north());
+        var stack = new ItemStack(WitcheryIngredient.FROZEN_HEART.item());
+        stack.getOrCreateTag().putString("RefundTest", "removed_glyph");
+        var entry = stack.save(new CompoundTag());
+        entry.putLong("OfferingPos", source.asLong());
+        var pending = new CompoundTag();
+        pending.putString("Rite", "witchery:rite_of_ice_shell");
+        pending.putInt("OfferingStep", 1);
+        var offerings = new ListTag();
+        offerings.add(entry);
+        pending.put("Sacrifices", offerings);
+        heart(helper).load(pending);
+
+        var rejected = new ArrayList<ItemEntity>();
+        Consumer<EntityJoinLevelEvent> veto = event -> {
+            if (event.getLevel() == level && event.getEntity() instanceof ItemEntity drop
+                    && ItemStack.matches(drop.getItem(), stack) && drop.position().equals(Vec3.atCenterOf(source))) {
+                rejected.add(drop);
+                event.setCanceled(true);
+            }
+        };
+        MinecraftForge.EVENT_BUS.addListener(veto);
+        try {
+            level.getRandom().setSeed(42);
+            var expectedRandom = net.minecraft.util.RandomSource.create(42);
+            helper.setBlock(CENTER, Blocks.AIR);
+            helper.assertTrue(level.getRandom().nextLong() == expectedRandom.nextLong(),
+                    "The refund launch does not consume the world's random stream");
+            helper.assertTrue(rejected.size() == 1 && drops(helper).isEmpty(),
+                    "Forge vetoed the refund from the removed glyph");
+            var drop = rejected.get(0);
+            helper.assertTrue(!drop.hasPickUpDelay() && drop.getDeltaMovement().y == (double) 0.2F
+                            && Math.abs(drop.getDeltaMovement().x) <= 0.1 && Math.abs(drop.getDeltaMovement().z) <= 0.1,
+                    "The refund attempts the original immediate pickup and launch motion");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(veto);
+        }
+        var admitted = new ArrayList<ItemEntity>();
+        Consumer<EntityJoinLevelEvent> watch = event -> {
+            if (event.getLevel() == level && event.getEntity() instanceof ItemEntity drop && ItemStack.matches(drop.getItem(), stack)) {
+                admitted.add(drop);
+            }
+        };
+        MinecraftForge.EVENT_BUS.addListener(watch);
+        helper.runAfterDelay(45, () -> {
+            MinecraftForge.EVENT_BUS.unregister(watch);
+            helper.assertTrue(admitted.size() == 1 && drops(helper).stream().anyMatch(drop -> ItemStack.matches(drop.getItem(), stack)),
+                    "The world returns the preserved item once after the veto lifts");
+            helper.succeed();
+        });
+    }
+
     @GameTest(template = TEMPLATE, setupTicks = 5)
     public static void missingFamiliarReturnsOnlyTheItemOfferings(GameTestHelper helper) {
         floor(helper);

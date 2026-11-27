@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Offering launches and spawn vetoes (2026-11-27)
+
+- The original 0.24.1 server recorded six cases for charged stone discharge, worn Arthana, worn Boline, reused or consumed Necromantic Stones, and rejected Ice Shell refunds. Legacy launches use the original source block center, immediate pickup, horizontal drift up to 0.1 and a vertical launch of `0.2F`, without drawing from world randomness. The preceding clean JAR passed 43 of 60 checks. The rebuilt JAR passed all 60 on clean Forge and copied Auram. The Auram fixture supplied the original seeded world random stream. See `build/qa-circle-refunds/{native/reference.log,clean-baseline/verify.log,clean-release/verify.log,pack-verified/verify.log}`.
+- A vetoed fresh reusable return leaves its offering available for the next glyph pulse. A vetoed held refund or reusable item from an early Forge save goes into the dimension's `witchery_rite_refunds.dat`. The saved queue retains each original position and full stack, retries during normal chunk ticking, and removes each entry when its item spawns.
+- Two muted survival clients exercised a no-coven Ice Shell in a supplied ring with supplied offerings. The fixture disabled fall damage in the elevated plot. Both tagged refunds survived a spawn veto, glyph removal, and restart with their original negative coordinates. The player collected each once. The next restart showed one of each in the inventory and an empty saved refund list. See `build/qa-circle-refunds/live-verified/`.
+- Local Java 17 data generation, JAR reobfuscation, and all 610 required Forge GameTests passed. `build/qa-circle-refunds/release.jar` has SHA-256 `6afe055551d4731559b52e846e95de097365a443b452283bf69a2c40af3a0395`.
+
 ## Ice Shell expansion and protection comparison (2026-11-27)
 
 - The original dedicated server recorded geometry and stage at 54 points across all seven coven sizes. It also tested 29 block and metadata variants on the outer and inner outlines. The Forge shell restores the ten original flower variants, keeps flowers introduced later, and preserves the existing asymmetric drainage.

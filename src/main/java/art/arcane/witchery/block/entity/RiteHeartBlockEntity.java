@@ -42,6 +42,7 @@ import art.arcane.witchery.ritual.PriorIncarnation;
 import art.arcane.witchery.ritual.ProtectionRites;
 import art.arcane.witchery.ritual.RainOfToads;
 import art.arcane.witchery.ritual.RiteActivation;
+import art.arcane.witchery.ritual.RiteOfferingDrops;
 import art.arcane.witchery.ritual.RiteOfTransposition;
 import art.arcane.witchery.ritual.WeatherRites;
 import art.arcane.witchery.vampirism.Vampirism;
@@ -295,7 +296,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         BlockPos origin = BlockPos.containing(offering.position());
         ItemStack returned = rite.returnedOffering(stack);
         if (returned.isEmpty()) sacrificed.add(new Sacrifice(stack, origin));
-        else if (!dropOffering(level, origin, returned)) return;
+        else if (!RiteOfferingDrops.trySpawn(level, origin, returned, usesGlyphClock())) return;
         offering.consume().run();
         offeringStep++;
         traceOffering(level, stack, offering.position());
@@ -1060,28 +1061,31 @@ public final class RiteHeartBlockEntity extends BlockEntity {
 
     public void refundSacrifices(ServerLevel level) {
         restoreOfferingReturns(level);
-        for (Sacrifice sacrifice : sacrificed) {
-            dropOffering(level, sacrifice.origin(), sacrifice.stack());
-        }
+        boolean legacy = usesGlyphClock();
+        var held = List.copyOf(sacrificed);
         sacrificed.clear();
+        for (Sacrifice sacrifice : held) {
+            RiteOfferingDrops.returnHeld(level, sacrifice.origin(), sacrifice.stack(), legacy);
+        }
     }
 
     private void restoreOfferingReturns(ServerLevel level) {
         if (!legacyOfferingReturns) return;
         legacyOfferingReturns = false;
         if (level.getRecipeManager().byKey(activeRite).orElse(null) instanceof ItemRiteRecipe rite) {
+            var returnedItems = new ArrayList<Sacrifice>();
             sacrificed.removeIf(sacrifice -> {
                 ItemStack returned = rite.returnedOffering(sacrifice.stack());
-                return !returned.isEmpty() && dropOffering(level, sacrifice.origin(), returned);
+                if (returned.isEmpty()) return false;
+                returnedItems.add(new Sacrifice(returned, sacrifice.origin()));
+                return true;
             });
+            boolean legacy = usesGlyphClock();
+            for (Sacrifice returned : returnedItems) {
+                RiteOfferingDrops.returnHeld(level, returned.origin(), returned.stack(), legacy);
+            }
         }
         setChanged();
-    }
-
-    private static boolean dropOffering(ServerLevel level, BlockPos origin, ItemStack stack) {
-        var drop = new ItemEntity(level, origin.getX() + 0.5, origin.getY() + 0.5, origin.getZ() + 0.5, stack);
-        drop.setDefaultPickUpDelay();
-        return level.addFreshEntity(drop);
     }
 
     private void nextCast(ServerLevel level) {

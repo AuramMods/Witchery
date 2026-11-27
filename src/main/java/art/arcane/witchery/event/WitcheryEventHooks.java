@@ -63,6 +63,7 @@ import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.ritual.DroppedWaystones;
 import art.arcane.witchery.ritual.DirectedCurse;
+import art.arcane.witchery.ritual.RiteOfferingDrops;
 import art.arcane.witchery.world.DreamAtmosphere;
 import art.arcane.witchery.world.DreamTravel;
 import art.arcane.witchery.world.MirrorTravel;
@@ -324,6 +325,7 @@ public final class WitcheryEventHooks {
             OverworldInfusion.tick(level);
             DreamCatcherBlock.tickSleep(level);
             Vampirism.finishCrouchingStrikes(level);
+            RiteOfferingDrops.tick(level);
         }
     }
 
