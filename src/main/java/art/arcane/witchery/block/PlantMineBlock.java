@@ -86,6 +86,11 @@ public final class PlantMineBlock extends Block implements IPlantable {
     }
 
     @Override
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos neighborPos, boolean moving) {
+        if (!level.isClientSide && !state.canSurvive(level, pos)) level.removeBlock(pos, false);
+    }
+
+    @Override
     public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (!state.canSurvive(level, pos)) level.removeBlock(pos, false);
     }

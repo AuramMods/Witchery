@@ -66,6 +66,10 @@ public final class WitcheryRegistries {
             PARTICLES.register("altar_power", () -> new SimpleParticleType(false));
     public static final RegistryObject<ParticleType<CauldronParticleOptions>> CAULDRON_EFFECT =
             PARTICLES.register("cauldron_effect", CauldronParticleOptions::type);
+    public static final RegistryObject<SimpleParticleType> LEGACY_SMOKE =
+            PARTICLES.register("legacy_smoke", () -> new SimpleParticleType(false));
+    public static final RegistryObject<SimpleParticleType> LEGACY_LARGE_SMOKE =
+            PARTICLES.register("legacy_large_smoke", () -> new SimpleParticleType(false));
     public static final RegistryObject<LootNumberProviderType> LOOTING_BONUS =
             LOOT_NUMBER_PROVIDERS.register("looting_bonus", () -> new LootNumberProviderType(new LootingBonus.Serializer()));
     public static final RegistryObject<LootNumberProviderType> LEGACY_FIXED_LOOT_COUNT =

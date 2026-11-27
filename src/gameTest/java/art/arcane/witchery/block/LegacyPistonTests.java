@@ -49,6 +49,7 @@ public final class LegacyPistonTests {
     public static void pistonsMatchLegacyExtensionAndRetraction(GameTestHelper helper) {
         var level = helper.getLevel();
         var snowSlab = state("snowslab").getBlock();
+        var mine = destroyed("plantmine");
         List<PistonCase> cases = List.of(
                 new PistonCase(Blocks.STONE.defaultBlockState(), Extension.MOVE, ItemStack.EMPTY),
                 blocked("candelabra"), blocked("fumefunnel"), blocked("filteredfumefunnel"),
@@ -56,12 +57,14 @@ public final class LegacyPistonTests {
                 destroyed("circleglyphinfernal"),
                 new PistonCase(state("dreamcatcher").setValue(DreamCatcherBlock.WEAVE, DreamWeave.NIGHTMARES),
                         Extension.DESTROY, new ItemStack(WitcheryIngredient.DREAMWEAVE_OF_NIGHTMARES.item())),
-                destroyed("embermoss"), dropped("garlicgarland"), dropped("glintweed"), destroyed("plantmine"),
+                destroyed("embermoss"), dropped("garlicgarland"), dropped("glintweed"), mine,
                 dropped("snowslab"), new PistonCase(state("snowdoubleslab"), Extension.DESTROY, new ItemStack(snowSlab, 2)),
                 new PistonCase(snowSlab.defaultBlockState().setValue(BlockStateProperties.SLAB_TYPE, SlabType.DOUBLE),
                         Extension.DESTROY, new ItemStack(snowSlab, 2)));
         List<BlockPos> positions = IntStream.range(0, cases.size()).mapToObj(index ->
                 helper.absolutePos(new BlockPos(4 + 5 * (index / 4), 160, 1 + 3 * (index % 4)))).toList();
+        BlockPos minePos = positions.get(cases.indexOf(mine));
+        BlockPos stickyMinePos = minePos.above(8).east();
 
         helper.startSequence().thenWaitUntil(() -> helper.assertTrue(positions.stream().allMatch(pos ->
                                 level.isPositionEntityTicking(pos.west(2).north())
@@ -70,6 +73,12 @@ public final class LegacyPistonTests {
                 .thenExecute(() -> {
                     encloseLanes(level, positions.get(0).offset(-3, -2, -2),
                             positions.get(positions.size() - 1).offset(3, 11, 2));
+                    level.setBlockAndUpdate(minePos.above(2), Blocks.LIGHT.defaultBlockState());
+                    level.setBlockAndUpdate(stickyMinePos.above(2), Blocks.LIGHT.defaultBlockState());
+                }).thenWaitUntil(() -> helper.assertTrue(level.getMaxLocalRawBrightness(minePos) >= 8
+                                && level.getMaxLocalRawBrightness(stickyMinePos) >= 8,
+                        "Both enclosed Plant Mine lanes have enough light before the pistons update their neighbors"))
+                .thenExecute(() -> {
                     for (int index = 0; index < cases.size(); index++) {
                         var pos = positions.get(index);
                         var state = cases.get(index).state();

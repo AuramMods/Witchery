@@ -3,8 +3,11 @@ package art.arcane.witchery.client.packet;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.brewing.ResizingEffect;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.client.ClientWitcherySounds;
 import art.arcane.witchery.client.event.WitcheryClientCameraHooks;
+import art.arcane.witchery.client.particle.LegacySmokeParticle;
 import art.arcane.witchery.network.WitcheryNetwork;
+import art.arcane.witchery.registry.WitcheryRegistries;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.nbt.CompoundTag;
@@ -21,7 +24,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import org.joml.Vector3f;
 
 import java.util.UUID;
 
@@ -45,34 +47,28 @@ public final class WitcheryClientPacketHandlers {
         LegacyParticleEffect effect = LegacyParticleEffect.byId(message.particleEffectId());
         ParticleOptions particleType = resolveParticleType(effect);
         RandomSource random = level.getRandom();
-        double width = Math.max(0.01D, message.width());
-        double height = Math.max(0.01D, message.height());
+        double width = message.width();
+        double height = message.height();
         int effectCount = Math.min(Mth.ceil(Math.max(width, 1.0D) * 20.0D), 300);
 
         SoundEvent sound = resolveLegacySound(message.soundEffectId());
         if (sound != null) {
-            level.playLocalSound(
-                    message.x(),
-                    message.y(),
-                    message.z(),
-                    sound,
-                    SoundSource.AMBIENT,
-                    0.5F,
-                    randomPitch(random),
-                    false
-            );
+            ClientWitcherySounds.playLocal(level, message.x(), message.y(), message.z(),
+                    sound, SoundSource.AMBIENT, 0.5F, randomPitch(random));
         }
 
         for (int i = 0; i < effectCount; i++) {
+            // The original consumed these draws even though it spawned each particle with zero velocity.
+            random.nextGaussian();
+            random.nextGaussian();
+            random.nextGaussian();
             double px = message.x() + random.nextDouble() * width * 2.0D - width;
             double py = message.y() + random.nextDouble() * height;
-            double pz = message.z() + random.nextDouble() * width * 2.0D - width;
+            double pz = message.z() + random.nextFloat() * width * 2.0D - width;
 
             if (effect == LegacyParticleEffect.SPELL_COLORED) {
-                var smoke = minecraft.particleEngine.createParticle(ParticleTypes.SMOKE, px, py, pz, 0, 0, 0);
-                if (smoke != null) {
-                    Vector3f rgb = colorToVector(message.color());
-                    smoke.setColor(rgb.x(), rgb.y(), rgb.z());
+                if (minecraft.particleEngine.createParticle(particleType, px, py, pz, 0, 0, 0) instanceof LegacySmokeParticle smoke) {
+                    smoke.applyTint(message.color());
                 }
             } else {
                 level.addParticle(particleType, px, py, pz, 0.0D, 0.0D, 0.0D);
@@ -160,24 +156,15 @@ public final class WitcheryClientPacketHandlers {
         }
 
         RandomSource random = level.getRandom();
-        float volume = message.volume() < 0.0F ? 0.5F : message.volume();
+        float volume = message.volume() == -1.0F ? 0.5F : message.volume();
         float pitch = message.pitch();
         boolean ghastFireball = sound == SoundEvents.GHAST_SHOOT;
-        if (pitch < 0) {
+        if (pitch == -1.0F) {
             pitch = ghastFireball ? 1 + (random.nextFloat() - random.nextFloat()) * 0.2F
-                    : 0.4F / ((float) random.nextDouble() * 0.4F + 0.8F);
+                    : randomPitch(random);
         }
         SoundSource source = sound == SoundEvents.SLIME_JUMP || ghastFireball ? SoundSource.HOSTILE : SoundSource.AMBIENT;
-        level.playLocalSound(
-                message.x(),
-                message.y(),
-                message.z(),
-                sound,
-                source,
-                volume,
-                pitch,
-                false
-        );
+        ClientWitcherySounds.playLocal(level, message.x(), message.y(), message.z(), sound, source, volume, pitch);
     }
 
     public static void handleSyncEntitySize(WitcheryNetwork.SyncEntitySizePacket message) {
@@ -286,7 +273,7 @@ public final class WitcheryClientPacketHandlers {
             case TOWN_AURA -> ParticleTypes.HAPPY_VILLAGER;
             case CRIT -> ParticleTypes.CRIT;
             case MAGIC_CRIT -> ParticleTypes.ENCHANTED_HIT;
-            case SMOKE -> ParticleTypes.SMOKE;
+            case SMOKE, SPELL_COLORED -> WitcheryRegistries.LEGACY_SMOKE.get();
             case MOB_SPELL -> ParticleTypes.ENTITY_EFFECT;
             case SPELL -> ParticleTypes.EFFECT;
             case INSTANT_SPELL -> ParticleTypes.INSTANT_EFFECT;
@@ -297,7 +284,7 @@ public final class WitcheryClientPacketHandlers {
             case LAVA -> ParticleTypes.LAVA;
             case FOOTSTEP -> ParticleTypes.CLOUD;
             case SPLASH -> ParticleTypes.SPLASH;
-            case LARGE_SMOKE -> ParticleTypes.LARGE_SMOKE;
+            case LARGE_SMOKE -> WitcheryRegistries.LEGACY_LARGE_SMOKE.get();
             case CLOUD -> ParticleTypes.CLOUD;
             case REDDUST -> DustParticleOptions.REDSTONE;
             case SNOWBALL_POOF -> ParticleTypes.ITEM_SNOWBALL;
@@ -307,7 +294,6 @@ public final class WitcheryClientPacketHandlers {
             case SLIME -> ParticleTypes.ITEM_SLIME;
             case HEART -> ParticleTypes.HEART;
             case ICON_CRACK, TILE_CRACK -> ParticleTypes.ITEM_SLIME;
-            case SPELL_COLORED -> ParticleTypes.ENTITY_EFFECT;
         };
     }
 
@@ -382,14 +368,7 @@ public final class WitcheryClientPacketHandlers {
     }
 
     private static float randomPitch(RandomSource random) {
-        return 0.4F / (random.nextFloat() * 0.4F + 0.8F);
-    }
-
-    private static Vector3f colorToVector(int color) {
-        float red = ((color >> 16) & 0xFF) / 256.0F;
-        float green = ((color >> 8) & 0xFF) / 256.0F;
-        float blue = (color & 0xFF) / 256.0F;
-        return new Vector3f(red, green, blue);
+        return 0.4F / ((float) random.nextDouble() * 0.4F + 0.8F);
     }
 
     private enum LegacyParticleEffect {
