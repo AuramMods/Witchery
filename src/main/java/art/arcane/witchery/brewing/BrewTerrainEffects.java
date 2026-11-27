@@ -118,7 +118,7 @@ final class BrewTerrainEffects {
                 BlockState lily = WitcheryBlocks.getRequired("lilypad").get().defaultBlockState()
                         .setValue(WitchLilyPadBlock.GROWTH, strength & 3);
                 Player actor = caster != null ? caster : FakePlayerFactory.getMinecraft(level);
-                BrewTerrain.setPlantRoot(actor, level, water.above(), lily, Direction.UP);
+                BrewTerrain.setBlockCheckingAir(actor, level, water.above(), lily, Direction.UP);
                 return;
             }
             water.move(Direction.UP);

@@ -49,7 +49,7 @@ public final class BrewErosion {
             BrewTerrain.forEachColumn(level, center, ring, pos -> {
                 BlockState state = level.getBlockState(pos);
                 if (BrewTerrain.isProtectedTerrain(state)
-                        || !BrewTerrain.setBlock(actor, level, pos, Blocks.AIR.defaultBlockState(), Direction.UP)) return;
+                        || !BrewTerrain.setBlockCheckingAir(actor, level, pos, Blocks.AIR.defaultBlockState(), Direction.UP)) return;
                 if (state.is(Blocks.OBSIDIAN)) obsidian.increment();
                 WitcheryNetwork.sendErosionSplash(level, Vec3.atLowerCornerOf(pos), 0.5, 16);
             });

@@ -1,8 +1,8 @@
 package art.arcane.witchery.brewing;
 
+import art.arcane.witchery.network.WitcheryNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -42,7 +42,7 @@ final class BrewLevelling {
                         || !BrewTerrain.setBlock(actor, level, pos, Blocks.AIR.defaultBlockState(), Direction.UP)) continue;
                 Block fill = fillMaterial(state);
                 materials.merge(fill != null ? fill : Blocks.DIRT, 1, Integer::sum);
-                smoke(level, pos);
+                WitcheryNetwork.sendLevellingSmoke(level, pos);
             }
         });
 
@@ -50,7 +50,7 @@ final class BrewLevelling {
         for (int y = center.getY(); y >= bottom && !materials.isEmpty(); y--) {
             BrewTerrain.forEachColumn(level, center.atY(y), reach, pos -> fill(level, pos, actor, materials));
         }
-        level.playSound(null, center, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1, 2);
+        level.playSound(null, center.getX(), center.getY(), center.getZ(), SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1, 2);
     }
 
     private static void fill(ServerLevel level, BlockPos pos, Player actor, Map<Block, Integer> materials) {
@@ -58,10 +58,10 @@ final class BrewLevelling {
         for (Block block : FILL_ORDER) {
             Integer count = materials.get(block);
             if (count == null) continue;
-            if (BrewTerrain.setBlock(actor, level, pos, block.defaultBlockState(), Direction.UP)) {
+            if (BrewTerrain.setBlockCheckingAir(actor, level, pos, block.defaultBlockState(), Direction.UP)) {
                 if (count == 1) materials.remove(block);
                 else materials.put(block, count - 1);
-                smoke(level, pos);
+                WitcheryNetwork.sendLevellingSmoke(level, pos);
             }
             return;
         }
@@ -69,15 +69,11 @@ final class BrewLevelling {
 
     @Nullable
     private static Block fillMaterial(BlockState state) {
+        if (BrewFarming.isLegacyStone(state)) return Blocks.STONE;
         if (state.is(Blocks.RED_SAND)) return Blocks.SAND;
         if (state.is(Blocks.COARSE_DIRT) || state.is(Blocks.PODZOL)) return Blocks.DIRT;
         if (state.is(Blocks.CUT_SANDSTONE) || state.is(Blocks.CHISELED_SANDSTONE)) return Blocks.SANDSTONE;
         Block block = state.getBlock();
         return FILL_ORDER.contains(block) ? block : null;
-    }
-
-    private static void smoke(ServerLevel level, BlockPos pos) {
-        level.sendParticles(ParticleTypes.SMOKE, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-                16, 0.5, 0.5, 0.5, 0);
     }
 }

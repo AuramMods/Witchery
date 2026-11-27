@@ -293,7 +293,7 @@ public final class BrewTerrain {
         return setBlock(owner, level, pos, state, face, false, false);
     }
 
-    static boolean setPlantRoot(Player player, ServerLevel level, BlockPos pos, BlockState state, Direction face) {
+    static boolean setBlockCheckingAir(Player player, ServerLevel level, BlockPos pos, BlockState state, Direction face) {
         return setBlock(player, level, pos, state, face, false, true);
     }
 
@@ -360,7 +360,7 @@ public final class BrewTerrain {
     private static boolean setBlock(@Nullable Entity owner, ServerLevel level, BlockPos pos, BlockState state,
                                     Direction face, boolean particles, boolean checkAir) {
         BlockState old = level.getBlockState(pos);
-        if (old.equals(state)) return true;
+        if (old.equals(state)) return !checkAir || canEdit(owner, level, pos, old, false, true);
         boolean replacingDispersal = old.getBlock() instanceof BrewDispersalBlock brew && (state.isAir()
                 || state.is(WitcheryBlocks.getRequired("perpetualice").get())
                 || !brew.isGas() && state.is(Blocks.ICE));
@@ -390,7 +390,7 @@ public final class BrewTerrain {
         return canEdit(owner, level, pos, old, false, false);
     }
 
-    static boolean canEditRoot(Player player, ServerLevel level, BlockPos pos, BlockState old) {
+    static boolean canEditIncludingAir(Player player, ServerLevel level, BlockPos pos, BlockState old) {
         return canEdit(player, level, pos, old, false, true);
     }
 

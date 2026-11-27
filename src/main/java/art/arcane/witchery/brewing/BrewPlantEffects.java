@@ -31,8 +31,8 @@ final class BrewPlantEffects {
         BlockState existing = level.getBlockState(center);
         // The original cast checks the site even when only the surrounding cells will change.
         boolean allowed = existing.canBeReplaced()
-                ? BrewTerrain.setPlantRoot(actor, level, center, web, Direction.UP)
-                : BrewTerrain.canEditRoot(actor, level, center, existing);
+                ? BrewTerrain.setBlockCheckingAir(actor, level, center, web, Direction.UP)
+                : BrewTerrain.canEditIncludingAir(actor, level, center, existing);
         if (!allowed || strength == 0) return;
         for (Direction direction : WEB_FACES) place(level, center.relative(direction), web, direction, actor);
         if (strength == 1) return;
@@ -74,7 +74,7 @@ final class BrewPlantEffects {
         for (int height = 0; height < 3 + strength; height++, pos = pos.above()) {
             if (!available(level, pos) || !cactus.canSurvive(level, pos) || !level.getBlockState(pos).canBeReplaced()) break;
             boolean placed = height == 0 && !extending
-                    ? BrewTerrain.setPlantRoot(actor, level, pos, cactus, Direction.UP)
+                    ? BrewTerrain.setBlockCheckingAir(actor, level, pos, cactus, Direction.UP)
                     : BrewTerrain.setBlock(actor, level, pos, cactus, Direction.UP);
             if (!placed) break;
         }

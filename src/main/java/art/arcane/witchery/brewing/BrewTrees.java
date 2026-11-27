@@ -80,7 +80,7 @@ final class BrewTrees {
         BlockItem sapling = (BlockItem) species.ingredient().getItem();
         if (!sapling.getBlock().defaultBlockState().canSurvive(level, pos)) return;
         Player actor = caster != null ? caster : FakePlayerFactory.getMinecraft(level);
-        if (!BrewTerrain.canEditRoot(actor, level, pos, level.getBlockState(pos))) return;
+        if (!BrewTerrain.canEditIncludingAir(actor, level, pos, level.getBlockState(pos))) return;
         var random = level.getRandom();
         var features = level.registryAccess().registryOrThrow(Registries.CONFIGURED_FEATURE);
         var feature = features.getHolder(species.feature(strength, random)).orElse(null);

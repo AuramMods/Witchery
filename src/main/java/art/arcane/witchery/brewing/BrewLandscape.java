@@ -1,5 +1,6 @@
 package art.arcane.witchery.brewing;
 
+import art.arcane.witchery.event.WitcheryBlockPlacement;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -25,17 +26,19 @@ final class BrewLandscape {
     private static void blightSurface(ServerLevel level, BlockPos pos, Player actor) {
         if (!level.isInWorldBounds(pos) || !level.hasChunkAt(pos)) return;
         BlockState state = level.getBlockState(pos);
+        if (!BrewTerrain.canEditIncludingAir(actor, level, pos, state) || state.hasBlockEntity()) return;
         BlockPos soil = pos;
         boolean shortGrass = state.is(Blocks.GRASS) || state.is(Blocks.FERN);
-        if (shortGrass || withers(state)) {
-            Block replacement = shortGrass ? Blocks.AIR : Blocks.DEAD_BUSH;
-            if (!BrewTerrain.setBlock(actor, level, pos, replacement.defaultBlockState(), Direction.UP)) return;
+        if (shortGrass) {
+            if (!level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState())) return;
+            soil = pos.below();
+        } else if (withers(state)) {
+            if (!WitcheryBlockPlacement.place(level, pos, Blocks.DEAD_BUSH.defaultBlockState(), actor, Direction.UP)) return;
             soil = pos.below();
         } else if (state.is(Blocks.FARMLAND)) {
-            BrewTerrain.setBlock(actor, level, pos, Blocks.SAND.defaultBlockState(), Direction.UP);
+            WitcheryBlockPlacement.place(level, pos, Blocks.SAND.defaultBlockState(), actor, Direction.UP);
             return;
         } else if (!state.blocksMotion()) {
-            if (!BrewTerrain.canChange(actor, level, pos, state)) return;
             soil = pos.below();
         }
         BlockState ground = level.getBlockState(soil);
@@ -44,7 +47,11 @@ final class BrewLandscape {
             int roll = level.random.nextInt(5);
             if (roll < 2) {
                 Block replacement = roll == 0 ? Blocks.SAND : Blocks.DIRT;
-                BrewTerrain.setBlock(actor, level, soil, replacement.defaultBlockState(), Direction.UP);
+                if (soil.equals(pos)) {
+                    WitcheryBlockPlacement.place(level, soil, replacement.defaultBlockState(), actor, Direction.UP);
+                } else {
+                    BrewTerrain.setBlock(actor, level, soil, replacement.defaultBlockState(), Direction.UP);
+                }
             }
         }
     }
@@ -78,11 +85,16 @@ final class BrewLandscape {
         BlockPos bottom = surface.below(height - 1);
         BlockPos top = surface.above(height);
         if (!level.isInWorldBounds(bottom) || !level.isInWorldBounds(top)) return;
-        for (BlockPos pos : BlockPos.betweenClosed(bottom, top)) {
-            if (BrewTerrain.isProtectedTerrain(level.getBlockState(pos))) return;
-        }
         Player actor = caster != null ? caster : FakePlayerFactory.getMinecraft(level);
-        if (BrewTerrain.placeGroup(level, actor, Direction.UP, () -> shiftColumn(level, bottom, height))) {
+        BlockState surfaceState = level.getBlockState(surface);
+        if (surfaceState.isAir() && !BrewTerrain.canEditIncludingAir(actor, level, surface, surfaceState)) return;
+        boolean empty = true;
+        for (BlockPos pos : BlockPos.betweenClosed(bottom, top)) {
+            BlockState state = level.getBlockState(pos);
+            if (BrewTerrain.isProtectedTerrain(state)) return;
+            empty &= state.isAir();
+        }
+        if (empty || BrewTerrain.placeGroup(level, actor, Direction.UP, () -> shiftColumn(level, bottom, height))) {
             BrewTerrain.lift(level, top.above(), new AABB(surface).expandTowards(0, 1, 0));
         }
     }

@@ -73,6 +73,7 @@ public final class WitcheryNetwork {
     private static final int LEGACY_FIZZ_SOUND_ID = 2;
     private static final int LEGACY_SNARE_SOUND_ID = 3;
     private static final int LEGACY_WATER_SPLASH_SOUND_ID = 4;
+    private static final int LEGACY_FIREWORK_BLAST_SOUND_ID = 6;
     private static final int LEGACY_HARP_SOUND_ID = 8;
     private static final int LEGACY_PLING_SOUND_ID = 9;
     private static final int LEGACY_EXPLOSION_SOUND_ID = 10;
@@ -360,6 +361,14 @@ public final class WitcheryNetwork {
 
     public static void sendErosionSplash(ServerLevel level, Vec3 center, double size, int range) {
         sendParticlesAround(level, LEGACY_SPLASH_PARTICLE_ID, LEGACY_NO_SOUND_ID, center, size, size, range);
+    }
+
+    public static void sendLevellingSmoke(ServerLevel level, BlockPos pos) {
+        sendParticlesAround(level, LEGACY_SMOKE_PARTICLE_ID, LEGACY_NO_SOUND_ID, Vec3.atLowerCornerOf(pos), 0.5, 0.5, 16);
+    }
+
+    public static void sendTransposeOrePulse(ServerLevel level, BlockPos pos) {
+        sendParticlesAround(level, LEGACY_FLAME_PARTICLE_ID, LEGACY_FIREWORK_BLAST_SOUND_ID, Vec3.atLowerCornerOf(pos), 1, 1, 16);
     }
 
     public static void sendBrewConversionSmoke(ServerLevel level, BlockPos pos) {

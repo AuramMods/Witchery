@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Cauldron landscape action comparison (2026-11-26)
+
+- Witchery 0.24.1 checked empty cells for Blight, Levelling, Erosion, and the changed destinations of Transpose. A denied Blight surface preserved the protected soil and its random draw. A denied Levelling fill left the stone available to the next cell. The original Raise Land raised a pig three blocks even over an empty column. See `build/qa-cauldron-landscape-matrix/native/cues.log`.
+- The rebuilt handlers honor these vetoes and keep the existing placement and rollback checks. Levelling accepts all flattened 1.7 Stone variants, sends Smoke from successful changes, and fizzes at the working center's lower corner. Transpose Ore sends Flame with the original firework blast on every ritual pulse at the target's lower corner. The package listeners checked the original packet parameters and silence outside the 16-block audience.
+- The preceding package failed eight of the 14 checks. Clean Forge and copied Auram passed all 14 on the rebuilt archive, including the protected Transpose destination, intact ore drops and second-pulse depth. See `clean-measured-baseline/baseline.log`, `clean-final/final.log`, and `pack-final/final.log` under `build/qa-cauldron-landscape-matrix`.
+- Java 17 data generation, JAR reobfuscation, and all 562 required local Forge GameTests passed. The exact package is `build/qa-cauldron-landscape-matrix/candidate.jar`, SHA-256 `a61e7d7a6c3908b2fa0f6cc72b56bc2d364cb928f1544c35602e5979e27f8a7f`. All 61 direct and terrain actions are now accounted for. Continue with the five dispersals, two general cast triggers and 15 fixed cast triggers.
+
 ## Cauldron fluid and plant action comparison (2026-11-26)
 
 - The original 0.24.1 server vetoed protected air for Webs, Thorns, and Lilify. The preceding Forge package posted no break events for those three roots and grew all three anyway. The rebuilt package checks the planting cell in those casts and restores the original Webs face and edge sequence. See `build/qa-cauldron-fluid-plants/native/targets.log` and `clean-baseline3/baseline.log` under the same directory.

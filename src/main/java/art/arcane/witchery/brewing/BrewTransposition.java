@@ -1,13 +1,11 @@
 package art.arcane.witchery.brewing;
 
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.world.WitcheryTeleport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -119,8 +117,8 @@ final class BrewTransposition {
         BlockState previous = to.level().getBlockState(to.pos());
         if (original.isAir() && previous.isAir()) return true;
         if (BrewTerrain.isProtectedTerrain(original) || BrewTerrain.isProtectedTerrain(previous)
-                || !BrewTerrain.canChange(fromActor, from.level(), from.pos(), original)
-                || !BrewTerrain.canChange(toActor, to.level(), to.pos(), previous)) return false;
+                || !BrewTerrain.canEditIncludingAir(fromActor, from.level(), from.pos(), original)
+                || !BrewTerrain.canEditIncludingAir(toActor, to.level(), to.pos(), previous)) return false;
         boolean replace = !original.equals(previous);
         BlockSnapshot snapshot = replace && !original.isAir() ? BlockSnapshot.create(to.level().dimension(), to.level(), to.pos()) : null;
         if (replace && !to.level().setBlock(to.pos(), original, MOVE_FLAGS)) return false;
@@ -137,8 +135,7 @@ final class BrewTransposition {
     static boolean orePulse(ServerLevel level, BlockPos center, int radius, int strength, int coven, int pulse) {
         BrewRituals.loadArea(level, center, radius + coven);
         extractOre(level, center.below((pulse - 1) * 4), radius + coven, 4, strength, null);
-        level.sendParticles(ParticleTypes.FLAME, center.getX() + 0.5, center.getY(), center.getZ() + 0.5, 16, 1, 1, 1, 0);
-        level.playSound(null, center, SoundEvents.FIREWORK_ROCKET_BLAST, SoundSource.BLOCKS, 1, 1);
+        WitcheryNetwork.sendTransposeOrePulse(level, center);
         return pulse < coven * (1 + strength);
     }
 

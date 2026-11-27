@@ -56,6 +56,10 @@ final class BrewFarming {
     private static final Set<Block> LEGACY_STONE = Set.of(Blocks.STONE, Blocks.GRANITE, Blocks.POLISHED_GRANITE,
             Blocks.DIORITE, Blocks.POLISHED_DIORITE, Blocks.ANDESITE, Blocks.POLISHED_ANDESITE);
 
+    static boolean isLegacyStone(BlockState state) {
+        return LEGACY_STONE.contains(state.getBlock());
+    }
+
     private BrewFarming() {
     }
 
@@ -283,7 +287,7 @@ final class BrewFarming {
     private static void pulveriseBlock(ServerLevel level, BlockPos pos, Player caster) {
         var state = level.getBlockState(pos);
         Block replacement;
-        if (LEGACY_STONE.contains(state.getBlock())) replacement = Blocks.COBBLESTONE;
+        if (isLegacyStone(state)) replacement = Blocks.COBBLESTONE;
         else if (state.is(Blocks.COBBLESTONE)) replacement = Blocks.GRAVEL;
         else if (state.is(Blocks.GRAVEL) || state.is(Blocks.SANDSTONE)
                 || state.is(Blocks.CHISELED_SANDSTONE) || state.is(Blocks.CUT_SANDSTONE)) replacement = Blocks.SAND;
