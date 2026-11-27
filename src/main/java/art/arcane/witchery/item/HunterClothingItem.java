@@ -2,6 +2,7 @@ package art.arcane.witchery.item;
 
 import art.arcane.witchery.client.model.HunterClothingModel;
 import art.arcane.witchery.lycanthropy.Lycanthropy;
+import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.vampirism.Vampirism;
 import net.minecraft.server.level.ServerPlayer;
@@ -119,7 +120,7 @@ public final class HunterClothingItem extends ArmorItem implements DyeableLeathe
         for (ItemStack stack : player.getArmorSlots()) {
             if (stack.getItem() instanceof HunterClothingItem item
                     && (werewolf && item.upgrade != Upgrade.PLAIN || vampire && item.upgrade == Upgrade.GARLICKED)) {
-                player.hurt(player.damageSources().inFire(), 1.0F);
+                player.hurt(WitcheryDamageTypes.directFire(player.level()), 1.0F);
                 return;
             }
         }

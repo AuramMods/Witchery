@@ -1,5 +1,6 @@
 package art.arcane.witchery.entity;
 
+import art.arcane.witchery.registry.WitcheryDamageTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -97,7 +98,7 @@ public final class LostSoul extends Monster {
     @Override
     public boolean doHurtTarget(Entity target) {
         if (soulType != 1 && random.nextInt(4) == 0) {
-            DamageSource source = soulType == 0 ? damageSources().inFire() : damageSources().indirectMagic(this, this);
+            DamageSource source = soulType == 0 ? WitcheryDamageTypes.directFire(level()) : damageSources().indirectMagic(this, this);
             return target.hurt(source, (float) getAttributeValue(Attributes.ATTACK_DAMAGE));
         }
         return super.doHurtTarget(target);
@@ -110,7 +111,7 @@ public final class LostSoul extends Monster {
         }
         boolean heat = source.is(DamageTypeTags.IS_FIRE) || source.is(DamageTypeTags.IS_EXPLOSION);
         boolean magic = source.is(DamageTypes.MAGIC) || source.is(DamageTypes.INDIRECT_MAGIC)
-                || source.is(art.arcane.witchery.registry.WitcheryDamageTypes.DEMONIC);
+                || source.is(WitcheryDamageTypes.DEMONIC);
         boolean vulnerable = switch (soulType) {
             case 0 -> heat;
             case 1 -> !heat && !magic && !source.is(DamageTypeTags.BYPASSES_ARMOR)

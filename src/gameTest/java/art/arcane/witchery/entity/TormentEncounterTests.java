@@ -10,6 +10,10 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -17,6 +21,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
@@ -102,6 +107,120 @@ public final class TormentEncounterTests {
             drops.forEach(Entity::discard);
             boss.discard();
         });
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_torment_fire")
+    public static void tormentAcceptsDirectLostSoulFireAndResistsAmbientFire(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var boss = WitcheryEntities.LORD_OF_TORMENT.get().create(level);
+        boss.setPos(Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(4, 8, 4))));
+        boss.lavaHurt();
+        helper.assertTrue(!boss.hurt(level.damageSources().inFire(), 40) && !boss.isOnFire() && boss.getHealth() == 500,
+                "Lava and fire blocks leave the Lord unharmed");
+
+        var soul = WitcheryEntities.LOST_SOUL.get().create(level);
+        soul.configure(0, -1);
+        long seed = 0;
+        while (RandomSource.create(seed).nextInt(4) != 0) seed++;
+        soul.getRandom().setSeed(seed);
+        helper.assertTrue(soul.doHurtTarget(boss) && boss.getHealth() == 498,
+                "The fire Lost Soul's direct flame attack damages the Lord");
+
+        boss.invulnerableTime = 0;
+        var flame = WitcheryDamageTypes.directFire(level);
+        helper.assertTrue(boss.hurt(flame, 40) && boss.getHealth() == 493, "The ordinary five-point cap applies to direct fire");
+        boss.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 100));
+        boss.invulnerableTime = 0;
+        helper.assertTrue(!boss.hurt(flame, 40) && boss.getHealth() == 493, "Fire Resistance still protects the Lord");
+        boss.removeEffect(MobEffects.FIRE_RESISTANCE);
+        boss.setInvulnerable(true);
+        helper.assertTrue(!boss.hurt(flame, 40) && boss.getHealth() == 493, "Normal invulnerability still protects the Lord");
+        soul.discard();
+        boss.discard();
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_torment_motion")
+    public static void tormentHoversLandsAndRetainsAirSupply(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var center = helper.absolutePos(new BlockPos(4, 8, 4));
+        var origin = Vec3.atBottomCenterOf(center);
+        var boss = WitcheryEntities.LORD_OF_TORMENT.get().create(level);
+        boss.setPos(origin);
+        boss.getMoveControl().tick();
+        boss.travel(Vec3.ZERO);
+        helper.assertTrue(boss.position().equals(origin) && boss.getDeltaMovement().equals(Vec3.ZERO),
+                "Idle flight keeps its altitude without a navigation step");
+        boss.setDeltaMovement(0.12, 0.15, 0.25);
+        boss.travel(Vec3.ZERO);
+        helper.assertTrue(Math.abs(boss.getY() - origin.y - 0.15) < 1e-5
+                        && boss.getDeltaMovement().distanceTo(new Vec3(0.1092, 0.1365, 0.2275)) < 1e-5,
+                "Flight retains the original momentum and drag on all three axes");
+
+        boss.setPos(origin);
+        boss.setDeltaMovement(Vec3.ZERO);
+        level.setBlockAndUpdate(center.below(3), Blocks.STONE.defaultBlockState());
+        var land = new TormentFlightGoals.Land(boss);
+        helper.assertTrue(land.canContinueToUse(), "An unobstructed air column permits an active landing");
+        land.start();
+        land.tick();
+        helper.assertTrue(boss.getDeltaMovement().y == -0.1, "The landing goal descends at one tenth of a block per tick");
+        boss.travel(Vec3.ZERO);
+        helper.assertTrue(Math.abs(boss.getY() - origin.y + 0.1) < 1e-5
+                        && !boss.causeFallDamage(32, 1, level.damageSources().fall()),
+                "The descent moves the Lord and its landing takes no fall damage");
+
+        for (BlockPos water : BlockPos.betweenClosed(center.offset(-1, 0, -1), center.offset(1, 2, 1))) {
+            level.setBlockAndUpdate(water, Blocks.WATER.defaultBlockState());
+        }
+        boss.setPos(origin);
+        boss.setDeltaMovement(Vec3.ZERO);
+        boss.setNoAi(true);
+        boss.setAirSupply(1);
+        for (int tick = 0; tick < 25; tick++) boss.tick();
+        helper.assertTrue(boss.isEyeInFluid(FluidTags.WATER) && boss.getAirSupply() == 1 && boss.getHealth() == 500,
+                "A submerged Lord keeps its air supply and does not drown");
+        boss.discard();
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_torment_pursuit")
+    public static void tormentPursuesBeyondRangeAndFiresAtTheOriginalInterval(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var origin = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(4, 14, 4)));
+        var boss = WitcheryEntities.LORD_OF_TORMENT.get().create(level);
+        var target = EntityType.PIG.create(level);
+        boss.setPos(origin);
+        boss.setTarget(target);
+        target.setPos(origin.add(13, 0, 0));
+        level.getChunkAt(target.blockPosition());
+        var pursuit = new TormentFlightGoals.RangedAttack(boss);
+        helper.assertTrue(pursuit.canUse(), "The ranged goal accepts the target");
+        pursuit.tick();
+        helper.assertTrue(boss.getDeltaMovement().distanceTo(new Vec3(0.15, 0, 0)) < 1e-5,
+                "A target thirteen blocks away provokes the original forward impulse");
+
+        boss.setDeltaMovement(Vec3.ZERO);
+        var blockedGoal = new TormentFlightGoals.RangedAttack(boss);
+        BlockPos obstruction = BlockPos.containing(origin.add(7, 0, 0));
+        level.setBlockAndUpdate(obstruction, Blocks.OBSIDIAN.defaultBlockState());
+        helper.assertTrue(blockedGoal.canUse(), "The ranged goal keeps its obstructed target");
+        blockedGoal.tick();
+        helper.assertTrue(boss.getDeltaMovement().equals(Vec3.ZERO), "A wall stops the direct pursuit impulse");
+        level.setBlockAndUpdate(obstruction, Blocks.AIR.defaultBlockState());
+
+        var ranged = new TormentFlightGoals.RangedAttack(boss);
+        target.setPos(origin.add(12, 0, 0));
+        helper.assertTrue(ranged.canUse(), "A target on the range boundary remains eligible");
+        ranged.tick();
+        for (int tick = 0; tick < 59; tick++) ranged.tick();
+        helper.assertTrue(boss.getDeltaMovement().equals(Vec3.ZERO) && boss.attackTicks() == 0,
+                "The Lord holds its position and delays the boundary volley for sixty ticks");
+        ranged.tick();
+        helper.assertTrue(boss.attackTicks() == 10, "The volley fires on the sixtieth tick at twelve blocks");
+        target.discard();
+        boss.discard();
+        helper.succeed();
     }
 
     private static FakePlayer player(ServerLevel level, String name, Vec3 position, GameType mode) {

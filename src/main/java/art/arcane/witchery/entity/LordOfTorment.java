@@ -8,6 +8,8 @@ import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcherySounds;
 import art.arcane.witchery.world.TormentTravel;
 import art.arcane.witchery.world.WitcheryDimensions;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -26,17 +28,15 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.control.FlyingMoveControl;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
-import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomFlyingGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
+import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.RangedAttackMob;
@@ -45,6 +45,7 @@ import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -59,7 +60,7 @@ public final class LordOfTorment extends Monster implements RangedAttackMob {
 
     public LordOfTorment(EntityType<? extends LordOfTorment> type, Level level) {
         super(type, level);
-        moveControl = new FlyingMoveControl(this, 20, false);
+        setNoGravity(true);
         xpReward = 80;
         setPersistenceRequired();
     }
@@ -72,18 +73,69 @@ public final class LordOfTorment extends Monster implements RangedAttackMob {
 
     @Override
     protected PathNavigation createNavigation(Level level) {
-        return new FlyingPathNavigation(this, level);
+        var navigation = new GroundPathNavigation(this, level);
+        navigation.setCanFloat(true);
+        navigation.setCanOpenDoors(true);
+        return navigation;
     }
 
     @Override
     protected void registerGoals() {
         goalSelector.addGoal(1, new FloatGoal(this));
-        goalSelector.addGoal(2, new RangedAttackGoal(this, 1, 20, 60, 12));
-        goalSelector.addGoal(6, new WaterAvoidingRandomFlyingGoal(this, 0.2));
+        goalSelector.addGoal(2, new TormentFlightGoals.RangedAttack(this));
+        goalSelector.addGoal(5, new TormentFlightGoals.Land(this));
+        goalSelector.addGoal(6, new TormentFlightGoals.Wander(this));
         goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 8));
         goalSelector.addGoal(8, new RandomLookAroundGoal(this));
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 0, true, false, null));
+    }
+
+    @Override
+    public void travel(Vec3 input) {
+        if (isControlledByLocalInstance()) {
+            boolean inWater = isInWater();
+            if (inWater || isInLava()) {
+                moveRelative(0.02F, input);
+                move(MoverType.SELF, getDeltaMovement());
+                setDeltaMovement(getDeltaMovement().scale(inWater ? 0.8F : 0.5D));
+            } else {
+                BlockPos ground = getBlockPosBelowThatAffectsMyMovement();
+                float friction = onGround() ? 0.91F * level().getBlockState(ground).getFriction(level(), ground, this) : 0.91F;
+                moveRelative(onGround() ? 0.1F * 0.16277136F / (friction * friction * friction) : 0.02F, input);
+                move(MoverType.SELF, getDeltaMovement());
+                setDeltaMovement(getDeltaMovement().scale(friction));
+            }
+        }
+        calculateEntityAnimation(false);
+    }
+
+    @Override
+    protected void checkFallDamage(double movement, boolean onGround, BlockState state, BlockPos pos) {}
+
+    @Override
+    public boolean causeFallDamage(float distance, float multiplier, DamageSource source) {
+        return false;
+    }
+
+    @Override
+    public boolean onClimbable() {
+        return false;
+    }
+
+    @Override
+    protected int decreaseAirSupply(int air) {
+        return air;
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (level().isClientSide()) {
+            var random = level().getRandom();
+            level().addParticle(ParticleTypes.FLAME, getX() + (random.nextDouble() - 0.5) * getBbWidth(),
+                    getY() + 0.1 + random.nextDouble() * 2, getZ() + (random.nextDouble() - 0.5) * getBbWidth(), 0, 0, 0);
+        }
     }
 
     @Override
@@ -92,11 +144,18 @@ public final class LordOfTorment extends Monster implements RangedAttackMob {
         if (attackTicks > 0) attackTicks--;
         if (!level().isClientSide()) {
             bar.setProgress(getHealth() / getMaxHealth());
-            if (getTarget() instanceof ServerPlayer player && player.getAbilities().flying && random.nextFloat() < 0.05F
+            if (level().getRandom().nextDouble() < 0.05 && getTarget() instanceof ServerPlayer player && player.getAbilities().flying
                     && !player.hasEffect(MobEffects.MOVEMENT_SLOWDOWN)) {
                 player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 200, 5));
             }
         }
+    }
+
+    @Override
+    public boolean isInvulnerableTo(DamageSource source) {
+        if (!source.is(WitcheryDamageTypes.DIRECT_FIRE)) return super.isInvulnerableTo(source);
+        // The old fire immunity applies to contact with the environment. Witchery attacks may deal fire damage directly.
+        return isRemoved() || isInvulnerable() && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && !source.isCreativePlayer();
     }
 
     @Override
@@ -153,8 +212,12 @@ public final class LordOfTorment extends Monster implements RangedAttackMob {
 
     @Override
     public void handleEntityEvent(byte event) {
-        if (event == 4) attackTicks = 10;
-        else super.handleEntityEvent(event);
+        if (event == 4) {
+            attackTicks = 10;
+            playSound(SoundEvents.IRON_GOLEM_ATTACK, 1, 1);
+        } else {
+            super.handleEntityEvent(event);
+        }
     }
 
     public int attackTicks() {
@@ -199,6 +262,11 @@ public final class LordOfTorment extends Monster implements RangedAttackMob {
     @Override
     protected SoundEvent getAmbientSound() {
         return WitcherySounds.TORMENT_LAUGH.get();
+    }
+
+    @Override
+    public int getAmbientSoundInterval() {
+        return 200;
     }
 
     @Override

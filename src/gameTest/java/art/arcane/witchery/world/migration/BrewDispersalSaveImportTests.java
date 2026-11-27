@@ -76,28 +76,34 @@ public final class BrewDispersalSaveImportTests {
                         && items.getCompound(0).getString("id").equals("minecraft:nether_wart")
                         && items.getCompound(1).getString("id").equals("minecraft:glistering_melon_slice"),
                 "The imported falling brew should retain its type and both ordered ingredients");
-        var pig = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(4, 3, 4));
+        var level = helper.getLevel();
+        var pig = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(4, 12, 4));
         pig.setHealth(4.0F);
         pig.setNoGravity(true);
-        var drop = WitcheryEntities.BREW_DROPLET.get().create(helper.getLevel());
+        var drop = WitcheryEntities.BREW_DROPLET.get().create(level);
         drop.load(saved);
         helper.assertTrue(saved.getCompound("Brew").getInt("Color") == -812596878
                         && drop.getItem().getTag().getInt(BrewDroplet.TINT_KEY) == (-812596878 & 0xFFFFFF),
                 "The falling brew should retain its saved color");
-        var approach = pig.position().add(-1, 0.3, 0);
-        var motion = new Vec3(2, 0, 0);
-        drop.setPos(approach);
-        drop.setDeltaMovement(motion);
-        helper.assertTrue(helper.getLevel().addFreshEntity(drop), "The imported droplet should join the level");
-        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(drop.isAlive() && drop.getX() > pig.getX()
-                && pig.getHealth() == 4.0F, "The falling brew must pass through creatures before its fifth tick"))
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.getEntity(pig.getUUID()) == pig,
+                        "The pig is available to the projectile's collision query"))
                 .thenExecute(() -> {
-                    drop.tickCount = 4;
+                    var approach = pig.position().add(-1, 0.3, 0);
+                    var motion = new Vec3(2, 0, 0);
                     drop.setPos(approach);
                     drop.setDeltaMovement(motion);
+                    helper.assertTrue(level.addFreshEntity(drop), "The imported droplet should join the level");
+                    drop.tickCount = 3;
+                    level.tickNonPassenger(drop);
+                    helper.assertTrue(drop.isAlive() && drop.tickCount == 4 && drop.getX() > pig.getX()
+                            && pig.getHealth() == 4.0F, "The falling brew passes through creatures on its fourth tick");
+
+                    drop.setPos(approach);
+                    drop.setDeltaMovement(motion);
+                    level.tickNonPassenger(drop);
+                    helper.assertTrue(!drop.isAlive() && drop.tickCount == 5 && pig.getHealth() == 8.0F,
+                            "The falling brew heals on its fifth tick");
                 })
-                .thenWaitUntil(() -> helper.assertTrue(!drop.isAlive() && drop.tickCount == 5 && pig.getHealth() == 8.0F,
-                        "The imported falling brew must heal creatures starting on its fifth tick"))
                 .thenSucceed();
     }
 

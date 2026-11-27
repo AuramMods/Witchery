@@ -1,6 +1,7 @@
 package art.arcane.witchery.mixin;
 
 import art.arcane.witchery.item.HunterClothingItem;
+import art.arcane.witchery.registry.WitcheryDamageTypes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -29,7 +30,7 @@ public abstract class HunterArmorProtectionMixin {
             }
         }
         if (silverRetaliation && !wearer.level().isClientSide && source.getEntity() instanceof LivingEntity attacker && attacker != wearer) {
-            attacker.hurt(attacker.damageSources().inFire(), 1);
+            attacker.hurt(WitcheryDamageTypes.directFire(attacker.level()), 1);
         }
         witchery$hunterArmorBonus = reinforcedDefense * 1.5F;
     }

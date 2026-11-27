@@ -16,6 +16,8 @@ import org.jetbrains.annotations.Nullable;
 public final class WitcheryDamageTypes {
     public static final ResourceKey<DamageType> DEMONIC = ResourceKey.create(Registries.DAMAGE_TYPE,
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "demonic"));
+    public static final ResourceKey<DamageType> DIRECT_FIRE = ResourceKey.create(Registries.DAMAGE_TYPE,
+            ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "direct_fire"));
     public static final ResourceKey<DamageType> VAMPIRE_FIRE = ResourceKey.create(Registries.DAMAGE_TYPE,
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "vampire_fire"));
     public static final ResourceKey<DamageType> SUNLIGHT = ResourceKey.create(Registries.DAMAGE_TYPE,
@@ -47,6 +49,10 @@ public final class WitcheryDamageTypes {
 
     public static DamageSource vampireFire(Level level) {
         return new DamageSource(level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(VAMPIRE_FIRE));
+    }
+
+    public static DamageSource directFire(Level level) {
+        return new DamageSource(level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(DIRECT_FIRE));
     }
 
     public static DamageSource sunlight(Level level) {
