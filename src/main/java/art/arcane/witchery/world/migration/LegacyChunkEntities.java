@@ -43,7 +43,7 @@ public final class LegacyChunkEntities {
     }
 
     static void prepare(CompoundTag level, LegacyWorldIds ids, DataFixer fixer, int from) {
-        for (Tag tag : level.getList("Entities", Tag.TAG_COMPOUND)) prepareEntity((CompoundTag) tag, ids, fixer, from);
+        for (Tag tag : level.getList("Entities", Tag.TAG_COMPOUND)) prepareEntity((CompoundTag) tag, ids, fixer, from, level);
         for (Tag entry : level.getList("TileEntities", Tag.TAG_COMPOUND)) {
             CompoundTag tile = (CompoundTag) entry;
             if (tile.getString("id").equals("MobSpawner")) prepareSpawner(tile, ids, fixer, from);
@@ -60,7 +60,7 @@ public final class LegacyChunkEntities {
         while (vehicle != null) {
             CompoundTag next = vehicle.get("Riding") instanceof CompoundTag parent ? parent : null;
             vehicle.remove("Riding");
-            prepareEntity(vehicle, ids, fixer, from);
+            prepareEntity(vehicle, ids, fixer, from, null);
             if (!(fixer.update(References.ENTITY_TREE, new Dynamic<>(NbtOps.INSTANCE, vehicle), from, to)
                     .getValue() instanceof CompoundTag fixed)) return null;
             restoreEntity(fixed);
@@ -80,10 +80,11 @@ public final class LegacyChunkEntities {
         return saved;
     }
 
-    private static void prepareEntity(CompoundTag entity, LegacyWorldIds ids, DataFixer fixer, int from) {
+    private static void prepareEntity(CompoundTag entity, LegacyWorldIds ids, DataFixer fixer, int from,
+                                      @Nullable CompoundTag originalChunk) {
         ids.upgradeEntityEffects(entity);
         if (entity.contains("Riding", Tag.TAG_COMPOUND)) {
-            prepareEntity(entity.getCompound("Riding"), ids, fixer, from);
+            prepareEntity(entity.getCompound("Riding"), ids, fixer, from, originalChunk);
         }
         int targetVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
         String oldType = entity.getString("id");
@@ -111,9 +112,7 @@ public final class LegacyChunkEntities {
             case "brew", "brew2" -> name = prepareBrewProjectile(entity, name, ids, fixer, from, targetVersion);
         }
         if (!ForgeRegistries.ENTITY_TYPES.containsKey(name)) return;
-        if (name.getPath().equals("bolt") && entity.contains("inTile", Tag.TAG_BYTE)) {
-            entity.putInt("inTile", Byte.toUnsignedInt(entity.getByte("inTile")));
-        }
+        if (name.getPath().equals("bolt")) LegacyBoltAnchors.prepare(entity, ids, originalChunk);
 
         // Vanilla's old entity schema needs a known type to fix the entity tree and its typed fields.
         // Keep the Witchery type in the remainder, which survives both passes of the chunk fixer.
@@ -188,7 +187,7 @@ public final class LegacyChunkEntities {
         CompoundTag entity = entry.getCompound(dataKey);
         entity.putString("id", name);
         // A vanilla mob template can also carry a Witchery effect or an Apothecary profession.
-        prepareEntity(entity, ids, fixer, from);
+        prepareEntity(entity, ids, fixer, from, null);
         // Vanilla copies the type field over the entity ID before it fixes the embedded entity.
         entry.putString(typeKey, entity.getString("id"));
         entry.put(dataKey, entity);
@@ -239,6 +238,7 @@ public final class LegacyChunkEntities {
             entity.putString("id", type);
             entity.remove(ORIGINAL_TYPE);
             restoreEquipmentSlots(entity);
+            if (type.equals(NAMESPACE + "bolt")) LegacyBoltAnchors.finishImport(entity);
             if (type.equals(NAMESPACE + "cat") && !entity.contains("variant")) {
                 entity.putString("variant", "minecraft:tabby");
             } else if (type.equals(NAMESPACE + "werevillager") && entity.getInt("Xp") == 0

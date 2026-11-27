@@ -451,6 +451,21 @@ public final class LegacyChunkUpgrade {
         return (blocks[index] & 0xFF) | (nibble(highBits, index) << 8);
     }
 
+    static int savedBlockIdAndMetadata(CompoundTag level, BlockPos pos) {
+        if (!level.contains("xPos", Tag.TAG_ANY_NUMERIC) || !level.contains("zPos", Tag.TAG_ANY_NUMERIC)
+                || (pos.getX() >> 4) != level.getInt("xPos") || (pos.getZ() >> 4) != level.getInt("zPos")) return -1;
+        for (Tag value : level.getList("Sections", Tag.TAG_COMPOUND)) {
+            CompoundTag section = (CompoundTag) value;
+            if (section.getInt("Y") != pos.getY() >> 4) continue;
+            byte[] blocks = section.getByteArray("Blocks");
+            if (blocks.length != SECTION_SIZE) return -1;
+            int index = ((pos.getY() & 15) << 8) | ((pos.getZ() & 15) << 4) | (pos.getX() & 15);
+            return (blockNumber(blocks, section.getByteArray("Add"), index) << 4)
+                    | nibble(section.getByteArray("Data"), index);
+        }
+        return -1;
+    }
+
     private static int nibble(byte[] bytes, int index) {
         int offset = index >> 1;
         return offset < bytes.length ? bytes[offset] >> ((index & 1) << 2) & 15 : 0;

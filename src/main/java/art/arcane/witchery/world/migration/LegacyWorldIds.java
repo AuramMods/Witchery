@@ -356,6 +356,7 @@ public final class LegacyWorldIds {
 
     public static void repairNamedStoredItems(Tag value) {
         visitStoredCompounds(value, stack -> {
+            LegacyBoltAnchors.repairStored(stack, null);
             repairWaypointTags(stack, false);
             if (isNamedWitcheryStack(stack) && (!hasLegacyStackEncoding(stack) || upgradeWitcheryStack(stack, stack.getString("id")))) {
                 upgradeStackTags(stack, true, false);
@@ -379,6 +380,7 @@ public final class LegacyWorldIds {
     }
 
     private void repairStoredCompound(CompoundTag compound, DataFixer fixer, int currentVersion, boolean repairVanilla) {
+        if (repairVanilla) LegacyBoltAnchors.repairStored(compound, this);
         repairWaypointTags(compound, false);
         // Both legacy and current item stacks store Count as a byte. Some tiles have their own integer Count.
         if (compound.contains("Count", Tag.TAG_BYTE) && hasLegacyStackEncoding(compound)) {

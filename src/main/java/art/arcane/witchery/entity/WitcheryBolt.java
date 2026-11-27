@@ -3,7 +3,11 @@ package art.arcane.witchery.entity;
 import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryEntities;
+import art.arcane.witchery.world.migration.LegacyBoltAnchors;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -19,12 +23,19 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 public final class WitcheryBolt extends AbstractArrow {
     private static final EntityDataAccessor<Byte> BOLT_TYPE = SynchedEntityData.defineId(WitcheryBolt.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Boolean> LEGACY_ATTACHMENT = SynchedEntityData.defineId(WitcheryBolt.class, EntityDataSerializers.BOOLEAN);
+    @Nullable private CompoundTag pendingAnchor;
+    @Nullable private BlockPos savedAnchorPosition;
+    @Nullable private BlockState savedAnchorState;
 
     public enum Kind {
         STAKE(WitcheryIngredient.STAKE_BOLT), ANTI_MAGIC(WitcheryIngredient.ANTI_MAGIC_BOLT),
@@ -56,6 +67,15 @@ public final class WitcheryBolt extends AbstractArrow {
     protected void defineSynchedData() {
         super.defineSynchedData();
         entityData.define(BOLT_TYPE, (byte) 0);
+        entityData.define(LEGACY_ATTACHMENT, false);
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> accessor) {
+        super.onSyncedDataUpdated(accessor);
+        if (level().isClientSide && LEGACY_ATTACHMENT.equals(accessor)) {
+            inGround = entityData.get(LEGACY_ATTACHMENT);
+        }
     }
 
     public Kind kind() {
@@ -80,6 +100,12 @@ public final class WitcheryBolt extends AbstractArrow {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+        pendingAnchor = tag.get(LegacyBoltAnchors.PENDING) instanceof CompoundTag pending ? pending.copy() : null;
+        savedAnchorPosition = tag.contains(LegacyBoltAnchors.POSITION, Tag.TAG_LONG)
+                ? BlockPos.of(tag.getLong(LegacyBoltAnchors.POSITION)) : null;
+        savedAnchorState = savedAnchorPosition != null && tag.get("inBlockState") instanceof CompoundTag state
+                ? NbtUtils.readBlockState(level().holderLookup(Registries.BLOCK), state) : null;
+        entityData.set(LEGACY_ATTACHMENT, inGround && savedAnchorState != null);
         if (!tag.contains("pickup") && tag.contains("player", Tag.TAG_ANY_NUMERIC)) {
             pickup = tag.getBoolean("player") ? Pickup.ALLOWED : Pickup.DISALLOWED;
         }
@@ -89,7 +115,34 @@ public final class WitcheryBolt extends AbstractArrow {
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
+        if (inGround && pendingAnchor != null) tag.put(LegacyBoltAnchors.PENDING, pendingAnchor.copy());
+        if (inGround && savedAnchorPosition != null) tag.putLong(LegacyBoltAnchors.POSITION, savedAnchorPosition.asLong());
         tag.putInt("boltType", kind().ordinal());
+    }
+
+    @Nullable
+    public Boolean shouldFallFromSavedAnchor() {
+        if (!inGround || !entityData.get(LEGACY_ATTACHMENT)) return null;
+        if (level().isClientSide) return false;
+        if (savedAnchorPosition == null || savedAnchorState == null) return null;
+        if (!level().hasChunkAt(savedAnchorPosition)) return false;
+        if (level().getBlockState(savedAnchorPosition).equals(savedAnchorState)) return false;
+        clearSavedAnchor();
+        hasImpulse = true;
+        return true;
+    }
+
+    @Override
+    protected void onHitBlock(BlockHitResult hit) {
+        clearSavedAnchor();
+        super.onHitBlock(hit);
+    }
+
+    private void clearSavedAnchor() {
+        pendingAnchor = null;
+        savedAnchorPosition = null;
+        savedAnchorState = null;
+        entityData.set(LEGACY_ATTACHMENT, false);
     }
 
     @Override

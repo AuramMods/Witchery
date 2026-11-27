@@ -1038,6 +1038,12 @@ public final class CircleRiteTests {
         heart.load(pending);
         var sounds = new ArrayList<PlayLevelSoundEvent.AtPosition>();
         var returnedAtCue = new ArrayList<Integer>();
+        var returned = new ArrayList<ItemEntity>();
+        var offeringArea = new AABB(center).inflate(4);
+        Consumer<EntityJoinLevelEvent> recordRefund = event -> {
+            if (event.getLevel() == level && event.getEntity() instanceof ItemEntity item
+                    && offeringArea.intersects(item.getBoundingBox())) returned.add(item);
+        };
         Consumer<PlayLevelSoundEvent.AtPosition> listener = event -> {
             if (event.getLevel() == level && event.getPosition().equals(Vec3.atLowerCornerOf(center))) {
                 sounds.add(event);
@@ -1045,6 +1051,7 @@ public final class CircleRiteTests {
             }
         };
         MinecraftForge.EVENT_BUS.addListener(listener);
+        MinecraftForge.EVENT_BUS.addListener(recordRefund);
         try {
             tick(level, center, heart, 19);
             helper.assertTrue(sounds.isEmpty() && drops(helper).isEmpty(), "The cast waits for its activation tick");
@@ -1057,12 +1064,14 @@ public final class CircleRiteTests {
                             && event.getNewPitch() >= 1F / 3 && event.getNewPitch() <= 0.5F)
                             && returnedAtCue.equals(List.of(0, 0, 0)),
                     "The three cues use the original volume and pitch range before any offerings return");
-            helper.assertTrue(drops(helper).stream().map(drop -> drop.getItem().getItem()).toList()
+            helper.assertTrue(returned.stream().map(drop -> drop.getItem().getItem()).toList()
                             .equals(List.of(Items.DIAMOND_SWORD, WitcheryIngredient.FROZEN_HEART.item()))
+                            && drops(helper).size() == 2 && drops(helper).containsAll(returned)
                             && !heart.saveWithoutMetadata().contains("Rite", Tag.TAG_STRING),
                     "The rejected cast returns the two held offerings once");
         } finally {
             MinecraftForge.EVENT_BUS.unregister(listener);
+            MinecraftForge.EVENT_BUS.unregister(recordRefund);
         }
         helper.succeed();
     }

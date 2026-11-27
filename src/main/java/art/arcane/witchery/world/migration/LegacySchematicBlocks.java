@@ -55,7 +55,7 @@ public final class LegacySchematicBlocks {
     }
 
     @Nullable
-    private static BlockState readVanilla(int encoded) {
+    static BlockState readVanilla(int encoded) {
         var flattened = BlockStateData.getTag(encoded).convert(NbtOps.INSTANCE);
         var updated = DataFixers.getDataFixer().update(References.BLOCK_STATE, flattened,
                 1451, SharedConstants.getCurrentVersion().getDataVersion().getVersion());

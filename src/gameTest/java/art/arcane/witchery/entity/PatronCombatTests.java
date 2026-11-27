@@ -79,7 +79,9 @@ public final class PatronCombatTests {
         var gulg = helper.spawn(WitcheryEntities.GULG.get(), new BlockPos(6, 5, 4));
         mog.setNoAi(true);
         gulg.setNoAi(true);
-        helper.runAfterDelay(2, () -> {
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
+                level.getEntitiesOfClass(HobgoblinGod.class, mog.getBoundingBox().inflate(3)).contains(gulg),
+                "Gulg is present in Mog's protection range")).thenExecute(() -> {
             helper.assertFalse(mog.hurt(level.damageSources().magic(), 10), "A living partner protects Mog");
             gulg.setHealth(0);
             helper.assertFalse(gulg.isAlive(), "Gulg should be dying");
@@ -88,8 +90,7 @@ public final class PatronCombatTests {
             helper.assertTrue(mog.hurt(level.damageSources().magic(), 10) && mog.getHealth() == 390,
                     "Mog becomes vulnerable after the partner leaves the world");
             mog.discard();
-            helper.succeed();
-        });
+        }).thenSucceed();
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_patron_teleport")

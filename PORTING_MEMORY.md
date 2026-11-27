@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Bolt impact anchor recovery (2026-11-27)
+
+- The original Forge server fired four Witchery Bolts into a Statue of Worship, a Hawthorn log, a Dark Oak log, and Mossy Stone Bricks. The original region and all four serialized records are in `build/qa-bolt-anchors/native/`. The earlier package passed 15 of 20 checks. The rebuilt clean Forge package passed those 20 and four additional saved-cell checks on import and again on restart.
+- The native reader verifies the low byte and metadata at the original impact cell before recovering the full custom block ID. An ordinary Forge save can supply a full numeric ID or block name. The known state takes precedence, while an unresolved anchor keeps its raw fields while the projectile stays embedded. Recovery of a truncated high ID currently needs the original impact cell in the Bolt's source chunk.
+- Converted clean Forge profiles passed all 36 initial and 37 restart checks with and without a captured registry. The registered fixture added the missing mapping before the restart. Protocol 102 keeps the original position visible on tracking and releases it on the client when the server does. Two hidden, muted clients verified the position, ordinary Holy Bolt pickup, the Stake Bolt's release, and the inventory and both remaining attachments after a dedicated restart. See `build/qa-bolt-anchors/live-synced-final/`.
+- Local Java 17 data generation, JAR reobfuscation and all 620 required Forge GameTests passed. The package at `build/qa-bolt-anchors/release-synced.jar` has SHA-256 `ddc9a17943e9772e49f51ca96b6efc26d4395a5c1905b9d4892c877d7989f09e`. Its clean Forge native import and restart passed 24 checks each. Copied Auram passed 36 converted load and 37 restart checks on the same package.
+
 ## Mandrake emergence (2026-11-27)
 
 - The running 0.24.1 server compared 20 cases covering the day and night boundaries, normal harvest, support loss, direct destruction, Harvesting brews, blasts, disabled item drops, and denied creature spawns. Read `build/qa-mandrake-emergence/native/reference-final.log`. A ripe plant rolls once up to and including 0.9 by day and 0.1 by night. Immature or Peaceful harvests skip the roll. An emergence attempt replaces the crop loot even when a Forge spawn listener vetoes the creature.
