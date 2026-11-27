@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Sleeping body pose and anchor (2026-11-27)
+
+- The old renderer and biped emitted 168 vertices per pose. The six original cases cover rest, turning, motion input, early and late death, and the `Dinnerbone` name. Clean Forge and copied Auram matched all 1,008 positions and skin coordinate pairs after mapping the 64×32 legacy skin to the modern canvas. The previous Forge model emitted 288 vertices per case and matched the position of none at a precision of two millionths of a block. See `build/qa-sleeping-body/native/reference.log` and `comparison.log` in the same directory.
+- The native body ignored `(3, 1, −2)` movement. The port restores that anchor rule and keeps the same position and UUID across ordinary save and reload. The GameTest exercises ordinary and piston movement. Local Java 17 data generation, JAR reobfuscation, and all 626 required GameTests passed.
+- The original live body from a Brew of Sleeping stayed beside the piston at `(100.5, 180, 100.5)`. After restart the same UUID drew 168 vertices with its owner's skin. The witness killed the body with ordinary melee, waking the dreamer and restoring the parked Diamonds. See `build/qa-sleeping-body/clean/`. The copied Auram fixture in `auram/anchor.log` also retained its position and 14 health. The package at `build/qa-sleeping-body/release.jar` has SHA-256 `d6565843d2863b4e557460c1b0afae011419c778c4e9d0fd7317e1eef04ba1a5`.
+
 ## Crossbow Punch and player-hit cue (2026-11-27)
 
 - The original server measured four cases against a pig with knockback resistance 1.0. Read `build/qa-bolt-punch/native/reference.log`. Punch II pushed `(1.200000030, 0.1, 0)` on the cardinal shot and `(0.720000029, 0.1, −0.960000038)` on the diagonal shot. The unenchanted and vertical shots added zero. The previous Forge package matched two, and the rebuilt clean Forge package matched all four. A vanilla Arrow with Punch II stayed stationary in the same control.

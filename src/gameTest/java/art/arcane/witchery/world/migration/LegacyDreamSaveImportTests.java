@@ -19,6 +19,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -26,6 +27,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -38,6 +40,24 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class LegacyDreamSaveImportTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_dream_body_anchor")
+    public static void theSleepingBodyStaysAtItsSavedAnchor(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var origin = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(5, 3, 5)));
+        var body = WitcheryEntities.SLEEPING_BODY.get().create(level);
+        body.setPos(origin);
+        body.move(MoverType.SELF, new Vec3(3, 1, -2));
+        body.move(MoverType.PISTON, new Vec3(0.5, 0, 0));
+        helper.assertTrue(body.position().equals(origin), "Movement leaves the body at the Dream session's anchor");
+        var saved = body.saveWithoutId(new CompoundTag());
+        var restored = WitcheryEntities.SLEEPING_BODY.get().create(level);
+        restored.load(saved);
+        restored.move(MoverType.PISTON, new Vec3(0, 0.5, 0));
+        helper.assertTrue(restored.position().equals(origin) && restored.getUUID().equals(body.getUUID()),
+                "The body keeps its identity and fixed position after reload");
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void returnedGhostCanWakeWithLegacyInventories(GameTestHelper helper) throws Exception {
         verifyParkedInventories(helper, false);
