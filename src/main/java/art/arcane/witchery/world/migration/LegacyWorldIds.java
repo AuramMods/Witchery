@@ -355,9 +355,7 @@ public final class LegacyWorldIds {
     public static void repairNamedStoredItems(Tag value) {
         visitStoredCompounds(value, stack -> {
             repairWaypointTags(stack, false);
-            String name = stack.getString("id");
-            if (name.startsWith(Witchery.MODID + ":") && stack.contains("Count", Tag.TAG_BYTE)
-                    && stack.getByte("Count") > 0 && hasLegacyStackEncoding(stack) && upgradeWitcheryStack(stack, name)) {
+            if (isNamedWitcheryStack(stack) && (!hasLegacyStackEncoding(stack) || upgradeWitcheryStack(stack, stack.getString("id")))) {
                 upgradeStackTags(stack, true, false);
             }
         });
@@ -389,6 +387,8 @@ public final class LegacyWorldIds {
             }
         } else {
             upgradeItemBinding(compound);
+            // A previous conversion can flatten the stack without touching its display or enchantments.
+            if (isNamedWitcheryStack(compound)) upgradeStackTags(compound, true, false);
         }
         String id = compound.getString("id");
         upgradeMirrorExit(compound, id);
@@ -540,6 +540,11 @@ public final class LegacyWorldIds {
     private static boolean hasLegacyStackEncoding(CompoundTag stack) {
         return stack.contains("id", Tag.TAG_ANY_NUMERIC) || stack.contains("Damage", Tag.TAG_ANY_NUMERIC)
                 || WitcheryIngredient.hasLegacyIngredientDamage(stack);
+    }
+
+    private static boolean isNamedWitcheryStack(CompoundTag stack) {
+        return stack.contains("Count", Tag.TAG_BYTE) && stack.getByte("Count") > 0
+                && stack.getString("id").startsWith(Witchery.MODID + ":");
     }
 
     private static void upgradeEnchantments(CompoundTag tag, String originalKey, String currentKey) {

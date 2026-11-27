@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Witchery item text and enchantments in converted saves (2026-11-27)
+
+- The original Brew Bag and Urn inventory writers save a plain `display.Name` and complete bottle stacks under `Inventory.Items`. The earlier Forge fixture already uses modern stack IDs and durability. The preceding JAR failed ten of 20 checks in both clean Forge replays. The chest and player inventory each lost the stored bottle text, the Urn's title, and the Arthana's numeric Unbreaking level.
+- Ordinary chunk and player loading now format legacy names and lore and convert numeric enchantments on already named Witchery stacks. Styled components and the Arthana's existing Sharpness III and wear stay intact. Clean Forge passed all 22 first-load and 20 restart checks with or without a captured registry. A server-side Brew Bag menu moved the recovered Splash Poison bottle from slot six to slot five and saved it to the standard player file.
+- Copied Auram also passed all 22 first-load and 20 restart checks with the same reobfuscated JAR. Local Java 17 data generation, JAR reobfuscation, and all 597 required Forge GameTests passed. `build/qa-stored-item-text/release.jar` has SHA-256 `d7d60ea94c05ac97c564c437a9871cf1b39d1e7e7769fc19b12b72ac5af1905d`. See `clean-release/`, `clean-release-with-registry/`, and `pack-release/` under `build/qa-stored-item-text/`.
+
 ## Shared block entity IDs and legacy placement matrix (2026-11-26)
 
 - The original server enumerated 121 blocks, placed the 54 blocks with tile entities, and wrote 40 distinct tile IDs. The saved region covers both oven and distillery states, both mirrors, seven cursed controls, three fetishes, both brew fluids, and both hunting traps. The four decorative blocks keep their placements and omit the original empty tiles. The village wall marker becomes air. A supplied Grassper name was absent from the original writer, and the Coffin's world data carried `Opened` while its angles belonged to the update packet. See `build/qa-tile-save-matrix/native/reference-colored.log`.
