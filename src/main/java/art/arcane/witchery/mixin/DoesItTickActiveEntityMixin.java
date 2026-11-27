@@ -6,6 +6,8 @@ import art.arcane.witchery.entity.Hellhound;
 import art.arcane.witchery.entity.HobgoblinGod;
 import art.arcane.witchery.entity.HornedHuntsman;
 import art.arcane.witchery.entity.InfernoSplatter;
+import art.arcane.witchery.entity.Leonard;
+import art.arcane.witchery.entity.LostSoul;
 import art.arcane.witchery.entity.SymbolProjectile;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.entity.WingedMonkey;
@@ -30,6 +32,8 @@ abstract class DoesItTickActiveEntityMixin {
                 || (entity instanceof Hellhound hound && hound.isConverting())
                 || (entity instanceof HornedHuntsman huntsman && huntsman.hasActiveEntrance())
                 || (entity instanceof HobgoblinGod god && god.hasActiveEntrance())
+                || (entity instanceof Leonard leonard && leonard.hasActiveEntrance())
+                || (entity instanceof LostSoul soul && soul.hasTimedLife())
                 || entity instanceof GrenadeProjectile
                 || entity instanceof SymbolProjectile
                 || entity instanceof ThrownBrew

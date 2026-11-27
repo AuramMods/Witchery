@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Leonard phase and Lost Soul wave comparison (2026-11-26)
+
+- The original server verified capped melee and Ice during the entrance, 30-health healing at entity ages ten and twenty, and protection from a dying Lost Soul in the corners of the 30-by-10-by-30 box. An idle Leonard did not gain a shield from a nearby Soul. New waves left one phase interval before claiming protection. Native data is in `build/qa-leonard-phase/native/reference-qualified.log`.
+- The seeded wave replay has five waves and 22 Souls. Clean Forge matches each column, type and lifetime. Lost Souls use the original grounded placement offsets and whole-second lifetimes, with a fallback of three attempts at the center when the outer columns are blocked. The Does It Tick integration lets the entrance advance and temporary Souls expire in loaded chunks.
+- Mortal Coil reached the original diagonal inside the horizontal range and skipped the farther corner. The original world's follow-up rolls stripped a curable positive effect or applied Sinking, Insanity, or Overheating for 1,200 ticks. The port uses the original targeted fizz and colored harp cues. Dispel writes air for gas and liquid inside the original radius. A modern fluid removal call previously recreated the liquid block in place.
+- The reobfuscated `build/qa-leonard-phase/release.jar` has SHA-256 `aa7163b49a8b3412296a7f1e630957cff54bd1bd6eef860883432e22c7c4276c`. Clean Forge passed 87 headless checks and copied Auram passed 83. Clean Forge replays the original wave seeds directly. Auram checks the same placement rules and whole-second lifetimes using the pack's random source. The previous Forge JAR failed 59 of its 87 checks.
+- Clean Forge passed two restart checks and copied Auram passed four. Both resumed the saved entrance and expired the saved Lost Soul. Auram resumed its normal distance rule for Leonard after the entrance. Java 17 data generation, JAR reobfuscation, and all 582 required Forge GameTests passed. See `clean-release/`, `pack-release/`, and `gametest-release.log` under `build/qa-leonard-phase/`.
+
 ## Mog and Gulg encounter (2026-11-26)
 
 - The original stalled-path tests measured Mog's first attempts at 301 and 602 ticks and Gulg's at 201 and 402. The port now uses the same age thresholds, sixteen-block teleport vector and the cue at both positions. An earlier Forge save keeps its remaining teleport wait. Both bosses heal on each tenth tick of entity age during the historical `Invul` entrance. The Does It Tick hook admits those saved entrances in loaded Auram chunks even with no players nearby.

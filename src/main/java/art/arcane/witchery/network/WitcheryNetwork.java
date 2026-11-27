@@ -505,6 +505,18 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_ORB_SOUND_ID, center, 0.5, 0.5, 16);
     }
 
+    public static void sendLeonardHex(ServerLevel level, Vec3 target) {
+        sendParticlesAround(level, LEGACY_MOB_SPELL_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID, target, 1, 2, 40);
+    }
+
+    public static void sendLeonardHexCast(ServerLevel level, Vec3 center, int color) {
+        sendParticlesAround(level, LEGACY_COLORED_SPELL_PARTICLE_ID, LEGACY_HARP_SOUND_ID, center, 1, 1, 40, color);
+    }
+
+    public static void sendLostSoulArrival(ServerLevel level, Vec3 center, double height) {
+        sendParticlesAround(level, LEGACY_SMOKE_PARTICLE_ID, LEGACY_POP_SOUND_ID, center, 1, height, 16);
+    }
+
     public static void sendBrewOwlArrival(ServerLevel level, Vec3 position) {
         sendParticlesAround(level, LEGACY_PORTAL_PARTICLE_ID, LEGACY_ENDERMAN_TELEPORT_SOUND_ID, position, 1, 1, 16);
     }

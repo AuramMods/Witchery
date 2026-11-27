@@ -1,6 +1,5 @@
 package art.arcane.witchery.entity;
 
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -53,7 +52,7 @@ public final class LostSoul extends Monster {
     protected void registerGoals() {
         goalSelector.addGoal(1, new MeleeAttackGoal(this, 1, true));
         goalSelector.addGoal(2, new WaterAvoidingRandomFlyingGoal(this, 0.8));
-        targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, true));
+        targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, 0, true, false, null));
     }
 
     @Override
@@ -85,13 +84,14 @@ public final class LostSoul extends Monster {
         return entityData.get(COLOR);
     }
 
+    void setLifetime(int ticks) { remaining = ticks; }
+
+    public boolean hasTimedLife() { return remaining >= 0; }
+
     @Override
     public void aiStep() {
         super.aiStep();
-        if (level() instanceof ServerLevel server && remaining >= 0 && --remaining <= 0) {
-            server.sendParticles(ParticleTypes.POOF, getX(), getY(0.5), getZ(), 12, 0.25, 0.3, 0.25, 0.02);
-            discard();
-        }
+        if (level() instanceof ServerLevel && hasTimedLife() && --remaining <= 0) discard();
     }
 
     @Override

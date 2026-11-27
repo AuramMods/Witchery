@@ -2,12 +2,14 @@ package art.arcane.witchery.entity;
 
 import art.arcane.witchery.infusion.SymbolSpell;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcherySounds;
+import art.arcane.witchery.world.WitcheryTeleport;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -38,6 +40,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -88,17 +92,17 @@ public final class Leonard extends Monster implements RangedAttackMob {
         super.aiStep();
         if (attackTicks > 0) attackTicks--;
         if (!(level() instanceof ServerLevel level) || !isAlive()) return;
-        if (entranceTicks > 0) {
-            if (--entranceTicks % 10 == 0) heal(getMaxHealth() * 0.05F);
-            if (entranceTicks == 0) level.globalLevelEvent(1023, blockPosition(), 0);
+        if (hasActiveEntrance()) {
+            if (--entranceTicks == 0) level.globalLevelEvent(1023, blockPosition(), 0);
+            if (tickCount % 10 == 0) heal(getMaxHealth() * 0.05F);
         } else {
             lifetime++;
             if (tickCount % 20 == 0) {
                 heal(1);
-                if (!isNoAi() && engaged() && random.nextInt(5) == 0) hexPlayers(level);
+                if (!isNoAi() && level.random.nextInt(5) == 0 && engaged()) hexPlayers(level);
             }
             if (tickCount % 20 == 2 && !isNoAi()) {
-                if (random.nextInt(5) == 0) disperseBrews(level);
+                if (level.random.nextInt(5) == 0) disperseBrews(level);
                 updateSoulPhase(level);
             }
         }
@@ -110,30 +114,42 @@ public final class Leonard extends Monster implements RangedAttackMob {
     }
 
     private void hexPlayers(ServerLevel level) {
-        var players = level.getEntitiesOfClass(ServerPlayer.class, getBoundingBox().inflate(40),
-                player -> player.isAlive() && !player.isSpectator() && !player.isCreative()
-                        && distanceToSqr(player.getX(), getY(), player.getZ()) <= 1600);
+        var players = level.getEntitiesOfClass(ServerPlayer.class, AABB.ofSize(position(), 80, 80, 80));
         boolean applied = false;
         for (ServerPlayer player : players) {
-            if (player.hasEffect(WitcheryEffects.MORTAL_COIL.get())) continue;
+            if (!canHex(player) || player.hasEffect(WitcheryEffects.MORTAL_COIL.get())) continue;
+            WitcheryNetwork.sendLeonardHex(level, player.position());
             player.addEffect(new MobEffectInstance(WitcheryEffects.MORTAL_COIL.get(), 1800), this);
-            level.sendParticles(ParticleTypes.ENTITY_EFFECT, player.getX(), player.getY(0.5), player.getZ(),
-                    24, 0.4, 0.7, 0.4, 0);
             applied = true;
         }
         if (applied) {
-            playSound(SoundEvents.NOTE_BLOCK_HARP.value(), 1, 1);
-        } else if (!players.isEmpty() && random.nextInt(5) == 1) {
-            ServerPlayer target = players.get(random.nextInt(players.size()));
-            switch (random.nextInt(10)) {
+            WitcheryNetwork.sendLeonardHexCast(level, position(), 39168);
+        } else if (level.random.nextInt(5) == 1 && !players.isEmpty()) {
+            ServerPlayer target = players.get(level.random.nextInt(players.size()));
+            if (!canHex(target)) return;
+            WitcheryNetwork.sendLeonardHex(level, target.position());
+            switch (level.random.nextInt(10)) {
                 case 0, 1, 2 -> target.getActiveEffects().stream().filter(effect -> effect.getEffect().getCategory()
                         != MobEffectCategory.HARMFUL && !effect.getCurativeItems().isEmpty())
                         .map(MobEffectInstance::getEffect).toList().forEach(target::removeEffect);
-                case 3, 4, 5 -> target.addEffect(new MobEffectInstance(WitcheryEffects.SINKING.get(), 1200, 3), this);
-                case 6, 7, 8 -> target.addEffect(new MobEffectInstance(WitcheryEffects.INSANITY.get(), 1200, 3), this);
-                case 9 -> target.addEffect(new MobEffectInstance(WitcheryEffects.OVERHEATING.get(), 1200, 3), this);
+                case 3, 4, 5 -> {
+                    target.addEffect(new MobEffectInstance(WitcheryEffects.SINKING.get(), 1200, 3), this);
+                    WitcheryNetwork.sendLeonardHexCast(level, position(), 10027008);
+                }
+                case 6, 7, 8 -> {
+                    target.addEffect(new MobEffectInstance(WitcheryEffects.INSANITY.get(), 1200, 3), this);
+                    WitcheryNetwork.sendLeonardHexCast(level, position(), 153);
+                }
+                case 9 -> {
+                    target.addEffect(new MobEffectInstance(WitcheryEffects.OVERHEATING.get(), 1200, 3), this);
+                    WitcheryNetwork.sendLeonardHexCast(level, position(), 39321);
+                }
             }
         }
+    }
+
+    private boolean canHex(ServerPlayer player) {
+        return player.isAlive() && !player.isSpectator() && distanceToSqr(player.getX(), getY(), player.getZ()) <= 1600;
     }
 
     private void updateSoulPhase(ServerLevel level) {
@@ -141,39 +157,44 @@ public final class Leonard extends Monster implements RangedAttackMob {
             shielded = false;
             return;
         }
-        shielded = level.getEntitiesOfClass(LostSoul.class, getBoundingBox().inflate(SOUL_RADIUS, 5, SOUL_RADIUS),
-                LivingEntity::isAlive).stream().anyMatch(soul -> distanceToSqr(soul.getX(), getY(), soul.getZ()) <= 225);
         if (!engaged()) return;
-        if (getHealth() < getMaxHealth() * 0.25F && random.nextInt(3) == 1 && !hasEffect(WitcheryEffects.RESIZING.get())) {
+        if (getHealth() < getMaxHealth() * 0.25F && level.random.nextInt(3) == 1 && !hasEffect(WitcheryEffects.RESIZING.get())) {
             addEffect(new MobEffectInstance(WitcheryEffects.RESIZING.get(), 1200, 3), this);
         }
-        if (!shielded && --soulDelay <= 0) {
-            removeCoilEffects(level, SOUL_RADIUS, 5);
-            soulDelay = 10;
-            int wanted = 4 + random.nextInt(2);
-            int spawned = 0;
-            for (int i = 0; i < wanted; i++) {
-                Vec3 point = position().add(random.nextInt(9) - 4, 1, random.nextInt(9) - 4);
-                if (spawnSoul(level, point)) spawned++;
-            }
-            int fallbacks = 3 - spawned;
-            for (int i = 0; i < fallbacks; i++) {
-                if (spawnSoul(level, position().add(0, 1, 0))) spawned++;
-            }
-            shielded = spawned > 0;
+        shielded = !level.getEntitiesOfClass(LostSoul.class,
+                AABB.ofSize(position(), SOUL_RADIUS * 2, 10, SOUL_RADIUS * 2)).isEmpty();
+        if (shielded || --soulDelay > 0) return;
+
+        removeCoilEffects(level, SOUL_RADIUS, 5);
+        soulDelay = 10;
+        int spawned = 0;
+        for (int i = 0; i < 4 + level.random.nextInt(2); i++) {
+            if (spawnSoul(level, 1, 4)) spawned++;
         }
+        for (int i = spawned; i < 3; i++) spawnSoul(level, 0, 0);
     }
 
-    private boolean spawnSoul(ServerLevel level, Vec3 position) {
+    private boolean spawnSoul(ServerLevel level, int minimum, int maximum) {
+        int span = maximum - minimum;
+        int offsetX = level.random.nextInt(span * 2 + 1);
+        int offsetZ = level.random.nextInt(span * 2 + 1);
+        var start = new BlockPos(
+                (int) getX() - maximum + offsetX + (offsetX > span ? minimum * 2 : 0), (int) getY() + 1,
+                (int) getZ() - maximum + offsetZ + (offsetZ > span ? minimum * 2 : 0));
+        if (!level.hasChunkAt(start) || !level.getWorldBorder().isWithinBounds(start)) return false;
+        BlockPos floor = WitcheryTeleport.findEncounterGround(level, start);
+        BlockPos landing = floor.above();
+        if (level.isOutsideBuildHeight(landing.above()) || !level.getBlockState(floor).isFaceSturdy(level, floor, Direction.UP)
+                || !level.isEmptyBlock(landing) || !level.isEmptyBlock(landing.above())) return false;
         LostSoul soul = WitcheryEntities.LOST_SOUL.get().create(level);
-        if (soul == null || !level.isLoaded(BlockPos.containing(position))) return false;
-        soul.setPos(position);
+        if (soul == null) return false;
+        soul.setPos(Vec3.atBottomCenterOf(landing).add(0, 0.05, 0));
         if (level.getBlockCollisions(soul, soul.getBoundingBox()).iterator().hasNext()) return false;
-        soul.configure(random.nextInt(3), 1200 + random.nextInt(600));
+        soul.configure(level.random.nextInt(3), -1);
         soul.setPersistenceRequired();
-        soul.setTarget(getTarget());
         if (!level.addFreshEntity(soul)) return false;
-        level.sendParticles(ParticleTypes.SMOKE, position.x, position.y, position.z, 8, 0.2, 0.3, 0.2, 0.02);
+        WitcheryNetwork.sendLostSoulArrival(level, soul.position(), soul.getBbHeight());
+        soul.setLifetime((60 + level.random.nextInt(30)) * 20);
         return true;
     }
 
@@ -181,15 +202,15 @@ public final class Leonard extends Monster implements RangedAttackMob {
         if (!net.minecraftforge.event.ForgeEventFactory.getMobGriefingEvent(level, this)) return;
         BlockPos center = blockPosition().above(2);
         for (BlockPos pos : BlockPos.betweenClosed(center.offset(-4, -4, -4), center.offset(4, 4, 4))) {
-            if (!pos.closerThan(center, 4.1)) continue;
+            if (pos.distSqr(center) >= 15) continue;
             if (level.getBlockState(pos).getBlock() instanceof art.arcane.witchery.block.BrewDispersalBlock) {
-                level.removeBlock(pos, false);
+                level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
             }
         }
     }
 
     private void removeCoilEffects(ServerLevel level, int radius, int height) {
-        for (ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class, getBoundingBox().inflate(radius, height, radius),
+        for (ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class, AABB.ofSize(position(), radius * 2, height * 2, radius * 2),
                 LivingEntity::isAlive)) {
             player.removeEffect(WitcheryEffects.MORTAL_COIL.get());
         }
@@ -198,14 +219,14 @@ public final class Leonard extends Monster implements RangedAttackMob {
     @Override
     public boolean hurt(DamageSource source, float amount) {
         if (source.is(DamageTypes.GENERIC_KILL) || source.is(DamageTypes.FELL_OUT_OF_WORLD)) return super.hurt(source, amount);
-        if (entranceTicks > 0 || shielded) return false;
+        if (shielded) return false;
         if (!source.is(DamageTypes.PLAYER_ATTACK)) return false;
         float cap = getHealth() < getMaxHealth() * 0.25F ? (enlarged() ? 1 : 4) : 12;
         return super.hurt(source, Math.min(amount, cap));
     }
 
     public void harmedByIce(@Nullable LivingEntity caster, int amount) {
-        if (entranceTicks == 0 && getHealth() < getMaxHealth() * 0.4F) {
+        if (getHealth() < getMaxHealth() * 0.4F) {
             super.hurt(damageSources().indirectMagic(caster, caster), Math.min(amount, enlarged() ? 8 : 15));
         }
     }
@@ -247,6 +268,7 @@ public final class Leonard extends Monster implements RangedAttackMob {
     }
 
     public int attackTicks() { return attackTicks; }
+    public boolean hasActiveEntrance() { return entranceTicks > 0; }
     public boolean enlarged() {
         var effect = getEffect(WitcheryEffects.RESIZING.get());
         return effect != null && effect.getAmplifier() >= 2;

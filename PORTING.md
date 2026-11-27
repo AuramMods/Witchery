@@ -2499,7 +2499,11 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - [x] Restore custom brew collision with living targets and the five-tick thrower grace period shared with fixed brews. On packaged Forge, the muted survival client sent an Urn brew past a fixture boat and placed Witchery Web on the supported target behind it. A fixed Brew of Webs struck the same boat.
 - [x] Use the collision build on both sides of copied Auram. The disposable server's longer connection timeout let the muted client finish JEI indexing. The normal survival gesture placed a web and spent four charges. A clean shutdown retained the web and the supplied bottle in the Urn.
 - [x] Resume the active cauldron cast across a dedicated restart. The muted client saw the resulting full-health Leonard, verified five Lost Souls, collected the Urn and shift-clicked a splash brew into the original menu. After another restart, the first Mystic Branch gesture hit a Blaze for ten and spent ten charges from the supplied infusion. The stored bottle remained in the Urn.
-- [x] Run Java 17 data generation, JAR reobfuscation and all 307 required Forge GameTests. The new cases cover the original cauldron recipe, entrance immunity, Lost Soul weaknesses, shield-piercing ice, migrated Urn tiers, saved contents and the fourth gesture's charge cost.
+- [x] Run Java 17 data generation, JAR reobfuscation and all 307 required Forge GameTests. The new cases cover the original cauldron recipe, Lost Soul weaknesses, shield-piercing ice, migrated Urn tiers, saved contents and the fourth gesture's charge cost.
+- [x] Compare damage during the entrance with the original server. Direct player attacks obey the existing damage caps during the sequence. Ice can damage Leonard below 240 health, including during the entrance. Its 30-health healing pulses follow entity age at each tenth tick.
+- [x] Compare Lost Soul shield checks and wave placement. An engaged Leonard below half health checks a 30-by-10-by-30 box that includes dying Souls. He gains the shield on the phase check after a new wave. Souls search for ground under their selected columns and can fall back to his center. They live for 60 through 89 seconds. The modern arrival checks loaded terrain, solid support, collision, and Forge spawn cancellation.
+- [x] Restore the original curse rolls and brew clearing boundary. The 40-block horizontal hex uses the original Mortal Coil, buff removal, Sinking, Insanity and Overheating selections and cues. The smaller dispel replaces both brew gas and liquid with air within its original sphere. Forge's mob griefing rule still controls the block changes.
+- [x] Replay the same packaged JAR on headless clean Forge and copied Auram. Clean Forge passed 87 checks and Auram passed 83. Both dedicated restarts recovered a saved entrance and a temporary Lost Soul. The entrance completed and the Soul expired, including on copied Auram with no players online. Local data generation, JAR reobfuscation, and all 582 Forge GameTests passed.
 
 ## Auram Pack Validation (2026-11-20)
 
@@ -2982,6 +2986,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
 - [ ] Entity AI/combat/spawn tuning parity.
   - [x] Compare [Horned Huntsman archery, teleport, wolves, and Horn summons](#horned-huntsman-trial-2026-11-20).
   - [x] Compare [Mog and Gulg's paired combat, navigation, statue summons, and rewards](#mog-and-gulg-2026-11-20).
+  - [x] Compare [Leonard's entrance, hexes, dispel, and Lost Soul waves](#leonard-lost-souls-and-the-urn-2026-11-20).
 
 ### Phase 5 - Integration + Stabilization
 - [x] Record the modern counterparts, empty hooks, and retired APIs for the original mod integrations. The manifest records their behavior and the release checklist tracks the packaged matrix.
