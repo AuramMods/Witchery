@@ -1480,6 +1480,13 @@
 - [x] A nearby Enhanced Poppets fetish allows a carried Death Protection Poppet to absorb a lethal powered anti-magic bolt. Shelf wards retain their ordinary restrictions.
 - [x] Package the original crossbow click and wind-up recordings. In the isolated muted client, loading a Wooden Bolt displayed both crossbow subtitles and left the bolt chambered.
 
+### Crossbow launch physics (2026-11-27)
+
+- The original server fired Wooden and Splitting Bolts after zero, 19, 20, and 35 use ticks at yaw 31 and pitch −17. Its seeded projectile trace gives about 2.79 blocks per tick for a quick shot and 2.99 for a full draw. It starts 0.3 blocks below eye height and 0.16 blocks sideways, rotated per projectile for the three splitting angles. The moving shooter's velocity is absent from all 16 original launch vectors.
+- The Forge item uses those launch positions, speeds, and signed Gaussian spread. The sound uses the shooter's precise position and a separate pitch roll. Infinity uses the original double draw. The earlier packaged build matched none of the 16 positions, none of the 16 velocities, and none of the eight firing cue positions. The rebuilt clean Forge package matched all 16 positions, velocities, damage values, and pickup modes, plus all eight cue checks.
+- Copied Auram matched the same positions, damage, pickup modes and cues. Its Faster Random option uses Java's `L64X128MixRandom`, so the same seed produces different signed Gaussian samples. Accounting for those three samples reproduced all 16 of the pack's velocities within two millionths of a block per tick. The Crossbow uses the pack's configured random source.
+- Two muted background survival clients used the supplied Crossbows, ammunition and Hunter clothing in a fixture range. The observer saw eight projectiles across six shots. The quick shots were near 2.8 blocks per tick at the client's first sample, and the full-draw powered Anti-Magic Bolt was near 3.0 and critical. That same Bolt was still lodged with its original texture after restart.
+
 ### Crossbow Bolt rendering (2026-11-27)
 
 - The original release's `RenderBolt` emitted six quads for each of five projectile kinds in three poses. The trace covered flight, a shaking impact, and a stationary Bolt. It recorded the texture, transformed vertices, texture coordinates, and normal directions at the Tessellator calls.
@@ -3176,7 +3183,8 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Compare [live Mandrake emergence](#mandrake-emergence-2026-11-27) through player harvest, lost support, direct destruction, harvest magic, and blasts.
 - [ ] Item behavior parity pass (including metadata-subitem conversions).
   - [x] Compare melee modifiers, sword guards, and Boline harvest against the [melee tool measurements](#melee-tools-and-boline-harvesting-2026-11-26).
-  - [ ] Restore the Crossbow's launch position, velocity, and spread. The original server's 16 launches cover Wooden and Splitting Bolts after zero, 19, 20, and 35 use ticks. Full-draw speed is about three blocks per tick before drag. The original releases each projectile 0.3 blocks below eye height with a 0.16-block horizontal offset rotated for its trajectory. The Forge item currently passes a full-draw speed of two directly. See `build/qa-bolt-launch/native/reference.log`.
+  - [x] Restore the Crossbow's [launch position, velocity, spread, and firing cue](#crossbow-launch-physics-2026-11-27). The seeded original replay covers four draw durations and the three Splitting trajectories with a moving shooter.
+  - [ ] Finish comparing Bolt flight and impact after launch. The original and current packaged servers agreed on five dry flight ticks and the position, motion, and shake through a stone impact. On the first immersed tick, a Bolt starting at 1.6 blocks per tick slowed to 1.28 in 0.24.1 and 0.96 on Forge. Continue with full immersion and transitions out of water.
 - [x] Brewing, Kettle, Distillery, Spinning Wheel, and Brazier parity.
   - [x] Compare the fixed Kettle, Distillery, Spinning Wheel, and Brazier registries and exercise their interactions and saved state in the workstation milestones above.
   - [x] Compare [Kettle bottling bonuses and cues](#kettle-bottling-bonuses-and-cues-2026-11-27) with the original world rolls and saved servings.

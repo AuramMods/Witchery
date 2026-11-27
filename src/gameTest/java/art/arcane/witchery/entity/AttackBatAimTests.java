@@ -1,7 +1,6 @@
 package art.arcane.witchery.entity;
 
 import art.arcane.witchery.Witchery;
-import art.arcane.witchery.infusion.OtherwhereInfusion;
 import art.arcane.witchery.registry.WitcheryEntities;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
@@ -9,6 +8,7 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -24,9 +24,10 @@ public final class AttackBatAimTests {
     @GameTest(template = "qa_coven_arena", batch = "witchery_attack_bat_aim")
     public static void batUsesTheCastersEntityAimAndItsOwnClearance(GameTestHelper helper) {
         var world = helper.getLevel();
-        var sample = helper.absolutePos(new BlockPos(5, 200, 5));
+        var sample = helper.absolutePos(new BlockPos(5, 0, 5));
         var chunk = new ChunkPos(sample);
-        var center = new BlockPos(chunk.getMiddleBlockX(), sample.getY(), chunk.getMiddleBlockZ());
+        var center = new BlockPos(chunk.getMiddleBlockX(), world.getMaxBuildHeight() - 8, chunk.getMiddleBlockZ());
+        var overhang = center.offset(3, 1, 3);
         var caster = new FakePlayer(world, new GameProfile(UUID.randomUUID(), "AttackBatAim"));
         caster.setPos(Vec3.atBottomCenterOf(center.north(5)));
         caster.setYRot(0);
@@ -45,8 +46,12 @@ public final class AttackBatAimTests {
 
         try {
             for (int height = 0; height < 3; height++) world.setBlockAndUpdate(center.above(height), Blocks.STONE.defaultBlockState());
-            helper.assertTrue(OtherwhereInfusion.rayTrace(caster, 32).getType() == HitResult.Type.BLOCK && bat.hasLineOfSight(target),
-                    "The caster's wall leaves the bat's approach to the cow clear");
+            Vec3 eyes = caster.getEyePosition();
+            var hit = world.clip(new ClipContext(eyes, eyes.add(caster.getLookAngle().scale(32)),
+                    ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, caster));
+            helper.assertTrue(hit.getType() == HitResult.Type.BLOCK && hit.getBlockPos().equals(center.above()),
+                    "The caster looks through the fixture wall at the cow");
+            helper.assertTrue(bat.hasLineOfSight(target), "The fixture wall leaves the bat's approach to the cow clear");
             var initial = new Vec3(0.20, 0.02, 0.05);
             var original = new Vec3(0.11055728, 0.02000000, 0.09472136);
             bat.setDeltaMovement(initial);
@@ -56,7 +61,6 @@ public final class AttackBatAimTests {
 
             target.setPos(target.position().add(0, 0.2, 0));
             bat.setPos(bat.position().add(0, 0.2, 0));
-            var overhang = center.offset(3, 1, 3);
             world.setBlockAndUpdate(overhang, Blocks.STONE.defaultBlockState());
             helper.assertTrue(bat.hasLineOfSight(target), "The eye trace passes under the overhang");
             bat.setDeltaMovement(initial);
@@ -72,6 +76,8 @@ public final class AttackBatAimTests {
             helper.assertTrue(bat.getDeltaMovement().distanceToSqr(original) > 1e-6,
                     "A nearer bat on the caster's aim ray prevents pursuit of the cow behind it");
         } finally {
+            world.removeBlock(overhang, false);
+            for (int height = 0; height < 3; height++) world.removeBlock(center.above(height), false);
             scout.discard();
             target.discard();
             bat.discard();

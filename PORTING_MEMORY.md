@@ -2,12 +2,20 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Crossbow launch physics (2026-11-27)
+
+- The seeded original server fired 16 Wooden and Splitting Bolts at yaw 31 and pitch −17 with a shooter already moving. It measured all four draw durations, a 0.3-block drop from eye height, and three sideways offsets rotated with the splitting angles. See `build/qa-bolt-launch/seeded/reference.log`.
+- The preceding package matched none of the 16 positions or velocities and none of the eight firing cue positions. The rebuilt clean Forge package passed all 16 launch comparisons, the damage and pickup checks, and all eight cue checks. Two muted background survival clients saw all eight normal projectiles and reopened the full-draw powered Bolt after restart. See `build/qa-bolt-launch/live-verified/`.
+- Copied Auram passed the same launch checks on the exact package. The `L64X128MixRandom` samples from its enabled Faster Random option explain the differences between the 16 original and 16 pack velocities at seed 4096. See `build/qa-bolt-launch/pack-comparison.log` and `auram-final/spread-delta.txt` in the same directory.
+- Local Java 17 data generation, JAR reobfuscation and all 622 required Forge GameTests passed. The final suite uses an isolated Attack Bat fixture and reads duplicate-grenade spawn positions at the join events. The previous replay also saw an intermittent Rain of Toads refund assertion, which passed on the final run. The package at `build/qa-bolt-launch/release.jar` has SHA-256 `1d99ba697b40a25ca4ca8902f20659030cfd61c4aecbfd0a5eca873a28141de8`.
+- The follow-up flight fixture matched five dry ticks and the stone impact sequence. At the first tick both servers considered submerged, horizontal speed fell from 1.6 to 1.28 in 0.24.1 and to 0.96 on Forge. See `build/qa-bolt-flight/native/reference.log` and `baseline-clean/launch.log`. The original water flag cleared on the next tick near the top of the sampled block, so the next immersion test should start lower in the tank.
+
 ## Crossbow Bolt rendering (2026-11-27)
 
 - The original `RenderBolt` trace recorded 360 vertices across five kinds and three poses. See `build/qa-bolt-renderer/native/reference.log`. The previous JAR matched 240 of 1,080 position values, 600 of 720 UV values, and 800 of 1,080 normal components. It selected the original texture in all 15 samples.
 - The rebuilt renderer matches all 2,880 values and all 15 textures on packaged clean Forge. Two muted background survival clients checked all eight projectiles from six normal Crossbow uses in flight and embedded. The same powered Anti-Magic Bolt rendered after restart. The fixture supplied a range, Crossbows, ammunition and plain Hunter gear. See `build/qa-bolt-renderer/clean-checked/`.
 - The identical JAR matched the full mesh comparison in copied Auram. Local Java 17 data generation, reobfuscation, and all 621 required Forge GameTests passed. The archive at `build/qa-bolt-renderer/release.jar` has SHA-256 `882986114804fdb6c0c090b52ae5a18e1b1028b6b4515884d9eebb5295d395f4`.
-- The original Crossbow fired 16 measured Wooden and Splitting Bolts after zero, 19, 20 and 35 use ticks. It places each projectile 0.3 blocks below eye height and shifts it horizontally by 0.16 blocks according to that Bolt's yaw. Full-draw flight starts near three blocks per tick, compared with two in the current Forge firing path. See `build/qa-bolt-launch/native/reference.log` and the open item behavior row.
+- The original Crossbow fired 16 measured Wooden and Splitting Bolts after zero, 19, 20 and 35 use ticks. The launch follow-up above covers the difference from the preceding Forge package. The original unseeded trace is in `build/qa-bolt-launch/native/reference.log`.
 
 ## Bolt attachments across region boundaries (2026-11-27)
 

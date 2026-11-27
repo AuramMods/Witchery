@@ -94,8 +94,7 @@ public final class SunGrenadeFuseTests {
         duplicate.setItem(GrenadeItem.duplicate("ImpactFixture"));
         duplicate.setPos(start);
         duplicate.setDeltaMovement(1.5, 0, 0);
-        duplicate.tick();
-        assertDuplicateAt(helper, start, "ImpactFixture");
+        assertDuplicateAt(helper, duplicate, start, "ImpactFixture");
         helper.assertTrue(duplicate.isRemoved(), "The duplicate grenade completes on contact with the wall");
         helper.succeed();
     }
@@ -111,24 +110,34 @@ public final class SunGrenadeFuseTests {
         var saved = grenade.saveWithoutId(new CompoundTag());
         saved.putInt("Remaining", 1);
         grenade.load(saved);
-        grenade.tick();
-        assertDuplicateAt(helper, origin, "FuseFixture");
+        assertDuplicateAt(helper, grenade, origin, "FuseFixture");
         helper.assertTrue(grenade.isRemoved(), "Fuse expiry spends the grenade at the current position");
         helper.succeed();
     }
 
-    private static void assertDuplicateAt(GameTestHelper helper, Vec3 origin, String skin) {
-        var level = helper.getLevel();
-        var area = new AABB(origin, origin).inflate(3);
-        var copies = level.getEntitiesOfClass(WitcheryFollower.class, area,
-                follower -> follower.getName().getString().equals(skin));
-        helper.assertTrue(copies.size() == 1 && copies.get(0).position().distanceTo(origin) < 1.0E-6,
-                "One named duplicate appears at the grenade's starting position for that tick");
-        var spheres = level.getEntitiesOfClass(ItemEntity.class, area,
-                drop -> drop.getItem().is(WitcheryIngredient.QUARTZ_SPHERE.item()));
-        helper.assertTrue(spheres.size() == 1 && spheres.get(0).getItem().getCount() == 1
-                        && spheres.get(0).position().distanceTo(origin.add(0, 0.5, 0)) < 1.0E-6,
-                "One Quartz Sphere appears a half block above that position");
+    private static void assertDuplicateAt(GameTestHelper helper, GrenadeProjectile grenade, Vec3 origin, String skin) {
+        var copies = new ArrayList<Vec3>();
+        var spheres = new ArrayList<Vec3>();
+        Consumer<EntityJoinLevelEvent> observe = event -> {
+            var entity = event.getEntity();
+            if (event.getLevel() != helper.getLevel() || entity.position().distanceTo(origin) >= 3) return;
+            if (entity instanceof WitcheryFollower follower && follower.getName().getString().equals(skin)) {
+                copies.add(entity.position());
+            } else if (entity instanceof ItemEntity item && item.getItem().is(WitcheryIngredient.QUARTZ_SPHERE.item())
+                    && item.getItem().getCount() == 1) {
+                spheres.add(entity.position());
+            }
+        };
+        MinecraftForge.EVENT_BUS.addListener(observe);
+        try {
+            grenade.tick();
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(observe);
+        }
+        helper.assertTrue(copies.size() == 1 && copies.get(0).distanceTo(origin) < 1.0E-6,
+                "One named duplicate spawns at the start of that tick: " + copies);
+        helper.assertTrue(spheres.size() == 1 && spheres.get(0).distanceTo(origin.add(0, 0.5, 0)) < 1.0E-6,
+                "One Quartz Sphere spawns a half block higher: " + spheres);
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_sun_grenade", setupTicks = 5)

@@ -12,6 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
@@ -34,6 +35,7 @@ public final class HandBowItem extends BowItem {
     private static final String CURRENT = "WITCBoltTypeCurrent";
     private static final String PREFERRED = "WITCBoltTypePreferred";
     private static final int LOAD_TICKS = 10;
+    private static final RandomSource SHOT_SOUND_RANDOM = RandomSource.create();
 
     public enum Ammo {
         STAKE(WitcheryIngredient.STAKE_BOLT, Kind.STAKE), ANTI_MAGIC(WitcheryIngredient.ANTI_MAGIC_BOLT, Kind.ANTI_MAGIC),
@@ -159,7 +161,7 @@ public final class HandBowItem extends BowItem {
         Level world = player.level();
         float power = getPowerForTime(elapsed >= 20 ? 20 : 19);
         boolean retained = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.INFINITY_ARROWS, bow) > 0
-                && world.random.nextFloat() < 0.25F;
+                && world.random.nextDouble() < 0.25D;
         boolean powered = ammo == Ammo.ANTI_MAGIC && HunterClothingItem.fullSet(player, HunterClothingItem.Upgrade.PLAIN);
         Kind projectile = powered ? Kind.POWERED_ANTI_MAGIC : ammo.projectile;
         int count = ammo == Ammo.SPLITTING ? 3 : 1;
@@ -171,7 +173,7 @@ public final class HandBowItem extends BowItem {
             bolt.pickup = !retained && !player.isCreative() ? AbstractArrow.Pickup.ALLOWED : AbstractArrow.Pickup.DISALLOWED;
             if (ammo != Ammo.ANTI_MAGIC) bolt.applyBowEnchantments(bow);
             float yaw = player.getYRot() + (count == 3 ? (i - 1) * 20 : 0);
-            bolt.shootFromRotation(player, player.getXRot(), yaw, 0, power * 2, 1);
+            bolt.shootFromCrossbow(player, yaw, power);
             fired |= world.addFreshEntity(bolt);
         }
         if (!fired) return;
@@ -179,8 +181,8 @@ public final class HandBowItem extends BowItem {
         if (!retained) bow.getOrCreateTag().remove(CURRENT);
         bow.hurtAndBreak(2, player, shooter -> shooter.broadcastBreakEvent(shooter.getUsedItemHand()));
         player.getInventory().setChanged();
-        world.playSound(null, player.blockPosition(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1,
-                1 / (world.random.nextFloat() * 0.4F + 1.2F) + power * 0.5F);
+        world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1,
+                1 / (SHOT_SOUND_RANDOM.nextFloat() * 0.4F + 1.2F) + power * 0.5F);
     }
 
     @Override
