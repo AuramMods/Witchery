@@ -379,13 +379,54 @@ public final class KettleDropTests {
         player.setItemSlot(EquipmentSlot.HEAD, new ItemStack(WitcheryItems.getRequired("witchhat").get()));
         long seed = 0;
         while (RandomSource.create(seed).nextDouble() >= 0.35) seed++;
-        player.getRandom().setSeed(seed);
+        helper.getLevel().getRandom().setSeed(seed);
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.GLASS_BOTTLE));
         helper.assertTrue(kettle.bottleBrew(player, InteractionHand.MAIN_HAND), "The kettle serves a held bottle");
         var result = player.getMainHandItem();
         helper.assertTrue(result.is(WitcheryIngredient.INFUSED_BREW_BASE.item()) && result.getCount() == 2,
                 "A successful Witch's Hat roll should add one serving to the duplicate-base recipe");
         helper.assertTrue(kettle.isReady(), "The bonus serving should leave the second base in the kettle");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_bottling_rolls")
+    public static void kettleRollsBothBabaBonusesOnTheWorldRandom(GameTestHelper helper) throws Exception {
+        var level = helper.getLevel();
+        var kettle = heatedKettle(helper, new BlockPos(3, 4, 4));
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "BabaBottler"));
+        player.setItemSlot(EquipmentSlot.HEAD, new ItemStack(WitcheryItems.getRequired("babashat").get()));
+        long seed = 0;
+        while (true) {
+            var random = RandomSource.create(seed);
+            if (random.nextDouble() <= 0.25 && random.nextDouble() <= 0.25) break;
+            seed++;
+        }
+        var pos = kettle.getBlockPos();
+        var hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
+        for (String brew : List.of("brew_of_vines", "redstone_soup")) {
+            kettle.load(TagParser.parseTag("""
+                    {Items:[{Slot:6b,id:"witchery:%s",Count:2b}],Powered:1b,
+                     Tank:{FluidName:"minecraft:water",Amount:1000},FinishedRecipe:"witchery:kettle/%s"}
+                    """.formatted(brew, brew)));
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.GLASS_BOTTLE));
+            level.getRandom().setSeed(seed);
+            player.getRandom().setSeed(17);
+            var expected = RandomSource.create(seed);
+            expected.nextDouble();
+            expected.nextDouble();
+            expected.nextDouble(); // Swim cue pitch.
+            var state = kettle.getBlockState();
+
+            state.getBlock().use(state, level, pos, player, InteractionHand.MAIN_HAND, hit);
+
+            int copies = brew.equals("redstone_soup") ? 1 : 3;
+            helper.assertTrue(player.getMainHandItem().getCount() == copies,
+                    "Both successful Baba's Hat rolls add to an eligible serving");
+            helper.assertTrue(kettle.isReady() && level.getRandom().nextLong() == expected.nextLong(),
+                    "Both hat rolls and the cue use the world stream even for a zero-bonus serving");
+            helper.assertTrue(player.getRandom().nextLong() == RandomSource.create(17).nextLong(),
+                    "Bottling does not use the player's random stream");
+        }
         helper.succeed();
     }
 
@@ -427,7 +468,7 @@ public final class KettleDropTests {
         MinecraftForge.EVENT_BUS.addListener(sound);
         try {
             var state = kettle.getBlockState();
-            player.getRandom().setSeed(seed);
+            level.getRandom().setSeed(seed);
             state.getBlock().use(state, level, pos, player, InteractionHand.MAIN_HAND, hit);
             helper.assertTrue(player.getMainHandItem().getCount() == 2
                             && player.getInventory().getItem(1).getCount() == full - 1 && cues.isEmpty(),
@@ -435,7 +476,7 @@ public final class KettleDropTests {
             helper.assertTrue(kettle.saveWithoutMetadata().getList("Items", Tag.TAG_COMPOUND).getCompound(0).getByte("Count") == 2,
                     "A rejected overflow keeps both servings in the Kettle");
             reject.set(false);
-            player.getRandom().setSeed(seed);
+            level.getRandom().setSeed(seed);
             state.getBlock().use(state, level, pos, player, InteractionHand.MAIN_HAND, hit);
             helper.assertTrue(drops.size() == 2 && drops.get(1).position().equals(dropPosition)
                             && drops.get(1).getItem().getCount() == 1 && player.getMainHandItem().getCount() == 1

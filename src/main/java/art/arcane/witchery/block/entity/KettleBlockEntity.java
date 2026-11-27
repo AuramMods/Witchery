@@ -42,6 +42,7 @@ import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 public final class KettleBlockEntity extends BlockEntity {
     private static final int BUCKET = 1000;
@@ -217,8 +218,10 @@ public final class KettleBlockEntity extends BlockEntity {
             var previous = inventory.save(new ListTag());
             player.addItem(serving);
             if (!serving.isEmpty()) {
+                var motion = ThreadLocalRandom.current();
                 ItemEntity overflow = new ItemEntity(player.serverLevel(), worldPosition.getX() + 0.5,
-                        worldPosition.getY() + 1.5, worldPosition.getZ() + 0.5, serving);
+                        worldPosition.getY() + 1.5, worldPosition.getZ() + 0.5, serving,
+                        motion.nextDouble(-0.1, 0.1), 0.2F, motion.nextDouble(-0.1, 0.1));
                 if (!player.serverLevel().addFreshEntity(overflow)) {
                     // Inventory insertion may have merged part of a bonus serving before the spawn veto.
                     inventory.load(previous);
@@ -237,7 +240,6 @@ public final class KettleBlockEntity extends BlockEntity {
         ItemStack bottled = extractBrew(1, false, true);
         if (bottled.isEmpty() || recipe == null) return bottled;
         int bonus = recipe.bottlingBonus();
-        if (bonus <= 0) return bottled;
 
         var hat = WitchClothingItem.style(player.getItemBySlot(EquipmentSlot.HEAD));
         var robe = WitchClothingItem.style(player.getItemBySlot(EquipmentSlot.CHEST));
@@ -249,8 +251,9 @@ public final class KettleBlockEntity extends BlockEntity {
         }
         double toadChance = FamiliarBinding.hasBrewMastery(player) ? 0.05 : 0;
         primaryChance += toadChance;
-        if (primaryChance > 0 && player.getRandom().nextDouble() <= primaryChance) bottled.grow(bonus);
-        if (babaHat && player.getRandom().nextDouble() <= 0.25 + toadChance) bottled.grow(bonus);
+        var random = player.serverLevel().getRandom();
+        if (primaryChance > 0 && random.nextDouble() <= primaryChance) bottled.grow(bonus);
+        if (babaHat && random.nextDouble() <= 0.25 + toadChance) bottled.grow(bonus);
         return bottled;
     }
 

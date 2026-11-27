@@ -2,6 +2,7 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -89,11 +90,13 @@ public final class WitcherySounds {
 
     public static void playLegacyPlayerCue(ServerPlayer player, SoundEvent sound, SoundSource source, float volume) {
         var level = player.serverLevel();
-        level.playSound(null, player, sound, source, volume, legacyPitch(level));
+        // Modern playback needs a sample seed in addition to the original pitch roll.
+        level.playSeededSound(null, player, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound),
+                source, volume, legacyPitch(level), ThreadLocalRandom.current().nextLong());
     }
 
     public static void playLegacyBlockCue(ServerLevel level, BlockPos pos, SoundEvent sound, float volume) {
-        level.playSound(null, pos.getX(), pos.getY(), pos.getZ(), sound, SoundSource.PLAYERS, volume, legacyPitch(level));
+        playLegacyBlockCue(level, pos, sound, SoundSource.PLAYERS, volume);
     }
 
     public static void playLegacyBlockCue(ServerLevel level, BlockPos pos, SoundEvent sound, SoundSource source, float volume) {

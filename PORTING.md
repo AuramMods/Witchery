@@ -205,6 +205,13 @@
 - [x] Preserve kettle batches during fluid automation. The original and both packaged profiles retained three finished servings after a 400 mB drain. The partly filled kettle yielded one serving by hand. Refilling allowed automated bottling of the other two. A dedicated restart retained a separate 600 mB fixture and its three finished servings.
 - [x] Convert a Witchery 0.24.1 save made after a partial drain and one hand bottling. The imported Kettle retained 600 mB, two Brew of Ice servings, three glass bottles, its tint and its power flag after an ordinary restart.
 - [x] Match the hand-serving overflow position and player swim cue for bottling brew, rinsing, and drawing Water Bottles. A muted survival player with a full inventory received one Brew of Vines above the basin and kept two servings in the Kettle. The restart retained that same dropped brew, both bottle buffers and the drawn water. A Forge drop veto preserves the bottle, serving and any partially filled inventory stack.
+
+### Kettle bottling bonuses and cues (2026-11-27)
+
+- The original dedicated server recorded twelve hand-bottling cases. They cover no gear, the Witch's Hat at and just over its threshold, both of Baba's Hat rolls, matching and mismatched robes for Raising, and active, dismissed and hat-assisted Toads. The duplicate Infused Brew Base used the original one-bottle bonus. Redstone Soup spent both hat rolls with no bonus.
+- The Forge Kettle uses the world stream for bottling rolls, followed by the original swim pitch roll. Overflow keeps its launch above the basin with separate motion randomness. The shared legacy cue helpers also choose modern sound sample seeds independently of the world stream.
+- With a full inventory, the muted survival player used an ordinary bottle on the Kettle while wearing Baba's Hat. The attempt spent one bottle and one serving and dropped three portions above the basin. Both clients received the same half-volume swim cue. The fixture supplied the hat, batches and rolls, then held the overflow in place for the player to collect. After restart, the three collected portions and leftover serving persisted. The player bottled one Redstone Soup and both Kettles kept their spare-bottle buffers.
+- The preceding clean Forge JAR matched one of twelve native traces. Clean Forge and copied Auram matched all twelve on the same rebuilt JAR with the original rolls supplied by the fixture. Local Java 17 data generation, JAR reobfuscation and all 614 required Forge GameTests passed.
 - [x] Restore empty-bucket draws and the original Kettle bounds. The original server refused a stacked draw without inventory space or with only 600 mB of water. Clean Forge reproduced both refusals through ordinary survival use. A successful draw gave the player one Water Bucket, cleared the brew, kept the three spare bottles, and played the original player swim cue. A dropped item landed at Y plus 15/16 on the empty Kettle.
 
 ## Mirror Milestone (2026-11-19)
@@ -1012,7 +1019,7 @@
 ## Plant Mutations and the Grave (2026-11-20)
 
 - [x] Restore the legacy Sprig patterns for Wild Bramble, Ender Bramble and Wormwood. The muted survival client mutated three separate prepared arrangements with one charge each. Breaking a Wild Bramble segment returned an item with its saved variant. Wild contact applied cactus damage.
-- [x] Double Infused Brew Base using the harvested Wild Bramble and the original five other ingredients. The muted client tossed the harvested item into the heated Kettle and manually bottled both portions. A GameTest refused Ender Bramble and verified that the second recipe has no hat bonus.
+- [x] Double Infused Brew Base using the harvested Wild Bramble and the original five other ingredients. The muted client tossed the harvested item into the heated Kettle and manually bottled both portions. A GameTest refused Ender Bramble. The original bottling lookup uses the first recipe yielding Infused Brew Base, so both recipes can yield one extra base per successful hat roll.
 - [x] Restore the Grave rite. The muted client dropped one of its bottled portions into the small and medium white rings with bone, Web, and a Necromantic Stone. The ritual consumed its zombie, produced the infused brew, and returned the stone. Drinking opened the original skull and 120-minute display.
 - [x] Restore sneaking use of the Necromantic Stone during the Grave. The muted client bound a zombie, was refused when it tried a skeleton inside the cooldown, and bound the skeleton when the cooldown finished. Infusion charge stayed at 158 throughout.
 - [x] Verify Ender Bramble travel through actual player movement. Stepping inside moved the muted client from the test platform to safe terrain roughly 370 blocks away. Waiting until the next server tick kept the vanilla movement handler from reverting the teleport.
@@ -3114,6 +3121,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Compare melee modifiers, sword guards, and Boline harvest against the [melee tool measurements](#melee-tools-and-boline-harvesting-2026-11-26).
 - [x] Brewing, Kettle, Distillery, Spinning Wheel, and Brazier parity.
   - [x] Compare the fixed Kettle, Distillery, Spinning Wheel, and Brazier registries and exercise their interactions and saved state in the workstation milestones above.
+  - [x] Compare [Kettle bottling bonuses and cues](#kettle-bottling-bonuses-and-cues-2026-11-27) with the original world rolls and saved servings.
   - [x] Complete the Cauldron effect, modifier, and cast comparisons in the release checklist.
 - [ ] Ritual and circle magic parity.
   - [x] Map the 39 original completion classes across all 96 registered rites to their modern handlers and recorded evidence. The [manifest](PORTING_MANIFEST.md#circle-magic-completion-classes) also records the rings and offering sequences.
