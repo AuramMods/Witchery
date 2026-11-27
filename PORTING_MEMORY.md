@@ -2,13 +2,19 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Crossbow Punch and player-hit cue (2026-11-27)
+
+- The original server measured four cases against a pig with knockback resistance 1.0. Read `build/qa-bolt-punch/native/reference.log`. Punch II pushed `(1.200000030, 0.1, 0)` on the cardinal shot and `(0.720000029, 0.1, −0.960000038)` on the diagonal shot. The unenchanted and vertical shots added zero. The previous Forge package matched two, and the rebuilt clean Forge package matched all four. A vanilla Arrow with Punch II stayed stationary in the same control.
+- The original `EntityBolt` sends game event six to players within 128 blocks of the shooter's coordinates in the same world. The port sends the vanilla arrow confirmation packet using that radius and includes the boundary.
+- The same JAR matched all four vectors and the vanilla Arrow control in copied Auram. Three muted background survival clients verified the cue at 128 blocks, no cue at 129 or in another dimension, and the shooter-only vanilla Arrow cue. The target's 11 health survived the dedicated restart. Read `build/qa-bolt-punch/comparison.log` and `survival/` in the same directory. Data generation, JAR reobfuscation, and all 625 required Forge GameTests passed on Java 17. The package at `build/qa-bolt-punch/release.jar` has SHA-256 `7ff027e6cf15d5049b8ecc26d92e19637c1e2871ae22cf711d345cf483ddd65c`.
+
 ## Crossbow Bolt entity impacts (2026-11-27)
 
 - The original dedicated server traced eight hits across seven cases. See `build/qa-bolt-hits/native/reference.log`. Both rapid Wooden Bolts dealt three health and cleared the cooldown. A Holy Bolt submitted six raw damage against an undead target and added two health loss during a previous four-point hit's cooldown. Rejected Flame kept 100 fire ticks. The slow ricochet and Enderman deflection both stayed in flight.
 - The previous package diverged on at least one field in every trace. The rebuilt clean Forge package matched all eight. The comparison treats idle Forge fire tick `-1` as extinguished and compares motion for surviving Bolts. Forge ends an accepted Bolt's tick when it removes the entity.
 - On the same package copied Auram matched seven original traces with an Enderman landing platform and controlled Forge vetoes for the two rejected hits. The active `guns1-20-0.1.2-dp.zip` tag added `minecraft:arrow` to damage that bypasses cooldown. Ordinary arrows used all four points during the previous hit's cooldown and the Holy Bolt used its full six. See `build/qa-bolt-hits/comparison.log` and `auram-veto/launch.log` in the same directory.
 - Two muted background survival clients fired ordinary Wooden Bolts during the same damage cooldown. Server ticks 319 and 320 each removed six health from the same named pig. The restart kept the pig's UUID and 28 health. See `build/qa-bolt-hits/survival/live.log` and `server-live.log` in the same directory. Local Java 17 data generation, JAR reobfuscation, and all 624 required GameTests passed. The exact JAR at `build/qa-bolt-hits/release.jar` has SHA-256 `d386f59f31f05f1b0032ed835fdf94055ef46e78f6e9892a43721d29f1a1b1a9`.
-- The follow-up `punch-native/reference.log` measured velocity `(1.200000030, 0.1, 0)` from a Punch II Bolt against knockback resistance 1.0. The same target with an unenchanted Bolt stayed stationary. Check Forge's current resistance scaling and the 128-block player-hit cue next.
+- The follow-up `punch-native/reference.log` first measured velocity `(1.200000030, 0.1, 0)` from a Punch II Bolt against knockback resistance 1.0. The Punch milestone above extends the comparison and verifies the player-hit cue.
 
 ## Crossbow Bolt flight in water (2026-11-27)
 

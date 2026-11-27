@@ -1500,6 +1500,12 @@
 - Copied Auram matched seven original traces with a valid Enderman landing and Forge vetoes on the two rejected attacks. The pack's `guns1-20-0.1.2-dp.zip` adds `minecraft:arrow` to the cooldown-bypass tag. A vanilla Arrow control dealt its full four damage during an existing cooldown, and the Holy Bolt dealt its full six under the same pack rule.
 - Two muted background survival clients fired supplied Wooden Bolts at the fixture's pig one server tick apart. Both took six health, reducing the pig from 40 to 28. A dedicated restart preserved the same pig and its remaining health. The fixture supplied the Crossbows and ammunition and held the pig in place.
 
+### Crossbow Punch and player-hit cue (2026-11-27)
+
+- The original server traced unenchanted, cardinal Punch II, diagonal Punch II, and vertical Punch II shots against a fully resistant pig. The cardinal shot added `(1.2, 0.1, 0)`. The diagonal shot added `(0.72, 0.1, −0.96)`. The pure vertical and unenchanted shots added no motion. The previous Forge package matched two of the four vectors. The rebuilt package matched all four on clean Forge and copied Auram. The vanilla Arrow control remained stationary in both profiles.
+- The Bolt applies the original Punch vector before the enchantment callbacks. Its player-hit confirmation uses the vanilla game-event packet and reaches players in the shooter's dimension at distances up to and including 128 blocks.
+- Three muted background clients received the Bolt cue as the shooter, target, and witness at exactly 128 blocks. The witness received zero cues at 129 blocks and from the Nether. The vanilla Arrow control played the cue once to the shooter. A Punch II hit moved the fully resistant survival target 1.44 blocks downrange. The fixture supplied the equipment and positions, set resistance to 1, and disabled natural regeneration. The target's remaining 11 health survived a dedicated restart.
+
 ### Crossbow Bolt rendering (2026-11-27)
 
 - The original release's `RenderBolt` emitted six quads for each of five projectile kinds in three poses. The trace covered flight, a shaking impact, and a stationary Bolt. It recorded the texture, transformed vertices, texture coordinates, and normal directions at the Tessellator calls.
@@ -3199,7 +3205,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Restore the Crossbow's [launch position, velocity, spread, and firing cue](#crossbow-launch-physics-2026-11-27). The seeded original replay covers four draw durations and the three Splitting trajectories with a moving shooter.
   - [x] Compare [Bolt flight in air and water](#crossbow-bolt-flight-in-water-2026-11-27), including the original wet cell bounds, water drag, current, water entry and exit, and stone impact.
   - [x] Compare [Bolt damage and ricochets](#crossbow-bolt-entity-impacts-2026-11-27), including two hits inside one damage cooldown, Holy damage, Flame on rejection, and Enderman deflections.
-  - [ ] Compare Punch against knockback-resistant targets and reproduce the original player-hit feedback audience. The original Punch II test added 1.2 horizontal and 0.1 vertical velocity to a fully resistant pig. The original player-hit cue reached players within 128 blocks of the shooter.
+  - [x] Compare [Punch and player-hit confirmation](#crossbow-punch-and-player-hit-cue-2026-11-27), including a fully resistant mob, the inclusive 128-block audience, and a vanilla Arrow control.
 - [x] Brewing, Kettle, Distillery, Spinning Wheel, and Brazier parity.
   - [x] Compare the fixed Kettle, Distillery, Spinning Wheel, and Brazier registries and exercise their interactions and saved state in the workstation milestones above.
   - [x] Compare [Kettle bottling bonuses and cues](#kettle-bottling-bonuses-and-cues-2026-11-27) with the original world rolls and saved servings.

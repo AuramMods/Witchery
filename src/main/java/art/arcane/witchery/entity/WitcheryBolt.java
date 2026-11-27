@@ -259,13 +259,23 @@ public final class WitcheryBolt extends AbstractArrow {
         target.invulnerableTime = 0;
     }
 
+    public void applyLegacyPunch(LivingEntity target) {
+        int strength = getKnockback();
+        if (strength <= 0) return;
+        Vec3 motion = getDeltaMovement();
+        float horizontalSpeed = (float) motion.horizontalDistance();
+        if (horizontalSpeed > 0) {
+            double force = strength * (double) 0.6F;
+            target.push(motion.x * force / horizontalSpeed, 0.1D, motion.z * force / horizontalSpeed);
+        }
+    }
+
     public void completeAcceptedEndermanHit(LivingEntity target) {
-        if (!level().isClientSide) {
-            if (getPierceLevel() <= 0) target.setArrowCount(target.getArrowCount() + 1);
-            if (getOwner() instanceof LivingEntity shooter) {
-                EnchantmentHelper.doPostHurtEffects(target, shooter);
-                EnchantmentHelper.doPostDamageEffects(shooter, target);
-            }
+        if (!level().isClientSide && getPierceLevel() <= 0) target.setArrowCount(target.getArrowCount() + 1);
+        applyLegacyPunch(target);
+        if (!level().isClientSide && getOwner() instanceof LivingEntity shooter) {
+            EnchantmentHelper.doPostHurtEffects(target, shooter);
+            EnchantmentHelper.doPostDamageEffects(shooter, target);
         }
         doPostHurtEffects(target);
         playSound(getHitGroundSoundEvent(), 1, 1.2F / (random.nextFloat() * 0.2F + 0.9F));
