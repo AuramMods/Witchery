@@ -548,7 +548,9 @@ public final class RiteHeartBlockEntity extends BlockEntity {
         var directedCurse = action.directedCurse();
         if (directedCurse != null) {
             ServerPlayer caster = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
-            String failure = directedCurse.perform(level, pos, caster, boundOffering(level), covenSize, action.inflictsDirectedCurse());
+            if (legacy && caster != null && caster.level() != level) caster = null;
+            String failure = directedCurse.perform(level, pos, caster, boundOffering(level, legacy), covenSize,
+                    action.inflictsDirectedCurse(), legacy);
             if (failure != null) {
                 abort(level, failure);
                 return;
@@ -685,7 +687,8 @@ public final class RiteHeartBlockEntity extends BlockEntity {
             WitcheryNetwork.sendSummonedCreature(level, result.position());
         } else if (legacy && familiarRite) {
             WitcheryNetwork.sendFamiliarRite(level, Vec3.atLowerCornerOf(pos), action == ItemRiteRecipe.Action.BIND_FAMILIAR);
-        } else if (!firstExpansionCue && !legacyItemOutput && (!legacy || (action != ItemRiteRecipe.Action.RECHARGE_INFUSION
+        } else if (!firstExpansionCue && !legacyItemOutput && (!legacy || (directedCurse == null
+                && action != ItemRiteRecipe.Action.RECHARGE_INFUSION
                 && action != ItemRiteRecipe.Action.TRAVEL_WAYSTONE && action != ItemRiteRecipe.Action.TRANSPOSE_CREATURE
                 && action != ItemRiteRecipe.Action.BIND_SPECTRAL_STONE && action != ItemRiteRecipe.Action.BIND_FETISH
                 && action != ItemRiteRecipe.Action.BANISH_DEMON && action != ItemRiteRecipe.Action.CALL_BEASTS))) {
@@ -912,9 +915,15 @@ public final class RiteHeartBlockEntity extends BlockEntity {
 
     @Nullable
     private LivingEntity boundOffering(ServerLevel level) {
+        return boundOffering(level, false);
+    }
+
+    @Nullable
+    private LivingEntity boundOffering(ServerLevel level, boolean allowDeadPlayer) {
         return sacrificed.stream().map(Sacrifice::stack).filter(stack -> stack.getItem() instanceof TaglockItem)
                 .map(stack -> TaglockItem.resolveTarget(level, stack))
-                .filter(target -> target != null && target.isAlive()).findFirst().orElse(null);
+                .filter(target -> target != null && (target.isAlive() || (allowDeadPlayer && target instanceof ServerPlayer)))
+                .findFirst().orElse(null);
     }
 
     static List<ServerPlayer> nearbyPlayers(ServerLevel level, BlockPos pos, int range, boolean legacy) {

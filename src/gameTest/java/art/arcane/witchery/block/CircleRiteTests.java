@@ -17,6 +17,7 @@ import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEffects;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcheryItems;
+import art.arcane.witchery.ritual.DirectedCurse;
 import art.arcane.witchery.ritual.ItemRiteRecipe;
 import art.arcane.witchery.ritual.LandscapeRites;
 import art.arcane.witchery.ritual.RiteActivation;
@@ -379,6 +380,47 @@ public final class CircleRiteTests {
             helper.assertTrue(banshee.isRemoved() && items.size() == 1 && !items.get(0).hasPickUpDelay()
                             && SpectralStoneItem.creatureCount(items.get(0).getItem()) == 1,
                     "An in-range Banshee still in its death animation fills the stone for immediate pickup");
+        }).thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "witchery_directed_curse_completion", setupTicks = 5)
+    public static void paidDirectedCurseCompletesWithoutGenericServerSounds(GameTestHelper helper) {
+        floor(helper);
+        ring(helper, RitualCircle.MEDIUM_RITE, "circleglyphinfernal");
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var target = stationaryPig(level, Vec3.atBottomCenterOf(center.east(2)));
+        var taglock = new ItemStack(WitcheryItems.getRequired("taglockkit").get());
+        TaglockItem.bindSignature(taglock, target);
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.getEntity(target.getUUID()) == target,
+                "The bound pig is available")).thenExecute(() -> {
+            var heart = heart(helper);
+            var rite = RiteActivation.legacyRecipeId(48);
+            var saved = new CompoundTag();
+            saved.putString("Rite", rite.toString());
+            saved.putInt("OfferingStep", 5);
+            saved.putBoolean("AltarPowerOffered", true);
+            saved.putInt("GlyphPhase", 19);
+            var sacrifices = new ListTag();
+            sacrifices.add(taglock.save(new CompoundTag()));
+            saved.put("Sacrifices", sacrifices);
+            heart.load(saved);
+
+            var sounds = new ArrayList<PlayLevelSoundEvent.AtPosition>();
+            Consumer<PlayLevelSoundEvent.AtPosition> listener = event -> {
+                if (event.getLevel() == level && event.getPosition().distanceToSqr(Vec3.atCenterOf(center)) < 1) {
+                    sounds.add(event);
+                }
+            };
+            MinecraftForge.EVENT_BUS.addListener(listener);
+            try {
+                tick(level, center, heart, 1);
+            } finally {
+                MinecraftForge.EVENT_BUS.unregister(listener);
+            }
+            helper.assertTrue(DirectedCurse.MISFORTUNE.strength(target) == 1
+                            && !heart.saveWithoutMetadata().contains("Rite") && sounds.isEmpty(),
+                    "The curse commits and sends its completion cue without extra server sounds");
         }).thenSucceed();
     }
 

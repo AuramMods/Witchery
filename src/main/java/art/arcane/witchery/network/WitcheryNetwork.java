@@ -408,6 +408,12 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, particle, sound, center, 0.5, 2, 16);
     }
 
+    public static void sendDirectedCurseRite(ServerLevel level, BlockPos heart, boolean afflicted) {
+        int particle = afflicted ? LEGACY_FLAME_PARTICLE_ID : LEGACY_INSTANT_SPELL_PARTICLE_ID;
+        int sound = afflicted ? LEGACY_DRAGON_GROWL_SOUND_ID : LEGACY_LEVEL_UP_SOUND_ID;
+        sendParticlesAround(level, particle, sound, Vec3.atBottomCenterOf(heart).add(0, 0.1, 0), 1, 2, 16);
+    }
+
     public static void sendInfusionRite(ServerLevel level, Vec3 center, boolean manifestation) {
         int particle = manifestation ? LEGACY_INSTANT_SPELL_PARTICLE_ID : LEGACY_HUGE_EXPLOSION_PARTICLE_ID;
         sendParticlesAround(level, particle, LEGACY_FIZZ_SOUND_ID, center, 3, 3, 16);

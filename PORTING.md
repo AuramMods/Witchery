@@ -697,6 +697,13 @@
 - [x] Use the same water entry before and after the restart and after clearing Sinking. After 30 game ticks, the cursed player reached the pool floor at Y 201 on both launches. After the cure the player was at Y 230.43.
 - [x] Run Java 17 data generation, JAR reobfuscation and all 489 Forge GameTests. The eight new cases cover the recipe codec and thunder requirement, cure odds, staged Taglock reload, ward and offline refunds, curse strength and poppet wear, persistent effects, and curing separate saved levels.
 
+### Directed curse and cure completion (2026-11-26)
+
+- All five curse and cure pairs match the original strength and result. The cat bonus comes from a caster still in the glyph's dimension. A Taglock can find its target in another dimension. The original resolves a named player still online during death and requires a living creature for a creature-bound Taglock.
+- Misfortune and Waking Nightmare use the target world's original 90 percent Hunter clothing roll. The enabled Statue of Broken Curses refunds the held offerings, while its disabled form and the teleport ward let the curse through. Voodoo Protection can absorb one strike or all three coven-enhanced strikes. A spent poppet can absorb its last strike without covering the rest.
+- A curse or worsened cure sends Flame and the dragon growl. A successful cure or full poppet defense sends Instant Spell and the level-up cue. The packet originates at the center of the glyph plus 0.1 blocks in height, uses width 1 and height 2, and reaches 16 blocks. An aborted cast plays a snare and refunds its remaining offerings after the altar charge.
+- The exact JAR passed all 243 checks on headless clean Forge and copied Auram. Thirty-two cases resumed at the paid effect step. Sinking and the Cure of Misfortune also ran from normal offerings and redstone activation. The fixture used seeds that give the same two rare cure rolls under Auram's `FasterRandom` and vanilla Forge's random source.
+
 ## Portable Volcano and Cooking Rites (2026-11-21)
 
 - [x] Restore the portable volcano with Stone, Magma Cream, an unworn Golden Sword, and a Charged Attuned Stone in the small Infernal ring. Erupt locally without altar power or a Waystone and keep the original lava reservoir requirement and staged cone.
@@ -2923,6 +2930,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
 - [ ] Ritual and circle magic parity.
   - [x] Compare the [19 standard and talisman item results](#circle-magic-item-results-2026-11-26) after the last offering.
   - [x] Compare [Spectral Stone and Fetish spirit binding](#circle-magic-spirit-binding-2026-11-26), including the hidden Death combination.
+  - [x] Compare the [ten directed Taglock curses and cures](#directed-curse-and-cure-completion-2026-11-26), including protection, a remote target, and completion cues.
 - [ ] Infusion, prediction, creature power parity.
 - [ ] Entity AI/combat/spawn tuning parity.
 

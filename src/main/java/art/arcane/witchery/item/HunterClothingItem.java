@@ -104,6 +104,13 @@ public final class HunterClothingItem extends ArmorItem implements DyeableLeathe
         return fullSet(wearer, Upgrade.PLAIN) && wearer.getRandom().nextFloat() < 0.9F;
     }
 
+    public static boolean resistsOriginalCurse(LivingEntity wearer) {
+        for (Piece piece : Piece.values()) {
+            if (!(wearer.getItemBySlot(piece.type.getSlot()).getItem() instanceof HunterClothingItem)) return false;
+        }
+        return wearer.level().getRandom().nextDouble() < 0.9D;
+    }
+
     public static void tick(ServerPlayer player) {
         if (player.tickCount % 20 != 2) return;
         boolean werewolf = Lycanthropy.rank(player) > 0;

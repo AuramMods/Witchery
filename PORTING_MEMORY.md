@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Directed curse and cure completion (2026-11-26)
+
+- The original dedicated server ran 32 cases covering all ten directed rites, all three cure-strength comparisons, exact ailments, coven and familiar bonuses, a stronger existing curse, Hunter clothing, three ward configurations, remote and dying targets, and three poppet outcomes. See `build/qa-directed-rite-completions/native/native-final.log`.
+- The earlier JAR failed 65 of 243 comparisons. It sent none of the original completion packets, broadcast two generic sounds for successful casts, counted the Nether caster's cat, refunded the Taglock on an online dead player, and used the target's entity RNG for Hunter clothing. See `clean-baseline/baseline.log` in the same directory.
+- Headless clean Forge and copied Auram both passed all 243 comparisons. The fixture resumed 32 paid casts, ran two fresh redstone casts with supplied offerings and altar charge, and checked recipient range at 15 and 17 blocks. Auram's `FasterRandom` returned 2 and 7 for the two legacy seeds that should exercise a worsened cure. The replay used seeds 4097 and 35 to obtain the original zero rolls. See `clean-verified/final.log` and `pack-verified/final.log`.
+- Local Java 17 data generation, reobfuscation and all 569 required Forge GameTests passed. The exact archive `build/qa-directed-rite-completions/candidate.jar` has SHA-256 `51ad42a29e6ecee19dd2102387b4ecaa37fee5ae3fe090812494853c5d6bc3ac`.
+- The original Blight and Blindness action samples are in `build/qa-area-curse-actions/native/run.log`. They cover terrain and its random draw, a baby Villager and a Cow conversion, magic damage to a pig, and Blindness through the death animation.
+
 ## Circle Magic spirit binding (2026-11-26)
 
 - The original dedicated server measured 16 scenarios across rites 83 through 86. It captured the first spectral kind with a limit of three. A Banshee 5.37 blocks from the glyph's lower X coordinate survived despite being inside the centered five-block sphere. Both the stone and a Witch's Ladder accepted a creature still in its death animation. The Fetish overlap chose Enhanced Poppets before Sentinel, Screamer, Twister, and Ghost Walker.
@@ -9,7 +17,6 @@ Validation workflow for this project should use `./gradlew compileJava` (do not 
 - The preceding JAR failed 61 of 187 observations. The matrix includes 16 paid Heart Glyph fixtures, plus fresh redstone activations of the stone and Witch's Ladder. It checks the ordered cues near the glyph and silence outside their range. The fixture supplies each spirit population, the full offerings, and charged altars for the redstone casts. See `build/qa-rite-spirit-output/clean-baseline-verified/baseline.log`.
 - Both rebuilt headless profiles passed all 187 observations. See `clean-verified/final.log` and `pack-verified/final.log` in the same directory.
 - Local Java 17 data generation, JAR reobfuscation, and all 568 required Forge GameTests passed. The exact `build/qa-rite-spirit-output/final.jar` has SHA-256 `1f5bdbe25088d3fb98d88fc8a5b5658db16685f84cc5e2a545b71f128e8ad4fc`.
-- The next comparison has original results for all ten directed curses and cures, plus equal and weaker cure rolls, coven bonuses, an existing stronger curse, and a missing Taglock. See `build/qa-directed-rite-completions/native/run.log`.
 
 ## Circle Magic item results (2026-11-26)
 

@@ -7,6 +7,7 @@ import art.arcane.witchery.familiar.FamiliarBinding;
 import art.arcane.witchery.infusion.InfusionEnergy;
 import art.arcane.witchery.item.HunterClothingItem;
 import art.arcane.witchery.item.VoodooPoppetItem;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.world.DreamTravel;
 import art.arcane.witchery.world.WitcheryDimensions;
 import net.minecraft.ChatFormatting;
@@ -92,14 +93,15 @@ public enum DirectedCurse {
 
     @Nullable
     public String perform(ServerLevel source, BlockPos heart, @Nullable ServerPlayer caster,
-                          @Nullable LivingEntity target, int coven, boolean inflict) {
+                          @Nullable LivingEntity target, int coven, boolean inflict, boolean legacy) {
         if (target == null) return "message.witchery.rite.no_taglock_target";
         int strength = 1 + (caster != null && FamiliarBinding.hasCurseMastery(caster) ? 1 : 0)
                 + (coven >= 6 ? 2 : coven >= 3 ? 1 : 0);
         boolean afflicted;
         if (inflict) {
             if (caster != null) WitchHunterPursuit.noticeBlackMagic(caster);
-            if ((this == MISFORTUNE || this == WAKING_NIGHTMARE) && HunterClothingItem.resistsCurse(target)) {
+            if ((this == MISFORTUNE || this == WAKING_NIGHTMARE)
+                    && (legacy ? HunterClothingItem.resistsOriginalCurse(target) : HunterClothingItem.resistsCurse(target))) {
                 return "message.witchery.rite.hunter_curse_protection";
             }
             if (AreaWardBlockEntity.protectsDirectedCurse(target)) return "message.witchery.rite.area_curse_protection";
@@ -113,6 +115,10 @@ public enum DirectedCurse {
             if (!afflicted) clearAilments(target);
         }
         if (this == SINKING && target instanceof ServerPlayer player) InfusionEnergy.sync(player);
+        if (legacy) {
+            WitcheryNetwork.sendDirectedCurseRite(source, heart, afflicted);
+            return null;
+        }
         source.sendParticles(afflicted ? ParticleTypes.FLAME : ParticleTypes.INSTANT_EFFECT,
                 heart.getX() + 0.5, heart.getY() + 0.1, heart.getZ() + 0.5, 16, 0.5, 0.6, 0.5, 0.035);
         source.playSound(null, heart, afflicted ? SoundEvents.ENDER_DRAGON_GROWL : SoundEvents.PLAYER_LEVELUP,
