@@ -371,6 +371,14 @@
 - [x] Draw the recorded strokes around the crosshair using the two original glyph sets and show the recognized spell name. Set `branchGlyphSet` to 1 for the alternate set. The muted clean Forge client drew both styles, confirmed that an out-of-range value uses the default, and released Lumos for one charge. Cancellation clears the preview and starts the next gesture empty.
 - [x] Restore `render3dGlintEffect`, on by default, for held Mystic Branches, Huntsman Spears, and enchanted Cane Swords. A muted packaged client confirmed that disabling and reenabling it changed all three held models. The item icons and the enchanted vanilla Diamond Sword retained their glint.
 
+### Mystic Branch projectile rendering (2026-11-27)
+
+- The original renderer used the snowball sprite from the item atlas. Forge uses the resource-pack-aware Minecraft snowball texture for the same outline. The stock 1.20.1 art matches all 256 original alpha pixels and supplies the current shading.
+- The original runtime drew 544 vertices across 31 spell IDs, three unresolved IDs and four camera poses. Clean Forge and copied Auram match the positions, normals and normalized texture coordinates. The 55-percent alpha and original RGB values use the nearest representable vertex color. All 136 quads retain full-bright lighting, and the original 256-block client draw cutoff remains strict.
+- The 21 projectile spells retain their individual scale and tint. Instant spell IDs and unresolved records draw the original red fallback. The ranged spell contract still controls which casts create and retain a flying projectile.
+- Two muted background survival clients saw both the small yellow Lumos and the black Morsmordre projectile. Lumos placed its Glow Globe, Morsmordre produced a Dark Mark, and the caster retained 179 charge. The clean Forge restart preserved the Glow Globe and the UUID and rank of the supplied earlier-port Aguamenti projectile.
+- The same local JAR passed both survival casts in copied Auram and all 630 Forge GameTests.
+
 ### Dark Mark rendering and creature response (2026-11-27)
 
 - Restore the mirrored skull's original height and pivot. The original model draws 48 vertices per pose. The preceding Forge renderer offset the skull by about half a block. Clean Forge and copied Auram match all 288 positions, texture coordinates and opacity values across six poses on the same JAR.
@@ -3177,6 +3185,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
 - [x] Restore the 48 missing static item descriptions from the original release. The muted packaged client validated all 48 in English, German, Spanish, Russian, Simplified Chinese, and Italian, using English fallback where the release supplied no localized text. It verified the Cowl's original color, its default before login, Forge's additional-tooltip hide flag, and the dedicated setting that hides its gaze hint after a restart.
 - [x] Restore Hobgoblin mining, worship, crouch, riding, and attack poses. Mog carries her bow in one hand and her skirt and chest stay independent of the torso. Gulg's strike uses the original attack counter and head yaw. The muted packaged client matched 1,386 pose values and all 864 vertex and texture coordinate samples across the three models.
 - [ ] Complete the source and runtime comparison for the remaining models, less common block states, and entity and armor poses.
+  - [x] Compare the [Mystic Branch projectile sprite, tints, scale, and camera poses](#mystic-branch-projectile-rendering-2026-11-27) along with normal survival casting and a saved projectile.
   - [x] Restore the [Dark Mark's original skull placement and smoke](#dark-mark-rendering-and-creature-response-2026-11-27), with a comparison of six native poses.
   - [x] Restore the [Mirror apparition's original head pivot, scale, and opacity](#mirror-apparition-parity-2026-11-27), with measured vertex positions during head and body rotation.
   - [x] Restore the [sleeping body's fixed pose and death rotation](#sleeping-body-pose-and-anchor-2026-11-27). Compare the original skin coordinates and verify the actual parked body.

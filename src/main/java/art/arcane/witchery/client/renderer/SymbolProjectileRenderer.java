@@ -1,23 +1,21 @@
 package art.arcane.witchery.client.renderer;
 
-import art.arcane.witchery.Witchery;
 import art.arcane.witchery.entity.SymbolProjectile;
 import art.arcane.witchery.infusion.SymbolSpell;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 
 public final class SymbolProjectileRenderer extends EntityRenderer<SymbolProjectile> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "textures/entities/spelleffect.png");
-    private static final float SPRITE_EDGE = 16F / 256;
+            ResourceLocation.withDefaultNamespace("textures/item/snowball.png");
+    private static final RenderType SPRITE = RenderType.entityTranslucent(TEXTURE);
+    private static final int ALPHA = Math.round(0.55F * 255);
 
     public SymbolProjectileRenderer(EntityRendererProvider.Context context) {
         super(context);
@@ -26,25 +24,21 @@ public final class SymbolProjectileRenderer extends EntityRenderer<SymbolProject
     @Override
     public void render(SymbolProjectile projectile, float yaw, float tick, PoseStack pose, MultiBufferSource buffers, int light) {
         SymbolSpell spell = projectile.spell();
-        if (spell == null) return;
+        boolean hasProjectileStyle = spell != null && spell.size() > 0;
+        float size = (hasProjectileStyle ? spell.size() : 1) * 0.325F;
+        int color = hasProjectileStyle ? spell.color() : 0xFF0000;
         pose.pushPose();
         pose.mulPose(entityRenderDispatcher.cameraOrientation());
         pose.mulPose(Axis.YP.rotationDegrees(180));
-        float size = spell.size() * 0.325F;
         pose.scale(size, size, size);
-        VertexConsumer vertices = buffers.getBuffer(RenderType.entityTranslucent(TEXTURE));
-        vertex(vertices, pose.last(), -0.5F, -0.25F, 0, SPRITE_EDGE, spell.color());
-        vertex(vertices, pose.last(), 0.5F, -0.25F, SPRITE_EDGE, SPRITE_EDGE, spell.color());
-        vertex(vertices, pose.last(), 0.5F, 0.75F, SPRITE_EDGE, 0, spell.color());
-        vertex(vertices, pose.last(), -0.5F, 0.75F, 0, 0, spell.color());
+        int tint = encodeChannel(color >> 16) << 16 | encodeChannel(color >> 8) << 8 | encodeChannel(color);
+        ProjectileBillboard.draw(buffers.getBuffer(SPRITE), pose.last(), tint, ALPHA, LightTexture.FULL_BRIGHT);
         pose.popPose();
         super.render(projectile, yaw, tick, pose, buffers, light);
     }
 
-    static void vertex(VertexConsumer vertices, PoseStack.Pose pose, float x, float y, float u, float v, int color) {
-        vertices.vertex(pose.pose(), x, y, 0).color(color >> 16 & 255, color >> 8 & 255, color & 255, 140)
-                .uv(u, v).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
-                .normal(pose.normal(), 0, 1, 0).endVertex();
+    private static int encodeChannel(int channel) {
+        return Math.round((channel & 255) * (255F / 256F));
     }
 
     @Override

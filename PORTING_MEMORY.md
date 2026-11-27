@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Mystic Branch projectile rendering (2026-11-27)
+
+- The original renderer exposed the Minecraft snowball item as its sprite. The 1.20.1 snowball matches all 256 of the original transparency bytes. Its palette is the current Minecraft art, and resource packs can override it. The preceding Witchery texture region matched 102 of the original transparency bytes.
+- The original runtime traced 544 vertices across 31 registered IDs, three unresolved IDs and four camera poses. Clean Forge and copied Auram matched all 544 vertices for position, normals, normalized texture coordinates and the nearest vertex color. The original reference used the sampled camera yaw for the copied pack. The comparison includes all 21 projectile styles, the red fallback, full brightness and the strict 256-block cutoff. See `build/qa-symbol-billboard/{native/reference.log,comparison.log}`.
+- Two hidden, muted clean Forge survival clients used a supplied Mystic Branch and learned spell to cast Lumos and Morsmordre in a prepared plot. Both observed the projectiles and the spell effects. A dedicated restart retained 179 charge, the Glow Globe, and the same rank-two earlier-port Aguamenti supplied by the fixture. See `build/qa-symbol-billboard/clean-exact/`.
+- Copied Auram cast both normal gestures and produced both effects on the same JAR. The disposable fixture disabled fall damage for the raised plot. See `build/qa-symbol-billboard/auram-exact/play.log`.
+- Local Java 17 data generation, JAR reobfuscation and all 630 required Forge GameTests passed. The package at `build/qa-symbol-billboard/release.jar` has SHA-256 `c58308f4b97fb9f5a0fff0cc8683ff8865d339dec7c2a17d7e7a6082f79e1bd4`.
+
 ## Dark Mark rendering and creature response (2026-11-27)
 
 - The original release emits 48 model vertices in each pose. The original server trace measured six creature positions, 15 smoke samples, horizontal drift after loaded motion, air retention, and the 6,000-tick age boundary. The ambient sound trace reported volume 0.8 and pitch one. See `build/qa-dark-mark-parity/native/{reference.log,server-reference.log}`.
