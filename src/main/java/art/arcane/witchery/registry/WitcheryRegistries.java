@@ -2,6 +2,7 @@ package art.arcane.witchery.registry;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.data.GrassSeedLootModifier;
+import art.arcane.witchery.data.LegacyFixedLootCount;
 import art.arcane.witchery.data.LootingBonus;
 import art.arcane.witchery.data.PredictionLootModifier;
 import art.arcane.witchery.data.SmeltingTouchLootModifier;
@@ -63,6 +64,8 @@ public final class WitcheryRegistries {
             PARTICLES.register("cauldron_effect", CauldronParticleOptions::type);
     public static final RegistryObject<LootNumberProviderType> LOOTING_BONUS =
             LOOT_NUMBER_PROVIDERS.register("looting_bonus", () -> new LootNumberProviderType(new LootingBonus.Serializer()));
+    public static final RegistryObject<LootNumberProviderType> LEGACY_FIXED_LOOT_COUNT =
+            LOOT_NUMBER_PROVIDERS.register("legacy_fixed_count", () -> new LootNumberProviderType(new LegacyFixedLootCount.Serializer()));
     public static final RegistryObject<Codec<HobgoblinSpawnModifier>> HOBGOBLIN_SPAWNS =
             BIOME_MODIFIERS.register("hobgoblin_spawns", () -> HobgoblinSpawnModifier.CODEC);
     public static final RegistryObject<Codec<DreamSpiritSpawnModifier>> DREAM_SPIRIT_SPAWNS =

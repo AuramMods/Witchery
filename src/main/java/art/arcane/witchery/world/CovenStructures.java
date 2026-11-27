@@ -1,11 +1,9 @@
 package art.arcane.witchery.world;
 
-import art.arcane.witchery.Witchery;
 import art.arcane.witchery.data.WitcheryLootTables;
 import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
@@ -21,7 +19,6 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraftforge.event.ForgeEventFactory;
 
 final class CovenStructures {
-    private static final ResourceLocation SHACK_LOOT = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "chests/witch_shack");
     private static final int[][] PILLARS = {
             {1, 2}, {2, 1}, {4, 0}, {6, 0}, {8, 1}, {9, 2}, {10, 4}, {10, 6},
             {9, 8}, {8, 9}, {6, 10}, {4, 10}, {2, 9}, {1, 8}, {0, 4}, {0, 6}
@@ -112,7 +109,7 @@ final class CovenStructures {
         site.putConnected(2, 1, 3, Blocks.OAK_FENCE);
         site.put(2, 2, 3, Blocks.OAK_PRESSURE_PLATE);
         site.put(1, 1, 2, Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, site.direction(Direction.EAST)));
-        RandomizableContainerBlockEntity.setLootTable(site.level(), random, site.at(1, 1, 2), SHACK_LOOT);
+        RandomizableContainerBlockEntity.setLootTable(site.level(), random, site.at(1, 1, 2), WitcheryLootTables.WITCH_SHACK);
         if (random.nextInt(4) != 0) spawnWitch(site, site.at(4, 1, 3));
     }
 

@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Witch's Shack, Apothecary, Keep, and Watchtower chest loot (2026-11-27)
+
+- The shipped 0.24.1 server reported all 52 entries with the same weights and quantity ranges as the Forge data. Across 128 seeded inventories, the original chest generator replaced a previously chosen slot in 29 cases. The preceding Forge JAR matched three inventories. It split stacks and chose from the remaining empty slots.
+- The four tables now choose a slot immediately after each item and quantity draw, including for entries with a fixed count. The chest can replace a prior stack. Forge's global loot modifier call and the table's normal inventory access remain in place.
+- The rebuilt package matched every occupied slot, item and quantity in all 128 inventories on clean Forge, including after restart. A copy of the preceding package's saved world also reopened all 128 already-filled chests with their recorded contents. See `build/qa-structure-loot/final-clean/` and `build/qa-structure-loot/final-old/`.
+- Five naturally generated chests in the seed-one world supplied their actual saved loot seeds. The final JAR replayed those seeds at the same three Watchtowers, the Witch's Shack and the Apothecary. The original server matched all five and their contents survived restart. See `native/natural-reference.log` and `natural-final/` under the same directory.
+- AuramCore's FasterRandom option replaces the base random source, so its stock seed outcomes differ from 0.24.1. With that option disabled in a temporary copied profile, all 128 stock results again matched the original. In the normal Auram profile, all differences from its recorded stock rolls were additional items or replacements from Aether, Big Inventory and Relics. Apotheosis also applied its ordinary equipment annotations. The normal profile retained all 128 generated inventories after restart.
+- Local Java 17 data generation, JAR reobfuscation, and all 598 required Forge GameTests passed. Dedicated checks ran headless with `--nogui`. The reobfuscated archive is `build/qa-structure-loot/final.jar`, SHA-256 `773bc539253fb89e911ca9e5a2a464c9c087e93593ab3c0e39c367d87b04fec5`.
+
 ## Living equipment in earlier converted saves (2026-11-27)
 
 - The original living entities save the main hand, boots, leggings, chest and head in `Equipment` and the corresponding probabilities in `DropChances`. A Forge-format fixture retaining those fields passed eight of 20 checks on the preceding package. The Witch Hunter and mounted Follower lost their gear and the Owl lost its parcel.

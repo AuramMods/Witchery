@@ -131,7 +131,8 @@
         {
           "type": "minecraft:item",
           "name": "witchery:spectral_dust",
-          "weight": 3
+          "weight": 3,
+          "functions": [{"function": "minecraft:set_count", "count": {"type": "witchery:legacy_fixed_count", "count": 1}}]
         },
         {
           "type": "minecraft:item",
@@ -166,7 +167,8 @@
         {
           "type": "minecraft:item",
           "name": "minecraft:skeleton_skull",
-          "weight": 1
+          "weight": 1,
+          "functions": [{"function": "minecraft:set_count", "count": {"type": "witchery:legacy_fixed_count", "count": 1}}]
         },
         {
           "type": "minecraft:item",
@@ -186,17 +188,20 @@
         {
           "type": "minecraft:item",
           "name": "witchery:divinerwater",
-          "weight": 1
+          "weight": 1,
+          "functions": [{"function": "minecraft:set_count", "count": {"type": "witchery:legacy_fixed_count", "count": 1}}]
         },
         {
           "type": "minecraft:item",
           "name": "witchery:voodoo_poppet",
-          "weight": 1
+          "weight": 1,
+          "functions": [{"function": "minecraft:set_count", "count": {"type": "witchery:legacy_fixed_count", "count": 1}}]
         },
         {
           "type": "minecraft:item",
           "name": "witchery:fire_protection_poppet",
-          "weight": 1
+          "weight": 1,
+          "functions": [{"function": "minecraft:set_count", "count": {"type": "witchery:legacy_fixed_count", "count": 1}}]
         }
       ]
     }
