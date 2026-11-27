@@ -12,6 +12,8 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -24,9 +26,11 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.ForgeMod;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -88,6 +92,44 @@ public final class WitcheryBolt extends AbstractArrow {
 
     private double nextCrossbowSpread() {
         return random.nextGaussian() * (random.nextBoolean() ? -1 : 1) * 0.0075F;
+    }
+
+    @Override
+    protected float getWaterInertia() {
+        return 0.8F;
+    }
+
+    @Override
+    public boolean updateFluidHeightAndDoFluidPushing(TagKey<Fluid> tag, double motionScale) {
+        if (tag != FluidTags.WATER) return super.updateFluidHeightAndDoFluidPushing(tag, motionScale);
+        var water = ForgeMod.WATER_TYPE.get();
+        super.updateFluidHeightAndDoFluidPushing(state -> state.getFluidType() != water);
+
+        // 1.7.10 shrank the vertical bounds before rounding to cells. An inverted interval can still sample one row.
+        var bounds = getBoundingBox();
+        int minX = Mth.floor(bounds.minX + 0.001D);
+        int maxX = Mth.floor(bounds.maxX - 0.001D + 1);
+        int minY = Mth.floor(bounds.minY + (double) 0.4F + 0.001D);
+        int maxY = Mth.floor(bounds.maxY - (double) 0.4F - 0.001D + 1);
+        int minZ = Mth.floor(bounds.minZ + 0.001D);
+        int maxZ = Mth.floor(bounds.maxZ - 0.001D + 1);
+        if (minY >= maxY || !level().hasChunksAt(minX, minZ, maxX, maxZ)) return false;
+
+        boolean touchingWater = false;
+        double depth = 0;
+        Vec3 flow = Vec3.ZERO;
+        for (BlockPos pos : BlockPos.betweenClosed(minX, minY, minZ, maxX - 1, maxY - 1, maxZ - 1)) {
+            var fluid = level().getFluidState(pos);
+            if (fluid.getFluidType() != water) continue;
+            touchingWater = true;
+            depth = Math.max(depth, pos.getY() + fluid.getHeight(level(), pos) - bounds.minY);
+            flow = flow.add(fluid.getFlow(level(), pos));
+        }
+        if (touchingWater) {
+            setFluidTypeHeight(water, depth);
+            if (isPushedByFluid(water)) setDeltaMovement(getDeltaMovement().add(flow.normalize().scale(motionScale)));
+        }
+        return touchingWater;
     }
 
     @Override

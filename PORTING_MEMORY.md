@@ -2,13 +2,19 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Crossbow Bolt flight in water (2026-11-27)
+
+- Read `build/qa-bolt-flight/current-native/reference.log` for five ticks each in eight cases. The original half-block projectile shrinks the vertical bounds on each side by 0.4 and again by 0.001 before rounding to sampled water cells. Some positions produce an empty range even in a filled tank. A wet Bolt retains 0.8 of its velocity and takes the current before drag. The previous package matched 11 of 35 checkpoints across seven cases. The rebuilt clean Forge package matched all 40 positions, velocities, water flags and shake values.
+- The Bolt uses the original water cell scan and Forge's fluid-state current vector. Forge still accounts for other fluids and performs movement, collision, gravity and rendering. The local regression compares five traces for 25 wet and dry flight ticks.
+- Copied Auram passed all 40 checkpoints. Both muted, hidden survival clients used the same JAR, `build/qa-bolt-flight/release-normalized.jar`, with SHA-256 `944df7f4279e0d5d3154194555a130f2a22157f11c4e6ae485ec6bfe45d4c2f9`. The real underwater shot lodged at Z 110.9514 in a stone wall and reopened with the same UUID and mesh. See `matrix-comparison.log` and `survival/` in the same directory. Local Java 17 data generation, reobfuscation and all 623 required Forge GameTests passed. The final package uses the tracked order of the two Critter Snare properties.
+
 ## Crossbow launch physics (2026-11-27)
 
 - The seeded original server fired 16 Wooden and Splitting Bolts at yaw 31 and pitch −17 with a shooter already moving. It measured all four draw durations, a 0.3-block drop from eye height, and three sideways offsets rotated with the splitting angles. See `build/qa-bolt-launch/seeded/reference.log`.
 - The preceding package matched none of the 16 positions or velocities and none of the eight firing cue positions. The rebuilt clean Forge package passed all 16 launch comparisons, the damage and pickup checks, and all eight cue checks. Two muted background survival clients saw all eight normal projectiles and reopened the full-draw powered Bolt after restart. See `build/qa-bolt-launch/live-verified/`.
 - Copied Auram passed the same launch checks on the exact package. The `L64X128MixRandom` samples from its enabled Faster Random option explain the differences between the 16 original and 16 pack velocities at seed 4096. See `build/qa-bolt-launch/pack-comparison.log` and `auram-final/spread-delta.txt` in the same directory.
 - Local Java 17 data generation, JAR reobfuscation and all 622 required Forge GameTests passed. The final suite uses an isolated Attack Bat fixture and reads duplicate-grenade spawn positions at the join events. The previous replay also saw an intermittent Rain of Toads refund assertion, which passed on the final run. The package at `build/qa-bolt-launch/release.jar` has SHA-256 `1d99ba697b40a25ca4ca8902f20659030cfd61c4aecbfd0a5eca873a28141de8`.
-- The follow-up flight fixture matched five dry ticks and the stone impact sequence. At the first tick both servers considered submerged, horizontal speed fell from 1.6 to 1.28 in 0.24.1 and to 0.96 on Forge. See `build/qa-bolt-flight/native/reference.log` and `baseline-clean/launch.log`. The original water flag cleared on the next tick near the top of the sampled block, so the next immersion test should start lower in the tank.
+- The first flight comparison found 1.28 blocks per tick on the original Bolt's first wet tick and 0.96 on the earlier Forge package. See `build/qa-bolt-flight/native/reference.log` and `baseline-clean/launch.log`. The flight milestone above resolves the difference and extends the comparison to the waterline and currents.
 
 ## Crossbow Bolt rendering (2026-11-27)
 

@@ -1487,6 +1487,12 @@
 - Copied Auram matched the same positions, damage, pickup modes and cues. Its Faster Random option uses Java's `L64X128MixRandom`, so the same seed produces different signed Gaussian samples. Accounting for those three samples reproduced all 16 of the pack's velocities within two millionths of a block per tick. The Crossbow uses the pack's configured random source.
 - Two muted background survival clients used the supplied Crossbows, ammunition and Hunter clothing in a fixture range. The observer saw eight projectiles across six shots. The quick shots were near 2.8 blocks per tick at the client's first sample, and the full-draw powered Anti-Magic Bolt was near 3.0 and critical. That same Bolt was still lodged with its original texture after restart.
 
+### Crossbow Bolt flight in water (2026-11-27)
+
+- The 0.24.1 server recorded five ticks each for dry flight, stone impact, uninterrupted submersion, shallow water, crossing the surface, entering and leaving a water lane, passing through the upper part of a submerged cell, and moving with a current. In one fully submerged shot starting at 1.6 blocks per tick, horizontal speed reached 0.524 after five ticks. The previous Forge package reached 0.124 and matched 11 of 35 checkpoints across the seven cases it ran.
+- The Bolt now uses the original water cell bounds and 0.8 drag on wet ticks. The original cell rounding can leave an empty sample in the upper part of a block, even within a full tank. The port applies the current before drag, uses Forge fluid states for the current vector, and keeps Forge handling for other fluid types. The rebuilt clean Forge package matched all 40 position, velocity, water contact, and shake checkpoints.
+- Copied Auram matched all 40 checkpoints on the same JAR. A player fired a Wooden Bolt in a submerged range while a second player watched. It lodged 10.45 blocks downrange, and the observer saw the original wood texture and mesh. The same Bolt stayed embedded and rendered after the dedicated restart. Both survival clients ran muted in the background. The fixture supplied the range, Crossbow, Bolt and Water Breathing.
+
 ### Crossbow Bolt rendering (2026-11-27)
 
 - The original release's `RenderBolt` emitted six quads for each of five projectile kinds in three poses. The trace covered flight, a shaking impact, and a stationary Bolt. It recorded the texture, transformed vertices, texture coordinates, and normal directions at the Tessellator calls.
@@ -3184,7 +3190,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
 - [ ] Item behavior parity pass (including metadata-subitem conversions).
   - [x] Compare melee modifiers, sword guards, and Boline harvest against the [melee tool measurements](#melee-tools-and-boline-harvesting-2026-11-26).
   - [x] Restore the Crossbow's [launch position, velocity, spread, and firing cue](#crossbow-launch-physics-2026-11-27). The seeded original replay covers four draw durations and the three Splitting trajectories with a moving shooter.
-  - [ ] Finish comparing Bolt flight and impact after launch. The original and current packaged servers agreed on five dry flight ticks and the position, motion, and shake through a stone impact. On the first immersed tick, a Bolt starting at 1.6 blocks per tick slowed to 1.28 in 0.24.1 and 0.96 on Forge. Continue with full immersion and transitions out of water.
+  - [x] Compare [Bolt flight in air and water](#crossbow-bolt-flight-in-water-2026-11-27), including the original wet cell bounds, water drag, current, water entry and exit, and stone impact.
 - [x] Brewing, Kettle, Distillery, Spinning Wheel, and Brazier parity.
   - [x] Compare the fixed Kettle, Distillery, Spinning Wheel, and Brazier registries and exercise their interactions and saved state in the workstation milestones above.
   - [x] Compare [Kettle bottling bonuses and cues](#kettle-bottling-bonuses-and-cues-2026-11-27) with the original world rolls and saved servings.
