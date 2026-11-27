@@ -14,6 +14,7 @@ import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -27,6 +28,11 @@ public final class SpiritFluidBlock extends LiquidBlock {
     public SpiritFluidBlock(Supplier<? extends FlowingFluid> fluid, Properties properties, boolean flowingSpirit) {
         super(fluid, properties);
         this.flowingSpirit = flowingSpirit;
+    }
+
+    @Override
+    public int getLightBlock(BlockState state, BlockGetter level, BlockPos pos) {
+        return 3;
     }
 
     @Override

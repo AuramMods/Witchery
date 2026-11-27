@@ -1253,6 +1253,13 @@ On clean Forge, the player selected and activated Bat form through ordinary cont
 - The same reobfuscated JAR matched all 20 native cases in clean Forge and copied Auram. The previous clean Forge build matched seven. The comparison supplied the requested emergence rolls and measured the creature admission, position, crop removal, and material fallback. All 618 required Forge GameTests passed locally after data generation and reobfuscation.
 - Two hidden clients at zero master volume used a normal block attack and a thrown Harvesting brew with tile drops off. The silent cue reached the observer at 15 blocks and was absent at 17 blocks. Both released creatures kept their UUIDs across restart and both crop plots stayed clear. The fixture supplied the mature plants and brew, then disabled creature AI to hold them for the save check. See `build/qa-mandrake-emergence/live-verified/`.
 
+## Block collision, lighting and redstone (2026-11-27)
+
+- [x] Compare all 121 original block IDs at metadata zero and nine powered variants. Both runtimes measured emission, opacity, render occlusion, collision, and weak and strong signals on all six sides. The powered Alder Door, cursed lever, both cursed buttons, and five pressure plates matched their original signals.
+- [x] Restore level-ten light on both Mirror frames. Flowing Spirit and Hollow Tears emit no light and attenuate it by three. Force and Torment Stone keep their solid collision and zero light opacity. Torment Stone renders as opaque stone and returns an empty creative pick. Mirror Walls occlude as solid terrain while retaining the original blue tint and animated sprites.
+- [x] Restore the original collision of the Blood Crucible, Candelabra, Cauldron, Chalice, both Fume Funnels, Infinity Egg, both lily pads, and Statue of Worship. The Cauldron keeps separate selection and collision bounds and accepts falling offerings at the rim.
+- [ ] Compare actual block and sky light around the remaining workstations, ice, snow and wood construction, pit covers, and dispersed brews. Their raw opacity measurements still differ and the two light engines apply them through different propagation rules.
+
 ## Creative pick-block (2026-11-25)
 
 - [x] Restore empty picks for Force, both portals, and both temporary brew dispersals. Force keeps its solid collision and all five retain their registered items for saved inventories and commands.
@@ -3470,6 +3477,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare [Plant Mine supporting blocks and activation packets and Critter Snare capture, release, and local sound](#critter-snare-and-plant-mine-parity-2026-11-27).
   - [x] Verify a covered Plant Mine's [light threshold and side-neighbor update](#critter-snare-and-plant-mine-parity-2026-11-27) with random ticking disabled.
   - [x] Compare [Demon Heart animation, particles and heartbeat and the three altar displays](#demon-heart-and-mounted-altar-items-2026-11-27), including collision, Forge placement protection, and recovery after restart.
+  - [x] Compare [block collision, lighting and redstone](#block-collision-lighting-and-redstone-2026-11-27) across the original block inventory and repair the collision and emission mismatches found in valid placed states.
 - [ ] Item behavior parity pass (including metadata-subitem conversions).
   - [x] Compare melee modifiers, sword guards, and Boline harvest against the [melee tool measurements](#melee-tools-and-boline-harvesting-2026-11-26).
   - [x] Restore the Crossbow's [launch position, velocity, spread, and firing cue](#crossbow-launch-physics-2026-11-27). The seeded original replay covers four draw durations and the three Splitting trajectories with a moving shooter.

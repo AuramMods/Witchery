@@ -27,7 +27,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public final class ChaliceBlock extends BaseEntityBlock {
     public static final BooleanProperty FILLED = BooleanProperty.create("filled");
-    private static final VoxelShape SHAPE = box(5, 0, 5, 11, 7.5, 11);
+    private static final VoxelShape SHAPE = box(4.8, 0, 5.92, 10.08, 7.36, 11.12);
 
     public ChaliceBlock(Properties properties) {
         super(properties);

@@ -175,6 +175,20 @@ public final class CauldronReagentTests {
         }).thenSucceed();
     }
 
+    @GameTest(template = "qa_coven_arena")
+    public static void gypsumFallingAtTheCauldronRimClearsWater(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(6, 4, 6));
+        var tank = tank(placeCauldron(helper, pos));
+        helper.assertTrue(tank.fill(new FluidStack(Fluids.WATER, 1000), IFluidHandler.FluidAction.EXECUTE) == 1000,
+                "The cauldron starts with one bucket of water");
+        var gypsum = dropAt(helper, Vec3.atBottomCenterOf(pos).add(-0.42, 1.5, 0), WitcheryIngredient.GYPSUM, 1);
+        gypsum.setDeltaMovement(0, -0.2, 0);
+        helper.assertTrue(level.addFreshEntity(gypsum), "Spawn the offering above the rim");
+        helper.succeedWhen(() -> helper.assertTrue(gypsum.isRemoved() && tank.getFluidInTank(0).isEmpty(),
+                "A falling offering in contact with the cauldron clears the water at the rim"));
+    }
+
     private static WitchesCauldronBlockEntity placeCauldron(GameTestHelper helper, BlockPos pos) {
         var level = helper.getLevel();
         level.setBlockAndUpdate(pos, WitcheryBlocks.getRequired("cauldron").get().defaultBlockState());

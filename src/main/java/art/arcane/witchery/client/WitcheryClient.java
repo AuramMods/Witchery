@@ -541,7 +541,7 @@ public final class WitcheryClient {
                     "icestairs", "iceslab", "icedoubleslab", "icefence", "icefencegate", "icepressureplate",
                     "spiritportal", "tormentportal", "brew", "brewliquid", "disease",
                     "spiritflowing", "hollowtears", "brewgas", "force", "barrier", "slurp",
-                    "mirrorwall", "mirrorblock", "mirrorblock2"
+                    "mirrorblock", "mirrorblock2"
             }) {
                 setRenderType(name, RenderType.translucent());
             }

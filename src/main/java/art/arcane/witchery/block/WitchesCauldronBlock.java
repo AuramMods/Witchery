@@ -31,7 +31,6 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.fluids.FluidUtil;
 
@@ -39,9 +38,8 @@ public final class WitchesCauldronBlock extends BaseEntityBlock {
     private static final int WATER_BUBBLE_COLOR = 3432410;
     public static final IntegerProperty WATER = IntegerProperty.create("water", 0, 3);
     public static final BooleanProperty BOILING = BooleanProperty.create("boiling");
-    private static final VoxelShape BASIN = Shapes.or(box(1, 0, 1, 15, 3, 15),
-            box(1, 3, 1, 3, 13, 15), box(13, 3, 1, 15, 13, 15),
-            box(3, 3, 1, 13, 13, 3), box(3, 3, 13, 13, 13, 15));
+    private static final VoxelShape OUTLINE = box(0, 0, 0, 16, 13.6, 16);
+    private static final VoxelShape COLLISION = box(1, 0, 1, 15, 15, 15);
 
     public WitchesCauldronBlock(Properties properties) {
         super(properties);
@@ -60,7 +58,12 @@ public final class WitchesCauldronBlock extends BaseEntityBlock {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return BASIN;
+        return OUTLINE;
+    }
+
+    @Override
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return COLLISION;
     }
 
     @Override
@@ -119,11 +122,7 @@ public final class WitchesCauldronBlock extends BaseEntityBlock {
                 || !(level.getBlockEntity(pos) instanceof WitchesCauldronBlockEntity cauldron)) {
             return;
         }
-        double x = item.getX() - pos.getX();
-        double z = item.getZ() - pos.getZ();
-        if (x >= 0.125 && x <= 0.875 && z >= 0.125 && z <= 0.875 && item.getY() < pos.getY() + 1) {
-            cauldron.acceptDroppedItem(item);
-        }
+        cauldron.acceptDroppedItem(item);
     }
 
     @Override

@@ -15,7 +15,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public final class CandelabraBlock extends Block {
-    private static final VoxelShape SHAPE = box(1.5, 0, 1.5, 14.5, 16, 14.5);
+    private static final VoxelShape SHAPE = box(1.6, 0, 1.6, 14.4, 16, 14.4);
 
     public CandelabraBlock(Properties properties) {
         super(properties);

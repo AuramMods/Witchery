@@ -35,7 +35,7 @@ public final class LegacyPickBlockTests {
         var center = Vec3.atCenterOf(target);
         var ray = new ClipContext(center.add(0, 0, 1.5), center.add(0, 0, -1.5),
                 ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player);
-        for (String path : List.of("force", "spiritportal", "tormentportal", "brewgas", "brewliquid")) {
+        for (String path : List.of("force", "tormentstone", "spiritportal", "tormentportal", "brewgas", "brewliquid")) {
             var block = WitcheryBlocks.getRequired(path).get();
             level.setBlock(target, block.defaultBlockState(), Block.UPDATE_CLIENTS);
             var state = level.getBlockState(target);
@@ -52,6 +52,12 @@ public final class LegacyPickBlockTests {
             if (path.equals("force")) {
                 helper.assertTrue(Block.isShapeFullBlock(state.getCollisionShape(level, target))
                         && state.getOcclusionShape(level, target).isEmpty(), "Force retains solid collision and empty occlusion");
+                helper.assertTrue(state.getLightBlock(level, target) == 0, "Force leaves the light level unchanged");
+            }
+            if (path.equals("tormentstone")) {
+                helper.assertTrue(Block.isShapeFullBlock(state.getCollisionShape(level, target))
+                        && state.isSolidRender(level, target), "Torment Stone has full collision and renders as opaque stone");
+                helper.assertTrue(state.getLightBlock(level, target) == 0, "Torment Stone keeps its original light opacity");
             }
         }
         helper.succeed();

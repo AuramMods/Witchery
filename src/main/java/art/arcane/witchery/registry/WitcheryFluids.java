@@ -112,9 +112,6 @@ public final class WitcheryFluids {
                 .viscosity(config.viscosity());
 
         boolean spirit = path.equals("fluidspirit") || path.equals("hollowtears");
-        if (spirit) {
-            fluidProperties.lightLevel(3);
-        }
         ResourceLocation still = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "block/" + config.stillTexture());
         ResourceLocation flow = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "block/" + config.flowingTexture());
         boolean dispersal = path.equals("brewgas") || path.equals("brewliquid");

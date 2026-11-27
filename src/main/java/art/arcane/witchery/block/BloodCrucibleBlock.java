@@ -25,7 +25,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public final class BloodCrucibleBlock extends BaseEntityBlock {
-    private static final VoxelShape SHAPE = box(4, 0, 4, 12, 5, 12);
+    private static final VoxelShape SHAPE = box(4, 0, 4, 12, 4.96, 12);
 
     public BloodCrucibleBlock() {
         super(Properties.copy(Blocks.STONE).strength(2.5F, 600).noOcclusion().pushReaction(PushReaction.BLOCK));

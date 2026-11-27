@@ -82,7 +82,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FenceGateBlock;
-import net.minecraft.world.level.block.GlassBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
@@ -253,18 +252,18 @@ public final class WitcheryBlocks {
             case "daylightcollector" -> new DaylightCollectorBlock();
             case "bloodcrucible" -> new BloodCrucibleBlock();
             case "mirrorblock", "mirrorblock2" -> new MirrorBlock(BlockBehaviour.Properties.copy(Blocks.GLASS)
-                    .strength(path.equals("mirrorblock") ? 1 : -1, 5_999.4F).noLootTable().pushReaction(PushReaction.BLOCK),
+                    .strength(path.equals("mirrorblock") ? 1 : -1, 5_999.4F).noLootTable().lightLevel(state -> 10)
+                    .pushReaction(PushReaction.BLOCK),
                     path.equals("mirrorblock2"));
             case "circle" -> new RiteHeartBlock();
             case "circleglyphritual" -> new RitualGlyphBlock("chalkritual");
             case "circleglyphotherwhere" -> new RitualGlyphBlock("chalkotherwhere");
             case "circleglyphinfernal" -> new RitualGlyphBlock("chalkinfernal");
             case "spiritportal" -> new SpiritPortalBlock(BlockBehaviour.Properties.copy(Blocks.NETHER_PORTAL).noLootTable());
-            case "mirrorwall" -> new GlassBlock(BlockBehaviour.Properties.copy(Blocks.GLASS)
+            case "mirrorwall" -> new Block(BlockBehaviour.Properties.copy(Blocks.STONE)
                     .strength(-1, 5_999.4F).noLootTable());
             case "tormentportal" -> new TormentPortalBlock();
-            case "tormentstone" -> new Block(BlockBehaviour.Properties.copy(Blocks.MYCELIUM)
-                    .strength(-1, 5_999.4F).noLootTable().noOcclusion());
+            case "tormentstone" -> new ForceBlock(false);
             case "spiritflowing" -> new SpiritFluidBlock(WitcheryFluids.getRequiredSource("fluidspirit"), spiritProperties(), true);
             case "hollowtears" -> new SpiritFluidBlock(WitcheryFluids.getRequiredSource("hollowtears"), spiritProperties(), false);
             case "disease" -> new DiseaseBlock();
@@ -272,7 +271,7 @@ public final class WitcheryBlocks {
                     BlockBehaviour.Properties.copy(Blocks.WATER).instabreak().noCollission().noLootTable());
             case "brewgas" -> new BrewDispersalBlock(true);
             case "brewliquid" -> new BrewDispersalBlock(false);
-            case "force" -> new ForceBlock();
+            case "force" -> new ForceBlock(true);
             case "barrier" -> new BarrierBlock();
             case "light" -> new SunlightBlock();
             case "slurp" -> new SlurpBlock();
@@ -294,12 +293,16 @@ public final class WitcheryBlocks {
     }
 
     private static BlockBehaviour.Properties spiritProperties() {
-        return BlockBehaviour.Properties.copy(Blocks.WATER).strength(100.0F).noCollission().noLootTable().lightLevel(state -> 3);
+        return BlockBehaviour.Properties.copy(Blocks.WATER).strength(100.0F).noCollission().noLootTable();
     }
 
     private static final class ForceBlock extends Block {
-        private ForceBlock() {
-            super(Properties.copy(Blocks.BARRIER).explosionResistance(5_999.4F).noLootTable().noOcclusion().dynamicShape());
+        private final boolean transparent;
+
+        private ForceBlock(boolean transparent) {
+            super(Properties.copy(transparent ? Blocks.BARRIER : Blocks.STONE)
+                    .strength(-1.0F, 5_999.4F).noLootTable());
+            this.transparent = transparent;
         }
 
         @Override
@@ -308,8 +311,13 @@ public final class WitcheryBlocks {
         }
 
         @Override
+        public int getLightBlock(BlockState state, BlockGetter level, BlockPos pos) {
+            return 0;
+        }
+
+        @Override
         public VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
-            return Shapes.empty();
+            return transparent ? Shapes.empty() : super.getOcclusionShape(state, level, pos);
         }
     }
 

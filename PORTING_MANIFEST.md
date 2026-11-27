@@ -321,6 +321,12 @@ The port includes the original localized versions where present in German, Spani
     - `cutoutMipped`: `witchleaves`
     - `translucent`: `shadedglass`, `shadedglass_active`, `perpetualice`
 
+### Block collision and lighting measurements
+
+- The server comparison sampled all 121 original block IDs at metadata zero and nine additional powered states. Both Forge versions expose light emission and opacity at the block position, the render-occlusion flag, and direct and weak redstone outputs on six sides. The original collision query collected the actual bounding boxes from the world. The Forge query used the matching imported block state and compared the occupied volume.
+- The metadata-zero Vine is outside its original supported facings. Forge imports it as a valid placement. The retired Wall Generator is an air cell after import. Plant Mine bounds agree at the intended precision, with small float rounding in the original world coordinates.
+- Mirror walls use the solid terrain layer. Both frame blocks use the translucent layer and emit ten light. The two Dream liquids use light opacity three and zero emission. Force keeps a full collision block with empty occlusion. Torment Stone has the same collision and light opacity but occludes like rock. The Cauldron keeps a full rim collision volume with the original inset, and accepts offerings through the ordinary item collision callback.
+
 ## Block Registry List (`WitcheryBlocks`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/WitcheryBlocks.java`
 

@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Block collision, lighting and redstone (2026-11-27)
+
+- The released 0.24.1 server measured collision volumes, emission, raw opacity, render occlusion, and six faces of weak and direct power across all 121 original block IDs and nine powered states. The preceding Forge package had four emission differences and ten collision differences in valid samples. It already matched all nine powered signals. Read `build/qa-block-properties/{native/defaults.log,baseline/audit.log,differences.txt}`.
+- The repaired realms restore level-ten Mirror frame emission, light attenuation three and no emission for both Dream fluids, and the original render occlusion for Force, Torment Stone, and Mirror Walls. The repaired Forge Cauldron has the original solid inset collision volume and accepts live drops at its rim. Both Fume Funnels and the Statue of Worship retain zero light opacity with their restored full-block collision.
+- Packaged clean Forge and copied Auram produced identical comparisons and matched all original emission and redstone observations. The remaining collision differences are the invalid metadata-zero Vine, the retired Wall Generator, and original Plant Mine float rounding. The remaining opacity list includes the retired marker. Verify actual sky and block illumination for the other unmatched raw opacity values before adapting them. Read `build/qa-block-properties/{clean,pack}/comparison.txt`.
+- The exact reobfuscated JAR has SHA-256 `75dbd61b2b76b7c312198ffe2f3772c4b84c221c06d97fe783b64c4fa061b77c`. An isolated clean Forge client verified the solid tinted Mirror Wall and all 16 translucent frame states. Its window was hidden and unfocused at master volume zero, and OpenAL used No Output. Read `build/qa-block-properties/client-check/{client-final.log,focus-final.log}`.
+- Local Java 17 packaging and all 654 required Forge GameTests passed. The new live drop test throws Gypsum onto the Cauldron rim and waits for the water to empty. The technical pick test checks the full collision, zero light opacity, and different render occlusion of the two Force variants.
+
 ## Equipment modifiers in converted saves (2026-11-27)
 
 - The original server used the vanilla modifier serializer on a worn Witchery Arthana and a worn Iron Sword, then confirmed their original stack reader activated three modifiers. It saved both in a native Chest. Read `build/qa-legacy-equipment-modifiers/native/originals-final.log`.

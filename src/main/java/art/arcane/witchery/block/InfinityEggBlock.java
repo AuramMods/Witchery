@@ -18,7 +18,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public final class InfinityEggBlock extends FallingBlock {
-    private static final VoxelShape SHAPE = box(2, 0, 2, 14, 16, 14);
+    private static final VoxelShape SHAPE = box(1, 0, 1, 15, 16, 15);
 
     public InfinityEggBlock() {
         super(Properties.copy(Blocks.DRAGON_EGG).noOcclusion());

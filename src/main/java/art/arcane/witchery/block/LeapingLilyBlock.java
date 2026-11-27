@@ -28,8 +28,6 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public final class LeapingLilyBlock extends WaterlilyBlock {
-    private static final VoxelShape PAD = box(0, 0, 0, 16, 0.5, 16);
-
     public LeapingLilyBlock() {
         super(Properties.copy(Blocks.LILY_PAD).lightLevel(state -> 6));
     }
@@ -42,7 +40,7 @@ public final class LeapingLilyBlock extends WaterlilyBlock {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return PAD;
+        return WitchLilyPadBlock.PAD;
     }
 
     @Override

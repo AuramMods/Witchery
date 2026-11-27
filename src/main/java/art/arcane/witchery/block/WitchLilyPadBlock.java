@@ -16,12 +16,15 @@ import net.minecraft.world.level.block.WaterlilyBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.common.util.FakePlayerFactory;
 
 import java.util.List;
 
 public final class WitchLilyPadBlock extends WaterlilyBlock {
     public static final IntegerProperty GROWTH = IntegerProperty.create("growth", 0, 3);
+    static final VoxelShape PAD = box(0, 0, 0, 16, 0.25, 16);
     private static final int SPREAD_DELAY = 20;
     private static final List<BlockPos> NEIGHBORS = List.of(
             new BlockPos(-1, 0, -1), new BlockPos(-1, 0, -1), new BlockPos(-1, 0, 0),
@@ -37,6 +40,11 @@ public final class WitchLilyPadBlock extends WaterlilyBlock {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(GROWTH);
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return PAD;
     }
 
     @Override
