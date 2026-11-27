@@ -4,9 +4,10 @@ import art.arcane.witchery.registry.WitcheryBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.BlockTags;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.util.FakePlayerFactory;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.LinkedHashSet;
@@ -15,6 +16,9 @@ import java.util.function.Consumer;
 
 public final class IceShell {
     private static final int[] SCAN_DIRECTIONS = {1, -1};
+    private static final Set<Block> LEGACY_FLOWERS = Set.of(Blocks.DANDELION, Blocks.POPPY, Blocks.BLUE_ORCHID,
+            Blocks.ALLIUM, Blocks.AZURE_BLUET, Blocks.RED_TULIP, Blocks.ORANGE_TULIP, Blocks.WHITE_TULIP,
+            Blocks.PINK_TULIP, Blocks.OXEYE_DAISY);
 
     private IceShell() {}
 
@@ -24,24 +28,25 @@ public final class IceShell {
 
     static void pulse(ServerLevel level, BlockPos center, int stage, int coven, @Nullable ServerPlayer caster) {
         if (stage % 2 != 0) return;
+        ServerPlayer actor = caster != null && caster.serverLevel() == level ? caster : FakePlayerFactory.getMinecraft(level);
         int radius = stage + 4;
         BlockState ice = WitcheryBlocks.getRequired("perpetualice").get().defaultBlockState();
-        draw(level, center, radius, ice, ice, caster);
-        draw(level, center, radius - 2, Blocks.AIR.defaultBlockState(), ice, caster);
+        draw(level, center, radius, ice, ice, actor);
+        draw(level, center, radius - 2, Blocks.AIR.defaultBlockState(), ice, actor);
         if (radius == radius(coven)) {
             forEachDrainCell(level, center, radius, ice, pos -> {
                 if (level.getBlockState(pos).is(Blocks.WATER)) {
-                    LandscapeRites.replace(level, pos, Blocks.AIR.defaultBlockState(), caster);
+                    LandscapeRites.replace(level, pos, Blocks.AIR.defaultBlockState(), actor);
                 }
             });
         }
     }
 
     private static void draw(ServerLevel level, BlockPos center, int radius, BlockState output,
-                             BlockState shell, @Nullable ServerPlayer caster) {
+                             BlockState shell, ServerPlayer actor) {
         for (BlockPos point : outline(radius)) {
             BlockPos pos = center.offset(point);
-            if (replaceable(level.getBlockState(pos), shell)) LandscapeRites.replace(level, pos, output, caster);
+            if (replaceable(level.getBlockState(pos), shell)) LandscapeRites.replace(level, pos, output, actor);
         }
     }
 
@@ -77,7 +82,7 @@ public final class IceShell {
     private static boolean replaceable(BlockState state, BlockState shell) {
         return state.isAir() || state.is(Blocks.WATER) || state.is(Blocks.ICE) || state.is(Blocks.SNOW_BLOCK)
                 || state.is(Blocks.GRASS) || state.is(Blocks.FERN) || state.is(Blocks.VINE) || state.is(Blocks.LILY_PAD)
-                || state.is(BlockTags.SMALL_FLOWERS) || state.is(Blocks.CACTUS) || state.is(Blocks.DEAD_BUSH) || state.is(shell.getBlock());
+                || LEGACY_FLOWERS.contains(state.getBlock()) || state.is(Blocks.CACTUS) || state.is(Blocks.DEAD_BUSH) || state.is(shell.getBlock());
     }
 
     public static void forEachDrainCell(ServerLevel level, BlockPos center, int radius, BlockState shell,

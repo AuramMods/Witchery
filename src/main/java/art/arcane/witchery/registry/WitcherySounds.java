@@ -12,6 +12,8 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 public final class WitcherySounds {
     private static final DeferredRegister<SoundEvent> SOUNDS =
             DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, Witchery.MODID);
@@ -92,6 +94,12 @@ public final class WitcherySounds {
 
     public static void playLegacyBlockCue(ServerLevel level, BlockPos pos, SoundEvent sound, float volume) {
         level.playSound(null, pos.getX(), pos.getY(), pos.getZ(), sound, SoundSource.PLAYERS, volume, legacyPitch(level));
+    }
+
+    public static void playLegacyBlockCue(ServerLevel level, BlockPos pos, SoundEvent sound, SoundSource source, float volume) {
+        // The original world random source only selected the pitch.
+        level.playSeededSound(null, pos.getX(), pos.getY(), pos.getZ(), sound, source, volume,
+                legacyPitch(level), ThreadLocalRandom.current().nextLong());
     }
 
     private static float legacyPitch(ServerLevel level) {

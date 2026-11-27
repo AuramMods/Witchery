@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -110,6 +111,50 @@ public final class IceShellDrainTests {
             helper.assertBlockPresent(gas, CENTER.north());
         } finally {
             level.setBlockAndUpdate(iceAtScanHeight, before);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = BATCH)
+    public static void circleShellKeepsLaterFlowersAndHonorsProtectionWithoutTheCaster(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var origin = helper.absolutePos(CENTER);
+        var actor = FakePlayerFactory.getMinecraft(level);
+        var ice = WitcheryBlocks.getRequired("perpetualice").get();
+        var dandelion = CENTER.west(8);
+        var cornflower = CENTER.east(8);
+        var protectedRim = CENTER.north(8);
+        var protectedWater = CENTER.south(3);
+        var openWater = CENTER.south(4);
+        helper.setBlock(dandelion.below(), Blocks.DIRT);
+        helper.setBlock(dandelion, Blocks.DANDELION);
+        helper.setBlock(cornflower.below(), Blocks.DIRT);
+        helper.setBlock(cornflower, Blocks.CORNFLOWER);
+        helper.setBlock(protectedRim, Blocks.AIR);
+        helper.setBlock(protectedWater, Blocks.WATER);
+        helper.setBlock(openWater, Blocks.WATER);
+        Consumer<BlockEvent.EntityPlaceEvent> vetoRim = event -> {
+            if (event.getEntity() == actor && event.getPos().equals(helper.absolutePos(protectedRim))) {
+                event.setCanceled(true);
+            }
+        };
+        Consumer<BlockEvent.BreakEvent> vetoDrain = event -> {
+            if (event.getPlayer() == actor && event.getPos().equals(helper.absolutePos(protectedWater))) {
+                event.setCanceled(true);
+            }
+        };
+        MinecraftForge.EVENT_BUS.addListener(vetoRim);
+        MinecraftForge.EVENT_BUS.addListener(vetoDrain);
+        try {
+            IceShell.pulse(level, origin, 4, 2, null);
+            helper.assertBlockPresent(ice, dandelion);
+            helper.assertBlockPresent(Blocks.CORNFLOWER, cornflower);
+            helper.assertBlockPresent(Blocks.AIR, protectedRim);
+            helper.assertBlockPresent(Blocks.WATER, protectedWater);
+            helper.assertBlockPresent(Blocks.AIR, openWater);
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(vetoDrain);
+            MinecraftForge.EVENT_BUS.unregister(vetoRim);
         }
         helper.succeed();
     }

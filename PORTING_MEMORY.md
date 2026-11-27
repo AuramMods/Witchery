@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Ice Shell expansion and protection comparison (2026-11-27)
+
+- The original dedicated server recorded geometry and stage at 54 points across all seven coven sizes. It also tested 29 block and metadata variants on the outer and inner outlines. The Forge shell restores the ten original flower variants, keeps flowers introduced later, and preserves the existing asymmetric drainage.
+- A resumed cast with no same-level caster uses the world's Forge fake player for configured break and place checks. The original rejection sequence plays a fizz and two snares before the sword and Frozen Heart return. Its original pitch draw stays separate from the modern sound sample seed.
+- Clean Forge and copied Auram passed all 306 packaged checks with the same JAR. The preceding clean package passed 292. The copied Auram fixture supplied the original seeded world random stream. See `build/qa-ice-rite-parity/{native/reference-verified.log,clean-checked/verify.log,pack-checked/verify.log}`.
+- The muted survival caster recovered the two held offerings and discharged stone after the no-coven cast. A prepared six-member cast saved stage two. The dedicated server completed its radius-sixteen shell before the caster rejoined. A second restart retained the shell, Cornflower, protected water, and stocked chest. Both clients stayed hidden and unfocused with master volume zero and OpenAL No Output. See `build/qa-ice-rite-parity/live-final/{cast,active-cast,restart,settled}.log`.
+- Local Java 17 data generation, JAR reobfuscation, and all 609 required Forge GameTests passed. Archive `build/qa-ice-rite-parity/release.jar` has SHA-256 `ed4744edb95077780216201d7d97a2f98cfe09a7a7ff0778352f435043ff773c`.
+
 ## Climate Change focus and weather comparison (2026-11-27)
 
 - The original 0.24.1 server enumerated all thirteen focus families and ran 29 cases. The Forge rite restores the signed chunk order, centered hitbox, original Glowstone Dust slots, independent weather focus, midpoint footprint, and effect cues. Netherrack selects Snowy Plains on one dust. The modern Water, Desert and Frozen families provide destinations for their empty stock 1.7.10 categories. Magical destinations require a registered tagged biome.

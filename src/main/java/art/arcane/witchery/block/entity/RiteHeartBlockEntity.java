@@ -834,6 +834,10 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     private LandscapeRites.Progress prepareLandscape(ServerLevel level, ItemRiteRecipe rite) {
         BlockPos heart = getBlockPos();
         if (rite.action() == ItemRiteRecipe.Action.ICE_SHELL && covenSize < 2) {
+            if (usesGlyphClock()) {
+                playOriginalRiteSound(level, heart, SoundEvents.FIRE_EXTINGUISH);
+                playOriginalRiteSound(level, heart, SoundEvents.NOTE_BLOCK_SNARE.value());
+            }
             abort(level, "message.witchery.rite.ice_shell_coven");
             return null;
         }
@@ -1026,15 +1030,14 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     private void abort(ServerLevel level, @Nullable String message, boolean originalSound) {
         ServerPlayer player = initiator == null ? null : level.getServer().getPlayerList().getPlayer(initiator);
         if (message != null && player != null && player.level() == level) showRiteError(player, message);
-        if (!cancellationPending) traceRite(level, activeRite, "cast aborted", message);
+        boolean announce = !cancellationPending;
+        if (announce) {
+            traceRite(level, activeRite, "cast aborted", message);
+            if (originalSound) playOriginalRiteSound(level, getBlockPos(), SoundEvents.NOTE_BLOCK_SNARE.value());
+        }
         refundSacrifices(level);
         nextCast(level);
-        if (cancellationPending) return;
-        if (originalSound) {
-            playOriginalRiteSound(level, getBlockPos(), SoundEvents.NOTE_BLOCK_SNARE.value());
-        } else {
-            failSound(level);
-        }
+        if (announce && !originalSound) failSound(level);
     }
 
     private void finishCancellation(ServerLevel level, ResourceLocation cast) {
@@ -1052,8 +1055,7 @@ public final class RiteHeartBlockEntity extends BlockEntity {
     }
 
     static void playOriginalRiteSound(ServerLevel level, BlockPos pos, SoundEvent sound) {
-        float pitch = 0.4F / ((float) level.getRandom().nextDouble() * 0.4F + 0.8F);
-        level.playSound(null, pos.getX(), pos.getY(), pos.getZ(), sound, SoundSource.BLOCKS, 0.5F, pitch);
+        WitcherySounds.playLegacyBlockCue(level, pos, sound, SoundSource.BLOCKS, 0.5F);
     }
 
     public void refundSacrifices(ServerLevel level) {

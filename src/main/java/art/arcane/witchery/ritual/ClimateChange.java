@@ -3,6 +3,7 @@ package art.arcane.witchery.ritual;
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.network.WitcheryNetwork;
+import art.arcane.witchery.registry.WitcherySounds;
 import art.arcane.witchery.world.BiomePainting;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -14,7 +15,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BiomeTags;
@@ -30,7 +30,6 @@ import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.Tags;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,7 +37,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 public final class ClimateChange {
     static final int CAST_STAGE = 5;
@@ -124,11 +122,11 @@ public final class ClimateChange {
     }
 
     public static void playStartCue(ServerLevel level, BlockPos center) {
-        playOriginalSound(level, Vec3.atLowerCornerOf(center), SoundEvents.FIRE_EXTINGUISH);
+        WitcherySounds.playLegacyBlockCue(level, center, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F);
     }
 
     public static void playInitialFailureCue(ServerLevel level, BlockPos center) {
-        playOriginalSound(level, Vec3.atLowerCornerOf(center), SoundEvents.NOTE_BLOCK_SNARE.value());
+        WitcherySounds.playLegacyBlockCue(level, center, SoundEvents.NOTE_BLOCK_SNARE.value(), SoundSource.BLOCKS, 0.5F);
     }
 
     static boolean pulse(ServerLevel level, BlockPos center, int stage, int coven,
@@ -228,11 +226,5 @@ public final class ClimateChange {
             if (caster != null) caster.displayClientMessage(Component.translatable(message), true);
         }
         return false;
-    }
-
-    private static void playOriginalSound(ServerLevel level, Vec3 pos, SoundEvent sound) {
-        float pitch = 0.4F / ((float) level.getRandom().nextDouble() * 0.4F + 0.8F);
-        level.playSeededSound(null, pos.x, pos.y, pos.z, sound, SoundSource.BLOCKS,
-                0.5F, pitch, ThreadLocalRandom.current().nextLong());
     }
 }

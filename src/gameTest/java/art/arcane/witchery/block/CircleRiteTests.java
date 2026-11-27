@@ -961,6 +961,55 @@ public final class CircleRiteTests {
         helper.succeed();
     }
 
+    @GameTest(template = TEMPLATE, batch = "witchery_ice_shell_refund")
+    public static void rejectedIceShellPlaysTheActivationFizzAndBothSnares(GameTestHelper helper) {
+        floor(helper);
+        helper.setBlock(CENTER, block("circle"));
+        var level = helper.getLevel();
+        var center = helper.absolutePos(CENTER);
+        var heart = heart(helper);
+        var pending = new CompoundTag();
+        pending.putString("Rite", "witchery:rite_of_ice_shell");
+        pending.putInt("OfferingStep", 3);
+        pending.putInt("GlyphPhase", 0);
+        pending.putInt("CovenSize", 1);
+        pending.putInt("CovenSummoned", 1);
+        var offerings = new ListTag();
+        offerings.add(Items.DIAMOND_SWORD.getDefaultInstance().save(new CompoundTag()));
+        offerings.add(WitcheryIngredient.FROZEN_HEART.item().getDefaultInstance().save(new CompoundTag()));
+        pending.put("Sacrifices", offerings);
+        heart.load(pending);
+        var sounds = new ArrayList<PlayLevelSoundEvent.AtPosition>();
+        var returnedAtCue = new ArrayList<Integer>();
+        Consumer<PlayLevelSoundEvent.AtPosition> listener = event -> {
+            if (event.getLevel() == level && event.getPosition().equals(Vec3.atLowerCornerOf(center))) {
+                sounds.add(event);
+                returnedAtCue.add(drops(helper).size());
+            }
+        };
+        MinecraftForge.EVENT_BUS.addListener(listener);
+        try {
+            tick(level, center, heart, 19);
+            helper.assertTrue(sounds.isEmpty() && drops(helper).isEmpty(), "The cast waits for its activation tick");
+            tick(level, center, heart, 1);
+            helper.assertTrue(sounds.stream().map(event -> event.getSound().value()).toList()
+                            .equals(List.of(SoundEvents.FIRE_EXTINGUISH, SoundEvents.NOTE_BLOCK_SNARE.value(),
+                                    SoundEvents.NOTE_BLOCK_SNARE.value())),
+                    "The activation fizz precedes the action snare and the Heart Glyph snare");
+            helper.assertTrue(sounds.stream().allMatch(event -> event.getNewVolume() == 0.5F
+                            && event.getNewPitch() >= 1F / 3 && event.getNewPitch() <= 0.5F)
+                            && returnedAtCue.equals(List.of(0, 0, 0)),
+                    "The three cues use the original volume and pitch range before any offerings return");
+            helper.assertTrue(drops(helper).stream().map(drop -> drop.getItem().getItem()).toList()
+                            .equals(List.of(Items.DIAMOND_SWORD, WitcheryIngredient.FROZEN_HEART.item()))
+                            && !heart.saveWithoutMetadata().contains("Rite", Tag.TAG_STRING),
+                    "The rejected cast returns the two held offerings once");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(listener);
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = TEMPLATE, batch = "witchery_legacy_wave_gate")
     public static void importedFertilityAndCursesShareTheOriginalActivationGate(GameTestHelper helper) {
         floor(helper);

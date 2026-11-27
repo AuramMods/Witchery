@@ -1209,7 +1209,7 @@ The class and ID columns follow the 96 registrations in the original `WitcheryRe
 | `RiteCallFamiliar` | 55 | `FamiliarBinding.callNear` | [Dismissed, distant, and cross-dimension recall](PORTING.md#familiars-and-covens-2026-11-19) |
 | `RiteCursePoppets` | 56 | `RiteHeartBlockEntity.finish`, `PoppetProtectionItem.corrupt` | [Original targeting, strikes, and cues](PORTING.md#corrupting-voodoo-protection-completion-2026-11-27) |
 | `RiteClimateChange` | 64 | `ClimateChange` | [All focus families, weather, and mixed offerings](PORTING.md#climate-change-focus-and-weather-comparison-2026-11-27) and [imported prelude and caster name](PORTING.md#legacy-save-fixtures-2026-11-21) |
-| `RiteSphereEffect` | 65 | `IceShell` | [Coven-dependent shell, draining, and resume](PORTING.md#forestation-and-terrain-rites) |
+| `RiteSphereEffect` | 65 | `IceShell` | [Coven-dependent shell, terrain, protections, and resume](PORTING.md#ice-shell-expansion-and-protection-comparison-2026-11-27) |
 | `RiteRainOfToads` | 66 | `RainOfToads` and `RiteHeartBlockEntity` prelude | [Prelude, shower, poisoning, and expiration](PORTING.md#rain-of-toads-action-comparison-2026-11-26) |
 | `RiteGlyphicTransformation` | 67 | `GlyphicTransformation` | [Chalk selection, order, and pattern retention](PORTING.md#glyphic-transformation-and-loose-offerings-2026-11-27) |
 | `RiteCallCreatures` | 68 | `CallOfTheBeasts.pulse` | [Animal order, arrival, and resumed search](PORTING.md#fertility-natures-power-and-calling-the-beasts-2026-11-21) |

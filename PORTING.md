@@ -668,6 +668,17 @@
 - [x] Run Java 17 data generation, JAR reobfuscation, and all 344 required Forge GameTests. New cases cover the original Chilled attribute and damage rules, migrated ingredients, glancing hits, the radius boundary, resistant entities, and preserving a container while clearing brew gas inside a shell.
 - [x] Restore the original circle rite actions and map all 96 legacy registration IDs, including the Rite of Prior Incarnation.
 
+### Ice Shell expansion and protection comparison (2026-11-27)
+
+- The original server recorded 54 snapshots across coven sizes zero through six and checked 29 block and metadata variants on the rim and inner outline. The first pulse is at tick 20, odd stages leave the shell unchanged, and the final radius is eight, twelve, or sixteen. The snapshots include the complete set of occupied ice coordinates.
+- The rite freezes or clears only the ten original flower variants. Cornflower, Wither Rose, Lily of the Valley, and tagged modded flowers stay in place. Perpetual Ice still stops the original asymmetric water scans. Thin snow, solid terrain, containers, and active brews remain intact.
+- A loaded cast can finish while its caster is offline or in another dimension. The shell uses Forge's fake player in that case, so the configured break and place events still honor protection. The normal caster supplies the event identity when present in the same level.
+- A cast rejected by the coven check plays the activation fizz and both snares from the Heart Glyph before returning held offerings. The shared legacy glyph cue uses the original volume 0.5 and pitch draw, and the modern sound sample uses a separate random source.
+- Clean Forge and copied Auram each passed all 306 packaged checks. The preceding clean JAR passed 292. The Auram fixture used the original seeded world random stream for the cue comparison. See `build/qa-ice-rite-parity/{native/reference-verified.log,clean-checked/verify.log,pack-checked/verify.log}`.
+- A muted survival client activated the prepared ring by hand without a Seer Stone. It received the coven message and recovered the sword, Frozen Heart, and discharged Attuned Stone. A second cast used the Seer Stone with six supplied coven records and reached the six-block outline before the server saved stage two. The fixture supplied the ring and offerings and disabled fall damage in the elevated arena.
+- The headless server finished the saved cast at radius sixteen with the caster offline. The old inner outline disappeared. A second dedicated restart retained the outer shell, Cornflower, water behind Perpetual Ice, and stocked chest. The two background clients stayed hidden and unfocused at zero master volume with OpenAL No Output. See `build/qa-ice-rite-parity/live-final/`.
+- Local Java 17 data generation, JAR reobfuscation, and all 609 required Forge GameTests passed. The new regressions verify the two Forge vetoes while the caster is absent and the rejection cue order before the two held offerings return.
+
 ### Climate Change focus and weather comparison (2026-11-27)
 
 - The original 0.24.1 server enumerated all 13 focus families and ran 29 cases. The last recognized focus in signed chunk order selects the biome. The last Cactus or Icy Needle sets the weather independently. The rite consumes every recognized stack and all Glowstone Dust in range, including an item whose original centered hitbox overlaps the upper edge. Unrelated drops remain.
@@ -3097,6 +3108,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Compare [both Fertility rites and Nature's Power](#fertility-and-natures-power-comparison-2026-11-27), including cure boundaries, repeated terrain rolls, and saved upkeep.
   - [x] Compare [Ore Transposition](#ore-transposition-layer-comparison-2026-11-27), including layer order, seeded drops, the world floor, Forge vetoes, and resumed extraction.
   - [x] Compare [all thirteen Climate Change foci and mixed focus order](#climate-change-focus-and-weather-comparison-2026-11-27) against the original registry and runtime.
+  - [x] Compare [Ice Shell expansion, block variants, and rejection cues](#ice-shell-expansion-and-protection-comparison-2026-11-27), including Forge protection for a resumed cast with an absent caster.
   - [x] Compare [Blight and Blindness actions](#blight-and-blindness-action-comparison-2026-11-26), including terrain and creature conversion.
   - [x] Compare [Hell on Earth terrain and fire](#hell-on-earth-terrain-comparison-2026-11-26), including fire support, soil rolls, and Forge protections.
   - [x] Compare [Rain of Toads](#rain-of-toads-action-comparison-2026-11-26), including the shower's coordinates and ordering, the coven refund, and expiration and poison.
