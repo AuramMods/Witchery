@@ -225,10 +225,11 @@ public final class LegacyWorldIds {
         var retainedInventory = DeathBrewEffects.pendingLegacyInventory(persisted);
         var expiredDrops = persisted.getList("WITCPriIncInv", Tag.TAG_COMPOUND);
         var dreamSession = persisted.getCompound("WITCSpiritWorld");
-        upgradeEntityEffects(player);
+        boolean originalFormat = from < 100;
+        upgradeEntityEffects(player, originalFormat);
         repairEntityEffects(player.getCompound("RootVehicle").getCompound("Entity"));
         // The pending list can keep legacy effect IDs after an earlier import updated the player version.
-        effects.upgrade(persisted.getList("WITCPoSpawn", Tag.TAG_COMPOUND));
+        effects.upgrade(persisted.getList("WITCPoSpawn", Tag.TAG_COMPOUND), originalFormat);
         int to = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
         if (from >= 100) {
             // These lists are outside the player inventory schema and can outlive the first import.
@@ -319,8 +320,8 @@ public final class LegacyWorldIds {
         }
     }
 
-    void upgradeEntityEffects(CompoundTag entity) {
-        effects.upgradeActive(entity.getList("ActiveEffects", Tag.TAG_COMPOUND));
+    void upgradeEntityEffects(CompoundTag entity, boolean originalFormat) {
+        effects.upgradeActive(entity.getList("ActiveEffects", Tag.TAG_COMPOUND), originalFormat);
     }
 
     public void repairEntityEffects(ListTag entities) {
@@ -337,9 +338,11 @@ public final class LegacyWorldIds {
     }
 
     private void repairEntityEffects(CompoundTag entity) {
-        upgradeEntityEffects(entity);
-        if (entity.getString("id").equals(LegacyChunkEntities.SPAWNER_CART)) {
-            LegacyChunkEntities.forEachSpawnerEntity(entity, this::repairEntityEffects);
+        upgradeEntityEffects(entity, false);
+        switch (entity.getString("id")) {
+            case LegacyChunkEntities.SPAWNER_CART -> LegacyChunkEntities.forEachSpawnerEntity(entity, this::repairEntityEffects);
+            case "minecraft:arrow" -> effects.repairConvertedPotion(entity.getList("CustomPotionEffects", Tag.TAG_COMPOUND));
+            case "minecraft:area_effect_cloud" -> effects.repairConvertedPotion(entity.getList("Effects", Tag.TAG_COMPOUND));
         }
         repairEntityEffects(entity.getList("Passengers", Tag.TAG_COMPOUND));
     }
@@ -347,7 +350,7 @@ public final class LegacyWorldIds {
     public void upgradeItems(Tag value) {
         if (value instanceof CompoundTag compound) {
             for (String key : compound.getAllKeys()) upgradeItems(compound.get(key));
-            if (compound.contains("Count", Tag.TAG_ANY_NUMERIC)) upgradeStack(compound);
+            if (compound.contains("Count", Tag.TAG_ANY_NUMERIC)) upgradeStack(compound, true);
         } else if (value instanceof ListTag list) {
             for (Tag entry : list) upgradeItems(entry);
         }
@@ -394,7 +397,7 @@ public final class LegacyWorldIds {
         if (compound.contains("Count", Tag.TAG_BYTE) && hasLegacyStackEncoding(compound)) {
             if (repairVanilla) {
                 upgradeUntypedStack(compound, fixer, currentVersion, currentVersion);
-            } else if (upgradeStack(compound)) {
+            } else if (upgradeStack(compound, true)) {
                 upgradeStackTags(compound, true, false);
             }
         } else {
@@ -410,7 +413,7 @@ public final class LegacyWorldIds {
                 repairLegacyInventory(brew.getList("Items", Tag.TAG_COMPOUND), fixer, currentVersion);
             } else if (id.equals("witchery:brew2") && hasLegacyStackEncoding(brew)) {
                 // Converted projectiles can retain the original bottle outside the vanilla Item field.
-                upgradeStack(brew);
+                upgradeStack(brew, !repairVanilla);
             }
         }
         if (compound.contains("Count", Tag.TAG_ANY_NUMERIC) && compound.get("tag") instanceof CompoundTag itemTag) {
@@ -490,7 +493,7 @@ public final class LegacyWorldIds {
     private void upgradeUntypedStack(CompoundTag stack, DataFixer fixer, int from, int to) {
         // Full chunk and entity migrations skip old stacks once their containing records have a modern version.
         boolean partiallyConverted = from >= 100 && hasLegacyStackEncoding(stack);
-        boolean mapped = partiallyConverted && upgradeStack(stack);
+        boolean mapped = partiallyConverted && upgradeStack(stack, false);
         ResourceLocation id = stack.contains("id", Tag.TAG_ANY_NUMERIC)
                 ? vanillaItems.get(stack.getInt("id") & 0xFFFF) : ResourceLocation.tryParse(stack.getString("id"));
         if (id == null) return;
@@ -617,7 +620,7 @@ public final class LegacyWorldIds {
         }
     }
 
-    private boolean upgradeStack(CompoundTag compound) {
+    private boolean upgradeStack(CompoundTag compound, boolean originalFormat) {
         ResourceLocation name;
         boolean legacySapling;
         if (compound.contains("id", Tag.TAG_ANY_NUMERIC)) {
@@ -637,7 +640,7 @@ public final class LegacyWorldIds {
             return true;
         }
         if (VANILLA_POTION.equals(name)) {
-            effects.upgrade(compound.getCompound("tag").getList("CustomPotionEffects", Tag.TAG_COMPOUND));
+            effects.upgrade(compound.getCompound("tag").getList("CustomPotionEffects", Tag.TAG_COMPOUND), originalFormat);
         }
         if (VANILLA_SPAWN_EGG.equals(name)) name = spawnEggs.get(compound.getInt("Damage") & 0xFFFF);
         if (name == null || !name.getNamespace().equals(Witchery.MODID) || compound.getByte("Count") <= 0) return false;

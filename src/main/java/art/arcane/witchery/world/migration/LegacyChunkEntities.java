@@ -82,7 +82,7 @@ public final class LegacyChunkEntities {
 
     private static void prepareEntity(CompoundTag entity, LegacyWorldIds ids, DataFixer fixer, int from,
                                       @Nullable CompoundTag originalChunk) {
-        ids.upgradeEntityEffects(entity);
+        ids.upgradeEntityEffects(entity, from < 100);
         if (entity.contains("Riding", Tag.TAG_COMPOUND)) {
             prepareEntity(entity.getCompound("Riding"), ids, fixer, from, originalChunk);
         }

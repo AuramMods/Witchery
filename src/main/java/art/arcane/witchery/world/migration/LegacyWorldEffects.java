@@ -45,28 +45,28 @@ public final class LegacyWorldEffects {
         return saved;
     }
 
-    void upgrade(ListTag effects) {
-        upgrade(effects, Source.LEGACY);
+    void upgrade(ListTag effects, boolean originalFormat) {
+        upgrade(effects, originalFormat, false);
     }
 
-    void upgradeActive(ListTag effects) {
-        upgrade(effects, Source.ACTIVE);
+    void upgradeActive(ListTag effects, boolean originalFormat) {
+        upgrade(effects, originalFormat, true);
     }
 
     void repairConvertedPotion(ListTag effects) {
-        upgrade(effects, Source.CONVERTED_POTION);
+        upgrade(effects, false);
     }
 
-    private void upgrade(ListTag effects, Source source) {
+    private void upgrade(ListTag effects, boolean originalFormat, boolean restoreAttributes) {
         for (Tag value : effects) {
             CompoundTag effect = (CompoundTag) value;
             if (effect.contains("forge:id", Tag.TAG_STRING) || !effect.contains("Id", Tag.TAG_ANY_NUMERIC)) continue;
             int id = Byte.toUnsignedInt(effect.getByte("Id"));
             String name = names.get(id);
             if (name == null) continue;
-            if (source == Source.CONVERTED_POTION && !hasOriginalPotionId(effect, id)) continue;
+            if (!originalFormat && !hasOriginalPotionId(effect, id)) continue;
             effect.putString("forge:id", name);
-            if (source == Source.ACTIVE) effect.putBoolean(RESTORE_ATTRIBUTES, true);
+            if (restoreAttributes) effect.putBoolean(RESTORE_ATTRIBUTES, true);
         }
     }
 
@@ -76,10 +76,6 @@ public final class LegacyWorldEffects {
         var current = MobEffect.byId(id);
         var key = current == null ? null : ForgeRegistries.MOB_EFFECTS.getKey(current);
         return key == null || !key.getNamespace().equals(ResourceLocation.DEFAULT_NAMESPACE);
-    }
-
-    private enum Source {
-        LEGACY, ACTIVE, CONVERTED_POTION
     }
 
     public static void restoreActiveAttributes(LivingEntity entity, CompoundTag saved) {
