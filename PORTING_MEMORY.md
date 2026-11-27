@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Crossbow Bolt rendering (2026-11-27)
+
+- The original `RenderBolt` trace recorded 360 vertices across five kinds and three poses. See `build/qa-bolt-renderer/native/reference.log`. The previous JAR matched 240 of 1,080 position values, 600 of 720 UV values, and 800 of 1,080 normal components. It selected the original texture in all 15 samples.
+- The rebuilt renderer matches all 2,880 values and all 15 textures on packaged clean Forge. Two muted background survival clients checked all eight projectiles from six normal Crossbow uses in flight and embedded. The same powered Anti-Magic Bolt rendered after restart. The fixture supplied a range, Crossbows, ammunition and plain Hunter gear. See `build/qa-bolt-renderer/clean-checked/`.
+- The identical JAR matched the full mesh comparison in copied Auram. Local Java 17 data generation, reobfuscation, and all 621 required Forge GameTests passed. The archive at `build/qa-bolt-renderer/release.jar` has SHA-256 `882986114804fdb6c0c090b52ae5a18e1b1028b6b4515884d9eebb5295d395f4`.
+- The original Crossbow fired 16 measured Wooden and Splitting Bolts after zero, 19, 20 and 35 use ticks. It places each projectile 0.3 blocks below eye height and shifts it horizontally by 0.16 blocks according to that Bolt's yaw. Full-draw flight starts near three blocks per tick, compared with two in the current Forge firing path. See `build/qa-bolt-launch/native/reference.log` and the open item behavior row.
+
 ## Bolt attachments across region boundaries (2026-11-27)
 
 - The original region audit in `build/qa-bolt-boundaries/native/region-audit.log` located four Bolts in `r.-1.-1.mca` with impact cells in `r.0.-1.mca`. The Statue of Worship and the Light Blue Terracotta Bolts saved the same block byte and metadata despite using IDs 415 and 159. The previous package passed 24 of 28 checks and lost the Statue attachment.

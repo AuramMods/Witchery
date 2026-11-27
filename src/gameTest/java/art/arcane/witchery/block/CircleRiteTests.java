@@ -1047,7 +1047,7 @@ public final class CircleRiteTests {
         Consumer<PlayLevelSoundEvent.AtPosition> listener = event -> {
             if (event.getLevel() == level && event.getPosition().equals(Vec3.atLowerCornerOf(center))) {
                 sounds.add(event);
-                returnedAtCue.add(drops(helper).size());
+                returnedAtCue.add(returned.size());
             }
         };
         MinecraftForge.EVENT_BUS.addListener(listener);
@@ -1066,14 +1066,17 @@ public final class CircleRiteTests {
                     "The three cues use the original volume and pitch range before any offerings return");
             helper.assertTrue(returned.stream().map(drop -> drop.getItem().getItem()).toList()
                             .equals(List.of(Items.DIAMOND_SWORD, WitcheryIngredient.FROZEN_HEART.item()))
-                            && drops(helper).size() == 2 && drops(helper).containsAll(returned)
                             && !heart.saveWithoutMetadata().contains("Rite", Tag.TAG_STRING),
                     "The rejected cast returns the two held offerings once");
         } finally {
             MinecraftForge.EVENT_BUS.unregister(listener);
             MinecraftForge.EVENT_BUS.unregister(recordRefund);
         }
-        helper.succeed();
+        helper.startSequence().thenWaitUntil(() -> {
+            var tracked = drops(helper);
+            helper.assertTrue(tracked.size() == 2 && tracked.containsAll(returned),
+                    "Both returned offerings are visible to the level");
+        }).thenSucceed();
     }
 
     @GameTest(template = TEMPLATE, batch = "witchery_legacy_wave_gate")
