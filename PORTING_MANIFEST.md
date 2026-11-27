@@ -960,6 +960,11 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 
 The modern registry also keeps `witchery:brew` and `witchery:brew2` as working projectile types for earlier 1.20.1 saves. Their fixed and custom payload decoding is shared with the 1.7.10 importer. The older port's two spawn egg item IDs remain readable. Protocol 89 covers the changed entity data.
 
+### Natural spawn eligibility
+
+- Coven Witch and Dream Spirit placement share the original tameable path-light rule and check the registered creature's bounds before drawing from the world random source. Clearance includes occupied space, solid collisions, and liquids. Coven Witches skip the configured roll at weight one. Dream Spirits roll one in ten before checking grass or sand and the raw light threshold. Both map other ground's original brightness boundary of 0.5 to a sky-adjusted light level of 12.
+- Forge applies the existing any-light placement check to Hellhounds. Their entity-level check uses the original Peaceful exclusion, leaving pathfinding's inherited preference for darkness independent of spawn eligibility. Hobgoblins retain the original grass and raw-light-above-eight check. See [Natural spawn eligibility](PORTING.md#natural-spawn-eligibility-2026-11-27) for the four-creature comparison.
+
 ## Potions / Effects (`WitcheryPotions`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/brewing/potions/WitcheryPotions.java`
 

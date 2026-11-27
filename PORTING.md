@@ -2768,6 +2768,13 @@ Copied Auram matched all 572 reference vertices on the same archive. The surviva
 - [x] Run Java 17 data generation, JAR reobfuscation and all 290 required Forge GameTests. Coverage includes Dream spawn rules, legacy guide data and expiry, item release, separate kettle offerings, bottling and the resumed night rite.
 - [x] Restore the spectral creatures and the charged Spectral Stone's binding and release.
 
+### Natural spawn eligibility (2026-11-27)
+
+- Coven Witches can spawn on dark grass or other suitable ground at light 12 or higher after sky darkening. The configured one-in-N roll runs after clearance and light checks, and a weight of one skips the draw. Forge still enforces its ground placement and world-border rules.
+- Dream Spirits use the original Dream-only rule and minimum Y of 60. They require raw light above eight on grass and sky-adjusted light of at least 12 on sand. Red sand counts as the original sand block's red variant. The one-in-ten roll happens after the height, clearance, and inherited light checks, before the final substrate and raw light checks.
+- Hellhounds can spawn at any light level outside Peaceful when the space is clear. The original Hobgoblin check still requires grass and raw light above eight. The headless comparison exercises the registered Forge placement and position checks on real surfaces, using controlled site and roll inputs.
+- Clean Forge and copied Auram both matched all 220 cases on the exact reobfuscated JAR. The comparison uses 172 original cases and 48 red sand equivalents. The previous clean Forge package matched 164. All 639 required local GameTests passed, including dark grass, bright and dim stone, liquid clearance before the roll, and the bright Hellhound placement.
+
 ## Brazier and Spectral Binding (2026-11-20)
 
 - [x] Craft the Brazier with a Necromantic Stone, iron ingots and sticks. It accepts three separate ingredients by hand or automation and ignites with flint and steel or a redstone pulse. A water bottle or bucket empties it and returns the container. Invalid offerings fizzle. The comparator reflects the occupied slots.
@@ -3393,7 +3400,8 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare the [remaining creature-power casts](#remaining-creature-power-casts-2026-11-27). The original dedicated trace covers 24 buff, Squid and Creeper cases.
   - [x] Compare [passive creature-power and held-item movement](#passive-creature-powers-and-held-item-movement-2026-11-27). Clean Forge and copied Auram match all 42 original runtime cases and ten Branch and Brew Bag cases derived from the original code.
 - [ ] Entity AI/combat/spawn tuning parity.
-  - [ ] Compare the spawn eligibility for the four original natural spawners. The Coven Witch's inherited path weight accepts grass in darkness and sufficiently bright ground of other kinds. The current Forge predicate requires both the animal substrate tag and raw light above eight. The [Coven Witch](#familiars-and-covens-2026-11-19), [Hobgoblin](#hobgoblin-worship-and-breeding-2026-11-20), Hellhound and Dream milestones cover the registered group and weight rules.
+  - [x] Compare [natural spawn eligibility](#natural-spawn-eligibility-2026-11-27) for Coven Witches, Dream Spirits, Hobgoblins, and Hellhounds.
+  - [ ] Compare biome membership and effective spawn weights against the running 0.24.1 registration table. The original Forge registry has 45 Spirit entries across 30 biomes, including two in Forest Hills and three in Cold Taiga Hills. It includes 14 Coven Witch entries, 17 Hobgoblin entries, and one Hellhound entry. Read `build/qa-natural-spawn/native-registry/default.log`, then map the original biomes and grouped weights to their modern counterparts.
   - [x] Compare [Broom steering, bonus timing, contact, and client interpolation](#broom-movement-and-collisions-2026-11-27).
   - [x] Compare [Insanity apparition columns, pursuit, lifetime, rendering, and private cues](#insanity-apparition-behavior-2026-11-27).
   - [x] Compare [Horned Huntsman archery, teleport, wolves, and Horn summons](#horned-huntsman-trial-2026-11-20).

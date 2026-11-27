@@ -7,6 +7,7 @@ import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcherySounds;
+import art.arcane.witchery.world.WitcheryCreatureSpawns;
 import art.arcane.witchery.world.WitcheryDimensions;
 import art.arcane.witchery.world.migration.LegacyGameProfiles;
 import net.minecraft.ChatFormatting;
@@ -24,7 +25,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
@@ -113,9 +113,10 @@ public final class CovenWitch extends PathfinderMob implements RangedAttackMob {
 
     public static boolean canSpawn(EntityType<CovenWitch> type, ServerLevelAccessor level, MobSpawnType reason,
                                    BlockPos pos, RandomSource random) {
-        return level.getBlockState(pos.below()).is(BlockTags.ANIMALS_SPAWNABLE_ON)
-                && level.getRawBrightness(pos, 0) > 8
-                && random.nextInt(WitcheryServerConfig.COVEN_WITCH_SPAWN_WEIGHT.get()) == 0;
+        if (!WitcheryCreatureSpawns.passesTameableLightCheck(level, pos)
+                || !WitcheryCreatureSpawns.isClearForSpawn(level, type, pos)) return false;
+        int weight = WitcheryServerConfig.COVEN_WITCH_SPAWN_WEIGHT.get();
+        return weight == 1 || random.nextInt(weight) == 0;
     }
 
     @Override

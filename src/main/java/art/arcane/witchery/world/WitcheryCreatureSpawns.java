@@ -4,10 +4,25 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.shapes.Shapes;
 
 public final class WitcheryCreatureSpawns {
     private WitcheryCreatureSpawns() {
+    }
+
+    public static boolean passesTameableLightCheck(LevelReader level, BlockPos pos) {
+        // The original path weight accepted grass at any light and other ground at brightness 0.5.
+        return level.getBlockState(pos.below()).is(Blocks.GRASS_BLOCK) || level.getMaxLocalRawBrightness(pos) >= 12;
+    }
+
+    public static boolean isClearForSpawn(LevelReader level, EntityType<?> type, BlockPos pos) {
+        var bounds = type.getAABB(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
+        return level.isUnobstructed(null, Shapes.create(bounds)) && level.noCollision(bounds)
+                && !level.containsAnyLiquid(bounds);
     }
 
     public static boolean spawnNear(ServerLevel level, BlockPos near, Mob mob, int minRange, int maxRange,

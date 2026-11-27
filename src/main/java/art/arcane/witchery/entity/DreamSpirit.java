@@ -3,6 +3,7 @@ package art.arcane.witchery.entity;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryEntities;
+import art.arcane.witchery.world.WitcheryCreatureSpawns;
 import art.arcane.witchery.world.WitcheryDimensions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -73,9 +74,11 @@ public final class DreamSpirit extends PathfinderMob {
     public static boolean canSpawn(EntityType<DreamSpirit> type, ServerLevelAccessor level, MobSpawnType reason,
                                    BlockPos pos, RandomSource random) {
         if (!level.getLevel().dimension().equals(WitcheryDimensions.DREAM) || pos.getY() < 60) return false;
+        if (!WitcheryCreatureSpawns.passesTameableLightCheck(level, pos)
+                || !WitcheryCreatureSpawns.isClearForSpawn(level, type, pos) || random.nextInt(10) != 0) return false;
         var ground = level.getBlockState(pos.below());
         return (ground.is(Blocks.GRASS_BLOCK) || ground.is(Blocks.SAND) || ground.is(Blocks.RED_SAND))
-                && level.getRawBrightness(pos, 0) > 8 && random.nextInt(10) == 0;
+                && level.getRawBrightness(pos, 0) > 8;
     }
 
     public static boolean release(ServerLevel level, Vec3 position, Kind kind) {
