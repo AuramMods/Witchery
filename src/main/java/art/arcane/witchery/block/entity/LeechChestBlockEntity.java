@@ -9,6 +9,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -20,6 +21,15 @@ public final class LeechChestBlockEntity extends ChestBlockEntity {
 
     public LeechChestBlockEntity(BlockPos pos, BlockState state) {
         super(WitcheryBlockEntities.LEECH_CHEST.get(), pos, state);
+    }
+
+    @Override
+    protected void signalOpenCount(Level level, BlockPos pos, BlockState state, int previous, int current) {
+        super.signalOpenCount(level, pos, state, previous, current);
+        if (previous != current) {
+            level.updateNeighborsAt(pos, state.getBlock());
+            level.updateNeighborsAt(pos.below(), state.getBlock());
+        }
     }
 
     public void record(ServerPlayer player) {

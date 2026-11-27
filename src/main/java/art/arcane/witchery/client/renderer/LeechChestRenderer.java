@@ -67,10 +67,7 @@ public final class LeechChestRenderer implements BlockEntityRenderer<LeechChestB
     @Override
     public void render(LeechChestBlockEntity chest, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
         var state = chest.getBlockState();
-        var block = (ChestBlock) state.getBlock();
-        float openness = block.combine(state, chest.getLevel(), chest.getBlockPos(), true)
-                .apply(ChestBlock.opennessCombiner(chest)).get(partialTick);
-        renderModel(state.getValue(ChestBlock.FACING), openness, chest.renderedCount(), pose, buffers, light, overlay);
+        renderModel(state.getValue(ChestBlock.FACING), chest.getOpenNess(partialTick), chest.renderedCount(), pose, buffers, light, overlay);
     }
 
     public void renderModel(Direction direction, float openness, int sampleCount, PoseStack pose,

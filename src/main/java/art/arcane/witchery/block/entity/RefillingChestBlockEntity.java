@@ -26,24 +26,23 @@ public final class RefillingChestBlockEntity extends ChestBlockEntity {
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, RefillingChestBlockEntity chest) {
-        if (!(level instanceof ServerLevel server) || !level.dimension().equals(WitcheryDimensions.TORMENT)) return;
-        if (chest.ticks++ % REFILL_INTERVAL == 0 && chest.isEmpty()) {
-            chest.refill(server, pos);
-        }
+        if (!(level instanceof ServerLevel server)) return;
+        if (chest.ticks == 0) chest.tryRefill(server, pos);
+        else if (chest.ticks == Long.MAX_VALUE) chest.ticks = 1;
+        if (++chest.ticks % REFILL_INTERVAL == 0) chest.tryRefill(server, pos);
         level.getChunkAt(pos).setUnsaved(true);
     }
 
-    private void refill(ServerLevel level, BlockPos pos) {
+    private void tryRefill(ServerLevel level, BlockPos pos) {
+        if (!level.dimension().equals(WitcheryDimensions.TORMENT) || !isEmpty()) return;
+        int requested = 2 + level.random.nextInt(4);
         LootParams params = new LootParams.Builder(level).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos))
                 .create(LootContextParamSets.CHEST);
         List<ItemStack> rolls = level.getServer().getLootData().getLootTable(BuiltInLootTables.SIMPLE_DUNGEON).getRandomItems(params);
-        int count = Math.min(rolls.size(), 2 + level.random.nextInt(4));
+        int count = Math.min(rolls.size(), requested);
         for (int index = 0; index < count; index++) {
-            int slot;
-            do {
-                slot = level.random.nextInt(getContainerSize());
-            } while (!getItem(slot).isEmpty());
-            setItem(slot, rolls.remove(level.random.nextInt(rolls.size())));
+            ItemStack rolled = rolls.remove(level.random.nextInt(rolls.size()));
+            setItem(level.random.nextInt(getContainerSize()), rolled);
         }
     }
 
