@@ -144,9 +144,9 @@ public enum CreaturePower {
             case BAT, OWL -> buff(player, MobEffects.NIGHT_VISION, 400, 0);
             case SQUID -> {
                 if (hit instanceof EntityHitResult entity && entity.getEntity() instanceof LivingEntity victim) {
-                    victim.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 200));
                     float pitch = 1 / (level.random.nextFloat() * 0.4F + 1.2F) + 0.5F;
                     level.playSound(null, player, SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 1, pitch);
+                    victim.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 200));
                 }
             }
             case GHAST -> launchFire(player, true);

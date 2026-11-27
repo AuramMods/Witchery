@@ -2,6 +2,19 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Remaining creature-power casts (2026-11-27)
+
+- The new Squid regression records the full-volume fizz before the Blindness event. Pitch and the next world random draw match the original. A miss and Minecart hit stay quiet, and each attempted cast debits one infusion charge and one reserve charge.
+- The packaged clean Forge logged all 24 original activation cases and used the ordinary Witch's Hand controls in survival. The Squid cast blinded the supplied pig. The short Creeper cast spent one reserve charge and preserved wool with mob griefing disabled. The held cast spent two reserve charges and broke wool with mob griefing enabled. The fixture supplied the Hand, charge pools and temporary resistance. See `build/qa-creature-power-actions/{native/reference.log,clean/live.log,clean/server-live.log}`.
+- The clean Forge background client rejoined after a dedicated restart with the Hand, Creeper power, 18 infusion charges, seven reserve charges and the final mob griefing setting. See `build/qa-creature-power-actions/clean/restart.log`.
+- Copied Auram matched all 24 seeded cases and all three normal casts. The disposable server marks its temporary probe server-only in the Mods Optimizer override. The client waited for JEI's ingredient index before casting. See `build/qa-creature-power-actions/{comparison.log,pack/replay.log}`.
+- JAR reobfuscation and all 636 required local GameTests passed. The exact archive at `build/qa-creature-power-actions/candidate.jar` has SHA-256 `fc20648f31cf6a8e9b2ab60a44839efecaef450b942d80d4eee1f1110201750e`. See `build/qa-creature-power-actions/gametest.log`.
+
+## Creature-power movement reference (2026-11-27)
+
+- The original client handlers produced 28 deterministic motion and block-query cases in `build/qa-creature-movement/native/reference.log`. The original `PlayerRender` applies passive creature movement at client tick start. Light Hand movement runs from the original item use tick.
+- The packaged Forge movement event matched 19 of 25 nonriding cases within 0.000001. Speed and Light missed the ice at the original sampled height, and the Spider sampled one block below the original stone and glass ceilings. The packaged event's block positions and motion are in `build/qa-creature-movement/baseline/client-probe/replies.txt` and the comparison is in `build/qa-creature-movement/comparison-baseline.log`. The three riding cases and tick order still need live comparisons.
+
 ## Placed Brew Gas rendering (2026-11-27)
 
 - The original runtime emitted 44 vertices per cell and 572 across 13 cases. The previous packaged renderer emitted 24. The rebuilt Forge mesh matches the positions, UVs, flat tint, face light and both opacity values for open cells, every neighbor direction, opaque walls, glass, the default tint, an emitting block and the dark slab fallback. See `build/qa-brew-gas-mesh/native/reference.log`.

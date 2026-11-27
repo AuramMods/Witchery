@@ -6,6 +6,7 @@ import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryItems;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.sounds.SoundEvent;
@@ -18,6 +19,7 @@ import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
@@ -25,6 +27,7 @@ import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.PlayLevelSoundEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
+import net.minecraftforge.event.entity.living.MobEffectEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -167,15 +170,61 @@ public final class CreaturePowerCueTests {
             InfernalInfusion.release(player, 5);
             assertCue(helper, cues.remove(0), SoundEvents.NOTE_BLOCK_SNARE.value(), 0.5F, 1F / 3, 0.5F);
             helper.assertTrue(infusion.getInt("witcheryInfusionCharges") == 17, "Refused activations preserve infusion charge");
-
-            var pig = EntityType.PIG.create(level);
-            CreaturePower.SQUID.absorb(player);
-            CreaturePower.SQUID.use(player, 5, new EntityHitResult(pig));
-            assertCue(helper, cues.remove(0), SoundEvents.FIRE_EXTINGUISH, 1, 1.125F, 1.334F);
-            helper.assertTrue(pig.hasEffect(MobEffects.BLINDNESS) && cues.isEmpty(),
-                    "Squid power blinds its target and plays only the full-volume cue");
         } finally {
             MinecraftForge.EVENT_BUS.unregister(capture);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void squidCuePrecedesBlindnessAndMissesStayQuiet(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "SquidCaster"));
+        player.setPos(helper.absolutePos(new BlockPos(3, 2, 3)).getCenter());
+        var pig = EntityType.PIG.create(level);
+        var minecart = EntityType.MINECART.create(level);
+        InfusionEnergy.grant(player, InfernalInfusion.ID, 20);
+        CreaturePower.SQUID.absorb(player);
+
+        var sequence = new ArrayList<String>();
+        var cues = new ArrayList<PlayLevelSoundEvent.AtEntity>();
+        Consumer<PlayLevelSoundEvent.AtEntity> hear = cue -> {
+            if (cue.getEntity() == player) {
+                sequence.add("fizz");
+                cues.add(cue);
+            }
+        };
+        Consumer<MobEffectEvent.Added> apply = event -> {
+            if (event.getEntity() == pig && event.getEffectInstance().getEffect() == MobEffects.BLINDNESS) {
+                sequence.add("blindness");
+            }
+        };
+        MinecraftForge.EVENT_BUS.addListener(hear);
+        MinecraftForge.EVENT_BUS.addListener(apply);
+        try {
+            level.getRandom().setSeed(42);
+            CreaturePower.SQUID.use(player, 20, new EntityHitResult(pig));
+            helper.assertTrue(sequence.equals(List.of("fizz", "blindness")), "The Squid cue precedes the effect");
+            float pitch = 1.1706793F;
+            assertCue(helper, cues.get(0), SoundEvents.FIRE_EXTINGUISH, 1, pitch, pitch);
+            var blindness = pig.getEffect(MobEffects.BLINDNESS);
+            helper.assertTrue(blindness != null && blindness.getDuration() == 200 && blindness.getAmplifier() == 0
+                            && level.getRandom().nextInt(1000) == 763,
+                    "A living hit applies the original effect and advances the world random source by one float");
+
+            var miss = BlockHitResult.miss(player.position(), Direction.UP, player.blockPosition());
+            for (var aim : List.of(miss, new EntityHitResult(minecart))) {
+                level.getRandom().setSeed(42);
+                CreaturePower.SQUID.use(player, 20, aim);
+                helper.assertTrue(sequence.size() == 2 && level.getRandom().nextInt(1000) == 130,
+                        "A miss and a nonliving hit play no cue and consume no random draw");
+            }
+            var data = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
+            helper.assertTrue(data.getInt("witcheryInfusionCharges") == 17 && CreaturePower.charges(player) == 7,
+                    "Every use spends one infusion charge and one creature charge");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(hear);
+            MinecraftForge.EVENT_BUS.unregister(apply);
         }
         helper.succeed();
     }

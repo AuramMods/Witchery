@@ -493,6 +493,14 @@ The copied Auram survival replay reached both rank-ten transformations and compl
 - [x] Replay the nine original Ghast, Blaze, Pigman, Squid, and Skeleton defense cases. Clean Forge and copied Auram matched charge, hit cancellation, air supply and effect duration and amplifier, including earlier Fire Resistance and unaffordable defenses.
 - [x] Use the ordinary Witch's Hand release on two muted background clients with fixture-supplied powers. Both clients received the Ghast sound at the original volume of 2 for Blaze and 10 for Ghast, from the correct block centers at negative coordinates. The observer beyond 64 blocks received no launch cue. The two players kept their Infusion and creature reserves through a dedicated restart. [Minecraft 1.7.10 client metadata](https://piston-meta.mojang.com/v1/packages/ed5d8789ed29872ea2ef1c348302b0c55e3f3468/1.7.10.json)
 
+### Remaining creature-power casts (2026-11-27)
+
+The original dedicated server recorded 24 activation cases for the buffs, Squid and Creeper. Clean Forge and copied Auram matched every case for effects, sound and explosion parameters, reserve costs and the next world random draw. The other six power IDs are covered by the projectile and Enderman travel comparisons above. The Squid cue now precedes Blindness. A miss and Minecart hit stay quiet and still spend the original charge. Read `build/qa-creature-power-actions/comparison.log`.
+
+The muted clean Forge survival client used the supplied Hand and charge pools. It blinded a pig and received the fizz. The short Creeper cast spent one reserve charge and preserved the test wool with mob griefing disabled. The held cast spent two reserve charges and broke the wool with mob griefing enabled. Both spent one infusion charge. The dedicated restart kept Creeper power and the remaining 18 infusion and seven reserve charges. The new GameTest observes the exact cue and effect order and checks the seeded random sequence on all three Squid cases.
+
+The copied Auram survival client replayed the three casts after JEI initialized, with the same effect, charge balances and wool results. Mods Optimizer initially classified the temporary probe as client-only. The copied server's override classified it as server-only for the successful replay. Both client profiles ran muted and unfocused. Read `build/qa-creature-power-actions/{clean/live.log,clean/restart.log,pack/replay.log,gametest.log}`.
+
 ## Poppet Shelf (2026-11-20)
 
 - [x] Restore the recipe with four Attuned Stones, four Nether Brick blocks, and green wool. The muted client crafted and placed a shelf, opened its nine slots, inserted three bound wards and rendered all three on the shelf. A comparator responded to its contents.
@@ -3341,7 +3349,8 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare [Crystal Ball selection and periodic forecasts](#prediction-reading-and-courtship-comparison-2026-11-27), including Nether eligibility, duplicate saved readings, and repeated suitor courtship.
   - [x] Compare [Infernal creature acquisition](#infernal-creature-variants-2026-11-26) for all 25 original power IDs and modern entity splits.
   - [x] Compare [Infernal combat cues and defenses](#infernal-combat-cues-and-defenses-2026-11-26), including fireball launches, bow cue order, Fire Resistance, and Water Breathing.
-  - [ ] Compare the other creature power casts and their client movement. The original dedicated server trace in `build/qa-creature-power-actions/native/reference.log` covers 24 buff, Squid and Creeper cases. Squid plays its cue before applying Blindness and uses the world random source for the pitch. Compare the effect, cue, random sequence and costs on a living hit, a miss, and a Minecart. Verify the remaining buffs, both Creeper powers and the client movement cases.
+  - [x] Compare the [remaining creature-power casts](#remaining-creature-power-casts-2026-11-27). The original dedicated trace covers 24 buff, Squid and Creeper cases.
+  - [ ] Compare passive creature-power movement and the Light Hand's movement during use. The original client handlers recorded 28 cases in `build/qa-creature-movement/native/reference.log`. Include step height over ice, ceilings, wall climbing, flight, water input, held jump, riding and the order of the client tick.
 - [ ] Entity AI/combat/spawn tuning parity.
   - [x] Compare [Insanity apparition columns, pursuit, lifetime, rendering, and private cues](#insanity-apparition-behavior-2026-11-27).
   - [x] Compare [Horned Huntsman archery, teleport, wolves, and Horn summons](#horned-huntsman-trial-2026-11-20).
