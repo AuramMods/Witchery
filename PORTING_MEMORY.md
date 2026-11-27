@@ -2,6 +2,15 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Validation workflow for this project should use `./gradlew compileJava` (do not rely on `runClient` during routine scaffolding checks).
 
+## Lord of Torment phase and rewards (2026-11-26)
+
+- The original headless server verified five damage from melee and magic, eight from demonic damage, and immunity to explosions. A hit rejected by the damage cooldown still triggered the maze at 250 health. The old save recorded direct attackers and demonic casters. It skipped a distant archer whose ordinary arrow did the damage.
+- A single world-random floor went to the players in the original 32-by-64-by-32 box at the Lord's feet, including the near corner and a creative player, and to the saved attackers. The port retains the spectator exclusion. Requests now run on the original 20-tick world clock and play the original portal cue on departure and arrival.
+- A loaded dying Lord outside the maze still occupies the floor when its feet are on the upper boundary. The packaged check cleared that request, removed the old Lord, and admitted one 250-health Lord on a later crossing. The encounter uses the saved maze footprint and centers the spawn in the modern block.
+- The original's five seeded kills each generated two identical enchanted books. The same enchanted book level and both guaranteed ingredient rewards are restored. Forge currently applies its fire immunity to all vanilla damage with the fire tag. The original accepted direct unowned fire damage while protecting the Lord from environmental flames. The direct-fire difference and flight timing remain open. See `build/qa-torment-encounter/native/reference-ambient.log`.
+- Local Java 17 data generation, JAR reobfuscation, and all 584 required Forge GameTests passed. The reobfuscated `build/qa-torment-encounter/release.jar` has SHA-256 `a1857f341881501a07af4f35276a5e706687d593779a967fdb3d835c25c47402`. Both dedicated profiles passed all 41 encounter checks with the exact JAR. The earlier JAR failed 13 of the 33 comparison checks in each profile.
+- Each packaged profile passed three restart checks. The same 250-health Lord reopened at its saved floor and no duplicate appeared. See `clean-verified/`, `pack-verified/`, and `gametest.log` under `build/qa-torment-encounter/`.
+
 ## Leonard phase and Lost Soul wave comparison (2026-11-26)
 
 - The original server verified capped melee and Ice during the entrance, 30-health healing at entity ages ten and twenty, and protection from a dying Lost Soul in the corners of the 30-by-10-by-30 box. An idle Leonard did not gain a shield from a nearby Soul. New waves left one phase interval before claiming protection. Native data is in `build/qa-leonard-phase/native/reference-qualified.log`.

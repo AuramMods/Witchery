@@ -1,6 +1,7 @@
 package art.arcane.witchery.world;
 
 import art.arcane.witchery.entity.LordOfTorment;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
 import net.minecraft.core.BlockPos;
@@ -18,7 +19,6 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -36,7 +36,7 @@ public final class TormentTravel {
     }
 
     public static void requestBossEncounter(ServerPlayer player, int floor) {
-        if (!player.isAlive() || player.isSpectator() || player.isCreative()) return;
+        if (!player.isAlive() || player.isSpectator()) return;
         CompoundTag data = data(player);
         data.putInt(ACTION, ENTER_PRESET);
         data.putInt(FLOOR, floor);
@@ -52,12 +52,14 @@ public final class TormentTravel {
         CompoundTag data = data(player);
         if (data.getInt(ACTION) == 0) {
             boolean leave = player.level().dimension().equals(WitcheryDimensions.TORMENT)
-                    && player.getRandom().nextDouble() >= 0.05;
+                    && player.level().getRandom().nextDouble() >= 0.05;
             data.putInt(ACTION, leave ? LEAVE : ENTER);
         }
     }
 
     public static boolean process(ServerPlayer player) {
+        ServerLevel origin = player.serverLevel();
+        if (origin.getGameTime() % 20 != 0) return false;
         CompoundTag data = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
         int action = data.getInt(ACTION);
         if (player.isSpectator() || !player.isAlive() || action == 0) return false;
@@ -69,7 +71,7 @@ public final class TormentTravel {
         if (action == ENTER || action == ENTER_PRESET) {
             destination = player.server.getLevel(WitcheryDimensions.TORMENT);
             if (destination == null) return false;
-            floor = action == ENTER ? randomFloor(player.getRandom())
+            floor = action == ENTER ? randomFloor(origin.getRandom())
                     : Mth.clamp(data.getInt(FLOOR), 0, TormentMaze.LEVELS - 1);
             int mazeOffset = MazeLocation.resolve(destination).offset;
             BlockPos entry = new BlockPos(mazeOffset + TormentMaze.CENTER_X, TormentMaze.floorY(floor) + 1, TormentMaze.ENTRANCE_Z);
@@ -81,16 +83,14 @@ public final class TormentTravel {
             return false;
         }
         if (arrival == null || !destination.getWorldBorder().isWithinBounds(BlockPos.containing(arrival))) return false;
-        ServerLevel origin = player.serverLevel();
-        Vec3 start = player.position();
+        WitcheryNetwork.sendTormentPortalCue(origin, player.position());
         player.teleportTo(destination, arrival.x, arrival.y, arrival.z, player.getYRot(), player.getXRot());
         if (player.serverLevel() != destination) return false;
         player.connection.resetPosition();
         player.resetFallDistance();
         if (action == LEAVE) data.remove(FLOOR);
         if (action == ENTER_PRESET) MazeLocation.resolve(destination).queueBoss(floor);
-        transitionEffect(origin, start);
-        transitionEffect(destination, player.position());
+        WitcheryNetwork.sendTormentPortalCue(destination, player.position());
         return true;
     }
 
@@ -109,8 +109,12 @@ public final class TormentTravel {
     private static boolean spawnEncounterBoss(ServerLevel level, int offset, int floor) {
         BlockPos chamber = new BlockPos(offset + 9, TormentMaze.floorY(floor) + 1, 36);
         if (!level.areEntitiesLoaded(ChunkPos.asLong(chamber))) return false;
-        AABB bounds = new AABB(offset - 24, chamber.getY() - 1, 6, offset + 40, chamber.getY() + 5, 71);
-        if (!level.getEntitiesOfClass(LordOfTorment.class, bounds, LordOfTorment::isAlive).isEmpty()) return true;
+        int bottom = chamber.getY() - 1;
+        int top = chamber.getY() + 5;
+        for (var entity : level.getAllEntities()) {
+            if (entity instanceof LordOfTorment && !entity.isRemoved()
+                    && entity.getY() >= bottom && entity.getY() <= top) return true;
+        }
         LordOfTorment lord = WitcheryEntities.LORD_OF_TORMENT.get().create(level);
         if (lord == null) return false;
         lord.moveTo(chamber.getX() + 0.5, chamber.getY(), chamber.getZ() + 0.5, 0, 0);

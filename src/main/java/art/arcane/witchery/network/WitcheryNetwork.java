@@ -521,6 +521,10 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_PORTAL_PARTICLE_ID, LEGACY_ENDERMAN_TELEPORT_SOUND_ID, position, 1, 1, 16);
     }
 
+    public static void sendTormentPortalCue(ServerLevel level, Vec3 position) {
+        sendParticlesAround(level, LEGACY_PORTAL_PARTICLE_ID, LEGACY_ENDERMAN_TELEPORT_SOUND_ID, position, 1, 2, 16);
+    }
+
     public static void sendCauldronRaisingCue(ServerLevel level, Vec3 position) {
         sendParticlesAround(level, LEGACY_LARGE_SMOKE_PARTICLE_ID, LEGACY_NO_SOUND_ID, position, 0.5, 2, 16);
     }

@@ -2,6 +2,7 @@ package art.arcane.witchery.entity;
 
 import art.arcane.witchery.infusion.SymbolSpell;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcherySounds;
@@ -44,6 +45,7 @@ import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.HashSet;
@@ -99,19 +101,22 @@ public final class LordOfTorment extends Monster implements RangedAttackMob {
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        if (source.is(DamageTypeTags.IS_FIRE) || !isAlive()) return false;
-        if (source.getEntity() instanceof ServerPlayer player) attackers.add(player.getGameProfile().getName());
-        boolean damaged = super.hurt(source, Math.min(amount, source.is(WitcheryDamageTypes.DEMONIC) ? 8 : 5));
-        if (damaged && isAlive() && level() instanceof ServerLevel server
+        if (source.is(DamageTypeTags.IS_EXPLOSION) || !isAlive()) return false;
+        boolean demonic = source.is(WitcheryDamageTypes.DEMONIC);
+        Entity attacker = demonic ? source.getEntity() : source.getDirectEntity();
+        if (attacker instanceof ServerPlayer player) attackers.add(player.getGameProfile().getName());
+        boolean damaged = super.hurt(source, Math.min(amount, demonic ? 8 : 5));
+        if (!isRemoved() && level() instanceof ServerLevel server
                 && !server.dimension().equals(WitcheryDimensions.TORMENT) && getHealth() <= getMaxHealth() / 2) {
-            int floor = TormentTravel.randomFloor(random);
+            int floor = TormentTravel.randomFloor(server.getRandom());
+            AABB nearby = AABB.ofSize(position(), 32, 64, 32);
             for (ServerPlayer player : server.players()) {
-                if (getBoundingBox().inflate(16, 32, 16).intersects(player.getBoundingBox())
+                if (nearby.intersects(player.getBoundingBox())
                         || attackers.contains(player.getGameProfile().getName())) {
                     TormentTravel.requestBossEncounter(player, floor);
                 }
             }
-            TormentTravel.transitionEffect(server, position());
+            WitcheryNetwork.sendTormentPortalCue(server, position());
             discard();
         }
         return damaged;
@@ -179,12 +184,13 @@ public final class LordOfTorment extends Monster implements RangedAttackMob {
         super.dropCustomDeathLoot(source, looting, recentlyHit);
         List<Enchantment> choices = BuiltInRegistries.ENCHANTMENT.stream().toList();
         if (!choices.isEmpty()) {
-            Enchantment first = choices.get(random.nextInt(choices.size()));
-            Enchantment second = choices.get(random.nextInt(choices.size()));
-            spawnAtLocation(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(first, first.getMaxLevel())));
-            int low = Math.min(second.getMaxLevel(), second.getMinLevel() + 1);
-            int level = low + random.nextInt(second.getMaxLevel() - low + 1);
-            spawnAtLocation(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(second, level)));
+            Enchantment enchantment = choices.get(random.nextInt(choices.size()));
+            int high = enchantment.getMaxLevel();
+            int low = Math.min(high, enchantment.getMinLevel() + 3);
+            int level = low == high ? high : low + random.nextInt(high - low + 1);
+            var book = EnchantedBookItem.createForEnchantment(new EnchantmentInstance(enchantment, level));
+            spawnAtLocation(book);
+            spawnAtLocation(book.copy());
         }
         spawnAtLocation(WitcheryIngredient.DEMON_HEART.item());
         spawnAtLocation(WitcheryIngredient.BREW_SOUL_TORMENT.item());
