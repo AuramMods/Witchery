@@ -963,6 +963,8 @@ The modern registry also keeps `witchery:brew` and `witchery:brew2` as working p
 ## Potions / Effects (`WitcheryPotions`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/brewing/potions/WitcheryPotions.java`
 
+All 44 effects in the running 0.24.1 registry had status icon index `-1`. Forge's active atlas retains the 40 sprites the port supplies for the original effects and Depths. An effect without a sprite keeps its inventory text and skips its HUD slot. Resource-pack sprites follow the ordinary HUD visibility rules. The same missing-sprite rule applies to JEED's ingredient renderer.
+
 | Field | Legacy Key | Class |
 |---|---|---|
 | `PARALYSED` | `witchery:potion.paralysed` | `PotionParalysis` |

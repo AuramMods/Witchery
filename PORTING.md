@@ -12,6 +12,7 @@
 The copied Auram survival replay reached both rank-ten transformations and completed Torment, Mirror, Leonard, and Death using the fixture assistance recorded in each milestone. The November 27 multiplayer replay covers the original packet intents on an earlier package. The open work below tracks behavior and visuals against 0.24.1, specialized save fields, and the replay on the final JAR.
 
 - [ ] Close the behavior rows under Phase 4 against the 0.24.1 inventory. For each open row, list the legacy actions and the matching modern handlers, cite the existing comparisons, and record any missing behavior or explicit adaptation. Fix the uncovered cases and verify their normal gameplay entry points. The crafting grids, Circle Magic offerings, and fixed workstation registry comparisons are recorded below.
+  - [x] Close the Circle Magic behavior pass. The original recipe source matches all 96 IDs and 39 completion classes in the [completion comparison](PORTING_MANIFEST.md#circle-magic-completion-classes). Its 29 milestone links cover the handlers and their adaptations. The final package replay still exercises the normal Circle Magic path in survival.
   - [x] Account for the 169 Cauldron mixing keys and 15 fixed cast keys. The running 0.24.1 registry assigned all 184 entries to the action families listed in the manifest. The identity and cost comparison still matches all 168 flattened mixing entries.
   - [x] Compare Cauldron behavior against the action families. The recorded checks cover modifier order, direct and diluted exposure, and each ritual delivery path.
     - [x] Compare the application of all 57 potion and curse keys across base drinks, inversion, ordered boosts, liquid contact, masked gas contact, the splash boundary, and Taglock effect application. Clean Forge matched all 399 observations. Copied Auram matched 397 directly. Its vanilla Instant Health control reproduced the same Ars Elemental healing bonus as the two diluted Witchery samples.
@@ -1717,7 +1718,7 @@ The copied Auram survival replay reached both rank-ten transformations and compl
 - [x] Restore cauldron casting feedback from the original runtime. A completed Swiftness cast or Mutandis recipe sends the spell and fizz cue within eight blocks. The three rejected casts return their final offering and show separate colors. Removing altar power during an active gas cast empties the cauldron with the original interruption cue.
 - [x] Restore ordered custom brew names and tooltips. The original Forge server and rebuilt muted client agreed on Colored Water, fast drinks, all four dispersals, the three-effect conjunction, and modifier placement around the dispersal ingredient. The original inverted Sugar bottle labels Slowness as `3:00` and applies 1,800 ticks. The port preserves both values and reads a saved positive drink time. The packaged client also rendered an unchanged bottle saved on the preceding build and displayed the new modifier lines in all five supported locales.
 - [x] Drink the fast mixture through the normal use binding on the muted packaged client. It applied Speed II and Regeneration and returned the glass bottle. The same reobfuscated JAR completed a headless Taglock cast on copied Auram. All 343 local Forge GameTests passed.
-- [x] Complete the brew action, modifier, and cast comparisons. The [release checklist](#remaining-release-verification-2026-11-22) links the original and packaged runtime evidence.
+- [x] Complete the brew action, modifier, and cast comparisons. The [release checklist](#remaining-release-verification-2026-11-27) links the original and packaged runtime evidence.
 - [x] Match the original ingredient splash and the Gypsum and Quicklime smoke at the basin. Clean Forge and copied Auram captured the exact payloads and eight-block broadcast. A rejected Hell Gate now returns its Tongue of Dog with the failure cue and no ingredient splash. Both dedicated restarts kept the cleared vessel, rejected mixture, and refund.
 
 ## Death and Armor Cauldron Brews (2026-11-21)
@@ -2776,6 +2777,16 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 - A muted background survival client drank a supplied Witchery Brew of Insanity made from the original ingredient sequence and opened the inventory with the normal key. The label changed at the duration boundary and resumed from the saved timer after a dedicated restart.
 - Copied Auram opened Big Inventory's BackpackScreen with JEI running. JEED's compact tooltip matched all 66 duration and language combinations at both tested widths. The label changed as the survival player waited, and the tooltip retained its timer, color and harmful-effect details. All 632 local Forge GameTests passed on the exact JAR.
 
+### Status-effect icons and names (2026-11-27)
+
+- Witchery 0.24.1 registered 44 effects with status icon index `-1`. The original Minecraft client draws an icon when that index is zero or higher. Speed and Poison retained their vanilla indices in the reference run.
+- The modern atlas supplies 40 Witchery sprites through 13 texture files and 27 aliases. The earlier JAR drew the missing-texture tile for Enslaved, Mortal Coil, Spiked, Sprouting, and Wrapped in Vine. Those effects keep their inventory rows and hover text. Forge skips their missing sprite and HUD tile, and JEED skips the missing sprite in its effect renderer.
+- Restore all 44 released English effect names and all 43 released Italian names. The active Insanity and Colorful inventory text still follows the remaining duration and the dye, respectively. Mortal Coil shows its released name in both languages.
+- The clean Forge comparison checked all 45 Witchery effects and both vanilla controls in the wide inventory panel, compact hover display, and HUD with both icon flags. A muted background survival client drank fixture-supplied Insanity, Chilled, and Sprouting brews, then reopened the effects after a dedicated restart. The stock atlas skipped the Sprouting tile, and a disposable resource pack supplied a working icon after the restart.
+- Copied Auram repeated the three survival drinks on the same JAR. Big Inventory opened its compact effect panel, and JEED drew the expected sprites and tooltip text for the 45 Witchery effects and three controls. The recipe ingredient renderer produced the expected result for all 48 effects. The muted client used OpenAL No Output and never became the active window.
+- An isolated JEED profile started with Italian selected. Its compact inventory, HUD, and ingredient display matched the atlas for all 47 tested effects, and the tooltip used the released Italian titles with the ordinary fallback.
+- Local Java 17 data generation, JAR reobfuscation, and all 632 required Forge GameTests passed. The tested package is `build/qa-effect-icons/release.jar` with SHA-256 `a18f5a571ff4216f9cc643b24cb7b237a01859a2ca3eedd1490fa3314bfe18cb`.
+
 ## Auram Pack Validation (2026-11-20)
 
 - [x] Reproduce the Evolved Mekanism 1.2.1-fix3 startup crash in the matched Auram profile before adding Witchery. Both pack runs reported the null `QIODriveTier` during Evolved Mekanism construction.
@@ -3034,7 +3045,7 @@ The importer covers Witch's Ovens, eight crop blocks, the altar and workstations
 
 ## Initial Port Snapshot (2026-02-09)
 
-See the current [release checklist](#remaining-release-verification-2026-11-22) and the [dimension runtime checks](#phase-3---runtime-systems) for progress since this snapshot.
+See the current [release checklist](#remaining-release-verification-2026-11-27) and the [dimension runtime checks](#phase-3---runtime-systems) for progress since this snapshot.
 
 - Legacy source inventory completed for blocks, items, fluids, entities, key registries, and bootstrap flow.
 - Manifest + durable memory created.
@@ -3205,7 +3216,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
 - [x] Restore Hobgoblin mining, worship, crouch, riding, and attack poses. Mog carries her bow in one hand and her skirt and chest stay independent of the torso. Gulg's strike uses the original attack counter and head yaw. The muted packaged client matched 1,386 pose values and all 864 vertex and texture coordinate samples across the three models.
 - [ ] Complete the source and runtime comparison for the remaining models, less common block states, and entity and armor poses.
   - [x] Compare the [rotating inventory text for the timed Insanity potion](#insanity-inventory-text-2026-11-27) in both inventory layouts and after restart.
-  - [ ] Compare status-effect icons in the inventory and HUD. Check the original effects without icons and the port's existing atlas sprites.
+  - [x] Compare [status-effect icons and names](#status-effect-icons-and-names-2026-11-27) in the inventory and HUD.
   - [x] Compare the [Mystic Branch projectile sprite, tints, scale, and camera poses](#mystic-branch-projectile-rendering-2026-11-27) along with normal survival casting and a saved projectile.
   - [x] Restore the [Dark Mark's original skull placement and smoke](#dark-mark-rendering-and-creature-response-2026-11-27), with a comparison of six native poses.
   - [x] Restore the [Mirror apparition's original head pivot, scale, and opacity](#mirror-apparition-parity-2026-11-27), with measured vertex positions during head and body rotation.
@@ -3265,7 +3276,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-22) 
   - [x] Compare the fixed Kettle, Distillery, Spinning Wheel, and Brazier registries and exercise their interactions and saved state in the workstation milestones above.
   - [x] Compare [Kettle bottling bonuses and cues](#kettle-bottling-bonuses-and-cues-2026-11-27) with the original world rolls and saved servings.
   - [x] Complete the Cauldron effect, modifier, and cast comparisons in the release checklist.
-- [ ] Ritual and circle magic parity.
+- [x] Ritual and circle magic parity.
   - [x] Map the 39 original completion classes across all 96 registered rites to their modern handlers and recorded evidence. The [manifest](PORTING_MANIFEST.md#circle-magic-completion-classes) also records the rings and offering sequences.
   - [x] Compare the [19 standard and talisman item results](#circle-magic-item-results-2026-11-26) after the last offering.
   - [x] Compare [Spectral Stone and Fetish spirit binding](#circle-magic-spirit-binding-2026-11-26), including the hidden Death combination.

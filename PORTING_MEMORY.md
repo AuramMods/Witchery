@@ -2,6 +2,16 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Status-effect icons and names (2026-11-27)
+
+- All 44 effects in the original dedicated runtime reported icon index `-1`. Speed and Poison reported zero and six. The original client bytecode uses the sign of that field to decide whether to draw the icon. See `build/qa-effect-icons/native/{reference.log,vanilla-potion.txt}`.
+- The preceding Forge atlas resolved 40 Witchery sprites from 13 texture files and 27 aliases. It returned the missing texture for Enslaved, Mortal Coil, Spiked, Sprouting, and Wrapped in Vine. Forge's client effect extension omits those missing sprites and their HUD tiles while retaining the full and compact inventory rows. It uses the active atlas, so an assigned resource-pack sprite draws normally. JEED applies the same rule to its rendered effect ingredients.
+- Compare the released title strings in `build/qa-effect-icons/native/effect-names.json`. English and Italian carry all 44 and 43 original labels, respectively. The runtime inventory continues to use the dye name and the revolving Insanity labels for their two specialized effects.
+- The muted clean Forge client checked both inventory layouts and both HUD icon flags for 45 Witchery effects, Speed, and Poison. A survival player drank three fixture-supplied brews. Insanity and Chilled used the stock sprites. Sprouting retained its saved duration and icon flag across restart. A fixture resource pack supplied its sprite on the second launch. Read `build/qa-effect-icons/clean/{live.log,override.log}`.
+- Copied Auram passed the three normal drinks and the compact inventory, HUD and JEED ingredient matrix for all 48 effects, including Speed, Poison and Vitality. The first probe failed during startup. The retry loaded the same package and completed with the window hidden and unfocused and with OpenAL No Output. Read `build/qa-effect-icons/auram/{live.log,client-probe/replies.txt}`.
+- JEED reads the language loaded through the game options for ordinary effect titles. The Italian check used a separate profile with `lang:it_it` and the same JEED version. It passed all 47 effect and control cases with the original Italian labels and fallback. Read `build/qa-effect-icons/jeed/client-probe/replies.txt`.
+- Local Java 17 data generation, JAR reobfuscation, and all 632 required GameTests passed on the package at `build/qa-effect-icons/release.jar`, SHA-256 `a18f5a571ff4216f9cc643b24cb7b237a01859a2ca3eedd1490fa3314bfe18cb`.
+
 ## Insanity inventory text (2026-11-27)
 
 - The original release's `PotionInsanity.renderInventoryEffect` selects one of seven labels from remaining duration divided by 60, modulo seven. The localized asset provides English and Italian strings. See `build/qa-insanity-inventory/{native-bytecode.txt,reference.json}`.
