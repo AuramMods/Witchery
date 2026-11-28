@@ -36,6 +36,7 @@ Audit each remaining behavior family against the original inventory before build
   - [ ] Close the remaining visual cases in Phase 2 using the registered items, blocks, entities, and equipment as the inventory. Record the remaining differences in models, states, and poses with their packaged client checks.
   - [x] [Restore Dream's inheritance of the Overworld generator](#dream-terrain-inheritance-2026-11-28). Fresh worlds follow the selected terrain, earlier saves keep their recorded Dream generator, and a higher-priority datapack can supply its own Dream terrain.
 - [ ] Close the specialized save migration cases under Legacy Save Fixtures. Use the original entity, block-entity, player, and item serializers to identify fields still lacking a disposition. Reuse the completed registry and subtype coverage, then verify the remaining active state and nested payloads through 1.7.10 import or ordinary 1.20.1 loading as applicable. Save and reopen the fixtures.
+  - [x] Map all 34 original [block-entity save overrides](PORTING_MANIFEST.md#block-entity-serializer-inventory) to their Forge readers and existing verification. Recover [mounted skull state](#mounted-skull-state-in-earlier-forge-saves-2026-11-28) on an ordinary load of a converted chunk.
   - [x] Recover [the player's saved dimension and Forge respawn point](#stored-player-dimension-and-respawn-point-2026-11-27) when an earlier port save still carries numeric IDs or the original spawn list.
   - [x] Recover [named vanilla stacks with original metadata and wear](#named-vanilla-stacks-with-original-metadata-and-wear-2026-11-27) in earlier player, container, and entity records without a registry snapshot.
   - [x] Preserve [native and converted potion effect identities](#effect-ids-in-native-and-converted-saves-2026-11-27) in active effects, pending death effects, potion stacks, and saved vanilla potion carriers.
@@ -2692,6 +2693,14 @@ The muted Auram client rejoined after the headless dedicated-server restart and 
 - [x] Open a single-player copy with a mixed owner record inside Mirror. The muted background client recovered the original vampire rank eight and blood reserve 34, kept the current 888 blood and second cooldown, and used the chat chant to return to the saved entrance. A full client restart kept the recovered inventory alongside an apple added after the first save, confirming the backup did not replay.
 - [x] Import and reopen nine [Infernal creature variants](#infernal-creature-variants-2026-11-26). Both packaged profiles preserved their names, UUIDs, vanilla or Witchery identities, and new bindings. The player reopened with the shared Horse reserve.
 - [ ] Expand migration to other block and subtype data and specialized entity and block-entity fields. Add fixtures before calling the migration complete.
+
+### Mounted skull state in earlier Forge saves (2026-11-28)
+
+- The Witchery 0.24.1 server serialized five mounted skulls at `(113–127, 190, 121)`. The original tiles supplied two active skulls with rotations 7 and 12, a dormant skull with rotation 13, a west-mounted Hellhound trophy and a floor Hellhound trophy with rotation 11. Clean Forge imported all five and kept the states through an ordinary dedicated restart.
+- A copy in the current chunk format retained the original `SkullType` and `Rot` bytes and omitted one or more current properties at four positions. The previous JAR defaulted those four positions. The port now fills missing properties from the tile at that position and marks the repaired chunk to save. An explicit `hellhound:false` keeps a floor Wolf Head while its missing rotation is recovered. A fully specified dormant Alluring Skull keeps both its current activation and rotation.
+- Clean Forge and copied Auram reopened the mixed chunk without a captured registry. Both saved all five expected states in the section palette and replaced the old tile fields with current tile records. Direct region reads verified the saved states before the servers restarted.
+- After restart, both profiles kept all five states. Using the Necromantic Stone returned the recovered active skull as an item and activated the separately saved dormant skull. All 725 required Forge GameTests passed locally.
+- The regression exercises a packed section that grows from four to five bits per entry, a single-entry section, a negative section Y, and an untouched cell that shares a legacy palette entry. A mismatched tile cannot change the underlying block.
 
 ### Pending Witchery village pieces in imported worlds (2026-11-28)
 

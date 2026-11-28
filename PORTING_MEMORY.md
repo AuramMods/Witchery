@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Mounted skull state in earlier Forge saves (2026-11-28)
+
+- Ordinary Forge chunk loads recover missing Alluring Skull and Wolf Head properties from `SkullType` and `Rot`. Current properties stay authoritative. The repaired section is repacked and marked for saving. The manifest accounts for all 34 original [block-entity save overrides](PORTING_MANIFEST.md#block-entity-serializer-inventory).
+- The exact reobfuscated package imported and restarted all five original skulls on clean Forge. Clean Forge and copied Auram also repaired the mixed save without a captured registry, saved the recovered properties to disk, and passed Necromantic Stone use after restart. See [mounted skull migration](PORTING.md#mounted-skull-state-in-earlier-forge-saves-2026-11-28).
+- All 725 required Forge GameTests passed with Java 17. The tested JAR has SHA-256 `05ff71eff61fbae6b67827a6a5eb75362079da4cdae93afbd1ec73dbf39d3fc7`. Fixtures and region checks are under `build/qa-mounted-skull-saves/`.
+
 ## Poltergeist container priority and unopened loot (2026-11-28)
 
 - The original server chose the nearest occupied chest and used registration order for ties. Clean Forge and copied Auram matched both placement orders. The port checks the original sixteen-block sphere before reading inventories and stops at the first occupied candidate. The two unselected loot chests kept their seeds across dedicated restarts. See the [container comparison](PORTING.md#poltergeist-container-priority-and-unopened-loot-2026-11-28).

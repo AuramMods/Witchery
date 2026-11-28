@@ -51,6 +51,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.util.SimpleBitStorage;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.datafix.PackedBitStorage;
 import net.minecraft.util.datafix.fixes.BlockStateData;
@@ -199,6 +200,73 @@ public final class LegacyChunkUpgrade {
                 }
             }
         }
+    }
+
+    public static void restoreMountedSkullStates(CompoundTag chunk) {
+        Map<Integer, List<CompoundTag>> bySection = new HashMap<>();
+        for (Tag entry : chunk.getList("block_entities", Tag.TAG_COMPOUND)) {
+            var tile = (CompoundTag) entry;
+            if (!belongsTo(ResourceLocation.tryParse(tile.getString("id")), SKULLS)
+                    || !tile.contains("SkullType", Tag.TAG_ANY_NUMERIC) && !tile.contains("Rot", Tag.TAG_ANY_NUMERIC)) continue;
+            BlockPos pos = savedPosition(tile);
+            if (pos.getX() >> 4 != chunk.getInt("xPos") || pos.getZ() >> 4 != chunk.getInt("zPos")) continue;
+            bySection.computeIfAbsent(pos.getY() >> 4, ignored -> new ArrayList<>()).add(tile);
+        }
+        if (bySection.isEmpty()) return;
+        for (Tag entry : chunk.getList("sections", Tag.TAG_COMPOUND)) {
+            var section = (CompoundTag) entry;
+            var tiles = bySection.get(section.getInt("Y"));
+            if (tiles != null && restoreMountedSkullSection(section.getCompound("block_states"), tiles)) {
+                chunk.putBoolean("shouldSave", true);
+            }
+        }
+    }
+
+    private static boolean restoreMountedSkullSection(CompoundTag blocks, List<CompoundTag> tiles) {
+        var palette = blocks.getList("palette", Tag.TAG_COMPOUND);
+        if (palette.isEmpty()) return false;
+        int bits = Math.max(4, Mth.ceillog2(palette.size()));
+        var storage = new SimpleBitStorage(bits, SECTION_SIZE, palette.size() == 1 ? null : blocks.getLongArray("data"));
+        boolean changed = false;
+        for (var tile : tiles) {
+            BlockPos pos = savedPosition(tile);
+            int index = (pos.getY() & 15) << 8 | (pos.getZ() & 15) << 4 | (pos.getX() & 15);
+            int previous = storage.get(index);
+            var state = palette.getCompound(previous);
+            if (!state.getString("Name").equals(tile.getString("id"))) continue;
+
+            var properties = state.getCompound("Properties").copy();
+            String type = state.getString("Name").equals("witchery:wolfhead")
+                    ? WolfHeadBlock.HELLHOUND.getName() : AlluringSkullBlock.ACTIVE.getName();
+            if (!properties.contains(type, Tag.TAG_STRING) && tile.contains("SkullType", Tag.TAG_ANY_NUMERIC)) {
+                properties.putString(type, Boolean.toString(tile.getInt("SkullType") == 1));
+            }
+            String rotation = MountedSkullBlock.ROTATION.getName();
+            if (!properties.contains(rotation, Tag.TAG_STRING) && tile.contains("Rot", Tag.TAG_ANY_NUMERIC)) {
+                String facing = properties.getString(MountedSkullBlock.FACING.getName());
+                properties.putString(rotation, facing.isEmpty() || facing.equals("up") ? Integer.toString(tile.getInt("Rot") & 15) : "0");
+            }
+            if (properties.equals(state.getCompound("Properties"))) continue;
+
+            // A palette entry can be shared by other skulls. Change only the position of the saved tile.
+            var restored = state.copy();
+            restored.put("Properties", properties);
+            int replacement = palette.indexOf(restored);
+            if (replacement < 0) {
+                replacement = palette.size();
+                palette.add(restored);
+                int newBits = Math.max(4, Mth.ceillog2(palette.size()));
+                if (newBits != storage.getBits()) {
+                    var expanded = new SimpleBitStorage(newBits, SECTION_SIZE);
+                    for (int cell = 0; cell < SECTION_SIZE; cell++) expanded.set(cell, storage.get(cell));
+                    storage = expanded;
+                }
+            }
+            storage.set(index, replacement);
+            changed = true;
+        }
+        if (changed) blocks.putLongArray("data", storage.getRaw());
+        return changed;
     }
 
     private static void restoreLegacyTileTypes(CompoundTag level, LegacyWorldIds ids) {
