@@ -1,13 +1,13 @@
 package art.arcane.witchery.item;
 
 import art.arcane.witchery.infusion.OtherwhereInfusion;
+import art.arcane.witchery.network.WitcheryNetwork;
+import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -51,7 +51,7 @@ public final class DivinerItem extends Item {
         if (!(level instanceof ServerLevel server) || !(user instanceof ServerPlayer player)) return;
         if (!(OtherwhereInfusion.rayTrace(player, 6) instanceof BlockHitResult hit)
                 || hit.getType() != BlockHitResult.Type.BLOCK || hit.getDirection() != Direction.UP) {
-            server.playSound(null, player, SoundEvents.NOTE_BLOCK_SNARE.value(), SoundSource.PLAYERS, 1, 1);
+            WitcherySounds.playLegacyPlayerCue(player, SoundEvents.NOTE_BLOCK_SNARE.value(), 0.5F);
             player.stopUsingItem();
             return;
         }
@@ -62,13 +62,7 @@ public final class DivinerItem extends Item {
         boolean found = state.is(fluidBlock) && state.getFluidState().isSource();
         if (!found && !state.is(Blocks.BEDROCK) && sample.getY() > server.getMinBuildHeight() + 1) return;
 
-        double x = surface.getX() + 0.5;
-        double y = surface.getY() + 1;
-        double z = surface.getZ() + 0.5;
-        server.sendParticles(found ? ParticleTypes.ENCHANTED_HIT : ParticleTypes.SMOKE, x, y, z,
-                8, 0.5, 0.5, 0.5, 0);
-        server.playSound(null, x, y, z, found ? SoundEvents.EXPERIENCE_ORB_PICKUP : SoundEvents.NOTE_BLOCK_SNARE.value(),
-                SoundSource.PLAYERS, 1, 1);
+        WitcheryNetwork.sendDivinerCue(server, surface, found);
         InteractionHand hand = player.getUsedItemHand();
         player.stopUsingItem();
         // The original rod could still complete one scan at its maximum damage.

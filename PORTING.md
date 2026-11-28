@@ -1417,7 +1417,7 @@ On clean Forge, the player selected and activated Bat form through ordinary cont
 ## Poppet Shelf Compass (2026-11-22)
 
 - [x] Craft the original `witchery:shelfcompass` with gold, diamonds, a clock, and a Null Catalyst. Restore the original name and all six item sprites.
-- [x] Read the nearest loaded Poppet Shelf in the holder's current world. The five signal bands end strictly before 8, 16, 32, 64, and 128 horizontal blocks. The model uses the zero-signal sprite without a holder. The client refreshes its reading once per second while rendering the compass.
+- [x] Read the nearest loaded Poppet Shelf in the holder's current world. The five signal bands end strictly before 8, 16, 32, 64, and 128 horizontal blocks. Each carried stack rolls for a refresh once per client inventory tick. The model uses the zero-signal sprite without a holder.
 - [x] Verify the recipe, exact boundaries, nearest of two shelves, removal, and absent chunks in Forge GameTests. Inspect the packaged JAR for all six original sprites and the complete model override chain.
 - [x] Import an original Forge chest holding a two-item compass stack with legacy icon value 5 and a custom tag. Both compasses and the tag survived a headless restart. The display uses the current reading after migration. The original shelf gave the correct reading in every band on both launches, and removing it reset the next reading to zero.
 - [x] Reproduce the optional Waystone activation failure. One immediate replay had both offerings alive while the level entity lookup was still empty. All 40 replays with five setup ticks passed, and the two checked-in fixtures now assert activation before checking the offering steps.
@@ -1462,6 +1462,13 @@ On clean Forge, the player selected and activated Bat form through ordinary cont
 - [x] Save an original Forge 1.7.10 chest containing both diviners. The importer resolved the save's numeric item IDs and moved the original wear of 17 and 42 into modern item data. Both custom tags and wear values remained after a normal restart of the reobfuscated Forge 47.4.10 JAR.
 - [x] Regenerate recipes and reobfuscate the JAR using Java 17. The tested JAR has SHA-256 `725af9d326d6d85d4579693dbfa75a3a23314206020b104291a85d120285d6f0`.
 - [x] Diagnose the Coven Witch visit replacement failure in the checked-in suite. Nine of 56 immediate replays observed the correctly owned witch join the level before the test's entity lookup could see it. Give the forced test chunks five setup ticks. All 56 replays then passed with the same gameplay assertions.
+
+### Shelf Compass refresh and Diviner scan cues (2026-11-27)
+
+- [x] Restore the Shelf Compass's one-in-twenty client inventory roll for each stack. The packaged client matched 512 original ticks, all 23 refreshes and the next random values. Two stacks in one player's inventory can show different readings until their next refreshes. Rendering keeps the current reading, and a dropped compass returns to the neutral model.
+- [x] Compare the Water and Lava Diviners against the released server's four source and flowing-fluid scans. Valid completion sends Magic Crit and the orb for a source, or legacy smoke and the snare at bedrock. Both packets use width and height 0.5 above the aimed surface and reach viewers strictly within eight blocks. Invalid aim plays one snare at the user and preserves wear.
+- [x] Verify normal survival use on a reobfuscated clean Forge server with two hidden, muted clients. A viewer at 7.75 blocks received the water cue and missed it at exactly eight. Both clients received the bedrock cue after the rod scanned past flowing water. A lava source increased saved wear from 41 to 42. Copied Auram passed both rod types against sources and bedrock, the original snare roll, and 512 server inventory ticks with the Shelf Compass. All 659 local Forge GameTests passed.
+- [x] Reopen the clean Forge test world after a dedicated restart. The Lava Diviner retained 42 wear and its custom tag. The saved Shelf Compass retained its custom tag and displayed the loaded shelf at signal five.
 
 ## Atlas and Journal Navigation (2026-11-22)
 
@@ -3505,7 +3512,8 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare [item stack and anvil behavior](#item-stack-and-anvil-behavior-2026-11-27) for all original IDs and sampled subtypes, with live anvil, crafting, and food interactions.
   - [x] Compare [Taglock collection](#taglock-collection-2026-11-27) for stealth chances, kits, sample sources, and cue delivery.
   - [x] Compare the [Player Compass's client inventory update, directional frames and handling of unloaded targets](#player-compass-tracking-2026-11-27) with the original.
-  - [ ] Compare the Poppet Shelf Compass's original random refresh and the Water and Lava Diviners' success, failure, and invalid-aim cues.
+  - [x] Compare the [Poppet Shelf Compass's original random refresh and the Water and Lava Diviners' cues](#shelf-compass-refresh-and-diviner-scan-cues-2026-11-27).
+  - [ ] Compare the original Ingredient drinks and edible brews with their Forge completion effects, cues, and stack changes.
   - [x] Compare melee modifiers, sword guards, and Boline harvest against the [melee tool measurements](#melee-tools-and-boline-harvesting-2026-11-26).
   - [x] Restore the Crossbow's [launch position, velocity, spread, and firing cue](#crossbow-launch-physics-2026-11-27). The seeded original replay covers four draw durations and the three Splitting trajectories with a moving shooter.
   - [x] Compare [Bolt flight in air and water](#crossbow-bolt-flight-in-water-2026-11-27), including the original wet cell bounds, water drag, current, water entry and exit, and stone impact.

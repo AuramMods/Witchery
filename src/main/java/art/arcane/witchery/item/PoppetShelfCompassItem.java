@@ -1,15 +1,27 @@
 package art.arcane.witchery.item;
 
 import art.arcane.witchery.block.entity.PoppetShelfBlockEntity;
+import art.arcane.witchery.client.PoppetShelfCompassProperty;
 import net.minecraft.core.SectionPos;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
 
 public final class PoppetShelfCompassItem extends Item {
     private static final int RANGE = 128;
 
     public PoppetShelfCompassItem() {
         super(new Properties());
+    }
+
+    @Override
+    public void inventoryTick(ItemStack stack, Level level, Entity holder, int slot, boolean held) {
+        if (level.isClientSide() && level.random.nextInt(20) == 0) {
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> PoppetShelfCompassProperty.sample(stack, level, holder));
+        }
     }
 
     public static int signal(Level level, double x, double z) {

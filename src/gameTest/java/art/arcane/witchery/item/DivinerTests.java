@@ -9,6 +9,8 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -24,11 +26,15 @@ import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.PlayLevelSoundEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
+import java.util.ArrayList;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
@@ -106,9 +112,11 @@ public final class DivinerTests {
                 helper.assertTrue(player.isUsingItem() && rod.getDamageValue() == 0,
                         "Stone, the wrong fluid, and running water do not end the search");
             }
+            level.random.setSeed(42);
             water.onUseTick(level, player, rod, rod.getUseDuration() - 3);
             helper.assertTrue(!player.isUsingItem() && rod.getDamageValue() == 1,
                     "The water source ends the scan with one point of wear");
+            helper.assertTrue(level.random.nextInt(1000) == 130, "The completion cue leaves sound sampling to each client");
             helper.succeed();
         } finally {
             player.discard();
@@ -126,11 +134,23 @@ public final class DivinerTests {
         var lava = WitcheryItems.getRequired("divinerlava").get();
         var rod = new ItemStack(lava);
         player.setItemInHand(InteractionHand.OFF_HAND, rod);
+        var cues = new ArrayList<PlayLevelSoundEvent.AtEntity>();
+        Consumer<PlayLevelSoundEvent.AtEntity> cueListener = event -> {
+            if (event.getEntity() == player) cues.add(event);
+        };
+        MinecraftForge.EVENT_BUS.addListener(cueListener);
         try {
             player.setXRot(-90);
             lava.use(level, player, InteractionHand.OFF_HAND);
+            level.random.setSeed(42);
             lava.onUseTick(level, player, rod, rod.getUseDuration());
             helper.assertTrue(!player.isUsingItem() && rod.getDamageValue() == 0, "Bad aim cancels without wear");
+            helper.assertTrue(cues.size() == 1, "Bad aim plays one cue at the user");
+            var cue = cues.get(0);
+            helper.assertTrue(cue.getSound() != null && cue.getSound().value() == SoundEvents.NOTE_BLOCK_SNARE.value()
+                            && cue.getSource() == SoundSource.RECORDS && cue.getNewVolume() == 0.5F
+                            && Math.abs(cue.getNewPitch() - 0.36662757F) < 0.000001F && level.random.nextInt(1000) == 248,
+                    "Bad aim uses the original mixer, volume and world pitch draw");
             player.setXRot(90);
             lava.use(level, player, InteractionHand.OFF_HAND);
             lava.onUseTick(level, player, rod, rod.getUseDuration());
@@ -151,6 +171,7 @@ public final class DivinerTests {
                     "The next find breaks the spent rod in the offhand");
             helper.succeed();
         } finally {
+            MinecraftForge.EVENT_BUS.unregister(cueListener);
             player.discard();
         }
     }

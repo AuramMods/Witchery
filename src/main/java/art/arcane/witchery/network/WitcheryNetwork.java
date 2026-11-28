@@ -379,6 +379,11 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_SPLASH_PARTICLE_ID, LEGACY_WATER_SPLASH_SOUND_ID, new Vec3(x, y, z), 0.5D, 0.5D, 5);
     }
 
+    public static void sendDivinerCue(ServerLevel level, BlockPos surface, boolean found) {
+        sendParticlesAround(level, found ? LEGACY_MAGIC_CRIT_PARTICLE_ID : LEGACY_SMOKE_PARTICLE_ID,
+                found ? LEGACY_ORB_SOUND_ID : LEGACY_SNARE_SOUND_ID, Vec3.atBottomCenterOf(surface.above()), 0.5, 0.5, 8);
+    }
+
     public static void sendCauldronIngredientSplash(ServerLevel level, BlockPos pos) {
         sendParticlesAround(level, LEGACY_SPLASH_PARTICLE_ID, LEGACY_WATER_SPLASH_SOUND_ID,
                 Vec3.atBottomCenterOf(pos).add(0, 0.6, 0), 0.5, 0.5, 8);

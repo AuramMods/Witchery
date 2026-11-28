@@ -3,35 +3,34 @@ package art.arcane.witchery.client;
 import art.arcane.witchery.item.PoppetShelfCompassItem;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.item.ItemPropertyFunction;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-final class PoppetShelfCompassProperty implements ItemPropertyFunction {
-    private final Map<LivingEntity, Reading> readings = new WeakHashMap<>();
-    private WeakReference<ClientLevel> lastWorld = new WeakReference<>(null);
+public final class PoppetShelfCompassProperty implements ItemPropertyFunction {
+    static final PoppetShelfCompassProperty INSTANCE = new PoppetShelfCompassProperty();
+    private final Map<ItemStack, Reading> readings = new WeakHashMap<>();
+
+    private PoppetShelfCompassProperty() {}
+
+    public static void sample(ItemStack stack, Level level, Entity holder) {
+        int signal = PoppetShelfCompassItem.signal(level, holder.getX(), holder.getZ());
+        INSTANCE.readings.put(stack, new Reading(new WeakReference<>(holder), signal));
+    }
 
     @Override
     public float call(ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity holder, int seed) {
         if (holder == null || !(holder.level() instanceof ClientLevel world)
                 || (level != null && level != world)) return 0;
-        if (lastWorld.get() != world) {
-            readings.clear();
-            lastWorld = new WeakReference<>(world);
-        }
-        long tick = world.getGameTime();
-        var reading = readings.get(holder);
-        if (reading == null || tick < reading.tick() || tick - reading.tick() >= 20) {
-            int signal = PoppetShelfCompassItem.signal(world, holder.getX(), holder.getZ());
-            reading = new Reading(tick, signal);
-            readings.put(holder, reading);
-        }
-        return reading.signal();
+        var reading = readings.get(stack);
+        return reading != null && reading.holder().get() == holder ? reading.signal() : 0;
     }
 
-    private record Reading(long tick, int signal) {}
+    private record Reading(WeakReference<Entity> holder, int signal) {}
 }

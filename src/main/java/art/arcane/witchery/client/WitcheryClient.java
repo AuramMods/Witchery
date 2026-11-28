@@ -494,7 +494,7 @@ public final class WitcheryClient {
                     PlayerCompassProperty.INSTANCE);
             ItemProperties.register(WitcheryItems.getRequired("shelfcompass").get(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "shelf_proximity"),
-                    new PoppetShelfCompassProperty());
+                    PoppetShelfCompassProperty.INSTANCE);
             ItemProperties.register(WitcheryBlocks.getRequired("crittersnare").get().asItem(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "critter"),
                     (stack, level, entity, seed) -> CritterSnareBlock.critterFromStack(stack).ordinal());
