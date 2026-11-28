@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Mog's Quiver and saved arrow impacts (2026-11-28)
+
+- The original server recorded six Bow releases, six nock cases, and eight marked and unmarked hit cases. Mog's Quiver now uses the original muzzle and roughly 4.5-block full-draw speed. Its saved marker gives Weakness I for 200 ticks and triples damage when the target's impulse flag is set.
+- Both packaged profiles passed 51 checks and kept four original arrow UUIDs and pickup rules through import and restart. The optional CoFH Core hook leaves the draw and release to Witchery while the quiver is equipped. The ordinary bow still consumed its ammunition. The Auram restart exercised both ordinary and guaranteed critical damage. Local data generation, reobfuscation and all 697 Forge GameTests passed. Read the [quiver comparison](PORTING.md#mogs-quiver-arrows-2026-11-28) and `build/qa-mog-quiver/`.
+- The save audit found a real 0.24.1 village with pending Apothecary and Witch Hut pieces. The native replay generated both, including the chest and residents. Importing the same source on clean Forge left all three missing once both locations loaded. The release checklist records the source and both runs.
+
 ## Naturally spawned Dream Spirit hunt (2026-11-28)
 
 - The clean seed-`209376` survival save in `build/qa-natural-spectra/clean/server/player-fixture` reopened on `670553bb`. The player drank two saved Sleeping servings across a forced wake, built a Wooden Sword from Dream Oak, and collected one naturally spawned Subdued Spirit near `-333 79 435` at spawn weight one. The [replay](PORTING.md#naturally-spawned-dream-spirit-hunt-2026-11-28) records the positioning and Resistance used in the hunt.

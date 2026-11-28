@@ -38,14 +38,19 @@ public final class LegacyTargetingTests {
     private static final Field MELEE_GOALS = ObfuscationReflectionHelper.findField(Mob.class, "f_21345_");
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_legacy_targeting")
-    public static void allLegacyPathCheckingMobsRejectUnreachableTargets(GameTestHelper helper) throws IllegalAccessException {
+    public static void allLegacyPathCheckingMobsRejectUnreachableTargets(GameTestHelper helper) {
         Arena arena = new Arena(helper);
-        for (var kind : hunters()) {
-            arena.check(kind, Layout.OPEN, kind.prey(), "normal", true, true);
-            arena.check(kind, Layout.WALL, kind.prey(), "normal", false, kind != Hunter.GOBLIN);
-            arena.check(kind, Layout.GAP, kind.prey(), "normal", true, false);
-        }
-        helper.succeed();
+        var corners = List.of(arena.origin.offset(-5, 0, -5), arena.origin.offset(11, 0, -5),
+                arena.origin.offset(-5, 0, 5), arena.origin.offset(11, 0, 5));
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
+                corners.stream().allMatch(arena.level::isPositionEntityTicking), "The targeting arena can track its prey"))
+                .thenExecute(() -> {
+                    for (var kind : hunters()) {
+                        arena.check(kind, Layout.OPEN, kind.prey(), "normal", true, true);
+                        arena.check(kind, Layout.WALL, kind.prey(), "normal", false, kind != Hunter.GOBLIN);
+                        arena.check(kind, Layout.GAP, kind.prey(), "normal", true, false);
+                    }
+                }).thenSucceed();
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_legacy_targeting_filters")
@@ -182,7 +187,7 @@ public final class LegacyTargetingTests {
         }
 
         private void check(Hunter kind, Layout layout, EntityType<? extends Mob> preyType, String mode,
-                           boolean visible, boolean eligible) throws IllegalAccessException {
+                           boolean visible, boolean eligible) {
             prepare(layout);
             long savedTime = level.getDayTime();
             Mob hunter = kind.type().get().create(level);
@@ -229,7 +234,7 @@ public final class LegacyTargetingTests {
 
                 String label = kind.name() + " " + layout + " " + mode + " vs " + prey.getType();
                 helper.assertTrue(hunter.hasLineOfSight(prey) == visible, "Unexpected visibility for " + label);
-                GoalSelector goals = (GoalSelector) TARGET_GOALS.get(hunter);
+                GoalSelector goals = ObfuscationReflectionHelper.getPrivateValue(Mob.class, hunter, "f_21346_");
                 var goal = goals.getAvailableGoals().stream()
                         .filter(entry -> entry.getPriority() == kind.priority()
                                 && entry.getGoal() instanceof NearestAttackableTargetGoal<?>)

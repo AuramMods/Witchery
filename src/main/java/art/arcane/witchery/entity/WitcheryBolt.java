@@ -69,29 +69,7 @@ public final class WitcheryBolt extends AbstractArrow {
     }
 
     public void shootFromCrossbow(LivingEntity shooter, float yaw, float power) {
-        float yawRadians = yaw / 180F * Mth.PI;
-        float pitchRadians = shooter.getXRot() / 180F * Mth.PI;
-        float sinYaw = Mth.sin(yawRadians);
-        float cosYaw = Mth.cos(yawRadians);
-        setPos(shooter.getX() - cosYaw * 0.16F, shooter.getEyeY() - 0.3F, shooter.getZ() - sinYaw * 0.16F);
-
-        float cosPitch = Mth.cos(pitchRadians);
-        double x = -sinYaw * cosPitch;
-        double y = -Mth.sin(pitchRadians);
-        double z = cosYaw * cosPitch;
-        float length = (float) Math.sqrt(x * x + y * y + z * z);
-        float speed = power * 3F;
-        Vec3 motion = new Vec3((x / length + nextCrossbowSpread()) * speed,
-                (y / length + nextCrossbowSpread()) * speed, (z / length + nextCrossbowSpread()) * speed);
-        setDeltaMovement(motion);
-        setYRot((float) Math.toDegrees(Math.atan2(motion.x, motion.z)));
-        setXRot((float) Math.toDegrees(Math.atan2(motion.y, motion.horizontalDistance())));
-        yRotO = getYRot();
-        xRotO = getXRot();
-    }
-
-    private double nextCrossbowSpread() {
-        return random.nextGaussian() * (random.nextBoolean() ? -1 : 1) * 0.0075F;
+        LegacyArrowLaunch.shoot(this, shooter, yaw, 0.3F, power * 3F, random);
     }
 
     @Override

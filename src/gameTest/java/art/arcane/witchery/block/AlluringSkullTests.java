@@ -27,7 +27,6 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
@@ -35,6 +34,7 @@ import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
+import java.util.ArrayList;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -62,6 +62,7 @@ public final class AlluringSkullTests {
 
         var tileDrops = level.getGameRules().getRule(GameRules.RULE_DOBLOCKDROPS);
         boolean oldRule = tileDrops.get();
+        var returned = new ArrayList<ItemEntity>();
         tileDrops.set(false, level.getServer());
         try {
             Consumer<EntityJoinLevelEvent> veto = event -> {
@@ -77,17 +78,28 @@ public final class AlluringSkullTests {
                 MinecraftForge.EVENT_BUS.unregister(veto);
             }
 
-            helper.assertTrue(active.use(level, player, InteractionHand.MAIN_HAND, hit).consumesAction() && level.isEmptyBlock(pos),
-                    "The second successful use removes the skull");
-            var drops = level.getEntitiesOfClass(ItemEntity.class, new AABB(pos), item -> item.getItem().is(skull.asItem()));
-            helper.assertTrue(drops.size() == 1 && drops.get(0).getItem().getCount() == 1 && stone.getCount() == 1
-                            && drops.get(0).position().distanceTo(Vec3.atBottomCenterOf(pos).add(0, 0.8, 0)) < 1.0E-7,
+            Consumer<EntityJoinLevelEvent> track = event -> {
+                if (event.getLevel() == level && event.getEntity() instanceof ItemEntity drop && drop.getItem().is(skull.asItem())) {
+                    returned.add(drop);
+                }
+            };
+            MinecraftForge.EVENT_BUS.addListener(track);
+            try {
+                helper.assertTrue(active.use(level, player, InteractionHand.MAIN_HAND, hit).consumesAction() && level.isEmptyBlock(pos),
+                        "The second successful use removes the skull");
+            } finally {
+                MinecraftForge.EVENT_BUS.unregister(track);
+            }
+            helper.assertTrue(returned.size() == 1 && returned.get(0).getItem().getCount() == 1 && stone.getCount() == 1
+                            && returned.get(0).position().distanceTo(Vec3.atBottomCenterOf(pos).add(0, 0.8, 0)) < 1.0E-7,
                     "Recovery returns one item at the original point and keeps the stone with tile drops disabled");
         } finally {
             tileDrops.set(oldRule, level.getServer());
             player.discard();
         }
-        helper.succeed();
+        var drop = returned.get(0);
+        helper.succeedWhen(() -> helper.assertTrue(level.getEntity(drop.getUUID()) == drop,
+                "The world tracks the returned skull"));
     }
 
     @GameTest(template = "qa_coven_arena", timeoutTicks = 160)
