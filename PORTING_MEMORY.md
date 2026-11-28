@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Dream Spirits and cotton for the Nightmares weave (2026-11-28)
+
+- The seed-`209376` survival checkpoint continues in `build/qa-natural-congealed/clean/server/player-fixture` on `f3075b0b`. The player brewed another batch of Sleeping from harvested and saved ingredients, recovered the parked Wooden Sword, and harvested 11 generated cotton plants.
+- Four natural Spirit kills brought the Overworld total to five after a forced wake. The wake and an ordinary dedicated restart kept 12 Disturbed Cotton, one Icy Needle and the Diamond Pickaxe in the Overworld. The six Wool of Bat and the Wooden Sword stayed parked in Dream. The Kettle has two Sleeping servings. Read the [Dream supply checkpoint](PORTING.md#dream-spirits-and-cotton-for-the-nightmares-weave-2026-11-28).
+- The same player mined a diamond and distilled two Diamond Vapour and one Odour of Purity with saved Oil of Vitriol and fired jars. The server saved and shut down with these outputs. Continue with the Spinning Wheel and the remaining Nightmares weave ingredients, then recover Wispy Cotton in normal Dream for the Flowing Spirit and Hollow Tears brewing route.
+
 ## Pending Witchery village pieces (2026-11-28)
 
 - The original village plans reopen through ordinary Forge chunk generation. The Apothecary, Witch Hut, bookshop, Keep, and watchtower keep their original orientation and any established ground height. The import snapshots the shifted 1.7.10 population boxes so it can preserve a placed room even when the room's chunk still had population pending.
