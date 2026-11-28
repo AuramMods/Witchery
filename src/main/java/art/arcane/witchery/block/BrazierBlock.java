@@ -20,6 +20,7 @@ import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
@@ -35,6 +36,8 @@ import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+
+import java.util.concurrent.ThreadLocalRandom;
 
 public final class BrazierBlock extends BaseEntityBlock {
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
@@ -76,8 +79,9 @@ public final class BrazierBlock extends BaseEntityBlock {
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         ItemStack held = player.getItemInHand(hand);
         if (held.isEmpty()) return InteractionResult.PASS;
-        if (level.isClientSide) return InteractionResult.SUCCESS;
         if (!(level.getBlockEntity(pos) instanceof BrazierBlockEntity brazier)) return InteractionResult.PASS;
+        if (held.is(Items.FLINT_AND_STEEL)) return strikeFlint(level, brazier, player, hand, hit, held);
+        if (level.isClientSide) return InteractionResult.SUCCESS;
 
         boolean waterBottle = held.is(Items.POTION) && PotionUtils.getPotion(held) == Potions.WATER;
         if (waterBottle || held.is(Items.WATER_BUCKET)) {
@@ -89,15 +93,29 @@ public final class BrazierBlock extends BaseEntityBlock {
                     WitcherySounds.playLegacyPlayerCue(server, SoundEvents.PLAYER_SPLASH, 0.5F);
                 }
             }
-        } else if (held.is(Items.FLINT_AND_STEEL)) {
-            if (brazier.isEmpty()) return InteractionResult.PASS;
-            brazier.ignite();
-            held.hurtAndBreak(1, player, user -> user.broadcastBreakEvent(hand));
-            level.playSound(null, pos, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1, 1);
         } else if (brazier.insert(held) && !player.getAbilities().instabuild) {
             held.shrink(1);
         }
         return InteractionResult.CONSUME;
+    }
+
+    private static InteractionResult strikeFlint(Level level, BrazierBlockEntity brazier, Player player,
+                                                 InteractionHand hand, BlockHitResult hit, ItemStack tool) {
+        if (!level.isClientSide) brazier.ignite();
+        BlockPos target = hit.getBlockPos().relative(hit.getDirection());
+        // Ordinary fire placement continues through vanilla useOn and Forge's placement event.
+        if (BaseFireBlock.canBePlacedAt(level, target, player.getDirection())) return InteractionResult.PASS;
+        if (!player.mayUseItemAt(target, hit.getDirection(), tool)) return InteractionResult.PASS;
+
+        if (!level.isClientSide) {
+            // The original flint wore even against an obstruction and sounded only when it struck air.
+            if (level.isEmptyBlock(target)) {
+                float pitch = 0.8F + ThreadLocalRandom.current().nextFloat() * 0.4F;
+                level.playSound(null, target, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1, pitch);
+            }
+            tool.hurtAndBreak(1, player, user -> user.broadcastBreakEvent(hand));
+        }
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
     @Override

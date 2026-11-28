@@ -2352,6 +2352,7 @@ The muted Auram client rejoined after the headless dedicated-server restart and 
 
 - [x] Enumerate the 121 original blocks and save the 54 tile-bearing placements through the 0.24.1 block entity serializers. They use 40 distinct saved IDs. The matrix covers both oven and distillery states, both mirrors, all seven cursed controls, all three fetishes, and both brew fluids. Four decorative placements keep their blocks and omit their empty tiles. The obsolete village wall marker becomes air.
 - [x] Compare the two apparent missing block entity fields against the original writers. A Coffin persists `Opened` and sends its two lid angles only in its update packet. The Grassper saves its offering and returns the default name even when a fixture supplies a `CustomName`.
+- [x] Preserve the [Brazier's saved ingredient stack counts, tags, and active Spectre batch](#brazier-ignition-comparator-and-saved-offerings-2026-11-27) from the original world.
 - [x] Recover ten shared tile IDs in an ordinary Forge-format save. Match each tile to its placed block and keep the saved brew and spectral fields. Clean Forge and copied Auram each passed the 54 original imports, 55 converted-save checks, and 64 restart checks. The valid Nether Wart and Spider Eye fixture applies Poison through the ordinary cursed button interaction and spends one charge. Clean Forge also passed the recovery and restart without the captured registry. The saved region contains all ten canonical IDs after the recovered chunks are saved.
 
 - [x] Recover the original owner UUID on ordinary Forge loads of Owls, Toads, Winged Monkeys, Witch Cats, Coven Witches, Imps, Mindrakes and Binky. Use the same reader for Spectral Familiars and Followers. Prefer the current owner when both are saved. Recover a Witch Cat's original coat from numeric `CatType` and retain a current named variant. Restore original entity names in an earlier region or a saved player vehicle.
@@ -2963,6 +2964,14 @@ Copied Auram matched all 572 reference vertices on the same archive. The surviva
 - [x] Restore Baba Yaga's retaliation. A Spectre's touch produces two Cave Spiders. Ordinary attacks by undead or untamed attackers produce one, even when her hurt cooldown prevents the damage. The spiders inherit her target and send mob-spell particles and a pop from the attacker's feet. Wooden swords and wooden bolts spare the player from reflection. Clean Forge and copied Auram matched the original's ten combat cases and five transformation cues.
 - [x] Use the Necromantic Stone with a fixture-owned Spectre in muted survival. The attack removed the Spectre, took six health from Baba Yaga, and sent both Cave Spider transformation cues to the client. The same save loaded a different Baba Yaga from the previous JAR and applied her original 16 percent armor reduction. Both bosses and the two spiders marked persistent by the fixture kept their UUIDs after a dedicated restart.
 
+## Brazier ignition, comparator, and saved offerings (2026-11-27)
+
+- [x] Compare five ignition cases and eight inventory and comparator cases with the released 0.24.1 server. The previous package matched three. The rebuilt clean Forge package matched all 13. Igniting adjacent fire uses the vanilla Forge placement path. A blocked strike spends one durability silently. A strike into unsupported air plays the volume-one ignition cue at the clicked face and spends one durability. An empty chamber stays empty.
+- [x] Restore comparator weighting by item stack limit over the original four inventory slots. One, two, and three unstackable offerings give strengths four, eight, and eleven. The ignition ash contributes one sixty-fourth of a full slot. A saved 48-stack remains at 48 and yields strength three. New offerings still enter one item at a time.
+- [x] Match the original break scatter in clean Forge. The seeded incomplete batch yielded three named fragments of 27, 10, and 11, a Diamond Sword, and the ignition ash. All five drops reproduced the original coordinates, motion, and zero pickup delay. The next world roll was 160.
+- [x] Verify ordinary ignition and comparator changes in the muted background survival client. Clicking the east face of a loaded Brazier lit the supported eastern cell and spent one flint use. Putting two ordinary swords in a separate Brazier made the wired comparator read four and eight.
+- [x] Import the 0.24.1 world and reopen it without the import flag. The idle Brazier retained its 48 named and tagged offerings and two stored Wilting credits. The active Spectre batch kept its three offerings, ash, and 598 ticks of progress while it waited for altar power. The returning survival player mined the idle Brazier and recovered all 48 tagged offerings. Copied Auram matched the 13 cases and its configured drop random sequence. All 668 required local Forge GameTests passed.
+
 ## Spirit-Bound Fetishes (2026-11-20)
 
 - [x] Restore the original Scarecrow, Trent Effigy and Witch's Ladder crafting patterns. The Scarecrow and Trent use a Jack o'Lantern and Tormented Twine. The Trent uses a Rowan Log. The Witch's Ladder uses feathers, string and Fanciful Thread.
@@ -3520,6 +3529,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
 
 ### Phase 4 - Feature Behavior Pass (depth)
 - [ ] Blocks/tile entity behavior parity pass.
+  - [x] Compare [Brazier ignition, comparator weighting, and the original break drops](#brazier-ignition-comparator-and-saved-offerings-2026-11-27), including saved offerings.
   - [x] Compare [Witch's Oven menu eligibility and routing, named output, and stack limits](#oven-menu-and-named-output-2026-11-27) alongside the original batch and funnel checks.
   - [x] Compare [Leech Chest access and redstone](#leech-chests-blood-roses-and-the-boline-2026-11-20) and the [Refilling Chest clock and loot placement](#torment-milestone-2026-11-19).
   - [x] Compare [Silver Vat observations and Grassper offering release](#silver-vat-and-silver-sword-2026-11-20).

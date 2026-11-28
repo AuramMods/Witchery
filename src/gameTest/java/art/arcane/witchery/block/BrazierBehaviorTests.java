@@ -15,10 +15,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionUtils;
@@ -45,22 +49,91 @@ import java.util.function.Consumer;
 @PrefixGameTestTemplate(false)
 public final class BrazierBehaviorTests {
     @GameTest(template = "qa_coven_arena", batch = "witchery_brazier_behavior")
-    public static void manualIgnitionSpendsFlintAndSteelWear(GameTestHelper helper) {
+    public static void manualIgnitionUsesTheStruckFaceAndSpendsFlintWear(GameTestHelper helper) {
         var brazier = place(helper);
         var level = helper.getLevel();
         var pos = brazier.getBlockPos();
         var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "BrazierLighter"));
-        var tool = new ItemStack(Items.FLINT_AND_STEEL);
-        player.setItemInHand(InteractionHand.MAIN_HAND, tool);
-        var hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
-        brazier.insert(new ItemStack(Items.GUNPOWDER));
+        player.setPos(Vec3.atBottomCenterOf(pos.east(2)));
+        var hand = InteractionHand.MAIN_HAND;
+        var target = pos.east();
+        level.setBlockAndUpdate(target.below(), Blocks.STONE.defaultBlockState());
+        var cues = new ArrayList<PlayLevelSoundEvent.AtPosition>();
+        Consumer<PlayLevelSoundEvent.AtPosition> listener = event -> {
+            if (event.getLevel() == level && event.getPosition().equals(Vec3.atCenterOf(target))
+                    && event.getSound() != null && event.getSound().value() == SoundEvents.FLINTANDSTEEL_USE) {
+                cues.add(event);
+            }
+        };
+        MinecraftForge.EVENT_BUS.addListener(listener);
+        try {
+            for (boolean loaded : new boolean[]{false, true}) {
+                for (boolean blocked : new boolean[]{false, true}) {
+                    level.setBlockAndUpdate(target, (blocked ? Blocks.STONE : Blocks.AIR).defaultBlockState());
+                    if (loaded) brazier.insert(new ItemStack(Items.GUNPOWDER));
+                    var tool = new ItemStack(Items.FLINT_AND_STEEL);
+                    player.setItemInHand(hand, tool);
+                    var hit = new BlockHitResult(Vec3.atCenterOf(pos).add(0.5, 0, 0), Direction.EAST, pos, false);
+                    helper.assertTrue(player.gameMode.useItemOn(player, level, tool, hand, hit).consumesAction()
+                                    && tool.getDamageValue() == 1 && level.getBlockState(target).is(Blocks.FIRE) == !blocked
+                                    && cues.size() == (blocked ? 0 : 1),
+                            "The normal strike spends one use and only starts fire and plays the cue on the open side");
+                    helper.assertTrue(brazier.saveWithoutMetadata().getList("Items", net.minecraft.nbt.Tag.TAG_COMPOUND)
+                                    .size() == (loaded ? 2 : 0),
+                            "A loaded Brazier receives ash and an empty Brazier keeps its slots empty");
+                    cues.clear();
+                    BrazierBlockEntity.serverTick(level, pos, brazier.getBlockState(), brazier);
+                    helper.assertTrue(brazier.isEmpty() && !brazier.getBlockState().getValue(BrazierBlock.LIT),
+                            "An incomplete recipe fizzles and clears the brazier");
+                }
+            }
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(listener);
+            player.discard();
+        }
+        helper.succeed();
+    }
 
-        helper.assertTrue(brazier.getBlockState().use(level, player, InteractionHand.MAIN_HAND, hit).consumesAction()
-                        && tool.getDamageValue() == 1 && level.isEmptyBlock(pos.above()),
-                "Lighting a nonempty Brazier should spend one durability and leave the space above clear");
-        BrazierBlockEntity.serverTick(level, pos, brazier.getBlockState(), brazier);
-        helper.assertTrue(brazier.isEmpty() && !brazier.getBlockState().getValue(BrazierBlock.LIT),
-                "An incomplete recipe should fizzle and clear the brazier");
+    @GameTest(template = "qa_coven_arena", batch = "witchery_brazier_inventory")
+    public static void brazierWeighsOfferingsAndRecoversSavedStacksOnBreak(GameTestHelper helper) {
+        var brazier = place(helper);
+        var level = helper.getLevel();
+        var pos = brazier.getBlockPos();
+        helper.assertTrue(brazier.insert(new ItemStack(Items.IRON_SWORD)) && brazier.comparatorSignal() == 4,
+                "One unstackable offering emits four comparator levels");
+        helper.assertTrue(brazier.insert(new ItemStack(Items.GOLDEN_SWORD)) && brazier.comparatorSignal() == 8,
+                "A second unstackable offering raises the comparator to eight");
+        brazier.clearBatch();
+
+        var offering = new ItemStack(Items.GUNPOWDER, 48);
+        offering.setHoverName(Component.literal("Recovered Offering"));
+        var entry = offering.save(new CompoundTag());
+        entry.putByte("Slot", (byte) 0);
+        var entries = new ListTag();
+        entries.add(entry);
+        var saved = brazier.saveWithoutMetadata();
+        saved.put("Items", entries);
+        brazier.load(saved);
+        brazier.load(brazier.saveWithoutMetadata());
+        helper.assertTrue(brazier.comparatorSignal() == 3, "Loading a saved 48-stack preserves its original comparator level");
+
+        var drops = new ArrayList<ItemEntity>();
+        Consumer<EntityJoinLevelEvent> listener = event -> {
+            if (event.getLevel() == level && event.getEntity() instanceof ItemEntity item
+                    && item.getItem().is(Items.GUNPOWDER) && item.distanceToSqr(Vec3.atCenterOf(pos)) < 4) drops.add(item);
+        };
+        MinecraftForge.EVENT_BUS.addListener(listener);
+        try {
+            level.random.setSeed(42);
+            level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+            helper.assertTrue(drops.stream().map(drop -> drop.getItem().getCount()).toList().equals(List.of(27, 10, 11))
+                            && drops.stream().allMatch(drop -> drop.getItem().getHoverName().getString().equals("Recovered Offering")
+                            && drop.saveWithoutId(new CompoundTag()).getShort("PickupDelay") == 0),
+                    "Breaking the brazier spills all saved offerings in the original named fragments without a pickup delay");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(listener);
+            drops.forEach(ItemEntity::discard);
+        }
         helper.succeed();
     }
 

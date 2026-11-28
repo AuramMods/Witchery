@@ -15,7 +15,7 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
-import net.minecraft.world.Containers;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -175,12 +175,31 @@ public final class BrazierBlockEntity extends BlockEntity {
     }
 
     public int comparatorSignal() {
-        // One item per slot, even when lit, is below the threshold for strength two.
-        return !ignited && isEmpty() ? 0 : 1;
+        if (!ignited && isEmpty()) return 0;
+        float fullness = 0;
+        for (int slot = 0; slot < INGREDIENT_SLOTS; slot++) {
+            ItemStack stack = ingredients.getStackInSlot(slot);
+            if (!stack.isEmpty()) fullness += (float) stack.getCount() / Math.min(64, stack.getMaxStackSize());
+        }
+        if (ignited) fullness += 1.0F / 64; // The fourth inventory slot holds the ignition ash.
+        return Math.min(15, 1 + Mth.floor(fullness * (14.0F / 4)));
     }
 
     private void drop(Level level, ItemStack stack) {
-        Containers.dropItemStack(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), stack);
+        if (stack.isEmpty()) return;
+        var random = level.random;
+        double x = worldPosition.getX() + (random.nextFloat() * 0.8F + 0.1F);
+        double y = worldPosition.getY() + (random.nextFloat() * 0.8F + 0.1F);
+        double z = worldPosition.getZ() + (random.nextFloat() * 0.8F + 0.1F);
+        int remaining = stack.getCount();
+        while (remaining > 0) {
+            int count = Math.min(remaining, 10 + random.nextInt(21));
+            var dropped = new ItemEntity(level, x, y, z, stack.copyWithCount(count),
+                    (float) random.nextGaussian() * 0.05F, (float) random.nextGaussian() * 0.05F + 0.2F,
+                    (float) random.nextGaussian() * 0.05F);
+            level.addFreshEntity(dropped);
+            remaining -= count;
+        }
     }
 
     private void setFlame(boolean flame) {
@@ -261,7 +280,7 @@ public final class BrazierBlockEntity extends BlockEntity {
             CompoundTag entry = entries.getCompound(index);
             int slot = Byte.toUnsignedInt(entry.getByte("Slot"));
             ItemStack stack = WitcheryIngredient.loadInventoryStack(entry);
-            if (slot < INGREDIENT_SLOTS && !stack.isEmpty()) ingredients.setStackInSlot(slot, stack.copyWithCount(1));
+            if (slot < INGREDIENT_SLOTS && !stack.isEmpty()) ingredients.setStackInSlot(slot, stack);
             if (slot == INGREDIENT_SLOTS && stack.is(WitcheryIngredient.WOOD_ASH.item())) ignited = true;
         }
         loading = false;
