@@ -20,6 +20,7 @@ import net.minecraft.world.entity.projectile.SmallFireball;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.levelgen.LegacyRandomSource;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
@@ -36,6 +37,28 @@ import java.util.function.Consumer;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class DemonicDreamTests {
+    @GameTest(template = "qa_coven_arena")
+    public static void dreamChoiceConsumesOnlyOriginalRolls(GameTestHelper helper) {
+        var noRolls = new DreamRolls();
+        helper.assertTrue(!new DreamTravel.DreamAmbience(0.0, 0.0).rollNightmare(noRolls),
+                "A certain Dream uses no random roll");
+        var certain = new DreamTravel.DreamAmbience(1.0, 0.0);
+        helper.assertTrue(certain.rollNightmare(noRolls) && !certain.rollDemonic(noRolls),
+                "A certain ordinary Nightmare uses no random roll");
+
+        var ordinary = new DreamTravel.DreamAmbience(0.998, 0.0);
+        var oneRoll = new DreamRolls(0.997);
+        helper.assertTrue(ordinary.rollNightmare(oneRoll) && !ordinary.rollDemonic(oneRoll) && oneRoll.index == 1,
+                "An ordinary Nightmare only rolls for the Dream outcome");
+        var eligible = new DreamTravel.DreamAmbience(0.748, 0.35);
+        var twoRolls = new DreamRolls(0.5, 0.34);
+        helper.assertTrue(eligible.rollNightmare(twoRolls) && eligible.rollDemonic(twoRolls) && twoRolls.index == 2,
+                "An eligible Nightmare uses the second world roll for the demonic outcome");
+        helper.assertTrue(!ordinary.rollNightmare(new DreamRolls(0.998)) && !eligible.rollDemonic(new DreamRolls(0.35)),
+                "A roll equal to its chance does not select the outcome");
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena", timeoutTicks = 220)
     public static void demonicDreamUsesOriginalHazardRollsAndMonsterCap(GameTestHelper helper) {
         var dream = helper.getLevel().getServer().getLevel(WitcheryDimensions.DREAM);
@@ -136,5 +159,20 @@ public final class DemonicDreamTests {
     private static boolean atLaunch(AbstractHurtingProjectile ball, Vec3 position) {
         return ball.position().equals(position) && Math.abs(ball.yPower + 0.1) < 0.0001
                 && ball.xPower == 0 && ball.zPower == 0;
+    }
+
+    private static final class DreamRolls extends LegacyRandomSource {
+        private final double[] rolls;
+        private int index;
+
+        private DreamRolls(double... rolls) {
+            super(0);
+            this.rolls = rolls;
+        }
+
+        @Override
+        public double nextDouble() {
+            return rolls[index++];
+        }
     }
 }

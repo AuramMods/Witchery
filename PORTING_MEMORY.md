@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Naturally sourced Nightmares weave and Dream outcome rolls (2026-11-28)
+
+- The clean Forge survival branch continues in `build/qa-natural-nightmares/clean/server/player-fixture`. The player hunted the Creepers and spider, made the clay jars and Golden Carrot, distilled three Reek of Misfortune, and spun three Tormented Twine. Both extended splash potions came from the player's Brewing Stand. The normal crafting grid produced the Dreamweave of Nightmares. Read the [survival weave checkpoint](PORTING.md#naturally-sourced-nightmares-weave-and-dream-outcome-rolls-2026-11-28).
+- Dream entry now samples the Overworld random source and skips rolls for certain outcomes and ineligible demonic nightmares, following the original implementation. Forced Sleeping Apple entry still produces an ordinary Nightmare. Java 17 data generation, reobfuscation, and all 699 required local Forge GameTests passed.
+- The player mounted the weave at `-242 64 287`, distilled a Whiff of Magic from a naturally dropped Ender Pearl, and made another batch of Sleeping. They rejoined after a dedicated restart in normal Dream at `-305.5 76 401.5` with four Wispy Cotton, six Wool of Bat, a Wooden Sword, and one Icy Needle. The Overworld Kettle has one serving left. Continue here by building the Dream workshop and spinning Fanciful Thread for Flowing Spirit. The same sleeping body and the parked Overworld inventory survived the restart.
+
 ## Survival supplies for the Nightmares weave (2026-11-28)
 
 - The clean Forge survival save continues in `build/qa-natural-weave/clean/server/player-fixture` on `f3075b0b`. The player crafted five Item Frames with leather from naturally spawned cattle, harvested White Wool and two Feathers, and parked the Spirits and Disturbed Cotton in the workshop Chest. The nearby Nether fortress supplied 20 Nether Wart and four Blaze Rods. A Wither Skeleton death exercised ordinary respawn and recovery of the actual carried items. Read the [weave supply checkpoint](PORTING.md#survival-supplies-for-the-nightmares-weave-2026-11-28).

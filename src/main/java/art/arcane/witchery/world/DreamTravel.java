@@ -24,6 +24,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -310,8 +311,9 @@ public final class DreamTravel {
         boolean demonic = false;
         if (!forceNightmare) {
             DreamAmbience ambience = DreamAmbience.around(overworld, anchor);
-            nightmare = player.getRandom().nextDouble() < ambience.nightmareChance();
-            demonic = nightmare && player.getRandom().nextDouble() < ambience.demonicChance();
+            RandomSource random = overworld.getRandom();
+            nightmare = ambience.rollNightmare(random);
+            demonic = nightmare && ambience.rollDemonic(random);
         }
 
         move(player, dream, arrival, yaw, pitch);
@@ -352,9 +354,17 @@ public final class DreamTravel {
         pushArrival(player);
     }
 
-    private record DreamAmbience(double nightmareChance, double demonicChance) {
+    record DreamAmbience(double nightmareChance, double demonicChance) {
         private static final double BASE_NIGHTMARE_CHANCE = 0.998;
         private static final int RADIUS = 8;
+
+        boolean rollNightmare(RandomSource random) {
+            return nightmareChance == 1.0 || nightmareChance > 0.0 && random.nextDouble() < nightmareChance;
+        }
+
+        boolean rollDemonic(RandomSource random) {
+            return demonicChance > 0.0 && random.nextDouble() < demonicChance;
+        }
 
         static DreamAmbience around(ServerLevel level, BlockPos anchor) {
             int cotton = 0;
