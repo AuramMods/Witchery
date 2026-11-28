@@ -298,7 +298,7 @@ public final class DreamTravel {
         float yaw = player.getYRot();
         float pitch = player.getXRot();
         body.attachOwner(player);
-        body.moveTo(anchor.getX() + 0.5, player.getY(), anchor.getZ() + 0.5, yaw, 0);
+        body.moveTo(anchor.getX() + 0.5, player.getY(), anchor.getZ() + 0.5, 0, 0);
         body.setHealth(Math.max(1, player.getHealth()));
         if (!overworld.addFreshEntity(body)) {
             return;

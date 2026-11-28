@@ -3,6 +3,7 @@ package art.arcane.witchery.world;
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.block.DreamCatcherBlock;
 import art.arcane.witchery.block.DreamWeave;
+import art.arcane.witchery.entity.SleepingBody;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import com.mojang.authlib.GameProfile;
@@ -152,6 +153,8 @@ public final class SleepingAppleTests {
         var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "DreamArrivalQA"));
         player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
         player.setPos(Vec3.atBottomCenterOf(anchor));
+        player.setYRot(73);
+        player.setXRot(-28);
         var brew = WitcheryIngredient.BREW_OF_SLEEPING.item();
         var needle = WitcheryIngredient.ICY_NEEDLE.item();
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(brew));
@@ -161,6 +164,10 @@ public final class SleepingAppleTests {
             helper.assertTrue(DreamTravel.processRequests(player) && player.serverLevel() == dream,
                     "The Brew of Sleeping must take the player to Dream");
             assertArrival(helper, player, anchor.above(12));
+            var session = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getCompound("WITCSpiritWorld");
+            var body = level.getEntity(session.getUUID("BodyEntity"));
+            helper.assertTrue(body instanceof SleepingBody && body.getYRot() == 0 && body.getXRot() == 0,
+                    "The sleeping body faces the original fixed direction regardless of the player's view");
 
             player.getCooldowns().removeCooldown(needle);
             player.getInventory().selected = 1;
@@ -172,6 +179,8 @@ public final class SleepingAppleTests {
             helper.assertTrue(DreamTravel.processRequests(player) && player.serverLevel() == level,
                     "Waking must return the player to the sleeping body");
             assertArrival(helper, player, anchor);
+            helper.assertTrue(player.getYRot() == 73 && player.getXRot() == -28,
+                    "Waking restores the player's saved view independently of the body's direction");
         } finally {
             if (player.serverLevel() == dream) {
                 DreamTravel.requestWake(player);
