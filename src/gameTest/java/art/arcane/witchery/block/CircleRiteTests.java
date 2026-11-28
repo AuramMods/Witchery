@@ -239,16 +239,26 @@ public final class CircleRiteTests {
         var level = helper.getLevel();
         var center = helper.absolutePos(CENTER);
         var origin = Vec3.atLowerCornerOf(center);
-        var obsidian = drop(level, origin.add(4.25, 0.2, 0.2), new ItemStack(Items.OBSIDIAN));
+        var east = origin.add(4.25, 0.2, 0.2);
+        var west = origin.add(-3.75, 0.2, 0.2);
+        var offering = new ItemEntity[1];
         waitForOfferings(helper, new ItemStack(Items.REDSTONE)).thenWaitUntil(() -> {
-            helper.assertTrue(level.getEntitiesOfClass(ItemEntity.class, new AABB(center).inflate(5)).contains(obsidian),
+            helper.assertTrue(level.isPositionEntityTicking(BlockPos.containing(east))
+                            && level.isPositionEntityTicking(BlockPos.containing(west)),
+                    "Both offering chunks can tick entities");
+        }).thenExecute(() -> {
+            offering[0] = drop(level, east, new ItemStack(Items.OBSIDIAN));
+            helper.assertTrue(offering[0].isAddedToWorld(), "The server accepted the east offering");
+        }).thenWaitUntil(() -> {
+            helper.assertTrue(level.getEntitiesOfClass(ItemEntity.class, new AABB(center).inflate(5)).contains(offering[0]),
                     "The obsidian exists before checking the offering boundary");
         }).thenExecute(() -> {
+            var obsidian = offering[0];
             helper.useBlock(CENTER);
             helper.assertFalse(helper.getBlockState(CENTER).getValue(RiteHeartBlock.ACTIVE),
                     "An offering beyond four blocks on the east side cannot start the small rite");
 
-            obsidian.setPos(origin.add(-3.75, 0.2, 0.2));
+            obsidian.setPos(west);
             start(helper);
             tick(level, center, heart(helper), 20);
             helper.assertTrue(obsidian.isRemoved(), "An offering within four blocks on the west side starts and feeds the rite");

@@ -34,7 +34,7 @@ public final class SomnianCottonBlock extends BushBlock {
 
     @Override
     public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        if (!level.dimension().equals(WitcheryDimensions.DREAM) || random.nextInt(6) != 0
+        if (level.getRandom().nextInt(6) != 0 || !level.dimension().equals(WitcheryDimensions.DREAM)
                 || !level.hasChunksAt(pos.offset(-4, -1, -4), pos.offset(4, 1, 4)) || !hasSpiritPool(level, pos)) {
             return;
         }
@@ -53,7 +53,7 @@ public final class SomnianCottonBlock extends BushBlock {
         }
         BlockPos target = step(origin, random);
         if (canSpreadTo(state, level, target)) {
-            level.setBlock(target, state, Block.UPDATE_ALL);
+            level.setBlock(target, state, Block.UPDATE_CLIENTS);
         }
     }
 
@@ -66,7 +66,8 @@ public final class SomnianCottonBlock extends BushBlock {
             return false;
         }
         BlockState soil = level.getBlockState(pos.below());
-        return (soil.is(Blocks.DIRT) || soil.is(Blocks.GRASS_BLOCK)) && state.canSurvive(level, pos);
+        return (soil.is(Blocks.DIRT) || soil.is(Blocks.COARSE_DIRT) || soil.is(Blocks.PODZOL)
+                || soil.is(Blocks.GRASS_BLOCK)) && state.canSurvive(level, pos);
     }
 
     private static boolean hasSpiritPool(ServerLevel level, BlockPos pos) {

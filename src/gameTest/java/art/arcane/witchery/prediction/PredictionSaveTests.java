@@ -37,6 +37,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
@@ -62,6 +63,12 @@ public final class PredictionSaveTests {
         var level = helper.getLevel();
         var chunk = new ChunkPos(helper.absolutePos(new BlockPos(5, 4, 5)));
         var pos = new BlockPos(chunk.getMiddleBlockX(), 170, chunk.getMiddleBlockZ());
+        helper.startSequence().thenWaitUntil(() -> {
+            helper.assertTrue(level.isPositionEntityTicking(pos), "The Crystal Ball chunk can tick its visitors");
+        }).thenExecute(() -> verifyCrystalBallReading(helper, level, pos)).thenSucceed();
+    }
+
+    private static void verifyCrystalBallReading(GameTestHelper helper, ServerLevel level, BlockPos pos) {
         level.setBlockAndUpdate(pos.below(), Blocks.STONE.defaultBlockState());
         var state = WitcheryBlocks.getRequired("crystalball").get().defaultBlockState();
         level.setBlockAndUpdate(pos, state);
@@ -95,11 +102,16 @@ public final class PredictionSaveTests {
         try {
             level.addNewPlayer(first);
             level.addNewPlayer(nearer);
+            var center = Vec3.atCenterOf(pos);
+            var bounds = new AABB(center, center).inflate(5, 2, 5);
+            helper.assertTrue(level.getEntitiesOfClass(FakePlayer.class, bounds).equals(List.of(first, nearer)),
+                    "Both visitors are tracked in the original section order");
             level.random.setSeed(42);
             state.use(level, reader, InteractionHand.MAIN_HAND, hit);
-            helper.assertTrue(firstReadings.size() == 1 && nearerReadings.isEmpty() && altar.power() == 400
-                            && level.random.nextInt(1000) == 763,
-                    "A paid reading chooses the first visitor in the section and makes just the original weighted draw");
+            helper.assertTrue(altar.power() == 400, "A paid reading consumes 500 altar power");
+            helper.assertTrue(firstReadings.size() == 1 && nearerReadings.isEmpty(),
+                    "A paid reading chooses the first visitor in the section");
+            helper.assertTrue(level.random.nextInt(1000) == 763, "A paid reading makes just the original weighted draw");
 
             for (boolean recharging : new boolean[]{true, false}) {
                 if (!recharging) ball.readAt(now - 101);
@@ -118,7 +130,6 @@ public final class PredictionSaveTests {
             level.removePlayerImmediately(first, Entity.RemovalReason.DISCARDED);
             level.removePlayerImmediately(nearer, Entity.RemovalReason.DISCARDED);
         }
-        helper.succeed();
     }
 
     @GameTest(template = "qa_coven_arena")

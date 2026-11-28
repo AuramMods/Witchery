@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Somnian Cotton and Dream workshop supplies (2026-11-28)
+
+- Cotton takes its one-in-six draw from the world before checking the dimension and uses the tick source for the offset draws. Original Forge 1.7.10 and the reobfuscated Forge package matched spread on coarse dirt and podzol and the draw outside Dream. Read the [Somnian Cotton spread comparison](PORTING.md#somnian-cotton-spread-2026-11-28).
+- Java 17 reobfuscation and all 701 required local Forge GameTests passed. The rerun used entity-tracking waits for the small rite boundary offering and Crystal Ball visitors.
+- In the continuous Dream save at `build/qa-natural-dreamwork/clean/server/player-fixture`, the player collected two Odour of Purity from harvested Hawthorn. They grew and harvested Rowan, replanted one sapling, and kept four Rowan Logs and two Rowan Saplings. A dedicated restart on the Somnian Cotton JAR finished roasting the saved third sapling and added one Wood Ash. The player has a fresh Mandrake Root and egg, and the chest retains four Wispy Cotton and six Wool of Bat. Obtain Oak fume for the next Mutandis, Birch fume for the Altar, and Whiff of Magic for the Attuned Stones. The [workshop checkpoint](PORTING.md#naturally-sourced-dream-workshop-2026-11-28) records the natural inputs and fixture assistance.
+
 ## Dream terrain inheritance and the first Dream Witchwood (2026-11-28)
 
 - The bundled Dream dimension now inherits the selected Overworld terrain and biome settings. The resolved generator persists in `level.dat`. Earlier saves keep their recorded Dream generator, and a higher-priority Dream datapack can override it. Clean Forge verified ordinary, large-biome and custom flat worlds, an earlier flat world with a noise Dream, and a separate Forest and gold-layer Dream datapack across restart. Java 17 data generation, reobfuscation and all 700 required local GameTests passed. Read the [Dream terrain comparison](PORTING.md#dream-terrain-inheritance-2026-11-28).
